@@ -1,15 +1,142 @@
+// === CORE MULTI-TENANCY ===
+
 model Tenant {
   id        String   @id @default(cuid())
   name      String
+  slug      String   @unique
+  status    String   @default("ACTIVE") // ACTIVE, SUSPENDED, ARCHIVED
   createdAt DateTime @default(now())
+
+  // Relations
+  memberships   Membership[]
+  roles         Role[]
+  apiKeys       ApiKey[]
+  refreshTokens RefreshToken[]
+
+  @@index([createdAt])
 }
 
+// === USERS ===
+
 model User {
-  id       String @id @default(cuid())
-  tenantId String
-  email    String @unique
-  name     String
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  status       String   @default("ACTIVE") // ACTIVE, INACTIVE, DELETED
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  memberships    Membership[]
+  refreshTokens  RefreshToken[]
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+// === MULTI-TENANCY MEMBERSHIP ===
+
+model Membership {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  roleId    String
   createdAt DateTime @default(now())
 
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, userId])
   @@index([tenantId])
+  @@index([userId])
+  @@index([roleId])
+  @@index([tenantId, createdAt])
+}
+
+// === RBAC ===
+
+model Role {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  systemKey String?  // OWNER, ADMIN, MEMBER (null for custom roles)
+  createdAt DateTime @default(now())
+
+  // Relations
+  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  memberships         Membership[]
+  rolePermissions     RolePermission[]
+
+  @@unique([tenantId, systemKey])
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([tenantId, systemKey])
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g., "tenant.manage", "user.invite", "invoice.write"
+  description String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@index([key])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now())
+
+  // Relations
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+// === SESSIONS / TOKENS ===
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  userId     String
+  tenantId   String
+  tokenHash  String
+  revokedAt  DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([userId, expiresAt])
+  @@index([tokenHash])
+}
+
+// === API KEYS ===
+
+model ApiKey {
+  id         String   @id @default(cuid())
+  tenantId   String
+  name       String
+  keyHash    String
+  lastUsedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([keyHash])
 }
