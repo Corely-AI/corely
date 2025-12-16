@@ -10,8 +10,8 @@
     "rxjs": "^7.8.2"
   },
   "scripts": {
-    "dev": "pnpm -w exec tsx watch src/main.ts",
-    "start": "pnpm -w exec tsx src/main.ts",
-    "typecheck": "pnpm -w exec tsc -p tsconfig.json --noEmit"
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }

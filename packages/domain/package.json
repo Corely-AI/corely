@@ -18,8 +18,8 @@
     "@kerniflow/contracts": "workspace:*"
   },
   "scripts": {
-    "build": "pnpm -w exec tsdown",
-    "dev": "pnpm -w exec tsdown --watch",
-    "typecheck": "pnpm -w exec tsc -p tsconfig.json --noEmit"
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
