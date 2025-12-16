@@ -13,8 +13,8 @@
     "rxjs": "^7.8.2"
   },
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "start": "tsx src/main.ts",
+    "dev": "tsx watch --env-file=../../.env src/main.ts",
+    "start": "tsx --env-file=../../.env src/main.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
