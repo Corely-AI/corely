@@ -1,0 +1,70 @@
+import { tool } from "ai";
+import { DomainToolPort } from "../../application/ports/domain-tool.port";
+import { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution.repo.port";
+import { AuditPort } from "../../application/ports/audit.port";
+import { OutboxPort } from "../../application/ports/outbox.port";
+
+export function buildAiTools(
+  tools: DomainToolPort[],
+  deps: {
+    toolExecutions: ToolExecutionRepositoryPort;
+    audit: AuditPort;
+    outbox: OutboxPort;
+    tenantId: string;
+    runId: string;
+    userId: string;
+  }
+) {
+  return tools.map((t) =>
+    tool({
+      name: t.name,
+      description: t.description,
+      parameters: t.inputSchema,
+      execute:
+        t.kind === "server" && t.execute
+          ? async ({ input, toolCallId }) => {
+              await deps.toolExecutions.create({
+                id: `${deps.runId}:${toolCallId}`,
+                tenantId: deps.tenantId,
+                runId: deps.runId,
+                toolCallId,
+                toolName: t.name,
+                inputJson: JSON.stringify(input),
+                status: "pending",
+              });
+              try {
+                const result = await t.execute({
+                  tenantId: deps.tenantId,
+                  userId: deps.userId,
+                  input,
+                });
+                await deps.toolExecutions.complete(deps.tenantId, deps.runId, toolCallId, {
+                  status: "completed",
+                  outputJson: JSON.stringify(result),
+                });
+                await deps.audit.write({
+                  tenantId: deps.tenantId,
+                  actorUserId: deps.userId,
+                  action: `copilot.tool.${t.name}`,
+                  targetType: "ToolExecution",
+                  targetId: toolCallId,
+                  details: JSON.stringify({ runId: deps.runId }),
+                });
+                await deps.outbox.enqueue({
+                  tenantId: deps.tenantId,
+                  eventType: "copilot.tool.completed",
+                  payloadJson: JSON.stringify({ runId: deps.runId, tool: t.name }),
+                });
+                return result;
+              } catch (error) {
+                await deps.toolExecutions.complete(deps.tenantId, deps.runId, toolCallId, {
+                  status: "failed",
+                  errorJson: error instanceof Error ? error.message : String(error),
+                });
+                throw error;
+              }
+            }
+          : undefined,
+    })
+  );
+}

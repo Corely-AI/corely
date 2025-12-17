@@ -8,6 +8,7 @@ import { WorkflowModule } from "./modules/workflow";
 import { AutomationModule } from "./modules/automation";
 import { ReportingModule } from "./modules/reporting";
 import { TestHarnessModule } from "./modules/test-harness";
+import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 
 @Module({
   controllers: [AppController],
@@ -19,6 +20,7 @@ import { TestHarnessModule } from "./modules/test-harness";
     WorkflowModule,
     AutomationModule,
     ReportingModule,
+    AiCopilotModule,
     ...(process.env.NODE_ENV === "test" ? [TestHarnessModule] : []),
   ],
 })
