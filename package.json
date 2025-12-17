@@ -22,6 +22,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check": "pnpm lint && pnpm typecheck",
+    "e2e:api:up": "docker compose -f docker-compose.e2e.yml up -d api",
     "e2e:up": "docker compose -f docker-compose.e2e.yml up -d --build",
     "e2e:down": "docker compose -f docker-compose.e2e.yml down -v",
     "e2e": "pnpm --filter @kerniflow/e2e e2e",

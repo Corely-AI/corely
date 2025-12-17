@@ -1,5 +1,11 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { ITokenService } from '../../application/ports/token-service.port';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+  Inject,
+} from "@nestjs/common";
+import { ITokenService, TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port";
 
 /**
  * Auth Guard
@@ -7,19 +13,19 @@ import { ITokenService } from '../../application/ports/token-service.port';
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly tokenService: ITokenService) {}
+  constructor(@Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
     if (!authHeader) {
-      throw new UnauthorizedException('Missing authorization header');
+      throw new UnauthorizedException("Missing authorization header");
     }
 
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0].toLowerCase() !== 'bearer') {
-      throw new UnauthorizedException('Invalid authorization header format');
+    const parts = authHeader.split(" ");
+    if (parts.length !== 2 || parts[0].toLowerCase() !== "bearer") {
+      throw new UnauthorizedException("Invalid authorization header format");
     }
 
     const token = parts[1];
@@ -28,13 +34,13 @@ export class AuthGuard implements CanActivate {
     const decoded = await this.tokenService.verifyAccessToken(token);
 
     if (!decoded) {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException("Invalid or expired token");
     }
 
     // Set user and tenant on request
     request.user = {
       userId: decoded.userId,
-      email: decoded.email
+      email: decoded.email,
     };
     request.tenantId = decoded.tenantId;
 

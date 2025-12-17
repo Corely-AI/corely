@@ -41,8 +41,15 @@ export class TestHarnessService {
       });
 
       // 2. Create user
-      const user = await tx.user.create({
-        data: {
+      // Allow repeated seeds with the same email by upserting the user
+      const user = await tx.user.upsert({
+        where: { email: params.email },
+        update: {
+          name: "Test User",
+          passwordHash,
+          status: "ACTIVE",
+        },
+        create: {
           email: params.email,
           name: "Test User",
           passwordHash,

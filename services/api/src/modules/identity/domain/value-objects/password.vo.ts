@@ -12,19 +12,8 @@ export class Password {
   }
 
   private static validate(password: string): void {
-    if (!password || password.length < 8) {
-      throw new Error('Password must be at least 8 characters long');
-    }
-
-    // Additional complexity checks
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-
-    if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
-      throw new Error(
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-      );
+    if (!password || password.length < 6) {
+      throw new Error("Password must be at least 6 characters long");
     }
   }
 
@@ -33,6 +22,6 @@ export class Password {
   }
 
   toString(): string {
-    return '***';
+    return "***";
   }
 }

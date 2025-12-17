@@ -15,23 +15,17 @@ async function globalSetup(_config: FullConfig) {
   // Call seed endpoint to create test tenant/user
   const testData = await seedTestData();
 
-  // If seed successful, perform login via UI and save storage state
   if (testData) {
     const loginUrl = `${baseURL}/auth/login`;
     await page.goto(loginUrl);
 
-    // Fill login form
+    await page.waitForSelector('input[data-testid="login-email"]', { timeout: 15000 });
     await page.fill('input[data-testid="login-email"]', testData.user.email);
     await page.fill('input[data-testid="login-password"]', testData.user.password);
     await page.click('button[data-testid="login-submit"]');
 
-    // Wait for redirect to dashboard
-    await page.waitForURL("**/dashboard", { timeout: 10_000 }).catch(() => {
-      // Dashboard redirect may not happen immediately, that's okay
-      // The important part is we're logged in for storage state
-    });
+    await page.waitForURL("**/dashboard", { timeout: 10000 }).catch(() => {});
 
-    // Save storage state (cookies, localStorage, sessionStorage)
     await context.storageState({
       path: "utils/storageState.json",
     });

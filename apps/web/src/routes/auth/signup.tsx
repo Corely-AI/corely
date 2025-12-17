@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../lib/auth-provider';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../lib/auth-provider";
 
 /**
  * Signup Page
@@ -9,27 +9,21 @@ export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { signup, error: authError } = useAuth();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [tenantName, setTenantName] = useState('');
-  const [userName, setUserName] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [tenantName, setTenantName] = useState("");
+  const [userName, setUserName] = useState("");
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setIsLoading(true);
 
     // Basic validation
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/\d/.test(password)) {
-      setError('Password must contain uppercase, lowercase, and numbers');
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
       setIsLoading(false);
       return;
     }
@@ -39,12 +33,12 @@ export const SignupPage: React.FC = () => {
         email,
         password,
         tenantName,
-        userName: userName || undefined
+        userName: userName || undefined,
       });
 
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      setError(err instanceof Error ? err.message : "Signup failed");
     } finally {
       setIsLoading(false);
     }
@@ -126,13 +120,11 @@ export const SignupPage: React.FC = () => {
                 autoComplete="new-password"
                 required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Min. 8 chars, uppercase, lowercase, number"
+                placeholder="Min. 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <p className="mt-1 text-xs text-gray-500">
-                Must be 8+ characters with uppercase, lowercase, and numbers
-              </p>
+              <p className="mt-1 text-xs text-gray-500">Must be at least 6 characters</p>
             </div>
           </div>
 
@@ -142,17 +134,14 @@ export const SignupPage: React.FC = () => {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isLoading ? 'Creating account...' : 'Sign up'}
+              {isLoading ? "Creating account..." : "Sign up"}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link
-                to="/login"
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
+              Already have an account?{" "}
+              <Link to="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
                 Sign in
               </Link>
             </p>

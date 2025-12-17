@@ -19,12 +19,16 @@ export class PrismaAuditRepository implements IAuditPort {
   }): Promise<void> {
     const createData: any = {
       action: data.action,
+      // Map target fields to the required Prisma columns
+      entity: data.targetType || "Unknown",
+      entityId: data.targetId || data.actorUserId || "unknown",
     };
 
     if (data.tenantId) createData.tenantId = data.tenantId;
-    if (data.actorUserId) createData.actorUserId = data.actorUserId;
-    if (data.targetType) createData.targetType = data.targetType;
-    if (data.targetId) createData.targetId = data.targetId;
+    // The auditLog model does not have actorUserId; stash it in metadata if provided
+    if (data.actorUserId) {
+      createData.details = JSON.stringify({ actorUserId: data.actorUserId });
+    }
     if (data.ip) createData.ip = data.ip;
     if (data.userAgent) createData.userAgent = data.userAgent;
     if (data.metadataJson) createData.metadataJson = data.metadataJson;
