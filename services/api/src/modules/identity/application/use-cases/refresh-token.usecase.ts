@@ -1,9 +1,9 @@
-import { IRefreshTokenRepository } from '../ports/refresh-token.repo.port';
-import { ITokenService } from '../ports/token-service.port';
-import { IUserRepository } from '../ports/user.repo.port';
-import { IAuditPort } from '../ports/audit.port';
-import { IClock } from '../ports/clock.port';
-import { randomUUID } from 'crypto';
+import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
+import { ITokenService } from "../ports/token-service.port";
+import { IUserRepository } from "../ports/user.repo.port";
+import { IAuditPort } from "../ports/audit.port";
+import { IClock } from "../ports/clock.port";
+import { createHash, randomUUID } from "crypto";
 
 export interface RefreshTokenInput {
   refreshToken: string;
@@ -35,25 +35,25 @@ export class RefreshTokenUseCase {
     const storedToken = await this.refreshTokenRepo.findValidByHash(tokenHash);
 
     if (!storedToken || storedToken.revokedAt) {
-      throw new Error('Invalid or revoked refresh token');
+      throw new Error("Invalid or revoked refresh token");
     }
 
     // 3. Check expiration
     if (storedToken.expiresAt < this.clock.now()) {
-      throw new Error('Refresh token has expired');
+      throw new Error("Refresh token has expired");
     }
 
     // 4. Get user info
     const user = await this.userRepo.findById(storedToken.userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     // 5. Generate new tokens
     const accessToken = this.tokenService.generateAccessToken({
       userId: storedToken.userId,
       email: user.getEmail().getValue(),
-      tenantId: storedToken.tenantId
+      tenantId: storedToken.tenantId,
     });
 
     const newRefreshToken = this.tokenService.generateRefreshToken();
@@ -70,29 +70,25 @@ export class RefreshTokenUseCase {
       userId: storedToken.userId,
       tenantId: storedToken.tenantId,
       tokenHash: newTokenHash,
-      expiresAt: new Date(this.clock.nowMs() + refreshTokenExpiresInMs)
+      expiresAt: new Date(this.clock.nowMs() + refreshTokenExpiresInMs),
     });
 
     // 7. Audit log
     await this.audit.write({
       tenantId: storedToken.tenantId,
       actorUserId: storedToken.userId,
-      action: 'user.token_refreshed',
-      targetType: 'RefreshToken',
-      targetId: newTokenId
+      action: "user.token_refreshed",
+      targetType: "RefreshToken",
+      targetId: newTokenId,
     });
 
     return {
       accessToken,
-      refreshToken: newRefreshToken
+      refreshToken: newRefreshToken,
     };
   }
 
   private async hashRefreshToken(token: string): Promise<string> {
-    const crypto = require('crypto');
-    return crypto
-      .createHash('sha256')
-      .update(token)
-      .digest('hex');
+    return createHash("sha256").update(token).digest("hex");
   }
 }

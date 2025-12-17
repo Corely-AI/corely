@@ -1,8 +1,14 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -14,8 +20,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "Menlo", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -103,11 +109,12 @@ export default {
         "3xl": "calc(var(--radius) + 16px)",
       },
       boxShadow: {
-        'glow': '0 0 20px hsl(var(--accent) / 0.2)',
-        'glow-lg': '0 0 40px hsl(var(--accent) / 0.3)',
-        'card': '0 1px 3px hsl(var(--foreground) / 0.05), 0 1px 2px hsl(var(--foreground) / 0.1)',
-        'card-hover': '0 10px 40px hsl(var(--foreground) / 0.1)',
-        'elevated': '0 4px 6px -1px hsl(var(--foreground) / 0.1), 0 2px 4px -2px hsl(var(--foreground) / 0.1)',
+        glow: "0 0 20px hsl(var(--accent) / 0.2)",
+        "glow-lg": "0 0 40px hsl(var(--accent) / 0.3)",
+        card: "0 1px 3px hsl(var(--foreground) / 0.05), 0 1px 2px hsl(var(--foreground) / 0.1)",
+        "card-hover": "0 10px 40px hsl(var(--foreground) / 0.1)",
+        elevated:
+          "0 4px 6px -1px hsl(var(--foreground) / 0.1), 0 2px 4px -2px hsl(var(--foreground) / 0.1)",
       },
       keyframes: {
         "accordion-down": {
@@ -150,7 +157,7 @@ export default {
           from: { transform: "rotate(0deg)" },
           to: { transform: "rotate(360deg)" },
         },
-        "shimmer": {
+        shimmer: {
           from: { backgroundPosition: "-200% 0" },
           to: { backgroundPosition: "200% 0" },
         },
@@ -170,10 +177,10 @@ export default {
         "slide-in-up": "slide-in-up 0.3s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
         "spin-slow": "spin-slow 3s linear infinite",
-        "shimmer": "shimmer 2s infinite",
+        shimmer: "shimmer 2s infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

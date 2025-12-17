@@ -25,6 +25,10 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2020,
       sourceType: "module",
+      parserOptions: {
+        // Aligns parser with the workspace root when running via pnpm scripts
+        tsconfigRootDir: process.cwd(),
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
