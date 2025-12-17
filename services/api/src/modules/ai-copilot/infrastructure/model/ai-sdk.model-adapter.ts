@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { streamText, convertToCoreMessages, pipeUIMessageStreamToResponse } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import { LanguageModelPort } from "../../application/ports/language-model.port";
 import { DomainToolPort } from "../../application/ports/domain-tool.port";
 import { buildAiTools } from "../tools/tools.factory";
@@ -12,6 +13,9 @@ import { OutboxPort } from "../../application/ports/outbox.port";
 export class AiSdkModelAdapter implements LanguageModelPort {
   private readonly openai = createOpenAI({
     apiKey: process.env.OPENAI_API_KEY || "",
+  });
+  private readonly anthropic = createAnthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY || "",
   });
 
   constructor(
@@ -37,8 +41,15 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       userId: params.userId,
     });
 
+    const provider = process.env.AI_MODEL_PROVIDER || "openai";
+    const modelId =
+      process.env.AI_MODEL_ID ||
+      (provider === "anthropic" ? "claude-3-haiku-20240307" : "gpt-4o-mini");
+
+    const model = provider === "anthropic" ? this.anthropic(modelId) : this.openai(modelId);
+
     const result = await streamText({
-      model: this.openai("gpt-4o-mini"),
+      model,
       messages: convertToCoreMessages(params.messages),
       tools: aiTools,
     });

@@ -11,6 +11,7 @@ import NotFound from "../../shared/components/NotFound";
 import { LoginPage } from "../../routes/auth/login";
 import SignupPage from "../../routes/auth/signup";
 import { RequireAuth } from "./require-auth";
+import { CopilotPage } from "../../routes/copilot";
 
 export const Router = () => (
   <BrowserRouter>
@@ -27,6 +28,7 @@ export const Router = () => (
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/clients" element={<ClientsPage />} />
+          <Route path="/copilot" element={<CopilotPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Route>
