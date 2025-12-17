@@ -7,12 +7,14 @@ export class SignUpDto {
   password: string;
   tenantName: string;
   userName?: string;
+  idempotencyKey?: string;
 }
 
 export class SignInDto {
   email: string;
   password: string;
   tenantId?: string;
+  idempotencyKey?: string;
 }
 
 export class RefreshTokenDto {

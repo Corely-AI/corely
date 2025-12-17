@@ -1,7 +1,7 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
-import { Observable, of } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { prisma } from '@kerniflow/data';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from "@nestjs/common";
+import { Observable, of } from "rxjs";
+import { tap } from "rxjs/operators";
+import { prisma } from "@kerniflow/data";
 
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
@@ -9,17 +9,17 @@ export class IdempotencyInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
-    const key = request.headers['x-idempotency-key'];
+    const key = request.headers["x-idempotency-key"];
     const tenantId = request.body?.tenantId;
-    const action = request.route.path;
+    const actionKey = request.route.path;
 
     if (key && tenantId) {
       const existing = await prisma.idempotencyKey.findUnique({
-        where: { tenantId_key: { tenantId, key } },
+        where: { tenantId_actionKey_key: { tenantId, actionKey, key } },
       });
 
       if (existing) {
-        response.status(200).json(JSON.parse(existing.responseJson || '{}'));
+        response.status(200).json(JSON.parse(existing.responseJson || "{}"));
         return of(null); // short circuit
       }
 
@@ -30,11 +30,11 @@ export class IdempotencyInterceptor implements NestInterceptor {
             data: {
               tenantId,
               key,
-              action,
+              actionKey,
               responseJson: JSON.stringify(data),
             },
           });
-        }),
+        })
       );
     }
 

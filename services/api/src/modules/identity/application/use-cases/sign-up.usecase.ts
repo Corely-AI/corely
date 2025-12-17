@@ -1,24 +1,35 @@
-import { Email } from '../../domain/value-objects/email.vo';
-import { Password } from '../../domain/value-objects/password.vo';
-import { User } from '../../domain/entities/user.entity';
-import { Tenant } from '../../domain/entities/tenant.entity';
-import { Membership } from '../../domain/entities/membership.entity';
-import { UserCreatedEvent, TenantCreatedEvent, MembershipCreatedEvent } from '../../domain/events/identity.events';
-import { IUserRepository } from '../ports/user.repo.port';
-import { ITenantRepository } from '../ports/tenant.repo.port';
-import { IMembershipRepository } from '../ports/membership.repo.port';
-import { IPasswordHasher } from '../ports/password-hasher.port';
-import { ITokenService } from '../ports/token-service.port';
-import { IOutboxPort } from '../ports/outbox.port';
-import { IAuditPort } from '../ports/audit.port';
-import { IClock } from '../ports/clock.port';
-import { IRoleRepository } from '../ports/role.repo.port';
-import { randomUUID } from 'crypto';
+import { createHash } from "crypto";
+import { Email } from "../../domain/value-objects/email.vo";
+import { Password } from "../../domain/value-objects/password.vo";
+import { User } from "../../domain/entities/user.entity";
+import { Tenant } from "../../domain/entities/tenant.entity";
+import { Membership } from "../../domain/entities/membership.entity";
+import {
+  UserCreatedEvent,
+  TenantCreatedEvent,
+  MembershipCreatedEvent,
+} from "../../domain/events/identity.events";
+import { IUserRepository } from "../ports/user.repo.port";
+import { ITenantRepository } from "../ports/tenant.repo.port";
+import { IMembershipRepository } from "../ports/membership.repo.port";
+import { IPasswordHasher } from "../ports/password-hasher.port";
+import { ITokenService } from "../ports/token-service.port";
+import { IOutboxPort } from "../ports/outbox.port";
+import { IAuditPort } from "../ports/audit.port";
+import { IClock } from "../ports/clock.port";
+import { IRoleRepository } from "../ports/role.repo.port";
+import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
+import { IdempotencyPort } from "../../../../shared/ports/idempotency.port";
+import { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
+import { RequestContext } from "../../../../shared/context/request-context";
+import { ConflictError, ValidationError } from "../../../../shared/errors/domain-errors";
 
 export interface SignUpInput {
   email: string;
   password: string;
   tenantName: string;
+  idempotencyKey: string;
+  context: RequestContext;
   userName?: string;
 }
 
@@ -32,10 +43,8 @@ export interface SignUpOutput {
   refreshToken: string;
 }
 
-/**
- * Sign Up Use Case
- * Idempotent by idempotency key in controller
- */
+const SIGN_UP_ACTION = "identity.sign_up";
+
 export class SignUpUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
@@ -44,116 +53,167 @@ export class SignUpUseCase {
     private readonly roleRepo: IRoleRepository,
     private readonly passwordHasher: IPasswordHasher,
     private readonly tokenService: ITokenService,
+    private readonly refreshTokenRepo: IRefreshTokenRepository,
     private readonly outbox: IOutboxPort,
     private readonly audit: IAuditPort,
+    private readonly idempotency: IdempotencyPort,
+    private readonly idGenerator: IdGeneratorPort,
     private readonly clock: IClock
   ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
-    // 1. Validate inputs
+    const cached = await this.idempotency.get(SIGN_UP_ACTION, null, input.idempotencyKey);
+    if (cached) {
+      return cached.body as SignUpOutput;
+    }
+
+    this.validate(input);
+
     const email = Email.create(input.email);
     const password = Password.create(input.password);
 
-    // 2. Check if user already exists
     const existingUser = await this.userRepo.findByEmail(email.getValue());
     if (existingUser) {
-      throw new Error('User with this email already exists');
+      throw new ConflictError("User with this email already exists");
     }
 
-    // 3. Create tenant
-    const tenantId = randomUUID();
+    const tenantId = this.idGenerator.next();
     const slug = this.generateSlug(input.tenantName);
-
     const existingTenant = await this.tenantRepo.findBySlug(slug);
     if (existingTenant) {
-      throw new Error('Tenant with this slug already exists');
+      throw new ConflictError("Tenant with this slug already exists");
     }
 
     const tenant = Tenant.create(tenantId, input.tenantName, slug);
     await this.tenantRepo.create(tenant);
 
-    // 4. Create user
-    const userId = randomUUID();
+    const userId = this.idGenerator.next();
     const passwordHash = await this.passwordHasher.hash(password.getValue());
     const user = User.create(userId, email, passwordHash, input.userName || null);
     await this.userRepo.create(user);
 
-    // 5. Create owner role for tenant (if not exists)
-    const ownerRole = await this.roleRepo.findBySystemKey(tenantId, 'OWNER');
-    let ownerRoleId = ownerRole?.id;
-
-    if (!ownerRole) {
-      ownerRoleId = randomUUID();
-      await this.roleRepo.create({
-        id: ownerRoleId,
-        tenantId,
-        name: 'Owner',
-        systemKey: 'OWNER'
-      });
-    }
-
-    // 6. Create membership (user as OWNER)
-    const membershipId = randomUUID();
-    const membership = Membership.create(membershipId, tenantId, userId, ownerRoleId!);
+    const ownerRole = await this.ensureOwnerRole(tenantId);
+    const membershipId = this.idGenerator.next();
+    const membership = Membership.create(membershipId, tenantId, userId, ownerRole);
     await this.membershipRepo.create(membership);
 
-    // 7. Generate tokens
     const accessToken = this.tokenService.generateAccessToken({
       userId,
       email: email.getValue(),
-      tenantId
+      tenantId,
     });
     const refreshToken = this.tokenService.generateRefreshToken();
-
-    // 8. Emit events to outbox
-    const userCreatedEvent = new UserCreatedEvent(userId, email.getValue(), input.userName || null, null);
-    await this.outbox.enqueue({
+    const { refreshTokenExpiresInMs } = this.tokenService.getExpirationTimes();
+    await this.refreshTokenRepo.create({
+      id: this.idGenerator.next(),
+      userId,
       tenantId,
-      eventType: userCreatedEvent.eventType,
-      payloadJson: JSON.stringify(userCreatedEvent)
+      tokenHash: await this.hashToken(refreshToken),
+      expiresAt: new Date(this.clock.nowMs() + refreshTokenExpiresInMs),
     });
 
-    const tenantCreatedEvent = new TenantCreatedEvent(tenantId, input.tenantName, slug);
-    await this.outbox.enqueue({
+    await this.emitOutboxEvents(
       tenantId,
-      eventType: tenantCreatedEvent.eventType,
-      payloadJson: JSON.stringify(tenantCreatedEvent)
-    });
+      input.tenantName,
+      userId,
+      membershipId,
+      ownerRole,
+      email.getValue(),
+      input.userName || null,
+      slug
+    );
 
-    const membershipCreatedEvent = new MembershipCreatedEvent(membershipId, tenantId, userId, ownerRoleId!);
-    await this.outbox.enqueue({
-      tenantId,
-      eventType: membershipCreatedEvent.eventType,
-      payloadJson: JSON.stringify(membershipCreatedEvent)
-    });
-
-    // 9. Write audit log
     await this.audit.write({
       tenantId,
       actorUserId: userId,
-      action: 'user.signup',
-      targetType: 'User',
-      targetId: userId
+      action: "identity.sign_up",
+      targetType: "User",
+      targetId: userId,
+      context: input.context,
     });
 
-    return {
+    const response: SignUpOutput = {
       userId,
       email: email.getValue(),
       tenantId,
       tenantName: input.tenantName,
       membershipId,
       accessToken,
-      refreshToken
+      refreshToken,
     };
+
+    await this.idempotency.store(SIGN_UP_ACTION, null, input.idempotencyKey, { body: response });
+    return response;
+  }
+
+  private validate(input: SignUpInput) {
+    if (!input.email || !input.email.includes("@")) {
+      throw new ValidationError("Invalid email");
+    }
+    if (!input.password || input.password.length < 8) {
+      throw new ValidationError("Password must be at least 8 characters");
+    }
+    if (!input.tenantName) {
+      throw new ValidationError("Tenant name is required");
+    }
   }
 
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
+      .replace(/[^a-z0-9\\s-]/g, "")
+      .replace(/\\s+/g, "-")
+      .replace(/-+/g, "-")
       .substring(0, 50);
+  }
+
+  private async ensureOwnerRole(tenantId: string): Promise<string> {
+    const existing = await this.roleRepo.findBySystemKey(tenantId, "OWNER");
+    if (existing) return existing.id;
+    const id = this.idGenerator.next();
+    await this.roleRepo.create({ id, tenantId, name: "Owner", systemKey: "OWNER" });
+    return id;
+  }
+
+  private async emitOutboxEvents(
+    tenantId: string,
+    tenantName: string,
+    userId: string,
+    membershipId: string,
+    roleId: string,
+    email: string,
+    name: string | null,
+    slug: string
+  ) {
+    const userCreatedEvent = new UserCreatedEvent(userId, email, name, null);
+    await this.outbox.enqueue({
+      tenantId,
+      eventType: userCreatedEvent.eventType,
+      payloadJson: JSON.stringify(userCreatedEvent),
+    });
+
+    const tenantCreatedEvent = new TenantCreatedEvent(tenantId, tenantName, slug);
+    await this.outbox.enqueue({
+      tenantId,
+      eventType: tenantCreatedEvent.eventType,
+      payloadJson: JSON.stringify(tenantCreatedEvent),
+    });
+
+    const membershipCreatedEvent = new MembershipCreatedEvent(
+      membershipId,
+      tenantId,
+      userId,
+      roleId
+    );
+    await this.outbox.enqueue({
+      tenantId,
+      eventType: membershipCreatedEvent.eventType,
+      payloadJson: JSON.stringify(membershipCreatedEvent),
+    });
+  }
+
+  private async hashToken(token: string) {
+    return createHash("sha256").update(token).digest("hex");
   }
 }

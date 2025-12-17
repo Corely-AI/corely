@@ -1,0 +1,33 @@
+model Invoice {
+  id         String   @id @default(cuid())
+  tenantId   String
+  clientId   String?
+  status     InvoiceStatus @default(DRAFT)
+  totalCents Int
+  currency   String
+  issuedAt   DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  lines      InvoiceLine[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+}
+
+model InvoiceLine {
+  id             String   @id @default(cuid())
+  invoiceId      String
+  description    String
+  qty            Int
+  unitPriceCents Int
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+}

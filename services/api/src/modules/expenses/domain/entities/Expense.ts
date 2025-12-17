@@ -2,8 +2,12 @@ export class Expense {
   constructor(
     public readonly id: string,
     public readonly tenantId: string,
-    public readonly amount: number,
-    public readonly description: string,
-    public readonly createdAt: Date,
+    public readonly merchant: string,
+    public readonly totalCents: number,
+    public readonly currency: string,
+    public readonly category: string | null,
+    public readonly issuedAt: Date,
+    public readonly createdByUserId: string,
+    public readonly createdAt: Date
   ) {}
 }

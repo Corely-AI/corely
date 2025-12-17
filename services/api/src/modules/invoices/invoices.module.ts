@@ -1,15 +1,70 @@
-import { Module } from '@nestjs/common';
-import { Controller, Get } from '@nestjs/common';
-
-@Controller('invoices')
-class InvoicesController {
-  @Get()
-  hello() {
-    return { message: 'Invoices context - hello' };
-  }
-}
+import { Module } from "@nestjs/common";
+import { InvoicesController } from "./presentation/http/invoices.controller";
+import { PrismaInvoiceRepository } from "./infrastructure/persistence/PrismaInvoiceRepository";
+import { CreateInvoiceDraftUseCase } from "./application/use-cases/CreateInvoiceDraftUseCase";
+import { IssueInvoiceUseCase } from "./application/use-cases/IssueInvoiceUseCase";
+import { OutboxPort, OUTBOX_PORT_TOKEN } from "../../shared/ports/outbox.port";
+import { AuditPort, AUDIT_PORT_TOKEN } from "../../shared/ports/audit.port";
+import { IdempotencyPort, IDEMPOTENCY_PORT_TOKEN } from "../../shared/ports/idempotency.port";
+import { IdGeneratorPort, ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
+import { ClockPort, CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
+import { PrismaOutboxAdapter } from "../../shared/infrastructure/persistence/prisma-outbox.adapter";
+import { PrismaAuditAdapter } from "../../shared/infrastructure/persistence/prisma-audit.adapter";
+import { PrismaIdempotencyAdapter } from "../../shared/infrastructure/persistence/prisma-idempotency.adapter";
+import { SystemIdGenerator } from "../../shared/infrastructure/system-id-generator";
+import { SystemClock } from "../../shared/infrastructure/system-clock";
 
 @Module({
   controllers: [InvoicesController],
+  providers: [
+    PrismaInvoiceRepository,
+    PrismaOutboxAdapter,
+    PrismaAuditAdapter,
+    PrismaIdempotencyAdapter,
+    SystemIdGenerator,
+    SystemClock,
+    {
+      provide: CreateInvoiceDraftUseCase,
+      useFactory: (
+        repo: PrismaInvoiceRepository,
+        outbox: OutboxPort,
+        audit: AuditPort,
+        idempotency: IdempotencyPort,
+        idGen: IdGeneratorPort,
+        clock: ClockPort
+      ) => new CreateInvoiceDraftUseCase(repo, outbox, audit, idempotency, idGen, clock),
+      inject: [
+        PrismaInvoiceRepository,
+        OUTBOX_PORT_TOKEN,
+        AUDIT_PORT_TOKEN,
+        IDEMPOTENCY_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: IssueInvoiceUseCase,
+      useFactory: (
+        repo: PrismaInvoiceRepository,
+        outbox: OutboxPort,
+        audit: AuditPort,
+        idempotency: IdempotencyPort,
+        clock: ClockPort
+      ) => new IssueInvoiceUseCase(repo, outbox, audit, idempotency, clock),
+      inject: [
+        PrismaInvoiceRepository,
+        OUTBOX_PORT_TOKEN,
+        AUDIT_PORT_TOKEN,
+        IDEMPOTENCY_PORT_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    { provide: OUTBOX_PORT_TOKEN, useClass: PrismaOutboxAdapter },
+    { provide: AUDIT_PORT_TOKEN, useClass: PrismaAuditAdapter },
+    { provide: IDEMPOTENCY_PORT_TOKEN, useClass: PrismaIdempotencyAdapter },
+    { provide: ID_GENERATOR_TOKEN, useExisting: SystemIdGenerator },
+    { provide: CLOCK_PORT_TOKEN, useExisting: SystemClock },
+  ],
+  exports: [CreateInvoiceDraftUseCase, IssueInvoiceUseCase],
 })
 export class InvoicesModule {}

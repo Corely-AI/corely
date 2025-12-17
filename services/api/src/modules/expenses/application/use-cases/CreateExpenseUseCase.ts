@@ -1,42 +1,106 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { Expense } from '../../domain/entities/Expense';
-import { ExpenseCreated } from '../../domain/events/ExpenseCreated';
-import { ExpenseRepositoryPort } from '../ports/ExpenseRepositoryPort';
-import { OutboxRepository } from '@kerniflow/data';
-import { EVENT_NAMES } from '@kerniflow/contracts';
+import { Injectable } from "@nestjs/common";
+import { Expense } from "../../domain/entities/Expense";
+import { ExpenseRepositoryPort } from "../ports/ExpenseRepositoryPort";
+import { OutboxPort } from "../../../../shared/ports/outbox.port";
+import { AuditPort } from "../../../../shared/ports/audit.port";
+import { IdempotencyPort } from "../../../../shared/ports/idempotency.port";
+import { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
+import { ClockPort } from "../../../../shared/ports/clock.port";
+import { RequestContext } from "../../../../shared/context/request-context";
 
-export const EXPENSE_REPO = Symbol('EXPENSE_REPO');
+export interface CreateExpenseInput {
+  tenantId: string;
+  merchant: string;
+  totalCents: number;
+  currency: string;
+  category?: string | null;
+  issuedAt: Date;
+  createdByUserId: string;
+  idempotencyKey: string;
+  context: RequestContext;
+}
 
 @Injectable()
 export class CreateExpenseUseCase {
+  private readonly actionKey = "expenses.create";
+
   constructor(
-    @Inject(EXPENSE_REPO) private readonly expenseRepo: ExpenseRepositoryPort,
-    private readonly outboxRepo: OutboxRepository,
+    private readonly expenseRepo: ExpenseRepositoryPort,
+    private readonly outbox: OutboxPort,
+    private readonly audit: AuditPort,
+    private readonly idempotency: IdempotencyPort,
+    private readonly idGenerator: IdGeneratorPort,
+    private readonly clock: ClockPort
   ) {}
 
-  async execute(input: { tenantId: string; amount: number; description: string }): Promise<Expense> {
+  async execute(input: CreateExpenseInput): Promise<Expense> {
+    const cached = await this.idempotency.get(this.actionKey, input.tenantId, input.idempotencyKey);
+    if (cached) {
+      const body = cached.body as any;
+      return new Expense(
+        body.id,
+        body.tenantId,
+        body.merchant,
+        body.totalCents,
+        body.currency,
+        body.category ?? null,
+        new Date(body.issuedAt),
+        body.createdByUserId,
+        new Date(body.createdAt)
+      );
+    }
+
     const expense = new Expense(
-      crypto.randomUUID(),
+      this.idGenerator.next(),
       input.tenantId,
-      input.amount,
-      input.description,
-      new Date(),
+      input.merchant,
+      input.totalCents,
+      input.currency,
+      input.category ?? null,
+      input.issuedAt,
+      input.createdByUserId,
+      this.clock.now()
     );
 
     await this.expenseRepo.save(expense);
+    await this.audit.write({
+      tenantId: input.tenantId,
+      actorUserId: input.createdByUserId,
+      action: "expense.created",
+      targetType: "Expense",
+      targetId: expense.id,
+      context: input.context,
+    });
 
-    // Enqueue outbox event (in real app, use transaction)
-    await this.outboxRepo.enqueue({
-      eventType: EVENT_NAMES.EXPENSE_CREATED,
-      payloadJson: JSON.stringify({
+    await this.outbox.enqueue({
+      tenantId: input.tenantId,
+      eventType: "expense.created",
+      payload: {
         expenseId: expense.id,
         tenantId: expense.tenantId,
-        amount: expense.amount,
-        description: expense.description,
-      }),
-      tenantId: expense.tenantId,
+        totalCents: expense.totalCents,
+        currency: expense.currency,
+      },
+    });
+
+    await this.idempotency.store(this.actionKey, input.tenantId, input.idempotencyKey, {
+      body: this.toJSON(expense),
     });
 
     return expense;
+  }
+
+  private toJSON(expense: Expense) {
+    return {
+      id: expense.id,
+      tenantId: expense.tenantId,
+      merchant: expense.merchant,
+      totalCents: expense.totalCents,
+      currency: expense.currency,
+      category: expense.category,
+      issuedAt: expense.issuedAt.toISOString(),
+      createdByUserId: expense.createdByUserId,
+      createdAt: expense.createdAt.toISOString(),
+    };
   }
 }

@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { prisma } from '@kerniflow/data';
-import { Expense } from '../../domain/entities/Expense';
-import { ExpenseRepositoryPort } from '../../application/ports/ExpenseRepositoryPort';
+import { Injectable } from "@nestjs/common";
+import { prisma } from "@kerniflow/data";
+import { Expense } from "../../domain/entities/Expense";
+import { ExpenseRepositoryPort } from "../../application/ports/ExpenseRepositoryPort";
 
 @Injectable()
 export class PrismaExpenseRepository implements ExpenseRepositoryPort {
@@ -10,8 +10,12 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       data: {
         id: expense.id,
         tenantId: expense.tenantId,
-        amount: expense.amount,
-        description: expense.description,
+        merchant: expense.merchant,
+        totalCents: expense.totalCents,
+        currency: expense.currency,
+        category: expense.category,
+        issuedAt: expense.issuedAt,
+        createdByUserId: expense.createdByUserId,
       },
     });
   }
@@ -19,6 +23,16 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
   async findById(id: string): Promise<Expense | null> {
     const data = await prisma.expense.findUnique({ where: { id } });
     if (!data) return null;
-    return new Expense(data.id, data.tenantId, data.amount, data.description, data.createdAt);
+    return new Expense(
+      data.id,
+      data.tenantId,
+      data.merchant,
+      data.totalCents,
+      data.currency,
+      data.category,
+      data.issuedAt,
+      data.createdByUserId,
+      data.createdAt
+    );
   }
 }

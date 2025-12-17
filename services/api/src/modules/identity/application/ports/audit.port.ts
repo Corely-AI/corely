@@ -15,7 +15,8 @@ export interface IAuditPort {
     ip?: string;
     userAgent?: string;
     metadataJson?: string;
+    context?: any;
   }): Promise<void>;
 }
 
-export const AUDIT_PORT_TOKEN = Symbol('AUDIT_PORT');
+export const AUDIT_PORT_TOKEN = Symbol("AUDIT_PORT");

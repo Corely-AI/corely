@@ -6,6 +6,7 @@ model OutboxEvent {
   status      OutboxStatus @default(PENDING)
   attempts    Int      @default(0)
   availableAt DateTime @default(now())
+  correlationId String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -26,24 +27,27 @@ model AuditLog {
   id        String   @id @default(cuid())
   tenantId  String
   action    String
+  actorUserId String?
   entity    String
   entityId  String
   details   String?
   createdAt DateTime @default(now())
 
   @@index([tenantId, entity, entityId])
+  @@index([tenantId, action])
 }
 
 model IdempotencyKey {
   id           String   @id @default(cuid())
-  tenantId     String
+  tenantId     String?
+  actionKey    String
   key          String
-  action       String
   responseJson String?
+  statusCode   Int?
   createdAt    DateTime @default(now())
 
-  @@unique([tenantId, key])
-  @@index([tenantId, action])
+  @@unique([tenantId, actionKey, key])
+  @@index([tenantId, actionKey])
 }
 
 enum OutboxStatus {
