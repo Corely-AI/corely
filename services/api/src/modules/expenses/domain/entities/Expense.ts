@@ -8,6 +8,7 @@ export class Expense {
     public readonly category: string | null,
     public readonly issuedAt: Date,
     public readonly createdByUserId: string,
-    public readonly createdAt: Date
+    public readonly createdAt: Date,
+    public readonly custom: Record<string, unknown> | null = null
   ) {}
 }

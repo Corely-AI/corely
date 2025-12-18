@@ -7,25 +7,40 @@ import { MockIdempotencyPort } from "@shared/testkit/mocks/mock-idempotency-port
 import { FakeIdGenerator } from "@shared/testkit/fakes/fake-id-generator";
 import { FakeClock } from "@shared/testkit/fakes/fake-clock";
 import { buildCreateDraftInput } from "../../../testkit/builders/build-create-draft-input";
+import { CustomFieldDefinitionPort, CustomFieldIndexPort } from "@kerniflow/domain";
 
 let useCase: CreateInvoiceDraftUseCase;
 let repo: FakeInvoiceRepository;
 let outbox: MockOutboxPort;
 let audit: MockAuditPort;
 let idempotency: MockIdempotencyPort;
+let customDefs: CustomFieldDefinitionPort;
+let customIndexes: CustomFieldIndexPort;
 
 beforeEach(() => {
   repo = new FakeInvoiceRepository();
   outbox = new MockOutboxPort();
   audit = new MockAuditPort();
   idempotency = new MockIdempotencyPort();
+  customDefs = {
+    listActiveByEntityType: async () => [],
+    getById: async () => null,
+    upsert: async (def: any) => def,
+    softDelete: async () => {},
+  };
+  customIndexes = {
+    upsertIndexesForEntity: async () => {},
+    deleteIndexesForEntity: async () => {},
+  };
   useCase = new CreateInvoiceDraftUseCase(
     repo,
     outbox,
     audit,
     idempotency,
     new FakeIdGenerator("inv"),
-    new FakeClock()
+    new FakeClock(),
+    customDefs,
+    customIndexes
   );
 });
 

@@ -33,6 +33,7 @@ export class ExpensesController {
       category: expense.category,
       issuedAt: expense.issuedAt.toISOString(),
       createdByUserId: expense.createdByUserId,
+      custom: expense.custom ?? undefined,
     };
   }
 }

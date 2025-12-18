@@ -11,3 +11,12 @@ export function formatEUR(cents: number, locale: "de-DE" | "en-US" = "de-DE"): s
 }
 
 export const DOMAIN_HELLO = "Kerniflow domain loaded ✅";
+
+export * from "./customization/types";
+export * from "./customization/ports";
+export * from "./customization/validate-and-normalize";
+export * from "./customization/build-indexes";
+export * from "./customization/use-cases/CreateCustomFieldDefinition";
+export * from "./customization/use-cases/UpdateCustomFieldDefinition";
+export * from "./customization/use-cases/ListCustomFieldDefinitions";
+export * from "./customization/use-cases/UpsertEntityLayout";

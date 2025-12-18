@@ -13,7 +13,8 @@ export class Invoice {
     public readonly currency: string,
     public readonly clientId: string | null,
     public readonly lines: InvoiceLine[],
-    issuedAt?: Date | null
+    issuedAt?: Date | null,
+    public custom: Record<string, unknown> | null = null
   ) {
     this.issuedAt = issuedAt ?? null;
   }

@@ -7,6 +7,12 @@ import { IdempotencyPort } from "../../../../shared/ports/idempotency.port";
 import { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import { ClockPort } from "../../../../shared/ports/clock.port";
 import { RequestContext } from "../../../../shared/context/request-context";
+import {
+  CustomFieldDefinitionPort,
+  CustomFieldIndexPort,
+  buildCustomFieldIndexes,
+  validateAndNormalizeCustomValues,
+} from "@kerniflow/domain";
 
 export interface CreateInvoiceDraftInput {
   tenantId: string;
@@ -15,6 +21,7 @@ export interface CreateInvoiceDraftInput {
   lines: Array<{ description: string; qty: number; unitPriceCents: number }>;
   idempotencyKey: string;
   actorUserId: string;
+  custom?: Record<string, unknown>;
   context: RequestContext;
 }
 
@@ -26,7 +33,9 @@ export class CreateInvoiceDraftUseCase {
     private readonly audit: AuditPort,
     private readonly idempotency: IdempotencyPort,
     private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: ClockPort
+    private readonly clock: ClockPort,
+    private readonly customFieldDefinitions: CustomFieldDefinitionPort,
+    private readonly customFieldIndexes: CustomFieldIndexPort
   ) {}
 
   async execute(input: CreateInvoiceDraftInput): Promise<Invoice> {
@@ -41,6 +50,12 @@ export class CreateInvoiceDraftUseCase {
         new InvoiceLine(this.idGenerator.next(), line.description, line.qty, line.unitPriceCents)
     );
     const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
+    const definitions = await this.customFieldDefinitions.listActiveByEntityType(
+      input.tenantId,
+      "invoice"
+    );
+    const normalizedCustom = validateAndNormalizeCustomValues(definitions, input.custom);
+
     const invoice = new Invoice(
       this.idGenerator.next(),
       input.tenantId,
@@ -48,7 +63,9 @@ export class CreateInvoiceDraftUseCase {
       total,
       input.currency,
       input.clientId ?? null,
-      lines
+      lines,
+      null,
+      Object.keys(normalizedCustom).length ? normalizedCustom : null
     );
 
     await this.invoiceRepo.save(invoice);
@@ -71,6 +88,22 @@ export class CreateInvoiceDraftUseCase {
       payload: { invoiceId: invoice.id, totalCents: invoice.totalCents },
     });
 
+    const indexRows = buildCustomFieldIndexes({
+      tenantId: input.tenantId,
+      entityType: "invoice",
+      entityId: invoice.id,
+      definitions,
+      values: normalizedCustom,
+    });
+    if (indexRows.length) {
+      await this.customFieldIndexes.upsertIndexesForEntity(
+        input.tenantId,
+        "invoice",
+        invoice.id,
+        indexRows
+      );
+    }
+
     return invoice;
   }
 
@@ -89,6 +122,7 @@ export class CreateInvoiceDraftUseCase {
         qty: line.qty,
         unitPriceCents: line.unitPriceCents,
       })),
+      custom: invoice.custom ?? null,
     };
   }
 
@@ -104,7 +138,8 @@ export class CreateInvoiceDraftUseCase {
       raw.currency,
       raw.clientId ?? null,
       lines,
-      raw.issuedAt ? new Date(raw.issuedAt) : null
+      raw.issuedAt ? new Date(raw.issuedAt) : null,
+      (raw.custom ?? null) as Record<string, unknown> | null
     );
   }
 }

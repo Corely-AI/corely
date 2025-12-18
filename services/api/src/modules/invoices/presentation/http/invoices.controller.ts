@@ -37,6 +37,7 @@ export class InvoicesController {
         qty: l.qty,
         unitPriceCents: l.unitPriceCents,
       })),
+      custom: invoice.custom ?? undefined,
     };
   }
 
@@ -58,6 +59,7 @@ export class InvoicesController {
       status: invoice.status,
       tenantId: invoice.tenantId,
       issuedAt: invoice.issuedAt?.toISOString() ?? null,
+      custom: invoice.custom ?? undefined,
     };
   }
 }

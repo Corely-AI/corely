@@ -13,7 +13,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
@@ -21,6 +23,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.0.0",
-    "prisma": "^5.0.0"
+    "prisma": "^5.0.0",
+    "@kerniflow/domain": "workspace:*"
   }
 }

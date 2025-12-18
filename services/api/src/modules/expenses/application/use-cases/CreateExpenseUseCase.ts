@@ -7,6 +7,12 @@ import { IdempotencyPort } from "../../../../shared/ports/idempotency.port";
 import { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import { ClockPort } from "../../../../shared/ports/clock.port";
 import { RequestContext } from "../../../../shared/context/request-context";
+import {
+  CustomFieldDefinitionPort,
+  CustomFieldIndexPort,
+  buildCustomFieldIndexes,
+  validateAndNormalizeCustomValues,
+} from "@kerniflow/domain";
 
 export interface CreateExpenseInput {
   tenantId: string;
@@ -16,6 +22,7 @@ export interface CreateExpenseInput {
   category?: string | null;
   issuedAt: Date;
   createdByUserId: string;
+  custom?: Record<string, unknown>;
   idempotencyKey: string;
   context: RequestContext;
 }
@@ -30,7 +37,9 @@ export class CreateExpenseUseCase {
     private readonly audit: AuditPort,
     private readonly idempotency: IdempotencyPort,
     private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: ClockPort
+    private readonly clock: ClockPort,
+    private readonly customFieldDefinitions: CustomFieldDefinitionPort,
+    private readonly customFieldIndexes: CustomFieldIndexPort
   ) {}
 
   async execute(input: CreateExpenseInput): Promise<Expense> {
@@ -46,9 +55,16 @@ export class CreateExpenseUseCase {
         body.category ?? null,
         new Date(body.issuedAt),
         body.createdByUserId,
-        new Date(body.createdAt)
+        new Date(body.createdAt),
+        (body.custom ?? null) as Record<string, unknown> | null
       );
     }
+
+    const definitions = await this.customFieldDefinitions.listActiveByEntityType(
+      input.tenantId,
+      "expense"
+    );
+    const normalizedCustom = validateAndNormalizeCustomValues(definitions, input.custom);
 
     const expense = new Expense(
       this.idGenerator.next(),
@@ -59,7 +75,8 @@ export class CreateExpenseUseCase {
       input.category ?? null,
       input.issuedAt,
       input.createdByUserId,
-      this.clock.now()
+      this.clock.now(),
+      Object.keys(normalizedCustom).length ? normalizedCustom : null
     );
 
     await this.expenseRepo.save(expense);
@@ -83,6 +100,22 @@ export class CreateExpenseUseCase {
       },
     });
 
+    const indexRows = buildCustomFieldIndexes({
+      tenantId: input.tenantId,
+      entityType: "expense",
+      entityId: expense.id,
+      definitions,
+      values: normalizedCustom,
+    });
+    if (indexRows.length) {
+      await this.customFieldIndexes.upsertIndexesForEntity(
+        input.tenantId,
+        "expense",
+        expense.id,
+        indexRows
+      );
+    }
+
     await this.idempotency.store(this.actionKey, input.tenantId, input.idempotencyKey, {
       body: this.toJSON(expense),
     });
@@ -101,6 +134,7 @@ export class CreateExpenseUseCase {
       issuedAt: expense.issuedAt.toISOString(),
       createdByUserId: expense.createdByUserId,
       createdAt: expense.createdAt.toISOString(),
+      custom: expense.custom,
     };
   }
 }

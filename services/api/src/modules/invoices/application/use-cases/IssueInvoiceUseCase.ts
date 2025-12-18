@@ -82,6 +82,7 @@ export class IssueInvoiceUseCase {
         qty: line.qty,
         unitPriceCents: line.unitPriceCents,
       })),
+      custom: invoice.custom ?? null,
     };
   }
 
@@ -96,7 +97,8 @@ export class IssueInvoiceUseCase {
       (raw.lines ?? []).map(
         (line: any) => new InvoiceLine(line.id, line.description, line.qty, line.unitPriceCents)
       ),
-      raw.issuedAt ? new Date(raw.issuedAt) : null
+      raw.issuedAt ? new Date(raw.issuedAt) : null,
+      (raw.custom ?? null) as Record<string, unknown> | null
     );
   }
 }

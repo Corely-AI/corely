@@ -6,6 +6,7 @@ model Invoice {
   totalCents Int
   currency   String
   issuedAt   DateTime?
+  custom     Json?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   lines      InvoiceLine[]

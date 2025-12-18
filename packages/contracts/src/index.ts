@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CustomValuesSchema } from "./common/customization/custom-field";
 
 export const CONTRACTS_HELLO = "Kerniflow contracts loaded ✅";
 
@@ -114,6 +115,7 @@ export const CreateExpenseInputSchema = z.object({
   issuedAt: z.string(),
   createdByUserId: z.string(),
   idempotencyKey: z.string(),
+  custom: CustomValuesSchema.optional(),
 });
 export type CreateExpenseInput = z.infer<typeof CreateExpenseInputSchema>;
 
@@ -126,6 +128,7 @@ export const CreateExpenseOutputSchema = z.object({
   category: z.string().nullable(),
   issuedAt: z.string(),
   createdByUserId: z.string(),
+  custom: CustomValuesSchema.optional(),
 });
 export type CreateExpenseOutput = z.infer<typeof CreateExpenseOutputSchema>;
 
@@ -144,6 +147,7 @@ export const CreateInvoiceDraftInputSchema = z.object({
   lines: z.array(InvoiceLineInputSchema).min(1),
   idempotencyKey: z.string(),
   actorUserId: z.string(),
+  custom: CustomValuesSchema.optional(),
 });
 export type CreateInvoiceDraftInput = z.infer<typeof CreateInvoiceDraftInputSchema>;
 
@@ -154,6 +158,7 @@ export const CreateInvoiceDraftOutputSchema = z.object({
   totalCents: z.number(),
   currency: z.string(),
   lines: z.array(InvoiceLineInputSchema.extend({ id: z.string() })),
+  custom: CustomValuesSchema.optional(),
 });
 export type CreateInvoiceDraftOutput = z.infer<typeof CreateInvoiceDraftOutputSchema>;
 
@@ -170,6 +175,7 @@ export const IssueInvoiceOutputSchema = z.object({
   tenantId: z.string(),
   status: z.literal("ISSUED"),
   issuedAt: z.string(),
+  custom: CustomValuesSchema.optional(),
 });
 export type IssueInvoiceOutput = z.infer<typeof IssueInvoiceOutputSchema>;
 
@@ -198,3 +204,5 @@ export const EVENT_NAMES = {
   EXPENSE_CREATED: "expense.created",
   INVOICE_ISSUED: "invoice.issued",
 } as const;
+
+export * from "./common/customization/custom-field";

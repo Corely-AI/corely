@@ -12,11 +12,14 @@ import { PrismaAuditAdapter } from "../../shared/infrastructure/persistence/pris
 import { PrismaIdempotencyAdapter } from "../../shared/infrastructure/persistence/prisma-idempotency.adapter";
 import { SystemIdGenerator } from "../../shared/infrastructure/system-id-generator";
 import { SystemClock } from "../../shared/infrastructure/system-clock";
+import { CustomFieldDefinitionRepository, CustomFieldIndexRepository } from "@kerniflow/data";
 
 @Module({
   controllers: [ExpensesController],
   providers: [
     PrismaExpenseRepository,
+    CustomFieldDefinitionRepository,
+    CustomFieldIndexRepository,
     PrismaOutboxAdapter,
     PrismaAuditAdapter,
     PrismaIdempotencyAdapter,
@@ -30,8 +33,20 @@ import { SystemClock } from "../../shared/infrastructure/system-clock";
         audit: AuditPort,
         idempotency: IdempotencyPort,
         idGen: IdGeneratorPort,
-        clock: ClockPort
-      ) => new CreateExpenseUseCase(repo, outbox, audit, idempotency, idGen, clock),
+        clock: ClockPort,
+        customDefs: CustomFieldDefinitionRepository,
+        customIndexes: CustomFieldIndexRepository
+      ) =>
+        new CreateExpenseUseCase(
+          repo,
+          outbox,
+          audit,
+          idempotency,
+          idGen,
+          clock,
+          customDefs,
+          customIndexes
+        ),
       inject: [
         PrismaExpenseRepository,
         OUTBOX_PORT_TOKEN,
@@ -39,6 +54,8 @@ import { SystemClock } from "../../shared/infrastructure/system-clock";
         IDEMPOTENCY_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
+        CustomFieldDefinitionRepository,
+        CustomFieldIndexRepository,
       ],
     },
     { provide: OUTBOX_PORT_TOKEN, useClass: PrismaOutboxAdapter },
