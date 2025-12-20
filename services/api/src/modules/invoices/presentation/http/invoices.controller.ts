@@ -45,7 +45,7 @@ export class InvoicesController {
 
   @Post(":id/issue")
   async issue(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
-    const input = IssueInvoiceInputSchema.parse({ ...body, invoiceId: id });
+    const input = IssueInvoiceInputSchema.parse({ ...(body as object), invoiceId: id });
     const ctx = buildRequestContext({
       requestId: req.headers["x-request-id"] as string | undefined,
       tenantId: input.tenantId,

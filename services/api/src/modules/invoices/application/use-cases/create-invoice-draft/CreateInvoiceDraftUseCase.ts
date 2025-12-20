@@ -19,8 +19,8 @@ import {
 } from "@kerniflow/domain";
 
 import { InvoiceRepositoryPort } from "../../ports/InvoiceRepositoryPort";
-import { OutboxPort } from "../../../../shared/ports/outbox.port";
-import { AuditPort } from "../../../../shared/ports/audit.port";
+import { OutboxPort } from "../../../../../shared/ports/outbox.port";
+import { AuditPort } from "../../../../../shared/ports/audit.port";
 import { Invoice } from "../../../domain/entities/Invoice";
 import { InvoiceLine } from "../../../domain/entities/InvoiceLine";
 
@@ -69,13 +69,15 @@ export class CreateInvoiceDraftUseCase extends BaseUseCase<
   CreateInvoiceDraftResult
 > {
   private readonly useCaseKey = "invoices.create_draft";
+  private readonly useCaseDeps: Deps;
 
-  constructor(private readonly deps: Deps) {
+  constructor(deps: Deps) {
     super({
       logger: deps.logger,
       uow: deps.uow,
       idempotency: deps.idempotency,
     });
+    this.useCaseDeps = deps;
   }
 
   protected validate(input: CreateInvoiceDraftCommand): CreateInvoiceDraftCommand {
@@ -120,7 +122,7 @@ export class CreateInvoiceDraftUseCase extends BaseUseCase<
     let normalizedCustom: Record<string, unknown> = {};
     let definitions: Awaited<ReturnType<CustomFieldDefinitionPort["listActiveByEntityType"]>> = [];
     try {
-      definitions = await this.deps.customFieldDefinitions.listActiveByEntityType(
+      definitions = await this.useCaseDeps.customFieldDefinitions.listActiveByEntityType(
         input.tenantId,
         "invoice"
       );
@@ -133,7 +135,7 @@ export class CreateInvoiceDraftUseCase extends BaseUseCase<
       const lines = this.buildLines(input.lines);
       const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
       const invoice = new Invoice(
-        this.deps.idGenerator.newId(),
+        this.useCaseDeps.idGenerator.newId(),
         input.tenantId,
         "DRAFT",
         total,
@@ -144,21 +146,21 @@ export class CreateInvoiceDraftUseCase extends BaseUseCase<
         Object.keys(normalizedCustom).length ? normalizedCustom : null
       );
 
-      await this.deps.invoiceRepo.save(invoice);
-      await this.deps.audit.write({
+      await this.useCaseDeps.invoiceRepo.save(invoice);
+      await this.useCaseDeps.audit.write({
         tenantId: input.tenantId,
         actorUserId: input.actorUserId,
         action: "invoice.draft_created",
         targetType: "Invoice",
         targetId: invoice.id,
         context: {
-          requestId: ctx.requestId,
+          requestId: ctx.requestId ?? "",
           tenantId: ctx.tenantId,
-          actorUserId: ctx.userId ?? input.actorUserId,
+          actorUserId: ctx.userId ?? input.actorUserId ?? "",
         },
       });
 
-      await this.deps.outbox.enqueue({
+      await this.useCaseDeps.outbox.enqueue({
         tenantId: input.tenantId,
         eventType: "invoice.draft_created",
         payload: { invoiceId: invoice.id, totalCents: invoice.totalCents },
@@ -172,7 +174,7 @@ export class CreateInvoiceDraftUseCase extends BaseUseCase<
         values: normalizedCustom,
       });
       if (indexRows.length) {
-        await this.deps.customFieldIndexes.upsertIndexesForEntity(
+        await this.useCaseDeps.customFieldIndexes.upsertIndexesForEntity(
           input.tenantId,
           "invoice",
           invoice.id,
@@ -198,7 +200,7 @@ export class CreateInvoiceDraftUseCase extends BaseUseCase<
     return lines.map(
       (line) =>
         new InvoiceLine(
-          this.deps.idGenerator.newId(),
+          this.useCaseDeps.idGenerator.newId(),
           line.description,
           line.qty,
           line.unitPriceCents

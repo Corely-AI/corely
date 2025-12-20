@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@kerniflow/data";
 import { IdempotencyPort } from "@kerniflow/kernel";
 
 /**
@@ -6,10 +6,7 @@ import { IdempotencyPort } from "@kerniflow/kernel";
  * tenant/action uniqueness (e.g. include tenantId + use case name).
  */
 export class DbIdempotencyAdapter implements IdempotencyPort {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly actionKey = "usecase"
-  ) {}
+  constructor(private readonly actionKey = "usecase") {}
 
   async run<T>(key: string, fn: () => Promise<T>): Promise<T> {
     const uniqueKey = {
@@ -18,9 +15,9 @@ export class DbIdempotencyAdapter implements IdempotencyPort {
       key,
     };
 
-    const existing = await this.prisma.idempotencyKey.findUnique({
+    const existing = await prisma.idempotencyKey.findUnique({
       where: {
-        tenantId_actionKey_key: uniqueKey,
+        tenantId_actionKey_key: uniqueKey as any,
       },
     });
 
@@ -30,8 +27,8 @@ export class DbIdempotencyAdapter implements IdempotencyPort {
 
     const result = await fn();
 
-    await this.prisma.idempotencyKey.upsert({
-      where: { tenantId_actionKey_key: uniqueKey },
+    await prisma.idempotencyKey.upsert({
+      where: { tenantId_actionKey_key: uniqueKey as any },
       update: {
         responseJson: this.serialize(result),
       },

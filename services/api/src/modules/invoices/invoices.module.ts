@@ -18,7 +18,6 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
 import { PrismaUnitOfWorkAdapter } from "../../shared/adapters/uow/prisma-uow.adapter";
 import { DbIdempotencyAdapter } from "../../shared/adapters/idempotency/db-idempotency.adapter";
 import { SystemIdGeneratorAdapter } from "../../shared/adapters/id-generator/system-id-generator.adapter";
-import { prisma } from "@kerniflow/data";
 
 @Module({
   controllers: [InvoicesController],
@@ -42,8 +41,8 @@ import { prisma } from "@kerniflow/data";
       ) =>
         new CreateInvoiceDraftUseCase({
           logger: new NestLoggerAdapter(),
-          uow: new PrismaUnitOfWorkAdapter(prisma),
-          idempotency: new DbIdempotencyAdapter(prisma, "invoices.create_draft"),
+          uow: new PrismaUnitOfWorkAdapter(),
+          idempotency: new DbIdempotencyAdapter("invoices.create_draft"),
           invoiceRepo: repo,
           outbox,
           audit,

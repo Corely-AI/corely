@@ -5,7 +5,7 @@ export class NestLoggerAdapter implements LoggerPort {
   constructor(private readonly logger: LoggerService = new Logger("UseCase")) {}
 
   debug(msg: string, meta?: Record<string, unknown>): void {
-    this.logger.debug(this.format(msg, meta));
+    this.logger.debug?.(this.format(msg, meta));
   }
 
   info(msg: string, meta?: Record<string, unknown>): void {

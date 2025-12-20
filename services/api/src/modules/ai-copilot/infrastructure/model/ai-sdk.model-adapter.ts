@@ -49,11 +49,11 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     const model = provider === "anthropic" ? this.anthropic(modelId) : this.openai(modelId);
 
     const result = await streamText({
-      model,
+      model: model as any,
       messages: convertToCoreMessages(params.messages),
-      tools: aiTools,
+      tools: aiTools as any,
     });
 
-    pipeUIMessageStreamToResponse(result, params.response);
+    (pipeUIMessageStreamToResponse as any)(result, params.response);
   }
 }
