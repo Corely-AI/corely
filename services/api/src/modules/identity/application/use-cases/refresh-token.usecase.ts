@@ -2,7 +2,7 @@ import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
 import { ITokenService } from "../ports/token-service.port";
 import { IUserRepository } from "../ports/user.repo.port";
 import { IAuditPort } from "../ports/audit.port";
-import { IClock } from "../ports/clock.port";
+import { ClockPort } from "../../../../shared/ports/clock.port";
 import { createHash, randomUUID } from "crypto";
 
 export interface RefreshTokenInput {
@@ -24,7 +24,7 @@ export class RefreshTokenUseCase {
     private readonly tokenService: ITokenService,
     private readonly userRepo: IUserRepository,
     private readonly audit: IAuditPort,
-    private readonly clock: IClock
+    private readonly clock: ClockPort
   ) {}
 
   async execute(input: RefreshTokenInput): Promise<RefreshTokenOutput> {

@@ -8,8 +8,8 @@ import { ITokenService } from "../ports/token-service.port";
 import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
 import { IOutboxPort } from "../ports/outbox.port";
 import { IAuditPort } from "../ports/audit.port";
-import { IClock } from "../ports/clock.port";
 import { IdempotencyPort } from "../../../../shared/ports/idempotency.port";
+import { ClockPort } from "../../../../shared/ports/clock.port";
 import { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import { RequestContext } from "../../../../shared/context/request-context";
 import { ForbiddenError, ValidationError } from "../../../../shared/errors/domain-errors";
@@ -48,7 +48,7 @@ export class SignInUseCase {
     private readonly audit: IAuditPort,
     private readonly idempotency: IdempotencyPort,
     private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: IClock
+    private readonly clock: ClockPort
   ) {}
 
   async execute(input: SignInInput): Promise<SignInOutput> {

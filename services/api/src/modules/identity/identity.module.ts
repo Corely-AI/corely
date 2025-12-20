@@ -44,7 +44,6 @@ import {
 import { IRoleRepository, ROLE_REPOSITORY_TOKEN } from "./application/ports/role.repo.port";
 import { IPasswordHasher, PASSWORD_HASHER_TOKEN } from "./application/ports/password-hasher.port";
 import { ITokenService, TOKEN_SERVICE_TOKEN } from "./application/ports/token-service.port";
-import { CLOCK_TOKEN } from "./application/ports/clock.port";
 import { IOutboxPort, OUTBOX_PORT_TOKEN } from "./application/ports/outbox.port";
 import { IAuditPort, AUDIT_PORT_TOKEN } from "./application/ports/audit.port";
 
@@ -107,10 +106,6 @@ import { IAuditPort, AUDIT_PORT_TOKEN } from "./application/ports/audit.port";
     {
       provide: AUDIT_PORT_TOKEN,
       useClass: PrismaAuditRepository,
-    },
-    {
-      provide: CLOCK_TOKEN,
-      useClass: SystemClock,
     },
     {
       provide: ID_GENERATOR_TOKEN,
@@ -202,7 +197,7 @@ import { IAuditPort, AUDIT_PORT_TOKEN } from "./application/ports/audit.port";
         AUDIT_PORT_TOKEN,
         IDEMPOTENCY_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
-        CLOCK_TOKEN,
+        CLOCK_PORT_TOKEN,
       ],
     },
     {
@@ -219,7 +214,7 @@ import { IAuditPort, AUDIT_PORT_TOKEN } from "./application/ports/audit.port";
         TOKEN_SERVICE_TOKEN,
         USER_REPOSITORY_TOKEN,
         AUDIT_PORT_TOKEN,
-        CLOCK_TOKEN,
+        CLOCK_PORT_TOKEN,
       ],
     },
     {
@@ -255,7 +250,7 @@ import { IAuditPort, AUDIT_PORT_TOKEN } from "./application/ports/audit.port";
         REFRESH_TOKEN_REPOSITORY_TOKEN,
         OUTBOX_PORT_TOKEN,
         AUDIT_PORT_TOKEN,
-        CLOCK_TOKEN,
+        CLOCK_PORT_TOKEN,
       ],
     },
   ],
@@ -270,7 +265,6 @@ import { IAuditPort, AUDIT_PORT_TOKEN } from "./application/ports/audit.port";
     TOKEN_SERVICE_TOKEN,
     OUTBOX_PORT_TOKEN,
     AUDIT_PORT_TOKEN,
-    CLOCK_TOKEN,
     SignUpUseCase,
     SignInUseCase,
     RefreshTokenUseCase,

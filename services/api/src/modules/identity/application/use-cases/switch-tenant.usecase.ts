@@ -4,7 +4,7 @@ import { IUserRepository } from "../ports/user.repo.port";
 import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
 import { IOutboxPort } from "../ports/outbox.port";
 import { IAuditPort } from "../ports/audit.port";
-import { IClock } from "../ports/clock.port";
+import { ClockPort } from "../../../../shared/ports/clock.port";
 import { TenantSwitchedEvent } from "../../domain/events/identity.events";
 import { createHash, randomUUID } from "crypto";
 
@@ -32,7 +32,7 @@ export class SwitchTenantUseCase {
     private readonly refreshTokenRepo: IRefreshTokenRepository,
     private readonly outbox: IOutboxPort,
     private readonly audit: IAuditPort,
-    private readonly clock: IClock
+    private readonly clock: ClockPort
   ) {}
 
   async execute(input: SwitchTenantInput): Promise<SwitchTenantOutput> {

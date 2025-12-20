@@ -16,8 +16,8 @@ import { IPasswordHasher } from "../ports/password-hasher.port";
 import { ITokenService } from "../ports/token-service.port";
 import { IOutboxPort } from "../ports/outbox.port";
 import { IAuditPort } from "../ports/audit.port";
-import { IClock } from "../ports/clock.port";
 import { IRoleRepository } from "../ports/role.repo.port";
+import { ClockPort } from "../../../../shared/ports/clock.port";
 import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
 import { IdempotencyPort } from "../../../../shared/ports/idempotency.port";
 import { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
@@ -58,7 +58,7 @@ export class SignUpUseCase {
     private readonly audit: IAuditPort,
     private readonly idempotency: IdempotencyPort,
     private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: IClock
+    private readonly clock: ClockPort
   ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
