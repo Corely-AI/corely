@@ -6,9 +6,8 @@
     "strict": false,
     "strictNullChecks": true,
     "exactOptionalPropertyTypes": false,
-    "baseUrl": "./src",
     "paths": {
-      "@shared/*": ["shared/*"],
+      "@shared/*": ["./src/shared/*"],
       "@kerniflow/kernel": ["../../packages/kernel/src"]
     }
   },
