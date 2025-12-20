@@ -7,6 +7,7 @@ import {
   BadRequestException,
   Headers,
   Req,
+  Inject,
 } from "@nestjs/common";
 import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 
@@ -45,11 +46,11 @@ import { Request } from "express";
 @Controller("auth")
 export class AuthController {
   constructor(
-    private readonly signUpUseCase: SignUpUseCase,
-    private readonly signInUseCase: SignInUseCase,
-    private readonly refreshTokenUseCase: RefreshTokenUseCase,
-    private readonly signOutUseCase: SignOutUseCase,
-    private readonly switchTenantUseCase: SwitchTenantUseCase
+    @Inject(SignUpUseCase) private readonly signUpUseCase: SignUpUseCase,
+    @Inject(SignInUseCase) private readonly signInUseCase: SignInUseCase,
+    @Inject(RefreshTokenUseCase) private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    @Inject(SignOutUseCase) private readonly signOutUseCase: SignOutUseCase,
+    @Inject(SwitchTenantUseCase) private readonly switchTenantUseCase: SwitchTenantUseCase
   ) {}
 
   /**
