@@ -25,6 +25,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@nestjs/testing": "^11.1.9",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.5",

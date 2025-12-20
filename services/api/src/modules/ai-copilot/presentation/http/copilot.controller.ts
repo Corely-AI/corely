@@ -15,7 +15,7 @@ import { CopilotChatRequestDto } from "./copilot.dto";
 import { StreamCopilotChatUseCase } from "../../application/use-cases/stream-copilot-chat.usecase";
 import { AuthGuard as IdentityAuthGuard } from "../../../identity/presentation/http/auth.guard";
 import { TenantGuard } from "./guards/tenant.guard";
-import { ClockPort } from "../../application/ports/clock.port";
+import { ClockPort } from "@kerniflow/kernel";
 
 @Controller("copilot")
 export class CopilotController {

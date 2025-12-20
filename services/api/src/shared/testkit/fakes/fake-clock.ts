@@ -11,10 +11,6 @@ export class FakeClock implements ClockPort {
     return new Date(this.current);
   }
 
-  nowMs(): number {
-    return this.current.getTime();
-  }
-
   advance(ms: number) {
     this.current = new Date(this.current.getTime() + ms);
   }

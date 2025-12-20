@@ -71,7 +71,7 @@ export class SwitchTenantUseCase {
       userId: input.userId,
       tenantId: input.toTenantId,
       tokenHash: refreshTokenHash,
-      expiresAt: new Date(this.clock.nowMs() + refreshTokenExpiresInMs),
+      expiresAt: new Date(this.clock.now().getTime() + refreshTokenExpiresInMs),
     });
 
     // 5. Emit event

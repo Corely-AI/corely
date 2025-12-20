@@ -93,7 +93,7 @@ export class SignInUseCase {
       userId: user.getId(),
       tenantId: selectedTenantId,
       tokenHash: await this.hashRefreshToken(refreshToken),
-      expiresAt: new Date(this.clock.nowMs() + refreshTokenExpiresInMs),
+      expiresAt: new Date(this.clock.now().getTime() + refreshTokenExpiresInMs),
     });
 
     const event = new UserLoggedInEvent(user.getId(), selectedTenantId, email.getValue());

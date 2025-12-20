@@ -24,7 +24,7 @@ const seed = async () => {
     userId: "user-1",
     tenantId: "tenant-1",
     tokenHash: hash,
-    expiresAt: new Date(clock.nowMs() + 10_000),
+    expiresAt: new Date(clock.now().getTime() + 10_000),
   });
   return refreshToken;
 };

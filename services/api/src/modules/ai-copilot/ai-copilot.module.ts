@@ -17,7 +17,7 @@ import { DomainToolPort } from "./application/ports/domain-tool.port";
 import { z } from "zod";
 import { AuditPort } from "./application/ports/audit.port";
 import { OutboxPort } from "./application/ports/outbox.port";
-import { ClockPort } from "./application/ports/clock.port";
+import { ClockPort } from "@kerniflow/kernel";
 import { IdentityModule } from "../identity/identity.module";
 
 const invoiceDraftTool: DomainToolPort = {
@@ -47,7 +47,7 @@ const invoiceIssueTool: DomainToolPort = {
 
 @Module({
   imports: [IdentityModule],
-  controllers: [], // [CopilotController],
+  controllers: [CopilotController],
   providers: [
     PrismaAgentRunRepository,
     PrismaMessageRepository,

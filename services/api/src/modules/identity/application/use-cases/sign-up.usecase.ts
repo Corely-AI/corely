@@ -109,7 +109,7 @@ export class SignUpUseCase {
       userId,
       tenantId,
       tokenHash: await this.hashToken(refreshToken),
-      expiresAt: new Date(this.clock.nowMs() + refreshTokenExpiresInMs),
+      expiresAt: new Date(this.clock.now().getTime() + refreshTokenExpiresInMs),
     });
 
     await this.emitOutboxEvents(

@@ -70,7 +70,7 @@ export class RefreshTokenUseCase {
       userId: storedToken.userId,
       tenantId: storedToken.tenantId,
       tokenHash: newTokenHash,
-      expiresAt: new Date(this.clock.nowMs() + refreshTokenExpiresInMs),
+      expiresAt: new Date(this.clock.now().getTime() + refreshTokenExpiresInMs),
     });
 
     // 7. Audit log
