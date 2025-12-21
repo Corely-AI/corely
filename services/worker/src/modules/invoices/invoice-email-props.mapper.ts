@@ -1,10 +1,22 @@
 import type { Invoice, InvoiceLine } from "@prisma/client";
 import type { InvoiceEmailProps } from "@kerniflow/email-templates/invoices";
 
+type BillToFields = {
+  billToName?: string | null;
+  billToEmail?: string | null;
+  billToVatId?: string | null;
+  billToAddressLine1?: string | null;
+  billToAddressLine2?: string | null;
+  billToCity?: string | null;
+  billToPostalCode?: string | null;
+  billToCountry?: string | null;
+};
+
 type MapperInput = {
-  invoice: Invoice & {
-    lines: InvoiceLine[];
-  };
+  invoice: Invoice &
+    BillToFields & {
+      lines: InvoiceLine[];
+    };
   companyName: string;
   customMessage?: string | undefined;
   viewInvoiceUrl?: string | undefined;
