@@ -65,11 +65,11 @@ export class ResendWebhookController {
         const event = this.resend.webhooks.verify({
           payload: rawBody,
           headers: {
-            "svix-id": svixId,
-            "svix-timestamp": svixTimestamp,
-            "svix-signature": svixSignature,
+            id: svixId,
+            timestamp: svixTimestamp,
+            signature: svixSignature,
           },
-          secret: this.webhookSecret,
+          webhookSecret: this.webhookSecret,
         }) as ResendWebhookEvent;
 
         await this.processEvent(event);

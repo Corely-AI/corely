@@ -9,10 +9,48 @@ import {
 import { PartyRoleType } from "../../domain/party-role";
 import { ContactPointType } from "../../domain/contact-point";
 import { Address } from "../../domain/address";
-import { Prisma } from "@prisma/client";
-type PartyWithRelations = Prisma.PartyGetPayload<{
-  include: { contactPoints: true; addresses: true; roles: true };
-}>;
+type PartyRoleRow = {
+  id: string;
+  tenantId: string;
+  partyId: string;
+  role: PartyRoleType;
+};
+
+type ContactPointRow = {
+  id: string;
+  tenantId: string;
+  partyId: string;
+  type: ContactPointType;
+  value: string;
+  isPrimary: boolean;
+};
+
+type AddressRow = {
+  id: string;
+  tenantId: string;
+  partyId: string;
+  type: "BILLING";
+  line1: string;
+  line2: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+};
+
+type PartyWithRelations = {
+  id: string;
+  tenantId: string;
+  displayName: string;
+  vatId: string | null;
+  notes: string | null;
+  tags: string[];
+  archivedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  contactPoints: ContactPointRow[];
+  addresses: AddressRow[];
+  roles: PartyRoleRow[];
+};
 
 const toAggregate = (row: PartyWithRelations): PartyAggregate => {
   const billingAddress = row.addresses.find((addr) => addr.type === "BILLING");
@@ -182,7 +220,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
       if (party.billingAddress) {
         await tx.address.upsert({
           where: {
-            tenantId_partyId_type: {
+            tenantId_partyId_type_address: {
               tenantId,
               partyId: party.id,
               type: "BILLING",
@@ -216,10 +254,10 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
   }
 
   async findCustomerById(tenantId: string, partyId: string): Promise<PartyAggregate | null> {
-    const row = await prisma.party.findFirst({
-      where: { id: partyId, tenantId, roles: { some: { role: "CUSTOMER" } } },
+    const row = (await prisma.party.findFirst({
+      where: { id: partyId, tenantId, roles: { some: { role: "CUSTOMER" as const } } },
       include: { contactPoints: true, addresses: true, roles: true },
-    });
+    })) as PartyWithRelations | null;
     if (!row) return null;
     return toAggregate(row);
   }
@@ -227,7 +265,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
   async listCustomers(tenantId: string, filters: ListCustomersFilters, pagination: Pagination) {
     const where = {
       tenantId,
-      roles: { some: { role: "CUSTOMER" } },
+      roles: { some: { role: "CUSTOMER" as const } },
       archivedAt: filters.includeArchived ? undefined : null,
     };
 
@@ -240,7 +278,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
       include: { contactPoints: true, addresses: true, roles: true },
     });
 
-    const items = results.map(toAggregate);
+    const items = results.map((row) => toAggregate(row as PartyWithRelations));
     const nextCursor = items.length === (pagination.pageSize ?? 20) ? items.at(-1)?.id : null;
     return { items, nextCursor };
   }
@@ -248,17 +286,17 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
   async searchCustomers(tenantId: string, q: string, pagination: Pagination) {
     const where = {
       tenantId,
-      roles: { some: { role: "CUSTOMER" } },
+      roles: { some: { role: "CUSTOMER" as const } },
       archivedAt: null,
       OR: [
-        { displayName: { contains: q, mode: "insensitive" } },
+        { displayName: { contains: q, mode: "insensitive" as const } },
         {
           contactPoints: {
-            some: { value: { contains: q, mode: "insensitive" } },
+            some: { value: { contains: q, mode: "insensitive" as const } },
           },
         },
-        { vatId: { contains: q, mode: "insensitive" } },
-        { notes: { contains: q, mode: "insensitive" } },
+        { vatId: { contains: q, mode: "insensitive" as const } },
+        { notes: { contains: q, mode: "insensitive" as const } },
       ],
     };
 
@@ -271,7 +309,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
       include: { contactPoints: true, addresses: true, roles: true },
     });
 
-    const items = results.map(toAggregate);
+    const items = results.map((row) => toAggregate(row as PartyWithRelations));
     const nextCursor = items.length === (pagination.pageSize ?? 20) ? items.at(-1)?.id : null;
     return { items, nextCursor };
   }
