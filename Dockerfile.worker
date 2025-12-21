@@ -28,7 +28,7 @@ COPY . .
 RUN pnpm --filter @kerniflow/contracts build && \
     pnpm --filter @kerniflow/domain build && \
     pnpm --filter @kerniflow/data build && \
-    pnpm --filter @kerniflow/data exec prisma generate --schema prisma/schema
+    pnpm --filter @kerniflow/data exec prisma generate --schema /app/packages/data/prisma/schema
 
 # ============================================================================
 # Development / Runtime stage

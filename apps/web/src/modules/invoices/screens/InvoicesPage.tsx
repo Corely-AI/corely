@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, Plus } from "lucide-react";
 import { Card, CardContent } from "@/shared/ui/card";
@@ -12,6 +13,7 @@ import type { InvoiceStatus } from "@/shared/types";
 
 export default function InvoicesPage() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
 
   const { data: invoices } = useQuery({ queryKey: ["invoices"], queryFn: () => getInvoices() });
@@ -24,7 +26,11 @@ export default function InvoicesPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-h1 text-foreground">{t("invoices.title")}</h1>
-        <Button variant="accent" data-testid="create-invoice-button">
+        <Button
+          variant="accent"
+          data-testid="create-invoice-button"
+          onClick={() => navigate("/invoices/new")}
+        >
           <Plus className="h-4 w-4" />
           {t("invoices.createInvoice")}
         </Button>

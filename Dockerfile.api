@@ -1,70 +1,39 @@
-# ============================================================================
-# Build stage for dependencies
-# ============================================================================
-FROM node:22-alpine AS builder
+# Simple single-stage image for the API.
+# Installs deps and rebuilds native modules in-place to avoid arch mismatches during e2e runs.
+FROM node:22-alpine
 
 RUN corepack enable pnpm
-RUN apk add --no-cache python3 make g++ openssl
+RUN apk add --no-cache python3 make g++ openssl curl
 
 WORKDIR /app
 
-# Copy root-level pnpm configuration
+# Workspace manifests (keeps install cache-friendly)
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-
-# Copy workspace package structures (so pnpm can resolve dependencies)
 COPY services/api/package.json ./services/api/
 COPY packages/data/package.json ./packages/data/
 COPY packages/domain/package.json ./packages/domain/
 COPY packages/contracts/package.json ./packages/contracts/
 
-# Install dependencies (frozen lockfile for deterministic builds)
-RUN pnpm install --frozen-lockfile --recursive && \
-    pnpm rebuild bcrypt
+# Install all workspace deps (includes dev deps needed for tsx watch)
+RUN pnpm install --frozen-lockfile --recursive
 
-# Copy source code
-COPY . .
-
-# Build packages that API depends on
-RUN pnpm --filter @kerniflow/contracts build && \
-    pnpm --filter @kerniflow/domain build && \
-    pnpm --filter @kerniflow/data build && \
-    pnpm --filter @kerniflow/data exec prisma generate --schema prisma/schema
-
-# ============================================================================
-# Development / Runtime stage
-# ============================================================================
-FROM node:22-alpine
-
-RUN corepack enable pnpm
-RUN apk add --no-cache openssl
-
-WORKDIR /app
-
-# Copy installed dependencies from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=builder /app/package.json ./package.json
-
-# Copy root tsconfig files
+# Copy source
 COPY tsconfig.base.json tsconfig.node.json ./
-
-# Copy workspace packages
 COPY packages ./packages
 COPY services/api ./services/api
 
-# Expose API port
+# Build shared packages and generate Prisma client (multi-file schema folder)
+RUN pnpm --filter @kerniflow/contracts build \
+ && pnpm --filter @kerniflow/domain build \
+ && pnpm --filter @kerniflow/data build \
+ && pnpm --filter @kerniflow/data exec prisma generate --schema /app/packages/data/prisma/schema
+
 EXPOSE 3000
 
-# Default environment (will be overridden by compose)
+# Default envs (overridden by compose)
 ENV NODE_ENV=development
 ENV DATABASE_URL=postgresql://kerniflow:kerniflow@postgres:5432/kerniflow?schema=public
 ENV REDIS_URL=redis://redis:6379
 ENV LOG_LEVEL=debug
 
-# Health endpoint for docker healthchecks
-# Install curl if needed (already available in alpine with wget)
-RUN apk add --no-cache curl
-
-# Run API in watch mode for development
 CMD ["pnpm", "--filter", "@kerniflow/api", "dev"]

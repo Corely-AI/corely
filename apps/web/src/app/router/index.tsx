@@ -4,7 +4,7 @@ import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
 import { ExpensesPage } from "../../modules/expenses";
-import { InvoicesPage } from "../../modules/invoices";
+import { InvoicesPage, NewInvoicePage } from "../../modules/invoices";
 import { ClientsPage } from "../../modules/clients";
 import { SettingsPage } from "../../modules/settings";
 import NotFound from "../../shared/components/NotFound";
@@ -27,6 +27,7 @@ export const Router = () => (
           <Route path="/assistant" element={<AssistantPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/invoices" element={<InvoicesPage />} />
+          <Route path="/invoices/new" element={<NewInvoicePage />} />
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/copilot" element={<CopilotPage />} />
           <Route path="/settings" element={<SettingsPage />} />

@@ -144,6 +144,9 @@ export class TestHarnessService {
       await tx.domainEvent.deleteMany({ where: { tenantId } });
       await tx.auditLog.deleteMany({ where: { tenantId } });
       await tx.idempotencyKey.deleteMany({ where: { tenantId } });
+      await tx.invoicePayment.deleteMany({ where: { invoice: { tenantId } } });
+      await tx.invoiceLine.deleteMany({ where: { invoice: { tenantId } } });
+      await tx.invoice.deleteMany({ where: { tenantId } });
       await tx.expense.deleteMany({ where: { tenantId } });
       await tx.workflowInstance.deleteMany({
         where: { definition: { tenantId } },

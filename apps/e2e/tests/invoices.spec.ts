@@ -1,76 +1,74 @@
-import { test, expect } from "./fixtures";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { selectors } from "../utils/selectors";
-import { drainOutbox } from "../utils/testData";
+
+const API_URL = process.env.API_URL || "http://localhost:3000";
+
+async function login(
+  page: Page,
+  creds: {
+    email: string;
+    password: string;
+  }
+) {
+  await page.goto("/auth/login");
+  await page.fill(selectors.auth.loginEmailInput, creds.email);
+  await page.fill(selectors.auth.loginPasswordInput, creds.password);
+  await page.click(selectors.auth.loginSubmitButton);
+  await page.waitForURL("**/dashboard", { timeout: 10_000 });
+}
 
 test.describe("Invoices", () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to invoices page
+  test("creates a new invoice from the UI and persists it", async ({ page, testData }) => {
+    await login(page, { email: testData.user.email, password: testData.user.password });
+
     await page.goto("/invoices");
-    await page.waitForLoadState("networkidle");
-  });
+    await expect(page.locator(selectors.invoices.createButton)).toBeVisible();
+    await page.click(selectors.invoices.createButton);
+    await expect(page).toHaveURL(/\/invoices\/new/);
 
-  test("should create a draft invoice", async ({ page }) => {
-    // Click create invoice button
-    const createButton = page.locator(selectors.invoices.createButton);
-    await expect(createButton).toBeVisible();
-    await createButton.click();
+    await page.waitForSelector(selectors.invoices.invoiceForm);
 
-    // Wait for form to appear
-    const form = page.locator(selectors.invoices.invoiceForm);
-    await expect(form).toBeVisible();
-
-    // Fill form (basic invoice creation)
-    // Assuming form has fields like client, amount, due date
-    await page.fill('input[data-testid="invoice-client"]', "Acme Corp");
-    await page.fill('input[data-testid="invoice-amount"]', "1500.00");
-    await page.fill('input[data-testid="invoice-due-date"]', "2025-01-31");
-
-    // Submit form
-    await page.click(selectors.invoices.issueButton);
-
-    // Should show success or redirect
-    // The invoice should appear in the list as a draft
-    const listContainer = page.locator('div[data-testid="invoices-list"]');
-    await expect(listContainer).toContainText("Acme Corp");
-  });
-
-  test("should display invoice with draft status", async ({ page }) => {
-    // List should be visible
-    const listContainer = page.locator(selectors.invoices.listContainer);
-    await expect(listContainer).toBeVisible();
-
-    // Check for draft status badge
-    const draftBadge = page.locator(selectors.invoices.draftBadge);
-    // May be visible or not, depending on data
-    const visible = await draftBadge.isVisible().catch(() => false);
-    expect(typeof visible).toBe("boolean");
-  });
-
-  test("should issue an invoice and drain outbox", async ({ page }) => {
-    // This test assumes an invoice exists in draft state
-    // Find a draft invoice row and issue it
-    const invoiceRows = page.locator(selectors.invoices.invoiceRow);
-    const count = await invoiceRows.count();
-
-    if (count > 0) {
-      // Click on first invoice to view details
-      await invoiceRows.first().click();
-
-      // Wait for details page to load
-      await page.waitForLoadState("networkidle");
-
-      // Find and click issue button (may be in a detail view)
-      const issueButton = page.locator('button[data-testid="issue-invoice"]');
-      if (await issueButton.isVisible()) {
-        await issueButton.click();
-
-        // Wait for confirmation
-        await page.waitForTimeout(500);
-
-        // Drain outbox to process the issued event
-        const result = await drainOutbox();
-        expect(result.processedCount).toBeGreaterThanOrEqual(0);
-      }
+    const clientId = "client-1";
+    await page.locator(selectors.invoices.customerSelect).click();
+    const clientOption = page.locator(selectors.invoices.customerOption(clientId));
+    if (await clientOption.count()) {
+      await clientOption.click();
+    } else {
+      await page.getByRole("option").first().click();
     }
+
+    await page.locator(selectors.invoices.lineDescriptionInput()).fill("E2E Consulting Package");
+    await page.locator(selectors.invoices.lineQtyInput()).fill("2");
+    await page.locator(selectors.invoices.lineRateInput()).fill("150");
+
+    const createResponsePromise = page.waitForResponse(
+      (response) => response.url().includes("/invoices") && response.request().method() === "POST"
+    );
+    await page.click(selectors.invoices.submitButton);
+    const createResponse = await createResponsePromise;
+
+    expect(createResponse.ok()).toBeTruthy();
+
+    const createdInvoice = await createResponse.json();
+    expect(createdInvoice.customerId).toBe(clientId);
+    expect(createdInvoice.lineItems).toHaveLength(1);
+    expect(createdInvoice.lineItems[0]).toMatchObject({
+      description: "E2E Consulting Package",
+      qty: 2,
+      unitPriceCents: 15000,
+    });
+    expect(createdInvoice.totals.totalCents).toBe(30000);
+
+    await expect(page).toHaveURL(/\/invoices$/);
+
+    const accessToken = await page.evaluate(() => localStorage.getItem("accessToken"));
+    const listResponse = await page.request.get(`${API_URL}/invoices`, {
+      headers: { Authorization: `Bearer ${accessToken ?? ""}` },
+    });
+    expect(listResponse.ok()).toBeTruthy();
+    const listBody: any = await listResponse.json();
+    const invoiceIds: string[] = (listBody.items ?? []).map((inv: any) => inv.id);
+    expect(invoiceIds).toContain(createdInvoice.id);
   });
 });
