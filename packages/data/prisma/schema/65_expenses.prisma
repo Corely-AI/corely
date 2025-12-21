@@ -1,16 +1,49 @@
 model Expense {
-  id              String   @id @default(cuid())
-  tenantId        String
-  merchant        String
-  totalCents      Int
-  currency        String
-  category        String?
-  issuedAt        DateTime @db.Timestamptz(6)
-  custom          Json?
-  createdByUserId String
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+  id             String         @id @default(cuid())
+  tenantId       String
+  status         ExpenseStatus  @default(DRAFT)
+  expenseDate    Date
+  merchantName   String?
+  supplierPartyId String?
+  currency       String
+  notes          String?
+  category       String?
+  totalAmountCents Int
+  taxAmountCents Int?
+  archivedAt     DateTime?      @db.Timestamptz(6)
+  custom         Json?
+  createdAt      DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime       @updatedAt @db.Timestamptz(6)
+
+  lines ExpenseLine[]
 
   @@index([tenantId])
-  @@index([tenantId, issuedAt])
+  @@index([tenantId, expenseDate])
+  @@index([tenantId, status])
+}
+
+model ExpenseLine {
+  id             String        @id @default(cuid())
+  tenantId       String
+  expenseId      String
+  description    String
+  quantity       Int           @default(1)
+  unitPriceCents Int
+  lineTotalCents Int
+  taxRate        Float?
+  category       String?
+  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([expenseId])
+}
+
+enum ExpenseStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
 }
