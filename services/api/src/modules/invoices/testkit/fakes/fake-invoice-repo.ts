@@ -1,11 +1,20 @@
-import { InvoiceRepositoryPort } from "../../application/ports/InvoiceRepositoryPort";
-import { Invoice } from "../../domain/entities/Invoice";
+import {
+  InvoiceRepoPort,
+  ListInvoicesFilters,
+  ListInvoicesResult,
+} from "../../application/ports/invoice-repo.port";
+import { InvoiceAggregate } from "../../domain/invoice.aggregate";
 
-export class FakeInvoiceRepository implements InvoiceRepositoryPort {
-  invoices: Invoice[] = [];
+export class FakeInvoiceRepository implements InvoiceRepoPort {
+  invoices: InvoiceAggregate[] = [];
 
-  async save(invoice: Invoice): Promise<void> {
-    const index = this.invoices.findIndex((i) => i.id === invoice.id);
+  async save(tenantId: string, invoice: InvoiceAggregate): Promise<void> {
+    if (tenantId !== invoice.tenantId) {
+      throw new Error("Tenant mismatch when saving invoice");
+    }
+    const index = this.invoices.findIndex(
+      (i) => i.id === invoice.id && i.tenantId === invoice.tenantId
+    );
     if (index >= 0) {
       this.invoices[index] = invoice;
     } else {
@@ -13,7 +22,33 @@ export class FakeInvoiceRepository implements InvoiceRepositoryPort {
     }
   }
 
-  async findById(id: string): Promise<Invoice | null> {
-    return this.invoices.find((i) => i.id === id) ?? null;
+  async create(tenantId: string, invoice: InvoiceAggregate): Promise<void> {
+    return this.save(tenantId, invoice);
+  }
+
+  async findById(tenantId: string, id: string): Promise<InvoiceAggregate | null> {
+    return this.invoices.find((i) => i.id === id && i.tenantId === tenantId) ?? null;
+  }
+
+  async list(
+    tenantId: string,
+    filters: ListInvoicesFilters,
+    pageSize = 20,
+    cursor?: string
+  ): Promise<ListInvoicesResult> {
+    const startIndex = cursor ? this.invoices.findIndex((i) => i.id === cursor) + 1 : 0;
+    let items = this.invoices.filter((i) => i.tenantId === tenantId);
+    if (filters.status) items = items.filter((i) => i.status === filters.status);
+    if (filters.customerId) items = items.filter((i) => i.customerId === filters.customerId);
+    if (filters.fromDate) items = items.filter((i) => i.createdAt >= filters.fromDate!);
+    if (filters.toDate) items = items.filter((i) => i.createdAt <= filters.toDate!);
+
+    const slice = items.slice(startIndex, startIndex + pageSize);
+    const nextCursor = slice.length === pageSize ? slice[slice.length - 1].id : null;
+    return { items: slice, nextCursor };
+  }
+
+  async isInvoiceNumberTaken(tenantId: string, number: string): Promise<boolean> {
+    return this.invoices.some((i) => i.tenantId === tenantId && i.number === number);
   }
 }

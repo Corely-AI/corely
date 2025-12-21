@@ -18,11 +18,11 @@ import {
   validateAndNormalizeCustomValues,
 } from "@kerniflow/domain";
 
-import { InvoiceRepositoryPort } from "../../ports/InvoiceRepositoryPort";
+import { InvoiceRepoPort } from "../../ports/invoice-repo.port";
 import { OutboxPort } from "../../../../../shared/ports/outbox.port";
 import { AuditPort } from "../../../../../shared/ports/audit.port";
-import { Invoice } from "../../../domain/entities/Invoice";
-import { InvoiceLine } from "../../../domain/entities/InvoiceLine";
+import { Invoice } from "../../../domain/invoice.entity";
+import { InvoiceLine } from "../../../domain/invoice-line.entity";
 
 export type CreateInvoiceDraftCommand = {
   tenantId: string;
@@ -56,7 +56,7 @@ type Deps = {
   logger: LoggerPort;
   uow?: UnitOfWorkPort;
   idempotency?: IdempotencyPort;
-  invoiceRepo: InvoiceRepositoryPort;
+  invoiceRepo: InvoiceRepoPort;
   outbox: OutboxPort;
   audit: AuditPort;
   idGenerator: IdGeneratorPort;
@@ -146,7 +146,7 @@ export class CreateInvoiceDraftUseCase extends BaseUseCase<
         Object.keys(normalizedCustom).length ? normalizedCustom : null
       );
 
-      await this.useCaseDeps.invoiceRepo.save(invoice);
+      await this.useCaseDeps.invoiceRepo.save(ctx.tenantId, invoice);
       await this.useCaseDeps.audit.write({
         tenantId: input.tenantId,
         actorUserId: input.actorUserId,

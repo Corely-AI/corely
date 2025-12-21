@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { ExpensesController } from "./presentation/http/expenses.controller";
+import { ExpensesController } from "./adapters/http/expenses.controller";
 import { CreateExpenseUseCase } from "./application/use-cases/CreateExpenseUseCase";
 import { PrismaExpenseRepository } from "./infrastructure/persistence/PrismaExpenseRepository";
 import { OutboxPort, OUTBOX_PORT_TOKEN } from "../../shared/ports/outbox.port";

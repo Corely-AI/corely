@@ -19,7 +19,7 @@ This document explains how the Kerniflow Copilot works end-to-end: streaming pro
   - Audit/Outbox: Prisma adapters
   - Idempotency: In-memory adapter (replaceable with persistent store)
   - Tools: Registry + AI SDK tool factory
-- **Controller**: `presentation/http/copilot.controller.ts`
+- **Controller**: `adapters/http/copilot.controller.ts`
 - **Guards**: Auth guard + `TenantGuard` requiring `X-Tenant-Id`; `X-Idempotency-Key` required.
 
 ### Data Model (Prisma)

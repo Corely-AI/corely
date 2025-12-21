@@ -38,6 +38,8 @@ export function buildAiTools(
               tenantId: deps.tenantId,
               userId: deps.userId,
               input,
+              toolCallId,
+              runId: deps.runId,
             });
             await deps.toolExecutions.complete(deps.tenantId, deps.runId, toolCallId, {
               status: "completed",

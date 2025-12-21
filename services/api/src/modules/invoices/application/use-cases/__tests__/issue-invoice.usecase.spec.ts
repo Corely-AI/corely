@@ -5,8 +5,8 @@ import { MockOutboxPort } from "@shared/testkit/mocks/mock-outbox-port";
 import { MockAuditPort } from "@shared/testkit/mocks/mock-audit-port";
 import { MockIdempotencyPort } from "@shared/testkit/mocks/mock-idempotency-port";
 import { FakeClock } from "@shared/testkit/fakes/fake-clock";
-import { Invoice } from "../../../domain/entities/Invoice";
-import { InvoiceLine } from "../../../domain/entities/InvoiceLine";
+import { Invoice } from "../../../domain/invoice.entity";
+import { InvoiceLine } from "../../../domain/invoice-line.entity";
 import { buildIssueInput } from "../../../testkit/builders/build-issue-input";
 import { ConflictError } from "@shared/errors/domain-errors";
 

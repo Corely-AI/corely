@@ -7,5 +7,11 @@ export interface DomainToolPort {
   description: string;
   inputSchema: z.ZodTypeAny;
   kind: ToolKind;
-  execute?: (params: { tenantId: string; userId: string; input: unknown }) => Promise<unknown>;
+  execute?: (params: {
+    tenantId: string;
+    userId: string;
+    input: unknown;
+    toolCallId?: string;
+    runId?: string;
+  }) => Promise<unknown>;
 }

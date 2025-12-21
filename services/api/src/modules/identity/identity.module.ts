@@ -6,7 +6,7 @@ import { Logger } from "@nestjs/common";
 const logger = new Logger("IdentityModule");
 
 // Controllers
-import { AuthController } from "./presentation/http/auth.controller";
+import { AuthController } from "./adapters/http/auth.controller";
 
 // Repositories
 import { PrismaUserRepository } from "./infrastructure/persistence/prisma.user.repo";
@@ -27,7 +27,7 @@ import { SignInUseCase } from "./application/use-cases/sign-in.usecase";
 import { RefreshTokenUseCase } from "./application/use-cases/refresh-token.usecase";
 import { SignOutUseCase } from "./application/use-cases/sign-out.usecase";
 import { SwitchTenantUseCase } from "./application/use-cases/switch-tenant.usecase";
-import { AuthGuard } from "./presentation/http/auth.guard";
+import { AuthGuard } from "./adapters/http/auth.guard";
 
 // Security
 import { BcryptPasswordHasher } from "./infrastructure/security/bcrypt.password-hasher";

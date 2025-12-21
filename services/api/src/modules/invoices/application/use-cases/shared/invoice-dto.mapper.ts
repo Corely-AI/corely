@@ -1,0 +1,30 @@
+import { InvoiceDto } from "@kerniflow/contracts";
+import { InvoiceAggregate } from "../../../domain/invoice.aggregate";
+
+export const toInvoiceDto = (invoice: InvoiceAggregate): InvoiceDto => ({
+  id: invoice.id,
+  tenantId: invoice.tenantId,
+  number: invoice.number,
+  status: invoice.status,
+  customerId: invoice.customerId,
+  currency: invoice.currency,
+  notes: invoice.notes ?? undefined,
+  terms: invoice.terms ?? undefined,
+  issuedAt: invoice.issuedAt ? invoice.issuedAt.toISOString() : null,
+  sentAt: invoice.sentAt ? invoice.sentAt.toISOString() : null,
+  createdAt: invoice.createdAt.toISOString(),
+  updatedAt: invoice.updatedAt.toISOString(),
+  lineItems: invoice.lineItems.map((line) => ({
+    id: line.id,
+    description: line.description,
+    qty: line.qty,
+    unitPriceCents: line.unitPriceCents,
+  })),
+  payments: invoice.payments.map((p) => ({
+    id: p.id,
+    amountCents: p.amountCents,
+    paidAt: p.paidAt.toISOString(),
+    note: p.note,
+  })),
+  totals: { ...invoice.totals },
+});

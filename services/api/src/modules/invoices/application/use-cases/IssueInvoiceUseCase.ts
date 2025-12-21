@@ -1,12 +1,12 @@
 import { ConflictError, NotFoundError } from "../../../../shared/errors/domain-errors";
-import { Invoice } from "../../domain/entities/Invoice";
-import { InvoiceRepositoryPort } from "../ports/InvoiceRepositoryPort";
+import { Invoice } from "../../domain/invoice.entity";
+import { InvoiceRepoPort } from "../ports/invoice-repo.port";
 import { OutboxPort } from "../../../../shared/ports/outbox.port";
 import { AuditPort } from "../../../../shared/ports/audit.port";
 import { IdempotencyPort } from "../../../../shared/ports/idempotency.port";
 import { ClockPort } from "../../../../shared/ports/clock.port";
 import { RequestContext } from "../../../../shared/context/request-context";
-import { InvoiceLine } from "../../domain/entities/InvoiceLine";
+import { InvoiceLine } from "../../domain/invoice-line.entity";
 
 export interface IssueInvoiceInput {
   invoiceId: string;
@@ -20,7 +20,7 @@ export class IssueInvoiceUseCase {
   private readonly actionKey = "invoices.issue";
 
   constructor(
-    private readonly invoiceRepo: InvoiceRepositoryPort,
+    private readonly invoiceRepo: InvoiceRepoPort,
     private readonly outbox: OutboxPort,
     private readonly audit: AuditPort,
     private readonly idempotency: IdempotencyPort,
@@ -33,7 +33,7 @@ export class IssueInvoiceUseCase {
       return this.hydrate(cached.body as any);
     }
 
-    const invoice = await this.invoiceRepo.findById(input.invoiceId);
+    const invoice = await this.invoiceRepo.findById(input.tenantId, input.invoiceId);
     if (!invoice || invoice.tenantId !== input.tenantId) {
       throw new NotFoundError("Invoice not found");
     }
@@ -43,7 +43,7 @@ export class IssueInvoiceUseCase {
     }
 
     invoice.issue(this.clock.now());
-    await this.invoiceRepo.save(invoice);
+    await this.invoiceRepo.save(input.tenantId, invoice);
 
     await this.audit.write({
       tenantId: input.tenantId,

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { AiCopilotModule } from "../ai-copilot.module";
-import { CopilotController } from "../presentation/http/copilot.controller";
+import { CopilotController } from "../adapters/http/copilot.controller";
 import { StreamCopilotChatUseCase } from "../application/use-cases/stream-copilot-chat.usecase";
 import { AiSdkModelAdapter } from "../infrastructure/model/ai-sdk.model-adapter";
 import { ToolRegistry } from "../infrastructure/tools/tool-registry";
@@ -106,8 +106,14 @@ describe("AiCopilotModule", () => {
     const toolsProvider = providers.find((p: any) => p.provide === COPILOT_TOOLS);
 
     expect(toolsProvider).toBeDefined();
-    expect(toolsProvider.useValue).toBeDefined();
-    expect(Array.isArray(toolsProvider.useValue)).toBe(true);
-    expect(toolsProvider.useValue.length).toBeGreaterThan(0);
+    expect(toolsProvider.useValue || toolsProvider.useFactory).toBeDefined();
+    if (toolsProvider.useValue) {
+      expect(Array.isArray(toolsProvider.useValue)).toBe(true);
+      expect(toolsProvider.useValue.length).toBeGreaterThan(0);
+    } else {
+      expect(typeof toolsProvider.useFactory).toBe("function");
+      expect(Array.isArray(toolsProvider.inject)).toBe(true);
+      expect(toolsProvider.inject.length).toBeGreaterThan(0);
+    }
   });
 });

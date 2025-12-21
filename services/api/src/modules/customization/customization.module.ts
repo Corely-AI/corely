@@ -1,8 +1,8 @@
 import { Module, Logger } from "@nestjs/common";
-import { CustomFieldsController } from "./presentation/custom-fields.controller";
+import { CustomFieldsController } from "./adapters/http/custom-fields.controller";
 
 const logger = new Logger("CustomizationModule");
-import { EntityLayoutController } from "./presentation/entity-layout.controller";
+import { EntityLayoutController } from "./adapters/http/entity-layout.controller";
 import { CustomizationService } from "./customization.service";
 import {
   CustomFieldDefinitionRepository,

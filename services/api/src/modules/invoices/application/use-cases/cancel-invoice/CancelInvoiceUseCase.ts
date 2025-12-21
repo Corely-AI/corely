@@ -1,0 +1,49 @@
+import {
+  BaseUseCase,
+  ConflictError,
+  LoggerPort,
+  NotFoundError,
+  Result,
+  UseCaseContext,
+  UseCaseError,
+  ValidationError,
+  err,
+  ok,
+} from "@kerniflow/kernel";
+import { CancelInvoiceInput, CancelInvoiceOutput } from "@kerniflow/contracts";
+import { InvoiceRepoPort } from "../../ports/invoice-repo.port";
+import { toInvoiceDto } from "../shared/invoice-dto.mapper";
+
+type Deps = {
+  logger: LoggerPort;
+  invoiceRepo: InvoiceRepoPort;
+};
+
+export class CancelInvoiceUseCase extends BaseUseCase<CancelInvoiceInput, CancelInvoiceOutput> {
+  constructor(private readonly deps: Deps) {
+    super({ logger: deps.logger });
+  }
+
+  protected async handle(
+    input: CancelInvoiceInput,
+    ctx: UseCaseContext
+  ): Promise<Result<CancelInvoiceOutput, UseCaseError>> {
+    if (!ctx.tenantId) {
+      return err(new ValidationError("tenantId is required"));
+    }
+
+    const invoice = await this.deps.invoiceRepo.findById(ctx.tenantId, input.invoiceId);
+    if (!invoice) {
+      return err(new NotFoundError("Invoice not found"));
+    }
+
+    try {
+      invoice.cancel(input.reason, new Date());
+    } catch (error) {
+      return err(new ConflictError((error as Error).message));
+    }
+
+    await this.deps.invoiceRepo.save(ctx.tenantId, invoice);
+    return ok({ invoice: toInvoiceDto(invoice) });
+  }
+}

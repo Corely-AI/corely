@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CustomValuesSchema } from "./common/customization/custom-field";
+export * from "./invoices";
 
 export const CONTRACTS_HELLO = "Kerniflow contracts loaded ✅";
 

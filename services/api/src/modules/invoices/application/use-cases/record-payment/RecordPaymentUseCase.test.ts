@@ -1,0 +1,41 @@
+import { beforeEach, describe, expect, it } from "vitest";
+import { RecordPaymentUseCase } from "./RecordPaymentUseCase";
+import { FakeInvoiceRepository } from "../../../testkit/fakes/fake-invoice-repo";
+import { FakeIdGenerator, NoopLogger, unwrap } from "@kerniflow/kernel";
+import { InvoiceAggregate } from "../../../domain/invoice.aggregate";
+
+describe("RecordPaymentUseCase", () => {
+  let useCase: RecordPaymentUseCase;
+  let repo: FakeInvoiceRepository;
+
+  beforeEach(() => {
+    repo = new FakeInvoiceRepository();
+    useCase = new RecordPaymentUseCase({
+      logger: new NoopLogger(),
+      invoiceRepo: repo,
+      idGenerator: new FakeIdGenerator(["pay-1"]),
+    });
+  });
+
+  it("marks invoice paid when payment covers total", async () => {
+    const invoice = InvoiceAggregate.createDraft({
+      id: "inv-1",
+      tenantId: "tenant-1",
+      customerId: "cust",
+      currency: "USD",
+      lineItems: [{ id: "line-1", description: "Work", qty: 1, unitPriceCents: 1000 }],
+      createdAt: new Date(),
+    });
+    invoice.finalize("INV-1", new Date());
+    repo.invoices = [invoice];
+
+    const result = await useCase.execute(
+      { invoiceId: invoice.id, amountCents: 1000 },
+      { tenantId: "tenant-1" }
+    );
+
+    const dto = unwrap(result).invoice;
+    expect(dto.status).toBe("PAID");
+    expect(dto.totals.paidCents).toBe(1000);
+  });
+});

@@ -1,18 +1,23 @@
 model Invoice {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   tenantId   String
-  clientId   String?
+  customerId String
+  number     String?
   status     InvoiceStatus @default(DRAFT)
-  totalCents Int
   currency   String
+  notes      String?
+  terms      String?
   issuedAt   DateTime?
-  custom     Json?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  lines      InvoiceLine[]
+  sentAt     DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  lines     InvoiceLine[]
+  payments  InvoicePayment[]
 
   @@index([tenantId, status])
   @@index([tenantId, createdAt])
+  @@unique([tenantId, number])
 }
 
 model InvoiceLine {
@@ -27,8 +32,22 @@ model InvoiceLine {
   @@index([invoiceId])
 }
 
+model InvoicePayment {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  amountCents Int
+  paidAt      DateTime
+  note        String?
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
 enum InvoiceStatus {
   DRAFT
   ISSUED
+  SENT
   PAID
+  CANCELED
 }
