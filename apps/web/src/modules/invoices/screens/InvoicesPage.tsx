@@ -6,7 +6,8 @@ import { FileText, Plus } from "lucide-react";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { getInvoices, getClients } from "@/shared/mock/mockApi";
+import { getClients } from "@/shared/mock/mockApi";
+import { invoicesApi } from "@/lib/invoices-api";
 import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { EmptyState } from "@/shared/components/EmptyState";
 import type { InvoiceStatus } from "@/shared/types";
@@ -16,11 +17,14 @@ export default function InvoicesPage() {
   const navigate = useNavigate();
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
 
-  const { data: invoices } = useQuery({ queryKey: ["invoices"], queryFn: () => getInvoices() });
+  const { data: invoices } = useQuery({
+    queryKey: ["invoices"],
+    queryFn: () => invoicesApi.listInvoices(),
+  });
   const { data: clients } = useQuery({ queryKey: ["clients"], queryFn: getClients });
 
-  const getClientName = (clientId: string) =>
-    clients?.find((c) => c.id === clientId)?.company || "Unknown";
+  const getClientName = (customerPartyId: string) =>
+    clients?.find((c) => c.id === customerPartyId)?.company || "Unknown";
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -73,19 +77,23 @@ export default function InvoicesPage() {
                       data-testid={`invoice-row-${invoice.id}`}
                       className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                     >
-                      <td className="px-4 py-3 text-sm font-medium">{invoice.invoiceNumber}</td>
-                      <td className="px-4 py-3 text-sm">{getClientName(invoice.clientId)}</td>
-                      <td className="px-4 py-3 text-sm">{formatDate(invoice.issueDate, locale)}</td>
+                      <td className="px-4 py-3 text-sm font-medium">{invoice.number || "Draft"}</td>
+                      <td className="px-4 py-3 text-sm">
+                        {getClientName(invoice.customerPartyId)}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {formatDate(invoice.issuedAt || invoice.createdAt, locale)}
+                      </td>
                       <td className="px-4 py-3">
                         <Badge
-                          variant={invoice.status as InvoiceStatus}
+                          variant={invoice.status.toLowerCase() as InvoiceStatus}
                           data-testid={`invoice-status-${invoice.status}`}
                         >
-                          {t(`invoices.statuses.${invoice.status}`)}
+                          {t(`invoices.statuses.${invoice.status.toLowerCase()}`)}
                         </Badge>
                       </td>
                       <td className="px-4 py-3 text-sm text-right font-medium">
-                        {formatMoney(invoice.totalCents, locale)}
+                        {formatMoney(invoice.totals.totalCents, locale)}
                       </td>
                     </tr>
                   ))}

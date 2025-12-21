@@ -19,6 +19,65 @@ async function login(
 }
 
 test.describe("Invoices", () => {
+  test("displays invoice list correctly", async ({ page, testData }) => {
+    await login(page, { email: testData.user.email, password: testData.user.password });
+
+    // Navigate to invoices page
+    await page.goto("/invoices");
+    await expect(page).toHaveURL(/\/invoices$/);
+
+    // Verify page title
+    await expect(page.locator("h1")).toContainText(/invoices/i);
+
+    // Verify create button is visible
+    await expect(page.locator(selectors.invoices.createButton)).toBeVisible();
+
+    // Verify invoice list container is visible
+    await expect(page.locator(selectors.invoices.listContainer)).toBeVisible();
+
+    // Wait for invoices to load
+    await page.waitForSelector(selectors.invoices.invoiceRow, { timeout: 10_000 });
+
+    // Get all invoice rows
+    const invoiceRows = page.locator(selectors.invoices.invoiceRow);
+    const rowCount = await invoiceRows.count();
+    expect(rowCount).toBeGreaterThan(0);
+
+    // Verify first invoice row has correct structure
+    const firstRow = invoiceRows.first();
+    await expect(firstRow).toBeVisible();
+
+    // Check for invoice number/status column
+    const cells = firstRow.locator("td");
+    expect(await cells.count()).toBeGreaterThanOrEqual(4);
+
+    // Verify at least one status badge is visible
+    const statusBadges = page.locator(selectors.invoices.statusChip);
+    expect(await statusBadges.count()).toBeGreaterThan(0);
+
+    // Verify the status badge has text
+    const firstStatusBadge = statusBadges.first();
+    const statusText = await firstStatusBadge.textContent();
+    expect(statusText).toBeTruthy();
+    expect(statusText?.length).toBeGreaterThan(0);
+  });
+
+  test("navigates to create invoice page when clicking create button", async ({
+    page,
+    testData,
+  }) => {
+    await login(page, { email: testData.user.email, password: testData.user.password });
+
+    await page.goto("/invoices");
+    await expect(page.locator(selectors.invoices.createButton)).toBeVisible();
+
+    await page.click(selectors.invoices.createButton);
+
+    // Verify navigation to create page
+    await expect(page).toHaveURL(/\/invoices\/new/);
+    await expect(page.locator(selectors.invoices.invoiceForm)).toBeVisible();
+  });
+
   test("creates a new invoice from the UI and persists it", async ({ page, testData }) => {
     await login(page, { email: testData.user.email, password: testData.user.password });
 
