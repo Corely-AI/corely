@@ -70,7 +70,7 @@ export class ResendWebhookController {
             "svix-signature": svixSignature,
           },
           secret: this.webhookSecret,
-        }) as ResendWebhookEvent;
+        } as any) as ResendWebhookEvent;
 
         await this.processEvent(event);
       } else {

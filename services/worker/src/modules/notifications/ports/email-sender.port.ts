@@ -8,15 +8,15 @@ export type EmailAttachment = {
 export type SendEmailRequest = {
   tenantId: string;
   to: string[];
-  cc?: string[];
-  bcc?: string[];
+  cc?: string[] | undefined;
+  bcc?: string[] | undefined;
   subject: string;
   html?: string;
   text?: string;
   attachments?: EmailAttachment[];
-  replyTo?: string;
+  replyTo?: string | undefined;
   headers?: Record<string, string>;
-  idempotencyKey?: string;
+  idempotencyKey?: string | undefined;
 };
 
 export type SendEmailResponse = {

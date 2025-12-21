@@ -6,19 +6,20 @@ import {
 } from "../../ports/email-sender.port";
 
 export class ResendEmailSenderAdapter implements EmailSenderPort {
-  private resend: Resend;
-  private fromAddress: string;
-  private replyTo?: string;
+  private resend!: Resend;
+  private fromAddress!: string;
+  private replyTo: string;
 
   constructor(apiKey?: string, fromAddress?: string, replyTo?: string) {
-    const key = apiKey ?? process.env.RESEND_API_KEY;
+    const key: string | undefined = apiKey ?? process.env.RESEND_API_KEY;
     if (!key) {
       throw new Error("RESEND_API_KEY environment variable is required");
     }
-    this.resend = new Resend(key);
-    this.fromAddress =
-      fromAddress ?? process.env.RESEND_FROM ?? "Qansa Billing <billing@example.com>";
-    this.replyTo = replyTo ?? process.env.RESEND_REPLY_TO;
+    this.resend = new Resend(key as string);
+    this.fromAddress = (fromAddress ??
+      process.env.RESEND_FROM ??
+      "Qansa Billing <billing@example.com>") as string;
+    this.replyTo = replyTo ?? process.env.RESEND_REPLY_TO ?? "";
   }
 
   async sendEmail(request: SendEmailRequest): Promise<SendEmailResponse> {
@@ -30,8 +31,8 @@ export class ResendEmailSenderAdapter implements EmailSenderPort {
       text: request.text,
     };
 
-    if (request.cc?.length) emailOptions.cc = request.cc;
-    if (request.bcc?.length) emailOptions.bcc = request.bcc;
+    if (request.cc && request.cc.length) emailOptions.cc = request.cc;
+    if (request.bcc && request.bcc.length) emailOptions.bcc = request.bcc;
     if (this.replyTo || request.replyTo) emailOptions.replyTo = request.replyTo ?? this.replyTo;
     if (request.headers) emailOptions.headers = request.headers;
     if (request.attachments?.length) {
@@ -43,9 +44,10 @@ export class ResendEmailSenderAdapter implements EmailSenderPort {
       }));
     }
 
-    const { data, error } = await this.resend.emails.send(emailOptions, {
-      idempotencyKey: request.idempotencyKey,
-    });
+    const sendOptions: { idempotencyKey: string } | undefined = request.idempotencyKey
+      ? { idempotencyKey: request.idempotencyKey }
+      : undefined;
+    const { data, error } = await this.resend.emails.send(emailOptions, sendOptions);
 
     if (error) {
       throw new Error(`Resend API error: ${error.message}`);

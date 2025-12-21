@@ -3,7 +3,7 @@ import { DocumentRepoPort } from "../../ports/document-repo.port";
 import { FileRepoPort } from "../../ports/file-repo.port";
 import { ObjectStoragePort } from "../../ports/object-storage.port";
 import { PdfRendererPort } from "../../ports/pdf-renderer.port";
-import { InvoicePdfModelPort } from "../../../invoices/application/ports/invoice-pdf-model.port";
+import { InvoicePdfModelPort } from "../../../../invoices/application/ports/invoice-pdf-model.port";
 
 type EventPayload = {
   tenantId: string;

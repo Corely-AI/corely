@@ -69,18 +69,26 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
 
     try {
       // 5. Send email via provider
-      const result = await this.emailSender.sendEmail({
+      const emailRequest: any = {
         tenantId: event.tenantId,
         to: [payload.to],
-        cc: payload.cc,
-        bcc: payload.bcc,
         subject,
         html,
         text,
-        replyTo: undefined,
-        headers: event.correlationId ? { "X-Correlation-ID": event.correlationId } : undefined,
         idempotencyKey: payload.idempotencyKey,
-      });
+      };
+
+      if (event.correlationId) {
+        emailRequest.headers = { "X-Correlation-ID": event.correlationId };
+      }
+      if (payload.cc) {
+        emailRequest.cc = payload.cc;
+      }
+      if (payload.bcc) {
+        emailRequest.bcc = payload.bcc;
+      }
+
+      const result = await this.emailSender.sendEmail(emailRequest);
 
       // 6. Update delivery record to SENT
       await prisma.invoiceEmailDelivery.update({
