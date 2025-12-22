@@ -7,6 +7,7 @@ import { Button } from "@/shared/ui/button";
 import { settingsNavItem, getEnabledModules, getComingSoonModules } from "@/modules/registry";
 import { useThemeStore } from "@/shared/theme/themeStore";
 import { cn } from "@/shared/lib/utils";
+import { WorkspaceSwitcher } from "@/shared/workspaces/WorkspaceSwitcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,6 +64,10 @@ export function AppSidebar({ collapsed = false, onToggle }: SidebarProps) {
       </div>
 
       {/* Navigation */}
+      <div className="px-3 py-3">
+        <WorkspaceSwitcher collapsed={collapsed} />
+      </div>
+
       <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin" data-testid="sidebar-nav">
         {/* Enabled modules */}
         <div className="space-y-1">

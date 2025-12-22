@@ -72,4 +72,18 @@ export const selectors = {
     errorMessage: 'div[data-testid="error-message"]',
     successMessage: 'div[data-testid="success-message"]',
   },
+
+  workspace: {
+    switcherTrigger: 'button[data-testid="workspace-switcher-trigger"]',
+    switcherMenu: 'div[data-testid="workspace-switcher-menu"]',
+    option: (id: string) => `div[data-testid="workspace-option-${id}"]`,
+    onboardingName: 'input[data-testid="onboarding-name"]',
+    onboardingLegalName: 'input[data-testid="onboarding-legal-name"]',
+    onboardingAddress: 'input[data-testid="onboarding-address-line1"]',
+    onboardingCity: 'input[data-testid="onboarding-city"]',
+    onboardingPostal: 'input[data-testid="onboarding-postal"]',
+    onboardingNext: 'button[data-testid="onboarding-next"]',
+    onboardingSubmit: 'button[data-testid="onboarding-submit"]',
+    createShortcut: 'button[data-testid="workspace-create-shortcut"]',
+  },
 };

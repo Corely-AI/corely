@@ -3,6 +3,8 @@
  * Handles HTTP calls to API auth endpoints
  */
 
+import { setActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
+
 // Vite exposes env via import.meta.env, so avoid process.env on the client
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -17,6 +19,7 @@ export interface SignInData {
   email: string;
   password: string;
   tenantId?: string;
+  workspaceId?: string;
 }
 
 export interface AuthResponse {
@@ -24,17 +27,22 @@ export interface AuthResponse {
   refreshToken: string;
   userId: string;
   email: string;
-  tenantId: string;
+  tenantId?: string;
+  tenantName?: string;
+  workspaceId?: string;
 }
 
 export interface CurrentUserResponse {
   userId: string;
   email: string;
   name: string | null;
-  activeTenantId: string;
+  activeTenantId?: string;
+  activeWorkspaceId?: string;
   memberships: Array<{
-    tenantId: string;
-    tenantName: string;
+    tenantId?: string;
+    tenantName?: string;
+    workspaceId?: string;
+    workspaceName?: string;
     roleId: string;
   }>;
 }
@@ -105,6 +113,8 @@ class AuthClient {
 
     const result = (await response.json()) as AuthResponse;
     this.storeTokens(result.accessToken, result.refreshToken);
+    const workspaceId = result.workspaceId ?? result.tenantId;
+    if (workspaceId) setActiveWorkspaceId(workspaceId);
 
     return result;
   }
@@ -127,6 +137,8 @@ class AuthClient {
 
     const result = (await response.json()) as AuthResponse;
     this.storeTokens(result.accessToken, result.refreshToken);
+    const workspaceId = result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId;
+    if (workspaceId) setActiveWorkspaceId(workspaceId);
 
     return result;
   }
@@ -206,6 +218,7 @@ class AuthClient {
     }
 
     this.clearTokens();
+    setActiveWorkspaceId(null);
   }
 
   /**
@@ -231,6 +244,7 @@ class AuthClient {
 
     const result = (await response.json()) as AuthResponse;
     this.storeTokens(result.accessToken, result.refreshToken);
+    setActiveWorkspaceId(result.workspaceId ?? result.tenantId ?? tenantId);
 
     return result;
   }

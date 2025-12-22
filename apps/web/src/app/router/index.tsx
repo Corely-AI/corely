@@ -13,6 +13,11 @@ import { LoginPage } from "../../routes/auth/login";
 import SignupPage from "../../routes/auth/signup";
 import { RequireAuth } from "./require-auth";
 import { CopilotPage } from "../../routes/copilot";
+import {
+  WorkspaceMembersPage,
+  WorkspaceOnboardingPage,
+  WorkspaceSettingsPage,
+} from "../../modules/workspaces";
 
 export const Router = () => (
   <BrowserRouter>
@@ -24,6 +29,7 @@ export const Router = () => (
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
+          <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/assistant" element={<AssistantPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
@@ -33,6 +39,8 @@ export const Router = () => (
           <Route path="/clients" element={<ClientsPage />} />
           <Route path="/copilot" element={<CopilotPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
+          <Route path="/settings/members" element={<WorkspaceMembersPage />} />
           <Route path="/settings/tax" element={<TaxSettingsPage />} />
         </Route>
       </Route>

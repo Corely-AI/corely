@@ -4,6 +4,7 @@
  */
 
 import { authClient } from "./auth-client";
+import { getActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -45,6 +46,7 @@ class ApiClient {
     }
   ): Promise<T> {
     const accessToken = authClient.getAccessToken();
+    const workspaceId = getActiveWorkspaceId();
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       ...options.headers,
@@ -58,6 +60,11 @@ class ApiClient {
     // Add idempotency key if provided
     if (opts?.idempotencyKey) {
       headers["X-Idempotency-Key"] = opts.idempotencyKey;
+    }
+
+    // Workspace context
+    if (workspaceId) {
+      headers["X-Workspace-Id"] = workspaceId;
     }
 
     // Add correlation ID if provided

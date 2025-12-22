@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { authClient, CurrentUserResponse, SignUpData, SignInData, AuthResponse } from './auth-client';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  authClient,
+  CurrentUserResponse,
+  SignUpData,
+  SignInData,
+  AuthResponse,
+} from "./auth-client";
+import { setActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
 
 interface AuthContextType {
   user: CurrentUserResponse | null;
@@ -40,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (err) {
         authClient.clearTokens();
-        setError(err instanceof Error ? err.message : 'Auth initialization failed');
+        setError(err instanceof Error ? err.message : "Auth initialization failed");
       } finally {
         setIsLoading(false);
       }
@@ -55,10 +62,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await authClient.signup(data);
       // Fetch user data after signup
       const currentUser = await authClient.getCurrentUser();
+      const workspaceId = currentUser.activeWorkspaceId ?? currentUser.activeTenantId;
+      if (workspaceId) setActiveWorkspaceId(workspaceId);
       setUser(currentUser);
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Signup failed';
+      const message = err instanceof Error ? err.message : "Signup failed";
       setError(message);
       throw err;
     }
@@ -70,10 +79,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await authClient.signin(data);
       // Fetch user data after signin
       const currentUser = await authClient.getCurrentUser();
+      const workspaceId =
+        currentUser.activeWorkspaceId ??
+        currentUser.activeTenantId ??
+        data.workspaceId ??
+        data.tenantId;
+      if (workspaceId) setActiveWorkspaceId(workspaceId);
       setUser(currentUser);
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Sign in failed';
+      const message = err instanceof Error ? err.message : "Sign in failed";
       setError(message);
       throw err;
     }
@@ -83,9 +98,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setError(null);
       await authClient.signout();
+      setActiveWorkspaceId(null);
       setUser(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Logout failed';
+      const message = err instanceof Error ? err.message : "Logout failed";
       setError(message);
       throw err;
     }
@@ -97,10 +113,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const result = await authClient.switchTenant(tenantId);
       // Fetch updated user data
       const currentUser = await authClient.getCurrentUser();
+      setActiveWorkspaceId(tenantId);
       setUser(currentUser);
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Tenant switch failed';
+      const message = err instanceof Error ? err.message : "Tenant switch failed";
       setError(message);
       throw err;
     }
@@ -111,10 +128,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await authClient.refreshAccessToken();
       if (authClient.getAccessToken()) {
         const currentUser = await authClient.getCurrentUser();
+        const workspaceId = currentUser.activeWorkspaceId ?? currentUser.activeTenantId;
+        if (workspaceId) setActiveWorkspaceId(workspaceId);
         setUser(currentUser);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Refresh failed');
+      setError(err instanceof Error ? err.message : "Refresh failed");
     }
   };
 
@@ -127,7 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logout,
     switchTenant,
     refresh,
-    error
+    error,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -139,7 +158,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 };
