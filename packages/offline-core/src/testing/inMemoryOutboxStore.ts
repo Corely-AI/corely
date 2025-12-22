@@ -1,0 +1,88 @@
+import { OutboxStore } from "../outbox/outboxStore.port";
+import { OutboxCommand, OutboxError } from "../outbox/outboxTypes";
+
+export class InMemoryOutboxStore implements OutboxStore {
+  private readonly commands = new Map<string, OutboxCommand>();
+
+  async enqueue(cmd: OutboxCommand): Promise<void> {
+    this.commands.set(cmd.commandId, { ...cmd });
+  }
+
+  async listPending(workspaceId: string, limit: number): Promise<OutboxCommand[]> {
+    const pending = Array.from(this.commands.values()).filter(
+      (cmd) => cmd.workspaceId === workspaceId && cmd.status === "PENDING"
+    );
+    return pending.slice(0, limit).map((cmd) => ({ ...cmd }));
+  }
+
+  async getById(commandId: string): Promise<OutboxCommand | null> {
+    const command = this.commands.get(commandId);
+    return command ? { ...command } : null;
+  }
+
+  async markInFlight(commandId: string): Promise<void> {
+    const command = this.commands.get(commandId);
+    if (command) {
+      this.commands.set(commandId, { ...command, status: "IN_FLIGHT" });
+    }
+  }
+
+  async markSucceeded(commandId: string, meta?: unknown): Promise<void> {
+    const command = this.commands.get(commandId);
+    if (command) {
+      const updated: Record<string, unknown> = {
+        ...command,
+        status: "SUCCEEDED",
+        nextAttemptAt: undefined,
+      };
+      if (meta) {
+        updated.meta = meta;
+      }
+      this.commands.set(commandId, updated as OutboxCommand);
+    }
+  }
+
+  async markFailed(commandId: string, error: OutboxError): Promise<void> {
+    const command = this.commands.get(commandId);
+    if (command) {
+      const updated: Record<string, unknown> = {
+        ...command,
+        status: "FAILED",
+        nextAttemptAt: undefined,
+        error,
+      };
+      this.commands.set(commandId, updated as OutboxCommand);
+    }
+  }
+
+  async markConflict(commandId: string, info?: unknown): Promise<void> {
+    const command = this.commands.get(commandId);
+    if (command) {
+      const updated = { ...command, status: "CONFLICT", nextAttemptAt: undefined };
+      if (info) {
+        (updated as unknown as Record<string, unknown>).conflict = info;
+      }
+      this.commands.set(commandId, updated);
+    }
+  }
+
+  async incrementAttempt(commandId: string, nextAttemptAt: Date): Promise<void> {
+    const command = this.commands.get(commandId);
+    if (command) {
+      this.commands.set(commandId, {
+        ...command,
+        attempts: command.attempts + 1,
+        status: "PENDING",
+        nextAttemptAt,
+      });
+    }
+  }
+
+  async clearWorkspace(workspaceId: string): Promise<void> {
+    for (const [id, command] of this.commands.entries()) {
+      if (command.workspaceId === workspaceId) {
+        this.commands.delete(id);
+      }
+    }
+  }
+}

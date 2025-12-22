@@ -6,4 +6,6 @@ export default defineWorkspace([
   "./packages/kernel/vitest.config.ts",
   "./services/worker/vitest.config.ts",
   "./apps/web/vitest.config.ts",
+  "./packages/offline-core/vitest.config.ts",
+  "./packages/offline-web/vitest.config.ts",
 ]);
