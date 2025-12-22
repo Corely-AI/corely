@@ -11,11 +11,11 @@ test.describe("Authentication", () => {
 
     await page.waitForURL("**/dashboard", { timeout: 10_000 });
 
-    const userMenuButton = await page.locator(selectors.auth.userMenuButton);
+    const userMenuButton = page.locator(selectors.auth.userMenuButton).first();
     await expect(userMenuButton).toBeVisible();
     await userMenuButton.click();
 
-    const userMenu = await page.locator(selectors.auth.userMenu);
+    const userMenu = page.locator(selectors.auth.userMenu).first();
     await expect(userMenu).toContainText(testData.user.email);
   });
 
@@ -36,5 +36,36 @@ test.describe("Authentication", () => {
 
     await page.waitForURL("**/auth/login", { timeout: 10_000 });
     await expect(page).toHaveURL(/\/auth\/login/);
+  });
+
+  test("should signup and create workspace", async ({ page }) => {
+    // Clear any existing session
+    await page.context().clearCookies();
+
+    // Navigate to signup page
+    await page.goto("/auth/signup");
+
+    // Generate unique test credentials
+    const timestamp = Date.now();
+    const testEmail = `e2e-signup-${timestamp}@kerniflow.local`;
+    const testPassword = "SignupTest123!";
+    const testName = "E2E Test User";
+    const testWorkspace = `E2E Test Workspace ${timestamp}`;
+
+    // Fill signup form
+    await page.fill(selectors.auth.signupEmailInput, testEmail);
+    await page.fill(selectors.auth.signupPasswordInput, testPassword);
+    await page.fill(selectors.auth.signupNameInput, testName);
+    await page.fill(selectors.auth.signupWorkspaceInput, testWorkspace);
+
+    // Submit signup form
+    await page.click(selectors.auth.signupSubmitButton);
+
+    // Wait for redirect to onboarding or dashboard
+    await page.waitForURL(/\/(onboarding|dashboard)/, { timeout: 10_000 });
+
+    // Verify user is authenticated by checking for user menu
+    const userMenuButton = page.locator(selectors.auth.userMenuButton).first();
+    await expect(userMenuButton).toBeVisible({ timeout: 10_000 });
   });
 });

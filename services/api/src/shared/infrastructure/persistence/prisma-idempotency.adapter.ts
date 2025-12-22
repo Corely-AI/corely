@@ -7,15 +7,26 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
     tenantId: string | null,
     key: string
   ): Promise<StoredResponse | null> {
-    const existing = await prisma.idempotencyKey.findUnique({
-      where: {
-        tenantId_actionKey_key: {
-          tenantId: tenantId as string,
-          actionKey,
-          key,
-        },
-      },
-    });
+    // When tenantId is null, we can't use findUnique with the compound key
+    // so we use findFirst instead
+    const existing = tenantId
+      ? await prisma.idempotencyKey.findUnique({
+          where: {
+            tenantId_actionKey_key: {
+              tenantId,
+              actionKey,
+              key,
+            },
+          },
+        })
+      : await prisma.idempotencyKey.findFirst({
+          where: {
+            tenantId: null,
+            actionKey,
+            key,
+          },
+        });
+
     if (!existing || !existing.responseJson) return null;
     return {
       statusCode: existing.statusCode ?? undefined,
@@ -29,25 +40,58 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
     key: string,
     response: StoredResponse
   ): Promise<void> {
-    await prisma.idempotencyKey.upsert({
-      where: {
-        tenantId_actionKey_key: {
-          tenantId: tenantId as string,
+    // When tenantId is null, we can't use upsert with the compound key
+    // so we need to handle it differently
+    if (tenantId) {
+      await prisma.idempotencyKey.upsert({
+        where: {
+          tenantId_actionKey_key: {
+            tenantId,
+            actionKey,
+            key,
+          },
+        },
+        update: {
+          responseJson: JSON.stringify(response.body ?? null),
+          statusCode: response.statusCode,
+        },
+        create: {
+          tenantId,
+          actionKey,
+          key,
+          responseJson: JSON.stringify(response.body ?? null),
+          statusCode: response.statusCode,
+        },
+      });
+    } else {
+      // For null tenantId, check if it exists first, then create or update
+      const existing = await prisma.idempotencyKey.findFirst({
+        where: {
+          tenantId: null,
           actionKey,
           key,
         },
-      },
-      update: {
-        responseJson: JSON.stringify(response.body ?? null),
-        statusCode: response.statusCode,
-      },
-      create: {
-        tenantId,
-        actionKey,
-        key,
-        responseJson: JSON.stringify(response.body ?? null),
-        statusCode: response.statusCode,
-      },
-    });
+      });
+
+      if (existing) {
+        await prisma.idempotencyKey.update({
+          where: { id: existing.id },
+          data: {
+            responseJson: JSON.stringify(response.body ?? null),
+            statusCode: response.statusCode,
+          },
+        });
+      } else {
+        await prisma.idempotencyKey.create({
+          data: {
+            tenantId: null,
+            actionKey,
+            key,
+            responseJson: JSON.stringify(response.body ?? null),
+            statusCode: response.statusCode,
+          },
+        });
+      }
+    }
   }
 }

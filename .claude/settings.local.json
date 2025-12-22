@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --version:*)",
+      "Bash(corepack --version:*)",
+      "Bash(docker ps:*)",
+      "Bash(pnpm prisma:migrate:*)",
+      "Bash(docker exec:*)",
+      "Bash(npm view:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm exec prisma generate:*)",
+      "Bash(pnpm --filter @kerniflow/data exec prisma migrate:*)",
+      "Bash(pnpm exec prisma migrate:*)",
+      "Bash(docker compose:*)",
+      "Bash(set CI=true)",
+      "Bash($env:CI=\"true\")",
+      "Bash(curl:*)",
+      "Bash(docker logs:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm exec playwright install:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm exec tsc:*)"
+    ]
+  }
+}

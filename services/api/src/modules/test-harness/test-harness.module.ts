@@ -1,7 +1,9 @@
 import { Module, Global } from "@nestjs/common";
 import { TestHarnessController } from "./test-harness.controller";
 import { TestHarnessService } from "./test-harness.service";
-import { PrismaClient } from "@kerniflow/data";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 @Global()
 @Module({
@@ -10,8 +12,10 @@ import { PrismaClient } from "@kerniflow/data";
     {
       provide: "TEST_HARNESS_SERVICE",
       useFactory: () => {
-        // Create a new Prisma client for test harness
-        return new TestHarnessService(new PrismaClient());
+        // Create a new Prisma client for test harness with Prisma 7 adapter
+        const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+        const adapter = new PrismaPg(pool);
+        return new TestHarnessService(new PrismaClient({ adapter }));
       },
     },
   ],

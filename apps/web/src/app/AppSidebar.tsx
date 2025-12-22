@@ -15,7 +15,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/shared/ui/dropdown-menu";
-import { getDb } from "@/shared/mock/mockDb";
+import { useAuth } from "@/lib/auth-provider";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -26,7 +27,8 @@ export function AppSidebar({ collapsed = false, onToggle }: SidebarProps) {
   const { t, i18n } = useTranslation();
   const _location = useLocation();
   const { theme, setTheme } = useThemeStore();
-  const db = getDb();
+  const { user } = useAuth();
+  const { activeWorkspace } = useWorkspace();
 
   const enabledModules = getEnabledModules();
   const comingSoonModules = getComingSoonModules();
@@ -46,7 +48,6 @@ export function AppSidebar({ collapsed = false, onToggle }: SidebarProps) {
         "flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
-      data-testid="sidebar-nav"
     >
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
@@ -167,7 +168,7 @@ export function AppSidebar({ collapsed = false, onToggle }: SidebarProps) {
         </div>
 
         {/* User profile */}
-        {!collapsed && (
+        {!collapsed && user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -175,23 +176,25 @@ export function AppSidebar({ collapsed = false, onToggle }: SidebarProps) {
                 className="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-sidebar-accent/50 transition-colors"
               >
                 <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground text-sm font-medium">
-                  {db.user.name
+                  {user.name
                     .split(" ")
                     .map((n) => n[0])
                     .join("")}
                 </div>
                 <div className="flex-1 text-left">
                   <div className="text-sm font-medium text-sidebar-foreground truncate">
-                    {db.user.name}
+                    {user.name}
                   </div>
-                  <div className="text-xs text-muted-foreground truncate">{db.tenant.name}</div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {activeWorkspace?.name || ""}
+                  </div>
                 </div>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56" data-testid="user-menu">
               <div className="px-2 py-1.5">
-                <div className="text-sm font-medium">{db.user.name}</div>
-                <div className="text-xs text-muted-foreground">{db.user.email}</div>
+                <div className="text-sm font-medium">{user.name}</div>
+                <div className="text-xs text-muted-foreground">{user.email}</div>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem data-testid="logout" className="text-danger">

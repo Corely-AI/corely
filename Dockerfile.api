@@ -8,13 +8,15 @@ RUN apk add --no-cache python3 make g++ openssl curl
 WORKDIR /app
 
 # Workspace manifests (keeps install cache-friendly)
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY services/api/package.json ./services/api/
 COPY packages/data/package.json ./packages/data/
 COPY packages/domain/package.json ./packages/domain/
 COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/kernel/package.json ./packages/kernel/
 
 # Install all workspace deps (includes dev deps needed for tsx watch)
+# Using shamefully-hoist for Prisma 7 compatibility
 RUN pnpm install --frozen-lockfile --recursive
 
 # Copy source
@@ -22,11 +24,16 @@ COPY tsconfig.base.json tsconfig.node.json ./
 COPY packages ./packages
 COPY services/api ./services/api
 
-# Build shared packages and generate Prisma client (multi-file schema folder)
+# Build shared packages and generate Prisma client (Prisma 7 uses prisma.config.ts)
 RUN pnpm --filter @kerniflow/contracts build \
  && pnpm --filter @kerniflow/domain build \
- && pnpm --filter @kerniflow/data build \
- && pnpm --filter @kerniflow/data exec prisma generate --schema /app/packages/data/prisma/schema
+ && pnpm --filter @kerniflow/kernel build \
+ && pnpm --filter @kerniflow/data build
+
+# Generate Prisma client - use pnpm exec from workspace root to avoid symlink issues
+# Prisma 7 requires running from the package directory where prisma.config.ts exists
+RUN pnpm --filter @kerniflow/data exec prisma generate || \
+    (cd /app/packages/data && /app/node_modules/.pnpm/prisma@*/node_modules/prisma/build/index.js generate)
 
 EXPOSE 3000
 

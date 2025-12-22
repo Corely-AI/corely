@@ -1,3 +1,5 @@
+# Load environment variables from .env.e2e file
+# Copy .env.e2e.example to .env.e2e and fill in your actual values
 services:
   # ============================================================================
   # POSTGRES DATABASE (E2E Test DB)
@@ -6,6 +8,8 @@ services:
     image: postgres:17-alpine
     container_name: kerniflow_e2e_postgres
     restart: unless-stopped
+    env_file:
+      - .env.e2e
     environment:
       # Explicit values so local .env overrides (e.g., POSTGRES_DB=kerniflow) don't
       # point the e2e stack at a database name that doesn't exist.
@@ -33,6 +37,8 @@ services:
     image: redis:7-alpine
     container_name: kerniflow_e2e_redis
     restart: unless-stopped
+    env_file:
+      - .env.e2e
     ports:
       - "6380:6379"
     volumes:
@@ -54,8 +60,10 @@ services:
       context: .
       dockerfile: Dockerfile.api
     container_name: kerniflow_e2e_api
+    env_file:
+      - .env.e2e
     command: >
-      sh -c "pnpm --filter @kerniflow/data exec prisma migrate deploy --schema /app/packages/data/prisma/schema &&
+      sh -c "cd /app/packages/data && /app/node_modules/.bin/prisma migrate deploy &&
              pnpm --filter @kerniflow/api dev"
     restart: unless-stopped
     depends_on:
@@ -64,12 +72,14 @@ services:
       redis:
         condition: service_healthy
     environment:
-      NODE_ENV: test
-      DATABASE_URL: postgresql://kerniflow:kerniflow@postgres:5432/kerniflow_e2e?schema=public
-      REDIS_URL: redis://redis:6379
-      LOG_LEVEL: info
+      NODE_ENV: ${NODE_ENV:-test}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://kerniflow:kerniflow@postgres:5432/kerniflow_e2e?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
       TEST_HARNESS_SECRET: ${TEST_HARNESS_SECRET:-test-secret-key}
       JWT_SECRET: ${JWT_SECRET:-test-jwt-secret-change-me}
+      RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_e2e}
+      NODE_OPTIONS: --enable-source-maps
     ports:
       - "3000:3000"
     networks:
@@ -89,8 +99,10 @@ services:
       context: .
       dockerfile: Dockerfile.worker
     container_name: kerniflow_e2e_worker
+    env_file:
+      - .env.e2e
     command: >
-      sh -c "pnpm --filter @kerniflow/data exec prisma migrate deploy --schema /app/packages/data/prisma/schema &&
+      sh -c "cd /app/packages/data && /app/node_modules/.bin/prisma migrate deploy &&
              pnpm --filter @kerniflow/worker dev"
     restart: unless-stopped
     depends_on:
@@ -99,10 +111,34 @@ services:
       redis:
         condition: service_healthy
     environment:
-      NODE_ENV: test
-      DATABASE_URL: postgresql://kerniflow:kerniflow@postgres:5432/kerniflow_e2e?schema=public
-      REDIS_URL: redis://redis:6379
-      LOG_LEVEL: info
+      NODE_ENV: ${NODE_ENV:-test}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://kerniflow:kerniflow@postgres:5432/kerniflow_e2e?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_e2e}
+      NODE_OPTIONS: --enable-source-maps
+    networks:
+      - kerniflow_e2e
+
+  # ============================================================================
+  # VITE WEB FRONTEND (E2E)
+  # ============================================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: kerniflow_e2e_web
+    env_file:
+      - .env.e2e
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-test}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    ports:
+      - "5173:8080"
     networks:
       - kerniflow_e2e
 

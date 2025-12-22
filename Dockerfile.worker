@@ -1,63 +1,46 @@
-# ============================================================================
-# Build stage for dependencies
-# ============================================================================
-FROM node:22-alpine AS builder
+# Simple single-stage image for the Worker.
+# Installs deps and rebuilds native modules in-place to avoid arch mismatches during e2e runs.
+FROM node:22-alpine
 
 RUN corepack enable pnpm
-RUN apk add --no-cache python3 make g++ openssl
+RUN apk add --no-cache python3 make g++ openssl curl
 
 WORKDIR /app
 
-# Copy root-level pnpm configuration
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
-
-# Copy workspace package structures (so pnpm can resolve dependencies)
+# Workspace manifests (keeps install cache-friendly)
+COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY services/worker/package.json ./services/worker/
 COPY packages/data/package.json ./packages/data/
 COPY packages/domain/package.json ./packages/domain/
 COPY packages/contracts/package.json ./packages/contracts/
+COPY packages/kernel/package.json ./packages/kernel/
+COPY packages/email-templates/package.json ./packages/email-templates/
 
-# Install dependencies (frozen lockfile for deterministic builds)
-RUN pnpm install --frozen-lockfile --recursive && \
-    pnpm rebuild bcrypt
+# Install all workspace deps (includes dev deps needed for tsx watch)
+# Using shamefully-hoist for Prisma 7 compatibility
+RUN pnpm install --frozen-lockfile --recursive
 
-# Copy source code
-COPY . .
-
-# Build packages that Worker depends on
-RUN pnpm --filter @kerniflow/contracts build && \
-    pnpm --filter @kerniflow/domain build && \
-    pnpm --filter @kerniflow/data build && \
-    pnpm --filter @kerniflow/data exec prisma generate --schema /app/packages/data/prisma/schema
-
-# ============================================================================
-# Development / Runtime stage
-# ============================================================================
-FROM node:22-alpine
-
-RUN corepack enable pnpm
-RUN apk add --no-cache openssl
-
-WORKDIR /app
-
-# Copy installed dependencies from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY --from=builder /app/package.json ./package.json
-
-# Copy root tsconfig files
+# Copy source
 COPY tsconfig.base.json tsconfig.node.json ./
-
-# Copy workspace packages
 COPY packages ./packages
 COPY services/worker ./services/worker
 
-# Default environment (will be overridden by compose)
+# Build shared packages and generate Prisma client (Prisma 7 uses prisma.config.ts)
+RUN pnpm --filter @kerniflow/contracts build \
+ && pnpm --filter @kerniflow/domain build \
+ && pnpm --filter @kerniflow/kernel build \
+ && pnpm --filter @kerniflow/email-templates build \
+ && pnpm --filter @kerniflow/data build
+
+# Generate Prisma client - use pnpm exec from workspace root to avoid symlink issues
+# Prisma 7 requires running from the package directory where prisma.config.ts exists
+RUN pnpm --filter @kerniflow/data exec prisma generate || \
+    (cd /app/packages/data && /app/node_modules/.pnpm/prisma@*/node_modules/prisma/build/index.js generate)
+
+# Default envs (overridden by compose)
 ENV NODE_ENV=development
 ENV DATABASE_URL=postgresql://kerniflow:kerniflow@postgres:5432/kerniflow?schema=public
 ENV REDIS_URL=redis://redis:6379
 ENV LOG_LEVEL=debug
 
-# Run Worker in watch mode for development
 CMD ["pnpm", "--filter", "@kerniflow/worker", "dev"]
