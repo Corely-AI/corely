@@ -1,0 +1,30 @@
+model PrivacyRequest {
+  id                   String          @id @default(cuid())
+  tenantId             String
+  subjectUserId        String
+  requestedByUserId    String
+  type                 PrivacyRequestType
+  status               PrivacyRequestStatus
+  resultDocumentId     String?
+  resultReportDocumentId String?
+  errorMessage         String?
+  completedAt          DateTime?       @db.Timestamptz(6)
+  createdAt            DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime        @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId, subjectUserId, createdAt])
+  @@index([tenantId, status, createdAt])
+}
+
+enum PrivacyRequestType {
+  EXPORT
+  ERASE
+}
+
+enum PrivacyRequestStatus {
+  PENDING
+  PROCESSING
+  READY
+  COMPLETED
+  FAILED
+}
