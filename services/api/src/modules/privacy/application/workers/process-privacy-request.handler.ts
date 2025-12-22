@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrivacyRequestRepoPort } from "../ports/privacy-request-repo.port";
-import { ClockPort } from "../../../shared/ports/clock.port";
+import { ClockPort } from "@shared/ports/clock.port";
 import { DocumentsPort } from "../ports/documents.port";
 import { PersonalDataCollectorPort, PersonalDataItem } from "../ports/personal-data-collector.port";
 import { PersonalDataEraserPort, ErasureResult } from "../ports/personal-data-eraser.port";

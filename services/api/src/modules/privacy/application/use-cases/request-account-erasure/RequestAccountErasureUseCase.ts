@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { PrivacyRequestRepoPort } from "../../ports/privacy-request-repo.port";
-import { OutboxPort } from "../../../shared/ports/outbox.port";
-import { IdGeneratorPort } from "../../../shared/ports/id-generator.port";
-import { ClockPort } from "../../../shared/ports/clock.port";
+import { OutboxPort } from "@shared/ports/outbox.port";
+import { IdGeneratorPort } from "@shared/ports/id-generator.port";
+import { ClockPort } from "@shared/ports/clock.port";
 import { PrivacyRequest } from "../../../domain/privacy-request.entity";
 import { IdentityPort } from "../../ports/identity-port";
 

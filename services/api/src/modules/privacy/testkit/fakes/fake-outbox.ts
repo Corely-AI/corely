@@ -1,4 +1,4 @@
-import { OutboxPort } from "../../../shared/ports/outbox.port";
+import { OutboxPort } from "@shared/ports/outbox.port";
 
 export class FakeOutbox implements OutboxPort {
   events: any[] = [];
