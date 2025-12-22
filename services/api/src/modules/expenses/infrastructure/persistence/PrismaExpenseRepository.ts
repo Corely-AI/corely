@@ -10,12 +10,11 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       data: {
         id: expense.id,
         tenantId: expense.tenantId,
-        merchant: expense.merchant,
-        totalCents: expense.totalCents,
+        merchantName: expense.merchant,
+        expenseDate: expense.issuedAt,
+        totalAmountCents: expense.totalCents,
         currency: expense.currency,
         category: expense.category,
-        issuedAt: expense.issuedAt,
-        createdByUserId: expense.createdByUserId,
         custom: expense.custom as any,
       },
     });
@@ -27,12 +26,12 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
     return new Expense(
       data.id,
       data.tenantId,
-      data.merchant,
-      data.totalCents,
+      (data as any).merchantName ?? "",
+      data.totalAmountCents,
       data.currency,
       data.category,
-      data.issuedAt,
-      data.createdByUserId,
+      data.expenseDate,
+      (data as any).createdByUserId ?? "",
       data.createdAt,
       data.custom as any
     );
