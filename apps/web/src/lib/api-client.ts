@@ -33,7 +33,7 @@ class ApiClient {
       url: `${API_URL}${endpoint}`,
       method: options.method ?? "GET",
       headers: options.headers,
-      body: options.body as any,
+      body: options.body as BodyInit | null | undefined,
       accessToken,
       workspaceId: workspaceId ?? null,
       idempotencyKey: opts?.idempotencyKey,
@@ -54,7 +54,7 @@ class ApiClient {
       endpoint,
       {
         method: "POST",
-        body,
+        body: body as BodyInit | null | undefined,
       },
       opts
     );
@@ -69,7 +69,7 @@ class ApiClient {
       endpoint,
       {
         method: "PUT",
-        body,
+        body: body as BodyInit | null | undefined,
       },
       opts
     );
@@ -84,7 +84,7 @@ class ApiClient {
       endpoint,
       {
         method: "PATCH",
-        body,
+        body: body as BodyInit | null | undefined,
       },
       opts
     );

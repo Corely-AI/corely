@@ -44,36 +44,43 @@ export class IdempotencyService {
           tenantId: params.tenantId,
           actionKey: params.actionKey,
           key: params.idempotencyKey,
+          // Additional fields are tolerated via cast until Prisma client is regenerated.
           userId: params.userId ?? null,
           requestHash: params.requestHash ?? null,
           status: "IN_PROGRESS",
           expiresAt,
-        },
+        } as any,
       });
       return { mode: "STARTED" };
     }
 
-    if (existing.requestHash && params.requestHash && existing.requestHash !== params.requestHash) {
+    const existingRecord = existing as any;
+
+    if (
+      existingRecord.requestHash &&
+      params.requestHash &&
+      existingRecord.requestHash !== params.requestHash
+    ) {
       return { mode: "MISMATCH" };
     }
 
-    if (existing.status === "COMPLETED") {
+    if (existingRecord.status === "COMPLETED") {
       return {
         mode: "REPLAY",
-        responseStatus: existing.responseStatus ?? existing.statusCode ?? 200,
-        responseBody: this.parseJson(existing.responseJson),
+        responseStatus: existingRecord.responseStatus ?? existingRecord.statusCode ?? 200,
+        responseBody: this.parseJson(existingRecord.responseJson),
       };
     }
 
-    if (existing.status === "FAILED") {
+    if (existingRecord.status === "FAILED") {
       return {
         mode: "FAILED",
-        responseStatus: existing.responseStatus ?? 500,
-        responseBody: this.parseJson(existing.responseJson),
+        responseStatus: existingRecord.responseStatus ?? 500,
+        responseBody: this.parseJson(existingRecord.responseJson),
       };
     }
 
-    const updatedAt = existing.updatedAt ?? existing.createdAt;
+    const updatedAt = existingRecord.updatedAt ?? existingRecord.createdAt;
     if (now.getTime() - updatedAt.getTime() > LOCK_TIMEOUT_MS) {
       await prisma.idempotencyKey.update({
         where: {
@@ -83,7 +90,11 @@ export class IdempotencyService {
             key: existing.key,
           },
         },
-        data: { status: "IN_PROGRESS", updatedAt: now, requestHash: params.requestHash ?? null },
+        data: {
+          status: "IN_PROGRESS",
+          updatedAt: now,
+          requestHash: params.requestHash ?? null,
+        } as any,
       });
       return { mode: "STARTED" };
     }
@@ -110,7 +121,7 @@ export class IdempotencyService {
         status: "COMPLETED",
         responseStatus: params.responseStatus,
         responseJson: JSON.stringify(params.responseBody ?? null),
-      },
+      } as any,
     });
   }
 
@@ -133,7 +144,7 @@ export class IdempotencyService {
         status: "FAILED",
         responseStatus: params.responseStatus ?? 500,
         responseJson: JSON.stringify(params.responseBody ?? null),
-      },
+      } as any,
     });
   }
 

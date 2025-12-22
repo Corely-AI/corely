@@ -3,6 +3,7 @@
     "target": "ES2020",
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["./src/types/custom-modules"],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -21,10 +22,12 @@
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
 
-    "baseUrl": ".",
+    "baseUrl": "..",
     "paths": {
-      "@/*": ["./src/*"],
-      "@kerniflow/api-client": ["../packages/api-client/src"]
+      "@/*": ["web/src/*"],
+      "@kerniflow/api-client": ["packages/api-client/src/index.ts"],
+      "@kerniflow/offline-core": ["packages/offline-core/src/index.ts"],
+      "@kerniflow/offline-web": ["packages/offline-web/src/index.ts"]
     }
   },
   "include": ["src"]

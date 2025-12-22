@@ -4,8 +4,12 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2022"],
-    "types": []
+    "lib": ["ES2022", "DOM"],
+    "types": [],
+    "baseUrl": ".",
+    "paths": {
+      "@kerniflow/offline-core": ["../offline-core/src"]
+    }
   },
   "include": ["src"]
 }

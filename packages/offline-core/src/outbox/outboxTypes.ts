@@ -8,9 +8,12 @@ export interface OutboxCommand<TPayload = unknown> {
   createdAt: Date;
   status: OutboxCommandStatus;
   attempts: number;
-  nextAttemptAt?: Date;
+  nextAttemptAt?: Date | null;
   idempotencyKey: string;
   clientTraceId?: string;
+  meta?: unknown;
+  error?: OutboxError;
+  conflict?: unknown;
 }
 
 export interface OutboxError {

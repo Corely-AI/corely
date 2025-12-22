@@ -30,38 +30,40 @@ export class InMemoryOutboxStore implements OutboxStore {
   async markSucceeded(commandId: string, meta?: unknown): Promise<void> {
     const command = this.commands.get(commandId);
     if (command) {
-      const updated: Record<string, unknown> = {
+      const updated: OutboxCommand = {
         ...command,
         status: "SUCCEEDED",
-        nextAttemptAt: undefined,
+        nextAttemptAt: null,
       };
       if (meta) {
         updated.meta = meta;
       }
-      this.commands.set(commandId, updated as OutboxCommand);
+      this.commands.set(commandId, updated);
     }
   }
 
   async markFailed(commandId: string, error: OutboxError): Promise<void> {
     const command = this.commands.get(commandId);
     if (command) {
-      const updated: Record<string, unknown> = {
+      const updated: OutboxCommand = {
         ...command,
         status: "FAILED",
-        nextAttemptAt: undefined,
+        nextAttemptAt: null,
         error,
       };
-      this.commands.set(commandId, updated as OutboxCommand);
+      this.commands.set(commandId, updated);
     }
   }
 
   async markConflict(commandId: string, info?: unknown): Promise<void> {
     const command = this.commands.get(commandId);
     if (command) {
-      const updated = { ...command, status: "CONFLICT", nextAttemptAt: undefined };
-      if (info) {
-        (updated as unknown as Record<string, unknown>).conflict = info;
-      }
+      const updated: OutboxCommand = {
+        ...command,
+        status: "CONFLICT",
+        nextAttemptAt: null,
+        conflict: info,
+      };
       this.commands.set(commandId, updated);
     }
   }

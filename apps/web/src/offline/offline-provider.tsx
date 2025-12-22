@@ -48,8 +48,8 @@ export const OfflineProvider: React.FC<OfflineProviderProps> = ({ queryClient, c
   const { user } = useAuth();
   const { activeWorkspaceId } = useWorkspace();
   const persisterKey = useMemo(
-    () => `kerniflow-cache:${user?.id ?? "anon"}:${activeWorkspaceId ?? "workspace"}`,
-    [user?.id, activeWorkspaceId]
+    () => `kerniflow-cache:${user?.userId ?? "anon"}:${activeWorkspaceId ?? "workspace"}`,
+    [user?.userId, activeWorkspaceId]
   );
 
   const syncEngineRef = useRef<SyncEngine | null>(null);

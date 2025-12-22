@@ -2,21 +2,21 @@ import { z } from "zod";
 import { CommandDefinition } from "./command";
 
 export class CommandRegistry {
-  private readonly definitions = new Map<string, CommandDefinition>();
+  private readonly definitions = new Map<string, CommandDefinition<unknown>>();
 
   register<TPayload>(definition: CommandDefinition<TPayload>): void {
     if (this.definitions.has(definition.type)) {
       throw new Error(`Command type already registered: ${definition.type}`);
     }
-    this.definitions.set(definition.type, definition);
+    this.definitions.set(definition.type, definition as CommandDefinition<unknown>);
   }
 
-  get(type: string): CommandDefinition | undefined {
+  get(type: string): CommandDefinition<unknown> | undefined {
     return this.definitions.get(type);
   }
 
   validate<TPayload>(type: string, payload: unknown): TPayload {
-    const definition = this.definitions.get(type);
+    const definition = this.definitions.get(type) as CommandDefinition<TPayload> | undefined;
     if (!definition) {
       throw new Error(`Unknown command type: ${type}`);
     }
@@ -24,7 +24,7 @@ export class CommandRegistry {
     return definition.normalize ? definition.normalize(parsed) : parsed;
   }
 
-  list(): CommandDefinition[] {
+  list(): CommandDefinition<unknown>[] {
     return Array.from(this.definitions.values());
   }
 }

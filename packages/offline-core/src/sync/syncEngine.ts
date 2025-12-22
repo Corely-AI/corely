@@ -45,8 +45,8 @@ export class SyncEngine {
   private readonly flushIntervalMs: number;
   private readonly trackedWorkspaces = new Set<string>();
   private readonly subscribers = new Set<SyncEventSubscriber>();
-  private intervalHandle?: ReturnType<typeof setInterval>;
-  private networkUnsubscribe?: () => void;
+  private intervalHandle: ReturnType<typeof setInterval> | null = null;
+  private networkUnsubscribe: (() => void) | null = null;
   private running = false;
 
   constructor(deps: SyncEngineDeps, options: SyncEngineOptions = {}) {
@@ -106,13 +106,13 @@ export class SyncEngine {
 
   stop(): void {
     this.running = false;
-    if (this.intervalHandle) {
+    if (this.intervalHandle !== null) {
       clearInterval(this.intervalHandle);
-      this.intervalHandle = undefined;
+      this.intervalHandle = null;
     }
     if (this.networkUnsubscribe) {
       this.networkUnsubscribe();
-      this.networkUnsubscribe = undefined;
+      this.networkUnsubscribe = null;
     }
   }
 

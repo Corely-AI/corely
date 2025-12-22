@@ -29,15 +29,15 @@ export class IndexedDbOutboxStore implements OutboxStore {
   }
 
   async markInFlight(commandId: string): Promise<void> {
-    await this.updateCommand(commandId, (cmd) => ({ ...cmd, status: "IN_FLIGHT" }));
+    await this.updateCommand(commandId, (cmd) => ({ ...cmd, status: "IN_FLIGHT" as const }));
   }
 
   async markSucceeded(commandId: string, meta?: unknown): Promise<void> {
     await this.updateCommand(commandId, (cmd) => {
-      const updated = {
+      const updated: SerializedCommand = {
         ...cmd,
         status: "SUCCEEDED",
-        nextAttemptAt: undefined as string | undefined,
+        nextAttemptAt: null,
       };
       if (meta) {
         (updated as Record<string, unknown>).meta = meta;
@@ -50,7 +50,7 @@ export class IndexedDbOutboxStore implements OutboxStore {
     await this.updateCommand(commandId, (cmd) => ({
       ...cmd,
       status: "FAILED",
-      nextAttemptAt: undefined,
+      nextAttemptAt: null,
       error,
     }));
   }
@@ -59,7 +59,7 @@ export class IndexedDbOutboxStore implements OutboxStore {
     await this.updateCommand(commandId, (cmd) => ({
       ...cmd,
       status: "CONFLICT",
-      nextAttemptAt: undefined,
+      nextAttemptAt: null,
       conflict: info,
     }));
   }
