@@ -1,13 +1,17 @@
+import { Injectable } from "@nestjs/common";
 import type { CustomEntityType } from "@kerniflow/contracts";
 import type { CustomFieldDefinition, CustomFieldDefinitionPort } from "@kerniflow/domain";
-import { prisma } from "../prisma.client";
+import { PrismaService } from "../prisma/prisma.service";
 
+@Injectable()
 export class CustomFieldDefinitionRepository implements CustomFieldDefinitionPort {
+  constructor(private readonly prisma: PrismaService) {}
+
   async listActiveByEntityType(
     tenantId: string,
     entityType: CustomEntityType
   ): Promise<CustomFieldDefinition[]> {
-    const defs = await prisma.customFieldDefinition.findMany({
+    const defs = await this.prisma.customFieldDefinition.findMany({
       where: { tenantId, entityType, isActive: true },
       orderBy: { createdAt: "asc" },
     });
@@ -15,14 +19,14 @@ export class CustomFieldDefinitionRepository implements CustomFieldDefinitionPor
   }
 
   async getById(tenantId: string, id: string): Promise<CustomFieldDefinition | null> {
-    const def = await prisma.customFieldDefinition.findFirst({
+    const def = await this.prisma.customFieldDefinition.findFirst({
       where: { id, tenantId },
     });
     return def ? toDomain(def) : null;
   }
 
   async upsert(definition: CustomFieldDefinition): Promise<CustomFieldDefinition> {
-    const saved = await prisma.customFieldDefinition.upsert({
+    const saved = await this.prisma.customFieldDefinition.upsert({
       where: { id: definition.id },
       create: toPrisma(definition),
       update: toPrisma(definition),
@@ -31,7 +35,7 @@ export class CustomFieldDefinitionRepository implements CustomFieldDefinitionPor
   }
 
   async softDelete(tenantId: string, id: string): Promise<void> {
-    await prisma.customFieldDefinition.updateMany({
+    await this.prisma.customFieldDefinition.updateMany({
       where: { tenantId, id },
       data: { isActive: false },
     });

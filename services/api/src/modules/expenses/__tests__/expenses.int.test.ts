@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   PostgresTestDb,
   createCustomerParty,
@@ -9,23 +9,38 @@ import {
 } from "@kerniflow/testkit";
 import { buildRequestContext } from "../../../shared/context/request-context";
 import { CreateExpenseUseCase } from "../application/use-cases/CreateExpenseUseCase";
-import { PrismaExpenseRepository } from "../infrastructure/persistence/PrismaExpenseRepository";
-import { PrismaOutboxAdapter } from "../../../shared/infrastructure/persistence/prisma-outbox.adapter";
-import { PrismaAuditAdapter } from "../../../shared/infrastructure/persistence/prisma-audit.adapter";
-import { PrismaIdempotencyAdapter } from "../../../shared/infrastructure/persistence/prisma-idempotency.adapter";
-import { SystemIdGenerator } from "../../../shared/infrastructure/system-id-generator";
-import { SystemClock } from "../../../shared/infrastructure/system-clock";
-import { CustomFieldDefinitionRepository, CustomFieldIndexRepository } from "@kerniflow/data";
 import type { PrismaClient } from "@prisma/client";
+
+vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
 describe("Expenses integration (Postgres)", () => {
   let db: PostgresTestDb;
   let prisma: PrismaClient;
   let useCase: CreateExpenseUseCase;
+  let ExpenseRepo: typeof import("../infrastructure/persistence/PrismaExpenseRepository").PrismaExpenseRepository;
 
   beforeAll(async () => {
     db = await createTestDb();
     prisma = db.client;
+    const [
+      { PrismaExpenseRepository },
+      { PrismaOutboxAdapter },
+      { PrismaAuditAdapter },
+      { PrismaIdempotencyAdapter },
+      { SystemIdGenerator },
+      { SystemClock },
+      { CustomFieldDefinitionRepository, CustomFieldIndexRepository },
+    ] = await Promise.all([
+      import("../infrastructure/persistence/PrismaExpenseRepository"),
+      import("../../../shared/infrastructure/persistence/prisma-outbox.adapter"),
+      import("../../../shared/infrastructure/persistence/prisma-audit.adapter"),
+      import("../../../shared/infrastructure/persistence/prisma-idempotency.adapter"),
+      import("../../../shared/infrastructure/system-id-generator"),
+      import("../../../shared/infrastructure/system-clock"),
+      import("@kerniflow/data"),
+    ]);
+
+    ExpenseRepo = PrismaExpenseRepository;
     useCase = new CreateExpenseUseCase(
       new PrismaExpenseRepository(),
       new PrismaOutboxAdapter(),
@@ -43,7 +58,9 @@ describe("Expenses integration (Postgres)", () => {
   });
 
   afterAll(async () => {
-    await db.down();
+    if (db) {
+      await db.down();
+    }
     await stopSharedContainer();
   });
 
@@ -66,7 +83,7 @@ describe("Expenses integration (Postgres)", () => {
       context: ctxA,
     });
 
-    const repo = new PrismaExpenseRepository();
+    const repo = new ExpenseRepo();
     const crossTenantResult = await repo.findById(tenantB.id, expense.id);
     expect(crossTenantResult).toBeNull();
 

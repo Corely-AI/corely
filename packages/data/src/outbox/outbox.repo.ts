@@ -1,5 +1,5 @@
-import { prisma } from '../prisma.client';
-import { Prisma } from '@prisma/client';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
 export interface OutboxEventData {
   eventType: string;
@@ -8,42 +8,37 @@ export interface OutboxEventData {
   availableAt?: Date;
 }
 
+/**
+ * OutboxRepository for worker polling use cases.
+ * This is separate from OutboxPort which is used by application layer.
+ */
+@Injectable()
 export class OutboxRepository {
-  async enqueue(data: OutboxEventData, tx?: Prisma.TransactionClient) {
-    const client = tx || prisma;
-    return client.outboxEvent.create({
-      data: {
-        tenantId: data.tenantId,
-        eventType: data.eventType,
-        payloadJson: data.payloadJson,
-        availableAt: data.availableAt || new Date(),
-      },
-    });
-  }
+  constructor(private readonly prisma: PrismaService) {}
 
   async fetchPending(limit: number = 10) {
-    return prisma.outboxEvent.findMany({
+    return this.prisma.outboxEvent.findMany({
       where: {
-        status: 'PENDING',
+        status: "PENDING",
         availableAt: { lte: new Date() },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
       take: limit,
     });
   }
 
   async markSent(id: string) {
-    return prisma.outboxEvent.update({
+    return this.prisma.outboxEvent.update({
       where: { id },
-      data: { status: 'SENT' },
+      data: { status: "SENT" },
     });
   }
 
   async markFailed(id: string, error: string) {
-    return prisma.outboxEvent.update({
+    return this.prisma.outboxEvent.update({
       where: { id },
       data: {
-        status: 'FAILED',
+        status: "FAILED",
         attempts: { increment: 1 },
       },
     });

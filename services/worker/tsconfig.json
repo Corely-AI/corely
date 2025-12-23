@@ -3,7 +3,11 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "nodenext",
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "@kerniflow/testkit": ["../../packages/testkit/src/index.ts"],
+      "@kerniflow/testkit/*": ["../../packages/testkit/src/*"]
+    }
   },
   "include": ["src"]
 }

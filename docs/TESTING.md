@@ -11,7 +11,7 @@
 ## Commands
 
 - `pnpm test:unit` — unit only (DB/HTTP/adapters excluded)
-- `pnpm test:int` — DB integrations + outbox
+- `pnpm test:int` — DB integrations + outbox (explicit key suites listed in script)
 - `pnpm test:api` — HTTP-level tests
 - `pnpm test:contract` — contract validations
 - `pnpm test:adapters` — provider/adapters with mocked HTTP

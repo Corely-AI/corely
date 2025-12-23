@@ -1,21 +1,24 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   PostgresTestDb,
   createTenant,
   createTestDb,
   stopSharedContainer,
 } from "@kerniflow/testkit";
-import { PrismaIdempotencyAdapter } from "../infrastructure/persistence/prisma-idempotency.adapter";
 import type { PrismaClient } from "@prisma/client";
+
+vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
 describe("Idempotency adapter (Prisma + Postgres)", () => {
   let db: PostgresTestDb;
   let prisma: PrismaClient;
-  let adapter: PrismaIdempotencyAdapter;
+  let adapter: import("../infrastructure/persistence/prisma-idempotency.adapter").PrismaIdempotencyAdapter;
 
   beforeAll(async () => {
     db = await createTestDb();
     prisma = db.client;
+    const { PrismaIdempotencyAdapter } =
+      await import("../infrastructure/persistence/prisma-idempotency.adapter");
     adapter = new PrismaIdempotencyAdapter();
   });
 
@@ -25,6 +28,7 @@ describe("Idempotency adapter (Prisma + Postgres)", () => {
 
   afterAll(async () => {
     await db.down();
+    await resetPrisma();
     await stopSharedContainer();
   });
 

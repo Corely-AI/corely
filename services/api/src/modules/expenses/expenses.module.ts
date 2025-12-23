@@ -1,38 +1,40 @@
 import { Module } from "@nestjs/common";
+import { DataModule } from "@kerniflow/data";
+import { OUTBOX_PORT, AUDIT_PORT } from "@kerniflow/kernel";
 import { ExpensesController } from "./adapters/http/expenses.controller";
 import { CreateExpenseUseCase } from "./application/use-cases/CreateExpenseUseCase";
 import { ArchiveExpenseUseCase } from "./application/use-cases/ArchiveExpenseUseCase";
 import { UnarchiveExpenseUseCase } from "./application/use-cases/UnarchiveExpenseUseCase";
 import { PrismaExpenseRepository } from "./infrastructure/persistence/PrismaExpenseRepository";
-import { OutboxPort, OUTBOX_PORT_TOKEN } from "../../shared/ports/outbox.port";
-import { AuditPort, AUDIT_PORT_TOKEN } from "../../shared/ports/audit.port";
+import { EXPENSE_REPOSITORY } from "./application/ports/ExpenseRepositoryPort";
 import { IdempotencyPort, IDEMPOTENCY_PORT_TOKEN } from "../../shared/ports/idempotency.port";
 import { IdGeneratorPort, ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
 import { ClockPort, CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
-import { PrismaOutboxAdapter } from "../../shared/infrastructure/persistence/prisma-outbox.adapter";
-import { PrismaAuditAdapter } from "../../shared/infrastructure/persistence/prisma-audit.adapter";
 import { PrismaIdempotencyAdapter } from "../../shared/infrastructure/persistence/prisma-idempotency.adapter";
 import { SystemIdGenerator } from "../../shared/infrastructure/system-id-generator";
 import { SystemClock } from "../../shared/infrastructure/system-clock";
 import { CustomFieldDefinitionRepository, CustomFieldIndexRepository } from "@kerniflow/data";
 
 @Module({
+  imports: [DataModule],
   controllers: [ExpensesController],
   providers: [
+    // Repository
     PrismaExpenseRepository,
-    CustomFieldDefinitionRepository,
-    CustomFieldIndexRepository,
-    PrismaOutboxAdapter,
-    PrismaAuditAdapter,
+    { provide: EXPENSE_REPOSITORY, useExisting: PrismaExpenseRepository },
+
+    // Shared infrastructure (eventually move to DataModule)
     PrismaIdempotencyAdapter,
     SystemIdGenerator,
     SystemClock,
+
+    // Use Cases
     {
       provide: CreateExpenseUseCase,
       useFactory: (
         repo: PrismaExpenseRepository,
-        outbox: OutboxPort,
-        audit: AuditPort,
+        outbox,
+        audit,
         idempotency: IdempotencyPort,
         idGen: IdGeneratorPort,
         clock: ClockPort,
@@ -50,9 +52,9 @@ import { CustomFieldDefinitionRepository, CustomFieldIndexRepository } from "@ke
           customIndexes
         ),
       inject: [
-        PrismaExpenseRepository,
-        OUTBOX_PORT_TOKEN,
-        AUDIT_PORT_TOKEN,
+        EXPENSE_REPOSITORY,
+        OUTBOX_PORT,
+        AUDIT_PORT,
         IDEMPOTENCY_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
@@ -64,15 +66,15 @@ import { CustomFieldDefinitionRepository, CustomFieldIndexRepository } from "@ke
       provide: ArchiveExpenseUseCase,
       useFactory: (repo: PrismaExpenseRepository, clock: ClockPort) =>
         new ArchiveExpenseUseCase(repo, clock),
-      inject: [PrismaExpenseRepository, CLOCK_PORT_TOKEN],
+      inject: [EXPENSE_REPOSITORY, CLOCK_PORT_TOKEN],
     },
     {
       provide: UnarchiveExpenseUseCase,
       useFactory: (repo: PrismaExpenseRepository) => new UnarchiveExpenseUseCase(repo),
-      inject: [PrismaExpenseRepository],
+      inject: [EXPENSE_REPOSITORY],
     },
-    { provide: OUTBOX_PORT_TOKEN, useClass: PrismaOutboxAdapter },
-    { provide: AUDIT_PORT_TOKEN, useClass: PrismaAuditAdapter },
+
+    // Token bindings for shared ports
     { provide: IDEMPOTENCY_PORT_TOKEN, useClass: PrismaIdempotencyAdapter },
     { provide: ID_GENERATOR_TOKEN, useExisting: SystemIdGenerator },
     { provide: CLOCK_PORT_TOKEN, useExisting: SystemClock },

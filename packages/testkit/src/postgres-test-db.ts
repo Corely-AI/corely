@@ -2,7 +2,9 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { execa } from "execa";
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from "testcontainers";
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import { fileURLToPath } from "url";
+import path from "path";
 
 let sharedContainer: StartedPostgreSqlContainer | null = null;
 
@@ -49,18 +51,28 @@ export class PostgresTestDb {
    */
   async migrate(): Promise<void> {
     if (!this.connectionString) throw new Error("Test DB not started");
+    const schemaDir = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "..",
+      "data",
+      "prisma",
+      "schema"
+    );
+
     await execa(
       "pnpm",
-      [
-        "--filter",
-        "@kerniflow/data",
-        "exec",
-        "prisma",
-        "migrate",
-        "deploy",
-        "--schema",
-        "packages/data/prisma/schema/schema.prisma",
-      ],
+      ["--filter", "@kerniflow/data", "exec", "prisma", "migrate", "deploy", "--schema", schemaDir],
+      {
+        env: { ...process.env, DATABASE_URL: this.connectionString },
+        stdout: "inherit",
+        stderr: "inherit",
+      }
+    );
+
+    await execa(
+      "pnpm",
+      ["--filter", "@kerniflow/data", "exec", "prisma", "generate", "--schema", schemaDir],
       {
         env: { ...process.env, DATABASE_URL: this.connectionString },
         stdout: "inherit",

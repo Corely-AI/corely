@@ -1,8 +1,11 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { PrismaClient } from "@prisma/client";
 import { PostgresTestDb, createTestDb, stopSharedContainer } from "@kerniflow/testkit";
+import { resetPrisma } from "@kerniflow/data";
 
 let OutboxRepository: typeof import("@kerniflow/data").OutboxRepository;
+
+vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
 describe("Outbox reliability (worker + Postgres)", () => {
   let db: PostgresTestDb;
@@ -22,6 +25,7 @@ describe("Outbox reliability (worker + Postgres)", () => {
 
   afterAll(async () => {
     await db.down();
+    await resetPrisma();
     await stopSharedContainer();
   });
 

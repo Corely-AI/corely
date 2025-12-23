@@ -1,8 +1,9 @@
-import { prisma } from "@kerniflow/data";
+import { getPrisma } from "@kerniflow/data";
 import { AuditEntry, AuditPort } from "../../ports/audit.port";
 
 export class PrismaAuditAdapter implements AuditPort {
   async write(entry: AuditEntry): Promise<void> {
+    const prisma = getPrisma();
     await prisma.auditLog.create({
       data: {
         tenantId: entry.tenantId!,

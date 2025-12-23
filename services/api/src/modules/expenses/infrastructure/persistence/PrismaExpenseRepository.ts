@@ -1,12 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { prisma } from "@kerniflow/data";
+import { PrismaService, getPrismaClient } from "@kerniflow/data";
+import { TransactionContext } from "@kerniflow/kernel";
 import { Expense } from "../../domain/entities/Expense";
 import { ExpenseRepositoryPort } from "../../application/ports/ExpenseRepositoryPort";
 
 @Injectable()
 export class PrismaExpenseRepository implements ExpenseRepositoryPort {
-  async save(expense: Expense): Promise<void> {
-    await prisma.expense.create({
+  constructor(private readonly prisma: PrismaService) {}
+
+  async save(expense: Expense, tx?: TransactionContext): Promise<void> {
+    const client = getPrismaClient(this.prisma, tx);
+    await client.expense.create({
       data: {
         id: expense.id,
         tenantId: expense.tenantId,
@@ -22,18 +26,29 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
     });
   }
 
-  async findById(tenantId: string, id: string): Promise<Expense | null> {
-    const data = await prisma.expense.findFirst({ where: { id, tenantId, archivedAt: null } });
+  async findById(tenantId: string, id: string, tx?: TransactionContext): Promise<Expense | null> {
+    const client = getPrismaClient(this.prisma, tx);
+    const data = await client.expense.findFirst({ where: { id, tenantId, archivedAt: null } });
     return data ? this.mapExpense(data) : null;
   }
 
-  async findByIdIncludingArchived(tenantId: string, id: string): Promise<Expense | null> {
-    const data = await prisma.expense.findFirst({ where: { id, tenantId } });
+  async findByIdIncludingArchived(
+    tenantId: string,
+    id: string,
+    tx?: TransactionContext
+  ): Promise<Expense | null> {
+    const client = getPrismaClient(this.prisma, tx);
+    const data = await client.expense.findFirst({ where: { id, tenantId } });
     return data ? this.mapExpense(data) : null;
   }
 
-  async list(tenantId: string, params?: { includeArchived?: boolean }): Promise<Expense[]> {
-    const data = await prisma.expense.findMany({
+  async list(
+    tenantId: string,
+    params?: { includeArchived?: boolean },
+    tx?: TransactionContext
+  ): Promise<Expense[]> {
+    const client = getPrismaClient(this.prisma, tx);
+    const data = await client.expense.findMany({
       where: { tenantId, archivedAt: params?.includeArchived ? undefined : null },
       orderBy: { expenseDate: "desc" },
     });

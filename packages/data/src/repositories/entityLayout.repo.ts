@@ -1,10 +1,14 @@
+import { Injectable } from "@nestjs/common";
 import type { CustomEntityType } from "@kerniflow/contracts";
 import type { EntityLayout, EntityLayoutPort } from "@kerniflow/domain";
-import { prisma } from "../prisma.client";
+import { PrismaService } from "../prisma/prisma.service";
 
+@Injectable()
 export class EntityLayoutRepository implements EntityLayoutPort {
+  constructor(private readonly prisma: PrismaService) {}
+
   async get(tenantId: string, entityType: CustomEntityType): Promise<EntityLayout | null> {
-    const layout = await prisma.entityLayout.findUnique({
+    const layout = await this.prisma.entityLayout.findUnique({
       where: {
         tenantId_entityType: { tenantId, entityType },
       },
@@ -13,7 +17,7 @@ export class EntityLayoutRepository implements EntityLayoutPort {
   }
 
   async upsert(layout: EntityLayout): Promise<EntityLayout> {
-    const saved = await prisma.entityLayout.upsert({
+    const saved = await this.prisma.entityLayout.upsert({
       where: {
         tenantId_entityType: { tenantId: layout.tenantId, entityType: layout.entityType },
       },

@@ -1,4 +1,4 @@
-import { prisma } from "@kerniflow/data";
+import { getPrisma } from "@kerniflow/data";
 import { IdempotencyPort, StoredResponse } from "../../ports/idempotency.port";
 
 export class PrismaIdempotencyAdapter implements IdempotencyPort {
@@ -9,6 +9,7 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
   ): Promise<StoredResponse | null> {
     // When tenantId is null, we can't use findUnique with the compound key
     // so we use findFirst instead
+    const prisma = getPrisma();
     const existing = tenantId
       ? await prisma.idempotencyKey.findUnique({
           where: {
@@ -43,6 +44,7 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
     // When tenantId is null, we can't use upsert with the compound key
     // so we need to handle it differently
     if (tenantId) {
+      const prisma = getPrisma();
       await prisma.idempotencyKey.upsert({
         where: {
           tenantId_actionKey_key: {
@@ -65,6 +67,7 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
       });
     } else {
       // For null tenantId, check if it exists first, then create or update
+      const prisma = getPrisma();
       const existing = await prisma.idempotencyKey.findFirst({
         where: {
           tenantId: null,

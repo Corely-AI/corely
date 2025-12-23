@@ -1,17 +1,21 @@
+import { Injectable } from "@nestjs/common";
 import type { CustomEntityType } from "@kerniflow/contracts";
 import type { CustomFieldIndexPort, CustomFieldIndexRow } from "@kerniflow/domain";
-import { prisma } from "../prisma.client";
+import { PrismaService } from "../prisma/prisma.service";
 
+@Injectable()
 export class CustomFieldIndexRepository implements CustomFieldIndexPort {
+  constructor(private readonly prisma: PrismaService) {}
+
   async upsertIndexesForEntity(
     tenantId: string,
     entityType: CustomEntityType,
     entityId: string,
     rows: CustomFieldIndexRow[]
   ): Promise<void> {
-    await prisma.$transaction([
-      prisma.customFieldIndex.deleteMany({ where: { tenantId, entityType, entityId } }),
-      prisma.customFieldIndex.createMany({
+    await this.prisma.$transaction([
+      this.prisma.customFieldIndex.deleteMany({ where: { tenantId, entityType, entityId } }),
+      this.prisma.customFieldIndex.createMany({
         data: rows.map((row) => ({
           tenantId: row.tenantId,
           entityType: row.entityType,
@@ -34,6 +38,6 @@ export class CustomFieldIndexRepository implements CustomFieldIndexPort {
     entityType: CustomEntityType,
     entityId: string
   ): Promise<void> {
-    await prisma.customFieldIndex.deleteMany({ where: { tenantId, entityType, entityId } });
+    await this.prisma.customFieldIndex.deleteMany({ where: { tenantId, entityType, entityId } });
   }
 }

@@ -1,4 +1,4 @@
-import { prisma } from "@kerniflow/data";
+import { getPrisma } from "@kerniflow/data";
 import { OutboxPort } from "../../ports/outbox.port";
 
 export class PrismaOutboxAdapter implements OutboxPort {
@@ -8,6 +8,7 @@ export class PrismaOutboxAdapter implements OutboxPort {
     tenantId: string;
     correlationId?: string;
   }): Promise<void> {
+    const prisma = getPrisma();
     await prisma.outboxEvent.create({
       data: {
         tenantId: event.tenantId,
