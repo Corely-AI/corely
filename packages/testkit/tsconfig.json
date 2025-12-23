@@ -1,7 +1,6 @@
 {
   "extends": "@kerniflow/tsconfig/node.json",
   "compilerOptions": {
-    "verbatimModuleSyntax": true,
     "paths": {
       "@kerniflow/testkit": ["./src/index.ts"],
       "@kerniflow/testkit/*": ["./src/*"]

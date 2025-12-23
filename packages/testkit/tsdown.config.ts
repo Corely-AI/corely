@@ -2,8 +2,11 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig({
   entry: ["./src/index.ts"],
-  cleanDist: true,
+  clean: true,
   format: ["cjs", "esm"],
   dts: true,
-  splitting: true,
+  external: [
+    // Don't bundle the API service - it will be imported at runtime
+    /^\.\.\/\.\.\/\.\.\/services\//,
+  ],
 });

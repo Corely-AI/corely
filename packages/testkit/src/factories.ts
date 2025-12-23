@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { nanoid } from "nanoid";
 
 export async function createTenant(
@@ -94,7 +95,7 @@ export async function createExpense(
       updatedAt: new Date(),
       archivedAt: null,
       archivedByUserId: null,
-      custom: null,
+      custom: Prisma.JsonNull,
     },
   });
 }

@@ -1,7 +1,7 @@
-import { INestApplication } from "@nestjs/common";
+import type { INestApplication } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
-import { AppModule } from "../../services/api/src/app.module";
-import { PostgresTestDb } from "./postgres-test-db";
+import { AppModule } from "../../../services/api/src/app.module";
+import type { PostgresTestDb } from "./postgres-test-db";
 
 /**
  * Bootstraps the Nest API against a disposable Postgres database.

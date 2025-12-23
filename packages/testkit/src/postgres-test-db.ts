@@ -1,7 +1,7 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
 import { execa } from "execa";
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import type { StartedPostgreSqlContainer } from "@testcontainers/postgresql";
+import { PostgreSqlContainer } from "@testcontainers/postgresql";
+
 import { fileURLToPath } from "url";
 import path from "path";
 import { PrismaService } from "@kerniflow/data";
@@ -35,12 +35,16 @@ export class PostgresTestDb {
   }
 
   get url(): string {
-    if (!this.connectionString) throw new Error("Test DB not started");
+    if (!this.connectionString) {
+      throw new Error("Test DB not started");
+    }
     return this.connectionString;
   }
 
   get client(): PrismaService {
-    if (!this.prisma) throw new Error("Test DB not started");
+    if (!this.prisma) {
+      throw new Error("Test DB not started");
+    }
     return this.prisma;
   }
 
@@ -49,7 +53,9 @@ export class PostgresTestDb {
    * This uses the @kerniflow/data Prisma schema to keep DB shape accurate.
    */
   async migrate(): Promise<void> {
-    if (!this.connectionString) throw new Error("Test DB not started");
+    if (!this.connectionString) {
+      throw new Error("Test DB not started");
+    }
     const schemaDir = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
       "..",
@@ -90,7 +96,9 @@ export class PostgresTestDb {
     >`SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT IN ('_prisma_migrations');`;
 
     const tableNames = tables.map((t) => `"${t.tablename}"`);
-    if (!tableNames.length) return;
+    if (!tableNames.length) {
+      return;
+    }
 
     await prisma.$executeRawUnsafe(
       `TRUNCATE TABLE ${tableNames.join(", ")} RESTART IDENTITY CASCADE;`
