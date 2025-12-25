@@ -2,7 +2,7 @@
  * Audit Port (Interface)
  * Abstracts audit logging
  */
-export interface IAuditPort {
+export interface AuditPort {
   /**
    * Write an audit log
    */

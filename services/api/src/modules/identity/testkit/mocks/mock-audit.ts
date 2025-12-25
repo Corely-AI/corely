@@ -1,9 +1,9 @@
-import { IAuditPort } from "../../application/ports/audit.port";
+import { type AuditPort } from "../../application/ports/audit.port";
 
-export class MockAudit implements IAuditPort {
-  entries: Array<Parameters<IAuditPort["write"]>[0]> = [];
+export class MockAudit implements AuditPort {
+  entries: Array<Parameters<AuditPort["write"]>[0]> = [];
 
-  async write(data: Parameters<IAuditPort["write"]>[0]): Promise<void> {
+  async write(data: Parameters<AuditPort["write"]>[0]): Promise<void> {
     this.entries.push(data);
   }
 }

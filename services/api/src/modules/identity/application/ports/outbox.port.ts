@@ -2,7 +2,7 @@
  * Outbox Port (Interface)
  * Abstracts event publishing via Outbox pattern
  */
-export interface IOutboxPort {
+export interface OutboxPort {
   /**
    * Enqueue an event for publishing
    */

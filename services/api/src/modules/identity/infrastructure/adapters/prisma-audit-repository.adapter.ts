@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
-import { IAuditPort } from "../../application/ports/audit.port";
+import { AuditPort } from "../../application/ports/audit.port";
 
 /**
  * Prisma Audit Repository Implementation
  */
 @Injectable()
-export class PrismaAuditRepository implements IAuditPort {
+export class PrismaAuditRepository implements AuditPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async write(data: {

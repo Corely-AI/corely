@@ -1,7 +1,7 @@
-import { type IMembershipRepository } from "../../application/ports/membership-repository.port";
+import { type MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
 import { type Membership } from "../../domain/entities/membership.entity";
 
-export class FakeMembershipRepository implements IMembershipRepository {
+export class FakeMembershipRepository implements MembershipRepositoryPort {
   memberships: Membership[] = [];
 
   async create(membership: Membership): Promise<Membership> {

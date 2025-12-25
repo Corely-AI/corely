@@ -1,7 +1,7 @@
-import { type IUserRepository } from "../../application/ports/user-repository.port";
+import { type UserRepositoryPort } from "../../application/ports/user-repository.port";
 import { type User } from "../../domain/entities/user.entity";
 
-export class FakeUserRepository implements IUserRepository {
+export class FakeUserRepository implements UserRepositoryPort {
   users: User[] = [];
 
   async create(user: User): Promise<User> {

@@ -2,7 +2,7 @@
  * Password Hasher Port (Interface)
  * Abstracts password hashing/verification logic
  */
-export interface IPasswordHasher {
+export interface PasswordHasherPort {
   /**
    * Hash a plain text password
    */

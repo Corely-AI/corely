@@ -2,7 +2,7 @@
  * Token Service Port (Interface)
  * Abstracts JWT token generation and verification
  */
-export interface ITokenService {
+export interface TokenServicePort {
   /**
    * Generate access token (short-lived)
    */

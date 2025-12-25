@@ -1,6 +1,6 @@
-import { type IRoleRepository } from "../../application/ports/role-repository.port";
+import { type RoleRepositoryPort } from "../../application/ports/role-repository.port";
 
-export class FakeRoleRepository implements IRoleRepository {
+export class FakeRoleRepository implements RoleRepositoryPort {
   roles: Array<{ id: string; tenantId: string; name: string; systemKey: string | null }> = [];
 
   async create(data: {
@@ -33,7 +33,9 @@ export class FakeRoleRepository implements IRoleRepository {
 
   async getPermissions(roleId: string): Promise<string[]> {
     const role = this.roles.find((r) => r.id === roleId);
-    if (!role) {return [];}
+    if (!role) {
+      return [];
+    }
     return role.systemKey === "OWNER" ? ["*"] : [];
   }
 }

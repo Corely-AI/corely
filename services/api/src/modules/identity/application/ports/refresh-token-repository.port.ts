@@ -1,7 +1,7 @@
 /**
  * Refresh Token Repository Port
  */
-export interface IRefreshTokenRepository {
+export interface RefreshTokenRepositoryPort {
   /**
    * Create a refresh token
    */

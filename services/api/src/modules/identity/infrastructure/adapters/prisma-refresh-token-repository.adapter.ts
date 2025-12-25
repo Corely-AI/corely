@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
-import { IRefreshTokenRepository } from "../../application/ports/refresh-token-repository.port";
+import { RefreshTokenRepositoryPort } from "../../application/ports/refresh-token-repository.port";
 
 /**
  * Prisma Refresh Token Repository Implementation
  */
 @Injectable()
-export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
+export class PrismaRefreshTokenRepository implements RefreshTokenRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: {

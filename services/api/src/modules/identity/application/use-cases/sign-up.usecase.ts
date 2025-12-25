@@ -10,20 +10,23 @@ import {
   TenantCreatedEvent,
   MembershipCreatedEvent,
 } from "../../domain/events/identity.events";
-import { type IUserRepository, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
-import { type ITenantRepository, TENANT_REPOSITORY_TOKEN } from "../ports/tenant-repository.port";
+import { type UserRepositoryPort, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
 import {
-  type IMembershipRepository,
+  type TenantRepositoryPort,
+  TENANT_REPOSITORY_TOKEN,
+} from "../ports/tenant-repository.port";
+import {
+  type MembershipRepositoryPort,
   MEMBERSHIP_REPOSITORY_TOKEN,
 } from "../ports/membership-repository.port";
-import { type IPasswordHasher, PASSWORD_HASHER_TOKEN } from "../ports/password-hasher.port";
-import { type ITokenService, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
-import { type IOutboxPort, OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
-import { type IAuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
-import { type IRoleRepository, ROLE_REPOSITORY_TOKEN } from "../ports/role-repository.port";
+import { type PasswordHasherPort, PASSWORD_HASHER_TOKEN } from "../ports/password-hasher.port";
+import { type TokenServicePort, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
+import { type OutboxPort, OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
+import { type AuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
+import { type RoleRepositoryPort, ROLE_REPOSITORY_TOKEN } from "../ports/role-repository.port";
 import { type ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import {
-  type IRefreshTokenRepository,
+  type RefreshTokenRepositoryPort,
   REFRESH_TOKEN_REPOSITORY_TOKEN,
 } from "../ports/refresh-token-repository.port";
 import {
@@ -61,16 +64,16 @@ const SIGN_UP_ACTION = "identity.sign_up";
 @Injectable()
 export class SignUpUseCase {
   constructor(
-    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
-    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: ITenantRepository,
-    @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: IMembershipRepository,
-    @Inject(ROLE_REPOSITORY_TOKEN) private readonly roleRepo: IRoleRepository,
-    @Inject(PASSWORD_HASHER_TOKEN) private readonly passwordHasher: IPasswordHasher,
-    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
+    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort,
+    @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: MembershipRepositoryPort,
+    @Inject(ROLE_REPOSITORY_TOKEN) private readonly roleRepo: RoleRepositoryPort,
+    @Inject(PASSWORD_HASHER_TOKEN) private readonly passwordHasher: PasswordHasherPort,
+    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort,
     @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
-    private readonly refreshTokenRepo: IRefreshTokenRepository,
-    @Inject(OUTBOX_PORT_TOKEN) private readonly outbox: IOutboxPort,
-    @Inject(AUDIT_PORT_TOKEN) private readonly audit: IAuditPort,
+    private readonly refreshTokenRepo: RefreshTokenRepositoryPort,
+    @Inject(OUTBOX_PORT_TOKEN) private readonly outbox: OutboxPort,
+    @Inject(AUDIT_PORT_TOKEN) private readonly audit: AuditPort,
     @Inject(IDEMPOTENCY_STORAGE_PORT_TOKEN) private readonly idempotency: IdempotencyStoragePort,
     @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort

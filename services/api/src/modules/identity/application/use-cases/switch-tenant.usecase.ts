@@ -1,15 +1,15 @@
 import { Injectable, Inject } from "@nestjs/common";
-import type { IMembershipRepository } from "../ports/membership-repository.port";
+import type { MembershipRepositoryPort } from "../ports/membership-repository.port";
 import { MEMBERSHIP_REPOSITORY_TOKEN } from "../ports/membership-repository.port";
-import type { ITokenService } from "../ports/token-service.port";
+import type { TokenServicePort } from "../ports/token-service.port";
 import { TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
-import type { IUserRepository } from "../ports/user-repository.port";
+import type { UserRepositoryPort } from "../ports/user-repository.port";
 import { USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
-import type { IRefreshTokenRepository } from "../ports/refresh-token-repository.port";
+import type { RefreshTokenRepositoryPort } from "../ports/refresh-token-repository.port";
 import { REFRESH_TOKEN_REPOSITORY_TOKEN } from "../ports/refresh-token-repository.port";
-import type { IOutboxPort } from "../ports/outbox.port";
+import type { OutboxPort } from "../ports/outbox.port";
 import { OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
-import type { IAuditPort } from "../ports/audit.port";
+import type { AuditPort } from "../ports/audit.port";
 import { AUDIT_PORT_TOKEN } from "../ports/audit.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
 import { CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
@@ -35,13 +35,13 @@ export interface SwitchTenantOutput {
 @Injectable()
 export class SwitchTenantUseCase {
   constructor(
-    @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: IMembershipRepository,
-    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService,
-    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
+    @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: MembershipRepositoryPort,
+    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
     @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
-    private readonly refreshTokenRepo: IRefreshTokenRepository,
-    @Inject(OUTBOX_PORT_TOKEN) private readonly outbox: IOutboxPort,
-    @Inject(AUDIT_PORT_TOKEN) private readonly audit: IAuditPort,
+    private readonly refreshTokenRepo: RefreshTokenRepositoryPort,
+    @Inject(OUTBOX_PORT_TOKEN) private readonly outbox: OutboxPort,
+    @Inject(AUDIT_PORT_TOKEN) private readonly audit: AuditPort,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
   ) {}
 

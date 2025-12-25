@@ -1,6 +1,6 @@
-import { ITokenService } from "../../application/ports/token-service.port";
+import { type TokenServicePort } from "../../application/ports/token-service.port";
 
-export class MockTokenService implements ITokenService {
+export class MockTokenService implements TokenServicePort {
   generateAccessToken(data: { userId: string; email: string; tenantId: string }): string {
     return `access:${data.userId}:${data.tenantId}`;
   }
@@ -13,7 +13,7 @@ export class MockTokenService implements ITokenService {
     token: string
   ): Promise<{ userId: string; email: string; tenantId: string; iat: number; exp: number } | null> {
     const parts = token.split(":");
-    if (parts[0] !== "access") return null;
+    if (parts[0] !== "access") {return null;}
     return {
       userId: parts[1],
       email: "",

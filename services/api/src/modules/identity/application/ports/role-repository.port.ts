@@ -1,7 +1,7 @@
 /**
  * Role Repository Port (Interface)
  */
-export interface IRoleRepository {
+export interface RoleRepositoryPort {
   /**
    * Create a role
    */

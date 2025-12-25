@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
-import { IRoleRepository } from "../../application/ports/role-repository.port";
+import { RoleRepositoryPort } from "../../application/ports/role-repository.port";
 
 /**
  * Prisma Role Repository Implementation
  */
 @Injectable()
-export class PrismaRoleRepository implements IRoleRepository {
+export class PrismaRoleRepository implements RoleRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: {

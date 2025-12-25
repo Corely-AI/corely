@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
 import { Tenant } from "../../domain/entities/tenant.entity";
-import { ITenantRepository } from "../../application/ports/tenant-repository.port";
+import { TenantRepositoryPort } from "../../application/ports/tenant-repository.port";
 
 /**
  * Prisma Tenant Repository Implementation
  */
 @Injectable()
-export class PrismaTenantRepository implements ITenantRepository {
+export class PrismaTenantRepository implements TenantRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(tenant: Tenant): Promise<Tenant> {

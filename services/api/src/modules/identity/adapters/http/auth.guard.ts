@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
   Inject,
 } from "@nestjs/common";
-import type { ITokenService } from "../../application/ports/token-service.port";
+import type { TokenServicePort } from "../../application/ports/token-service.port";
 import { TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port";
 
 /**
@@ -14,7 +14,7 @@ import { TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port"
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(@Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService) {}
+  constructor(@Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

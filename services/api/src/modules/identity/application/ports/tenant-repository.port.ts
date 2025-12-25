@@ -1,9 +1,9 @@
-import { Tenant } from "../../domain/entities/tenant.entity";
+import { type Tenant } from "../../domain/entities/tenant.entity";
 
 /**
  * Tenant Repository Port (Interface)
  */
-export interface ITenantRepository {
+export interface TenantRepositoryPort {
   /**
    * Create a new tenant
    */

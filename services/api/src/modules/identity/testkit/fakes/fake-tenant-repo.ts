@@ -1,7 +1,7 @@
-import { type ITenantRepository } from "../../application/ports/tenant-repository.port";
+import { type TenantRepositoryPort } from "../../application/ports/tenant-repository.port";
 import { type Tenant } from "../../domain/entities/tenant.entity";
 
-export class FakeTenantRepository implements ITenantRepository {
+export class FakeTenantRepository implements TenantRepositoryPort {
   tenants: Tenant[] = [];
 
   async create(tenant: Tenant): Promise<Tenant> {

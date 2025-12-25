@@ -1,11 +1,11 @@
 import { Injectable, Inject } from "@nestjs/common";
-import type { IRefreshTokenRepository } from "../ports/refresh-token-repository.port";
+import type { RefreshTokenRepositoryPort } from "../ports/refresh-token-repository.port";
 import { REFRESH_TOKEN_REPOSITORY_TOKEN } from "../ports/refresh-token-repository.port";
-import type { ITokenService } from "../ports/token-service.port";
+import type { TokenServicePort } from "../ports/token-service.port";
 import { TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
-import type { IUserRepository } from "../ports/user-repository.port";
+import type { UserRepositoryPort } from "../ports/user-repository.port";
 import { USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
-import type { IAuditPort } from "../ports/audit.port";
+import type { AuditPort } from "../ports/audit.port";
 import { AUDIT_PORT_TOKEN } from "../ports/audit.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
 import { CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
@@ -28,10 +28,10 @@ export interface RefreshTokenOutput {
 export class RefreshTokenUseCase {
   constructor(
     @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
-    private readonly refreshTokenRepo: IRefreshTokenRepository,
-    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService,
-    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
-    @Inject(AUDIT_PORT_TOKEN) private readonly audit: IAuditPort,
+    private readonly refreshTokenRepo: RefreshTokenRepositoryPort,
+    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
+    @Inject(AUDIT_PORT_TOKEN) private readonly audit: AuditPort,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
   ) {}
 

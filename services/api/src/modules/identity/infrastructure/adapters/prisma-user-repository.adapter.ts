@@ -2,14 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService, getPrismaClient } from "@kerniflow/data";
 import { TransactionContext } from "@kerniflow/kernel";
 import { User } from "../../domain/entities/user.entity";
-import { IUserRepository } from "../../application/ports/user-repository.port";
+import { UserRepositoryPort } from "../../application/ports/user-repository.port";
 
 /**
  * Prisma User Repository Implementation
- * Infrastructure adapter - implements IUserRepository port
+ * Infrastructure adapter - implements UserRepositoryPort port
  */
 @Injectable()
-export class PrismaUserRepository implements IUserRepository {
+export class PrismaUserRepository implements UserRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(user: User, tx?: TransactionContext): Promise<User> {

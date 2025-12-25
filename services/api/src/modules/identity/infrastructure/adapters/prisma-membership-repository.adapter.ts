@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
 import { Membership } from "../../domain/entities/membership.entity";
-import { IMembershipRepository } from "../../application/ports/membership-repository.port";
+import { MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
 
 /**
  * Prisma Membership Repository Implementation
  */
 @Injectable()
-export class PrismaMembershipRepository implements IMembershipRepository {
+export class PrismaMembershipRepository implements MembershipRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(membership: Membership): Promise<Membership> {

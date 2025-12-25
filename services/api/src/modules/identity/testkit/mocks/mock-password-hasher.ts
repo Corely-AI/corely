@@ -1,6 +1,6 @@
-import { IPasswordHasher } from "../../application/ports/password-hasher.port";
+import { type PasswordHasherPort } from "../../application/ports/password-hasher.port";
 
-export class MockPasswordHasher implements IPasswordHasher {
+export class MockPasswordHasher implements PasswordHasherPort {
   async hash(password: string): Promise<string> {
     return `hashed:${password}`;
   }

@@ -6,8 +6,8 @@ import {
   SetMetadata,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import type { IMembershipRepository } from "../../application/ports/membership-repository.port";
-import type { IRoleRepository } from "../../application/ports/role-repository.port";
+import type { MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
+import type { RoleRepositoryPort } from "../../application/ports/role-repository.port";
 
 export const REQUIRE_PERMISSION = "require_permission";
 
@@ -20,8 +20,8 @@ export const REQUIRE_PERMISSION = "require_permission";
 export class RbacGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly membershipRepo: IMembershipRepository,
-    private readonly roleRepo: IRoleRepository
+    private readonly membershipRepo: MembershipRepositoryPort,
+    private readonly roleRepo: RoleRepositoryPort
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

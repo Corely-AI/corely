@@ -1,6 +1,6 @@
-import { type IRefreshTokenRepository } from "../../application/ports/refresh-token-repository.port";
+import { type RefreshTokenRepositoryPort } from "../../application/ports/refresh-token-repository.port";
 
-export class FakeRefreshTokenRepository implements IRefreshTokenRepository {
+export class FakeRefreshTokenRepository implements RefreshTokenRepositoryPort {
   tokens: Array<{
     id: string;
     userId: string;
@@ -28,7 +28,9 @@ export class FakeRefreshTokenRepository implements IRefreshTokenRepository {
     revokedAt: Date | null;
   } | null> {
     const token = this.tokens.find((t) => t.tokenHash === hash && !t.revokedAt);
-    if (!token) {return null;}
+    if (!token) {
+      return null;
+    }
     return token;
   }
 

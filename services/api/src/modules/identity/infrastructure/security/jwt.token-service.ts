@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import * as jwt from "jsonwebtoken";
-import { ITokenService } from "../../application/ports/token-service.port";
+import { TokenServicePort } from "../../application/ports/token-service.port";
 
 /**
  * JWT Token Service Implementation
  */
 @Injectable()
-export class JwtTokenService implements ITokenService {
+export class JwtTokenService implements TokenServicePort {
   private readonly accessTokenSecret =
     process.env.JWT_ACCESS_SECRET || "your-access-secret-change-in-production";
   private readonly refreshTokenSecret =

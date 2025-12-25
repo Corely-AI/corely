@@ -1,11 +1,11 @@
-import { TransactionContext } from "@kerniflow/kernel";
-import { User } from "../../domain/entities/user.entity";
+import { type TransactionContext } from "@kerniflow/kernel";
+import { type User } from "../../domain/entities/user.entity";
 
 /**
  * User Repository Port (Interface)
  * Abstracts data persistence for User entity
  */
-export interface IUserRepository {
+export interface UserRepositoryPort {
   /**
    * Create a new user
    */

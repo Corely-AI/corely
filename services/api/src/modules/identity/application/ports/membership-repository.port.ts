@@ -1,9 +1,9 @@
-import { Membership } from "../../domain/entities/membership.entity";
+import { type Membership } from "../../domain/entities/membership.entity";
 
 /**
  * Membership Repository Port (Interface)
  */
-export interface IMembershipRepository {
+export interface MembershipRepositoryPort {
   /**
    * Create a new membership
    */
