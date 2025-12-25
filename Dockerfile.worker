@@ -15,6 +15,8 @@ COPY packages/domain/package.json ./packages/domain/
 COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/kernel/package.json ./packages/kernel/
 COPY packages/email-templates/package.json ./packages/email-templates/
+COPY packages/config/package.json ./packages/config/
+COPY packages/tooling/tsconfig/package.json ./packages/tooling/tsconfig/
 
 # Install all workspace deps (includes dev deps needed for tsx watch)
 # Using shamefully-hoist for Prisma 7 compatibility
@@ -22,25 +24,25 @@ RUN pnpm install --frozen-lockfile --recursive
 
 # Copy source
 COPY tsconfig.base.json tsconfig.node.json ./
+COPY packages/tooling/tsconfig/*.json ./packages/tooling/tsconfig/
 COPY packages ./packages
 COPY services/worker ./services/worker
 
-# Build shared packages and generate Prisma client (Prisma 7 uses prisma.config.ts)
-RUN pnpm --filter @kerniflow/contracts build \
+# Generate Prisma client BEFORE building packages (Prisma 7 uses prisma.config.ts)
+# Set a dummy DATABASE_URL for build time only (actual URL comes from runtime env vars)
+ARG DATABASE_URL_BUILD=postgresql://dummy:dummy@localhost:5432/dummy
+RUN cd /app/packages/data && DATABASE_URL=$DATABASE_URL_BUILD /app/node_modules/.bin/prisma generate
+
+# Build shared packages (now that Prisma client is generated)
+RUN pnpm --filter @kerniflow/config build \
+ && pnpm --filter @kerniflow/contracts build \
  && pnpm --filter @kerniflow/domain build \
  && pnpm --filter @kerniflow/kernel build \
  && pnpm --filter @kerniflow/email-templates build \
  && pnpm --filter @kerniflow/data build
 
-# Generate Prisma client - use pnpm exec from workspace root to avoid symlink issues
-# Prisma 7 requires running from the package directory where prisma.config.ts exists
-RUN pnpm --filter @kerniflow/data exec prisma generate || \
-    (cd /app/packages/data && /app/node_modules/.pnpm/prisma@*/node_modules/prisma/build/index.js generate)
-
-# Default envs (overridden by compose)
+# Default envs (set by docker-compose)
 ENV NODE_ENV=development
-ENV DATABASE_URL=postgresql://kerniflow:kerniflow@postgres:5432/kerniflow?schema=public
-ENV REDIS_URL=redis://redis:6379
-ENV LOG_LEVEL=debug
+# DATABASE_URL, REDIS_URL, LOG_LEVEL are set by docker-compose or .env files
 
 CMD ["pnpm", "--filter", "@kerniflow/worker", "dev"]

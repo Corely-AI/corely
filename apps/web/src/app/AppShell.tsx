@@ -15,6 +15,7 @@ export function AppShell() {
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <AppSidebar
+          variant="desktop"
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
@@ -35,7 +36,7 @@ export function AppShell() {
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <AppSidebar onToggle={() => setMobileSidebarOpen(false)} />
+        <AppSidebar variant="mobile" onToggle={() => setMobileSidebarOpen(false)} />
       </div>
 
       {/* Main Content */}

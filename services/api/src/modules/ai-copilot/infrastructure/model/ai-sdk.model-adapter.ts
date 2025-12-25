@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
-import { EnvService } from "@kerniflow/config";
+import type { EnvService } from "@kerniflow/config";
 import { streamText, convertToCoreMessages, pipeUIMessageStreamToResponse } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { LanguageModelPort } from "../../application/ports/language-model.port";
-import { DomainToolPort } from "../../application/ports/domain-tool.port";
+import type { DomainToolPort } from "../../application/ports/domain-tool.port";
 import { buildAiTools } from "../tools/tools.factory";
-import { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution.repo.port";
-import { AuditPort } from "../../application/ports/audit.port";
-import { OutboxPort } from "../../application/ports/outbox.port";
+import type { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution.repo.port";
+import type { AuditPort } from "../../application/ports/audit.port";
+import type { OutboxPort } from "../../application/ports/outbox.port";
 
 @Injectable()
 export class AiSdkModelAdapter implements LanguageModelPort {
@@ -51,7 +51,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
 
     const model = provider === "anthropic" ? this.anthropic(modelId) : this.openai(modelId);
 
-    const result = await streamText({
+    const result = streamText({
       model: model as any,
       messages: convertToCoreMessages(params.messages),
       tools: aiTools as any,

@@ -5,14 +5,15 @@ import {
   UpdateCustomFieldDefinition,
   UpsertEntityLayout,
 } from "@kerniflow/domain";
-import { CustomFieldDefinitionRepository, EntityLayoutRepository } from "@kerniflow/data";
-import { AuditPort, AUDIT_PORT_TOKEN } from "../../shared/ports/audit.port";
-import {
-  IdempotencyStoragePort,
-  IDEMPOTENCY_STORAGE_PORT_TOKEN,
-} from "../../shared/ports/idempotency-storage.port";
-import { IdGeneratorPort, ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
-import { ClockPort, CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
+import type { CustomFieldDefinitionRepository, EntityLayoutRepository } from "@kerniflow/data";
+import type { AuditPort } from "../../shared/ports/audit.port";
+import { AUDIT_PORT_TOKEN } from "../../shared/ports/audit.port";
+import type { IdempotencyStoragePort } from "../../shared/ports/idempotency-storage.port";
+import { IDEMPOTENCY_STORAGE_PORT_TOKEN } from "../../shared/ports/idempotency-storage.port";
+import type { IdGeneratorPort } from "../../shared/ports/id-generator.port";
+import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
+import type { ClockPort } from "../../shared/ports/clock.port";
+import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
 import type {
   CreateCustomFieldDefinition as CreateDefinitionContract,
   UpdateCustomFieldDefinition as UpdateDefinitionContract,
@@ -54,7 +55,9 @@ export class CustomizationService {
     const actionKey = `customization:create:${input.entityType}`;
     if (idempotencyKey) {
       const cached = await this.idempotency.get(actionKey, tenantId, idempotencyKey);
-      if (cached?.body) {return cached.body as CustomFieldDefinition;}
+      if (cached?.body) {
+        return cached.body as CustomFieldDefinition;
+      }
     }
 
     const definition = await this.createDefinition.execute({
@@ -90,7 +93,9 @@ export class CustomizationService {
     const actionKey = `customization:update:${id}`;
     if (idempotencyKey) {
       const cached = await this.idempotency.get(actionKey, tenantId, idempotencyKey);
-      if (cached?.body) {return cached.body as CustomFieldDefinition;}
+      if (cached?.body) {
+        return cached.body as CustomFieldDefinition;
+      }
     }
 
     const updated = await this.updateDefinition.execute({
@@ -142,7 +147,9 @@ export class CustomizationService {
     const actionKey = `customization:layout:${entityType}`;
     if (idempotencyKey) {
       const cached = await this.idempotency.get(actionKey, tenantId, idempotencyKey);
-      if (cached?.body) {return cached.body as EntityLayout;}
+      if (cached?.body) {
+        return cached.body as EntityLayout;
+      }
     }
 
     const existing = await this.layoutRepo.get(tenantId, entityType);

@@ -1,6 +1,10 @@
-import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
-import { IOutboxPort } from "../ports/outbox.port";
-import { IAuditPort } from "../ports/audit.port";
+import { Injectable, Inject } from "@nestjs/common";
+import {
+  type IRefreshTokenRepository,
+  REFRESH_TOKEN_REPOSITORY_TOKEN,
+} from "../ports/refresh-token-repository.port";
+import { type IOutboxPort, OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
+import { type IAuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
 import { UserLoggedOutEvent } from "../../domain/events/identity.events";
 
 export interface SignOutInput {
@@ -12,11 +16,13 @@ export interface SignOutInput {
 /**
  * Sign Out Use Case
  */
+@Injectable()
 export class SignOutUseCase {
   constructor(
+    @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
     private readonly refreshTokenRepo: IRefreshTokenRepository,
-    private readonly outbox: IOutboxPort,
-    private readonly audit: IAuditPort
+    @Inject(OUTBOX_PORT_TOKEN) private readonly outbox: IOutboxPort,
+    @Inject(AUDIT_PORT_TOKEN) private readonly audit: IAuditPort
   ) {}
 
   async execute(input: SignOutInput): Promise<void> {

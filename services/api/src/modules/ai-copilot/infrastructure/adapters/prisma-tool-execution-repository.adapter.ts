@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@kerniflow/data";
+import type { PrismaService } from "@kerniflow/data";
 import { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution.repo.port";
 import { ToolExecution } from "../../domain/entities/tool-execution.entity";
 

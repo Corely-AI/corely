@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { PrivacyRequestRepoPort } from "../../ports/privacy-request-repo.port";
-import { OutboxPort } from "@shared/ports/outbox.port";
-import { IdGeneratorPort } from "@shared/ports/id-generator.port";
-import { ClockPort } from "@shared/ports/clock.port";
+import type { PrivacyRequestRepoPort } from "../../ports/privacy-request-repo.port";
+import type { OutboxPort } from "@shared/ports/outbox.port";
+import type { IdGeneratorPort } from "@shared/ports/id-generator.port";
+import type { ClockPort } from "@shared/ports/clock.port";
 import { PrivacyRequest } from "../../../domain/privacy-request.entity";
-import { IdentityPort } from "../../ports/identity-port";
+import type { IdentityPort } from "../../ports/identity-port";
 
 export interface RequestAccountErasureInput {
   tenantId: string;

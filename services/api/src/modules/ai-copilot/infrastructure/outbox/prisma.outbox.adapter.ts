@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@kerniflow/data";
+import type { PrismaService } from "@kerniflow/data";
 import { OutboxPort } from "../../application/ports/outbox.port";
 
 @Injectable()

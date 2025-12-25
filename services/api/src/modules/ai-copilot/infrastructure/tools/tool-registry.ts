@@ -1,5 +1,5 @@
 import { Inject, Injectable, Optional } from "@nestjs/common";
-import { DomainToolPort } from "../../application/ports/domain-tool.port";
+import type { DomainToolPort } from "../../application/ports/domain-tool.port";
 import { ToolRegistryPort, COPILOT_TOOLS } from "../../application/ports/tool-registry.port";
 
 @Injectable()

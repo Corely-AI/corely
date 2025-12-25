@@ -1,3 +1,4 @@
+import { Injectable, Inject } from "@nestjs/common";
 import { createHash } from "crypto";
 import { Email } from "../../domain/value-objects/email.vo";
 import { Password } from "../../domain/value-objects/password.vo";
@@ -9,18 +10,30 @@ import {
   TenantCreatedEvent,
   MembershipCreatedEvent,
 } from "../../domain/events/identity.events";
-import { type IUserRepository } from "../ports/user.repo.port";
-import { type ITenantRepository } from "../ports/tenant.repo.port";
-import { type IMembershipRepository } from "../ports/membership.repo.port";
-import { type IPasswordHasher } from "../ports/password-hasher.port";
-import { type ITokenService } from "../ports/token-service.port";
-import { type IOutboxPort } from "../ports/outbox.port";
-import { type IAuditPort } from "../ports/audit.port";
-import { type IRoleRepository } from "../ports/role.repo.port";
-import { type ClockPort } from "../../../../shared/ports/clock.port";
-import { type IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
-import { type IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
-import { type IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
+import { type IUserRepository, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
+import { type ITenantRepository, TENANT_REPOSITORY_TOKEN } from "../ports/tenant-repository.port";
+import {
+  type IMembershipRepository,
+  MEMBERSHIP_REPOSITORY_TOKEN,
+} from "../ports/membership-repository.port";
+import { type IPasswordHasher, PASSWORD_HASHER_TOKEN } from "../ports/password-hasher.port";
+import { type ITokenService, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
+import { type IOutboxPort, OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
+import { type IAuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
+import { type IRoleRepository, ROLE_REPOSITORY_TOKEN } from "../ports/role-repository.port";
+import { type ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
+import {
+  type IRefreshTokenRepository,
+  REFRESH_TOKEN_REPOSITORY_TOKEN,
+} from "../ports/refresh-token-repository.port";
+import {
+  type IdempotencyStoragePort,
+  IDEMPOTENCY_STORAGE_PORT_TOKEN,
+} from "../../../../shared/ports/idempotency-storage.port";
+import {
+  type IdGeneratorPort,
+  ID_GENERATOR_TOKEN,
+} from "../../../../shared/ports/id-generator.port";
 import { type RequestContext } from "../../../../shared/context/request-context";
 import { ConflictError, ValidationError } from "../../../../shared/errors/domain-errors";
 
@@ -45,20 +58,22 @@ export interface SignUpOutput {
 
 const SIGN_UP_ACTION = "identity.sign_up";
 
+@Injectable()
 export class SignUpUseCase {
   constructor(
-    private readonly userRepo: IUserRepository,
-    private readonly tenantRepo: ITenantRepository,
-    private readonly membershipRepo: IMembershipRepository,
-    private readonly roleRepo: IRoleRepository,
-    private readonly passwordHasher: IPasswordHasher,
-    private readonly tokenService: ITokenService,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
+    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: ITenantRepository,
+    @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: IMembershipRepository,
+    @Inject(ROLE_REPOSITORY_TOKEN) private readonly roleRepo: IRoleRepository,
+    @Inject(PASSWORD_HASHER_TOKEN) private readonly passwordHasher: IPasswordHasher,
+    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService,
+    @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
     private readonly refreshTokenRepo: IRefreshTokenRepository,
-    private readonly outbox: IOutboxPort,
-    private readonly audit: IAuditPort,
-    private readonly idempotency: IdempotencyStoragePort,
-    private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: ClockPort
+    @Inject(OUTBOX_PORT_TOKEN) private readonly outbox: IOutboxPort,
+    @Inject(AUDIT_PORT_TOKEN) private readonly audit: IAuditPort,
+    @Inject(IDEMPOTENCY_STORAGE_PORT_TOKEN) private readonly idempotency: IdempotencyStoragePort,
+    @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
   ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
@@ -170,7 +185,9 @@ export class SignUpUseCase {
 
   private async ensureOwnerRole(tenantId: string): Promise<string> {
     const existing = await this.roleRepo.findBySystemKey(tenantId, "OWNER");
-    if (existing) {return existing.id;}
+    if (existing) {
+      return existing.id;
+    }
     const id = this.idGenerator.newId();
     await this.roleRepo.create({ id, tenantId, name: "Owner", systemKey: "OWNER" });
     return id;

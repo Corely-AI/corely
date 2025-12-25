@@ -3,6 +3,10 @@ import { selectors } from "../utils/selectors";
 
 test.describe("Authentication", () => {
   test("should login and display user in menu", async ({ page, testData }) => {
+    // Clear any existing session
+    await page.context().clearCookies();
+    await page.goto("/");
+    await page.evaluate(() => localStorage.clear());
     await page.goto("/auth/login");
 
     await page.fill(selectors.auth.loginEmailInput, testData.user.email);
@@ -20,7 +24,17 @@ test.describe("Authentication", () => {
   });
 
   test("should display tenant name in navigation", async ({ page, testData }) => {
-    await page.goto("/dashboard");
+    // Clear any existing session
+    await page.context().clearCookies();
+    await page.goto("/");
+    await page.evaluate(() => localStorage.clear());
+    await page.goto("/auth/login");
+
+    await page.fill(selectors.auth.loginEmailInput, testData.user.email);
+    await page.fill(selectors.auth.loginPasswordInput, testData.user.password);
+    await page.click(selectors.auth.loginSubmitButton);
+
+    await page.waitForURL("**/dashboard", { timeout: 10_000 });
     await page.waitForLoadState("networkidle");
 
     const sidebar = page.locator(selectors.navigation.sidebarNav);
@@ -41,6 +55,8 @@ test.describe("Authentication", () => {
   test("should signup and create workspace", async ({ page }) => {
     // Clear any existing session
     await page.context().clearCookies();
+    await page.goto("/");
+    await page.evaluate(() => localStorage.clear());
 
     // Navigate to signup page
     await page.goto("/auth/signup");

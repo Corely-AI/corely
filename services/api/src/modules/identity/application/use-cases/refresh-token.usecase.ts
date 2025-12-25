@@ -1,8 +1,12 @@
-import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
-import { ITokenService } from "../ports/token-service.port";
-import { IUserRepository } from "../ports/user.repo.port";
-import { IAuditPort } from "../ports/audit.port";
-import { ClockPort } from "../../../../shared/ports/clock.port";
+import { Injectable, Inject } from "@nestjs/common";
+import {
+  IRefreshTokenRepository,
+  REFRESH_TOKEN_REPOSITORY_TOKEN,
+} from "../ports/refresh-token-repository.port";
+import { ITokenService, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
+import { IUserRepository, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
+import { IAuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
+import { ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import { createHash, randomUUID } from "crypto";
 
 export interface RefreshTokenInput {
@@ -18,13 +22,15 @@ export interface RefreshTokenOutput {
  * Refresh Token Use Case
  * Rotates the refresh token for security
  */
+@Injectable()
 export class RefreshTokenUseCase {
   constructor(
+    @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
     private readonly refreshTokenRepo: IRefreshTokenRepository,
-    private readonly tokenService: ITokenService,
-    private readonly userRepo: IUserRepository,
-    private readonly audit: IAuditPort,
-    private readonly clock: ClockPort
+    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
+    @Inject(AUDIT_PORT_TOKEN) private readonly audit: IAuditPort,
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
   ) {}
 
   async execute(input: RefreshTokenInput): Promise<RefreshTokenOutput> {

@@ -12,11 +12,11 @@ import {
 import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 
 // Use cases
-import { SignUpUseCase } from "../../application/use-cases/sign-up.usecase";
-import { SignInUseCase } from "../../application/use-cases/sign-in.usecase";
-import { RefreshTokenUseCase } from "../../application/use-cases/refresh-token.usecase";
-import { SignOutUseCase } from "../../application/use-cases/sign-out.usecase";
-import { SwitchTenantUseCase } from "../../application/use-cases/switch-tenant.usecase";
+import type { SignUpUseCase } from "../../application/use-cases/sign-up.usecase";
+import type { SignInUseCase } from "../../application/use-cases/sign-in.usecase";
+import type { RefreshTokenUseCase } from "../../application/use-cases/refresh-token.usecase";
+import type { SignOutUseCase } from "../../application/use-cases/sign-out.usecase";
+import type { SwitchTenantUseCase } from "../../application/use-cases/switch-tenant.usecase";
 
 // DTOs
 import {
@@ -34,7 +34,7 @@ import {
 
 // Guards and decorators
 import { AuthGuard } from "./auth.guard";
-import { CurrentUser, CurrentUserId, CurrentTenantId } from "./current-user.decorator";
+import { CurrentUserId, CurrentTenantId } from "./current-user.decorator";
 import { buildRequestContext } from "../../../../shared/context/request-context";
 import { Request } from "express";
 

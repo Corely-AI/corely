@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@kerniflow/data";
+import type { PrismaService } from "@kerniflow/data";
 import { AgentRunRepositoryPort } from "../../application/ports/agent-run.repo.port";
 import { AgentRun } from "../../domain/entities/agent-run.entity";
 

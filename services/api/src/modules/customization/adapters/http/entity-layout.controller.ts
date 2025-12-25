@@ -14,7 +14,7 @@ import {
   CurrentTenantId,
   CurrentUserId,
 } from "../../../identity/adapters/http/current-user.decorator";
-import { CustomizationService } from "../../customization.service";
+import type { CustomizationService } from "../../customization.service";
 
 @UseGuards(AuthGuard)
 @Controller("customization/layouts")
@@ -30,7 +30,9 @@ export class EntityLayoutController {
       throw new BadRequestException("Invalid entity type");
     }
     const layout = await this.customization.getLayout(tenantId, entityType);
-    if (!layout) return null;
+    if (!layout) {
+      return null;
+    }
     return serializeLayout(layout);
   }
 

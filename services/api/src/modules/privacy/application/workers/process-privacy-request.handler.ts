@@ -1,9 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { PrivacyRequestRepoPort } from "../ports/privacy-request-repo.port";
-import { ClockPort } from "@shared/ports/clock.port";
-import { DocumentsPort } from "../ports/documents.port";
-import { PersonalDataCollectorPort, PersonalDataItem } from "../ports/personal-data-collector.port";
-import { PersonalDataEraserPort, ErasureResult } from "../ports/personal-data-eraser.port";
+import type { PrivacyRequestRepoPort } from "../ports/privacy-request-repo.port";
+import type { ClockPort } from "@shared/ports/clock.port";
+import type { DocumentsPort } from "../ports/documents.port";
+import type { PersonalDataCollectorPort } from "../ports/personal-data-collector.port";
+import type { PersonalDataItem } from "../ports/personal-data-collector.port";
+import type { PersonalDataEraserPort } from "../ports/personal-data-eraser.port";
+import type { ErasureResult } from "../ports/personal-data-eraser.port";
 
 export interface ProcessPrivacyRequestPayload {
   requestId: string;
@@ -22,10 +24,14 @@ export class ProcessPrivacyRequestHandler {
 
   async handle(payload: ProcessPrivacyRequestPayload) {
     const request = await this.repo.findById(payload.tenantId, payload.requestId);
-    if (!request) return;
+    if (!request) {
+      return;
+    }
 
     // Already handled
-    if (request.status === "READY" || request.status === "COMPLETED") return;
+    if (request.status === "READY" || request.status === "COMPLETED") {
+      return;
+    }
 
     try {
       request.markProcessing(this.clock.now());

@@ -1,10 +1,17 @@
-import { IMembershipRepository } from "../ports/membership.repo.port";
-import { ITokenService } from "../ports/token-service.port";
-import { IUserRepository } from "../ports/user.repo.port";
-import { IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
-import { IOutboxPort } from "../ports/outbox.port";
-import { IAuditPort } from "../ports/audit.port";
-import { ClockPort } from "../../../../shared/ports/clock.port";
+import { Injectable, Inject } from "@nestjs/common";
+import {
+  IMembershipRepository,
+  MEMBERSHIP_REPOSITORY_TOKEN,
+} from "../ports/membership-repository.port";
+import { ITokenService, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
+import { IUserRepository, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
+import {
+  IRefreshTokenRepository,
+  REFRESH_TOKEN_REPOSITORY_TOKEN,
+} from "../ports/refresh-token-repository.port";
+import { IOutboxPort, OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
+import { IAuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
+import { ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import { TenantSwitchedEvent } from "../../domain/events/identity.events";
 import { createHash, randomUUID } from "crypto";
 
@@ -24,15 +31,17 @@ export interface SwitchTenantOutput {
  * Switch Tenant Use Case
  * Allows user to switch active tenant
  */
+@Injectable()
 export class SwitchTenantUseCase {
   constructor(
-    private readonly membershipRepo: IMembershipRepository,
-    private readonly tokenService: ITokenService,
-    private readonly userRepo: IUserRepository,
+    @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: IMembershipRepository,
+    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
+    @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
     private readonly refreshTokenRepo: IRefreshTokenRepository,
-    private readonly outbox: IOutboxPort,
-    private readonly audit: IAuditPort,
-    private readonly clock: ClockPort
+    @Inject(OUTBOX_PORT_TOKEN) private readonly outbox: IOutboxPort,
+    @Inject(AUDIT_PORT_TOKEN) private readonly audit: IAuditPort,
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
   ) {}
 
   async execute(input: SwitchTenantInput): Promise<SwitchTenantOutput> {

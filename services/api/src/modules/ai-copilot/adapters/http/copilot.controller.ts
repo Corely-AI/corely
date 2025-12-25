@@ -12,10 +12,10 @@ import {
 } from "@nestjs/common";
 import { Response, Request } from "express";
 import { CopilotChatRequestDto } from "./copilot.dto";
-import { StreamCopilotChatUseCase } from "../../application/use-cases/stream-copilot-chat.usecase";
+import type { StreamCopilotChatUseCase } from "../../application/use-cases/stream-copilot-chat.usecase";
 import { AuthGuard as IdentityAuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { TenantGuard } from "./guards/tenant.guard";
-import { ClockPort } from "@kerniflow/kernel";
+import type { ClockPort } from "@kerniflow/kernel";
 
 @Controller("copilot")
 export class CopilotController {

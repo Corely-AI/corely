@@ -1,38 +1,25 @@
-import { chromium, FullConfig } from "@playwright/test";
-import { seedTestData } from "./testData";
+import { chromium, type FullConfig } from "@playwright/test";
 
 async function globalSetup(_config: FullConfig) {
-  // Seed test data and create a logged-in storage state
-  const baseURL = process.env.BASE_URL || "http://localhost:5173";
+  // Global setup for test infrastructure
+  // Note: Each test creates its own isolated test data via fixtures
+  // and handles authentication independently for better test isolation
 
+  // Verify API is reachable
+  const baseURL = process.env.BASE_URL || "http://localhost:5173";
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
 
-  // Navigate to the app
-  await page.goto(baseURL);
-
-  // Call seed endpoint to create test tenant/user
-  const testData = await seedTestData();
-
-  if (testData) {
-    const loginUrl = `${baseURL}/auth/login`;
-    await page.goto(loginUrl);
-
-    await page.waitForSelector('input[data-testid="login-email"]', { timeout: 15000 });
-    await page.fill('input[data-testid="login-email"]', testData.user.email);
-    await page.fill('input[data-testid="login-password"]', testData.user.password);
-    await page.click('button[data-testid="login-submit"]');
-
-    await page.waitForURL("**/dashboard", { timeout: 10000 }).catch(() => {});
-
-    await context.storageState({
-      path: "utils/storageState.json",
-    });
+  try {
+    await page.goto(baseURL, { timeout: 15000 });
+  } catch (error) {
+    console.error("Failed to reach application at", baseURL);
+    throw error;
+  } finally {
+    await context.close();
+    await browser.close();
   }
-
-  await context.close();
-  await browser.close();
 }
 
 export default globalSetup;

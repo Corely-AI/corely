@@ -1,8 +1,8 @@
 import { tool } from "ai";
-import { DomainToolPort } from "../../application/ports/domain-tool.port";
-import { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution.repo.port";
-import { AuditPort } from "../../application/ports/audit.port";
-import { OutboxPort } from "../../application/ports/outbox.port";
+import type { DomainToolPort } from "../../application/ports/domain-tool.port";
+import type { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution.repo.port";
+import type { AuditPort } from "../../application/ports/audit.port";
+import type { OutboxPort } from "../../application/ports/outbox.port";
 
 export function buildAiTools(
   tools: DomainToolPort[],
@@ -33,7 +33,9 @@ export function buildAiTools(
             status: "pending",
           });
           try {
-            if (!t.execute) throw new Error("Tool execute function not defined");
+            if (!t.execute) {
+              throw new Error("Tool execute function not defined");
+            }
             const result = await t.execute({
               tenantId: deps.tenantId,
               userId: deps.userId,

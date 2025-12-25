@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { ExpenseRepositoryPort } from "../ports/expense-repository.port";
-import { ClockPort } from "../../../../shared/ports/clock.port";
+import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
+import type { ClockPort } from "../../../../shared/ports/clock.port";
 
 export interface ArchiveExpenseInput {
   tenantId: string;

@@ -1,5 +1,5 @@
-import { ExpenseRepositoryPort } from "../../application/ports/ExpenseRepositoryPort";
-import { Expense } from "../../domain/entities/Expense";
+import { type ExpenseRepositoryPort } from "../../application/ports/expense-repository.port";
+import { type Expense } from "../../domain/expense.entity";
 
 export class FakeExpenseRepository implements ExpenseRepositoryPort {
   public expenses: Expense[] = [];

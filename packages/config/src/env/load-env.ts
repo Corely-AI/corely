@@ -7,8 +7,8 @@ import { config } from "dotenv";
  * Production environments should NOT load .env files - they use injected process.env.
  */
 function isProductionEnvironment(): boolean {
-  // Check if NODE_ENV is production
-  if (process.env.NODE_ENV === "production") {
+  // Check if NODE_ENV is production or test (test environments use injected env vars)
+  if (process.env.NODE_ENV === "production" || process.env.NODE_ENV === "test") {
     return true;
   }
 
@@ -19,6 +19,11 @@ function isProductionEnvironment(): boolean {
 
   // Check for other common container/cloud markers
   if (process.env.KUBERNETES_SERVICE_HOST || process.env.ECS_CONTAINER_METADATA_URI) {
+    return true;
+  }
+
+  // Check if running in Docker (common marker)
+  if (process.env.DOCKER_CONTAINER || process.env.HOSTNAME?.includes("docker")) {
     return true;
   }
 
@@ -46,7 +51,9 @@ function findMonorepoRoot(): string {
     }
 
     const parentDir = resolve(currentDir, "..");
-    if (parentDir === currentDir) break; // Reached filesystem root
+    if (parentDir === currentDir) {
+      break;
+    } // Reached filesystem root
     currentDir = parentDir;
   }
 

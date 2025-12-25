@@ -21,11 +21,11 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 interface SidebarProps {
   collapsed?: boolean;
   onToggle?: () => void;
+  variant?: "desktop" | "mobile";
 }
 
-export function AppSidebar({ collapsed = false, onToggle }: SidebarProps) {
+export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }: SidebarProps) {
   const { t, i18n } = useTranslation();
-  const _location = useLocation();
   const { theme, setTheme } = useThemeStore();
   const { user } = useAuth();
   const { activeWorkspace } = useWorkspace();
@@ -34,7 +34,7 @@ export function AppSidebar({ collapsed = false, onToggle }: SidebarProps) {
   const comingSoonModules = getComingSoonModules();
 
   const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
+    void i18n.changeLanguage(lang);
     localStorage.setItem("bizflow-language", lang);
   };
 
@@ -69,7 +69,10 @@ export function AppSidebar({ collapsed = false, onToggle }: SidebarProps) {
         <WorkspaceSwitcher collapsed={collapsed} />
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin" data-testid="sidebar-nav">
+      <nav
+        className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin"
+        data-testid={`sidebar-nav${variant === "mobile" ? "-mobile" : ""}`}
+      >
         {/* Enabled modules */}
         <div className="space-y-1">
           {enabledModules.flatMap((module) =>

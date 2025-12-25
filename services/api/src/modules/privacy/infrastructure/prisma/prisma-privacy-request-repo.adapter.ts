@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@kerniflow/data";
-import { PrivacyRequestRepoPort } from "../../application/ports/privacy-request-repo.port";
+import type { PrismaService } from "@kerniflow/data";
+import type { PrivacyRequestRepoPort } from "../../application/ports/privacy-request-repo.port";
 import { PrivacyRequest } from "../../domain/privacy-request.entity";
 
 const mapRequest = (row: any): PrivacyRequest =>

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { PrivacyRequestRepoPort } from "../../ports/privacy-request-repo.port";
+import type { PrivacyRequestRepoPort } from "../../ports/privacy-request-repo.port";
 
 @Injectable()
 export class GetPrivacyRequestStatusUseCase {
@@ -7,7 +7,9 @@ export class GetPrivacyRequestStatusUseCase {
 
   async execute(input: { tenantId: string; requestId: string }) {
     const req = await this.repo.findById(input.tenantId, input.requestId);
-    if (!req) throw new NotFoundException("Privacy request not found");
+    if (!req) {
+      throw new NotFoundException("Privacy request not found");
+    }
     return {
       id: req.id,
       type: req.type,

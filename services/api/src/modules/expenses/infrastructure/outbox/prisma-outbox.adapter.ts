@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { OutboxPort, TransactionContext } from "@kerniflow/kernel";
-import { PrismaService } from "@kerniflow/data";
-import { getPrismaClient } from "@kerniflow/data";
+import { OutboxPort } from "@kerniflow/kernel";
+import { PrismaService, getPrismaClient, type TransactionContext } from "@kerniflow/data";
 
 @Injectable()
 export class PrismaOutboxAdapter implements OutboxPort {

@@ -1,16 +1,29 @@
+import { Injectable, Inject } from "@nestjs/common";
 import { createHash } from "crypto";
 import { Email } from "../../domain/value-objects/email.vo";
 import { UserLoggedInEvent } from "../../domain/events/identity.events";
-import { type IUserRepository } from "../ports/user.repo.port";
-import { type IMembershipRepository } from "../ports/membership.repo.port";
-import { type IPasswordHasher } from "../ports/password-hasher.port";
-import { type ITokenService } from "../ports/token-service.port";
-import { type IRefreshTokenRepository } from "../ports/refresh-token.repo.port";
-import { type IOutboxPort } from "../ports/outbox.port";
-import { type IAuditPort } from "../ports/audit.port";
-import { type IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
-import { type ClockPort } from "../../../../shared/ports/clock.port";
-import { type IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
+import { type IUserRepository, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
+import {
+  type IMembershipRepository,
+  MEMBERSHIP_REPOSITORY_TOKEN,
+} from "../ports/membership-repository.port";
+import { type IPasswordHasher, PASSWORD_HASHER_TOKEN } from "../ports/password-hasher.port";
+import { type ITokenService, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
+import {
+  type IRefreshTokenRepository,
+  REFRESH_TOKEN_REPOSITORY_TOKEN,
+} from "../ports/refresh-token-repository.port";
+import { type IOutboxPort, OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
+import { type IAuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
+import {
+  type IdempotencyStoragePort,
+  IDEMPOTENCY_STORAGE_PORT_TOKEN,
+} from "../../../../shared/ports/idempotency-storage.port";
+import { type ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
+import {
+  type IdGeneratorPort,
+  ID_GENERATOR_TOKEN,
+} from "../../../../shared/ports/id-generator.port";
 import { type RequestContext } from "../../../../shared/context/request-context";
 import { ForbiddenError, ValidationError } from "../../../../shared/errors/domain-errors";
 
@@ -37,25 +50,29 @@ export interface SignInOutput {
 
 const SIGN_IN_ACTION = "identity.sign_in";
 
+@Injectable()
 export class SignInUseCase {
   constructor(
-    private readonly userRepo: IUserRepository,
-    private readonly membershipRepo: IMembershipRepository,
-    private readonly passwordHasher: IPasswordHasher,
-    private readonly tokenService: ITokenService,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: IUserRepository,
+    @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: IMembershipRepository,
+    @Inject(PASSWORD_HASHER_TOKEN) private readonly passwordHasher: IPasswordHasher,
+    @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: ITokenService,
+    @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
     private readonly refreshTokenRepo: IRefreshTokenRepository,
-    private readonly outbox: IOutboxPort,
-    private readonly audit: IAuditPort,
-    private readonly idempotency: IdempotencyStoragePort,
-    private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: ClockPort
+    @Inject(OUTBOX_PORT_TOKEN) private readonly outbox: IOutboxPort,
+    @Inject(AUDIT_PORT_TOKEN) private readonly audit: IAuditPort,
+    @Inject(IDEMPOTENCY_STORAGE_PORT_TOKEN) private readonly idempotency: IdempotencyStoragePort,
+    @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
   ) {}
 
   async execute(input: SignInInput): Promise<SignInOutput> {
     const key = input.idempotencyKey;
     if (key) {
       const cached = await this.idempotency.get(SIGN_IN_ACTION, input.tenantId ?? null, key);
-      if (cached) {return cached.body as SignInOutput;}
+      if (cached) {
+        return cached.body as SignInOutput;
+      }
     }
 
     this.validate(input);
