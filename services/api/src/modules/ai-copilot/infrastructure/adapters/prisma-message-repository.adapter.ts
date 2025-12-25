@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { PrismaService } from "@kerniflow/data";
-import { MessageRepositoryPort } from "../../application/ports/message.repo.port";
+import { MessageRepositoryPort } from "../../application/ports/message-repository.port";
 import { CopilotMessage } from "../../domain/entities/message.entity";
 
 @Injectable()
@@ -14,7 +14,7 @@ export class PrismaMessageRepository implements MessageRepositoryPort {
     role: string;
     partsJson: string;
   }): Promise<CopilotMessage> {
-    const created = await prisma.message.create({
+    const created = await this.prisma.message.create({
       data: {
         id: message.id,
         tenantId: message.tenantId,

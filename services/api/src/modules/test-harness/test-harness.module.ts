@@ -15,7 +15,7 @@ import { Pool } from "pg";
         // Create a new Prisma client for test harness with Prisma 7 adapter
         const pool = new Pool({ connectionString: process.env.DATABASE_URL });
         const adapter = new PrismaPg(pool);
-        return new TestHarnessService(new PrismaClient({ adapter }));
+        return new TestHarnessService(new PrismaClient({ adapter }) as any);
       },
     },
   ],

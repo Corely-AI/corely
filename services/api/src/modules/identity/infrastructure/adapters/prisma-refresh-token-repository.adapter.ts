@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
-import { IRefreshTokenRepository } from "../../application/ports/refresh-token.repo.port";
+import { IRefreshTokenRepository } from "../../application/ports/refresh-token-repository.port";
 
 /**
  * Prisma Refresh Token Repository Implementation
@@ -16,7 +16,7 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
     tokenHash: string;
     expiresAt: Date;
   }): Promise<void> {
-    await prisma.refreshToken.create({
+    await this.prisma.refreshToken.create({
       data,
     });
   }
@@ -28,7 +28,7 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
     expiresAt: Date;
     revokedAt: Date | null;
   } | null> {
-    const token = await prisma.refreshToken.findFirst({
+    const token = await this.prisma.refreshToken.findFirst({
       where: { tokenHash: hash },
       select: {
         id: true,
@@ -39,26 +39,28 @@ export class PrismaRefreshTokenRepository implements IRefreshTokenRepository {
       },
     });
 
-    if (!token) {return null;}
+    if (!token) {
+      return null;
+    }
     return token;
   }
 
   async revoke(id: string): Promise<void> {
-    await prisma.refreshToken.update({
+    await this.prisma.refreshToken.update({
       where: { id },
       data: { revokedAt: new Date() },
     });
   }
 
   async revokeAllForUserInTenant(userId: string, tenantId: string): Promise<void> {
-    await prisma.refreshToken.updateMany({
+    await this.prisma.refreshToken.updateMany({
       where: { userId, tenantId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
   }
 
   async deleteExpired(): Promise<number> {
-    const result = await prisma.refreshToken.deleteMany({
+    const result = await this.prisma.refreshToken.deleteMany({
       where: {
         expiresAt: {
           lt: new Date(),

@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
-import { Request } from "express";
+import type { Request } from "express";
 import {
   CompleteUploadInputSchema,
   CreateUploadIntentInputSchema,

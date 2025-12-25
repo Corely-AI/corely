@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
-import { Request } from "express";
+import type { Request } from "express";
 import { InvoicesApplication } from "../../application/invoices.application";
 import {
   CancelInvoiceInputSchema,

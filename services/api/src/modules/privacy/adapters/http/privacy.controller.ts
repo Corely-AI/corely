@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
 import type { RequestPersonalDataExportUseCase } from "../../application/use-cases/request-personal-data-export/request-personal-data-export.usecase";
 import type { RequestAccountErasureUseCase } from "../../application/use-cases/request-account-erasure/request-account-erasure.usecase";
 import type { GetPrivacyRequestStatusUseCase } from "../../application/use-cases/get-privacy-request-status/get-privacy-request-status.usecase";
-import { Request } from "express";
+import type { Request } from "express";
 
 @Controller("privacy")
 export class PrivacyController {

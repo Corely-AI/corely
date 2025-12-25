@@ -4,7 +4,7 @@ import {
   InvoiceRepoPort,
   ListInvoicesFilters,
   ListInvoicesResult,
-} from "../../application/ports/invoice-repo.port";
+} from "../../application/ports/invoice-repository.port";
 import { InvoiceAggregate } from "../../domain/invoice.aggregate";
 import { InvoiceLine, InvoicePayment, InvoiceStatus } from "../../domain/invoice.types";
 import { LocalDate } from "@kerniflow/kernel";
@@ -24,7 +24,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       throw new Error("Tenant mismatch when saving invoice");
     }
 
-    await prisma.invoice.upsert({
+    await this.prisma.invoice.upsert({
       where: { id: invoice.id },
       update: {
         customerPartyId: invoice.customerPartyId,
@@ -83,7 +83,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
 
     if (invoice.lineItems.length) {
       for (const line of invoice.lineItems) {
-        await prisma.invoiceLine.upsert({
+        await this.prisma.invoiceLine.upsert({
           where: { id: line.id },
           update: {
             description: line.description,
@@ -107,11 +107,13 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   }
 
   async findById(tenantId: string, id: string): Promise<InvoiceAggregate | null> {
-    const data = await prisma.invoice.findFirst({
+    const data = await this.prisma.invoice.findFirst({
       where: { id, tenantId },
       include: { lines: true },
     });
-    if (!data) {return null;}
+    if (!data) {
+      return null;
+    }
     const lineItems: InvoiceLine[] = data.lines.map((line) => ({
       id: line.id,
       description: line.description,
@@ -154,15 +156,23 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     cursor?: string
   ): Promise<ListInvoicesResult> {
     const where: any = { tenantId };
-    if (filters.status) {where.status = filters.status;}
-    if (filters.customerPartyId) {where.customerPartyId = filters.customerPartyId;}
+    if (filters.status) {
+      where.status = filters.status;
+    }
+    if (filters.customerPartyId) {
+      where.customerPartyId = filters.customerPartyId;
+    }
     if (filters.fromDate || filters.toDate) {
       where.createdAt = {};
-      if (filters.fromDate) {where.createdAt.gte = filters.fromDate;}
-      if (filters.toDate) {where.createdAt.lte = filters.toDate;}
+      if (filters.fromDate) {
+        where.createdAt.gte = filters.fromDate;
+      }
+      if (filters.toDate) {
+        where.createdAt.lte = filters.toDate;
+      }
     }
 
-    const results = await prisma.invoice.findMany({
+    const results = await this.prisma.invoice.findMany({
       where,
       take: pageSize,
       skip: cursor ? 1 : 0,
@@ -211,7 +221,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   }
 
   async isInvoiceNumberTaken(tenantId: string, number: string): Promise<boolean> {
-    const count = await prisma.invoice.count({ where: { tenantId, number } });
+    const count = await this.prisma.invoice.count({ where: { tenantId, number } });
     return count > 0;
   }
 }

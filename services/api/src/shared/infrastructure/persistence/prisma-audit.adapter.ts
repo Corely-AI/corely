@@ -18,7 +18,8 @@
 // }
 
 import { Injectable } from "@nestjs/common";
-import { AuditPort, TransactionContext } from "@kerniflow/kernel";
+import { AuditPort } from "@kerniflow/kernel";
+import type { TransactionContext } from "@kerniflow/kernel";
 import { PrismaService } from "@kerniflow/data";
 import { getPrismaClient } from "@kerniflow/data";
 
@@ -37,17 +38,16 @@ export class PrismaAuditAdapter implements AuditPort {
     },
     tx?: TransactionContext
   ): Promise<void> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
 
     await client.auditLog.create({
       data: {
         tenantId: entry.tenantId,
-        userId: entry.userId,
+        actorUserId: entry.userId,
         action: entry.action,
-        entityType: entry.entityType,
+        entity: entry.entityType,
         entityId: entry.entityId,
-        metadataJson: entry.metadata ? JSON.stringify(entry.metadata) : "{}",
-        timestamp: new Date(),
+        details: entry.metadata ? JSON.stringify(entry.metadata) : null,
       },
     });
   }

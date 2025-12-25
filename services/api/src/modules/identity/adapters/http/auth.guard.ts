@@ -5,7 +5,8 @@ import {
   UnauthorizedException,
   Inject,
 } from "@nestjs/common";
-import { ITokenService, TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port";
+import type { ITokenService } from "../../application/ports/token-service.port";
+import { TOKEN_SERVICE_TOKEN } from "../../application/ports/token-service.port";
 
 /**
  * Auth Guard

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import type { PrivacyRequestRepoPort } from "../ports/privacy-request-repo.port";
+import type { PrivacyRequestRepoPort } from "../ports/privacy-request-repository.port";
 import type { ClockPort } from "@shared/ports/clock.port";
 import type { DocumentsPort } from "../ports/documents.port";
 import type { PersonalDataCollectorPort } from "../ports/personal-data-collector.port";

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
-import { DocumentRepoPort } from "../../application/ports/document-repo.port";
+import { DocumentRepoPort } from "../../application/ports/document-repository.port";
 import { DocumentAggregate } from "../../domain/document.aggregate";
 import { FileEntity } from "../../domain/file.entity";
 import { DocumentLinkEntityType, DocumentStatus, DocumentType } from "../../domain/document.types";
@@ -40,7 +40,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(document: DocumentAggregate): Promise<void> {
-    await prisma.document.create({
+    await this.prisma.document.create({
       data: {
         id: document.id,
         tenantId: document.tenantId,
@@ -57,7 +57,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
   }
 
   async save(document: DocumentAggregate): Promise<void> {
-    await prisma.document.update({
+    await this.prisma.document.update({
       where: { id: document.id },
       data: {
         status: document.status as any,
@@ -75,7 +75,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
     documentId: string,
     opts?: { includeArchived?: boolean }
   ): Promise<DocumentAggregate | null> {
-    const doc = await prisma.document.findFirst({
+    const doc = await this.prisma.document.findFirst({
       where: {
         id: documentId,
         tenantId,
@@ -83,7 +83,9 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
       } as any,
       include: { files: true },
     } as any);
-    if (!doc) {return null;}
+    if (!doc) {
+      return null;
+    }
     return mapDocument(doc);
   }
 
@@ -93,7 +95,7 @@ export class PrismaDocumentRepoAdapter implements DocumentRepoPort {
     entityType: DocumentLinkEntityType,
     entityId: string
   ): Promise<DocumentAggregate | null> {
-    const link = await prisma.documentLink.findFirst({
+    const link = await this.prisma.documentLink.findFirst({
       where: { tenantId, entityType: entityType as any, entityId },
       include: { document: { include: { files: true } } },
     });

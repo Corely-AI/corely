@@ -26,15 +26,23 @@ export class PrismaAuditRepository implements IAuditPort {
       entityId: data.targetId || data.actorUserId || "unknown",
     };
 
-    if (data.tenantId) {createData.tenantId = data.tenantId;}
+    if (data.tenantId) {
+      createData.tenantId = data.tenantId;
+    }
     // The auditLog model does not have actorUserId; stash it in metadata if provided
     if (data.actorUserId) {
       createData.details = JSON.stringify({ actorUserId: data.actorUserId });
     }
-    if (data.ip) {createData.ip = data.ip;}
-    if (data.userAgent) {createData.userAgent = data.userAgent;}
-    if (data.metadataJson) {createData.metadataJson = data.metadataJson;}
+    if (data.ip) {
+      createData.ip = data.ip;
+    }
+    if (data.userAgent) {
+      createData.userAgent = data.userAgent;
+    }
+    if (data.metadataJson) {
+      createData.metadataJson = data.metadataJson;
+    }
 
-    await prisma.auditLog.create({ data: createData });
+    await this.prisma.auditLog.create({ data: createData });
   }
 }

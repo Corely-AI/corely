@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
 import { Membership } from "../../domain/entities/membership.entity";
-import { IMembershipRepository } from "../../application/ports/membership.repo.port";
+import { IMembershipRepository } from "../../application/ports/membership-repository.port";
 
 /**
  * Prisma Membership Repository Implementation
@@ -29,7 +29,9 @@ export class PrismaMembershipRepository implements IMembershipRepository {
       where: { id },
     });
 
-    if (!data) {return null;}
+    if (!data) {
+      return null;
+    }
     return Membership.restore(data);
   }
 
@@ -57,7 +59,9 @@ export class PrismaMembershipRepository implements IMembershipRepository {
       where: { tenantId_userId: { tenantId, userId } },
     });
 
-    if (!data) {return null;}
+    if (!data) {
+      return null;
+    }
     return Membership.restore(data);
   }
 

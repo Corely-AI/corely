@@ -1,17 +1,18 @@
 import { Injectable, Inject } from "@nestjs/common";
-import {
-  IMembershipRepository,
-  MEMBERSHIP_REPOSITORY_TOKEN,
-} from "../ports/membership-repository.port";
-import { ITokenService, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
-import { IUserRepository, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
-import {
-  IRefreshTokenRepository,
-  REFRESH_TOKEN_REPOSITORY_TOKEN,
-} from "../ports/refresh-token-repository.port";
-import { IOutboxPort, OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
-import { IAuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
-import { ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
+import type { IMembershipRepository } from "../ports/membership-repository.port";
+import { MEMBERSHIP_REPOSITORY_TOKEN } from "../ports/membership-repository.port";
+import type { ITokenService } from "../ports/token-service.port";
+import { TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
+import type { IUserRepository } from "../ports/user-repository.port";
+import { USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
+import type { IRefreshTokenRepository } from "../ports/refresh-token-repository.port";
+import { REFRESH_TOKEN_REPOSITORY_TOKEN } from "../ports/refresh-token-repository.port";
+import type { IOutboxPort } from "../ports/outbox.port";
+import { OUTBOX_PORT_TOKEN } from "../ports/outbox.port";
+import type { IAuditPort } from "../ports/audit.port";
+import { AUDIT_PORT_TOKEN } from "../ports/audit.port";
+import type { ClockPort } from "../../../../shared/ports/clock.port";
+import { CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import { TenantSwitchedEvent } from "../../domain/events/identity.events";
 import { createHash, randomUUID } from "crypto";
 

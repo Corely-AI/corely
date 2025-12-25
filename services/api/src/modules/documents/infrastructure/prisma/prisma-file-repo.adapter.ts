@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
-import { FileRepoPort } from "../../application/ports/file-repo.port";
+import { FileRepoPort } from "../../application/ports/file-repository.port";
 import { FileEntity } from "../../domain/file.entity";
 import { FileKind } from "../../domain/document.types";
 
@@ -24,7 +24,7 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(file: FileEntity): Promise<void> {
-    await prisma.file.create({
+    await this.prisma.file.create({
       data: {
         id: file.id,
         tenantId: file.tenantId,
@@ -42,7 +42,7 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
   }
 
   async save(file: FileEntity): Promise<void> {
-    await prisma.file.update({
+    await this.prisma.file.update({
       where: { id: file.id },
       data: {
         kind: file.kind as any,
@@ -57,12 +57,12 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
   }
 
   async findById(tenantId: string, fileId: string): Promise<FileEntity | null> {
-    const row = await prisma.file.findFirst({ where: { id: fileId, tenantId } });
+    const row = await this.prisma.file.findFirst({ where: { id: fileId, tenantId } });
     return row ? mapFile(row) : null;
   }
 
   async findByDocument(tenantId: string, documentId: string): Promise<FileEntity[]> {
-    const rows = await prisma.file.findMany({ where: { tenantId, documentId } });
+    const rows = await this.prisma.file.findMany({ where: { tenantId, documentId } });
     return rows.map(mapFile);
   }
 
@@ -71,7 +71,7 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
     documentId: string,
     kind: FileKind
   ): Promise<FileEntity | null> {
-    const row = await prisma.file.findFirst({ where: { tenantId, documentId, kind } });
+    const row = await this.prisma.file.findFirst({ where: { tenantId, documentId, kind } });
     return row ? mapFile(row) : null;
   }
 }

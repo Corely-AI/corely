@@ -5,7 +5,7 @@ import { UnarchiveExpenseUseCase } from "../../application/use-cases/unarchive-e
 import { CreateExpenseInputSchema } from "@kerniflow/contracts";
 import { IdempotencyInterceptor } from "../../../../shared/idempotency/IdempotencyInterceptor";
 import { buildRequestContext } from "../../../../shared/context/request-context";
-import { Request } from "express";
+import type { Request } from "express";
 
 @Controller("expenses")
 @UseInterceptors(IdempotencyInterceptor)

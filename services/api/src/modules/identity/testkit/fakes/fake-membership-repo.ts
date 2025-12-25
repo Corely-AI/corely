@@ -1,5 +1,5 @@
-import { IMembershipRepository } from "../../application/ports/membership.repo.port";
-import { Membership } from "../../domain/entities/membership.entity";
+import { type IMembershipRepository } from "../../application/ports/membership-repository.port";
+import { type Membership } from "../../domain/entities/membership.entity";
 
 export class FakeMembershipRepository implements IMembershipRepository {
   memberships: Membership[] = [];

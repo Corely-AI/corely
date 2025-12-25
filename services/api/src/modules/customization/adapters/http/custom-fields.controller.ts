@@ -11,8 +11,8 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
+import type { CustomEntityType } from "@kerniflow/contracts";
 import {
-  CustomEntityType,
   CustomEntityTypes,
   CreateCustomFieldDefinitionSchema,
   UpdateCustomFieldDefinitionSchema,

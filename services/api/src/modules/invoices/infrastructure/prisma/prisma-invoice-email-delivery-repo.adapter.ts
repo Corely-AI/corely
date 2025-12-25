@@ -4,7 +4,7 @@ import {
   InvoiceEmailDeliveryRepoPort,
   InvoiceEmailDelivery,
   DeliveryStatus,
-} from "../../application/ports/invoice-email-delivery-repo.port";
+} from "../../application/ports/invoice-email-delivery-repository.port";
 
 @Injectable()
 export class PrismaInvoiceEmailDeliveryRepoAdapter implements InvoiceEmailDeliveryRepoPort {
@@ -14,7 +14,7 @@ export class PrismaInvoiceEmailDeliveryRepoAdapter implements InvoiceEmailDelive
     tenantId: string,
     idempotencyKey: string
   ): Promise<InvoiceEmailDelivery | null> {
-    const record = await prisma.invoiceEmailDelivery.findUnique({
+    const record = await this.prisma.invoiceEmailDelivery.findUnique({
       where: {
         tenantId_idempotencyKey: {
           tenantId,
@@ -41,7 +41,7 @@ export class PrismaInvoiceEmailDeliveryRepoAdapter implements InvoiceEmailDelive
   }
 
   async findById(tenantId: string, deliveryId: string): Promise<InvoiceEmailDelivery | null> {
-    const record = await prisma.invoiceEmailDelivery.findFirst({
+    const record = await this.prisma.invoiceEmailDelivery.findFirst({
       where: {
         id: deliveryId,
         tenantId,
@@ -66,7 +66,7 @@ export class PrismaInvoiceEmailDeliveryRepoAdapter implements InvoiceEmailDelive
   }
 
   async findByProviderMessageId(providerMessageId: string): Promise<InvoiceEmailDelivery | null> {
-    const record = await prisma.invoiceEmailDelivery.findFirst({
+    const record = await this.prisma.invoiceEmailDelivery.findFirst({
       where: { providerMessageId },
     });
 
@@ -90,7 +90,7 @@ export class PrismaInvoiceEmailDeliveryRepoAdapter implements InvoiceEmailDelive
   async create(
     delivery: Omit<InvoiceEmailDelivery, "createdAt" | "updatedAt">
   ): Promise<InvoiceEmailDelivery> {
-    const record = await prisma.invoiceEmailDelivery.create({
+    const record = await this.prisma.invoiceEmailDelivery.create({
       data: {
         id: delivery.id,
         tenantId: delivery.tenantId,
@@ -126,7 +126,7 @@ export class PrismaInvoiceEmailDeliveryRepoAdapter implements InvoiceEmailDelive
     providerMessageId?: string,
     lastError?: string
   ): Promise<void> {
-    await prisma.invoiceEmailDelivery.updateMany({
+    await this.prisma.invoiceEmailDelivery.updateMany({
       where: {
         id: deliveryId,
         tenantId,
@@ -144,7 +144,7 @@ export class PrismaInvoiceEmailDeliveryRepoAdapter implements InvoiceEmailDelive
     status: DeliveryStatus,
     lastError?: string
   ): Promise<void> {
-    await prisma.invoiceEmailDelivery.updateMany({
+    await this.prisma.invoiceEmailDelivery.updateMany({
       where: { providerMessageId },
       data: {
         status,

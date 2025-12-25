@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common";
 import { PrivacyController } from "./adapters/http/privacy.controller";
-import { RequestPersonalDataExportUseCase } from "./application/use-cases/request-personal-data-export/RequestPersonalDataExportUseCase";
-import { RequestAccountErasureUseCase } from "./application/use-cases/request-account-erasure/RequestAccountErasureUseCase";
-import { GetPrivacyRequestStatusUseCase } from "./application/use-cases/get-privacy-request-status/GetPrivacyRequestStatusUseCase";
+import { RequestPersonalDataExportUseCase } from "./application/use-cases/request-personal-data-export/request-personal-data-export.usecase";
+import { RequestAccountErasureUseCase } from "./application/use-cases/request-account-erasure/request-account-erasure.usecase";
+import { GetPrivacyRequestStatusUseCase } from "./application/use-cases/get-privacy-request-status/get-privacy-request-status.usecase";
 import { ProcessPrivacyRequestHandler } from "./application/workers/process-privacy-request.handler";
 import { PrismaPrivacyRequestRepoAdapter } from "./infrastructure/prisma/prisma-privacy-request-repo.adapter";
 import { OUTBOX_PORT_TOKEN } from "../../shared/ports/outbox.port";

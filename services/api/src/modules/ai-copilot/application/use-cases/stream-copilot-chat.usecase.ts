@@ -1,8 +1,8 @@
 import { nanoid } from "nanoid";
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
-import { type AgentRunRepositoryPort } from "../ports/agent-run.repo.port";
-import { type MessageRepositoryPort } from "../ports/message.repo.port";
-import { type ToolExecutionRepositoryPort } from "../ports/tool-execution.repo.port";
+import { type AgentRunRepositoryPort } from "../ports/agent-run-repository.port";
+import { type MessageRepositoryPort } from "../ports/message-repository.port";
+import { type ToolExecutionRepositoryPort } from "../ports/tool-execution-repository.port";
 import { type ToolRegistryPort } from "../ports/tool-registry.port";
 import { type LanguageModelPort } from "../ports/language-model.port";
 import { type AuditPort } from "../ports/audit.port";

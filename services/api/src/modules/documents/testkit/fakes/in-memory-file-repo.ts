@@ -1,6 +1,6 @@
-import { FileRepoPort } from "../../application/ports/file-repo.port";
-import { FileEntity } from "../../domain/file.entity";
-import { FileKind } from "../../domain/document.types";
+import { type FileRepoPort } from "../../application/ports/file-repository.port";
+import { type FileEntity } from "../../domain/file.entity";
+import { type FileKind } from "../../domain/document.types";
 
 export class InMemoryFileRepo implements FileRepoPort {
   files = new Map<string, FileEntity>();
@@ -15,7 +15,7 @@ export class InMemoryFileRepo implements FileRepoPort {
 
   async findById(tenantId: string, fileId: string): Promise<FileEntity | null> {
     const file = this.files.get(fileId);
-    if (!file || file.tenantId !== tenantId) return null;
+    if (!file || file.tenantId !== tenantId) {return null;}
     return file;
   }
 

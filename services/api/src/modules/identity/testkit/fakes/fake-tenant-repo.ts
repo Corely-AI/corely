@@ -1,5 +1,5 @@
-import { ITenantRepository } from "../../application/ports/tenant.repo.port";
-import { Tenant } from "../../domain/entities/tenant.entity";
+import { type ITenantRepository } from "../../application/ports/tenant-repository.port";
+import { type Tenant } from "../../domain/entities/tenant.entity";
 
 export class FakeTenantRepository implements ITenantRepository {
   tenants: Tenant[] = [];

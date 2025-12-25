@@ -6,8 +6,8 @@ import {
   SetMetadata,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { IMembershipRepository } from "../../application/ports/membership-repository.port";
-import { IRoleRepository } from "../../application/ports/role-repository.port";
+import type { IMembershipRepository } from "../../application/ports/membership-repository.port";
+import type { IRoleRepository } from "../../application/ports/role-repository.port";
 
 export const REQUIRE_PERMISSION = "require_permission";
 

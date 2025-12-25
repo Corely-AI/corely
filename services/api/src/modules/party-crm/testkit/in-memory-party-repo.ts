@@ -1,9 +1,9 @@
 import {
-  PartyRepoPort,
-  ListCustomersFilters,
-  Pagination,
-} from "../application/ports/party-repo.port";
-import { PartyAggregate } from "../domain/party.aggregate";
+  type PartyRepoPort,
+  type ListCustomersFilters,
+  type Pagination,
+} from "../application/ports/party-repository.port";
+import { type PartyAggregate } from "../domain/party.aggregate";
 
 export class InMemoryPartyRepo implements PartyRepoPort {
   customers: PartyAggregate[] = [];

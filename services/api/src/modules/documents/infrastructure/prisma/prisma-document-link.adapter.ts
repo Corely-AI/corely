@@ -13,7 +13,7 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
     entityType: DocumentLinkEntityType;
     entityId: string;
   }): Promise<void> {
-    const existing = await prisma.documentLink.findFirst({
+    const existing = await this.prisma.documentLink.findFirst({
       where: {
         tenantId: params.tenantId,
         documentId: params.documentId,
@@ -21,8 +21,10 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
         entityId: params.entityId,
       },
     });
-    if (existing) {return;}
-    await prisma.documentLink.create({
+    if (existing) {
+      return;
+    }
+    await this.prisma.documentLink.create({
       data: {
         tenantId: params.tenantId,
         documentId: params.documentId,
@@ -37,7 +39,7 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
     entityType: DocumentLinkEntityType;
     entityId: string;
   }): Promise<string[]> {
-    const rows = await prisma.documentLink.findMany({
+    const rows = await this.prisma.documentLink.findMany({
       where: {
         tenantId: params.tenantId,
         entityType: params.entityType,

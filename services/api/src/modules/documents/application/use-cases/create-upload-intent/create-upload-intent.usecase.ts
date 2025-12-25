@@ -1,21 +1,21 @@
 import {
   BaseUseCase,
-  ClockPort,
-  IdGeneratorPort,
-  LoggerPort,
-  Result,
-  UseCaseContext,
-  UseCaseError,
+  type ClockPort,
+  type IdGeneratorPort,
+  type LoggerPort,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
   ValidationError,
   err,
   ok,
 } from "@kerniflow/kernel";
-import { CreateUploadIntentInput, CreateUploadIntentOutput } from "@kerniflow/contracts";
-import { DocumentRepoPort } from "../../ports/document-repo.port";
-import { FileRepoPort } from "../../ports/file-repo.port";
-import { ObjectStoragePort } from "../../ports/object-storage.port";
+import { type CreateUploadIntentInput, type CreateUploadIntentOutput } from "@kerniflow/contracts";
+import { type DocumentRepoPort } from "../../ports/document-repository.port";
+import { type FileRepoPort } from "../../ports/file-repository.port";
+import { type ObjectStoragePort } from "../../ports/object-storage.port";
 import { DocumentAggregate } from "../../../domain/document.aggregate";
-import { FileKind } from "../../../domain/document.types";
+import { type FileKind } from "../../../domain/document.types";
 import { toDocumentDto, toFileDto } from "../../mappers/document.mapper";
 
 type Deps = {

@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@kerniflow/data";
 import { Tenant } from "../../domain/entities/tenant.entity";
-import { ITenantRepository } from "../../application/ports/tenant.repo.port";
+import { ITenantRepository } from "../../application/ports/tenant-repository.port";
 
 /**
  * Prisma Tenant Repository Implementation
@@ -29,7 +29,9 @@ export class PrismaTenantRepository implements ITenantRepository {
       where: { id },
     });
 
-    if (!data) {return null;}
+    if (!data) {
+      return null;
+    }
     return Tenant.restore(data);
   }
 
@@ -38,7 +40,9 @@ export class PrismaTenantRepository implements ITenantRepository {
       where: { slug },
     });
 
-    if (!data) {return null;}
+    if (!data) {
+      return null;
+    }
     return Tenant.restore(data);
   }
 

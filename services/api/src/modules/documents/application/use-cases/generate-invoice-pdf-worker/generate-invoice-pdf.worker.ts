@@ -1,9 +1,9 @@
-import { LoggerPort } from "@kerniflow/kernel";
-import { DocumentRepoPort } from "../../ports/document-repo.port";
-import { FileRepoPort } from "../../ports/file-repo.port";
-import { ObjectStoragePort } from "../../ports/object-storage.port";
-import { PdfRendererPort } from "../../ports/pdf-renderer.port";
-import { InvoicePdfModelPort } from "../../../../invoices/application/ports/invoice-pdf-model.port";
+import { type LoggerPort } from "@kerniflow/kernel";
+import { type DocumentRepoPort } from "../../ports/document-repository.port";
+import { type FileRepoPort } from "../../ports/file-repository.port";
+import { type ObjectStoragePort } from "../../ports/object-storage.port";
+import { type PdfRendererPort } from "../../ports/pdf-renderer.port";
+import { type InvoicePdfModelPort } from "../../../../invoices/application/ports/invoice-pdf-model.port";
 
 type EventPayload = {
   tenantId: string;

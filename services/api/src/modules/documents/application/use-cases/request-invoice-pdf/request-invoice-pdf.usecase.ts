@@ -1,25 +1,25 @@
 import {
   BaseUseCase,
-  ClockPort,
-  IdGeneratorPort,
-  LoggerPort,
+  type ClockPort,
+  type IdGeneratorPort,
+  type LoggerPort,
   NotFoundError,
-  Result,
-  UseCaseContext,
-  UseCaseError,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
   ValidationError,
   err,
   ok,
 } from "@kerniflow/kernel";
-import { RequestInvoicePdfInput, RequestInvoicePdfOutput } from "@kerniflow/contracts";
-import { DocumentRepoPort } from "../../ports/document-repo.port";
-import { FileRepoPort } from "../../ports/file-repo.port";
-import { DocumentLinkRepoPort } from "../../ports/document-link.port";
-import { ObjectStoragePort } from "../../ports/object-storage.port";
-import { OutboxPort } from "../../ports/outbox.port";
+import { type RequestInvoicePdfInput, type RequestInvoicePdfOutput } from "@kerniflow/contracts";
+import { type DocumentRepoPort } from "../../ports/document-repository.port";
+import { type FileRepoPort } from "../../ports/file-repository.port";
+import { type DocumentLinkRepoPort } from "../../ports/document-link.port";
+import { type ObjectStoragePort } from "../../ports/object-storage.port";
+import { type OutboxPort } from "../../ports/outbox.port";
 import { DocumentAggregate } from "../../../domain/document.aggregate";
 import { FileEntity } from "../../../domain/file.entity";
-import { FileKind } from "../../../domain/document.types";
+import { type FileKind } from "../../../domain/document.types";
 
 type Deps = {
   logger: LoggerPort;
@@ -45,7 +45,7 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
   }
 
   protected validate(input: RequestInvoicePdfInput): RequestInvoicePdfInput {
-    if (!input.invoiceId) throw new ValidationError("invoiceId is required");
+    if (!input.invoiceId) {throw new ValidationError("invoiceId is required");}
     return input;
   }
 

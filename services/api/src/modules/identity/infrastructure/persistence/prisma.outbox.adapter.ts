@@ -11,7 +11,7 @@ export class PrismaOutboxAdapter implements IOutboxPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async enqueue(data: { tenantId: string; eventType: string; payloadJson: string }): Promise<void> {
-    await prisma.outboxEvent.create({
+    await this.prisma.outboxEvent.create({
       data: {
         tenantId: data.tenantId,
         eventType: data.eventType,

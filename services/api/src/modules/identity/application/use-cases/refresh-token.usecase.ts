@@ -1,12 +1,14 @@
 import { Injectable, Inject } from "@nestjs/common";
-import {
-  IRefreshTokenRepository,
-  REFRESH_TOKEN_REPOSITORY_TOKEN,
-} from "../ports/refresh-token-repository.port";
-import { ITokenService, TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
-import { IUserRepository, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
-import { IAuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
-import { ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
+import type { IRefreshTokenRepository } from "../ports/refresh-token-repository.port";
+import { REFRESH_TOKEN_REPOSITORY_TOKEN } from "../ports/refresh-token-repository.port";
+import type { ITokenService } from "../ports/token-service.port";
+import { TOKEN_SERVICE_TOKEN } from "../ports/token-service.port";
+import type { IUserRepository } from "../ports/user-repository.port";
+import { USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
+import type { IAuditPort } from "../ports/audit.port";
+import { AUDIT_PORT_TOKEN } from "../ports/audit.port";
+import type { ClockPort } from "../../../../shared/ports/clock.port";
+import { CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import { createHash, randomUUID } from "crypto";
 
 export interface RefreshTokenInput {

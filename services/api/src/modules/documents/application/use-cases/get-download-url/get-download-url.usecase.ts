@@ -1,18 +1,18 @@
 import {
   BaseUseCase,
-  LoggerPort,
-  Result,
-  UseCaseContext,
-  UseCaseError,
+  type LoggerPort,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
   ValidationError,
   NotFoundError,
   err,
   ok,
 } from "@kerniflow/kernel";
-import { GetDownloadUrlInput, GetDownloadUrlOutput } from "@kerniflow/contracts";
-import { DocumentRepoPort } from "../../ports/document-repo.port";
-import { FileRepoPort } from "../../ports/file-repo.port";
-import { ObjectStoragePort } from "../../ports/object-storage.port";
+import { type GetDownloadUrlInput, type GetDownloadUrlOutput } from "@kerniflow/contracts";
+import { type DocumentRepoPort } from "../../ports/document-repository.port";
+import { type FileRepoPort } from "../../ports/file-repository.port";
+import { type ObjectStoragePort } from "../../ports/object-storage.port";
 
 type Deps = {
   logger: LoggerPort;
@@ -28,7 +28,7 @@ export class GetDownloadUrlUseCase extends BaseUseCase<GetDownloadUrlInput, GetD
   }
 
   protected validate(input: GetDownloadUrlInput): GetDownloadUrlInput {
-    if (!input.documentId) throw new ValidationError("documentId is required");
+    if (!input.documentId) {throw new ValidationError("documentId is required");}
     return input;
   }
 

@@ -1,5 +1,5 @@
 import { Body, Controller, Param, Post, Req, UseGuards } from "@nestjs/common";
-import { Request } from "express";
+import type { Request } from "express";
 import { RequestInvoicePdfInputSchema } from "@kerniflow/contracts";
 import { DocumentsApplication } from "../../application/documents.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";

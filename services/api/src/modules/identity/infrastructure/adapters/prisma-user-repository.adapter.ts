@@ -13,7 +13,7 @@ export class PrismaUserRepository implements IUserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(user: User, tx?: TransactionContext): Promise<User> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
 
     const data = await client.user.create({
       data: {
@@ -30,29 +30,33 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   async findById(id: string, tx?: TransactionContext): Promise<User | null> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
 
     const data = await client.user.findUnique({
       where: { id },
     });
 
-    if (!data) {return null;}
+    if (!data) {
+      return null;
+    }
     return User.restore(data);
   }
 
   async findByEmail(email: string, tx?: TransactionContext): Promise<User | null> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
 
     const data = await client.user.findUnique({
       where: { email },
     });
 
-    if (!data) {return null;}
+    if (!data) {
+      return null;
+    }
     return User.restore(data);
   }
 
   async emailExists(email: string, tx?: TransactionContext): Promise<boolean> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
 
     const count = await client.user.count({
       where: { email },
@@ -62,7 +66,7 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   async update(user: User, tx?: TransactionContext): Promise<User> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
 
     const data = await client.user.update({
       where: { id: user.getId() },

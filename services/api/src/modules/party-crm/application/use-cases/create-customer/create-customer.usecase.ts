@@ -1,17 +1,17 @@
 import {
   BaseUseCase,
-  ClockPort,
-  IdGeneratorPort,
-  LoggerPort,
-  Result,
-  UseCaseContext,
-  UseCaseError,
+  type ClockPort,
+  type IdGeneratorPort,
+  type LoggerPort,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
   ValidationError,
   err,
   ok,
 } from "@kerniflow/kernel";
-import { CreateCustomerInput, CreateCustomerOutput } from "@kerniflow/contracts";
-import { PartyRepoPort } from "../../ports/party-repo.port";
+import { type CreateCustomerInput, type CreateCustomerOutput } from "@kerniflow/contracts";
+import { type PartyRepoPort } from "../../ports/party-repository.port";
 import { PartyAggregate } from "../../../domain/party.aggregate";
 import { toCustomerDto } from "../../mappers/customer-dto.mapper";
 

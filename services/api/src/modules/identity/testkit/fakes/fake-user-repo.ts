@@ -1,5 +1,5 @@
-import { IUserRepository } from "../../application/ports/user.repo.port";
-import { User } from "../../domain/entities/user.entity";
+import { type IUserRepository } from "../../application/ports/user-repository.port";
+import { type User } from "../../domain/entities/user.entity";
 
 export class FakeUserRepository implements IUserRepository {
   users: User[] = [];

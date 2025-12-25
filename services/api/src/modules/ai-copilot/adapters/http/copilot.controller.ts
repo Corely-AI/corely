@@ -10,7 +10,7 @@ import {
   Inject,
   Logger,
 } from "@nestjs/common";
-import { Response, Request } from "express";
+import type { Response, Request } from "express";
 import { CopilotChatRequestDto } from "./copilot.dto";
 import type { StreamCopilotChatUseCase } from "../../application/use-cases/stream-copilot-chat.usecase";
 import { AuthGuard as IdentityAuthGuard } from "../../../identity/adapters/http/auth.guard";

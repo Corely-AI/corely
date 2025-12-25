@@ -1,8 +1,8 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { PrismaClient } from "@kerniflow/data";
+import { PrismaService } from "@kerniflow/data";
 import * as bcrypt from "bcrypt";
 
-interface SeedResult {
+export interface SeedResult {
   tenantId: string;
   tenantName: string;
   userId: string;
@@ -10,14 +10,14 @@ interface SeedResult {
   email: string;
 }
 
-interface DrainResult {
+export interface DrainResult {
   processedCount: number;
   failedCount: number;
 }
 
 @Injectable()
 export class TestHarnessService {
-  constructor(@Inject("PRISMA_CLIENT") private prisma: PrismaClient) {}
+  constructor(@Inject("PRISMA_CLIENT") private prisma: PrismaService) {}
 
   /**
    * Create a test tenant with user, roles, and permissions

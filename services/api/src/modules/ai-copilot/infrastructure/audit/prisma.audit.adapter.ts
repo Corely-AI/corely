@@ -14,7 +14,7 @@ export class PrismaAuditAdapter implements AuditPort {
     targetId?: string | undefined;
     details?: string | undefined;
   }): Promise<void> {
-    await prisma.auditLog.create({
+    await this.prisma.auditLog.create({
       data: {
         tenantId: data.tenantId || "unknown",
         action: data.action,

@@ -1,5 +1,5 @@
-import { TransactionContext } from "@kerniflow/kernel";
-import { Expense } from "../../domain/entities/Expense";
+import { type TransactionContext } from "@kerniflow/kernel";
+import { type Expense } from "../../domain/expense.entity";
 
 export interface ExpenseRepositoryPort {
   save(expense: Expense, tx?: TransactionContext): Promise<void>;

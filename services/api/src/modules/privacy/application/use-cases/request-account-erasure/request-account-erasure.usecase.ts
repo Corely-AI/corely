@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import type { PrivacyRequestRepoPort } from "../../ports/privacy-request-repo.port";
+import type { PrivacyRequestRepoPort } from "../../ports/privacy-request-repository.port";
 import type { OutboxPort } from "@shared/ports/outbox.port";
 import type { IdGeneratorPort } from "@shared/ports/id-generator.port";
 import type { ClockPort } from "@shared/ports/clock.port";

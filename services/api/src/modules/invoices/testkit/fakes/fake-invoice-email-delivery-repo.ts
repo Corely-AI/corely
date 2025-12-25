@@ -1,8 +1,8 @@
 import {
-  InvoiceEmailDeliveryRepoPort,
-  InvoiceEmailDelivery,
-  DeliveryStatus,
-} from "../../application/ports/invoice-email-delivery-repo.port";
+  type InvoiceEmailDeliveryRepoPort,
+  type InvoiceEmailDelivery,
+  type DeliveryStatus,
+} from "../../application/ports/invoice-email-delivery-repository.port";
 
 export class FakeInvoiceEmailDeliveryRepository implements InvoiceEmailDeliveryRepoPort {
   deliveries: InvoiceEmailDelivery[] = [];

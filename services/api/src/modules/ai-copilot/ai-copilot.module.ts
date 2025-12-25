@@ -1,11 +1,12 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@kerniflow/data";
 import { CopilotController } from "./adapters/http/copilot.controller";
+import type { EnvService } from "@kerniflow/config";
 
 import { StreamCopilotChatUseCase } from "./application/use-cases/stream-copilot-chat.usecase";
-import { PrismaAgentRunRepository } from "./infrastructure/persistence/prisma.agent-run.repo";
-import { PrismaMessageRepository } from "./infrastructure/persistence/prisma.message.repo";
-import { PrismaToolExecutionRepository } from "./infrastructure/persistence/prisma.tool-execution.repo";
+import { PrismaAgentRunRepository } from "./infrastructure/adapters/prisma-agent-run-repository.adapter";
+import { PrismaMessageRepository } from "./infrastructure/adapters/prisma-message-repository.adapter";
+import { PrismaToolExecutionRepository } from "./infrastructure/adapters/prisma-tool-execution-repository.adapter";
 import { ToolRegistry } from "./infrastructure/tools/tool-registry";
 import { AiSdkModelAdapter } from "./infrastructure/model/ai-sdk.model-adapter";
 import { PrismaAuditAdapter } from "./infrastructure/audit/prisma.audit.adapter";
@@ -46,15 +47,17 @@ import { buildCustomerTools } from "../party-crm/adapters/tools/customer.tools";
         toolExec: PrismaToolExecutionRepository,
         audit: PrismaAuditAdapter,
         outbox: PrismaOutboxAdapter,
+        env: EnvService,
         logger: NestLoggerAdapter
       ) => {
         logger.debug("Creating AiSdkModelAdapter");
-        return new AiSdkModelAdapter(toolExec, audit, outbox);
+        return new AiSdkModelAdapter(toolExec, audit, outbox, env);
       },
       inject: [
         PrismaToolExecutionRepository,
         PrismaAuditAdapter,
         PrismaOutboxAdapter,
+        "ENV_SERVICE",
         "COPILOT_LOGGER",
       ],
     },

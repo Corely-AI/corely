@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { PrismaService } from "@kerniflow/data";
-import { AgentRunRepositoryPort } from "../../application/ports/agent-run.repo.port";
+import { AgentRunRepositoryPort } from "../../application/ports/agent-run-repository.port";
 import { AgentRun } from "../../domain/entities/agent-run.entity";
 
 @Injectable()
@@ -14,7 +14,7 @@ export class PrismaAgentRunRepository implements AgentRunRepositoryPort {
     status: string;
     metadataJson?: string | undefined;
   }): Promise<AgentRun> {
-    const created = await prisma.agentRun.create({
+    const created = await this.prisma.agentRun.create({
       data: {
         id: run.id,
         tenantId: run.tenantId,
@@ -35,7 +35,7 @@ export class PrismaAgentRunRepository implements AgentRunRepositoryPort {
   }
 
   async updateStatus(runId: string, status: string, finishedAt?: Date): Promise<void> {
-    await prisma.agentRun.update({
+    await this.prisma.agentRun.update({
       where: { id: runId },
       data: { status, finishedAt: finishedAt || null },
     });

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { PrismaService } from "@kerniflow/data";
-import { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution.repo.port";
+import { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution-repository.port";
 import { ToolExecution } from "../../domain/entities/tool-execution.entity";
 
 @Injectable()
@@ -16,7 +16,7 @@ export class PrismaToolExecutionRepository implements ToolExecutionRepositoryPor
     inputJson: string;
     status: string;
   }): Promise<ToolExecution> {
-    const created = await prisma.toolExecution.create({
+    const created = await this.prisma.toolExecution.create({
       data: {
         id: execution.id,
         tenantId: execution.tenantId,
@@ -49,7 +49,7 @@ export class PrismaToolExecutionRepository implements ToolExecutionRepositoryPor
     toolCallId: string,
     data: { status: string; outputJson?: string; errorJson?: string }
   ): Promise<void> {
-    await prisma.toolExecution.update({
+    await this.prisma.toolExecution.update({
       where: {
         tenantId_runId_toolCallId: {
           tenantId,

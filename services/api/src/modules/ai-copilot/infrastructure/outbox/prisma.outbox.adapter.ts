@@ -11,7 +11,7 @@ export class PrismaOutboxAdapter implements OutboxPort {
     eventType: string;
     payloadJson: string;
   }): Promise<void> {
-    await prisma.outboxEvent.create({
+    await this.prisma.outboxEvent.create({
       data: {
         tenantId: event.tenantId,
         eventType: event.eventType,

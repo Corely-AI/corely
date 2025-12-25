@@ -7,7 +7,7 @@ export class PrismaTenantTimeZoneAdapter implements TenantTimeZonePort {
   constructor(private readonly prisma: PrismaService) {}
 
   async getTenantTimeZone(tenantId: string): Promise<string | null> {
-    const tenant = await prisma.tenant.findUnique({
+    const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
       select: { timeZone: true },
     });

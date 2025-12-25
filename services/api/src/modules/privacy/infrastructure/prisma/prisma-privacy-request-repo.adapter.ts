@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { PrismaService } from "@kerniflow/data";
-import type { PrivacyRequestRepoPort } from "../../application/ports/privacy-request-repo.port";
+import type { PrivacyRequestRepoPort } from "../../application/ports/privacy-request-repository.port";
 import { PrivacyRequest } from "../../domain/privacy-request.entity";
 
 const mapRequest = (row: any): PrivacyRequest =>
@@ -24,7 +24,7 @@ export class PrismaPrivacyRequestRepoAdapter implements PrivacyRequestRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(request: PrivacyRequest): Promise<void> {
-    await (prisma as any).privacyRequest.create({
+    await (this.prisma as any).privacyRequest.create({
       data: {
         id: request.id,
         tenantId: request.tenantId,
@@ -43,7 +43,7 @@ export class PrismaPrivacyRequestRepoAdapter implements PrivacyRequestRepoPort {
   }
 
   async save(request: PrivacyRequest): Promise<void> {
-    await (prisma as any).privacyRequest.update({
+    await (this.prisma as any).privacyRequest.update({
       where: { id: request.id },
       data: {
         status: request.status,
@@ -57,7 +57,7 @@ export class PrismaPrivacyRequestRepoAdapter implements PrivacyRequestRepoPort {
   }
 
   async findById(tenantId: string, id: string): Promise<PrivacyRequest | null> {
-    const row = await (prisma as any).privacyRequest.findFirst({ where: { id, tenantId } });
+    const row = await (this.prisma as any).privacyRequest.findFirst({ where: { id, tenantId } });
     return row ? mapRequest(row) : null;
   }
 }

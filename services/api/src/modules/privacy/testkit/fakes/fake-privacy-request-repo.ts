@@ -1,5 +1,5 @@
-import { PrivacyRequestRepoPort } from "../../application/ports/privacy-request-repo.port";
-import { PrivacyRequest } from "../../domain/privacy-request.entity";
+import { type PrivacyRequestRepoPort } from "../../application/ports/privacy-request-repository.port";
+import { type PrivacyRequest } from "../../domain/privacy-request.entity";
 
 export class FakePrivacyRequestRepo implements PrivacyRequestRepoPort {
   private requests = new Map<string, PrivacyRequest>();
@@ -14,7 +14,7 @@ export class FakePrivacyRequestRepo implements PrivacyRequestRepoPort {
 
   async findById(tenantId: string, id: string): Promise<PrivacyRequest | null> {
     const req = this.requests.get(id);
-    if (!req || req.tenantId !== tenantId) return null;
+    if (!req || req.tenantId !== tenantId) {return null;}
     return req;
   }
 }

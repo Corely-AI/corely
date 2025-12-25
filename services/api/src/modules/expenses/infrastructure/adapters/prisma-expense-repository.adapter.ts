@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService, getPrismaClient, type TransactionContext } from "@kerniflow/data";
+import type { TransactionContext } from "@kerniflow/kernel";
+import { PrismaService, getPrismaClient } from "@kerniflow/data";
 import { ExpenseRepositoryPort } from "../../application/ports/expense-repository.port";
 import { Expense } from "../../domain/expense.entity";
 
@@ -8,7 +9,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async save(expense: Expense, tx?: TransactionContext): Promise<void> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
     await client.expense.create({
       data: {
         id: expense.id,
@@ -26,7 +27,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
   }
 
   async findById(tenantId: string, id: string, tx?: TransactionContext): Promise<Expense | null> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
     const data = await client.expense.findFirst({ where: { id, tenantId, archivedAt: null } });
     return data ? this.mapExpense(data) : null;
   }
@@ -36,7 +37,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
     id: string,
     tx?: TransactionContext
   ): Promise<Expense | null> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
     const data = await client.expense.findFirst({ where: { id, tenantId } });
     return data ? this.mapExpense(data) : null;
   }
@@ -46,7 +47,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
     params?: { includeArchived?: boolean },
     tx?: TransactionContext
   ): Promise<Expense[]> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
     const data = await client.expense.findMany({
       where: { tenantId, archivedAt: params?.includeArchived ? undefined : null },
       orderBy: { expenseDate: "desc" },

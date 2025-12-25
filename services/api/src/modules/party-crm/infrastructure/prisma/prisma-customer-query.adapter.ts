@@ -11,11 +11,13 @@ export class PrismaCustomerQueryAdapter implements CustomerQueryPort {
     tenantId: string,
     partyId: string
   ): Promise<CustomerBillingSnapshotDTO | null> {
-    const party = await prisma.party.findFirst({
+    const party = await this.prisma.party.findFirst({
       where: { id: partyId, tenantId, roles: { some: { role: "CUSTOMER" } } },
       include: { contactPoints: true, addresses: true },
     });
-    if (!party) {return null;}
+    if (!party) {
+      return null;
+    }
 
     const email = party.contactPoints.find((cp) => cp.type === "EMAIL" && cp.isPrimary)?.value;
     const billingAddress = party.addresses.find((addr) => addr.type === "BILLING");

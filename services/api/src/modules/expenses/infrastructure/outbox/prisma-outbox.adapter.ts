@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { OutboxPort } from "@kerniflow/kernel";
-import { PrismaService, getPrismaClient, type TransactionContext } from "@kerniflow/data";
+import { OutboxPort, type TransactionContext } from "@kerniflow/kernel";
+import { PrismaService, getPrismaClient } from "@kerniflow/data";
 
 @Injectable()
 export class PrismaOutboxAdapter implements OutboxPort {
@@ -16,7 +16,7 @@ export class PrismaOutboxAdapter implements OutboxPort {
     },
     tx?: TransactionContext
   ): Promise<void> {
-    const client = getPrismaClient(this.prisma, tx);
+    const client = getPrismaClient(this.prisma, tx as any);
 
     await client.outboxEvent.create({
       data: {

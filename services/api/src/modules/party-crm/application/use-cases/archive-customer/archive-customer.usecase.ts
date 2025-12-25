@@ -1,17 +1,17 @@
 import {
   BaseUseCase,
-  ClockPort,
-  LoggerPort,
+  type ClockPort,
+  type LoggerPort,
   NotFoundError,
-  Result,
-  UseCaseContext,
-  UseCaseError,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
   ValidationError,
   err,
   ok,
 } from "@kerniflow/kernel";
-import { ArchiveCustomerInput, ArchiveCustomerOutput } from "@kerniflow/contracts";
-import { PartyRepoPort } from "../../ports/party-repo.port";
+import { type ArchiveCustomerInput, type ArchiveCustomerOutput } from "@kerniflow/contracts";
+import { type PartyRepoPort } from "../../ports/party-repository.port";
 import { toCustomerDto } from "../../mappers/customer-dto.mapper";
 
 type Deps = { logger: LoggerPort; partyRepo: PartyRepoPort; clock: ClockPort };

@@ -13,7 +13,7 @@ export class PrismaInvoiceEmailContextQueryAdapter implements InvoiceEmailContex
     tenantId: string,
     invoiceId: string
   ): Promise<InvoiceEmailContext | null> {
-    const invoice = await prisma.invoice.findFirst({
+    const invoice = await this.prisma.invoice.findFirst({
       where: {
         id: invoiceId,
         tenantId,

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import type { PrivacyRequestRepoPort } from "../../ports/privacy-request-repo.port";
+import type { PrivacyRequestRepoPort } from "../../ports/privacy-request-repository.port";
 
 @Injectable()
 export class GetPrivacyRequestStatusUseCase {

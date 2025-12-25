@@ -1,19 +1,19 @@
 import {
   BaseUseCase,
-  ClockPort,
-  LoggerPort,
-  Result,
-  UseCaseContext,
-  UseCaseError,
+  type ClockPort,
+  type LoggerPort,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
   ValidationError,
   NotFoundError,
   err,
   ok,
 } from "@kerniflow/kernel";
-import { CompleteUploadInput, CompleteUploadOutput } from "@kerniflow/contracts";
-import { DocumentRepoPort } from "../../ports/document-repo.port";
-import { FileRepoPort } from "../../ports/file-repo.port";
-import { ObjectStoragePort } from "../../ports/object-storage.port";
+import { type CompleteUploadInput, type CompleteUploadOutput } from "@kerniflow/contracts";
+import { type DocumentRepoPort } from "../../ports/document-repository.port";
+import { type FileRepoPort } from "../../ports/file-repository.port";
+import { type ObjectStoragePort } from "../../ports/object-storage.port";
 import { toDocumentDto, toFileDto } from "../../mappers/document.mapper";
 
 type Deps = {
@@ -30,8 +30,8 @@ export class CompleteUploadUseCase extends BaseUseCase<CompleteUploadInput, Comp
   }
 
   protected validate(input: CompleteUploadInput): CompleteUploadInput {
-    if (!input.documentId) throw new ValidationError("documentId is required");
-    if (!input.fileId) throw new ValidationError("fileId is required");
+    if (!input.documentId) {throw new ValidationError("documentId is required");}
+    if (!input.fileId) {throw new ValidationError("fileId is required");}
     return input;
   }
 

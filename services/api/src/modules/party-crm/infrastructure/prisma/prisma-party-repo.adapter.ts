@@ -5,7 +5,7 @@ import {
   PartyRepoPort,
   ListCustomersFilters,
   Pagination,
-} from "../../application/ports/party-repo.port";
+} from "../../application/ports/party-repository.port";
 import { PartyRoleType } from "../../domain/party-role";
 import { ContactPointType } from "../../domain/contact-point";
 import { Address } from "../../domain/address";
@@ -94,7 +94,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
       throw new Error("Tenant mismatch when creating customer");
     }
 
-    await prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       await tx.party.create({
         data: {
           id: party.id,
@@ -153,7 +153,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
       throw new Error("Tenant mismatch when updating customer");
     }
 
-    await prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       await tx.party.update({
         where: { id: party.id },
         data: {
@@ -256,11 +256,13 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
   }
 
   async findCustomerById(tenantId: string, partyId: string): Promise<PartyAggregate | null> {
-    const row = (await prisma.party.findFirst({
+    const row = (await this.prisma.party.findFirst({
       where: { id: partyId, tenantId, roles: { some: { role: "CUSTOMER" as const } } },
       include: { contactPoints: true, addresses: true, roles: true },
     })) as PartyWithRelations | null;
-    if (!row) {return null;}
+    if (!row) {
+      return null;
+    }
     return toAggregate(row);
   }
 
@@ -271,7 +273,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
       archivedAt: filters.includeArchived ? undefined : null,
     };
 
-    const results = await prisma.party.findMany({
+    const results = await this.prisma.party.findMany({
       where,
       take: pagination.pageSize ?? 20,
       skip: pagination.cursor ? 1 : 0,
@@ -302,7 +304,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
       ],
     };
 
-    const results = await prisma.party.findMany({
+    const results = await this.prisma.party.findMany({
       where,
       take: pagination.pageSize ?? 20,
       skip: pagination.cursor ? 1 : 0,

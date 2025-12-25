@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import {
+import type {
   ObjectStoragePort,
   SignedDownload,
   SignedUpload,
 } from "../../../application/ports/object-storage.port";
-import { GcsClient } from "./gcs.client";
+import type { GcsClient } from "./gcs.client";
 
 @Injectable()
 export class GcsObjectStorageAdapter implements ObjectStoragePort {

@@ -1,6 +1,6 @@
-import { DocumentRepoPort } from "../../application/ports/document-repo.port";
-import { DocumentAggregate } from "../../domain/document.aggregate";
-import { DocumentLinkEntityType, DocumentType } from "../../domain/document.types";
+import { type DocumentRepoPort } from "../../application/ports/document-repository.port";
+import { type DocumentAggregate } from "../../domain/document.aggregate";
+import { type DocumentLinkEntityType, type DocumentType } from "../../domain/document.types";
 
 export class InMemoryDocumentRepo implements DocumentRepoPort {
   documents = new Map<string, DocumentAggregate>();
@@ -20,8 +20,8 @@ export class InMemoryDocumentRepo implements DocumentRepoPort {
     opts?: { includeArchived?: boolean }
   ): Promise<DocumentAggregate | null> {
     const doc = this.documents.get(documentId);
-    if (!doc || doc.tenantId !== tenantId) return null;
-    if (!opts?.includeArchived && doc.archivedAt) return null;
+    if (!doc || doc.tenantId !== tenantId) {return null;}
+    if (!opts?.includeArchived && doc.archivedAt) {return null;}
     return doc;
   }
 
@@ -33,9 +33,9 @@ export class InMemoryDocumentRepo implements DocumentRepoPort {
   ): Promise<DocumentAggregate | null> {
     const key = this.buildLinkKey(tenantId, entityType, entityId);
     const docId = this.links.get(key);
-    if (!docId) return null;
+    if (!docId) {return null;}
     const doc = this.documents.get(docId);
-    if (!doc || doc.type !== type || doc.archivedAt) return null;
+    if (!doc || doc.type !== type || doc.archivedAt) {return null;}
     return doc;
   }
 

@@ -1,21 +1,21 @@
 import {
   BaseUseCase,
-  ClockPort,
+  type ClockPort,
   ConflictError,
-  LoggerPort,
+  type LoggerPort,
   NotFoundError,
-  Result,
-  UseCaseContext,
-  UseCaseError,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
   ValidationError,
   err,
   ok,
 } from "@kerniflow/kernel";
-import { FinalizeInvoiceInput, FinalizeInvoiceOutput } from "@kerniflow/contracts";
-import { InvoiceRepoPort } from "../../ports/invoice-repo.port";
-import { InvoiceNumberingPort } from "../../ports/invoice-numbering.port";
+import { type FinalizeInvoiceInput, type FinalizeInvoiceOutput } from "@kerniflow/contracts";
+import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
+import { type InvoiceNumberingPort } from "../../ports/invoice-numbering.port";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
-import { CustomerQueryPort } from "../../ports/customer-query.port";
+import { type CustomerQueryPort } from "../../ports/customer-query.port";
 
 type Deps = {
   logger: LoggerPort;
