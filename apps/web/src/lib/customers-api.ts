@@ -32,7 +32,16 @@ export const customersApi = {
     pageSize?: number;
     includeArchived?: boolean;
   }): Promise<{ customers: CustomerDto[]; nextCursor?: string }> {
-    const response = await apiClient.get<unknown>("/customers", params);
+    const queryParams = new URLSearchParams();
+    if (params?.cursor) {queryParams.append("cursor", params.cursor);}
+    if (params?.pageSize) {queryParams.append("pageSize", params.pageSize.toString());}
+    if (params?.includeArchived !== undefined) {
+      queryParams.append("includeArchived", params.includeArchived.toString());
+    }
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/customers?${queryString}` : "/customers";
+
+    const response = await apiClient.get<unknown>(endpoint);
     if (Array.isArray(response)) {
       return { customers: response as CustomerDto[] };
     }

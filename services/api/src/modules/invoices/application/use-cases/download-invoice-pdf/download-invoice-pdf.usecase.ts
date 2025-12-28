@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
+import type { UseCaseContext } from "@kerniflow/kernel";
 import type { InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import type { InvoicePdfModelPort } from "../../ports/invoice-pdf-model.port";
 import type { InvoicePdfRendererPort } from "../../ports/invoice-pdf-renderer.port";
@@ -13,11 +14,6 @@ export type DownloadInvoicePdfInput = {
 export type DownloadInvoicePdfOutput = {
   downloadUrl: string;
   expiresAt: Date;
-};
-
-export type UseCaseContext = {
-  tenantId: string;
-  userId: string;
 };
 
 @Injectable()
@@ -37,6 +33,10 @@ export class DownloadInvoicePdfUseCase {
   ): Promise<DownloadInvoicePdfOutput> {
     const { invoiceId } = input;
     const { tenantId } = ctx;
+
+    if (!tenantId) {
+      throw new Error("tenantId is required in context");
+    }
 
     // 1. Authorize: Fetch invoice
     const invoice = await this.invoiceRepo.findById(tenantId, invoiceId);
