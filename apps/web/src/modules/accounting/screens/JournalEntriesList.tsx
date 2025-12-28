@@ -33,6 +33,7 @@ export const JournalEntriesList: FC = () => {
   const [statusFilter, setStatusFilter] = useState<EntryStatus | "all">("all");
 
   const { data, isLoading } = useJournalEntries({
+    limit: 50,
     search: search || undefined,
     status: statusFilter !== "all" ? statusFilter : undefined,
   });
@@ -104,7 +105,7 @@ export const JournalEntriesList: FC = () => {
             <div>
               <CardTitle>Entries</CardTitle>
               <CardDescription>
-                {data?.totalCount || 0} entr{data?.totalCount === 1 ? "y" : "ies"} found
+                {data?.total || 0} entr{data?.total === 1 ? "y" : "ies"} found
               </CardDescription>
             </div>
           </div>

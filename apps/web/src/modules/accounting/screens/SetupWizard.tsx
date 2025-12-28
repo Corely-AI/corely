@@ -30,6 +30,7 @@ const setupFormSchema = z.object({
   baseCurrency: z.string().min(3).max(3),
   fiscalYearStartMonthDay: z.string().regex(/^\d{2}-\d{2}$/),
   periodLockingEnabled: z.boolean(),
+  entryNumberPrefix: z.string().min(1),
   template: z.enum(["minimal", "freelancer", "smallBusiness", "standard"]),
 });
 
@@ -37,27 +38,26 @@ type SetupFormData = z.infer<typeof setupFormSchema>;
 
 const templates = [
   {
-    value: "minimal",
+    value: "minimal" as const,
     label: "Minimal (5 accounts)",
     description: "Basic setup for very simple accounting needs",
   },
   {
-    value: "freelancer",
+    value: "freelancer" as const,
     label: "Freelancer (16 accounts)",
     description: "Ideal for independent contractors and consultants",
   },
   {
-    value: "smallBusiness",
+    value: "smallBusiness" as const,
     label: "Small Business (35 accounts)",
     description: "Comprehensive setup for small businesses",
   },
   {
-    value: "standard",
-    label: "Standard (79 accounts)",
+    value: "standard" as const,
+    label: "Standard (79 accounts) (Recommended)",
     description: "Full-featured chart of accounts for most businesses",
-    recommended: true,
   },
-] as const;
+];
 
 /**
  * Setup wizard for initializing accounting module
@@ -72,6 +72,7 @@ export const SetupWizard: FC = () => {
       baseCurrency: "EUR",
       fiscalYearStartMonthDay: "01-01",
       periodLockingEnabled: false,
+      entryNumberPrefix: "JE-",
       template: "standard",
     },
   });
@@ -216,11 +217,6 @@ export const SetupWizard: FC = () => {
                             >
                               <div className="flex items-center gap-2 mb-1">
                                 <span className="font-semibold">{template.label}</span>
-                                {template.recommended && (
-                                  <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                                    Recommended
-                                  </span>
-                                )}
                               </div>
                               <p className="text-sm text-muted-foreground">
                                 {template.description}

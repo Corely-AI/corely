@@ -64,8 +64,9 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
       direction: "Debit" as LineDirection,
       amountCents: 0,
       currency,
-      lineMemo: null,
-    });
+      lineMemo: undefined,
+      tags: [],
+    } as JournalLine & { id: string });
   };
 
   return (

@@ -21,7 +21,7 @@ export const AccountingDashboard: FC = () => {
   }
 
   const recentEntries = entriesData?.entries || [];
-  const accountCount = accountsData?.totalCount || 0;
+  const accountCount = accountsData?.total || 0;
 
   return (
     <div className="container py-6 space-y-6">
@@ -71,7 +71,7 @@ export const AccountingDashboard: FC = () => {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{entriesData?.totalCount || 0}</div>
+            <div className="text-2xl font-bold">{entriesData?.total || 0}</div>
             <p className="text-xs text-muted-foreground">Total entries</p>
           </CardContent>
         </Card>

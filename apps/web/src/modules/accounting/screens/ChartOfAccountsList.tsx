@@ -34,6 +34,7 @@ export const ChartOfAccountsList: FC = () => {
   const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("active");
 
   const { data, isLoading } = useAccounts({
+    limit: 100,
     search: search || undefined,
     type: typeFilter !== "all" ? typeFilter : undefined,
     isActive: activeFilter === "all" ? undefined : activeFilter === "active",
@@ -113,7 +114,7 @@ export const ChartOfAccountsList: FC = () => {
             <div>
               <CardTitle>Accounts</CardTitle>
               <CardDescription>
-                {data?.totalCount || 0} account{data?.totalCount !== 1 ? "s" : ""} found
+                {data?.total || 0} account{data?.total !== 1 ? "s" : ""} found
               </CardDescription>
             </div>
           </div>

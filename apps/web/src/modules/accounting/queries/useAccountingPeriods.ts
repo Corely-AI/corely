@@ -20,7 +20,7 @@ export function useClosePeriod() {
     mutationFn: ({ periodId, confirmation }: { periodId: string; confirmation: boolean }) =>
       accountingApi.closePeriod(periodId, confirmation),
     onSuccess: (period) => {
-      toast.success(`Period ${period.periodKey} closed successfully`);
+      toast.success(`Period ${period.name} closed successfully`);
       // Invalidate periods list
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.periods.list() });
     },
@@ -38,7 +38,7 @@ export function useReopenPeriod() {
     mutationFn: ({ periodId, reason }: { periodId: string; reason: string }) =>
       accountingApi.reopenPeriod(periodId, reason),
     onSuccess: (period) => {
-      toast.success(`Period ${period.periodKey} reopened successfully`);
+      toast.success(`Period ${period.name} reopened successfully`);
       // Invalidate periods list
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.periods.list() });
     },

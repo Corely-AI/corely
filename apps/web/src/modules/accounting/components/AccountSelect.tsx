@@ -35,7 +35,7 @@ export const AccountSelect: FC<AccountSelectProps> = ({
   className,
 }) => {
   const [open, setOpen] = React.useState(false);
-  const { data, isLoading } = useAccounts({ type: filterType, isActive: true });
+  const { data, isLoading } = useAccounts({ limit: 1000, type: filterType, isActive: true });
 
   const accounts = useMemo(() => data?.accounts || [], [data]);
 
