@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Loader2, Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Plus, Trash2, Calendar as CalendarIcon } from "lucide-react";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -57,7 +57,9 @@ export default function InvoiceDetailPage() {
   });
 
   useEffect(() => {
-    if (!invoice) {return;}
+    if (!invoice) {
+      return;
+    }
     const invoiceDate = invoice.invoiceDate ? new Date(invoice.invoiceDate) : new Date();
     const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : undefined;
     const seededLines =
@@ -89,9 +91,22 @@ export default function InvoiceDetailPage() {
     form.setValue("lineItems", lineItems, { shouldValidate: false });
   }, [form, lineItems]);
 
+  const downloadPdf = useMutation({
+    mutationFn: (invoiceId: string) => invoicesApi.downloadInvoicePdf(invoiceId),
+    onSuccess: (data) => {
+      window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+    },
+    onError: (error) => {
+      console.error("Download PDF failed", error);
+      toast.error("Failed to download invoice PDF");
+    },
+  });
+
   const updateInvoice = useMutation({
     mutationFn: async (data: InvoiceFormData) => {
-      if (!id) {throw new Error("Missing invoice id");}
+      if (!id) {
+        throw new Error("Missing invoice id");
+      }
       const input = toCreateInvoiceInput(data);
       return invoicesApi.updateInvoice(id, input);
     },
@@ -120,7 +135,9 @@ export default function InvoiceDetailPage() {
   };
 
   const removeLineItem = (index: number) => {
-    if (lineItems.length <= 1) {return;}
+    if (lineItems.length <= 1) {
+      return;
+    }
     setLineItems(lineItems.filter((_, i) => i !== index));
   };
 
@@ -197,7 +214,19 @@ export default function InvoiceDetailPage() {
             </p>
           </div>
         </div>
-        <Badge variant={invoice.status.toLowerCase() as any}>{invoice.status}</Badge>
+        <div className="flex items-center gap-3">
+          {invoice.status !== "DRAFT" && (
+            <Button
+              variant="outline"
+              onClick={() => id && downloadPdf.mutate(id)}
+              disabled={downloadPdf.isPending}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              {downloadPdf.isPending ? "Downloading..." : "Download PDF"}
+            </Button>
+          )}
+          <Badge variant={invoice.status.toLowerCase() as any}>{invoice.status}</Badge>
+        </div>
       </div>
 
       <form onSubmit={form.handleSubmit((data) => updateInvoice.mutate(data))}>

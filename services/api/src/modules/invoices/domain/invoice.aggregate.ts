@@ -1,5 +1,11 @@
-import { LocalDate } from "@kerniflow/kernel";
-import { InvoiceLine, InvoicePayment, InvoiceStatus, InvoiceTotals } from "./invoice.types";
+import { type LocalDate } from "@kerniflow/kernel";
+import {
+  type InvoiceLine,
+  type InvoicePayment,
+  type InvoiceStatus,
+  type InvoiceTotals,
+  type PdfStatus,
+} from "./invoice.types";
 
 type BillToSnapshot = {
   name: string;
@@ -39,6 +45,11 @@ type InvoiceProps = {
   billToCountry?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  pdfStorageKey?: string | null;
+  pdfGeneratedAt?: Date | null;
+  pdfSourceVersion?: string | null;
+  pdfStatus?: PdfStatus;
+  pdfFailureReason?: string | null;
 };
 
 export class InvoiceAggregate {
@@ -66,6 +77,11 @@ export class InvoiceAggregate {
   billToCountry: string | null;
   createdAt: Date;
   updatedAt: Date;
+  pdfStorageKey: string | null;
+  pdfGeneratedAt: Date | null;
+  pdfSourceVersion: string | null;
+  pdfStatus: PdfStatus;
+  pdfFailureReason: string | null;
   totals: InvoiceTotals;
 
   constructor(props: InvoiceProps) {
@@ -93,6 +109,11 @@ export class InvoiceAggregate {
     this.billToCountry = props.billToCountry ?? null;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
+    this.pdfStorageKey = props.pdfStorageKey ?? null;
+    this.pdfGeneratedAt = props.pdfGeneratedAt ?? null;
+    this.pdfSourceVersion = props.pdfSourceVersion ?? null;
+    this.pdfStatus = props.pdfStatus ?? "NONE";
+    this.pdfFailureReason = props.pdfFailureReason ?? null;
     this.totals = this.calculateTotals();
   }
 
@@ -138,10 +159,10 @@ export class InvoiceAggregate {
       }
     }
 
-    if (patch.customerPartyId !== undefined) this.customerPartyId = patch.customerPartyId;
-    if (patch.currency !== undefined) this.currency = patch.currency;
-    if (patch.notes !== undefined) this.notes = patch.notes;
-    if (patch.terms !== undefined) this.terms = patch.terms;
+    if (patch.customerPartyId !== undefined) {this.customerPartyId = patch.customerPartyId;}
+    if (patch.currency !== undefined) {this.currency = patch.currency;}
+    if (patch.notes !== undefined) {this.notes = patch.notes;}
+    if (patch.terms !== undefined) {this.terms = patch.terms;}
     this.touch(now);
   }
 
@@ -149,8 +170,8 @@ export class InvoiceAggregate {
     if (this.status !== "DRAFT") {
       throw new Error("Cannot change invoice dates unless draft");
     }
-    if (dates.invoiceDate !== undefined) this.invoiceDate = dates.invoiceDate;
-    if (dates.dueDate !== undefined) this.dueDate = dates.dueDate;
+    if (dates.invoiceDate !== undefined) {this.invoiceDate = dates.invoiceDate;}
+    if (dates.dueDate !== undefined) {this.dueDate = dates.dueDate;}
     this.touch(now);
   }
 
@@ -212,7 +233,7 @@ export class InvoiceAggregate {
     if (this.status === "PAID") {
       throw new Error("Cannot cancel a paid invoice");
     }
-    if (this.status === "CANCELED") return;
+    if (this.status === "CANCELED") {return;}
     this.status = "CANCELED";
     this.notes = reason ?? this.notes ?? null;
     this.sentAt = canceledAt ?? this.sentAt;
@@ -249,6 +270,42 @@ export class InvoiceAggregate {
 
   private recalculateTotals() {
     this.totals = this.calculateTotals();
+  }
+
+  markPdfGenerated(args: {
+    storageKey: string;
+    generatedAt: Date;
+    sourceVersion: string;
+    now: Date;
+  }) {
+    this.pdfStorageKey = args.storageKey;
+    this.pdfGeneratedAt = args.generatedAt;
+    this.pdfSourceVersion = args.sourceVersion;
+    this.pdfStatus = "READY";
+    this.pdfFailureReason = null;
+    this.touch(args.now);
+  }
+
+  markPdfGenerating(sourceVersion: string, now: Date) {
+    this.pdfSourceVersion = sourceVersion;
+    this.pdfStatus = "GENERATING";
+    this.pdfFailureReason = null;
+    this.touch(now);
+  }
+
+  markPdfFailed(reason: string, now: Date) {
+    this.pdfStatus = "FAILED";
+    this.pdfFailureReason = reason;
+    this.touch(now);
+  }
+
+  isPdfStale(): boolean {
+    if (!this.pdfStorageKey || !this.pdfSourceVersion) {return true;}
+    return this.pdfSourceVersion !== this.updatedAt.toISOString();
+  }
+
+  isPdfReady(): boolean {
+    return this.pdfStatus === "READY" && !this.isPdfStale();
   }
 
   private touch(now: Date) {

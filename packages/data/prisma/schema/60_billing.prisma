@@ -22,6 +22,12 @@ model Invoice {
   createdAt   DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime      @updatedAt @db.Timestamptz(6)
 
+  pdfStorageKey     String?
+  pdfGeneratedAt    DateTime? @db.Timestamptz(6)
+  pdfSourceVersion  String?
+  pdfStatus         PdfStatus @default(NONE)
+  pdfFailureReason  String?
+
   lines     InvoiceLine[]
   payments  InvoicePayment[]
 
@@ -88,4 +94,11 @@ enum DeliveryStatus {
   BOUNCED
   FAILED
   DELAYED
+}
+
+enum PdfStatus {
+  NONE
+  GENERATING
+  READY
+  FAILED
 }

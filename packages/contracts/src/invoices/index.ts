@@ -7,3 +7,4 @@ export * from "./record-payment.schema";
 export * from "./cancel-invoice.schema";
 export * from "./get-invoice.schema";
 export * from "./list-invoices.schema";
+export * from "./download-invoice-pdf.schema";

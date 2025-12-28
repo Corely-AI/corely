@@ -4,6 +4,9 @@ import { localDateSchema, utcInstantSchema } from "../shared/local-date.schema";
 export const InvoiceStatusSchema = z.enum(["DRAFT", "ISSUED", "SENT", "PAID", "CANCELED"]);
 export type InvoiceStatus = z.infer<typeof InvoiceStatusSchema>;
 
+export const PdfStatusSchema = z.enum(["NONE", "GENERATING", "READY", "FAILED"]);
+export type PdfStatus = z.infer<typeof PdfStatusSchema>;
+
 export const InvoiceLineSchema = z.object({
   id: z.string(),
   description: z.string(),
@@ -56,5 +59,10 @@ export const InvoiceDtoSchema = z.object({
   lineItems: z.array(InvoiceLineSchema),
   payments: z.array(InvoicePaymentSchema).optional(),
   totals: InvoiceTotalsSchema,
+  pdfStorageKey: z.string().nullable().optional(),
+  pdfGeneratedAt: utcInstantSchema.nullable().optional(),
+  pdfSourceVersion: z.string().nullable().optional(),
+  pdfStatus: PdfStatusSchema.optional(),
+  pdfFailureReason: z.string().nullable().optional(),
 });
 export type InvoiceDto = z.infer<typeof InvoiceDtoSchema>;

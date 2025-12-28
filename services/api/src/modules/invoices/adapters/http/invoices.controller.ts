@@ -16,6 +16,7 @@ import { InvoicesApplication } from "../../application/invoices.application";
 import {
   CancelInvoiceInputSchema,
   CreateInvoiceInputSchema,
+  DownloadInvoicePdfInputSchema,
   FinalizeInvoiceInputSchema,
   GetInvoiceByIdInputSchema,
   ListInvoicesInputSchema,
@@ -91,6 +92,17 @@ export class InvoicesHttpController {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.cancelInvoice.execute(input, ctx);
     return mapResultToHttp(result).invoice;
+  }
+
+  @Get(":invoiceId/pdf")
+  async downloadPdf(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
+    const input = DownloadInvoicePdfInputSchema.parse({ invoiceId });
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.downloadInvoicePdf.execute(input, ctx);
+    return {
+      downloadUrl: result.downloadUrl,
+      expiresAt: result.expiresAt.toISOString(),
+    };
   }
 
   @Get(":invoiceId")

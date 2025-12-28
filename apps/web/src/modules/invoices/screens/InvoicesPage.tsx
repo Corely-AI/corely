@@ -88,20 +88,16 @@ export default function InvoicesPage() {
     },
   });
 
-  const handleDownload = async (invoiceId: string) => {
-    try {
-      const invoice = await invoicesApi.getInvoice(invoiceId);
-      const pdfUrl = (invoice as any).pdfUrl;
-      if (pdfUrl) {
-        window.open(pdfUrl, "_blank", "noopener");
-        return;
-      }
-      toast.info("Download", { description: "PDF not available for this invoice yet." });
-    } catch (error) {
-      console.error("Download invoice failed", error);
-      toast.error("Failed to download invoice");
-    }
-  };
+  const downloadPdf = useMutation({
+    mutationFn: (invoiceId: string) => invoicesApi.downloadInvoicePdf(invoiceId),
+    onSuccess: (data) => {
+      window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+    },
+    onError: (error) => {
+      console.error("Download PDF failed", error);
+      toast.error("Failed to download invoice PDF");
+    },
+  });
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -195,9 +191,12 @@ export default function InvoicesPage() {
                               <Mail className="mr-2 h-4 w-4" />
                               Email
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownload(invoice.id)}>
+                            <DropdownMenuItem
+                              onClick={() => downloadPdf.mutate(invoice.id)}
+                              disabled={downloadPdf.isPending}
+                            >
                               <Download className="mr-2 h-4 w-4" />
-                              Download
+                              {downloadPdf.isPending ? "Downloading..." : "Download PDF"}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => cancelInvoice.mutate(invoice.id)}>

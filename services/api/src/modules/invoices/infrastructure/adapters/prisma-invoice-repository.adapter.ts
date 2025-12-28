@@ -6,7 +6,7 @@ import {
   ListInvoicesResult,
 } from "../../application/ports/invoice-repository.port";
 import { InvoiceAggregate } from "../../domain/invoice.aggregate";
-import { InvoiceLine, InvoicePayment, InvoiceStatus } from "../../domain/invoice.types";
+import { InvoiceLine, InvoicePayment, InvoiceStatus, PdfStatus } from "../../domain/invoice.types";
 import { LocalDate } from "@kerniflow/kernel";
 
 const toPrismaDate = (localDate: LocalDate | null): Date | null =>
@@ -46,6 +46,11 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         billToPostalCode: invoice.billToPostalCode,
         billToCountry: invoice.billToCountry,
         updatedAt: invoice.updatedAt,
+        pdfStorageKey: invoice.pdfStorageKey,
+        pdfGeneratedAt: invoice.pdfGeneratedAt,
+        pdfSourceVersion: invoice.pdfSourceVersion,
+        pdfStatus: invoice.pdfStatus as any,
+        pdfFailureReason: invoice.pdfFailureReason,
       },
       create: {
         id: invoice.id,
@@ -70,6 +75,11 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         billToCountry: invoice.billToCountry,
         createdAt: invoice.createdAt,
         updatedAt: invoice.updatedAt,
+        pdfStorageKey: invoice.pdfStorageKey,
+        pdfGeneratedAt: invoice.pdfGeneratedAt,
+        pdfSourceVersion: invoice.pdfSourceVersion,
+        pdfStatus: invoice.pdfStatus as any,
+        pdfFailureReason: invoice.pdfFailureReason,
         lines: {
           create: invoice.lineItems.map((line) => ({
             id: line.id,
@@ -146,6 +156,11 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       billToCountry: (data as any).billToCountry ?? null,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      pdfStorageKey: (data as any).pdfStorageKey ?? null,
+      pdfGeneratedAt: (data as any).pdfGeneratedAt ?? null,
+      pdfSourceVersion: (data as any).pdfSourceVersion ?? null,
+      pdfStatus: ((data as any).pdfStatus as PdfStatus) ?? "NONE",
+      pdfFailureReason: (data as any).pdfFailureReason ?? null,
     });
   }
 
@@ -213,6 +228,11 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         billToCountry: (row as any).billToCountry ?? null,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
+        pdfStorageKey: (row as any).pdfStorageKey ?? null,
+        pdfGeneratedAt: (row as any).pdfGeneratedAt ?? null,
+        pdfSourceVersion: (row as any).pdfSourceVersion ?? null,
+        pdfStatus: ((row as any).pdfStatus as PdfStatus) ?? "NONE",
+        pdfFailureReason: (row as any).pdfFailureReason ?? null,
       });
     });
 

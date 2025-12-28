@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@kerniflow/data";
+import { chromium } from "playwright";
 import { InvoicesHttpController } from "./adapters/http/invoices.controller";
 import { ResendWebhookController } from "./adapters/webhooks/resend-webhook.controller";
 import { PrismaInvoiceEmailDeliveryRepoAdapter } from "./infrastructure/prisma/prisma-invoice-email-delivery-repo.adapter";
@@ -13,6 +14,8 @@ import {
   InvoiceNumberingPort,
 } from "./application/ports/invoice-numbering.port";
 import { CUSTOMER_QUERY_PORT, CustomerQueryPort } from "./application/ports/customer-query.port";
+import { INVOICE_PDF_MODEL_PORT } from "./application/ports/invoice-pdf-model.port";
+import { INVOICE_PDF_RENDERER_PORT } from "./application/ports/invoice-pdf-renderer.port";
 import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
 import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
 import { InvoiceNumberingAdapter } from "./infrastructure/prisma/prisma-numbering.adapter";
@@ -21,6 +24,7 @@ import { TimeService } from "@kerniflow/kernel";
 import { PrismaTenantTimeZoneAdapter } from "../../shared/time/prisma-tenant-timezone.adapter";
 import { TENANT_TIMEZONE_PORT } from "../../shared/time/tenant-timezone.token";
 import { PartyCrmModule } from "../party-crm";
+import { DocumentsModule } from "../documents";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { CreateInvoiceUseCase } from "./application/use-cases/create-invoice/create-invoice.usecase";
 import { FinalizeInvoiceUseCase } from "./application/use-cases/finalize-invoice/finalize-invoice.usecase";
@@ -29,10 +33,14 @@ import { ListInvoicesUseCase } from "./application/use-cases/list-invoices/list-
 import { RecordPaymentUseCase } from "./application/use-cases/record-payment/record-payment.usecase";
 import { SendInvoiceUseCase } from "./application/use-cases/send-invoice/send-invoice.usecase";
 import { UpdateInvoiceUseCase } from "./application/use-cases/update-invoice/update-invoice.usecase";
+import { DownloadInvoicePdfUseCase } from "./application/use-cases/download-invoice-pdf/download-invoice-pdf.usecase";
 import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoice-repository.adapter";
+import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoice-pdf-model.adapter";
+import { PlaywrightInvoicePdfRendererAdapter } from "./infrastructure/pdf/playwright-invoice-pdf-renderer.adapter";
+import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
 
 @Module({
-  imports: [DataModule, IdentityModule, PartyCrmModule],
+  imports: [DataModule, IdentityModule, PartyCrmModule, DocumentsModule],
   controllers: [InvoicesHttpController, ResendWebhookController],
   providers: [
     PrismaInvoiceRepoAdapter,
@@ -49,6 +57,18 @@ import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoi
       inject: [CLOCK_PORT_TOKEN, TENANT_TIMEZONE_PORT],
     },
     { provide: INVOICE_NUMBERING_PORT, useClass: InvoiceNumberingAdapter },
+    { provide: INVOICE_PDF_MODEL_PORT, useClass: PrismaInvoicePdfModelAdapter },
+    {
+      provide: "PLAYWRIGHT_BROWSER",
+      useFactory: async () => {
+        return await chromium.launch({ headless: true });
+      },
+    },
+    {
+      provide: INVOICE_PDF_RENDERER_PORT,
+      useFactory: (browser: any) => new PlaywrightInvoicePdfRendererAdapter(browser),
+      inject: ["PLAYWRIGHT_BROWSER"],
+    },
     PrismaInvoiceEmailDeliveryRepoAdapter,
     PrismaOutboxAdapter,
     {
@@ -175,6 +195,21 @@ import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoi
       inject: [PrismaInvoiceRepoAdapter, TimeService],
     },
     {
+      provide: DownloadInvoicePdfUseCase,
+      useFactory: (
+        repo: PrismaInvoiceRepoAdapter,
+        pdfModel: any,
+        renderer: any,
+        storage: GcsObjectStorageAdapter
+      ) => new DownloadInvoicePdfUseCase(repo, pdfModel, renderer, storage),
+      inject: [
+        PrismaInvoiceRepoAdapter,
+        INVOICE_PDF_MODEL_PORT,
+        INVOICE_PDF_RENDERER_PORT,
+        GcsObjectStorageAdapter,
+      ],
+    },
+    {
       provide: InvoicesApplication,
       useFactory: (
         createInvoice: CreateInvoiceUseCase,
@@ -184,7 +219,8 @@ import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoi
         recordPayment: RecordPaymentUseCase,
         cancelInvoice: CancelInvoiceUseCase,
         getInvoice: GetInvoiceByIdUseCase,
-        listInvoices: ListInvoicesUseCase
+        listInvoices: ListInvoicesUseCase,
+        downloadPdf: DownloadInvoicePdfUseCase
       ) =>
         new InvoicesApplication(
           createInvoice,
@@ -194,7 +230,8 @@ import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoi
           recordPayment,
           cancelInvoice,
           getInvoice,
-          listInvoices
+          listInvoices,
+          downloadPdf
         ),
       inject: [
         CreateInvoiceUseCase,
@@ -205,6 +242,7 @@ import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoi
         CancelInvoiceUseCase,
         GetInvoiceByIdUseCase,
         ListInvoicesUseCase,
+        DownloadInvoicePdfUseCase,
       ],
     },
   ],

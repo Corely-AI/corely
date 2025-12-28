@@ -24,6 +24,7 @@
     "jsonwebtoken": "catalog:",
     "nanoid": "catalog:",
     "pdf-lib": "^1.17.1",
+    "playwright": "^1.57.0",
     "reflect-metadata": "catalog:",
     "resend": "catalog:",
     "rxjs": "catalog:",
