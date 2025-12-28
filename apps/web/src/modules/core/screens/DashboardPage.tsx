@@ -198,7 +198,8 @@ export default function DashboardPage() {
                         {invoice.invoiceNumber}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {db.clients.find((c) => c.id === invoice.clientId)?.company || "Client"}
+                        {db.customers.find((c) => c.id === invoice.customerId)?.company ||
+                          "Customer"}
                       </div>
                     </div>
                   </div>

@@ -25,7 +25,7 @@ export interface User {
   avatarUrl?: string;
 }
 
-export interface Client {
+export interface Customer {
   id: string;
   tenantId: string;
   name: string;
@@ -43,7 +43,7 @@ export interface Client {
 export interface Project {
   id: string;
   tenantId: string;
-  clientId: string;
+  customerId: string;
   name: string;
   description?: string;
   hourlyRate?: number;
@@ -94,7 +94,7 @@ export interface InvoiceLineItem {
 export interface Invoice {
   id: string;
   tenantId: string;
-  clientId: string;
+  customerId: string;
   projectId?: string;
   invoiceNumber: string;
   status: InvoiceStatus;
@@ -169,7 +169,7 @@ export interface CreateExpenseInput {
 }
 
 export interface GenerateInvoiceDraftInput {
-  clientId: string;
+  customerId: string;
   projectId?: string;
   items: Array<{
     description: string;

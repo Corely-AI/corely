@@ -15,7 +15,7 @@ import { Calendar } from "@/shared/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
-import { getClients } from "@/shared/mock/mockApi";
+import { getCustomers } from "@/shared/mock/mockApi";
 import { invoicesApi } from "@/lib/invoices-api";
 import { toast } from "sonner";
 import {
@@ -45,9 +45,9 @@ export default function NewInvoicePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: clients = [] } = useQuery({
-    queryKey: ["clients"],
-    queryFn: getClients,
+  const { data: customers = [] } = useQuery({
+    queryKey: ["customers"],
+    queryFn: getCustomers,
   });
 
   const defaultValues = getDefaultInvoiceFormValues();
@@ -131,7 +131,7 @@ export default function NewInvoicePage() {
       return invoicesApi.createInvoice(input);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      void queryClient.invalidateQueries({ queryKey: ["invoices"] });
       toast.success("Invoice created successfully!");
       navigate("/invoices");
     },
@@ -146,8 +146,8 @@ export default function NewInvoicePage() {
     createInvoiceMutation.mutate(data);
   };
 
-  // Get selected client
-  const selectedClient = clients.find((c) => c.id === form.watch("customerPartyId"));
+  // Get selected customer
+  const selectedCustomer = customers.find((c) => c.id === form.watch("customerPartyId"));
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -199,16 +199,16 @@ export default function NewInvoicePage() {
                       onValueChange={(value) => form.setValue("customerPartyId", value)}
                     >
                       <SelectTrigger className="mt-2" data-testid="invoice-customer-select">
-                        <SelectValue placeholder="Select a client" />
+                        <SelectValue placeholder="Select a customer" />
                       </SelectTrigger>
                       <SelectContent>
-                        {clients.map((client) => (
+                        {customers.map((customer) => (
                           <SelectItem
-                            key={client.id}
-                            value={client.id}
-                            data-testid={`invoice-customer-option-${client.id}`}
+                            key={customer.id}
+                            value={customer.id}
+                            data-testid={`invoice-customer-option-${customer.id}`}
                           >
-                            {client.company || client.name}
+                            {customer.company || customer.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -220,18 +220,18 @@ export default function NewInvoicePage() {
                     )}
                   </div>
 
-                  {selectedClient && (
+                  {selectedCustomer && (
                     <div className="space-y-1">
                       <div className="text-2xl font-semibold">
-                        {selectedClient.company || selectedClient.name}
+                        {selectedCustomer.company || selectedCustomer.name}
                       </div>
-                      {selectedClient.address && (
-                        <div className="text-sm">{selectedClient.address}</div>
+                      {selectedCustomer.address && (
+                        <div className="text-sm">{selectedCustomer.address}</div>
                       )}
-                      {selectedClient.city && (
+                      {selectedCustomer.city && (
                         <div className="text-sm">
-                          {selectedClient.city}
-                          {selectedClient.country && `, ${selectedClient.country}`}
+                          {selectedCustomer.city}
+                          {selectedCustomer.country && `, ${selectedCustomer.country}`}
                         </div>
                       )}
                     </div>

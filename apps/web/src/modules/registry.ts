@@ -1,5 +1,5 @@
 import {
-  LucideIcon,
+  type LucideIcon,
   LayoutDashboard,
   MessageSquare,
   Receipt,
@@ -75,13 +75,13 @@ export const moduleRegistry: ModuleDefinition[] = [
     permissions: ["read:invoices", "write:invoices"],
   },
   {
-    id: "clients",
-    name: "Clients",
-    description: "Client relationship management",
+    id: "customers",
+    name: "Customers",
+    description: "Customer relationship management",
     enabled: true,
     comingSoon: false,
-    navItems: [{ id: "clients", labelKey: "nav.clients", icon: Users, path: "/clients" }],
-    permissions: ["read:clients", "write:clients"],
+    navItems: [{ id: "customers", labelKey: "nav.customers", icon: Users, path: "/customers" }],
+    permissions: ["read:customers", "write:customers"],
   },
   // Coming soon modules
   {

@@ -31,7 +31,7 @@
     "assistant": "Trợ lý",
     "expenses": "Chi phí",
     "invoices": "Hóa đơn",
-    "clients": "Khách hàng",
+    "customers": "Khách hàng",
     "settings": "Cài đặt",
     "projects": "Dự án",
     "accounting": "Kế toán",
@@ -105,7 +105,7 @@
     "noInvoices": "Chưa có hóa đơn nào",
     "noInvoicesDescription": "Tạo hóa đơn đầu tiên để bắt đầu.",
     "invoiceNumber": "Số hóa đơn",
-    "client": "Khách hàng",
+    "customer": "Khách hàng",
     "date": "Ngày",
     "dueDate": "Ngày đến hạn",
     "amount": "Số tiền",
@@ -131,16 +131,16 @@
       "preview": "Xem trước"
     },
     "wizard": {
-      "selectClient": "Chọn khách hàng",
+      "selectCustomer": "Chọn khách hàng",
       "addItems": "Thêm mục",
       "review": "Xem lại & tạo"
     }
   },
-  "clients": {
+  "customers": {
     "title": "Khách hàng",
-    "addClient": "Thêm khách hàng",
-    "noClients": "Chưa có khách hàng nào",
-    "noClientsDescription": "Thêm khách hàng đầu tiên để bắt đầu tạo hóa đơn.",
+    "addCustomer": "Thêm khách hàng",
+    "noCustomers": "Chưa có khách hàng nào",
+    "noCustomersDescription": "Thêm khách hàng đầu tiên để bắt đầu tạo hóa đơn.",
     "name": "Tên",
     "company": "Công ty",
     "email": "Email",

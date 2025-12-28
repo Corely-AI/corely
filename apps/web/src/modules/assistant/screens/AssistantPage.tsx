@@ -95,7 +95,7 @@ export default function AssistantPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() && !selectedFile) return;
+    if (!input.trim() && !selectedFile) {return;}
 
     const userMessage = input.trim();
     const hasFile = !!selectedFile;
@@ -210,29 +210,29 @@ export default function AssistantPage() {
   };
 
   const handleInvoiceFlow = async (userMessage: string) => {
-    // Try to find client name in message
-    const clients = db.clients;
-    let matchedClient = clients.find(
+    // Try to find customer name in message
+    const customers = db.customers;
+    let matchedCustomer = customers.find(
       (c) =>
         userMessage.toLowerCase().includes(c.company?.toLowerCase() || "") ||
         userMessage.toLowerCase().includes(c.name.toLowerCase())
     );
 
-    if (!matchedClient) {
-      // Default to first client for demo
-      matchedClient = clients[0];
+    if (!matchedCustomer) {
+      // Default to first customer for demo
+      matchedCustomer = customers[0];
     }
 
     const toolMessageId = addMessage({
       role: "assistant",
       content:
         i18n.language === "de"
-          ? `Erstelle Rechnungsentwurf für ${matchedClient.company || matchedClient.name}...`
-          : `Generating invoice draft for ${matchedClient.company || matchedClient.name}...`,
+          ? `Erstelle Rechnungsentwurf für ${matchedCustomer.company || matchedCustomer.name}...`
+          : `Generating invoice draft for ${matchedCustomer.company || matchedCustomer.name}...`,
       toolCall: { name: "generate_invoice_draft", status: "running" },
     });
 
-    const invoice = await generateInvoiceDraftFromPrompt(matchedClient.id, "November");
+    const invoice = await generateInvoiceDraftFromPrompt(matchedCustomer.id, "November");
 
     updateMessage(toolMessageId, {
       toolCall: { name: "generate_invoice_draft", status: "completed" },
@@ -519,8 +519,9 @@ export default function AssistantPage() {
                             <span className="text-muted-foreground">{t("invoices.client")}</span>
                             <span className="font-medium">
                               {
-                                db.clients.find((c) => c.id === message.invoicePreview?.clientId)
-                                  ?.company
+                                db.customers.find(
+                                  (c) => c.id === message.invoicePreview?.customerId
+                                )?.company
                               }
                             </span>
                           </div>

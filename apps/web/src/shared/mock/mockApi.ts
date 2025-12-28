@@ -2,7 +2,7 @@
 
 import { getDb, updateDb } from "./mockDb";
 import type {
-  Client,
+  Customer,
   Expense,
   Invoice,
   InvoiceLineItem,
@@ -11,6 +11,7 @@ import type {
   ExtractReceiptResult,
   ExpenseCategory,
   VatRate,
+  Project,
 } from "../types";
 import { generateInvoiceNumber, calculateVat } from "../lib/formatters";
 
@@ -150,7 +151,7 @@ export async function createExpense(
 
   if (idempotencyKey) {
     const cached = idempotencyCache.get(idempotencyKey);
-    if (cached) return cached as Expense;
+    if (cached) {return cached as Expense;}
     idempotencyCache.set(idempotencyKey, expense);
   }
 
@@ -172,7 +173,7 @@ export async function updateExpense(
 
   updateDb((db) => {
     const index = db.expenses.findIndex((exp) => exp.id === id);
-    if (index === -1) return db;
+    if (index === -1) {return db;}
 
     const existing = db.expenses[index];
     const amountCents = patch.amountCents ?? existing.amountCents;
@@ -212,7 +213,7 @@ export async function deleteExpense(id: string): Promise<boolean> {
 // Invoices
 export interface InvoiceFilters {
   status?: string;
-  clientId?: string;
+  customerId?: string;
   projectId?: string;
 }
 
@@ -226,8 +227,8 @@ export async function getInvoices(filters?: InvoiceFilters): Promise<Invoice[]> 
     invoices = invoices.filter((inv) => inv.status === filters.status);
   }
 
-  if (filters?.clientId) {
-    invoices = invoices.filter((inv) => inv.clientId === filters.clientId);
+  if (filters?.customerId) {
+    invoices = invoices.filter((inv) => inv.customerId === filters.customerId);
   }
 
   if (filters?.projectId) {
@@ -265,7 +266,7 @@ export async function createInvoiceDraft(input: GenerateInvoiceDraftInput): Prom
   const invoice: Invoice = {
     id: generateId("invoice"),
     tenantId: "tenant-1",
-    clientId: input.clientId,
+    customerId: input.customerId,
     projectId: input.projectId,
     invoiceNumber: generateInvoiceNumber(
       db.tenant.invoicePrefix,
@@ -304,7 +305,7 @@ export async function issueInvoice(id: string, idempotencyKey?: string): Promise
 
   updateDb((db) => {
     const index = db.invoices.findIndex((inv) => inv.id === id);
-    if (index === -1) return db;
+    if (index === -1) {return db;}
 
     updatedInvoice = {
       ...db.invoices[index],
@@ -333,7 +334,7 @@ export async function markInvoicePaid(id: string, paidDate: string): Promise<Inv
 
   updateDb((db) => {
     const index = db.invoices.findIndex((inv) => inv.id === id);
-    if (index === -1) return db;
+    if (index === -1) {return db;}
 
     updatedInvoice = {
       ...db.invoices[index],
@@ -351,29 +352,29 @@ export async function markInvoicePaid(id: string, paidDate: string): Promise<Inv
   return updatedInvoice;
 }
 
-// Clients
-export async function getClients(): Promise<Client[]> {
+// Customers
+export async function getCustomers(): Promise<Customer[]> {
   await randomDelay();
   const db = getDb();
-  return [...db.clients].sort(
+  return [...db.customers].sort(
     (a, b) => a.company?.localeCompare(b.company || "") || a.name.localeCompare(b.name)
   );
 }
 
-export async function getClient(id: string): Promise<Client | null> {
+export async function getCustomer(id: string): Promise<Customer | null> {
   await randomDelay();
   const db = getDb();
-  return db.clients.find((c) => c.id === id) || null;
+  return db.customers.find((c) => c.id === id) || null;
 }
 
-export async function createClient(
-  input: Omit<Client, "id" | "tenantId" | "createdAt" | "updatedAt">
-): Promise<Client> {
+export async function createCustomer(
+  input: Omit<Customer, "id" | "tenantId" | "createdAt" | "updatedAt">
+): Promise<Customer> {
   await randomDelay();
 
-  const client: Client = {
+  const customer: Customer = {
     ...input,
-    id: generateId("client"),
+    id: generateId("customer"),
     tenantId: "tenant-1",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -381,14 +382,14 @@ export async function createClient(
 
   updateDb((db) => ({
     ...db,
-    clients: [...db.clients, client],
+    customers: [...db.customers, customer],
   }));
 
-  return client;
+  return customer;
 }
 
 // Projects
-export async function getProjects(): Promise<import("../types").Project[]> {
+export async function getProjects(): Promise<Project[]> {
   await randomDelay();
   const db = getDb();
   return [...db.projects];
@@ -421,18 +422,18 @@ export async function extractReceiptData(fileId: string): Promise<ExtractReceipt
 }
 
 export async function generateInvoiceDraftFromPrompt(
-  clientId: string,
+  customerId: string,
   period?: string
 ): Promise<Invoice> {
   await delay(2000 + Math.random() * 1000);
   const db = getDb();
 
-  const client = db.clients.find((c) => c.id === clientId);
-  if (!client) throw new Error("Client not found");
+  const customer = db.customers.find((c) => c.id === customerId);
+  if (!customer) {throw new Error("Customer not found");}
 
-  // Find projects for this client
-  const clientProjects = db.projects.filter((p) => p.clientId === clientId);
-  const project = clientProjects[0];
+  // Find projects for this customer
+  const customerProjects = db.projects.filter((p) => p.customerId === customerId);
+  const project = customerProjects[0];
 
   // Generate realistic items based on context
   const items = [
@@ -454,7 +455,7 @@ export async function generateInvoiceDraftFromPrompt(
   }
 
   return createInvoiceDraft({
-    clientId,
+    customerId,
     projectId: project?.id,
     items,
     notes: period ? `Services for ${period}` : undefined,

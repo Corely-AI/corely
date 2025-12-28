@@ -1,7 +1,7 @@
 import type {
   Tenant,
   User,
-  Client,
+  Customer,
   Project,
   Expense,
   Invoice,
@@ -37,9 +37,9 @@ const seedUser: User = {
   role: "owner",
 };
 
-const seedClients: Client[] = [
+const seedCustomers: Customer[] = [
   {
-    id: "client-1",
+    id: "customer-1",
     tenantId: "tenant-1",
     name: "Thomas Müller",
     company: "Müller GmbH",
@@ -53,7 +53,7 @@ const seedClients: Client[] = [
     updatedAt: "2024-01-15T10:00:00Z",
   },
   {
-    id: "client-2",
+    id: "customer-2",
     tenantId: "tenant-1",
     name: "Sarah Schmidt",
     company: "Kraftwerk Studio UG",
@@ -67,7 +67,7 @@ const seedClients: Client[] = [
     updatedAt: "2024-02-20T14:30:00Z",
   },
   {
-    id: "client-3",
+    id: "customer-3",
     tenantId: "tenant-1",
     name: "Max Weber",
     company: "Nordlicht Media",
@@ -85,7 +85,7 @@ const seedProjects: Project[] = [
   {
     id: "project-1",
     tenantId: "tenant-1",
-    clientId: "client-1",
+    customerId: "customer-1",
     name: "Website Redesign",
     description: "Complete redesign of corporate website",
     hourlyRate: 9500, // 95 EUR
@@ -96,7 +96,7 @@ const seedProjects: Project[] = [
   {
     id: "project-2",
     tenantId: "tenant-1",
-    clientId: "client-2",
+    customerId: "customer-2",
     name: "Brand Identity",
     description: "Logo and brand guidelines development",
     hourlyRate: 12000, // 120 EUR
@@ -107,7 +107,7 @@ const seedProjects: Project[] = [
   {
     id: "project-3",
     tenantId: "tenant-1",
-    clientId: "client-3",
+    customerId: "customer-3",
     name: "Social Media Strategy",
     description: "Monthly social media content and strategy",
     hourlyRate: 8500,
@@ -294,7 +294,7 @@ const seedInvoices: Invoice[] = [
   {
     id: "invoice-1",
     tenantId: "tenant-1",
-    clientId: "client-1",
+    customerId: "customer-1",
     projectId: "project-1",
     invoiceNumber: "RE-2024-0001",
     status: "paid",
@@ -328,7 +328,7 @@ const seedInvoices: Invoice[] = [
   {
     id: "invoice-2",
     tenantId: "tenant-1",
-    clientId: "client-2",
+    customerId: "customer-2",
     projectId: "project-2",
     invoiceNumber: "RE-2024-0002",
     status: "paid",
@@ -362,7 +362,7 @@ const seedInvoices: Invoice[] = [
   {
     id: "invoice-3",
     tenantId: "tenant-1",
-    clientId: "client-3",
+    customerId: "customer-3",
     projectId: "project-3",
     invoiceNumber: "RE-2024-0003",
     status: "sent",
@@ -387,7 +387,7 @@ const seedInvoices: Invoice[] = [
   {
     id: "invoice-4",
     tenantId: "tenant-1",
-    clientId: "client-1",
+    customerId: "customer-1",
     projectId: "project-1",
     invoiceNumber: "RE-2024-0004",
     status: "overdue",
@@ -412,7 +412,7 @@ const seedInvoices: Invoice[] = [
   {
     id: "invoice-5",
     tenantId: "tenant-1",
-    clientId: "client-2",
+    customerId: "customer-2",
     invoiceNumber: "RE-2024-0005",
     status: "issued",
     issueDate: "2024-11-01T00:00:00Z",
@@ -444,7 +444,7 @@ const seedInvoices: Invoice[] = [
   {
     id: "invoice-6",
     tenantId: "tenant-1",
-    clientId: "client-3",
+    customerId: "customer-3",
     projectId: "project-3",
     invoiceNumber: "RE-2024-0006",
     status: "draft",
@@ -479,7 +479,7 @@ const seedInvoices: Invoice[] = [
 export interface MockDatabase {
   tenant: Tenant;
   user: User;
-  clients: Client[];
+  customers: Customer[];
   projects: Project[];
   expenses: Expense[];
   invoices: Invoice[];
@@ -491,7 +491,7 @@ function createInitialDb(): MockDatabase {
   return {
     tenant: seedTenant,
     user: seedUser,
-    clients: seedClients,
+    customers: seedCustomers,
     projects: seedProjects,
     expenses: seedExpenses,
     invoices: seedInvoices,

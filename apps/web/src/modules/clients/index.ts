@@ -1,1 +1,0 @@
-export { default as ClientsPage } from "./screens/ClientsPage";

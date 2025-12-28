@@ -6,7 +6,7 @@ import { FileText, Plus } from "lucide-react";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { getClients } from "@/shared/mock/mockApi";
+import { getCustomers } from "@/shared/mock/mockApi";
 import { invoicesApi } from "@/lib/invoices-api";
 import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { EmptyState } from "@/shared/components/EmptyState";
@@ -21,10 +21,10 @@ export default function InvoicesPage() {
     queryKey: ["invoices"],
     queryFn: () => invoicesApi.listInvoices(),
   });
-  const { data: clients } = useQuery({ queryKey: ["clients"], queryFn: getClients });
+  const { data: customers } = useQuery({ queryKey: ["customers"], queryFn: getCustomers });
 
-  const getClientName = (customerPartyId: string) =>
-    clients?.find((c) => c.id === customerPartyId)?.company || "Unknown";
+  const getCustomerName = (customerPartyId: string) =>
+    customers?.find((c) => c.id === customerPartyId)?.company || "Unknown";
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -79,7 +79,7 @@ export default function InvoicesPage() {
                     >
                       <td className="px-4 py-3 text-sm font-medium">{invoice.number || "Draft"}</td>
                       <td className="px-4 py-3 text-sm">
-                        {getClientName(invoice.customerPartyId)}
+                        {getCustomerName(invoice.customerPartyId)}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {formatDate(invoice.issuedAt || invoice.createdAt, locale)}

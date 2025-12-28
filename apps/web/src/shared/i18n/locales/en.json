@@ -31,7 +31,7 @@
     "assistant": "Assistant",
     "expenses": "Expenses",
     "invoices": "Invoices",
-    "clients": "Clients",
+    "customers": "Customers",
     "settings": "Settings",
     "projects": "Projects",
     "accounting": "Accounting",
@@ -105,7 +105,7 @@
     "noInvoices": "No invoices yet",
     "noInvoicesDescription": "Create your first invoice to get started.",
     "invoiceNumber": "Invoice #",
-    "client": "Client",
+    "customer": "Customer",
     "date": "Date",
     "dueDate": "Due date",
     "amount": "Amount",
@@ -131,16 +131,16 @@
       "preview": "Preview"
     },
     "wizard": {
-      "selectClient": "Select client",
+      "selectCustomer": "Select customer",
       "addItems": "Add line items",
       "review": "Review & create"
     }
   },
-  "clients": {
-    "title": "Clients",
-    "addClient": "Add client",
-    "noClients": "No clients yet",
-    "noClientsDescription": "Add your first client to start creating invoices.",
+  "customers": {
+    "title": "Customers",
+    "addCustomer": "Add customer",
+    "noCustomers": "No customers yet",
+    "noCustomersDescription": "Add your first customer to start creating invoices.",
     "name": "Name",
     "company": "Company",
     "email": "Email",

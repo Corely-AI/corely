@@ -31,7 +31,7 @@
     "assistant": "Assistent",
     "expenses": "Ausgaben",
     "invoices": "Rechnungen",
-    "clients": "Kunden",
+    "customers": "Kunden",
     "settings": "Einstellungen",
     "projects": "Projekte",
     "accounting": "Buchhaltung",
@@ -105,7 +105,7 @@
     "noInvoices": "Noch keine Rechnungen",
     "noInvoicesDescription": "Erstellen Sie Ihre erste Rechnung um loszulegen.",
     "invoiceNumber": "Rechnung Nr.",
-    "client": "Kunde",
+    "customer": "Kunde",
     "date": "Datum",
     "dueDate": "Fällig am",
     "amount": "Betrag",
@@ -131,16 +131,16 @@
       "preview": "Vorschau"
     },
     "wizard": {
-      "selectClient": "Kunde auswählen",
+      "selectCustomer": "Kunde auswählen",
       "addItems": "Positionen hinzufügen",
       "review": "Prüfen & erstellen"
     }
   },
-  "clients": {
+  "customers": {
     "title": "Kunden",
-    "addClient": "Kunde hinzufügen",
-    "noClients": "Noch keine Kunden",
-    "noClientsDescription": "Fügen Sie Ihren ersten Kunden hinzu um Rechnungen zu erstellen.",
+    "addCustomer": "Kunde hinzufügen",
+    "noCustomers": "Noch keine Kunden",
+    "noCustomersDescription": "Fügen Sie Ihren ersten Kunden hinzu um Rechnungen zu erstellen.",
     "name": "Name",
     "company": "Firma",
     "email": "E-Mail",
