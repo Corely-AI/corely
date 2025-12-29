@@ -80,6 +80,128 @@ The platform is organized into four runtime surfaces that share the same domain 
 
 ---
 
+## Error handling (Problem Details standard)
+
+All API errors use **RFC 7807 Problem Details** as the wire format. This ensures predictable, consistent error responses across Web, POS, and any future client surfaces. Errors are safe by default: internal details never leak to clients in production.
+
+## Wire format (all API errors)
+
+```typescript
+{
+  type: "https://errors.kerniflow.com/Invoices:Locked",
+  title: "Conflict",
+  status: 409,
+  detail: "This invoice has already been finalized",  // safe to show
+  instance: "/api/invoices/123/finalize",
+  code: "Invoices:Locked",                            // stable machine code
+  traceId: "a1b2c3d4-...",                            // correlation ID
+  validationErrors: [{ message: "...", members: ["email"] }], // optional
+  data: { invoiceId: "123" }                          // safe metadata
+}
+```
+
+**Error code convention:** `Module:Meaning` (e.g., `Invoices:Locked`, `Common:ValidationFailed`, `Customers:EmailExists`).
+
+## Backend error taxonomy (`packages/domain/src/errors`)
+
+| Error class             | Status  | Message exposed? | When to use                                     |
+| ----------------------- | ------- | ---------------- | ----------------------------------------------- |
+| `UserFriendlyError`     | 400     | ✅ YES           | Business logic errors safe to show users        |
+| `ValidationFailedError` | 400     | ✅ YES           | Form/request validation with field-level errors |
+| `UnauthorizedError`     | 401     | ✅ Generic       | Authentication required/failed                  |
+| `ForbiddenError`        | 403     | ✅ Generic       | Insufficient permissions                        |
+| `NotFoundError`         | 404     | ❌ NO            | Resource not found (message sanitized)          |
+| `ConflictError`         | 409     | ❌ NO            | Duplicates, state conflicts (message sanitized) |
+| `ExternalServiceError`  | 502/503 | ❌ NO            | Third-party API failures (includes retry flag)  |
+| `UnexpectedError`       | 500     | ❌ NO            | System errors (message sanitized)               |
+
+**Usage example (backend):**
+
+```typescript
+// User-friendly (safe to show)
+throw new UserFriendlyError("This invoice has already been finalized", {
+  code: "Invoices:Locked",
+});
+
+// Validation
+throw new ValidationFailedError("Validation failed", [
+  { message: "Email is required", members: ["email"] },
+]);
+
+// Not safe (internal details for logs, generic message to client)
+throw new NotFoundError("Invoice ABC-123 not found for tenant XYZ");
+```
+
+## Global exception filter (API layer)
+
+The `ProblemDetailsExceptionFilter` catches **all** exceptions and converts them to Problem Details:
+
+1. **AppError** → Maps directly using error properties
+2. **Prisma errors** → Maps to business errors with stable codes:
+   - `P2002` (unique constraint) → 409 Conflict
+   - `P2025` (not found) → 404 Not Found
+   - `P2003` (foreign key) → 409 Conflict
+3. **NestJS HttpException** → Converts with stable codes
+4. **Unknown errors** → Sanitized 500 response in production
+
+**Trace/correlation IDs:** Every request gets a `traceId` (extracted from `x-trace-id` header or generated). Included in all error responses and logs for debugging/support.
+
+**Logging policy:** User-friendly and validation errors log as `warn`/`info` (no stack); unexpected errors log as `error` (with stack). All logs include `traceId`, `tenantId`, HTTP method, and URL.
+
+## Client-side error handling (Web + POS)
+
+**Shared normalizer** (`packages/api-client/src/errors`): Converts HTTP errors to structured `ApiError` class with convenience methods (`isValidationError()`, `isRetryable()`, etc.).
+
+**Web patterns** (`apps/web/src/shared/lib/errors`):
+
+```typescript
+// Automatic toast for non-validation errors
+const showError = useApiErrorToast();
+try {
+  await apiClient.post("/invoices", data);
+} catch (error) {
+  showError(error); // Shows toast with trace ID
+}
+
+// Map validation errors to form fields
+const fieldErrors = mapValidationErrorsToForm(error);
+// → { email: "Email is required", amount: "Must be positive" }
+Object.entries(fieldErrors).forEach(([field, message]) => {
+  form.setError(field, { message });
+});
+```
+
+**POS offline-aware rules:**
+
+| Error type                 | POS behavior                                       |
+| -------------------------- | -------------------------------------------------- |
+| Network/offline            | Queue action for sync (via `packages/offline-rn`)  |
+| Validation (400)           | Show error, do NOT retry (user must fix)           |
+| Conflict (409)             | Show error, do NOT retry (business rule violation) |
+| Auth (401/403)             | Trigger re-login flow                              |
+| Transient server (502/503) | Retry with backoff (if idempotent)                 |
+
+**Trace ID support:** All error UIs (web toasts, POS banners) display `traceId` and allow copying for support tickets.
+
+## Developer guidelines
+
+**DO:**
+
+- ✅ Use `UserFriendlyError` for messages safe to show users
+- ✅ Include module-specific error codes (e.g., `Invoices:Locked`)
+- ✅ Log `traceId` with every error
+- ✅ Handle 401/403 in global auth flow, not per-component
+
+**DON'T:**
+
+- ❌ Expose database constraint names or SQL errors to clients
+- ❌ Retry validation errors or permission errors
+- ❌ Show generic "An error occurred" when you have specific business logic errors
+
+**Full documentation:** See `docs/architecture/error-handling.md` for complete reference, testing patterns, and troubleshooting.
+
+---
+
 # Cross-platform sharing strategy (Web + React Native)
 
 Web and POS are distinct client surfaces, but they share the same contracts, domain vocabulary, and workflow boundaries. Avoid duplicating business workflows across clients.
