@@ -12,6 +12,7 @@ export function formatEUR(cents: number, locale: "de-DE" | "en-US" = "de-DE"): s
 
 export const DOMAIN_HELLO = "Kerniflow domain loaded ✅";
 
+export * from "./errors";
 export * from "./customization/types";
 export * from "./customization/ports";
 export * from "./customization/validate-and-normalize";

@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
 import { EnvModule } from "@kerniflow/config";
 import { DataModule } from "@kerniflow/data";
 import { AppController } from "./app.controller";
@@ -19,9 +19,12 @@ import { PurchasingModule } from "./modules/purchasing";
 import { InventoryModule } from "./modules/inventory";
 import { ApprovalsModule } from "./modules/approvals";
 import { EngagementModule } from "./modules/engagement/engagement.module";
+import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware.js";
+import { TraceIdService } from "./shared/trace/trace-id.service.js";
 
 @Module({
   controllers: [AppController],
+  providers: [TraceIdService],
   imports: [
     // Config must be first to validate env before other modules use it
     EnvModule.forRoot(),
@@ -54,4 +57,9 @@ import { EngagementModule } from "./modules/engagement/engagement.module";
     })(),
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply trace ID middleware to all routes
+    consumer.apply(TraceIdMiddleware).forRoutes("*");
+  }
+}
