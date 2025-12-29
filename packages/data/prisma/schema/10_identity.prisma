@@ -67,12 +67,16 @@ model Role {
   tenantId  String
   name      String
   systemKey String?  // OWNER, ADMIN, MEMBER (null for custom roles)
+  description String?
+  isSystem  Boolean  @default(false)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   // Relations
   tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   memberships         Membership[]
   rolePermissions     RolePermission[]
+  rolePermissionGrants RolePermissionGrant[]
 
   @@unique([tenantId, systemKey])
   @@unique([tenantId, name])
@@ -92,6 +96,11 @@ model Permission {
   @@index([key])
 }
 
+enum PermissionEffect {
+  ALLOW
+  DENY
+}
+
 model RolePermission {
   roleId       String
   permissionId String
@@ -104,6 +113,25 @@ model RolePermission {
   @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
+}
+
+model RolePermissionGrant {
+  id            String           @id @default(cuid())
+  tenantId      String
+  roleId        String
+  permissionKey String
+  effect        PermissionEffect @default(ALLOW)
+  createdAt     DateTime         @default(now()) @db.Timestamptz(6)
+  createdBy     String?
+
+  // Relations
+  tenant       Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role         Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdByUser User?  @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, roleId, permissionKey])
+  @@index([tenantId, roleId])
+  @@index([permissionKey])
 }
 
 // === SESSIONS / TOKENS ===

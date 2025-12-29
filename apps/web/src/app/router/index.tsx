@@ -48,7 +48,8 @@ import {
   ReorderDashboardPage,
   InventoryCopilotPage,
 } from "../../modules/inventory";
-import { SettingsPage } from "../../modules/settings";
+import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
+import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { TaxSettingsPage } from "../../modules/tax";
 import NotFound from "../../shared/components/NotFound";
 import { LoginPage } from "../../routes/auth/login";
@@ -123,6 +124,22 @@ export const Router = () => (
           <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
           <Route path="/settings/members" element={<WorkspaceMembersPage />} />
           <Route path="/settings/tax" element={<TaxSettingsPage />} />
+          <Route
+            path="/settings/roles"
+            element={
+              <RequirePermission permission="settings.roles.manage">
+                <RolesPage />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/settings/roles/:roleId/permissions"
+            element={
+              <RequirePermission permission="settings.roles.manage">
+                <RolePermissionsPage />
+              </RequirePermission>
+            }
+          />
         </Route>
       </Route>
 

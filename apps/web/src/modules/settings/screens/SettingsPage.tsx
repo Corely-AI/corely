@@ -8,6 +8,7 @@ import { useThemeStore } from "@/shared/theme/themeStore";
 import { getDb } from "@/shared/mock/mockDb";
 import { Moon, Sun, Monitor, Globe } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { Link } from "react-router-dom";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
@@ -22,6 +23,20 @@ export default function SettingsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-4xl">
       <h1 className="text-h1 text-foreground">{t("settings.title")}</h1>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Access control</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-muted-foreground">
+            Manage tenant roles and permission grants.
+          </div>
+          <Button variant="accent" asChild>
+            <Link to="/settings/roles">Manage roles</Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

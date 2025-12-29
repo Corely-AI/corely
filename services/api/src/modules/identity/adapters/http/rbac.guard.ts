@@ -4,10 +4,14 @@ import {
   ExecutionContext,
   ForbiddenException,
   SetMetadata,
+  Inject,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
-import type { RoleRepositoryPort } from "../../application/ports/role-repository.port";
+import { MEMBERSHIP_REPOSITORY_TOKEN } from "../../application/ports/membership-repository.port";
+import type { RolePermissionGrantRepositoryPort } from "../../application/ports/role-permission-grant-repository.port";
+import { ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN } from "../../application/ports/role-permission-grant-repository.port";
+import type { RolePermissionEffect } from "@kerniflow/contracts";
 
 export const REQUIRE_PERMISSION = "require_permission";
 
@@ -20,8 +24,10 @@ export const REQUIRE_PERMISSION = "require_permission";
 export class RbacGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
+    @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
     private readonly membershipRepo: MembershipRepositoryPort,
-    private readonly roleRepo: RoleRepositoryPort
+    @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
+    private readonly grantRepo: RolePermissionGrantRepositoryPort
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -46,16 +52,47 @@ export class RbacGuard implements CanActivate {
       throw new ForbiddenException("User is not a member of this tenant");
     }
 
-    // Get role permissions
-    const permissions = await this.roleRepo.getPermissions(membership.getRoleId());
+    const grants = await this.grantRepo.listByRole(tenantId, membership.getRoleId());
+    const canAccess = hasPermission(grants, requiredPermission);
 
-    if (!permissions.includes(requiredPermission)) {
+    if (!canAccess) {
       throw new ForbiddenException(`User does not have permission: ${requiredPermission}`);
     }
 
     return true;
   }
 }
+
+const hasPermission = (
+  grants: Array<{ key: string; effect: RolePermissionEffect }>,
+  required: string
+): boolean => {
+  const allow = new Set<string>();
+  const deny = new Set<string>();
+  let allowAll = false;
+
+  for (const grant of grants) {
+    if (grant.key === "*" && grant.effect === "ALLOW") {
+      allowAll = true;
+      continue;
+    }
+    if (grant.effect === "DENY") {
+      deny.add(grant.key);
+      continue;
+    }
+    allow.add(grant.key);
+  }
+
+  if (deny.has(required)) {
+    return false;
+  }
+
+  if (allowAll) {
+    return true;
+  }
+
+  return allow.has(required);
+};
 
 /**
  * Decorator to require a specific permission

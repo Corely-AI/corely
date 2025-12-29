@@ -13,6 +13,8 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
     id: string;
     tenantId: string;
     name: string;
+    description?: string | null;
+    isSystem?: boolean;
     systemKey?: string;
   }): Promise<void> {
     await this.prisma.role.create({
@@ -20,23 +22,29 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
         id: data.id,
         tenantId: data.tenantId,
         name: data.name,
+        description: data.description ?? null,
+        isSystem: data.isSystem ?? false,
         systemKey: data.systemKey || null,
       },
     });
   }
 
-  async findById(id: string): Promise<{
+  async findById(tenantId: string, id: string): Promise<{
     id: string;
     tenantId: string;
     name: string;
+    description: string | null;
+    isSystem: boolean;
     systemKey: string | null;
   } | null> {
-    return await this.prisma.role.findUnique({
-      where: { id },
+    return await this.prisma.role.findFirst({
+      where: { tenantId, id },
       select: {
         id: true,
         tenantId: true,
         name: true,
+        description: true,
+        isSystem: true,
         systemKey: true,
       },
     });
@@ -49,6 +57,8 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
     id: string;
     tenantId: string;
     name: string;
+    description: string | null;
+    isSystem: boolean;
     systemKey: string | null;
   } | null> {
     return await this.prisma.role.findUnique({
@@ -57,6 +67,8 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
         id: true,
         tenantId: true,
         name: true,
+        description: true,
+        isSystem: true,
         systemKey: true,
       },
     });
@@ -67,6 +79,8 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
       id: string;
       tenantId: string;
       name: string;
+      description: string | null;
+      isSystem: boolean;
       systemKey: string | null;
     }>
   > {
@@ -76,19 +90,54 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
         id: true,
         tenantId: true,
         name: true,
+        description: true,
+        isSystem: true,
         systemKey: true,
       },
     });
   }
 
-  async getPermissions(roleId: string): Promise<string[]> {
-    const rolePermissions = await this.prisma.rolePermission.findMany({
-      where: { roleId },
-      include: {
-        permission: true,
+  async findByName(
+    tenantId: string,
+    name: string
+  ): Promise<{
+    id: string;
+    tenantId: string;
+    name: string;
+    description: string | null;
+    isSystem: boolean;
+    systemKey: string | null;
+  } | null> {
+    return await this.prisma.role.findUnique({
+      where: { tenantId_name: { tenantId, name } },
+      select: {
+        id: true,
+        tenantId: true,
+        name: true,
+        description: true,
+        isSystem: true,
+        systemKey: true,
       },
     });
+  }
 
-    return rolePermissions.map((rp) => rp.permission.key);
+  async update(
+    tenantId: string,
+    roleId: string,
+    patch: { name?: string; description?: string | null }
+  ): Promise<void> {
+    await this.prisma.role.updateMany({
+      where: { tenantId, id: roleId },
+      data: {
+        name: patch.name,
+        description: patch.description,
+      },
+    });
+  }
+
+  async delete(tenantId: string, roleId: string): Promise<void> {
+    await this.prisma.role.deleteMany({
+      where: { tenantId, id: roleId },
+    });
   }
 }

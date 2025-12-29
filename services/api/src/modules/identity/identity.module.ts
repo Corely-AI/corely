@@ -5,6 +5,8 @@ import { DataModule } from "@kerniflow/data";
 
 // Controllers
 import { AuthController } from "./adapters/http/auth.controller";
+import { RolesController } from "./adapters/http/roles.controller";
+import { PermissionsController } from "./adapters/http/permissions.controller";
 
 // Infrastructure adapters
 import { PrismaIdempotencyStorageAdapter } from "../../shared/infrastructure/persistence/prisma-idempotency-storage.adapter";
@@ -19,6 +21,7 @@ import { RefreshTokenUseCase } from "./application/use-cases/refresh-token.useca
 import { SignOutUseCase } from "./application/use-cases/sign-out.usecase";
 import { SwitchTenantUseCase } from "./application/use-cases/switch-tenant.usecase";
 import { AuthGuard } from "./adapters/http/auth.guard";
+import { RbacGuard } from "./adapters/http/rbac.guard";
 
 // Security
 import { BcryptPasswordHasher } from "./infrastructure/security/bcrypt.password-hasher";
@@ -33,17 +36,30 @@ import { PrismaAuditRepository } from "./infrastructure/adapters/prisma-audit-re
 import { PrismaMembershipRepository } from "./infrastructure/adapters/prisma-membership-repository.adapter";
 import { PrismaRefreshTokenRepository } from "./infrastructure/adapters/prisma-refresh-token-repository.adapter";
 import { PrismaRoleRepository } from "./infrastructure/adapters/prisma-role-repository.adapter";
+import { PrismaRolePermissionGrantRepository } from "./infrastructure/adapters/prisma-role-permission-grant-repository.adapter";
 import { PrismaTenantRepository } from "./infrastructure/adapters/prisma-tenant-repository.adapter";
 import { PrismaUserRepository } from "./infrastructure/adapters/prisma-user-repository.adapter";
 import { MEMBERSHIP_REPOSITORY_TOKEN } from "./application/ports/membership-repository.port";
 import { REFRESH_TOKEN_REPOSITORY_TOKEN } from "./application/ports/refresh-token-repository.port";
 import { ROLE_REPOSITORY_TOKEN } from "./application/ports/role-repository.port";
+import {
+  ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN,
+} from "./application/ports/role-permission-grant-repository.port";
 import { TENANT_REPOSITORY_TOKEN } from "./application/ports/tenant-repository.port";
 import { USER_REPOSITORY_TOKEN } from "./application/ports/user-repository.port";
+import { PERMISSION_CATALOG_PORT } from "./application/ports/permission-catalog.port";
+import { PermissionCatalogRegistry } from "./permissions/permission-catalog";
+import { ListRolesUseCase } from "./application/use-cases/list-roles.usecase";
+import { CreateRoleUseCase } from "./application/use-cases/create-role.usecase";
+import { UpdateRoleUseCase } from "./application/use-cases/update-role.usecase";
+import { DeleteRoleUseCase } from "./application/use-cases/delete-role.usecase";
+import { GetPermissionCatalogUseCase } from "./application/use-cases/get-permission-catalog.usecase";
+import { GetRolePermissionsUseCase } from "./application/use-cases/get-role-permissions.usecase";
+import { UpdateRolePermissionsUseCase } from "./application/use-cases/update-role-permissions.usecase";
 
 @Module({
   imports: [DataModule],
-  controllers: [AuthController],
+  controllers: [AuthController, RolesController, PermissionsController],
   providers: [
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()
     PrismaUserRepository,
@@ -51,8 +67,10 @@ import { USER_REPOSITORY_TOKEN } from "./application/ports/user-repository.port"
     PrismaMembershipRepository,
     PrismaRefreshTokenRepository,
     PrismaRoleRepository,
+    PrismaRolePermissionGrantRepository,
     PrismaAuditRepository,
     AuthGuard,
+    RbacGuard,
 
     // Security
     BcryptPasswordHasher,
@@ -86,6 +104,10 @@ import { USER_REPOSITORY_TOKEN } from "./application/ports/user-repository.port"
       useExisting: PrismaRoleRepository,
     },
     {
+      provide: ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN,
+      useExisting: PrismaRolePermissionGrantRepository,
+    },
+    {
       provide: PASSWORD_HASHER_TOKEN,
       useExisting: BcryptPasswordHasher,
     },
@@ -96,6 +118,10 @@ import { USER_REPOSITORY_TOKEN } from "./application/ports/user-repository.port"
     {
       provide: AUDIT_PORT_TOKEN,
       useExisting: PrismaAuditRepository,
+    },
+    {
+      provide: PERMISSION_CATALOG_PORT,
+      useExisting: PermissionCatalogRegistry,
     },
     {
       provide: ID_GENERATOR_TOKEN,
@@ -113,6 +139,16 @@ import { USER_REPOSITORY_TOKEN } from "./application/ports/user-repository.port"
     RefreshTokenUseCase,
     SignOutUseCase,
     SwitchTenantUseCase,
+    ListRolesUseCase,
+    CreateRoleUseCase,
+    UpdateRoleUseCase,
+    DeleteRoleUseCase,
+    GetPermissionCatalogUseCase,
+    GetRolePermissionsUseCase,
+    UpdateRolePermissionsUseCase,
+
+    // Permission catalog
+    PermissionCatalogRegistry,
   ],
   exports: [
     Reflector,
@@ -121,16 +157,19 @@ import { USER_REPOSITORY_TOKEN } from "./application/ports/user-repository.port"
     MEMBERSHIP_REPOSITORY_TOKEN,
     REFRESH_TOKEN_REPOSITORY_TOKEN,
     ROLE_REPOSITORY_TOKEN,
+    ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN,
     PASSWORD_HASHER_TOKEN,
     TOKEN_SERVICE_TOKEN,
     OUTBOX_PORT,
     AUDIT_PORT_TOKEN,
+    PERMISSION_CATALOG_PORT,
     SignUpUseCase,
     SignInUseCase,
     RefreshTokenUseCase,
     SignOutUseCase,
     SwitchTenantUseCase,
     AuthGuard,
+    RbacGuard,
     ID_GENERATOR_TOKEN,
     IDEMPOTENCY_STORAGE_PORT_TOKEN,
   ],

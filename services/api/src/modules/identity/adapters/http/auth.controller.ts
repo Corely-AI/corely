@@ -37,6 +37,15 @@ import { AuthGuard } from "./auth.guard";
 import { CurrentUserId, CurrentTenantId } from "./current-user.decorator";
 import { buildRequestContext } from "../../../../shared/context/request-context";
 import type { Request } from "express";
+import { USER_REPOSITORY_TOKEN, type UserRepositoryPort } from "../../application/ports/user-repository.port";
+import {
+  MEMBERSHIP_REPOSITORY_TOKEN,
+  type MembershipRepositoryPort,
+} from "../../application/ports/membership-repository.port";
+import {
+  TENANT_REPOSITORY_TOKEN,
+  type TenantRepositoryPort,
+} from "../../application/ports/tenant-repository.port";
 
 /**
  * Auth Controller
@@ -50,7 +59,11 @@ export class AuthController {
     @Inject(SignInUseCase) private readonly signInUseCase: SignInUseCase,
     @Inject(RefreshTokenUseCase) private readonly refreshTokenUseCase: RefreshTokenUseCase,
     @Inject(SignOutUseCase) private readonly signOutUseCase: SignOutUseCase,
-    @Inject(SwitchTenantUseCase) private readonly switchTenantUseCase: SwitchTenantUseCase
+    @Inject(SwitchTenantUseCase) private readonly switchTenantUseCase: SwitchTenantUseCase,
+    @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
+    @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
+    private readonly membershipRepo: MembershipRepositoryPort,
+    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort
   ) {}
 
   /**
@@ -170,13 +183,29 @@ export class AuthController {
       throw new BadRequestException("User not found");
     }
 
-    // TODO: Inject and use repositories
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    const memberships = await this.membershipRepo.findByUserId(userId);
+    const membershipDtos = await Promise.all(
+      memberships.map(async (membership) => {
+        const tenant = await this.tenantRepo.findById(membership.getTenantId());
+        return {
+          tenantId: membership.getTenantId(),
+          tenantName: tenant?.getName() ?? membership.getTenantId(),
+          roleId: membership.getRoleId(),
+        };
+      })
+    );
+
     return {
       userId,
-      email: "user@example.com",
-      name: "User",
+      email: user.getEmail().getValue(),
+      name: user.getName(),
       activeTenantId: tenantId,
-      memberships: [],
+      memberships: membershipDtos,
     };
   }
 
