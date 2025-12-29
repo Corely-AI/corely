@@ -12,9 +12,11 @@ import { useRouter } from 'expo-router';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useCartStore } from '@/stores/cartStore';
 import { useCatalogStore } from '@/stores/catalogStore';
+import { useRegisterStore } from '@/stores/registerStore';
 
 export default function POSHomeScreen() {
   const router = useRouter();
+  const { selectedRegister } = useRegisterStore();
   const { currentShift } = useShiftStore();
   const { addItem, items } = useCartStore();
   const { searchProducts } = useCatalogStore();
@@ -46,6 +48,27 @@ export default function POSHomeScreen() {
   const handleOpenScanner = () => {
     router.push('/scanner');
   };
+
+  // Check if register is selected
+  if (!selectedRegister) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.emptyState}>
+          <Ionicons name="desktop-outline" size={64} color="#999" />
+          <Text style={styles.emptyTitle}>No Register Selected</Text>
+          <Text style={styles.emptyText}>
+            Please select a register to start using the POS
+          </Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push('/register-selection')}
+          >
+            <Text style={styles.buttonText}>Select Register</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   if (!currentShift) {
     return (
