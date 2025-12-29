@@ -12,6 +12,7 @@ import { WorkflowDefinitionRepository } from "./adapters/prisma-workflow-definit
 import { WorkflowInstanceRepository } from "./adapters/prisma-workflow-instance-repository.adapter";
 import { WorkflowTaskRepository } from "./adapters/prisma-workflow-task-repository.adapter";
 import { WorkflowEventRepository } from "./adapters/prisma-workflow-event-repository.adapter";
+import { DomainEventRepository } from "./adapters/prisma-domain-event-repository.adapter";
 
 /**
  * Global DataModule that provides all data access infrastructure.
@@ -52,6 +53,7 @@ import { WorkflowEventRepository } from "./adapters/prisma-workflow-event-reposi
     WorkflowInstanceRepository,
     WorkflowTaskRepository,
     WorkflowEventRepository,
+    DomainEventRepository,
   ],
   exports: [
     // Prisma client (for rare cases where direct access is needed)
@@ -74,6 +76,7 @@ import { WorkflowEventRepository } from "./adapters/prisma-workflow-event-reposi
     WorkflowInstanceRepository,
     WorkflowTaskRepository,
     WorkflowEventRepository,
+    DomainEventRepository,
   ],
 })
 export class DataModule {}

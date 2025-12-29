@@ -2,6 +2,7 @@ import { z } from "zod";
 import { WorkflowSpecSchema } from "./workflow-spec.schema";
 import {
   WorkflowDefinitionStatusSchema,
+  WorkflowDefinitionTypeSchema,
   WorkflowEventInputSchema,
   WorkflowInstanceStatusSchema,
 } from "./workflow.types";
@@ -11,6 +12,7 @@ export const CreateWorkflowDefinitionInputSchema = z.object({
   version: z.number().int().optional(),
   name: z.string().min(1),
   description: z.string().optional(),
+  type: WorkflowDefinitionTypeSchema.optional(),
   status: WorkflowDefinitionStatusSchema.optional(),
   spec: WorkflowSpecSchema,
   createdBy: z.string().optional(),

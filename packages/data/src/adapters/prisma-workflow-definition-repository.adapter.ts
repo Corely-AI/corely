@@ -9,6 +9,7 @@ export interface WorkflowDefinitionCreateInput {
   version: number;
   name: string;
   description?: string | null;
+  type?: "GENERAL" | "APPROVAL";
   status: "ACTIVE" | "INACTIVE" | "ARCHIVED";
   spec: string;
   createdBy?: string | null;
@@ -25,7 +26,12 @@ export class WorkflowDefinitionRepository {
 
   async create(input: WorkflowDefinitionCreateInput, tx?: TransactionContext) {
     const client = getPrismaClient(this.prisma, tx);
-    return client.workflowDefinition.create({ data: input });
+    return client.workflowDefinition.create({
+      data: {
+        ...input,
+        type: input.type ?? "GENERAL",
+      },
+    });
   }
 
   async findById(tenantId: string, id: string, tx?: TransactionContext) {
@@ -44,6 +50,23 @@ export class WorkflowDefinitionRepository {
     });
   }
 
+  async listByKeyPrefix(
+    tenantId: string,
+    keyPrefix: string,
+    status?: WorkflowDefinitionFilters["status"],
+    type?: "GENERAL" | "APPROVAL"
+  ) {
+    return this.prisma.workflowDefinition.findMany({
+      where: {
+        tenantId,
+        key: { startsWith: keyPrefix },
+        ...(status ? { status } : {}),
+        ...(type ? { type } : {}),
+      },
+      orderBy: [{ key: "asc" }, { version: "desc" }],
+    });
+  }
+
   async findActiveByKey(tenantId: string, key: string, version?: number) {
     return this.prisma.workflowDefinition.findFirst({
       where: {
@@ -52,6 +75,13 @@ export class WorkflowDefinitionRepository {
         status: "ACTIVE",
         ...(version ? { version } : {}),
       },
+      orderBy: { version: "desc" },
+    });
+  }
+
+  async findLatestByKey(tenantId: string, key: string) {
+    return this.prisma.workflowDefinition.findFirst({
+      where: { tenantId, key },
       orderBy: { version: "desc" },
     });
   }

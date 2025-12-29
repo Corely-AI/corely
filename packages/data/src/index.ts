@@ -20,3 +20,4 @@ export * from "./adapters/prisma-workflow-definition-repository.adapter";
 export * from "./adapters/prisma-workflow-instance-repository.adapter";
 export * from "./adapters/prisma-workflow-task-repository.adapter";
 export * from "./adapters/prisma-workflow-event-repository.adapter";
+export * from "./adapters/prisma-domain-event-repository.adapter";
