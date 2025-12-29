@@ -17,6 +17,7 @@ import { AccountingModule } from "./modules/accounting";
 import { SalesModule } from "./modules/sales";
 import { PurchasingModule } from "./modules/purchasing";
 import { InventoryModule } from "./modules/inventory";
+import { ApprovalsModule } from "./modules/approvals";
 
 @Module({
   controllers: [AppController],
@@ -36,6 +37,7 @@ import { InventoryModule } from "./modules/inventory";
     SalesModule,
     PurchasingModule,
     InventoryModule,
+    ApprovalsModule,
     WorkflowModule,
     AutomationModule,
     ReportingModule,

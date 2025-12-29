@@ -41,6 +41,7 @@ export class WorkflowService {
       version: input.version ?? 1,
       name: input.name,
       description: input.description ?? null,
+      type: input.type ?? "GENERAL",
       status: input.status ?? "ACTIVE",
       spec: specJson,
       createdBy: input.createdBy ?? null,

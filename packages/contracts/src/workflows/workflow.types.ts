@@ -2,6 +2,7 @@ import { z } from "zod";
 import { type WorkflowTaskTypeSchema } from "./workflow-spec.schema";
 
 export const WorkflowDefinitionStatusSchema = z.enum(["ACTIVE", "INACTIVE", "ARCHIVED"]);
+export const WorkflowDefinitionTypeSchema = z.enum(["GENERAL", "APPROVAL"]);
 
 export const WorkflowInstanceStatusSchema = z.enum([
   "PENDING",
@@ -27,6 +28,7 @@ export const WorkflowEventInputSchema = z.object({
 });
 
 export type WorkflowDefinitionStatus = z.infer<typeof WorkflowDefinitionStatusSchema>;
+export type WorkflowDefinitionType = z.infer<typeof WorkflowDefinitionTypeSchema>;
 export type WorkflowInstanceStatus = z.infer<typeof WorkflowInstanceStatusSchema>;
 export type WorkflowTaskStatus = z.infer<typeof WorkflowTaskStatusSchema>;
 export type WorkflowEventInput = z.infer<typeof WorkflowEventInputSchema>;

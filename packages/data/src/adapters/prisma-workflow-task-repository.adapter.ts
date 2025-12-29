@@ -10,7 +10,11 @@ export interface WorkflowTaskCreateInput {
   type: "HUMAN" | "TIMER" | "HTTP" | "EMAIL" | "AI" | "SYSTEM";
   status: "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED" | "SKIPPED";
   runAt?: Date | null;
+  dueAt?: Date | null;
   maxAttempts?: number;
+  assigneeUserId?: string | null;
+  assigneeRoleId?: string | null;
+  assigneePermissionKey?: string | null;
   idempotencyKey?: string | null;
   input?: string | null;
   traceId?: string | null;
@@ -51,7 +55,11 @@ export class WorkflowTaskRepository {
           type: input.type,
           status: input.status,
           runAt: input.runAt ?? null,
+          dueAt: input.dueAt ?? null,
           maxAttempts: input.maxAttempts ?? 3,
+          assigneeUserId: input.assigneeUserId ?? null,
+          assigneeRoleId: input.assigneeRoleId ?? null,
+          assigneePermissionKey: input.assigneePermissionKey ?? null,
           idempotencyKey: input.idempotencyKey ?? null,
           input: input.input ?? null,
           traceId: input.traceId ?? null,
@@ -78,6 +86,31 @@ export class WorkflowTaskRepository {
   async listByTraceId(tenantId: string, traceId: string) {
     return this.prisma.task.findMany({
       where: { tenantId, traceId },
+      orderBy: { createdAt: "asc" },
+    });
+  }
+
+  async listInbox(params: {
+    tenantId: string;
+    userId: string;
+    roleId?: string | null;
+    permissionKeys?: string[];
+    status?: "PENDING" | "RUNNING";
+  }) {
+    const status = params.status ?? "PENDING";
+    const permissionKeys = params.permissionKeys ?? [];
+
+    return this.prisma.task.findMany({
+      where: {
+        tenantId: params.tenantId,
+        type: "HUMAN",
+        status,
+        OR: [
+          params.userId ? { assigneeUserId: params.userId } : undefined,
+          params.roleId ? { assigneeRoleId: params.roleId } : undefined,
+          permissionKeys.length ? { assigneePermissionKey: { in: permissionKeys } } : undefined,
+        ].filter(Boolean) as any,
+      },
       orderBy: { createdAt: "asc" },
     });
   }

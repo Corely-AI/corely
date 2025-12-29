@@ -6,6 +6,7 @@ model WorkflowDefinition {
   version     Int                       @default(1)
   name        String
   description String?
+  type        WorkflowDefinitionType    @default(GENERAL)
   status      WorkflowDefinitionStatus  @default(ACTIVE)
   spec        String                    // JSON: XState machine definition
   createdBy   String?
@@ -23,6 +24,11 @@ enum WorkflowDefinitionStatus {
   ACTIVE
   INACTIVE
   ARCHIVED
+}
+
+enum WorkflowDefinitionType {
+  GENERAL
+  APPROVAL
 }
 
 // Workflow Instance: Runtime execution of a workflow definition
@@ -68,10 +74,14 @@ model Task {
   type            TaskType
   status          TaskStatus @default(PENDING)
   runAt           DateTime?  // For delayed/scheduled tasks
+  dueAt           DateTime?  // For human task SLA
   attempts        Int        @default(0)
   maxAttempts     Int        @default(3)
   lockedAt        DateTime?  // For preventing concurrent execution
   lockedBy        String?    // Worker/process ID that claimed this task
+  assigneeUserId  String?
+  assigneeRoleId  String?
+  assigneePermissionKey String?
   idempotencyKey  String?    // Optional deduplication key
   input           String?    // JSON: Task input parameters
   output          String?    // JSON: Task execution result
@@ -87,6 +97,9 @@ model Task {
   @@index([tenantId, idempotencyKey])
   @@index([status, lockedAt])
   @@index([runAt, status])
+  @@index([tenantId, assigneeUserId, status])
+  @@index([tenantId, assigneeRoleId, status])
+  @@index([tenantId, assigneePermissionKey, status])
 }
 
 enum TaskType {

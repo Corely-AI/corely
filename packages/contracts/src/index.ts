@@ -18,6 +18,7 @@ export * from "./inventory-ai";
 export * from "./pos";
 export * from "./pos-ai";
 export * from "./workflows";
+export * from "./approvals";
 
 export const CONTRACTS_HELLO = "Kerniflow contracts loaded ✅";
 

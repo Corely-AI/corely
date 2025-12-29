@@ -7,9 +7,13 @@ export const WorkflowTaskCreateSchema = z.object({
   name: z.string().optional(),
   input: z.record(z.unknown()).optional(),
   runAt: z.string().datetime().optional(),
+  dueAt: z.string().datetime().optional(),
   maxAttempts: z.number().int().positive().optional(),
   idempotencyKey: z.string().optional(),
   completionEvent: z.string().optional(),
+  assigneeUserId: z.string().optional(),
+  assigneeRoleId: z.string().optional(),
+  assigneePermissionKey: z.string().optional(),
 });
 
 export const WorkflowActionSchema = z.union([
@@ -56,6 +60,7 @@ export const WorkflowSpecSchema = z.object({
   version: z.number().int().optional(),
   initial: z.string(),
   context: z.record(z.unknown()).optional(),
+  meta: z.record(z.unknown()).optional(),
   states: z.record(z.string(), WorkflowStateSchema),
   guards: z.record(z.string(), WorkflowGuardSchema).optional(),
 });

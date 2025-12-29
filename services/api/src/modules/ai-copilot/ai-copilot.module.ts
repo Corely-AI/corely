@@ -35,6 +35,7 @@ import { buildPurchasingTools } from "../purchasing/adapters/tools/purchasing.to
 import { InventoryModule } from "../inventory";
 import { InventoryApplication } from "../inventory/application/inventory.application";
 import { buildInventoryTools } from "../inventory/adapters/tools/inventory.tools";
+import { buildApprovalTools } from "../approvals/adapters/tools/approval.tools";
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { buildInventoryTools } from "../inventory/adapters/tools/inventory.tools
         ...buildSalesTools(sales),
         ...buildPurchasingTools(purchasing),
         ...buildInventoryTools(inventory),
+        ...buildApprovalTools(),
       ],
       inject: [
         InvoicesApplication,
