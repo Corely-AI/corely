@@ -31,6 +31,10 @@ export class FakeMembershipRepository implements MembershipRepositoryPort {
     return this.memberships.some((m) => m.getTenantId() === tenantId && m.getUserId() === userId);
   }
 
+  async existsByRole(tenantId: string, roleId: string): Promise<boolean> {
+    return this.memberships.some((m) => m.getTenantId() === tenantId && m.getRoleId() === roleId);
+  }
+
   async update(membership: Membership): Promise<Membership> {
     this.memberships = this.memberships.map((m) =>
       m.getId() === membership.getId() ? membership : m

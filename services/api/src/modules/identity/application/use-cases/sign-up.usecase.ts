@@ -24,6 +24,14 @@ import { type TokenServicePort, TOKEN_SERVICE_TOKEN } from "../ports/token-servi
 import { type OutboxPort, OUTBOX_PORT } from "../ports/outbox.port";
 import { type AuditPort, AUDIT_PORT_TOKEN } from "../ports/audit.port";
 import { type RoleRepositoryPort, ROLE_REPOSITORY_TOKEN } from "../ports/role-repository.port";
+import {
+  type RolePermissionGrantRepositoryPort,
+  ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN,
+} from "../ports/role-permission-grant-repository.port";
+import {
+  type PermissionCatalogPort,
+  PERMISSION_CATALOG_PORT,
+} from "../ports/permission-catalog.port";
 import { type ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import {
   type RefreshTokenRepositoryPort,
@@ -39,6 +47,7 @@ import {
 } from "../../../../shared/ports/id-generator.port";
 import { type RequestContext } from "../../../../shared/context/request-context";
 import { ConflictError, ValidationError } from "../../../../shared/errors/domain-errors";
+import { buildDefaultRoleGrants, type DefaultRoleKey } from "../../permissions/default-role-grants";
 
 export interface SignUpInput {
   email: string;
@@ -68,6 +77,9 @@ export class SignUpUseCase {
     @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: MembershipRepositoryPort,
     @Inject(ROLE_REPOSITORY_TOKEN) private readonly roleRepo: RoleRepositoryPort,
+    @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
+    private readonly grantRepo: RolePermissionGrantRepositoryPort,
+    @Inject(PERMISSION_CATALOG_PORT) private readonly catalogPort: PermissionCatalogPort,
     @Inject(PASSWORD_HASHER_TOKEN) private readonly passwordHasher: PasswordHasherPort,
     @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort,
     @Inject(REFRESH_TOKEN_REPOSITORY_TOKEN)
@@ -110,7 +122,9 @@ export class SignUpUseCase {
     const user = User.create(userId, email, passwordHash, input.userName || null);
     await this.userRepo.create(user);
 
-    const ownerRole = await this.ensureOwnerRole(tenantId);
+    const defaultRoles = await this.ensureDefaultRoles(tenantId);
+    await this.seedDefaultRoleGrants(tenantId, userId, defaultRoles);
+    const ownerRole = defaultRoles.OWNER;
     const membershipId = this.idGenerator.newId();
     const membership = Membership.create(membershipId, tenantId, userId, ownerRole);
     await this.membershipRepo.create(membership);
@@ -186,14 +200,56 @@ export class SignUpUseCase {
       .substring(0, 50);
   }
 
-  private async ensureOwnerRole(tenantId: string): Promise<string> {
-    const existing = await this.roleRepo.findBySystemKey(tenantId, "OWNER");
-    if (existing) {
-      return existing.id;
+  private async ensureDefaultRoles(tenantId: string): Promise<Record<DefaultRoleKey, string>> {
+    const roles = [
+      { key: "OWNER" as const, name: "Owner" },
+      { key: "ADMIN" as const, name: "Admin" },
+      { key: "ACCOUNTANT" as const, name: "Accountant" },
+      { key: "STAFF" as const, name: "Staff" },
+      { key: "READ_ONLY" as const, name: "Read-only" },
+    ];
+
+    const results: Record<DefaultRoleKey, string> = {
+      OWNER: "",
+      ADMIN: "",
+      ACCOUNTANT: "",
+      STAFF: "",
+      READ_ONLY: "",
+    };
+
+    for (const role of roles) {
+      const existing = await this.roleRepo.findBySystemKey(tenantId, role.key);
+      if (existing) {
+        results[role.key] = existing.id;
+        continue;
+      }
+      const id = this.idGenerator.newId();
+      await this.roleRepo.create({
+        id,
+        tenantId,
+        name: role.name,
+        systemKey: role.key,
+        isSystem: true,
+      });
+      results[role.key] = id;
     }
-    const id = this.idGenerator.newId();
-    await this.roleRepo.create({ id, tenantId, name: "Owner", systemKey: "OWNER" });
-    return id;
+
+    return results;
+  }
+
+  private async seedDefaultRoleGrants(
+    tenantId: string,
+    actorUserId: string,
+    roles: Record<DefaultRoleKey, string>
+  ) {
+    const catalog = this.catalogPort.getCatalog();
+    const grants = buildDefaultRoleGrants(catalog);
+
+    await this.grantRepo.replaceAll(tenantId, roles.OWNER, grants.OWNER, actorUserId);
+    await this.grantRepo.replaceAll(tenantId, roles.ADMIN, grants.ADMIN, actorUserId);
+    await this.grantRepo.replaceAll(tenantId, roles.ACCOUNTANT, grants.ACCOUNTANT, actorUserId);
+    await this.grantRepo.replaceAll(tenantId, roles.STAFF, grants.STAFF, actorUserId);
+    await this.grantRepo.replaceAll(tenantId, roles.READ_ONLY, grants.READ_ONLY, actorUserId);
   }
 
   private async emitOutboxEvents(

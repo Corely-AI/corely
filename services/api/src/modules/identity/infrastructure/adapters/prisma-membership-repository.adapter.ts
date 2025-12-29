@@ -73,6 +73,14 @@ export class PrismaMembershipRepository implements MembershipRepositoryPort {
     return count > 0;
   }
 
+  async existsByRole(tenantId: string, roleId: string): Promise<boolean> {
+    const count = await this.prisma.membership.count({
+      where: { tenantId, roleId },
+    });
+
+    return count > 0;
+  }
+
   async update(membership: Membership): Promise<Membership> {
     const data = await this.prisma.membership.update({
       where: { id: membership.getId() },

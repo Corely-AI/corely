@@ -4,6 +4,7 @@ import { FakeUserRepository } from "../../../testkit/fakes/fake-user-repo";
 import { FakeTenantRepository } from "../../../testkit/fakes/fake-tenant-repo";
 import { FakeMembershipRepository } from "../../../testkit/fakes/fake-membership-repo";
 import { FakeRoleRepository } from "../../../testkit/fakes/fake-role-repo";
+import { FakeRolePermissionGrantRepository } from "../../../testkit/fakes/fake-role-permission-grant-repo";
 import { FakeRefreshTokenRepository } from "../../../testkit/fakes/fake-refresh-token-repo";
 import { MockPasswordHasher } from "../../../testkit/mocks/mock-password-hasher";
 import { MockTokenService } from "../../../testkit/mocks/mock-token-service";
@@ -14,32 +15,53 @@ import { FakeIdGenerator } from "@shared/testkit/fakes/fake-id-generator";
 import { FakeClock } from "@shared/testkit/fakes/fake-clock";
 import { buildSignUpInput } from "../../../testkit/builders/build-signup-input";
 import { ValidationError } from "@shared/errors/domain-errors";
+import type { PermissionCatalogPort } from "../../ports/permission-catalog.port";
 
 let useCase: SignUpUseCase;
 let userRepo: FakeUserRepository;
 let tenantRepo: FakeTenantRepository;
 let membershipRepo: FakeMembershipRepository;
 let roleRepo: FakeRoleRepository;
+let grantRepo: FakeRolePermissionGrantRepository;
 let refreshTokenRepo: FakeRefreshTokenRepository;
 let outbox: MockOutbox;
 let audit: MockAudit;
 let idempotency: MockIdempotencyStoragePort;
+let catalogPort: PermissionCatalogPort;
 
 const setup = () => {
   userRepo = new FakeUserRepository();
   tenantRepo = new FakeTenantRepository();
   membershipRepo = new FakeMembershipRepository();
   roleRepo = new FakeRoleRepository();
+  grantRepo = new FakeRolePermissionGrantRepository();
   refreshTokenRepo = new FakeRefreshTokenRepository();
   outbox = new MockOutbox();
   audit = new MockAudit();
   idempotency = new MockIdempotencyStoragePort();
+  catalogPort = {
+    getCatalog: () => [
+      {
+        id: "settings",
+        label: "Settings",
+        permissions: [
+          {
+            key: "settings.roles.manage",
+            group: "settings",
+            label: "Manage roles",
+          },
+        ],
+      },
+    ],
+  };
 
   useCase = new SignUpUseCase(
     userRepo,
     tenantRepo,
     membershipRepo,
     roleRepo,
+    grantRepo,
+    catalogPort,
     new MockPasswordHasher(),
     new MockTokenService(),
     refreshTokenRepo,

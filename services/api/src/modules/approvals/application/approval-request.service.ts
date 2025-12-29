@@ -13,9 +13,10 @@ import {
   type MembershipRepositoryPort,
 } from "../../identity/application/ports/membership-repository.port";
 import {
-  ROLE_REPOSITORY_TOKEN,
-  type RoleRepositoryPort,
-} from "../../identity/application/ports/role-repository.port";
+  ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN,
+  type RolePermissionGrantRepositoryPort,
+} from "../../identity/application/ports/role-permission-grant-repository.port";
+import type { RolePermissionEffect } from "@kerniflow/contracts";
 
 @Injectable()
 export class ApprovalRequestService {
@@ -31,8 +32,8 @@ export class ApprovalRequestService {
     private readonly domainEvents: DomainEventRepository,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
     private readonly memberships: MembershipRepositoryPort,
-    @Inject(ROLE_REPOSITORY_TOKEN)
-    private readonly roles: RoleRepositoryPort
+    @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
+    private readonly grants: RolePermissionGrantRepositoryPort
   ) {}
 
   async listRequests(tenantId: string, filters: { status?: string; businessKey?: string }) {
@@ -59,7 +60,7 @@ export class ApprovalRequestService {
   async listInbox(tenantId: string, userId: string) {
     const membership = await this.memberships.findByTenantAndUser(tenantId, userId);
     const roleId = membership?.getRoleId() ?? null;
-    const permissionKeys = roleId ? await this.roles.getPermissions(roleId) : [];
+    const permissionKeys = roleId ? await this.getAllowedPermissions(tenantId, roleId) : [];
 
     return this.tasks.listInbox({
       tenantId,
@@ -135,7 +136,7 @@ export class ApprovalRequestService {
     }
 
     if (task.assigneePermissionKey && roleId) {
-      const permissions = await this.roles.getPermissions(roleId);
+      const permissions = await this.getAllowedPermissions(tenantId, roleId);
       if (permissions.includes(task.assigneePermissionKey)) {
         return;
       }
@@ -159,4 +160,30 @@ export class ApprovalRequestService {
       return { approve: "APPROVE", reject: "REJECT" };
     }
   }
+
+  private async getAllowedPermissions(tenantId: string, roleId: string): Promise<string[]> {
+    const grants = await this.grants.listByRole(tenantId, roleId);
+    return toAllowedPermissionKeys(grants);
+  }
 }
+
+const toAllowedPermissionKeys = (
+  grants: Array<{ key: string; effect: RolePermissionEffect }>
+): string[] => {
+  const allow = new Set<string>();
+  const deny = new Set<string>();
+
+  for (const grant of grants) {
+    if (grant.effect === "DENY") {
+      deny.add(grant.key);
+      continue;
+    }
+    allow.add(grant.key);
+  }
+
+  for (const key of deny) {
+    allow.delete(key);
+  }
+
+  return Array.from(allow);
+};

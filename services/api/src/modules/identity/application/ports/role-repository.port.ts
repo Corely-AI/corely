@@ -5,15 +5,24 @@ export interface RoleRepositoryPort {
   /**
    * Create a role
    */
-  create(data: { id: string; tenantId: string; name: string; systemKey?: string }): Promise<void>;
+  create(data: {
+    id: string;
+    tenantId: string;
+    name: string;
+    description?: string | null;
+    isSystem?: boolean;
+    systemKey?: string;
+  }): Promise<void>;
 
   /**
    * Find role by ID
    */
-  findById(id: string): Promise<{
+  findById(tenantId: string, id: string): Promise<{
     id: string;
     tenantId: string;
     name: string;
+    description: string | null;
+    isSystem: boolean;
     systemKey: string | null;
   } | null>;
 
@@ -27,6 +36,8 @@ export interface RoleRepositoryPort {
     id: string;
     tenantId: string;
     name: string;
+    description: string | null;
+    isSystem: boolean;
     systemKey: string | null;
   } | null>;
 
@@ -38,14 +49,40 @@ export interface RoleRepositoryPort {
       id: string;
       tenantId: string;
       name: string;
+      description: string | null;
+      isSystem: boolean;
       systemKey: string | null;
     }>
   >;
 
   /**
-   * Get permissions for a role
+   * Find role by name within a tenant
    */
-  getPermissions(roleId: string): Promise<string[]>;
+  findByName(
+    tenantId: string,
+    name: string
+  ): Promise<{
+    id: string;
+    tenantId: string;
+    name: string;
+    description: string | null;
+    isSystem: boolean;
+    systemKey: string | null;
+  } | null>;
+
+  /**
+   * Update role details
+   */
+  update(
+    tenantId: string,
+    roleId: string,
+    patch: { name?: string; description?: string | null }
+  ): Promise<void>;
+
+  /**
+   * Delete role
+   */
+  delete(tenantId: string, roleId: string): Promise<void>;
 }
 
 export const ROLE_REPOSITORY_TOKEN = Symbol("ROLE_REPOSITORY");

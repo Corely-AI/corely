@@ -35,6 +35,11 @@ export interface MembershipRepositoryPort {
   existsByTenantAndUser(tenantId: string, userId: string): Promise<boolean>;
 
   /**
+   * Check if any membership uses a role in a tenant
+   */
+  existsByRole(tenantId: string, roleId: string): Promise<boolean>;
+
+  /**
    * Update membership (e.g., change role)
    */
   update(membership: Membership): Promise<Membership>;

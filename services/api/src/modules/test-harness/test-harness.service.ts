@@ -4,6 +4,7 @@ import * as bcrypt from "bcrypt";
 import { CreateWorkspaceUseCase } from "../workspaces/application/use-cases/create-workspace.usecase";
 import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/workspace-repository.port";
 import { WORKSPACE_REPOSITORY_PORT } from "../workspaces/application/ports/workspace-repository.port";
+import { buildPermissionCatalog } from "../identity/permissions/permission-catalog";
 
 export interface SeedResult {
   tenantId: string;
@@ -75,6 +76,7 @@ export class TestHarnessService {
             tenantId: tenant.id,
             name: "Owner",
             systemKey: "OWNER",
+            isSystem: true,
           },
         });
 
@@ -83,6 +85,7 @@ export class TestHarnessService {
             tenantId: tenant.id,
             name: "Admin",
             systemKey: "ADMIN",
+            isSystem: true,
           },
         });
 
@@ -91,43 +94,28 @@ export class TestHarnessService {
             tenantId: tenant.id,
             name: "Member",
             systemKey: "MEMBER",
+            isSystem: true,
           },
         });
 
-        // 4. Create default permissions
-        const permissionKeys = [
-          "tenant.manage",
-          "user.invite",
-          "user.remove",
-          "expense.write",
-          "expense.read",
-          "invoice.write",
-          "invoice.read",
-          "workflow.write",
-          "workflow.read",
-        ];
-
-        const permissions = await Promise.all(
-          permissionKeys.map((key) =>
-            tx.permission.upsert({
-              where: { key },
-              update: {},
-              create: { key, description: `Permission: ${key}` },
-            })
-          )
+        // 4. Assign all catalog permissions to OWNER role
+        const permissionKeys = buildPermissionCatalog().flatMap((group) =>
+          group.permissions.map((permission) => permission.key)
         );
 
-        // 5. Assign all permissions to OWNER role
-        for (const permission of permissions) {
-          await tx.rolePermission.create({
-            data: {
+        if (permissionKeys.length > 0) {
+          await tx.rolePermissionGrant.createMany({
+            data: permissionKeys.map((permissionKey) => ({
+              tenantId: tenant.id,
               roleId: ownerRole.id,
-              permissionId: permission.id,
-            },
+              permissionKey,
+              effect: "ALLOW",
+              createdBy: user.id,
+            })),
           });
         }
 
-        // 6. Create membership: user = OWNER of tenant
+        // 5. Create membership: user = OWNER of tenant
         await tx.membership.create({
           data: {
             tenantId: tenant.id,

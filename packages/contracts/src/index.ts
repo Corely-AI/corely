@@ -21,6 +21,7 @@ export * from "./engagement";
 export * from "./engagement-ai";
 export * from "./workflows";
 export * from "./approvals";
+export * from "./identity";
 export * from "./errors";
 
 export const CONTRACTS_HELLO = "Kerniflow contracts loaded ✅";
