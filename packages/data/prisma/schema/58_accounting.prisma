@@ -160,6 +160,8 @@ enum SourceType {
   Invoice
   Payment
   Expense
+  VendorBill
+  BillPayment
   Migration
   Adjustment
 }
