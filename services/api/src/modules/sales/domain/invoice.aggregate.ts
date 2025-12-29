@@ -174,6 +174,23 @@ export class SalesInvoiceAggregate {
     this.touch(now);
   }
 
+  removePayment(paymentId: string, now: Date) {
+    const nextPayments = this.payments.filter((item) => item.id !== paymentId);
+    if (nextPayments.length === this.payments.length) {
+      throw new Error("Payment not found on invoice");
+    }
+    this.payments = nextPayments;
+    this.recalculateTotals();
+    if (this.totals.paidCents === 0) {
+      this.status = "ISSUED";
+    } else if (this.totals.dueCents > 0) {
+      this.status = "PARTIALLY_PAID";
+    } else {
+      this.status = "PAID";
+    }
+    this.touch(now);
+  }
+
   setIssuedJournalEntry(entryId: string, now: Date) {
     this.issuedJournalEntryId = entryId;
     this.touch(now);
