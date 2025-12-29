@@ -22,6 +22,8 @@ export const SourceTypeSchema = z.enum([
   "Invoice",
   "Payment",
   "Expense",
+  "VendorBill",
+  "BillPayment",
   "Migration",
   "Adjustment",
 ]);

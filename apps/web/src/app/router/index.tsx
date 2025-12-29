@@ -14,6 +14,17 @@ import {
   JournalEntriesList,
   ReportsHub,
 } from "../../modules/accounting/screens";
+import {
+  PurchaseOrdersPage,
+  PurchaseOrderDetailPage,
+  NewPurchaseOrderPage,
+  VendorBillsPage,
+  VendorBillDetailPage,
+  NewVendorBillPage,
+  RecordBillPaymentPage,
+  PurchasingSettingsPage,
+  PurchasingCopilotPage,
+} from "../../modules/purchasing";
 import { SettingsPage } from "../../modules/settings";
 import { TaxSettingsPage } from "../../modules/tax";
 import NotFound from "../../shared/components/NotFound";
@@ -56,6 +67,15 @@ export const Router = () => (
           <Route path="/accounting/accounts" element={<ChartOfAccountsList />} />
           <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
           <Route path="/accounting/reports" element={<ReportsHub />} />
+          <Route path="/purchasing/purchase-orders" element={<PurchaseOrdersPage />} />
+          <Route path="/purchasing/purchase-orders/new" element={<NewPurchaseOrderPage />} />
+          <Route path="/purchasing/purchase-orders/:id" element={<PurchaseOrderDetailPage />} />
+          <Route path="/purchasing/vendor-bills" element={<VendorBillsPage />} />
+          <Route path="/purchasing/vendor-bills/new" element={<NewVendorBillPage />} />
+          <Route path="/purchasing/vendor-bills/:id" element={<VendorBillDetailPage />} />
+          <Route path="/purchasing/vendor-bills/:id/pay" element={<RecordBillPaymentPage />} />
+          <Route path="/purchasing/settings" element={<PurchasingSettingsPage />} />
+          <Route path="/purchasing/copilot" element={<PurchasingCopilotPage />} />
           <Route path="/copilot" element={<CopilotPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />

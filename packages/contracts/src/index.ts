@@ -11,6 +11,8 @@ export * from "./accounting";
 export * from "./crm";
 export * from "./sales";
 export * from "./sales-ai";
+export * from "./purchasing";
+export * from "./purchasing-ai";
 
 export const CONTRACTS_HELLO = "Kerniflow contracts loaded ✅";
 

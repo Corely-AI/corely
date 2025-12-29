@@ -9,6 +9,7 @@ import {
   FolderKanban,
   Calculator,
   Package,
+  ShoppingCart,
   Zap,
   FileStack,
   UsersRound,
@@ -103,6 +104,45 @@ export const moduleRegistry: ModuleDefinition[] = [
       { id: "accounting", labelKey: "nav.accounting", icon: Calculator, path: "/accounting" },
     ],
     permissions: ["read:accounting", "write:accounting"],
+  },
+  {
+    id: "purchasing",
+    name: "Purchasing",
+    description: "Purchase orders and vendor bills",
+    enabled: true,
+    comingSoon: false,
+    navItems: [
+      {
+        id: "purchase-orders",
+        labelKey: "nav.purchaseOrders",
+        icon: ShoppingCart,
+        path: "/purchasing/purchase-orders",
+      },
+      {
+        id: "vendor-bills",
+        labelKey: "nav.vendorBills",
+        icon: ShoppingCart,
+        path: "/purchasing/vendor-bills",
+      },
+      {
+        id: "purchasing-settings",
+        labelKey: "nav.purchasingSettings",
+        icon: ShoppingCart,
+        path: "/purchasing/settings",
+      },
+      {
+        id: "purchasing-copilot",
+        labelKey: "nav.purchasingCopilot",
+        icon: ShoppingCart,
+        path: "/purchasing/copilot",
+      },
+    ],
+    permissions: [
+      "purchasing.po.read",
+      "purchasing.po.manage",
+      "purchasing.bills.read",
+      "purchasing.bills.manage",
+    ],
   },
   {
     id: "inventory",
