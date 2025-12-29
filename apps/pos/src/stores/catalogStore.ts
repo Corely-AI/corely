@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { CatalogProduct } from '@kerniflow/contracts';
+import { useAuthStore } from './authStore';
 
 interface CatalogState {
   products: CatalogProduct[];
@@ -19,18 +20,15 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   isLoading: false,
 
   syncCatalog: async () => {
+    const apiClient = useAuthStore.getState().apiClient;
+    if (!apiClient) throw new Error('API client not initialized');
+
     set({ isLoading: true });
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/pos/catalog/snapshot`
-      );
+      const data = await apiClient.getCatalogSnapshot({
+        lastSyncAt: get().lastSyncAt ?? undefined,
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to sync catalog');
-      }
-
-      const data = await response.json();
       set({
         products: data.products,
         lastSyncAt: new Date(),

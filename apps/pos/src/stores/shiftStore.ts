@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { ShiftSession } from '@kerniflow/contracts';
+import { useAuthStore } from './authStore';
 
 interface ShiftState {
   currentShift: ShiftSession | null;
@@ -22,19 +23,13 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
   isLoading: false,
 
   loadCurrentShift: async (registerId: string) => {
+    const apiClient = useAuthStore.getState().apiClient;
+    if (!apiClient) throw new Error('API client not initialized');
+
     set({ isLoading: true });
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/pos/shifts/current?registerId=${registerId}`
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to load current shift');
-      }
-
-      const data = await response.json();
-      set({ currentShift: data.session, isLoading: false });
+      const data = await apiClient.getCurrentShift({ registerId });
+      set({ currentShift: data.session ?? null, isLoading: false });
     } catch (error) {
       console.error('Failed to load current shift:', error);
       set({ isLoading: false });
@@ -43,27 +38,21 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
   },
 
   openShift: async (data) => {
+    const apiClient = useAuthStore.getState().apiClient;
+    if (!apiClient) throw new Error('API client not initialized');
+
+    const user = useAuthStore.getState().user;
+    if (!user) throw new Error('User not authenticated');
+
     set({ isLoading: true });
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/pos/shifts/open`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to open shift');
-      }
-
-      const result = await response.json();
-      set({
-        currentShift: result.session,
-        isLoading: false,
+      const result = await apiClient.openShift({
+        ...data,
+        openedByEmployeePartyId: user.userId,
       });
+
+      // Reload to get full session data
+      await get().loadCurrentShift(data.registerId);
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -71,6 +60,12 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
   },
 
   closeShift: async (data) => {
+    const apiClient = useAuthStore.getState().apiClient;
+    if (!apiClient) throw new Error('API client not initialized');
+
+    const user = useAuthStore.getState().user;
+    if (!user) throw new Error('User not authenticated');
+
     const { currentShift } = get();
     if (!currentShift) {
       throw new Error('No active shift to close');
@@ -78,22 +73,11 @@ export const useShiftStore = create<ShiftState>((set, get) => ({
 
     set({ isLoading: true });
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/pos/shifts/close`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: currentShift.sessionId,
-            ...data,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to close shift');
-      }
+      await apiClient.closeShift({
+        sessionId: currentShift.sessionId,
+        closedByEmployeePartyId: user.userId,
+        ...data,
+      });
 
       set({ currentShift: null, isLoading: false });
     } catch (error) {

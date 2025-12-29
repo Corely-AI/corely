@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import * as SecureStore from 'expo-secure-store';
+import { PosApiClient } from '@/services/apiClient';
 
 interface User {
   userId: string;
@@ -14,11 +15,14 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   initialized: boolean;
+  apiClient: PosApiClient | null;
 
   initialize: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setTokens: (accessToken: string, refreshToken: string) => Promise<void>;
+  refreshAccessToken: () => Promise<string>;
+  getAccessToken: () => Promise<string | null>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -28,12 +32,41 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   isLoading: false,
   initialized: false,
+  apiClient: null,
+
+  getAccessToken: async () => {
+    return get().accessToken;
+  },
+
+  refreshAccessToken: async () => {
+    const { refreshToken, apiClient, logout } = get();
+    if (!refreshToken || !apiClient) {
+      throw new Error('No refresh token available');
+    }
+
+    try {
+      const result = await apiClient.refreshToken(refreshToken);
+      await get().setTokens(result.accessToken, result.refreshToken);
+      return result.accessToken;
+    } catch (error) {
+      await logout();
+      throw error;
+    }
+  },
 
   initialize: async () => {
     try {
       const accessToken = await SecureStore.getItemAsync('accessToken');
       const refreshToken = await SecureStore.getItemAsync('refreshToken');
       const userJson = await SecureStore.getItemAsync('user');
+
+      // Initialize API client
+      const apiClient = new PosApiClient({
+        baseUrl: process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api',
+        getAccessToken: () => get().getAccessToken(),
+        refreshAccessToken: () => get().refreshAccessToken(),
+        onAuthError: () => get().logout(),
+      });
 
       if (accessToken && refreshToken && userJson) {
         const user = JSON.parse(userJson);
@@ -43,9 +76,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           refreshToken,
           isAuthenticated: true,
           initialized: true,
+          apiClient,
         });
       } else {
-        set({ initialized: true });
+        set({ initialized: true, apiClient });
       }
     } catch (error) {
       console.error('Failed to initialize auth:', error);
@@ -54,20 +88,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (email: string, password: string) => {
+    const { apiClient } = get();
+    if (!apiClient) {
+      throw new Error('API client not initialized');
+    }
+
     set({ isLoading: true });
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
+      const data = await apiClient.login(email, password);
       const user: User = {
         userId: data.userId,
         workspaceId: data.workspaceId,
