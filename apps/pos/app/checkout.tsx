@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from '@lukeed/uuid';
 import { useCartStore } from '@/stores/cartStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useSalesService } from '@/hooks/useSalesService';
 import type { PosSalePayment } from '@kerniflow/contracts';
 
 type PaymentMethod = 'CASH' | 'CARD' | 'BANK_TRANSFER' | 'OTHER';
@@ -24,6 +25,7 @@ export default function CheckoutScreen() {
   const { items, customerId, notes, getTotals, clearCart } = useCartStore();
   const { currentShift } = useShiftStore();
   const { user } = useAuthStore();
+  const { salesService } = useSalesService();
   const totals = getTotals();
 
   const [payments, setPayments] = useState<PosSalePayment[]>([]);
@@ -68,19 +70,41 @@ export default function CheckoutScreen() {
       return;
     }
 
+    if (!salesService) {
+      Alert.alert('Error', 'Sales service not initialized');
+      return;
+    }
+
+    if (!user) {
+      Alert.alert('Error', 'User not authenticated');
+      return;
+    }
+
     setIsProcessing(true);
     try {
-      // TODO: Create PosSale and enqueue sync command
-      // For now, just show success and clear cart
+      // Create POS sale and save to SQLite
+      const sale = await salesService.createSale({
+        workspaceId: user.workspaceId,
+        sessionId: currentShift.sessionId,
+        registerId: currentShift.registerId,
+        customerId,
+        lineItems: items,
+        payments,
+        notes,
+        taxCents: totals.taxCents,
+      });
+
+      // TODO: Enqueue sync command via outbox
+
       Alert.alert(
         'Sale Complete',
-        `Payment received: $${(totalPaid / 100).toFixed(2)}\nChange due: $${(changeDue / 100).toFixed(2)}`,
+        `Receipt: ${sale.receiptNumber}\nPayment: $${(totalPaid / 100).toFixed(2)}\nChange: $${(changeDue / 100).toFixed(2)}`,
         [
           {
             text: 'Print Receipt',
             onPress: () => {
               clearCart();
-              router.replace('/receipt?saleId=placeholder');
+              router.replace(`/receipt?saleId=${sale.posSaleId}`);
             },
           },
           {
