@@ -1,0 +1,180 @@
+enum PurchaseOrderStatus {
+  DRAFT
+  APPROVED
+  SENT
+  PARTIALLY_RECEIVED
+  RECEIVED
+  CLOSED
+  CANCELED
+}
+
+enum VendorBillStatus {
+  DRAFT
+  APPROVED
+  POSTED
+  PARTIALLY_PAID
+  PAID
+  VOID
+}
+
+enum BillPaymentMethod {
+  BANK_TRANSFER
+  CASH
+  CARD
+  OTHER
+}
+
+model PurchaseOrder {
+  id                     String             @id @default(cuid())
+  tenantId               String
+  poNumber               String?
+  status                 PurchaseOrderStatus @default(DRAFT)
+  supplierPartyId        String
+  supplierContactPartyId String?
+  orderDate              DateTime?          @db.Date
+  expectedDeliveryDate   DateTime?          @db.Date
+  currency               String
+  notes                  String?
+  subtotalCents          Int
+  taxCents               Int
+  totalCents             Int
+  approvedAt             DateTime?          @db.Timestamptz(6)
+  sentAt                 DateTime?          @db.Timestamptz(6)
+  receivedAt             DateTime?          @db.Timestamptz(6)
+  closedAt               DateTime?          @db.Timestamptz(6)
+  canceledAt             DateTime?          @db.Timestamptz(6)
+  createdByUserId        String?
+  updatedByUserId        String?
+  createdAt              DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime           @updatedAt @db.Timestamptz(6)
+
+  lines PurchaseOrderLine[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, supplierPartyId])
+  @@index([tenantId, createdAt])
+  @@unique([tenantId, poNumber])
+}
+
+model PurchaseOrderLine {
+  id              String   @id @default(cuid())
+  purchaseOrderId String
+  description     String
+  quantity        Int
+  unitCostCents   Int
+  taxCode         String?
+  category        String?
+  sortOrder       Int?
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  @@index([purchaseOrderId])
+}
+
+model VendorBill {
+  id                     String          @id @default(cuid())
+  tenantId               String
+  billNumber             String?
+  internalBillRef        String?
+  status                 VendorBillStatus @default(DRAFT)
+  supplierPartyId        String
+  supplierContactPartyId String?
+  billDate               DateTime        @db.Date
+  dueDate                DateTime        @db.Date
+  currency               String
+  paymentTerms           String?
+  notes                  String?
+  subtotalCents          Int
+  taxCents               Int
+  totalCents             Int
+  paidCents              Int
+  dueCents               Int
+  approvedAt             DateTime?       @db.Timestamptz(6)
+  postedAt               DateTime?       @db.Timestamptz(6)
+  voidedAt               DateTime?       @db.Timestamptz(6)
+  purchaseOrderId        String?
+  postedJournalEntryId   String?
+  possibleDuplicateOfBillId String?
+  duplicateScore         Float?
+  createdByUserId        String?
+  updatedByUserId        String?
+  createdAt              DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime        @updatedAt @db.Timestamptz(6)
+
+  lines     VendorBillLine[]
+  payments  BillPayment[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, supplierPartyId])
+  @@index([tenantId, createdAt])
+  @@unique([tenantId, supplierPartyId, billNumber])
+}
+
+model VendorBillLine {
+  id           String   @id @default(cuid())
+  vendorBillId String
+  description  String
+  quantity     Int
+  unitCostCents Int
+  category     String?
+  glAccountId  String?
+  taxCode      String?
+  sortOrder    Int?
+
+  vendorBill VendorBill @relation(fields: [vendorBillId], references: [id], onDelete: Cascade)
+
+  @@index([vendorBillId])
+}
+
+model BillPayment {
+  id               String           @id @default(cuid())
+  tenantId         String
+  vendorBillId     String
+  amountCents      Int
+  currency         String
+  paymentDate      DateTime         @db.Date
+  method           BillPaymentMethod
+  reference        String?
+  notes            String?
+  recordedAt       DateTime         @default(now()) @db.Timestamptz(6)
+  recordedByUserId String?
+  journalEntryId   String?
+
+  vendorBill VendorBill @relation(fields: [vendorBillId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, vendorBillId])
+  @@index([vendorBillId])
+}
+
+model PurchasingSettings {
+  id                             String   @id @default(cuid())
+  tenantId                       String   @unique
+  defaultPaymentTerms            String?
+  defaultCurrency                String   @default("EUR")
+  poNumberingPrefix              String   @default("PO-")
+  poNextNumber                   Int      @default(1)
+  billInternalRefPrefix          String?  @default("BILL-")
+  billNextNumber                 Int?     @default(1)
+  defaultAccountsPayableAccountId String?
+  defaultExpenseAccountId        String?
+  defaultBankAccountId           String?
+  autoPostOnBillPost             Boolean  @default(true)
+  autoPostOnPaymentRecord        Boolean  @default(true)
+  billDuplicateDetectionEnabled  Boolean  @default(true)
+  approvalRequiredForBills       Boolean  @default(false)
+  createdAt                      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt                      DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model PurchasingAccountMapping {
+  id             String   @id @default(cuid())
+  tenantId       String
+  supplierPartyId String
+  categoryKey    String
+  glAccountId    String
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([tenantId, supplierPartyId, categoryKey])
+  @@index([tenantId, supplierPartyId])
+}
