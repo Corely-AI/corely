@@ -1,0 +1,43 @@
+{
+  "name": "@kerniflow/pos",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kerniflow/contracts": "workspace:*",
+    "@kerniflow/api-client": "workspace:*",
+    "@kerniflow/offline-core": "workspace:*",
+    "@kerniflow/offline-rn": "workspace:*",
+    "@kerniflow/pos-core": "workspace:*",
+    "expo": "^52.0.0",
+    "expo-router": "^4.0.0",
+    "expo-sqlite": "^15.0.0",
+    "expo-secure-store": "^14.0.0",
+    "expo-barcode-scanner": "^14.0.0",
+    "expo-camera": "^16.0.0",
+    "expo-status-bar": "~2.0.0",
+    "react": "18.3.1",
+    "react-native": "0.76.5",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.3.0",
+    "@react-native-community/netinfo": "^11.3.0",
+    "@expo/vector-icons": "^14.0.0",
+    "@lukeed/uuid": "^2.0.1",
+    "zustand": "^5.0.2",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@types/react": "~18.3.0",
+    "typescript": "^5.7.0",
+    "babel-plugin-module-resolver": "^5.0.0"
+  }
+}
