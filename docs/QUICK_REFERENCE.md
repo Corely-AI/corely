@@ -30,21 +30,22 @@ touch index.ts
 
 # Build
 cd ../../../
-pnpm build
+pnpm --filter @kerniflow/contracts build
 ```
 
 ### 2. Create Backend Module
 
 ```bash
-cd apps/api
-mkdir -p src/modules/{module}/{domain,application,infrastructure}
+cd services/api
+mkdir -p src/modules/{module}/{domain,application,infrastructure,adapters/http}
+touch src/modules/{module}/index.ts
 
 # Create files
 touch src/modules/{module}/domain/{module}.entity.ts
-touch src/modules/{module}/domain/{module}-repo.port.ts
-touch src/modules/{module}/application/create-{module}.use-case.ts
-touch src/modules/{module}/infrastructure/prisma-{module}-repo.adapter.ts
-touch src/modules/{module}/{module}.controller.ts
+touch src/modules/{module}/application/ports/{module}-repository.port.ts
+touch src/modules/{module}/application/use-cases/create-{module}.usecase.ts
+touch src/modules/{module}/infrastructure/adapters/prisma-{module}-repository.adapter.ts
+touch src/modules/{module}/adapters/http/{module}.controller.ts
 touch src/modules/{module}/{module}.module.ts
 ```
 
@@ -75,6 +76,7 @@ import { z } from "zod";
 
 export const Create{Module}InputSchema = z.object({
   name: z.string().min(1),
+  idempotencyKey: z.string(),
   // Dates as ISO strings
   startDate: z.string().datetime().optional(),
   // IDs
@@ -123,13 +125,13 @@ export function toCreate{Module}Input(form: {Module}FormData): Create{Module}Inp
 
 ```bash
 # Build contracts package
-cd packages/contracts && pnpm build
+pnpm --filter @kerniflow/contracts build
 
 # Type check frontend
-cd apps/web && pnpm typecheck
+pnpm --filter @kerniflow/web typecheck
 
 # Type check backend
-cd apps/api && pnpm typecheck
+pnpm --filter @kerniflow/api typecheck
 
 # Build all
 pnpm build
@@ -139,10 +141,13 @@ pnpm build
 
 ```bash
 # Start frontend dev server
-cd apps/web && pnpm dev
+pnpm dev:web
 
 # Start backend dev server
-cd apps/api && pnpm dev
+pnpm dev:api
+
+# Start worker
+pnpm dev:worker
 
 # Start both (from root)
 pnpm dev
@@ -152,17 +157,16 @@ pnpm dev
 
 ```bash
 # Create migration
-cd apps/api
-npx prisma migrate dev --name add_{module}_table
+pnpm prisma:migrate --name add_{module}_table
 
 # Apply migrations
-npx prisma migrate deploy
+pnpm --filter @kerniflow/data exec prisma migrate deploy
 
 # Generate client
-npx prisma generate
+pnpm prisma:generate
 
 # View database
-npx prisma studio
+pnpm prisma:studio
 ```
 
 ### Testing
@@ -176,6 +180,13 @@ pnpm test {module}.spec.ts
 
 # Watch mode
 pnpm test:watch
+```
+
+### Architecture Checks
+
+```bash
+# Boundary + Prisma access check
+pnpm arch:check
 ```
 
 ---

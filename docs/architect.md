@@ -2,8 +2,8 @@
 
 ## A scalable architecture for an AI-native modular ERP
 
-**Version:** 1.0  
-**Date:** 15 Dec 2025  
+**Version:** 1.1  
+**Date:** 12 Mar 2025  
 **Scope:** Kernel + module domains (finance, ops, HR, vertical packs) with clean boundaries for a growing team.
 
 ---
@@ -16,7 +16,7 @@ Start as a **modular monolith** (single platform) but keep boundaries so you can
 - safe multi-tenant isolation
 - team scalability (clear ownership) tomorrow
 
-**Recommended stack:** Vite + React (web + POS UI) + NestJS (API) + Worker (jobs/outbox) in a monorepo; PostgreSQL + Prisma; Redis for queues/caching; object storage for files; SSE/realtime provider for live POS.
+**Recommended stack:** Vite + React (web backoffice) + React Native (POS) + NestJS (API) + Worker (jobs/outbox) in a monorepo; PostgreSQL + Prisma; Redis for queues/caching; object storage for files; optional realtime provider for multi-device POS.
 
 ---
 
@@ -40,13 +40,14 @@ Bizflow is an AI-native ERP platform designed to support multiple business types
 
 # System overview
 
-The platform is organized into three runtime surfaces that share the same domain packages:
+The platform is organized into four runtime surfaces that share the same domain packages:
 
-- **Web/POS (Vite + React):** UI, POS screens, SPA with client-side routing
-- **API (NestJS):** RBAC, tools, workflows, domain use-cases
-- **Worker (NestJS):** outbox, queues, automations, integrations
+- **Web (Vite + React):** backoffice/admin UI for modules
+- **POS (React Native):** offline-first selling UI for fast cashier workflows
+- **API (NestJS):** RBAC, validation, idempotency, tool execution, domain use-cases
+- **Worker (NestJS):** outbox, queues, automations, integrations, scheduled sync tasks
 
-**Storage & infra:** PostgreSQL + Prisma • Redis (queues/cache) • Object Storage (files) • Realtime (SSE/provider)
+**Storage & infra:** PostgreSQL + Prisma • Redis (queues/cache) • Object Storage (files) • Realtime (optional for multi-device POS)
 
 ## Key boundary rules
 
@@ -54,6 +55,7 @@ The platform is organized into three runtime surfaces that share the same domain
 2. Only **repositories** in the data layer talk to Prisma.
 3. Modules communicate via **domain events** and stable contracts.
 4. API enforces **authorization, validation, and idempotency** for every command and tool call.
+5. Web and POS share contracts and client behavior; UI logic stays in apps.
 
 ---
 
@@ -75,6 +77,51 @@ The platform is organized into three runtime surfaces that share the same domain
 - **Result** helpers (`Ok/Err/isOk/isErr/unwrap`) replace thrown errors across layers; **UseCaseError** family (Validation/NotFound/Forbidden/Unauthorized/Conflict/etc.) is serializable and mapped to HTTP in API.
 - Shared **ports** (Logger/Clock/IdGenerator/UnitOfWork/Idempotency) and **testing fakes** (NoopLogger, FixedClock, FakeIdGenerator, InMemoryIdempotency) live in `packages/kernel`, imported by API/Worker.
 - Adapters belong to surfaces (e.g., Nest logger, Prisma $transaction UoW, DB idempotency store); keeps kernel boring and framework-agnostic.
+
+---
+
+# Cross-platform sharing strategy (Web + React Native)
+
+Web and POS are distinct client surfaces, but they share the same contracts, domain vocabulary, and workflow boundaries. Avoid duplicating business workflows across clients.
+
+**Shared (packages):**
+
+- `packages/contracts`: Zod schemas + request/response types (single source of truth).
+- Shared API client behavior (auth, tenant scoping, idempotency, error normalization) via `apps/web/src/lib/api-client.ts` and aligned patterns in RN.
+- Shared domain workflows where applicable: use-case orchestration lives in API; clients reuse the same contract shapes and command semantics.
+- AI copilot tool schemas and tool-card payloads (shared types, stable outputs).
+
+**React Native specific:**
+
+- Device APIs (camera/scan), local storage, background sync triggers.
+- Offline queue persistence via `packages/offline-rn`.
+- POS navigation and touch-first UI primitives.
+
+**Web specific:**
+
+- Browser storage and backoffice layouts/dashboards.
+- Admin workflows and reports.
+
+**Rule:** UI logic stays in `apps/*`; shared domain, contracts, and client behavior stay in `packages/*`.
+
+---
+
+# POS offline-first architecture (React Native)
+
+The POS client is **offline-first** by design. It must complete sales flows even when connectivity is intermittent.
+
+Core concepts:
+
+- **Register / Shift session:** scoped session for a device/cashier with opening/closing control.
+- **POS ticket (draft):** editable cart state; not yet a sale.
+- **POS sale (syncable transaction):** immutable local transaction created on finalize; queued for sync.
+
+Sync behavior:
+
+- POS queues commands locally using `packages/offline-rn`.
+- Commands are **idempotent** with deterministic server responses.
+- Conflict handling is explicit: reject with an actionable error; never silently drop or merge.
+- When online, sync posts to Sales/Accounting through API use cases (single system of record).
 
 ---
 
@@ -111,7 +158,8 @@ Treat each row as a bounded context with its own code ownership, migrations, and
 | Billing & Payments        | Invoices, payments, refunds, allocations.           | Invoice, InvoiceLine, Payment, Allocation, Refund  |
 | Accounting Core           | Chart of accounts and journal postings.             | LedgerAccount, JournalEntry, JournalLine           |
 | Expenses                  | Employee/vendor expenses and approvals.             | Expense, ExpenseLine, ReceiptLink, Approval        |
-| Inventory                 | Stock, movements, reorder rules.                    | Location, InventoryItem, StockMovement             |
+| Inventory                 | Stock ledger, reservations, reorder rules.          | Location, StockMove, Reservation, ReorderPolicy    |
+| POS / Register             | Register sessions and offline sales sync.           | Register, ShiftSession, PosTicket, PosSale         |
 | Assets & Maintenance      | Equipment lifecycle and servicing.                  | Asset, MaintenanceTask, WorkOrder                  |
 | Projects & Jobs           | Job costing and time/material tracking.             | Project, Job, TimeEntry, CostAllocation            |
 | HR (light)                | Profiles, time off, shifts (optional).              | EmployeeProfile, LeaveRequest, Shift               |
@@ -129,11 +177,23 @@ vendor bills, line items, pricing) and never mutates records silently. Every mut
 user-confirmed, while deterministic auto-posting to Accounting Core produces auditable journal entries
 with source links and explanations.
 
+# AI copilot for Web and POS
+
+We use the existing **ai-copilot** module and **ai-sdk.dev** tool-calling patterns. Web and POS both render
+the same tool cards and apply actions explicitly.
+
+Rules:
+
+- AI proposes structured actions only (tool cards).
+- Cashier/user must confirm apply actions.
+- AI never finalizes a sale, never posts inventory moves.
+- All AI interactions are logged (confidence, provenance, accepted/dismissed).
+
 ---
 
 # Vertical packs (restaurant, hotel, factory)
 
-Vertical packs extend the kernel and baseline modules with specialized workflows, UI, and data structures. They should be **additive and isolated**: new tables live in the pack, while shared primitives remain in the kernel.
+Vertical packs extend the kernel and baseline modules with specialized workflows, UI, and data structures. They should be **additive and isolated**: new tables live in the pack, while shared primitives remain in the kernel. We ship a baseline POS v1 in `apps/pos` (generic quick sale); packs later extend it for hospitality/retail flows.
 
 | Pack                    | Adds (examples)                                                    | Composes kernel primitives                      |
 | ----------------------- | ------------------------------------------------------------------ | ----------------------------------------------- |
@@ -173,5 +233,9 @@ Vertical packs extend the kernel and baseline modules with specialized workflows
 3. **Contracts are versioned:** breaking changes require a deprecation window.
 4. **Events are stable:** treat domain events as public APIs; add fields, do not rename/remove lightly.
 5. **Keep the kernel small:** promote something into kernel only when at least two packs need it.
+6. **Cross-platform contracts:** Web + POS consume versioned contracts; no client-specific wire formats.
+7. **Shared client behavior:** auth/idempotency/error mapping lives in shared client patterns.
+8. **Offline queue stability:** queued command semantics remain backward compatible.
+9. **Tool-card schemas are public APIs:** Web + POS share tool definitions and card payloads.
 
 > This foundation is intentionally practical: strong enough for enterprise needs, while avoiding early microservice overhead. When parts grow (integrations, reporting, POS realtime), these boundaries let you extract services safely.
