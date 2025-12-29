@@ -1,0 +1,62 @@
+// POS (Point of Sale) module
+// Register devices, shift sessions, and sale sync idempotency
+
+model Register {
+  id                    String   @id @default(uuid()) @db.Uuid
+  workspaceId           String   @map("workspace_id") @db.Uuid
+  name                  String   @db.VarChar(100)
+  defaultWarehouseId    String?  @map("default_warehouse_id") @db.Uuid
+  defaultBankAccountId  String?  @map("default_bank_account_id") @db.Uuid
+  status                String   @default("ACTIVE") @db.VarChar(20)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  shiftSessions         ShiftSession[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId, status])
+  @@map("registers")
+}
+
+model ShiftSession {
+  id                       String    @id @default(uuid()) @db.Uuid
+  workspaceId              String    @map("workspace_id") @db.Uuid
+  registerId               String    @map("register_id") @db.Uuid
+  openedByEmployeePartyId  String    @map("opened_by_employee_party_id") @db.Uuid
+  openedAt                 DateTime  @map("opened_at") @db.Timestamptz
+  startingCashCents        Int?      @map("starting_cash_cents")
+  status                   String    @default("OPEN") @db.VarChar(20)
+  closedAt                 DateTime? @map("closed_at") @db.Timestamptz
+  closedByEmployeePartyId  String?   @map("closed_by_employee_party_id") @db.Uuid
+  closingCashCents         Int?      @map("closing_cash_cents")
+  totalSalesCents          Int       @default(0) @map("total_sales_cents")
+  totalCashReceivedCents   Int       @default(0) @map("total_cash_received_cents")
+  varianceCents            Int?      @map("variance_cents")
+  notes                    String?   @db.Text
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  workspace                Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  register                 Register  @relation(fields: [registerId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId, registerId, status])
+  @@index([workspaceId, status, closedAt])
+  @@map("shift_sessions")
+}
+
+model PosSaleIdempotency {
+  idempotencyKey     String   @id @db.VarChar(255)
+  workspaceId        String   @map("workspace_id") @db.Uuid
+  posSaleId          String   @map("pos_sale_id") @db.Uuid
+  serverInvoiceId    String   @map("server_invoice_id") @db.Uuid
+  serverPaymentId    String?  @map("server_payment_id") @db.Uuid
+  receiptNumber      String   @map("receipt_number") @db.VarChar(100)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  workspace          Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([posSaleId])
+  @@map("pos_sale_idempotency")
+}
