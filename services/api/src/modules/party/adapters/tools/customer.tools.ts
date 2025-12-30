@@ -6,8 +6,8 @@ import {
   UpdateCustomerInputSchema,
 } from "@kerniflow/contracts";
 import { type DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
-import { type PartyCrmApplication } from "../../application/party-crm.application";
-import { mapToolResult } from "./tool-mappers";
+import { type PartyApplication } from "../../application/party.application";
+import { mapToolResult } from "../../../../shared/adapters/tools/tool-mappers";
 
 const validationError = (issues: unknown) => ({
   ok: false,
@@ -23,7 +23,7 @@ const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?:
   requestId: toolCallId,
 });
 
-export const buildCustomerTools = (app: PartyCrmApplication): DomainToolPort[] => [
+export const buildCustomerTools = (app: PartyApplication): DomainToolPort[] => [
   {
     name: "customer.create",
     description: "Create a customer with contact and billing details.",

@@ -9,7 +9,8 @@ import { WorkflowModule } from "./modules/workflow";
 import { AutomationModule } from "./modules/automation";
 import { ReportingModule } from "./modules/reporting";
 import { TestHarnessModule } from "./modules/test-harness";
-import { PartyCrmModule } from "./modules/party-crm";
+import { PartyModule } from "./modules/party";
+import { CrmModule } from "./modules/crm";
 import { DocumentsModule } from "./modules/documents";
 import { TaxModule } from "./modules/tax/tax.module";
 import { WorkspacesModule } from "./modules/workspaces";
@@ -31,7 +32,8 @@ import { TraceIdService } from "./shared/trace/trace-id.service.js";
     // DataModule must be imported for global providers (OUTBOX_PORT, AUDIT_PORT, etc.)
     DataModule,
     IdentityModule,
-    PartyCrmModule,
+    PartyModule,
+    CrmModule,
     WorkspacesModule,
     ExpensesModule,
     InvoicesModule,

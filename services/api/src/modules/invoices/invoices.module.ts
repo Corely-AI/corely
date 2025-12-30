@@ -24,7 +24,7 @@ import { IdentityModule } from "../identity";
 import { TimeService } from "@kerniflow/kernel";
 import { PrismaTenantTimeZoneAdapter } from "../../shared/infrastructure/time/prisma-tenant-timezone.adapter";
 import { TENANT_TIMEZONE_PORT } from "../../shared/time/tenant-timezone.token";
-import { PartyCrmModule } from "../party-crm";
+import { PartyModule } from "../party";
 import { DocumentsModule } from "../documents";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { CreateInvoiceUseCase } from "./application/use-cases/create-invoice/create-invoice.usecase";
@@ -41,7 +41,7 @@ import { PlaywrightInvoicePdfRendererAdapter } from "./infrastructure/pdf/playwr
 import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
 
 @Module({
-  imports: [DataModule, IdentityModule, PartyCrmModule, DocumentsModule],
+  imports: [DataModule, IdentityModule, PartyModule, DocumentsModule],
   controllers: [InvoicesHttpController, ResendWebhookController],
   providers: [
     PrismaInvoiceRepoAdapter,

@@ -19,8 +19,8 @@ import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
 import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
 import { PrismaIdempotencyStorageAdapter } from "../../shared/infrastructure/persistence/prisma-idempotency-storage.adapter";
 import { IDEMPOTENCY_STORAGE_PORT_TOKEN } from "../../shared/ports/idempotency-storage.port";
-import { PartyCrmModule } from "../party-crm";
-import { CUSTOMER_QUERY_PORT } from "../party-crm/application/ports/customer-query.port";
+import { PartyModule } from "../party";
+import { CUSTOMER_QUERY_PORT } from "../party/application/ports/customer-query.port";
 import { AccountingModule } from "../accounting";
 import { AccountingApplication } from "../accounting/application/accounting.application";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
@@ -64,7 +64,7 @@ import {
 } from "./application/use-cases/settings.usecases";
 
 @Module({
-  imports: [DataModule, PartyCrmModule, AccountingModule],
+  imports: [DataModule, PartyModule, AccountingModule],
   controllers: [SalesController],
   providers: [
     PrismaQuoteRepositoryAdapter,

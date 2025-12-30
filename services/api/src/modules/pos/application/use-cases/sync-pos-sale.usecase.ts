@@ -24,7 +24,7 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
   constructor(
     @Inject(POS_SALE_IDEMPOTENCY_PORT) private idempotencyStore: PosSaleIdempotencyPort
     // TODO: Inject SalesApplication, InventoryApplication (for product validation)
-    // TODO: Inject PartyCrmApplication (for customer validation)
+    // TODO: Inject PartyApplication (for customer validation)
   ) {
     super({ logger: new NoopLogger() });
   }
@@ -53,7 +53,7 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     // }
 
     // 3. Validate customer exists (if provided)
-    // TODO: Use PartyCrmApplication to validate customer
+    // TODO: Use PartyApplication to validate customer
     // if (input.customerPartyId) {
     //   const customer = await this.partyCrmApp.getParty(input.customerPartyId, ctx);
     //   if (!customer.ok) {

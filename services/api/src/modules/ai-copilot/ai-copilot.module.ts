@@ -23,9 +23,9 @@ import { IdempotencyService } from "../../shared/infrastructure/idempotency/idem
 import { InvoicesModule } from "../invoices/invoices.module";
 import { InvoicesApplication } from "../invoices/application/invoices.application";
 import { buildInvoiceTools } from "../invoices/adapters/tools/invoice.tools";
-import { PartyCrmModule } from "../party-crm";
-import { PartyCrmApplication } from "../party-crm/application/party-crm.application";
-import { buildCustomerTools } from "../party-crm/adapters/tools/customer.tools";
+import { PartyModule } from "../party";
+import { PartyApplication } from "../party/application/party.application";
+import { buildCustomerTools } from "../party/adapters/tools/customer.tools";
 import { SalesModule } from "../sales";
 import { SalesApplication } from "../sales/application/sales.application";
 import { buildSalesTools } from "../sales/adapters/tools/sales.tools";
@@ -45,7 +45,7 @@ import { buildEngagementTools } from "../engagement/adapters/tools/engagement.to
     DataModule,
     IdentityModule,
     InvoicesModule,
-    PartyCrmModule,
+    PartyModule,
     SalesModule,
     PurchasingModule,
     InventoryModule,
@@ -90,7 +90,7 @@ import { buildEngagementTools } from "../engagement/adapters/tools/engagement.to
       provide: COPILOT_TOOLS,
       useFactory: (
         invoices: InvoicesApplication,
-        partyCrm: PartyCrmApplication,
+        partyCrm: PartyApplication,
         sales: SalesApplication,
         purchasing: PurchasingApplication,
         inventory: InventoryApplication,
@@ -106,7 +106,7 @@ import { buildEngagementTools } from "../engagement/adapters/tools/engagement.to
       ],
       inject: [
         InvoicesApplication,
-        PartyCrmApplication,
+        PartyApplication,
         SalesApplication,
         PurchasingApplication,
         InventoryApplication,

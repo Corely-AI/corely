@@ -6,7 +6,7 @@ import {
   EngagementExplainLoyaltyInputSchema,
 } from "@kerniflow/contracts";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
-import { type PartyCrmApplication } from "../../../party-crm/application/party-crm.application";
+import { type PartyApplication } from "../../../party/application/party.application";
 import { type EngagementApplication } from "../../application/engagement.application";
 
 const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?: string) => ({
@@ -18,7 +18,7 @@ const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?:
 
 export const buildEngagementTools = (
   engagement: EngagementApplication,
-  partyCrm: PartyCrmApplication
+  partyCrm: PartyApplication
 ): DomainToolPort[] => [
   {
     name: "engagement_findCustomer",

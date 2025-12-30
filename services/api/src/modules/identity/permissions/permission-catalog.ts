@@ -5,6 +5,8 @@ import type { PermissionCatalogPort } from "../application/ports/permission-cata
 import { identityPermissions } from "./identity.permissions";
 import { salesPermissions } from "../../sales/sales.permissions";
 import { inventoryPermissions } from "../../inventory/inventory.permissions";
+import { partyPermissions } from "../../party/party.permissions";
+import { crmPermissions } from "../../crm/crm.permissions";
 
 const PERMISSION_KEY_REGEX = /^[a-z][a-z0-9]*(?:[.:][a-z0-9]+)*$/;
 
@@ -12,6 +14,8 @@ export const buildPermissionCatalog = (): PermissionGroup[] => [
   ...identityPermissions,
   ...salesPermissions,
   ...inventoryPermissions,
+  ...partyPermissions,
+  ...crmPermissions,
 ];
 
 const normalizeCatalog = (catalog: PermissionGroup[]): PermissionGroup[] => {

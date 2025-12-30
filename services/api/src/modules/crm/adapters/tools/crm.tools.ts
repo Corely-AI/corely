@@ -2,7 +2,8 @@ import { z } from "zod";
 import { generateObject } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
-import type { PartyCrmApplication } from "../../application/party-crm.application";
+import type { PartyApplication } from "../../../party/application/party.application";
+import type { CrmApplication } from "../../application/crm.application";
 import {
   PartyProposalSchema,
   PartyProposalCardSchema,
@@ -25,7 +26,10 @@ const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?:
   requestId: toolCallId,
 });
 
-export const buildCrmAiTools = (app: PartyCrmApplication): DomainToolPort[] => [
+export const buildCrmAiTools = (deps: {
+  party: PartyApplication;
+  crm: CrmApplication;
+}): DomainToolPort[] => [
   // ============================================================
   // P0: Create Party from Text
   // ============================================================
@@ -85,7 +89,7 @@ export const buildCrmAiTools = (app: PartyCrmApplication): DomainToolPort[] => [
         matchScore: number;
       }> = [];
       if (object.email) {
-        const searchResult = await app.searchCustomers.execute(
+        const searchResult = await deps.party.searchCustomers.execute(
           { q: object.email, pageSize: 5 },
           buildCtx(tenantId, userId, toolCallId, runId)
         );
@@ -224,7 +228,7 @@ export const buildCrmAiTools = (app: PartyCrmApplication): DomainToolPort[] => [
       const { dealId, context } = parsed.data;
 
       // Fetch deal details
-      const dealResult = await app.getDealById.execute(
+      const dealResult = await deps.crm.getDealById.execute(
         { dealId },
         buildCtx(tenantId, userId, toolCallId, runId)
       );
@@ -234,7 +238,7 @@ export const buildCrmAiTools = (app: PartyCrmApplication): DomainToolPort[] => [
       const deal = dealResult.value.deal;
 
       // Fetch existing activities for the deal
-      const activitiesResult = await app.listActivities.execute(
+      const activitiesResult = await deps.crm.listActivities.execute(
         { dealId, pageSize: 10 },
         buildCtx(tenantId, userId, toolCallId, runId)
       );

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildCustomerTools } from "./customer.tools";
-import { PartyCrmApplication } from "../../application/party-crm.application";
+import { PartyApplication } from "../../application/party.application";
 import { err, NotFoundError, ok } from "@kerniflow/kernel";
 
 const customer = {
@@ -11,7 +11,7 @@ const customer = {
 };
 
 describe("customer tools", () => {
-  let app: PartyCrmApplication;
+  let app: PartyApplication;
   const getExecute = vi.fn();
 
   beforeEach(() => {
@@ -24,7 +24,7 @@ describe("customer tools", () => {
       searchCustomers: { execute: vi.fn().mockResolvedValue(ok({ items: [customer] })) },
       listCustomers: { execute: vi.fn() },
       unarchiveCustomer: { execute: vi.fn() },
-    } as unknown as PartyCrmApplication;
+    } as unknown as PartyApplication;
   });
 
   it("executes get tool", async () => {

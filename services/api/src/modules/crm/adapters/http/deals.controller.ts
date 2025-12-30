@@ -9,16 +9,18 @@ import {
   ListDealsInputSchema,
   GetDealInputSchema,
 } from "@kerniflow/contracts";
-import { PartyCrmApplication } from "../../application/party-crm.application";
-import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
+import { CrmApplication } from "../../application/crm.application";
+import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { AuthGuard } from "../../../identity";
+import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 
 @Controller("crm/deals")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard)
 export class DealsHttpController {
-  constructor(private readonly app: PartyCrmApplication) {}
+  constructor(private readonly app: CrmApplication) {}
 
   @Post()
+  @RequirePermission("crm.deals.manage")
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = CreateDealInputSchema.parse(body);
     const ctx = buildUseCaseContext(req);
@@ -27,6 +29,7 @@ export class DealsHttpController {
   }
 
   @Patch(":id")
+  @RequirePermission("crm.deals.manage")
   async update(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = UpdateDealInputSchema.parse({ dealId: id, ...body });
     const ctx = buildUseCaseContext(req);
@@ -35,6 +38,7 @@ export class DealsHttpController {
   }
 
   @Post(":id/move-stage")
+  @RequirePermission("crm.deals.manage")
   async moveStage(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = MoveDealStageInputSchema.parse({ dealId: id, ...body });
     const ctx = buildUseCaseContext(req);
@@ -43,6 +47,7 @@ export class DealsHttpController {
   }
 
   @Post(":id/mark-won")
+  @RequirePermission("crm.deals.manage")
   async markWon(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = MarkDealWonInputSchema.parse({ dealId: id, ...body });
     const ctx = buildUseCaseContext(req);
@@ -51,6 +56,7 @@ export class DealsHttpController {
   }
 
   @Post(":id/mark-lost")
+  @RequirePermission("crm.deals.manage")
   async markLost(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = MarkDealLostInputSchema.parse({ dealId: id, ...body });
     const ctx = buildUseCaseContext(req);
@@ -59,6 +65,7 @@ export class DealsHttpController {
   }
 
   @Get(":id")
+  @RequirePermission("crm.deals.read")
   async get(@Param("id") id: string, @Req() req: Request) {
     const input = GetDealInputSchema.parse({ dealId: id });
     const ctx = buildUseCaseContext(req);
@@ -67,6 +74,7 @@ export class DealsHttpController {
   }
 
   @Get()
+  @RequirePermission("crm.deals.read")
   async list(@Query() query: any, @Req() req: Request) {
     const input = ListDealsInputSchema.parse({
       partyId: query.partyId,

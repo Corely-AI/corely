@@ -7,16 +7,18 @@ import {
   ListActivitiesInputSchema,
   GetTimelineInputSchema,
 } from "@kerniflow/contracts";
-import { PartyCrmApplication } from "../../application/party-crm.application";
-import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
+import { CrmApplication } from "../../application/crm.application";
+import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { AuthGuard } from "../../../identity";
+import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 
 @Controller("crm/activities")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard)
 export class ActivitiesHttpController {
-  constructor(private readonly app: PartyCrmApplication) {}
+  constructor(private readonly app: CrmApplication) {}
 
   @Post()
+  @RequirePermission("crm.activities.manage")
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = CreateActivityInputSchema.parse(body);
     const ctx = buildUseCaseContext(req);
@@ -25,6 +27,7 @@ export class ActivitiesHttpController {
   }
 
   @Patch(":id")
+  @RequirePermission("crm.activities.manage")
   async update(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = UpdateActivityInputSchema.parse({ activityId: id, ...body });
     const ctx = buildUseCaseContext(req);
@@ -33,6 +36,7 @@ export class ActivitiesHttpController {
   }
 
   @Post(":id/complete")
+  @RequirePermission("crm.activities.manage")
   async complete(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = CompleteActivityInputSchema.parse({ activityId: id, ...body });
     const ctx = buildUseCaseContext(req);
@@ -41,6 +45,7 @@ export class ActivitiesHttpController {
   }
 
   @Get()
+  @RequirePermission("crm.activities.read")
   async list(@Query() query: any, @Req() req: Request) {
     const input = ListActivitiesInputSchema.parse({
       partyId: query.partyId,
@@ -58,11 +63,12 @@ export class ActivitiesHttpController {
 }
 
 @Controller("crm/timeline")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard)
 export class TimelineHttpController {
-  constructor(private readonly app: PartyCrmApplication) {}
+  constructor(private readonly app: CrmApplication) {}
 
   @Get(":entityType/:entityId")
+  @RequirePermission("crm.activities.read")
   async getTimeline(
     @Param("entityType") entityType: string,
     @Param("entityId") entityId: string,

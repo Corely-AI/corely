@@ -9,16 +9,18 @@ import {
   UnarchiveCustomerInputSchema,
   UpdateCustomerInputSchema,
 } from "@kerniflow/contracts";
-import { PartyCrmApplication } from "../../application/party-crm.application";
-import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
+import { PartyApplication } from "../../application/party.application";
+import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { AuthGuard } from "../../../identity";
+import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 
 @Controller("customers")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard)
 export class CustomersHttpController {
-  constructor(private readonly app: PartyCrmApplication) {}
+  constructor(private readonly app: PartyApplication) {}
 
   @Post()
+  @RequirePermission("party.customers.manage")
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = CreateCustomerInputSchema.parse(body);
     const ctx = buildUseCaseContext(req);
@@ -27,6 +29,7 @@ export class CustomersHttpController {
   }
 
   @Patch(":id")
+  @RequirePermission("party.customers.manage")
   async update(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = UpdateCustomerInputSchema.parse({ id, patch: body as object });
     const ctx = buildUseCaseContext(req);
@@ -35,6 +38,7 @@ export class CustomersHttpController {
   }
 
   @Post(":id/archive")
+  @RequirePermission("party.customers.manage")
   async archive(@Param("id") id: string, @Req() req: Request) {
     const input = ArchiveCustomerInputSchema.parse({ id });
     const ctx = buildUseCaseContext(req);
@@ -43,6 +47,7 @@ export class CustomersHttpController {
   }
 
   @Post(":id/unarchive")
+  @RequirePermission("party.customers.manage")
   async unarchive(@Param("id") id: string, @Req() req: Request) {
     const input = UnarchiveCustomerInputSchema.parse({ id });
     const ctx = buildUseCaseContext(req);
@@ -51,6 +56,7 @@ export class CustomersHttpController {
   }
 
   @Get("search")
+  @RequirePermission("party.customers.read")
   async search(@Query() query: any, @Req() req: Request) {
     const input = SearchCustomersInputSchema.parse({
       q: query.q,
@@ -63,6 +69,7 @@ export class CustomersHttpController {
   }
 
   @Get(":id")
+  @RequirePermission("party.customers.read")
   async get(@Param("id") id: string, @Req() req: Request) {
     const input = GetCustomerInputSchema.parse({ id });
     const ctx = buildUseCaseContext(req);
@@ -71,6 +78,7 @@ export class CustomersHttpController {
   }
 
   @Get()
+  @RequirePermission("party.customers.read")
   async list(@Query() query: any, @Req() req: Request) {
     const input = ListCustomersInputSchema.parse({
       cursor: query.cursor,

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CustomersHttpController } from "./customers.controller";
-import { PartyCrmApplication } from "../../application/party-crm.application";
+import { PartyApplication } from "../../application/party.application";
 import { err, NotFoundError, ok } from "@kerniflow/kernel";
 import { HttpException } from "@nestjs/common";
 
@@ -32,7 +32,7 @@ describe("CustomersHttpController", () => {
       getCustomerById: { execute: getExecute },
       listCustomers: { execute: vi.fn().mockResolvedValue(ok({ items: [customer] })) },
       searchCustomers: { execute: vi.fn().mockResolvedValue(ok({ items: [customer] })) },
-    } as unknown as PartyCrmApplication;
+    } as unknown as PartyApplication;
 
     controller = new CustomersHttpController(app);
   });
