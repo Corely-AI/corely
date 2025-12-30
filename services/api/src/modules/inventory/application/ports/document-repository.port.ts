@@ -18,7 +18,7 @@ export type ListDocumentsResult = {
   nextCursor?: string | null;
 };
 
-export const DOCUMENT_REPO = Symbol("DOCUMENT_REPO");
+export const DOCUMENT_REPO = "inventory/document-repository";
 
 export interface InventoryDocumentRepositoryPort {
   create(tenantId: string, document: InventoryDocumentAggregate): Promise<void>;

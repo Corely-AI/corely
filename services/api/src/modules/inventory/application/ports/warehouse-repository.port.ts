@@ -18,7 +18,7 @@ export type ListWarehousesFilters = {
   pageSize?: number;
 };
 
-export const WAREHOUSE_REPO = Symbol("WAREHOUSE_REPO");
+export const WAREHOUSE_REPO = "inventory/warehouse-repository";
 
 export interface WarehouseRepositoryPort {
   create(tenantId: string, warehouse: InventoryWarehouse): Promise<void>;

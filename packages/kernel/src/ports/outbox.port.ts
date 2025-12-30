@@ -12,4 +12,4 @@ export interface OutboxPort {
   enqueue(event: OutboxEventEnvelope, tx?: TransactionContext): Promise<void>;
 }
 
-export const OUTBOX_PORT = Symbol("OUTBOX_PORT");
+export { OUTBOX_PORT } from "@kerniflow/contracts";

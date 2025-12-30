@@ -5,4 +5,4 @@ export interface SalesSettingsRepositoryPort {
   save(settings: SalesSettingsAggregate): Promise<void>;
 }
 
-export const SALES_SETTINGS_REPOSITORY_PORT = Symbol("SALES_SETTINGS_REPOSITORY_PORT");
+export const SALES_SETTINGS_REPOSITORY_PORT = "sales/settings-repository";

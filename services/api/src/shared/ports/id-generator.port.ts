@@ -1,3 +1,2 @@
 export type { IdGeneratorPort } from "@kerniflow/kernel";
-
-export const ID_GENERATOR_TOKEN = Symbol("ID_GENERATOR_TOKEN");
+export { ID_GENERATOR_TOKEN } from "@kerniflow/contracts";

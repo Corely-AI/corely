@@ -30,4 +30,4 @@ export interface TenantRepositoryPort {
   update(tenant: Tenant): Promise<Tenant>;
 }
 
-export const TENANT_REPOSITORY_TOKEN = Symbol("TENANT_REPOSITORY");
+export const TENANT_REPOSITORY_TOKEN = "identity/tenant-repository";

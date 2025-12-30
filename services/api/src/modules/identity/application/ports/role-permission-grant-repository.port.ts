@@ -14,4 +14,4 @@ export interface RolePermissionGrantRepositoryPort {
   ): Promise<void>;
 }
 
-export const ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN = Symbol("ROLE_PERMISSION_GRANT_REPOSITORY");
+export const ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN = "identity/role-permission-grant-repository";

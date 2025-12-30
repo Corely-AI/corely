@@ -1,6 +1,6 @@
 import type { ShiftSession } from "../../domain/shift-session.aggregate";
 
-export const SHIFT_SESSION_REPOSITORY_PORT = Symbol("SHIFT_SESSION_REPOSITORY_PORT");
+export const SHIFT_SESSION_REPOSITORY_PORT = "pos/shift-session-repository";
 
 export interface ShiftSessionRepositoryPort {
   /**

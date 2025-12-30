@@ -18,4 +18,4 @@ export interface TemplateExecutorPort {
   apply(tenantId: string, params: Record<string, any>): Promise<TemplateResult>;
 }
 
-export const TEMPLATE_EXECUTOR_TOKEN = Symbol("TEMPLATE_EXECUTOR_TOKEN");
+export const TEMPLATE_EXECUTOR_TOKEN = "platform/template-executor";

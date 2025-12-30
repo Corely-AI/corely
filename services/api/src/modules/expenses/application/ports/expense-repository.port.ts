@@ -18,4 +18,4 @@ export interface ExpenseRepositoryPort {
   ): Promise<Expense[]>;
 }
 
-export const EXPENSE_REPOSITORY = Symbol("EXPENSE_REPOSITORY");
+export const EXPENSE_REPOSITORY = "expenses/expense-repository";

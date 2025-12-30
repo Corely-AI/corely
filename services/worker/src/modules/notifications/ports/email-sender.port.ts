@@ -28,4 +28,4 @@ export interface EmailSenderPort {
   sendEmail(request: SendEmailRequest): Promise<SendEmailResponse>;
 }
 
-export const EMAIL_SENDER_PORT = Symbol("EMAIL_SENDER_PORT");
+export const EMAIL_SENDER_PORT = "worker/notifications/email-sender";

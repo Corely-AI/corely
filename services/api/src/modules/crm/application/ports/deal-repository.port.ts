@@ -39,4 +39,4 @@ export interface DealRepoPort {
   ): Promise<DealStageTransition[]>;
 }
 
-export const DEAL_REPO_PORT = Symbol("DealRepoPort");
+export const DEAL_REPO_PORT = "crm/deal-repository";

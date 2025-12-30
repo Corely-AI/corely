@@ -1,17 +1,9 @@
-import { type RequestContext } from "../context/request-context";
+import type { AuditPort as KernelAuditPort } from "@kerniflow/kernel";
+import { AUDIT_PORT } from "@kerniflow/contracts";
 
-export interface AuditEntry {
-  tenantId: string | null;
-  actorUserId: string | null;
-  action: string;
-  targetType?: string;
-  targetId?: string;
-  details?: string;
-  context?: RequestContext;
-}
+export type AuditPort = KernelAuditPort;
+export type AuditEntry = Parameters<KernelAuditPort["log"]>[0];
 
-export interface AuditPort {
-  write(entry: AuditEntry): Promise<void>;
-}
-
-export const AUDIT_PORT_TOKEN = Symbol("AUDIT_PORT_TOKEN");
+// Backward-compatible alias while modules migrate.
+export const AUDIT_PORT_TOKEN = AUDIT_PORT;
+export { AUDIT_PORT };

@@ -30,4 +30,4 @@ export interface VendorBillRepositoryPort {
   ): Promise<VendorBillAggregate | null>;
 }
 
-export const VENDOR_BILL_REPO = Symbol("VENDOR_BILL_REPO");
+export const VENDOR_BILL_REPO = "purchasing/vendor-bill-repository";

@@ -29,7 +29,7 @@ export type ListProductsResult = {
   nextCursor?: string | null;
 };
 
-export const PRODUCT_REPO = Symbol("PRODUCT_REPO");
+export const PRODUCT_REPO = "inventory/product-repository";
 
 export interface ProductRepositoryPort {
   create(tenantId: string, product: InventoryProduct): Promise<void>;

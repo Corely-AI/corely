@@ -37,7 +37,7 @@ export type ListResult<T> = {
   nextCursor?: string | null;
 };
 
-export const CHECKIN_REPOSITORY_PORT = Symbol("CHECKIN_REPOSITORY_PORT");
+export const CHECKIN_REPOSITORY_PORT = "engagement/checkin-repository";
 
 export interface CheckInRepositoryPort {
   create(record: CheckInEventRecord): Promise<void>;

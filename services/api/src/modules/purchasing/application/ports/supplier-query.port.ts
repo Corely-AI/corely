@@ -13,4 +13,4 @@ export interface SupplierQueryPort {
   ): Promise<ListSuppliersResult>;
 }
 
-export const SUPPLIER_QUERY_PORT = Symbol("SUPPLIER_QUERY_PORT");
+export const SUPPLIER_QUERY_PORT = "purchasing/supplier-query";

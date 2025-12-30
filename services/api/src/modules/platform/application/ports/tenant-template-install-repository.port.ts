@@ -38,6 +38,5 @@ export interface TenantTemplateInstallEntity {
   resultSummaryJson: string | null;
 }
 
-export const TENANT_TEMPLATE_INSTALL_REPOSITORY_TOKEN = Symbol(
-  "TENANT_TEMPLATE_INSTALL_REPOSITORY_TOKEN"
-);
+export const TENANT_TEMPLATE_INSTALL_REPOSITORY_TOKEN =
+  "platform/tenant-template-install-repository";

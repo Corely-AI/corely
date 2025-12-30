@@ -52,6 +52,4 @@ export interface TenantMenuOverrideRepositoryPort {
   delete(id: string, tx?: TransactionContext): Promise<void>;
 }
 
-export const TENANT_MENU_OVERRIDE_REPOSITORY_TOKEN = Symbol(
-  "TENANT_MENU_OVERRIDE_REPOSITORY_TOKEN"
-);
+export const TENANT_MENU_OVERRIDE_REPOSITORY_TOKEN = "platform/tenant-menu-override-repository";

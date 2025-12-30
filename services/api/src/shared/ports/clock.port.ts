@@ -1,3 +1,2 @@
 export type { ClockPort } from "@kerniflow/kernel/ports/clock.port";
-
-export const CLOCK_PORT_TOKEN = Symbol("CLOCK_PORT_TOKEN");
+export { CLOCK_PORT_TOKEN } from "@kerniflow/contracts";

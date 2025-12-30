@@ -40,4 +40,4 @@ export interface RefreshTokenRepositoryPort {
   deleteExpired(): Promise<number>;
 }
 
-export const REFRESH_TOKEN_REPOSITORY_TOKEN = Symbol("REFRESH_TOKEN_REPOSITORY");
+export const REFRESH_TOKEN_REPOSITORY_TOKEN = "identity/refresh-token-repository";

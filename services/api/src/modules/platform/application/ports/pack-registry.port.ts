@@ -21,4 +21,4 @@ export interface PackRegistryPort {
   has(packId: string): boolean;
 }
 
-export const PACK_REGISTRY_TOKEN = Symbol("PACK_REGISTRY_TOKEN");
+export const PACK_REGISTRY_TOKEN = "platform/pack-registry";

@@ -4,38 +4,30 @@ import {
   DataModule,
   CustomFieldDefinitionRepository,
   CustomFieldIndexRepository,
-  PrismaAuditAdapter,
 } from "@kerniflow/data";
 import { ExpensesController } from "./adapters/http/expenses.controller";
-import { PrismaIdempotencyStorageAdapter } from "../../shared/infrastructure/persistence/prisma-idempotency-storage.adapter";
 import {
   IdempotencyStoragePort,
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
 } from "../../shared/ports/idempotency-storage.port";
 import { IdGeneratorPort, ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
 import { ClockPort, CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
-import { SystemIdGenerator } from "../../shared/infrastructure/system-id-generator";
-import { SystemClock } from "../../shared/infrastructure/system-clock";
 import { EXPENSE_REPOSITORY } from "./application/ports/expense-repository.port";
 import { ArchiveExpenseUseCase } from "./application/use-cases/archive-expense.usecase";
 import { CreateExpenseUseCase } from "./application/use-cases/create-expense.usecase";
 import { UnarchiveExpenseUseCase } from "./application/use-cases/unarchive-expense.usecase";
 import { PrismaExpenseRepository } from "./infrastructure/adapters/prisma-expense-repository.adapter";
 import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/IdempotencyInterceptor";
+import { KernelModule } from "../../shared/kernel/kernel.module";
 
 @Module({
-  imports: [DataModule],
+  imports: [DataModule, KernelModule],
   controllers: [ExpensesController],
   providers: [
     // Repository
     PrismaExpenseRepository,
     { provide: EXPENSE_REPOSITORY, useExisting: PrismaExpenseRepository },
 
-    // Local infrastructure adapters
-    SystemIdGenerator,
-    SystemClock,
-    PrismaAuditAdapter,
-    PrismaIdempotencyStorageAdapter,
     IdempotencyInterceptor,
 
     // Use Cases
@@ -83,12 +75,6 @@ import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/
       useFactory: (repo: PrismaExpenseRepository) => new UnarchiveExpenseUseCase(repo),
       inject: [EXPENSE_REPOSITORY],
     },
-
-    // Token bindings for shared ports
-    { provide: AUDIT_PORT, useExisting: PrismaAuditAdapter },
-    { provide: IDEMPOTENCY_STORAGE_PORT_TOKEN, useExisting: PrismaIdempotencyStorageAdapter },
-    { provide: ID_GENERATOR_TOKEN, useExisting: SystemIdGenerator },
-    { provide: CLOCK_PORT_TOKEN, useExisting: SystemClock },
   ],
   exports: [CreateExpenseUseCase],
 })

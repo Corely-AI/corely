@@ -7,4 +7,4 @@ export interface CustomerQueryPort {
   ): Promise<CustomerBillingSnapshotDTO | null>;
 }
 
-export const CUSTOMER_QUERY_PORT = Symbol("CUSTOMER_QUERY_PORT");
+export const CUSTOMER_QUERY_PORT = "invoices/customer-query";

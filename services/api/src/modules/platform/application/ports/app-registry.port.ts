@@ -26,4 +26,4 @@ export interface AppRegistryPort {
   has(appId: string): boolean;
 }
 
-export const APP_REGISTRY_TOKEN = Symbol("APP_REGISTRY_TOKEN");
+export const APP_REGISTRY_TOKEN = "platform/app-registry";

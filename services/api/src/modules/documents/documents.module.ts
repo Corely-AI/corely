@@ -10,14 +10,13 @@ import { GcsObjectStorageAdapter } from "./infrastructure/storage/gcs/gcs-object
 import { createGcsClient } from "./infrastructure/storage/gcs/gcs.client";
 import { PdfLibRendererAdapter } from "./infrastructure/pdf/pdf-lib/pdf-lib-renderer.adapter";
 import { NullInvoicePdfModelAdapter } from "./infrastructure/invoices/null-invoice-pdf-model.adapter";
-import { SystemIdGenerator } from "../../shared/infrastructure/system-id-generator";
-import { SystemClock } from "../../shared/infrastructure/system-clock";
-import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
-import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
+import { ID_GENERATOR_TOKEN, type IdGeneratorPort } from "../../shared/ports/id-generator.port";
+import { CLOCK_PORT_TOKEN, type ClockPort } from "../../shared/ports/clock.port";
 import { OUTBOX_PORT } from "@kerniflow/kernel";
 import type { OutboxPort } from "@kerniflow/kernel";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 import { IdentityModule } from "../identity";
+import { KernelModule } from "../../shared/kernel/kernel.module";
 
 import {
   INVOICE_PDF_MODEL_PORT,
@@ -31,14 +30,12 @@ import { LinkDocumentUseCase } from "./application/use-cases/link-document/link-
 import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoice-pdf/request-invoice-pdf.usecase";
 
 @Module({
-  imports: [IdentityModule],
+  imports: [IdentityModule, KernelModule],
   controllers: [DocumentsController, InvoicePdfController],
   providers: [
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
     PrismaDocumentLinkAdapter,
-    SystemIdGenerator,
-    SystemClock,
     PdfLibRendererAdapter,
     {
       provide: GcsObjectStorageAdapter,
@@ -51,8 +48,6 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
       },
       inject: [EnvService],
     },
-    { provide: ID_GENERATOR_TOKEN, useExisting: SystemIdGenerator },
-    { provide: CLOCK_PORT_TOKEN, useExisting: SystemClock },
     { provide: INVOICE_PDF_MODEL_PORT, useClass: NullInvoicePdfModelAdapter },
     {
       provide: CreateUploadIntentUseCase,
@@ -60,8 +55,8 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
         storage: GcsObjectStorageAdapter,
-        idGen: SystemIdGenerator,
-        clock: SystemClock,
+        idGen: IdGeneratorPort,
+        clock: ClockPort,
         env: EnvService
       ) =>
         new CreateUploadIntentUseCase({
@@ -90,7 +85,7 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
         documentRepo: PrismaDocumentRepoAdapter,
         fileRepo: PrismaFileRepoAdapter,
         storage: GcsObjectStorageAdapter,
-        clock: SystemClock
+        clock: ClockPort
       ) =>
         new CompleteUploadUseCase({
           logger: new NestLoggerAdapter(),
@@ -146,8 +141,8 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
         linkRepo: PrismaDocumentLinkAdapter,
         storage: GcsObjectStorageAdapter,
         outbox: OutboxPort,
-        idGen: SystemIdGenerator,
-        clock: SystemClock,
+        idGen: IdGeneratorPort,
+        clock: ClockPort,
         env: EnvService
       ) =>
         new RequestInvoicePdfUseCase({

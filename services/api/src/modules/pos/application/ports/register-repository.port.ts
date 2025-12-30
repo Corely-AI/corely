@@ -1,6 +1,6 @@
 import type { Register } from "../../domain/register.aggregate";
 
-export const REGISTER_REPOSITORY_PORT = Symbol("REGISTER_REPOSITORY_PORT");
+export const REGISTER_REPOSITORY_PORT = "pos/register-repository";
 
 export interface RegisterRepositoryPort {
   /**

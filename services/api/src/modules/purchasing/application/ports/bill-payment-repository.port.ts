@@ -6,4 +6,4 @@ export interface BillPaymentRepositoryPort {
   create(tenantId: string, payment: BillPayment): Promise<void>;
 }
 
-export const BILL_PAYMENT_REPO = Symbol("BILL_PAYMENT_REPO");
+export const BILL_PAYMENT_REPO = "purchasing/bill-payment-repository";

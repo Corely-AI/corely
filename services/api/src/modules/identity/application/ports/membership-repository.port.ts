@@ -50,4 +50,4 @@ export interface MembershipRepositoryPort {
   delete(id: string): Promise<void>;
 }
 
-export const MEMBERSHIP_REPOSITORY_TOKEN = Symbol("MEMBERSHIP_REPOSITORY");
+export const MEMBERSHIP_REPOSITORY_TOKEN = "identity/membership-repository";

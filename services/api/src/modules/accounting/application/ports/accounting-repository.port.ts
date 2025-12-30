@@ -57,7 +57,7 @@ export interface AccountingPeriodRepoPort {
   save(period: AccountingPeriodAggregate): Promise<void>;
 }
 
-export const ACCOUNTING_SETTINGS_REPO_PORT = Symbol("ACCOUNTING_SETTINGS_REPO_PORT");
-export const LEDGER_ACCOUNT_REPO_PORT = Symbol("LEDGER_ACCOUNT_REPO_PORT");
-export const JOURNAL_ENTRY_REPO_PORT = Symbol("JOURNAL_ENTRY_REPO_PORT");
-export const ACCOUNTING_PERIOD_REPO_PORT = Symbol("ACCOUNTING_PERIOD_REPO_PORT");
+export const ACCOUNTING_SETTINGS_REPO_PORT = "accounting/settings-repository";
+export const LEDGER_ACCOUNT_REPO_PORT = "accounting/ledger-account-repository";
+export const JOURNAL_ENTRY_REPO_PORT = "accounting/journal-entry-repository";
+export const ACCOUNTING_PERIOD_REPO_PORT = "accounting/period-repository";

@@ -5,4 +5,4 @@ export interface PurchasingSettingsRepositoryPort {
   save(settings: PurchasingSettingsAggregate): Promise<void>;
 }
 
-export const PURCHASING_SETTINGS_REPO = Symbol("PURCHASING_SETTINGS_REPO");
+export const PURCHASING_SETTINGS_REPO = "purchasing/settings-repository";

@@ -1,6 +1,6 @@
 import type { SyncPosSaleOutput } from "@kerniflow/contracts";
 
-export const POS_SALE_IDEMPOTENCY_PORT = Symbol("POS_SALE_IDEMPOTENCY_PORT");
+export const POS_SALE_IDEMPOTENCY_PORT = "pos/pos-sale-idempotency";
 
 export interface PosSaleIdempotencyPort {
   /**
