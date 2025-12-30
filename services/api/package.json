@@ -2,6 +2,7 @@
   "name": "@corely/api",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "dependencies": {
     "@ai-sdk/anthropic": "catalog:",
@@ -56,5 +57,6 @@
     "start": "node dist/main.js",
     "start:debug": "node --inspect=0.0.0.0:9229 dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

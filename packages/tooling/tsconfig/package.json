@@ -2,9 +2,11 @@
   "name": "@corely/tsconfig",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "description": "Shared TypeScript configurations for Corely monorepo",
   "files": [
     "*.json",
     "README.md"
-  ]
+  ],
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

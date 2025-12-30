@@ -2,6 +2,7 @@
   "name": "@corely/domain",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -23,5 +24,6 @@
     "build": "tsdown",
     "dev": "tsdown --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

@@ -2,6 +2,7 @@
   "name": "@corely/tailwind-preset",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "description": "Shared Tailwind CSS preset for Corely monorepo",
   "type": "module",
   "main": "./index.js",
@@ -16,5 +17,6 @@
   "devDependencies": {
     "tailwindcss": "catalog:",
     "tailwindcss-animate": "catalog:"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

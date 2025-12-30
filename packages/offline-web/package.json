@@ -2,6 +2,7 @@
   "name": "@corely/offline-web",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -31,5 +32,6 @@
     "fake-indexeddb": "^6.0.0",
     "jsdom": "^24.1.0",
     "vitest": "catalog:"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

@@ -1,6 +1,7 @@
 {
   "name": "@corely/pos",
   "version": "0.1.0",
+  "license": "AGPL-3.0-only",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -40,5 +41,6 @@
     "@types/react": "~18.3.0",
     "typescript": "^5.7.0",
     "babel-plugin-module-resolver": "^5.0.0"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

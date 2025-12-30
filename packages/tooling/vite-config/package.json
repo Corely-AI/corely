@@ -2,6 +2,7 @@
   "name": "@corely/vite-config",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "description": "Shared Vite and Vitest configurations for Corely monorepo",
   "type": "module",
   "main": "./dist/index.mjs",
@@ -30,5 +31,6 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

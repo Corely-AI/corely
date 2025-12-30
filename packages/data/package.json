@@ -2,6 +2,7 @@
   "name": "@corely/data",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -30,5 +31,6 @@
   "devDependencies": {
     "@types/pg": "catalog:",
     "prisma": "catalog:"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

@@ -2,6 +2,7 @@
   "name": "@corely/web",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "dependencies": {
     "@ai-sdk/react": "catalog:",
@@ -92,5 +93,6 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.app.json --noEmit"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

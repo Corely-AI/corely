@@ -2,6 +2,7 @@
   "name": "@corely/api-client",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./src/index.ts",
   "exports": {
@@ -13,5 +14,6 @@
   "dependencies": {},
   "devDependencies": {
     "vitest": "catalog:"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

@@ -1,198 +1,273 @@
-# Corely
+# Corely — AI-native modular ERP kernel
 
-Corely is an **AI-native modular ERP kernel** designed to start small (freelancer workflows like **expenses + invoices + assistant**) and scale into full ERP domains (restaurant/hotel/factory packs) without forking code.
+A modular ERP kernel that starts with freelancer workflows (expenses, invoices, assistant) and scales into restaurant, hotel, and factory packs without forking code.
 
-This repo is a **pnpm monorepo** with clear boundaries:
+## Table of Contents
 
-- **DDD bounded contexts** per module
-- **Hexagonal** ports/adapters (domain + use-cases are framework-free)
-- **Outbox + Worker** for reliable async workflows
-- **CQRS-lite reads** for dashboards
-- **Idempotency + Audit** as defaults
+- [Corely — AI-native modular ERP kernel](#corely--ai-native-modular-erp-kernel)
+  - [Table of Contents](#table-of-contents)
+  - [What is Corely?](#what-is-corely)
+  - [Key features](#key-features)
+    - [Kernel \& modularity](#kernel--modularity)
+    - [Reliability primitives](#reliability-primitives)
+    - [Security primitives](#security-primitives)
+    - [Developer experience](#developer-experience)
+  - [Open-source kernel, commercial packs](#open-source-kernel-commercial-packs)
+  - [Architecture at a glance](#architecture-at-a-glance)
+    - [Dependency direction rules](#dependency-direction-rules)
+  - [Monorepo layout](#monorepo-layout)
+  - [Getting started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Quick start](#quick-start)
+      - [UI-first (web + mock server)](#ui-first-web--mock-server)
+      - [Full stack (web + API + worker + Postgres/Redis)](#full-stack-web--api--worker--postgresredis)
+    - [Environment files](#environment-files)
+  - [Environment variables](#environment-variables)
+  - [Scripts](#scripts)
+  - [Development modes](#development-modes)
+  - [Built in public](#built-in-public)
+  - [How to add a new module](#how-to-add-a-new-module)
+  - [Contributing](#contributing)
+  - [Security](#security)
+  - [Roadmap](#roadmap)
+  - [License](#license)
+  - [Acknowledgements](#acknowledgements)
 
----
+## What is Corely?
 
-## Repo structure
+- A modular kernel built for freelancer workflows (expenses, invoices, assistant) that can layer in full ERP packs (restaurant, hotel, factory) without duplicating the core.
+- AI-native by design: contracts define tool schemas, assistant endpoints run through the API with auditable tool executions, retries are idempotent, and every action is logged for traceability.
+- Bounded contexts keep each module’s domain model, use cases, and migrations isolated so teams can own vertical packs safely.
+- Hexagonal ports/adapters let use cases stay framework-free while adapters live in NestJS, Prisma, Redis, or UI layers.
+- Outbox + Worker power reliable automations, and CQRS-lite read models keep dashboards responsive without polluting the write model.
+- Idempotency keys, audit trails, and tenant scoping are defaults so even AI or POS retries stay safe.
+
+## Key features
+
+### Kernel & modularity
+
+- Modular monolith with shared contracts (`packages/contracts`), pure domain rules (`packages/domain`), and a kernel of standard use cases.
+- Packs add UI, migrations, and integrations in their own folders so restaurant/hotel/factory features compose the kernel instead of fork it.
+- Clear ownership boundaries remove direct cross-module DB writes; modules talk through contracts, events, and the API surface.
+
+### Reliability primitives
+
+- Outbox pattern and a dedicated worker deliver domain events, retries, and process managers for automations.
+- CQRS-lite read services keep dashboards fast while write use cases remain strict and transactional.
+- Every write command/tool call carries an idempotency key plus an audit log entry by default.
+
+### Security primitives
+
+- Tenant-aware schemata (all tables include `tenantId` checks) and RBAC/ABAC guards in the API.
+- Audit log captures critical actions, including AI tool executions and POS commands, with immutable metadata.
+- Tool runs surface confidence, provenance, and trace IDs so consumers can safely retry or investigate.
+
+### Developer experience
+
+- `pnpm` workspace orchestrates apps (`apps/web`, `apps/pos`, `apps/e2e`), services (`services/api`, `services/worker`, `services/mock-server`), and shared packages.
+- Contracts package centralizes schemas, enums, and tool cards so frontend, API, and worker speak the same language.
+- Mock server simulates latency, pagination, idempotency, and assistant-tool endpoints, enabling a UI-first workflow before the full stack is ready.
+
+## Open-source kernel, commercial packs
+
+- **Core OSS kernel:** everything in this repository is AGPL-3.0-only unless a file or folder states otherwise.
+- **Enterprise Packs / EE:** distributed separately under a commercial license; they integrate via ports/interfaces and runtime registration (no direct OSS imports).
+- **Trademarks:** “Corely” name and logos are protected by trademark and brand usage rules.
+- Details: see `docs/licensing.md`, `ee/README.md`, and `TRADEMARKS.md`.
+
+## Architecture at a glance
+
+DDD bounded contexts → Hexagonal ports/adapters → Outbox + Worker → CQRS-lite reads + idempotent commands + audit by default.
+
+```mermaid
+flowchart LR
+  subgraph Clients
+    Web["apps/web (Vite)"]
+    POS["apps/pos (POS shell)"]
+  end
+  subgraph Shared
+    Contracts["packages/contracts"]
+    Domain["packages/domain"]
+    Data["packages/data"]
+  end
+  subgraph Backend
+    API["services/api"]
+    Worker["services/worker"]
+    Mock["services/mock-server"]
+  end
+  Web --> Contracts
+  Web --> Domain
+  POS --> Contracts
+  POS --> Domain
+  API --> Contracts
+  API --> Domain
+  API --> Data
+  Worker --> Contracts
+  Worker --> Domain
+  Worker --> Data
+  Mock --> Contracts
+```
+
+### Dependency direction rules
+
+- `apps/web` & `apps/pos` → `packages/contracts`, `packages/domain`
+- `services/api`, `services/worker` → `packages/contracts`, `packages/domain`, `packages/data`
+- `packages/domain` → `packages/contracts`
+- **Forbidden:** `packages/contracts` importing other workspace code, frontend importing backend internals, backend importing UI assets, or any module writing another module’s tables directly.
+- Architecture patterns: DDD bounded contexts, Hexagonal ports/adapters, Outbox + Worker for automation, CQRS-lite reads for dashboards, idempotent commands and audit trails as defaults.
+
+## Monorepo layout
 
 ```text
 apps/
-  web/                      # Frontend (Vite/Next.js depending on your setup)
+  e2e/                        # End-to-end suites
+  pos/                        # Offline-first POS shell
+  web/                        # Vite-based admin UI
 
 services/
-  api/                      # NestJS API (RBAC, tools, workflows, use-cases)
-  worker/                   # NestJS Worker (outbox, jobs, automations)
-  mock-server/              # Dedicated mock backend for frontend demo/dev
+  api/                        # NestJS API (RBAC, tools, workflows)
+  worker/                     # NestJS worker (outbox, jobs, integrations)
+  mock-server/                # Dedicated mock server for UI-first work
 
 packages/
-  contracts/                # Shared FE/BE: schemas + types + tool contracts
-  domain/                   # Optional shared pure domain rules (no Prisma/Nest/React)
-  data/                     # Backend-only Prisma + repositories
+  api-client/
+  auth-client/
+  config/
+  contracts/
+  core/
+  data/
+  domain/
+  email-templates/
+  kernel/
+  offline-core/
+  offline-rn/
+  offline-web/
+  pos-core/
+  testkit/
+  tooling/
 
-docs/                       # Architecture docs
-assets/                     # Brand/logo assets
+docs/
+assets/
+docker/
+scripts/
 ```
 
----
+## Getting started
 
-## Prerequisites
+### Prerequisites
 
-- **Node.js** (recommended: latest LTS)
-- **pnpm** (workspace package manager)
-- **Docker** (optional, for Postgres/Redis via compose)
+- Node.js 22.19+ (LTS recommended)
+- `pnpm` 10+
+- Docker (optional: Postgres/Redis via `docker-compose.dev.yml`, `docker-compose.local.yml`, or Alpine scripts)
 
----
+### Quick start
 
-## Quick start (local dev)
+1. Install dependencies and copy env scaffolding:
+   ```bash
+   pnpm install
+   cp .env.example .env
+   ```
+2. Set `VITE_API_BASE_URL` to `http://localhost:4000` for the mock profile or `http://localhost:3000` for the full stack.
+3. Start the stack you need:
 
-### 1) Install
-
-```bash
-pnpm install
-```
-
-### 2) Run frontend with dedicated mock server (recommended for UI work)
+#### UI-first (web + mock server)
 
 ```bash
 pnpm dev:mock
 pnpm dev:web
 ```
 
-Or run everything together if you have a combined script:
+Mock server routes live under `services/mock-server/src/routes`; latency, pagination, and idempotency middleware keep the experience close to the real API.
 
-```bash
-pnpm dev
-```
-
-### 3) Run backend stack (API + Worker)
+#### Full stack (web + API + worker + Postgres/Redis)
 
 ```bash
 pnpm dev:api
 pnpm dev:worker
+pnpm dev:web
 ```
 
----
+Ensure Postgres/Redis are reachable (use `docker compose -f docker-compose.dev.yml up` if needed). When you want everything wired together, `pnpm dev` builds packages then starts all services.
 
-## Common scripts (root)
+### Environment files
 
-> Scripts may vary slightly depending on current repo state.
-
-```bash
-pnpm dev           # start main dev environment (often web + mock)
-pnpm dev:web       # start frontend
-pnpm dev:mock      # start mock server
-pnpm dev:api       # start NestJS API
-pnpm dev:worker    # start NestJS worker
-
-pnpm build         # build all packages/apps
-pnpm typecheck     # typecheck all packages
-pnpm lint          # lint (if configured)
-pnpm format        # format (if configured)
-```
-
----
+- Global defaults: `.env.example`, `.env.dev.example`, `.env.e2e.example`; copy the one that matches your workflow into a `.env` file at the repo root.
+- Services and apps pick values from that `.env` (web uses `VITE_` prefixed keys, API/worker reference connection strings directly).
 
 ## Environment variables
 
-Create a `.env` (or per-service env files) from `.env.example`:
+| Name                                   | Used by                                         | Example                                                         | Notes                                                       |
+| -------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------- |
+| `DATABASE_URL`                         | `@corely/api`, `@corely/worker`, `@corely/data` | `postgresql://corely:corely@postgres:5432/corely?schema=public` | Prisma connection for commands, outbox, and read models.    |
+| `REDIS_URL`                            | `@corely/api`, `@corely/worker`                 | `redis://redis:6379`                                            | Queues, locks, rate limits, idempotency caches.             |
+| `VITE_API_BASE_URL`                    | `apps/web`, `apps/pos`                          | `http://localhost:4000`                                         | Switch between mock (`4000`) and real API (`3000`).         |
+| `LOG_LEVEL`                            | All services                                    | `debug`                                                         | Controls structured logging verbosity.                      |
+| `AI_MODEL_PROVIDER`                    | `@corely/api`                                   | `openai`                                                        | Selects `openai` or `anthropic` for Copilot tool runs.      |
+| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | `@corely/api`                                   | `(redacted)`                                                    | Provider credentials for assistant/tool calls; keep secret. |
+| `EMAIL_PROVIDER`                       | `@corely/api`                                   | `resend`                                                        | Controls transactional email adapter.                       |
+| `WEB_PORT`, `API_PORT`, `MOCK_PORT`    | Apps/services                                   | `5173`, `3000`, `4000`                                          | Override ports when composing services locally.             |
 
-Typical values:
+## Scripts
 
-- `DATABASE_URL` (Postgres connection)
-- `REDIS_URL` (Redis connection)
-- `VITE_API_BASE_URL` (frontend → mock server or api)
+Common scripts include:
 
----
+- `pnpm dev` – builds shared packages and runs all services/apps in parallel.
+- `pnpm dev:web`, `pnpm dev:mock`, `pnpm dev:api`, `pnpm dev:worker`, `pnpm dev:api:debug` – start each surface individually.
+- `pnpm build`, `pnpm build:web`, `pnpm build:api` – compile packages plus apps/services.
+- `pnpm typecheck`, `pnpm lint`, `pnpm format`, `pnpm format:check` – workspace-wide quality gates.
+- `pnpm check` – `lint` + `typecheck`.
+- `pnpm prisma:migrate`, `pnpm prisma:generate` – keep Prisma schema in sync for `@corely/data`.
 
 ## Development modes
 
-### UI-first (recommended)
+- **Mock-first / UI-first:** `apps/web` (and `apps/pos`) call `services/mock-server`. Mock middleware simulates latency/pagination, enforces idempotency, and exposes assistant tool endpoints, so UI work keeps moving before backend features land.
+- **Full backend stack:** `services/api` uses NestJS guards, Prisma, the outbox table, and idempotency ports; `services/worker` publishes outbox events, retries process managers, and powers integrations. `packages/data` owns the Prisma client and repositories.
 
-- Frontend calls `services/mock-server`
-- Mock server simulates:
-  - latency
-  - pagination/filtering
-  - idempotency
-  - assistant tool endpoints
+## Built in public
 
-### Full stack
+- Progress lives in docs such as `docs/IMPLEMENTATION_SUMMARY.md`, `CODE_SHARING_ANALYSIS.md`, and the per-domain status notes (`ACCOUNTING_CORE_STATUS.md`, `POS_IMPLEMENTATION_STATUS.md`). Watch those for what is happening now.
+- Contributors can help by picking tasks from the implementation docs, updating the mock server when new contracts arrive, or improving module guides (`docs/MODULE_IMPLEMENTATION_GUIDE.md`, `docs/MODULE-TEMPLATE.md`).
+- Large changes start with an issue describing the intent; small PRs that include updated tests/docs are most welcome.
 
-- Frontend calls `services/api`
-- API uses Postgres + Prisma
-- Worker publishes outbox events and runs jobs
+## How to add a new module
 
----
+1. **Contracts first:** add Zod schemas, enums, and tool definitions inside `packages/contracts/src/<module>` so web, POS, API, and worker share the surface.
+2. **Backend module:** create `services/api/src/modules/<module>` folders with domains, use cases, DTOs, and Nest controllers that depend only on ports/adapters.
+3. **Data nor cross-writes:** add migrations under `packages/data/prisma/schema/` and let repositories in `packages/data/src` own DB writes; no other module touches those tables directly.
+4. **Frontend module:** mirror the module in `apps/web/src/modules/<module>` (screens, hooks, routes) and point to the shared contracts plus the HTTP client.
+5. **Mock routes:** register UI-first routes/seeds in `services/mock-server/src/routes` so the mock server stays up to date.
 
-## Architecture rules (do not break)
+Keep the boundaries: API modules use ports/interfaces, the worker only publishes the module’s events, and clients never import backend internals.
 
-### Dependency direction
+## Contributing
 
-✅ Allowed:
+- Open an issue for any larger initiative so maintainers can track scope before code.
+- Small, focused PRs that pass `pnpm lint`, `pnpm typecheck`, and relevant tests get reviewed faster.
+- Update docs or `docs/IMPLEMENTATION_SUMMARY.md` when you touch workflows, contracts, or module behavior.
+- Code style follows the shared configs (`eslint.config.js`, `prettier.config.js`). Run `pnpm format` and `pnpm lint:fix` when you add or move files.
+- See `CONTRIBUTING.md` for setup, DCO sign-off, and review expectations. Community standards live in `CODE_OF_CONDUCT.md`.
 
-- `apps/web` → `packages/contracts`, `packages/domain`
-- `services/api` → `packages/contracts`, `packages/domain`, `packages/data`
-- `services/worker` → `packages/contracts`, `packages/domain`, `packages/data`
-- `packages/domain` → `packages/contracts`
+## Security
 
-🚫 Forbidden:
+Please follow `SECURITY.md` for private reporting and response expectations. Placeholder contact: **<SECURITY_EMAIL>**.
 
-- `packages/contracts` importing anything else
-- frontend importing backend internals
-- shared packages importing feature modules
-- cross-module direct DB writes (no “shared DB access”)
+## Roadmap
 
-### Domain boundaries
+Subject to change.
 
-- **Domain + use-cases**: no framework imports (no NestJS, no Prisma)
-- **Infra adapters** implement ports (Prisma/JWT/queues/etc.)
-- **Outbox** written in the same transaction as state changes
-- **Worker** publishes/retries outbox events
-- **Idempotency** required for write commands/tools
-- **AuditLog** for security-sensitive actions
-
----
-
-## Where to add new features
-
-### Add a new ERP module (example: inventory)
-
-1. Backend:
-   - `services/api/src/modules/inventory/*`
-   - Prisma tables in `packages/data/prisma/schema/*`
-
-2. Contracts:
-   - `packages/contracts/src/inventory/*`
-
-3. Frontend:
-   - `apps/web/src/modules/inventory/*`
-
-4. Optional: mock server routes
-   - `services/mock-server/src/routes/inventory.ts`
-
----
-
-## Troubleshooting
-
-### pnpm workspace import issues
-
-- Ensure `pnpm-workspace.yaml` includes `apps/*`, `services/*`, `packages/*`
-- Run a clean install:
-
-```bash
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
-```
-
-### CORS errors (frontend ↔ api/mock)
-
-- Confirm mock/api enables CORS for the frontend origin
-- Confirm frontend uses the correct `VITE_API_BASE_URL`
-
-### Prisma schema split
-
-- If using multi-file Prisma schema, ensure Prisma is configured to load the schema directory (and your generator scripts point to it).
-
----
+- Module registry and pack metadata so teams can enable restaurant/hotel/factory workflows with one settings switch.
+- Workflow editor integration that composes use-case graphs for approvals, approvals, and multi-step automations.
+- POS offline build-out: queue durability, shift sessions, floor plan workflows, and manager approvals.
+- AI Copilot improvements: richer tool cards, assistant run auditing, and more deterministic apply/dismiss flows.
+- Vertical pack work: kitchen display flows, room folio billing, manufacturing BOM routing, and pack-specific migrations.
+- Observability upgrades: structured logs with trace IDs, read-model telemetry, and outbox monitoring dashboards.
+- Marketplace for connectors (webhooks, real-time adapters) that plug into the outbox/worker automation surface.
 
 ## License
 
-TBD
+Corely Community is licensed under **AGPL-3.0-only**. Enterprise Packs are commercial and distributed separately. Trademarks are governed by `TRADEMARKS.md`.
+See `LICENSE` and `docs/licensing.md` for details.
+
+## Acknowledgements
+
+Built on Vite, React, NestJS, Prisma, BullMQ, and XState along with the ideas documented in `docs/architect.md` and `docs/overall-structure.md`.
