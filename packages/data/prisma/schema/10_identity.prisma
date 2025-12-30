@@ -9,12 +9,20 @@ model Tenant {
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   // Relations
-  memberships   Membership[]
-  roles         Role[]
-  apiKeys       ApiKey[]
-  refreshTokens RefreshToken[]
-  workspaces    Workspace[]
-  legalEntities LegalEntity[]
+  memberships          Membership[]
+  roles                Role[]
+  apiKeys              ApiKey[]
+  refreshTokens        RefreshToken[]
+  workspaces           Workspace[]
+  legalEntities        LegalEntity[]
+  rolePermissionGrants RolePermissionGrant[]
+
+  // Platform (Apps + Templates + Packs) relations
+  appInstalls       TenantAppInstall[]
+  templateInstalls  TenantTemplateInstall[]
+  packInstalls      TenantPackInstall[]
+  menuOverrides     TenantMenuOverride[]
+  seededRecordMeta  SeededRecordMeta[]
 
   @@index([createdAt])
 }
@@ -34,6 +42,7 @@ model User {
   memberships         Membership[]
   refreshTokens       RefreshToken[]
   workspaceMemberships WorkspaceMembership[]
+  rolePermissionGrants RolePermissionGrant[]
 
   @@index([email])
   @@index([createdAt])
@@ -125,9 +134,9 @@ model RolePermissionGrant {
   createdBy     String?
 
   // Relations
-  tenant       Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  role         Role    @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  createdByUser User?  @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdByUser User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, roleId, permissionKey])
   @@index([tenantId, roleId])
