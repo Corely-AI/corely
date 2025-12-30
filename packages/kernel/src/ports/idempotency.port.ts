@@ -6,4 +6,4 @@ export interface IdempotencyPort {
   run<T>(key: string, fn: () => Promise<T>): Promise<T>;
 }
 
-export const IDEMPOTENCY_PORT = "kernel/idempotency-port";
+export { IDEMPOTENCY_PORT } from "../tokens";

@@ -4,6 +4,9 @@ export * from "./application/errors";
 export * from "./application/usecase";
 export * from "./application/base-usecase";
 
+// DI Tokens (canonical source)
+export * from "./tokens";
+
 export * from "./ports/logger.port";
 export * from "./ports/clock.port";
 export * from "./ports/id-generator.port";

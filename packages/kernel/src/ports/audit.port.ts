@@ -14,4 +14,4 @@ export interface AuditPort {
   ): Promise<void>;
 }
 
-export const AUDIT_PORT = "kernel/audit-port";
+export { AUDIT_PORT } from "../tokens";

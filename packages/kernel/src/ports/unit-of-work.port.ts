@@ -14,4 +14,4 @@ export interface UnitOfWorkPort {
   withinTransaction<T>(fn: (tx: TransactionContext) => Promise<T>): Promise<T>;
 }
 
-export const UNIT_OF_WORK = "kernel/unit-of-work";
+export { UNIT_OF_WORK } from "../tokens";
