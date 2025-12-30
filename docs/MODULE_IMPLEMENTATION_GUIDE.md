@@ -1,6 +1,6 @@
 # Module Implementation Guide
 
-This guide walks you through implementing a complete feature module in Kerniflow, from frontend to backend.
+This guide walks you through implementing a complete feature module in Corely, from frontend to backend.
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@ This guide walks you through implementing a complete feature module in Kerniflow
 
 ## Architecture Overview
 
-Kerniflow follows a clean architecture pattern with clear separation of concerns:
+Corely follows a clean architecture pattern with clear separation of concerns:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐

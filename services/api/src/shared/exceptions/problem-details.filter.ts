@@ -53,7 +53,7 @@ export class ProblemDetailsExceptionFilter implements ExceptionFilter {
     tenantId: string | undefined,
     request: Request
   ) {
-    if (process.env.NODE_ENV === "test" || process.env.KERNIFLOW_TEST === "true") {
+    if (process.env.NODE_ENV === "test" || process.env.CORELY_TEST === "true") {
       return;
     }
 

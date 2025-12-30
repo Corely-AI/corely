@@ -2,7 +2,7 @@
 
 ## Overview
 
-Kerniflow uses a **systematic, cross-platform error handling system** based on RFC 7807 Problem Details for HTTP APIs. This ensures predictable, consistent error responses across backend, web, and POS clients.
+Corely uses a **systematic, cross-platform error handling system** based on RFC 7807 Problem Details for HTTP APIs. This ensures predictable, consistent error responses across backend, web, and POS clients.
 
 ## Core Principles
 
@@ -27,7 +27,7 @@ interface ProblemDetails {
   detail: string; // "This invoice has already been finalized"
   instance: string; // "/api/invoices/123/finalize"
 
-  // Kerniflow extensions
+  // Corely extensions
   code: string; // "Invoices:Locked" (stable machine code)
   validationErrors?: Array<{
     // Field-level validation errors

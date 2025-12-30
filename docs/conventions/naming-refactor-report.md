@@ -1,4 +1,4 @@
-# Kerniflow Naming Conventions Refactor - Implementation Report
+# Corely Naming Conventions Refactor - Implementation Report
 
 **Date:** 23 Dec 2025
 **Author:** Automated Refactor via Claude Code
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This report documents the successful implementation of consistent naming conventions across the entire Kerniflow monorepo. The refactor addressed **85+ files** and **4 folder renames**, systematically eliminating PascalCase filenames, abbreviation inconsistencies, and mixed test suffix patterns.
+This report documents the successful implementation of consistent naming conventions across the entire Corely monorepo. The refactor addressed **85+ files** and **4 folder renames**, systematically eliminating PascalCase filenames, abbreviation inconsistencies, and mixed test suffix patterns.
 
 ### Key Achievements
 
@@ -317,7 +317,7 @@ These issues are **separate concerns** and should be addressed independently.
 
 ```bash
 # Run all three scripts in sequence (already executed):
-cd /d/Working/Kerniflow
+cd /d/Working/Corely
 bash scripts/rename-files.sh
 bash scripts/update-imports.sh
 bash scripts/fix-remaining-imports.sh
@@ -443,7 +443,7 @@ The following modules had no violations and required no changes:
 
 ## Conclusion
 
-The Kerniflow naming conventions refactor has been **successfully completed**. All 85+ files now follow consistent kebab-case naming, all repository files use the full "repository" word (no abbreviations), and infrastructure folders use the complete "infrastructure" name.
+The Corely naming conventions refactor has been **successfully completed**. All 85+ files now follow consistent kebab-case naming, all repository files use the full "repository" word (no abbreviations), and infrastructure folders use the complete "infrastructure" name.
 
 **The codebase is now:**
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implemented a scalable shared-config strategy in the Kerniflow pnpm monorepo with strict separation between runtime config utilities and dev tooling configs. All tooling configs are grouped under `packages/tooling/*`, while runtime config utilities remain in `packages/config`.
+Implemented a scalable shared-config strategy in the Corely pnpm monorepo with strict separation between runtime config utilities and dev tooling configs. All tooling configs are grouped under `packages/tooling/*`, while runtime config utilities remain in `packages/config`.
 
 ## Workspace Structure
 
@@ -120,7 +120,7 @@ export default {
 
 ### 5. @corely/tailwind-preset
 
-**Purpose:** Shared Tailwind design system with Kerniflow brand
+**Purpose:** Shared Tailwind design system with Corely brand
 
 **Includes:**
 

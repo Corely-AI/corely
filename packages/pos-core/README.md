@@ -1,6 +1,6 @@
 # @corely/pos-core
 
-Platform-agnostic POS business logic for Kerniflow.
+Platform-agnostic POS business logic for Corely.
 
 ## Purpose
 

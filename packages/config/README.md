@@ -1,6 +1,6 @@
 # @corely/config
 
-Runtime configuration utilities for Kerniflow monorepo. This package provides type-safe environment variable management and configuration services for backend services.
+Runtime configuration utilities for Corely monorepo. This package provides type-safe environment variable management and configuration services for backend services.
 
 > **Note**: This is a **runtime-only** package. For development tooling configs (TypeScript, ESLint, Prettier, Vite), see `packages/tooling/*`.
 
@@ -185,4 +185,4 @@ For development tooling, use packages under `packages/tooling/*`.
 
 ## License
 
-Private package for Kerniflow monorepo.
+Private package for Corely monorepo.

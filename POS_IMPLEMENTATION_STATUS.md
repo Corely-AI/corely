@@ -1,8 +1,8 @@
-# Kerniflow React Native POS Implementation Status
+# Corely React Native POS Implementation Status
 
 ## Overview
 
-This document tracks the implementation progress of the AI-Native, Offline-First Point of Sale (POS) system for Kerniflow.
+This document tracks the implementation progress of the AI-Native, Offline-First Point of Sale (POS) system for Corely.
 
 ---
 

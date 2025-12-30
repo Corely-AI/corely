@@ -331,7 +331,7 @@ Need to create AI-related hooks and components:
 
 ### Pattern Consistency
 
-All implemented code follows existing Kerniflow patterns:
+All implemented code follows existing Corely patterns:
 
 - ✅ React Query for data fetching
 - ✅ react-hook-form + Zod for forms

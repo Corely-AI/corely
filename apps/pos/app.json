@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Kerniflow POS",
+    "name": "Corely POS",
     "slug": "corely-pos",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -40,7 +40,7 @@
       [
         "expo-barcode-scanner",
         {
-          "cameraPermission": "Allow Kerniflow POS to scan product barcodes"
+          "cameraPermission": "Allow Corely POS to scan product barcodes"
         }
       ]
     ],

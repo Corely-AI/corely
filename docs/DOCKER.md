@@ -1,6 +1,6 @@
-# Docker Setup for Kerniflow
+# Docker Setup for Corely
 
-Complete Docker Compose setup for Kerniflow monorepo with two deployment profiles.
+Complete Docker Compose setup for Corely monorepo with two deployment profiles.
 
 ---
 

@@ -1,6 +1,6 @@
 # @corely/vite-config
 
-Shared Vite and Vitest configuration helpers for the Kerniflow monorepo.
+Shared Vite and Vitest configuration helpers for the Corely monorepo.
 
 ## Installation
 

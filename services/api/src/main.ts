@@ -29,8 +29,8 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle("Kerniflow API")
-    .setDescription("Kerniflow - AI-native workflows → ERP kernel")
+    .setTitle("Corely API")
+    .setDescription("Corely - AI-native workflows → ERP kernel")
     .setVersion("1.0")
     .addBearerAuth()
     .build();

@@ -1,6 +1,6 @@
 # @corely/tailwind-preset
 
-Shared Tailwind CSS preset for the Kerniflow design system.
+Shared Tailwind CSS preset for the Corely design system.
 
 ## Installation
 

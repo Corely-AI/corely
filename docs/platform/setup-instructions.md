@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide walks through the setup steps needed to activate the Platform module (Apps + Templates + Packs system) in your Kerniflow installation.
+This guide walks through the setup steps needed to activate the Platform module (Apps + Templates + Packs system) in your Corely installation.
 
 ## Prerequisites
 

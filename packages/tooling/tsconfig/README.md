@@ -1,6 +1,6 @@
 # @corely/tsconfig
 
-Shared TypeScript configurations for the Kerniflow monorepo.
+Shared TypeScript configurations for the Corely monorepo.
 
 ## Available Profiles
 

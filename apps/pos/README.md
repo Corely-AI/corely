@@ -1,6 +1,6 @@
-# Kerniflow POS - React Native App
+# Corely POS - React Native App
 
-AI-Native, Offline-First Point of Sale application for Kerniflow.
+AI-Native, Offline-First Point of Sale application for Corely.
 
 ## Features
 

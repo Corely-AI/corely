@@ -1,6 +1,6 @@
 # @corely/offline-rn
 
-React Native adapters for offline-first sync with Kerniflow.
+React Native adapters for offline-first sync with Corely.
 
 ## Purpose
 

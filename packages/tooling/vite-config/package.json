@@ -2,7 +2,7 @@
   "name": "@corely/vite-config",
   "private": true,
   "version": "0.0.0",
-  "description": "Shared Vite and Vitest configurations for Kerniflow monorepo",
+  "description": "Shared Vite and Vitest configurations for Corely monorepo",
   "type": "module",
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",

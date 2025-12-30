@@ -2,7 +2,7 @@
   "name": "@corely/tsconfig",
   "private": true,
   "version": "0.0.0",
-  "description": "Shared TypeScript configurations for Kerniflow monorepo",
+  "description": "Shared TypeScript configurations for Corely monorepo",
   "files": [
     "*.json",
     "README.md"

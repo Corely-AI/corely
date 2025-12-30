@@ -1,6 +1,6 @@
-# E2E Testing Guide for Kerniflow
+# E2E Testing Guide for Corely
 
-This document describes the End-to-End (E2E) testing infrastructure for Kerniflow, including how to run tests locally, in CI/CD pipelines, and how the test harness works.
+This document describes the End-to-End (E2E) testing infrastructure for Corely, including how to run tests locally, in CI/CD pipelines, and how the test harness works.
 
 ## Overview
 
@@ -536,7 +536,7 @@ pnpm e2e:ui
 
 - [Playwright Documentation](https://playwright.dev)
 - [Docker Compose Docs](https://docs.docker.com/compose/)
-- [Kerniflow Architecture](./overall-structure.md)
+- [Corely Architecture](./overall-structure.md)
 - [API Documentation](../services/api/README.md)
 
 ---

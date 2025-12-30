@@ -1,4 +1,4 @@
-# Kerniflow — Boundaries (Hard Rules)
+# Corely — Boundaries (Hard Rules)
 
 This doc defines the hard architecture boundaries for the modular monolith.
 These rules are enforced by tooling and code review.

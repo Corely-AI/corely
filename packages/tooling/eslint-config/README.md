@@ -1,6 +1,6 @@
 # @corely/eslint-config
 
-Shared ESLint configuration for the Kerniflow monorepo using ESLint flat config format.
+Shared ESLint configuration for the Corely monorepo using ESLint flat config format.
 
 ## Installation
 

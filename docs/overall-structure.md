@@ -1,6 +1,6 @@
-# Kerniflow — Overall Structure (Frontend + Backend)
+# Corely — Overall Structure (Frontend + Backend)
 
-This document describes the **repo hierarchy** for Kerniflow (pnpm monorepo) and shows file trees using a **true hierarchy format** (folders nested, files indented).
+This document describes the **repo hierarchy** for Corely (pnpm monorepo) and shows file trees using a **true hierarchy format** (folders nested, files indented).
 
 ---
 

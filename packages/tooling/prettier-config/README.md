@@ -1,6 +1,6 @@
 # @corely/prettier-config
 
-Shared Prettier configuration for the Kerniflow monorepo.
+Shared Prettier configuration for the Corely monorepo.
 
 ## Installation
 

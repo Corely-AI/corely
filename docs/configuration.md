@@ -1,10 +1,10 @@
 # Configuration Guide
 
-This document explains how environment configuration works in Kerniflow and how to manage environment variables across local development, testing, and production environments.
+This document explains how environment configuration works in Corely and how to manage environment variables across local development, testing, and production environments.
 
 ## Overview
 
-Kerniflow uses a centralized configuration system powered by the `@corely/config` package. This provides:
+Corely uses a centralized configuration system powered by the `@corely/config` package. This provides:
 
 - **Type-safe access** to environment variables via `EnvService`
 - **Automatic validation** with clear error messages on startup
