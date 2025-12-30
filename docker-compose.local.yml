@@ -3,7 +3,7 @@ version: "3.9"
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: kerniflow_postgres
+    container_name: corely_postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-corely}
@@ -23,7 +23,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: kerniflow_redis
+    container_name: corely_redis
     restart: unless-stopped
     ports:
       - "6379:6379"

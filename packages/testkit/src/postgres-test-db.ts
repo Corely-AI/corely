@@ -25,7 +25,7 @@ export class PostgresTestDb {
 
     if (!sharedContainer) {
       sharedContainer = await new PostgreSqlContainer("postgres:16-alpine")
-        .withDatabase("kerniflow_test")
+        .withDatabase("corely_test")
         .withUsername("corely")
         .withPassword("corely")
         .start();

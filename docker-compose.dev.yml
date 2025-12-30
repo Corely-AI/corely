@@ -5,7 +5,7 @@ version: "3.9"
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: kerniflow_dev_postgres
+    container_name: corely_dev_postgres
     restart: unless-stopped
     env_file:
       - .env.dev
@@ -25,11 +25,11 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - kerniflow_dev
+      - corely_dev
 
   redis:
     image: redis:7-alpine
-    container_name: kerniflow_dev_redis
+    container_name: corely_dev_redis
     restart: unless-stopped
     env_file:
       - .env.dev
@@ -44,13 +44,13 @@ services:
       retries: 5
       start_period: 5s
     networks:
-      - kerniflow_dev
+      - corely_dev
 
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
-    container_name: kerniflow_dev_api
+    container_name: corely_dev_api
     env_file:
       - .env.dev
     command: >
@@ -86,13 +86,13 @@ services:
       retries: 3
       start_period: 10s
     networks:
-      - kerniflow_dev
+      - corely_dev
 
   worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
-    container_name: kerniflow_dev_worker
+    container_name: corely_dev_worker
     env_file:
       - .env.dev
     restart: unless-stopped
@@ -117,13 +117,13 @@ services:
       - ./packages/kernel/src:/app/packages/kernel/src
       - ./packages/email-templates/src:/app/packages/email-templates/src
     networks:
-      - kerniflow_dev
+      - corely_dev
 
   web:
     build:
       context: .
       dockerfile: Dockerfile.web
-    container_name: kerniflow_dev_web
+    container_name: corely_dev_web
     env_file:
       - .env.dev
     restart: unless-stopped
@@ -143,12 +143,12 @@ services:
       - ./packages/offline-core/src:/app/packages/offline-core/src
       - ./packages/offline-web/src:/app/packages/offline-web/src
     networks:
-      - kerniflow_dev
+      - corely_dev
 
 volumes:
   postgres_dev_data:
   redis_dev_data:
 
 networks:
-  kerniflow_dev:
+  corely_dev:
     driver: bridge

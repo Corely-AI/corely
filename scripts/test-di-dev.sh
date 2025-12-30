@@ -19,8 +19,8 @@ COMPOSE_FILE="docker-compose.di-test.yml"
 echo -e "${BLUE}=== DI Integration Test (Dev Mode) ===${NC}\n"
 
 # Check if services are running
-POSTGRES_RUNNING=$(docker ps --filter "name=kerniflow_postgres_di_test" --filter "status=running" -q)
-REDIS_RUNNING=$(docker ps --filter "name=kerniflow_redis_di_test" --filter "status=running" -q)
+POSTGRES_RUNNING=$(docker ps --filter "name=corely_postgres_di_test" --filter "status=running" -q)
+REDIS_RUNNING=$(docker ps --filter "name=corely_redis_di_test" --filter "status=running" -q)
 
 if [ -z "$POSTGRES_RUNNING" ] || [ -z "$REDIS_RUNNING" ]; then
   echo -e "${YELLOW}Starting services...${NC}"

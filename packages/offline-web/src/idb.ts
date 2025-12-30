@@ -17,7 +17,7 @@ export interface OfflineWebDb extends DBSchema {
   };
 }
 
-export const DEFAULT_DB_NAME = "kerniflow_offline";
+export const DEFAULT_DB_NAME = "corely_offline";
 export const OUTBOX_STORE = "outbox";
 export const QUERY_CACHE_STORE = "queryCache";
 

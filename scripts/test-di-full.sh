@@ -50,8 +50,8 @@ MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-  POSTGRES_HEALTHY=$(docker inspect kerniflow_postgres_di_test --format='{{.State.Health.Status}}' 2>/dev/null || echo "")
-  REDIS_HEALTHY=$(docker inspect kerniflow_redis_di_test --format='{{.State.Health.Status}}' 2>/dev/null || echo "")
+  POSTGRES_HEALTHY=$(docker inspect corely_postgres_di_test --format='{{.State.Health.Status}}' 2>/dev/null || echo "")
+  REDIS_HEALTHY=$(docker inspect corely_redis_di_test --format='{{.State.Health.Status}}' 2>/dev/null || echo "")
 
   if [ "$POSTGRES_HEALTHY" = "healthy" ] && [ "$REDIS_HEALTHY" = "healthy" ]; then
     echo -e "${GREEN}      ✓ Postgres: healthy${NC}"
