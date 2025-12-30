@@ -46,11 +46,16 @@ describe("Invoices API (HTTP + Postgres)", () => {
     await stopSharedContainer();
   });
 
-  const buildAuthHeader = (tenantId: string, userId = "user-123") => {
+  const buildAuthHeader = (
+    tenantId: string,
+    userId = "user-123",
+    roleIds: string[] = ["test-permission-role"]
+  ) => {
     const token = tokenService.generateAccessToken({
       userId,
       email: `${userId}@example.com`,
       tenantId,
+      roleIds,
     });
     return `Bearer ${token}`;
   };

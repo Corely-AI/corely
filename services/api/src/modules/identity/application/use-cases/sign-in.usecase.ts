@@ -97,10 +97,23 @@ export class SignInUseCase {
       throw new ForbiddenError("User is not a member of the specified tenant");
     }
 
+    const selectedRoleIds = Array.from(
+      new Set(
+        memberships
+          .filter((membership) => membership.getTenantId() === selectedTenantId)
+          .map((membership) => membership.getRoleId())
+      )
+    );
+
+    if (selectedRoleIds.length === 0) {
+      throw new ForbiddenError("User has no roles for the selected tenant");
+    }
+
     const accessToken = this.tokenService.generateAccessToken({
       userId: user.getId(),
       email: email.getValue(),
       tenantId: selectedTenantId,
+      roleIds: selectedRoleIds,
     });
     const refreshToken = this.tokenService.generateRefreshToken();
     const { refreshTokenExpiresInMs } = this.tokenService.getExpirationTimes();

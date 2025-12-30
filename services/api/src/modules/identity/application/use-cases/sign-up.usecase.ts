@@ -133,6 +133,7 @@ export class SignUpUseCase {
       userId,
       email: email.getValue(),
       tenantId,
+      roleIds: [ownerRole],
     });
     const refreshToken = this.tokenService.generateRefreshToken();
     const { refreshTokenExpiresInMs } = this.tokenService.getExpirationTimes();

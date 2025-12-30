@@ -30,7 +30,7 @@ export class GetRolePermissionsUseCase {
     }
 
     const catalog = this.catalogPort.getCatalog();
-    const grants = await this.grantRepo.listByRole(query.tenantId, query.roleId);
+    const grants = await this.grantRepo.listByRoleIdsAndTenant(query.tenantId, [query.roleId]);
     const grantMap = new Map(grants.map((grant) => [grant.key, grant.effect]));
 
     const states: RolePermissionState[] = [];
@@ -40,7 +40,7 @@ export class GetRolePermissionsUseCase {
         states.push({
           key: permission.key,
           granted: effect === "ALLOW",
-          effect: effect,
+          effect,
         });
       }
     }

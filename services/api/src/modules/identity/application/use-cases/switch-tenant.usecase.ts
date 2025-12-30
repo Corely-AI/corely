@@ -67,6 +67,7 @@ export class SwitchTenantUseCase {
       userId: input.userId,
       email: user.getEmail().getValue(),
       tenantId: input.toTenantId,
+      roleIds: [membership.getRoleId()],
     });
 
     const refreshToken = this.tokenService.generateRefreshToken();

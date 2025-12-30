@@ -53,6 +53,7 @@ describe("Invoice API contracts", () => {
           userId: "user-schema",
           email: "user@example.com",
           tenantId,
+          roleIds: ["schema-role"],
         })}`
       )
       .send({
