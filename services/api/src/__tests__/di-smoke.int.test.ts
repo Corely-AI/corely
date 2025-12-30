@@ -12,6 +12,7 @@
  */
 
 import { Test, TestingModule } from "@nestjs/testing";
+import { describe, it, expect } from "vitest";
 import { AppModule } from "../app.module";
 import { PlatformModule } from "../modules/platform/platform.module";
 import { IdentityModule } from "../modules/identity/identity.module";

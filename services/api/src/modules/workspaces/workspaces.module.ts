@@ -28,6 +28,9 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     UpdateWorkspaceUseCase,
   ],
   exports: [
+    // Expose repository + token so external modules (e.g., TestHarness) can inject it
+    PrismaWorkspaceRepository,
+    WORKSPACE_REPOSITORY_PORT,
     CreateWorkspaceUseCase,
     ListWorkspacesUseCase,
     GetWorkspaceUseCase,

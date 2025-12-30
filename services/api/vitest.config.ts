@@ -9,6 +9,10 @@ export default defineConfig({
     // Do not exclude *.int.test.ts so integration workspace can reuse this config
     exclude: ["**/node_modules/**", "**/dist/**"],
     setupFiles: ["./src/test/setup.ts"],
+    env: {
+      NODE_ENV: "test",
+      APP_ENV: "test",
+    },
   },
   resolve: {
     alias: {

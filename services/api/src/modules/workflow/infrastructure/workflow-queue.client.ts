@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
+import { Injectable, Logger, OnModuleDestroy, Inject } from "@nestjs/common";
 import { Queue } from "bullmq";
 import { EnvService } from "@kerniflow/config";
 import { WORKFLOW_ORCHESTRATOR_QUEUE } from "@kerniflow/contracts";
@@ -25,7 +25,7 @@ export class WorkflowQueueClient implements OnModuleDestroy {
   private readonly queue: Queue;
   private readonly logger = new Logger(WorkflowQueueClient.name);
 
-  constructor(private readonly env: EnvService) {
+  constructor(@Inject(EnvService) private readonly env: EnvService) {
     this.queue = new Queue(WORKFLOW_ORCHESTRATOR_QUEUE, {
       connection: buildRedisConnection(this.env.REDIS_URL),
       defaultJobOptions: {

@@ -22,7 +22,7 @@ export interface DrainResult {
 @Injectable()
 export class TestHarnessService {
   constructor(
-    @Inject("PRISMA_CLIENT") private prisma: PrismaService,
+    private readonly prisma: PrismaService,
     private readonly createWorkspaceUseCase: CreateWorkspaceUseCase,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort
