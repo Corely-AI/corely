@@ -112,10 +112,10 @@ constructor(
    - `AUDIT_PORT` from `@kerniflow/kernel` (line 2)
    - `ID_GENERATOR_TOKEN` from `../../../../shared/ports/id-generator.port` (line 10)
 
-6. Shared ports re-export from `@kerniflow/contracts`:
+6. Shared ports re-export from `@kerniflow/kernel`:
    ```typescript
    // shared/ports/id-generator.port.ts
-   export { ID_GENERATOR_TOKEN } from "@kerniflow/contracts";
+   export { ID_GENERATOR_TOKEN } from "@kerniflow/kernel";
    ```
 
 7. All tokens resolve to the same string values, but the **provider instances** are isolated to PlatformModule
@@ -139,9 +139,9 @@ EnableAppUseCase constructor
   ↓
 import from ../../../../shared/ports/id-generator.port
   ↓
-export { ID_GENERATOR_TOKEN } from "@kerniflow/contracts"
+export { ID_GENERATOR_TOKEN } from "@kerniflow/kernel"
   ↓
-packages/contracts/src/di/tokens.ts:
+packages/kernel/src/tokens.ts:
   export const ID_GENERATOR_TOKEN = "kernel/id-generator"
 ```
 
@@ -152,10 +152,10 @@ packages/contracts/src/di/tokens.ts:
 
 | Token | Canonical Source | Should Be Provided By | Actually Provided By |
 |-------|-----------------|----------------------|---------------------|
-| ID_GENERATOR_TOKEN | @kerniflow/contracts | KernelModule | KernelModule + 11 feature modules |
-| CLOCK_PORT_TOKEN | @kerniflow/contracts | KernelModule | KernelModule + 10 feature modules |
-| AUDIT_PORT | @kerniflow/contracts | DataModule | DataModule + 4 feature modules |
-| IDEMPOTENCY_STORAGE_PORT_TOKEN | @kerniflow/contracts | KernelModule | KernelModule + 3 feature modules |
+| ID_GENERATOR_TOKEN | @kerniflow/kernel | KernelModule | KernelModule + 11 feature modules |
+| CLOCK_PORT_TOKEN | @kerniflow/kernel | KernelModule | KernelModule + 10 feature modules |
+| AUDIT_PORT | @kerniflow/kernel | DataModule | DataModule + 4 feature modules |
+| IDEMPOTENCY_STORAGE_PORT_TOKEN | @kerniflow/kernel | KernelModule | KernelModule + 3 feature modules |
 
 ## Impact Assessment
 
