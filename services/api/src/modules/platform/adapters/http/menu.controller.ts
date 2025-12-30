@@ -20,7 +20,7 @@ interface RolePermissionGrantRepositoryPort {
   ): Promise<Array<{ permissionKey: string; effect: string }>>;
 }
 
-const ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN = Symbol("ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN");
+const ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN = "platform/role-permission-grant-repository";
 
 @Controller("menu")
 @UseGuards(AuthGuard)

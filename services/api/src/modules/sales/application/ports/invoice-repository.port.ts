@@ -26,4 +26,4 @@ export interface SalesInvoiceRepositoryPort {
   isInvoiceNumberTaken(tenantId: string, number: string): Promise<boolean>;
 }
 
-export const SALES_INVOICE_REPOSITORY_PORT = Symbol("SALES_INVOICE_REPOSITORY_PORT");
+export const SALES_INVOICE_REPOSITORY_PORT = "sales/invoice-repository";

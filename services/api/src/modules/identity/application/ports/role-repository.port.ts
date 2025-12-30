@@ -88,4 +88,4 @@ export interface RoleRepositoryPort {
   delete(tenantId: string, roleId: string): Promise<void>;
 }
 
-export const ROLE_REPOSITORY_TOKEN = Symbol("ROLE_REPOSITORY");
+export const ROLE_REPOSITORY_TOKEN = "identity/role-repository";

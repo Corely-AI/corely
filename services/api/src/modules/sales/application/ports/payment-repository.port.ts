@@ -7,4 +7,4 @@ export interface SalesPaymentRepositoryPort {
   delete(tenantId: string, paymentId: string): Promise<void>;
 }
 
-export const SALES_PAYMENT_REPOSITORY_PORT = Symbol("SALES_PAYMENT_REPOSITORY_PORT");
+export const SALES_PAYMENT_REPOSITORY_PORT = "sales/payment-repository";

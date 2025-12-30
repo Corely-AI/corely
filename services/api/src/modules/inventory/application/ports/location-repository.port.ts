@@ -11,7 +11,7 @@ export type InventoryLocation = {
   updatedAt: Date;
 };
 
-export const LOCATION_REPO = Symbol("LOCATION_REPO");
+export const LOCATION_REPO = "inventory/location-repository";
 
 export interface LocationRepositoryPort {
   create(tenantId: string, location: InventoryLocation): Promise<void>;

@@ -24,4 +24,4 @@ export interface PurchaseOrderRepositoryPort {
   isPoNumberTaken(tenantId: string, poNumber: string): Promise<boolean>;
 }
 
-export const PURCHASE_ORDER_REPO = Symbol("PURCHASE_ORDER_REPO");
+export const PURCHASE_ORDER_REPO = "purchasing/purchase-order-repository";

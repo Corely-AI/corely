@@ -75,4 +75,4 @@ export interface SeededRecordMetaRepositoryPort {
   ): Promise<boolean>;
 }
 
-export const SEEDED_RECORD_META_REPOSITORY_TOKEN = Symbol("SEEDED_RECORD_META_REPOSITORY_TOKEN");
+export const SEEDED_RECORD_META_REPOSITORY_TOKEN = "platform/seeded-record-meta-repository";

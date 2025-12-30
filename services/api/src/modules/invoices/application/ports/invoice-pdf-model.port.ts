@@ -15,4 +15,4 @@ export interface InvoicePdfModelPort {
   } | null>;
 }
 
-export const INVOICE_PDF_MODEL_PORT = Symbol("INVOICE_PDF_MODEL_PORT");
+export const INVOICE_PDF_MODEL_PORT = "invoices/invoice-pdf-model";

@@ -4,4 +4,4 @@ export interface ToolRegistryPort {
   listForTenant(tenantId: string): DomainToolPort[];
 }
 
-export const COPILOT_TOOLS = Symbol("COPILOT_TOOLS");
+export const COPILOT_TOOLS = "ai-copilot/tools";

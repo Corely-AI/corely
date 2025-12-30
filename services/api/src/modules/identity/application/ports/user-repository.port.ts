@@ -32,4 +32,4 @@ export interface UserRepositoryPort {
   update(user: User, tx?: TransactionContext): Promise<User>;
 }
 
-export const USER_REPOSITORY_TOKEN = Symbol("USER_REPOSITORY");
+export const USER_REPOSITORY_TOKEN = "identity/user-repository";

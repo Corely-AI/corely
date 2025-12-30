@@ -1,1 +1,1 @@
-export const TENANT_TIMEZONE_PORT = Symbol("TENANT_TIMEZONE_PORT");
+export { TENANT_TIMEZONE_PORT } from "@kerniflow/contracts";

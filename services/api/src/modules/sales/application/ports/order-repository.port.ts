@@ -26,4 +26,4 @@ export interface SalesOrderRepositoryPort {
   isOrderNumberTaken(tenantId: string, number: string): Promise<boolean>;
 }
 
-export const SALES_ORDER_REPOSITORY_PORT = Symbol("SALES_ORDER_REPOSITORY_PORT");
+export const SALES_ORDER_REPOSITORY_PORT = "sales/order-repository";

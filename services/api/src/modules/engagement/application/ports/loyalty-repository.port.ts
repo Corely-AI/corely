@@ -37,7 +37,7 @@ export type ListResult<T> = {
   nextCursor?: string | null;
 };
 
-export const LOYALTY_REPOSITORY_PORT = Symbol("LOYALTY_REPOSITORY_PORT");
+export const LOYALTY_REPOSITORY_PORT = "engagement/loyalty-repository";
 
 export interface LoyaltyRepositoryPort {
   getAccountByCustomer(

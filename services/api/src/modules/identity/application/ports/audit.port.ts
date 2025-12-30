@@ -19,4 +19,4 @@ export interface AuditPort {
   }): Promise<void>;
 }
 
-export const AUDIT_PORT_TOKEN = Symbol("AUDIT_PORT");
+export const AUDIT_PORT_TOKEN = "identity/audit-port";

@@ -21,7 +21,7 @@ export type StockMoveSum = {
   quantityDelta: number;
 };
 
-export const STOCK_MOVE_REPO = Symbol("STOCK_MOVE_REPO");
+export const STOCK_MOVE_REPO = "inventory/stock-move-repository";
 
 export interface StockMoveRepositoryPort {
   createMany(tenantId: string, moves: StockMove[]): Promise<void>;

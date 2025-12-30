@@ -18,4 +18,4 @@ export interface InvoicePdfRendererPort {
   }): Promise<Buffer>;
 }
 
-export const INVOICE_PDF_RENDERER_PORT = Symbol("INVOICE_PDF_RENDERER_PORT");
+export const INVOICE_PDF_RENDERER_PORT = "invoices/invoice-pdf-renderer";

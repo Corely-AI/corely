@@ -34,4 +34,4 @@ export interface AccountingReportQueryPort {
   }): Promise<LedgerLineRow[]>;
 }
 
-export const ACCOUNTING_REPORT_QUERY_PORT = Symbol("ACCOUNTING_REPORT_QUERY_PORT");
+export const ACCOUNTING_REPORT_QUERY_PORT = "accounting/accounting-report-query";

@@ -26,4 +26,4 @@ export interface TemplateRegistryPort {
   has(templateId: string): boolean;
 }
 
-export const TEMPLATE_REGISTRY_TOKEN = Symbol("TEMPLATE_REGISTRY_TOKEN");
+export const TEMPLATE_REGISTRY_TOKEN = "platform/template-registry";

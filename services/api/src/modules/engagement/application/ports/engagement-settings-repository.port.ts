@@ -1,6 +1,6 @@
 import { type EngagementSettingsRecord } from "../../domain/engagement.types";
 
-export const ENGAGEMENT_SETTINGS_REPOSITORY_PORT = Symbol("ENGAGEMENT_SETTINGS_REPOSITORY_PORT");
+export const ENGAGEMENT_SETTINGS_REPOSITORY_PORT = "engagement/settings-repository";
 
 export interface EngagementSettingsRepositoryPort {
   getByTenant(tenantId: string): Promise<EngagementSettingsRecord | null>;

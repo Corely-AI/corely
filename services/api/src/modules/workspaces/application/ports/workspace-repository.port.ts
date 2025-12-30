@@ -76,4 +76,4 @@ export interface WorkspaceRepositoryPort {
   ): Promise<boolean>;
 }
 
-export const WORKSPACE_REPOSITORY_PORT = Symbol("WORKSPACE_REPOSITORY_PORT");
+export const WORKSPACE_REPOSITORY_PORT = "workspaces/workspace-repository";

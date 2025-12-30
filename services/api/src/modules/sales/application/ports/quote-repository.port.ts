@@ -26,4 +26,4 @@ export interface QuoteRepositoryPort {
   isQuoteNumberTaken(tenantId: string, number: string): Promise<boolean>;
 }
 
-export const QUOTE_REPOSITORY_PORT = Symbol("QUOTE_REPOSITORY_PORT");
+export const QUOTE_REPOSITORY_PORT = "sales/quote-repository";

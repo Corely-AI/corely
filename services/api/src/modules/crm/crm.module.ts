@@ -8,10 +8,9 @@ import {
 } from "./adapters/http/activities.controller";
 import { PrismaDealRepoAdapter } from "./infrastructure/prisma/prisma-deal-repo.adapter";
 import { PrismaActivityRepoAdapter } from "./infrastructure/prisma/prisma-activity-repo.adapter";
-import { SystemIdGenerator } from "../../shared/infrastructure/system-id-generator";
-import { SystemClock } from "../../shared/infrastructure/system-clock";
-import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
-import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
+import { CLOCK_PORT_TOKEN, type ClockPort } from "../../shared/ports/clock.port";
+import { ID_GENERATOR_TOKEN, type IdGeneratorPort } from "../../shared/ports/id-generator.port";
+import { KernelModule } from "../../shared/kernel/kernel.module";
 import { CrmApplication } from "./application/crm.application";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 import { DEAL_REPO_PORT } from "./application/ports/deal-repository.port";
@@ -30,44 +29,40 @@ import { ListActivitiesUseCase } from "./application/use-cases/list-activities/l
 import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-timeline.usecase";
 
 @Module({
-  imports: [DataModule, IdentityModule],
+  imports: [DataModule, IdentityModule, KernelModule],
   controllers: [DealsHttpController, ActivitiesHttpController, TimelineHttpController],
   providers: [
     PrismaDealRepoAdapter,
     PrismaActivityRepoAdapter,
-    SystemIdGenerator,
-    SystemClock,
-    { provide: ID_GENERATOR_TOKEN, useExisting: SystemIdGenerator },
-    { provide: CLOCK_PORT_TOKEN, useExisting: SystemClock },
     { provide: DEAL_REPO_PORT, useExisting: PrismaDealRepoAdapter },
     { provide: ACTIVITY_REPO_PORT, useExisting: PrismaActivityRepoAdapter },
     {
       provide: CreateDealUseCase,
-      useFactory: (dealRepo: PrismaDealRepoAdapter, idGen: SystemIdGenerator, clock: SystemClock) =>
+      useFactory: (dealRepo: PrismaDealRepoAdapter, idGen: IdGeneratorPort, clock: ClockPort) =>
         new CreateDealUseCase(dealRepo, clock, idGen, new NestLoggerAdapter()),
       inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
     },
     {
       provide: UpdateDealUseCase,
-      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: SystemClock) =>
+      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort) =>
         new UpdateDealUseCase(dealRepo, clock, new NestLoggerAdapter()),
       inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN],
     },
     {
       provide: MoveDealStageUseCase,
-      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: SystemClock) =>
+      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort) =>
         new MoveDealStageUseCase(dealRepo, clock, new NestLoggerAdapter()),
       inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN],
     },
     {
       provide: MarkDealWonUseCase,
-      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: SystemClock) =>
+      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort) =>
         new MarkDealWonUseCase(dealRepo, clock, new NestLoggerAdapter()),
       inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN],
     },
     {
       provide: MarkDealLostUseCase,
-      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: SystemClock) =>
+      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort) =>
         new MarkDealLostUseCase(dealRepo, clock, new NestLoggerAdapter()),
       inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN],
     },
@@ -87,20 +82,20 @@ import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-tim
       provide: CreateActivityUseCase,
       useFactory: (
         activityRepo: PrismaActivityRepoAdapter,
-        idGen: SystemIdGenerator,
-        clock: SystemClock
+        idGen: IdGeneratorPort,
+        clock: ClockPort
       ) => new CreateActivityUseCase(activityRepo, clock, idGen, new NestLoggerAdapter()),
       inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
     },
     {
       provide: UpdateActivityUseCase,
-      useFactory: (activityRepo: PrismaActivityRepoAdapter, clock: SystemClock) =>
+      useFactory: (activityRepo: PrismaActivityRepoAdapter, clock: ClockPort) =>
         new UpdateActivityUseCase(activityRepo, clock, new NestLoggerAdapter()),
       inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN],
     },
     {
       provide: CompleteActivityUseCase,
-      useFactory: (activityRepo: PrismaActivityRepoAdapter, clock: SystemClock) =>
+      useFactory: (activityRepo: PrismaActivityRepoAdapter, clock: ClockPort) =>
         new CompleteActivityUseCase(activityRepo, clock, new NestLoggerAdapter()),
       inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN],
     },

@@ -51,4 +51,4 @@ export interface ActivityRepoPort {
   ): Promise<TimelineResult>;
 }
 
-export const ACTIVITY_REPO_PORT = Symbol("ActivityRepoPort");
+export const ACTIVITY_REPO_PORT = "crm/activity-repository";

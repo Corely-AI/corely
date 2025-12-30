@@ -33,4 +33,4 @@ export interface TokenServicePort {
   };
 }
 
-export const TOKEN_SERVICE_TOKEN = Symbol("TOKEN_SERVICE");
+export const TOKEN_SERVICE_TOKEN = "identity/token-service";

@@ -79,4 +79,4 @@ export interface TenantAppInstallRepositoryPort {
   delete(id: string, tx?: TransactionContext): Promise<void>;
 }
 
-export const TENANT_APP_INSTALL_REPOSITORY_TOKEN = Symbol("TENANT_APP_INSTALL_REPOSITORY_TOKEN");
+export const TENANT_APP_INSTALL_REPOSITORY_TOKEN = "platform/tenant-app-install-repository";

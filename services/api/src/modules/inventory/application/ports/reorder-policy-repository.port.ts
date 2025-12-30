@@ -13,7 +13,7 @@ export type ReorderPolicy = {
   updatedAt: Date;
 };
 
-export const REORDER_POLICY_REPO = Symbol("REORDER_POLICY_REPO");
+export const REORDER_POLICY_REPO = "inventory/reorder-policy-repository";
 
 export interface ReorderPolicyRepositoryPort {
   create(tenantId: string, policy: ReorderPolicy): Promise<void>;

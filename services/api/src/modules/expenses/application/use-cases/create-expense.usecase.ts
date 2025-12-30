@@ -82,13 +82,13 @@ export class CreateExpenseUseCase {
     );
 
     await this.expenseRepo.save(expense);
-    await this.audit.write({
+    await this.audit.log({
       tenantId: input.tenantId,
-      actorUserId: input.createdByUserId,
+      userId: input.createdByUserId,
       action: "expense.created",
-      targetType: "Expense",
-      targetId: expense.id,
-      context: input.context,
+      entityType: "Expense",
+      entityId: expense.id,
+      metadata: { context: input.context },
     });
 
     await this.outbox.enqueue({

@@ -10,4 +10,4 @@ export interface PurchasingAccountMappingRepositoryPort {
   upsert(mapping: PurchasingAccountMapping): Promise<PurchasingAccountMapping>;
 }
 
-export const PURCHASING_ACCOUNT_MAPPING_REPO = Symbol("PURCHASING_ACCOUNT_MAPPING_REPO");
+export const PURCHASING_ACCOUNT_MAPPING_REPO = "purchasing/account-mapping-repository";

@@ -18,7 +18,7 @@ export type ReservationSum = {
   reservedQty: number;
 };
 
-export const STOCK_RESERVATION_REPO = Symbol("STOCK_RESERVATION_REPO");
+export const STOCK_RESERVATION_REPO = "inventory/stock-reservation-repository";
 
 export interface StockReservationRepositoryPort {
   createMany(tenantId: string, reservations: StockReservation[]): Promise<void>;

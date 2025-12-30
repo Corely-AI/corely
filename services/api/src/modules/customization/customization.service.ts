@@ -68,12 +68,12 @@ export class CustomizationService {
       updatedAt: this.clock.now(),
     });
 
-    await this.audit.write({
+    await this.audit.log({
       tenantId,
-      actorUserId,
+      userId: actorUserId ?? "system",
       action: "custom_field.created",
-      targetType: "CustomFieldDefinition",
-      targetId: definition.id,
+      entityType: "CustomFieldDefinition",
+      entityId: definition.id,
     });
 
     if (idempotencyKey) {
@@ -106,12 +106,12 @@ export class CustomizationService {
       },
     });
 
-    await this.audit.write({
+    await this.audit.log({
       tenantId,
-      actorUserId,
+      userId: actorUserId ?? "system",
       action: "custom_field.updated",
-      targetType: "CustomFieldDefinition",
-      targetId: id,
+      entityType: "CustomFieldDefinition",
+      entityId: id,
     });
 
     if (idempotencyKey) {
@@ -123,12 +123,12 @@ export class CustomizationService {
 
   async deleteCustomField(tenantId: string, actorUserId: string | null, id: string) {
     await this.definitionRepo.softDelete(tenantId, id);
-    await this.audit.write({
+    await this.audit.log({
       tenantId,
-      actorUserId,
+      userId: actorUserId ?? "system",
       action: "custom_field.deleted",
-      targetType: "CustomFieldDefinition",
-      targetId: id,
+      entityType: "CustomFieldDefinition",
+      entityId: id,
     });
   }
 
