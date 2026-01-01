@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Moon, Sun, Globe, LogOut } from "lucide-react";
+import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut } from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
 import { Button } from "@/shared/ui/button";
 import { settingsNavItem, getEnabledModules, getComingSoonModules } from "@/modules/registry";
@@ -78,16 +78,27 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
     >
       {/* Logo */}
       <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
-        <Logo size="md" showText={!collapsed} />
-        {!collapsed && (
+        {collapsed ? (
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={onToggle}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground mx-auto"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
+        ) : (
+          <>
+            <Logo size="md" showText={!collapsed} />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onToggle}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </>
         )}
       </div>
 
