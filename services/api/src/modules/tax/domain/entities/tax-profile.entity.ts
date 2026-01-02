@@ -5,9 +5,12 @@ export interface TaxProfileEntity {
   tenantId: string;
   country: string;
   regime: TaxRegime;
+  vatEnabled: boolean;
   vatId: string | null;
   currency: string;
   filingFrequency: VatFilingFrequency;
+  taxYearStartMonth?: number | null;
+  localTaxOfficeName?: string | null;
   effectiveFrom: Date;
   effectiveTo: Date | null;
   createdAt: Date;

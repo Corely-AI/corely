@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/ui/car
 import { Button } from "../../../shared/ui/button";
 import { Input } from "../../../shared/ui/input";
 import { Label } from "../../../shared/ui/label";
+import { Switch } from "../../../shared/ui/switch";
+import { Textarea } from "../../../shared/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -22,6 +24,11 @@ import {
   taxProfileDtoToFormData,
   type TaxProfileFormData,
 } from "../schemas/tax-profile-form.schema";
+import {
+  taxConsultantFormSchema,
+  toUpsertTaxConsultantInput,
+  type TaxConsultantFormData,
+} from "../schemas/tax-consultant-form.schema";
 
 export default function TaxSettingsPage() {
   const queryClient = useQueryClient();
@@ -32,10 +39,20 @@ export default function TaxSettingsPage() {
     queryFn: () => taxApi.getProfile(),
   });
 
+  const { data: consultantData, isLoading: isLoadingConsultant } = useQuery({
+    queryKey: ["tax-consultant"],
+    queryFn: () => taxApi.getConsultant(),
+  });
+
   // Form setup
   const form = useForm<TaxProfileFormData>({
     resolver: zodResolver(taxProfileFormSchema),
     defaultValues: profile ? taxProfileDtoToFormData(profile) : getDefaultTaxProfileFormValues(),
+  });
+
+  const consultantForm = useForm<TaxConsultantFormData>({
+    resolver: zodResolver(taxConsultantFormSchema),
+    defaultValues: consultantData?.consultant ?? { name: "", email: "", phone: "", notes: "" },
   });
 
   // Reset form when profile loads
@@ -44,6 +61,17 @@ export default function TaxSettingsPage() {
       form.reset(taxProfileDtoToFormData(profile));
     }
   }, [profile, form]);
+
+  React.useEffect(() => {
+    if (consultantData?.consultant) {
+      consultantForm.reset({
+        name: consultantData.consultant.name,
+        email: consultantData.consultant.email ?? "",
+        phone: consultantData.consultant.phone ?? "",
+        notes: consultantData.consultant.notes ?? "",
+      });
+    }
+  }, [consultantData, consultantForm]);
 
   // Save mutation
   const saveMutation = useMutation({
@@ -65,6 +93,20 @@ export default function TaxSettingsPage() {
     saveMutation.mutate(data);
   };
 
+  const saveConsultant = useMutation({
+    mutationFn: async (data: TaxConsultantFormData) => {
+      const input = toUpsertTaxConsultantInput(data);
+      return taxApi.upsertConsultant(input);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["tax-consultant"] });
+      toast.success("Consultant saved");
+    },
+    onError: () => {
+      toast.error("Failed to save consultant");
+    },
+  });
+
   const regimeOptions = [
     { value: "SMALL_BUSINESS", label: "Small Business (Kleinunternehmer §19 UStG)" },
     { value: "STANDARD_VAT", label: "Standard VAT" },
@@ -78,7 +120,7 @@ export default function TaxSettingsPage() {
     { value: "YEARLY", label: "Yearly" },
   ];
 
-  if (isLoading) {
+  if (isLoading || isLoadingConsultant) {
     return (
       <div className="p-6 lg:p-8">
         <div className="text-muted-foreground">Loading tax settings...</div>
@@ -99,6 +141,22 @@ export default function TaxSettingsPage() {
             <CardTitle>Tax Profile</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div>
+                <p className="font-medium text-foreground">VAT enabled</p>
+                <p className="text-sm text-muted-foreground">
+                  Toggle if you are registered and required to file VAT.
+                </p>
+              </div>
+              <Controller
+                control={form.control}
+                name="vatEnabled"
+                render={({ field }) => (
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                )}
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="country">Country</Label>
@@ -200,6 +258,41 @@ export default function TaxSettingsPage() {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="taxYearStartMonth">Tax year start month</Label>
+                <Controller
+                  control={form.control}
+                  name="taxYearStartMonth"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(val) => field.onChange(val ? Number(val) : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select month" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[...Array(12)].map((_, idx) => (
+                          <SelectItem key={idx + 1} value={String(idx + 1)}>
+                            {new Date(0, idx).toLocaleString("en", { month: "long" })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div>
+                <Label htmlFor="localTaxOfficeName">Local tax office</Label>
+                <Input
+                  id="localTaxOfficeName"
+                  placeholder="Finanzamt Berlin"
+                  {...form.register("localTaxOfficeName")}
+                />
+              </div>
+            </div>
+
             <div className="flex justify-end gap-2 pt-4">
               <Button
                 type="button"
@@ -219,12 +312,39 @@ export default function TaxSettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Tax Codes</CardTitle>
+          <CardTitle>Tax Consultant</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Tax code management will be available in a future update.
-          </p>
+        <CardContent className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={consultantForm.handleSubmit((data) => saveConsultant.mutate(data))}
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="consultantName">Name</Label>
+                <Input id="consultantName" {...consultantForm.register("name")} />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="consultantEmail">Email</Label>
+                <Input id="consultantEmail" {...consultantForm.register("email")} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label htmlFor="consultantPhone">Phone</Label>
+                <Input id="consultantPhone" {...consultantForm.register("phone")} />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="consultantNotes">Notes</Label>
+                <Textarea id="consultantNotes" {...consultantForm.register("notes")} />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="submit" disabled={saveConsultant.isPending}>
+                {saveConsultant.isPending ? "Saving..." : "Save consultant"}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>

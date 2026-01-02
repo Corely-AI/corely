@@ -31,6 +31,15 @@ export type VatFilingFrequency = z.infer<typeof VatFilingFrequencySchema>;
 export const VatPeriodStatusSchema = z.enum(["OPEN", "FINALIZED"]);
 export type VatPeriodStatus = z.infer<typeof VatPeriodStatusSchema>;
 
+export const TaxReportStatusSchema = z.enum(["UPCOMING", "OPEN", "SUBMITTED", "OVERDUE"]);
+export type TaxReportStatus = z.infer<typeof TaxReportStatusSchema>;
+
+export const TaxReportTypeSchema = z.enum(["VAT_ADVANCE", "VAT_ANNUAL", "INCOME_TAX"]);
+export type TaxReportType = z.infer<typeof TaxReportTypeSchema>;
+
+export const TaxReportGroupSchema = z.enum(["ADVANCE_VAT", "ANNUAL_REPORT"]);
+export type TaxReportGroup = z.infer<typeof TaxReportGroupSchema>;
+
 // ============================================================================
 // DTOs (wire format - ISO strings for dates)
 // ============================================================================
@@ -44,9 +53,12 @@ export const TaxProfileDtoSchema = z.object({
   tenantId: z.string(),
   country: TaxCountrySchema,
   regime: TaxRegimeSchema,
+  vatEnabled: z.boolean().default(true),
   vatId: z.string().optional().nullable(),
   currency: z.string().default("EUR"),
   filingFrequency: VatFilingFrequencySchema,
+  taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
+  localTaxOfficeName: z.string().optional().nullable(),
   effectiveFrom: z.string().datetime(),
   effectiveTo: z.string().datetime().optional().nullable(),
   createdAt: z.string().datetime(),
@@ -226,3 +238,74 @@ export const VatPeriodSummaryDtoSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 export type VatPeriodSummaryDto = z.infer<typeof VatPeriodSummaryDtoSchema>;
+
+/**
+ * Tax Consultant DTO
+ */
+export const TaxConsultantDtoSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  name: z.string(),
+  email: z.string().email().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type TaxConsultantDto = z.infer<typeof TaxConsultantDtoSchema>;
+
+/**
+ * Tax Report DTO (scheduled obligations)
+ */
+export const TaxReportDtoSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  type: TaxReportTypeSchema,
+  group: TaxReportGroupSchema,
+  periodLabel: z.string(),
+  periodStart: z.string().datetime(),
+  periodEnd: z.string().datetime(),
+  dueDate: z.string().datetime(),
+  status: TaxReportStatusSchema,
+  amountEstimatedCents: z.number().int().nullable(),
+  amountFinalCents: z.number().int().optional().nullable(),
+  currency: z.string(),
+  submittedAt: z.string().datetime().optional().nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+export type TaxReportDto = z.infer<typeof TaxReportDtoSchema>;
+
+/**
+ * Summary preview item for dashboard
+ */
+export const TaxReportPreviewSchema = TaxReportDtoSchema.pick({
+  id: true,
+  type: true,
+  group: true,
+  periodLabel: true,
+  periodStart: true,
+  periodEnd: true,
+  dueDate: true,
+  status: true,
+  amountEstimatedCents: true,
+  amountFinalCents: true,
+  currency: true,
+});
+export type TaxReportPreview = z.infer<typeof TaxReportPreviewSchema>;
+
+/**
+ * Tax Summary DTO for dashboard KPIs
+ */
+export const TaxSummaryDtoSchema = z.object({
+  taxesToBePaidEstimatedCents: z.number().int(),
+  incomeTotalCents: z.number().int(),
+  unpaidInvoicesCount: z.number().int(),
+  expensesTotalCents: z.number().int(),
+  expenseItemsToReviewCount: z.number().int(),
+  upcomingReportCount: z.number().int(),
+  upcomingReportsPreview: z.array(TaxReportPreviewSchema).max(3),
+  localTaxOfficeName: z.string().optional().nullable(),
+  workspaceKind: z.string().optional(),
+});
+export type TaxSummaryDto = z.infer<typeof TaxSummaryDtoSchema>;

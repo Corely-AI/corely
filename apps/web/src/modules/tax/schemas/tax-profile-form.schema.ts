@@ -13,9 +13,12 @@ import {
 export const taxProfileFormSchema = z.object({
   country: TaxCountrySchema,
   regime: TaxRegimeSchema,
+  vatEnabled: z.boolean().default(true),
   vatId: z.string().optional(),
   currency: z.string().default("EUR"),
   filingFrequency: VatFilingFrequencySchema,
+  taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
+  localTaxOfficeName: z.string().optional().nullable(),
   effectiveFrom: z.date(),
   effectiveTo: z.date().optional().nullable(),
 });
@@ -30,9 +33,12 @@ export function toUpsertTaxProfileInput(form: TaxProfileFormData): UpsertTaxProf
   return {
     country: form.country,
     regime: form.regime,
+    vatEnabled: form.vatEnabled,
     vatId: form.vatId || undefined,
     currency: form.currency,
     filingFrequency: form.filingFrequency,
+    taxYearStartMonth: form.taxYearStartMonth ?? null,
+    localTaxOfficeName: form.localTaxOfficeName ?? null,
     effectiveFrom: form.effectiveFrom.toISOString(),
     effectiveTo: form.effectiveTo?.toISOString() || undefined,
   };
@@ -45,8 +51,11 @@ export function getDefaultTaxProfileFormValues(): Partial<TaxProfileFormData> {
   return {
     country: "DE",
     regime: "STANDARD_VAT",
+    vatEnabled: true,
     currency: "EUR",
     filingFrequency: "QUARTERLY",
+    taxYearStartMonth: null,
+    localTaxOfficeName: "",
     effectiveFrom: new Date(),
   };
 }
@@ -58,9 +67,12 @@ export function taxProfileDtoToFormData(dto: any): TaxProfileFormData {
   return {
     country: dto.country,
     regime: dto.regime,
+    vatEnabled: dto.vatEnabled ?? true,
     vatId: dto.vatId || undefined,
     currency: dto.currency,
     filingFrequency: dto.filingFrequency,
+    taxYearStartMonth: dto.taxYearStartMonth ?? null,
+    localTaxOfficeName: dto.localTaxOfficeName ?? null,
     effectiveFrom: new Date(dto.effectiveFrom),
     effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : undefined,
   };

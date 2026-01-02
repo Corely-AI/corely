@@ -50,7 +50,7 @@ import {
 } from "../../modules/inventory";
 import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
-import { TaxSettingsPage } from "../../modules/tax";
+import { TaxSettingsPage, TaxesOverviewPage, TaxReportsPage } from "../../modules/tax";
 import {
   PlatformPage,
   AppsManagementPage,
@@ -126,6 +126,9 @@ export const Router = () => (
           <Route path="/inventory/reorder" element={<ReorderDashboardPage />} />
           <Route path="/inventory/copilot" element={<InventoryCopilotPage />} />
           <Route path="/copilot" element={<CopilotPage />} />
+          <Route path="/tax" element={<TaxesOverviewPage />} />
+          <Route path="/tax/reports" element={<TaxReportsPage />} />
+          <Route path="/tax/settings" element={<TaxSettingsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
           <Route path="/settings/members" element={<WorkspaceMembersPage />} />
