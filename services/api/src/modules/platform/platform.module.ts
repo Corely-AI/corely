@@ -28,7 +28,6 @@ import { UpdateMenuOverridesUseCase } from "./application/use-cases/update-menu-
 import { ResetMenuOverridesUseCase } from "./application/use-cases/reset-menu-overrides.usecase";
 import { PlanTemplateUseCase } from "./application/use-cases/plan-template.usecase";
 import { ApplyTemplateUseCase } from "./application/use-cases/apply-template.usecase";
-import { GetShellConfigUseCase } from "./application/use-cases/get-shell-config.usecase";
 
 // Guards
 import { EntitlementGuard } from "./guards/entitlement.guard";
@@ -37,7 +36,6 @@ import { EntitlementGuard } from "./guards/entitlement.guard";
 import { PlatformController } from "./adapters/http/platform.controller";
 import { MenuController } from "./adapters/http/menu.controller";
 import { TemplateController } from "./adapters/http/template.controller";
-import { ShellConfigController } from "./adapters/http/shell-config.controller";
 
 // Ports
 import { APP_REGISTRY_TOKEN } from "./application/ports/app-registry.port";
@@ -50,7 +48,7 @@ import { SEEDED_RECORD_META_REPOSITORY_TOKEN } from "./application/ports/seeded-
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, WorkspacesModule],
-  controllers: [PlatformController, MenuController, TemplateController, ShellConfigController],
+  controllers: [PlatformController, MenuController, TemplateController],
   providers: [
     // Infrastructure - Registries
     AppRegistry,
@@ -106,7 +104,6 @@ import { SEEDED_RECORD_META_REPOSITORY_TOKEN } from "./application/ports/seeded-
     ResetMenuOverridesUseCase,
     PlanTemplateUseCase,
     ApplyTemplateUseCase,
-    GetShellConfigUseCase,
 
     // Guards
     EntitlementGuard,

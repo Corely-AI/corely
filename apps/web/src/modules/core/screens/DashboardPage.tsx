@@ -21,15 +21,24 @@ import { CardSkeleton } from "@/shared/components/Skeleton";
 import { invoicesApi } from "@/lib/invoices-api";
 import { customersApi } from "@/lib/customers-api";
 import { expensesApi } from "@/lib/expenses-api";
-import { useCapabilities, useTerminology } from "@/shared/lib/shell-config";
+import { useMenu } from "@/modules/platform/hooks/useMenu";
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
 
-  // Server-driven UI configuration
-  const capabilities = useCapabilities();
-  const terminology = useTerminology();
+  // Server-driven UI configuration from menu API
+  const { data: menu } = useMenu("web");
+  const capabilities = menu?.workspace?.capabilities ?? {
+    multiUser: false,
+    quotes: false,
+    aiCopilot: false,
+    rbac: false,
+  };
+  const terminology = menu?.workspace?.terminology ?? {
+    partyLabel: "Client",
+    partyLabelPlural: "Clients",
+  };
 
   // Fetch invoices
   const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({

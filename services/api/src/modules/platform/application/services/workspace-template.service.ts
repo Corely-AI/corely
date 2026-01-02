@@ -89,29 +89,24 @@ export class WorkspaceTemplateService {
   getDefaultEnabledApps(kind: WorkspaceKind): string[] {
     if (kind === "PERSONAL") {
       return [
+        "core",
         "platform",
-        "identity",
         "workspaces",
         "invoices",
         "expenses",
         "parties", // clients
-        "documents",
         "ai-copilot",
       ];
     } else {
       return [
+        "core",
         "platform",
-        "identity",
         "workspaces",
         "invoices",
         "expenses",
         "parties", // customers
-        "documents",
         "sales", // quotes, projects
-        "inventory",
-        "tax",
         "ai-copilot",
-        "crm",
       ];
     }
   }

@@ -17,6 +17,3 @@ export * from "./entitlements.schema";
 
 // Menu
 export * from "./menu.schema";
-
-// Shell Config (Server-Driven UI)
-export * from "./shell-config.schema";

@@ -1,12 +1,14 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   UseInterceptors,
   Req,
   Param,
   Inject,
   Optional,
+  Query,
 } from "@nestjs/common";
 import {
   CreateExpenseUseCase,
@@ -18,6 +20,11 @@ import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempo
 import { buildRequestContext } from "../../../../shared/context/request-context";
 import type { Request } from "express";
 import { z } from "zod";
+import {
+  EXPENSE_REPOSITORY,
+  type ExpenseRepositoryPort,
+} from "../../application/ports/expense-repository.port";
+import type { Expense } from "../../domain/expense.entity";
 
 const ExpenseHttpInputSchema = z.object({
   tenantId: z.string(),
@@ -37,7 +44,8 @@ export class ExpensesController {
     @Inject(CreateExpenseUseCase) private readonly createExpenseUseCase: CreateExpenseUseCase,
     @Inject(ArchiveExpenseUseCase) private readonly archiveExpenseUseCase: ArchiveExpenseUseCase,
     @Inject(UnarchiveExpenseUseCase)
-    private readonly unarchiveExpenseUseCase: UnarchiveExpenseUseCase
+    private readonly unarchiveExpenseUseCase: UnarchiveExpenseUseCase,
+    @Inject(EXPENSE_REPOSITORY) private readonly expenseRepo: ExpenseRepositoryPort
   ) {}
 
   @Post()
@@ -105,5 +113,43 @@ export class ExpensesController {
       expenseId,
     });
     return { archived: false };
+  }
+
+  @Get()
+  async list(@Query() query: any, @Req() req: Request) {
+    const tenantId =
+      (req.headers["x-tenant-id"] as string | undefined) ??
+      (req.headers["x-workspace-id"] as string | undefined) ??
+      (req as any).tenantId;
+
+    if (!tenantId) {
+      return { items: [] };
+    }
+
+    const includeArchived = query?.includeArchived === "true" || query?.includeArchived === true;
+    const expenses = await this.expenseRepo.list(tenantId, { includeArchived });
+    return { items: expenses.map((expense) => this.mapExpenseDto(expense)) };
+  }
+
+  private mapExpenseDto(expense: Expense) {
+    return {
+      id: expense.id,
+      tenantId: expense.tenantId,
+      status: "SUBMITTED",
+      expenseDate: expense.issuedAt.toISOString().slice(0, 10),
+      merchantName: expense.merchant,
+      supplierPartyId: null,
+      currency: expense.currency,
+      notes: null,
+      category: expense.category,
+      totalAmountCents: expense.totalCents,
+      taxAmountCents: null,
+      archivedAt: expense.archivedAt?.toISOString() ?? null,
+      createdAt: expense.createdAt.toISOString(),
+      updatedAt: expense.createdAt.toISOString(),
+      lines: [],
+      receipts: [],
+      custom: expense.custom,
+    };
   }
 }
