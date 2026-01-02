@@ -13,9 +13,12 @@ import {
 export const UpsertTaxProfileInputSchema = z.object({
   country: TaxCountrySchema,
   regime: TaxRegimeSchema,
+  vatEnabled: z.boolean().optional(),
   vatId: z.string().optional().nullable(),
   currency: z.string().default("EUR"),
   filingFrequency: VatFilingFrequencySchema,
+  taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
+  localTaxOfficeName: z.string().optional().nullable(),
   effectiveFrom: z.string().datetime(),
   effectiveTo: z.string().datetime().optional().nullable(),
   idempotencyKey: z.string().optional(),

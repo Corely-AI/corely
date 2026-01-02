@@ -95,6 +95,7 @@ export class WorkspaceTemplateService {
         "invoices",
         "expenses",
         "parties", // clients
+        "tax",
         "ai-copilot",
       ];
     } else {
@@ -106,6 +107,7 @@ export class WorkspaceTemplateService {
         "expenses",
         "parties", // customers
         "sales", // quotes, projects
+        "tax",
         "ai-copilot",
       ];
     }

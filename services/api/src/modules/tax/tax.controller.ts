@@ -9,6 +9,8 @@ import {
   Query,
   Req,
   UseInterceptors,
+  UseGuards,
+  BadRequestException,
 } from "@nestjs/common";
 import type { Request } from "express";
 import {
@@ -20,6 +22,8 @@ import {
   CreateTaxRateInputSchema,
   CalculateTaxInputSchema,
   LockTaxSnapshotInputSchema,
+  ListTaxReportsInputSchema,
+  UpsertTaxConsultantInputSchema,
   type GetTaxProfileOutput,
   type UpsertTaxProfileOutput,
   type ListTaxCodesOutput,
@@ -32,8 +36,13 @@ import {
   type TaxProfileDto,
   type TaxCodeDto,
   type TaxRateDto,
+  type GetTaxSummaryOutput,
+  type ListTaxReportsOutput,
+  type UpsertTaxConsultantOutput,
+  type GetTaxConsultantOutput,
 } from "@corely/contracts";
 import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/IdempotencyInterceptor";
+import { AuthGuard } from "../identity/adapters/http/auth.guard";
 import { GetTaxProfileUseCase } from "./application/use-cases/get-tax-profile.use-case";
 import { UpsertTaxProfileUseCase } from "./application/use-cases/upsert-tax-profile.use-case";
 import { ListTaxCodesUseCase } from "./application/use-cases/list-tax-codes.use-case";
@@ -41,8 +50,14 @@ import { CreateTaxCodeUseCase } from "./application/use-cases/create-tax-code.us
 import { CalculateTaxUseCase } from "./application/use-cases/calculate-tax.use-case";
 import { LockTaxSnapshotUseCase } from "./application/use-cases/lock-tax-snapshot.use-case";
 import type { UseCaseContext } from "./application/use-cases/use-case-context";
+import { GetTaxSummaryUseCase } from "./application/use-cases/get-tax-summary.use-case";
+import { ListTaxReportsUseCase } from "./application/use-cases/list-tax-reports.use-case";
+import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-report-submitted.use-case";
+import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
+import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
 
 @Controller("tax")
+@UseGuards(AuthGuard)
 @UseInterceptors(IdempotencyInterceptor)
 export class TaxController {
   constructor(
@@ -51,7 +66,12 @@ export class TaxController {
     private readonly listTaxCodesUseCase: ListTaxCodesUseCase,
     private readonly createTaxCodeUseCase: CreateTaxCodeUseCase,
     private readonly calculateTaxUseCase: CalculateTaxUseCase,
-    private readonly lockTaxSnapshotUseCase: LockTaxSnapshotUseCase
+    private readonly lockTaxSnapshotUseCase: LockTaxSnapshotUseCase,
+    private readonly getTaxSummaryUseCase: GetTaxSummaryUseCase,
+    private readonly listTaxReportsUseCase: ListTaxReportsUseCase,
+    private readonly markTaxReportSubmittedUseCase: MarkTaxReportSubmittedUseCase,
+    private readonly getTaxConsultantUseCase: GetTaxConsultantUseCase,
+    private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase
   ) {}
 
   // ============================================================================
@@ -135,15 +155,80 @@ export class TaxController {
   }
 
   // ============================================================================
+  // Summary & Reports
+  // ============================================================================
+
+  @Get("summary")
+  async getSummary(@Req() req: Request): Promise<GetTaxSummaryOutput> {
+    const ctx = this.buildContext(req);
+    return this.getTaxSummaryUseCase.execute(ctx);
+  }
+
+  @Get("reports")
+  async listReports(@Query() query: any, @Req() req: Request): Promise<ListTaxReportsOutput> {
+    const parsed = ListTaxReportsInputSchema.parse({
+      status: query.status,
+      group: query.group,
+      type: query.type,
+    });
+    const ctx = this.buildContext(req);
+    return this.listTaxReportsUseCase.execute(parsed.status ?? "upcoming", parsed, ctx);
+  }
+
+  @Post("reports/:id/mark-submitted")
+  async markSubmitted(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.markTaxReportSubmittedUseCase.execute(id, ctx);
+  }
+
+  // ============================================================================
+  // Consultant
+  // ============================================================================
+
+  @Get("consultant")
+  async getConsultant(@Req() req: Request): Promise<GetTaxConsultantOutput> {
+    const ctx = this.buildContext(req);
+    return this.getTaxConsultantUseCase.execute(ctx);
+  }
+
+  @Put("consultant")
+  async upsertConsultant(
+    @Body() body: unknown,
+    @Req() req: Request
+  ): Promise<UpsertTaxConsultantOutput> {
+    const input = UpsertTaxConsultantInputSchema.parse(body);
+    const ctx = this.buildContext(req);
+    return this.upsertTaxConsultantUseCase.execute(input, ctx);
+  }
+
+  // ============================================================================
   // Helpers
   // ============================================================================
 
   private buildContext(req: Request): UseCaseContext {
     // Extract tenant/user from request (in real app, from JWT)
-    // For now, use headers or defaults
+    const tenantId =
+      (req as any).tenantId ||
+      (req.headers["x-tenant-id"] as string | undefined) ||
+      (req.headers["x-workspace-id"] as string | undefined);
+    const userId =
+      (req.headers["x-user-id"] as string | undefined) ??
+      (req as any).user?.userId ??
+      (req as any).user?.id;
+
+    if (!tenantId) {
+      throw new BadRequestException("Missing tenantId in request context");
+    }
+    if (!userId) {
+      throw new BadRequestException("Missing userId in request context");
+    }
+    if (tenantId === "default-tenant") {
+      throw new BadRequestException("Invalid tenantId in request context");
+    }
+
     return {
-      tenantId: (req.headers["x-tenant-id"] as string) || "default-tenant",
-      userId: (req.headers["x-user-id"] as string) || "default-user",
+      tenantId,
+      userId,
       correlationId: req.headers["x-correlation-id"] as string | undefined,
       idempotencyKey: req.headers["x-idempotency-key"] as string | undefined,
     };
@@ -155,9 +240,12 @@ export class TaxController {
       tenantId: entity.tenantId,
       country: entity.country,
       regime: entity.regime,
+      vatEnabled: entity.vatEnabled,
       vatId: entity.vatId,
       currency: entity.currency,
       filingFrequency: entity.filingFrequency,
+      taxYearStartMonth: entity.taxYearStartMonth,
+      localTaxOfficeName: entity.localTaxOfficeName,
       effectiveFrom: entity.effectiveFrom.toISOString(),
       effectiveTo: entity.effectiveTo?.toISOString() || null,
       createdAt: entity.createdAt.toISOString(),

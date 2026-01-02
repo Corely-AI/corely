@@ -9,9 +9,12 @@ model TaxProfile {
   tenantId        String
   country         String              // ISO 2-letter code (e.g., "DE")
   regime          TaxRegime
+  vatEnabled      Boolean             @default(true)
   vatId           String?
   currency        String              @default("EUR")
   filingFrequency VatFilingFrequency
+  taxYearStartMonth Int?
+  localTaxOfficeName String?
   effectiveFrom   DateTime            @db.Timestamptz(6)
   effectiveTo     DateTime?           @db.Timestamptz(6)
   createdAt       DateTime            @default(now()) @db.Timestamptz(6)
@@ -141,4 +144,59 @@ model VatPeriodSummary {
 enum VatPeriodStatus {
   OPEN      // Period is still being aggregated
   FINALIZED // Period is locked for reporting
+}
+
+// Tax Consultant
+model TaxConsultant {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  email     String?
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+// Tax Reports (scheduled obligations)
+model TaxReport {
+  id                   String           @id @default(cuid())
+  tenantId             String
+  type                 TaxReportType
+  group                TaxReportGroup
+  periodLabel          String
+  periodStart          DateTime         @db.Timestamptz(6)
+  periodEnd            DateTime         @db.Timestamptz(6)
+  dueDate              DateTime         @db.Timestamptz(6)
+  status               TaxReportStatus
+  amountEstimatedCents Int?
+  amountFinalCents     Int?
+  currency             String           @default("EUR")
+  submittedAt          DateTime?        @db.Timestamptz(6)
+  createdAt            DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime         @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId, status])
+  @@index([tenantId, periodStart, periodEnd])
+}
+
+enum TaxReportStatus {
+  UPCOMING
+  OPEN
+  SUBMITTED
+  OVERDUE
+}
+
+enum TaxReportType {
+  VAT_ADVANCE
+  VAT_ANNUAL
+  INCOME_TAX
+}
+
+enum TaxReportGroup {
+  ADVANCE_VAT
+  ANNUAL_REPORT
 }

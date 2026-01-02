@@ -19,6 +19,12 @@ import type {
   CalculateTaxOutput,
   LockTaxSnapshotInput,
   LockTaxSnapshotOutput,
+  GetTaxSummaryOutput,
+  ListTaxReportsOutput,
+  GetTaxConsultantOutput,
+  UpsertTaxConsultantInput,
+  UpsertTaxConsultantOutput,
+  MarkTaxReportSubmittedOutput,
   TaxProfileDto,
   TaxCodeDto,
   TaxRateDto,
@@ -147,6 +153,47 @@ export class TaxApi {
       correlationId: apiClient.generateCorrelationId(),
     });
     return result.snapshot;
+  }
+
+  // ============================================================================
+  // Summary & Reports
+  // ============================================================================
+
+  async getSummary() {
+    return apiClient.get<GetTaxSummaryOutput>("/tax/summary", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async listReports(status: "upcoming" | "submitted" = "upcoming") {
+    return apiClient.get<ListTaxReportsOutput>(`/tax/reports?status=${status}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async markReportSubmitted(id: string) {
+    return apiClient.post<MarkTaxReportSubmittedOutput>(
+      `/tax/reports/${id}/mark-submitted`,
+      {},
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
+
+  // ============================================================================
+  // Consultant
+  // ============================================================================
+
+  async getConsultant() {
+    return apiClient.get<GetTaxConsultantOutput>("/tax/consultant", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async upsertConsultant(input: UpsertTaxConsultantInput) {
+    return apiClient.put<UpsertTaxConsultantOutput>("/tax/consultant", input, {
+      correlationId: apiClient.generateCorrelationId(),
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+    });
   }
 }
 

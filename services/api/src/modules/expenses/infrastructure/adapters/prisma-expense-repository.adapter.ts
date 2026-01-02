@@ -17,6 +17,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
         merchantName: expense.merchant,
         expenseDate: expense.issuedAt,
         totalAmountCents: expense.totalCents,
+        taxAmountCents: expense.taxAmountCents ?? undefined,
         currency: expense.currency,
         category: expense.category,
         archivedAt: expense.archivedAt ?? undefined,
@@ -30,6 +31,24 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
     const client = getPrismaClient(this.prisma, tx as any);
     const data = await client.expense.findFirst({ where: { id, tenantId, archivedAt: null } });
     return data ? this.mapExpense(data) : null;
+  }
+
+  async update(expense: Expense, tx?: TransactionContext): Promise<void> {
+    const client = getPrismaClient(this.prisma, tx as any);
+    await client.expense.update({
+      where: { id: expense.id },
+      data: {
+        merchantName: expense.merchant,
+        expenseDate: expense.issuedAt,
+        totalAmountCents: expense.totalCents,
+        taxAmountCents: expense.taxAmountCents ?? undefined,
+        currency: expense.currency,
+        category: expense.category,
+        archivedAt: expense.archivedAt ?? undefined,
+        archivedByUserId: expense.archivedByUserId ?? undefined,
+        custom: expense.custom as any,
+      },
+    });
   }
 
   async findByIdIncludingArchived(
@@ -61,12 +80,13 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       data.tenantId,
       data.merchantName ?? "",
       data.totalAmountCents,
+      data.taxAmountCents ?? null,
       data.currency,
       data.category,
-      data.expenseDate,
+      new Date(data.expenseDate),
       data.createdByUserId ?? "",
-      data.createdAt,
-      data.archivedAt ?? null,
+      new Date(data.createdAt),
+      data.archivedAt ? new Date(data.archivedAt) : null,
       data.archivedByUserId ?? null,
       data.custom as any
     );

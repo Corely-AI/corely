@@ -16,9 +16,12 @@ export class UpsertTaxProfileUseCase {
       tenantId: ctx.tenantId,
       country: input.country,
       regime: input.regime,
+      vatEnabled: input.vatEnabled ?? true,
       vatId: input.vatId || null,
       currency: input.currency,
       filingFrequency: input.filingFrequency,
+      taxYearStartMonth: input.taxYearStartMonth ?? null,
+      localTaxOfficeName: input.localTaxOfficeName ?? null,
       effectiveFrom,
       effectiveTo,
     };

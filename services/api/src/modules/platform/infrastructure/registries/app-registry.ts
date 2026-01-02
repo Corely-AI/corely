@@ -182,6 +182,50 @@ export class AppRegistry implements AppRegistryPort {
       ],
     });
 
+    // Tax Settings App (freelancer + company)
+    this.register({
+      appId: "tax",
+      name: "Tax",
+      tier: 2,
+      version: "1.0.0",
+      description: "Tax overview, reports, and settings",
+      dependencies: [],
+      capabilities: [],
+      permissions: [],
+      menu: [
+        {
+          id: "tax-overview",
+          scope: "web",
+          section: "tax",
+          labelKey: "nav.tax",
+          defaultLabel: "Taxes",
+          route: "/taxes",
+          icon: "Percent",
+          order: 70,
+        },
+        {
+          id: "tax-reports",
+          scope: "web",
+          section: "tax",
+          labelKey: "nav.taxReports",
+          defaultLabel: "Reports",
+          route: "/tax/reports",
+          icon: "ClipboardList",
+          order: 71,
+        },
+        {
+          id: "tax-settings",
+          scope: "web",
+          section: "tax",
+          labelKey: "nav.taxSettings",
+          defaultLabel: "Settings",
+          route: "/tax/settings",
+          icon: "Settings",
+          order: 72,
+        },
+      ],
+    });
+
     // Sales App (quotes, projects - company mode)
     this.register({
       appId: "sales",

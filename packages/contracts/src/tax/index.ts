@@ -14,3 +14,7 @@ export * from "./lock-tax-snapshot.schema";
 export * from "./get-vat-period-summary.schema";
 export * from "./list-vat-periods.schema";
 export * from "./export-vat-period.schema";
+export * from "./get-tax-summary.schema";
+export * from "./list-tax-reports.schema";
+export * from "./tax-consultant.schema";
+export * from "./mark-tax-report-submitted.schema";
