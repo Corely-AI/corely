@@ -1,20 +1,33 @@
 #!/usr/bin/env node
 import { spawn } from "child_process";
-import { watch } from "fs";
+import { once } from "events";
 
 let nodeProcess = null;
 let buildProcess = null;
+let restartPromise = Promise.resolve();
 
 // Check if debug mode is enabled
 const isDebugMode = process.argv.includes("--inspect") || process.env.NODE_DEBUG === "true";
 const debugPort = process.env.DEBUG_PORT || "9229";
 
-const startNode = () => {
-  if (nodeProcess) {
-    console.log("🔄 Restarting server...");
-    nodeProcess.kill();
-  }
+const stopNode = async () => {
+  if (!nodeProcess) return;
 
+  const proc = nodeProcess;
+  nodeProcess = null;
+
+  proc.kill("SIGTERM");
+
+  try {
+    await Promise.race([once(proc, "exit"), new Promise((r) => setTimeout(r, 5000))]);
+  } finally {
+    if (!proc.killed) {
+      proc.kill("SIGKILL");
+    }
+  }
+};
+
+const startNode = () => {
   console.log(
     `\n🚀 Starting server${isDebugMode ? " (Debug Mode on port " + debugPort + ")" : ""}...\n`
   );
@@ -26,6 +39,17 @@ const startNode = () => {
   nodeProcess = spawn("node", nodeArgs, {
     stdio: "inherit",
     env: { ...process.env, FORCE_COLOR: "1" },
+  });
+};
+
+const restartNode = () => {
+  restartPromise = restartPromise.then(async () => {
+    if (nodeProcess) {
+      console.log("🔄 Restarting server...");
+    }
+
+    await stopNode();
+    startNode();
   });
 };
 
@@ -48,10 +72,10 @@ buildProcess.stdout.on("data", (data) => {
   if (output.includes("Watching for file changes") || output.includes("Found 0 errors")) {
     if (!initialBuildComplete) {
       initialBuildComplete = true;
-      startNode();
+      restartNode();
     } else {
       // Restart on subsequent builds
-      startNode();
+      restartNode();
     }
   }
 });
@@ -60,8 +84,8 @@ buildProcess.stderr.on("data", (data) => {
   console.error(data.toString());
 });
 
-process.on("SIGINT", () => {
-  if (nodeProcess) nodeProcess.kill();
+process.on("SIGINT", async () => {
+  await stopNode();
   if (buildProcess) buildProcess.kill();
   process.exit(0);
 });

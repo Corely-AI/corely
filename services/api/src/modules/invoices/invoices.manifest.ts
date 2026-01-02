@@ -29,7 +29,7 @@ export const invoicesAppManifest: AppManifest = {
       route: "/invoices",
       icon: "FileText",
       order: 10,
-      requiresPermissions: ["invoices.read"],
+      requiresPermissions: ["sales.invoices.read"],
     },
   ],
 };
