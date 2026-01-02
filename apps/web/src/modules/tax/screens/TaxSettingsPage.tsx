@@ -1,12 +1,19 @@
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/ui/card";
 import { Button } from "../../../shared/ui/button";
 import { Input } from "../../../shared/ui/input";
 import { Label } from "../../../shared/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../shared/ui/select";
 import { taxApi } from "../../../lib/tax-api";
 import {
   taxProfileFormSchema,
@@ -58,6 +65,19 @@ export default function TaxSettingsPage() {
     saveMutation.mutate(data);
   };
 
+  const regimeOptions = [
+    { value: "SMALL_BUSINESS", label: "Small Business (Kleinunternehmer §19 UStG)" },
+    { value: "STANDARD_VAT", label: "Standard VAT" },
+  ];
+
+  const countryOptions = [{ value: "DE", label: "Germany (DE)" }];
+
+  const filingOptions = [
+    { value: "MONTHLY", label: "Monthly" },
+    { value: "QUARTERLY", label: "Quarterly" },
+    { value: "YEARLY", label: "Yearly" },
+  ];
+
   if (isLoading) {
     return (
       <div className="p-6 lg:p-8">
@@ -82,14 +102,29 @@ export default function TaxSettingsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="country">Country</Label>
-                <select
-                  id="country"
-                  className="w-full px-3 py-2 border rounded-md"
-                  {...form.register("country")}
-                  disabled
-                >
-                  <option value="DE">Germany (DE)</option>
-                </select>
+                <Controller
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value ?? "DE"}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value ?? "DE"}
+                      disabled
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countryOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 <p className="text-xs text-muted-foreground mt-1">
                   Currently only Germany is supported
                 </p>
@@ -97,14 +132,28 @@ export default function TaxSettingsPage() {
 
               <div>
                 <Label htmlFor="regime">Tax Regime</Label>
-                <select
-                  id="regime"
-                  className="w-full px-3 py-2 border rounded-md"
-                  {...form.register("regime")}
-                >
-                  <option value="SMALL_BUSINESS">Small Business (Kleinunternehmer §19 UStG)</option>
-                  <option value="STANDARD_VAT">Standard VAT</option>
-                </select>
+                <Controller
+                  control={form.control}
+                  name="regime"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tax regime" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {regimeOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {form.formState.errors.regime && (
                   <p className="text-sm text-destructive mt-1">
                     {form.formState.errors.regime.message}
@@ -126,15 +175,28 @@ export default function TaxSettingsPage() {
 
               <div>
                 <Label htmlFor="filingFrequency">Filing Frequency</Label>
-                <select
-                  id="filingFrequency"
-                  className="w-full px-3 py-2 border rounded-md"
-                  {...form.register("filingFrequency")}
-                >
-                  <option value="MONTHLY">Monthly</option>
-                  <option value="QUARTERLY">Quarterly</option>
-                  <option value="YEARLY">Yearly</option>
-                </select>
+                <Controller
+                  control={form.control}
+                  name="filingFrequency"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select filing frequency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {filingOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
             </div>
 
