@@ -189,7 +189,7 @@ export class WorkspaceTemplateService {
               id: "add-client",
               labelKey: "actions.addClient",
               icon: "Users",
-              route: "/clients/new",
+              route: "/customers/new",
             },
           ],
         },
