@@ -112,14 +112,15 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         sales: SalesApplication,
         purchasing: PurchasingApplication,
         inventory: InventoryApplication,
-        engagement: EngagementApplication
+        engagement: EngagementApplication,
+        env: EnvService
       ) => [
         ...buildInvoiceTools(invoices),
         ...buildCustomerTools(partyCrm),
         ...buildSalesTools(sales),
-        ...buildPurchasingTools(purchasing),
-        ...buildInventoryTools(inventory),
-        ...buildApprovalTools(),
+        ...buildPurchasingTools(purchasing, env),
+        ...buildInventoryTools(inventory, env),
+        ...buildApprovalTools(env),
         ...buildEngagementTools(engagement, partyCrm),
       ],
       inject: [
@@ -129,6 +130,7 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         PurchasingApplication,
         InventoryApplication,
         EngagementApplication,
+        EnvService,
       ],
     },
     {

@@ -63,6 +63,9 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       } as any,
     });
 
-    (pipeUIMessageStreamToResponse as any)(result, params.response);
+    pipeUIMessageStreamToResponse({
+      response: params.response as any,
+      stream: result.toUIMessageStream(),
+    });
   }
 }
