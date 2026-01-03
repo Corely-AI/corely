@@ -1,10 +1,83 @@
 #!/usr/bin/env node
-import { spawn } from "child_process";
+import { spawn, spawnSync } from "child_process";
 import { once } from "events";
+import net from "node:net";
 
 let nodeProcess = null;
 let buildProcess = null;
 let restartPromise = Promise.resolve();
+
+const apiPort = Number(process.env.API_PORT || 3000);
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const isPortFree = (port) =>
+  new Promise((resolve) => {
+    const tester = net.createServer();
+    tester.once("error", () => resolve(false));
+    tester.once("listening", () => {
+      tester.close(() => resolve(true));
+    });
+    tester.listen(port, "0.0.0.0");
+  });
+
+const killPortOccupants = async (port) => {
+  if (process.platform === "win32") return false;
+
+  try {
+    const { stdout } = spawnSync("lsof", ["-ti", `:${port}`], { encoding: "utf8" });
+    const pids = stdout
+      .split(/\s+/)
+      .map((pid) => pid.trim())
+      .filter(Boolean);
+
+    if (!pids.length) return false;
+
+    console.warn(`[dev] Port ${port} is busy; terminating PIDs ${pids.join(", ")}`);
+    for (const pid of pids) {
+      try {
+        process.kill(Number(pid), "SIGTERM");
+      } catch {
+        // ignore
+      }
+    }
+
+    await sleep(400);
+
+    for (const pid of pids) {
+      try {
+        process.kill(Number(pid), "SIGKILL");
+      } catch {
+        // ignore
+      }
+    }
+
+    return true;
+  } catch (error) {
+    console.warn(`[dev] Could not inspect port ${port}: ${error?.message ?? error}`);
+    return false;
+  }
+};
+
+const waitForPortToClose = async (port, attempts = 15, delayMs = 200) => {
+  for (let i = 0; i < attempts; i++) {
+    if (await isPortFree(port)) return true;
+    await sleep(delayMs);
+  }
+
+  return await isPortFree(port);
+};
+
+const ensurePortFree = async (port) => {
+  if (await isPortFree(port)) return;
+
+  await killPortOccupants(port);
+
+  const freed = await waitForPortToClose(port);
+  if (!freed) {
+    throw new Error(`Port ${port} is still busy. Set API_PORT or free it manually.`);
+  }
+};
 
 // Check if debug mode is enabled
 const isDebugMode = process.argv.includes("--inspect") || process.env.NODE_DEBUG === "true";
@@ -25,9 +98,13 @@ const stopNode = async () => {
       proc.kill("SIGKILL");
     }
   }
+
+  await ensurePortFree(apiPort);
 };
 
-const startNode = () => {
+const startNode = async () => {
+  await ensurePortFree(apiPort);
+
   console.log(
     `\n🚀 Starting server${isDebugMode ? " (Debug Mode on port " + debugPort + ")" : ""}...\n`
   );
@@ -48,8 +125,12 @@ const restartNode = () => {
       console.log("🔄 Restarting server...");
     }
 
-    await stopNode();
-    startNode();
+    try {
+      await stopNode();
+      await startNode();
+    } catch (error) {
+      console.error(`[dev] Failed to restart: ${error?.message ?? error}`);
+    }
   });
 };
 
