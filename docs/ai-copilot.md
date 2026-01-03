@@ -9,7 +9,7 @@
 
 - Set `AI_MODEL_PROVIDER=openai` or `anthropic`.
 - OpenAI default: `AI_MODEL_ID=gpt-4o-mini` and `OPENAI_API_KEY=<your-key>`.
-- Anthropic sample: `AI_MODEL_PROVIDER=anthropic`, `AI_MODEL_ID=claude-3-5-sonnet-20241022`, `ANTHROPIC_API_KEY=sk-ant-...`.
+- Anthropic sample: `AI_MODEL_PROVIDER=anthropic`, `AI_MODEL_ID=claude-3-5-sonnet-20240620`, `ANTHROPIC_API_KEY=sk-ant-...`.
 
 ### Interactive collect_inputs tool
 
