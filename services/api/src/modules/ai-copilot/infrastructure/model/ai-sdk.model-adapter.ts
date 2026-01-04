@@ -116,6 +116,10 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       messages: modelMessages,
       tools: toolset,
       stopWhen: stepCountIs(5),
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: "copilot.streamChat",
+      },
     });
 
     let usage: LanguageModelUsage | undefined;

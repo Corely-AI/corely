@@ -62,6 +62,14 @@ export class OtelObservabilityAdapter implements ObservabilityPort {
     const maskedInput = payload.userInput
       ? maskString(payload.userInput, this.options.maskingMode)
       : "";
+
+    // Set attributes for Langfuse to display as input
+    spanRef.span.setAttributes({
+      "llm.input.messages": JSON.stringify(maskedHistory),
+      "llm.input.value": maskedInput || JSON.stringify(maskedHistory),
+    });
+
+    // Also keep event for backward compatibility
     spanRef.span.addEvent("turn.input", {
       "turn.history": JSON.stringify(maskedHistory),
       "turn.user_input": maskedInput,
@@ -71,6 +79,14 @@ export class OtelObservabilityAdapter implements ObservabilityPort {
 
   recordTurnOutput(spanRef: ObservabilitySpanRef, payload: TurnOutputPayload): void {
     const text = payload.text ? maskString(payload.text, this.options.maskingMode) : "";
+
+    // Set attributes for Langfuse to display as output
+    spanRef.span.setAttributes({
+      "llm.output.value": text,
+      "llm.output.parts": payload.partsSummary ?? "",
+    });
+
+    // Also keep event for backward compatibility
     spanRef.span.addEvent("turn.output", {
       "turn.output.text": text,
       "turn.output.parts": payload.partsSummary ?? "",
