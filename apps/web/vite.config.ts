@@ -21,6 +21,9 @@ export default defineConfig(() => {
     },
     excludeFromOptimizeDeps: ["@corely/contracts", "@corely/domain"],
     watchWorkspacePackages: ["@corely/*"],
+    apiProxy: {
+      target: "http://localhost:3000",
+    },
   });
 
   return {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import {
   ProductProposalCardSchema,
@@ -13,13 +13,20 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { inventoryApi } from "@/lib/inventory-api";
-import { useCopilotChatOptions } from "@/lib/copilot-api";
+import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
 
-type MessagePart =
-  | { type: "text"; text: string }
-  | { type: "tool-call"; toolName: string; toolCallId: string; input: unknown }
-  | { type: "tool-result"; toolName: string; toolCallId: string; result: unknown }
-  | { type: "data"; data: any };
+type MessagePart = {
+  type: string;
+  text?: string;
+  toolCallId?: string;
+  toolName?: string;
+  input?: unknown;
+  output?: unknown;
+  result?: unknown;
+  state?: string;
+  approval?: { id: string; approved?: boolean; reason?: string };
+  errorText?: string;
+};
 
 const ProposalCard: React.FC<{
   title: string;
@@ -66,14 +73,39 @@ const ProposalCard: React.FC<{
 );
 
 export default function InventoryCopilotPage() {
-  const chatOptions = useCopilotChatOptions({
+  const {
+    options: chatOptions,
+    runId,
+    apiBase,
+    tenantId,
+    accessToken,
+  } = useCopilotChatOptions({
     activeModule: "inventory",
     locale: "en",
   });
 
-  const { messages, input, handleInputChange, handleSubmit } = useChat(chatOptions);
+  const { messages, input, handleInputChange, handleSubmit, addToolApprovalResponse, setMessages } =
+    useChat(chatOptions);
+  const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
   const setPrompt = (value: string) =>
     handleInputChange({ target: { value } } as React.ChangeEvent<HTMLInputElement>);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+      .then((history) => {
+        if (!cancelled && (!hydratedRunId || hydratedRunId !== runId)) {
+          setMessages(history);
+          setHydratedRunId(runId);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch copilot history:", error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
 
   const renderHints = (missingFields?: string[], followUpQuestions?: string[]) => {
     if (!missingFields?.length && !followUpQuestions?.length) {
@@ -291,11 +323,54 @@ export default function InventoryCopilotPage() {
     if (part.type === "text") {
       return <p className="whitespace-pre-wrap">{part.text}</p>;
     }
-    if (part.type === "tool-call") {
-      return <div className="text-xs text-muted-foreground">Tool call: {part.toolName}</div>;
+    if (part.type === "reasoning") {
+      return <p className="text-xs text-muted-foreground">{part.text}</p>;
     }
-    if (part.type === "tool-result") {
-      return <div className="space-y-2">{renderToolResult(part.result)}</div>;
+    if (
+      part.type === "tool-call" ||
+      part.type === "dynamic-tool" ||
+      part.type.startsWith("tool-")
+    ) {
+      if (part.state === "approval-requested" && part.approval?.id) {
+        return (
+          <div className="flex flex-col gap-2 text-sm">
+            <div className="text-muted-foreground">
+              Approval required for <span className="font-semibold">{part.toolName}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="accent"
+                onClick={() =>
+                  addToolApprovalResponse?.({ id: part.approval?.id ?? "", approved: true })
+                }
+              >
+                Allow
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() =>
+                  addToolApprovalResponse?.({ id: part.approval?.id ?? "", approved: false })
+                }
+              >
+                Deny
+              </Button>
+            </div>
+          </div>
+        );
+      }
+      if (part.state === "output-available") {
+        return <div className="space-y-2">{renderToolResult(part.output ?? part.result)}</div>;
+      }
+      if (part.state === "output-error" || part.state === "output-denied") {
+        return (
+          <div className="text-xs text-destructive">
+            Tool {part.toolName} failed: {part.errorText ?? "Denied"}
+          </div>
+        );
+      }
+      return <div className="text-xs text-muted-foreground">Tool call: {part.toolName}</div>;
     }
     return null;
   };

@@ -1,8 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { UseChatOptions } from "@ai-sdk/react";
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from "ai";
 import { createIdempotencyKey } from "@corely/api-client";
 import { authClient } from "./auth-client";
 import { getActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
+import { CopilotUIMessageSchema, type CopilotUIMessage } from "@corely/contracts";
 
 export const resolveCopilotBaseUrl = () => {
   const mode = import.meta.env.VITE_API_MODE;
@@ -10,8 +12,13 @@ export const resolveCopilotBaseUrl = () => {
     import.meta.env.VITE_MOCK_API_BASE_URL ||
     import.meta.env.VITE_API_MOCK_BASE_URL ||
     "http://localhost:4000";
+
+  // Use /api proxy in development (Vite dev server proxies to backend)
   const realBase =
-    import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:3000";
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_API_URL ||
+    (import.meta.env.DEV ? "/api" : "http://localhost:3000");
+
   return mode === "mock" ? mockBase : realBase;
 };
 
@@ -19,37 +26,157 @@ export interface CopilotOptionsInput {
   activeModule: string;
   locale?: string;
   runId?: string;
+  onData?: (data: any) => void;
 }
 
-export const useCopilotChatOptions = (input: CopilotOptionsInput): UseChatOptions => {
+const RUN_ID_STORAGE_KEY = "copilot:run";
+
+const loadStoredRunId = (activeModule: string, tenantId: string): string | null => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  try {
+    const stored = window.localStorage.getItem(`${RUN_ID_STORAGE_KEY}:${tenantId}:${activeModule}`);
+    return stored || null;
+  } catch {
+    return null;
+  }
+};
+
+const persistRunId = (activeModule: string, tenantId: string, runId: string) => {
+  if (typeof window === "undefined") {
+    return;
+  }
+  try {
+    window.localStorage.setItem(`${RUN_ID_STORAGE_KEY}:${tenantId}:${activeModule}`, runId);
+  } catch {
+    // ignore storage errors
+  }
+};
+
+export const useCopilotChatOptions = (
+  input: CopilotOptionsInput
+): {
+  options: UseChatOptions;
+  runId: string;
+  apiBase: string;
+  tenantId: string;
+  accessToken: string;
+} => {
   const apiBase = resolveCopilotBaseUrl();
   const tenantId = getActiveWorkspaceId() ?? "demo-tenant";
   const accessToken = authClient.getAccessToken() ?? "";
-  // Generate fresh idempotency key on each render to avoid reuse across requests
-  const idempotencyKey = createIdempotencyKey();
 
-  return {
-    api: input.runId
-      ? `${apiBase}/copilot/runs/${input.runId}/messages`
-      : `${apiBase}/copilot/chat`,
-    headers: {
+  const [runId, setRunId] = useState<string>(
+    input.runId ||
+      loadStoredRunId(input.activeModule, tenantId) ||
+      (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : createIdempotencyKey())
+  );
+
+  useEffect(() => {
+    persistRunId(input.activeModule, tenantId, runId);
+  }, [runId, input.activeModule, tenantId]);
+
+  const baseHeaders = useMemo(
+    () => ({
       Authorization: accessToken ? `Bearer ${accessToken}` : "",
       "X-Tenant-Id": tenantId,
-      "X-Idempotency-Key": idempotencyKey,
-    },
-    body: {
-      id: input.runId,
-      requestData: {
-        tenantId,
-        locale: input.locale || "en",
-        activeModule: input.activeModule,
+    }),
+    [accessToken, tenantId]
+  );
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport<CopilotUIMessage>({
+        api: `${apiBase}/copilot/chat`,
+        headers: async () => ({
+          ...baseHeaders,
+          "X-Idempotency-Key": createIdempotencyKey(),
+        }),
+        body: {
+          id: runId,
+          requestData: {
+            tenantId,
+            locale: input.locale || "en",
+            activeModule: input.activeModule,
+          },
+        },
+        prepareSendMessagesRequest: async ({ messages, trigger, messageId }) => {
+          const idempotencyKey = createIdempotencyKey();
+          const shouldSendFullHistory = lastAssistantMessageIsCompleteWithApprovalResponses({
+            messages,
+          });
+          const latestMessage = messages[messages.length - 1];
+
+          return {
+            api: `${apiBase}/copilot/chat`,
+            headers: {
+              ...baseHeaders,
+              "X-Idempotency-Key": idempotencyKey,
+            },
+            body: {
+              id: runId,
+              trigger,
+              messageId,
+              requestData: {
+                tenantId,
+                locale: input.locale || "en",
+                activeModule: input.activeModule,
+              },
+              ...(shouldSendFullHistory ? { messages } : { message: latestMessage }),
+            },
+          };
+        },
+      }),
+    [apiBase, baseHeaders, input.activeModule, input.locale, runId, tenantId]
+  );
+
+  const options: UseChatOptions = useMemo(
+    () => ({
+      id: runId,
+      transport,
+      onData: (data: any) => {
+        if (data.type === "data-run" && data.data?.runId) {
+          setRunId(data.data.runId);
+        }
+        input.onData?.(data);
       },
+      onError: (error: Error) => {
+        console.error("[Copilot] Stream error:", error);
+      },
+      sendAutomaticallyWhen: ({ messages }) =>
+        lastAssistantMessageIsCompleteWithApprovalResponses({ messages }),
+    }),
+    [input, runId, transport]
+  );
+
+  return { options, runId, apiBase, tenantId, accessToken };
+};
+
+export const fetchCopilotHistory = async (params: {
+  runId: string;
+  apiBase: string;
+  tenantId: string;
+  accessToken: string;
+}): Promise<CopilotUIMessage[]> => {
+  if (!params.runId) {
+    return [];
+  }
+  const response = await fetch(`${params.apiBase}/copilot/chat/${params.runId}/history`, {
+    headers: {
+      Authorization: params.accessToken ? `Bearer ${params.accessToken}` : "",
+      "X-Tenant-Id": params.tenantId,
     },
-    // Use text protocol for compatibility with Express/NestJS backend
-    // Note: Tool calls execute server-side but don't render in real-time
-    streamProtocol: "text",
-    onError: (error: Error) => {
-      console.error("[Copilot] Stream error:", error);
-    },
-  };
+  });
+  if (!response.ok) {
+    return [];
+  }
+  const json = await response.json();
+  const parsed = CopilotUIMessageSchema.array().safeParse(json.items ?? []);
+  if (parsed.success) {
+    return parsed.data;
+  }
+  return [];
 };

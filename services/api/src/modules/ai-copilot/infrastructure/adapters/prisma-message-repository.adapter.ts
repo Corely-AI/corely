@@ -64,6 +64,38 @@ export class PrismaMessageRepository implements MessageRepositoryPort {
     });
   }
 
+  async upsert(message: {
+    id: string;
+    tenantId: string;
+    runId: string;
+    role: string;
+    partsJson: string;
+    traceId?: string;
+  }): Promise<void> {
+    const existing = await this.prisma.message.findUnique({
+      where: { id: message.id },
+      select: { tenantId: true },
+    });
+
+    if (!existing) {
+      await this.create(message);
+      return;
+    }
+
+    if (existing.tenantId !== message.tenantId) {
+      throw new Error("Message tenant mismatch");
+    }
+
+    await this.prisma.message.update({
+      where: { id: message.id },
+      data: {
+        partsJson: message.partsJson,
+        role: message.role,
+        traceId: message.traceId,
+      },
+    });
+  }
+
   async listByRun(params: { tenantId: string; runId: string }): Promise<CopilotMessage[]> {
     const rows = await this.prisma.message.findMany({
       where: { tenantId: params.tenantId, runId: params.runId },

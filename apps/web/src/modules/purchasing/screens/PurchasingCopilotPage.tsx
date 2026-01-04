@@ -1,15 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { purchasingApi } from "@/lib/purchasing-api";
-import { useCopilotChatOptions } from "@/lib/copilot-api";
+import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
 
-type MessagePart =
-  | { type: "text"; text: string }
-  | { type: "tool-call"; toolName: string; toolCallId: string; input: unknown }
-  | { type: "tool-result"; toolName: string; toolCallId: string; result: any }
-  | { type: "data"; data: any };
+type MessagePart = {
+  type: string;
+  text?: string;
+  toolCallId?: string;
+  toolName?: string;
+  input?: unknown;
+  output?: any;
+  result?: any;
+  state?: string;
+  approval?: { id: string; approved?: boolean; reason?: string };
+  errorText?: string;
+};
 
 const ProposalCard: React.FC<{
   title: string;
@@ -36,12 +43,37 @@ const ProposalCard: React.FC<{
 );
 
 export default function PurchasingCopilotPage() {
-  const chatOptions = useCopilotChatOptions({
+  const {
+    options: chatOptions,
+    runId,
+    apiBase,
+    tenantId,
+    accessToken,
+  } = useCopilotChatOptions({
     activeModule: "purchasing",
     locale: "en",
   });
 
-  const { messages, input, handleInputChange, handleSubmit } = useChat(chatOptions);
+  const { messages, input, handleInputChange, handleSubmit, addToolApprovalResponse, setMessages } =
+    useChat(chatOptions);
+  const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+      .then((history) => {
+        if (!cancelled && (!hydratedRunId || hydratedRunId !== runId)) {
+          setMessages(history);
+          setHydratedRunId(runId);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch copilot history:", error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
 
   const renderToolResult = (toolName: string, result: any) => {
     if (!result || result.ok !== true) {
@@ -108,11 +140,61 @@ export default function PurchasingCopilotPage() {
     if (part.type === "text") {
       return <p className="whitespace-pre-wrap">{part.text}</p>;
     }
-    if (part.type === "tool-call") {
+    if (part.type === "reasoning") {
+      return <p className="text-xs text-muted-foreground">{part.text}</p>;
+    }
+    if (part.state === "approval-requested" && part.approval?.id) {
+      return (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground">Allow {part.toolName}?</span>
+          <Button
+            size="sm"
+            variant="accent"
+            onClick={() =>
+              addToolApprovalResponse?.({ id: part.approval?.id ?? "", approved: true })
+            }
+          >
+            Allow
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() =>
+              addToolApprovalResponse?.({ id: part.approval?.id ?? "", approved: false })
+            }
+          >
+            Deny
+          </Button>
+        </div>
+      );
+    }
+    if (
+      part.type === "tool-call" ||
+      part.type === "dynamic-tool" ||
+      part.type.startsWith("tool-")
+    ) {
+      if (part.state === "output-available") {
+        return (
+          <div className="space-y-2">
+            {renderToolResult(part.toolName ?? "tool", part.output ?? part.result ?? part.input)}
+          </div>
+        );
+      }
+      if (part.state === "output-error" || part.state === "output-denied") {
+        return (
+          <div className="text-xs text-destructive">
+            Tool {part.toolName} failed: {part.errorText ?? "Denied"}
+          </div>
+        );
+      }
       return <div className="text-xs text-muted-foreground">Tool call: {part.toolName}</div>;
     }
     if (part.type === "tool-result") {
-      return <div className="space-y-2">{renderToolResult(part.toolName, part.result)}</div>;
+      return (
+        <div className="space-y-2">
+          {renderToolResult(part.toolName ?? "tool", part.output ?? part.result ?? part.input)}
+        </div>
+      );
     }
     return null;
   };

@@ -11,9 +11,8 @@ import type { AuditPort } from "../../application/ports/audit.port";
 import type { OutboxPort } from "../../application/ports/outbox.port";
 import { collectInputsTool } from "../tools/interactive-tools";
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
-import type { Response } from "express";
 import { type ObservabilityPort, type ObservabilitySpanRef } from "@corely/kernel";
-import { type LanguageModelUsage } from "ai";
+import { type LanguageModelUsage, type StreamTextResult } from "ai";
 
 @Injectable()
 export class AiSdkModelAdapter implements LanguageModelPort {
@@ -42,9 +41,8 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     runId: string;
     tenantId: string;
     userId: string;
-    response: Response;
     observability: ObservabilitySpanRef;
-  }): Promise<{ outputText: string; usage?: LanguageModelUsage }> {
+  }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }> {
     const aiTools = buildAiTools(params.tools, {
       toolExecutions: this.toolExecutions,
       audit: this.audit,
@@ -68,13 +66,10 @@ export class AiSdkModelAdapter implements LanguageModelPort {
 
     this.logger.debug(`Starting streamText with ${Object.keys(toolset).length} tools`);
 
-    // Convert UI messages to model messages (async)
-    // convertToModelMessages expects UI messages without ids/metadata; build a clean array
     const modelMessages = await convertToModelMessages(
       params.messages.map((msg) => ({
         role: msg.role,
         parts: msg.parts,
-        content: msg.content,
       }))
     );
 
@@ -85,37 +80,13 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       stopWhen: stepCountIs(5),
     });
 
-    // Stream plain text over SSE to the client (text protocol)
-    params.response.setHeader("Content-Type", "text/event-stream; charset=utf-8");
-    params.response.setHeader("Cache-Control", "no-cache, no-transform");
-    params.response.setHeader("Connection", "keep-alive");
-    params.response.setHeader("X-Accel-Buffering", "no");
-    params.response.status(200);
-    (params.response as any).flushHeaders?.();
-
-    let outputText = "";
-
+    let usage: LanguageModelUsage | undefined;
     try {
-      for await (const delta of result.textStream) {
-        outputText += delta;
-        this.logger.debug(`Stream delta: ${delta}`);
-        params.response.write(`${delta}\n\n`);
-        (params.response as any).flush?.();
-      }
-    } catch (error) {
-      this.logger.error("Stream error:", error);
-    } finally {
-      // Signal end of stream
-      params.response.write("data: [DONE]\n\n");
-      params.response.end();
+      usage = await result.usage;
+    } catch (err) {
+      this.logger.warn(`Failed to resolve usage: ${err}`);
     }
 
-    // Wait for usage to resolve to capture token accounting.
-    const usage = await result.usage.catch((err) => {
-      this.logger.warn(`Failed to resolve usage: ${err}`);
-      return undefined;
-    });
-
-    return { outputText, usage };
+    return { result, usage };
   }
 }

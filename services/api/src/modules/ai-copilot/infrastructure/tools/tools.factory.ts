@@ -31,6 +31,7 @@ export function buildAiTools(
     tool({
       description: t.description,
       inputSchema: t.inputSchema,
+      needsApproval: t.needsApproval,
       execute: async (input: unknown, options: ToolCallOptions) => {
         const { toolCallId } = options;
 

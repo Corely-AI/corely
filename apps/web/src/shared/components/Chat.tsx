@@ -3,29 +3,41 @@ import { useChat } from "@ai-sdk/react";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
-import { useCopilotChatOptions } from "@/lib/copilot-api";
+import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
 import { QuestionForm } from "@/shared/components/QuestionForm";
 import { type CollectInputsToolInput, type CollectInputsToolOutput } from "@corely/contracts";
 
+type ToolInvocationPart = {
+  type: string;
+  toolCallId?: string;
+  toolName?: string;
+  state?: string;
+  input?: unknown;
+  output?: unknown;
+  result?: unknown;
+  approval?: { id: string; approved?: boolean; reason?: string };
+  errorText?: string;
+  preliminary?: boolean;
+};
+
 type MessagePart =
-  | { type: "text"; text: string }
-  | {
-      type: "tool-invocation";
-      toolInvocation: {
-        toolName: string;
-        toolCallId: string;
-        args?: unknown;
-        result?: unknown;
-        state?: "partial-call" | "call" | "result";
-      };
-    }
-  | { type: "tool-result"; toolName: string; toolCallId: string; result: unknown }
-  | { type: "data"; data: any };
+  | { type: "text"; text: string; state?: string }
+  | { type: "reasoning"; text: string; state?: string }
+  | ToolInvocationPart
+  | { type: string; data?: any; transient?: boolean };
+
+const isToolPart = (part: MessagePart): part is ToolInvocationPart =>
+  part.type === "dynamic-tool" || part.type.startsWith("tool-");
 
 const renderPart = (
   part: MessagePart,
   helpers: {
     addToolResult?: (params: { toolCallId: string; result: unknown; toolName?: string }) => unknown;
+    addToolApprovalResponse?: (params: {
+      id: string;
+      approved: boolean;
+      reason?: string;
+    }) => unknown;
     submittingToolIds: Set<string>;
     markSubmitting: (id: string, value: boolean) => void;
   }
@@ -33,12 +45,18 @@ const renderPart = (
   if (part.type === "text") {
     return <span className="whitespace-pre-wrap">{part.text}</span>;
   }
-  if (part.type === "tool-invocation") {
-    const invocation = part.toolInvocation;
 
-    if (invocation.toolName === "collect_inputs" && invocation.state !== "result") {
-      const request = invocation.args as CollectInputsToolInput | undefined;
-      const isSubmitting = helpers.submittingToolIds.has(invocation.toolCallId);
+  if (part.type === "reasoning") {
+    return <span className="text-xs text-muted-foreground">{part.text}</span>;
+  }
+
+  if (isToolPart(part)) {
+    const toolName = part.toolName ?? part.type.replace("tool-", "");
+    const toolCallId = part.toolCallId || toolName;
+
+    if (toolName === "collect_inputs" && part.state !== "output-available") {
+      const request = part.input as CollectInputsToolInput | undefined;
+      const isSubmitting = helpers.submittingToolIds.has(toolCallId);
       if (!request) {
         return <span className="text-xs text-muted-foreground">Awaiting collect_inputs...</span>;
       }
@@ -50,76 +68,128 @@ const renderPart = (
             if (!helpers.addToolResult) {
               return;
             }
-            helpers.markSubmitting(invocation.toolCallId, true);
+            helpers.markSubmitting(toolCallId, true);
             await Promise.resolve(
               helpers.addToolResult({
-                toolCallId: invocation.toolCallId,
+                toolCallId,
                 result: output,
                 toolName: "collect_inputs",
               })
             );
-            helpers.markSubmitting(invocation.toolCallId, false);
+            helpers.markSubmitting(toolCallId, false);
           }}
           onCancel={async () => {
             if (!helpers.addToolResult) {
               return;
             }
-            helpers.markSubmitting(invocation.toolCallId, true);
+            helpers.markSubmitting(toolCallId, true);
             await Promise.resolve(
               helpers.addToolResult({
-                toolCallId: invocation.toolCallId,
+                toolCallId,
                 result: { values: {}, meta: { cancelled: true } },
                 toolName: "collect_inputs",
               })
             );
-            helpers.markSubmitting(invocation.toolCallId, false);
+            helpers.markSubmitting(toolCallId, false);
           }}
         />
       );
     }
 
-    if (invocation.state === "partial-call" || invocation.state === "call") {
+    if (
+      part.state === "approval-requested" &&
+      part.approval?.id &&
+      helpers.addToolApprovalResponse
+    ) {
+      const approvalId = part.approval.id;
       return (
-        <span className="text-xs text-muted-foreground">
-          Tool call: {invocation.toolName} ({invocation.toolCallId})...
-        </span>
+        <Card className="bg-background border-dashed border-primary/40">
+          <CardContent className="p-3 text-xs space-y-2">
+            <div className="font-semibold">Approval required: {toolName}</div>
+            <div className="text-muted-foreground">
+              The assistant wants to call <strong>{toolName}</strong>. Allow?
+            </div>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="accent"
+                onClick={() =>
+                  helpers.addToolApprovalResponse?.({ id: approvalId, approved: true })
+                }
+              >
+                Allow
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() =>
+                  helpers.addToolApprovalResponse?.({ id: approvalId, approved: false })
+                }
+              >
+                Deny
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       );
     }
-    if (invocation.state === "result") {
+
+    if (part.state === "output-available") {
       return (
         <Card className="bg-background border-border">
           <CardContent className="p-3 text-xs space-y-1">
-            <div className="font-semibold">Tool result: {invocation.toolName}</div>
+            <div className="font-semibold">Tool result: {toolName}</div>
             <pre className="whitespace-pre-wrap text-muted-foreground">
-              {JSON.stringify(invocation.result ?? invocation.args, null, 2)}
+              {JSON.stringify(part.output ?? part.result ?? part.input, null, 2)}
             </pre>
           </CardContent>
         </Card>
       );
     }
-  }
-  if (part.type === "tool-result") {
+
+    if (part.state === "output-error" || part.state === "output-denied") {
+      return (
+        <div className="text-xs text-destructive">
+          Tool {toolName} failed: {part.errorText ?? "Denied"}
+        </div>
+      );
+    }
+
     return (
-      <Card className="bg-background border-border">
-        <CardContent className="p-3 text-xs space-y-1">
-          <div className="font-semibold">Tool result: {part.toolName}</div>
-          <pre className="whitespace-pre-wrap text-muted-foreground">
-            {JSON.stringify(part.result, null, 2)}
-          </pre>
-        </CardContent>
-      </Card>
+      <span className="text-xs text-muted-foreground">
+        Tool call: {toolName} ({toolCallId})...
+      </span>
     );
   }
-  if (part.type === "data") {
-    return <span className="text-xs text-muted-foreground">{JSON.stringify(part.data)}</span>;
+
+  if (part.type.startsWith("data-")) {
+    return null;
   }
+
   return null;
 };
 
 export function Chat() {
-  const chatOptions = useCopilotChatOptions({ activeModule: "assistant" });
-  const { messages, input, handleInputChange, handleSubmit, addToolResult } = useChat(chatOptions);
+  const {
+    options: chatOptions,
+    runId,
+    apiBase,
+    tenantId,
+    accessToken,
+  } = useCopilotChatOptions({
+    activeModule: "assistant",
+  });
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    addToolResult,
+    addToolApprovalResponse,
+    setMessages,
+  } = useChat(chatOptions);
   const [submittingToolIds, setSubmittingToolIds] = useState<Set<string>>(new Set());
+  const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
 
   const markSubmitting = (id: string, value: boolean) => {
     setSubmittingToolIds((prev) => {
@@ -134,8 +204,24 @@ export function Chat() {
   };
 
   useEffect(() => {
-    console.debug("[Chat] messages", messages);
-  }, [messages]);
+    let cancelled = false;
+    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+      .then((history) => {
+        if (cancelled) {
+          return;
+        }
+        if (!hydratedRunId || hydratedRunId !== runId) {
+          setMessages(history);
+          setHydratedRunId(runId);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch copilot history:", error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -145,7 +231,12 @@ export function Chat() {
             <div className="text-xs uppercase text-muted-foreground">{m.role}</div>
             {m.parts?.map((p, idx) => (
               <div key={idx}>
-                {renderPart(p as MessagePart, { addToolResult, submittingToolIds, markSubmitting })}
+                {renderPart(p as MessagePart, {
+                  addToolResult,
+                  addToolApprovalResponse,
+                  submittingToolIds,
+                  markSubmitting,
+                })}
               </div>
             ))}
             {!m.parts?.length && m.content ? (

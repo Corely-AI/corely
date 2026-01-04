@@ -1,5 +1,11 @@
 import { nanoid } from "nanoid";
+import { createHash } from "crypto";
+import { SpanStatusCode } from "@opentelemetry/api";
+import { createUIMessageStream, pipeUIMessageStreamToResponse } from "ai";
+import { type Response } from "express";
+
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
+import { type CopilotMessage } from "../../domain/entities/message.entity";
 import { type AgentRunRepositoryPort } from "../ports/agent-run-repository.port";
 import { type MessageRepositoryPort } from "../ports/message-repository.port";
 import { type ToolExecutionRepositoryPort } from "../ports/tool-execution-repository.port";
@@ -14,9 +20,6 @@ import {
   type NormalizedMessageSnapshot,
   type ObservabilityPort,
 } from "@corely/kernel";
-import { type Response } from "express";
-import { createHash } from "crypto";
-import { SpanStatusCode } from "@opentelemetry/api";
 
 const ACTION_KEY = "copilot.chat";
 
@@ -35,7 +38,8 @@ export class StreamCopilotChatUseCase {
   ) {}
 
   async execute(params: {
-    messages: CopilotUIMessage[];
+    messages?: CopilotUIMessage[];
+    message?: CopilotUIMessage;
     tenantId: string;
     userId: string;
     idempotencyKey: string;
@@ -48,10 +52,14 @@ export class StreamCopilotChatUseCase {
     environment: string;
     modelId?: string;
     modelProvider?: string;
+    trigger?: string;
   }): Promise<void> {
     const { tenantId, userId, idempotencyKey } = params;
+    const incomingMessages = this.ensureMessageIds(
+      params.messages?.length ? params.messages : params.message ? [params.message] : []
+    );
 
-    const requestHash = this.hashRequest(params.messages);
+    const requestHash = this.hashRequest(incomingMessages);
     const decision = await this.idempotency.startOrReplay({
       actionKey: ACTION_KEY,
       tenantId,
@@ -91,6 +99,11 @@ export class StreamCopilotChatUseCase {
       return;
     }
 
+    if (!incomingMessages.length) {
+      params.response.status(400).json({ code: "EMPTY_REQUEST", message: "No messages provided" });
+      return;
+    }
+
     const runId = params.runId || nanoid();
     const turnId = nanoid();
     const tools = this.toolRegistry.listForTenant(tenantId);
@@ -112,7 +125,16 @@ export class StreamCopilotChatUseCase {
       provider: params.modelProvider,
     });
 
-    const normalizedMessages = this.normalizeMessages(params.messages);
+    let turnClosed = false;
+    const closeTurn = (withError?: { code: SpanStatusCode; message: string }) => {
+      if (turnClosed) {
+        return;
+      }
+      this.observability.endSpan(turnSpan, withError);
+      turnClosed = true;
+    };
+
+    const normalizedMessages = this.normalizeMessages(incomingMessages);
     this.observability.recordTurnInput(turnSpan, {
       history: normalizedMessages,
       userInput: this.extractLatestUserInput(normalizedMessages),
@@ -130,90 +152,138 @@ export class StreamCopilotChatUseCase {
       });
     }
 
-    const messagePersistSpan = this.observability.startSpan(
-      "store.messages",
-      { "copilot.run.id": runId },
-      turnSpan
-    );
+    const historyEntities = await this.messages.listByRun({ tenantId, runId });
+    const historyMessages = historyEntities.map((entity) => this.mapEntityToUIMessage(entity));
+    const existingIds = new Set(historyMessages.map((msg) => msg.id).filter(Boolean) as string[]);
 
-    await this.messages.createMany(
-      params.messages.map((msg) => ({
-        id: msg.id || nanoid(),
-        tenantId,
-        runId,
-        role: msg.role,
-        partsJson: JSON.stringify(
-          msg.parts && Array.isArray(msg.parts)
-            ? msg.parts
-            : [{ type: "text", text: typeof msg.content === "string" ? msg.content : "" }]
-        ),
-        traceId: turnSpan.traceId,
-      }))
-    );
+    const newMessagesToPersist = incomingMessages
+      .map((msg) => ({ ...msg, id: msg.id || nanoid() }))
+      .filter((msg) => !existingIds.has(msg.id ?? ""));
 
-    this.observability.endSpan(messagePersistSpan);
+    if (newMessagesToPersist.length) {
+      await this.messages.createMany(
+        newMessagesToPersist.map((msg) => ({
+          id: msg.id as string,
+          tenantId,
+          runId,
+          role: msg.role,
+          partsJson: JSON.stringify(this.serializeMessage(msg)),
+          traceId: turnSpan.traceId,
+        }))
+      );
+    }
+
+    const conversation = this.mergeMessages(historyMessages, incomingMessages);
+    const assistantMessageId = nanoid();
 
     try {
-      const modelSpan = this.observability.startSpan(
-        "copilot.model",
-        {
-          "ai.model": params.modelId ?? "unspecified",
-          "ai.provider": params.modelProvider ?? "unspecified",
-          "copilot.run.id": runId,
+      const stream = createUIMessageStream({
+        originalMessages: conversation,
+        onError: (error) => (error instanceof Error ? error.message : String(error)),
+        onFinish: async ({ responseMessage, isContinuation, finishReason }) => {
+          try {
+            await this.persistAssistantMessage({
+              message: responseMessage,
+              tenantId,
+              runId,
+              traceId: turnSpan.traceId,
+              isContinuation,
+            });
+
+            await this.agentRuns.updateStatus(runId, "completed", this.clock.now());
+
+            await this.audit.write({
+              tenantId,
+              actorUserId: userId,
+              action: "copilot.chat",
+              targetType: "AgentRun",
+              targetId: runId,
+            });
+
+            await this.idempotency.markCompleted({
+              actionKey: ACTION_KEY,
+              tenantId,
+              idempotencyKey,
+              responseStatus: 200,
+              responseBody: { status: "STREAMED", runId, finishReason },
+            });
+
+            this.observability.recordTurnOutput(turnSpan, {
+              text: this.extractAssistantText(responseMessage),
+              partsSummary: `parts:${responseMessage.parts?.length ?? 0}`,
+            });
+          } catch (error) {
+            if (error instanceof Error) {
+              this.observability.recordError(turnSpan, error, { "copilot.run.id": runId });
+            }
+          } finally {
+            closeTurn();
+          }
         },
-        turnSpan
-      );
+        execute: async ({ writer }) => {
+          const modelSpan = this.observability.startSpan(
+            "copilot.model",
+            {
+              "ai.model": params.modelId ?? "unspecified",
+              "ai.provider": params.modelProvider ?? "unspecified",
+              "copilot.run.id": runId,
+            },
+            turnSpan
+          );
 
-      const result = await this.languageModel.streamChat({
-        messages: params.messages,
-        tools,
-        runId,
-        tenantId,
-        userId,
+          let modelSpanError: { code: SpanStatusCode; message: string } | undefined;
+          try {
+            const { result, usage } = await this.languageModel.streamChat({
+              messages: conversation,
+              tools,
+              runId,
+              tenantId,
+              userId,
+              observability: modelSpan,
+            });
+
+            if (usage) {
+              this.observability.setAttributes(modelSpan, {
+                "tokens.input": usage.inputTokens ?? 0,
+                "tokens.output": usage.outputTokens ?? 0,
+                "tokens.total": usage.totalTokens ?? 0,
+              });
+            }
+
+            writer.write({
+              type: "data-run",
+              data: { runId },
+              transient: true,
+            });
+
+            writer.merge(
+              result.toUIMessageStream({
+                originalMessages: conversation,
+                generateMessageId: () => assistantMessageId,
+                messageMetadata: () => ({ runId }),
+                sendReasoning: true,
+              })
+            );
+          } catch (error) {
+            modelSpanError = {
+              code: SpanStatusCode.ERROR,
+              message: "copilot_model_failed",
+            };
+            throw error;
+          } finally {
+            this.observability.endSpan(modelSpan, modelSpanError);
+          }
+        },
+      });
+
+      pipeUIMessageStreamToResponse({
         response: params.response,
-        observability: modelSpan,
+        stream,
       });
-
-      if (result.usage) {
-        this.observability.setAttributes(modelSpan, {
-          "tokens.input": result.usage.promptTokens ?? 0,
-          "tokens.output": result.usage.completionTokens ?? 0,
-          "tokens.total": result.usage.totalTokens ?? 0,
-        });
-      }
-
-      this.observability.endSpan(modelSpan);
-      this.observability.recordTurnOutput(turnSpan, {
-        text: result.outputText,
-        partsSummary: result.outputText ? `length:${result.outputText.length}` : "",
-      });
-
-      await this.agentRuns.updateStatus(runId, "completed", this.clock.now());
-
-      await this.audit.write({
-        tenantId,
-        actorUserId: userId,
-        action: "copilot.chat",
-        targetType: "AgentRun",
-        targetId: runId,
-      });
-
-      await this.idempotency.markCompleted({
-        actionKey: ACTION_KEY,
-        tenantId,
-        idempotencyKey,
-        responseStatus: 200,
-        responseBody: { status: "STREAMED", runId },
-      });
-      this.observability.endSpan(turnSpan);
     } catch (error) {
       if (error instanceof Error) {
-        this.observability.recordError(turnSpan, error, { "copilot.run.id": params.runId ?? "" });
+        this.observability.recordError(turnSpan, error, { "copilot.run.id": runId });
       }
-      this.observability.endSpan(turnSpan, {
-        code: SpanStatusCode.ERROR,
-        message: "copilot_stream_failed",
-      });
       await this.idempotency.markFailed({
         actionKey: ACTION_KEY,
         tenantId,
@@ -221,6 +291,7 @@ export class StreamCopilotChatUseCase {
         responseStatus: 500,
         responseBody: { error: "copilot_stream_failed" },
       });
+      closeTurn({ code: SpanStatusCode.ERROR, message: "copilot_stream_failed" });
       throw error;
     }
   }
@@ -230,41 +301,195 @@ export class StreamCopilotChatUseCase {
     return createHash("sha256").update(json).digest("hex");
   }
 
+  private ensureMessageIds(messages: CopilotUIMessage[]): CopilotUIMessage[] {
+    return messages.map((msg) => ({ ...msg, id: msg.id || nanoid() }));
+  }
+
+  private mergeMessages(
+    history: CopilotUIMessage[],
+    incoming: CopilotUIMessage[]
+  ): CopilotUIMessage[] {
+    const merged: CopilotUIMessage[] = [];
+    const seen = new Set<string>();
+
+    const pushMessage = (message: CopilotUIMessage) => {
+      if (message.id) {
+        if (seen.has(message.id)) {
+          const index = merged.findIndex((entry) => entry.id === message.id);
+          if (index >= 0) {
+            merged[index] = message;
+          }
+          return;
+        }
+        seen.add(message.id);
+      }
+      merged.push(message);
+    };
+
+    history.forEach(pushMessage);
+    incoming.forEach(pushMessage);
+
+    return merged;
+  }
+
+  private mapEntityToUIMessage(entity: CopilotMessage): CopilotUIMessage {
+    try {
+      const parsed = JSON.parse(entity.partsJson);
+      if (Array.isArray(parsed)) {
+        return {
+          id: entity.id,
+          role: entity.role as CopilotUIMessage["role"],
+          parts: parsed,
+        };
+      }
+      return {
+        id: entity.id,
+        role: entity.role as CopilotUIMessage["role"],
+        parts: parsed?.parts,
+        metadata: parsed?.metadata,
+      };
+    } catch {
+      return {
+        id: entity.id,
+        role: entity.role as CopilotUIMessage["role"],
+        parts: [],
+      };
+    }
+  }
+
+  private serializeMessage(message: CopilotUIMessage) {
+    return {
+      parts: message.parts ?? [],
+      metadata: message.metadata,
+    };
+  }
+
+  private async persistAssistantMessage(params: {
+    message: CopilotUIMessage;
+    tenantId: string;
+    runId: string;
+    traceId?: string;
+    isContinuation: boolean;
+  }) {
+    const payload = JSON.stringify(this.serializeMessage(params.message));
+    const id = params.message.id || nanoid();
+    const record = {
+      id,
+      tenantId: params.tenantId,
+      runId: params.runId,
+      role: params.message.role ?? "assistant",
+      partsJson: payload,
+      traceId: params.traceId,
+    };
+
+    await this.messages.upsert(record);
+    await this.syncToolExecutionsFromMessage(params.message, params.tenantId, params.runId);
+  }
+
+  private extractAssistantText(message: CopilotUIMessage): string | undefined {
+    const textPart = message.parts?.find((part) => part.type === "text");
+    if (textPart && "text" in textPart && typeof textPart.text === "string") {
+      return textPart.text;
+    }
+    return undefined;
+  }
+
+  private async syncToolExecutionsFromMessage(
+    message: CopilotUIMessage,
+    tenantId: string,
+    runId: string
+  ) {
+    for (const part of message.parts ?? []) {
+      const toolCallId = (part as any).toolCallId as string | undefined;
+      if (!toolCallId) {
+        continue;
+      }
+      const toolName = (part as any).toolName ?? this.toolNameFromType(String(part.type));
+      const state = (part as any).state as string | undefined;
+
+      if (state === "approval-requested") {
+        try {
+          await this.toolExecutions.create({
+            id: `${runId}:${toolCallId}`,
+            tenantId,
+            runId,
+            toolCallId,
+            toolName: toolName ?? "unknown",
+            inputJson: JSON.stringify((part as any).input ?? {}),
+            status: "pending-approval",
+          });
+        } catch {
+          // ignore duplicate records
+        }
+      }
+
+      if (state === "output-available") {
+        try {
+          await this.toolExecutions.complete(tenantId, runId, toolCallId, {
+            status: "completed",
+            outputJson: JSON.stringify((part as any).output ?? {}),
+          });
+          await this.outbox.enqueue({
+            tenantId,
+            eventType: "copilot.tool.completed",
+            payload: { runId, tool: toolName ?? "unknown" },
+          });
+        } catch {
+          // Swallow errors to avoid breaking the stream persistence
+        }
+      }
+
+      if (state === "output-error" || state === "output-denied") {
+        try {
+          await this.toolExecutions.complete(tenantId, runId, toolCallId, {
+            status: "failed",
+            errorJson:
+              state === "output-denied"
+                ? "tool denied"
+                : typeof (part as any).errorText === "string"
+                  ? (part as any).errorText
+                  : "tool_failed",
+          });
+        } catch {
+          // ignore failures when syncing tool executions
+        }
+      }
+    }
+  }
+
+  private toolNameFromType(type: string): string | undefined {
+    if (type.startsWith("tool-")) {
+      return type.replace("tool-", "");
+    }
+    return undefined;
+  }
+
   private normalizeMessages(messages: CopilotUIMessage[]): NormalizedMessageSnapshot[] {
     return messages.map((msg) => {
       const parts =
         msg.parts?.map((part) => {
           if (part.type === "text") {
-            return { type: "text", text: part.text };
+            return { type: "text", text: (part as any).text } as const;
           }
-          if (part.type === "tool-call") {
+          if (String(part.type).startsWith("tool-")) {
             return {
               type: "tool-call",
-              toolCallId: part.toolCallId,
-              toolName: part.toolName,
-              input: part.input as JsonValue,
-            };
+              toolCallId: (part as any).toolCallId,
+              toolName: (part as any).toolName,
+              input: (part as any).input as JsonValue,
+            } as const;
           }
-          if (part.type === "tool-result") {
-            return {
-              type: "tool-result",
-              toolCallId: part.toolCallId,
-              toolName: part.toolName,
-              result: part.result as JsonValue,
-            };
-          }
-          if (part.type === "data") {
+          if (String(part.type).startsWith("data-")) {
             return {
               type: "data",
-              text: typeof part.data === "string" ? part.data : undefined,
-            };
+              text: typeof (part as any).data === "string" ? (part as any).data : undefined,
+            } as const;
           }
-          return { type: "text", text: "" };
+          return { type: "text", text: "" } as const;
         }) ?? [];
 
       return {
         role: msg.role as NormalizedMessageSnapshot["role"],
-        content: typeof msg.content === "string" ? msg.content : undefined,
         parts: parts.length ? parts : undefined,
       };
     });
@@ -275,9 +500,6 @@ export class StreamCopilotChatUseCase {
       const message = messages[index];
       if (message.role !== "user") {
         continue;
-      }
-      if (message.content) {
-        return message.content;
       }
       const textPart = message.parts?.find((part) => part.type === "text" && part.text);
       if (textPart && textPart.text) {

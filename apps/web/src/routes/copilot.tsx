@@ -1,14 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { nanoid } from "nanoid";
 import { Button } from "@/shared/ui/button";
-import { useCopilotChatOptions } from "@/lib/copilot-api";
+import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
 
-type MessagePart =
-  | { type: "text"; text: string }
-  | { type: "tool-call"; toolName: string; toolCallId: string; input: unknown }
-  | { type: "tool-result"; toolName: string; toolCallId: string; result: unknown }
-  | { type: "data"; data: any };
+type MessagePart = {
+  type: string;
+  text?: string;
+  toolCallId?: string;
+  toolName?: string;
+  input?: unknown;
+  output?: unknown;
+  result?: unknown;
+  state?: string;
+  approval?: { id: string; approved?: boolean; reason?: string };
+  errorText?: string;
+};
 
 const ConfirmCard: React.FC<{
   toolCallId: string;
@@ -47,60 +53,119 @@ const MessageBubble: React.FC<{
 );
 
 export const CopilotPage: React.FC = () => {
-  const chatOptions = useCopilotChatOptions({
+  const {
+    options: chatOptions,
+    runId,
+    apiBase,
+    tenantId,
+    accessToken,
+  } = useCopilotChatOptions({
     activeModule: "freelancer",
     locale: "en",
   });
 
-  const { messages, input, handleInputChange, handleSubmit, addToolResult } = useChat(chatOptions);
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    addToolResult,
+    addToolApprovalResponse,
+    setMessages,
+  } = useChat(chatOptions);
+  const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+      .then((history) => {
+        if (!cancelled && (!hydratedRunId || hydratedRunId !== runId)) {
+          setMessages(history);
+          setHydratedRunId(runId);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch copilot history:", error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
 
   const renderPart = (part: MessagePart, messageId: string) => {
     if (part.type === "text") {
       return <p className="whitespace-pre-wrap">{part.text}</p>;
     }
-    if (part.type === "tool-call") {
-      if (part.toolName === "invoice.issue" || part.toolName === "expense.confirmCreate") {
+    if (part.type === "reasoning") {
+      return <p className="text-xs text-muted-foreground">{part.text}</p>;
+    }
+    if (
+      part.type === "tool-call" ||
+      part.type === "dynamic-tool" ||
+      part.type.startsWith("tool-")
+    ) {
+      const toolCallId = part.toolCallId || messageId;
+      const toolName = part.toolName || part.type.replace("tool-", "");
+      if (toolName === "invoice.issue" || toolName === "expense.confirmCreate") {
         return (
           <ConfirmCard
-            key={part.toolCallId}
-            toolCallId={part.toolCallId}
-            toolName={part.toolName}
+            key={toolCallId}
+            toolCallId={toolCallId}
+            toolName={toolName}
             onConfirm={() =>
               addToolResult?.({
-                toolCallId: part.toolCallId,
+                toolCallId,
                 result: { confirmed: true },
-                toolName: part.toolName,
+                toolName,
               } as any)
             }
             onCancel={() =>
               addToolResult?.({
-                toolCallId: part.toolCallId,
+                toolCallId,
                 result: { confirmed: false },
-                toolName: part.toolName,
+                toolName,
               } as any)
             }
           />
         );
       }
+      if (part.state === "approval-requested" && part.approval?.id) {
+        return (
+          <ConfirmCard
+            key={toolCallId}
+            toolCallId={toolCallId}
+            toolName={toolName}
+            onConfirm={() =>
+              addToolApprovalResponse?.({ id: part.approval?.id ?? toolCallId, approved: true })
+            }
+            onCancel={() =>
+              addToolApprovalResponse?.({ id: part.approval?.id ?? toolCallId, approved: false })
+            }
+          />
+        );
+      }
+      if (part.state === "output-available") {
+        return (
+          <div className="text-xs text-green-700">
+            Tool result {toolName}: {JSON.stringify(part.output ?? part.result ?? part.input)}
+          </div>
+        );
+      }
+      if (part.state === "output-error" || part.state === "output-denied") {
+        return (
+          <div className="text-xs text-destructive">
+            Tool {toolName} failed: {part.errorText ?? "Denied"}
+          </div>
+        );
+      }
       return (
         <div className="text-xs text-gray-600">
-          Tool call: {part.toolName} ({part.toolCallId})
+          Tool call: {toolName} ({toolCallId})
         </div>
       );
     }
-    if (part.type === "tool-result") {
-      return (
-        <div className="text-xs text-green-700">
-          Tool result {part.toolName}: {JSON.stringify(part.result)}
-        </div>
-      );
-    }
-    if (part.type === "data") {
-      return (
-        <div className="text-[11px] text-gray-500">
-          meta {messageId}: {JSON.stringify(part.data)}
-        </div>
-      );
+    if (part.type.startsWith("data-")) {
+      return null;
     }
     return null;
   };

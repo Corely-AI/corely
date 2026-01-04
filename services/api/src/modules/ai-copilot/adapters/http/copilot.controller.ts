@@ -22,6 +22,8 @@ import { CreateRunUseCase } from "../../application/use-cases/create-run.usecase
 import { GetRunUseCase } from "../../application/use-cases/get-run.usecase";
 import { ListMessagesUseCase } from "../../application/use-cases/list-messages.usecase";
 import { EnvService } from "@corely/config";
+import { type CopilotMessage } from "../../domain/entities/message.entity";
+import { type CopilotUIMessage } from "../../domain/types/ui-message";
 
 type AuthedRequest = Request & { tenantId?: string; user?: { userId?: string }; traceId?: string };
 
@@ -58,6 +60,7 @@ export class CopilotController {
 
     return this.streamCopilotChat.execute({
       messages: body.messages || [],
+      message: body.message,
       tenantId,
       userId,
       idempotencyKey,
@@ -70,6 +73,7 @@ export class CopilotController {
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,
       modelProvider: this.env.AI_MODEL_PROVIDER,
+      trigger: body.trigger,
     });
   }
 
@@ -114,6 +118,23 @@ export class CopilotController {
     return { items: messages };
   }
 
+  @Get("chat/:id/stream")
+  @UseGuards(IdentityAuthGuard, TenantGuard)
+  async resume(@Param("id") id: string, @Req() req: AuthedRequest, @Res() res: Response) {
+    // Resume streams are not persisted yet; return 204 to indicate no active stream
+    res.status(204).json({ status: "NO_ACTIVE_STREAM", runId: id, tenantId: req.tenantId });
+  }
+
+  @Get("chat/:id/history")
+  @UseGuards(IdentityAuthGuard, TenantGuard)
+  async history(@Param("id") id: string, @Req() req: AuthedRequest) {
+    const tenantId = req.tenantId as string;
+    const messages = await this.listMessagesUseCase.execute({ tenantId, runId: id });
+    return {
+      items: messages.map((msg) => this.mapToUiMessage(msg)),
+    };
+  }
+
   @Post("runs/:id/messages")
   @UseGuards(IdentityAuthGuard, TenantGuard)
   async appendMessage(
@@ -132,6 +153,7 @@ export class CopilotController {
 
     await this.streamCopilotChat.execute({
       messages: body.messages || [],
+      message: body.message,
       tenantId,
       userId,
       idempotencyKey,
@@ -144,6 +166,32 @@ export class CopilotController {
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,
       modelProvider: this.env.AI_MODEL_PROVIDER,
+      trigger: body.trigger,
     });
+  }
+
+  private mapToUiMessage(message: CopilotMessage): CopilotUIMessage {
+    try {
+      const parsed = JSON.parse(message.partsJson);
+      if (Array.isArray(parsed)) {
+        return {
+          id: message.id,
+          role: message.role as CopilotUIMessage["role"],
+          parts: parsed,
+        };
+      }
+      return {
+        id: message.id,
+        role: message.role as CopilotUIMessage["role"],
+        parts: parsed?.parts,
+        metadata: parsed?.metadata,
+      };
+    } catch {
+      return {
+        id: message.id,
+        role: message.role as CopilotUIMessage["role"],
+        parts: [],
+      };
+    }
   }
 }

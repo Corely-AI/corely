@@ -26,6 +26,14 @@ export interface BaseViteConfigOptions {
    * Watch workspace packages for changes
    */
   watchWorkspacePackages?: string[];
+
+  /**
+   * API proxy configuration
+   */
+  apiProxy?: {
+    target: string;
+    path?: string;
+  };
 }
 
 export interface BaseVitestConfigOptions {
@@ -60,7 +68,19 @@ export function createBaseViteConfig(options: BaseViteConfigOptions = {}): UserC
     plugins = [],
     excludeFromOptimizeDeps = [],
     watchWorkspacePackages = [],
+    apiProxy,
   } = options;
+
+  const proxyPath = apiProxy?.path || "/api";
+  const proxyConfig = apiProxy
+    ? {
+        [proxyPath]: {
+          target: apiProxy.target,
+          changeOrigin: true,
+          ...(apiProxy.path ? {} : { rewrite: (path: string) => path.replace(/^\/api/, "") }),
+        },
+      }
+    : undefined;
 
   return {
     plugins,
@@ -73,6 +93,7 @@ export function createBaseViteConfig(options: BaseViteConfigOptions = {}): UserC
           ignored: [`!**/node_modules/{${watchWorkspacePackages.join(",")}}/**`],
         },
       }),
+      ...(proxyConfig && { proxy: proxyConfig }),
     },
     optimizeDeps: {
       // Exclude workspace packages from pre-bundling so changes are picked up

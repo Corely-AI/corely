@@ -7,6 +7,7 @@ export interface DomainToolPort {
   description: string;
   inputSchema: z.ZodTypeAny;
   kind: ToolKind;
+  needsApproval?: boolean;
   execute?: (params: {
     tenantId: string;
     userId: string;
