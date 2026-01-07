@@ -3,9 +3,12 @@
   "compilerOptions": {
     "target": "ES2020",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "types": ["./src/types/custom-modules", "./src/types/react-query"],
+    "types": ["./src/types/react-query"],
     "allowImportingTsExtensions": true,
     "moduleDetection": "force",
+    "composite": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
 
     /* Linting - relaxed for gradual migration */
     "strict": false,
@@ -14,15 +17,17 @@
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
     "exactOptionalPropertyTypes": false,
+    "ignoreDeprecations": "6.0",
 
     "baseUrl": "..",
     "paths": {
       "@/*": ["web/src/*"],
-      "@corely/api-client": ["packages/api-client/src/index.ts"],
-      "@corely/contracts": ["packages/contracts/src/index.ts"],
-      "@corely/domain": ["packages/domain/src/index.ts"],
-      "@corely/offline-core": ["packages/offline-core/src/index.ts"],
-      "@corely/offline-web": ["packages/offline-web/src/index.ts"]
+      "@corely/auth-client": ["../packages/auth-client/src/index.ts"],
+      "@corely/api-client": ["../packages/api-client/src/index.ts"],
+      "@corely/contracts": ["../packages/contracts/src/index.ts"],
+      "@corely/domain": ["../packages/domain/src/index.ts"],
+      "@corely/offline-core": ["../packages/offline-core/src/index.ts"],
+      "@corely/offline-web": ["../packages/offline-web/src/index.ts"]
     }
   },
   "include": ["src"]

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CreateCustomerInput, UpdateCustomerInput } from "@corely/contracts";
+import type { CreateCustomerInput, UpdateCustomerInput, CustomerDto } from "@corely/contracts";
 
 export const customerFormSchema = z.object({
   displayName: z.string().min(1, "Display name is required"),
@@ -77,6 +77,28 @@ export function getDefaultCustomerFormValues(): CustomerFormData {
       city: "",
       postalCode: "",
       country: "",
+    },
+  };
+}
+
+export function toCustomerFormValues(customer: CustomerDto): CustomerFormData {
+  const defaults = getDefaultCustomerFormValues();
+
+  return {
+    ...defaults,
+    displayName: customer.displayName ?? "",
+    email: customer.email ?? "",
+    phone: customer.phone ?? "",
+    vatId: customer.vatId ?? "",
+    notes: customer.notes ?? "",
+    tags: customer.tags ?? [],
+    billingAddress: {
+      ...defaults.billingAddress,
+      line1: customer.billingAddress?.line1 ?? "",
+      line2: customer.billingAddress?.line2 ?? "",
+      city: customer.billingAddress?.city ?? "",
+      postalCode: customer.billingAddress?.postalCode ?? "",
+      country: customer.billingAddress?.country ?? "",
     },
   };
 }

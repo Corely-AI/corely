@@ -20,6 +20,8 @@ type Props = {
 
 type FieldErrors = Record<string, string | undefined>;
 
+const EMPTY_SELECT_VALUE = "__empty__";
+
 const buildSchema = (field: CollectInputField): z.ZodTypeAny => {
   if (field.type === "number") {
     let schema = z.number();
@@ -129,18 +131,42 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
     }
     if (field.type === "select") {
       const options = field.options || [];
+      const hasEmptyOption = options.some(
+        (opt) => opt.value === "" || opt.value === null || opt.value === undefined
+      );
+      const normalizedOptions = options.map((opt) => {
+        const rawValue = opt.value ?? "";
+        const stringValue = String(rawValue);
+        return {
+          ...opt,
+          value: stringValue === "" ? EMPTY_SELECT_VALUE : stringValue,
+        };
+      });
+      const currentValue = values[field.key];
+      const selectValue =
+        currentValue === "" && hasEmptyOption
+          ? EMPTY_SELECT_VALUE
+          : currentValue === null || currentValue === undefined
+            ? ""
+            : String(currentValue);
       return (
         <Select
           disabled={disabled || isSubmitting}
-          value={(values[field.key] as string | undefined) ?? ""}
-          onValueChange={(value) => handleChange(field.key, value)}
+          value={selectValue}
+          onValueChange={(value) =>
+            handleChange(field.key, value === EMPTY_SELECT_VALUE ? "" : value)
+          }
         >
           <SelectTrigger>
             <SelectValue placeholder={field.placeholder || "Select"} />
           </SelectTrigger>
           <SelectContent>
-            {options.map((opt) => (
-              <SelectItem key={String(opt.value)} value={String(opt.value)} disabled={opt.disabled}>
+            {normalizedOptions.map((opt, index) => (
+              <SelectItem
+                key={`${opt.value}-${index}`}
+                value={String(opt.value)}
+                disabled={opt.disabled}
+              >
                 {opt.label}
               </SelectItem>
             ))}
