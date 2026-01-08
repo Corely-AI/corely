@@ -9,7 +9,7 @@ import type {
 
 export const customersApi = {
   async createCustomer(input: CreateCustomerInput): Promise<CustomerDto> {
-    const response = await apiClient.post<unknown>("/customers", input);
+    const response = await apiClient.post<CreateCustomerOutput>("/customers", input);
     // Support both wrapped `{ customer }` responses and raw DTO bodies
     if (typeof response === "object" && response !== null && "customer" in response) {
       return (response as CreateCustomerOutput).customer;
@@ -22,9 +22,22 @@ export const customersApi = {
     return response.customer;
   },
 
-  async getCustomer(id: string): Promise<CustomerDto> {
-    const response = await apiClient.get<{ customer: CustomerDto }>(`/customers/${id}`);
-    return response.customer;
+  async getCustomer(id: string): Promise<CustomerDto | null> {
+    const response = await apiClient.get<unknown>(`/customers/${id}`);
+    if (!response) {
+      return null;
+    }
+    if (typeof response === "object" && response !== null) {
+      if ("customer" in response) {
+        const customer = (response as { customer?: CustomerDto | null }).customer;
+        return customer ?? null;
+      }
+      if ("data" in response) {
+        const customer = (response as { data?: CustomerDto | null }).data;
+        return customer ?? null;
+      }
+    }
+    return response as CustomerDto;
   },
 
   async listCustomers(params?: {

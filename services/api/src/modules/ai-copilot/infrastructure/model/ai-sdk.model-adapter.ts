@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import type { EnvService } from "@corely/config";
-import { streamText, convertToCoreMessages, stepCountIs } from "ai";
+import { streamText, convertToModelMessages, stepCountIs } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { LanguageModelPort } from "../../application/ports/language-model.port";
@@ -11,9 +11,8 @@ import type { AuditPort } from "../../application/ports/audit.port";
 import type { OutboxPort } from "../../application/ports/outbox.port";
 import { collectInputsTool } from "../tools/interactive-tools";
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
-import type { Response } from "express";
 import { type ObservabilityPort, type ObservabilitySpanRef } from "@corely/kernel";
-import { type LanguageModelUsage } from "ai";
+import { type LanguageModelUsage, type StreamTextResult } from "ai";
 
 @Injectable()
 export class AiSdkModelAdapter implements LanguageModelPort {
@@ -42,9 +41,8 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     runId: string;
     tenantId: string;
     userId: string;
-    response: Response;
     observability: ObservabilitySpanRef;
-  }): Promise<{ outputText: string; usage?: LanguageModelUsage }> {
+  }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }> {
     const aiTools = buildAiTools(params.tools, {
       toolExecutions: this.toolExecutions,
       audit: this.audit,
@@ -68,55 +66,69 @@ export class AiSdkModelAdapter implements LanguageModelPort {
 
     this.logger.debug(`Starting streamText with ${Object.keys(toolset).length} tools`);
 
+    const sanitizeParts = (parts: CopilotUIMessage["parts"]) => {
+      if (!Array.isArray(parts)) {
+        return undefined;
+      }
+      const filtered = parts
+        .map((part: any) => {
+          if (typeof part?.type !== "string") {
+            return null;
+          }
+          if (part.type === "text" && typeof part.text === "string") {
+            return { type: "text", text: part.text };
+          }
+          if (part.type === "reasoning" && typeof part.text === "string") {
+            return { type: "text", text: part.text };
+          }
+          // Drop tool/data/other parts to avoid malformed tool_use/tool_result sequences
+          return null;
+        })
+        .filter(Boolean);
+      return filtered.length ? filtered : undefined;
+    };
+
+    const systemMessage: CopilotUIMessage = {
+      role: "system",
+      parts: [
+        {
+          type: "text",
+          text:
+            "You are the Corely Copilot. Use the provided tools for all factual or data retrieval tasks. " +
+            "When asked to search, list, or look up customers, always call the customer_search tool even if the user provides no query; " +
+            "send an empty or undefined query to list all customers. Do not make up customer data.",
+        } as any,
+      ],
+    };
+
+    const modelMessages = await convertToModelMessages(
+      [systemMessage, ...params.messages].map((msg) => {
+        const parts = sanitizeParts(msg.parts) ?? [];
+        return {
+          role: msg.role,
+          parts,
+        };
+      })
+    );
+
     const result = streamText({
       model,
-      messages: convertToCoreMessages(params.messages),
+      messages: modelMessages,
       tools: toolset,
       stopWhen: stepCountIs(5),
+      experimental_telemetry: {
+        isEnabled: true,
+        functionId: "copilot.streamChat",
+      },
     });
 
-    // Set response headers for text streaming
-    params.response.setHeader("Content-Type", "text/plain; charset=utf-8");
-    params.response.setHeader("Cache-Control", "no-cache, no-transform");
-
-    this.logger.debug("Starting to stream chunks from fullStream");
-    let chunkCount = 0;
-    let textDeltaCount = 0;
-    let toolCallCount = 0;
-    let toolResultCount = 0;
-
-    // Stream all text from all steps (including after tool calls)
+    let usage: LanguageModelUsage | undefined;
     try {
-      for await (const chunk of result.fullStream) {
-        chunkCount++;
-
-        if (chunk.type === "text-delta") {
-          textDeltaCount++;
-          const preview = chunk.text.length > 50 ? chunk.text.substring(0, 50) + "..." : chunk.text;
-          this.logger.debug(`Text delta ${textDeltaCount}: "${preview}"`);
-          params.response.write(chunk.text);
-        } else if (chunk.type === "tool-call") {
-          toolCallCount++;
-          this.logger.log(`Tool call ${toolCallCount}: ${(chunk as any).toolName}`);
-        } else if (chunk.type === "tool-result") {
-          toolResultCount++;
-          this.logger.log(`Tool result ${toolResultCount} received`);
-        } else if (chunk.type === "finish") {
-          this.logger.log(`Stream finished: ${(chunk as any).finishReason}`);
-        } else {
-          this.logger.debug(`Chunk type: ${chunk.type}`);
-        }
-      }
-    } catch (error) {
-      this.logger.error("Stream error:", error);
-    } finally {
-      this.logger.log(
-        `Stream completed - Chunks: ${chunkCount}, Text: ${textDeltaCount}, Tools: ${toolCallCount}/${toolResultCount}`
-      );
-      params.response.end();
+      usage = await result.usage;
+    } catch (err) {
+      this.logger.warn(`Failed to resolve usage: ${err}`);
     }
 
-    // Return empty values - actual text/usage available via result promises if needed
-    return { outputText: "", usage: undefined };
+    return { result, usage };
   }
 }

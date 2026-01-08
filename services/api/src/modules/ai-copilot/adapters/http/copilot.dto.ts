@@ -10,6 +10,17 @@ export class CopilotChatRequestDto {
   @IsArray()
   messages?: CopilotUIMessage[];
 
+  @IsOptional()
+  message?: CopilotUIMessage;
+
+  @IsOptional()
+  @IsString()
+  trigger?: string;
+
+  @IsOptional()
+  @IsString()
+  messageId?: string;
+
   requestData!: {
     tenantId: string;
     locale?: string;

@@ -258,6 +258,7 @@ export const buildInventoryTools = (
       name: "inventory_anomalyScan",
       description: "Scan inventory activity for anomalies.",
       kind: "server",
+      needsApproval: true,
       inputSchema: z.object({
         fromDate: z.string().optional(),
         toDate: z.string().optional(),

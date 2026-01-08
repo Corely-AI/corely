@@ -22,5 +22,14 @@ export interface MessageRepositoryPort {
     }[]
   ): Promise<void>;
 
+  upsert(message: {
+    id: string;
+    tenantId: string;
+    runId: string;
+    role: string;
+    partsJson: string;
+    traceId?: string;
+  }): Promise<void>;
+
   listByRun(params: { tenantId: string; runId: string }): Promise<CopilotMessage[]>;
 }
