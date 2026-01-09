@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
-import { CONTRACTS_HELLO, mockReceipts } from "@kerniflow/contracts";
-import { DOMAIN_HELLO, formatEUR, vatCents } from "@kerniflow/domain";
+import { CONTRACTS_HELLO, mockReceipts } from "@corely/contracts";
+import { DOMAIN_HELLO, formatEUR, vatCents } from "@corely/domain";
 
 @Controller()
 export class AppController {
@@ -18,8 +18,8 @@ export class AppController {
       sample: {
         merchant: r.merchant,
         total: formatEUR(r.totalCents, "de-DE"),
-        vat: formatEUR(vatCents(r), "de-DE")
-      }
+        vat: formatEUR(vatCents(r), "de-DE"),
+      },
     };
   }
 }

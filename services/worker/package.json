@@ -1,17 +1,39 @@
 {
-  "name": "@kerniflow/worker",
+  "name": "@corely/worker",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "dependencies": {
-    "@kerniflow/contracts": "workspace:*",
-    "@nestjs/common": "^11.1.9",
-    "@nestjs/core": "^11.1.9",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "@corely/config": "workspace:*",
+    "@corely/contracts": "workspace:*",
+    "@corely/core": "workspace:*",
+    "@corely/data": "workspace:*",
+    "@corely/email-templates": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "0.52.1",
+    "@opentelemetry/resources": "1.25.1",
+    "@opentelemetry/sdk-node": "0.52.1",
+    "@opentelemetry/sdk-trace-base": "1.25.1",
+    "@opentelemetry/semantic-conventions": "1.25.1",
+    "@prisma/client": "catalog:",
+    "bullmq": "catalog:",
+    "react": "catalog:",
+    "reflect-metadata": "catalog:",
+    "resend": "catalog:",
+    "rxjs": "catalog:"
+  },
+  "devDependencies": {
+    "@corely/testkit": "workspace:*",
+    "@types/react": "catalog:",
+    "msw": "catalog:"
   },
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "start": "tsx src/main.ts",
+    "dev": "node dev.mjs",
+    "build": "node esbuild.config.mjs",
+    "start": "node dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  }
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

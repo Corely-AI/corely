@@ -3,6 +3,8 @@
     "appName": "Bizflow",
     "tagline": "Run your business, end-to-end.",
     "loading": "Loading...",
+    "select": "Select",
+    "optional": "Optional",
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -29,11 +31,26 @@
     "assistant": "Assistant",
     "expenses": "Expenses",
     "invoices": "Invoices",
-    "clients": "Clients",
+    "customers": "Customers",
+    "salesQuotes": "Sales Quotes",
+    "salesOrders": "Sales Orders",
+    "salesInvoices": "Sales Invoices",
+    "salesCopilot": "Sales Copilot",
+    "salesSettings": "Sales Settings",
+    "purchaseOrders": "Purchase Orders",
+    "vendorBills": "Vendor Bills",
+    "purchasingSettings": "Purchasing Settings",
+    "purchasingCopilot": "Purchasing Copilot",
     "settings": "Settings",
     "projects": "Projects",
     "accounting": "Accounting",
     "inventory": "Inventory",
+    "inventoryProducts": "Inventory - Products",
+    "inventoryWarehouses": "Inventory - Warehouses",
+    "inventoryStock": "Inventory - Stock",
+    "inventoryDocuments": "Inventory - Documents",
+    "inventoryReorder": "Inventory - Reorder",
+    "inventoryCopilot": "Inventory - Copilot",
     "automation": "Automation",
     "documents": "Documents",
     "hr": "HR"
@@ -100,20 +117,36 @@
   "invoices": {
     "title": "Invoices",
     "createInvoice": "Create invoice",
+    "createNewInvoice": "Create New Invoice",
     "noInvoices": "No invoices yet",
     "noInvoicesDescription": "Create your first invoice to get started.",
     "invoiceNumber": "Invoice #",
-    "client": "Client",
+    "invoiceNumberLabel": "Invoice number",
+    "customer": "Customer",
+    "billedTo": "Billed to",
     "date": "Date",
+    "invoiceDate": "Invoice date",
+    "serviceDate": "Service date",
     "dueDate": "Due date",
     "amount": "Amount",
     "status": "Status",
     "items": "Items",
+    "description": "Description",
+    "quantity": "Quantity",
+    "rate": "Rate",
     "subtotal": "Subtotal",
     "vatAmount": "VAT",
     "total": "Total",
+    "totalAmountNet": "Total amount (Net)",
+    "totalAmountGross": "Total amount (Gross)",
     "paymentTerms": "Payment terms",
     "notes": "Notes",
+    "addLine": "Add a line",
+    "generate": "Generate",
+    "creating": "Creating...",
+    "saving": "Saving...",
+    "selectDate": "Select date",
+    "selectDateRange": "Select date range",
     "statuses": {
       "draft": "Draft",
       "issued": "Issued",
@@ -129,26 +162,52 @@
       "preview": "Preview"
     },
     "wizard": {
-      "selectClient": "Select client",
+      "selectCustomer": "Select customer",
       "addItems": "Add line items",
       "review": "Review & create"
     }
   },
-  "clients": {
-    "title": "Clients",
-    "addClient": "Add client",
-    "noClients": "No clients yet",
-    "noClientsDescription": "Add your first client to start creating invoices.",
+  "customers": {
+    "title": "Customers",
+    "addCustomer": "Add customer",
+    "addNewClient": "Add new client",
+    "noCustomers": "No customers yet",
+    "noCustomersDescription": "Add your first customer to start creating invoices.",
     "name": "Name",
+    "displayName": "Display Name",
     "company": "Company",
     "email": "Email",
     "phone": "Phone",
     "address": "Address",
+    "addressLine1": "Address Line 1",
+    "addressLine2": "Address Line 2",
     "city": "City",
+    "postalCode": "Postal Code",
     "country": "Country",
     "vatId": "VAT ID",
     "invoiceHistory": "Invoice history",
-    "totalRevenue": "Total revenue"
+    "totalRevenue": "Total revenue",
+    "basicInformation": "Basic Information",
+    "billingAddress": "Billing Address",
+    "placeholders": {
+      "displayName": "Company or person name",
+      "email": "customer@example.com",
+      "phone": "+49 30 12345678",
+      "vatId": "DE123456789",
+      "addressLine1": "Street and number",
+      "addressLine2": "Apartment, suite, etc. (optional)",
+      "city": "Berlin",
+      "postalCode": "10115",
+      "country": "Germany",
+      "notes": "Additional notes about this customer"
+    },
+    "createDescription": "Create a new customer with basic contact and billing information.",
+    "selectCustomer": "Select a customer",
+    "searchCustomers": "Search by name, email, or VAT...",
+    "searchOrAdd": "Search customers or add a new one",
+    "addNewCustomer": "Add New Customer",
+    "noCustomersFound": "No customers found.",
+    "selectExisting": "Search existing clients or create a new one."
   },
   "settings": {
     "title": "Settings",
@@ -174,7 +233,8 @@
     },
     "languages": {
       "en": "English",
-      "de": "Deutsch"
+      "de": "Deutsch",
+      "vi": "Tiếng Việt"
     }
   },
   "time": {
@@ -185,5 +245,8 @@
     "lastMonth": "Last month",
     "thisYear": "This year",
     "daysAgo": "{{count}} days ago"
+  },
+  "errors": {
+    "loadMenuFailed": "Failed to load menu"
   }
 }

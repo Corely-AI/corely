@@ -1,0 +1,183 @@
+// === CORE MULTI-TENANCY ===
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  status    String   @default("ACTIVE") // ACTIVE, SUSPENDED, ARCHIVED
+  timeZone  String   @default("UTC")
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  memberships          Membership[]
+  roles                Role[]
+  apiKeys              ApiKey[]
+  refreshTokens        RefreshToken[]
+  workspaces           Workspace[]
+  legalEntities        LegalEntity[]
+  rolePermissionGrants RolePermissionGrant[]
+
+  // Platform (Apps + Templates + Packs) relations
+  appInstalls       TenantAppInstall[]
+  templateInstalls  TenantTemplateInstall[]
+  packInstalls      TenantPackInstall[]
+  menuOverrides     TenantMenuOverride[]
+  seededRecordMeta  SeededRecordMeta[]
+
+  @@index([createdAt])
+}
+
+// === USERS ===
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  status       String   @default("ACTIVE") // ACTIVE, INACTIVE, DELETED
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  memberships         Membership[]
+  refreshTokens       RefreshToken[]
+  workspaceMemberships WorkspaceMembership[]
+  rolePermissionGrants RolePermissionGrant[]
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+// === MULTI-TENANCY MEMBERSHIP ===
+
+model Membership {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  roleId    String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([roleId])
+  @@index([tenantId, createdAt])
+}
+
+// === RBAC ===
+
+model Role {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  systemKey String?  // OWNER, ADMIN, MEMBER (null for custom roles)
+  description String?
+  isSystem  Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  memberships         Membership[]
+  rolePermissions     RolePermission[]
+  rolePermissionGrants RolePermissionGrant[]
+
+  @@unique([tenantId, systemKey])
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([tenantId, systemKey])
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique // e.g., "tenant.manage", "user.invite", "invoice.write"
+  description String?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@index([key])
+}
+
+enum PermissionEffect {
+  ALLOW
+  DENY
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model RolePermissionGrant {
+  id            String           @id @default(cuid())
+  tenantId      String
+  roleId        String
+  permissionKey String
+  effect        PermissionEffect @default(ALLOW)
+  createdAt     DateTime         @default(now()) @db.Timestamptz(6)
+  createdBy     String?
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdByUser User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, roleId, permissionKey])
+  @@index([tenantId, roleId])
+  @@index([permissionKey])
+}
+
+// === SESSIONS / TOKENS ===
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  userId     String
+  tenantId   String
+  tokenHash  String
+  revokedAt  DateTime?
+  expiresAt  DateTime @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([userId, expiresAt])
+  @@index([tokenHash])
+}
+
+// === API KEYS ===
+
+model ApiKey {
+  id         String   @id @default(cuid())
+  tenantId   String
+  name       String
+  keyHash    String
+  lastUsedAt DateTime? @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([keyHash])
+}

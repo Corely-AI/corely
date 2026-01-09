@@ -1,0 +1,8 @@
+{
+  "extends": "@corely/tsconfig/lib.json",
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

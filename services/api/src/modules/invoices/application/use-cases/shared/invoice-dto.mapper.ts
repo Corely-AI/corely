@@ -1,0 +1,40 @@
+import { type InvoiceDto } from "@corely/contracts";
+import { type InvoiceAggregate } from "../../../domain/invoice.aggregate";
+
+export const toInvoiceDto = (invoice: InvoiceAggregate): InvoiceDto => ({
+  id: invoice.id,
+  tenantId: invoice.tenantId,
+  number: invoice.number,
+  status: invoice.status,
+  customerPartyId: invoice.customerPartyId,
+  billToName: invoice.billToName,
+  billToEmail: invoice.billToEmail ?? null,
+  billToVatId: invoice.billToVatId ?? null,
+  billToAddressLine1: invoice.billToAddressLine1 ?? null,
+  billToAddressLine2: invoice.billToAddressLine2 ?? null,
+  billToCity: invoice.billToCity ?? null,
+  billToPostalCode: invoice.billToPostalCode ?? null,
+  billToCountry: invoice.billToCountry ?? null,
+  currency: invoice.currency,
+  notes: invoice.notes ?? undefined,
+  terms: invoice.terms ?? undefined,
+  invoiceDate: invoice.invoiceDate,
+  dueDate: invoice.dueDate,
+  issuedAt: invoice.issuedAt ? invoice.issuedAt.toISOString() : null,
+  sentAt: invoice.sentAt ? invoice.sentAt.toISOString() : null,
+  createdAt: invoice.createdAt.toISOString(),
+  updatedAt: invoice.updatedAt.toISOString(),
+  lineItems: invoice.lineItems.map((line) => ({
+    id: line.id,
+    description: line.description,
+    qty: line.qty,
+    unitPriceCents: line.unitPriceCents,
+  })),
+  payments: invoice.payments.map((p) => ({
+    id: p.id,
+    amountCents: p.amountCents,
+    paidAt: p.paidAt.toISOString(),
+    note: p.note,
+  })),
+  totals: { ...invoice.totals },
+});

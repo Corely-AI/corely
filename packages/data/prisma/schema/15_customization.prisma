@@ -1,0 +1,64 @@
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  DATE
+  BOOLEAN
+  SELECT
+  MULTI_SELECT
+  MONEY
+}
+
+model CustomFieldDefinition {
+  id           String          @id @default(cuid())
+  tenantId     String
+  entityType   String
+  key          String
+  label        String
+  description  String?
+  type         CustomFieldType
+  required     Boolean
+  defaultValue Json?
+  options      Json?
+  validation   Json?
+  isIndexed    Boolean         @default(false)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@unique([tenantId, entityType, key])
+  @@index([tenantId, entityType])
+}
+
+model CustomFieldIndex {
+  id         String   @id @default(cuid())
+  tenantId   String
+  entityType String
+  entityId   String
+  fieldId    String
+  fieldKey   String
+  valueText  String?
+  valueNumber Float?
+  valueDate  DateTime?
+  valueBool  Boolean?
+  valueJson  Json?
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, entityType, entityId, fieldId])
+  @@index([tenantId, entityType, fieldId])
+  @@index([tenantId, entityType, fieldKey])
+  @@index([tenantId, entityType, valueText])
+  @@index([tenantId, entityType, valueNumber])
+  @@index([tenantId, entityType, valueDate])
+  @@index([tenantId, entityType, valueBool])
+}
+
+model EntityLayout {
+  id         String   @id @default(cuid())
+  tenantId   String
+  entityType String
+  layout     Json
+  version    Int      @default(1)
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, entityType])
+}

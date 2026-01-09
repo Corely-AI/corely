@@ -1,0 +1,37 @@
+# Docker Compose for DI Integration Testing
+# Provides minimal infrastructure needed for full DI smoke tests
+# Usage: docker-compose -f docker-compose.di-test.yml up -d
+
+services:
+  postgres-test:
+    image: postgres:17-alpine
+    container_name: corely_postgres_di_test
+    restart: no
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-corely}
+      POSTGRES_USER: ${POSTGRES_USER:-corely}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-corely}
+    ports:
+      - "5433:5432" # Different port to avoid conflict with local dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-corely}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    tmpfs:
+      - /var/lib/postgresql/data # Use tmpfs for faster tests
+
+  redis-test:
+    image: redis:7-alpine
+    container_name: corely_redis_di_test
+    restart: no
+    ports:
+      - "6380:6379" # Different port to avoid conflict with local dev
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    tmpfs:
+      - /data # Use tmpfs for faster tests

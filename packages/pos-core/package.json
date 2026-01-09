@@ -1,0 +1,35 @@
+{
+  "name": "@corely/pos-core",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*",
+    "date-fns": "catalog:"
+  },
+  "devDependencies": {
+    "vitest": "catalog:",
+    "zod": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

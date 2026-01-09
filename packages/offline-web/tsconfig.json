@@ -1,0 +1,11 @@
+{
+  "extends": "@corely/tsconfig/lib.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM"],
+    "baseUrl": ".",
+    "paths": {
+      "@corely/offline-core": ["../offline-core/src"]
+    }
+  },
+  "include": ["src", "../offline-core/src/**/*"]
+}

@@ -1,7 +1,8 @@
 {
-  "name": "@kerniflow/contracts",
+  "name": "@corely/contracts",
   "private": true,
   "version": "0.0.0",
+  "license": "AGPL-3.0-only",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -13,10 +14,16 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit"
-  }
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
 }

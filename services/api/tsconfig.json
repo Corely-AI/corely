@@ -1,4 +1,22 @@
 {
-  "extends": "../../tsconfig.node.json",
-  "include": ["src"]
+  "extends": "@corely/tsconfig/node.json",
+  "compilerOptions": {
+    "strict": false,
+    "strictNullChecks": false,
+    "exactOptionalPropertyTypes": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "noEmit": false,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": "./",
+    "paths": {
+      "@shared/*": ["src/shared/*"],
+      "@/*": ["src/*"]
+    },
+    "skipLibCheck": true,
+    "esModuleInterop": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
 }

@@ -1,4 +1,14 @@
 {
-  "extends": "../../tsconfig.node.json",
+  "extends": "@corely/tsconfig/node.json",
+  "compilerOptions": {
+    "strict": false,
+    "strictNullChecks": false,
+    "exactOptionalPropertyTypes": false,
+    "jsx": "react-jsx",
+    "paths": {
+      "@corely/testkit": ["../../packages/testkit/src/index.ts"],
+      "@corely/testkit/*": ["../../packages/testkit/src/*"]
+    }
+  },
   "include": ["src"]
 }

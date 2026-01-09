@@ -1,0 +1,34 @@
+{
+  "name": "@corely/eslint-config",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "description": "Shared ESLint configuration for Corely monorepo",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./base": "./base.js",
+    "./typescript": "./typescript.js",
+    "./node": "./node.js",
+    "./react": "./react.js",
+    "./test": "./test.js"
+  },
+  "files": [
+    "*.js",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "eslint": "catalog:",
+    "globals": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

@@ -1,0 +1,14 @@
+# Skip hook if HUSKY is set to 0
+if [ "$HUSKY" = "0" ]; then
+  exit 0
+fi
+
+# Run lint-staged on staged files only
+pnpm lint-staged
+
+if [ $? -ne 0 ]; then
+  echo "❌ lint-staged failed. Fix errors and try again."
+  exit 1
+fi
+
+echo "✅ lint-staged passed."

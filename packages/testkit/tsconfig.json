@@ -1,0 +1,12 @@
+{
+  "extends": "@corely/tsconfig/node.json",
+  "compilerOptions": {
+    "strict": false,
+    "exactOptionalPropertyTypes": false,
+    "paths": {
+      "@corely/testkit": ["./src/index.ts"],
+      "@corely/testkit/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}

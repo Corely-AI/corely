@@ -1,29 +1,33 @@
 {
+  "extends": "@corely/tsconfig/react.json",
   "compilerOptions": {
     "target": "ES2020",
-    "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
+    "types": ["./src/types/react-query"],
     "allowImportingTsExtensions": true,
-    "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
-    "jsx": "react-jsx",
+    "composite": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
 
-    /* Linting */
+    /* Linting - relaxed for gradual migration */
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
+    "exactOptionalPropertyTypes": false,
+    "ignoreDeprecations": "6.0",
 
-    "baseUrl": ".",
+    "baseUrl": "..",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["web/src/*"],
+      "@corely/auth-client": ["../packages/auth-client/src/index.ts"],
+      "@corely/api-client": ["../packages/api-client/src/index.ts"],
+      "@corely/contracts": ["../packages/contracts/src/index.ts"],
+      "@corely/domain": ["../packages/domain/src/index.ts"],
+      "@corely/offline-core": ["../packages/offline-core/src/index.ts"],
+      "@corely/offline-web": ["../packages/offline-web/src/index.ts"]
     }
   },
   "include": ["src"]

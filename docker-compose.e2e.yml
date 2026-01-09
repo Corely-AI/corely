@@ -1,0 +1,151 @@
+# Load environment variables from .env.e2e file
+# Copy .env.e2e.example to .env.e2e and fill in your actual values
+services:
+  # ============================================================================
+  # POSTGRES DATABASE (E2E Test DB)
+  # ============================================================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: corely_e2e_postgres
+    restart: unless-stopped
+    env_file:
+      - .env.e2e
+    environment:
+      # Explicit values so local .env overrides (e.g., POSTGRES_DB=corely) don't
+      # point the e2e stack at a database name that doesn't exist.
+      POSTGRES_DB: corely_e2e
+      POSTGRES_USER: corely
+      POSTGRES_PASSWORD: corely
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_e2e_data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-corely}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - corely_e2e
+
+  # ============================================================================
+  # REDIS CACHE & QUEUE (E2E)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: corely_e2e_redis
+    restart: unless-stopped
+    env_file:
+      - .env.e2e
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_e2e_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - corely_e2e
+
+  # ============================================================================
+  # NESTJS API (E2E - NODE_ENV=test)
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: corely_e2e_api
+    env_file:
+      - .env.e2e
+    command: >
+      sh -c "cd /app/packages/data && /app/node_modules/.bin/prisma migrate deploy &&
+             pnpm --filter @corely/api dev"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-test}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://corely:corely@postgres:5432/corely_e2e?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      TEST_HARNESS_SECRET: ${TEST_HARNESS_SECRET:-test-secret-key}
+      JWT_SECRET: ${JWT_SECRET:-test-jwt-secret-change-me}
+      RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_e2e}
+      NODE_OPTIONS: --enable-source-maps
+    ports:
+      - "3000:3000"
+    networks:
+      - corely_e2e
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ============================================================================
+  # NESTJS WORKER (E2E - NODE_ENV=test)
+  # ============================================================================
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: corely_e2e_worker
+    env_file:
+      - .env.e2e
+    command: >
+      sh -c "cd /app/packages/data && /app/node_modules/.bin/prisma migrate deploy &&
+             pnpm --filter @corely/worker dev"
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-test}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://corely:corely@postgres:5432/corely_e2e?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_e2e}
+      NODE_OPTIONS: --enable-source-maps
+    networks:
+      - corely_e2e
+
+  # ============================================================================
+  # VITE WEB FRONTEND (E2E)
+  # ============================================================================
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: corely_e2e_web
+    env_file:
+      - .env.e2e
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-test}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+    ports:
+      - "5173:8080"
+    networks:
+      - corely_e2e
+
+volumes:
+  postgres_e2e_data:
+  redis_e2e_data:
+
+networks:
+  corely_e2e:
+    driver: bridge

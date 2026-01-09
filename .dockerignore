@@ -1,0 +1,34 @@
+# Ignore .env files - use environment variables from docker-compose instead
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Ignore git
+.git
+.gitignore
+
+# Ignore node_modules (will be installed fresh)
+node_modules
+
+# Ignore build artifacts (we rebuild in Docker)
+build
+**/dist
+*.tsbuildinfo
+
+# Ignore logs
+*.log
+npm-debug.log*
+
+# Ignore IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Ignore test coverage
+coverage
+
+# Ignore temporary files
+*.tmp
+.DS_Store

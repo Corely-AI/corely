@@ -1,0 +1,49 @@
+model AgentRun {
+  id             String   @id @default(cuid())
+  tenantId       String
+  createdByUserId String?
+  status         String
+  startedAt      DateTime @default(now())
+  finishedAt     DateTime?
+  metadataJson   String?
+  createdAt      DateTime @default(now())
+  traceId        String?
+
+  messages       Message[]
+  toolExecutions ToolExecution[]
+
+  @@index([tenantId, createdAt])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  tenantId  String
+  runId     String
+  role      String
+  partsJson String
+  createdAt DateTime @default(now())
+  traceId   String?
+
+  run AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, runId, createdAt])
+}
+
+model ToolExecution {
+  id            String   @id @default(cuid())
+  tenantId      String
+  runId         String
+  toolCallId    String
+  toolName      String
+  inputJson     String
+  outputJson    String?
+  status        String
+  startedAt     DateTime @default(now())
+  finishedAt    DateTime?
+  errorJson     String?
+  traceId       String?
+
+  run AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, runId, toolCallId])
+}

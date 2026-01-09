@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import { AppSidebar } from './AppSidebar';
-import { Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import React, { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { AppSidebar } from "./AppSidebar";
+import { Menu } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { cn } from "@/shared/lib/utils";
+import { WorkspaceSwitcher } from "@/shared/workspaces/WorkspaceSwitcher";
 
 export function AppShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -14,6 +15,7 @@ export function AppShell() {
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <AppSidebar
+          variant="desktop"
           collapsed={sidebarCollapsed}
           onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
@@ -30,24 +32,23 @@ export function AppShell() {
       {/* Mobile Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 lg:hidden transition-transform duration-300',
-          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          "fixed inset-y-0 left-0 z-50 lg:hidden transition-transform duration-300",
+          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <AppSidebar onToggle={() => setMobileSidebarOpen(false)} />
+        <AppSidebar variant="mobile" onToggle={() => setMobileSidebarOpen(false)} />
       </div>
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Mobile Header */}
         <header className="lg:hidden flex items-center h-14 px-4 border-b border-border bg-background">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileSidebarOpen(true)}
-          >
+          <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
           </Button>
+          <div className="flex-1 px-3">
+            <WorkspaceSwitcher />
+          </div>
         </header>
 
         {/* Page Content */}

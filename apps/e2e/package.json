@@ -1,0 +1,18 @@
+{
+  "name": "@corely/e2e",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "e2e:report": "playwright show-report",
+    "e2e:debug": "playwright test --debug"
+  },
+  "devDependencies": {
+    "@playwright/test": "catalog:",
+    "@types/node": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

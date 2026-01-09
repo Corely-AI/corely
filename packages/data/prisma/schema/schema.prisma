@@ -1,0 +1,12 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  // Ensure Prisma ships engines for local dev and alpine arm64 builds
+  binaryTargets = ["native", "linux-musl-arm64-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+}

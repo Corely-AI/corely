@@ -1,0 +1,39 @@
+{
+  "name": "@corely/testkit",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*",
+    "@corely/data": "workspace:*",
+    "@corely/domain": "workspace:*",
+    "@prisma/adapter-pg": "catalog:",
+    "@prisma/client": "catalog:",
+    "@testcontainers/postgresql": "catalog:",
+    "execa": "catalog:",
+    "nanoid": "catalog:",
+    "pg": "catalog:",
+    "testcontainers": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/testing": "catalog:",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}
