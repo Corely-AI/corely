@@ -292,7 +292,7 @@ export class SalesApi {
       `/sales/invoices/${input.invoiceId}/payments`,
       input,
       {
-        idempotencyKey: input.idempotencyKey || apiClient.generateIdempotencyKey(),
+        idempotencyKey: apiClient.generateIdempotencyKey(),
       }
     );
   }

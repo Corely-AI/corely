@@ -52,7 +52,6 @@ export async function setupTracing(serviceName: string): Promise<void> {
     (provider === "langfuse" ? process.env.LANGFUSE_BASE_URL : undefined);
 
   if (!endpoint) {
-     
     console.warn("[observability] tracing disabled: missing OTLP endpoint");
     return;
   }
@@ -74,19 +73,13 @@ export async function setupTracing(serviceName: string): Promise<void> {
     }),
   });
 
-  const startResult = sdk.start();
-  if (startResult instanceof Promise) {
-    await startResult;
-  }
+  await Promise.resolve(sdk.start());
 }
 
 export async function shutdownTracing(): Promise<void> {
   if (!sdk) {
     return;
   }
-  const shutdownResult = sdk.shutdown();
-  if (shutdownResult instanceof Promise) {
-    await shutdownResult;
-  }
+  await Promise.resolve(sdk.shutdown());
   sdk = undefined;
 }

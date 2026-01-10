@@ -17,7 +17,7 @@ import {
   WorkflowInstanceRepository,
   WorkflowTaskRepository,
 } from "@corely/data";
-import type { QueueJob, QueuePort, QueueSubscription, TransactionContext } from "@corely/kernel";
+import type { QueueJob, QueuePort, QueueSubscription } from "@corely/kernel";
 import { WorkflowMetricsService } from "./workflow-metrics.service";
 
 @Injectable()
@@ -150,14 +150,14 @@ export class WorkflowOrchestratorProcessor implements OnModuleInit, OnModuleDest
           completedAt: hasFinal ? now : null,
           lastError: nextStatus === "FAILED" ? JSON.stringify({ reason: "Task failed" }) : null,
         },
-        tx as TransactionContext
+        tx as any
       );
 
       if (updated.count === 0) {
         throw new Error("Workflow instance updated concurrently");
       }
 
-      const createdTasks = await this.tasks.createTasks(taskInputs, tx as TransactionContext);
+      const createdTasks = await this.tasks.createTasks(taskInputs, tx as any);
 
       await this.events.appendMany(
         [
@@ -169,7 +169,7 @@ export class WorkflowOrchestratorProcessor implements OnModuleInit, OnModuleDest
             payload: JSON.stringify({ taskId: task.id }),
           })),
         ],
-        tx as TransactionContext
+        tx as any
       );
 
       return createdTasks;

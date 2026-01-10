@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { context, trace, SpanStatusCode } from "@opentelemetry/api";
+import { context, trace, SpanStatusCode, type Attributes } from "@opentelemetry/api";
 import {
   type NormalizedMessageSnapshot,
   type ObservabilityAttributes,
@@ -54,7 +54,7 @@ export class OtelObservabilityAdapter implements ObservabilityPort {
   }
 
   setAttributes(spanRef: ObservabilitySpanRef, attributes: ObservabilityAttributes): void {
-    spanRef.span.setAttributes(attributes);
+    spanRef.span.setAttributes(this.normalizeAttributes(attributes));
   }
 
   recordTurnInput(spanRef: ObservabilitySpanRef, payload: TurnInputPayload): void {
@@ -98,7 +98,11 @@ export class OtelObservabilityAdapter implements ObservabilityPort {
     attributes: ObservabilityAttributes,
     parent?: ObservabilitySpanRef
   ): ObservabilitySpanRef {
-    const span = this.tracer.startSpan(name, { attributes }, parent?.context);
+    const span = this.tracer.startSpan(
+      name,
+      { attributes: this.normalizeAttributes(attributes) },
+      parent?.context
+    );
     const ctx = trace.setSpan(parent?.context ?? context.active(), span);
     const spanContext = span.spanContext();
     return { span, context: ctx, traceId: spanContext.traceId, spanId: spanContext.spanId };
@@ -135,7 +139,7 @@ export class OtelObservabilityAdapter implements ObservabilityPort {
   ): void {
     spanRef.span.setStatus({ code: SpanStatusCode.ERROR, message: error.message });
     if (attributes) {
-      spanRef.span.setAttributes(attributes);
+      spanRef.span.setAttributes(this.normalizeAttributes(attributes));
     }
     spanRef.span.recordException({
       name: error.name,
@@ -145,10 +149,37 @@ export class OtelObservabilityAdapter implements ObservabilityPort {
   }
 
   async flush(): Promise<void> {
-    const provider = trace.getTracerProvider();
-    if (typeof (provider as { forceFlush?: () => Promise<void> }).forceFlush === "function") {
-      await (provider as { forceFlush: () => Promise<void> }).forceFlush();
+    const provider = trace.getTracerProvider() as unknown as { forceFlush?: () => Promise<void> };
+    if (typeof provider.forceFlush === "function") {
+      await provider.forceFlush();
     }
+  }
+
+  private normalizeAttributes(attributes: ObservabilityAttributes): Attributes {
+    const normalized: Attributes = {};
+    for (const [key, value] of Object.entries(attributes)) {
+      if (value == null) {
+        continue;
+      }
+      if (Array.isArray(value)) {
+        const filtered = value.filter((item) => item != null);
+        if (filtered.length === 0) {
+          continue;
+        }
+        if (filtered.every((item) => typeof item === "string")) {
+          normalized[key] = filtered as string[];
+        } else if (filtered.every((item) => typeof item === "number")) {
+          normalized[key] = filtered as number[];
+        } else if (filtered.every((item) => typeof item === "boolean")) {
+          normalized[key] = filtered as boolean[];
+        } else {
+          normalized[key] = filtered.map((item) => String(item));
+        }
+        continue;
+      }
+      normalized[key] = value;
+    }
+    return normalized;
   }
 
   private maskSnapshot(snapshot: NormalizedMessageSnapshot): NormalizedMessageSnapshot {

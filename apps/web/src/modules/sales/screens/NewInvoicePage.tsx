@@ -13,6 +13,11 @@ export default function NewInvoicePage() {
     queryKey: ["customers"],
     queryFn: () => customersApi.listCustomers(),
   });
+  const customers = (customersData?.customers ?? []).flatMap((customer) =>
+    customer.id && customer.displayName
+      ? [{ id: customer.id, displayName: customer.displayName }]
+      : []
+  );
 
   const createMutation = useMutation({
     mutationFn: (values: InvoiceFormValues) =>
@@ -42,10 +47,7 @@ export default function NewInvoicePage() {
       <h1 className="text-h1 text-foreground">New Invoice</h1>
       <Card>
         <CardContent className="p-6">
-          <InvoiceForm
-            customers={customersData?.customers ?? []}
-            onSubmit={(values) => createMutation.mutate(values)}
-          />
+          <InvoiceForm customers={customers} onSubmit={(values) => createMutation.mutate(values)} />
         </CardContent>
       </Card>
     </div>

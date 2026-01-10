@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { Button } from "@/shared/ui/button";
-import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
+import {
+  fetchCopilotHistory,
+  useCopilotChatOptions,
+  type CopilotChatMessage,
+} from "@/lib/copilot-api";
 
 type MessagePart = {
   type: string;
@@ -64,16 +68,22 @@ export const CopilotPage: React.FC = () => {
     locale: "en",
   });
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    addToolResult,
-    addToolApprovalResponse,
-    setMessages,
-  } = useChat(chatOptions);
+  const { messages, sendMessage, addToolResult, addToolApprovalResponse, setMessages } =
+    useChat<CopilotChatMessage>(chatOptions);
   const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(event.target.value);
+  };
+  const handleSubmit = (event?: { preventDefault?: () => void }) => {
+    event?.preventDefault?.();
+    const trimmed = input.trim();
+    if (!trimmed) {
+      return;
+    }
+    void sendMessage({ text: trimmed });
+    setInput("");
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -170,6 +180,20 @@ export const CopilotPage: React.FC = () => {
     return null;
   };
 
+  const formatMessageContent = (value: unknown) => {
+    if (value == null) {
+      return "";
+    }
+    if (typeof value === "string") {
+      return value;
+    }
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  };
+
   return (
     <div className="p-4 space-y-4">
       <h1 className="text-xl font-semibold">Copilot</h1>
@@ -182,7 +206,9 @@ export const CopilotPage: React.FC = () => {
                 ? (m.parts as MessagePart[]).map((p, idx) => (
                     <div key={idx}>{renderPart(p, m.id)}</div>
                   ))
-                : m.content && <p className="whitespace-pre-wrap">{m.content}</p>}
+                : m.content != null && (
+                    <p className="whitespace-pre-wrap">{formatMessageContent(m.content)}</p>
+                  )}
             </MessageBubble>
           </div>
         ))}

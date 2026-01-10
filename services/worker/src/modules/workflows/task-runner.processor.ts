@@ -14,7 +14,7 @@ import {
   WorkflowInstanceRepository,
   WorkflowTaskRepository,
 } from "@corely/data";
-import type { QueueJob, QueuePort, QueueSubscription, TransactionContext } from "@corely/kernel";
+import type { QueueJob, QueuePort, QueueSubscription } from "@corely/kernel";
 import { WorkflowMetricsService } from "./workflow-metrics.service";
 import { TaskHandlerRegistry } from "./handlers/task-handler.registry";
 import type { WorkflowTaskPayload } from "./handlers/task-handler.interface";
@@ -139,7 +139,7 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
             ...(result.output ?? {}),
             suggestedEvent: result.suggestedEvent ?? null,
           }),
-          tx as TransactionContext
+          tx as any
         );
 
         await this.events.append(
@@ -149,7 +149,7 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
             type: "TASK_COMPLETED",
             payload: JSON.stringify({ taskId: task.id, output: result.output ?? {} }),
           },
-          tx as TransactionContext
+          tx as any
         );
       });
 
@@ -190,13 +190,7 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
     const status = willRetry ? "PENDING" : "FAILED";
 
     await this.prisma.$transaction(async (tx) => {
-      await this.tasks.markFailed(
-        tenantId,
-        task.id,
-        JSON.stringify(error),
-        status,
-        tx as TransactionContext
-      );
+      await this.tasks.markFailed(tenantId, task.id, JSON.stringify(error), status, tx as any);
 
       await this.events.append(
         {
@@ -205,16 +199,11 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
           type: "TASK_FAILED",
           payload: JSON.stringify({ taskId: task.id, error, willRetry }),
         },
-        tx as TransactionContext
+        tx as any
       );
 
       if (!willRetry) {
-        await this.instances.updateStatus(
-          tenantId,
-          task.instanceId,
-          "FAILED",
-          tx as TransactionContext
-        );
+        await this.instances.updateStatus(tenantId, task.instanceId, "FAILED", tx as any);
       }
     });
 

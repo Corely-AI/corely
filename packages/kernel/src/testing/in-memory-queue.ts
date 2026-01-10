@@ -46,13 +46,19 @@ export class InMemoryQueue<T> implements QueuePort<T> {
 
     const maxAttempts = Math.max(1, options.attempts ?? 1);
     const job: InternalJob<T> = {
-      id: options.jobId,
       timestamp: Date.now(),
       data,
       attemptsMade: 0,
       maxAttempts,
-      backoff: options.backoff,
     };
+
+    if (options.jobId !== undefined) {
+      job.id = options.jobId;
+    }
+
+    if (options.backoff) {
+      job.backoff = options.backoff;
+    }
 
     const delayMs = options.delayMs ?? 0;
     if (delayMs > 0) {
@@ -147,12 +153,17 @@ export class InMemoryQueue<T> implements QueuePort<T> {
   }
 
   private toQueueJob(job: InternalJob<T>): QueueJob<T> {
-    return {
-      id: job.id,
+    const payload: QueueJob<T> = {
       timestamp: job.timestamp,
       data: job.data,
       attemptsMade: job.attemptsMade,
       maxAttempts: job.maxAttempts,
     };
+
+    if (job.id !== undefined) {
+      payload.id = job.id;
+    }
+
+    return payload;
   }
 }

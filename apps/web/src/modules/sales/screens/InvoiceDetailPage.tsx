@@ -48,6 +48,11 @@ export default function InvoiceDetailPage() {
     queryKey: ["customers"],
     queryFn: () => customersApi.listCustomers(),
   });
+  const customers = (customersData?.customers ?? []).flatMap((customer) =>
+    customer.id && customer.displayName
+      ? [{ id: customer.id, displayName: customer.displayName }]
+      : []
+  );
 
   const invoice = invoiceData?.invoice;
   const isDraft = invoice?.status === "DRAFT";
@@ -178,7 +183,7 @@ export default function InvoiceDetailPage() {
       <Card>
         <CardContent className="p-6">
           <InvoiceForm
-            customers={customersData?.customers ?? []}
+            customers={customers}
             initial={invoice}
             disabled={!isDraft}
             onSubmit={(values) => updateMutation.mutate(values)}

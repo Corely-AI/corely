@@ -7,10 +7,10 @@ describe("WorkflowQueueController (Cloud Tasks)", () => {
     const env = { WORKFLOW_QUEUE_SECRET: "secret" } as any;
     const controller = new WorkflowQueueController(
       env,
-      { handleJob: vi.fn() },
+      { handleJob: vi.fn() } as any,
       {
         handleJob: vi.fn(),
-      }
+      } as any
     );
 
     await expect(
@@ -27,10 +27,14 @@ describe("WorkflowQueueController (Cloud Tasks)", () => {
 
   it("maps Cloud Tasks headers into a queue job payload", async () => {
     const env = { WORKFLOW_QUEUE_SECRET: "secret" } as any;
-    const orchestrator = { handleJob: vi.fn().mockResolvedValue(undefined) };
-    const controller = new WorkflowQueueController(env, orchestrator as any, {
-      handleJob: vi.fn(),
-    });
+    const orchestrator = { handleJob: vi.fn().mockResolvedValue(undefined) } as any;
+    const controller = new WorkflowQueueController(
+      env,
+      orchestrator as any,
+      {
+        handleJob: vi.fn(),
+      } as any
+    );
 
     await controller.handleOrchestrator(
       {
@@ -57,10 +61,14 @@ describe("WorkflowQueueController (Cloud Tasks)", () => {
 
   it("skips processing when attempts are exhausted", async () => {
     const env = { WORKFLOW_QUEUE_SECRET: "secret" } as any;
-    const orchestrator = { handleJob: vi.fn().mockResolvedValue(undefined) };
-    const controller = new WorkflowQueueController(env, orchestrator as any, {
-      handleJob: vi.fn(),
-    });
+    const orchestrator = { handleJob: vi.fn().mockResolvedValue(undefined) } as any;
+    const controller = new WorkflowQueueController(
+      env,
+      orchestrator as any,
+      {
+        handleJob: vi.fn(),
+      } as any
+    );
 
     await controller.handleOrchestrator(
       {
@@ -81,10 +89,10 @@ describe("WorkflowQueueController (Cloud Tasks)", () => {
     const env = { WORKFLOW_QUEUE_SECRET: undefined } as any;
     const controller = new WorkflowQueueController(
       env,
-      { handleJob: vi.fn() },
+      { handleJob: vi.fn() } as any,
       {
         handleJob: vi.fn(),
-      }
+      } as any
     );
 
     await expect(

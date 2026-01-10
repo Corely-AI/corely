@@ -26,7 +26,7 @@ function buildRedisConnection(redisUrl?: string) {
 }
 
 export class BullmqQueueAdapter<T> implements QueuePort<T> {
-  private readonly queue: Queue<T>;
+  private readonly queue: Queue<T, unknown, string, T, unknown, string>;
   private readonly name: string;
   private readonly connection: ReturnType<typeof buildRedisConnection>;
   private readonly workers = new Set<Worker<T>>();
@@ -34,7 +34,7 @@ export class BullmqQueueAdapter<T> implements QueuePort<T> {
   constructor(name: string, redisUrl?: string) {
     this.name = name;
     this.connection = buildRedisConnection(redisUrl);
-    this.queue = new Queue<T>(name, {
+    this.queue = new Queue<T, unknown, string, T, unknown, string>(name, {
       connection: this.connection,
       defaultJobOptions: {
         removeOnComplete: true,

@@ -93,7 +93,7 @@ export const crmApi = {
     const endpoint = queryString ? `/crm/deals?${queryString}` : "/crm/deals";
 
     const response = await apiClient.get<ListDealsOutput>(endpoint);
-    return { deals: response.deals, nextCursor: response.nextCursor };
+    return { deals: response.items, nextCursor: response.nextCursor ?? undefined };
   },
 
   // ============================================================
@@ -154,7 +154,7 @@ export const crmApi = {
     const endpoint = queryString ? `/crm/activities?${queryString}` : "/crm/activities";
 
     const response = await apiClient.get<ListActivitiesOutput>(endpoint);
-    return { activities: response.activities, nextCursor: response.nextCursor };
+    return { activities: response.items, nextCursor: response.nextCursor ?? undefined };
   },
 
   // ============================================================

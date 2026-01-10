@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { UseChatOptions } from "@ai-sdk/react";
-import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from "ai";
+import {
+  type UIMessage,
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+} from "ai";
 import { createIdempotencyKey } from "@corely/api-client";
 import { authClient } from "./auth-client";
 import { getActiveWorkspaceId, subscribeWorkspace } from "@/shared/workspaces/workspace-store";
 import { CopilotUIMessageSchema, type CopilotUIMessage } from "@corely/contracts";
+
+export type CopilotChatMessage = UIMessage & { content?: unknown };
 
 export const resolveCopilotBaseUrl = () => {
   const mode = import.meta.env.VITE_API_MODE;
@@ -54,16 +60,51 @@ const persistRunId = (activeModule: string, tenantId: string, runId: string) => 
   }
 };
 
-const normalizeMessages = (messages: CopilotUIMessage[]) =>
-  messages.map((msg) => ({
-    ...msg,
-    parts: Array.isArray(msg.parts) ? msg.parts : [],
-  }));
+const contentToText = (content: unknown) => {
+  if (typeof content === "string") {
+    return content;
+  }
+  if (content == null) {
+    return "";
+  }
+  try {
+    return JSON.stringify(content);
+  } catch {
+    return String(content);
+  }
+};
+
+const normalizeMessages = (
+  messages: Array<CopilotUIMessage | CopilotChatMessage>
+): CopilotChatMessage[] =>
+  messages.map((msg) => {
+    const role = (msg.role === "tool" ? "assistant" : msg.role) as CopilotChatMessage["role"];
+    const fallbackText = contentToText((msg as CopilotUIMessage).content);
+    const parts = (
+      Array.isArray(msg.parts) && msg.parts.length > 0
+        ? msg.parts
+        : fallbackText
+          ? [{ type: "text", text: fallbackText }]
+          : []
+    ) as CopilotChatMessage["parts"];
+    const id =
+      msg.id ||
+      (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : createIdempotencyKey());
+
+    return {
+      ...msg,
+      id,
+      role,
+      parts,
+    };
+  });
 
 export const useCopilotChatOptions = (
   input: CopilotOptionsInput
 ): {
-  options: UseChatOptions;
+  options: UseChatOptions<CopilotChatMessage>;
   runId: string;
   apiBase: string;
   tenantId: string;
@@ -115,7 +156,7 @@ export const useCopilotChatOptions = (
 
   const transport = useMemo(
     () =>
-      new DefaultChatTransport<CopilotUIMessage>({
+      new DefaultChatTransport<CopilotChatMessage>({
         api: `${apiBase}/copilot/chat`,
         headers: async () => ({
           ...getAuthHeaders(),
@@ -160,7 +201,7 @@ export const useCopilotChatOptions = (
     [apiBase, getAuthHeaders, input.activeModule, input.locale, runId, tenantId]
   );
 
-  const options: UseChatOptions = useMemo(
+  const options: UseChatOptions<CopilotChatMessage> = useMemo(
     () => ({
       id: runId,
       transport,
@@ -189,7 +230,7 @@ export const fetchCopilotHistory = async (params: {
   apiBase: string;
   tenantId: string;
   accessToken: string;
-}): Promise<CopilotUIMessage[]> => {
+}): Promise<CopilotChatMessage[]> => {
   if (!params.runId) {
     return [];
   }
@@ -205,10 +246,7 @@ export const fetchCopilotHistory = async (params: {
   const json = await response.json();
   const parsed = CopilotUIMessageSchema.array().safeParse(json.items ?? []);
   if (parsed.success) {
-    return parsed.data.map((msg) => ({
-      ...msg,
-      parts: Array.isArray(msg.parts) ? msg.parts : [],
-    }));
+    return normalizeMessages(parsed.data);
   }
   return [];
 };

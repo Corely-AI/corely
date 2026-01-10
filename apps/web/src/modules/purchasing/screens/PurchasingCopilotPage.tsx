@@ -3,7 +3,11 @@ import { useChat } from "@ai-sdk/react";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { purchasingApi } from "@/lib/purchasing-api";
-import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
+import {
+  fetchCopilotHistory,
+  useCopilotChatOptions,
+  type CopilotChatMessage,
+} from "@/lib/copilot-api";
 
 type MessagePart = {
   type: string;
@@ -54,9 +58,22 @@ export default function PurchasingCopilotPage() {
     locale: "en",
   });
 
-  const { messages, input, handleInputChange, handleSubmit, addToolApprovalResponse, setMessages } =
-    useChat(chatOptions);
+  const { messages, sendMessage, addToolApprovalResponse, setMessages } =
+    useChat<CopilotChatMessage>(chatOptions);
+  const [input, setInput] = useState("");
   const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(event.target.value);
+  };
+  const handleSubmit = (event?: { preventDefault?: () => void }) => {
+    event?.preventDefault?.();
+    const trimmed = input.trim();
+    if (!trimmed) {
+      return;
+    }
+    void sendMessage({ text: trimmed });
+    setInput("");
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -199,6 +216,20 @@ export default function PurchasingCopilotPage() {
     return null;
   };
 
+  const formatMessageContent = (value: unknown) => {
+    if (value == null) {
+      return "";
+    }
+    if (typeof value === "string") {
+      return value;
+    }
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -206,21 +237,13 @@ export default function PurchasingCopilotPage() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() =>
-              handleInputChange({
-                target: { value: "Create a vendor bill from this text: ..." },
-              } as any)
-            }
+            onClick={() => setInput("Create a vendor bill from this text: ...")}
           >
             Prompt: Bill from text
           </Button>
           <Button
             variant="outline"
-            onClick={() =>
-              handleInputChange({
-                target: { value: "Create a purchase order from this text: ..." },
-              } as any)
-            }
+            onClick={() => setInput("Create a purchase order from this text: ...")}
           >
             Prompt: PO from text
           </Button>
@@ -235,7 +258,9 @@ export default function PurchasingCopilotPage() {
                 <div className="text-xs uppercase text-muted-foreground">{m.role}</div>
                 {(m.parts as MessagePart[] | undefined)?.length
                   ? (m.parts as MessagePart[]).map((p, idx) => <div key={idx}>{renderPart(p)}</div>)
-                  : m.content && <p className="whitespace-pre-wrap">{m.content}</p>}
+                  : m.content != null && (
+                      <p className="whitespace-pre-wrap">{formatMessageContent(m.content)}</p>
+                    )}
               </div>
             ))}
           </div>

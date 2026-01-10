@@ -1,12 +1,15 @@
 import { Injectable, Inject } from "@nestjs/common";
+import { randomUUID } from "crypto";
 import type { TemplatePlan, TemplateResult, TemplatePlanAction } from "@corely/contracts";
 import type { TemplateExecutorPort } from "../../platform/application/ports/template-executor.port";
 import type { SeededRecordMetaRepositoryPort } from "../../platform/application/ports/seeded-record-meta-repository.port";
 import { SEEDED_RECORD_META_REPOSITORY_TOKEN } from "../../platform/application/ports/seeded-record-meta-repository.port";
 import { PrismaService } from "@corely/data";
+import { type AccountType } from "@prisma/client";
 import {
   CoaUsGaapParamsSchema,
   type CoaUsGaapParams,
+  type ChartOfAccountRecord,
   getUsGaapAccounts,
   coaUsGaapTemplate,
 } from "./coa-us-gaap.definition";
@@ -38,7 +41,7 @@ export class CoaUsGaapExecutor implements TemplateExecutorPort {
 
     for (const account of accounts) {
       // Check if account already exists
-      const existing = await this.prisma.chartOfAccount.findFirst({
+      const existing = await this.prisma.ledgerAccount.findFirst({
         where: {
           tenantId,
           code: account.code,
@@ -49,15 +52,15 @@ export class CoaUsGaapExecutor implements TemplateExecutorPort {
         // Will create new account
         actions.push({
           type: "create",
-          table: "ChartOfAccount",
+          table: "LedgerAccount",
           key: account.code,
           data: account,
         });
       } else {
         // Check if it's been customized
-        const seededMeta = await this.seededRecordRepo.findByTargetRecord(
+        const seededMeta = await this.seededRecordRepo.findByTarget(
           tenantId,
-          "ChartOfAccount",
+          "LedgerAccount",
           existing.id
         );
 
@@ -65,7 +68,7 @@ export class CoaUsGaapExecutor implements TemplateExecutorPort {
           // Skip customized accounts
           actions.push({
             type: "skip",
-            table: "ChartOfAccount",
+            table: "LedgerAccount",
             key: account.code,
             data: account,
             reason: "Account has been customized by tenant",
@@ -74,7 +77,7 @@ export class CoaUsGaapExecutor implements TemplateExecutorPort {
           // Will update existing account
           actions.push({
             type: "update",
-            table: "ChartOfAccount",
+            table: "LedgerAccount",
             key: account.code,
             data: account,
           });
@@ -93,6 +96,21 @@ export class CoaUsGaapExecutor implements TemplateExecutorPort {
       actions,
       summary,
     };
+  }
+
+  private mapAccountType(value: ChartOfAccountRecord["type"]): AccountType {
+    switch (value) {
+      case "ASSET":
+        return "Asset";
+      case "LIABILITY":
+        return "Liability";
+      case "EQUITY":
+        return "Equity";
+      case "REVENUE":
+        return "Income";
+      case "EXPENSE":
+        return "Expense";
+    }
   }
 
   /**
@@ -116,34 +134,31 @@ export class CoaUsGaapExecutor implements TemplateExecutorPort {
 
       if (action.type === "create") {
         // Create new account
-        const newAccount = await this.prisma.chartOfAccount.create({
+        const accountType = this.mapAccountType(action.data.type as ChartOfAccountRecord["type"]);
+        const newAccount = await this.prisma.ledgerAccount.create({
           data: {
             tenantId,
             code: action.data.code as string,
             name: action.data.name as string,
-            type: action.data.type as string,
-            parentCode: (action.data.parentCode as string) || null,
-            currency: action.data.currency as string,
+            type: accountType,
             isActive: action.data.isActive as boolean,
           },
         });
 
         // Register seeded record
         await this.seededRecordRepo.create({
+          id: randomUUID(),
           tenantId,
-          targetTable: "ChartOfAccount",
+          targetTable: "LedgerAccount",
           targetId: newAccount.id,
           sourceTemplateId: coaUsGaapTemplate.templateId,
           sourceTemplateVersion: coaUsGaapTemplate.version,
-          isCustomized: false,
-          customizedAt: null,
-          customizedByUserId: null,
         });
 
         created++;
       } else if (action.type === "update") {
         // Find existing account
-        const existing = await this.prisma.chartOfAccount.findFirst({
+        const existing = await this.prisma.ledgerAccount.findFirst({
           where: {
             tenantId,
             code: action.data.code as string,
@@ -152,13 +167,12 @@ export class CoaUsGaapExecutor implements TemplateExecutorPort {
 
         if (existing) {
           // Update account
-          await this.prisma.chartOfAccount.update({
+          const accountType = this.mapAccountType(action.data.type as ChartOfAccountRecord["type"]);
+          await this.prisma.ledgerAccount.update({
             where: { id: existing.id },
             data: {
               name: action.data.name as string,
-              type: action.data.type as string,
-              parentCode: (action.data.parentCode as string) || null,
-              currency: action.data.currency as string,
+              type: accountType,
               isActive: action.data.isActive as boolean,
             },
           });

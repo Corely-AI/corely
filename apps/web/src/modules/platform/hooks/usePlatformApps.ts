@@ -23,11 +23,11 @@ export interface AppWithStatus extends App {
  * Fetch all apps with tenant install status
  */
 export function usePlatformApps() {
-  return useQuery({
+  return useQuery<AppWithStatus[], Error>({
     queryKey: ["platform", "apps"],
     queryFn: async () => {
       const response = await apiClient.get<{ apps: AppWithStatus[] }>("/platform/apps");
-      return response.data.apps;
+      return response.apps;
     },
   });
 }
@@ -43,7 +43,7 @@ export function useEnableApp() {
       const response = await apiClient.post<{ appId: string; enabledDependencies: string[] }>(
         `/platform/apps/${appId}/enable`
       );
-      return response.data;
+      return response;
     },
     onSuccess: () => {
       // Invalidate apps list to refetch with updated status
@@ -63,7 +63,7 @@ export function useDisableApp() {
       const response = await apiClient.post<{ appId: string }>(`/platform/apps/${appId}/disable`, {
         force,
       });
-      return response.data;
+      return response;
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["platform", "apps"] });

@@ -26,9 +26,33 @@ export default function QuoteDetailPage() {
     queryKey: ["customers"],
     queryFn: () => customersApi.listCustomers(),
   });
+  const customers = (customersData?.customers ?? []).flatMap((customer) =>
+    customer.id && customer.displayName
+      ? [{ id: customer.id, displayName: customer.displayName }]
+      : []
+  );
 
   const quote = quoteData?.quote;
   const isDraft = quote?.status === "DRAFT";
+  const quoteInitial = quote
+    ? {
+        customerPartyId: quote.customerPartyId ?? "",
+        customerContactPartyId: quote.customerContactPartyId ?? undefined,
+        currency: quote.currency ?? "EUR",
+        paymentTerms: quote.paymentTerms ?? "",
+        issueDate: quote.issueDate ?? "",
+        validUntilDate: quote.validUntilDate ?? "",
+        notes: quote.notes ?? "",
+        lineItems:
+          quote.lineItems?.map((item) => ({
+            id: item.id,
+            description: item.description ?? "",
+            quantity: item.quantity ?? 1,
+            unitPriceCents: item.unitPriceCents ?? 0,
+            discountCents: item.discountCents,
+          })) ?? [],
+      }
+    : undefined;
 
   const updateMutation = useMutation({
     mutationFn: (values: QuoteFormValues) =>
@@ -156,8 +180,8 @@ export default function QuoteDetailPage() {
       <Card>
         <CardContent className="p-6">
           <QuoteForm
-            customers={customersData?.customers ?? []}
-            initial={quote}
+            customers={customers}
+            initial={quoteInitial}
             disabled={!isDraft}
             onSubmit={(values) => updateMutation.mutate(values)}
           />

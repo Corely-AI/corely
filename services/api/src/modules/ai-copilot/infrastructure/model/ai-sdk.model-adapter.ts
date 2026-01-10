@@ -70,34 +70,29 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       if (!Array.isArray(parts)) {
         return undefined;
       }
-      const filtered = parts
-        .map((part: any) => {
-          if (typeof part?.type !== "string") {
-            return null;
-          }
-          if (part.type === "text" && typeof part.text === "string") {
-            return { type: "text", text: part.text };
-          }
-          if (part.type === "reasoning" && typeof part.text === "string") {
-            return { type: "text", text: part.text };
-          }
-          // Drop tool/data/other parts to avoid malformed tool_use/tool_result sequences
-          return null;
-        })
-        .filter(Boolean);
+      const filtered = parts.flatMap((part) => {
+        if (part?.type === "text" && typeof part.text === "string") {
+          return [{ type: "text" as const, text: part.text }];
+        }
+        if (part?.type === "reasoning" && typeof part.text === "string") {
+          return [{ type: "text" as const, text: part.text }];
+        }
+        // Drop tool/data/other parts to avoid malformed tool_use/tool_result sequences
+        return [];
+      });
       return filtered.length ? filtered : undefined;
     };
 
-    const systemMessage: CopilotUIMessage = {
+    const systemMessage: Omit<CopilotUIMessage, "id"> = {
       role: "system",
       parts: [
         {
-          type: "text",
+          type: "text" as const,
           text:
             "You are the Corely Copilot. Use the provided tools for all factual or data retrieval tasks. " +
             "When asked to search, list, or look up customers, always call the customer_search tool even if the user provides no query; " +
             "send an empty or undefined query to list all customers. Do not make up customer data.",
-        } as any,
+        },
       ],
     };
 

@@ -17,7 +17,7 @@
     "noImplicitAny": false,
     "noFallthroughCasesInSwitch": false,
     "exactOptionalPropertyTypes": false,
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
 
     "baseUrl": "..",
     "paths": {
@@ -30,5 +30,13 @@
       "@corely/offline-web": ["../packages/offline-web/src/index.ts"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../../packages/api-client/src",
+    "../../packages/auth-client/src",
+    "../../packages/contracts/src",
+    "../../packages/domain/src",
+    "../../packages/offline-core/src",
+    "../../packages/offline-web/src"
+  ]
 }

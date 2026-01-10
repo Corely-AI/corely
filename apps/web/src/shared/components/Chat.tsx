@@ -8,7 +8,7 @@ import { QuestionForm } from "@/shared/components/QuestionForm";
 import { type CollectInputsToolInput, type CollectInputsToolOutput } from "@corely/contracts";
 
 type ToolInvocationPart = {
-  type: string;
+  type: "dynamic-tool" | `tool-${string}` | "tool-call" | "tool-result";
   toolCallId?: string;
   toolName?: string;
   state?: string;
@@ -24,7 +24,7 @@ type MessagePart =
   | { type: "text"; text: string; state?: string }
   | { type: "reasoning"; text: string; state?: string }
   | ToolInvocationPart
-  | { type: string; data?: any; transient?: boolean };
+  | { type: `data-${string}`; data?: any; transient?: boolean };
 
 const isToolPart = (part: MessagePart): part is ToolInvocationPart =>
   part.type === "dynamic-tool" || part.type.startsWith("tool-");

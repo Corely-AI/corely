@@ -1,4 +1,4 @@
-import { Queue, QueueScheduler, Worker, type Job, type JobsOptions } from "bullmq";
+import { Queue, Worker, type Job, type JobsOptions } from "bullmq";
 import type {
   QueueEnqueueOptions,
   QueueHandler,
@@ -26,8 +26,7 @@ function buildRedisConnection(redisUrl?: string) {
 }
 
 export class BullmqQueueAdapter<T> implements QueuePort<T> {
-  private readonly queue: Queue<T>;
-  private readonly scheduler: QueueScheduler;
+  private readonly queue: Queue<T, unknown, string, T, unknown, string>;
   private readonly name: string;
   private readonly connection: ReturnType<typeof buildRedisConnection>;
   private readonly workers = new Set<Worker<T>>();
@@ -35,14 +34,13 @@ export class BullmqQueueAdapter<T> implements QueuePort<T> {
   constructor(name: string, redisUrl?: string) {
     this.name = name;
     this.connection = buildRedisConnection(redisUrl);
-    this.queue = new Queue<T>(name, {
+    this.queue = new Queue<T, unknown, string, T, unknown, string>(name, {
       connection: this.connection,
       defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: 1000,
       },
     });
-    this.scheduler = new QueueScheduler(name, { connection: this.connection });
   }
 
   async enqueue(data: T, options: QueueEnqueueOptions = {}): Promise<void> {
@@ -86,7 +84,6 @@ export class BullmqQueueAdapter<T> implements QueuePort<T> {
       await worker.close();
     }
     this.workers.clear();
-    await this.scheduler.close();
     await this.queue.close();
   }
 
