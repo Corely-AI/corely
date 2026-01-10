@@ -4,6 +4,7 @@ import {
   type UIMessage,
   DefaultChatTransport,
   lastAssistantMessageIsCompleteWithApprovalResponses,
+  lastAssistantMessageIsCompleteWithToolCalls,
 } from "ai";
 import { createIdempotencyKey } from "@corely/api-client";
 import { authClient } from "./auth-client";
@@ -216,6 +217,9 @@ export const useCopilotChatOptions = (
       },
       sendAutomaticallyWhen: ({ messages }) =>
         lastAssistantMessageIsCompleteWithApprovalResponses({
+          messages: normalizeMessages(messages),
+        }) ||
+        lastAssistantMessageIsCompleteWithToolCalls({
           messages: normalizeMessages(messages),
         }),
     }),

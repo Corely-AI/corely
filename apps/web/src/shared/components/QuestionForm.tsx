@@ -11,6 +11,10 @@ import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { Card, CardContent } from "@/shared/ui/card";
+import { Calendar } from "@/shared/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { cn } from "@/shared/lib/utils";
+import { Calendar as CalendarIcon } from "lucide-react";
 
 type Props = {
   request: CollectInputsToolInput;
@@ -77,6 +81,41 @@ const buildSchema = (field: CollectInputField): z.ZodTypeAny => {
     }
     return field.required ? schema : schema.optional();
   }
+};
+
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
+const formatDateValue = (date?: Date) => {
+  if (!date) {
+    return "";
+  }
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+};
+
+const parseDateValue = (value?: string) => {
+  if (!value) {
+    return undefined;
+  }
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) {
+    return undefined;
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  const date = new Date(year, month, day);
+  if (Number.isNaN(date.getTime())) {
+    return undefined;
+  }
+  return date;
+};
+
+const splitDateTimeValue = (value?: string) => {
+  if (!value) {
+    return { datePart: "", timePart: "" };
+  }
+  const [datePart = "", timePart = ""] = value.split("T");
+  return { datePart, timePart: timePart.slice(0, 5) };
 };
 
 export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, disabled }) => {
@@ -182,14 +221,88 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
       );
     }
     if (field.type === "date" || field.type === "datetime") {
+      const rawValue = (values[field.key] as string | undefined) ?? "";
+      const { datePart, timePart } = splitDateTimeValue(rawValue);
+      const selectedDate = parseDateValue(datePart || rawValue);
+      const displayDate = datePart || formatDateValue(selectedDate);
+
+      if (field.type === "date") {
+        return (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !displayDate && "text-muted-foreground"
+                )}
+                disabled={disabled || isSubmitting}
+                id={field.key}
+                aria-invalid={Boolean(error)}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {displayDate || field.placeholder || "Select date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => handleChange(field.key, formatDateValue(date))}
+              />
+            </PopoverContent>
+          </Popover>
+        );
+      }
+
+      const fallbackTime = timePart || "00:00";
+      const timeValue = displayDate ? fallbackTime : "";
+      const timeDisabled = !displayDate || disabled || isSubmitting;
+
       return (
-        <Input
-          type={field.type === "date" ? "date" : "datetime-local"}
-          {...commonProps}
-          placeholder={field.placeholder}
-          value={(values[field.key] as string) ?? ""}
-          onChange={(e) => handleChange(field.key, e.target.value)}
-        />
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !displayDate && "text-muted-foreground"
+                )}
+                disabled={disabled || isSubmitting}
+                id={field.key}
+                aria-invalid={Boolean(error)}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {displayDate || field.placeholder || "Select date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => {
+                  const nextDate = formatDateValue(date);
+                  const nextValue = nextDate ? `${nextDate}T${fallbackTime}` : "";
+                  handleChange(field.key, nextValue);
+                }}
+              />
+            </PopoverContent>
+          </Popover>
+          <Input
+            type="time"
+            id={`${field.key}-time`}
+            aria-invalid={Boolean(error)}
+            value={timeValue}
+            onChange={(e) => {
+              if (!displayDate) {
+                return;
+              }
+              handleChange(field.key, `${displayDate}T${e.target.value}`);
+            }}
+            disabled={timeDisabled}
+          />
+        </div>
       );
     }
     if (field.type === "select") {
