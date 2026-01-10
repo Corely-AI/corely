@@ -1,0 +1,28 @@
+{
+  "name": "@corely/prompts",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

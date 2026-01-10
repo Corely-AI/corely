@@ -9,10 +9,13 @@ import { buildAiTools } from "../tools/tools.factory";
 import type { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution-repository.port";
 import type { AuditPort } from "../../application/ports/audit.port";
 import type { OutboxPort } from "../../application/ports/outbox.port";
-import { collectInputsTool } from "../tools/interactive-tools";
+import { buildCollectInputsTool } from "../tools/interactive-tools";
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
 import { type ObservabilityPort, type ObservabilitySpanRef } from "@corely/kernel";
 import { type LanguageModelUsage, type StreamTextResult } from "ai";
+import { type WorkspaceKind, PromptRegistry } from "@corely/prompts";
+import { PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
+import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 
 @Injectable()
 export class AiSdkModelAdapter implements LanguageModelPort {
@@ -25,7 +28,9 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     private readonly audit: AuditPort,
     private readonly outbox: OutboxPort,
     private readonly env: EnvService,
-    private readonly observability: ObservabilityPort
+    private readonly observability: ObservabilityPort,
+    private readonly promptRegistry: PromptRegistry,
+    private readonly promptUsageLogger: PromptUsageLogger
   ) {
     this.openai = createOpenAI({
       apiKey: this.env.OPENAI_API_KEY || "",
@@ -41,6 +46,8 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     runId: string;
     tenantId: string;
     userId: string;
+    workspaceKind?: WorkspaceKind;
+    environment?: string;
     observability: ObservabilitySpanRef;
   }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }> {
     const aiTools = buildAiTools(params.tools, {
@@ -59,9 +66,51 @@ export class AiSdkModelAdapter implements LanguageModelPort {
 
     const model = provider === "anthropic" ? this.anthropic(modelId) : this.openai(modelId);
 
+    const promptContext = buildPromptContext({
+      env: this.env,
+      tenantId: params.tenantId,
+      workspaceKind: params.workspaceKind,
+      environmentOverride: params.environment,
+    });
+
+    const systemPrompt = this.promptRegistry.render("copilot.system", promptContext, {});
+    this.observability.setAttributes(params.observability, {
+      "prompt.id": systemPrompt.promptId,
+      "prompt.version": systemPrompt.promptVersion,
+      "prompt.hash": systemPrompt.promptHash,
+    });
+    this.promptUsageLogger.logUsage({
+      promptId: systemPrompt.promptId,
+      promptVersion: systemPrompt.promptVersion,
+      promptHash: systemPrompt.promptHash,
+      modelId,
+      provider,
+      tenantId: params.tenantId,
+      userId: params.userId,
+      runId: params.runId,
+      purpose: "copilot.system",
+    });
+
+    const collectInputsDescription = this.promptRegistry.render(
+      "copilot.collect_inputs.description",
+      promptContext,
+      {}
+    );
+    this.promptUsageLogger.logUsage({
+      promptId: collectInputsDescription.promptId,
+      promptVersion: collectInputsDescription.promptVersion,
+      promptHash: collectInputsDescription.promptHash,
+      modelId,
+      provider,
+      tenantId: params.tenantId,
+      userId: params.userId,
+      runId: params.runId,
+      purpose: "copilot.tool.collect_inputs",
+    });
+
     const toolset = {
       ...aiTools,
-      collect_inputs: collectInputsTool,
+      collect_inputs: buildCollectInputsTool(collectInputsDescription.content),
     };
 
     this.logger.debug(`Starting streamText with ${Object.keys(toolset).length} tools`);
@@ -88,15 +137,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       parts: [
         {
           type: "text" as const,
-          text:
-            "You are the Corely Copilot. Use the provided tools for all factual or data retrieval tasks. " +
-            "When asked to search, list, or look up customers, always call the customer_search tool even if the user provides no query; " +
-            "send an empty or undefined query to list all customers. " +
-            "When creating or drafting an invoice for a named customer, call invoice_create_from_customer first to resolve the customer; " +
-            "only use collect_inputs after customer resolution or when required invoice fields are missing. " +
-            "When defining collect_inputs fields, use the most specific type (date for YYYY-MM-DD, datetime for date+time, boolean for yes/no). " +
-            "Never use type text for dates or datetimes; do not use regex patterns for those fields. " +
-            "Do not make up customer data.",
+          text: systemPrompt.content,
         },
       ],
     };

@@ -45,6 +45,9 @@ import { type ObservabilityPort } from "@corely/kernel";
 import { CreateRunUseCase } from "./application/use-cases/create-run.usecase";
 import { GetRunUseCase } from "./application/use-cases/get-run.usecase";
 import { ListMessagesUseCase } from "./application/use-cases/list-messages.usecase";
+import { PromptModule } from "../../shared/prompts/prompt.module";
+import { PromptRegistry } from "@corely/prompts";
+import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
 
 @Module({
   imports: [
@@ -56,6 +59,7 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
     PurchasingModule,
     InventoryModule,
     EngagementModule,
+    PromptModule,
   ],
   controllers: [CopilotController],
   providers: [
@@ -76,10 +80,20 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         outbox: OutboxPort,
         env: EnvService,
         logger: NestLoggerAdapter,
-        observability: ObservabilityPort
+        observability: ObservabilityPort,
+        promptRegistry: PromptRegistry,
+        promptUsageLogger: PromptUsageLogger
       ) => {
         logger.debug("Creating AiSdkModelAdapter");
-        return new AiSdkModelAdapter(toolExec, audit, outbox, env, observability);
+        return new AiSdkModelAdapter(
+          toolExec,
+          audit,
+          outbox,
+          env,
+          observability,
+          promptRegistry,
+          promptUsageLogger
+        );
       },
       inject: [
         PrismaToolExecutionRepository,
@@ -88,6 +102,8 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         EnvService,
         "COPILOT_LOGGER",
         "OBSERVABILITY_PORT",
+        PromptRegistry,
+        PromptUsageLogger,
       ],
     },
     {
@@ -124,15 +140,17 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         purchasing: PurchasingApplication,
         inventory: InventoryApplication,
         engagement: EngagementApplication,
-        env: EnvService
+        env: EnvService,
+        promptRegistry: PromptRegistry,
+        promptUsageLogger: PromptUsageLogger
       ) => [
         ...buildInvoiceWorkflowTools(invoices, partyCrm),
         ...buildInvoiceTools(invoices),
         ...buildCustomerTools(partyCrm),
         ...buildSalesTools(sales),
-        ...buildPurchasingTools(purchasing, env),
-        ...buildInventoryTools(inventory, env),
-        ...buildApprovalTools(env),
+        ...buildPurchasingTools(purchasing, env, promptRegistry, promptUsageLogger),
+        ...buildInventoryTools(inventory, env, promptRegistry, promptUsageLogger),
+        ...buildApprovalTools(env, promptRegistry, promptUsageLogger),
         ...buildEngagementTools(engagement, partyCrm),
       ],
       inject: [
@@ -143,6 +161,8 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         InventoryApplication,
         EngagementApplication,
         EnvService,
+        PromptRegistry,
+        PromptUsageLogger,
       ],
     },
     {

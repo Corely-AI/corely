@@ -20,6 +20,7 @@ import {
   type NormalizedMessageSnapshot,
   type ObservabilityPort,
 } from "@corely/kernel";
+import { type WorkspaceKind } from "@corely/prompts";
 
 const ACTION_KEY = "copilot.chat";
 
@@ -47,7 +48,7 @@ export class StreamCopilotChatUseCase {
     response: Response;
     requestId: string;
     workspaceId?: string;
-    workspaceKind?: string;
+    workspaceKind?: WorkspaceKind;
     intent?: string;
     environment: string;
     modelId?: string;
@@ -242,6 +243,8 @@ export class StreamCopilotChatUseCase {
               runId,
               tenantId,
               userId,
+              workspaceKind: params.workspaceKind,
+              environment: params.environment,
               observability: modelSpan,
             });
 

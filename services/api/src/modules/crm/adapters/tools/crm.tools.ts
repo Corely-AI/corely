@@ -4,6 +4,7 @@ import type { LanguageModel } from "ai";
 import { isErr, isOk } from "@corely/kernel";
 import { anthropic } from "@ai-sdk/anthropic";
 import type { EnvService } from "@corely/config";
+import { type PromptRegistry } from "@corely/prompts";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
 import type { PartyApplication } from "../../../party/application/party.application";
 import type { CrmApplication } from "../../application/crm.application";
@@ -14,6 +15,8 @@ import {
   DealProposalCardSchema,
   ActivityProposalCardSchema,
 } from "@corely/contracts";
+import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
+import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 
 const validationError = (issues: unknown) => ({
   ok: false,
@@ -33,6 +36,8 @@ export const buildCrmAiTools = (deps: {
   party: PartyApplication;
   crm: CrmApplication;
   env: EnvService;
+  promptRegistry: PromptRegistry;
+  promptUsageLogger: PromptUsageLogger;
 }): DomainToolPort[] => {
   const defaultModel = anthropic(deps.env.AI_MODEL_ID) as unknown as LanguageModel;
 
@@ -61,6 +66,28 @@ export const buildCrmAiTools = (deps: {
         }
 
         const { sourceText, suggestedRoles } = parsed.data;
+        const prompt = deps.promptRegistry.render(
+          "crm.extract_party",
+          buildPromptContext({ env: deps.env, tenantId }),
+          {
+            SOURCE_TEXT: sourceText,
+            SUGGESTED_ROLES_LINE: suggestedRoles?.length
+              ? `Suggested roles: ${suggestedRoles.join(", ")}`
+              : "",
+          }
+        );
+        deps.promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: deps.env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "crm_createPartyFromText",
+          purpose: "crm.extract_party",
+        });
 
         // Use LLM to extract structured party data
         const { object } = await generateObject({
@@ -85,7 +112,7 @@ export const buildCrmAiTools = (deps: {
             confidence: z.number().min(0).max(1).describe("Confidence score 0.0-1.0"),
             rationale: z.string().describe("Brief explanation of extraction logic"),
           }),
-          prompt: `Extract party information from this text. ${suggestedRoles ? `Suggested roles: ${suggestedRoles.join(", ")}` : ""}\n\nText:\n${sourceText}`,
+          prompt: prompt.content,
         });
 
         // Search for potential duplicates
@@ -160,6 +187,26 @@ export const buildCrmAiTools = (deps: {
         }
 
         const { sourceText, partyId } = parsed.data;
+        const prompt = deps.promptRegistry.render(
+          "crm.extract_deal",
+          buildPromptContext({ env: deps.env, tenantId }),
+          {
+            SOURCE_TEXT: sourceText,
+            ASSOCIATED_PARTY_LINE: partyId ? `Associate with party ID: ${partyId}` : "",
+          }
+        );
+        deps.promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: deps.env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "crm_createDealFromText",
+          purpose: "crm.extract_deal",
+        });
 
         // Use LLM to extract structured deal data
         const { object } = await generateObject({
@@ -179,7 +226,7 @@ export const buildCrmAiTools = (deps: {
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Extract deal/opportunity information from this text. ${partyId ? `Associate with party ID: ${partyId}` : ""}\n\nText:\n${sourceText}`,
+          prompt: prompt.content,
         });
 
         const proposal = DealProposalCardSchema.parse({
@@ -250,6 +297,43 @@ export const buildCrmAiTools = (deps: {
           buildCtx(tenantId, userId, toolCallId, runId)
         );
         const existingActivities = isOk(activitiesResult) ? activitiesResult.value.items : [];
+        const existingActivitiesList =
+          existingActivities.length > 0
+            ? existingActivities
+                .map((activity) => `- ${activity.type}: ${activity.subject}`)
+                .join("\n")
+            : "- None";
+        const contextSection = parsed.data.context
+          ? `Recent Context:\n${parsed.data.context}`
+          : "No additional context provided.";
+        const amountText = deal.amountCents
+          ? `EUR ${(deal.amountCents / 100).toFixed(2)}`
+          : "Unknown";
+        const prompt = deps.promptRegistry.render(
+          "crm.follow_up_suggestions",
+          buildPromptContext({ env: deps.env, tenantId }),
+          {
+            DEAL_TITLE: deal.title,
+            DEAL_STAGE: deal.stageId,
+            DEAL_AMOUNT: amountText,
+            DEAL_EXPECTED_CLOSE: deal.expectedCloseDate ?? "Unknown",
+            DEAL_NOTES: deal.notes ?? "None",
+            EXISTING_ACTIVITIES: existingActivitiesList,
+            CONTEXT_SECTION: contextSection,
+          }
+        );
+        deps.promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: deps.env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "crm_generateFollowUps",
+          purpose: "crm.follow_up_suggestions",
+        });
 
         // Use LLM to generate follow-up suggestions
         const { object } = await generateObject({
@@ -267,19 +351,7 @@ export const buildCrmAiTools = (deps: {
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Generate 2-4 suggested follow-up activities for this deal:
-
-Deal: ${deal.title}
-Stage: ${deal.stageId}
-Amount: ${deal.amountCents ? `€${(deal.amountCents / 100).toFixed(2)}` : "Unknown"}
-Expected Close: ${deal.expectedCloseDate ?? "Unknown"}
-Notes: ${deal.notes ?? "None"}
-
-Existing Activities: ${existingActivities.map((a) => `- ${a.type}: ${a.subject}`).join("\n")}
-
-${context ? `Recent Context:\n${context}` : ""}
-
-Suggest practical next steps to move this deal forward.`,
+          prompt: prompt.content,
         });
 
         const proposal = ActivityProposalCardSchema.parse({

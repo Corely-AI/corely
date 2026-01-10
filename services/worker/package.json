@@ -9,6 +9,7 @@
     "@corely/core": "workspace:*",
     "@corely/data": "workspace:*",
     "@corely/email-templates": "workspace:*",
+    "@corely/prompts": "workspace:*",
     "@nestjs/common": "catalog:",
     "@nestjs/core": "catalog:",
     "@google-cloud/tasks": "^4.1.0",

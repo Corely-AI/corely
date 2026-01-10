@@ -23,8 +23,10 @@ import { SystemTaskHandler } from "./handlers/system-task.handler";
 import { createWorkflowQueueAdapter } from "./workflow-queue.provider";
 import { WorkflowQueueLifecycle } from "./workflow-queue.lifecycle";
 import { WorkflowQueueController } from "./workflow-queue.controller";
+import { PromptModule } from "../../shared/prompts/prompt.module";
 
 @Module({
+  imports: [PromptModule],
   controllers: [WorkflowQueueController],
   providers: [
     WorkflowMetricsService,
