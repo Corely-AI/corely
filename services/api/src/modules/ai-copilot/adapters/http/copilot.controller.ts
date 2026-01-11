@@ -152,6 +152,7 @@ export class CopilotController {
     const tenantId = req.tenantId as string;
     const userId = req.user?.userId || "unknown";
     const requestId = req.traceId || "unknown";
+    const workspaceId = (req.headers["x-workspace-id"] as string | undefined) ?? tenantId;
 
     await this.streamCopilotChat.execute({
       messages: body.messages || [],

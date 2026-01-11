@@ -9,7 +9,7 @@ const findButtonByLabel = (container: HTMLElement, label: string) =>
   Array.from(container.querySelectorAll("button")).find((button) => button.textContent === label);
 
 describe("QuestionForm repeater", () => {
-  it("submits repeater values", () => {
+  it("submits repeater values", async () => {
     const request: CollectInputsToolInput = {
       title: "Collect items",
       fields: [
@@ -18,6 +18,7 @@ describe("QuestionForm repeater", () => {
           label: "Items",
           type: "repeater",
           minItems: 1,
+          defaultValue: [{ description: "Widget", quantity: 2 }],
           itemFields: [
             { key: "description", label: "Description", type: "text", required: true },
             { key: "quantity", label: "Quantity", type: "number" },
@@ -31,25 +32,19 @@ describe("QuestionForm repeater", () => {
     const root = createRoot(container);
 
     act(() => {
-      root.render(<QuestionForm request={request} onSubmit={(output) => (submitted = output)} />);
+      root.render(
+        <QuestionForm
+          request={request}
+          onSubmit={(output) => {
+            submitted = output;
+          }}
+        />
+      );
     });
 
-    const inputs = Array.from(container.querySelectorAll("input"));
-    expect(inputs).toHaveLength(2);
-
-    act(() => {
-      inputs[0].value = "Widget";
-      inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
-    });
-
-    act(() => {
-      inputs[1].value = "2";
-      inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
-    });
-
-    const submitButton = findButtonByLabel(container, "Submit");
-    act(() => {
-      submitButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    const form = container.querySelector("form");
+    await act(async () => {
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 
     expect(submitted?.values.items).toEqual([

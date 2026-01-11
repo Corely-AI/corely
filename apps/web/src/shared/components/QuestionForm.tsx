@@ -622,28 +622,32 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {fields.map((field) => (
-            <div
-              key={field.key ?? field.label ?? field.placeholder ?? Math.random()}
-              className="space-y-2"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <label htmlFor={field.key} className="text-sm font-medium text-foreground">
-                  {field.label}
-                  {field.required ? " *" : ""}
-                </label>
-                {field.helpText || field.patternLabel ? (
-                  <span className="text-[11px] text-muted-foreground">
-                    {field.helpText || field.patternLabel}
-                  </span>
+          {fields.map((field) => {
+            const fieldError = errors[field.key];
+            const errorMessage = typeof fieldError === "string" ? fieldError : undefined;
+            return (
+              <div
+                key={field.key ?? field.label ?? field.placeholder ?? Math.random()}
+                className="space-y-2"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <label htmlFor={field.key} className="text-sm font-medium text-foreground">
+                    {field.label}
+                    {field.required ? " *" : ""}
+                  </label>
+                  {field.helpText || field.patternLabel ? (
+                    <span className="text-[11px] text-muted-foreground">
+                      {field.helpText || field.patternLabel}
+                    </span>
+                  ) : null}
+                </div>
+                {renderField(field)}
+                {errorMessage ? (
+                  <div className="text-xs text-destructive">{errorMessage}</div>
                 ) : null}
               </div>
-              {renderField(field)}
-              {typeof errors[field.key] === "string" ? (
-                <div className="text-xs text-destructive">{errors[field.key]}</div>
-              ) : null}
-            </div>
-          ))}
+            );
+          })}
           <div className="flex gap-2">
             <Button type="submit" disabled={disabled || isSubmitting} size="sm">
               {request.submitLabel || "Submit"}
