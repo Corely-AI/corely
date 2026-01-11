@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   type CollectInputsToolInput,
   type CollectInputField,
+  type CollectRepeaterField,
   type CollectInputsToolOutput,
 } from "@corely/contracts";
 import { Button } from "@/shared/ui/button";
@@ -23,9 +24,12 @@ type Props = {
   disabled?: boolean;
 };
 
-type FieldErrors = Record<string, string | undefined>;
+type RepeaterRowErrors = Record<number, Record<string, string | undefined>>;
+type RepeaterFieldError = { message?: string; rows?: RepeaterRowErrors };
+type FieldErrors = Record<string, string | RepeaterFieldError | undefined>;
 
 const EMPTY_SELECT_VALUE = "__empty__";
+const DEFAULT_MAX_REPEATER_ITEMS = 50;
 
 const toRegExp = (pattern: string) => {
   const trimmed = pattern.trim();
@@ -65,7 +69,22 @@ const buildSchema = (field: CollectInputField): z.ZodTypeAny => {
       schema = schema.max(field.max);
     }
     return field.required ? schema : schema.optional();
-  } else {
+  }
+  if (field.type === "repeater") {
+    const itemFields = Array.isArray(field.itemFields) ? field.itemFields : [];
+    const itemSchema =
+      itemFields.length > 0
+        ? z.object(Object.fromEntries(itemFields.map((item) => [item.key, buildSchema(item)])))
+        : z.record(z.string(), z.any());
+    const maxItems = field.maxItems ?? DEFAULT_MAX_REPEATER_ITEMS;
+    const minItems = field.minItems ?? (field.required ? 1 : 0);
+    let schema = z.array(itemSchema).max(maxItems);
+    if (minItems > 0) {
+      schema = schema.min(minItems);
+    }
+    return field.required || field.minItems !== undefined ? schema : schema.optional();
+  }
+  if (field.type === "text" || field.type === "textarea") {
     let schema = z.string();
     if (field.minLength !== undefined) {
       schema = schema.min(field.minLength);
@@ -79,6 +98,10 @@ const buildSchema = (field: CollectInputField): z.ZodTypeAny => {
         schema = schema.regex(patternRegex);
       }
     }
+    return field.required ? schema : schema.optional();
+  }
+  {
+    const schema = z.string();
     return field.required ? schema : schema.optional();
   }
 };
@@ -118,15 +141,59 @@ const splitDateTimeValue = (value?: string) => {
   return { datePart, timePart: timePart.slice(0, 5) };
 };
 
+const getEmptyValue = (field: CollectInputField): unknown => {
+  if (field.defaultValue !== undefined) {
+    return field.defaultValue;
+  }
+  switch (field.type) {
+    case "boolean":
+      return false;
+    case "number":
+      return "";
+    case "select":
+      return "";
+    case "repeater":
+      return [];
+    default:
+      return "";
+  }
+};
+
+const buildRepeaterRow = (itemFields: CollectInputField[]) =>
+  Object.fromEntries(itemFields.map((item) => [item.key, getEmptyValue(item)]));
+
+const getRepeaterInitialValue = (field: CollectRepeaterField): Array<Record<string, unknown>> => {
+  if (Array.isArray(field.defaultValue)) {
+    return field.defaultValue as Array<Record<string, unknown>>;
+  }
+  if (!Array.isArray(field.itemFields)) {
+    return [];
+  }
+  const minItems = field.minItems ?? (field.required ? 1 : 0);
+  return Array.from({ length: minItems }, () => buildRepeaterRow(field.itemFields));
+};
+
+const ensureRepeaterError = (fieldErrors: FieldErrors, fieldKey: string) => {
+  const existing = fieldErrors[fieldKey];
+  if (existing && typeof existing === "object") {
+    return existing as RepeaterFieldError;
+  }
+  const next: RepeaterFieldError = existing ? { message: existing as string } : {};
+  fieldErrors[fieldKey] = next;
+  return next;
+};
+
 export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, disabled }) => {
   const fields = Array.isArray(request.fields) ? request.fields : [];
 
   const [values, setValues] = useState<Record<string, unknown>>(
     Object.fromEntries(
-      fields.map((field) => [
-        field.key,
-        field.defaultValue ?? (field.type === "boolean" ? false : ""),
-      ])
+      fields.map((field) => {
+        if (field.type === "repeater") {
+          return [field.key, getRepeaterInitialValue(field)];
+        }
+        return [field.key, getEmptyValue(field)];
+      })
     )
   );
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -152,8 +219,21 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
     }
     const fieldErrors: FieldErrors = {};
     parsed.error.issues.forEach((issue) => {
-      const pathKey = issue.path[0] as string;
-      fieldErrors[pathKey] = issue.message;
+      const [fieldKey, rowIndex, nestedKey] = issue.path;
+      if (typeof fieldKey !== "string") {
+        return;
+      }
+      if (typeof rowIndex === "number" && typeof nestedKey === "string") {
+        const repeaterError = ensureRepeaterError(fieldErrors, fieldKey);
+        if (!repeaterError.rows) {
+          repeaterError.rows = {};
+        }
+        const rowErrors = repeaterError.rows[rowIndex] ?? {};
+        rowErrors[nestedKey] = issue.message;
+        repeaterError.rows[rowIndex] = rowErrors;
+        return;
+      }
+      fieldErrors[fieldKey] = issue.message;
     });
     setErrors(fieldErrors);
     return { ok: false as const };
@@ -173,10 +253,15 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
     setIsSubmitting(false);
   };
 
-  const renderField = (field: CollectInputField) => {
-    const error = errors[field.key];
+  const renderInputField = (
+    field: CollectInputField,
+    value: unknown,
+    onChange: (nextValue: unknown) => void,
+    error?: string,
+    fieldId?: string
+  ) => {
     const commonProps = {
-      id: field.key,
+      id: fieldId ?? field.key,
       disabled: disabled || isSubmitting,
       "aria-invalid": Boolean(error),
     };
@@ -185,8 +270,8 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
         <Textarea
           {...commonProps}
           placeholder={field.placeholder}
-          value={(values[field.key] as string) ?? ""}
-          onChange={(e) => handleChange(field.key, e.target.value)}
+          value={(value as string) ?? ""}
+          onChange={(e) => onChange(e.target.value)}
         />
       );
     }
@@ -196,10 +281,8 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
           type="number"
           {...commonProps}
           placeholder={field.placeholder}
-          value={(values[field.key] as number | string | undefined) ?? ""}
-          onChange={(e) =>
-            handleChange(field.key, e.target.value === "" ? "" : Number(e.target.value))
-          }
+          value={(value as number | string | undefined) ?? ""}
+          onChange={(e) => onChange(e.target.value === "" ? "" : Number(e.target.value))}
           min={field.min}
           max={field.max}
           step={field.step}
@@ -211,8 +294,8 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
         <div className="flex items-center gap-2">
           <Checkbox
             {...commonProps}
-            checked={Boolean(values[field.key])}
-            onCheckedChange={(checked) => handleChange(field.key, checked === true)}
+            checked={Boolean(value)}
+            onCheckedChange={(checked) => onChange(checked === true)}
           />
           {field.placeholder ? (
             <span className="text-xs text-muted-foreground">{field.placeholder}</span>
@@ -221,7 +304,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
       );
     }
     if (field.type === "date" || field.type === "datetime") {
-      const rawValue = (values[field.key] as string | undefined) ?? "";
+      const rawValue = (value as string | undefined) ?? "";
       const { datePart, timePart } = splitDateTimeValue(rawValue);
       const selectedDate = parseDateValue(datePart || rawValue);
       const displayDate = datePart || formatDateValue(selectedDate);
@@ -237,7 +320,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
                   !displayDate && "text-muted-foreground"
                 )}
                 disabled={disabled || isSubmitting}
-                id={field.key}
+                id={fieldId ?? field.key}
                 aria-invalid={Boolean(error)}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -248,7 +331,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
               <Calendar
                 mode="single"
                 selected={selectedDate}
-                onSelect={(date) => handleChange(field.key, formatDateValue(date))}
+                onSelect={(date) => onChange(formatDateValue(date))}
               />
             </PopoverContent>
           </Popover>
@@ -270,7 +353,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
                   !displayDate && "text-muted-foreground"
                 )}
                 disabled={disabled || isSubmitting}
-                id={field.key}
+                id={fieldId ?? field.key}
                 aria-invalid={Boolean(error)}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -284,21 +367,21 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
                 onSelect={(date) => {
                   const nextDate = formatDateValue(date);
                   const nextValue = nextDate ? `${nextDate}T${fallbackTime}` : "";
-                  handleChange(field.key, nextValue);
+                  onChange(nextValue);
                 }}
               />
             </PopoverContent>
           </Popover>
           <Input
             type="time"
-            id={`${field.key}-time`}
+            id={`${fieldId ?? field.key}-time`}
             aria-invalid={Boolean(error)}
             value={timeValue}
             onChange={(e) => {
               if (!displayDate) {
                 return;
               }
-              handleChange(field.key, `${displayDate}T${e.target.value}`);
+              onChange(`${displayDate}T${e.target.value}`);
             }}
             disabled={timeDisabled}
           />
@@ -318,7 +401,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
           value: stringValue === "" ? EMPTY_SELECT_VALUE : stringValue,
         };
       });
-      const currentValue = values[field.key];
+      const currentValue = value;
       const selectValue =
         currentValue === "" && hasEmptyOption
           ? EMPTY_SELECT_VALUE
@@ -329,9 +412,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
         <Select
           disabled={disabled || isSubmitting}
           value={selectValue}
-          onValueChange={(value) =>
-            handleChange(field.key, value === EMPTY_SELECT_VALUE ? "" : value)
-          }
+          onValueChange={(nextValue) => onChange(nextValue === EMPTY_SELECT_VALUE ? "" : nextValue)}
         >
           <SelectTrigger>
             <SelectValue placeholder={field.placeholder || "Select"} />
@@ -355,9 +436,178 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
         type="text"
         {...commonProps}
         placeholder={field.placeholder}
-        value={(values[field.key] as string) ?? ""}
-        onChange={(e) => handleChange(field.key, e.target.value)}
+        value={(value as string) ?? ""}
+        onChange={(e) => onChange(e.target.value)}
       />
+    );
+  };
+
+  const renderField = (field: CollectInputField) => {
+    const error = errors[field.key];
+    if (field.type === "repeater") {
+      const value = Array.isArray(values[field.key])
+        ? (values[field.key] as Array<Record<string, unknown>>)
+        : [];
+      const repeaterError = typeof error === "object" ? (error as RepeaterFieldError) : undefined;
+      const errorMessage = typeof error === "string" ? error : repeaterError?.message;
+      const rowErrors = repeaterError?.rows ?? {};
+      const minItems = field.minItems ?? (field.required ? 1 : 0);
+      const maxItems = field.maxItems ?? DEFAULT_MAX_REPEATER_ITEMS;
+      const layout = field.ui?.layout ?? "table";
+      const itemFields = Array.isArray(field.itemFields) ? field.itemFields : [];
+
+      const handleRowChange = (rowIndex: number, key: string, nextValue: unknown) => {
+        const nextRows = value.map((row, index) =>
+          index === rowIndex ? { ...row, [key]: nextValue } : row
+        );
+        handleChange(field.key, nextRows);
+      };
+
+      return (
+        <div className="space-y-3">
+          {itemFields.length === 0 ? (
+            <div className="text-xs text-destructive">Repeater fields require itemFields.</div>
+          ) : null}
+          {value.length === 0 ? (
+            <div className="text-xs text-muted-foreground">No rows yet.</div>
+          ) : null}
+          {layout === "cards" ? (
+            <div className="space-y-3">
+              {value.map((row, rowIndex) => {
+                const rowLabelValue = field.ui?.rowLabelKey ? row[field.ui.rowLabelKey] : undefined;
+                const rowTitle =
+                  rowLabelValue !== undefined && rowLabelValue !== ""
+                    ? String(rowLabelValue)
+                    : `Row ${rowIndex + 1}`;
+                return (
+                  <Card key={`repeater-${field.key}-${rowIndex}`}>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-foreground">{rowTitle}</div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={disabled || isSubmitting || value.length <= minItems}
+                          onClick={() =>
+                            handleChange(
+                              field.key,
+                              value.filter((_, index) => index !== rowIndex)
+                            )
+                          }
+                        >
+                          {field.ui?.removeLabel || "Remove"}
+                        </Button>
+                      </div>
+                      {itemFields.map((itemField) => {
+                        const nestedError = rowErrors?.[rowIndex]?.[itemField.key];
+                        return (
+                          <div
+                            key={`${field.key}-${rowIndex}-${itemField.key}`}
+                            className="space-y-2"
+                          >
+                            <label
+                              htmlFor={`${field.key}-${rowIndex}-${itemField.key}`}
+                              className="text-sm font-medium text-foreground"
+                            >
+                              {itemField.label}
+                              {itemField.required ? " *" : ""}
+                            </label>
+                            {renderInputField(
+                              itemField,
+                              row[itemField.key],
+                              (nextValue) => handleRowChange(rowIndex, itemField.key, nextValue),
+                              nestedError,
+                              `${field.key}-${rowIndex}-${itemField.key}`
+                            )}
+                            {nestedError ? (
+                              <div className="text-xs text-destructive">{nestedError}</div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div
+                className="grid gap-2 text-xs font-medium text-muted-foreground"
+                style={{
+                  gridTemplateColumns: `repeat(${itemFields.length}, minmax(0, 1fr)) auto`,
+                }}
+              >
+                {itemFields.map((itemField) => (
+                  <div key={`${field.key}-header-${itemField.key}`}>{itemField.label}</div>
+                ))}
+                <div className="text-right"> </div>
+              </div>
+              {value.map((row, rowIndex) => (
+                <div
+                  key={`repeater-${field.key}-row-${rowIndex}`}
+                  className="grid items-start gap-2"
+                  style={{
+                    gridTemplateColumns: `repeat(${itemFields.length}, minmax(0, 1fr)) auto`,
+                  }}
+                >
+                  {itemFields.map((itemField) => {
+                    const nestedError = rowErrors?.[rowIndex]?.[itemField.key];
+                    return (
+                      <div key={`${field.key}-${rowIndex}-${itemField.key}`} className="space-y-1">
+                        {renderInputField(
+                          itemField,
+                          row[itemField.key],
+                          (nextValue) => handleRowChange(rowIndex, itemField.key, nextValue),
+                          nestedError,
+                          `${field.key}-${rowIndex}-${itemField.key}`
+                        )}
+                        {nestedError ? (
+                          <div className="text-xs text-destructive">{nestedError}</div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                  <div className="flex items-start justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={disabled || isSubmitting || value.length <= minItems}
+                      onClick={() =>
+                        handleChange(
+                          field.key,
+                          value.filter((_, index) => index !== rowIndex)
+                        )
+                      }
+                    >
+                      {field.ui?.removeLabel || "Remove"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {errorMessage ? <div className="text-xs text-destructive">{errorMessage}</div> : null}
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            disabled={disabled || isSubmitting || value.length >= maxItems}
+            onClick={() => handleChange(field.key, [...value, buildRepeaterRow(itemFields)])}
+          >
+            {field.ui?.addLabel || "Add row"}
+          </Button>
+        </div>
+      );
+    }
+    const errorMessage = typeof error === "string" ? error : undefined;
+    return renderInputField(
+      field,
+      values[field.key],
+      (nextValue) => handleChange(field.key, nextValue),
+      errorMessage
     );
   };
 
@@ -389,7 +639,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
                 ) : null}
               </div>
               {renderField(field)}
-              {errors[field.key] ? (
+              {typeof errors[field.key] === "string" ? (
                 <div className="text-xs text-destructive">{errors[field.key]}</div>
               ) : null}
             </div>

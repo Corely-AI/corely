@@ -72,8 +72,8 @@ const renderPart = (
             await Promise.resolve(
               helpers.addToolResult({
                 toolCallId,
-                result: output,
-                toolName: "collect_inputs",
+                output,
+                tool: "collect_inputs",
               })
             );
             helpers.markSubmitting(toolCallId, false);
@@ -86,8 +86,8 @@ const renderPart = (
             await Promise.resolve(
               helpers.addToolResult({
                 toolCallId,
-                result: { values: {}, meta: { cancelled: true } },
-                toolName: "collect_inputs",
+                output: { values: {}, meta: { cancelled: true } },
+                tool: "collect_inputs",
               })
             );
             helpers.markSubmitting(toolCallId, false);
