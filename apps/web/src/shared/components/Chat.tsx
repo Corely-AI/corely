@@ -5,6 +5,7 @@ import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
 import { QuestionForm } from "@/shared/components/QuestionForm";
+import { Markdown } from "@/shared/components/Markdown";
 import { type CollectInputsToolInput, type CollectInputsToolOutput } from "@corely/contracts";
 
 type ToolInvocationPart = {
@@ -32,7 +33,7 @@ const isToolPart = (part: MessagePart): part is ToolInvocationPart =>
 const renderPart = (
   part: MessagePart,
   helpers: {
-    addToolResult?: (params: { toolCallId: string; result: unknown; toolName?: string }) => unknown;
+    addToolResult?: (params: { toolCallId: string; output: unknown; tool: string }) => unknown;
     addToolApprovalResponse?: (params: {
       id: string;
       approved: boolean;
@@ -43,7 +44,7 @@ const renderPart = (
   }
 ) => {
   if (part.type === "text") {
-    return <span className="whitespace-pre-wrap">{part.text}</span>;
+    return <Markdown content={part.text} />;
   }
 
   if (part.type === "reasoning") {
@@ -72,8 +73,8 @@ const renderPart = (
             await Promise.resolve(
               helpers.addToolResult({
                 toolCallId,
-                result: output,
-                toolName: "collect_inputs",
+                output,
+                tool: "collect_inputs",
               })
             );
             helpers.markSubmitting(toolCallId, false);
@@ -86,8 +87,8 @@ const renderPart = (
             await Promise.resolve(
               helpers.addToolResult({
                 toolCallId,
-                result: { values: {}, meta: { cancelled: true } },
-                toolName: "collect_inputs",
+                output: { values: {}, meta: { cancelled: true } },
+                tool: "collect_inputs",
               })
             );
             helpers.markSubmitting(toolCallId, false);
@@ -135,12 +136,23 @@ const renderPart = (
     }
 
     if (part.state === "output-available") {
+      const rawOutput = part.output ?? part.result ?? part.input;
+      if (typeof rawOutput === "string") {
+        return (
+          <Card className="bg-background border-border">
+            <CardContent className="p-3 text-xs space-y-1">
+              <div className="font-semibold">Tool result: {toolName}</div>
+              <Markdown content={rawOutput} className="text-muted-foreground" />
+            </CardContent>
+          </Card>
+        );
+      }
       return (
         <Card className="bg-background border-border">
           <CardContent className="p-3 text-xs space-y-1">
             <div className="font-semibold">Tool result: {toolName}</div>
             <pre className="whitespace-pre-wrap text-muted-foreground">
-              {JSON.stringify(part.output ?? part.result ?? part.input, null, 2)}
+              {JSON.stringify(rawOutput, null, 2)}
             </pre>
           </CardContent>
         </Card>
@@ -196,7 +208,7 @@ export function Chat({
     options: chatOptions,
     runId,
     apiBase,
-    tenantId,
+    workspaceId,
     accessToken,
   } = useCopilotChatOptions({
     activeModule,
@@ -254,7 +266,7 @@ export function Chat({
     }
 
     let cancelled = false;
-    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+    void fetchCopilotHistory({ runId, apiBase, workspaceId, accessToken })
       .then((history) => {
         if (cancelled) {
           return;
@@ -270,7 +282,7 @@ export function Chat({
     return () => {
       cancelled = true;
     };
-  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, workspaceId]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -317,9 +329,7 @@ export function Chat({
                 })}
               </div>
             ))}
-            {!m.parts?.length && m.content ? (
-              <p className="whitespace-pre-wrap">{m.content as string}</p>
-            ) : null}
+            {!m.parts?.length && m.content ? <Markdown content={String(m.content)} /> : null}
           </div>
         ))}
       </div>

@@ -19,8 +19,14 @@ export function maskString(input: string, mode: MaskingMode): string {
     .replace(PHONE_REGEX, placeholder);
 }
 
-export function maskJsonValue(value: JsonValue, mode: MaskingMode): JsonValue {
+export function maskJsonValue(
+  value: JsonValue | undefined,
+  mode: MaskingMode
+): JsonValue | undefined {
   if (mode === "off") {
+    return value;
+  }
+  if (value === undefined) {
     return value;
   }
   if (value === null) {

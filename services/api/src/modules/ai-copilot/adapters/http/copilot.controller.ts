@@ -57,6 +57,7 @@ export class CopilotController {
     const tenantId = req.tenantId as string;
     const userId = req.user?.userId || "unknown";
     const requestId = req.traceId || "unknown";
+    const workspaceId = (req.headers["x-workspace-id"] as string | undefined) ?? tenantId;
 
     return this.streamCopilotChat.execute({
       messages: body.messages || [],
@@ -68,7 +69,7 @@ export class CopilotController {
       response: res,
       intent: body.requestData?.activeModule,
       requestId,
-      workspaceId: tenantId,
+      workspaceId,
       workspaceKind: "COMPANY",
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,
@@ -90,6 +91,7 @@ export class CopilotController {
     const tenantId = req.tenantId as string;
     const userId = req.user?.userId || "unknown";
     const requestId = req.traceId || "unknown";
+    const workspaceId = (req.headers["x-workspace-id"] as string | undefined) ?? tenantId;
 
     const { runId } = await this.createRun.execute({
       runId: body.id,
@@ -150,6 +152,7 @@ export class CopilotController {
     const tenantId = req.tenantId as string;
     const userId = req.user?.userId || "unknown";
     const requestId = req.traceId || "unknown";
+    const workspaceId = (req.headers["x-workspace-id"] as string | undefined) ?? tenantId;
 
     await this.streamCopilotChat.execute({
       messages: body.messages || [],
@@ -161,7 +164,7 @@ export class CopilotController {
       response: res,
       intent: body.requestData?.activeModule,
       requestId,
-      workspaceId: tenantId,
+      workspaceId,
       workspaceKind: "COMPANY",
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import type { EnvService } from "@corely/config";
-import { streamText, convertToModelMessages, stepCountIs } from "ai";
+import { streamText, convertToModelMessages, stepCountIs, validateUIMessages } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { LanguageModelPort } from "../../application/ports/language-model.port";
@@ -11,11 +11,13 @@ import type { AuditPort } from "../../application/ports/audit.port";
 import type { OutboxPort } from "../../application/ports/outbox.port";
 import { buildCollectInputsTool } from "../tools/interactive-tools";
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
+import { CopilotDataPartSchemas } from "@corely/contracts";
 import { type ObservabilityPort, type ObservabilitySpanRef } from "@corely/kernel";
 import { type LanguageModelUsage, type StreamTextResult } from "ai";
 import { type WorkspaceKind, PromptRegistry } from "@corely/prompts";
 import { PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
+import { copilotMessageMetadataSchema } from "../../application/validation/copilot-message-metadata.schema";
 
 @Injectable()
 export class AiSdkModelAdapter implements LanguageModelPort {
@@ -73,7 +75,11 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       environmentOverride: params.environment,
     });
 
-    const systemPrompt = this.promptRegistry.render("copilot.system", promptContext, {});
+    const systemPrompt = this.promptRegistry.render("copilot.system", promptContext, {
+      CUSTOMER_SEARCH_TOOL: "customer_search",
+      INVOICE_CREATE_FROM_CUSTOMER_TOOL: "invoice_create_from_customer",
+      COLLECT_INPUTS_TOOL: "collect_inputs",
+    });
     this.observability.setAttributes(params.observability, {
       "prompt.id": systemPrompt.promptId,
       "prompt.version": systemPrompt.promptVersion,
@@ -115,24 +121,8 @@ export class AiSdkModelAdapter implements LanguageModelPort {
 
     this.logger.debug(`Starting streamText with ${Object.keys(toolset).length} tools`);
 
-    const sanitizeParts = (parts: CopilotUIMessage["parts"]) => {
-      if (!Array.isArray(parts)) {
-        return undefined;
-      }
-      const filtered = parts.flatMap((part) => {
-        if (part?.type === "text" && typeof part.text === "string") {
-          return [{ type: "text" as const, text: part.text }];
-        }
-        if (part?.type === "reasoning" && typeof part.text === "string") {
-          return [{ type: "text" as const, text: part.text }];
-        }
-        // Drop tool/data/other parts to avoid malformed tool_use/tool_result sequences
-        return [];
-      });
-      return filtered.length ? filtered : undefined;
-    };
-
-    const systemMessage: Omit<CopilotUIMessage, "id"> = {
+    const systemMessage: CopilotUIMessage = {
+      id: `copilot-system-${params.runId}`,
       role: "system",
       parts: [
         {
@@ -142,15 +132,92 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       ],
     };
 
-    const modelMessages = await convertToModelMessages(
-      [systemMessage, ...params.messages].map((msg) => {
-        const parts = sanitizeParts(msg.parts) ?? [];
-        return {
-          role: msg.role,
-          parts,
+    const messagesWithIds = [systemMessage, ...params.messages].map((message, index) => ({
+      ...message,
+      id: message.id ?? `copilot-${params.runId}-${index}`,
+    }));
+
+    const normalizedMessages = messagesWithIds
+      .map((message) => {
+        const normalizeToolPart = (part: CopilotUIMessage["parts"][number]) => {
+          if (!part || typeof part !== "object") {
+            return part;
+          }
+          if (typeof part.type !== "string" || !part.type.startsWith("tool-")) {
+            return part;
+          }
+          const toolPart = part as {
+            type: string;
+            state?: string;
+            toolCallId?: string;
+            input?: unknown;
+            rawInput?: unknown;
+            output?: unknown;
+            result?: unknown;
+            errorText?: string;
+          };
+          if (!toolPart.toolCallId) {
+            return undefined;
+          }
+          if (toolPart.state === "output-available" && toolPart.output === undefined) {
+            if (toolPart.result !== undefined) {
+              return { ...toolPart, output: toolPart.result };
+            }
+            return {
+              ...toolPart,
+              state: "output-error",
+              errorText: toolPart.errorText ?? "tool output missing",
+              rawInput: toolPart.rawInput ?? {},
+            };
+          }
+          if (toolPart.state !== "input-streaming" && toolPart.input == null) {
+            if (toolPart.rawInput != null) {
+              return { ...toolPart, input: toolPart.rawInput };
+            }
+            if (toolPart.state === "output-error") {
+              return { ...toolPart, rawInput: {} };
+            }
+            return undefined;
+          }
+          return toolPart;
         };
+
+        if (Array.isArray(message.parts) && message.parts.length > 0) {
+          return {
+            ...message,
+            parts: message.parts
+              .map(normalizeToolPart)
+              .filter(
+                (part): part is CopilotUIMessage["parts"][number] =>
+                  Boolean(part) && typeof part === "object"
+              ),
+          };
+        }
+        const content = (message as { content?: unknown }).content;
+        if (typeof content === "string") {
+          return {
+            ...message,
+            parts: [{ type: "text" as const, text: content }],
+          };
+        }
+        return undefined;
       })
-    );
+      .filter(
+        (message): message is CopilotUIMessage =>
+          Boolean(message) && Array.isArray(message.parts) && message.parts.length > 0
+      );
+
+    const validatedMessages = await validateUIMessages<CopilotUIMessage>({
+      messages: normalizedMessages,
+      metadataSchema: copilotMessageMetadataSchema,
+      dataSchemas: CopilotDataPartSchemas,
+      tools: toolset,
+    });
+
+    const modelMessages = await convertToModelMessages(validatedMessages, {
+      tools: toolset,
+      ignoreIncompleteToolCalls: true,
+    });
 
     const result = streamText({
       model,

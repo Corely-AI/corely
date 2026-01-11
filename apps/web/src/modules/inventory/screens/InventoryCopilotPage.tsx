@@ -81,7 +81,7 @@ export default function InventoryCopilotPage() {
     options: chatOptions,
     runId,
     apiBase,
-    tenantId,
+    workspaceId,
     accessToken,
   } = useCopilotChatOptions({
     activeModule: "inventory",
@@ -108,7 +108,7 @@ export default function InventoryCopilotPage() {
 
   useEffect(() => {
     let cancelled = false;
-    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+    void fetchCopilotHistory({ runId, apiBase, workspaceId, accessToken })
       .then((history) => {
         if (!cancelled && (!hydratedRunId || hydratedRunId !== runId)) {
           setMessages(history);
@@ -121,7 +121,7 @@ export default function InventoryCopilotPage() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, workspaceId]);
 
   const renderHints = (missingFields?: string[], followUpQuestions?: string[]) => {
     if (!missingFields?.length && !followUpQuestions?.length) {
