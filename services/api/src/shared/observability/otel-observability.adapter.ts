@@ -125,10 +125,14 @@ export class OtelObservabilityAdapter implements ObservabilityPort {
       "tool.error_message": observation.errorMessage
         ? maskString(observation.errorMessage, this.options.maskingMode)
         : "",
-      "tool.input": JSON.stringify(maskJsonValue(observation.input, this.options.maskingMode)),
-      "tool.output": observation.output
-        ? JSON.stringify(maskJsonValue(observation.output, this.options.maskingMode))
-        : "",
+      "tool.input":
+        observation.input === undefined || observation.input === null
+          ? ""
+          : JSON.stringify(maskJsonValue(observation.input, this.options.maskingMode)),
+      "tool.output":
+        observation.output === undefined || observation.output === null
+          ? ""
+          : JSON.stringify(maskJsonValue(observation.output, this.options.maskingMode)),
     });
   }
 

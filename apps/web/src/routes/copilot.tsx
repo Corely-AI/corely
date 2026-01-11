@@ -61,7 +61,7 @@ export const CopilotPage: React.FC = () => {
     options: chatOptions,
     runId,
     apiBase,
-    tenantId,
+    workspaceId,
     accessToken,
   } = useCopilotChatOptions({
     activeModule: "freelancer",
@@ -87,7 +87,7 @@ export const CopilotPage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+    void fetchCopilotHistory({ runId, apiBase, workspaceId, accessToken })
       .then((history) => {
         if (!cancelled && (!hydratedRunId || hydratedRunId !== runId)) {
           setMessages(history);
@@ -100,7 +100,7 @@ export const CopilotPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, workspaceId]);
 
   const renderPart = (part: MessagePart, messageId: string) => {
     if (part.type === "text") {

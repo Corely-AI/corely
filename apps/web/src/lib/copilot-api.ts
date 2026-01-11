@@ -38,24 +38,50 @@ export interface CopilotOptionsInput {
 
 const RUN_ID_STORAGE_KEY = "copilot:run";
 
-const loadStoredRunId = (activeModule: string, tenantId: string): string | null => {
+const buildRunIdStorageKey = (
+  activeModule: string,
+  tenantId: string,
+  workspaceId: string
+): string => `${RUN_ID_STORAGE_KEY}:${tenantId}:${workspaceId}:${activeModule}`;
+
+const loadStoredRunId = (
+  activeModule: string,
+  tenantId: string,
+  workspaceId: string
+): string | null => {
   if (typeof window === "undefined") {
     return null;
   }
   try {
-    const stored = window.localStorage.getItem(`${RUN_ID_STORAGE_KEY}:${tenantId}:${activeModule}`);
-    return stored || null;
+    const scopedKey = buildRunIdStorageKey(activeModule, tenantId, workspaceId);
+    const stored = window.localStorage.getItem(scopedKey);
+    if (stored) {
+      return stored;
+    }
+    if (tenantId === workspaceId) {
+      const legacy = window.localStorage.getItem(
+        `${RUN_ID_STORAGE_KEY}:${workspaceId}:${activeModule}`
+      );
+      return legacy || null;
+    }
+    return null;
   } catch {
     return null;
   }
 };
 
-const persistRunId = (activeModule: string, tenantId: string, runId: string) => {
+const persistRunId = (
+  activeModule: string,
+  tenantId: string,
+  workspaceId: string,
+  runId: string
+) => {
   if (typeof window === "undefined") {
     return;
   }
   try {
-    window.localStorage.setItem(`${RUN_ID_STORAGE_KEY}:${tenantId}:${activeModule}`, runId);
+    const scopedKey = buildRunIdStorageKey(activeModule, tenantId, workspaceId);
+    window.localStorage.setItem(scopedKey, runId);
   } catch {
     // ignore storage errors
   }
@@ -102,6 +128,27 @@ const normalizeMessages = (
     };
   });
 
+const decodeTenantIdFromToken = (token: string | null): string | null => {
+  if (!token) {
+    return null;
+  }
+  if (typeof atob !== "function") {
+    return null;
+  }
+  const parts = token.split(".");
+  if (parts.length < 2) {
+    return null;
+  }
+  const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+  const padded = payload.padEnd(Math.ceil(payload.length / 4) * 4, "=");
+  try {
+    const decoded = JSON.parse(atob(padded));
+    return typeof decoded?.tenantId === "string" ? decoded.tenantId : null;
+  } catch {
+    return null;
+  }
+};
+
 export const useCopilotChatOptions = (
   input: CopilotOptionsInput
 ): {
@@ -109,23 +156,29 @@ export const useCopilotChatOptions = (
   runId: string;
   apiBase: string;
   tenantId: string;
+  workspaceId: string;
   accessToken: string;
 } => {
   const apiBase = resolveCopilotBaseUrl();
-  const [tenantId, setTenantId] = useState<string>(getActiveWorkspaceId() ?? "demo-tenant");
+  const accessToken = authClient.getAccessToken() ?? "";
+  const tenantId = useMemo(
+    () => decodeTenantIdFromToken(accessToken) ?? "demo-tenant",
+    [accessToken]
+  );
+  const [workspaceId, setWorkspaceId] = useState<string>(getActiveWorkspaceId() ?? tenantId);
 
   useEffect(() => {
     const unsubscribe = subscribeWorkspace((workspaceId) => {
-      setTenantId(workspaceId ?? "demo-tenant");
+      setWorkspaceId(workspaceId ?? tenantId);
     });
     return unsubscribe;
-  }, []);
+  }, [tenantId]);
 
   const [runId, setRunId] = useState<string>(() => {
-    const initialTenant = getActiveWorkspaceId() ?? "demo-tenant";
+    const initialWorkspace = getActiveWorkspaceId() ?? tenantId;
     return (
       input.runId ||
-      loadStoredRunId(input.activeModule, initialTenant) ||
+      loadStoredRunId(input.activeModule, tenantId, initialWorkspace) ||
       (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
         ? crypto.randomUUID()
         : createIdempotencyKey())
@@ -135,25 +188,25 @@ export const useCopilotChatOptions = (
   useEffect(() => {
     const nextRunId =
       input.runId ||
-      loadStoredRunId(input.activeModule, tenantId) ||
+      loadStoredRunId(input.activeModule, tenantId, workspaceId) ||
       (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
         ? crypto.randomUUID()
         : createIdempotencyKey());
     setRunId(nextRunId);
-  }, [input.activeModule, input.runId, tenantId]);
+  }, [input.activeModule, input.runId, tenantId, workspaceId]);
 
   useEffect(() => {
-    persistRunId(input.activeModule, tenantId, runId);
-  }, [runId, input.activeModule, tenantId]);
+    persistRunId(input.activeModule, tenantId, workspaceId, runId);
+  }, [runId, input.activeModule, tenantId, workspaceId]);
 
   // Get auth headers dynamically on each request to ensure fresh token
   const getAuthHeaders = useCallback(() => {
     const accessToken = authClient.getAccessToken() ?? "";
     return {
       Authorization: accessToken ? `Bearer ${accessToken}` : "",
-      "X-Tenant-Id": tenantId,
+      "X-Workspace-Id": workspaceId,
     };
-  }, [tenantId]);
+  }, [workspaceId]);
 
   const transport = useMemo(
     () =>
@@ -223,13 +276,13 @@ export const useCopilotChatOptions = (
     [input, runId, transport]
   );
 
-  return { options, runId, apiBase, tenantId, accessToken: authClient.getAccessToken() ?? "" };
+  return { options, runId, apiBase, tenantId, workspaceId, accessToken };
 };
 
 export const fetchCopilotHistory = async (params: {
   runId: string;
   apiBase: string;
-  tenantId: string;
+  workspaceId: string;
   accessToken: string;
 }): Promise<CopilotChatMessage[]> => {
   if (!params.runId) {
@@ -238,7 +291,7 @@ export const fetchCopilotHistory = async (params: {
   const response = await fetch(`${params.apiBase}/copilot/chat/${params.runId}/history`, {
     headers: {
       Authorization: params.accessToken ? `Bearer ${params.accessToken}` : "",
-      "X-Tenant-Id": params.tenantId,
+      "X-Workspace-Id": params.workspaceId,
     },
   });
   if (!response.ok) {

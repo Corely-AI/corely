@@ -196,7 +196,7 @@ export function Chat({
     options: chatOptions,
     runId,
     apiBase,
-    tenantId,
+    workspaceId,
     accessToken,
   } = useCopilotChatOptions({
     activeModule,
@@ -254,7 +254,7 @@ export function Chat({
     }
 
     let cancelled = false;
-    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+    void fetchCopilotHistory({ runId, apiBase, workspaceId, accessToken })
       .then((history) => {
         if (cancelled) {
           return;
@@ -270,7 +270,7 @@ export function Chat({
     return () => {
       cancelled = true;
     };
-  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, workspaceId]);
 
   return (
     <div className="flex flex-col gap-4">

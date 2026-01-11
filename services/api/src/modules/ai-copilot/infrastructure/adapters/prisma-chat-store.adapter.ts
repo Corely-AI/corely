@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
+import { Prisma } from "@prisma/client";
 import {
   type ChatStorePort,
   type CopilotChatMetadata,
@@ -96,17 +97,26 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
       params.metadata
     );
     if (!run) {
-      await this.prisma.agentRun.create({
-        data: {
-          id: params.chatId,
-          tenantId: params.tenantId,
-          createdByUserId: params.metadata?.userId,
-          status: "running",
-          metadataJson: nextMetadata ? JSON.stringify(nextMetadata) : undefined,
-          traceId: params.traceId,
-        },
-      });
-    } else if (params.metadata) {
+      try {
+        await this.prisma.agentRun.create({
+          data: {
+            id: params.chatId,
+            tenantId: params.tenantId,
+            createdByUserId: params.metadata?.userId,
+            status: "running",
+            metadataJson: nextMetadata ? JSON.stringify(nextMetadata) : undefined,
+            traceId: params.traceId,
+          },
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+          // Run was created concurrently; fall through to metadata update.
+        } else {
+          throw error;
+        }
+      }
+    }
+    if (params.metadata) {
       await this.prisma.agentRun.update({
         where: { id: params.chatId },
         data: {
@@ -126,17 +136,42 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
       });
 
       if (!existing) {
-        await this.prisma.message.create({
-          data: {
-            id: message.id,
-            tenantId: params.tenantId,
-            runId: params.chatId,
-            role: message.role ?? "assistant",
-            partsJson: payload,
-            traceId: params.traceId,
-          },
-        });
-        continue;
+        try {
+          await this.prisma.message.create({
+            data: {
+              id: message.id,
+              tenantId: params.tenantId,
+              runId: params.chatId,
+              role: message.role ?? "assistant",
+              partsJson: payload,
+              traceId: params.traceId,
+            },
+          });
+          continue;
+        } catch (error) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            const concurrent = await this.prisma.message.findUnique({
+              where: { id: message.id },
+              select: { tenantId: true },
+            });
+            if (!concurrent) {
+              throw error;
+            }
+            if (concurrent.tenantId !== params.tenantId) {
+              throw new Error("Message tenant mismatch");
+            }
+            await this.prisma.message.update({
+              where: { id: message.id },
+              data: {
+                partsJson: payload,
+                role: message.role ?? "assistant",
+                traceId: params.traceId,
+              },
+            });
+            continue;
+          }
+          throw error;
+        }
       }
 
       if (existing.tenantId !== params.tenantId) {

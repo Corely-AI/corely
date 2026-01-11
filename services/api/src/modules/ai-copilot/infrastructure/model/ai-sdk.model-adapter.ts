@@ -75,7 +75,11 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       environmentOverride: params.environment,
     });
 
-    const systemPrompt = this.promptRegistry.render("copilot.system", promptContext, {});
+    const systemPrompt = this.promptRegistry.render("copilot.system", promptContext, {
+      CUSTOMER_SEARCH_TOOL: "customer_search",
+      INVOICE_CREATE_FROM_CUSTOMER_TOOL: "invoice_create_from_customer",
+      COLLECT_INPUTS_TOOL: "collect_inputs",
+    });
     this.observability.setAttributes(params.observability, {
       "prompt.id": systemPrompt.promptId,
       "prompt.version": systemPrompt.promptVersion,
@@ -118,6 +122,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     this.logger.debug(`Starting streamText with ${Object.keys(toolset).length} tools`);
 
     const systemMessage: CopilotUIMessage = {
+      id: `copilot-system-${params.runId}`,
       role: "system",
       parts: [
         {
@@ -127,14 +132,92 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       ],
     };
 
+    const messagesWithIds = [systemMessage, ...params.messages].map((message, index) => ({
+      ...message,
+      id: message.id ?? `copilot-${params.runId}-${index}`,
+    }));
+
+    const normalizedMessages = messagesWithIds
+      .map((message) => {
+        const normalizeToolPart = (part: CopilotUIMessage["parts"][number]) => {
+          if (!part || typeof part !== "object") {
+            return part;
+          }
+          if (typeof part.type !== "string" || !part.type.startsWith("tool-")) {
+            return part;
+          }
+          const toolPart = part as {
+            type: string;
+            state?: string;
+            toolCallId?: string;
+            input?: unknown;
+            rawInput?: unknown;
+            output?: unknown;
+            result?: unknown;
+            errorText?: string;
+          };
+          if (!toolPart.toolCallId) {
+            return undefined;
+          }
+          if (toolPart.state === "output-available" && toolPart.output === undefined) {
+            if (toolPart.result !== undefined) {
+              return { ...toolPart, output: toolPart.result };
+            }
+            return {
+              ...toolPart,
+              state: "output-error",
+              errorText: toolPart.errorText ?? "tool output missing",
+              rawInput: toolPart.rawInput ?? {},
+            };
+          }
+          if (toolPart.state !== "input-streaming" && toolPart.input == null) {
+            if (toolPart.rawInput != null) {
+              return { ...toolPart, input: toolPart.rawInput };
+            }
+            if (toolPart.state === "output-error") {
+              return { ...toolPart, rawInput: {} };
+            }
+            return undefined;
+          }
+          return toolPart;
+        };
+
+        if (Array.isArray(message.parts) && message.parts.length > 0) {
+          return {
+            ...message,
+            parts: message.parts
+              .map(normalizeToolPart)
+              .filter(
+                (part): part is CopilotUIMessage["parts"][number] =>
+                  Boolean(part) && typeof part === "object"
+              ),
+          };
+        }
+        const content = (message as { content?: unknown }).content;
+        if (typeof content === "string") {
+          return {
+            ...message,
+            parts: [{ type: "text" as const, text: content }],
+          };
+        }
+        return undefined;
+      })
+      .filter(
+        (message): message is CopilotUIMessage =>
+          Boolean(message) && Array.isArray(message.parts) && message.parts.length > 0
+      );
+
     const validatedMessages = await validateUIMessages<CopilotUIMessage>({
-      messages: [systemMessage, ...params.messages],
+      messages: normalizedMessages,
       metadataSchema: copilotMessageMetadataSchema,
       dataSchemas: CopilotDataPartSchemas,
       tools: toolset,
     });
 
-    const modelMessages = await convertToModelMessages(validatedMessages, { tools: toolset });
+    const modelMessages = await convertToModelMessages(validatedMessages, {
+      tools: toolset,
+      ignoreIncompleteToolCalls: true,
+    });
 
     const result = streamText({
       model,

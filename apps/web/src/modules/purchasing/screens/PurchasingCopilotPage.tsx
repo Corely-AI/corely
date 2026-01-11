@@ -51,7 +51,7 @@ export default function PurchasingCopilotPage() {
     options: chatOptions,
     runId,
     apiBase,
-    tenantId,
+    workspaceId,
     accessToken,
   } = useCopilotChatOptions({
     activeModule: "purchasing",
@@ -77,7 +77,7 @@ export default function PurchasingCopilotPage() {
 
   useEffect(() => {
     let cancelled = false;
-    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+    void fetchCopilotHistory({ runId, apiBase, workspaceId, accessToken })
       .then((history) => {
         if (!cancelled && (!hydratedRunId || hydratedRunId !== runId)) {
           setMessages(history);
@@ -90,7 +90,7 @@ export default function PurchasingCopilotPage() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, workspaceId]);
 
   const renderToolResult = (toolName: string, result: any) => {
     if (!result || result.ok !== true) {

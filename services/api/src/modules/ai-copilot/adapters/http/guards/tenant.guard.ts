@@ -4,6 +4,9 @@ import { CanActivate, ExecutionContext, Injectable, BadRequestException } from "
 export class TenantGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
+    if (request.tenantId) {
+      return true;
+    }
     const tenantId = request.headers["x-tenant-id"] as string | undefined;
     if (!tenantId) {
       throw new BadRequestException("Missing X-Tenant-Id");

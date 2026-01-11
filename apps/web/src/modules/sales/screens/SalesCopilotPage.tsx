@@ -153,7 +153,7 @@ export default function SalesCopilotPage() {
     void fetchCopilotHistory({
       runId: chatOptions.runId,
       apiBase: chatOptions.apiBase,
-      tenantId: chatOptions.tenantId,
+      workspaceId: chatOptions.workspaceId,
       accessToken: chatOptions.accessToken,
     })
       .then((history) => {
@@ -172,7 +172,7 @@ export default function SalesCopilotPage() {
     chatOptions.accessToken,
     chatOptions.apiBase,
     chatOptions.runId,
-    chatOptions.tenantId,
+    chatOptions.workspaceId,
     hydratedRunId,
     setMessages,
   ]);
