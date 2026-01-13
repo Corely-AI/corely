@@ -5,8 +5,10 @@ import {
   Inject,
   Param,
   Query,
+  Req,
   UseGuards,
 } from "@nestjs/common";
+import type { Request } from "express";
 import {
   CurrentRoleIds,
   CurrentTenantId,
@@ -17,6 +19,7 @@ import {
   type RolePermissionGrantRepositoryPort,
 } from "../../../identity/application/ports/role-permission-grant-repository.port";
 import { toAllowedPermissionKeys } from "../../../../shared/permissions/effective-permissions";
+import { resolveRequestContext } from "../../../../shared/request-context";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { GetMenuQuerySchema, type MenuScope } from "@corely/contracts";
 import { GetWorkspaceConfigUseCase } from "../../application/use-cases/get-workspace-config.usecase";
@@ -32,16 +35,20 @@ export class WorkspaceConfigController {
 
   @Get(":workspaceId/config")
   async getConfig(
-    @Param("workspaceId") workspaceId: string,
+    @Param("workspaceId") workspaceIdParam: string,
     @Query("scope") scope: string | undefined,
     @CurrentTenantId() tenantId: string,
     @CurrentUserId() userId: string,
-    @CurrentRoleIds() roleIds: string[]
+    @CurrentRoleIds() roleIds: string[],
+    @Req() req: Request
   ) {
     const validatedScope = this.parseScope(scope);
     if (!tenantId || !userId) {
       throw new BadRequestException("Missing tenant or user context");
     }
+
+    const ctx = (req as any).context ?? resolveRequestContext(req as any);
+    const workspaceId = ctx.workspaceId ?? workspaceIdParam;
 
     const requestedRoles = Array.isArray(roleIds) ? roleIds : [];
     const grants =

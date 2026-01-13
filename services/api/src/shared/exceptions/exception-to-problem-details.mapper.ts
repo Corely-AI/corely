@@ -72,7 +72,7 @@ export class ExceptionToProblemDetailsMapper {
     const isPublic = error.isPublic();
 
     return {
-      type: `https://errors.corely.com/${error.code}`,
+      type: `https://errors.corely.one/${error.code}`,
       title: this.getTitle(error.status),
       status: error.status,
       detail: isPublic ? error.publicMessage! : this.getSafeDetail(error.status),
@@ -114,7 +114,7 @@ export class ExceptionToProblemDetailsMapper {
     }
 
     return {
-      type: `https://errors.corely.com/${error.code}`,
+      type: `https://errors.corely.one/${error.code}`,
       title: this.getTitle(status),
       status,
       detail: isPublic ? error.message : this.getSafeDetail(status),
@@ -133,7 +133,7 @@ export class ExceptionToProblemDetailsMapper {
     switch (error.code) {
       case "P2002": // Unique constraint violation
         return {
-          type: "https://errors.corely.com/Common:Conflict",
+          type: "https://errors.corely.one/Common:Conflict",
           title: "Conflict",
           status: HttpStatus.CONFLICT,
           detail: "A record with this value already exists",
@@ -145,7 +145,7 @@ export class ExceptionToProblemDetailsMapper {
 
       case "P2025": // Record not found
         return {
-          type: "https://errors.corely.com/Common:NotFound",
+          type: "https://errors.corely.one/Common:NotFound",
           title: "Not Found",
           status: HttpStatus.NOT_FOUND,
           detail: "Resource not found",
@@ -156,7 +156,7 @@ export class ExceptionToProblemDetailsMapper {
 
       case "P2003": // Foreign key constraint violation
         return {
-          type: "https://errors.corely.com/Common:Conflict",
+          type: "https://errors.corely.one/Common:Conflict",
           title: "Conflict",
           status: HttpStatus.CONFLICT,
           detail: "Referenced resource does not exist",
@@ -168,7 +168,7 @@ export class ExceptionToProblemDetailsMapper {
       default:
         // Unknown Prisma error - treat as internal error
         return {
-          type: "https://errors.corely.com/Common:DatabaseError",
+          type: "https://errors.corely.one/Common:DatabaseError",
           title: "Internal Server Error",
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           detail: "A database error occurred",
@@ -204,7 +204,7 @@ export class ExceptionToProblemDetailsMapper {
     }
 
     return {
-      type: `https://errors.corely.com/${code}`,
+      type: `https://errors.corely.one/${code}`,
       title: this.getTitle(status),
       status,
       detail,
@@ -225,7 +225,7 @@ export class ExceptionToProblemDetailsMapper {
         : "An unexpected error occurred";
 
     return {
-      type: "https://errors.corely.com/Common:UnexpectedError",
+      type: "https://errors.corely.one/Common:UnexpectedError",
       title: "Internal Server Error",
       status: HttpStatus.INTERNAL_SERVER_ERROR,
       detail,

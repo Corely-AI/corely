@@ -7,8 +7,8 @@ Purpose: single source of truth for request identity/context (requestId, tenant/
 - `requestId`: `x-request-id` → `x-trace-id`/`traceId` from middleware → generated UUID.
 - `correlationId`: `x-correlation-id` → `requestId`.
 - `userId`: **only** from authenticated principal (`req.user.userId`).
-- `tenantId`: **only** from authenticated principal (`req.user.tenantId`); optional header `x-tenant-id` is only read when principal is missing.
-- `workspaceId`: route param `workspaceId` → header `x-workspace-id` → principal `req.user.workspaceId` → `null`.
+- `tenantId`: **only** from authenticated principal (`req.user.tenantId`); header `x-tenant-id` is considered only when the principal is missing.
+- `workspaceId`: **header `x-workspace-id` first**, then route param `workspaceId`, then principal (`req.user.workspaceId`), then `null`. This ensures active-workspace switches via header are honored even when routes include tenant/workspace ids.
 - Roles/scopes: from `req.user.roleIds` (array) when present.
 
 ### Integration

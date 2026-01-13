@@ -28,7 +28,7 @@ describe("resolveRequestContext", () => {
     expect(ctx.tenantId).toBe("auth-tenant");
   });
 
-  it("uses workspace route param before headers", () => {
+  it("prefers workspace header over route param", () => {
     const req = buildReq({
       params: { workspaceId: "route-workspace" },
       headers: { [HEADER_WORKSPACE_ID]: "header-workspace" },
@@ -37,8 +37,8 @@ describe("resolveRequestContext", () => {
 
     const ctx = resolveRequestContext(req);
 
-    expect(ctx.workspaceId).toBe("route-workspace");
-    expect(ctx.sources.workspaceId).toBe("route");
+    expect(ctx.workspaceId).toBe("header-workspace");
+    expect(ctx.sources.workspaceId).toBe("header");
   });
 
   it("falls back to request-id header and generates when missing", () => {

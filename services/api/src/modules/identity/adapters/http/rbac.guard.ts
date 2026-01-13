@@ -17,6 +17,7 @@ import {
   hasPermission,
 } from "../../../../shared/permissions/effective-permissions";
 import { PlatformModule, WorkspaceTemplateService } from "../../../platform";
+import { resolveRequestContext } from "../../../../shared/request-context";
 import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,
@@ -52,7 +53,7 @@ export class RbacGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const ctx = request.context;
+    const ctx = request.context ?? resolveRequestContext(request);
     const userId = ctx?.userId ?? request.user?.userId;
     const tenantId = ctx?.tenantId ?? request.tenantId;
     const workspaceId = (ctx?.workspaceId as string | null | undefined) ?? null;
@@ -63,6 +64,8 @@ export class RbacGuard implements CanActivate {
         requiredPermission,
         headerWorkspaceId: request.headers["x-workspace-id"],
         requestWorkspaceId: request.workspaceId,
+        routeWorkspaceId: (request.params || {}).workspaceId,
+        contextSources: ctx?.sources,
       });
     }
 

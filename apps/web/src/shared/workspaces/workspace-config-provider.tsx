@@ -18,9 +18,11 @@ const WorkspaceConfigContext = createContext<WorkspaceConfigContextValue | undef
 
 export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
-  const { activeWorkspaceId } = useWorkspace();
+  const { activeWorkspaceId, workspaces, isLoading: isWorkspacesLoading } = useWorkspace();
   const { isAuthenticated } = useAuth();
-  const enabled = isAuthenticated && !!activeWorkspaceId;
+  const hasValidWorkspace =
+    !!activeWorkspaceId && workspaces.some((w) => w.id === activeWorkspaceId);
+  const enabled = isAuthenticated && hasValidWorkspace && !isWorkspacesLoading;
 
   const {
     data: config,
@@ -29,10 +31,20 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
     refetch,
   } = useQuery<WorkspaceConfig, Error>({
     queryKey: ["workspace-config", activeWorkspaceId],
-    queryFn: () =>
-      workspacesApi.getWorkspaceConfig(activeWorkspaceId as string, {
+    queryFn: () => {
+      // Debug to verify which workspaceId is being used for config fetch
+      if (process.env.NODE_ENV === "development") {
+        // eslint-disable-next-line no-console
+        console.debug("[WorkspaceConfigProvider] fetching config", {
+          activeWorkspaceId,
+          workspacesCount: workspaces.length,
+          hasValidWorkspace,
+        });
+      }
+      return workspacesApi.getWorkspaceConfig(activeWorkspaceId as string, {
         scope: "web",
-      }),
+      });
+    },
     enabled,
     staleTime: 60_000,
   });

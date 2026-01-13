@@ -28,6 +28,10 @@ const pickHeader = (req: ContextAwareRequest, names: string[]): string | undefin
 };
 
 export const resolveRequestContext = (req: ContextAwareRequest): RequestContext => {
+  const debug =
+    typeof (req as any).log?.child === "function"
+      ? (req as any).log.child({ scope: "RequestContext" })
+      : null;
   // Request ID / correlation
   const headerRequestId = pickHeader(req, [HEADER_REQUEST_ID]);
   const traceIdHeader = pickHeader(req, [HEADER_TRACE_ID]);
@@ -47,7 +51,9 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const headerWorkspaceId = pickHeader(req, [HEADER_WORKSPACE_ID]);
   const headerTenantId = pickHeader(req, [HEADER_TENANT_ID]);
 
-  const workspaceId = routeWorkspaceId ?? headerWorkspaceId ?? req.user?.workspaceId ?? null;
+  // Prefer explicit workspace header (active workspace) over route param to support
+  // cross-workspace requests where the route carries tenantId.
+  const workspaceId = headerWorkspaceId ?? routeWorkspaceId ?? req.user?.workspaceId ?? null;
 
   const tenantId = req.user?.tenantId ?? headerTenantId ?? undefined;
 
@@ -69,17 +75,28 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
       userId: userSource,
       tenantId: tenantId ? (tenantId === req.user?.tenantId ? "user" : "header") : undefined,
       workspaceId: workspaceId
-        ? routeWorkspaceId
-          ? "route"
-          : req.user?.workspaceId
-            ? "user"
-            : headerWorkspaceId
-              ? "header"
+        ? headerWorkspaceId
+          ? "header"
+          : routeWorkspaceId
+            ? "route"
+            : req.user?.workspaceId
+              ? "user"
               : undefined
         : undefined,
     },
     deprecated: {},
   };
+
+  if (!workspaceId && debug) {
+    debug.warn(
+      {
+        routeWorkspaceId,
+        headerWorkspaceId,
+        userWorkspaceId: req.user?.workspaceId,
+      },
+      "RequestContextResolver: workspaceId is missing"
+    );
+  }
 
   // Attach for downstream consumers
   req.context = ctx;

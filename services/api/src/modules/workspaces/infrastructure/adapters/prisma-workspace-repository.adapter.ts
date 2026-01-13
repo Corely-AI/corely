@@ -200,7 +200,6 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
         workspaceId,
         userId,
         status: "ACTIVE",
-        workspace: { tenantId },
       },
     });
 
