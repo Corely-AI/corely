@@ -39,7 +39,7 @@ import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-tim
     { provide: ACTIVITY_REPO_PORT, useExisting: PrismaActivityRepoAdapter },
     {
       provide: CreateDealUseCase,
-      useFactory: (dealRepo: PrismaDealRepoAdapter, idGen: IdGeneratorPort, clock: ClockPort) =>
+      useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort, idGen: IdGeneratorPort) =>
         new CreateDealUseCase(dealRepo, clock, idGen, new NestLoggerAdapter()),
       inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
     },
@@ -83,8 +83,8 @@ import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-tim
       provide: CreateActivityUseCase,
       useFactory: (
         activityRepo: PrismaActivityRepoAdapter,
-        idGen: IdGeneratorPort,
-        clock: ClockPort
+        clock: ClockPort,
+        idGen: IdGeneratorPort
       ) => new CreateActivityUseCase(activityRepo, clock, idGen, new NestLoggerAdapter()),
       inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
     },

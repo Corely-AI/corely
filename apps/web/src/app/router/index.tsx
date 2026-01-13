@@ -6,7 +6,13 @@ import { AssistantPage } from "../../modules/assistant";
 import { ExpensesPage, NewExpensePage } from "../../modules/expenses";
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
 import { CustomersPage, NewCustomerPage, EditCustomerPage } from "../../modules/customers";
-import { DealsPage, DealDetailPage, ActivitiesPage } from "../../modules/crm";
+import {
+  DealsPage,
+  NewDealPage,
+  DealDetailPage,
+  ActivitiesPage,
+  NewActivityPage,
+} from "../../modules/crm";
 import {
   QuotesPage as SalesQuotesPage,
   NewQuotePage,
@@ -180,8 +186,10 @@ export const Router = () => (
           <Route path="/customers/new" element={<NewCustomerPage />} />
           <Route path="/customers/:id" element={<EditCustomerPage />} />
           <Route path="/crm/deals" element={<DealsPage />} />
+          <Route path="/crm/deals/new" element={<NewDealPage />} />
           <Route path="/crm/deals/:id" element={<DealDetailPage />} />
           <Route path="/crm/activities" element={<ActivitiesPage />} />
+          <Route path="/crm/activities/new" element={<NewActivityPage />} />
           <Route path="/accounting" element={<AccountingDashboard />} />
           <Route path="/accounting/setup" element={<SetupWizard />} />
           <Route path="/accounting/accounts" element={<ChartOfAccountsList />} />
