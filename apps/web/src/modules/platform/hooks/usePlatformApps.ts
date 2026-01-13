@@ -26,9 +26,18 @@ export function usePlatformApps() {
   return useQuery<AppWithStatus[], Error>({
     queryKey: ["platform", "apps"],
     queryFn: async () => {
-      const response = await apiClient.get<{ apps: AppWithStatus[] }>("/platform/apps");
-      return response.apps;
+      const response = await apiClient.get<AppWithStatus[] | { apps: AppWithStatus[] }>(
+        "/platform/apps"
+      );
+      if (Array.isArray(response)) {
+        return response;
+      }
+      if (response?.apps) {
+        return response.apps;
+      }
+      return [];
     },
+    initialData: [],
   });
 }
 
