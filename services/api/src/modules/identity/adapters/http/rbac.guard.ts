@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   SetMetadata,
   Inject,
+  Logger,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
@@ -30,6 +31,8 @@ export const REQUIRE_PERMISSION = "require_permission";
  */
 @Injectable()
 export class RbacGuard implements CanActivate {
+  private readonly logger = new Logger(RbacGuard.name);
+
   constructor(
     private readonly reflector: Reflector,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
@@ -52,12 +55,16 @@ export class RbacGuard implements CanActivate {
     const ctx = request.context;
     const userId = ctx?.userId ?? request.user?.userId;
     const tenantId = ctx?.tenantId ?? request.tenantId;
-    const headerWorkspaceId = request.headers["x-workspace-id"] as string | undefined;
-    const workspaceId =
-      (ctx?.workspaceId as string | null | undefined) ??
-      (request.workspaceId as string | null | undefined) ??
-      headerWorkspaceId ??
-      null;
+    const workspaceId = (ctx?.workspaceId as string | null | undefined) ?? null;
+    if (!workspaceId) {
+      this.logger.warn("RBAC: workspaceId missing in request context", {
+        userId,
+        tenantId,
+        requiredPermission,
+        headerWorkspaceId: request.headers["x-workspace-id"],
+        requestWorkspaceId: request.workspaceId,
+      });
+    }
 
     if (!userId || !tenantId) {
       throw new ForbiddenException("User or tenant not found in context");
