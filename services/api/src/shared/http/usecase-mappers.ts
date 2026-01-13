@@ -1,7 +1,7 @@
 import { type Result, type UseCaseError, isErr, type LoggerPort } from "@corely/kernel";
 import { toHttpException } from "./usecase-error.mapper";
 import { NestLoggerAdapter } from "../adapters/logger/nest-logger.adapter";
-import { toUseCaseContext } from "../request-context";
+import { HEADER_TENANT_ID, toUseCaseContext } from "../request-context";
 import type { ContextAwareRequest } from "../request-context";
 
 const logger: LoggerPort = new NestLoggerAdapter();
@@ -13,7 +13,7 @@ export const buildUseCaseContext = (req: ContextAwareRequest) => {
   if (!ctx.tenantId) {
     logger.warn("Missing tenantId on request", {
       hasAuthHeader: Boolean(req.headers["authorization"]),
-      hasTenantHeader: Boolean(req.headers["x-tenant-id"]),
+      hasTenantHeader: Boolean(req.headers[HEADER_TENANT_ID]),
       path: req.path,
       method: req.method,
     });

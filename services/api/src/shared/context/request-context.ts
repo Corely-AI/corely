@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { HEADER_REQUEST_ID, HEADER_TENANT_ID } from "../request-context";
 
 export type RequestContext = {
   requestId: string;
@@ -22,8 +23,8 @@ export type RequestWithContext = {
 };
 
 export const attachRequestContext = (req: RequestWithContext): RequestContext => {
-  const requestId = (req.headers?.["x-request-id"] as string | undefined) || randomUUID();
-  const tenantId = req.headers?.["x-tenant-id"] as string | undefined;
+  const requestId = (req.headers?.[HEADER_REQUEST_ID] as string | undefined) || randomUUID();
+  const tenantId = req.headers?.[HEADER_TENANT_ID] as string | undefined;
   const actorUserId = req.user?.id;
   const ctx: RequestContext = { requestId, tenantId, actorUserId };
   req.context = ctx;
