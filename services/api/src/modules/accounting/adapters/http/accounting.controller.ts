@@ -32,21 +32,20 @@ import {
   UpdateAccountingSettingsInputSchema,
 } from "@corely/contracts";
 import { isOk } from "@corely/kernel";
+import { toUseCaseContext } from "../../../../shared/request-context";
 
 // Assuming auth guard from existing modules
 // @UseGuards(AuthGuard)
 
-interface RequestWithAuth extends Request {
-  user?: { userId: string };
-  tenantId?: string;
-}
+type RequestWithAuth = Request;
 
 function buildContext(req: RequestWithAuth) {
+  const ctx = toUseCaseContext(req as any);
   return {
-    tenantId: req.tenantId,
-    userId: req.user?.userId,
-    correlationId: req.headers["x-correlation-id"] as string,
-    requestId: req.headers["x-request-id"] as string,
+    tenantId: ctx.tenantId ?? ctx.workspaceId ?? undefined,
+    userId: ctx.userId,
+    correlationId: ctx.correlationId ?? ctx.requestId,
+    requestId: ctx.requestId,
   };
 }
 

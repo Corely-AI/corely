@@ -1,4 +1,5 @@
 import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
+import { APP_INTERCEPTOR } from "@nestjs/core";
 import { EnvModule } from "@corely/config";
 import { DataModule } from "@corely/data";
 import { AppController } from "./app.controller";
@@ -24,10 +25,17 @@ import { PlatformModule } from "./modules/platform";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware.js";
 import { TraceIdService } from "./shared/trace/trace-id.service.js";
+import { RequestContextInterceptor } from "./shared/request-context";
 
 @Module({
   controllers: [AppController],
-  providers: [TraceIdService],
+  providers: [
+    TraceIdService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestContextInterceptor,
+    },
+  ],
   imports: [
     // Config must be first to validate env before other modules use it
     EnvModule.forRoot(),

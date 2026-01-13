@@ -28,6 +28,7 @@ import { UpdateWorkspaceUseCase } from "../../application/use-cases/update-works
 import { UpgradeWorkspaceUseCase } from "../../application/use-cases/upgrade-workspace.usecase";
 import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
+import { toUseCaseContext } from "../../../../shared/request-context";
 
 // Auth context extraction - compatible with tests and production
 interface AuthUser {
@@ -36,14 +37,9 @@ interface AuthUser {
 }
 
 function extractAuthUser(req: Request, bodyData?: any): AuthUser {
-  // Extract from various sources (headers, user session, or body for tests)
-  const user = (req as any).user;
-  const requestTenantId = (req as any).tenantId;
-  const headerTenantId = req.headers["x-tenant-id"] as string | undefined;
-  const headerUserId = req.headers["x-user-id"] as string | undefined;
-  const tenantId = requestTenantId || headerTenantId || bodyData?.tenantId || user?.tenantId;
-  const userId =
-    headerUserId || bodyData?.createdByUserId || bodyData?.userId || user?.userId || user?.id;
+  const ctx = toUseCaseContext(req as any);
+  const tenantId = ctx.tenantId ?? bodyData?.tenantId;
+  const userId = ctx.userId ?? bodyData?.createdByUserId ?? bodyData?.userId;
 
   if (!tenantId) {
     throw new BadRequestException("Missing tenantId in request context");

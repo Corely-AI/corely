@@ -17,6 +17,7 @@ import {
 import { AuthGuard } from "../../../identity";
 import { EngagementApplication } from "../../application/engagement.application";
 import { toHttpException } from "../../../../shared/http/usecase-error.mapper";
+import { toUseCaseContext } from "../../../../shared/request-context";
 
 type RequestWithUser = Request & { user?: { workspaceId?: string; userId?: string } };
 
@@ -28,11 +29,12 @@ export class EngagementController {
   constructor(private readonly app: EngagementApplication) {}
 
   private buildCtx(req: RequestWithUser) {
+    const ctx = toUseCaseContext(req as any);
     return {
-      tenantId: req.user?.workspaceId,
-      userId: req.user?.userId,
-      requestId: (req.headers["x-request-id"] as string | undefined) ?? undefined,
-      correlationId: (req.headers["x-correlation-id"] as string | undefined) ?? undefined,
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
+      correlationId: ctx.correlationId ?? ctx.requestId,
     };
   }
 

@@ -30,12 +30,12 @@ export class WorkspaceCapabilityGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const tenantId = request.tenantId;
-    const workspaceHeader = request.headers["x-workspace-id"];
+    const tenantId = request.context?.tenantId ?? request.tenantId;
     const workspaceId =
-      (Array.isArray(workspaceHeader) ? workspaceHeader[0] : workspaceHeader) ||
-      request.params?.workspaceId ||
-      request.body?.workspaceId;
+      request.context?.workspaceId ??
+      request.params?.workspaceId ??
+      request.body?.workspaceId ??
+      null;
 
     if (!tenantId) {
       throw new ForbiddenError("Tenant context not found", {

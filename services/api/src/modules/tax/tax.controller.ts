@@ -50,6 +50,7 @@ import { CreateTaxCodeUseCase } from "./application/use-cases/create-tax-code.us
 import { CalculateTaxUseCase } from "./application/use-cases/calculate-tax.use-case";
 import { LockTaxSnapshotUseCase } from "./application/use-cases/lock-tax-snapshot.use-case";
 import type { UseCaseContext } from "./application/use-cases/use-case-context";
+import { toUseCaseContext } from "../../shared/request-context";
 import { GetTaxSummaryUseCase } from "./application/use-cases/get-tax-summary.use-case";
 import { ListTaxReportsUseCase } from "./application/use-cases/list-tax-reports.use-case";
 import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-report-submitted.use-case";
@@ -206,30 +207,22 @@ export class TaxController {
   // ============================================================================
 
   private buildContext(req: Request): UseCaseContext {
-    // Extract tenant/user from request (in real app, from JWT)
-    const tenantId =
-      (req as any).tenantId ||
-      (req.headers["x-tenant-id"] as string | undefined) ||
-      (req.headers["x-workspace-id"] as string | undefined);
-    const userId =
-      (req.headers["x-user-id"] as string | undefined) ??
-      (req as any).user?.userId ??
-      (req as any).user?.id;
+    const ctx = toUseCaseContext(req as any);
 
-    if (!tenantId) {
+    if (!ctx.tenantId) {
       throw new BadRequestException("Missing tenantId in request context");
     }
-    if (!userId) {
+    if (!ctx.userId) {
       throw new BadRequestException("Missing userId in request context");
     }
-    if (tenantId === "default-tenant") {
+    if (ctx.tenantId === "default-tenant") {
       throw new BadRequestException("Invalid tenantId in request context");
     }
 
     return {
-      tenantId,
-      userId,
-      correlationId: req.headers["x-correlation-id"] as string | undefined,
+      tenantId: ctx.tenantId!,
+      userId: ctx.userId!,
+      correlationId: ctx.correlationId,
       idempotencyKey: req.headers["x-idempotency-key"] as string | undefined,
     };
   }

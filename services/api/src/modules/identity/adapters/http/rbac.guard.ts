@@ -15,11 +15,11 @@ import {
   computeEffectivePermissionSet,
   hasPermission,
 } from "../../../../shared/permissions/effective-permissions";
-import { WorkspaceTemplateService } from "../../platform";
+import { WorkspaceTemplateService } from "../../../platform";
 import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,
-} from "../../workspaces/application/ports/workspace-repository.port";
+} from "../../../workspaces/application/ports/workspace-repository.port";
 
 export const REQUIRE_PERMISSION = "require_permission";
 
@@ -49,10 +49,10 @@ export class RbacGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const userId = request.user?.userId;
-    const tenantId = request.tenantId;
-    const headerWorkspaceId = request.headers["x-workspace-id"] as string | undefined;
-    const workspaceId = (request.workspaceId as string | null) ?? headerWorkspaceId ?? null;
+    const ctx = request.context;
+    const userId = ctx?.userId ?? request.user?.userId;
+    const tenantId = ctx?.tenantId ?? request.tenantId;
+    const workspaceId = (ctx?.workspaceId as string | null | undefined) ?? null;
 
     if (!userId || !tenantId) {
       throw new ForbiddenException("User or tenant not found in context");

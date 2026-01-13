@@ -24,6 +24,7 @@ import { CloseShiftUseCase } from "../../application/use-cases/close-shift.useca
 import { GetCurrentShiftUseCase } from "../../application/use-cases/get-current-shift.usecase";
 import { SyncPosSaleUseCase } from "../../application/use-cases/sync-pos-sale.usecase";
 import { GetCatalogSnapshotUseCase } from "../../application/use-cases/get-catalog-snapshot.usecase";
+import { toUseCaseContext } from "../../../../shared/request-context";
 
 @ApiTags("POS")
 @ApiBearerAuth()
@@ -46,10 +47,11 @@ export class PosController {
     @Body() input: CreateRegisterInput,
     @Req() req: any
   ): Promise<CreateRegisterOutput> {
+    const ctx = toUseCaseContext(req);
     const result = await this.createRegister.execute(input, {
-      tenantId: req.user.workspaceId,
-      userId: req.user.userId,
-      requestId: req.id,
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
     });
 
     if ("error" in result) {
@@ -65,10 +67,11 @@ export class PosController {
     @Query() input: ListRegistersInput,
     @Req() req: any
   ): Promise<ListRegistersOutput> {
+    const ctx = toUseCaseContext(req);
     const result = await this.listRegisters.execute(input, {
-      tenantId: req.user.workspaceId,
-      userId: req.user.userId,
-      requestId: req.id,
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
     });
 
     if ("error" in result) {
@@ -84,10 +87,11 @@ export class PosController {
     @Body() input: OpenShiftInput,
     @Req() req: any
   ): Promise<OpenShiftOutput> {
+    const ctx = toUseCaseContext(req);
     const result = await this.openShift.execute(input, {
-      tenantId: req.user.workspaceId,
-      userId: req.user.userId,
-      requestId: req.id,
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
     });
 
     if ("error" in result) {
@@ -103,10 +107,11 @@ export class PosController {
     @Body() input: CloseShiftInput,
     @Req() req: any
   ): Promise<CloseShiftOutput> {
+    const ctx = toUseCaseContext(req);
     const result = await this.closeShift.execute(input, {
-      tenantId: req.user.workspaceId,
-      userId: req.user.userId,
-      requestId: req.id,
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
     });
 
     if ("error" in result) {
@@ -122,10 +127,11 @@ export class PosController {
     @Query() input: GetCurrentShiftInput,
     @Req() req: any
   ): Promise<GetCurrentShiftOutput> {
+    const ctx = toUseCaseContext(req);
     const result = await this.getCurrentShift.execute(input, {
-      tenantId: req.user.workspaceId,
-      userId: req.user.userId,
-      requestId: req.id,
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
     });
 
     if ("error" in result) {
@@ -141,10 +147,11 @@ export class PosController {
     @Body() input: SyncPosSaleInput,
     @Req() req: any
   ): Promise<SyncPosSaleOutput> {
+    const ctx = toUseCaseContext(req);
     const result = await this.syncPosSale.execute(input, {
-      tenantId: req.user.workspaceId,
-      userId: req.user.userId,
-      requestId: req.id,
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
     });
 
     if ("error" in result) {
@@ -160,10 +167,11 @@ export class PosController {
     @Query() input: GetCatalogSnapshotInput,
     @Req() req: any
   ): Promise<GetCatalogSnapshotOutput> {
+    const ctx = toUseCaseContext(req);
     const result = await this.getCatalogSnapshot.execute(input, {
-      tenantId: req.user.workspaceId,
-      userId: req.user.userId,
-      requestId: req.id,
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
     });
 
     if ("error" in result) {

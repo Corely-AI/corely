@@ -19,7 +19,6 @@ import {
 import { ArchiveExpenseUseCase } from "../../application/use-cases/archive-expense.usecase";
 import { UnarchiveExpenseUseCase } from "../../application/use-cases/unarchive-expense.usecase";
 import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempotency/IdempotencyInterceptor";
-import { buildRequestContext } from "../../../../shared/context/request-context";
 import type { Request } from "express";
 import { z } from "zod";
 import { CreateExpenseWebInputSchema } from "@corely/contracts";
@@ -28,6 +27,7 @@ import {
   type ExpenseRepositoryPort,
 } from "../../application/ports/expense-repository.port";
 import type { Expense } from "../../domain/expense.entity";
+import { toUseCaseContext } from "../../../../shared/request-context";
 
 const ExpenseHttpInputSchema = CreateExpenseWebInputSchema.partial().extend({
   tenantId: z.string().optional(),
@@ -51,12 +51,9 @@ export class ExpensesController {
   @Post()
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = ExpenseHttpInputSchema.parse(body);
+    const resolved = toUseCaseContext(req as any);
 
-    const tenantId =
-      input.tenantId ??
-      (req.headers["x-tenant-id"] as string | undefined) ??
-      (req.headers["x-workspace-id"] as string | undefined) ??
-      (req as any).tenantId;
+    const tenantId = input.tenantId ?? resolved.workspaceId ?? resolved.tenantId;
     if (!tenantId) {
       throw new BadRequestException("Missing tenant/workspace id");
     }
@@ -82,18 +79,14 @@ export class ExpensesController {
       throw new BadRequestException("Invalid date");
     }
 
-    const actorUserId =
-      input.createdByUserId ??
-      (req as any).user?.userId ??
-      (req as any).user?.id ??
-      (req.headers["x-user-id"] as string | undefined);
+    const actorUserId = input.createdByUserId ?? resolved.userId;
     const createdByUserId = actorUserId ?? "system";
 
-    const ctx = buildRequestContext({
-      requestId: req.headers["x-request-id"] as string | undefined,
+    const ctx = {
+      requestId: resolved.requestId,
       tenantId,
       actorUserId: createdByUserId,
-    });
+    };
     const vatRate = typeof input.vatRate === "number" ? input.vatRate : undefined;
     const taxAmountCents = vatRate != null ? Math.round((totalCents * vatRate) / 100) : null;
     const expenseInput: CreateExpenseInput = {
@@ -129,11 +122,13 @@ export class ExpensesController {
 
   @Post(":expenseId/archive")
   async archive(@Param("expenseId") expenseId: string, @Req() req: Request) {
-    const ctx = buildRequestContext({
-      requestId: req.headers["x-request-id"] as string | undefined,
-      tenantId: (req.headers["x-tenant-id"] as string | undefined) ?? (req.body as any)?.tenantId,
-      actorUserId: (req as any).user?.id,
-    });
+    const resolved = toUseCaseContext(req as any);
+    const tenantId = resolved.tenantId ?? (req.body as any)?.tenantId;
+    const ctx = {
+      requestId: resolved.requestId,
+      tenantId,
+      actorUserId: resolved.userId,
+    };
     await this.archiveExpenseUseCase.execute({
       tenantId: ctx.tenantId!,
       expenseId,
@@ -144,11 +139,13 @@ export class ExpensesController {
 
   @Post(":expenseId/unarchive")
   async unarchive(@Param("expenseId") expenseId: string, @Req() req: Request) {
-    const ctx = buildRequestContext({
-      requestId: req.headers["x-request-id"] as string | undefined,
-      tenantId: (req.headers["x-tenant-id"] as string | undefined) ?? (req.body as any)?.tenantId,
-      actorUserId: (req as any).user?.id,
-    });
+    const resolved = toUseCaseContext(req as any);
+    const tenantId = resolved.tenantId ?? (req.body as any)?.tenantId;
+    const ctx = {
+      requestId: resolved.requestId,
+      tenantId,
+      actorUserId: resolved.userId,
+    };
     await this.unarchiveExpenseUseCase.execute({
       tenantId: ctx.tenantId!,
       expenseId,
@@ -158,10 +155,8 @@ export class ExpensesController {
 
   @Get()
   async list(@Query() query: any, @Req() req: Request) {
-    const tenantId =
-      (req.headers["x-tenant-id"] as string | undefined) ??
-      (req.headers["x-workspace-id"] as string | undefined) ??
-      (req as any).tenantId;
+    const resolved = toUseCaseContext(req as any);
+    const tenantId = resolved.workspaceId ?? resolved.tenantId;
 
     if (!tenantId) {
       return { items: [] };
@@ -174,10 +169,8 @@ export class ExpensesController {
 
   @Get(":expenseId")
   async getOne(@Param("expenseId") expenseId: string, @Req() req: Request) {
-    const tenantId =
-      (req.headers["x-tenant-id"] as string | undefined) ??
-      (req.headers["x-workspace-id"] as string | undefined) ??
-      (req as any).tenantId;
+    const resolved = toUseCaseContext(req as any);
+    const tenantId = resolved.workspaceId ?? resolved.tenantId;
 
     if (!tenantId) {
       throw new BadRequestException("Missing tenant/workspace id");
@@ -193,11 +186,8 @@ export class ExpensesController {
   @Patch(":expenseId")
   async update(@Param("expenseId") expenseId: string, @Body() body: unknown, @Req() req: Request) {
     const input = ExpenseHttpInputSchema.parse(body);
-    const tenantId =
-      input.tenantId ??
-      (req.headers["x-tenant-id"] as string | undefined) ??
-      (req.headers["x-workspace-id"] as string | undefined) ??
-      (req as any).tenantId;
+    const resolved = toUseCaseContext(req as any);
+    const tenantId = input.tenantId ?? resolved.workspaceId ?? resolved.tenantId;
     if (!tenantId) {
       throw new BadRequestException("Missing tenant/workspace id");
     }
