@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
+import { PlatformModule } from "../platform";
 import { DealsHttpController } from "./adapters/http/deals.controller";
 import {
   ActivitiesHttpController,
@@ -29,7 +30,7 @@ import { ListActivitiesUseCase } from "./application/use-cases/list-activities/l
 import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-timeline.usecase";
 
 @Module({
-  imports: [DataModule, IdentityModule, KernelModule],
+  imports: [DataModule, IdentityModule, KernelModule, PlatformModule],
   controllers: [DealsHttpController, ActivitiesHttpController, TimelineHttpController],
   providers: [
     PrismaDealRepoAdapter,

@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
+import { PlatformModule } from "../platform";
 import { CustomersHttpController } from "./adapters/http/customers.controller";
 import { PrismaPartyRepoAdapter } from "./infrastructure/prisma/prisma-party-repo.adapter";
 import { PrismaCustomerQueryAdapter } from "./infrastructure/prisma/prisma-customer-query.adapter";
@@ -19,7 +20,7 @@ import { UnarchiveCustomerUseCase } from "./application/use-cases/unarchive-cust
 import { UpdateCustomerUseCase } from "./application/use-cases/update-customer/update-customer.usecase";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule],
+  imports: [DataModule, KernelModule, IdentityModule, PlatformModule],
   controllers: [CustomersHttpController],
   providers: [
     PrismaPartyRepoAdapter,

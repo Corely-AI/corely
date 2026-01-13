@@ -15,7 +15,7 @@ import {
   computeEffectivePermissionSet,
   hasPermission,
 } from "../../../../shared/permissions/effective-permissions";
-import { WorkspaceTemplateService } from "../../../platform";
+import { PlatformModule, WorkspaceTemplateService } from "../../../platform";
 import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,

@@ -3,7 +3,6 @@ import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { IdentityModule } from "../identity";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
-import { WORKSPACE_REPOSITORY_PORT } from "../workspaces/application/ports/workspace-repository.port";
 
 // Infrastructure
 import { AppRegistry } from "./infrastructure/registries/app-registry";
@@ -121,7 +120,6 @@ import { SEEDED_RECORD_META_REPOSITORY_TOKEN } from "./application/ports/seeded-
     WorkspaceCapabilityGuard,
     WorkspaceTemplateService,
     WorkspacesModule,
-    WORKSPACE_REPOSITORY_PORT,
     APP_REGISTRY_TOKEN,
     TEMPLATE_REGISTRY_TOKEN,
     PACK_REGISTRY_TOKEN,
