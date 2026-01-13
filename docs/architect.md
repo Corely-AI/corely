@@ -1,202 +1,80 @@
-# Bizflow Foundation
+# Corely architecture
 
-## A scalable architecture for an AI-native modular ERP
-
-**Version:** 1.1  
-**Date:** 12 Mar 2025  
-**Scope:** Kernel + module domains (finance, ops, HR, vertical packs) with clean boundaries for a growing team.
+**Version:** 1.2  
+**Date:** 19 Mar 2025  
+**Scope:** Kernel + module domains (accounting, sales/purchasing, inventory, workflows, AI, POS, web admin).
 
 ---
 
-## Design intent
+## Intent
 
-Start as a **modular monolith** (single platform) but keep boundaries so you can later split parts into services. Optimize for:
-
-- fast product iteration today
-- safe multi-tenant isolation
-- team scalability (clear ownership) tomorrow
-
-**Recommended stack:** Vite + React (web backoffice) + React Native (POS) + NestJS (API) + Worker (jobs/outbox) in a monorepo; PostgreSQL + Prisma; Redis for queues/caching; object storage for files; optional realtime provider for multi-device POS.
+Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo keeps strict boundaries (DDD + hexagonal) so feature teams can iterate in one codebase today and peel out services later. PostgreSQL + Prisma back the transactional core, with Redis/queues for workflow orchestration and an outbox for integrations.
 
 ---
 
-# Executive summary
+## Runtime surfaces
 
-Bizflow is an AI-native ERP platform designed to support multiple business types (restaurant, hotel, factory, services) **without forking code**. The foundation is a **kernel** of universal business primitives plus **module packs** that add domain-specific workflows, UI, and integrations.
-
-**Enterprise pattern:** Modular monolith + DDD bounded contexts + Hexagonal (ports/adapters) + Event-driven automation (outbox + process managers) + CQRS-lite reads.
-
-## Principles
-
-| Principle                       | What it means in practice                                                            |
-| ------------------------------- | ------------------------------------------------------------------------------------ |
-| Clear ownership boundaries      | Each module has domain + use-cases + infra adapters; no cross-module DB access.      |
-| Stable kernel primitives        | Core models stay small; vertical packs compose kernel instead of rewriting it.       |
-| Events over tight coupling      | Modules publish domain events; automation/integrations subscribe (outbox).           |
-| Configuration before code forks | Custom fields/statuses/workflows cover most customization; packs only for real code. |
-| Security and audit as defaults  | Tenant scoping, RBAC/ABAC, immutable audit trail, idempotency for commands/tools.    |
+- **Web (`apps/web`, Vite + React):** Admin/backoffice UI. Uses TanStack Query with backoff from `@corely/api-client`, workspace + auth providers, and an offline provider backed by `@corely/offline-web` (IndexedDB cache + outbox; transport is still a placeholder).
+- **POS (`apps/pos`, Expo + React Native):** Offline-first shell wired to `@corely/offline-core`, `@corely/offline-rn`, and `@corely/pos-core`.
+- **API (`services/api`, NestJS 11):** Modules for identity, accounting, sales, purchasing, inventory, approvals, engagements, workflows, AI copilot, etc. Global env validation via `@corely/config`, Prisma-powered `DataModule`, and trace-ID middleware.
+- **Worker (`services/worker`, NestJS 11):** Outbox poller (invoice email delivery via Resend) and workflow orchestrator/task runners using queue adapters defined in `@corely/contracts`.
+- **Mock server (`services/mock-server` dist):** Lightweight UI-first backend with latency/idempotency simulation.
 
 ---
 
-# System overview
+## Monorepo layout (selected)
 
-The platform is organized into four runtime surfaces that share the same domain packages:
-
-- **Web (Vite + React):** backoffice/admin UI for modules
-- **POS (React Native):** offline-first selling UI for fast cashier workflows
-- **API (NestJS):** RBAC, validation, idempotency, tool execution, domain use-cases
-- **Worker (NestJS):** outbox, queues, automations, integrations, scheduled sync tasks
-
-**Storage & infra:** PostgreSQL + Prisma • Redis (queues/cache) • Object Storage (files) • Realtime (optional for multi-device POS)
-
-## Key boundary rules
-
-1. **Domain logic** lives in shared packages (no framework imports).
-2. Only **repositories** in the data layer talk to Prisma.
-3. Modules communicate via **domain events** and stable contracts.
-4. API enforces **authorization, validation, and idempotency** for every command and tool call.
-5. Web and POS share contracts and client behavior; UI logic stays in apps.
+- **apps/**: `web`, `pos`, `e2e`
+- **services/**: `api`, `worker`, `mock-server`
+- **packages/**:
+  - `contracts`: shared schemas/enums/events/tool cards (accounting, CRM, expenses, invoices, inventory, pos, purchasing, sales, tax, workflows, AI contexts, queues)
+  - `kernel`: BaseUseCase, Result helpers, DI tokens, core ports (UoW/outbox/audit/idempotency/queue/observability), time helpers, test fakes
+  - `domain`: shared errors + customization primitives
+  - `data`: Prisma `DataModule` (UoW + outbox/audit/idempotency adapters, shared repositories)
+  - `core`: workflow engine (xstate-backed) used by workflow modules
+  - `api-client` / `auth-client`: HTTP client with retry/idempotency headers + auth helpers
+  - `offline-core`, `offline-web`, `offline-rn`, `pos-core`: offline/outbox/sync building blocks
+  - `prompts`: prompt registry + static prompt definitions for AI
 
 ---
 
-# Architecture patterns
+## Backend architecture
 
-| Pattern                    | Why it matters                                                | How to implement                                                            |
-| -------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| DDD bounded contexts       | Stops the ERP from becoming one giant model.                  | Each module owns entities, use-cases, migrations, and APIs.                 |
-| Hexagonal (ports/adapters) | Swap DB/queue/LLM providers without rewriting business rules. | Use interfaces (ports) in application layer; Nest providers implement them. |
-| Outbox pattern             | Reliable event publication and integration delivery.          | Write events into outbox table in same transaction; worker publishes.       |
-| Process managers (sagas)   | Long workflows: approvals, multi-step ops, retries.           | WorkflowInstance + state machine; subscribe to events; emit commands.       |
-| CQRS-lite reads            | Fast dashboards/reports without polluting write model.        | Read services/materialized views; keep writes strict in use-cases.          |
-| Idempotent commands        | Safe retries for POS and AI tool executions.                  | Idempotency key per command; unique constraint + replay return.             |
-| AI tool cards              | Keeps AI outputs structured and user-confirmed.               | Tool schemas in contracts + UI cards with explicit apply/dismiss actions.   |
-
-### Use case kernel (standardized application layer)
-
-- One **BaseUseCase** (`execute(input, ctx)`) that wraps optional validation, logging, transaction (`UnitOfWorkPort`), and idempotency (`IdempotencyPort`); no NestJS deps.
-- **Result** helpers (`Ok/Err/isOk/isErr/unwrap`) replace thrown errors across layers; **UseCaseError** family (Validation/NotFound/Forbidden/Unauthorized/Conflict/etc.) is serializable and mapped to HTTP in API.
-- Shared **ports** (Logger/Clock/IdGenerator/UnitOfWork/Idempotency) and **testing fakes** (NoopLogger, FixedClock, FakeIdGenerator, InMemoryIdempotency) live in `packages/kernel`, imported by API/Worker.
-- Adapters belong to surfaces (e.g., Nest logger, Prisma $transaction UoW, DB idempotency store); keeps kernel boring and framework-agnostic.
+- **Hexagonal per module:** `services/api/src/modules/*` follow domain → application (ports/use-cases) → infrastructure (Prisma/adapters) → adapters (HTTP/tools) with testkits. See `services/api/src/modules/README.md` for the layout.
+- **Composition:** `AppModule` imports modules for identity, party/CRM, workspaces, accounting, sales, purchasing, inventory, approvals, engagement, workflows, automation, reporting, documents, tax, platform, and AI copilot. `TraceIdMiddleware` applies to all routes.
+- **Data & transactions:** `@corely/data` exposes a global Prisma UnitOfWork plus outbox, audit, and idempotency adapters. Only repositories talk to Prisma.
+- **AI Copilot:** `ai-copilot` module streams chat via `StreamCopilotChatUseCase`, builds tool registries from invoices/party/sales/purchasing/inventory/approvals/engagement, and records tool executions to Prisma + outbox. Prompt registry comes from `@corely/prompts`; observability uses OTEL/Langfuse via `OtelObservabilityAdapter`.
+- **Workflows & automation:** Workflow orchestration lives in the worker (`WorkflowsModule`) with handlers for human/timer/http/email/ai/system tasks and queue adapters (BullMQ/Cloud Tasks selectable via env). Workflow specs and transitions reuse `packages/core`.
+- **Outbox & notifications:** Worker `OutboxModule` polls Prisma outbox and triggers handlers such as invoice email delivery via Resend (provider set by env).
+- **Error model:** RFC 7807 Problem Details responses; domain errors in `packages/domain/src/errors` (UserFriendly/Validation/Unauthorized/Forbidden/NotFound/Conflict/ExternalService/Unexpected). Stable codes follow `Module:Meaning`.
+- **Observability:** `services/api/src/shared/observability/setup-tracing.ts` wires OTLP exporters with optional Langfuse span processor. Sampling and masking are driven by `OBSERVABILITY_*` env vars.
+- **Configuration:** `@corely/config` validates env with Zod (DB/Redis/AI/email/storage/observability/auth ports) before bootstrapping modules.
 
 ---
 
-## Error handling (Problem Details standard)
+## Frontend architecture (web)
 
-All API errors use **RFC 7807 Problem Details** as the wire format. This ensures predictable, consistent error responses across Web, POS, and any future client surfaces. Errors are safe by default: internal details never leak to clients in production.
+- **Providers:** `apps/web/src/app/providers` wires QueryClient (retry/backoff), AuthProvider, WorkspaceProvider, OfflineProvider, and toast/tooltip UI.
+- **Modules:** Feature folders under `apps/web/src/modules` mirror backend domains (accounting, sales, purchasing, inventory, expenses, invoices, CRM/customers, assistant, platform/settings, tax, workspaces). Shared UI/components sit in `apps/web/src/shared`.
+- **Offline:** `OfflineProvider` persists React Query cache to IndexedDB and runs `SyncEngine` (outbox + network monitor + local lock). Transport is currently a placeholder; workspace tracking is already wired.
+- **API integration:** `@corely/api-client` adds idempotency and correlation headers plus retry with exponential backoff; web uses shared error mappers/toasts for consistent UX.
 
-## Wire format (all API errors)
+---
 
-```typescript
-{
-  type: "https://errors.corely.com/Invoices:Locked",
-  title: "Conflict",
-  status: 409,
-  detail: "This invoice has already been finalized",  // safe to show
-  instance: "/api/invoices/123/finalize",
-  code: "Invoices:Locked",                            // stable machine code
-  traceId: "a1b2c3d4-...",                            // correlation ID
-  validationErrors: [{ message: "...", members: ["email"] }], // optional
-  data: { invoiceId: "123" }                          // safe metadata
-}
-```
+## POS shell
 
-**Error code convention:** `Module:Meaning` (e.g., `Invoices:Locked`, `Common:ValidationFailed`, `Customers:EmailExists`).
+- Expo Router entrypoint with dependencies on `@corely/offline-core`, `@corely/offline-rn`, `@corely/pos-core`, `@corely/api-client`, and `@corely/auth-client`.
+- Uses SQLite + SecureStore via offline packages for queued commands and sync once transport endpoints are wired.
 
-## Backend error taxonomy (`packages/domain/src/errors`)
+---
 
-| Error class             | Status  | Message exposed? | When to use                                     |
-| ----------------------- | ------- | ---------------- | ----------------------------------------------- |
-| `UserFriendlyError`     | 400     | ✅ YES           | Business logic errors safe to show users        |
-| `ValidationFailedError` | 400     | ✅ YES           | Form/request validation with field-level errors |
-| `UnauthorizedError`     | 401     | ✅ Generic       | Authentication required/failed                  |
-| `ForbiddenError`        | 403     | ✅ Generic       | Insufficient permissions                        |
-| `NotFoundError`         | 404     | ❌ NO            | Resource not found (message sanitized)          |
-| `ConflictError`         | 409     | ❌ NO            | Duplicates, state conflicts (message sanitized) |
-| `ExternalServiceError`  | 502/503 | ❌ NO            | Third-party API failures (includes retry flag)  |
-| `UnexpectedError`       | 500     | ❌ NO            | System errors (message sanitized)               |
+## Boundary rules
 
-**Usage example (backend):**
-
-```typescript
-// User-friendly (safe to show)
-throw new UserFriendlyError("This invoice has already been finalized", {
-  code: "Invoices:Locked",
-});
-
-// Validation
-throw new ValidationFailedError("Validation failed", [
-  { message: "Email is required", members: ["email"] },
-]);
-
-// Not safe (internal details for logs, generic message to client)
-throw new NotFoundError("Invoice ABC-123 not found for tenant XYZ");
-```
-
-## Global exception filter (API layer)
-
-The `ProblemDetailsExceptionFilter` catches **all** exceptions and converts them to Problem Details:
-
-1. **AppError** → Maps directly using error properties
-2. **Prisma errors** → Maps to business errors with stable codes:
-   - `P2002` (unique constraint) → 409 Conflict
-   - `P2025` (not found) → 404 Not Found
-   - `P2003` (foreign key) → 409 Conflict
-3. **NestJS HttpException** → Converts with stable codes
-4. **Unknown errors** → Sanitized 500 response in production
-
-**Trace/correlation IDs:** Every request gets a `traceId` (extracted from `x-trace-id` header or generated). Included in all error responses and logs for debugging/support.
-
-**Logging policy:** User-friendly and validation errors log as `warn`/`info` (no stack); unexpected errors log as `error` (with stack). All logs include `traceId`, `tenantId`, HTTP method, and URL.
-
-## Client-side error handling (Web + POS)
-
-**Shared normalizer** (`packages/api-client/src/errors`): Converts HTTP errors to structured `ApiError` class with convenience methods (`isValidationError()`, `isRetryable()`, etc.).
-
-**Web patterns** (`apps/web/src/shared/lib/errors`):
-
-```typescript
-// Automatic toast for non-validation errors
-const showError = useApiErrorToast();
-try {
-  await apiClient.post("/invoices", data);
-} catch (error) {
-  showError(error); // Shows toast with trace ID
-}
-
-// Map validation errors to form fields
-const fieldErrors = mapValidationErrorsToForm(error);
-// → { email: "Email is required", amount: "Must be positive" }
-Object.entries(fieldErrors).forEach(([field, message]) => {
-  form.setError(field, { message });
-});
-```
-
-**POS offline-aware rules:**
-
-| Error type                 | POS behavior                                       |
-| -------------------------- | -------------------------------------------------- |
-| Network/offline            | Queue action for sync (via `packages/offline-rn`)  |
-| Validation (400)           | Show error, do NOT retry (user must fix)           |
-| Conflict (409)             | Show error, do NOT retry (business rule violation) |
-| Auth (401/403)             | Trigger re-login flow                              |
-| Transient server (502/503) | Retry with backoff (if idempotent)                 |
-
-**Trace ID support:** All error UIs (web toasts, POS banners) display `traceId` and allow copying for support tickets.
-
-## Developer guidelines
-
-**DO:**
-
-- ✅ Use `UserFriendlyError` for messages safe to show users
-- ✅ Include module-specific error codes (e.g., `Invoices:Locked`)
-- ✅ Log `traceId` with every error
-- ✅ Handle 401/403 in global auth flow, not per-component
-
-**DON'T:**
-
-- ❌ Expose database constraint names or SQL errors to clients
-- ❌ Retry validation errors or permission errors
-- ❌ Show generic "An error occurred" when you have specific business logic errors
+1. Domain logic stays in shared packages or module `domain/` folders (no Nest/React imports).
+2. Only repositories access Prisma; app/services depend on ports, not implementations.
+3. Modules communicate via contracts/events/outbox—not direct table writes.
+4. API enforces auth/validation/idempotency/trace IDs per request; workers reuse the same ports.
+5. Web/POS consume `@corely/contracts` and clients; they never import backend internals.
 
 **Full documentation:** See `docs/architecture/error-handling.md` for complete reference, testing patterns, and troubleshooting.
 
