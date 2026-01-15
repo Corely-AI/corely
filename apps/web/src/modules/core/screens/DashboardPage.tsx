@@ -54,11 +54,12 @@ export default function DashboardPage() {
   });
 
   // Fetch expenses
-  const { data: expenses = [], isLoading: isLoadingExpenses } = useQuery({
+  const { data: expensesData, isLoading: isLoadingExpenses } = useQuery({
     queryKey: ["expenses"],
     queryFn: () => expensesApi.listExpenses(),
   });
 
+  const expenses = expensesData?.items ?? [];
   const customers = customersData?.customers || [];
   const isLoading = isLoadingInvoices || isLoadingCustomers || isLoadingExpenses;
 

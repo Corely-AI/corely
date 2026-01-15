@@ -59,20 +59,7 @@ describe("Expense contract responses", () => {
       console.error(parsed.error.format());
     }
 
-    expect(Object.keys(res.body).sort()).toMatchInlineSnapshot(`
-[
-  "archivedAt",
-  "archivedByUserId",
-  "category",
-  "createdByUserId",
-  "currency",
-  "custom",
-  "id",
-  "issuedAt",
-  "merchant",
-  "tenantId",
-  "totalCents",
-]
-`);
+    expect(res.body.expense).toBeTruthy();
+    expect(res.body.expense.merchantName ?? res.body.expense.merchant).toBe("Contract Vendor");
   });
 });

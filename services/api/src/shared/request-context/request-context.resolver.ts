@@ -42,7 +42,8 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const correlationId = correlationHeader || requestId;
 
   // Principal
-  const userId = req.user?.userId;
+  const headerUserId = pickHeader(req, ["x-user-id"]);
+  const userId = req.user?.userId ?? headerUserId;
   const roleIds = Array.isArray(req.user?.roleIds) ? req.user?.roleIds : undefined;
 
   // Workspace / tenant with precedence

@@ -1,29 +1,52 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { ForbiddenError, NotFoundError } from "@corely/domain";
+import type { UseCaseContext } from "@corely/kernel";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
+import type { AuditPort } from "../../../../shared/ports/audit.port";
+import { assertCan } from "../../../../shared/policies/assert-can";
 
 export interface ArchiveExpenseInput {
-  tenantId: string;
   expenseId: string;
-  userId: string;
 }
 
 @Injectable()
 export class ArchiveExpenseUseCase {
   constructor(
     private readonly repo: ExpenseRepositoryPort,
-    private readonly clock: ClockPort
+    private readonly clock: ClockPort,
+    private readonly audit: AuditPort
   ) {}
 
-  async execute(input: ArchiveExpenseInput): Promise<void> {
-    const expense = await this.repo.findById(input.tenantId, input.expenseId);
+  async execute(input: ArchiveExpenseInput, ctx: UseCaseContext): Promise<void> {
+    assertCan(ctx);
+    const tenantId = ctx.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenError("Tenant is required");
+    }
+    const expense = await this.repo.findById(tenantId, input.expenseId, { includeArchived: true });
     if (!expense) {
-      throw new NotFoundException("Expense not found");
+      throw new NotFoundError("Expense not found");
     }
     if (expense.archivedAt) {
       return;
     }
-    expense.archive(this.clock.now(), input.userId);
-    await this.repo.save(expense);
+    expense.archive(this.clock.now(), ctx.userId ?? "system");
+    await this.repo.update(expense);
+    await this.audit.log({
+      tenantId,
+      userId: ctx.userId ?? "system",
+      action: "expense.archived",
+      entityType: "Expense",
+      entityId: expense.id,
+      metadata: {
+        context: {
+          tenantId: ctx.tenantId,
+          workspaceId: ctx.workspaceId,
+          userId: ctx.userId,
+          requestId: ctx.requestId,
+        },
+      },
+    });
   }
 }

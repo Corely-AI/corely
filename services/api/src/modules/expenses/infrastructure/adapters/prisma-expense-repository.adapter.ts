@@ -1,14 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import type { TransactionContext } from "@corely/kernel";
 import { PrismaService, getPrismaClient } from "@corely/data";
-import { ExpenseRepositoryPort } from "../../application/ports/expense-repository.port";
+import {
+  type ExpenseListFilters,
+  type ExpenseListResult,
+  type ExpenseRepositoryPort,
+} from "../../application/ports/expense-repository.port";
 import { Expense } from "../../domain/expense.entity";
 
 @Injectable()
 export class PrismaExpenseRepository implements ExpenseRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(expense: Expense, tx?: TransactionContext): Promise<void> {
+  async create(expense: Expense, tx?: TransactionContext): Promise<void> {
     const client = getPrismaClient(this.prisma, tx as any);
     await client.expense.create({
       data: {
@@ -19,18 +23,13 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
         totalAmountCents: expense.totalCents,
         taxAmountCents: expense.taxAmountCents ?? undefined,
         currency: expense.currency,
-        category: expense.category,
+        category: expense.category ?? undefined,
         archivedAt: expense.archivedAt ?? undefined,
         archivedByUserId: expense.archivedByUserId ?? undefined,
+        createdByUserId: expense.createdByUserId ?? undefined,
         custom: expense.custom as any,
       } as any,
     });
-  }
-
-  async findById(tenantId: string, id: string, tx?: TransactionContext): Promise<Expense | null> {
-    const client = getPrismaClient(this.prisma, tx as any);
-    const data = await client.expense.findFirst({ where: { id, tenantId, archivedAt: null } });
-    return data ? this.mapExpense(data) : null;
   }
 
   async update(expense: Expense, tx?: TransactionContext): Promise<void> {
@@ -43,7 +42,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
         totalAmountCents: expense.totalCents,
         taxAmountCents: expense.taxAmountCents ?? undefined,
         currency: expense.currency,
-        category: expense.category,
+        category: expense.category ?? undefined,
         archivedAt: expense.archivedAt ?? undefined,
         archivedByUserId: expense.archivedByUserId ?? undefined,
         custom: expense.custom as any,
@@ -51,27 +50,72 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
     });
   }
 
-  async findByIdIncludingArchived(
+  async findById(
     tenantId: string,
     id: string,
+    opts?: { includeArchived?: boolean },
     tx?: TransactionContext
   ): Promise<Expense | null> {
     const client = getPrismaClient(this.prisma, tx as any);
-    const data = await client.expense.findFirst({ where: { id, tenantId } });
+    const data = await client.expense.findFirst({
+      where: { id, tenantId, archivedAt: opts?.includeArchived ? undefined : null },
+    });
     return data ? this.mapExpense(data) : null;
   }
 
   async list(
     tenantId: string,
-    params?: { includeArchived?: boolean },
+    filters: ExpenseListFilters,
+    pagination: { page: number; pageSize: number; cursor?: string | null },
     tx?: TransactionContext
-  ): Promise<Expense[]> {
+  ): Promise<ExpenseListResult> {
     const client = getPrismaClient(this.prisma, tx as any);
-    const data = await client.expense.findMany({
-      where: { tenantId, archivedAt: params?.includeArchived ? undefined : null },
-      orderBy: { expenseDate: "desc" },
-    });
-    return data.map((row) => this.mapExpense(row));
+    const where: any = {
+      tenantId,
+      archivedAt: filters.includeArchived ? undefined : null,
+    };
+    if (filters.q) {
+      where.merchantName = { contains: filters.q, mode: "insensitive" };
+    }
+    if (filters.merchantName) {
+      where.merchantName = { contains: filters.merchantName, mode: "insensitive" };
+    }
+    if (filters.category) {
+      where.category = filters.category;
+    }
+    if (filters.fromDate || filters.toDate) {
+      where.expenseDate = {};
+      if (filters.fromDate) {
+        where.expenseDate.gte = filters.fromDate;
+      }
+      if (filters.toDate) {
+        where.expenseDate.lte = filters.toDate;
+      }
+    }
+
+    const skip = (pagination.page - 1) * pagination.pageSize;
+    const take = pagination.pageSize;
+
+    const [rows, total] = await Promise.all([
+      client.expense.findMany({
+        where,
+        orderBy: [{ expenseDate: "desc" }, { createdAt: "desc" }],
+        skip,
+        take,
+      }),
+      client.expense.count({ where }),
+    ]);
+
+    const nextCursor =
+      rows.length === pagination.pageSize && skip + rows.length < total
+        ? (rows[rows.length - 1]?.id ?? null)
+        : null;
+
+    return {
+      items: rows.map((row) => this.mapExpense(row)),
+      total,
+      nextCursor,
+    };
   }
 
   private mapExpense(data: any): Expense {
@@ -82,7 +126,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       data.totalAmountCents,
       data.taxAmountCents ?? null,
       data.currency,
-      data.category,
+      data.category ?? null,
       new Date(data.expenseDate),
       data.createdByUserId ?? "",
       new Date(data.createdAt),

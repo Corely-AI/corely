@@ -28,3 +28,11 @@ export const mapResultToHttp = <T>(result: Result<T, UseCaseError>): T => {
   }
   return result.value;
 };
+
+export const resolveIdempotencyKey = (req: ContextAwareRequest): string | undefined => {
+  const raw = req.headers?.["idempotency-key"] ?? req.headers?.["x-idempotency-key"];
+  if (Array.isArray(raw)) {
+    return raw.find((value) => typeof value === "string" && value.length > 0);
+  }
+  return typeof raw === "string" && raw.length > 0 ? raw : undefined;
+};
