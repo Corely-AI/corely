@@ -299,6 +299,8 @@ export type TaxReportPreview = z.infer<typeof TaxReportPreviewSchema>;
  */
 export const TaxSummaryDtoSchema = z.object({
   taxesToBePaidEstimatedCents: z.number().int(),
+  configurationStatus: z.enum(["READY", "MISSING_SETTINGS", "NOT_APPLICABLE"]).default("READY"),
+  warnings: z.array(z.string()).default([]),
   incomeTotalCents: z.number().int(),
   unpaidInvoicesCount: z.number().int(),
   expensesTotalCents: z.number().int(),

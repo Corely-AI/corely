@@ -62,6 +62,8 @@ export default function TaxesOverviewPage() {
 
   const summary = data;
   const formatCents = (cents: number) => formatMoney(cents, locale);
+  const isMissingSettings = summary.configurationStatus === "MISSING_SETTINGS";
+  const isNotApplicable = summary.configurationStatus === "NOT_APPLICABLE";
 
   return (
     <div className="p-6 lg:p-8 space-y-8 animate-fade-in">
@@ -97,10 +99,24 @@ export default function TaxesOverviewPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-2xl font-semibold">
-              {formatCents(summary.taxesToBePaidEstimatedCents || 0)}
+              {isMissingSettings ? (
+                <span className="text-muted-foreground">Not configured</span>
+              ) : (
+                formatCents(summary.taxesToBePaidEstimatedCents || 0)
+              )}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/tax/reports")}>
-              See taxes overview <ArrowRight className="h-4 w-4 ml-2" />
+            {isNotApplicable && (
+              <Badge variant="secondary" className="mt-1">
+                VAT not applicable
+              </Badge>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(isMissingSettings ? "/tax/settings" : "/tax/reports")}
+            >
+              {isMissingSettings ? "Complete tax setup" : "See taxes overview"}
+              <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </CardContent>
         </Card>
@@ -133,6 +149,31 @@ export default function TaxesOverviewPage() {
           </CardContent>
         </Card>
       </div>
+
+      {summary.warnings?.length ? (
+        <Alert>
+          <AlertTitle>Heads up</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc list-inside space-y-1">
+              {summary.warnings.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {isMissingSettings && (
+        <Alert>
+          <AlertTitle>Tax settings incomplete</AlertTitle>
+          <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <span>Configure your tax profile to estimate what you owe.</span>
+            <Button size="sm" onClick={() => navigate("/tax/settings")}>
+              Go to tax settings
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Helper card */}
       <Card className="bg-muted/50">

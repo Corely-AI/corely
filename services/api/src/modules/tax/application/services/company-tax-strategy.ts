@@ -7,6 +7,8 @@ export class CompanyTaxStrategy implements TaxComputationStrategy {
   async computeSummary(_ctx: TaxStrategyContext): Promise<TaxSummaryDto> {
     return {
       taxesToBePaidEstimatedCents: 0,
+      configurationStatus: "NOT_APPLICABLE",
+      warnings: ["Company tax summary is not implemented yet"],
       incomeTotalCents: 0,
       unpaidInvoicesCount: 0,
       expensesTotalCents: 0,
