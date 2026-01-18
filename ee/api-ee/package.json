@@ -1,0 +1,37 @@
+{
+  "name": "@corely/api-ee",
+  "private": true,
+  "version": "0.0.0",
+  "license": "SEE LICENSE IN /ee/LICENSE-EE.md",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts --clean --format esm --dts",
+    "dev": "tsdown src/index.ts --watch --format esm --dts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@corely/config": "workspace:*",
+    "@corely/contracts": "workspace:*",
+    "@corely/core": "workspace:*",
+    "@corely/data": "workspace:*",
+    "@corely/domain": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:"
+  },
+  "devDependencies": {
+    "@corely/tsconfig": "workspace:*",
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:"
+  }
+}

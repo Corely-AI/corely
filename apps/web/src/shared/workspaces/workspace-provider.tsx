@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { workspacesApi } from "./workspaces-api";
 import { getActiveWorkspaceId, setActiveWorkspaceId, subscribeWorkspace } from "./workspace-store";
 import { useAuth } from "@/lib/auth-provider";
+import { features } from "@/lib/features";
 
 interface WorkspaceContextValue {
   workspaces: WorkspaceDto[];
@@ -33,7 +34,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   } = useQuery<WorkspaceDto[]>({
     queryKey: ["workspaces"],
     queryFn: () => workspacesApi.listWorkspaces(),
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && features.multiTenant,
     staleTime: 30_000,
   });
 
@@ -53,22 +54,26 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [workspaces, isAuthenticated, activeId]);
 
-  // Set default workspace once we have list
+  // Set default workspace once we have list (EE) or fallback default (OSS)
   useEffect(() => {
     console.debug("[WorkspaceProvider] evaluate default workspace", {
       activeId,
       workspaces: workspaces.length,
       isFetching,
+      multiTenant: features.multiTenant,
     });
 
-    if (!activeId && workspaces.length > 0) {
-      console.debug("[WorkspaceProvider] setting default workspace", {
-        id: workspaces[0].id,
-        name: workspaces[0].name,
-      });
-      const defaultId = workspaces[0].id;
-      setActiveWorkspaceId(defaultId);
-      setActiveId(defaultId);
+    if (!activeId) {
+      if (features.multiTenant && workspaces.length > 0) {
+        const defaultId = workspaces[0].id;
+        setActiveWorkspaceId(defaultId);
+        setActiveId(defaultId);
+      }
+      if (!features.multiTenant) {
+        const defaultId = features.defaultTenantId;
+        setActiveWorkspaceId(defaultId);
+        setActiveId(defaultId);
+      }
     }
   }, [activeId, workspaces]);
 
@@ -88,16 +93,25 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [activeId, workspaces]);
 
-  const activeWorkspace = useMemo(
-    () => workspaces.find((w) => w.id === activeId) ?? null,
-    [activeId, workspaces]
-  );
+  const activeWorkspace = useMemo(() => {
+    if (!features.multiTenant) {
+      return activeId
+        ? ({
+            id: activeId,
+            name: "Default Workspace",
+          } as WorkspaceDto)
+        : null;
+    }
+    return workspaces.find((w) => w.id === activeId) ?? null;
+  }, [activeId, workspaces]);
 
   const setWorkspace = (workspaceId: string) => {
     setActiveWorkspaceId(workspaceId);
     setActiveId(workspaceId);
     console.debug("[WorkspaceProvider] workspace selected", { workspaceId });
-    void queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    if (features.multiTenant) {
+      void queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    }
   };
 
   const value: WorkspaceContextValue = {
@@ -107,7 +121,9 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     isLoading: isFetching,
     setWorkspace,
     refresh: async () => {
-      await refetch();
+      if (features.multiTenant) {
+        await refetch();
+      }
     },
   };
 

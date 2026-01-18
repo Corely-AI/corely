@@ -11,14 +11,20 @@
   "scripts": {
     "prepare": "husky",
     "dev": "pnpm build:packages && pnpm -r --parallel dev",
-    "build": "pnpm build:packages && pnpm --filter './packages/tooling/**' build && pnpm --filter './services/**' build && pnpm --filter './apps/**' build",
+    "build": "pnpm build:packages && pnpm --filter './ee/**' build && pnpm --filter './packages/tooling/**' build && pnpm --filter './services/**' build && pnpm --filter './apps/**' build",
+    "build:oss": "EDITION=oss VITE_EDITION=oss pnpm build:packages && pnpm --filter './packages/tooling/**' build && pnpm --filter './services/**' build && pnpm --filter './apps/**' build",
+    "build:ee": "EDITION=ee VITE_EDITION=ee pnpm build",
     "build:packages": "pnpm --filter './packages/config' --filter './packages/kernel' --filter './packages/contracts' --filter './packages/prompts' --filter './packages/core' --filter './packages/domain' --filter './packages/data' --filter './packages/offline-core' --filter './packages/offline-web' --filter './packages/offline-rn' --filter './packages/testkit' --filter './packages/tooling/vite-config' --filter './packages/email-templates' build",
     "build:web-packages": "pnpm --filter '@corely/vite-config' --filter './packages/api-client' --filter './packages/auth-client' build",
     "build:api": "pnpm build:packages && pnpm --filter @corely/api build",
     "typecheck": "pnpm -r typecheck",
-    "dev:web": "pnpm build:web-packages && pnpm --filter @corely/web dev",
+    "dev:web": "VITE_EDITION=oss pnpm build:web-packages && pnpm --filter @corely/web dev",
+    "dev:web:oss": "VITE_EDITION=oss pnpm build:web-packages && pnpm --filter @corely/web dev",
+    "dev:web:ee": "VITE_EDITION=ee pnpm build:web-packages && pnpm --filter @corely/web dev",
     "build:web": "pnpm build:packages && pnpm --filter @corely/web build",
-    "dev:api": "pnpm build:packages && pnpm --filter @corely/api dev:esbuild",
+    "dev:api": "EDITION=oss pnpm build:packages && pnpm --filter @corely/api dev:esbuild",
+    "dev:api:oss": "EDITION=oss pnpm build:packages && pnpm --filter @corely/api dev:esbuild",
+    "dev:api:ee": "EDITION=ee pnpm build:packages && pnpm --filter @corely/api dev:esbuild",
     "dev:api:debug": "pnpm build:packages && pnpm --filter @corely/api dev:debug",
     "dev:worker": "pnpm --filter @corely/worker dev",
     "prisma:generate": "pnpm --filter @corely/data exec prisma generate",
@@ -45,7 +51,8 @@
     "test:unit": "vitest run --workspace ./vitest.workspace.ts",
     "test:int": "pnpm prisma:generate && vitest run --workspace ./vitest.workspace.int.ts",
     "test:watch": "vitest --workspace ./vitest.workspace.ts --watch",
-    "coverage": "vitest run --workspace ./vitest.workspace.ts --coverage"
+    "coverage": "vitest run --workspace ./vitest.workspace.ts --coverage",
+    "ci:verify-oss-no-ee": "node scripts/verify-oss-build.mjs"
   },
   "devDependencies": {
     "@eslint/js": "catalog:",

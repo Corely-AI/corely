@@ -16,6 +16,7 @@ let outbox: MockOutboxPort;
 let idempotency: MockIdempotencyStoragePort;
 let customDefs: CustomFieldDefinitionPort;
 let customIndexes: CustomFieldIndexPort;
+const ctx = { tenantId: "tenant-1", userId: "user-1", requestId: "req-1" } as any;
 
 beforeEach(() => {
   repo = new FakeExpenseRepository();
@@ -46,7 +47,7 @@ beforeEach(() => {
 
 describe("CreateExpenseUseCase", () => {
   it("creates an expense, audit and outbox entry", async () => {
-    const expense = await useCase.execute(buildCreateExpenseInput());
+    const expense = await useCase.execute(buildCreateExpenseInput(), ctx);
 
     expect(repo.expenses).toHaveLength(1);
     expect(audit.entries).toHaveLength(1);
@@ -56,8 +57,8 @@ describe("CreateExpenseUseCase", () => {
 
   it("is idempotent for same key", async () => {
     const input = buildCreateExpenseInput({ idempotencyKey: "same" });
-    const first = await useCase.execute(input);
-    const second = await useCase.execute(input);
+    const first = await useCase.execute(input, ctx);
+    const second = await useCase.execute(input, ctx);
 
     expect(second.id).toBe(first.id);
     expect(repo.expenses).toHaveLength(1);
