@@ -3,19 +3,19 @@ import { SingleTenantResolver } from "../single-tenant.resolver";
 import { TenantMismatchError } from "../errors";
 
 describe("SingleTenantResolver", () => {
-  const resolver = new SingleTenantResolver("tenant_default");
+  const resolver = new SingleTenantResolver("default_tenant", "default_workspace");
 
   it("returns default tenant when no header", async () => {
     const res = await resolver.resolve({ headers: {} } as any);
-    expect(res.tenantId).toBe("tenant_default");
+    expect(res.tenantId).toBe("default_tenant");
     expect(res.source).toBe("default");
   });
 
   it("accepts matching header", async () => {
     const res = await resolver.resolve({
-      headers: { "x-tenant-id": "tenant_default" },
+      headers: { "x-tenant-id": "default_tenant" },
     } as any);
-    expect(res.tenantId).toBe("tenant_default");
+    expect(res.tenantId).toBe("default_tenant");
     expect(res.source).toBe("header");
   });
 

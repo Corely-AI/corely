@@ -29,6 +29,7 @@
     "dev:worker": "pnpm --filter @corely/worker dev",
     "prisma:generate": "pnpm --filter @corely/data exec prisma generate",
     "prisma:migrate": "pnpm --filter @corely/data exec prisma migrate dev",
+    "prisma:deploy": "pnpm --filter @corely/data exec prisma migrate deploy",
     "prisma:studio": "pnpm --filter @corely/data exec prisma studio",
     "migrate": "pnpm --filter @corely/data exec tsx --env-file=../../.env ../../../node_modules/.bin/prisma migrate dev",
     "format": "prettier -w .",

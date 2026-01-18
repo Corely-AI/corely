@@ -70,7 +70,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         setActiveId(defaultId);
       }
       if (!features.multiTenant) {
-        const defaultId = features.defaultTenantId;
+        const defaultId = features.defaultWorkspaceId;
         setActiveWorkspaceId(defaultId);
         setActiveId(defaultId);
       }
@@ -95,7 +95,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
 
   const defaultOssWorkspace: WorkspaceDto | null = !features.multiTenant
     ? {
-        id: activeId ?? features.defaultTenantId,
+        id: activeId ?? features.defaultWorkspaceId,
         name: "Default Workspace",
         kind: "PERSONAL",
       }

@@ -76,7 +76,7 @@ describe("Workspaces API - OSS Mode (Integration)", () => {
     if (process.env.EDITION !== "oss") return;
 
     const res = await request(app.getHttpServer())
-      .patch("/workspaces/tenant_default")
+      .patch("/workspaces/default_workspace")
       .set("Authorization", `Bearer ${authToken}`)
       .send({ name: "Updated Workspace" });
 
@@ -88,7 +88,7 @@ describe("Workspaces API - OSS Mode (Integration)", () => {
     if (process.env.EDITION !== "oss") return;
 
     const res = await request(app.getHttpServer())
-      .get("/workspaces/tenant_default/members")
+      .get("/workspaces/default_workspace/members")
       .set("Authorization", `Bearer ${authToken}`);
 
     expect(res.status).toBe(404);

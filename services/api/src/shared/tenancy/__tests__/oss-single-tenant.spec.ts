@@ -7,11 +7,12 @@ import { TenantMismatchError } from "../errors";
 import type { ContextAwareRequest } from "../../request-context/request-context.types";
 
 describe("OSS Mode - Single Tenant Enforcement", () => {
-  const DEFAULT_TENANT = "tenant_default";
+  const DEFAULT_TENANT = "default_tenant";
+  const DEFAULT_WORKSPACE = "default_workspace";
   let resolver: SingleTenantResolver;
 
   beforeEach(() => {
-    resolver = new SingleTenantResolver(DEFAULT_TENANT);
+    resolver = new SingleTenantResolver(DEFAULT_TENANT, DEFAULT_WORKSPACE);
   });
 
   describe("SingleTenantResolver", () => {
@@ -26,7 +27,7 @@ describe("OSS Mode - Single Tenant Enforcement", () => {
 
     it("should accept matching x-workspace-id header", async () => {
       const req = {
-        headers: { "x-workspace-id": DEFAULT_TENANT },
+        headers: { "x-workspace-id": DEFAULT_WORKSPACE },
       } as ContextAwareRequest;
       const result = await resolver.resolve(req);
 

@@ -7,7 +7,7 @@ import { HEADER_TENANT_ID } from "@shared/request-context";
 
 const invoice = {
   id: "inv-1",
-  tenantId: "tenant_default",
+  tenantId: "default_tenant",
   number: null,
   status: "DRAFT" as const,
   customerPartyId: "cust-1",
@@ -64,19 +64,19 @@ describe("InvoicesHttpController", () => {
   });
 
   it("returns invoice dto via get endpoint", async () => {
-    const req = { headers: { [HEADER_TENANT_ID]: "tenant_default" } } as any;
+    const req = { headers: { [HEADER_TENANT_ID]: "default_tenant" } } as any;
     const result = await controller.getInvoice("inv-1", req);
 
     expect(result).toEqual(invoice);
     expect(getExecute).toHaveBeenCalledWith(
       { invoiceId: "inv-1" },
-      expect.objectContaining({ tenantId: "tenant_default" })
+      expect.objectContaining({ tenantId: "default_tenant" })
     );
   });
 
   it("maps use case errors to http exceptions", async () => {
     getExecute.mockResolvedValueOnce(err(new NotFoundError("missing invoice")));
-    const req = { headers: { [HEADER_TENANT_ID]: "tenant_default" } } as any;
+    const req = { headers: { [HEADER_TENANT_ID]: "default_tenant" } } as any;
 
     await expect(controller.getInvoice("missing", req)).rejects.toBeInstanceOf(HttpException);
   });

@@ -13,7 +13,8 @@ import {
 vi.mock("@/lib/features", () => ({
   features: {
     multiTenant: false,
-    defaultTenantId: "tenant_default",
+    defaultTenantId: "default_tenant",
+    defaultWorkspaceId: "default_workspace",
     edition: "oss",
   },
 }));
@@ -26,15 +27,15 @@ describe("Workspace Store - OSS Mode", () => {
     }
   });
 
-  it("should always return default tenant in OSS mode", () => {
+  it("should always return default workspace in OSS mode", () => {
     const workspaceId = getActiveWorkspaceId();
-    expect(workspaceId).toBe("tenant_default");
+    expect(workspaceId).toBe("default_workspace");
   });
 
   it("should ignore attempts to set different workspace in OSS mode", () => {
     setActiveWorkspaceId("different_workspace");
     const workspaceId = getActiveWorkspaceId();
-    expect(workspaceId).toBe("tenant_default");
+    expect(workspaceId).toBe("default_workspace");
   });
 
   it("should ignore localStorage values in OSS mode", () => {
@@ -42,7 +43,7 @@ describe("Workspace Store - OSS Mode", () => {
       localStorage.setItem("corely-active-workspace", "stored_workspace");
     }
     const workspaceId = loadActiveWorkspaceId();
-    expect(workspaceId).toBe("tenant_default");
+    expect(workspaceId).toBe("default_workspace");
   });
 
   it("should not write to localStorage in OSS mode", () => {

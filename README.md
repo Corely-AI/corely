@@ -249,20 +249,22 @@ See `VERIFICATION_GUIDE.md` for detailed testing procedures and `ee/README.md` f
 
 ## Environment variables
 
-| Name                                   | Used by                                         | Example                                                         | Notes                                                        |
-| -------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------ |
-| `DATABASE_URL`                         | `@corely/api`, `@corely/worker`, `@corely/data` | `postgresql://corely:corely@postgres:5432/corely?schema=public` | Prisma connection for commands, outbox, and read models.     |
-| `EDITION`                              | `@corely/api`, `@corely/web`                    | `oss` or `ee`                                                   | Controls OSS vs EE module registration. Defaults to `oss`.   |
-| `DEFAULT_TENANT_ID`                    | `@corely/api`, `@corely/web`                    | `tenant_default`                                                | Required for OSS single-tenant enforcement.                  |
-| `REDIS_URL`                            | `@corely/api`, `@corely/worker`                 | `redis://redis:6379`                                            | Queues, locks, rate limits, idempotency caches.              |
-| `VITE_API_BASE_URL`                    | `apps/web`, `apps/pos`                          | `http://localhost:4000`                                         | Switch between mock (`4000`) and real API (`3000`).          |
-| `VITE_EDITION`                         | `apps/web`                                      | `oss` or `ee`                                                   | Enables EE-only UI (tenant switching, /t/:slug routing).     |
-| `VITE_DEFAULT_TENANT_ID`               | `apps/web`                                      | `tenant_default`                                                | OSS fallback tenant id; must match backend DEFAULT_TENANT_ID |
-| `LOG_LEVEL`                            | All services                                    | `debug`                                                         | Controls structured logging verbosity.                       |
-| `AI_MODEL_PROVIDER`                    | `@corely/api`                                   | `openai`                                                        | Selects `openai` or `anthropic` for Copilot tool runs.       |
-| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | `@corely/api`                                   | `(redacted)`                                                    | Provider credentials for assistant/tool calls; keep secret.  |
-| `EMAIL_PROVIDER`                       | `@corely/api`                                   | `resend`                                                        | Controls transactional email adapter.                        |
-| `WEB_PORT`, `API_PORT`, `MOCK_PORT`    | Apps/services                                   | `5173`, `3000`, `4000`                                          | Override ports when composing services locally.              |
+| Name                                   | Used by                                         | Example                                                         | Notes                                                              |
+| -------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`                         | `@corely/api`, `@corely/worker`, `@corely/data` | `postgresql://corely:corely@postgres:5432/corely?schema=public` | Prisma connection for commands, outbox, and read models.           |
+| `EDITION`                              | `@corely/api`, `@corely/web`                    | `oss` or `ee`                                                   | Controls OSS vs EE module registration. Defaults to `oss`.         |
+| `DEFAULT_TENANT_ID`                    | `@corely/api`, `@corely/web`                    | `default_tenant`                                                | Required for OSS single-tenant enforcement.                        |
+| `DEFAULT_WORKSPACE_ID`                 | `@corely/api`, `@corely/web`                    | `default_workspace`                                             | Required for OSS default workspace.                                |
+| `REDIS_URL`                            | `@corely/api`, `@corely/worker`                 | `redis://redis:6379`                                            | Queues, locks, rate limits, idempotency caches.                    |
+| `VITE_API_BASE_URL`                    | `apps/web`, `apps/pos`                          | `http://localhost:4000`                                         | Switch between mock (`4000`) and real API (`3000`).                |
+| `VITE_EDITION`                         | `apps/web`                                      | `oss` or `ee`                                                   | Enables EE-only UI (tenant switching, /t/:slug routing).           |
+| `VITE_DEFAULT_TENANT_ID`               | `apps/web`                                      | `default_tenant`                                                | OSS fallback tenant id; must match backend DEFAULT_TENANT_ID       |
+| `VITE_DEFAULT_WORKSPACE_ID`            | `apps/web`                                      | `default_workspace`                                             | OSS fallback workspace id; must match backend DEFAULT_WORKSPACE_ID |
+| `LOG_LEVEL`                            | All services                                    | `debug`                                                         | Controls structured logging verbosity.                             |
+| `AI_MODEL_PROVIDER`                    | `@corely/api`                                   | `openai`                                                        | Selects `openai` or `anthropic` for Copilot tool runs.             |
+| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | `@corely/api`                                   | `(redacted)`                                                    | Provider credentials for assistant/tool calls; keep secret.        |
+| `EMAIL_PROVIDER`                       | `@corely/api`                                   | `resend`                                                        | Controls transactional email adapter.                              |
+| `WEB_PORT`, `API_PORT`, `MOCK_PORT`    | Apps/services                                   | `5173`, `3000`, `4000`                                          | Override ports when composing services locally.                    |
 
 ## Scripts
 

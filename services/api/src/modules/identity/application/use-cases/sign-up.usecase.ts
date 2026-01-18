@@ -128,7 +128,8 @@ export class SignUpUseCase {
 
     const isEe = this.env.EDITION === "ee";
     const tenantId = isEe ? this.idGenerator.newId() : this.env.DEFAULT_TENANT_ID;
-    console.log("[SignUp] Edition check:", { isEe, tenantId });
+    const workspaceId = isEe ? undefined : this.env.DEFAULT_WORKSPACE_ID;
+    console.log("[SignUp] Edition check:", { isEe, tenantId, workspaceId });
 
     let slug: string;
     let tenantName: string;
@@ -180,7 +181,12 @@ export class SignUpUseCase {
     if (!isEe) {
       console.log("[SignUp] Creating default workspace for OSS mode");
       try {
-        await this.createDefaultWorkspaceForOss(tenantId, userId, input.userName || null);
+        await this.createDefaultWorkspaceForOss(
+          tenantId,
+          workspaceId ?? tenantId,
+          userId,
+          input.userName || null
+        );
         console.log("[SignUp] Default workspace created successfully");
       } catch (error) {
         console.error("[SignUp] Error creating default workspace:", error);
@@ -243,8 +249,8 @@ export class SignUpUseCase {
     if (!input.email || !input.email.includes("@")) {
       throw new ValidationError("Invalid email");
     }
-    if (!input.password || input.password.length < 8) {
-      throw new ValidationError("Password must be at least 8 characters");
+    if (!input.password || input.password.length < 6) {
+      throw new ValidationError("Password must be at least 6 characters");
     }
     if (!input.tenantName && this.env.EDITION === "ee") {
       throw new ValidationError("Tenant name is required");
@@ -389,24 +395,26 @@ export class SignUpUseCase {
    */
   private async createDefaultWorkspaceForOss(
     tenantId: string,
+    workspaceId: string,
     userId: string,
     workspaceName: string
   ): Promise<void> {
     console.log("[SignUp:Workspace] Creating default workspace:", {
       tenantId,
+      workspaceId,
       userId,
       workspaceName,
     });
 
-    // Check if workspace already exists (in OSS mode, workspace ID = tenant ID)
-    const existingWorkspace = await this.workspaceRepo.getWorkspaceById(tenantId, tenantId);
+    // Check if workspace already exists (OSS mode uses a fixed default workspace ID)
+    const existingWorkspace = await this.workspaceRepo.getWorkspaceById(tenantId, workspaceId);
     if (existingWorkspace) {
       console.log("[SignUp:Workspace] Workspace already exists, creating membership only");
       // Workspace exists, just create membership for this user
       const workspaceMembershipId = this.idGenerator.newId();
       await this.workspaceRepo.createMembership({
         id: workspaceMembershipId,
-        workspaceId: tenantId,
+        workspaceId,
         userId,
         role: "OWNER",
         status: "ACTIVE",
@@ -441,17 +449,17 @@ export class SignUpUseCase {
       throw error;
     }
 
-    // Create workspace with same ID as tenant (OSS convention)
+    // Create workspace for OSS default tenant
     const defaultWorkspaceName = workspaceName || "My Workspace";
     console.log(
       "[SignUp:Workspace] Creating workspace with ID:",
-      tenantId,
+      workspaceId,
       "and name:",
       defaultWorkspaceName
     );
     try {
       await this.workspaceRepo.createWorkspace({
-        id: tenantId,
+        id: workspaceId,
         tenantId,
         legalEntityId,
         name: defaultWorkspaceName,
@@ -469,7 +477,7 @@ export class SignUpUseCase {
     try {
       await this.workspaceRepo.createMembership({
         id: workspaceMembershipId,
-        workspaceId: tenantId,
+        workspaceId,
         userId,
         role: "OWNER",
         status: "ACTIVE",

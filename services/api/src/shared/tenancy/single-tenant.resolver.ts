@@ -25,21 +25,30 @@ const pickHeader = (req: ContextAwareRequest, names: string[]): string | undefin
  * Rejects mismatched inbound headers to prevent accidental cross-tenant leakage.
  */
 export class SingleTenantResolver implements TenantResolver {
-  constructor(private readonly defaultTenantId: string) {}
+  constructor(
+    private readonly defaultTenantId: string,
+    private readonly defaultWorkspaceId?: string
+  ) {}
 
   async resolve(req: ContextAwareRequest): Promise<TenantResolution> {
     if (!this.defaultTenantId) {
       throw new TenantNotResolvedError("DEFAULT_TENANT_ID is not configured");
     }
 
-    const headerTenant = pickHeader(req, [HEADER_WORKSPACE_ID, HEADER_TENANT_ID]);
+    const headerTenant = pickHeader(req, [HEADER_TENANT_ID]);
+    const headerWorkspace = pickHeader(req, [HEADER_WORKSPACE_ID]);
+    const expectedWorkspaceId = this.defaultWorkspaceId ?? this.defaultTenantId;
+
     if (headerTenant && headerTenant !== this.defaultTenantId) {
+      throw new TenantMismatchError("OSS mode only supports a single tenant");
+    }
+    if (headerWorkspace && headerWorkspace !== expectedWorkspaceId) {
       throw new TenantMismatchError("OSS mode only supports a single tenant");
     }
 
     return {
-      tenantId: headerTenant ?? this.defaultTenantId,
-      source: headerTenant ? "header" : "default",
+      tenantId: this.defaultTenantId,
+      source: headerTenant || headerWorkspace ? "header" : "default",
       edition: "oss",
     };
   }

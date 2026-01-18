@@ -41,23 +41,23 @@ Fixed all test failures that occurred after implementing OSS single-tenant enfor
 
 **File**: `services/api/src/modules/invoices/adapters/http/invoices.controller.test.ts`
 
-**Issue**: Using non-default tenant ID `"tenant-1"` instead of `"tenant_default"`
+**Issue**: Using non-default tenant ID `"tenant-1"` instead of `"default_tenant"`
 
 **Fix**:
 
-- Changed invoice mock `tenantId` from `"tenant-1"` to `"tenant_default"`
-- Updated test headers to use `"tenant_default"`
+- Changed invoice mock `tenantId` from `"tenant-1"` to `"default_tenant"`
+- Updated test headers to use `"default_tenant"`
 - Updated test expectations to match default tenant
 
 ### 4. Customers Controller Tests
 
 **File**: `services/api/src/modules/party/adapters/http/customers.controller.test.ts`
 
-**Issue**: Using non-default tenant ID `"tenant-1"` instead of `"tenant_default"`
+**Issue**: Using non-default tenant ID `"tenant-1"` instead of `"default_tenant"`
 
 **Fix**:
 
-- Updated test headers to use `"tenant_default"`
+- Updated test headers to use `"default_tenant"`
 - Updated test expectations to match default tenant
 
 ### 5. Request Context Resolver Tests
@@ -68,11 +68,11 @@ Fixed all test failures that occurred after implementing OSS single-tenant enfor
 
 **Fix**:
 
-- Changed `"header-tenant"` → `"tenant_default"`
-- Changed `"auth-tenant"` → `"tenant_default"`
-- Changed `"header-workspace"` → `"tenant_default"`
-- Changed `"route-workspace"` → `"tenant_default"`
-- Changed `"t1"` → `"tenant_default"`
+- Changed `"header-tenant"` → `"default_tenant"`
+- Changed `"auth-tenant"` → `"default_tenant"`
+- Changed `"header-workspace"` → `"default_workspace"`
+- Changed `"route-workspace"` → `"default_workspace"`
+- Changed `"t1"` → `"default_tenant"`
 
 ### 6. OSS Single Tenant Tests
 
@@ -104,7 +104,7 @@ Fixed all test failures that occurred after implementing OSS single-tenant enfor
 ```typescript
 const mockEnv = {
   EDITION: (process.env.EDITION || "oss") as "oss" | "ee",
-  DEFAULT_TENANT_ID: process.env.DEFAULT_TENANT_ID || "tenant_default",
+  DEFAULT_TENANT_ID: process.env.DEFAULT_TENANT_ID || "default_tenant",
 } as any;
 ```
 

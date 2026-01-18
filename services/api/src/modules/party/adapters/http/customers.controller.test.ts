@@ -39,19 +39,19 @@ describe("CustomersHttpController", () => {
   });
 
   it("returns customer dto", async () => {
-    const req = { headers: { [HEADER_TENANT_ID]: "tenant_default" } } as any;
+    const req = { headers: { [HEADER_TENANT_ID]: "default_tenant" } } as any;
     const result = await controller.get("cust-1", req);
 
     expect(result).toEqual(customer);
     expect(getExecute).toHaveBeenCalledWith(
       { id: "cust-1" },
-      expect.objectContaining({ tenantId: "tenant_default" })
+      expect.objectContaining({ tenantId: "default_tenant" })
     );
   });
 
   it("maps use case errors to http exception", async () => {
     getExecute.mockResolvedValueOnce(err(new NotFoundError("missing")));
-    const req = { headers: { [HEADER_TENANT_ID]: "tenant_default" } } as any;
+    const req = { headers: { [HEADER_TENANT_ID]: "default_tenant" } } as any;
     await expect(controller.get("missing", req)).rejects.toBeInstanceOf(HttpException);
   });
 });

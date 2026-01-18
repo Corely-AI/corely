@@ -18,26 +18,26 @@ describe("resolveRequestContext", () => {
   it("prefers user principal over headers for tenant", () => {
     const req = buildReq({
       headers: {
-        [HEADER_TENANT_ID]: "tenant_default",
+        [HEADER_TENANT_ID]: "default_tenant",
       },
-      user: { userId: "auth-user", tenantId: "tenant_default" },
+      user: { userId: "auth-user", tenantId: "default_tenant" },
     });
 
     const ctx = resolveRequestContext(req);
 
-    expect(ctx.tenantId).toBe("tenant_default");
+    expect(ctx.tenantId).toBe("default_tenant");
   });
 
   it("prefers workspace header over route param", () => {
     const req = buildReq({
-      params: { workspaceId: "tenant_default" },
-      headers: { [HEADER_WORKSPACE_ID]: "tenant_default" },
-      user: { userId: "u1", tenantId: "tenant_default" },
+      params: { workspaceId: "default_workspace" },
+      headers: { [HEADER_WORKSPACE_ID]: "default_workspace" },
+      user: { userId: "u1", tenantId: "default_tenant" },
     });
 
     const ctx = resolveRequestContext(req);
 
-    expect(ctx.workspaceId).toBe("tenant_default");
+    expect(ctx.workspaceId).toBe("default_workspace");
     expect(ctx.sources.workspaceId).toBe("header");
   });
 

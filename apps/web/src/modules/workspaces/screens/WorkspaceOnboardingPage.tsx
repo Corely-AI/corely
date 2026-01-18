@@ -9,12 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/shared/ui/use-toast";
 import { workspacesApi } from "@/shared/workspaces/workspaces-api";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { features } from "@/lib/features";
 
 const steps = ["Workspace", "Legal & Address", "Tax & Bank"];
 
 export const WorkspaceOnboardingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { workspaces, setWorkspace, refresh } = useWorkspace();
+  const { workspaces, setWorkspace, refresh, activeWorkspaceId } = useWorkspace();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -104,11 +105,24 @@ export const WorkspaceOnboardingPage: React.FC = () => {
               }
             : undefined,
       };
-      const result = await workspacesApi.createWorkspace(payload);
-      const createdId = result.workspace.id;
-      setWorkspace(createdId);
-      await refresh();
-      toast({ title: "Workspace created", description: `${result.workspace.name} is now active.` });
+      if (features.multiTenant) {
+        const result = await workspacesApi.createWorkspace(payload);
+        const createdId = result.workspace.id;
+        setWorkspace(createdId);
+        await refresh();
+        toast({
+          title: "Workspace created",
+          description: `${result.workspace.name} is now active.`,
+        });
+      } else {
+        const workspaceId = activeWorkspaceId ?? features.defaultWorkspaceId;
+        const result = await workspacesApi.updateWorkspace(workspaceId, payload);
+        setWorkspace(workspaceId);
+        toast({
+          title: "Workspace updated",
+          description: `${result.workspace.name} is now active.`,
+        });
+      }
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -121,8 +135,8 @@ export const WorkspaceOnboardingPage: React.FC = () => {
     }
   };
 
-  // If user already has a workspace, send them back to dashboard/settings
-  if (workspaces.length > 0) {
+  // EE: If user already has a workspace, send them back to dashboard/settings
+  if (features.multiTenant && workspaces.length > 0) {
     navigate("/dashboard");
     return null;
   }

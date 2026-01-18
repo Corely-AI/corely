@@ -49,7 +49,7 @@ export class TenancyModule {
                 throw new Error(`EE tenancy resolver not available. ${(error as Error).message}`);
               }
             }
-            return new SingleTenantResolver(env.DEFAULT_TENANT_ID);
+            return new SingleTenantResolver(env.DEFAULT_TENANT_ID, env.DEFAULT_WORKSPACE_ID);
           },
           inject: [EnvService, TENANT_ROUTING_SERVICE_TOKEN],
         },

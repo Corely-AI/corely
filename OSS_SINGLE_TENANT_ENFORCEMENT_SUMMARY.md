@@ -24,7 +24,7 @@ Successfully enforced strict OSS mode single-tenant/workspace behavior across th
 
 **Single Default Workspace**
 
-- OSS mode has exactly ONE workspace: the "default workspace" (tenant_default)
+- OSS mode has exactly ONE workspace: the "default workspace" (default_workspace)
 - Auto-created during first user signup with minimal configuration
 - Users configure it during onboarding (freelancer/company mode, legal entity details)
 - Cannot be deleted, cannot create additional workspaces
@@ -356,8 +356,8 @@ Tests:
   curl -X POST http://localhost:3000/auth/signup -d '{"email":"test@example.com","password":"pass123","tenantName":"Test"}'
 
   # Query database
-  psql -U kerniflow -d kerniflow -c "SELECT id, name FROM Workspace WHERE \"tenantId\" = 'tenant_default';"
-  # Expected: One workspace with tenant_default ID
+  psql -U kerniflow -d kerniflow -c "SELECT id, name FROM Workspace WHERE \"tenantId\" = 'default_tenant';"
+  # Expected: One workspace with default_workspace ID
   ```
 
 - [x] **Run tests:**
@@ -388,9 +388,9 @@ Tests:
   // In browser console (OSS mode)
   import { getActiveWorkspaceId, setActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
 
-  console.log(getActiveWorkspaceId()); // "tenant_default"
+  console.log(getActiveWorkspaceId()); // "default_workspace"
   setActiveWorkspaceId("other_workspace");
-  console.log(getActiveWorkspaceId()); // Still "tenant_default"
+  console.log(getActiveWorkspaceId()); // Still "default_workspace"
   ```
 
 - [x] **Run tests:**
@@ -420,7 +420,7 @@ Tests:
   2. Verify no workspace selection/creation UI
   3. Verify dashboard loads with default workspace
   4. Attempt to access /settings/workspace → should be hidden/404
-  5. Check localStorage: workspace should be "tenant_default"
+  5. Check localStorage: workspace should be "default_workspace"
 
 ---
 
@@ -473,12 +473,14 @@ Tests:
 ### Backend
 
 - `EDITION=oss` - Required for OSS mode
-- `DEFAULT_TENANT_ID=tenant_default` - Default tenant/workspace ID (optional, defaults to "tenant_default")
+- `DEFAULT_TENANT_ID=default_tenant` - Default tenant ID (optional, defaults to "default_tenant")
+- `DEFAULT_WORKSPACE_ID=default_workspace` - Default workspace ID (optional, defaults to "default_workspace")
 
 ### Frontend
 
 - `VITE_EDITION=oss` - Required for OSS mode
-- `VITE_DEFAULT_TENANT_ID=tenant_default` - Default tenant/workspace ID (optional, defaults to "tenant_default")
+- `VITE_DEFAULT_TENANT_ID=default_tenant` - Default tenant ID (optional, defaults to "default_tenant")
+- `VITE_DEFAULT_WORKSPACE_ID=default_workspace` - Default workspace ID (optional, defaults to "default_workspace")
 
 ---
 

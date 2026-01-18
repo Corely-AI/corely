@@ -33,6 +33,10 @@ export class EnvService {
     return this.config.DEFAULT_TENANT_ID;
   }
 
+  get DEFAULT_WORKSPACE_ID(): string {
+    return this.config.DEFAULT_WORKSPACE_ID;
+  }
+
   // ============================================================================
   // DATABASE
   // ============================================================================

@@ -6,9 +6,9 @@ let activeWorkspaceId: string | null = null;
 const subscribers = new Set<(workspaceId: string | null) => void>();
 
 export function loadActiveWorkspaceId(): string | null {
-  // OSS mode: always use default tenant, ignore localStorage
+  // OSS mode: always use default workspace, ignore localStorage
   if (!features.multiTenant) {
-    return features.defaultTenantId;
+    return features.defaultWorkspaceId;
   }
 
   if (activeWorkspaceId) {
@@ -22,9 +22,9 @@ export function loadActiveWorkspaceId(): string | null {
 }
 
 export function getActiveWorkspaceId(): string | null {
-  // OSS mode: always use default tenant, ignore localStorage
+  // OSS mode: always use default workspace, ignore localStorage
   if (!features.multiTenant) {
-    return features.defaultTenantId;
+    return features.defaultWorkspaceId;
   }
   return activeWorkspaceId ?? loadActiveWorkspaceId();
 }
@@ -32,8 +32,8 @@ export function getActiveWorkspaceId(): string | null {
 export function setActiveWorkspaceId(workspaceId: string | null): void {
   // OSS mode: ignore attempts to change workspace, always use default
   if (!features.multiTenant) {
-    activeWorkspaceId = features.defaultTenantId;
-    subscribers.forEach((fn) => fn(features.defaultTenantId));
+    activeWorkspaceId = features.defaultWorkspaceId;
+    subscribers.forEach((fn) => fn(features.defaultWorkspaceId));
     return;
   }
 

@@ -13,22 +13,22 @@ import { SingleTenantResolver } from "../single-tenant.resolver";
 describe("Edition Module Loading", () => {
   describe("OSS Edition", () => {
     it("SingleTenantResolver returns default tenant ID", async () => {
-      const resolver = new SingleTenantResolver("tenant_default");
+      const resolver = new SingleTenantResolver("default_tenant", "default_workspace");
       const result = await resolver.resolve({} as any);
 
-      expect(result.tenantId).toBe("tenant_default");
+      expect(result.tenantId).toBe("default_tenant");
       expect(result.edition).toBe("oss");
       expect(result.source).toBe("default");
     });
 
     it("SingleTenantResolver validates tenant ID from header", async () => {
-      const resolver = new SingleTenantResolver("tenant_default");
+      const resolver = new SingleTenantResolver("default_tenant", "default_workspace");
 
       // Should succeed with matching header
       const result = await resolver.resolve({
-        headers: { "x-tenant-id": "tenant_default" },
+        headers: { "x-tenant-id": "default_tenant" },
       } as any);
-      expect(result.tenantId).toBe("tenant_default");
+      expect(result.tenantId).toBe("default_tenant");
 
       // Should fail with mismatching header
       await expect(

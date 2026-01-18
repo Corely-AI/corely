@@ -38,7 +38,7 @@ describe("CreateWorkspaceUseCase", () => {
 
     const mockEnv = {
       EDITION: (process.env.EDITION || "oss") as "oss" | "ee",
-      DEFAULT_TENANT_ID: process.env.DEFAULT_TENANT_ID || "tenant_default",
+      DEFAULT_TENANT_ID: process.env.DEFAULT_TENANT_ID || "default_tenant",
     } as any;
 
     idCounter = 0;
