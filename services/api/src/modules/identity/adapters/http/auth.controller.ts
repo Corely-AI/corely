@@ -129,16 +129,6 @@ export class AuthController {
       console.error("[AuthController] Signup error:", error);
       throw error;
     }
-
-    return {
-      userId: result.userId,
-      email: result.email,
-      tenantId: result.tenantId,
-      tenantName: result.tenantName,
-      membershipId: result.membershipId,
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
-    };
   }
 
   /**

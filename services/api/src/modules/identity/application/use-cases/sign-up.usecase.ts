@@ -121,7 +121,7 @@ export class SignUpUseCase {
     console.log("[SignUp] Checking for existing user with email:", email.getValue());
     const existingUser = await this.userRepo.findByEmail(email.getValue());
     if (existingUser) {
-      console.log("[SignUp] User already exists:", existingUser.id);
+      console.log("[SignUp] User already exists:", existingUser.getId());
       throw new ConflictError("User with this email already exists");
     }
     console.log("[SignUp] No existing user found");
