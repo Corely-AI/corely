@@ -65,7 +65,6 @@ export class UpdateExpenseUseCase {
           requestId: ctx.requestId,
         },
       },
-      occurredAt: this.clock.now(),
     });
 
     return expense;

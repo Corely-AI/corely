@@ -1,5 +1,4 @@
 import { type CreateExpenseInput } from "../../application/use-cases/create-expense.usecase";
-import { buildRequestContext } from "../../../../shared/context/request-context";
 
 export const buildCreateExpenseInput = (
   overrides: Partial<CreateExpenseInput> = {}
@@ -13,7 +12,6 @@ export const buildCreateExpenseInput = (
     issuedAt: new Date("2023-01-01T00:00:00.000Z"),
     createdByUserId: "user-1",
     idempotencyKey: "expense-1",
-    context: buildRequestContext({ tenantId: "tenant-1", actorUserId: "user-1" }),
     ...overrides,
   };
 };
