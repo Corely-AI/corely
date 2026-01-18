@@ -22,7 +22,8 @@ export class TenancyModule {
             if (edition === "ee") {
               try {
                 const { InMemoryTenantRoutingService } = await loadEeTenancy();
-                return new InMemoryTenantRoutingService();
+                const RoutingCtor = InMemoryTenantRoutingService as new () => TenantRoutingService;
+                return new RoutingCtor();
               } catch (error) {
                 throw new Error(`EE routing service not available. ${(error as Error).message}`);
               }
@@ -40,7 +41,10 @@ export class TenancyModule {
             if (edition === "ee") {
               try {
                 const { MultiTenantResolver } = await loadEeTenancy();
-                return new MultiTenantResolver(routing);
+                const ResolverCtor = MultiTenantResolver as new (routing: TenantRoutingService) => {
+                  resolve: (...args: any[]) => Promise<any>;
+                };
+                return new ResolverCtor(routing);
               } catch (error) {
                 throw new Error(`EE tenancy resolver not available. ${(error as Error).message}`);
               }
