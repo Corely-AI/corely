@@ -93,17 +93,26 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [activeId, workspaces]);
 
+  const defaultOssWorkspace: WorkspaceDto | null = !features.multiTenant
+    ? {
+        id: activeId ?? features.defaultTenantId,
+        name: "Default Workspace",
+        kind: "PERSONAL",
+      }
+    : null;
+
+  const effectiveWorkspaces = features.multiTenant
+    ? workspaces
+    : defaultOssWorkspace
+      ? [defaultOssWorkspace]
+      : [];
+
   const activeWorkspace = useMemo(() => {
     if (!features.multiTenant) {
-      return activeId
-        ? ({
-            id: activeId,
-            name: "Default Workspace",
-          } as WorkspaceDto)
-        : null;
+      return defaultOssWorkspace;
     }
     return workspaces.find((w) => w.id === activeId) ?? null;
-  }, [activeId, workspaces]);
+  }, [activeId, workspaces, defaultOssWorkspace]);
 
   const setWorkspace = (workspaceId: string) => {
     setActiveWorkspaceId(workspaceId);
@@ -115,7 +124,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   };
 
   const value: WorkspaceContextValue = {
-    workspaces,
+    workspaces: effectiveWorkspaces,
     activeWorkspace,
     activeWorkspaceId: activeId,
     isLoading: isFetching,

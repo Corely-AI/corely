@@ -1,8 +1,13 @@
 import { BadRequestException } from "@nestjs/common";
 
 export class TenantMismatchError extends BadRequestException {
-  constructor(expected: string, received?: string) {
-    super(`TENANT_MISMATCH: expected ${expected}, received ${received ?? "none"}`);
+  constructor(expectedOrMessage: string, received?: string) {
+    // If received is undefined, treat expectedOrMessage as a custom message
+    if (received === undefined) {
+      super(expectedOrMessage);
+    } else {
+      super(`TENANT_MISMATCH: expected ${expectedOrMessage}, received ${received ?? "none"}`);
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-provider";
+import { features } from "@/lib/features";
 
 /**
  * Login Page
@@ -13,7 +14,6 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [tenantId, setTenantId] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
   // Load remembered credentials on mount
@@ -23,15 +23,12 @@ export const LoginPage: React.FC = () => {
       if (!raw) {
         return;
       }
-      const parsed = JSON.parse(raw) as { email?: string; password?: string; tenantId?: string };
+      const parsed = JSON.parse(raw) as { email?: string; password?: string };
       if (parsed.email) {
         setEmail(parsed.email);
       }
       if (parsed.password) {
         setPassword(parsed.password);
-      }
-      if (parsed.tenantId) {
-        setTenantId(parsed.tenantId);
       }
       setRememberMe(true);
     } catch {
@@ -48,15 +45,12 @@ export const LoginPage: React.FC = () => {
       await signin({
         email,
         password,
-        tenantId: tenantId || undefined,
+        tenantId: features.edition === "ee" ? undefined : features.defaultTenantId,
       });
 
       // Persist credentials if requested
       if (rememberMe) {
-        localStorage.setItem(
-          "corely-remember-login",
-          JSON.stringify({ email, password, tenantId: tenantId || undefined })
-        );
+        localStorage.setItem("corely-remember-login", JSON.stringify({ email, password }));
       } else {
         localStorage.removeItem("corely-remember-login");
       }
@@ -119,21 +113,6 @@ export const LoginPage: React.FC = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="tenantId" className="sr-only">
-                Tenant ID (optional)
-              </label>
-              <input
-                id="tenantId"
-                name="tenantId"
-                type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Tenant ID (optional)"
-                value={tenantId}
-                onChange={(e) => setTenantId(e.target.value)}
               />
             </div>
           </div>

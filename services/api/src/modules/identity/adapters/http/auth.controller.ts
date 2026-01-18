@@ -49,6 +49,7 @@ import {
   TENANT_REPOSITORY_TOKEN,
   type TenantRepositoryPort,
 } from "../../application/ports/tenant-repository.port";
+import { EnvService } from "@corely/config";
 
 /**
  * Auth Controller
@@ -66,7 +67,8 @@ export class AuthController {
     @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
     private readonly membershipRepo: MembershipRepositoryPort,
-    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort
+    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort,
+    private readonly env: EnvService
   ) {}
 
   /**
@@ -79,19 +81,54 @@ export class AuthController {
     @Headers("x-idempotency-key") idempotencyKey?: string,
     @Req() req?: Request
   ): Promise<SignUpResponseDto> {
-    if (!input.email || !input.password || !input.tenantName) {
-      throw new BadRequestException("Missing required fields");
+    console.log("[AuthController] POST /auth/signup received:", {
+      email: input.email,
+      hasPassword: !!input.password,
+      tenantName: input.tenantName,
+      bodyIdempotencyKey: input.idempotencyKey,
+      headerIdempotencyKey: idempotencyKey,
+    });
+
+    if (!input.email || !input.password) {
+      throw new BadRequestException("Missing required fields: email and password");
     }
 
-    const result = await this.signUpUseCase.execute({
-      ...input,
-      idempotencyKey: idempotencyKey ?? input.idempotencyKey ?? "default",
-      context: buildRequestContext({
-        requestId: req?.headers["x-request-id"] as string | undefined,
-        tenantId: undefined,
-        actorUserId: undefined,
-      }),
-    });
+    // EE mode requires tenant name, OSS mode uses default tenant
+    if (this.env.EDITION === "ee" && !input.tenantName) {
+      throw new BadRequestException("Tenant name is required in Enterprise Edition");
+    }
+
+    const finalIdempotencyKey = idempotencyKey ?? input.idempotencyKey ?? "default";
+    console.log("[AuthController] Final idempotency key:", finalIdempotencyKey);
+
+    try {
+      const result = await this.signUpUseCase.execute({
+        ...input,
+        idempotencyKey: finalIdempotencyKey,
+        context: buildRequestContext({
+          requestId: req?.headers["x-request-id"] as string | undefined,
+          tenantId: undefined,
+          actorUserId: undefined,
+        }),
+      });
+
+      console.log("[AuthController] Signup successful:", {
+        userId: result.userId,
+        tenantId: result.tenantId,
+      });
+      return {
+        userId: result.userId,
+        email: result.email,
+        tenantId: result.tenantId,
+        tenantName: result.tenantName,
+        membershipId: result.membershipId,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      };
+    } catch (error) {
+      console.error("[AuthController] Signup error:", error);
+      throw error;
+    }
 
     return {
       userId: result.userId,

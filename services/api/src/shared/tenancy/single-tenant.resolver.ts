@@ -34,7 +34,7 @@ export class SingleTenantResolver implements TenantResolver {
 
     const headerTenant = pickHeader(req, [HEADER_WORKSPACE_ID, HEADER_TENANT_ID]);
     if (headerTenant && headerTenant !== this.defaultTenantId) {
-      throw new TenantMismatchError(this.defaultTenantId, headerTenant);
+      throw new TenantMismatchError("OSS mode only supports a single tenant");
     }
 
     return {

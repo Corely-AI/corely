@@ -74,6 +74,7 @@ import {
   WorkspaceOnboardingPage,
   WorkspaceSettingsPage,
 } from "../../modules/workspaces";
+import { features } from "../../lib/features";
 
 export const Router = () => (
   <BrowserRouter>
@@ -85,6 +86,7 @@ export const Router = () => (
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
+          {/* Workspace onboarding - configure the default workspace (OSS) or create new ones (EE) */}
           <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/assistant" element={<AssistantPage />} />
@@ -398,16 +400,20 @@ export const Router = () => (
           {/* <Route path="/tax" element={<Navigate to="/taxes" replace />} /> */}
           <Route path="/tax/reports" element={<Navigate to="/taxes/reports" replace />} />
           <Route path="/tax/settings" element={<Navigate to="/taxes/settings" replace />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
-          <Route
-            path="/settings/members"
-            element={
-              <RequireCapability capability="workspace.multiUser">
-                <WorkspaceMembersPage />
-              </RequireCapability>
-            }
-          />
+          {/* EE-only: workspace management */}
+          {features.multiTenant && (
+            <>
+              <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
+              <Route
+                path="/settings/members"
+                element={
+                  <RequireCapability capability="workspace.multiUser">
+                    <WorkspaceMembersPage />
+                  </RequireCapability>
+                }
+              />
+            </>
+          )}
           <Route path="/settings/tax" element={<TaxSettingsPage />} />
           <Route
             path="/settings/roles"

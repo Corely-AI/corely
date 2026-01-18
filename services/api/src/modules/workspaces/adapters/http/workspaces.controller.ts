@@ -29,6 +29,7 @@ import { UpgradeWorkspaceUseCase } from "../../application/use-cases/upgrade-wor
 import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { toUseCaseContext } from "../../../../shared/request-context";
+import { EditionGuard, RequireEdition } from "../../../../shared/guards/edition.guard";
 
 // Auth context extraction - compatible with tests and production
 interface AuthUser {
@@ -52,7 +53,7 @@ function extractAuthUser(req: Request, bodyData?: any): AuthUser {
 }
 
 @Controller("workspaces")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, EditionGuard)
 @UseInterceptors(IdempotencyInterceptor)
 export class WorkspacesController {
   constructor(
@@ -69,6 +70,7 @@ export class WorkspacesController {
   ) {}
 
   @Post()
+  @RequireEdition("ee")
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = CreateWorkspaceInputSchema.parse(body);
     const auth = extractAuthUser(req, body);
