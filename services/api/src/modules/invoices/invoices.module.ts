@@ -38,6 +38,7 @@ import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoi
 import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoice-pdf-model.adapter";
 import { PlaywrightInvoicePdfRendererAdapter } from "./infrastructure/pdf/playwright-invoice-pdf-renderer.adapter";
 import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
+import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-renderer.port";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule],
@@ -54,17 +55,28 @@ import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs
     },
     { provide: INVOICE_NUMBERING_PORT, useClass: InvoiceNumberingAdapter },
     { provide: INVOICE_PDF_MODEL_PORT, useClass: PrismaInvoicePdfModelAdapter },
-    {
-      provide: "PLAYWRIGHT_BROWSER",
-      useFactory: async () => {
-        return await chromium.launch({ headless: true });
-      },
-    },
-    {
-      provide: INVOICE_PDF_RENDERER_PORT,
-      useFactory: (browser: any) => new PlaywrightInvoicePdfRendererAdapter(browser),
-      inject: ["PLAYWRIGHT_BROWSER"],
-    },
+    ...(process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_DISABLED === "true"
+      ? [
+          {
+            provide: INVOICE_PDF_RENDERER_PORT,
+            useFactory: (): InvoicePdfRendererPort => ({
+              renderInvoiceToPdf: async () => Buffer.from(""),
+            }),
+          },
+        ]
+      : [
+          {
+            provide: "PLAYWRIGHT_BROWSER",
+            useFactory: async () => {
+              return await chromium.launch({ headless: true });
+            },
+          },
+          {
+            provide: INVOICE_PDF_RENDERER_PORT,
+            useFactory: (browser: any) => new PlaywrightInvoicePdfRendererAdapter(browser),
+            inject: ["PLAYWRIGHT_BROWSER"],
+          },
+        ]),
     PrismaInvoiceEmailDeliveryRepoAdapter,
     {
       provide: CreateInvoiceUseCase,

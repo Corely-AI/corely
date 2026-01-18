@@ -206,6 +206,8 @@ Ensure Postgres/Redis are reachable (use `docker compose -f docker-compose.dev.y
 - Global defaults: `.env.example`, `.env.dev.example`, `.env.e2e.example`; copy the one that matches your workflow into a `.env` file at the repo root.
 - Services and apps pick values from that `.env` (web uses `VITE_` prefixed keys, API/worker reference connection strings directly).
 - **Edition configuration:** Set `EDITION=oss` (backend) and `VITE_EDITION=oss` (frontend) for single-tenant OSS, or `ee` for multi-tenant Enterprise Edition. Defaults to `oss`.
+- **E2E compose (API only):** `docker compose --env-file .env.e2e -f docker-compose.e2e.yml up -d --build api`
+- **Reset E2E DB (fresh run):** `pnpm e2e:down` then `pnpm e2e:up` (this drops the docker volumes).
 
 ### Running OSS vs EE Editions
 

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-provider";
 import { features } from "@/lib/features";
+import { workspacesApi } from "@/shared/workspaces/workspaces-api";
 
 /**
  * Signup Page
@@ -12,6 +13,7 @@ export const SignupPage: React.FC = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [tenantName, setTenantName] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,12 +33,22 @@ export const SignupPage: React.FC = () => {
       await signup({
         email,
         password,
+        tenantName: features.multiTenant ? tenantName : undefined,
       });
 
       if (features.multiTenant) {
         navigate("/");
       } else {
-        navigate("/onboarding");
+        try {
+          const workspace = await workspacesApi.getWorkspace(features.defaultWorkspaceId);
+          if (workspace.workspace.onboardingStatus === "DONE") {
+            navigate("/dashboard");
+          } else {
+            navigate("/onboarding");
+          }
+        } catch {
+          navigate("/onboarding");
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
@@ -78,6 +90,24 @@ export const SignupPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+
+            {features.multiTenant && (
+              <div>
+                <label htmlFor="tenantName" className="block text-sm font-medium text-gray-700">
+                  Organization name
+                </label>
+                <input
+                  id="tenantName"
+                  name="tenantName"
+                  type="text"
+                  required
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Acme Inc"
+                  value={tenantName}
+                  onChange={(e) => setTenantName(e.target.value)}
+                />
+              </div>
+            )}
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">

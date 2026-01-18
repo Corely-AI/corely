@@ -19,6 +19,34 @@ export interface DrainResult {
   failedCount: number;
 }
 
+export interface UserSnapshot {
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+  };
+  tenant: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  membership: {
+    tenantId: string;
+    roleId: string;
+  } | null;
+  workspace: {
+    id: string;
+    tenantId: string;
+    name: string;
+    onboardingStatus: string;
+    legalEntity: {
+      id: string;
+      kind: string;
+      legalName: string;
+    } | null;
+  } | null;
+}
+
 @Injectable()
 export class TestHarnessService {
   constructor(
@@ -235,5 +263,68 @@ export class TestHarnessService {
     }
 
     return { processedCount, failedCount };
+  }
+
+  async getUserSnapshot(email: string): Promise<UserSnapshot> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: {
+        memberships: true,
+        workspaceMemberships: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error(`User not found for email: ${email}`);
+    }
+
+    const membership = user.memberships[0] ?? null;
+    const tenant = membership
+      ? await this.prisma.tenant.findUnique({ where: { id: membership.tenantId } })
+      : null;
+
+    const workspaceMembership = user.workspaceMemberships[0] ?? null;
+    const workspace = workspaceMembership
+      ? await this.prisma.workspace.findUnique({
+          where: { id: workspaceMembership.workspaceId },
+          include: { legalEntity: true },
+        })
+      : null;
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      tenant: tenant
+        ? {
+            id: tenant.id,
+            name: tenant.name,
+            slug: tenant.slug,
+          }
+        : null,
+      membership: membership
+        ? {
+            tenantId: membership.tenantId,
+            roleId: membership.roleId,
+          }
+        : null,
+      workspace: workspace
+        ? {
+            id: workspace.id,
+            tenantId: workspace.tenantId,
+            name: workspace.name,
+            onboardingStatus: workspace.onboardingStatus,
+            legalEntity: workspace.legalEntity
+              ? {
+                  id: workspace.legalEntity.id,
+                  kind: workspace.legalEntity.kind,
+                  legalName: workspace.legalEntity.legalName,
+                }
+              : null,
+          }
+        : null,
+    };
   }
 }
