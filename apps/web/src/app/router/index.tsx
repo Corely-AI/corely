@@ -95,6 +95,7 @@ export const Router = () => (
           <Route path="/invoices" element={<InvoicesPage />} />
           <Route path="/invoices/new" element={<NewInvoicePage />} />
           <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+          <Route path="/invoices/:id/edit" element={<InvoiceDetailPage />} />
           <Route
             path="/sales/quotes"
             element={
@@ -113,6 +114,14 @@ export const Router = () => (
           />
           <Route
             path="/sales/quotes/:quoteId"
+            element={
+              <RequireCapability capability="sales.quotes">
+                <QuoteDetailPage />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="/sales/quotes/:quoteId/edit"
             element={
               <RequireCapability capability="sales.quotes">
                 <QuoteDetailPage />
@@ -144,6 +153,14 @@ export const Router = () => (
             }
           />
           <Route
+            path="/sales/orders/:orderId/edit"
+            element={
+              <RequireCapability capability="sales.quotes">
+                <OrderDetailPage />
+              </RequireCapability>
+            }
+          />
+          <Route
             path="/sales/invoices"
             element={
               <RequireCapability capability="sales.quotes">
@@ -161,6 +178,14 @@ export const Router = () => (
           />
           <Route
             path="/sales/invoices/:invoiceId"
+            element={
+              <RequireCapability capability="sales.quotes">
+                <SalesInvoiceDetailPage />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="/sales/invoices/:invoiceId/edit"
             element={
               <RequireCapability capability="sales.quotes">
                 <SalesInvoiceDetailPage />
@@ -186,9 +211,11 @@ export const Router = () => (
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/customers/new" element={<NewCustomerPage />} />
           <Route path="/customers/:id" element={<EditCustomerPage />} />
+          <Route path="/customers/:id/edit" element={<EditCustomerPage />} />
           <Route path="/crm/deals" element={<DealsPage />} />
           <Route path="/crm/deals/new" element={<NewDealPage />} />
           <Route path="/crm/deals/:id" element={<DealDetailPage />} />
+          <Route path="/crm/deals/:id/edit" element={<DealDetailPage />} />
           <Route path="/crm/activities" element={<ActivitiesPage />} />
           <Route path="/crm/activities/new" element={<NewActivityPage />} />
           <Route path="/accounting" element={<AccountingDashboard />} />
@@ -221,6 +248,14 @@ export const Router = () => (
             }
           />
           <Route
+            path="/purchasing/purchase-orders/:id/edit"
+            element={
+              <RequireCapability capability="purchasing.purchaseOrders">
+                <PurchaseOrderDetailPage />
+              </RequireCapability>
+            }
+          />
+          <Route
             path="/purchasing/vendor-bills"
             element={
               <RequireCapability capability="purchasing.purchaseOrders">
@@ -238,6 +273,14 @@ export const Router = () => (
           />
           <Route
             path="/purchasing/vendor-bills/:id"
+            element={
+              <RequireCapability capability="purchasing.purchaseOrders">
+                <VendorBillDetailPage />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="/purchasing/vendor-bills/:id/edit"
             element={
               <RequireCapability capability="purchasing.purchaseOrders">
                 <VendorBillDetailPage />
@@ -285,6 +328,14 @@ export const Router = () => (
             }
           />
           <Route
+            path="/inventory/products/:id/edit"
+            element={
+              <RequireCapability capability="inventory.basic">
+                <ProductDetailPage />
+              </RequireCapability>
+            }
+          />
+          <Route
             path="/inventory/warehouses"
             element={
               <RequireCapability capability="inventory.basic">
@@ -310,6 +361,14 @@ export const Router = () => (
           />
           <Route
             path="/inventory/documents/:id"
+            element={
+              <RequireCapability capability="inventory.basic">
+                <DocumentDetailPage />
+              </RequireCapability>
+            }
+          />
+          <Route
+            path="/inventory/documents/:id/edit"
             element={
               <RequireCapability capability="inventory.basic">
                 <DocumentDetailPage />
