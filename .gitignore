@@ -18,3 +18,4 @@ playwright-report/
 storageState.json
 .claude/settings.local.json
 .env.test
+services/api/pdfs/

@@ -5,7 +5,7 @@
 export class SignUpDto {
   email: string;
   password: string;
-  tenantName: string;
+  tenantName?: string;
   userName?: string;
   idempotencyKey?: string;
 }

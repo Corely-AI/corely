@@ -17,8 +17,8 @@ import {
   type ExpenseDto,
   type ExpenseStatus,
 } from "@corely/contracts";
-import { parseListQuery } from "../../shared/http/pagination";
-import { buildUseCaseContext, resolveIdempotencyKey } from "../../shared/http/usecase-mappers";
+import { parseListQuery } from "../../../shared/http/pagination";
+import { buildUseCaseContext, resolveIdempotencyKey } from "../../../shared/http/usecase-mappers";
 import { CreateExpenseUseCase } from "../application/use-cases/create-expense.usecase";
 import { ArchiveExpenseUseCase } from "../application/use-cases/archive-expense.usecase";
 import { UnarchiveExpenseUseCase } from "../application/use-cases/unarchive-expense.usecase";

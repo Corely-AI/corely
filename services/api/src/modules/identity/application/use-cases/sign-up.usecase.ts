@@ -183,8 +183,8 @@ export class SignUpUseCase {
     if (!input.email || !input.email.includes("@")) {
       throw new ValidationError("Invalid email");
     }
-    if (!input.password || input.password.length < 8) {
-      throw new ValidationError("Password must be at least 8 characters");
+    if (!input.password || input.password.length < 6) {
+      throw new ValidationError("Password must be at least 6 characters");
     }
     if (!input.tenantName) {
       throw new ValidationError("Tenant name is required");

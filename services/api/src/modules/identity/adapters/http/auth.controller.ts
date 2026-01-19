@@ -79,12 +79,19 @@ export class AuthController {
     @Headers("x-idempotency-key") idempotencyKey?: string,
     @Req() req?: Request
   ): Promise<SignUpResponseDto> {
-    if (!input.email || !input.password || !input.tenantName) {
+    if (!input.email || !input.password) {
       throw new BadRequestException("Missing required fields");
     }
 
+    const tenantName =
+      input.tenantName?.trim() ||
+      input.userName?.trim() ||
+      input.email.split("@")[0] ||
+      "Workspace";
+
     const result = await this.signUpUseCase.execute({
       ...input,
+      tenantName,
       idempotencyKey: idempotencyKey ?? input.idempotencyKey ?? "default",
       context: buildRequestContext({
         requestId: req?.headers["x-request-id"] as string | undefined,

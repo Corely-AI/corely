@@ -121,21 +121,6 @@ export const LoginPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-
-            <div>
-              <label htmlFor="tenantId" className="sr-only">
-                Tenant ID (optional)
-              </label>
-              <input
-                id="tenantId"
-                name="tenantId"
-                type="text"
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Tenant ID (optional)"
-                value={tenantId}
-                onChange={(e) => setTenantId(e.target.value)}
-              />
-            </div>
           </div>
 
           <div>

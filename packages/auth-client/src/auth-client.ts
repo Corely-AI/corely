@@ -4,7 +4,7 @@ import type { TokenStorage } from "./storage/storage.interface";
 export interface SignUpData {
   email: string;
   password: string;
-  tenantName: string;
+  tenantName?: string;
   userName?: string;
 }
 

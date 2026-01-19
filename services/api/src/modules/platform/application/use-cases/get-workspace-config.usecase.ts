@@ -12,6 +12,12 @@ import {
   type WorkspaceRepositoryPort,
 } from "../../../workspaces/application/ports/workspace-repository.port";
 import type { NavigationGroupStructure } from "../services/workspace-template.service";
+import {
+  TENANT_APP_INSTALL_REPOSITORY_TOKEN,
+  type TenantAppInstallRepositoryPort,
+} from "../ports/tenant-app-install-repository.port";
+import { APP_REGISTRY_TOKEN, type AppRegistryPort } from "../ports/app-registry.port";
+import { randomUUID } from "crypto";
 
 export interface GetWorkspaceConfigInput {
   tenantId: string;
@@ -27,7 +33,11 @@ export class GetWorkspaceConfigUseCase {
     private readonly templateService: WorkspaceTemplateService,
     private readonly menuComposer: MenuComposerService,
     @Inject(WORKSPACE_REPOSITORY_PORT)
-    private readonly workspaceRepo: WorkspaceRepositoryPort
+    private readonly workspaceRepo: WorkspaceRepositoryPort,
+    @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
+    private readonly appInstallRepo: TenantAppInstallRepositoryPort,
+    @Inject(APP_REGISTRY_TOKEN)
+    private readonly appRegistry: AppRegistryPort
   ) {}
 
   async execute(input: GetWorkspaceConfigInput): Promise<WorkspaceConfig> {
@@ -53,6 +63,8 @@ export class GetWorkspaceConfigUseCase {
     const terminology = this.templateService.getDefaultTerminology(workspaceKind);
     const homeWidgets = this.templateService.getDefaultHomeWidgets(workspaceKind);
     const navigationStructure = this.templateService.getNavigationGroupsStructure(workspaceKind);
+
+    await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind);
 
     const capabilityFilter = new Set(
       Object.entries(capabilities)
@@ -143,5 +155,34 @@ export class GetWorkspaceConfigUseCase {
     }
 
     return groups.sort((a, b) => a.order - b.order);
+  }
+
+  private async ensureDefaultAppsInstalled(
+    tenantId: string,
+    userId: string,
+    workspaceKind: "PERSONAL" | "COMPANY"
+  ) {
+    const currentInstalls = await this.appInstallRepo.listEnabledByTenant(tenantId);
+    const installed = new Set(currentInstalls.map((i) => i.appId));
+    const defaultApps = this.templateService.getDefaultEnabledApps(workspaceKind);
+
+    for (const appId of defaultApps) {
+      if (installed.has(appId)) {
+        continue;
+      }
+      const manifest = this.appRegistry.get(appId);
+      if (!manifest) {
+        continue;
+      }
+      await this.appInstallRepo.upsert({
+        id: randomUUID(),
+        tenantId,
+        appId,
+        enabled: true,
+        installedVersion: manifest.version ?? "1.0.0",
+        enabledAt: new Date(),
+        enabledByUserId: userId,
+      });
+    }
   }
 }
