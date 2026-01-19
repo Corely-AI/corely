@@ -528,15 +528,24 @@ export default function InvoiceDetailPage() {
                   <tbody>
                     {lineItems.map((item, index) => {
                       const lineTotal = item.qty * item.unitPriceCents;
+                      const lineItemError = form.formState.errors.lineItems?.[index]?.description;
                       return (
                         <tr key={index} className="border-b border-border">
                           <td className="px-4 py-3">
-                            <Input
-                              value={item.description}
-                              onChange={(e) => updateLineItem(index, "description", e.target.value)}
-                              placeholder="Description"
-                              className="border-0 focus-visible:ring-0 px-0"
-                            />
+                            <div className="space-y-1">
+                              <Input
+                                value={item.description}
+                                onChange={(e) =>
+                                  updateLineItem(index, "description", e.target.value)
+                                }
+                                placeholder="Description"
+                                className="border-0 focus-visible:ring-0 px-0"
+                                aria-invalid={Boolean(lineItemError)}
+                              />
+                              {lineItemError?.message && (
+                                <p className="text-xs text-destructive">{lineItemError.message}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <Input

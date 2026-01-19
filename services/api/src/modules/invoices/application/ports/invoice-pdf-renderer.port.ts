@@ -1,12 +1,15 @@
 export type InvoicePdfModel = {
   invoiceNumber: string;
+  billFromName?: string;
+  billFromAddress?: string;
   billToName: string;
   billToAddress?: string;
   issueDate: string;
+  serviceDate?: string;
   dueDate?: string;
   currency: string;
   items: Array<{ description: string; qty: string; unitPrice: string; lineTotal: string }>;
-  totals: { subtotal: string; total: string };
+  totals: { subtotal: string; vatRate?: string; vatAmount?: string; total: string };
   notes?: string;
 };
 

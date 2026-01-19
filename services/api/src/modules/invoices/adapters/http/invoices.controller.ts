@@ -99,8 +99,11 @@ export class InvoicesHttpController {
     const input = DownloadInvoicePdfInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.downloadInvoicePdf.execute(input, ctx);
+    const downloadUrl = result.downloadUrl.startsWith("/")
+      ? `${req.protocol}://${req.get("host")}${result.downloadUrl}`
+      : result.downloadUrl;
     return {
-      downloadUrl: result.downloadUrl,
+      downloadUrl,
       expiresAt: result.expiresAt.toISOString(),
     };
   }

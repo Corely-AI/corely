@@ -61,6 +61,17 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
       )
       .join("");
 
+    const billFromLine =
+      model.billFromName || model.billFromAddress
+        ? `${model.billFromName ? this.escapeHtml(model.billFromName) : ""}${
+            model.billFromName && model.billFromAddress ? " | " : ""
+          }${model.billFromAddress ? this.escapeHtml(model.billFromAddress) : ""}`
+        : "";
+
+    const billToLines = model.billToAddress
+      ? model.billToAddress.split(", ").map((line) => this.escapeHtml(line))
+      : [];
+
     return `
 <!DOCTYPE html>
 <html>
@@ -80,48 +91,53 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
       font-family: 'Helvetica', 'Arial', sans-serif;
       font-size: 10pt;
       line-height: 1.4;
-      color: #333;
+      color: #2b2b2b;
     }
     .container {
       padding: 20mm 15mm;
     }
+    .company-line {
+      font-size: 9.5pt;
+      color: #444;
+      letter-spacing: 0.2px;
+      margin-bottom: 28px;
+    }
     .header {
       margin-bottom: 30px;
-    }
-    .invoice-title {
-      font-size: 24pt;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .invoice-number {
-      font-size: 12pt;
-      color: #666;
     }
     .section {
       margin-bottom: 25px;
     }
     .section-title {
-      font-weight: bold;
-      font-size: 11pt;
-      margin-bottom: 8px;
-      color: #444;
+      font-weight: 600;
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+      color: #8a8a8a;
     }
     .bill-to {
       line-height: 1.6;
     }
     .dates {
-      display: flex;
-      gap: 30px;
-      margin-bottom: 25px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 40px;
+      margin-top: 6px;
     }
     .date-item {
-      flex: 1;
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 16px;
     }
     .date-label {
-      font-weight: bold;
+      font-weight: 600;
       font-size: 9pt;
-      color: #666;
-      margin-bottom: 3px;
+      color: #8a8a8a;
+    }
+    .date-value {
+      font-size: 10.5pt;
+      color: #2b2b2b;
     }
     table {
       width: 100%;
@@ -132,78 +148,85 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
       display: table-header-group;
     }
     thead th {
-      background-color: #f5f5f5;
-      padding: 10px;
+      padding: 8px 10px 10px;
       text-align: left;
-      font-weight: bold;
-      border-bottom: 2px solid #333;
+      font-weight: 600;
+      color: #8a8a8a;
+      text-transform: uppercase;
+      font-size: 9pt;
+      border-bottom: 1px solid #33b6c4;
     }
     tbody td {
       padding: 8px 10px;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid #eaeaea;
     }
     tbody tr:last-child td {
       border-bottom: none;
     }
     .totals {
-      margin-top: 30px;
+      margin-top: 40px;
       margin-left: auto;
-      width: 250px;
+      width: 280px;
     }
     .total-row {
       display: flex;
       justify-content: space-between;
       padding: 8px 0;
+      font-size: 10.5pt;
     }
     .total-row.grand {
       font-weight: bold;
-      font-size: 12pt;
-      border-top: 2px solid #333;
+      font-size: 11.5pt;
+      border-top: 1px solid #c9c9c9;
       margin-top: 8px;
       padding-top: 12px;
-    }
-    .notes {
-      margin-top: 40px;
-      padding: 15px;
-      background-color: #f9f9f9;
-      border-left: 3px solid #ccc;
-    }
-    .notes-title {
-      font-weight: bold;
-      margin-bottom: 8px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <div class="invoice-title">INVOICE</div>
-      <div class="invoice-number">#${this.escapeHtml(model.invoiceNumber)}</div>
-    </div>
+    ${billFromLine ? `<div class="company-line">${billFromLine}</div>` : ""}
 
     <div class="section">
-      <div class="section-title">Bill To</div>
-      <div class="bill-to">
-        <div><strong>${this.escapeHtml(model.billToName)}</strong></div>
-        ${model.billToAddress ? `<div>${this.escapeHtml(model.billToAddress)}</div>` : ""}
+      <div class="dates">
+        <div>
+          <div class="section-title">Billed to</div>
+          <div class="bill-to">
+            <div><strong>${this.escapeHtml(model.billToName)}</strong></div>
+            ${billToLines.map((line) => `<div>${line}</div>`).join("")}
+          </div>
+        </div>
+        <div>
+          <div class="date-item">
+            <div class="date-label">Invoice date</div>
+            <div class="date-value">${this.escapeHtml(model.issueDate)}</div>
+          </div>
+          ${
+            model.serviceDate
+              ? `
+          <div class="date-item">
+            <div class="date-label">Service date</div>
+            <div class="date-value">${this.escapeHtml(model.serviceDate)}</div>
+          </div>
+          `
+              : ""
+          }
+          <div class="date-item">
+            <div class="date-label">Invoice number</div>
+            <div class="date-value">${this.escapeHtml(model.invoiceNumber)}</div>
+          </div>
+          ${
+            model.dueDate
+              ? `
+          <div class="date-item">
+            <div class="date-label">Due date</div>
+            <div class="date-value">${this.escapeHtml(model.dueDate)}</div>
+          </div>
+          `
+              : ""
+          }
+        </div>
       </div>
-    </div>
-
-    <div class="dates">
-      <div class="date-item">
-        <div class="date-label">Issue Date</div>
-        <div>${this.escapeHtml(model.issueDate)}</div>
-      </div>
-      ${
-        model.dueDate
-          ? `
-      <div class="date-item">
-        <div class="date-label">Due Date</div>
-        <div>${this.escapeHtml(model.dueDate)}</div>
-      </div>
-      `
-          : ""
-      }
     </div>
 
     <table>
@@ -222,11 +245,21 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
 
     <div class="totals">
       <div class="total-row">
-        <span>Subtotal:</span>
+        <span>Total amount (Net)</span>
         <span>${this.escapeHtml(model.totals.subtotal)}</span>
       </div>
+      ${
+        model.totals.vatAmount
+          ? `
+      <div class="total-row">
+        <span>VAT ${this.escapeHtml(model.totals.vatRate || "")}</span>
+        <span>${this.escapeHtml(model.totals.vatAmount)}</span>
+      </div>
+      `
+          : ""
+      }
       <div class="total-row grand">
-        <span>Total:</span>
+        <span>Total amount (Gross)</span>
         <span>${this.escapeHtml(model.totals.total)}</span>
       </div>
     </div>
@@ -234,8 +267,8 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
     ${
       model.notes
         ? `
-    <div class="notes">
-      <div class="notes-title">Notes</div>
+    <div class="section">
+      <div class="section-title">Notes</div>
       <div>${this.escapeHtml(model.notes)}</div>
     </div>
     `

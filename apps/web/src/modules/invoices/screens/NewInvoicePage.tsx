@@ -105,7 +105,7 @@ export default function NewInvoicePage() {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
   const [lineItems, setLineItems] = useState<InvoiceLineFormData[]>(defaultValues.lineItems || []);
-  const [targetStatus, setTargetStatus] = useState<InvoiceStatus>("DRAFT");
+  const [targetStatus] = useState<InvoiceStatus>("ISSUED");
 
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceFormSchema),
@@ -289,23 +289,6 @@ export default function NewInvoicePage() {
           <h1 className="text-h1 text-foreground">{t("invoices.createNewInvoice")}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-48">
-            <Label className="text-xs text-muted-foreground">Status</Label>
-            <Select
-              value={targetStatus}
-              onValueChange={(val: InvoiceStatus) => setTargetStatus(val)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="DRAFT">Draft</SelectItem>
-                <SelectItem value="ISSUED">Issued</SelectItem>
-                <SelectItem value="SENT">Sent</SelectItem>
-                <SelectItem value="CANCELED">Canceled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <Button
             variant="outline"
             onClick={() => navigate("/invoices")}
@@ -784,16 +767,25 @@ export default function NewInvoicePage() {
                   <tbody>
                     {lineItems.map((item, index) => {
                       const total = item.qty * item.unitPriceCents;
+                      const lineItemError = form.formState.errors.lineItems?.[index]?.description;
                       return (
                         <tr key={index} className="border-b border-border">
                           <td className="px-4 py-3">
-                            <Input
-                              data-testid={`invoice-line-description-${index}`}
-                              value={item.description}
-                              onChange={(e) => updateLineItem(index, "description", e.target.value)}
-                              placeholder="Description"
-                              className="border-0 focus-visible:ring-0 px-0"
-                            />
+                            <div className="space-y-1">
+                              <Input
+                                data-testid={`invoice-line-description-${index}`}
+                                value={item.description}
+                                onChange={(e) =>
+                                  updateLineItem(index, "description", e.target.value)
+                                }
+                                placeholder="Description"
+                                className="border-0 focus-visible:ring-0 px-0"
+                                aria-invalid={Boolean(lineItemError)}
+                              />
+                              {lineItemError?.message && (
+                                <p className="text-xs text-destructive">{lineItemError.message}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">

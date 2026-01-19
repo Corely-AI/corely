@@ -12,6 +12,7 @@ import { format } from "date-fns";
  * Form schema for line items (extends contract with unit field for UI)
  */
 export const invoiceLineFormSchema = InvoiceLineInputSchema.extend({
+  description: z.string().min(1, "Description is required"),
   unit: z.string().default("h"), // UI-only field for display
 });
 

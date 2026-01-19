@@ -90,15 +90,31 @@ export class DownloadInvoicePdfUseCase {
         invoice.number!,
         currentSourceVersion
       );
-      await this.savePdfToLocalFolder(tenantId, invoiceId, invoice.number!, pdfBytes);
+      const localFilename = this.buildLocalFilename(invoiceId, invoice.number!);
+      await this.savePdfToLocalFolder(tenantId, localFilename, pdfBytes);
 
       // 4e. Upload to GCS
-      await this.storagePort.putObject({
-        tenantId,
-        objectKey: storageKey,
-        contentType: "application/pdf",
-        bytes: pdfBytes,
-      });
+      try {
+        await this.storagePort.putObject({
+          tenantId,
+          objectKey: storageKey,
+          contentType: "application/pdf",
+          bytes: pdfBytes,
+        });
+      } catch (error) {
+        if (this.isMissingStorageCredentials(error)) {
+          this.logger.warn(
+            `Storage credentials missing; serving local PDF for invoice ${invoiceId}`
+          );
+          return await this.finalizeLocalPdf(
+            invoice,
+            tenantId,
+            currentSourceVersion,
+            localFilename
+          );
+        }
+        throw error;
+      }
 
       // 4e. Mark PDF ready
       invoice.markPdfGenerated({
@@ -112,10 +128,28 @@ export class DownloadInvoicePdfUseCase {
       this.logger.log(`PDF generated successfully for invoice ${invoiceId}`);
 
       // 5. Return signed download URL
-      return this.createSignedDownloadUrl(tenantId, storageKey);
+      try {
+        return this.createSignedDownloadUrl(tenantId, storageKey);
+      } catch (error) {
+        if (this.isMissingStorageCredentials(error)) {
+          this.logger.warn(
+            `Storage credentials missing during signing; serving local PDF for invoice ${invoiceId}`
+          );
+          return await this.finalizeLocalPdf(
+            invoice,
+            tenantId,
+            currentSourceVersion,
+            localFilename
+          );
+        }
+        throw error;
+      }
     } catch (error) {
       this.logger.error(`PDF generation failed for invoice ${invoiceId}`, error);
-      invoice.markPdfFailed(error.message, new Date());
+      invoice.markPdfFailed(
+        error instanceof Error ? error.message : "PDF generation failed",
+        new Date()
+      );
       await this.invoiceRepo.save(tenantId, invoice);
       throw error;
     }
@@ -123,8 +157,7 @@ export class DownloadInvoicePdfUseCase {
 
   private async savePdfToLocalFolder(
     tenantId: string,
-    invoiceId: string,
-    invoiceNumber: string,
+    filename: string,
     pdfBytes: Uint8Array
   ): Promise<void> {
     try {
@@ -132,24 +165,21 @@ export class DownloadInvoicePdfUseCase {
       const pdfsDir = path.join(process.cwd(), "pdfs");
       await fs.mkdir(pdfsDir, { recursive: true });
 
-      // Sanitize invoice number for filename
-      const sanitizedNumber = invoiceNumber.replace(/[^a-zA-Z0-9-_]/g, "-");
-      const filename = `invoice-${sanitizedNumber}-${invoiceId}.pdf`;
       const filePath = path.join(pdfsDir, filename);
 
       // Write the PDF to the local file
       await fs.writeFile(filePath, pdfBytes);
 
-      this.logger.log(
-        `PDF saved locally for tenant ${tenantId}, invoice ${invoiceId}: ${filePath}`
-      );
+      this.logger.log(`PDF saved locally for tenant ${tenantId}: ${filePath}`);
     } catch (error) {
-      this.logger.error(
-        `Failed to save PDF locally for tenant ${tenantId}, invoice ${invoiceId}`,
-        error
-      );
+      this.logger.error(`Failed to save PDF locally for tenant ${tenantId}`, error);
       // Don't throw - we still want to upload to GCS even if local save fails
     }
+  }
+
+  private buildLocalFilename(invoiceId: string, invoiceNumber: string): string {
+    const sanitizedNumber = invoiceNumber.replace(/[^a-zA-Z0-9-_]/g, "-");
+    return `invoice-${sanitizedNumber}-${invoiceId}.pdf`;
   }
 
   private buildStorageKey(
@@ -167,6 +197,14 @@ export class DownloadInvoicePdfUseCase {
     tenantId: string,
     storageKey: string
   ): Promise<DownloadInvoicePdfOutput> {
+    if (storageKey.startsWith("local:")) {
+      const filename = storageKey.slice("local:".length);
+      return {
+        downloadUrl: `/__local/pdfs/${filename}`,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      };
+    }
+
     const signedDownload = await this.storagePort.createSignedDownloadUrl({
       tenantId,
       objectKey: storageKey,
@@ -177,5 +215,27 @@ export class DownloadInvoicePdfUseCase {
       downloadUrl: signedDownload.url,
       expiresAt: signedDownload.expiresAt,
     };
+  }
+
+  private async finalizeLocalPdf(
+    invoice: { markPdfGenerated: (args: any) => void },
+    tenantId: string,
+    sourceVersion: string,
+    filename: string
+  ): Promise<DownloadInvoicePdfOutput> {
+    const storageKey = `local:${filename}`;
+    invoice.markPdfGenerated({
+      storageKey,
+      generatedAt: new Date(),
+      sourceVersion,
+      now: new Date(),
+    });
+    await this.invoiceRepo.save(tenantId, invoice as any);
+    return this.createSignedDownloadUrl(tenantId, storageKey);
+  }
+
+  private isMissingStorageCredentials(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return message.includes("Could not load the default credentials");
   }
 }
