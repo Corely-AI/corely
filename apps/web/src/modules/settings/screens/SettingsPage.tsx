@@ -54,6 +54,20 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Payment Methods</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-muted-foreground">
+            Configure bank accounts and payment methods for invoices.
+          </div>
+          <Button variant="accent" asChild>
+            <Link to="/settings/payment-methods">Manage payment methods</Link>
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>{t("settings.profile")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

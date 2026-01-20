@@ -55,7 +55,7 @@ import {
   InventoryCopilotPage,
 } from "../../modules/inventory";
 import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
-import { RequirePermission } from "../../modules/settings/components/RequirePermission";
+import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import { TaxSettingsPage, TaxesOverviewPage, TaxReportsPage } from "../../modules/tax";
 import {
   PlatformPage,
@@ -399,6 +399,7 @@ export const Router = () => (
           <Route path="/tax/reports" element={<Navigate to="/taxes/reports" replace />} />
           <Route path="/tax/settings" element={<Navigate to="/taxes/settings" replace />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
           <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
           <Route
             path="/settings/members"

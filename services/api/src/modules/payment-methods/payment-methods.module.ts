@@ -6,9 +6,10 @@ import { PaymentMethodsController } from "./adapters/http/payment-methods.contro
 import { BANK_ACCOUNT_REPOSITORY_PORT } from "./application/ports/bank-account-repository.port";
 import { PAYMENT_METHOD_REPOSITORY_PORT } from "./application/ports/payment-method-repository.port";
 import { DataModule } from "@corely/data";
+import { IdentityModule } from "../identity";
 
 @Module({
-  imports: [DataModule],
+  imports: [DataModule, IdentityModule],
   controllers: [BankAccountsController, PaymentMethodsController],
   providers: [
     {

@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { resolveRequestContext } from "@/shared/request-context/request-context.resolver";
-import { Request } from "express";
+import type { Request } from "express";
 import { Req } from "@nestjs/common";
 import { CreateBankAccountInputSchema, UpdateBankAccountInputSchema } from "@corely/contracts";
 import type {
