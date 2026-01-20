@@ -55,6 +55,7 @@ import {
   InventoryCopilotPage,
 } from "../../modules/inventory";
 import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
+import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import { TaxSettingsPage, TaxesOverviewPage, TaxReportsPage } from "../../modules/tax";
 import {
