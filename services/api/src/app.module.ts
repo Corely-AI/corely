@@ -17,6 +17,7 @@ import { TaxModule } from "./modules/tax/tax.module";
 import { WorkspacesModule } from "./modules/workspaces";
 import { AccountingModule } from "./modules/accounting";
 import { SalesModule } from "./modules/sales";
+import { PaymentMethodsModule } from "./modules/payment-methods/payment-methods.module";
 import { PurchasingModule } from "./modules/purchasing";
 import { InventoryModule } from "./modules/inventory";
 import { ApprovalsModule } from "./modules/approvals";
@@ -52,6 +53,7 @@ import { RequestContextInterceptor } from "./shared/request-context";
     TaxModule,
     AccountingModule,
     SalesModule,
+    PaymentMethodsModule,
     PurchasingModule,
     InventoryModule,
     ApprovalsModule,

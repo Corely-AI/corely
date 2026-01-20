@@ -191,6 +191,87 @@ export default function InvoiceDetailPage() {
         </CardContent>
       </Card>
 
+      {invoice.status !== "DRAFT" && invoice.paymentSnapshot && (
+        <Card>
+          <CardContent className="p-6 space-y-3">
+            <h2 className="text-lg font-semibold">Payment Details</h2>
+            {invoice.paymentSnapshot.type === "BANK_TRANSFER" ? (
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Account Holder:</span>
+                  <span className="ml-2 font-medium">
+                    {invoice.paymentSnapshot.accountHolderName}
+                  </span>
+                </div>
+                {invoice.paymentSnapshot.iban && (
+                  <div>
+                    <span className="text-muted-foreground">IBAN:</span>
+                    <span className="ml-2 font-mono">{invoice.paymentSnapshot.iban}</span>
+                  </div>
+                )}
+                {invoice.paymentSnapshot.bic && (
+                  <div>
+                    <span className="text-muted-foreground">BIC:</span>
+                    <span className="ml-2 font-mono">{invoice.paymentSnapshot.bic}</span>
+                  </div>
+                )}
+                {invoice.paymentSnapshot.bankName && (
+                  <div>
+                    <span className="text-muted-foreground">Bank:</span>
+                    <span className="ml-2">{invoice.paymentSnapshot.bankName}</span>
+                  </div>
+                )}
+                {invoice.paymentSnapshot.referenceText && (
+                  <div>
+                    <span className="text-muted-foreground">Reference:</span>
+                    <span className="ml-2 font-semibold">
+                      {invoice.paymentSnapshot.referenceText}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Method:</span>
+                  <span className="ml-2 font-medium">{invoice.paymentSnapshot.label}</span>
+                </div>
+                {invoice.paymentSnapshot.instructions && (
+                  <div>
+                    <span className="text-muted-foreground">Instructions:</span>
+                    <p className="ml-2 mt-1 text-sm">{invoice.paymentSnapshot.instructions}</p>
+                  </div>
+                )}
+                {invoice.paymentSnapshot.payUrl && (
+                  <div>
+                    <span className="text-muted-foreground">Payment URL:</span>
+                    <a
+                      href={invoice.paymentSnapshot.payUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-2 text-blue-600 hover:underline"
+                    >
+                      {invoice.paymentSnapshot.payUrl}
+                    </a>
+                  </div>
+                )}
+                {invoice.paymentSnapshot.referenceText && (
+                  <div>
+                    <span className="text-muted-foreground">Reference:</span>
+                    <span className="ml-2 font-semibold">
+                      {invoice.paymentSnapshot.referenceText}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="text-xs text-muted-foreground pt-2 border-t">
+              Captured {new Date(invoice.paymentSnapshot.snapshotedAt).toLocaleDateString()}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardContent className="p-6 space-y-3">
           <h2 className="text-lg font-semibold">Payments</h2>

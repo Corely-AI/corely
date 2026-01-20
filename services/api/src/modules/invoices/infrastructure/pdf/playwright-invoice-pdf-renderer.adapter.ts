@@ -265,6 +265,35 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
     </div>
 
     ${
+      model.paymentSnapshot
+        ? `
+    <div class="section">
+      <div class="section-title">Payment Details</div>
+      <div style="font-size: 10pt; line-height: 1.6;">
+        ${
+          model.paymentSnapshot.type === "BANK_TRANSFER"
+            ? `
+          <div><strong>Bank Transfer</strong></div>
+          ${model.paymentSnapshot.accountHolderName ? `<div>${this.escapeHtml(model.paymentSnapshot.accountHolderName)}</div>` : ""}
+          ${model.paymentSnapshot.iban ? `<div>IBAN: ${this.escapeHtml(model.paymentSnapshot.iban)}</div>` : ""}
+          ${model.paymentSnapshot.bic ? `<div>BIC: ${this.escapeHtml(model.paymentSnapshot.bic)}</div>` : ""}
+          ${model.paymentSnapshot.bankName ? `<div>Bank: ${this.escapeHtml(model.paymentSnapshot.bankName)}</div>` : ""}
+          <div style="margin-top: 8px;">Reference: <strong>${this.escapeHtml(model.paymentSnapshot.referenceText)}</strong></div>
+        `
+            : `
+          <div><strong>${this.escapeHtml(model.paymentSnapshot.label)}</strong></div>
+          ${model.paymentSnapshot.instructions ? `<div>${this.escapeHtml(model.paymentSnapshot.instructions)}</div>` : ""}
+          ${model.paymentSnapshot.payUrl ? `<div>URL: ${this.escapeHtml(model.paymentSnapshot.payUrl)}</div>` : ""}
+          ${model.paymentSnapshot.referenceText ? `<div style="margin-top: 8px;">Reference: <strong>${this.escapeHtml(model.paymentSnapshot.referenceText)}</strong></div>` : ""}
+        `
+        }
+      </div>
+    </div>
+    `
+        : ""
+    }
+
+    ${
       model.notes
         ? `
     <div class="section">

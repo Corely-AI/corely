@@ -4,20 +4,36 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/shared/ui/card";
 import { salesApi } from "@/lib/sales-api";
 import { customersApi } from "@/lib/customers-api";
+import { paymentMethodsApi } from "@/lib/payment-methods-api";
 import { InvoiceForm, type InvoiceFormValues } from "../components/InvoiceForm";
 import { toast } from "sonner";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 export default function NewInvoicePage() {
   const navigate = useNavigate();
+  const { activeWorkspace } = useWorkspace();
+
   const { data: customersData } = useQuery({
     queryKey: ["customers"],
     queryFn: () => customersApi.listCustomers(),
   });
+
+  const { data: paymentMethodsData } = useQuery({
+    queryKey: ["payment-methods", activeWorkspace?.id],
+    queryFn: () =>
+      activeWorkspace?.id
+        ? paymentMethodsApi.listPaymentMethods(activeWorkspace.id)
+        : { paymentMethods: [] },
+    enabled: !!activeWorkspace?.id,
+  });
+
   const customers = (customersData?.customers ?? []).flatMap((customer) =>
     customer.id && customer.displayName
       ? [{ id: customer.id, displayName: customer.displayName }]
       : []
   );
+
+  const paymentMethods = paymentMethodsData?.paymentMethods ?? [];
 
   const createMutation = useMutation({
     mutationFn: (values: InvoiceFormValues) =>
@@ -28,6 +44,7 @@ export default function NewInvoicePage() {
         dueDate: values.dueDate,
         paymentTerms: values.paymentTerms,
         notes: values.notes,
+        paymentMethodId: values.paymentMethodId,
         lineItems: values.lineItems.map((item) => ({
           description: item.description,
           quantity: item.quantity,
@@ -47,7 +64,11 @@ export default function NewInvoicePage() {
       <h1 className="text-h1 text-foreground">New Invoice</h1>
       <Card>
         <CardContent className="p-6">
-          <InvoiceForm customers={customers} onSubmit={(values) => createMutation.mutate(values)} />
+          <InvoiceForm
+            customers={customers}
+            paymentMethods={paymentMethods}
+            onSubmit={(values) => createMutation.mutate(values)}
+          />
         </CardContent>
       </Card>
     </div>

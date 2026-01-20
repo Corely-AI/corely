@@ -40,6 +40,12 @@ import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotenc
 import { getIdempotentResult, storeIdempotentResult } from "./idempotency";
 import type { CustomerQueryPort } from "../../../party/application/ports/customer-query.port";
 import type { AccountingApplication } from "../../../accounting/application/accounting.application";
+import type { PaymentMethodRepositoryPort } from "../../../payment-methods/application/ports/payment-method-repository.port";
+import type { BankAccountRepositoryPort } from "../../../payment-methods/application/ports/bank-account-repository.port";
+import {
+  snapshotPaymentMethod,
+  enrichSnapshotWithBankAccount,
+} from "../../../payment-methods/domain/payment-method-snapshot.helper";
 
 const buildLineItems = (params: {
   idGenerator: IdGeneratorPort;
@@ -75,6 +81,8 @@ type InvoiceDeps = {
   idempotency: IdempotencyStoragePort;
   accounting: AccountingApplication;
   audit: AuditPort;
+  paymentMethodRepo?: PaymentMethodRepositoryPort;
+  bankAccountRepo?: BankAccountRepositoryPort;
 };
 
 export class CreateSalesInvoiceUseCase extends BaseUseCase<
@@ -145,6 +153,7 @@ export class CreateSalesInvoiceUseCase extends BaseUseCase<
       lineItems,
       sourceSalesOrderId: input.sourceSalesOrderId ?? null,
       sourceQuoteId: input.sourceQuoteId ?? null,
+      paymentMethodId: input.paymentMethodId ?? null,
       now,
     });
 
@@ -290,6 +299,33 @@ export class IssueSalesInvoiceUseCase extends BaseUseCase<
     });
 
     invoice.issue(number, now, now);
+
+    // Create payment method snapshot
+    if (
+      invoice.paymentMethodId &&
+      this.services.paymentMethodRepo &&
+      this.services.bankAccountRepo
+    ) {
+      const paymentMethod = await this.services.paymentMethodRepo.getById(
+        ctx.tenantId,
+        invoice.paymentMethodId
+      );
+      if (paymentMethod && paymentMethod.isActive) {
+        let snapshot = snapshotPaymentMethod(paymentMethod, invoice.number!);
+
+        if (paymentMethod.type === "BANK_TRANSFER" && paymentMethod.bankAccountId) {
+          const bankAccount = await this.services.bankAccountRepo.getById(
+            ctx.tenantId,
+            paymentMethod.bankAccountId
+          );
+          if (bankAccount) {
+            snapshot = enrichSnapshotWithBankAccount(snapshot, bankAccount);
+          }
+        }
+
+        invoice.setPaymentSnapshot(snapshot, now);
+      }
+    }
 
     if (settings.autoPostOnIssue) {
       if (!settings.defaultAccountsReceivableAccountId) {

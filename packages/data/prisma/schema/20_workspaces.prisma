@@ -18,8 +18,10 @@ model LegalEntity {
   bankAccount Json? // LegalEntityBankAccount: { iban?, bic?, bankName?, accountHolder?, accountNumber?, routingNumber? }
 
   // Relations
-  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  workspaces Workspace[]
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspaces  Workspace[]
+  bankAccounts BankAccount[]
+  paymentMethods PaymentMethod[]
 
   @@index([tenantId])
   @@index([tenantId, kind])

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { localDateSchema, utcInstantSchema } from "../shared/local-date.schema";
+import { PaymentMethodSnapshotSchema } from "../payment-methods/payment-method.schema";
 
 export const SalesInvoiceStatusSchema = z.enum([
   "DRAFT",
@@ -74,5 +75,7 @@ export const SalesInvoiceDtoSchema = z.object({
   issuedJournalEntryId: z.string().nullable().optional(),
   paymentJournalEntryIds: z.array(z.string()).optional(),
   payments: z.array(SalesPaymentSchema).optional(),
+  paymentMethodId: z.string().nullable().optional(),
+  paymentSnapshot: PaymentMethodSnapshotSchema.nullable().optional(),
 });
 export type SalesInvoiceDto = z.infer<typeof SalesInvoiceDtoSchema>;

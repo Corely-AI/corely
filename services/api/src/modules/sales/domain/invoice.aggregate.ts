@@ -1,4 +1,5 @@
 import type { LocalDate } from "@corely/kernel";
+import type { PaymentMethodSnapshot } from "@corely/contracts";
 import { calculateInvoiceTotals } from "./totals";
 import type {
   InvoiceLineItem,
@@ -30,6 +31,8 @@ export class SalesInvoiceAggregate {
   sourceSalesOrderId: string | null;
   sourceQuoteId: string | null;
   issuedJournalEntryId: string | null;
+  paymentMethodId: string | null;
+  paymentSnapshot: PaymentMethodSnapshot | null;
 
   constructor(props: SalesInvoiceProps & { payments?: SalesPayment[] }) {
     this.id = props.id;
@@ -54,6 +57,8 @@ export class SalesInvoiceAggregate {
     this.sourceSalesOrderId = props.sourceSalesOrderId ?? null;
     this.sourceQuoteId = props.sourceQuoteId ?? null;
     this.issuedJournalEntryId = props.issuedJournalEntryId ?? null;
+    this.paymentMethodId = props.paymentMethodId ?? null;
+    this.paymentSnapshot = props.paymentSnapshot ?? null;
   }
 
   static createDraft(params: {
@@ -69,6 +74,7 @@ export class SalesInvoiceAggregate {
     lineItems: InvoiceLineItem[];
     sourceSalesOrderId?: string | null;
     sourceQuoteId?: string | null;
+    paymentMethodId?: string | null;
     now: Date;
   }): SalesInvoiceAggregate {
     const totals = calculateInvoiceTotals(params.lineItems, []);
@@ -95,6 +101,7 @@ export class SalesInvoiceAggregate {
       sourceSalesOrderId: params.sourceSalesOrderId ?? null,
       sourceQuoteId: params.sourceQuoteId ?? null,
       issuedJournalEntryId: null,
+      paymentMethodId: params.paymentMethodId ?? null,
     });
   }
 
@@ -199,6 +206,11 @@ export class SalesInvoiceAggregate {
 
   setIssuedJournalEntry(entryId: string, now: Date) {
     this.issuedJournalEntryId = entryId;
+    this.touch(now);
+  }
+
+  setPaymentSnapshot(snapshot: PaymentMethodSnapshot, now: Date) {
+    this.paymentSnapshot = snapshot;
     this.touch(now);
   }
 

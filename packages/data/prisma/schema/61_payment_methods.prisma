@@ -1,0 +1,64 @@
+// Payment Methods & Bank Accounts
+// Scoped to: (tenantId, legalEntityId) for multi-entity support
+
+enum PaymentMethodType {
+  BANK_TRANSFER
+  PAYPAL
+  CASH
+  CARD
+  OTHER
+}
+
+model BankAccount {
+  id                String   @id @default(cuid())
+  tenantId          String
+  legalEntityId     String
+  label             String
+  accountHolderName String
+  iban              String
+  bic               String?
+  bankName          String?
+  currency          String   @default("EUR") @db.Char(3)
+  country           String?  @db.Char(2)
+  isActive          Boolean  @default(true)
+  isDefault         Boolean  @default(false)
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  legalEntity       LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+  paymentMethods    PaymentMethod[]
+
+  // Indices for efficient querying
+  @@unique([tenantId, legalEntityId, label])
+  @@index([tenantId, legalEntityId])
+  @@index([tenantId, isDefault])
+  @@index([legalEntityId, isDefault])
+}
+
+model PaymentMethod {
+  id                      String            @id @default(cuid())
+  tenantId                String
+  legalEntityId           String
+  type                    PaymentMethodType
+  label                   String
+  isActive                Boolean           @default(true)
+  isDefaultForInvoicing   Boolean           @default(false)
+  bankAccountId           String?
+  instructions            String?
+  payUrl                  String?
+  referenceTemplate       String            @default("INV-{invoiceNumber}")
+  createdAt               DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime          @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  legalEntity             LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+  bankAccount             BankAccount? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  salesInvoices           SalesInvoice[]
+
+  // Indices for efficient querying
+  @@unique([tenantId, legalEntityId, label])
+  @@index([tenantId, legalEntityId])
+  @@index([tenantId, isDefaultForInvoicing])
+  @@index([bankAccountId])
+}

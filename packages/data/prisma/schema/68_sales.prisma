@@ -155,15 +155,19 @@ model SalesInvoice {
   issuedJournalEntryId   String?
   createdByUserId        String?
   updatedByUserId        String?
+  paymentMethodId        String?
+  paymentSnapshot        Json?
   createdAt              DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime           @updatedAt @db.Timestamptz(6)
 
   lines     SalesInvoiceLine[]
   payments  SalesPayment[]
+  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, status])
   @@index([tenantId, customerPartyId])
   @@index([tenantId, createdAt])
+  @@index([paymentMethodId])
   @@unique([tenantId, number])
 }
 
