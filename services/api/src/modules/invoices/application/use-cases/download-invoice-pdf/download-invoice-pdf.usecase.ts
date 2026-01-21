@@ -80,7 +80,17 @@ export class DownloadInvoicePdfUseCase {
       const pdfBytes = await this.rendererPort.renderInvoiceToPdf({
         tenantId,
         invoiceId,
-        model,
+        model: {
+          ...model,
+          paymentSnapshot: model.paymentSnapshot
+            ? {
+                ...model.paymentSnapshot,
+                type: model.paymentSnapshot.type || "BANK_TRANSFER",
+                label: model.paymentSnapshot.label || "Default",
+                referenceText: model.paymentSnapshot.referenceText || "",
+              }
+            : undefined,
+        },
       });
 
       // 4d. Save to local folder first

@@ -18,7 +18,6 @@ export type InvoicePdfModel = {
     iban?: string;
     bic?: string;
     bankName?: string;
-    currency?: string;
     instructions?: string;
     payUrl?: string;
     referenceText: string;
