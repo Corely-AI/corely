@@ -24,6 +24,7 @@ export class ListWorkspacesUseCase {
     return {
       workspaces: workspaces.map((ws) => ({
         id: ws.id,
+        legalEntityId: ws.legalEntityId,
         name: ws.name,
         kind: ws.legalEntity?.kind as any,
         legalName: ws.legalEntity?.legalName,

@@ -60,6 +60,7 @@ export type WorkspaceProfile = z.infer<typeof WorkspaceProfileSchema>;
 
 export const WorkspaceDtoSchema = WorkspaceProfileSchema.extend({
   id: z.string(),
+  legalEntityId: z.string(),
   onboardingStatus: WorkspaceOnboardingStatusSchema,
   onboardingCompletedAt: utcInstantSchema.nullable().optional(),
   createdAt: utcInstantSchema,

@@ -7,8 +7,9 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 export function PaymentMethodsSettings() {
   const { activeWorkspace } = useWorkspace();
+  const legalEntityId = activeWorkspace?.legalEntityId ?? activeWorkspace?.id;
 
-  if (!activeWorkspace?.id) {
+  if (!activeWorkspace?.id || !legalEntityId) {
     return <div className="text-center py-8 text-muted-foreground">Please select a workspace</div>;
   }
 
@@ -36,7 +37,7 @@ export function PaymentMethodsSettings() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <BankAccountsList legalEntityId={activeWorkspace.id} />
+              <BankAccountsList legalEntityId={legalEntityId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -50,7 +51,7 @@ export function PaymentMethodsSettings() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PaymentMethodsList legalEntityId={activeWorkspace.id} />
+              <PaymentMethodsList legalEntityId={legalEntityId} />
             </CardContent>
           </Card>
         </TabsContent>

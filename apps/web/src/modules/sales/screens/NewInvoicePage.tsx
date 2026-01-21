@@ -12,6 +12,7 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 export default function NewInvoicePage() {
   const navigate = useNavigate();
   const { activeWorkspace } = useWorkspace();
+  const workspaceLegalEntityId = activeWorkspace?.legalEntityId ?? activeWorkspace?.id;
 
   const { data: customersData } = useQuery({
     queryKey: ["customers"],
@@ -19,12 +20,12 @@ export default function NewInvoicePage() {
   });
 
   const { data: paymentMethodsData } = useQuery({
-    queryKey: ["payment-methods", activeWorkspace?.id],
+    queryKey: ["payment-methods", workspaceLegalEntityId],
     queryFn: () =>
-      activeWorkspace?.id
-        ? paymentMethodsApi.listPaymentMethods(activeWorkspace.id)
+      workspaceLegalEntityId
+        ? paymentMethodsApi.listPaymentMethods(workspaceLegalEntityId)
         : { paymentMethods: [] },
-    enabled: !!activeWorkspace?.id,
+    enabled: !!workspaceLegalEntityId,
   });
 
   const customers = (customersData?.customers ?? []).flatMap((customer) =>

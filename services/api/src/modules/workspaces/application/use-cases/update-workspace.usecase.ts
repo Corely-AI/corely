@@ -110,6 +110,7 @@ export class UpdateWorkspaceUseCase {
     const result: UpdateWorkspaceOutput = {
       workspace: {
         id: updated!.id,
+        legalEntityId: updated!.legalEntityId,
         name: updated!.name,
         kind: updated!.legalEntity?.kind as any,
         legalName: updated!.legalEntity?.legalName,
