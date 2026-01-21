@@ -3,6 +3,7 @@ import { InvoiceDtoSchema } from "./invoice.types";
 
 export const FinalizeInvoiceInputSchema = z.object({
   invoiceId: z.string(),
+  paymentMethodId: z.string().optional(),
 });
 
 export const FinalizeInvoiceOutputSchema = z.object({

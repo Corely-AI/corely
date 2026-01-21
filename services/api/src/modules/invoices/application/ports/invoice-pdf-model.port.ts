@@ -15,6 +15,17 @@ export interface InvoicePdfModelPort {
     items: Array<{ description: string; qty: string; unitPrice: string; lineTotal: string }>;
     totals: { subtotal: string; vatRate?: string; vatAmount?: string; total: string };
     notes?: string;
+    paymentSnapshot?: {
+      type?: string;
+      bankName?: string;
+      accountHolderName?: string;
+      iban?: string;
+      bic?: string;
+      label?: string;
+      instructions?: string;
+      referenceText?: string;
+      payUrl?: string;
+    };
   } | null>;
 }
 

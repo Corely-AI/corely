@@ -14,6 +14,8 @@ import {
   InvoiceNumberingPort,
 } from "./application/ports/invoice-numbering.port";
 import { CUSTOMER_QUERY_PORT, CustomerQueryPort } from "./application/ports/customer-query.port";
+import { PAYMENT_METHOD_QUERY_PORT } from "./application/ports/payment-method-query.port";
+import { PrismaPaymentMethodQueryAdapter } from "./infrastructure/adapters/prisma-payment-method-query.adapter";
 import { INVOICE_PDF_MODEL_PORT } from "./application/ports/invoice-pdf-model.port";
 import { INVOICE_PDF_RENDERER_PORT } from "./application/ports/invoice-pdf-renderer.port";
 import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
@@ -38,6 +40,8 @@ import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoi
 import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoice-pdf-model.adapter";
 import { PlaywrightInvoicePdfRendererAdapter } from "./infrastructure/pdf/playwright-invoice-pdf-renderer.adapter";
 import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
+import { INVOICE_COMMANDS } from "./application/ports/invoice-commands.port";
+import { InvoiceCommandService } from "./application/services/invoice-command.service";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule],
@@ -66,6 +70,8 @@ import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs
       inject: ["PLAYWRIGHT_BROWSER"],
     },
     PrismaInvoiceEmailDeliveryRepoAdapter,
+    PrismaPaymentMethodQueryAdapter,
+    { provide: PAYMENT_METHOD_QUERY_PORT, useExisting: PrismaPaymentMethodQueryAdapter },
     {
       provide: CreateInvoiceUseCase,
       useFactory: (
@@ -114,7 +120,8 @@ import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs
         repo: PrismaInvoiceRepoAdapter,
         numbering: InvoiceNumberingPort,
         clock: any,
-        customerQuery: CustomerQueryPort
+        customerQuery: CustomerQueryPort,
+        paymentMethodQuery: any
       ) =>
         new FinalizeInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -122,12 +129,14 @@ import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs
           numbering,
           clock,
           customerQuery,
+          paymentMethodQuery,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
         INVOICE_NUMBERING_PORT,
         CLOCK_PORT_TOKEN,
         CUSTOMER_QUERY_PORT,
+        PAYMENT_METHOD_QUERY_PORT,
       ],
     },
     {
@@ -240,7 +249,11 @@ import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs
         DownloadInvoicePdfUseCase,
       ],
     },
+    {
+      provide: INVOICE_COMMANDS,
+      useClass: InvoiceCommandService,
+    },
   ],
-  exports: [InvoicesApplication],
+  exports: [InvoicesApplication, INVOICE_COMMANDS],
 })
 export class InvoicesModule {}

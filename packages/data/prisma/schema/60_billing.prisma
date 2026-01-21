@@ -15,6 +15,7 @@ model Invoice {
   currency    String
   notes       String?
   terms       String?
+  paymentDetails Json?
   invoiceDate DateTime?     @db.Date
   dueDate     DateTime?     @db.Date
   issuedAt    DateTime?     @db.Timestamptz(6)
@@ -27,6 +28,8 @@ model Invoice {
   pdfSourceVersion  String?
   pdfStatus         PdfStatus @default(NONE)
   pdfFailureReason  String?
+  sourceType        String?
+  sourceId          String?
 
   lines     InvoiceLine[]
   payments  InvoicePayment[]

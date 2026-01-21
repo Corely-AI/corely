@@ -5,12 +5,14 @@ import { FakeInvoiceNumbering } from "../../../testkit/fakes/fake-numbering";
 import { InvoiceAggregate } from "../../../domain/invoice.aggregate";
 import { FixedClock, NoopLogger, unwrap } from "@corely/kernel";
 import { FakeCustomerQueryPort } from "../../../testkit/fakes/fake-customer-query";
+import { FakePaymentMethodQuery } from "../../../testkit/fakes/fake-payment-method-query";
 
 describe("FinalizeInvoiceUseCase", () => {
   let repo: FakeInvoiceRepository;
   let numbering: FakeInvoiceNumbering;
   let useCase: FinalizeInvoiceUseCase;
   let customers: FakeCustomerQueryPort;
+  let payments: FakePaymentMethodQuery;
   const clock = new FixedClock(new Date("2025-01-02T00:00:00.000Z"));
 
   beforeEach(() => {
@@ -23,12 +25,14 @@ describe("FinalizeInvoiceUseCase", () => {
       email: "customer@example.com",
       billingAddress: { line1: "Street 1", city: "Paris", country: "FR" },
     });
+    payments = new FakePaymentMethodQuery();
     useCase = new FinalizeInvoiceUseCase({
       logger: new NoopLogger(),
       invoiceRepo: repo,
       numbering,
       clock,
       customerQuery: customers,
+      paymentMethodQuery: payments,
     });
   });
 
@@ -67,7 +71,38 @@ describe("FinalizeInvoiceUseCase", () => {
       partyId: "cust",
       displayName: "Changed Name",
     });
-
     expect(repo.invoices[0].billToName).toBe("Customer One");
+  });
+
+  it("snapshots payment method details on finalize", async () => {
+    const invoice = InvoiceAggregate.createDraft({
+      id: "inv-1",
+      tenantId: "tenant-1",
+      customerPartyId: "cust",
+      currency: "USD",
+      lineItems: [{ id: "line-1", description: "Work", qty: 1, unitPriceCents: 1000 }],
+      createdAt: new Date(),
+    });
+    repo.invoices = [invoice];
+
+    payments.setMethod("tenant-1", "pm-1", {
+      type: "BANK_TRANSFER",
+      bankName: "My Bank",
+      iban: "FR123",
+      label: "Main Account",
+    });
+
+    await useCase.execute(
+      { invoiceId: invoice.id, paymentMethodId: "pm-1" },
+      { tenantId: "tenant-1" }
+    );
+
+    const finalized = repo.invoices[0];
+    expect(finalized.paymentDetails).toEqual({
+      type: "BANK_TRANSFER",
+      bankName: "My Bank",
+      iban: "FR123",
+      label: "Main Account",
+    });
   });
 });

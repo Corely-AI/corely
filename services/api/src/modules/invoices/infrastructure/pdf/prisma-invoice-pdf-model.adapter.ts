@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { InvoicePdfModelPort } from "../../application/ports/invoice-pdf-model.port";
+import { PaymentDetailsSnapshot } from "../../domain/invoice.types";
 import type { Prisma } from "@prisma/client";
 
 type InvoiceWithLines = Prisma.InvoiceGetPayload<{
@@ -16,14 +17,28 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     invoiceId: string
   ): Promise<{
     invoiceNumber: string;
+    billFromName?: string;
+    billFromAddress?: string;
     billToName: string;
     billToAddress?: string;
     issueDate: string;
+    serviceDate?: string;
     dueDate?: string;
     currency: string;
     items: Array<{ description: string; qty: string; unitPrice: string; lineTotal: string }>;
-    totals: { subtotal: string; total: string };
+    totals: { subtotal: string; vatRate?: string; vatAmount?: string; total: string };
     notes?: string;
+    paymentSnapshot?: {
+      type?: string;
+      bankName?: string;
+      accountHolderName?: string;
+      iban?: string;
+      bic?: string;
+      label?: string;
+      instructions?: string;
+      referenceText?: string;
+      payUrl?: string;
+    };
   } | null> {
     const invoice: InvoiceWithLines | null = await this.prisma.invoice.findFirst({
       where: { id: invoiceId, tenantId },
@@ -89,7 +104,9 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     const billToAddress = addressParts.length > 0 ? addressParts.join(", ") : undefined;
 
     const formatDate = (value: Date | null | undefined) => {
-      if (!value) {return undefined;}
+      if (!value) {
+        return undefined;
+      }
       const iso = value.toISOString().slice(0, 10);
       return `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
     };
@@ -147,6 +164,20 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
       lineTotal: formatCurrency(line.qty * line.unitPriceCents),
     }));
 
+    const paymentDetailsSnapshot =
+      ((invoice as any).paymentDetails as PaymentDetailsSnapshot) ?? undefined;
+    let paymentSnapshot = undefined;
+
+    if (paymentDetailsSnapshot) {
+      const referenceTemplate = paymentDetailsSnapshot.referenceTemplate || "INV-{invoiceNumber}";
+      const referenceText = referenceTemplate.replace("{invoiceNumber}", invoice.number);
+
+      paymentSnapshot = {
+        ...paymentDetailsSnapshot,
+        referenceText,
+      };
+    }
+
     return {
       invoiceNumber: invoice.number,
       billFromName: legalEntity?.legalName,
@@ -165,6 +196,7 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
         total: formatCurrency(totalCents),
       },
       notes: invoice.notes || undefined,
+      paymentSnapshot,
     };
   }
 }

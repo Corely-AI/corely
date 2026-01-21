@@ -20,9 +20,6 @@ import {
   OrdersPage as SalesOrdersPage,
   NewOrderPage,
   OrderDetailPage,
-  InvoicesPage as SalesInvoicesPage,
-  NewInvoicePage as SalesNewInvoicePage,
-  InvoiceDetailPage as SalesInvoiceDetailPage,
   SalesSettingsPage,
   SalesCopilotPage,
 } from "../../modules/sales";
@@ -165,7 +162,7 @@ export const Router = () => (
             path="/sales/invoices"
             element={
               <RequireCapability capability="sales.quotes">
-                <SalesInvoicesPage />
+                <InvoicesPage />
               </RequireCapability>
             }
           />
@@ -173,7 +170,7 @@ export const Router = () => (
             path="/sales/invoices/new"
             element={
               <RequireCapability capability="sales.quotes">
-                <SalesNewInvoicePage />
+                <NewInvoicePage />
               </RequireCapability>
             }
           />
@@ -181,7 +178,7 @@ export const Router = () => (
             path="/sales/invoices/:invoiceId"
             element={
               <RequireCapability capability="sales.quotes">
-                <SalesInvoiceDetailPage />
+                <InvoiceDetailPage />
               </RequireCapability>
             }
           />
@@ -189,7 +186,7 @@ export const Router = () => (
             path="/sales/invoices/:invoiceId/edit"
             element={
               <RequireCapability capability="sales.quotes">
-                <SalesInvoiceDetailPage />
+                <InvoiceDetailPage />
               </RequireCapability>
             }
           />

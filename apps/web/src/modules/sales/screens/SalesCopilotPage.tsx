@@ -7,7 +7,6 @@ import {
   PricingSuggestionCardSchema,
   MessageDraftCardSchema,
   StalledQuotesCardSchema,
-  PostingExplanationCardSchema,
   SalesSummaryCardSchema,
   type QuoteDraftProposalCard,
   type LineItemsProposalCard,
@@ -469,44 +468,6 @@ export default function SalesCopilotPage() {
       );
     }
 
-    const postingCard = PostingExplanationCardSchema.safeParse(result);
-    if (postingCard.success) {
-      return (
-        <Card className="bg-white">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="font-semibold">Posting Explanation</div>
-              <Badge variant="secondary">Accounting</Badge>
-            </div>
-            <div className="text-sm">{postingCard.data.explanation}</div>
-            {postingCard.data.journalEntryId ? (
-              <div className="text-sm text-muted-foreground">
-                Journal Entry:{" "}
-                <span className="text-foreground">{postingCard.data.journalEntryId}</span>
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-2">
-              <Button variant="ghost" size="sm" onClick={() => dismissTool(toolCallId)}>
-                Dismiss
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate("/accounting/journal-entries")}
-              >
-                View Journal Entries
-              </Button>
-            </div>
-            <MetaFooter
-              confidence={postingCard.data.confidence}
-              rationale={postingCard.data.rationale}
-              provenance={postingCard.data.provenance}
-            />
-          </CardContent>
-        </Card>
-      );
-    }
-
     const summaryCard = SalesSummaryCardSchema.safeParse(result);
     if (summaryCard.success) {
       return (
@@ -662,7 +623,7 @@ export default function SalesCopilotPage() {
         <CardContent className="p-4 space-y-4">
           <div className="text-sm text-muted-foreground">
             Try prompts like: “Create a quote for website redesign,” “Draft a follow-up for quote
-            123,” or “Explain posting for invoice 456.”
+            123.”
           </div>
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Textarea

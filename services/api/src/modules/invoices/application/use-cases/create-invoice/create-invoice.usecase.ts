@@ -102,6 +102,8 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
             }
           : undefined,
       },
+      sourceType: input.sourceType ?? null,
+      sourceId: input.sourceId ?? null,
     });
 
     await this.useCaseDeps.invoiceRepo.create(ctx.tenantId, aggregate);

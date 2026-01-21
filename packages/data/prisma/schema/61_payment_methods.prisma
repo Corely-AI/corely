@@ -54,7 +54,7 @@ model PaymentMethod {
   // Relations
   legalEntity             LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
   bankAccount             BankAccount? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
-  salesInvoices           SalesInvoice[]
+
 
   // Indices for efficient querying
   @@unique([tenantId, legalEntityId, label])

@@ -6,7 +6,13 @@ import {
   ListInvoicesResult,
 } from "../../application/ports/invoice-repository.port";
 import { InvoiceAggregate } from "../../domain/invoice.aggregate";
-import { InvoiceLine, InvoicePayment, InvoiceStatus, PdfStatus } from "../../domain/invoice.types";
+import {
+  InvoiceLine,
+  InvoicePayment,
+  InvoiceStatus,
+  PdfStatus,
+  PaymentDetailsSnapshot,
+} from "../../domain/invoice.types";
 import { LocalDate } from "@corely/kernel";
 
 const toPrismaDate = (localDate: LocalDate | null): Date | null =>
@@ -51,6 +57,9 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         pdfSourceVersion: invoice.pdfSourceVersion,
         pdfStatus: invoice.pdfStatus as any,
         pdfFailureReason: invoice.pdfFailureReason,
+        sourceType: invoice.sourceType,
+        sourceId: invoice.sourceId,
+        paymentDetails: invoice.paymentDetails as any,
       },
       create: {
         id: invoice.id,
@@ -80,6 +89,9 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         pdfSourceVersion: invoice.pdfSourceVersion,
         pdfStatus: invoice.pdfStatus as any,
         pdfFailureReason: invoice.pdfFailureReason,
+        sourceType: invoice.sourceType,
+        sourceId: invoice.sourceId,
+        paymentDetails: invoice.paymentDetails as any,
         lines: {
           create: invoice.lineItems.map((line) => ({
             id: line.id,
@@ -161,6 +173,9 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       pdfSourceVersion: (data as any).pdfSourceVersion ?? null,
       pdfStatus: ((data as any).pdfStatus as PdfStatus) ?? "NONE",
       pdfFailureReason: (data as any).pdfFailureReason ?? null,
+      sourceType: (data as any).sourceType ?? null,
+      sourceId: (data as any).sourceId ?? null,
+      paymentDetails: ((data as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
     });
   }
 
@@ -233,6 +248,9 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         pdfSourceVersion: (row as any).pdfSourceVersion ?? null,
         pdfStatus: ((row as any).pdfStatus as PdfStatus) ?? "NONE",
         pdfFailureReason: (row as any).pdfFailureReason ?? null,
+        sourceType: (row as any).sourceType ?? null,
+        sourceId: (row as any).sourceId ?? null,
+        paymentDetails: ((row as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
       });
     });
 

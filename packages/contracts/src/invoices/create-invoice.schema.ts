@@ -10,12 +10,16 @@ export const InvoiceLineInputSchema = z.object({
 
 export const CreateInvoiceInputSchema = z.object({
   customerPartyId: z.string(),
+  customerContactPartyId: z.string().optional(),
   currency: z.string(),
   notes: z.string().optional(),
   terms: z.string().optional(),
   invoiceDate: localDateSchema.optional(),
   dueDate: localDateSchema.optional(),
   lineItems: z.array(InvoiceLineInputSchema).min(1),
+  // Source tracking for invoices created from sales artifacts
+  sourceType: z.enum(["order", "quote", "deal", "manual"]).optional(),
+  sourceId: z.string().optional(),
   idempotencyKey: z.string().optional(),
 });
 

@@ -5,6 +5,8 @@ import {
   type InvoiceStatus,
   type InvoiceTotals,
   type PdfStatus,
+  type InvoiceSourceType,
+  type PaymentDetailsSnapshot,
 } from "./invoice.types";
 
 type BillToSnapshot = {
@@ -50,6 +52,10 @@ type InvoiceProps = {
   pdfSourceVersion?: string | null;
   pdfStatus?: PdfStatus;
   pdfFailureReason?: string | null;
+  // Sales source tracking
+  sourceType?: InvoiceSourceType | null;
+  sourceId?: string | null;
+  paymentDetails?: PaymentDetailsSnapshot | null;
 };
 
 export class InvoiceAggregate {
@@ -82,6 +88,9 @@ export class InvoiceAggregate {
   pdfSourceVersion: string | null;
   pdfStatus: PdfStatus;
   pdfFailureReason: string | null;
+  sourceType: InvoiceSourceType | null;
+  sourceId: string | null;
+  paymentDetails: PaymentDetailsSnapshot | null;
   totals: InvoiceTotals;
 
   constructor(props: InvoiceProps) {
@@ -114,6 +123,9 @@ export class InvoiceAggregate {
     this.pdfSourceVersion = props.pdfSourceVersion ?? null;
     this.pdfStatus = props.pdfStatus ?? "NONE";
     this.pdfFailureReason = props.pdfFailureReason ?? null;
+    this.sourceType = props.sourceType ?? null;
+    this.sourceId = props.sourceId ?? null;
+    this.paymentDetails = props.paymentDetails ?? null;
     this.totals = this.calculateTotals();
   }
 
@@ -129,6 +141,8 @@ export class InvoiceAggregate {
     lineItems: InvoiceLine[];
     createdAt: Date;
     billToSnapshot?: BillToSnapshot | null;
+    sourceType?: InvoiceSourceType | null;
+    sourceId?: string | null;
   }) {
     const aggregate = new InvoiceAggregate({
       ...params,
@@ -196,7 +210,13 @@ export class InvoiceAggregate {
     this.touch(now);
   }
 
-  finalize(number: string, issuedAt: Date, now: Date, billTo: BillToSnapshot) {
+  finalize(
+    number: string,
+    issuedAt: Date,
+    now: Date,
+    billTo: BillToSnapshot,
+    paymentDetails?: PaymentDetailsSnapshot
+  ) {
     if (this.status !== "DRAFT") {
       throw new Error("Only draft invoices can be finalized");
     }
@@ -211,6 +231,9 @@ export class InvoiceAggregate {
     }
 
     this.setBillToSnapshot(billTo);
+    if (paymentDetails) {
+      this.paymentDetails = paymentDetails;
+    }
     this.status = "ISSUED";
     this.number = number;
     this.issuedAt = issuedAt;

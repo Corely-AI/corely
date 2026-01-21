@@ -870,9 +870,29 @@ export default function NewInvoicePage() {
               </button>
             </div>
 
-            {/* Totals */}
-            <div className="flex justify-end">
-              <div className="w-full lg:w-1/2 space-y-3">
+            {/* Notes and Terms */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-4 pt-6 border-t border-border">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">{t("invoices.notes")}</Label>
+                  <textarea
+                    {...form.register("notes")}
+                    className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder={t("invoices.notesPlaceholder")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">{t("invoices.terms")}</Label>
+                  <textarea
+                    {...form.register("terms")}
+                    className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder={t("invoices.termsPlaceholder")}
+                  />
+                </div>
+              </div>
+
+              {/* Totals */}
+              <div className="space-y-3 pt-6 border-t border-border">
                 <div className="flex justify-between items-center pb-3">
                   <span className="text-sm font-medium">{t("invoices.totalAmountNet")}</span>
                   <span className="text-lg font-semibold">{formatMoney(subtotalCents)}</span>
