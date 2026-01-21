@@ -39,14 +39,7 @@ export class ArchiveExpenseUseCase {
       action: "expense.archived",
       entityType: "Expense",
       entityId: expense.id,
-      metadata: {
-        context: {
-          tenantId: ctx.tenantId,
-          workspaceId: ctx.workspaceId,
-          userId: ctx.userId,
-          requestId: ctx.requestId,
-        },
-      },
+      metadata: {},
     });
   }
 }
