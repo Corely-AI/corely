@@ -17,11 +17,13 @@ export default function NewExpensePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: expense, isLoading } = useQuery({
+  const { data: queryResult, isLoading } = useQuery({
     queryKey: expenseKeys.detail(id ?? ""),
     queryFn: () => (id ? expensesApi.getExpense(id) : Promise.resolve(null)),
     enabled: isEdit,
   });
+
+  const expense = queryResult && "expense" in queryResult ? queryResult.expense : null;
 
   const mutation = useMutation({
     mutationFn: async (values: ExpenseFormValues) => {
@@ -51,7 +53,9 @@ export default function NewExpensePage() {
   });
 
   const defaultValues: ExpenseFormValues | undefined = useMemo(() => {
-    if (!expense) {return undefined;}
+    if (!expense) {
+      return undefined;
+    }
     return {
       merchantName: expense.merchantName ?? "",
       expenseDate: expense.expenseDate ?? new Date().toISOString().slice(0, 10),

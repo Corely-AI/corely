@@ -7,7 +7,9 @@ import type {
   CreateInvoiceInput,
   CreateInvoiceOutput,
   InvoiceDto,
+  InvoiceCapabilities,
   RecordPaymentInput,
+  UpdateInvoiceInput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -57,22 +59,31 @@ export class InvoicesApi {
   }
 
   /**
-   * Get invoice by ID
+   * Get invoice by ID with capabilities
    */
-  async getInvoice(id: string): Promise<InvoiceDto> {
-    const result = await apiClient.get<unknown>(`/invoices/${id}`, {
-      correlationId: apiClient.generateCorrelationId(),
-    });
-    if (result && typeof result === "object" && "invoice" in (result as any)) {
-      return (result as { invoice: InvoiceDto }).invoice;
+  async getInvoice(
+    id: string
+  ): Promise<{ invoice: InvoiceDto; capabilities?: InvoiceCapabilities }> {
+    const result = await apiClient.get<{ invoice: InvoiceDto; capabilities?: InvoiceCapabilities }>(
+      `/invoices/${id}`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+    if (result && typeof result === "object" && "invoice" in result) {
+      return { invoice: result.invoice, capabilities: result.capabilities };
     }
-    return result as InvoiceDto;
+    // Fallback for older API responses without capabilities
+    return { invoice: result as unknown as InvoiceDto };
   }
 
   /**
    * Update invoice
    */
-  async updateInvoice(id: string, input: Partial<CreateInvoiceInput>): Promise<InvoiceDto> {
+  async updateInvoice(
+    id: string,
+    input: Omit<UpdateInvoiceInput, "invoiceId">
+  ): Promise<InvoiceDto> {
     const result = await apiClient.patch<{ invoice: InvoiceDto }>(`/invoices/${id}`, input, {
       correlationId: apiClient.generateCorrelationId(),
     });
@@ -97,10 +108,20 @@ export class InvoicesApi {
   /**
    * Send invoice to customer
    */
-  async sendInvoice(id: string): Promise<InvoiceDto> {
+  async sendInvoice(
+    id: string,
+    payload?: {
+      to?: string;
+      subject?: string;
+      message?: string;
+      cc?: string[];
+      bcc?: string[];
+      attachPdf?: boolean;
+    }
+  ): Promise<InvoiceDto> {
     const result = await apiClient.post<{ invoice: InvoiceDto }>(
       `/invoices/${id}/send`,
-      {},
+      payload || {},
       {
         idempotencyKey: apiClient.generateIdempotencyKey(),
         correlationId: apiClient.generateCorrelationId(),

@@ -12,6 +12,7 @@ import {
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import { type GetInvoiceByIdCommand, type GetInvoiceByIdResult } from "./types";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
+import { buildInvoiceCapabilities } from "../../../domain/invoice-capabilities.builder";
 
 type Deps = {
   logger: LoggerPort;
@@ -49,6 +50,12 @@ export class GetInvoiceByIdUseCase extends BaseUseCase<
       );
     }
 
-    return ok({ invoice: toInvoiceDto(invoice) });
+    // Build capabilities based on current invoice state
+    const capabilities = buildInvoiceCapabilities(invoice);
+
+    return ok({
+      invoice: toInvoiceDto(invoice),
+      capabilities,
+    });
   }
 }

@@ -3,7 +3,7 @@
  * Minimal wrapper around expenses endpoints
  */
 
-import type { ExpenseDto, CreateExpenseWebInput } from "@corely/contracts";
+import type { ExpenseCapabilities, ExpenseDto, CreateExpenseWebInput } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
 export type ListExpensesParams = {
@@ -26,13 +26,27 @@ export type ListExpensesResponse = {
 export class ExpensesApi {
   async listExpenses(params: ListExpensesParams = {}): Promise<ListExpensesResponse> {
     const query = new URLSearchParams();
-    if (params.q) {query.set("q", params.q);}
-    if (params.page) {query.set("page", String(params.page));}
-    if (params.pageSize) {query.set("pageSize", String(params.pageSize));}
-    if (params.sort) {query.set("sort", params.sort);}
-    if (params.category) {query.set("category", params.category);}
-    if (params.fromDate) {query.set("fromDate", params.fromDate);}
-    if (params.toDate) {query.set("toDate", params.toDate);}
+    if (params.q) {
+      query.set("q", params.q);
+    }
+    if (params.page) {
+      query.set("page", String(params.page));
+    }
+    if (params.pageSize) {
+      query.set("pageSize", String(params.pageSize));
+    }
+    if (params.sort) {
+      query.set("sort", params.sort);
+    }
+    if (params.category) {
+      query.set("category", params.category);
+    }
+    if (params.fromDate) {
+      query.set("fromDate", params.fromDate);
+    }
+    if (params.toDate) {
+      query.set("toDate", params.toDate);
+    }
     if (params.includeArchived !== undefined) {
       query.set("includeArchived", String(params.includeArchived));
     }
@@ -62,11 +76,16 @@ export class ExpensesApi {
     return result.expense;
   }
 
-  async getExpense(id: string): Promise<ExpenseDto> {
-    const result = await apiClient.get<{ expense: ExpenseDto }>(`/expenses/${id}`, {
-      correlationId: apiClient.generateCorrelationId(),
-    });
-    return result.expense;
+  async getExpense(
+    id: string
+  ): Promise<{ expense: ExpenseDto; capabilities?: ExpenseCapabilities }> {
+    const result = await apiClient.get<{ expense: ExpenseDto; capabilities?: ExpenseCapabilities }>(
+      `/expenses/${id}`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+    return result;
   }
 
   async updateExpense(id: string, input: CreateExpenseWebInput): Promise<ExpenseDto> {

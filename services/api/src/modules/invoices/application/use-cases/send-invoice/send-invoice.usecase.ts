@@ -91,6 +91,7 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
       to: input.to,
       cc: input.cc,
       bcc: input.bcc,
+      subject: input.subject,
       message: input.message,
       attachPdf: input.attachPdf,
       locale: input.locale,

@@ -42,7 +42,7 @@ export default function InvoicesPage() {
 
   const duplicateInvoice = useMutation({
     mutationFn: async (invoiceId: string) => {
-      const invoice = await invoicesApi.getInvoice(invoiceId);
+      const { invoice } = await invoicesApi.getInvoice(invoiceId);
       return invoicesApi.createInvoice({
         customerPartyId: invoice.customerPartyId,
         currency: invoice.currency,
