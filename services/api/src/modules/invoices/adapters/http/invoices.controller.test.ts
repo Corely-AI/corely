@@ -67,7 +67,7 @@ describe("InvoicesHttpController", () => {
     const req = { headers: { [HEADER_TENANT_ID]: "tenant-1" } } as any;
     const result = await controller.getInvoice("inv-1", req);
 
-    expect(result).toEqual(invoice);
+    expect(result).toEqual({ invoice, capabilities: undefined });
     expect(getExecute).toHaveBeenCalledWith(
       { invoiceId: "inv-1" },
       expect.objectContaining({ tenantId: "tenant-1" })
