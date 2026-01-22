@@ -12,7 +12,9 @@
     "baseUrl": "./",
     "paths": {
       "@shared/*": ["src/shared/*"],
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@corely/data": ["../../packages/data/src/index.ts"],
+      "@corely/data/*": ["../../packages/data/src/*"]
     },
     "skipLibCheck": true,
     "esModuleInterop": true
