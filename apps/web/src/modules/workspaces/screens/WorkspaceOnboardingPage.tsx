@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, CheckCircle2, User, ArrowRight } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -14,7 +14,7 @@ const steps = ["Workspace", "Legal & Address", "Tax & Bank"];
 
 export const WorkspaceOnboardingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { workspaces, setWorkspace, refresh } = useWorkspace();
+  const { setWorkspace, refresh } = useWorkspace();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -120,12 +120,6 @@ export const WorkspaceOnboardingPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
-
-  // If user already has a workspace, send them back to dashboard/settings
-  if (workspaces.length > 0) {
-    navigate("/dashboard");
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40">
