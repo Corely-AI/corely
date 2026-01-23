@@ -118,7 +118,7 @@ export default function DashboardPage() {
     const expensesThisMonthCents = expenses
       .filter((exp) => {
         const expDate = new Date(exp.expenseDate || exp.createdAt);
-        return expDate >= thisMonth && expDate < nextMonth;
+        return expDate >= thisMonthStart && expDate < nextMonthStart;
       })
       .reduce((sum, exp) => sum + (exp.totalAmountCents || 0), 0);
 
