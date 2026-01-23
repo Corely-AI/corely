@@ -34,6 +34,8 @@ import {
 import type { UpdateInvoiceInput } from "@corely/contracts";
 import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
 import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
+import { invoiceQueryKeys } from "../queries";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 const DEFAULT_VAT_RATE = 19;
 
@@ -57,7 +59,7 @@ export default function InvoiceDetailPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["invoice", id],
+    queryKey: invoiceQueryKeys.detail(id ?? ""),
     queryFn: () => (id ? invoicesApi.getInvoice(id) : Promise.reject("Missing id")),
     enabled: Boolean(id),
   });
@@ -66,7 +68,7 @@ export default function InvoiceDetailPage() {
   const capabilities = invoiceData?.capabilities;
 
   const { data: listData } = useQuery({
-    queryKey: ["customers"],
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
@@ -193,7 +195,9 @@ export default function InvoiceDetailPage() {
     message: string;
     sendCopy: boolean;
   }) => {
-    if (!id || !invoice) {return;}
+    if (!id || !invoice) {
+      return;
+    }
     setIsProcessing(true);
     try {
       // 1. Finalize if needed
@@ -215,8 +219,8 @@ export default function InvoiceDetailPage() {
       setSendDialogOpen(false);
 
       // 3. Refresh
-      void queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-      void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
     } catch (err) {
       console.error("Failed to send invoice", err);
       toast.error("Failed to send invoice");
@@ -228,7 +232,9 @@ export default function InvoiceDetailPage() {
   // Handle status transitions from RecordCommandBar
   const handleTransition = useCallback(
     async (to: string, input?: Record<string, string>) => {
-      if (!id || !invoice) {return;}
+      if (!id || !invoice) {
+        return;
+      }
 
       if (to === "SENT") {
         setSendDialogOpen(true);
@@ -244,8 +250,8 @@ export default function InvoiceDetailPage() {
           await invoicesApi.cancelInvoice(id, input?.reason);
           toast.success("Invoice canceled");
         }
-        void queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-        void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+        void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
+        void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       } catch (err) {
         console.error("Transition failed", err);
         toast.error("Could not update invoice status");
@@ -259,7 +265,9 @@ export default function InvoiceDetailPage() {
   // Handle actions from RecordCommandBar
   const handleAction = useCallback(
     async (actionKey: string) => {
-      if (!id) {return;}
+      if (!id) {
+        return;
+      }
 
       if (actionKey === "send") {
         setSendDialogOpen(true);
@@ -296,8 +304,8 @@ export default function InvoiceDetailPage() {
             toast.info("Reminder feature coming soon");
             return;
         }
-        void queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-        void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+        void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
+        void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       } catch (err) {
         console.error("Action failed", err);
         toast.error("Action failed");
@@ -333,8 +341,8 @@ export default function InvoiceDetailPage() {
       };
 
       await updateInvoice.mutateAsync(updateInput);
-      void queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-      void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success("Invoice updated successfully");
       navigate("/invoices");
     } catch {
@@ -413,7 +421,9 @@ export default function InvoiceDetailPage() {
 
   // Record payment mutation (kept for dialog use)
   const recordPayment = () => {
-    if (!id) {return;}
+    if (!id) {
+      return;
+    }
     const amountCents = Math.round(parseFloat(paymentAmount || "0") * 100);
     if (!amountCents || Number.isNaN(amountCents)) {
       toast.error("Invalid amount");
@@ -430,8 +440,8 @@ export default function InvoiceDetailPage() {
       .then(() => {
         setPaymentDialogOpen(false);
         setPaymentNote("");
-        void queryClient.invalidateQueries({ queryKey: ["invoice", id] });
-        void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+        void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
+        void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
         toast.success("Payment recorded");
       })
       .catch((err) => {

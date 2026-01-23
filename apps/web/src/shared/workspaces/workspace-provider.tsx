@@ -94,10 +94,19 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
   );
 
   const setWorkspace = (workspaceId: string) => {
+    const previousWorkspaceId = activeId;
     setActiveWorkspaceId(workspaceId);
     setActiveId(workspaceId);
-    console.debug("[WorkspaceProvider] workspace selected", { workspaceId });
-    void queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    console.debug("[WorkspaceProvider] workspace switched", {
+      from: previousWorkspaceId,
+      to: workspaceId,
+    });
+
+    // CRITICAL: Invalidate ALL queries when switching workspaces
+    // This prevents data from the previous workspace from appearing
+    // in the new workspace context. The queries will refetch with
+    // the new workspaceId header.
+    void queryClient.invalidateQueries();
   };
 
   const value: WorkspaceContextValue = {

@@ -26,7 +26,10 @@ export class ListInvoicesUseCase extends BaseUseCase<ListInvoicesInput, ListInvo
     ctx: UseCaseContext
   ): Promise<Result<ListInvoicesOutput, UseCaseError>> {
     if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
+      return err(new ValidationError("tenantId/workspaceId is required"));
+    }
+    if (!ctx.workspaceId) {
+      return err(new ValidationError("workspaceId is required"));
     }
 
     const pageSize = input.pageSize ?? 20;
@@ -45,7 +48,7 @@ export class ListInvoicesUseCase extends BaseUseCase<ListInvoicesInput, ListInvo
           )
         : undefined;
     const { items, nextCursor } = await this.useCaseDeps.invoiceRepo.list(
-      ctx.tenantId,
+      ctx.workspaceId,
       {
         status: input.status,
         customerPartyId: input.customerPartyId,

@@ -22,6 +22,7 @@ import { invoicesApi } from "@/lib/invoices-api";
 import { customersApi } from "@/lib/customers-api";
 import { expensesApi } from "@/lib/expenses-api";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
@@ -43,19 +44,19 @@ export default function DashboardPage() {
 
   // Fetch invoices
   const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
-    queryKey: ["invoices"],
+    queryKey: workspaceQueryKeys.invoices.list(),
     queryFn: () => invoicesApi.listInvoices(),
   });
 
   // Fetch customers
   const { data: customersData, isLoading: isLoadingCustomers } = useQuery({
-    queryKey: ["customers"],
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
   // Fetch expenses
   const { data: expensesData, isLoading: isLoadingExpenses } = useQuery({
-    queryKey: ["expenses"],
+    queryKey: workspaceQueryKeys.expenses.list(),
     queryFn: () => expensesApi.listExpenses(),
   });
 

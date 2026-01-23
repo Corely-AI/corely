@@ -34,22 +34,20 @@ export class DownloadInvoicePdfUseCase {
     ctx: UseCaseContext
   ): Promise<DownloadInvoicePdfOutput> {
     const { invoiceId } = input;
-    const { tenantId } = ctx;
+    const { tenantId, workspaceId } = ctx;
 
     if (!tenantId) {
       throw new Error("tenantId is required in context");
     }
+    if (!workspaceId) {
+      throw new Error("workspaceId is required in context");
+    }
 
-    // 1. Authorize: Fetch invoice
-    const invoice = await this.invoiceRepo.findById(tenantId, invoiceId);
+    // 1. Authorize: Fetch invoice using workspaceId
+    const invoice = await this.invoiceRepo.findById(workspaceId, invoiceId);
     if (!invoice) {
       throw new Error(`Invoice not found: ${invoiceId}`);
     }
-
-    // // 2. Validate status: only finalized invoices can have PDFs
-    // if (invoice.status === "DRAFT") {
-    //   throw new Error("Cannot download PDF for draft invoice");
-    // }
 
     // 3. Check if valid PDF exists
     const now = new Date();
@@ -57,7 +55,7 @@ export class DownloadInvoicePdfUseCase {
 
     if (invoice.isPdfReady()) {
       this.logger.log(`PDF already exists for invoice ${invoiceId}, returning signed URL`);
-      return this.createSignedDownloadUrl(tenantId, invoice.pdfStorageKey!);
+      return this.createSignedDownloadUrl(workspaceId, invoice.pdfStorageKey!);
     }
 
     // 4. Generate and store PDF
@@ -67,18 +65,19 @@ export class DownloadInvoicePdfUseCase {
 
     // 4a. Mark generating
     invoice.markPdfGenerating(currentSourceVersion, now);
-    await this.invoiceRepo.save(tenantId, invoice);
+    await this.invoiceRepo.save(workspaceId, invoice);
 
     try {
       // 4b. Fetch PDF model
-      const model = await this.pdfModelPort.getInvoicePdfModel(tenantId, invoiceId);
+      // We pass workspaceId as tenantId here because we want to load invoice/settings from the workspace scope
+      const model = await this.pdfModelPort.getInvoicePdfModel(workspaceId, invoiceId);
       if (!model) {
         throw new Error("Invoice data incomplete for PDF generation");
       }
 
       // 4c. Render PDF
       const pdfBytes = await this.rendererPort.renderInvoiceToPdf({
-        tenantId,
+        tenantId: workspaceId,
         invoiceId,
         model: {
           ...model,
@@ -95,18 +94,18 @@ export class DownloadInvoicePdfUseCase {
 
       // 4d. Save to local folder first
       const storageKey = this.buildStorageKey(
-        tenantId,
+        workspaceId,
         invoiceId,
         invoice.number!,
         currentSourceVersion
       );
       const localFilename = this.buildLocalFilename(invoiceId, invoice.number!);
-      await this.savePdfToLocalFolder(tenantId, localFilename, pdfBytes);
+      await this.savePdfToLocalFolder(workspaceId, localFilename, pdfBytes);
 
       // 4e. Upload to GCS
       try {
         await this.storagePort.putObject({
-          tenantId,
+          tenantId: workspaceId,
           objectKey: storageKey,
           contentType: "application/pdf",
           bytes: pdfBytes,
@@ -118,7 +117,7 @@ export class DownloadInvoicePdfUseCase {
           );
           return await this.finalizeLocalPdf(
             invoice,
-            tenantId,
+            workspaceId,
             currentSourceVersion,
             localFilename
           );
@@ -133,13 +132,13 @@ export class DownloadInvoicePdfUseCase {
         sourceVersion: currentSourceVersion,
         now: new Date(),
       });
-      await this.invoiceRepo.save(tenantId, invoice);
+      await this.invoiceRepo.save(workspaceId, invoice);
 
       this.logger.log(`PDF generated successfully for invoice ${invoiceId}`);
 
       // 5. Return signed download URL
       try {
-        return this.createSignedDownloadUrl(tenantId, storageKey);
+        return this.createSignedDownloadUrl(workspaceId, storageKey);
       } catch (error) {
         if (this.isMissingStorageCredentials(error)) {
           this.logger.warn(
@@ -147,7 +146,7 @@ export class DownloadInvoicePdfUseCase {
           );
           return await this.finalizeLocalPdf(
             invoice,
-            tenantId,
+            workspaceId,
             currentSourceVersion,
             localFilename
           );
@@ -160,7 +159,7 @@ export class DownloadInvoicePdfUseCase {
         error instanceof Error ? error.message : "PDF generation failed",
         new Date()
       );
-      await this.invoiceRepo.save(tenantId, invoice);
+      await this.invoiceRepo.save(workspaceId, invoice);
       throw error;
     }
   }
@@ -229,7 +228,7 @@ export class DownloadInvoicePdfUseCase {
 
   private async finalizeLocalPdf(
     invoice: { markPdfGenerated: (args: any) => void },
-    tenantId: string,
+    tenantId: string, // actually workspaceId
     sourceVersion: string,
     filename: string
   ): Promise<DownloadInvoicePdfOutput> {
@@ -240,6 +239,7 @@ export class DownloadInvoicePdfUseCase {
       sourceVersion,
       now: new Date(),
     });
+    // Cast strict type
     await this.invoiceRepo.save(tenantId, invoice as any);
     return this.createSignedDownloadUrl(tenantId, storageKey);
   }

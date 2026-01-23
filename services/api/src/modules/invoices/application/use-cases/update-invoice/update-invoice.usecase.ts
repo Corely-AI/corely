@@ -49,10 +49,13 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
     ctx: UseCaseContext
   ): Promise<Result<UpdateInvoiceOutput, UseCaseError>> {
     if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
+      return err(new ValidationError("tenantId missing from context"));
+    }
+    if (!ctx.workspaceId) {
+      return err(new ValidationError("workspaceId missing from context"));
     }
 
-    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.tenantId, input.invoiceId);
+    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.workspaceId, input.invoiceId);
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
     }
@@ -151,7 +154,7 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
       return err(new ConflictError((error as Error).message));
     }
 
-    await this.useCaseDeps.invoiceRepo.save(ctx.tenantId, invoice);
+    await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice);
 
     return ok({ invoice: toInvoiceDto(invoice) });
   }

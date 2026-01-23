@@ -40,10 +40,13 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
     ctx: UseCaseContext
   ): Promise<Result<FinalizeInvoiceOutput, UseCaseError>> {
     if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
+      return err(new ValidationError("tenantId missing from context"));
+    }
+    if (!ctx.workspaceId) {
+      return err(new ValidationError("workspaceId missing from context"));
     }
 
-    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.tenantId, input.invoiceId);
+    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.workspaceId, input.invoiceId);
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
     }
@@ -63,7 +66,7 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
       );
 
       const now = this.useCaseDeps.clock.now();
-      const number = await this.useCaseDeps.numbering.nextInvoiceNumber(ctx.tenantId);
+      const number = await this.useCaseDeps.numbering.nextInvoiceNumber(ctx.workspaceId);
       invoice.finalize(
         number,
         now,
@@ -91,7 +94,7 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
       return err(new ConflictError((error as Error).message));
     }
 
-    await this.useCaseDeps.invoiceRepo.save(ctx.tenantId, invoice);
+    await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice);
     return ok({ invoice: toInvoiceDto(invoice) });
   }
 }

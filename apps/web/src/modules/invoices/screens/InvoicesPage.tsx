@@ -20,6 +20,8 @@ import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { EmptyState } from "@/shared/components/EmptyState";
 import type { InvoiceStatus } from "@/shared/types";
 import { toast } from "sonner";
+import { invoiceQueryKeys } from "../queries";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 export default function InvoicesPage() {
   const { t, i18n } = useTranslation();
@@ -28,11 +30,11 @@ export default function InvoicesPage() {
   const queryClient = useQueryClient();
 
   const { data: invoices } = useQuery({
-    queryKey: ["invoices"],
+    queryKey: invoiceQueryKeys.list(),
     queryFn: () => invoicesApi.listInvoices(),
   });
   const { data: customersData } = useQuery({
-    queryKey: ["customers"],
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
   const customers = customersData?.customers ?? [];
@@ -58,7 +60,7 @@ export default function InvoicesPage() {
       });
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success("Invoice duplicated");
     },
     onError: (error) => {
@@ -79,7 +81,7 @@ export default function InvoicesPage() {
   const cancelInvoice = useMutation({
     mutationFn: (invoiceId: string) => invoicesApi.cancelInvoice(invoiceId, "Soft delete"),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success("Invoice deleted (soft)");
     },
     onError: (error) => {

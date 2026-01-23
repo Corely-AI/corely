@@ -48,6 +48,8 @@ import {
   type InvoiceLineFormData,
 } from "../schemas/invoice-form.schema";
 import type { InvoiceStatus } from "@corely/contracts";
+import { invoiceQueryKeys } from "../queries";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 const DEFAULT_VAT_RATE = 19;
 const AVAILABLE_VAT_RATES = [0, 7, 19];
@@ -93,7 +95,7 @@ export default function NewInvoicePage() {
   const queryClient = useQueryClient();
 
   const { data: customersData } = useQuery({
-    queryKey: ["customers"],
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
   const customers = customersData?.customers ?? [];
@@ -195,7 +197,7 @@ export default function NewInvoicePage() {
     },
     onSuccess: (customer) => {
       if (customer?.id) {
-        void queryClient.invalidateQueries({ queryKey: ["customers"] });
+        void queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.customers.all() });
         form.setValue("customerPartyId", customer.id, { shouldValidate: true, shouldDirty: true });
         toast.success(t("common.success"));
         setNewCustomerDialogOpen(false);
@@ -259,7 +261,7 @@ export default function NewInvoicePage() {
     try {
       const invoice = await createInvoiceMutation.mutateAsync(data);
       const finalStatus = await runStatusFlow(invoice.id, invoice.status ?? "DRAFT", targetStatus);
-      void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success(
         finalStatus === targetStatus ? t("invoices.created") : "Invoice saved (status unchanged)"
       );

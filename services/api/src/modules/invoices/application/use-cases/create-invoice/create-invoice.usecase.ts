@@ -53,6 +53,9 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
     if (!ctx.tenantId) {
       return err(new ValidationError("tenantId missing from context"));
     }
+    if (!ctx.workspaceId) {
+      return err(new ValidationError("workspaceId missing from context"));
+    }
 
     const customer = await this.useCaseDeps.customerQuery.getCustomerBillingSnapshot(
       ctx.tenantId,
@@ -79,7 +82,7 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
 
     const aggregate = InvoiceAggregate.createDraft({
       id: invoiceId,
-      tenantId: ctx.tenantId,
+      tenantId: ctx.workspaceId,
       customerPartyId: input.customerPartyId,
       currency: input.currency,
       notes: input.notes,
@@ -106,7 +109,7 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
       sourceId: input.sourceId ?? null,
     });
 
-    await this.useCaseDeps.invoiceRepo.create(ctx.tenantId, aggregate);
+    await this.useCaseDeps.invoiceRepo.create(ctx.workspaceId, aggregate);
 
     return ok({ invoice: toInvoiceDto(aggregate) });
   }

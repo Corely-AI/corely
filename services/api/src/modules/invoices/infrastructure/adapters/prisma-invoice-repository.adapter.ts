@@ -25,9 +25,9 @@ const fromPrismaDate = (value: Date | null | undefined): LocalDate | null =>
 export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(tenantId: string, invoice: InvoiceAggregate): Promise<void> {
-    if (tenantId !== invoice.tenantId) {
-      throw new Error("Tenant mismatch when saving invoice");
+  async save(workspaceId: string, invoice: InvoiceAggregate): Promise<void> {
+    if (workspaceId !== invoice.tenantId) {
+      throw new Error("Workspace mismatch when saving invoice");
     }
 
     await this.prisma.invoice.upsert({
@@ -124,13 +124,13 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     }
   }
 
-  async create(tenantId: string, invoice: InvoiceAggregate): Promise<void> {
-    await this.save(tenantId, invoice);
+  async create(workspaceId: string, invoice: InvoiceAggregate): Promise<void> {
+    await this.save(workspaceId, invoice);
   }
 
-  async findById(tenantId: string, id: string): Promise<InvoiceAggregate | null> {
+  async findById(workspaceId: string, id: string): Promise<InvoiceAggregate | null> {
     const data = await this.prisma.invoice.findFirst({
-      where: { id, tenantId },
+      where: { id, tenantId: workspaceId },
       include: { lines: true },
     });
     if (!data) {
@@ -180,12 +180,12 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   }
 
   async list(
-    tenantId: string,
+    workspaceId: string,
     filters: ListInvoicesFilters,
     pageSize = 20,
     cursor?: string
   ): Promise<ListInvoicesResult> {
-    const where: any = { tenantId };
+    const where: any = { tenantId: workspaceId };
     if (filters.status) {
       where.status = filters.status;
     }
@@ -258,8 +258,8 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     return { items, nextCursor };
   }
 
-  async isInvoiceNumberTaken(tenantId: string, number: string): Promise<boolean> {
-    const count = await this.prisma.invoice.count({ where: { tenantId, number } });
+  async isInvoiceNumberTaken(workspaceId: string, number: string): Promise<boolean> {
+    const count = await this.prisma.invoice.count({ where: { tenantId: workspaceId, number } });
     return count > 0;
   }
 }

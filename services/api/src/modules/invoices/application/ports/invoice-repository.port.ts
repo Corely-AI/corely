@@ -14,14 +14,14 @@ export type ListInvoicesResult = {
 };
 
 export interface InvoiceRepoPort {
-  findById(tenantId: string, invoiceId: string): Promise<InvoiceAggregate | null>;
+  findById(workspaceId: string, invoiceId: string): Promise<InvoiceAggregate | null>;
   list(
-    tenantId: string,
+    workspaceId: string,
     filters: ListInvoicesFilters,
     pageSize?: number,
     cursor?: string
   ): Promise<ListInvoicesResult>;
-  save(tenantId: string, invoice: InvoiceAggregate): Promise<void>;
-  create(tenantId: string, invoice: InvoiceAggregate): Promise<void>;
-  isInvoiceNumberTaken(tenantId: string, number: string): Promise<boolean>;
+  save(workspaceId: string, invoice: InvoiceAggregate): Promise<void>;
+  create(workspaceId: string, invoice: InvoiceAggregate): Promise<void>;
+  isInvoiceNumberTaken(workspaceId: string, number: string): Promise<boolean>;
 }
