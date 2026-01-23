@@ -54,7 +54,13 @@
     "inventoryCopilot": "Inventory - Copilot",
     "automation": "Automation",
     "documents": "Documents",
-    "hr": "HR"
+    "hr": "HR",
+    "workspace": "Workspace Settings",
+    "profile": "Profile & Account",
+    "members": "Team Management",
+    "roles": "Roles & Permissions",
+    "paymentMethods": "Payment Methods",
+    "taxSettings": "Tax Settings"
   },
   "dashboard": {
     "title": "Dashboard",

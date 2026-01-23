@@ -166,22 +166,6 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
 
       {/* Bottom section */}
       <div className="border-t border-sidebar-border p-3 space-y-2">
-        {/* Settings */}
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-              isActive
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-            )
-          }
-        >
-          <Settings className="h-5 w-5 shrink-0" />
-          {!collapsed && <span>{t("nav.settings")}</span>}
-        </NavLink>
-
         {/* Controls row */}
         <div className={cn("flex items-center", collapsed ? "flex-col gap-2" : "gap-2 px-2")}>
           {/* Theme toggle */}

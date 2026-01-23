@@ -59,7 +59,7 @@
     "supertest": "catalog:"
   },
   "scripts": {
-    "dev": "node dev-tsc.mjs",
+    "dev": "node dev.mjs",
     "dev:esbuild": "node dev.mjs",
     "dev:debug": "node dev-tsc.mjs --inspect",
     "build": "tsc -p tsconfig.json",

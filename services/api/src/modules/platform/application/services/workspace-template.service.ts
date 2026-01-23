@@ -236,7 +236,16 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.settings",
         defaultLabel: "Settings",
         order: 99,
-        sectionOrder: ["workspace", "profile", "tax", "platform"],
+        sectionOrder: [
+          "workspace",
+          "profile",
+          "team",
+          "roles",
+          "tax-settings",
+          "sales",
+          "purchasing",
+          "platform",
+        ],
       },
     ];
   }
@@ -394,11 +403,20 @@ export class WorkspaceTemplateService {
         sectionOrder: ["accounting", "tax", "reports"],
       },
       {
-        id: "admin",
-        labelKey: "nav.groups.admin",
-        defaultLabel: "Administration",
+        id: "settings",
+        labelKey: "nav.groups.settings",
+        defaultLabel: "Settings",
         order: 99,
-        sectionOrder: ["workspace", "team", "roles", "platform"],
+        sectionOrder: [
+          "workspace",
+          "profile",
+          "team",
+          "roles",
+          "tax-settings",
+          "sales",
+          "purchasing",
+          "platform",
+        ],
       },
     ];
   }
