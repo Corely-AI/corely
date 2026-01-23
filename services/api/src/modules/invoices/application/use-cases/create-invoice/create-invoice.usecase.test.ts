@@ -50,7 +50,7 @@ describe("CreateInvoiceUseCase", () => {
         currency: "USD",
         lineItems: [{ description: "Work", qty: 2, unitPriceCents: 500 }],
       },
-      { tenantId: "tenant-1" }
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
     );
 
     const dto = unwrap(result).invoice;
@@ -67,7 +67,7 @@ describe("CreateInvoiceUseCase", () => {
         currency: "USD",
         lineItems: [{ description: "Work", qty: 1, unitPriceCents: 500 }],
       },
-      { tenantId: "tenant-1" }
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
     );
 
     expect(isErr(result)).toBe(true);

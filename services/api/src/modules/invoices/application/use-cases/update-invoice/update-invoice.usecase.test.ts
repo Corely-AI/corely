@@ -61,7 +61,7 @@ describe("UpdateInvoiceUseCase", () => {
         headerPatch: { currency: "EUR" },
         lineItems: [{ description: "New", qty: 2, unitPriceCents: 700 }],
       },
-      { tenantId: invoice.tenantId }
+      { tenantId: invoice.tenantId, workspaceId: invoice.tenantId }
     );
 
     const dto = unwrap(result).invoice;
@@ -77,7 +77,7 @@ describe("UpdateInvoiceUseCase", () => {
         invoiceId: invoice.id,
         lineItems: [{ description: "Bad", qty: 1, unitPriceCents: 100 }],
       },
-      { tenantId: invoice.tenantId }
+      { tenantId: invoice.tenantId, workspaceId: invoice.tenantId }
     );
 
     expect(isErr(result)).toBe(true);
@@ -93,7 +93,7 @@ describe("UpdateInvoiceUseCase", () => {
         invoiceId: invoice.id,
         headerPatch: { customerPartyId: "missing" },
       },
-      { tenantId: invoice.tenantId }
+      { tenantId: invoice.tenantId, workspaceId: invoice.tenantId }
     );
 
     expect(isErr(result)).toBe(true);

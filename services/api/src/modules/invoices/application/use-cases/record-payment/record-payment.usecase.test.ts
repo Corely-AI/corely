@@ -34,7 +34,7 @@ describe("RecordPaymentUseCase", () => {
 
     const result = await useCase.execute(
       { invoiceId: invoice.id, amountCents: 1000 },
-      { tenantId: "tenant-1" }
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
     );
 
     const dto = unwrap(result).invoice;

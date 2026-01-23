@@ -47,7 +47,10 @@ describe("FinalizeInvoiceUseCase", () => {
     });
     repo.invoices = [invoice];
 
-    const result = await useCase.execute({ invoiceId: invoice.id }, { tenantId: "tenant-1" });
+    const result = await useCase.execute(
+      { invoiceId: invoice.id },
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
+    );
     const dto = unwrap(result).invoice;
     expect(dto.status).toBe("ISSUED");
     expect(dto.number).toBe("INV-000001");
@@ -66,7 +69,10 @@ describe("FinalizeInvoiceUseCase", () => {
     });
     repo.invoices = [invoice];
 
-    await useCase.execute({ invoiceId: invoice.id }, { tenantId: "tenant-1" });
+    await useCase.execute(
+      { invoiceId: invoice.id },
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
+    );
     customers.setSnapshot("tenant-1", {
       partyId: "cust",
       displayName: "Changed Name",
@@ -94,7 +100,7 @@ describe("FinalizeInvoiceUseCase", () => {
 
     await useCase.execute(
       { invoiceId: invoice.id, paymentMethodId: "pm-1" },
-      { tenantId: "tenant-1" }
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
     );
 
     const finalized = repo.invoices[0];
