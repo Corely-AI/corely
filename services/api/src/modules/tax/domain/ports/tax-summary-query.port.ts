@@ -6,5 +6,5 @@ export interface TaxSummaryTotals {
 }
 
 export abstract class TaxSummaryQueryPort {
-  abstract getTotals(tenantId: string): Promise<TaxSummaryTotals>;
+  abstract getTotals(workspaceId: string): Promise<TaxSummaryTotals>;
 }

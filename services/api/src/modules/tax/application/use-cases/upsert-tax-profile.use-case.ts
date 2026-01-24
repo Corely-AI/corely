@@ -13,7 +13,7 @@ export class UpsertTaxProfileUseCase {
     const effectiveTo = input.effectiveTo ? new Date(input.effectiveTo) : null;
 
     const profile: Omit<TaxProfileEntity, "id" | "createdAt" | "updatedAt"> = {
-      tenantId: ctx.tenantId,
+      tenantId: ctx.workspaceId,
       country: input.country,
       regime: input.regime,
       vatEnabled: input.vatEnabled ?? true,
@@ -22,6 +22,7 @@ export class UpsertTaxProfileUseCase {
       filingFrequency: input.filingFrequency,
       taxYearStartMonth: input.taxYearStartMonth ?? null,
       localTaxOfficeName: input.localTaxOfficeName ?? null,
+      vatExemptionParagraph: input.vatExemptionParagraph ?? null,
       effectiveFrom,
       effectiveTo,
     };

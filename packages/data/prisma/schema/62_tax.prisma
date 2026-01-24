@@ -15,6 +15,7 @@ model TaxProfile {
   filingFrequency VatFilingFrequency
   taxYearStartMonth Int?
   localTaxOfficeName String?
+  vatExemptionParagraph String?
   effectiveFrom   DateTime            @db.Timestamptz(6)
   effectiveTo     DateTime?           @db.Timestamptz(6)
   createdAt       DateTime            @default(now()) @db.Timestamptz(6)
@@ -27,6 +28,7 @@ model TaxProfile {
 enum TaxRegime {
   SMALL_BUSINESS // Kleinunternehmer (§19 UStG) - no VAT charged
   STANDARD_VAT   // Regular VAT
+  VAT_EXEMPT     // Exempt from VAT according to §4 Tax Act
 }
 
 enum VatFilingFrequency {

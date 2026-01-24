@@ -10,6 +10,6 @@ export class GetTaxProfileUseCase {
   async execute(ctx: UseCaseContext): Promise<TaxProfileEntity | null> {
     // Get active profile for current date
     const now = new Date();
-    return this.repo.getActive(ctx.tenantId, now);
+    return this.repo.getActive(ctx.workspaceId, now);
   }
 }

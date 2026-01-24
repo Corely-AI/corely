@@ -19,6 +19,7 @@ export const UpsertTaxProfileInputSchema = z.object({
   filingFrequency: VatFilingFrequencySchema,
   taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
   localTaxOfficeName: z.string().optional().nullable(),
+  vatExemptionParagraph: z.string().optional().nullable(),
   effectiveFrom: z.string().datetime(),
   effectiveTo: z.string().datetime().optional().nullable(),
   idempotencyKey: z.string().optional(),

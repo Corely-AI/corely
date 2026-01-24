@@ -215,12 +215,16 @@ export class TaxController {
     if (!ctx.userId) {
       throw new BadRequestException("Missing userId in request context");
     }
+    if (!ctx.workspaceId) {
+      throw new BadRequestException("Missing workspaceId in request context");
+    }
     if (ctx.tenantId === "default-tenant") {
       throw new BadRequestException("Invalid tenantId in request context");
     }
 
     return {
       tenantId: ctx.tenantId!,
+      workspaceId: ctx.workspaceId!,
       userId: ctx.userId!,
       correlationId: ctx.correlationId,
       idempotencyKey: req.headers["x-idempotency-key"] as string | undefined,
@@ -239,6 +243,7 @@ export class TaxController {
       filingFrequency: entity.filingFrequency,
       taxYearStartMonth: entity.taxYearStartMonth,
       localTaxOfficeName: entity.localTaxOfficeName,
+      vatExemptionParagraph: entity.vatExemptionParagraph ?? null,
       effectiveFrom: entity.effectiveFrom.toISOString(),
       effectiveTo: entity.effectiveTo?.toISOString() || null,
       createdAt: entity.createdAt.toISOString(),

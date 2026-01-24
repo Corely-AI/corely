@@ -110,7 +110,21 @@ export default function TaxSettingsPage() {
   const regimeOptions = [
     { value: "SMALL_BUSINESS", label: "Small Business (Kleinunternehmer §19 UStG)" },
     { value: "STANDARD_VAT", label: "Standard VAT" },
+    { value: "VAT_EXEMPT", label: "I am VAT exempt according to §4 Tax Act" },
   ];
+
+  const exemptionParagraphs = [
+    { value: "4.1", label: "§ 4 Nr. 1 - Export deliveries" },
+    { value: "4.2", label: "§ 4 Nr. 2 - Intra-community deliveries" },
+    { value: "4.8", label: "§ 4 Nr. 8 - Financial services" },
+    { value: "4.11", label: "§ 4 Nr. 11 - Insurance services" },
+    { value: "4.12", label: "§ 4 Nr. 12 - Letting and leasing" },
+    { value: "4.14", label: "§ 4 Nr. 14 - Medical services" },
+    { value: "4.21", label: "§ 4 Nr. 21 - Educational services" },
+  ];
+
+  const selectedRegime = form.watch("regime");
+  const isVatExempt = selectedRegime === "VAT_EXEMPT";
 
   const countryOptions = [{ value: "DE", label: "Germany (DE)" }];
 
@@ -219,6 +233,40 @@ export default function TaxSettingsPage() {
                 )}
               </div>
             </div>
+
+            {isVatExempt && (
+              <div className="rounded-lg border p-4 bg-muted/50">
+                <Label htmlFor="vatExemptionParagraph">VAT Exemption paragraph</Label>
+                <div className="mt-2">
+                  <Controller
+                    control={form.control}
+                    name="vatExemptionParagraph"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value ?? undefined}
+                        onValueChange={field.onChange}
+                        defaultValue={field.value ?? undefined}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select exemption paragraph" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {exemptionParagraphs.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Please select the paragraph of the German Tax Act (§4 UStG) that applies to your
+                    business.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>

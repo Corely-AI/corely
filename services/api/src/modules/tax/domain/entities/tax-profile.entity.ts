@@ -11,6 +11,7 @@ export interface TaxProfileEntity {
   filingFrequency: VatFilingFrequency;
   taxYearStartMonth?: number | null;
   localTaxOfficeName?: string | null;
+  vatExemptionParagraph?: string | null;
   effectiveFrom: Date;
   effectiveTo: Date | null;
   createdAt: Date;

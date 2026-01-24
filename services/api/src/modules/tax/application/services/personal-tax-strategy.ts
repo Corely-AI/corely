@@ -22,14 +22,14 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
   ) {}
 
   async computeSummary(ctx: TaxStrategyContext): Promise<TaxSummaryDto> {
-    await this.reportRepo.seedDefaultReports(ctx.tenantId);
-    const totals = await this.summaryQuery.getTotals(ctx.tenantId);
-    const reports = await this.reportRepo.listByStatus(ctx.tenantId, "upcoming");
+    await this.reportRepo.seedDefaultReports(ctx.workspaceId);
+    const totals = await this.summaryQuery.getTotals(ctx.workspaceId);
+    const reports = await this.reportRepo.listByStatus(ctx.workspaceId, "upcoming");
     const now = new Date();
-    const profile = await this.profileRepo.getActive(ctx.tenantId, now);
+    const profile = await this.profileRepo.getActive(ctx.workspaceId, now);
 
     const { taxesToBePaidEstimatedCents, configurationStatus, warnings } =
-      await this.computePayable(profile, totals, ctx.tenantId, now);
+      await this.computePayable(profile, totals, ctx.workspaceId, now);
 
     const preview = reports
       .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
@@ -56,8 +56,8 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
     status: "upcoming" | "submitted",
     filters?: { group?: string | null; type?: string | null }
   ): Promise<TaxReportDto[]> {
-    await this.reportRepo.seedDefaultReports(ctx.tenantId);
-    const reports = await this.reportRepo.listByStatus(ctx.tenantId, status);
+    await this.reportRepo.seedDefaultReports(ctx.workspaceId);
+    const reports = await this.reportRepo.listByStatus(ctx.workspaceId, status);
     const filtered = reports.filter((r) => {
       const groupOk = filters?.group ? r.group === filters.group : true;
       const typeOk = filters?.type ? r.type === filters.type : true;
@@ -67,7 +67,7 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
   }
 
   async markSubmitted(ctx: TaxStrategyContext, id: string): Promise<TaxReportDto> {
-    const report = await this.reportRepo.markSubmitted(ctx.tenantId, id, new Date());
+    const report = await this.reportRepo.markSubmitted(ctx.workspaceId, id, new Date());
     return this.toReportDto(report);
   }
 
@@ -137,7 +137,7 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
   private async computePayable(
     profile: TaxProfileEntity | null,
     totals: TaxSummaryTotals,
-    tenantId: string,
+    workspaceId: string,
     at: Date
   ): Promise<{
     taxesToBePaidEstimatedCents: number;
@@ -160,7 +160,7 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
       };
     }
 
-    const rateBps = await this.dePack.getRateBps("STANDARD", at, tenantId);
+    const rateBps = await this.dePack.getRateBps("STANDARD", at, workspaceId);
     const outputVatCents = Math.round((totals.incomeTotalCents * rateBps) / 10_000);
 
     const warnings = ["Input VAT from expenses is not yet tracked; deduction not applied"];

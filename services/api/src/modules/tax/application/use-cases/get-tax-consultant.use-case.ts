@@ -8,7 +8,7 @@ export class GetTaxConsultantUseCase {
   constructor(private readonly repo: TaxConsultantRepoPort) {}
 
   async execute(ctx: UseCaseContext): Promise<GetTaxConsultantOutput> {
-    const consultant = await this.repo.get(ctx.tenantId);
+    const consultant = await this.repo.get(ctx.workspaceId);
     return {
       consultant: consultant
         ? {

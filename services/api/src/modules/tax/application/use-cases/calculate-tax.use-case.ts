@@ -12,6 +12,6 @@ export class CalculateTaxUseCase {
   constructor(private readonly taxEngine: TaxEngineService) {}
 
   async execute(input: CalculateTaxInput, ctx: UseCaseContext): Promise<TaxBreakdownDto> {
-    return this.taxEngine.calculate(input, ctx.tenantId);
+    return this.taxEngine.calculate(input, ctx.workspaceId);
   }
 }
