@@ -3,6 +3,7 @@ export { BankAccountsList } from "./BankAccountsList";
 export { BankAccountForm } from "./BankAccountForm";
 export { PaymentMethodsList } from "./PaymentMethodsList";
 export { PaymentMethodForm } from "./PaymentMethodForm";
+export { PaymentMethodSwitcher } from "./PaymentMethodSwitcher";
 export {
   useBankAccounts,
   useCreateBankAccount,

@@ -10,6 +10,8 @@ export const InvoiceHeaderPatchSchema = z.object({
   terms: z.string().optional(),
   invoiceDate: localDateSchema.optional(),
   dueDate: localDateSchema.optional(),
+  legalEntityId: z.string().optional(),
+  paymentMethodId: z.string().optional(),
 });
 
 export const InvoiceLinePatchSchema = InvoiceLineInputSchema.extend({

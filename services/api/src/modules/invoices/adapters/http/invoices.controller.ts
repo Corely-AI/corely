@@ -61,8 +61,8 @@ export class InvoicesHttpController {
   }
 
   @Post(":invoiceId/finalize")
-  async finalize(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
-    const input = FinalizeInvoiceInputSchema.parse({ invoiceId });
+  async finalize(@Param("invoiceId") invoiceId: string, @Body() body: unknown, @Req() req: Request) {
+    const input = FinalizeInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.finalizeInvoice.execute(input, ctx);
     return mapResultToHttp(result).invoice;

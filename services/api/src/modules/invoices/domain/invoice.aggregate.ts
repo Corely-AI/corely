@@ -7,6 +7,8 @@ import {
   type PdfStatus,
   type InvoiceSourceType,
   type PaymentDetailsSnapshot,
+  type IssuerSnapshot,
+  type TaxSnapshot,
 } from "./invoice.types";
 
 type BillToSnapshot = {
@@ -56,6 +58,12 @@ type InvoiceProps = {
   sourceType?: InvoiceSourceType | null;
   sourceId?: string | null;
   paymentDetails?: PaymentDetailsSnapshot | null;
+  // New snapshots & references
+  legalEntityId?: string | null;
+  paymentMethodId?: string | null;
+  issuerSnapshot?: IssuerSnapshot | null;
+  taxSnapshot?: TaxSnapshot | null;
+  paymentSnapshot?: PaymentDetailsSnapshot | null;
 };
 
 export class InvoiceAggregate {
@@ -91,6 +99,13 @@ export class InvoiceAggregate {
   sourceType: InvoiceSourceType | null;
   sourceId: string | null;
   paymentDetails: PaymentDetailsSnapshot | null;
+  // New props
+  legalEntityId: string | null;
+  paymentMethodId: string | null;
+  issuerSnapshot: IssuerSnapshot | null;
+  taxSnapshot: TaxSnapshot | null;
+  paymentSnapshot: PaymentDetailsSnapshot | null;
+  
   totals: InvoiceTotals;
 
   constructor(props: InvoiceProps) {
@@ -126,6 +141,11 @@ export class InvoiceAggregate {
     this.sourceType = props.sourceType ?? null;
     this.sourceId = props.sourceId ?? null;
     this.paymentDetails = props.paymentDetails ?? null;
+    this.legalEntityId = props.legalEntityId ?? null;
+    this.paymentMethodId = props.paymentMethodId ?? null;
+    this.issuerSnapshot = props.issuerSnapshot ?? null;
+    this.taxSnapshot = props.taxSnapshot ?? null;
+    this.paymentSnapshot = props.paymentSnapshot ?? null;
     this.totals = this.calculateTotals();
   }
 
@@ -143,6 +163,11 @@ export class InvoiceAggregate {
     billToSnapshot?: BillToSnapshot | null;
     sourceType?: InvoiceSourceType | null;
     sourceId?: string | null;
+    legalEntityId?: string | null;
+    paymentMethodId?: string | null;
+    issuerSnapshot?: IssuerSnapshot | null;
+    taxSnapshot?: TaxSnapshot | null;
+    paymentSnapshot?: PaymentDetailsSnapshot | null;
   }) {
     const aggregate = new InvoiceAggregate({
       ...params,
@@ -154,6 +179,7 @@ export class InvoiceAggregate {
       issuedAt: null,
       sentAt: null,
       updatedAt: params.createdAt,
+      paymentDetails: params.paymentSnapshot ?? null, 
     });
     if (params.billToSnapshot) {
       aggregate.setBillToSnapshot(params.billToSnapshot);
@@ -197,6 +223,38 @@ export class InvoiceAggregate {
     }
     if (dates.dueDate !== undefined) {
       this.dueDate = dates.dueDate;
+    }
+    this.touch(now);
+  }
+
+  updateSnapshots(
+    props: {
+      legalEntityId?: string | null;
+      paymentMethodId?: string | null;
+      issuerSnapshot?: IssuerSnapshot | null;
+      taxSnapshot?: TaxSnapshot | null;
+      paymentSnapshot?: PaymentDetailsSnapshot | null;
+    },
+    now: Date
+  ) {
+    if (this.status !== "DRAFT") {
+      throw new Error("Cannot update snapshots on non-draft invoice");
+    }
+    if (props.legalEntityId !== undefined) {
+      this.legalEntityId = props.legalEntityId;
+    }
+    if (props.paymentMethodId !== undefined) {
+      this.paymentMethodId = props.paymentMethodId;
+    }
+    if (props.issuerSnapshot !== undefined) {
+      this.issuerSnapshot = props.issuerSnapshot;
+    }
+    if (props.taxSnapshot !== undefined) {
+      this.taxSnapshot = props.taxSnapshot;
+    }
+    if (props.paymentSnapshot !== undefined) {
+      this.paymentSnapshot = props.paymentSnapshot;
+      this.paymentDetails = props.paymentSnapshot;
     }
     this.touch(now);
   }

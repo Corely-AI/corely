@@ -15,6 +15,17 @@ model Invoice {
   currency    String
   notes       String?
   terms       String?
+  
+  // References
+  legalEntityId   String?
+  paymentMethodId String?
+
+  // Snapshots (Immutable copies at time of issuance)
+  issuerSnapshot  Json?      @db.JsonB
+  taxSnapshot     Json?      @db.JsonB
+  paymentSnapshot Json?      @db.JsonB
+  
+  // Legacy/Other
   paymentDetails Json?
   invoiceDate DateTime?     @db.Date
   dueDate     DateTime?     @db.Date
@@ -33,10 +44,15 @@ model Invoice {
 
   lines     InvoiceLine[]
   payments  InvoicePayment[]
+  
+  legalEntity     LegalEntity?   @relation(fields: [legalEntityId], references: [id])
+  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
 
   @@index([tenantId, status])
   @@index([tenantId, customerPartyId])
   @@index([tenantId, createdAt])
+  @@index([legalEntityId])
+  @@index([paymentMethodId])
   @@unique([tenantId, number])
 }
 

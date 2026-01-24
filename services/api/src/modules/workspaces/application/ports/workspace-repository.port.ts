@@ -8,6 +8,10 @@ export interface CreateLegalEntityInput {
   countryCode: string;
   currency: string;
   taxId?: string;
+  vatId?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
   address?: any;
   bankAccount?: any;
 }
@@ -34,6 +38,10 @@ export interface UpdateLegalEntityInput {
   countryCode?: string;
   currency?: string;
   taxId?: string;
+  vatId?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
   address?: any;
   bankAccount?: any;
 }

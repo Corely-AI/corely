@@ -34,6 +34,8 @@ import { cn } from "@/shared/lib/utils";
 import { customersApi } from "@/lib/customers-api";
 import { invoicesApi } from "@/lib/invoices-api";
 import { toast } from "sonner";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { InvoiceFooter } from "../components/InvoiceFooter";
 import {
   customerFormSchema,
   getDefaultCustomerFormValues,
@@ -93,6 +95,7 @@ export default function NewInvoicePage() {
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
 
   const { data: customersData } = useQuery({
     queryKey: workspaceQueryKeys.customers.list(),
@@ -225,19 +228,19 @@ export default function NewInvoicePage() {
   });
 
   const runStatusFlow = React.useCallback(
-    async (invoiceId: string, currentStatus: InvoiceStatus, desiredStatus: InvoiceStatus) => {
+    async (invoiceId: string, currentStatus: InvoiceStatus, desiredStatus: InvoiceStatus, paymentMethodId?: string) => {
       if (desiredStatus === currentStatus) {
         return currentStatus;
       }
 
       try {
         if (desiredStatus === "ISSUED") {
-          await invoicesApi.finalizeInvoice(invoiceId);
+          await invoicesApi.finalizeInvoice(invoiceId, paymentMethodId);
           return "ISSUED";
         }
         if (desiredStatus === "SENT") {
           if (currentStatus === "DRAFT") {
-            await invoicesApi.finalizeInvoice(invoiceId);
+            await invoicesApi.finalizeInvoice(invoiceId, paymentMethodId);
           }
           await invoicesApi.sendInvoice(invoiceId);
           return "SENT";
@@ -260,7 +263,7 @@ export default function NewInvoicePage() {
   const onSubmit = async (data: InvoiceFormData) => {
     try {
       const invoice = await createInvoiceMutation.mutateAsync(data);
-      const finalStatus = await runStatusFlow(invoice.id, invoice.status ?? "DRAFT", targetStatus);
+      const finalStatus = await runStatusFlow(invoice.id, invoice.status ?? "DRAFT", targetStatus, data.paymentMethodId);
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success(
         finalStatus === targetStatus ? t("invoices.created") : "Invoice saved (status unchanged)"
@@ -610,6 +613,8 @@ export default function NewInvoicePage() {
                       </form>
                     </DialogContent>
                   </Dialog>
+
+
                 </div>
 
                 {/* Right column - Invoice metadata */}
@@ -928,6 +933,12 @@ export default function NewInvoicePage() {
                 </div>
               </div>
             </div>
+
+            {/* Footer */}
+            <InvoiceFooter
+              paymentMethodId={form.watch("paymentMethodId")}
+              onPaymentMethodSelect={(id) => form.setValue("paymentMethodId", id)}
+            />
           </CardContent>
         </Card>
       </form>

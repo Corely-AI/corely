@@ -31,6 +31,10 @@ export interface LegalEntity {
   countryCode: string;
   currency: string;
   taxId?: string;
+  vatId?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
   address?: WorkspaceAddress;
   bankAccount?: WorkspaceBankAccount;
   createdAt: Date;

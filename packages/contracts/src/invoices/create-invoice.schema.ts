@@ -17,6 +17,8 @@ export const CreateInvoiceInputSchema = z.object({
   invoiceDate: localDateSchema.optional(),
   dueDate: localDateSchema.optional(),
   lineItems: z.array(InvoiceLineInputSchema).min(1),
+  legalEntityId: z.string().optional(),
+  paymentMethodId: z.string().optional(),
   // Source tracking for invoices created from sales artifacts
   sourceType: z.enum(["order", "quote", "deal", "manual"]).optional(),
   sourceId: z.string().optional(),

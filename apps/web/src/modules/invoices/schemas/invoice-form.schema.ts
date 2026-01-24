@@ -30,6 +30,7 @@ export const invoiceFormSchema = CreateInvoiceInputSchema.extend({
   // Add UI-specific fields
   invoiceNumber: z.string().min(1, "Invoice number is required"),
   vatRate: z.number().min(0).max(100),
+  paymentMethodId: z.string().optional(),
 
   // Override lineItems to use form schema
   lineItems: z.array(invoiceLineFormSchema).min(1, "At least one line item is required"),
@@ -59,6 +60,8 @@ export function toCreateInvoiceInput(form: InvoiceFormData): CreateInvoiceInput 
       qty: item.qty,
       unitPriceCents: item.unitPriceCents,
     })),
+    // @ts-ignore - explicitly passing paymentMethodId for backend to snapshot
+    paymentMethodId: form.paymentMethodId,
   };
 }
 

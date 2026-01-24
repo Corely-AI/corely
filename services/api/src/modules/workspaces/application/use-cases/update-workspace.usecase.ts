@@ -69,6 +69,18 @@ export class UpdateWorkspaceUseCase {
     if (command.taxId !== undefined) {
       legalEntityUpdates.taxId = command.taxId;
     }
+    if (command.vatId !== undefined) {
+      legalEntityUpdates.vatId = command.vatId;
+    }
+    if (command.phone !== undefined) {
+      legalEntityUpdates.phone = command.phone;
+    }
+    if (command.email !== undefined) {
+      legalEntityUpdates.email = command.email;
+    }
+    if (command.website !== undefined) {
+      legalEntityUpdates.website = command.website;
+    }
     if (command.address !== undefined) {
       legalEntityUpdates.address = command.address;
     }
@@ -117,6 +129,10 @@ export class UpdateWorkspaceUseCase {
         countryCode: updated!.legalEntity?.countryCode,
         currency: updated!.legalEntity?.currency,
         taxId: updated!.legalEntity?.taxId,
+        vatId: updated!.legalEntity?.vatId,
+        phone: updated!.legalEntity?.phone,
+        email: updated!.legalEntity?.email,
+        website: updated!.legalEntity?.website,
         address: updated!.legalEntity?.address as any,
         bankAccount: updated!.legalEntity?.bankAccount as any,
         invoiceSettings: updated!.invoiceSettings as any,

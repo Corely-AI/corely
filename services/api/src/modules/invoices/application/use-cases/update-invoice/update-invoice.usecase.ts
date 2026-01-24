@@ -16,7 +16,8 @@ import {
 import { type UpdateInvoiceInput, type UpdateInvoiceOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
-import { type CustomerQueryPort } from "../../ports/customer-query.port";
+import { type PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
+import { type LegalEntityQueryPort } from "../../ports/legal-entity-query.port";
 
 type Deps = {
   logger: LoggerPort;
@@ -24,6 +25,8 @@ type Deps = {
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
   customerQuery: CustomerQueryPort;
+  legalEntityQuery: LegalEntityQueryPort;
+  paymentMethodQuery: PaymentMethodQueryPort;
 };
 
 export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, UpdateInvoiceOutput> {
@@ -64,15 +67,13 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
       name: string;
       email?: string | null;
       vatId?: string | null;
-      address?:
-        | {
-            line1: string;
-            line2?: string | null;
-            city?: string | null;
-            postalCode?: string | null;
-            country?: string | null;
-          }
-        | undefined;
+      address?: {
+        line1: string;
+        line2?: string | null;
+        city?: string | null;
+        postalCode?: string | null;
+        country?: string | null;
+      };
     } | null = null;
 
     if (input.headerPatch?.customerPartyId !== undefined) {
@@ -102,8 +103,36 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
       };
     }
 
+    let issuerSnapshot: any = undefined;
+    let paymentSnapshot: any = undefined;
+
+    // Handle Config Updates (Legal Entity & Payment Method)
+    if (
+      input.headerPatch?.legalEntityId !== undefined ||
+      input.headerPatch?.paymentMethodId !== undefined
+    ) {
+      if (invoice.status !== "DRAFT") {
+        return err(new ConflictError("Cannot change invoice settings after finalize"));
+      }
+      
+      if (input.headerPatch.legalEntityId !== undefined) {
+         issuerSnapshot = await this.useCaseDeps.legalEntityQuery.getIssuerSnapshot(
+            ctx.tenantId, 
+            input.headerPatch.legalEntityId
+         );
+      }
+
+      if (input.headerPatch.paymentMethodId !== undefined) {
+         paymentSnapshot = await this.useCaseDeps.paymentMethodQuery.getPaymentMethodSnapshot(
+            ctx.tenantId, 
+            input.headerPatch.paymentMethodId
+         );
+      }
+    }
+
     try {
       const now = this.useCaseDeps.clock.now();
+      
       if (input.headerPatch) {
         invoice.updateHeader(
           {
@@ -114,6 +143,7 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
           },
           now
         );
+        
         if (
           input.headerPatch.invoiceDate !== undefined ||
           input.headerPatch.dueDate !== undefined
@@ -132,12 +162,25 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
             now
           );
         }
+
+        // Update Snapshots
+        if (
+             input.headerPatch.legalEntityId !== undefined || 
+             input.headerPatch.paymentMethodId !== undefined
+        ) {
+           invoice.updateSnapshots({
+              legalEntityId: input.headerPatch.legalEntityId,
+              paymentMethodId: input.headerPatch.paymentMethodId,
+              issuerSnapshot,
+              paymentSnapshot: paymentSnapshot
+           }, now);
+        }
       }
 
       if (draftCustomerSnapshot) {
         invoice.setBillToSnapshot(draftCustomerSnapshot);
       }
-
+      
       if (input.lineItems) {
         const newLines = input.lineItems.map((line) => ({
           id: line.id ?? this.useCaseDeps.idGenerator.newId(),

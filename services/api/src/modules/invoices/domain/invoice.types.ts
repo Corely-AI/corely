@@ -39,3 +39,27 @@ export type PaymentDetailsSnapshot = {
   referenceTemplate?: string;
   payUrl?: string;
 };
+
+export type IssuerSnapshot = {
+  name: string;
+  address?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    postalCode?: string;
+    country?: string;
+  };
+  taxId?: string;
+  vatId?: string;
+  contact?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+};
+
+export type TaxSnapshot = {
+  regime?: string;
+  taxId?: string;
+  vatId?: string;
+};

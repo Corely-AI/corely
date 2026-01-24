@@ -32,6 +32,7 @@ import {
   type InvoiceLineFormData,
 } from "../schemas/invoice-form.schema";
 import type { UpdateInvoiceInput } from "@corely/contracts";
+import { InvoiceFooter } from "../components/InvoiceFooter";
 import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
 import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
 import { invoiceQueryKeys } from "../queries";
@@ -848,6 +849,12 @@ export default function InvoiceDetailPage() {
                 </div>
               </div>
             </div>
+
+            {/* Footer */}
+            <InvoiceFooter
+              paymentMethodId={form.watch("paymentMethodId")}
+              onPaymentMethodSelect={(id) => form.setValue("paymentMethodId", id)}
+            />
 
             <div className="flex justify-end gap-3">
               <Button variant="outline" type="button" onClick={() => navigate("/invoices")}>

@@ -93,10 +93,10 @@ export class InvoicesApi {
   /**
    * Finalize invoice (change from DRAFT to ISSUED)
    */
-  async finalizeInvoice(id: string): Promise<InvoiceDto> {
+  async finalizeInvoice(id: string, paymentMethodId?: string): Promise<InvoiceDto> {
     const result = await apiClient.post<{ invoice: InvoiceDto }>(
       `/invoices/${id}/finalize`,
-      {},
+      paymentMethodId ? { paymentMethodId } : {},
       {
         idempotencyKey: apiClient.generateIdempotencyKey(),
         correlationId: apiClient.generateCorrelationId(),
