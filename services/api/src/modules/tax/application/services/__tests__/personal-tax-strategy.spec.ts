@@ -190,7 +190,7 @@ describe("PersonalTaxStrategy.computeSummary", () => {
       expenseItemsToReviewCount: 0,
     });
 
-    const summary = await strategy.computeSummary({ tenantId });
+    const summary = await strategy.computeSummary({ tenantId, workspaceId: tenantId });
 
     expect(summary.configurationStatus).toBe("READY");
     expect(summary.taxesToBePaidEstimatedCents).toBe(38_000); // 19% of 200k
@@ -206,7 +206,7 @@ describe("PersonalTaxStrategy.computeSummary", () => {
       expenseItemsToReviewCount: 0,
     });
 
-    const summary = await strategy.computeSummary({ tenantId });
+    const summary = await strategy.computeSummary({ tenantId, workspaceId: tenantId });
 
     expect(summary.configurationStatus).toBe("MISSING_SETTINGS");
     expect(summary.taxesToBePaidEstimatedCents).toBe(0);
@@ -234,7 +234,7 @@ describe("PersonalTaxStrategy.computeSummary", () => {
       expenseItemsToReviewCount: 0,
     });
 
-    const summary = await strategy.computeSummary({ tenantId });
+    const summary = await strategy.computeSummary({ tenantId, workspaceId: tenantId });
 
     expect(summary.configurationStatus).toBe("NOT_APPLICABLE");
     expect(summary.taxesToBePaidEstimatedCents).toBe(0);
@@ -262,7 +262,7 @@ describe("PersonalTaxStrategy.computeSummary", () => {
       expenseItemsToReviewCount: 2,
     });
 
-    const summary = await strategy.computeSummary({ tenantId });
+    const summary = await strategy.computeSummary({ tenantId, workspaceId: tenantId });
 
     expect(summary.configurationStatus).toBe("READY");
     expect(summary.taxesToBePaidEstimatedCents).toBe(19_000);
