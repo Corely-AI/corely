@@ -13,6 +13,7 @@ describe("UpsertTaxProfileUseCase", () => {
   const ctx: UseCaseContext = {
     tenantId: "tenant-1",
     userId: "user-1",
+    workspaceId: "tenant-1",
     correlationId: "test-correlation-id",
   };
 
@@ -36,7 +37,9 @@ describe("UpsertTaxProfileUseCase", () => {
       const profile = await upsertUseCase.execute(input, ctx);
 
       expect(profile.id).toBeDefined();
-      expect(profile.tenantId).toBe(ctx.tenantId);
+      expect(profile.id).toBeDefined();
+      expect(profile.tenantId).toBe(ctx.workspaceId);
+      expect(profile.country).toBe("DE");
       expect(profile.country).toBe("DE");
       expect(profile.regime).toBe("STANDARD_VAT");
       expect(profile.vatId).toBe("DE123456789");
@@ -214,11 +217,13 @@ describe("UpsertTaxProfileUseCase", () => {
     it("profiles are scoped to tenant", async () => {
       const tenant1Ctx: UseCaseContext = {
         tenantId: "tenant-1",
+        workspaceId: "tenant-1",
         userId: "user-1",
       };
 
       const tenant2Ctx: UseCaseContext = {
         tenantId: "tenant-2",
+        workspaceId: "tenant-2",
         userId: "user-2",
       };
 
