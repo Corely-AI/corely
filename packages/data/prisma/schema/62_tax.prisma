@@ -14,6 +14,7 @@ model TaxProfile {
   currency        String              @default("EUR")
   filingFrequency VatFilingFrequency
   taxYearStartMonth Int?
+  vatAccountingMethod VatAccountingMethod @default(IST)
   localTaxOfficeName String?
   vatExemptionParagraph String?
   effectiveFrom   DateTime            @db.Timestamptz(6)
@@ -23,6 +24,11 @@ model TaxProfile {
 
   @@unique([tenantId, effectiveFrom])
   @@index([tenantId, country])
+}
+
+enum VatAccountingMethod {
+  IST   // Cash accounting (received date)
+  SOLL  // Accrual accounting (invoice date)
 }
 
 enum TaxRegime {

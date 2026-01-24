@@ -56,6 +56,10 @@ import { ListTaxReportsUseCase } from "./application/use-cases/list-tax-reports.
 import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-report-submitted.use-case";
 import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
 import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
+import { ListVatPeriodsUseCase } from "./application/use-cases/list-vat-periods.use-case";
+import { GetVatPeriodSummaryUseCase } from "./application/use-cases/get-vat-period-summary.use-case";
+import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-period-details.use-case";
+import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 @Controller("tax")
 @UseGuards(AuthGuard)
@@ -72,7 +76,11 @@ export class TaxController {
     private readonly listTaxReportsUseCase: ListTaxReportsUseCase,
     private readonly markTaxReportSubmittedUseCase: MarkTaxReportSubmittedUseCase,
     private readonly getTaxConsultantUseCase: GetTaxConsultantUseCase,
-    private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase
+    private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase,
+    private readonly listVatPeriodsUseCase: ListVatPeriodsUseCase,
+    private readonly getVatPeriodSummaryUseCase: GetVatPeriodSummaryUseCase,
+    private readonly getVatPeriodDetailsUseCase: GetVatPeriodDetailsUseCase,
+    private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
   // ============================================================================
@@ -180,6 +188,41 @@ export class TaxController {
   async markSubmitted(@Param("id") id: string, @Req() req: Request) {
     const ctx = this.buildContext(req);
     return this.markTaxReportSubmittedUseCase.execute(id, ctx);
+  }
+
+  // ============================================================================
+  // VAT Periods
+  // ============================================================================
+
+  @Get("periods")
+  async listVatPeriods(@Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const input = {
+      from: query.from,
+      to: query.to,
+    };
+    return this.listVatPeriodsUseCase.execute(input, ctx);
+  }
+
+  @Get("periods/:key")
+  async getVatPeriodSummary(@Param("key") key: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const period = this.vatPeriodResolver.resolveQuarter(key);
+    
+    // We convert key to start/end for the use case which follows the contract
+    return this.getVatPeriodSummaryUseCase.execute({
+        periodStart: period.start.toISOString(),
+        periodEnd: period.end.toISOString(),
+    }, ctx);
+  }
+
+  @Get("periods/:key/details")
+  async getVatPeriodDetails(@Param("key") key: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    // Use case internally resolves key (as I implemented it to take periodKey)
+    // Wait, let's verify GetVatPeriodDetailsUseCase implementation.
+    // Yes, it takes (periodKey, ctx).
+    return this.getVatPeriodDetailsUseCase.execute(key, ctx);
   }
 
   // ============================================================================

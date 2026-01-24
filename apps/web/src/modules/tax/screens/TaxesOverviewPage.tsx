@@ -18,6 +18,7 @@ import {
   PiggyBank,
 } from "lucide-react";
 import { formatMoney, formatRelativeTime } from "@/shared/lib/formatters";
+import { TaxHistoryCard } from "../components/TaxHistoryCard";
 
 export default function TaxesOverviewPage() {
   const navigate = useNavigate();
@@ -236,6 +237,8 @@ export default function TaxesOverviewPage() {
           )}
         </CardContent>
       </Card>
+      
+      <TaxHistoryCard />
 
       {/* Local tax office */}
       <Card>

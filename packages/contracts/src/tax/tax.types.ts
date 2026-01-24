@@ -58,6 +58,7 @@ export const TaxProfileDtoSchema = z.object({
   currency: z.string().default("EUR"),
   filingFrequency: VatFilingFrequencySchema,
   taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
+  vatAccountingMethod: z.enum(["IST", "SOLL"]).default("IST"),
   localTaxOfficeName: z.string().optional().nullable(),
   vatExemptionParagraph: z.string().optional().nullable(),
   effectiveFrom: z.string().datetime(),

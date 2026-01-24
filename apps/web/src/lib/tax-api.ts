@@ -180,6 +180,35 @@ export class TaxApi {
   }
 
   // ============================================================================
+  // VAT Periods
+  // ============================================================================
+
+  async listVatPeriods(from?: string, to?: string) {
+    let url = "/tax/periods";
+    const params = new URLSearchParams();
+    if (from) params.append("from", from);
+    if (to) params.append("to", to);
+    if (params.toString()) url += `?${params.toString()}`;
+
+    // Return type should be ListVatPeriodsOutput (imported from contracts)
+    return apiClient.get<any>(url, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getVatPeriodSummary(key: string) {
+    return apiClient.get<any>(`/tax/periods/${key}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getVatPeriodDetails(key: string) {
+    return apiClient.get<any>(`/tax/periods/${key}/details`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  // ============================================================================
   // Consultant
   // ============================================================================
 
