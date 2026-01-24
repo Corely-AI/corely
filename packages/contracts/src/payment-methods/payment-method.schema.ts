@@ -10,7 +10,7 @@ export const PaymentMethodSnapshotSchema = z.object({
   bankName: z.string().optional().nullable(),
   currency: z.string(),
   instructions: z.string().optional().nullable(),
-  payUrl: z.string().url().optional().nullable(),
+  payUrl: z.string().url().optional().nullable().or(z.literal("")),
   referenceText: z.string(),
   snapshotVersion: z.number().default(1),
   snapshotedAt: z.date(),
@@ -28,7 +28,7 @@ export const PaymentMethodSchema = z.object({
   isDefaultForInvoicing: z.boolean().default(false),
   bankAccountId: z.string().nullable().optional(),
   instructions: z.string().nullable().optional(),
-  payUrl: z.string().url().nullable().optional(),
+  payUrl: z.string().url().nullable().optional().or(z.literal("")),
   referenceTemplate: z.string().default("INV-{invoiceNumber}"),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -42,7 +42,7 @@ export const CreatePaymentMethodInputSchema = z
     label: z.string().min(1, "Label is required").max(255),
     bankAccountId: z.string().optional(),
     instructions: z.string().optional(),
-    payUrl: z.string().url().optional(),
+    payUrl: z.string().url().optional().or(z.literal("")),
     referenceTemplate: z.string().max(500).optional().default("INV-{invoiceNumber}"),
     isDefaultForInvoicing: z.boolean().optional().default(false),
   })
@@ -78,7 +78,7 @@ export const UpdatePaymentMethodInputSchema = z
     label: z.string().min(1).max(255).optional(),
     bankAccountId: z.string().nullable().optional(),
     instructions: z.string().nullable().optional(),
-    payUrl: z.string().url().nullable().optional(),
+    payUrl: z.string().url().nullable().optional().or(z.literal("")),
     referenceTemplate: z.string().max(500).optional(),
   })
   .refine((data) => {
