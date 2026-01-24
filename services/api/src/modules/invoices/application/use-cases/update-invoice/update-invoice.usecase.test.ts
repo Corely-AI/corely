@@ -49,6 +49,8 @@ describe("UpdateInvoiceUseCase", () => {
       idGenerator: new FakeIdGenerator(["line-3"]),
       clock,
       customerQuery: customers,
+      legalEntityQuery: { getIssuerSnapshot: async () => null },
+      paymentMethodQuery: { getPaymentMethodSnapshot: async () => null },
     });
   });
 

@@ -40,6 +40,8 @@ describe("CreateInvoiceUseCase", () => {
       clock,
       timeService,
       customerQuery: customers,
+      legalEntityQuery: { getIssuerSnapshot: async () => null },
+      paymentMethodQuery: { getPaymentMethodSnapshot: async () => null },
     });
   });
 
