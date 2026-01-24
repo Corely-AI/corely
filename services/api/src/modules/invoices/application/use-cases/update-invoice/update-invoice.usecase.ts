@@ -16,6 +16,7 @@ import {
 import { type UpdateInvoiceInput, type UpdateInvoiceOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
+import { type CustomerQueryPort } from "../../ports/customer-query.port";
 import { type PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
 import { type LegalEntityQueryPort } from "../../ports/legal-entity-query.port";
 
@@ -114,25 +115,25 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
       if (invoice.status !== "DRAFT") {
         return err(new ConflictError("Cannot change invoice settings after finalize"));
       }
-      
+
       if (input.headerPatch.legalEntityId !== undefined) {
-         issuerSnapshot = await this.useCaseDeps.legalEntityQuery.getIssuerSnapshot(
-            ctx.tenantId, 
-            input.headerPatch.legalEntityId
-         );
+        issuerSnapshot = await this.useCaseDeps.legalEntityQuery.getIssuerSnapshot(
+          ctx.tenantId,
+          input.headerPatch.legalEntityId
+        );
       }
 
       if (input.headerPatch.paymentMethodId !== undefined) {
-         paymentSnapshot = await this.useCaseDeps.paymentMethodQuery.getPaymentMethodSnapshot(
-            ctx.tenantId, 
-            input.headerPatch.paymentMethodId
-         );
+        paymentSnapshot = await this.useCaseDeps.paymentMethodQuery.getPaymentMethodSnapshot(
+          ctx.tenantId,
+          input.headerPatch.paymentMethodId
+        );
       }
     }
 
     try {
       const now = this.useCaseDeps.clock.now();
-      
+
       if (input.headerPatch) {
         invoice.updateHeader(
           {
@@ -143,7 +144,7 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
           },
           now
         );
-        
+
         if (
           input.headerPatch.invoiceDate !== undefined ||
           input.headerPatch.dueDate !== undefined
@@ -165,22 +166,25 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
 
         // Update Snapshots
         if (
-             input.headerPatch.legalEntityId !== undefined || 
-             input.headerPatch.paymentMethodId !== undefined
+          input.headerPatch.legalEntityId !== undefined ||
+          input.headerPatch.paymentMethodId !== undefined
         ) {
-           invoice.updateSnapshots({
+          invoice.updateSnapshots(
+            {
               legalEntityId: input.headerPatch.legalEntityId,
               paymentMethodId: input.headerPatch.paymentMethodId,
               issuerSnapshot,
-              paymentSnapshot: paymentSnapshot
-           }, now);
+              paymentSnapshot,
+            },
+            now
+          );
         }
       }
 
       if (draftCustomerSnapshot) {
         invoice.setBillToSnapshot(draftCustomerSnapshot);
       }
-      
+
       if (input.lineItems) {
         const newLines = input.lineItems.map((line) => ({
           id: line.id ?? this.useCaseDeps.idGenerator.newId(),
