@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { VatPeriodSummaryDtoSchema } from "./tax.types";
+import { VatPeriodSummaryDtoSchema, VatPeriodTypeSchema } from "./tax.types";
 
 /**
  * List VAT Periods
@@ -8,6 +8,8 @@ import { VatPeriodSummaryDtoSchema } from "./tax.types";
 export const ListVatPeriodsInputSchema = z.object({
   from: z.string().datetime().optional(),
   to: z.string().datetime().optional(),
+  year: z.number().int().optional(),
+  type: VatPeriodTypeSchema.optional(),
 });
 
 export const ListVatPeriodsOutputSchema = z.object({

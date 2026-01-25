@@ -49,7 +49,7 @@ export class VatPeriodSummary {
   static finalize(summary: VatPeriodSummaryEntity): VatPeriodSummaryEntity {
     return {
       ...summary,
-      status: "FINALIZED",
+      status: "SUBMITTED",
     };
   }
 

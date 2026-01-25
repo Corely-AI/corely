@@ -32,20 +32,27 @@ export abstract class VatPeriodQueryPort {
 
 export interface VatPeriodDetails {
   sales: {
-    id: string;
-    number: string | null;
-    date: Date;
-    customerName: string | null;
+    sourceType: "INVOICE" | "PAYMENT";
+    sourceId: string;
+    displayNumber: string | null;
+    customer: string | null;
+    dateUsed: Date;
     netAmountCents: number;
     taxAmountCents: number;
     grossAmountCents: number;
+    currency: string;
+    status: string | null;
   }[];
   purchases: {
-    id: string;
-    date: Date;
-    merchantName: string | null;
+    sourceType: "EXPENSE";
+    sourceId: string;
+    displayNumber: string | null;
+    customer: string | null;
+    dateUsed: Date;
     netAmountCents: number;
     taxAmountCents: number;
     grossAmountCents: number;
+    currency: string;
+    status: string | null;
   }[];
 }

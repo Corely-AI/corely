@@ -5,10 +5,8 @@ import { taxApi } from "@/lib/tax-api";
 import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/components/Skeleton";
-import { ArrowLeft, Download, Printer } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
 import { formatMoney } from "@/shared/lib/formatters";
-import { Badge } from "@/shared/ui/badge";
-import { Separator } from "@/shared/ui/separator";
 import { useReactToPrint } from "react-to-print";
 
 export function VatPeriodDetailsPage() {
@@ -19,12 +17,6 @@ export function VatPeriodDetailsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["vat-period-details", key],
     queryFn: () => taxApi.getVatPeriodDetails(key!),
-    enabled: !!key,
-  });
-
-  const { data: summary } = useQuery({
-    queryKey: ["vat-period-summary", key],
-    queryFn: () => taxApi.getVatPeriodSummary(key!),
     enabled: !!key,
   });
 
@@ -53,19 +45,9 @@ export function VatPeriodDetailsPage() {
     );
   }
 
-  const { sales, purchases } = data;
-  const period = summary?.summary;
-
-  // Recalculate totals for display matching the details
-  const totalSalesNet = sales.reduce((acc: number, i: any) => acc + i.netAmountCents, 0);
-  const totalSalesVat = sales.reduce((acc: number, i: any) => acc + i.taxAmountCents, 0);
-  const totalSalesGross = sales.reduce((acc: number, i: any) => acc + i.grossAmountCents, 0);
-
-  const totalPurchasesNet = purchases.reduce((acc: number, i: any) => acc + i.netAmountCents, 0);
-  const totalPurchasesVat = purchases.reduce((acc: number, i: any) => acc + i.taxAmountCents, 0);
-  const totalPurchasesGross = purchases.reduce((acc: number, i: any) => acc + i.grossAmountCents, 0);
-
-  const payableVat = totalSalesVat - totalPurchasesVat;
+  const sales = data.rows.filter((row) => row.sourceType !== "EXPENSE");
+  const purchases = data.rows.filter((row) => row.sourceType === "EXPENSE");
+  const payableVat = data.taxDueCents;
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -74,16 +56,14 @@ export function VatPeriodDetailsPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">VAT Return {key}</h1>
-          <p className="text-muted-foreground">
-             Detailed breakdown of sales and purchases
-          </p>
+          <h1 className="text-2xl font-bold">VAT Return {data.periodKey}</h1>
+          <p className="text-muted-foreground">Detailed breakdown of sales and purchases</p>
         </div>
         <div className="ml-auto flex gap-2">
-            <Button variant="outline" onClick={handlePrint}>
-                <Printer className="mr-2 h-4 w-4" />
-                Print / PDF
-            </Button>
+          <Button variant="outline" onClick={handlePrint}>
+            <Printer className="mr-2 h-4 w-4" />
+            Print / PDF
+          </Button>
         </div>
       </div>
 
@@ -96,9 +76,9 @@ export function VatPeriodDetailsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatMoney(totalSalesVat, "EUR")}</div>
+              <div className="text-2xl font-bold">{formatMoney(data.salesVatCents, "EUR")}</div>
               <p className="text-xs text-muted-foreground">
-                on {formatMoney(totalSalesNet, "EUR")} net sales
+                on {formatMoney(data.salesNetCents, "EUR")} net sales
               </p>
             </CardContent>
           </Card>
@@ -109,13 +89,17 @@ export function VatPeriodDetailsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatMoney(totalPurchasesVat, "EUR")}</div>
+              <div className="text-2xl font-bold">{formatMoney(data.purchaseVatCents, "EUR")}</div>
               <p className="text-xs text-muted-foreground">
-                on {formatMoney(totalPurchasesNet, "EUR")} net purchases
+                on {formatMoney(data.purchaseNetCents, "EUR")} net purchases
               </p>
             </CardContent>
           </Card>
-          <Card className={payableVat > 0 ? "border-l-4 border-l-red-500" : "border-l-4 border-l-green-500"}>
+          <Card
+            className={
+              payableVat > 0 ? "border-l-4 border-l-red-500" : "border-l-4 border-l-green-500"
+            }
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 Net Payable
@@ -136,36 +120,45 @@ export function VatPeriodDetailsPage() {
           </CardHeader>
           <CardContent>
             {sales.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No sales records in this period.</p>
+              <p className="text-muted-foreground text-sm">No sales records in this period.</p>
             ) : (
-                <div className="relative overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
-                            <tr>
-                                <th className="px-4 py-3">Date</th>
-                                <th className="px-4 py-3">Number</th>
-                                <th className="px-4 py-3">Customer</th>
-                                <th className="px-4 py-3 text-right">Net</th>
-                                <th className="px-4 py-3 text-right">VAT</th>
-                                <th className="px-4 py-3 text-right">Gross</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sales.map((item: any) => (
-                                <tr key={item.id} className="bg-background border-b last:border-0 hover:bg-muted/20">
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        {new Date(item.date).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-4 py-3 font-medium">{item.number || "—"}</td>
-                                    <td className="px-4 py-3">{item.customerName || "—"}</td>
-                                    <td className="px-4 py-3 text-right">{formatMoney(item.netAmountCents, "EUR")}</td>
-                                    <td className="px-4 py-3 text-right">{formatMoney(item.taxAmountCents, "EUR")}</td>
-                                    <td className="px-4 py-3 text-right">{formatMoney(item.grossAmountCents, "EUR")}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+              <div className="relative overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
+                    <tr>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">Number</th>
+                      <th className="px-4 py-3">Customer</th>
+                      <th className="px-4 py-3 text-right">Net</th>
+                      <th className="px-4 py-3 text-right">VAT</th>
+                      <th className="px-4 py-3 text-right">Gross</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sales.map((item: any) => (
+                      <tr
+                        key={item.id}
+                        className="bg-background border-b last:border-0 hover:bg-muted/20"
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {new Date(item.dateUsed).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 font-medium">{item.displayNumber || "—"}</td>
+                        <td className="px-4 py-3">{item.customer || "—"}</td>
+                        <td className="px-4 py-3 text-right">
+                          {formatMoney(item.netAmountCents, "EUR")}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {formatMoney(item.taxAmountCents, "EUR")}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {formatMoney(item.grossAmountCents, "EUR")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -175,35 +168,44 @@ export function VatPeriodDetailsPage() {
             <CardTitle>Purchases (Input VAT)</CardTitle>
           </CardHeader>
           <CardContent>
-             {purchases.length === 0 ? (
-                <p className="text-muted-foreground text-sm">No purchase records in this period.</p>
+            {purchases.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No purchase records in this period.</p>
             ) : (
-                <div className="relative overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
-                            <tr>
-                                <th className="px-4 py-3">Date</th>
-                                <th className="px-4 py-3">Merchant</th>
-                                <th className="px-4 py-3 text-right">Net</th>
-                                <th className="px-4 py-3 text-right">VAT</th>
-                                <th className="px-4 py-3 text-right">Gross</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {purchases.map((item: any) => (
-                                <tr key={item.id} className="bg-background border-b last:border-0 hover:bg-muted/20">
-                                    <td className="px-4 py-3 whitespace-nowrap">
-                                        {new Date(item.date).toLocaleDateString()}
-                                    </td>
-                                    <td className="px-4 py-3">{item.merchantName || "—"}</td>
-                                    <td className="px-4 py-3 text-right">{formatMoney(item.netAmountCents, "EUR")}</td>
-                                    <td className="px-4 py-3 text-right">{formatMoney(item.taxAmountCents, "EUR")}</td>
-                                    <td className="px-4 py-3 text-right">{formatMoney(item.grossAmountCents, "EUR")}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+              <div className="relative overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b">
+                    <tr>
+                      <th className="px-4 py-3">Date</th>
+                      <th className="px-4 py-3">Merchant</th>
+                      <th className="px-4 py-3 text-right">Net</th>
+                      <th className="px-4 py-3 text-right">VAT</th>
+                      <th className="px-4 py-3 text-right">Gross</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {purchases.map((item: any) => (
+                      <tr
+                        key={item.id}
+                        className="bg-background border-b last:border-0 hover:bg-muted/20"
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {new Date(item.dateUsed).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3">{item.customer || "—"}</td>
+                        <td className="px-4 py-3 text-right">
+                          {formatMoney(item.netAmountCents, "EUR")}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {formatMoney(item.taxAmountCents, "EUR")}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {formatMoney(item.grossAmountCents, "EUR")}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </CardContent>
         </Card>

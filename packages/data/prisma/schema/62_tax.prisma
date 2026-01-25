@@ -150,8 +150,12 @@ model VatPeriodSummary {
 }
 
 enum VatPeriodStatus {
-  OPEN      // Period is still being aggregated
-  FINALIZED // Period is locked for reporting
+  OPEN
+  OVERDUE
+  SUBMITTED
+  PAID
+  NIL
+  ARCHIVED
 }
 
 // Tax Consultant
@@ -184,11 +188,17 @@ model TaxReport {
   amountFinalCents     Int?
   currency             String           @default("EUR")
   submittedAt          DateTime?        @db.Timestamptz(6)
+  submissionReference  String?
+  submissionNotes      String?
+  archivedReason       String?
+  pdfStorageKey        String?
+  pdfGeneratedAt       DateTime?        @db.Timestamptz(6)
   createdAt            DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime         @updatedAt @db.Timestamptz(6)
 
   @@index([tenantId, status])
   @@index([tenantId, periodStart, periodEnd])
+  @@unique([tenantId, type, periodStart, periodEnd])
 }
 
 enum TaxReportStatus {
@@ -196,6 +206,9 @@ enum TaxReportStatus {
   OPEN
   SUBMITTED
   OVERDUE
+  PAID
+  NIL
+  ARCHIVED
 }
 
 enum TaxReportType {

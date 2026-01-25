@@ -45,21 +45,11 @@ class FakeVatPeriodQuery extends VatPeriodQueryPort {
     this.inputs = inputs;
   }
 
-  async getInputs(
-    _workspaceId: string,
-    _start: Date,
-    _end: Date,
-    _method: VatAccountingMethod
-  ) {
+  async getInputs(_workspaceId: string, _start: Date, _end: Date, _method: VatAccountingMethod) {
     return this.inputs;
   }
 
-  async getDetails(
-    _workspaceId: string,
-    _start: Date,
-    _end: Date,
-    _method: VatAccountingMethod
-  ) {
+  async getDetails(_workspaceId: string, _start: Date, _end: Date, _method: VatAccountingMethod) {
     return { sales: [], purchases: [] };
   }
 }
@@ -72,9 +62,11 @@ class FakeReportRepo extends TaxReportRepoPort {
     status: "upcoming" | "submitted"
   ): Promise<TaxReportEntity[]> {
     if (status === "submitted") {
-      return this.reports.filter((r) => r.status === "SUBMITTED");
+      return this.reports.filter((r) =>
+        ["SUBMITTED", "PAID", "NIL", "ARCHIVED"].includes(r.status)
+      );
     }
-    return this.reports.filter((r) => r.status !== "SUBMITTED");
+    return this.reports.filter((r) => !["SUBMITTED", "PAID", "NIL", "ARCHIVED"].includes(r.status));
   }
 
   async markSubmitted(tenantId: string, id: string, submittedAt: Date): Promise<TaxReportEntity> {
@@ -86,6 +78,67 @@ class FakeReportRepo extends TaxReportRepoPort {
     report.submittedAt = submittedAt;
     report.updatedAt = submittedAt;
     return report;
+  }
+
+  async listByPeriodRange(): Promise<TaxReportEntity[]> {
+    return this.reports;
+  }
+
+  async upsertByPeriod(input: {
+    tenantId: string;
+    type: string;
+    group: string;
+    periodLabel: string;
+    periodStart: Date;
+    periodEnd: Date;
+    dueDate: Date;
+    status: string;
+    amountFinalCents?: number | null;
+    submissionReference?: string | null;
+    submissionNotes?: string | null;
+    archivedReason?: string | null;
+    submittedAt?: Date | null;
+  }): Promise<TaxReportEntity> {
+    const existing = this.reports.find(
+      (r) =>
+        r.tenantId === input.tenantId &&
+        r.type === input.type &&
+        r.periodStart.getTime() === input.periodStart.getTime() &&
+        r.periodEnd.getTime() === input.periodEnd.getTime()
+    );
+    if (existing) {
+      existing.status = input.status as any;
+      existing.amountFinalCents = input.amountFinalCents ?? null;
+      existing.submittedAt = input.submittedAt ?? null;
+      existing.submissionReference = input.submissionReference ?? null;
+      existing.submissionNotes = input.submissionNotes ?? null;
+      existing.archivedReason = input.archivedReason ?? null;
+      return existing;
+    }
+    const created: TaxReportEntity = {
+      id: `report-${this.reports.length + 1}`,
+      tenantId: input.tenantId,
+      type: input.type as any,
+      group: input.group as any,
+      periodLabel: input.periodLabel,
+      periodStart: input.periodStart,
+      periodEnd: input.periodEnd,
+      dueDate: input.dueDate,
+      status: input.status as any,
+      amountEstimatedCents: null,
+      amountFinalCents: input.amountFinalCents ?? null,
+      currency: "EUR",
+      submittedAt: input.submittedAt ?? null,
+      submissionReference: input.submissionReference ?? null,
+      submissionNotes: input.submissionNotes ?? null,
+      archivedReason: input.archivedReason ?? null,
+      pdfStorageKey: null,
+      pdfGeneratedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.reports.push(created);
+    return created;
   }
 
   async seedDefaultReports(tenantId: string): Promise<void> {
@@ -108,6 +161,11 @@ class FakeReportRepo extends TaxReportRepoPort {
         createdAt: now,
         updatedAt: now,
         submittedAt: null,
+        submissionReference: null,
+        submissionNotes: null,
+        archivedReason: null,
+        pdfStorageKey: null,
+        pdfGeneratedAt: null,
       },
       {
         id: "r2",
@@ -125,6 +183,11 @@ class FakeReportRepo extends TaxReportRepoPort {
         createdAt: now,
         updatedAt: now,
         submittedAt: null,
+        submissionReference: null,
+        submissionNotes: null,
+        archivedReason: null,
+        pdfStorageKey: null,
+        pdfGeneratedAt: null,
       }
     );
   }
@@ -231,7 +294,7 @@ describe("PersonalTaxStrategy.computeSummary", () => {
 
     // High lifetime totals
     summaryQuery.setTotals({
-      incomeTotalCents: 1_000_000, 
+      incomeTotalCents: 1_000_000,
       unpaidInvoicesCount: 2,
       expensesTotalCents: 0,
       expenseItemsToReviewCount: 0,

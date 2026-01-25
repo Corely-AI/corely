@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
+import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { TaxController } from "./tax.controller";
 
 // Use cases
@@ -18,6 +19,9 @@ import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-c
 import { ListVatPeriodsUseCase } from "./application/use-cases/list-vat-periods.use-case";
 import { GetVatPeriodSummaryUseCase } from "./application/use-cases/get-vat-period-summary.use-case";
 import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-period-details.use-case";
+import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
+import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
+import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -52,7 +56,7 @@ import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax
 import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-period-query.adapter";
 
 @Module({
-  imports: [IdentityModule, DataModule],
+  imports: [IdentityModule, WorkspacesModule, DataModule],
   controllers: [TaxController],
   providers: [
     // Use cases
@@ -70,6 +74,9 @@ import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-
     ListVatPeriodsUseCase,
     GetVatPeriodSummaryUseCase,
     GetVatPeriodDetailsUseCase,
+    MarkVatPeriodSubmittedUseCase,
+    MarkVatPeriodNilUseCase,
+    ArchiveVatPeriodUseCase,
 
     // Services
     TaxEngineService,

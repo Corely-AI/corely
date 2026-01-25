@@ -7,72 +7,93 @@ import type {
 } from "@corely/contracts";
 import type { UseCaseContext } from "./use-case-context";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
-import { VatPeriodQueryPort, TaxProfileRepoPort } from "../../domain/ports";
+import { VatPeriodQueryPort, TaxProfileRepoPort, TaxReportRepoPort } from "../../domain/ports";
 
 @Injectable()
 export class ListVatPeriodsUseCase {
   constructor(
     private readonly periodResolver: VatPeriodResolver,
     private readonly vatPeriodQuery: VatPeriodQueryPort,
-    private readonly taxProfileRepo: TaxProfileRepoPort
+    private readonly taxProfileRepo: TaxProfileRepoPort,
+    private readonly taxReportRepo: TaxReportRepoPort
   ) {}
 
   async execute(input: ListVatPeriodsInput, ctx: UseCaseContext): Promise<ListVatPeriodsOutput> {
-    
-    // Determine range. If not provided, maybe default to current year?
-    // Input schema has optional from/to.
-    let startDate = input.from ? new Date(input.from) : new Date(new Date().getFullYear(), 0, 1);
-    let endDate = input.to ? new Date(input.to) : new Date(new Date().getFullYear(), 11, 31);
-    
-    // We want to list quarters for the years covered by range.
-    // For simplicity, let's just use the periodResolver to get quarters for the start date's year.
-    // Or if the user asked for "?year=2025", input.from might be 2025-01-01.
-    
-    const year = startDate.getUTCFullYear();
-    const periods = this.periodResolver.getQuartersOfYear(year);
+    const now = new Date();
+    const year =
+      input.year ?? (input.from ? new Date(input.from).getUTCFullYear() : now.getUTCFullYear());
+    const yearStart = new Date(Date.UTC(year, 0, 1));
+    const yearEnd = new Date(Date.UTC(year + 1, 0, 1));
 
+    const periods = this.periodResolver.getQuartersOfYear(year);
     const summaries: VatPeriodSummaryDto[] = [];
 
-    // Get active profile to know accounting method
-    const profile = await this.taxProfileRepo.getActive(ctx.workspaceId, new Date());
+    const profile = await this.taxProfileRepo.getActive(ctx.workspaceId, now);
     const method = profile?.vatAccountingMethod ?? "IST";
+    const currency = profile?.currency ?? "EUR";
+
+    const reports = await this.taxReportRepo.listByPeriodRange(
+      ctx.workspaceId,
+      "VAT_ADVANCE",
+      yearStart,
+      yearEnd
+    );
+
+    const reportByKey = new Map(
+      reports.map((report) => [this.periodResolver.resolveQuarter(report.periodStart).key, report])
+    );
 
     for (const p of periods) {
       if (input.from && p.end <= new Date(input.from)) continue;
       if (input.to && p.start >= new Date(input.to)) continue;
 
-      // TODO: Check if finalized summary exists in DB (VatReportRepoPort or generic Repo)
-      // For now, computed on the fly as requested
-      
       const inputs = await this.vatPeriodQuery.getInputs(ctx.workspaceId, p.start, p.end, method);
+      const salesGrossCents = inputs.salesNetCents + inputs.salesVatCents;
+      const purchaseGrossCents = inputs.purchaseNetCents + inputs.purchaseVatCents;
+      const taxDueCents = inputs.salesVatCents - inputs.purchaseVatCents;
 
-      // Map inputs to TotalsByKind structure
-      // For now we only have net/vat totals, not broken by kind (Standard/Reduced).
-      // Contracts expects `totalsByKind: TaxTotalsByKindSchema` which is a Record of Kind -> Object.
-      // We'll put everything under STANDARD for now or create a generic summary.
-      // Or we need to update VatPeriodQuery to return breakdown by kind. 
-      // Current VatPeriodQuery only returns total net/vat.
-      
       const totalsByKind: TaxTotalsByKind = {
-        STANDARD: { // Assumption: mostly standard
+        STANDARD: {
           netAmountCents: inputs.salesNetCents,
           taxAmountCents: inputs.salesVatCents,
-          grossAmountCents: inputs.salesNetCents + inputs.salesVatCents,
-          rateBps: 1900, // Hardcoded approximation if we don't have breakdown
-        }
+          grossAmountCents: salesGrossCents,
+          rateBps: 1900,
+        },
       };
-      
+
+      const report = reportByKey.get(p.key) ?? null;
+      const finalizedStatuses = ["SUBMITTED", "PAID", "NIL", "ARCHIVED"];
+      const status =
+        report && finalizedStatuses.includes(report.status)
+          ? report.status
+          : now >= p.end
+            ? "OVERDUE"
+            : "OPEN";
+
       summaries.push({
-        id: `computed-${p.key}`, // Virtual ID
+        id: p.key,
         tenantId: ctx.tenantId,
+        periodKey: p.key,
         periodStart: p.start.toISOString(),
         periodEnd: p.end.toISOString(),
-        currency: "EUR",
+        currency,
+        salesNetCents: inputs.salesNetCents,
+        salesVatCents: inputs.salesVatCents,
+        salesGrossCents,
+        purchaseNetCents: inputs.purchaseNetCents,
+        purchaseVatCents: inputs.purchaseVatCents,
+        purchaseGrossCents,
+        taxDueCents,
         totalsByKind,
-        generatedAt: new Date().toISOString(),
-        status: "OPEN",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        generatedAt: now.toISOString(),
+        status: status as any,
+        submissionDate: report?.submittedAt?.toISOString() ?? null,
+        submissionReference: report?.submissionReference ?? null,
+        submissionNotes: report?.submissionNotes ?? null,
+        archivedReason: report?.archivedReason ?? null,
+        pdfStorageKey: report?.pdfStorageKey ?? null,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
       });
     }
 

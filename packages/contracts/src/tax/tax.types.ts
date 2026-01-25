@@ -28,10 +28,25 @@ export type TaxSourceType = z.infer<typeof TaxSourceTypeSchema>;
 export const VatFilingFrequencySchema = z.enum(["MONTHLY", "QUARTERLY", "YEARLY"]);
 export type VatFilingFrequency = z.infer<typeof VatFilingFrequencySchema>;
 
-export const VatPeriodStatusSchema = z.enum(["OPEN", "FINALIZED"]);
+export const VatPeriodStatusSchema = z.enum([
+  "OPEN",
+  "OVERDUE",
+  "SUBMITTED",
+  "PAID",
+  "NIL",
+  "ARCHIVED",
+]);
 export type VatPeriodStatus = z.infer<typeof VatPeriodStatusSchema>;
 
-export const TaxReportStatusSchema = z.enum(["UPCOMING", "OPEN", "SUBMITTED", "OVERDUE"]);
+export const TaxReportStatusSchema = z.enum([
+  "UPCOMING",
+  "OPEN",
+  "OVERDUE",
+  "SUBMITTED",
+  "PAID",
+  "NIL",
+  "ARCHIVED",
+]);
 export type TaxReportStatus = z.infer<typeof TaxReportStatusSchema>;
 
 export const TaxReportTypeSchema = z.enum(["VAT_ADVANCE", "VAT_ANNUAL", "INCOME_TAX"]);
@@ -39,6 +54,9 @@ export type TaxReportType = z.infer<typeof TaxReportTypeSchema>;
 
 export const TaxReportGroupSchema = z.enum(["ADVANCE_VAT", "ANNUAL_REPORT"]);
 export type TaxReportGroup = z.infer<typeof TaxReportGroupSchema>;
+
+export const VatPeriodTypeSchema = z.enum(["VAT_QUARTERLY"]);
+export type VatPeriodType = z.infer<typeof VatPeriodTypeSchema>;
 
 // ============================================================================
 // DTOs (wire format - ISO strings for dates)
@@ -230,12 +248,25 @@ export type TaxSnapshotDto = z.infer<typeof TaxSnapshotDtoSchema>;
 export const VatPeriodSummaryDtoSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
+  periodKey: z.string(),
   periodStart: z.string().datetime(),
   periodEnd: z.string().datetime(),
   currency: z.string(),
+  salesNetCents: z.number().int(),
+  salesVatCents: z.number().int(),
+  salesGrossCents: z.number().int(),
+  purchaseNetCents: z.number().int(),
+  purchaseVatCents: z.number().int(),
+  purchaseGrossCents: z.number().int(),
+  taxDueCents: z.number().int(),
   totalsByKind: TaxTotalsByKindSchema,
   generatedAt: z.string().datetime(),
   status: VatPeriodStatusSchema,
+  submissionDate: z.string().datetime().optional().nullable(),
+  submissionReference: z.string().optional().nullable(),
+  submissionNotes: z.string().optional().nullable(),
+  archivedReason: z.string().optional().nullable(),
+  pdfStorageKey: z.string().optional().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -273,6 +304,11 @@ export const TaxReportDtoSchema = z.object({
   amountFinalCents: z.number().int().optional().nullable(),
   currency: z.string(),
   submittedAt: z.string().datetime().optional().nullable(),
+  submissionReference: z.string().optional().nullable(),
+  submissionNotes: z.string().optional().nullable(),
+  archivedReason: z.string().optional().nullable(),
+  pdfStorageKey: z.string().optional().nullable(),
+  pdfGeneratedAt: z.string().datetime().optional().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
