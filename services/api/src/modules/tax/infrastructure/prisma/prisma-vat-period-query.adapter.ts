@@ -1,6 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
-import { VatPeriodQueryPort, type VatPeriodInputs } from "../../domain/ports/vat-period-query.port";
+import {
+  VatPeriodQueryPort,
+  type VatPeriodInputs,
+  type VatPeriodDetails,
+} from "../../domain/ports/vat-period-query.port";
 import type { VatAccountingMethod } from "@corely/contracts";
 
 @Injectable()
@@ -31,7 +35,7 @@ export class PrismaVatPeriodQueryAdapter extends VatPeriodQueryPort {
     start: Date,
     end: Date,
     method: VatAccountingMethod
-  ): Promise<import("../../domain/ports/vat-period-query.port").VatPeriodDetails> {
+  ): Promise<VatPeriodDetails> {
     const sales = [];
 
     if (method === "SOLL") {
@@ -56,12 +60,14 @@ export class PrismaVatPeriodQueryAdapter extends VatPeriodQueryPort {
         let net = 0;
         let vat = 0;
         let gross = 0;
+
         if (inv.taxSnapshot) {
           const snap = inv.taxSnapshot as any;
           net = snap.subtotalAmountCents || 0;
           vat = snap.taxTotalAmountCents || 0;
           gross = snap.totalAmountCents || 0;
         }
+
         sales.push({
           sourceType: "INVOICE",
           sourceId: inv.id,

@@ -29,6 +29,8 @@ import { PrismaTenantTimeZoneAdapter } from "../../shared/infrastructure/time/pr
 import { TENANT_TIMEZONE_PORT } from "../../shared/time/tenant-timezone.token";
 import { PartyModule } from "../party";
 import { DocumentsModule } from "../documents";
+import { TaxModule } from "../tax/tax.module";
+import { TaxEngineService } from "../tax/application/services/tax-engine.service";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { CreateInvoiceUseCase } from "./application/use-cases/create-invoice/create-invoice.usecase";
 import { FinalizeInvoiceUseCase } from "./application/use-cases/finalize-invoice/finalize-invoice.usecase";
@@ -46,7 +48,7 @@ import { INVOICE_COMMANDS } from "./application/ports/invoice-commands.port";
 import { InvoiceCommandService } from "./application/services/invoice-command.service";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule],
+  imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule, TaxModule],
   controllers: [InvoicesHttpController, ResendWebhookController],
   providers: [
     PrismaInvoiceRepoAdapter,
@@ -127,9 +129,9 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
           paymentMethodQuery,
         }),
       inject: [
-        PrismaInvoiceRepoAdapter, 
-        ID_GENERATOR_TOKEN, 
-        CLOCK_PORT_TOKEN, 
+        PrismaInvoiceRepoAdapter,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
         CUSTOMER_QUERY_PORT,
         LEGAL_ENTITY_QUERY_PORT,
         PAYMENT_METHOD_QUERY_PORT,
@@ -142,7 +144,8 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
         numbering: InvoiceNumberingPort,
         clock: any,
         customerQuery: CustomerQueryPort,
-        paymentMethodQuery: any
+        paymentMethodQuery: any,
+        taxEngine: TaxEngineService
       ) =>
         new FinalizeInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -151,6 +154,7 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
           clock,
           customerQuery,
           paymentMethodQuery,
+          taxEngine,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
@@ -158,6 +162,7 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
         CLOCK_PORT_TOKEN,
         CUSTOMER_QUERY_PORT,
         PAYMENT_METHOD_QUERY_PORT,
+        TaxEngineService,
       ],
     },
     {
