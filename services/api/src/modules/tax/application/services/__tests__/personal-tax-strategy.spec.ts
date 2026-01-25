@@ -6,12 +6,15 @@ import {
   TaxProfileRepoPort,
   TaxCodeRepoPort,
   TaxRateRepoPort,
+  VatPeriodQueryPort,
 } from "../../../domain/ports";
 import type { TaxReportEntity, TaxProfileEntity } from "../../../domain/entities";
 import type { TaxSummaryTotals } from "../../../domain/ports/tax-summary-query.port";
 import { DEPackV1 } from "../jurisdictions/de-pack.v1";
 import { InMemoryTaxCodeRepo } from "../../../testkit/fakes/in-memory-tax-code-repo";
 import { InMemoryTaxRateRepo } from "../../../testkit/fakes/in-memory-tax-rate-repo";
+import { VatPeriodResolver } from "../../../domain/services/vat-period.resolver";
+import type { VatAccountingMethod } from "@corely/contracts";
 
 class FakeSummaryQuery extends TaxSummaryQueryPort {
   constructor(private totals: TaxSummaryTotals) {
@@ -25,6 +28,32 @@ class FakeSummaryQuery extends TaxSummaryQueryPort {
   }
 }
 
+class FakeVatPeriodQuery extends VatPeriodQueryPort {
+  inputs = {
+    salesNetCents: 0,
+    salesVatCents: 0,
+    purchaseNetCents: 0,
+    purchaseVatCents: 0,
+  };
+
+  setInputs(inputs: {
+    salesNetCents: number;
+    salesVatCents: number;
+    purchaseNetCents: number;
+    purchaseVatCents: number;
+  }) {
+    this.inputs = inputs;
+  }
+
+  async getInputs(_workspaceId: string, _start: Date, _end: Date, _method: VatAccountingMethod) {
+    return this.inputs;
+  }
+
+  async getDetails(_workspaceId: string, _start: Date, _end: Date, _method: VatAccountingMethod) {
+    return { sales: [], purchases: [] };
+  }
+}
+
 class FakeReportRepo extends TaxReportRepoPort {
   reports: TaxReportEntity[] = [];
 
@@ -33,9 +62,11 @@ class FakeReportRepo extends TaxReportRepoPort {
     status: "upcoming" | "submitted"
   ): Promise<TaxReportEntity[]> {
     if (status === "submitted") {
-      return this.reports.filter((r) => r.status === "SUBMITTED");
+      return this.reports.filter((r) =>
+        ["SUBMITTED", "PAID", "NIL", "ARCHIVED"].includes(r.status)
+      );
     }
-    return this.reports.filter((r) => r.status !== "SUBMITTED");
+    return this.reports.filter((r) => !["SUBMITTED", "PAID", "NIL", "ARCHIVED"].includes(r.status));
   }
 
   async markSubmitted(tenantId: string, id: string, submittedAt: Date): Promise<TaxReportEntity> {
@@ -49,26 +80,92 @@ class FakeReportRepo extends TaxReportRepoPort {
     return report;
   }
 
+  async listByPeriodRange(): Promise<TaxReportEntity[]> {
+    return this.reports;
+  }
+
+  async upsertByPeriod(input: {
+    tenantId: string;
+    type: string;
+    group: string;
+    periodLabel: string;
+    periodStart: Date;
+    periodEnd: Date;
+    dueDate: Date;
+    status: string;
+    amountFinalCents?: number | null;
+    submissionReference?: string | null;
+    submissionNotes?: string | null;
+    archivedReason?: string | null;
+    submittedAt?: Date | null;
+  }): Promise<TaxReportEntity> {
+    const existing = this.reports.find(
+      (r) =>
+        r.tenantId === input.tenantId &&
+        r.type === input.type &&
+        r.periodStart.getTime() === input.periodStart.getTime() &&
+        r.periodEnd.getTime() === input.periodEnd.getTime()
+    );
+    if (existing) {
+      existing.status = input.status as any;
+      existing.amountFinalCents = input.amountFinalCents ?? null;
+      existing.submittedAt = input.submittedAt ?? null;
+      existing.submissionReference = input.submissionReference ?? null;
+      existing.submissionNotes = input.submissionNotes ?? null;
+      existing.archivedReason = input.archivedReason ?? null;
+      return existing;
+    }
+    const created: TaxReportEntity = {
+      id: `report-${this.reports.length + 1}`,
+      tenantId: input.tenantId,
+      type: input.type as any,
+      group: input.group as any,
+      periodLabel: input.periodLabel,
+      periodStart: input.periodStart,
+      periodEnd: input.periodEnd,
+      dueDate: input.dueDate,
+      status: input.status as any,
+      amountEstimatedCents: null,
+      amountFinalCents: input.amountFinalCents ?? null,
+      currency: "EUR",
+      submittedAt: input.submittedAt ?? null,
+      submissionReference: input.submissionReference ?? null,
+      submissionNotes: input.submissionNotes ?? null,
+      archivedReason: input.archivedReason ?? null,
+      pdfStorageKey: null,
+      pdfGeneratedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.reports.push(created);
+    return created;
+  }
+
   async seedDefaultReports(tenantId: string): Promise<void> {
     if (this.reports.length > 0) return;
-    const now = new Date("2025-02-10T00:00:00Z");
+    const now = new Date("2026-01-24T00:00:00Z"); // Updated to match user context
     this.reports.push(
       {
         id: "r1",
         tenantId,
         type: "VAT_ADVANCE",
         group: "ADVANCE_VAT",
-        periodLabel: "Q1 2025",
-        periodStart: new Date("2025-01-01T00:00:00Z"),
-        periodEnd: new Date("2025-03-31T00:00:00Z"),
-        dueDate: new Date("2025-04-10T00:00:00Z"),
-        status: "OPEN",
+        periodLabel: "Q4 2025",
+        periodStart: new Date("2025-10-01T00:00:00Z"),
+        periodEnd: new Date("2026-01-01T00:00:00Z"),
+        dueDate: new Date("2026-01-10T00:00:00Z"),
+        status: "OPEN", // OPEN/UPCOMING depending on logic
         amountEstimatedCents: null,
         amountFinalCents: null,
         currency: "EUR",
         createdAt: now,
         updatedAt: now,
         submittedAt: null,
+        submissionReference: null,
+        submissionNotes: null,
+        archivedReason: null,
+        pdfStorageKey: null,
+        pdfGeneratedAt: null,
       },
       {
         id: "r2",
@@ -86,6 +183,11 @@ class FakeReportRepo extends TaxReportRepoPort {
         createdAt: now,
         updatedAt: now,
         submittedAt: null,
+        submissionReference: null,
+        submissionNotes: null,
+        archivedReason: null,
+        pdfStorageKey: null,
+        pdfGeneratedAt: null,
       }
     );
   }
@@ -131,6 +233,8 @@ describe("PersonalTaxStrategy.computeSummary", () => {
   let profileRepo: FakeProfileRepo;
   let taxCodeRepo: TaxCodeRepoPort;
   let taxRateRepo: TaxRateRepoPort;
+  let vatPeriodQuery: FakeVatPeriodQuery;
+  let vatPeriodResolver: VatPeriodResolver;
   let strategy: PersonalTaxStrategy;
 
   beforeEach(async () => {
@@ -144,6 +248,8 @@ describe("PersonalTaxStrategy.computeSummary", () => {
     profileRepo = new FakeProfileRepo();
     taxCodeRepo = new InMemoryTaxCodeRepo();
     taxRateRepo = new InMemoryTaxRateRepo();
+    vatPeriodQuery = new FakeVatPeriodQuery();
+    vatPeriodResolver = new VatPeriodResolver();
 
     // Seed default tax code/rate for DE standard VAT
     const code = await taxCodeRepo.create({
@@ -165,11 +271,13 @@ describe("PersonalTaxStrategy.computeSummary", () => {
       summaryQuery,
       reportRepo,
       profileRepo,
+      vatPeriodQuery,
+      vatPeriodResolver,
       new DEPackV1(taxCodeRepo, taxRateRepo)
     );
   });
 
-  it("computes VAT payable when profile is configured for standard VAT", async () => {
+  it("computes VAT payable based on PERIOD inputs, not lifetime totals", async () => {
     await profileRepo.upsert({
       tenantId,
       country: "DE",
@@ -183,19 +291,56 @@ describe("PersonalTaxStrategy.computeSummary", () => {
       effectiveFrom: new Date("2024-01-01T00:00:00Z"),
       effectiveTo: null,
     });
+
+    // High lifetime totals
     summaryQuery.setTotals({
-      incomeTotalCents: 200_000,
+      incomeTotalCents: 1_000_000,
       unpaidInvoicesCount: 2,
       expensesTotalCents: 0,
       expenseItemsToReviewCount: 0,
     });
 
+    // But this quarter has minimal activity
+    vatPeriodQuery.setInputs({
+      salesNetCents: 10_000,
+      salesVatCents: 1_900, // 19% of 10,000
+      purchaseNetCents: 0,
+      purchaseVatCents: 0,
+    });
+
     const summary = await strategy.computeSummary({ tenantId, workspaceId: tenantId });
 
     expect(summary.configurationStatus).toBe("READY");
-    expect(summary.taxesToBePaidEstimatedCents).toBe(38_000); // 19% of 200k
-    expect(summary.upcomingReportsPreview[0].amountEstimatedCents).toBe(38_000);
-    expect(summary.warnings.length).toBeGreaterThan(0);
+    // Should NOT be 190,000 (19% of 1m)
+    expect(summary.taxesToBePaidEstimatedCents).toBe(1_900);
+    // Reports should reflect this
+    expect(summary.upcomingReportsPreview[0].periodLabel).toBe("Q4 2025");
+    expect(summary.upcomingReportsPreview[0].amountEstimatedCents).toBe(1_900);
+  });
+
+  it("calculates net payable (Sales VAT - Purchase VAT)", async () => {
+    await profileRepo.upsert({
+      tenantId,
+      country: "DE",
+      regime: "STANDARD_VAT",
+      vatEnabled: true,
+      vatId: "DE123",
+      currency: "EUR",
+      filingFrequency: "QUARTERLY",
+      taxYearStartMonth: 1,
+      effectiveFrom: new Date("2024-01-01T00:00:00Z"),
+      effectiveTo: null,
+    });
+
+    vatPeriodQuery.setInputs({
+      salesNetCents: 10_000,
+      salesVatCents: 1_900,
+      purchaseNetCents: 5_000,
+      purchaseVatCents: 950, // 19% of 5,000
+    });
+
+    const summary = await strategy.computeSummary({ tenantId, workspaceId: tenantId });
+    expect(summary.taxesToBePaidEstimatedCents).toBe(950); // 1900 - 950
   });
 
   it("indicates missing settings when no profile exists", async () => {
@@ -223,15 +368,8 @@ describe("PersonalTaxStrategy.computeSummary", () => {
       currency: "EUR",
       filingFrequency: "YEARLY",
       taxYearStartMonth: 1,
-      localTaxOfficeName: "Berlin",
       effectiveFrom: new Date("2024-01-01T00:00:00Z"),
       effectiveTo: null,
-    });
-    summaryQuery.setTotals({
-      incomeTotalCents: 150_000,
-      unpaidInvoicesCount: 1,
-      expensesTotalCents: 0,
-      expenseItemsToReviewCount: 0,
     });
 
     const summary = await strategy.computeSummary({ tenantId, workspaceId: tenantId });
@@ -239,34 +377,5 @@ describe("PersonalTaxStrategy.computeSummary", () => {
     expect(summary.configurationStatus).toBe("NOT_APPLICABLE");
     expect(summary.taxesToBePaidEstimatedCents).toBe(0);
     expect(summary.warnings[0]).toMatch(/VAT is not applicable/i);
-  });
-
-  it("handles expenses present while keeping input VAT warning", async () => {
-    await profileRepo.upsert({
-      tenantId,
-      country: "DE",
-      regime: "STANDARD_VAT",
-      vatEnabled: true,
-      vatId: "DE123",
-      currency: "EUR",
-      filingFrequency: "QUARTERLY",
-      taxYearStartMonth: 1,
-      localTaxOfficeName: "Berlin",
-      effectiveFrom: new Date("2024-01-01T00:00:00Z"),
-      effectiveTo: null,
-    });
-    summaryQuery.setTotals({
-      incomeTotalCents: 100_000,
-      unpaidInvoicesCount: 1,
-      expensesTotalCents: 50_000,
-      expenseItemsToReviewCount: 2,
-    });
-
-    const summary = await strategy.computeSummary({ tenantId, workspaceId: tenantId });
-
-    expect(summary.configurationStatus).toBe("READY");
-    expect(summary.taxesToBePaidEstimatedCents).toBe(19_000);
-    expect(summary.expenseItemsToReviewCount).toBe(2);
-    expect(summary.warnings.some((w) => w.includes("Input VAT"))).toBe(true);
   });
 });

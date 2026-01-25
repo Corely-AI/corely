@@ -7,10 +7,16 @@ import type {
   TaxReportGroup,
 } from "@corely/contracts";
 import { TaxComputationStrategy, type TaxStrategyContext } from "./tax-strategy";
-import { TaxSummaryQueryPort, TaxReportRepoPort, TaxProfileRepoPort } from "../../domain/ports";
+import {
+  TaxSummaryQueryPort,
+  TaxReportRepoPort,
+  TaxProfileRepoPort,
+  VatPeriodQueryPort,
+} from "../../domain/ports";
 import type { TaxProfileEntity } from "../../domain/entities";
 import type { TaxSummaryTotals } from "../../domain/ports";
 import { DEPackV1 } from "./jurisdictions/de-pack.v1";
+import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 
 @Injectable()
 export class PersonalTaxStrategy implements TaxComputationStrategy {
@@ -18,6 +24,8 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
     private readonly summaryQuery: TaxSummaryQueryPort,
     private readonly reportRepo: TaxReportRepoPort,
     private readonly profileRepo: TaxProfileRepoPort,
+    private readonly vatPeriodQuery: VatPeriodQueryPort,
+    private readonly vatPeriodResolver: VatPeriodResolver,
     private readonly dePack: DEPackV1
   ) {}
 
@@ -29,7 +37,7 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
     const profile = await this.profileRepo.getActive(ctx.workspaceId, now);
 
     const { taxesToBePaidEstimatedCents, configurationStatus, warnings } =
-      await this.computePayable(profile, totals, ctx.workspaceId, now);
+      await this.computePayable(profile, totals, ctx.workspaceId, reports);
 
     const preview = reports
       .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime())
@@ -86,6 +94,11 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
       amountFinalCents?: number | null;
       currency: string;
       submittedAt?: Date | null;
+      submissionReference?: string | null;
+      submissionNotes?: string | null;
+      archivedReason?: string | null;
+      pdfStorageKey?: string | null;
+      pdfGeneratedAt?: Date | null;
       createdAt: Date;
       updatedAt: Date;
     },
@@ -112,6 +125,11 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
     amountFinalCents?: number | null;
     currency: string;
     submittedAt?: Date | null;
+    submissionReference?: string | null;
+    submissionNotes?: string | null;
+    archivedReason?: string | null;
+    pdfStorageKey?: string | null;
+    pdfGeneratedAt?: Date | null;
     createdAt: Date;
     updatedAt: Date;
   }): TaxReportDto {
@@ -129,6 +147,11 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
       amountFinalCents: entity.amountFinalCents ?? null,
       currency: entity.currency,
       submittedAt: entity.submittedAt?.toISOString() ?? null,
+      submissionReference: entity.submissionReference ?? null,
+      submissionNotes: entity.submissionNotes ?? null,
+      archivedReason: entity.archivedReason ?? null,
+      pdfStorageKey: entity.pdfStorageKey ?? null,
+      pdfGeneratedAt: entity.pdfGeneratedAt?.toISOString() ?? null,
       createdAt: entity.createdAt.toISOString(),
       updatedAt: entity.updatedAt.toISOString(),
     };
@@ -138,7 +161,7 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
     profile: TaxProfileEntity | null,
     totals: TaxSummaryTotals,
     workspaceId: string,
-    at: Date
+    reports: { type: TaxReportType; periodStart: Date; periodEnd: Date }[]
   ): Promise<{
     taxesToBePaidEstimatedCents: number;
     configurationStatus: "READY" | "MISSING_SETTINGS" | "NOT_APPLICABLE";
@@ -160,13 +183,43 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
       };
     }
 
-    const rateBps = await this.dePack.getRateBps("STANDARD", at, workspaceId);
-    const outputVatCents = Math.round((totals.incomeTotalCents * rateBps) / 10_000);
+    // Determine period from next VAT report or current date
+    let start: Date;
+    let end: Date;
 
-    const warnings = ["Input VAT from expenses is not yet tracked; deduction not applied"];
+    const nextVatReport = reports.find((r) => r.type === "VAT_ADVANCE" || r.type === "VAT_ANNUAL");
+
+    if (nextVatReport) {
+      start = nextVatReport.periodStart;
+      end = nextVatReport.periodEnd;
+    } else {
+      // Fallback to current quarter
+      const period = this.vatPeriodResolver.resolveQuarter(new Date());
+      start = period.start;
+      end = period.end;
+    }
+
+    const inputs = await this.vatPeriodQuery.getInputs(
+      workspaceId,
+      start,
+      end,
+      profile.vatAccountingMethod ?? "IST"
+    );
+
+    const payable = inputs.salesVatCents - inputs.purchaseVatCents;
+    // ensure non-negative? No, tax refund is possible. But usually displayed as negative 0 or (X).
+    // The UI `formatMoney` handles negatives.
+
+    // Warnings?
+    const warnings: string[] = [];
+    if (inputs.purchaseVatCents === 0 && totals.expensesTotalCents > 0) {
+      // Simple heuristic: if we have expenses total but no input VAT in this period?
+      // Maybe valid. But if we track expenses, we expect some input VAT.
+      // Actually the old warning "Input VAT from expenses is not yet tracked" can be removed now that we track it.
+    }
 
     return {
-      taxesToBePaidEstimatedCents: outputVatCents,
+      taxesToBePaidEstimatedCents: payable,
       configurationStatus: "READY",
       warnings,
     };

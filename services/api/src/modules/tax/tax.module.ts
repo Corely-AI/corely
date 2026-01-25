@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
+import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { TaxController } from "./tax.controller";
 
 // Use cases
@@ -15,6 +16,12 @@ import { ListTaxReportsUseCase } from "./application/use-cases/list-tax-reports.
 import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-report-submitted.use-case";
 import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
 import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
+import { ListVatPeriodsUseCase } from "./application/use-cases/list-vat-periods.use-case";
+import { GetVatPeriodSummaryUseCase } from "./application/use-cases/get-vat-period-summary.use-case";
+import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-period-details.use-case";
+import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
+import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
+import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -22,6 +29,7 @@ import { DEPackV1 } from "./application/services/jurisdictions/de-pack.v1";
 import { TaxStrategyResolverService } from "./application/services/tax-strategy-resolver.service";
 import { PersonalTaxStrategy } from "./application/services/personal-tax-strategy";
 import { CompanyTaxStrategy } from "./application/services/company-tax-strategy";
+import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 // Repository ports
 import {
@@ -33,6 +41,7 @@ import {
   TaxConsultantRepoPort,
   TaxReportRepoPort,
   TaxSummaryQueryPort,
+  VatPeriodQueryPort,
 } from "./domain/ports";
 
 // Repository adapters
@@ -44,9 +53,10 @@ import { PrismaVatReportRepoAdapter } from "./infrastructure/prisma/prisma-vat-r
 import { PrismaTaxConsultantRepoAdapter } from "./infrastructure/prisma/prisma-tax-consultant-repo.adapter";
 import { PrismaTaxReportRepoAdapter } from "./infrastructure/prisma/prisma-tax-report-repo.adapter";
 import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax-summary-query.adapter";
+import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-period-query.adapter";
 
 @Module({
-  imports: [IdentityModule, DataModule],
+  imports: [IdentityModule, WorkspacesModule, DataModule],
   controllers: [TaxController],
   providers: [
     // Use cases
@@ -61,6 +71,12 @@ import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax
     MarkTaxReportSubmittedUseCase,
     GetTaxConsultantUseCase,
     UpsertTaxConsultantUseCase,
+    ListVatPeriodsUseCase,
+    GetVatPeriodSummaryUseCase,
+    GetVatPeriodDetailsUseCase,
+    MarkVatPeriodSubmittedUseCase,
+    MarkVatPeriodNilUseCase,
+    ArchiveVatPeriodUseCase,
 
     // Services
     TaxEngineService,
@@ -68,6 +84,7 @@ import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax
     TaxStrategyResolverService,
     PersonalTaxStrategy,
     CompanyTaxStrategy,
+    VatPeriodResolver,
 
     // Repository adapters bound to ports
     {
@@ -101,6 +118,10 @@ import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax
     {
       provide: TaxSummaryQueryPort,
       useClass: PrismaTaxSummaryQueryAdapter,
+    },
+    {
+      provide: VatPeriodQueryPort,
+      useClass: PrismaVatPeriodQueryAdapter,
     },
   ],
   exports: [

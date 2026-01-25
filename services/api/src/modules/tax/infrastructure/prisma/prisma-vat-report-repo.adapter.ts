@@ -69,7 +69,7 @@ export class PrismaVatReportRepoAdapter extends VatReportRepoPort {
   async finalize(id: string, tenantId: string): Promise<VatPeriodSummaryEntity> {
     const updated = await this.prisma.vatPeriodSummary.update({
       where: { id, tenantId },
-      data: { status: "FINALIZED" },
+      data: { status: "SUBMITTED" },
     });
 
     return this.toDomain(updated);

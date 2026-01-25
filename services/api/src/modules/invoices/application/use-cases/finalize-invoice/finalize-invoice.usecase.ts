@@ -17,6 +17,7 @@ import { type InvoiceNumberingPort } from "../../ports/invoice-numbering.port";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
 import { type CustomerQueryPort } from "../../ports/customer-query.port";
 import { type PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
+import { type TaxEngineService } from "../../../../tax/application/services/tax-engine.service";
 
 type Deps = {
   logger: LoggerPort;
@@ -25,6 +26,7 @@ type Deps = {
   clock: ClockPort;
   customerQuery: CustomerQueryPort;
   paymentMethodQuery: PaymentMethodQueryPort;
+  taxEngine: TaxEngineService;
 };
 
 export class FinalizeInvoiceUseCase extends BaseUseCase<
@@ -62,10 +64,61 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
     try {
       const paymentSnapshot = await this.useCaseDeps.paymentMethodQuery.getPaymentMethodSnapshot(
         ctx.tenantId,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (input as any).paymentMethodId
       );
 
+      // Calculate tax snapshot before finalizing
       const now = this.useCaseDeps.clock.now();
+      const documentDate = invoice.issuedAt ?? now;
+
+      let taxSnapshot = null;
+      try {
+        const taxBreakdown = await this.useCaseDeps.taxEngine.calculate(
+          {
+            jurisdiction: "DE",
+            documentDate: documentDate.toISOString(),
+            currency: invoice.currency,
+            customer:
+              customer.vatId || customer.billingAddress?.country
+                ? {
+                    country: customer.billingAddress?.country ?? "DE",
+                    isBusiness: !!customer.vatId,
+                    vatId: customer.vatId ?? undefined,
+                  }
+                : undefined,
+            lines: invoice.lineItems.map((line) => ({
+              id: line.id,
+              description: line.description,
+              qty: line.qty,
+              netAmountCents: line.qty * line.unitPriceCents,
+              taxCodeId: undefined,
+            })),
+          },
+          ctx.tenantId
+        );
+
+        taxSnapshot = {
+          subtotalAmountCents: taxBreakdown.subtotalAmountCents,
+          taxTotalAmountCents: taxBreakdown.taxTotalAmountCents,
+          totalAmountCents: taxBreakdown.totalAmountCents,
+          lines: taxBreakdown.lines,
+          totalsByKind: taxBreakdown.totalsByKind,
+          appliedAt: now.toISOString(),
+        };
+      } catch (taxError: unknown) {
+        // If tax calculation fails, log but don't block finalization
+        this.useCaseDeps.logger.warn(
+          `Failed to calculate tax for invoice ${invoice.id}`,
+          taxError as Record<string, unknown>
+        );
+      }
+
+      // Update tax snapshot before finalizing
+      if (taxSnapshot) {
+        invoice.updateSnapshots({ taxSnapshot }, now);
+      }
+
       const number = await this.useCaseDeps.numbering.nextInvoiceNumber(ctx.workspaceId);
       invoice.finalize(
         number,

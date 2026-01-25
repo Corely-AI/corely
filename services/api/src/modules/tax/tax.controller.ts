@@ -24,6 +24,10 @@ import {
   LockTaxSnapshotInputSchema,
   ListTaxReportsInputSchema,
   UpsertTaxConsultantInputSchema,
+  ListVatPeriodsInputSchema,
+  MarkVatPeriodSubmittedInputSchema,
+  MarkVatPeriodNilInputSchema,
+  ArchiveVatPeriodInputSchema,
   type GetTaxProfileOutput,
   type UpsertTaxProfileOutput,
   type ListTaxCodesOutput,
@@ -56,6 +60,13 @@ import { ListTaxReportsUseCase } from "./application/use-cases/list-tax-reports.
 import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-report-submitted.use-case";
 import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
 import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
+import { ListVatPeriodsUseCase } from "./application/use-cases/list-vat-periods.use-case";
+import { GetVatPeriodSummaryUseCase } from "./application/use-cases/get-vat-period-summary.use-case";
+import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-period-details.use-case";
+import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
+import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
+import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
+import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 @Controller("tax")
 @UseGuards(AuthGuard)
@@ -72,7 +83,14 @@ export class TaxController {
     private readonly listTaxReportsUseCase: ListTaxReportsUseCase,
     private readonly markTaxReportSubmittedUseCase: MarkTaxReportSubmittedUseCase,
     private readonly getTaxConsultantUseCase: GetTaxConsultantUseCase,
-    private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase
+    private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase,
+    private readonly listVatPeriodsUseCase: ListVatPeriodsUseCase,
+    private readonly getVatPeriodSummaryUseCase: GetVatPeriodSummaryUseCase,
+    private readonly getVatPeriodDetailsUseCase: GetVatPeriodDetailsUseCase,
+    private readonly markVatPeriodSubmittedUseCase: MarkVatPeriodSubmittedUseCase,
+    private readonly markVatPeriodNilUseCase: MarkVatPeriodNilUseCase,
+    private readonly archiveVatPeriodUseCase: ArchiveVatPeriodUseCase,
+    private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
   // ============================================================================
@@ -183,6 +201,71 @@ export class TaxController {
   }
 
   // ============================================================================
+  // VAT Periods
+  // ============================================================================
+
+  @Get("periods")
+  async listVatPeriods(@Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const input = ListVatPeriodsInputSchema.parse({
+      from: query.from,
+      to: query.to,
+      year: query.year ? Number(query.year) : undefined,
+      type: query.type,
+    });
+    return this.listVatPeriodsUseCase.execute(input, ctx);
+  }
+
+  @Get("periods/:key")
+  async getVatPeriodSummary(@Param("key") key: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const period = this.vatPeriodResolver.resolveQuarter(key);
+
+    // We convert key to start/end for the use case which follows the contract
+    return this.getVatPeriodSummaryUseCase.execute(
+      {
+        periodStart: period.start.toISOString(),
+        periodEnd: period.end.toISOString(),
+      },
+      ctx
+    );
+  }
+
+  @Get("periods/:key/details")
+  async getVatPeriodDetails(@Param("key") key: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    // Use case internally resolves key (as I implemented it to take periodKey)
+    // Wait, let's verify GetVatPeriodDetailsUseCase implementation.
+    // Yes, it takes (periodKey, ctx).
+    return this.getVatPeriodDetailsUseCase.execute(key, ctx);
+  }
+
+  @Post("reports/vat/quarterly/:key/mark-submitted")
+  async markVatPeriodSubmitted(
+    @Param("key") key: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = MarkVatPeriodSubmittedInputSchema.parse(body);
+    const ctx = this.buildContext(req);
+    return this.markVatPeriodSubmittedUseCase.execute(key, input, ctx);
+  }
+
+  @Post("reports/vat/quarterly/:key/mark-nil")
+  async markVatPeriodNil(@Param("key") key: string, @Body() body: unknown, @Req() req: Request) {
+    const input = MarkVatPeriodNilInputSchema.parse(body);
+    const ctx = this.buildContext(req);
+    return this.markVatPeriodNilUseCase.execute(key, input, ctx);
+  }
+
+  @Post("reports/vat/quarterly/:key/archive")
+  async archiveVatPeriod(@Param("key") key: string, @Body() body: unknown, @Req() req: Request) {
+    const input = ArchiveVatPeriodInputSchema.parse(body);
+    const ctx = this.buildContext(req);
+    return this.archiveVatPeriodUseCase.execute(key, input, ctx);
+  }
+
+  // ============================================================================
   // Consultant
   // ============================================================================
 
@@ -241,6 +324,7 @@ export class TaxController {
       vatId: entity.vatId,
       currency: entity.currency,
       filingFrequency: entity.filingFrequency,
+      vatAccountingMethod: entity.vatAccountingMethod,
       taxYearStartMonth: entity.taxYearStartMonth,
       localTaxOfficeName: entity.localTaxOfficeName,
       vatExemptionParagraph: entity.vatExemptionParagraph ?? null,
