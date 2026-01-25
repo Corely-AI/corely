@@ -242,6 +242,13 @@
     "thisYear": "Dieses Jahr",
     "daysAgo": "vor {{count}} Tagen"
   },
+  "dueDate": {
+    "today": "heute fällig",
+    "inDays": "in {{count}} Tagen",
+    "inDays_one": "in einem Tag",
+    "overdue": "{{count}} Tage überfällig",
+    "overdue_one": "einen Tag überfällig"
+  },
   "errors": {
     "loadMenuFailed": "Menü konnte nicht geladen werden"
   }

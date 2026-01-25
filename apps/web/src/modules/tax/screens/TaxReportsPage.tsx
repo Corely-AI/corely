@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { formatMoney, formatRelativeTime } from "@/shared/lib/formatters";
-import { CheckCircle2, Clock, Download, FileSignature } from "lucide-react";
+import { formatMoney, formatDueDate } from "@/shared/lib/formatters";
+import { CheckCircle2, Clock, Download, FileText, FileSignature } from "lucide-react";
 
 export default function TaxReportsPage() {
   const [tab, setTab] = React.useState<"upcoming" | "submitted">("upcoming");
@@ -96,7 +96,7 @@ function ReportGroup({
   canSubmit,
 }: ReportGroupProps) {
   const handleDownload = (storageKey?: string | null) => {
-    if (!storageKey) return;
+    if (!storageKey) {return;}
     if (storageKey.startsWith("http") || storageKey.startsWith("/")) {
       window.open(storageKey, "_blank", "noopener,noreferrer");
     }
@@ -123,7 +123,7 @@ function ReportGroup({
                 <div className="font-medium">{humanizeReportType(report.type)}</div>
                 <div className="text-sm text-muted-foreground">{report.periodLabel}</div>
                 <div className="text-sm text-muted-foreground">
-                  Due {formatRelativeTime(report.dueDate, locale)}
+                  Due {formatDueDate(report.dueDate, locale)}
                 </div>
               </div>
               <div className="text-right space-y-1">

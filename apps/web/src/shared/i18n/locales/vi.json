@@ -242,6 +242,11 @@
     "thisYear": "Năm nay",
     "daysAgo": "{{count}} ngày trước"
   },
+  "dueDate": {
+    "today": "đến hạn hôm nay",
+    "inDays": "còn {{count}} ngày",
+    "overdue": "quá hạn {{count}} ngày"
+  },
   "errors": {
     "loadMenuFailed": "Không thể tải menu"
   }

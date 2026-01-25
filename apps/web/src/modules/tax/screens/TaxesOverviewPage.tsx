@@ -17,7 +17,8 @@ import {
   Home,
   PiggyBank,
 } from "lucide-react";
-import { formatMoney, formatRelativeTime } from "@/shared/lib/formatters";
+import { useTranslation } from "react-i18next";
+import { formatMoney, formatDueDate } from "../../../shared/lib/formatters";
 import { TaxHistoryCard } from "../components/TaxHistoryCard";
 
 export default function TaxesOverviewPage() {
@@ -272,7 +273,7 @@ export default function TaxesOverviewPage() {
                   </div>
                   <div className="text-right space-y-1">
                     <div className="text-sm text-muted-foreground">
-                      Due {formatRelativeTime(report.dueDate, locale)}
+                      Due {formatDueDate(report.dueDate, locale)}
                     </div>
                     <div className="font-semibold">
                       {formatCents(report.amountEstimatedCents ?? report.amountFinalCents ?? 0)}
