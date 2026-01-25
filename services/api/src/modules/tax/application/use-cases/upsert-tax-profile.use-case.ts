@@ -24,6 +24,9 @@ export class UpsertTaxProfileUseCase {
       taxYearStartMonth: input.taxYearStartMonth ?? null,
       localTaxOfficeName: input.localTaxOfficeName ?? null,
       vatExemptionParagraph: input.vatExemptionParagraph ?? null,
+      euB2BSales: input.euB2BSales ?? false,
+      hasEmployees: input.hasEmployees ?? false,
+      usesTaxAdvisor: input.usesTaxAdvisor ?? false,
       effectiveFrom,
       effectiveTo,
     };
