@@ -246,26 +246,19 @@ export function TaxHistoryCard() {
                         variant="ghost"
                         size="sm"
                         className="w-fit"
-                        disabled={!selectedPeriod.pdfStorageKey}
                         onClick={() => {
-                          if (selectedPeriod.pdfStorageKey) {
-                            if (
-                              selectedPeriod.pdfStorageKey.startsWith("http") ||
-                              selectedPeriod.pdfStorageKey.startsWith("/")
-                            ) {
-                              window.open(
-                                selectedPeriod.pdfStorageKey,
-                                "_blank",
-                                "noopener,noreferrer"
-                              );
-                            }
-                          }
+                          const promise = taxApi
+                            .getVatPeriodPdfUrl(selectedPeriod.periodKey)
+                            .then((res) => {
+                              window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
+                            });
+
+                          toast.promise(promise, {
+                            loading: "Generating PDF...",
+                            success: "Download started",
+                            error: "Failed to download PDF",
+                          });
                         }}
-                        title={
-                          !selectedPeriod.pdfStorageKey
-                            ? "PDF generation coming soon"
-                            : "Download VAT period PDF"
-                        }
                       >
                         <Download className="mr-2 h-4 w-4" />
                         Download PDF

@@ -29,6 +29,7 @@ export abstract class TaxReportRepoPort {
     submissionNotes?: string | null;
     archivedReason?: string | null;
     submittedAt?: Date | null;
+    pdfStorageKey?: string | null;
   }): Promise<TaxReportEntity>;
 
   abstract seedDefaultReports(tenantId: string): Promise<void>;

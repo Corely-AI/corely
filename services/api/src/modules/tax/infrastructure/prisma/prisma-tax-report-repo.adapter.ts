@@ -75,6 +75,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     submissionNotes?: string | null;
     archivedReason?: string | null;
     submittedAt?: Date | null;
+    pdfStorageKey?: string | null;
   }): Promise<TaxReportEntity> {
     const row = await this.prisma.taxReport.upsert({
       where: {
@@ -102,6 +103,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
         submissionReference: input.submissionReference ?? null,
         submissionNotes: input.submissionNotes ?? null,
         archivedReason: input.archivedReason ?? null,
+        pdfStorageKey: input.pdfStorageKey ?? null,
       },
       update: {
         status: input.status as any,
@@ -110,6 +112,16 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
         submissionReference: input.submissionReference ?? null,
         submissionNotes: input.submissionNotes ?? null,
         archivedReason: input.archivedReason ?? null,
+        pdfStorageKey: input.pdfStorageKey ?? undefined, // Only update if provided? wrapper function passes null defaults.
+        // Actually, if input.pdfStorageKey is passed (even null), we might overwrite.
+        // Logic: if undefined, don't update. if null, clear it?
+        // The input interface has optional pdfStorageKey.
+        // Let's use `input.pdfStorageKey` directly, but if undefined we might want to skip.
+        // The previous code had `?? null` to force nulls.
+        // If I use `input.pdfStorageKey ?? undefined`, then explicit nulls become null, undefined becomes undefined (skip update in prisma).
+        // But `??` coalesces null and undefined.
+        // `input.pdfStorageKey === undefined ? undefined : input.pdfStorageKey` is safer.
+        // However, Prisma `create` requires a value (or null). `update` allows undefined to skip.
         updatedAt: new Date(),
       },
     });

@@ -195,9 +195,9 @@ export class TaxApi {
   async listVatPeriods(from?: string, to?: string) {
     let url = "/tax/periods";
     const params = new URLSearchParams();
-    if (from) params.append("from", from);
-    if (to) params.append("to", to);
-    if (params.toString()) url += `?${params.toString()}`;
+    if (from) {params.append("from", from);}
+    if (to) {params.append("to", to);}
+    if (params.toString()) {url += `?${params.toString()}`;}
 
     return apiClient.get<ListVatPeriodsOutput>(url, {
       correlationId: apiClient.generateCorrelationId(),
@@ -247,6 +247,12 @@ export class TaxApi {
       input,
       { correlationId: apiClient.generateCorrelationId() }
     );
+  }
+
+  async getVatPeriodPdfUrl(key: string) {
+    return apiClient.get<{ downloadUrl: string }>(`/tax/reports/vat/quarterly/${key}/pdf-url`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
   }
 
   // ============================================================================

@@ -66,6 +66,7 @@ import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-peri
 import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
 import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
+import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 @Controller("tax")
@@ -90,6 +91,7 @@ export class TaxController {
     private readonly markVatPeriodSubmittedUseCase: MarkVatPeriodSubmittedUseCase,
     private readonly markVatPeriodNilUseCase: MarkVatPeriodNilUseCase,
     private readonly archiveVatPeriodUseCase: ArchiveVatPeriodUseCase,
+    private readonly generateTaxReportPdfUseCase: GenerateTaxReportPdfUseCase,
     private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
@@ -263,6 +265,12 @@ export class TaxController {
     const input = ArchiveVatPeriodInputSchema.parse(body);
     const ctx = this.buildContext(req);
     return this.archiveVatPeriodUseCase.execute(key, input, ctx);
+  }
+
+  @Get("reports/vat/quarterly/:key/pdf-url")
+  async getVatPeriodPdfUrl(@Param("key") key: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.generateTaxReportPdfUseCase.execute(ctx, key);
   }
 
   // ============================================================================

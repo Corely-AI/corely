@@ -22,6 +22,7 @@ import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-peri
 import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
 import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
+import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -30,6 +31,7 @@ import { TaxStrategyResolverService } from "./application/services/tax-strategy-
 import { PersonalTaxStrategy } from "./application/services/personal-tax-strategy";
 import { CompanyTaxStrategy } from "./application/services/company-tax-strategy";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
+import { TaxPdfRenderer } from "./infrastructure/pdf/tax-pdf-renderer";
 
 // Repository ports
 import {
@@ -54,9 +56,10 @@ import { PrismaTaxConsultantRepoAdapter } from "./infrastructure/prisma/prisma-t
 import { PrismaTaxReportRepoAdapter } from "./infrastructure/prisma/prisma-tax-report-repo.adapter";
 import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax-summary-query.adapter";
 import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-period-query.adapter";
+import { DocumentsModule } from "../documents/documents.module";
 
 @Module({
-  imports: [IdentityModule, WorkspacesModule, DataModule],
+  imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
   controllers: [TaxController],
   providers: [
     // Use cases
@@ -77,6 +80,7 @@ import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-
     MarkVatPeriodSubmittedUseCase,
     MarkVatPeriodNilUseCase,
     ArchiveVatPeriodUseCase,
+    GenerateTaxReportPdfUseCase,
 
     // Services
     TaxEngineService,
@@ -85,6 +89,7 @@ import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-
     PersonalTaxStrategy,
     CompanyTaxStrategy,
     VatPeriodResolver,
+    TaxPdfRenderer,
 
     // Repository adapters bound to ports
     {
