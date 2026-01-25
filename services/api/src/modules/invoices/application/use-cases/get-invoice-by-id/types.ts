@@ -1,4 +1,8 @@
-import { type GetInvoiceByIdInput, type InvoiceDto } from "@corely/contracts";
+import {
+  type GetInvoiceByIdInput,
+  type InvoiceDto,
+  type InvoiceCapabilities,
+} from "@corely/contracts";
 
 export type GetInvoiceByIdCommand = GetInvoiceByIdInput;
-export type GetInvoiceByIdResult = { invoice: InvoiceDto };
+export type GetInvoiceByIdResult = { invoice: InvoiceDto; capabilities?: InvoiceCapabilities };

@@ -21,7 +21,7 @@ export class LockTaxSnapshotUseCase {
   async execute(input: LockTaxSnapshotInput, ctx: UseCaseContext): Promise<TaxSnapshotDto> {
     // Check if snapshot already exists (idempotency)
     const existing = await this.snapshotRepo.findBySource(
-      ctx.tenantId,
+      ctx.workspaceId,
       input.sourceType,
       input.sourceId
     );
@@ -40,12 +40,12 @@ export class LockTaxSnapshotUseCase {
         customer: input.customer,
         lines: input.lines,
       },
-      ctx.tenantId
+      ctx.workspaceId
     );
 
     // Get profile for regime info
     const documentDate = new Date(input.documentDate);
-    const profile = await this.profileRepo.getActive(ctx.tenantId, documentDate);
+    const profile = await this.profileRepo.getActive(ctx.workspaceId, documentDate);
 
     if (!profile) {
       throw new Error("No active tax profile found");
@@ -53,7 +53,7 @@ export class LockTaxSnapshotUseCase {
 
     // Create immutable snapshot
     const snapshot = TaxSnapshot.create({
-      tenantId: ctx.tenantId,
+      tenantId: ctx.workspaceId,
       sourceType: input.sourceType,
       sourceId: input.sourceId,
       jurisdiction: input.jurisdiction || "DE",

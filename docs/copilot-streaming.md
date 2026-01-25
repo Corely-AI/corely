@@ -15,6 +15,7 @@
 - UI lives under `apps/web/src/modules/*CopilotPage.tsx` (sales, purchasing, inventory) and `modules/assistant` which renders the shared `Chat` component. Routes in `apps/web/src/routes/copilot.tsx` and feature pages all call `useChat` from `@ai-sdk/react`.
 - Transport: `useCopilotChatOptions` (apps/web/src/lib/copilot-api.ts) targets either the real API base or mock base depending on `VITE_API_MODE`. It posts to `/copilot/chat` (or `/copilot/runs/:id/messages` when a runId is provided) with `streamProtocol: "text"`, auto-generates an idempotency key, and passes tenant/auth headers. No resume or history loading exists; runId is typically undefined so every page load starts a new run.
 - Rendering: Components mostly render `message.parts` when present, with some special handling for `collect_inputs` via `addToolResult`, but because the backend streams plain text there are no live tool-call/result parts arriving from the server.
+- Loading status text: `Chat` uses `useRotatingStatusText` and the message lists in `apps/web/src/shared/components/chat/statusTexts.ts`; tool-phase messages appear only when a tool submission/approval is pending in the UI.
 
 ### Contracts (packages/contracts)
 

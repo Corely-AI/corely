@@ -13,6 +13,11 @@ export default function NewOrderPage() {
     queryKey: ["customers"],
     queryFn: () => customersApi.listCustomers(),
   });
+  const customers = (customersData?.customers ?? []).flatMap((customer) =>
+    customer.id && customer.displayName
+      ? [{ id: customer.id, displayName: customer.displayName }]
+      : []
+  );
 
   const createMutation = useMutation({
     mutationFn: (values: OrderFormValues) =>
@@ -41,10 +46,7 @@ export default function NewOrderPage() {
       <h1 className="text-h1 text-foreground">New Order</h1>
       <Card>
         <CardContent className="p-6">
-          <OrderForm
-            customers={customersData?.customers ?? []}
-            onSubmit={(values) => createMutation.mutate(values)}
-          />
+          <OrderForm customers={customers} onSubmit={(values) => createMutation.mutate(values)} />
         </CardContent>
       </Card>
     </div>

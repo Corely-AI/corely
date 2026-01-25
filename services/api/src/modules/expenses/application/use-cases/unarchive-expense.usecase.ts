@@ -1,24 +1,43 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { ForbiddenError, NotFoundError } from "@corely/domain";
+import type { UseCaseContext } from "@corely/kernel";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
+import type { AuditPort } from "../../../../shared/ports/audit.port";
+import { assertCan } from "../../../../shared/policies/assert-can";
 
 export interface UnarchiveExpenseInput {
-  tenantId: string;
   expenseId: string;
 }
 
 @Injectable()
 export class UnarchiveExpenseUseCase {
-  constructor(private readonly repo: ExpenseRepositoryPort) {}
+  constructor(
+    private readonly repo: ExpenseRepositoryPort,
+    private readonly audit: AuditPort
+  ) {}
 
-  async execute(input: UnarchiveExpenseInput): Promise<void> {
-    const expense = await this.repo.findByIdIncludingArchived(input.tenantId, input.expenseId);
+  async execute(input: UnarchiveExpenseInput, ctx: UseCaseContext): Promise<void> {
+    assertCan(ctx);
+    const tenantId = ctx.tenantId;
+    if (!tenantId) {
+      throw new ForbiddenError("Tenant is required");
+    }
+    const expense = await this.repo.findById(tenantId, input.expenseId, { includeArchived: true });
     if (!expense) {
-      throw new NotFoundException("Expense not found");
+      throw new NotFoundError("Expense not found");
     }
     if (!expense.archivedAt) {
       return;
     }
     expense.unarchive();
-    await this.repo.save(expense);
+    await this.repo.update(expense);
+    await this.audit.log({
+      tenantId,
+      userId: ctx.userId ?? "system",
+      action: "expense.unarchived",
+      entityType: "Expense",
+      entityId: expense.id,
+      metadata: {},
+    });
   }
 }

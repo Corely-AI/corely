@@ -4,12 +4,52 @@ import type {
   SalesOrderDto,
   SalesPaymentDto,
   SalesSettingsDto,
+  InvoiceDto,
 } from "@corely/contracts";
 import { type QuoteAggregate } from "../../domain/quote.aggregate";
 import { type SalesOrderAggregate } from "../../domain/order.aggregate";
-import { type SalesInvoiceAggregate } from "../../domain/invoice.aggregate";
-import type { SalesPayment } from "../../domain/sales.types";
 import { type SalesSettingsAggregate } from "../../domain/settings.aggregate";
+
+/**
+ * Maps a unified InvoiceDto from the Invoices module to the legacy SalesInvoiceDto format.
+ * This ensures backward compatibility while the Invoices module becomes the SSoT.
+ */
+export const mapUnifiedInvoiceToSalesInvoice = (invoice: InvoiceDto): SalesInvoiceDto => ({
+  id: invoice.id,
+  tenantId: invoice.tenantId,
+  number: invoice.number,
+  status: (invoice.status === "CANCELED" ? "VOID" : invoice.status) as any, // Map CANCELED -> VOID
+  customerPartyId: invoice.customerPartyId,
+  customerContactPartyId: null, // Unified doesn't have this yet or maps differently
+  issueDate: invoice.invoiceDate,
+  dueDate: invoice.dueDate,
+  currency: invoice.currency,
+  paymentTerms: invoice.terms,
+  notes: invoice.notes,
+  lineItems: invoice.lineItems.map((item) => ({
+    id: item.id,
+    description: item.description,
+    quantity: item.qty,
+    unitPriceCents: item.unitPriceCents,
+    discountCents: 0,
+    sortOrder: 0,
+  })),
+  totals: {
+    subtotalCents: invoice.totals.subtotalCents,
+    discountCents: invoice.totals.discountCents,
+    taxCents: invoice.totals.taxCents,
+    totalCents: invoice.totals.totalCents,
+    paidCents: invoice.totals.paidCents,
+    dueCents: invoice.totals.dueCents,
+  },
+  createdAt: invoice.createdAt,
+  updatedAt: invoice.updatedAt,
+  issuedAt: invoice.issuedAt,
+  voidedAt: invoice.status === "CANCELED" ? invoice.updatedAt : null,
+  voidReason: undefined,
+  sourceSalesOrderId: invoice.sourceType === "order" ? invoice.sourceId : null,
+  sourceQuoteId: invoice.sourceType === "quote" ? invoice.sourceId : null,
+});
 
 const toIso = (value: Date | null | undefined): string | null | undefined =>
   value ? value.toISOString() : value === null ? null : undefined;
@@ -75,57 +115,6 @@ export const toOrderDto = (order: SalesOrderAggregate): SalesOrderDto => ({
   updatedAt: toIso(order.updatedAt) ?? "",
   sourceQuoteId: order.sourceQuoteId ?? undefined,
   sourceInvoiceId: order.sourceInvoiceId ?? undefined,
-});
-
-export const toPaymentDto = (payment: SalesPayment): SalesPaymentDto => ({
-  id: payment.id,
-  invoiceId: payment.invoiceId,
-  amountCents: payment.amountCents,
-  currency: payment.currency,
-  paymentDate: payment.paymentDate,
-  method: payment.method,
-  reference: payment.reference ?? undefined,
-  notes: payment.notes ?? undefined,
-  recordedAt: toIso(payment.recordedAt) ?? "",
-  recordedByUserId: payment.recordedByUserId ?? undefined,
-  journalEntryId: payment.journalEntryId ?? undefined,
-});
-
-export const toInvoiceDto = (invoice: SalesInvoiceAggregate): SalesInvoiceDto => ({
-  id: invoice.id,
-  tenantId: invoice.tenantId,
-  number: invoice.number,
-  status: invoice.status,
-  customerPartyId: invoice.customerPartyId,
-  customerContactPartyId: invoice.customerContactPartyId ?? undefined,
-  issueDate: invoice.issueDate ?? undefined,
-  dueDate: invoice.dueDate ?? undefined,
-  currency: invoice.currency,
-  paymentTerms: invoice.paymentTerms ?? undefined,
-  notes: invoice.notes ?? undefined,
-  lineItems: invoice.lineItems.map((item) => ({
-    id: item.id,
-    description: item.description,
-    quantity: item.quantity,
-    unitPriceCents: item.unitPriceCents,
-    discountCents: item.discountCents ?? undefined,
-    taxCode: item.taxCode ?? undefined,
-    revenueCategory: item.revenueCategory ?? undefined,
-    sortOrder: item.sortOrder ?? undefined,
-  })),
-  totals: invoice.totals,
-  createdAt: toIso(invoice.createdAt) ?? "",
-  updatedAt: toIso(invoice.updatedAt) ?? "",
-  issuedAt: toIso(invoice.issuedAt) ?? undefined,
-  voidedAt: toIso(invoice.voidedAt) ?? undefined,
-  voidReason: invoice.voidReason ?? undefined,
-  sourceSalesOrderId: invoice.sourceSalesOrderId ?? undefined,
-  sourceQuoteId: invoice.sourceQuoteId ?? undefined,
-  issuedJournalEntryId: invoice.issuedJournalEntryId ?? undefined,
-  paymentJournalEntryIds: invoice.payments
-    .map((payment) => payment.journalEntryId)
-    .filter((value): value is string => Boolean(value)),
-  payments: invoice.payments.length ? invoice.payments.map(toPaymentDto) : undefined,
 });
 
 export const toSettingsDto = (settings: SalesSettingsAggregate): SalesSettingsDto => ({

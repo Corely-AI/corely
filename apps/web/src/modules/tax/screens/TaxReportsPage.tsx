@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/ui/tabs";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { formatMoney, formatRelativeTime } from "@/shared/lib/formatters";
-import { CheckCircle2, Clock, FileSignature } from "lucide-react";
+import { CheckCircle2, Clock, Download, FileSignature } from "lucide-react";
 
 export default function TaxReportsPage() {
   const [tab, setTab] = React.useState<"upcoming" | "submitted">("upcoming");
@@ -95,6 +95,13 @@ function ReportGroup({
   onSubmit,
   canSubmit,
 }: ReportGroupProps) {
+  const handleDownload = (storageKey?: string | null) => {
+    if (!storageKey) return;
+    if (storageKey.startsWith("http") || storageKey.startsWith("/")) {
+      window.open(storageKey, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <Card className="mt-4">
       <CardHeader className="flex flex-row items-center gap-2">
@@ -127,6 +134,17 @@ function ReportGroup({
                 {canSubmit && (
                   <Button size="sm" variant="ghost" onClick={() => onSubmit(report.id)}>
                     Mark as submitted
+                  </Button>
+                )}
+                {!canSubmit && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    disabled={!report.pdfStorageKey}
+                    onClick={() => handleDownload(report.pdfStorageKey)}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Download PDF
                   </Button>
                 )}
               </div>

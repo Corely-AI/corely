@@ -1,65 +1,106 @@
-import { apiClient } from "./api-client";
 import type {
   CreateDealInput,
-  CreateDealOutput,
   UpdateDealInput,
-  UpdateDealOutput,
-  MoveDealStageOutput,
-  MarkDealWonOutput,
-  MarkDealLostOutput,
   ListDealsOutput,
-  GetDealOutput,
   DealDto,
   CreateActivityInput,
-  CreateActivityOutput,
   UpdateActivityInput,
-  UpdateActivityOutput,
-  CompleteActivityOutput,
   ListActivitiesOutput,
   GetTimelineOutput,
   ActivityDto,
   TimelineItem,
+  ChannelDefinition,
 } from "@corely/contracts";
+import type { LogMessageInput, LogMessageOutput, ListChannelsOutput } from "@corely/contracts";
+import { apiClient } from "./api-client";
+
+const unwrapDealResponse = (response: unknown): DealDto => {
+  if (response && typeof response === "object") {
+    if ("deal" in response) {
+      return (response as { deal: DealDto }).deal;
+    }
+    if ("data" in response) {
+      const data = (response as { data?: unknown }).data;
+      if (data && typeof data === "object") {
+        if ("deal" in data) {
+          return (data as { deal: DealDto }).deal;
+        }
+        if ("id" in data) {
+          return data as DealDto;
+        }
+      }
+    }
+    if ("id" in response) {
+      return response as DealDto;
+    }
+  }
+
+  return response as DealDto;
+};
+
+const unwrapActivityResponse = (response: unknown): ActivityDto => {
+  if (response && typeof response === "object") {
+    if ("activity" in response) {
+      return (response as { activity: ActivityDto }).activity;
+    }
+    if ("data" in response) {
+      const data = (response as { data?: unknown }).data;
+      if (data && typeof data === "object") {
+        if ("activity" in data) {
+          return (data as { activity: ActivityDto }).activity;
+        }
+        if ("id" in data) {
+          return data as ActivityDto;
+        }
+      }
+    }
+    if ("id" in response) {
+      return response as ActivityDto;
+    }
+  }
+
+  return response as ActivityDto;
+};
 
 export const crmApi = {
   // ============================================================
   // Deal Operations
   // ============================================================
   async createDeal(input: CreateDealInput): Promise<DealDto> {
-    const response = await apiClient.post<CreateDealOutput>("/crm/deals", input);
-    return response.deal;
+    const response = await apiClient.post<unknown>("/crm/deals", input);
+    return unwrapDealResponse(response);
   },
 
   async updateDeal(id: string, patch: Partial<UpdateDealInput>): Promise<DealDto> {
-    const response = await apiClient.patch<UpdateDealOutput>(`/crm/deals/${id}`, patch);
-    return response.deal;
+    const response = await apiClient.patch<unknown>(`/crm/deals/${id}`, patch);
+    return unwrapDealResponse(response);
   },
 
   async moveDealStage(id: string, newStageId: string): Promise<DealDto> {
-    const response = await apiClient.post<MoveDealStageOutput>(`/crm/deals/${id}/move-stage`, {
+    const response = await apiClient.post<unknown>(`/crm/deals/${id}/move-stage`, {
       newStageId,
     });
-    return response.deal;
+    return unwrapDealResponse(response);
   },
 
   async markDealWon(id: string, wonAt?: string): Promise<DealDto> {
-    const response = await apiClient.post<MarkDealWonOutput>(`/crm/deals/${id}/mark-won`, {
+    const response = await apiClient.post<unknown>(`/crm/deals/${id}/mark-won`, {
       wonAt,
     });
-    return response.deal;
+    return unwrapDealResponse(response);
   },
 
   async markDealLost(id: string, lostReason?: string, lostAt?: string): Promise<DealDto> {
-    const response = await apiClient.post<MarkDealLostOutput>(`/crm/deals/${id}/mark-lost`, {
+    const response = await apiClient.post<unknown>(`/crm/deals/${id}/mark-lost`, {
       lostReason,
       lostAt,
     });
-    return response.deal;
+    return unwrapDealResponse(response);
   },
 
   async getDeal(id: string): Promise<DealDto> {
-    const response = await apiClient.get<GetDealOutput>(`/crm/deals/${id}`);
-    return response.deal;
+    const response = await apiClient.get<unknown>(`/crm/deals/${id}`);
+    return unwrapDealResponse(response);
   },
 
   async listDeals(params?: {
@@ -93,30 +134,27 @@ export const crmApi = {
     const endpoint = queryString ? `/crm/deals?${queryString}` : "/crm/deals";
 
     const response = await apiClient.get<ListDealsOutput>(endpoint);
-    return { deals: response.deals, nextCursor: response.nextCursor };
+    return { deals: response.items, nextCursor: response.nextCursor ?? undefined };
   },
 
   // ============================================================
   // Activity Operations
   // ============================================================
   async createActivity(input: CreateActivityInput): Promise<ActivityDto> {
-    const response = await apiClient.post<CreateActivityOutput>("/crm/activities", input);
-    return response.activity;
+    const response = await apiClient.post<unknown>("/crm/activities", input);
+    return unwrapActivityResponse(response);
   },
 
   async updateActivity(id: string, patch: Partial<UpdateActivityInput>): Promise<ActivityDto> {
-    const response = await apiClient.patch<UpdateActivityOutput>(`/crm/activities/${id}`, patch);
-    return response.activity;
+    const response = await apiClient.patch<unknown>(`/crm/activities/${id}`, patch);
+    return unwrapActivityResponse(response);
   },
 
   async completeActivity(id: string, completedAt?: string): Promise<ActivityDto> {
-    const response = await apiClient.post<CompleteActivityOutput>(
-      `/crm/activities/${id}/complete`,
-      {
-        completedAt,
-      }
-    );
-    return response.activity;
+    const response = await apiClient.post<unknown>(`/crm/activities/${id}/complete`, {
+      completedAt,
+    });
+    return unwrapActivityResponse(response);
   },
 
   async listActivities(params?: {
@@ -154,7 +192,7 @@ export const crmApi = {
     const endpoint = queryString ? `/crm/activities?${queryString}` : "/crm/activities";
 
     const response = await apiClient.get<ListActivitiesOutput>(endpoint);
-    return { activities: response.activities, nextCursor: response.nextCursor };
+    return { activities: response.items, nextCursor: response.nextCursor ?? undefined };
   },
 
   // ============================================================
@@ -182,5 +220,21 @@ export const crmApi = {
 
     const response = await apiClient.get<GetTimelineOutput>(endpoint);
     return { items: response.items, nextCursor: response.nextCursor };
+  },
+
+  // ============================================================
+  // Channel Operations
+  // ============================================================
+  async listChannels(): Promise<ChannelDefinition[]> {
+    const response = await apiClient.get<ListChannelsOutput>("/crm/channels");
+    return response.channels;
+  },
+
+  async logMessage(input: LogMessageInput): Promise<ActivityDto> {
+    const response = await apiClient.post<LogMessageOutput>(
+      `/crm/deals/${input.dealId}/messages`,
+      input
+    );
+    return response.activity;
   },
 };

@@ -18,6 +18,7 @@
     "next": "Next",
     "confirm": "Confirm",
     "close": "Close",
+    "logout": "Log out",
     "viewAll": "View all",
     "comingSoon": "Coming soon",
     "noResults": "No results found",
@@ -53,7 +54,13 @@
     "inventoryCopilot": "Inventory - Copilot",
     "automation": "Automation",
     "documents": "Documents",
-    "hr": "HR"
+    "hr": "HR",
+    "workspace": "Workspace Settings",
+    "profile": "Profile & Account",
+    "members": "Team Management",
+    "roles": "Roles & Permissions",
+    "paymentMethods": "Payment Methods",
+    "taxSettings": "Tax Settings"
   },
   "dashboard": {
     "title": "Dashboard",

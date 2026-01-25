@@ -36,11 +36,14 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
     ctx: UseCaseContext
   ): Promise<Result<SendInvoiceOutput, UseCaseError>> {
     if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
+      return err(new ValidationError("tenantId missing from context"));
+    }
+    if (!ctx.workspaceId) {
+      return err(new ValidationError("workspaceId missing from context"));
     }
 
-    // 1. Validate invoice exists + belongs to tenantId
-    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.tenantId, input.invoiceId);
+    // 1. Validate invoice exists + belongs to workspace
+    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.workspaceId, input.invoiceId);
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
     }
@@ -60,7 +63,7 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
 
     // 4. Check for existing delivery (idempotency)
     const existingDelivery = await this.useCaseDeps.deliveryRepo.findByIdempotencyKey(
-      ctx.tenantId,
+      ctx.workspaceId,
       idempotencyKey
     );
 
@@ -76,7 +79,7 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
     const deliveryId = this.useCaseDeps.idGenerator.newId();
     await this.useCaseDeps.deliveryRepo.create({
       id: deliveryId,
-      tenantId: ctx.tenantId,
+      tenantId: ctx.workspaceId,
       invoiceId: input.invoiceId,
       to: input.to,
       status: "QUEUED",
@@ -91,6 +94,7 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
       to: input.to,
       cc: input.cc,
       bcc: input.bcc,
+      subject: input.subject,
       message: input.message,
       attachPdf: input.attachPdf,
       locale: input.locale,
@@ -98,7 +102,7 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
     };
 
     await this.useCaseDeps.outbox.enqueue({
-      tenantId: ctx.tenantId,
+      tenantId: ctx.workspaceId,
       eventType: "invoice.email.requested",
       payload,
       correlationId: ctx.correlationId,

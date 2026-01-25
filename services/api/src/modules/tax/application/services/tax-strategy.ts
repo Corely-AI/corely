@@ -2,6 +2,7 @@ import type { TaxSummaryDto, TaxReportDto } from "@corely/contracts";
 
 export interface TaxStrategyContext {
   tenantId: string;
+  workspaceId: string;
 }
 
 export interface TaxComputationStrategy {

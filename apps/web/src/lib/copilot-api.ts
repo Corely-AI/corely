@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { UseChatOptions } from "@ai-sdk/react";
-import { DefaultChatTransport, lastAssistantMessageIsCompleteWithApprovalResponses } from "ai";
+import {
+  type UIMessage,
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+  lastAssistantMessageIsCompleteWithToolCalls,
+} from "ai";
 import { createIdempotencyKey } from "@corely/api-client";
 import { authClient } from "./auth-client";
 import { getActiveWorkspaceId, subscribeWorkspace } from "@/shared/workspaces/workspace-store";
 import { CopilotUIMessageSchema, type CopilotUIMessage } from "@corely/contracts";
+
+export type CopilotChatMessage = UIMessage & { content?: unknown };
 
 export const resolveCopilotBaseUrl = () => {
   const mode = import.meta.env.VITE_API_MODE;
@@ -31,59 +38,147 @@ export interface CopilotOptionsInput {
 
 const RUN_ID_STORAGE_KEY = "copilot:run";
 
-const loadStoredRunId = (activeModule: string, tenantId: string): string | null => {
+const buildRunIdStorageKey = (
+  activeModule: string,
+  tenantId: string,
+  workspaceId: string
+): string => `${RUN_ID_STORAGE_KEY}:${tenantId}:${workspaceId}:${activeModule}`;
+
+const loadStoredRunId = (
+  activeModule: string,
+  tenantId: string,
+  workspaceId: string
+): string | null => {
   if (typeof window === "undefined") {
     return null;
   }
   try {
-    const stored = window.localStorage.getItem(`${RUN_ID_STORAGE_KEY}:${tenantId}:${activeModule}`);
-    return stored || null;
+    const scopedKey = buildRunIdStorageKey(activeModule, tenantId, workspaceId);
+    const stored = window.localStorage.getItem(scopedKey);
+    if (stored) {
+      return stored;
+    }
+    if (tenantId === workspaceId) {
+      const legacy = window.localStorage.getItem(
+        `${RUN_ID_STORAGE_KEY}:${workspaceId}:${activeModule}`
+      );
+      return legacy || null;
+    }
+    return null;
   } catch {
     return null;
   }
 };
 
-const persistRunId = (activeModule: string, tenantId: string, runId: string) => {
+const persistRunId = (
+  activeModule: string,
+  tenantId: string,
+  workspaceId: string,
+  runId: string
+) => {
   if (typeof window === "undefined") {
     return;
   }
   try {
-    window.localStorage.setItem(`${RUN_ID_STORAGE_KEY}:${tenantId}:${activeModule}`, runId);
+    const scopedKey = buildRunIdStorageKey(activeModule, tenantId, workspaceId);
+    window.localStorage.setItem(scopedKey, runId);
   } catch {
     // ignore storage errors
   }
 };
 
-const normalizeMessages = (messages: CopilotUIMessage[]) =>
-  messages.map((msg) => ({
-    ...msg,
-    parts: Array.isArray(msg.parts) ? msg.parts : [],
-  }));
+const contentToText = (content: unknown) => {
+  if (typeof content === "string") {
+    return content;
+  }
+  if (content == null) {
+    return "";
+  }
+  try {
+    return JSON.stringify(content);
+  } catch {
+    return String(content);
+  }
+};
+
+const normalizeMessages = (
+  messages: Array<CopilotUIMessage | CopilotChatMessage>
+): CopilotChatMessage[] =>
+  messages.map((msg) => {
+    const role = (msg.role === "tool" ? "assistant" : msg.role) as CopilotChatMessage["role"];
+    const fallbackText = contentToText((msg as CopilotUIMessage).content);
+    const parts = (
+      Array.isArray(msg.parts) && msg.parts.length > 0
+        ? msg.parts
+        : fallbackText
+          ? [{ type: "text", text: fallbackText }]
+          : []
+    ) as CopilotChatMessage["parts"];
+    const id =
+      msg.id ||
+      (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : createIdempotencyKey());
+
+    return {
+      ...msg,
+      id,
+      role,
+      parts,
+    };
+  });
+
+const decodeTenantIdFromToken = (token: string | null): string | null => {
+  if (!token) {
+    return null;
+  }
+  if (typeof atob !== "function") {
+    return null;
+  }
+  const parts = token.split(".");
+  if (parts.length < 2) {
+    return null;
+  }
+  const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+  const padded = payload.padEnd(Math.ceil(payload.length / 4) * 4, "=");
+  try {
+    const decoded = JSON.parse(atob(padded));
+    return typeof decoded?.tenantId === "string" ? decoded.tenantId : null;
+  } catch {
+    return null;
+  }
+};
 
 export const useCopilotChatOptions = (
   input: CopilotOptionsInput
 ): {
-  options: UseChatOptions;
+  options: UseChatOptions<CopilotChatMessage>;
   runId: string;
   apiBase: string;
   tenantId: string;
+  workspaceId: string;
   accessToken: string;
 } => {
   const apiBase = resolveCopilotBaseUrl();
-  const [tenantId, setTenantId] = useState<string>(getActiveWorkspaceId() ?? "demo-tenant");
+  const accessToken = authClient.getAccessToken() ?? "";
+  const tenantId = useMemo(
+    () => decodeTenantIdFromToken(accessToken) ?? "demo-tenant",
+    [accessToken]
+  );
+  const [workspaceId, setWorkspaceId] = useState<string>(getActiveWorkspaceId() ?? tenantId);
 
   useEffect(() => {
     const unsubscribe = subscribeWorkspace((workspaceId) => {
-      setTenantId(workspaceId ?? "demo-tenant");
+      setWorkspaceId(workspaceId ?? tenantId);
     });
     return unsubscribe;
-  }, []);
+  }, [tenantId]);
 
   const [runId, setRunId] = useState<string>(() => {
-    const initialTenant = getActiveWorkspaceId() ?? "demo-tenant";
+    const initialWorkspace = getActiveWorkspaceId() ?? tenantId;
     return (
       input.runId ||
-      loadStoredRunId(input.activeModule, initialTenant) ||
+      loadStoredRunId(input.activeModule, tenantId, initialWorkspace) ||
       (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
         ? crypto.randomUUID()
         : createIdempotencyKey())
@@ -93,29 +188,29 @@ export const useCopilotChatOptions = (
   useEffect(() => {
     const nextRunId =
       input.runId ||
-      loadStoredRunId(input.activeModule, tenantId) ||
+      loadStoredRunId(input.activeModule, tenantId, workspaceId) ||
       (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
         ? crypto.randomUUID()
         : createIdempotencyKey());
     setRunId(nextRunId);
-  }, [input.activeModule, input.runId, tenantId]);
+  }, [input.activeModule, input.runId, tenantId, workspaceId]);
 
   useEffect(() => {
-    persistRunId(input.activeModule, tenantId, runId);
-  }, [runId, input.activeModule, tenantId]);
+    persistRunId(input.activeModule, tenantId, workspaceId, runId);
+  }, [runId, input.activeModule, tenantId, workspaceId]);
 
   // Get auth headers dynamically on each request to ensure fresh token
   const getAuthHeaders = useCallback(() => {
     const accessToken = authClient.getAccessToken() ?? "";
     return {
       Authorization: accessToken ? `Bearer ${accessToken}` : "",
-      "X-Tenant-Id": tenantId,
+      "X-Workspace-Id": workspaceId,
     };
-  }, [tenantId]);
+  }, [workspaceId]);
 
   const transport = useMemo(
     () =>
-      new DefaultChatTransport<CopilotUIMessage>({
+      new DefaultChatTransport<CopilotChatMessage>({
         api: `${apiBase}/copilot/chat`,
         headers: async () => ({
           ...getAuthHeaders(),
@@ -132,9 +227,6 @@ export const useCopilotChatOptions = (
         prepareSendMessagesRequest: async ({ messages, trigger, messageId }) => {
           const idempotencyKey = createIdempotencyKey();
           const safeMessages = normalizeMessages(messages);
-          const shouldSendFullHistory = lastAssistantMessageIsCompleteWithApprovalResponses({
-            messages: safeMessages,
-          });
           const latestMessage = safeMessages[safeMessages.length - 1];
 
           return {
@@ -152,7 +244,7 @@ export const useCopilotChatOptions = (
                 locale: input.locale || "en",
                 activeModule: input.activeModule,
               },
-              ...(shouldSendFullHistory ? { messages: safeMessages } : { message: latestMessage }),
+              message: latestMessage,
             },
           };
         },
@@ -160,7 +252,7 @@ export const useCopilotChatOptions = (
     [apiBase, getAuthHeaders, input.activeModule, input.locale, runId, tenantId]
   );
 
-  const options: UseChatOptions = useMemo(
+  const options: UseChatOptions<CopilotChatMessage> = useMemo(
     () => ({
       id: runId,
       transport,
@@ -176,27 +268,30 @@ export const useCopilotChatOptions = (
       sendAutomaticallyWhen: ({ messages }) =>
         lastAssistantMessageIsCompleteWithApprovalResponses({
           messages: normalizeMessages(messages),
+        }) ||
+        lastAssistantMessageIsCompleteWithToolCalls({
+          messages: normalizeMessages(messages),
         }),
     }),
     [input, runId, transport]
   );
 
-  return { options, runId, apiBase, tenantId, accessToken: authClient.getAccessToken() ?? "" };
+  return { options, runId, apiBase, tenantId, workspaceId, accessToken };
 };
 
 export const fetchCopilotHistory = async (params: {
   runId: string;
   apiBase: string;
-  tenantId: string;
+  workspaceId: string;
   accessToken: string;
-}): Promise<CopilotUIMessage[]> => {
+}): Promise<CopilotChatMessage[]> => {
   if (!params.runId) {
     return [];
   }
   const response = await fetch(`${params.apiBase}/copilot/chat/${params.runId}/history`, {
     headers: {
       Authorization: params.accessToken ? `Bearer ${params.accessToken}` : "",
-      "X-Tenant-Id": params.tenantId,
+      "X-Workspace-Id": params.workspaceId,
     },
   });
   if (!response.ok) {
@@ -205,10 +300,7 @@ export const fetchCopilotHistory = async (params: {
   const json = await response.json();
   const parsed = CopilotUIMessageSchema.array().safeParse(json.items ?? []);
   if (parsed.success) {
-    return parsed.data.map((msg) => ({
-      ...msg,
-      parts: Array.isArray(msg.parts) ? msg.parts : [],
-    }));
+    return normalizeMessages(parsed.data);
   }
   return [];
 };

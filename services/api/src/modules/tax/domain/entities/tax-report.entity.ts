@@ -14,6 +14,11 @@ export interface TaxReportEntity {
   amountFinalCents?: number | null;
   currency: string;
   submittedAt?: Date | null;
+  submissionReference?: string | null;
+  submissionNotes?: string | null;
+  archivedReason?: string | null;
+  pdfStorageKey?: string | null;
+  pdfGeneratedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

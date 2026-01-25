@@ -2,6 +2,8 @@ import "reflect-metadata";
 import { loadEnv } from "@corely/config";
 import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import type { NestExpressApplication } from "@nestjs/platform-express";
+import * as path from "path";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ProblemDetailsExceptionFilter } from "./shared/exceptions/problem-details.filter.js";
@@ -17,7 +19,7 @@ async function bootstrap() {
   await setupTracing("corely-api");
 
   logger.log("Starting Nest factory");
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ["log", "error", "warn", "debug", "verbose"],
   });
 
@@ -29,6 +31,12 @@ async function bootstrap() {
   app.useGlobalFilters(new ProblemDetailsExceptionFilter());
 
   app.enableCors({ origin: true });
+
+  if (process.env.NODE_ENV !== "production") {
+    app.useStaticAssets(path.join(process.cwd(), "pdfs"), {
+      prefix: "/__local/pdfs",
+    });
+  }
 
   // Swagger configuration
   const config = new DocumentBuilder()

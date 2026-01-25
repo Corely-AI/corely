@@ -6,7 +6,7 @@ import { createParamDecorator, type ExecutionContext } from "@nestjs/common";
  */
 export const CurrentUser = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  return request.user;
+  return request.context?.userId ? { userId: request.context.userId } : request.user;
 });
 
 /**
@@ -15,7 +15,7 @@ export const CurrentUser = createParamDecorator((data: unknown, ctx: ExecutionCo
  */
 export const CurrentTenant = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  return request.tenantId;
+  return request.context?.tenantId ?? request.tenantId;
 });
 
 /**
@@ -23,7 +23,7 @@ export const CurrentTenant = createParamDecorator((data: unknown, ctx: Execution
  */
 export const CurrentUserId = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  return request.user?.userId;
+  return request.context?.userId ?? request.user?.userId;
 });
 
 /**
@@ -31,7 +31,7 @@ export const CurrentUserId = createParamDecorator((data: unknown, ctx: Execution
  */
 export const CurrentTenantId = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  return request.tenantId;
+  return request.context?.tenantId ?? request.tenantId;
 });
 
 /**
@@ -40,7 +40,7 @@ export const CurrentTenantId = createParamDecorator((data: unknown, ctx: Executi
  */
 export const CurrentRoleIds = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  return request.roleIds ?? [];
+  return request.context?.roles ?? request.roleIds ?? [];
 });
 
 /**
@@ -49,5 +49,5 @@ export const CurrentRoleIds = createParamDecorator((data: unknown, ctx: Executio
  */
 export const CurrentWorkspaceId = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
-  return request.workspaceId;
+  return request.context?.workspaceId ?? request.workspaceId;
 });

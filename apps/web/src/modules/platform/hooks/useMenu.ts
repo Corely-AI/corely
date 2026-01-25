@@ -12,6 +12,7 @@ export interface MenuItem {
   order: number;
   pinned?: boolean;
   tags?: string[];
+  requiredCapabilities?: string[];
 }
 
 export interface WorkspaceMetadata {
@@ -55,31 +56,33 @@ export function useMenu(scope: "web" | "pos" = "web") {
     enabled,
   });
 
-  return useQuery({
+  return useQuery<ComposedMenu, Error>({
     queryKey: ["menu", scope, activeWorkspace?.id],
     queryFn: async () => {
-      console.debug("[useMenu] fetching menu", {
-        scope,
-        workspaceId: activeWorkspace?.id,
-      });
-      const workspaceParam = activeWorkspace?.id ? `&workspaceId=${activeWorkspace.id}` : "";
-      const result = await apiClient.get<ComposedMenu>(`/menu?scope=${scope}${workspaceParam}`);
-      console.debug("[useMenu] menu response", {
-        scope,
-        workspaceId: activeWorkspace?.id,
-        items: result?.items?.length ?? 0,
-        computedAt: result?.computedAt,
-      });
-      return result;
+      try {
+        console.debug("[useMenu] fetching menu", {
+          scope,
+          workspaceId: activeWorkspace?.id,
+        });
+        const workspaceParam = activeWorkspace?.id ? `&workspaceId=${activeWorkspace.id}` : "";
+        const result = await apiClient.get<ComposedMenu>(`/menu?scope=${scope}${workspaceParam}`);
+        console.debug("[useMenu] menu response", {
+          scope,
+          workspaceId: activeWorkspace?.id,
+          items: result?.items?.length ?? 0,
+          computedAt: result?.computedAt,
+        });
+        return result;
+      } catch (error) {
+        console.error("[useMenu] menu fetch failed", {
+          scope,
+          workspaceId: activeWorkspace?.id,
+          error,
+        });
+        throw error;
+      }
     },
     enabled, // Only fetch when workspace is available
-    onError: (error) => {
-      console.error("[useMenu] menu fetch failed", {
-        scope,
-        workspaceId: activeWorkspace?.id,
-        error,
-      });
-    },
   });
 }
 

@@ -15,6 +15,11 @@ export default function NewQuotePage() {
     queryKey: ["customers"],
     queryFn: () => customersApi.listCustomers(),
   });
+  const customers = (customersData?.customers ?? []).flatMap((customer) =>
+    customer.id && customer.displayName
+      ? [{ id: customer.id, displayName: customer.displayName }]
+      : []
+  );
 
   const createMutation = useMutation({
     mutationFn: (values: QuoteFormValues) =>
@@ -45,7 +50,7 @@ export default function NewQuotePage() {
       <Card>
         <CardContent className="p-6">
           <QuoteForm
-            customers={customersData?.customers ?? []}
+            customers={customers}
             initial={prefill}
             onSubmit={(values) => createMutation.mutate(values)}
           />

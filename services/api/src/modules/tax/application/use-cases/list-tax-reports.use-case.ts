@@ -12,8 +12,12 @@ export class ListTaxReportsUseCase {
     filters: { group?: string | null; type?: string | null } | undefined,
     ctx: UseCaseContext
   ): Promise<ListTaxReportsOutput> {
-    const strategy = await this.resolver.resolve(ctx.tenantId);
-    const reports = await strategy.listReports({ tenantId: ctx.tenantId }, status, filters);
+    const strategy = await this.resolver.resolve(ctx.workspaceId);
+    const reports = await strategy.listReports(
+      { tenantId: ctx.tenantId, workspaceId: ctx.workspaceId },
+      status,
+      filters
+    );
     return { reports };
   }
 }

@@ -17,6 +17,8 @@ import { type UpdateInvoiceInput, type UpdateInvoiceOutput } from "@corely/contr
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
 import { type CustomerQueryPort } from "../../ports/customer-query.port";
+import { type PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
+import { type LegalEntityQueryPort } from "../../ports/legal-entity-query.port";
 
 type Deps = {
   logger: LoggerPort;
@@ -24,6 +26,8 @@ type Deps = {
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
   customerQuery: CustomerQueryPort;
+  legalEntityQuery: LegalEntityQueryPort;
+  paymentMethodQuery: PaymentMethodQueryPort;
 };
 
 export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, UpdateInvoiceOutput> {
@@ -49,10 +53,13 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
     ctx: UseCaseContext
   ): Promise<Result<UpdateInvoiceOutput, UseCaseError>> {
     if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
+      return err(new ValidationError("tenantId missing from context"));
+    }
+    if (!ctx.workspaceId) {
+      return err(new ValidationError("workspaceId missing from context"));
     }
 
-    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.tenantId, input.invoiceId);
+    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.workspaceId, input.invoiceId);
     if (!invoice) {
       return err(new NotFoundError("Invoice not found"));
     }
@@ -61,15 +68,13 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
       name: string;
       email?: string | null;
       vatId?: string | null;
-      address?:
-        | {
-            line1: string;
-            line2?: string | null;
-            city?: string | null;
-            postalCode?: string | null;
-            country?: string | null;
-          }
-        | undefined;
+      address?: {
+        line1: string;
+        line2?: string | null;
+        city?: string | null;
+        postalCode?: string | null;
+        country?: string | null;
+      };
     } | null = null;
 
     if (input.headerPatch?.customerPartyId !== undefined) {
@@ -99,8 +104,36 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
       };
     }
 
+    let issuerSnapshot: any = undefined;
+    let paymentSnapshot: any = undefined;
+
+    // Handle Config Updates (Legal Entity & Payment Method)
+    if (
+      input.headerPatch?.legalEntityId !== undefined ||
+      input.headerPatch?.paymentMethodId !== undefined
+    ) {
+      if (invoice.status !== "DRAFT") {
+        return err(new ConflictError("Cannot change invoice settings after finalize"));
+      }
+
+      if (input.headerPatch.legalEntityId !== undefined) {
+        issuerSnapshot = await this.useCaseDeps.legalEntityQuery.getIssuerSnapshot(
+          ctx.tenantId,
+          input.headerPatch.legalEntityId
+        );
+      }
+
+      if (input.headerPatch.paymentMethodId !== undefined) {
+        paymentSnapshot = await this.useCaseDeps.paymentMethodQuery.getPaymentMethodSnapshot(
+          ctx.tenantId,
+          input.headerPatch.paymentMethodId
+        );
+      }
+    }
+
     try {
       const now = this.useCaseDeps.clock.now();
+
       if (input.headerPatch) {
         invoice.updateHeader(
           {
@@ -111,6 +144,7 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
           },
           now
         );
+
         if (
           input.headerPatch.invoiceDate !== undefined ||
           input.headerPatch.dueDate !== undefined
@@ -125,6 +159,22 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
                 input.headerPatch.dueDate !== undefined
                   ? parseLocalDate(input.headerPatch.dueDate)
                   : undefined,
+            },
+            now
+          );
+        }
+
+        // Update Snapshots
+        if (
+          input.headerPatch.legalEntityId !== undefined ||
+          input.headerPatch.paymentMethodId !== undefined
+        ) {
+          invoice.updateSnapshots(
+            {
+              legalEntityId: input.headerPatch.legalEntityId,
+              paymentMethodId: input.headerPatch.paymentMethodId,
+              issuerSnapshot,
+              paymentSnapshot,
             },
             now
           );
@@ -151,7 +201,7 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
       return err(new ConflictError((error as Error).message));
     }
 
-    await this.useCaseDeps.invoiceRepo.save(ctx.tenantId, invoice);
+    await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice);
 
     return ok({ invoice: toInvoiceDto(invoice) });
   }

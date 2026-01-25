@@ -16,7 +16,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
   ): Promise<TaxReportEntity[]> {
     const where =
       status === "submitted"
-        ? { tenantId, status: { in: ["SUBMITTED"] as any } }
+        ? { tenantId, status: { in: ["SUBMITTED", "PAID", "NIL", "ARCHIVED"] as any } }
         : { tenantId, status: { in: ["UPCOMING", "OPEN", "OVERDUE"] as any } };
 
     const rows = await this.prisma.taxReport.findMany({
@@ -35,13 +35,93 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
       throw new Error("Report not found for tenant");
     }
     const refreshed = await this.prisma.taxReport.findUnique({ where: { id } });
-    if (!refreshed) {throw new Error("Report not found after update");}
+    if (!refreshed) {
+      throw new Error("Report not found after update");
+    }
     return this.toDomain(refreshed);
+  }
+
+  async listByPeriodRange(
+    tenantId: string,
+    type: string,
+    start: Date,
+    end: Date
+  ): Promise<TaxReportEntity[]> {
+    const rows = await this.prisma.taxReport.findMany({
+      where: {
+        tenantId,
+        type: type as any,
+        periodStart: {
+          gte: start,
+          lt: end,
+        },
+      },
+      orderBy: { periodStart: "asc" },
+    });
+    return rows.map((row) => this.toDomain(row));
+  }
+
+  async upsertByPeriod(input: {
+    tenantId: string;
+    type: string;
+    group: string;
+    periodLabel: string;
+    periodStart: Date;
+    periodEnd: Date;
+    dueDate: Date;
+    status: string;
+    amountFinalCents?: number | null;
+    submissionReference?: string | null;
+    submissionNotes?: string | null;
+    archivedReason?: string | null;
+    submittedAt?: Date | null;
+  }): Promise<TaxReportEntity> {
+    const row = await this.prisma.taxReport.upsert({
+      where: {
+        tenantId_type_periodStart_periodEnd: {
+          tenantId: input.tenantId,
+          type: input.type as any,
+          periodStart: input.periodStart,
+          periodEnd: input.periodEnd,
+        },
+      },
+      create: {
+        id: randomUUID(),
+        tenantId: input.tenantId,
+        type: input.type as any,
+        group: input.group as any,
+        periodLabel: input.periodLabel,
+        periodStart: input.periodStart,
+        periodEnd: input.periodEnd,
+        dueDate: input.dueDate,
+        status: input.status as any,
+        amountEstimatedCents: null,
+        amountFinalCents: input.amountFinalCents ?? null,
+        currency: "EUR",
+        submittedAt: input.submittedAt ?? null,
+        submissionReference: input.submissionReference ?? null,
+        submissionNotes: input.submissionNotes ?? null,
+        archivedReason: input.archivedReason ?? null,
+      },
+      update: {
+        status: input.status as any,
+        amountFinalCents: input.amountFinalCents ?? null,
+        submittedAt: input.submittedAt ?? null,
+        submissionReference: input.submissionReference ?? null,
+        submissionNotes: input.submissionNotes ?? null,
+        archivedReason: input.archivedReason ?? null,
+        updatedAt: new Date(),
+      },
+    });
+
+    return this.toDomain(row);
   }
 
   async seedDefaultReports(tenantId: string): Promise<void> {
     const existing = await this.prisma.taxReport.count({ where: { tenantId } });
-    if (existing > 0) {return;}
+    if (existing > 0) {
+      return;
+    }
 
     const now = new Date();
     const year = now.getUTCFullYear();
@@ -101,6 +181,11 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
       amountFinalCents: model.amountFinalCents ?? null,
       currency: model.currency,
       submittedAt: model.submittedAt,
+      submissionReference: model.submissionReference ?? null,
+      submissionNotes: model.submissionNotes ?? null,
+      archivedReason: model.archivedReason ?? null,
+      pdfStorageKey: model.pdfStorageKey ?? null,
+      pdfGeneratedAt: model.pdfGeneratedAt ?? null,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     };

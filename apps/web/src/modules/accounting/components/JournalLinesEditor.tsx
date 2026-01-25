@@ -33,8 +33,8 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
   currency,
   disabled = false,
 }) => {
-  const { fields, append, remove } = useFieldArray({
-    control,
+  const { fields, append, remove } = useFieldArray<Record<string, JournalLine[]>, string>({
+    control: control as unknown as Control<Record<string, JournalLine[]>>,
     name: fieldName,
   });
 
@@ -59,8 +59,7 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
       amountCents: 0,
       currency,
       lineMemo: undefined,
-      tags: [],
-    } as JournalLine & { id: string });
+    });
   };
 
   return (

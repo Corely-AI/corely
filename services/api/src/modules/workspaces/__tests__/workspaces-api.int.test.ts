@@ -8,6 +8,7 @@ import {
   seedDefaultTenant,
   stopSharedContainer,
 } from "@corely/testkit";
+import { HEADER_TENANT_ID } from "@shared/request-context";
 
 vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
@@ -18,11 +19,11 @@ describe("Workspaces API (E2E)", () => {
   let tenantId: string;
   let userId: string;
   const authedPost = (url: string) =>
-    request(server).post(url).set("x-tenant-id", tenantId).set("x-user-id", userId);
+    request(server).post(url).set(HEADER_TENANT_ID, tenantId).set("x-user-id", userId);
   const authedGet = (url: string) =>
-    request(server).get(url).set("x-tenant-id", tenantId).set("x-user-id", userId);
+    request(server).get(url).set(HEADER_TENANT_ID, tenantId).set("x-user-id", userId);
   const authedPatch = (url: string) =>
-    request(server).patch(url).set("x-tenant-id", tenantId).set("x-user-id", userId);
+    request(server).patch(url).set(HEADER_TENANT_ID, tenantId).set("x-user-id", userId);
 
   beforeAll(async () => {
     db = await createTestDb();
@@ -197,6 +198,25 @@ describe("Workspaces API (E2E)", () => {
     });
   });
 
+  describe("GET /workspaces/:id/config", () => {
+    it("returns workspace config based on kind", async () => {
+      const created = await authedPost("/workspaces").send({
+        name: "Config Workspace",
+        kind: "PERSONAL",
+      });
+
+      const workspaceId = created.body.workspace.id;
+      const res = await authedGet(`/workspaces/${workspaceId}/config`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.kind).toBe("PERSONAL");
+      expect(res.body.capabilities["workspace.multiUser"]).toBe(false);
+      expect(res.body.capabilities["sales.quotes"]).toBe(false);
+      expect(res.body.terminology.partyLabel).toBe("Client");
+      expect(Array.isArray(res.body.navigation.groups)).toBe(true);
+    });
+  });
+
   describe("PATCH /workspaces/:id", () => {
     it("updates workspace name", async () => {
       const created = await authedPost("/workspaces").send({
@@ -299,7 +319,7 @@ describe("Workspaces API (E2E)", () => {
 
       // Try to access with different tenant ID
       const res = await authedGet(`/workspaces/${workspaceId}`).set(
-        "x-tenant-id",
+        HEADER_TENANT_ID,
         "different-tenant-id"
       );
 

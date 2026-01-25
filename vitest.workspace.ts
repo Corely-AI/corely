@@ -28,6 +28,19 @@ export default defineWorkspace([
     },
   },
   {
+    extends: "./packages/contracts/vitest.config.ts",
+    root: "./packages/contracts",
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.int.test.ts",
+        "**/e2e/**",
+        "**/apps/e2e/**",
+      ],
+    },
+  },
+  {
     extends: "./packages/kernel/vitest.config.ts",
     root: "./packages/kernel",
     test: {
@@ -43,6 +56,19 @@ export default defineWorkspace([
   {
     extends: "./packages/core/vitest.config.ts",
     root: "./packages/core",
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.int.test.ts",
+        "**/e2e/**",
+        "**/apps/e2e/**",
+      ],
+    },
+  },
+  {
+    extends: "./packages/prompts/vitest.config.ts",
+    root: "./packages/prompts",
     test: {
       exclude: [
         "**/node_modules/**",

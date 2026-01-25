@@ -59,7 +59,7 @@ export function AppsManagementPage() {
     );
   }
 
-  const groupedApps = apps?.reduce(
+  const groupedApps = (apps ?? []).reduce(
     (acc, app) => {
       const tier = app.tier;
       if (!acc[tier]) {
@@ -142,20 +142,23 @@ export function AppsManagementPage() {
                         </div>
                       )}
 
-                      {app.capabilities.length > 0 && (
+                      {(app.capabilities || []).length > 0 && (
                         <div>
                           <p className="text-xs font-medium mb-1">
-                            Capabilities ({app.capabilities.length}):
+                            Capabilities{" "}
+                            {(app.capabilities || []).length > 0
+                              ? `(${(app.capabilities || []).length})`
+                              : ""}
                           </p>
                           <div className="flex flex-wrap gap-1">
-                            {app.capabilities.slice(0, 3).map((cap) => (
+                            {(app.capabilities || []).slice(0, 3).map((cap) => (
                               <Badge key={cap} variant="outline" className="text-xs">
                                 {cap}
                               </Badge>
                             ))}
-                            {app.capabilities.length > 3 && (
+                            {(app.capabilities || []).length > 3 && (
                               <Badge variant="outline" className="text-xs">
-                                +{app.capabilities.length - 3} more
+                                +{(app.capabilities || []).length - 3} more
                               </Badge>
                             )}
                           </div>

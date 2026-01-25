@@ -26,34 +26,6 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Platform Management</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-muted-foreground">
-            Manage apps, templates, and workspace customizations.
-          </div>
-          <Button variant="accent" asChild>
-            <Link to="/settings/platform">Platform Settings</Link>
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Access control</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-muted-foreground">
-            Manage tenant roles and permission grants.
-          </div>
-          <Button variant="accent" asChild>
-            <Link to="/settings/roles">Manage roles</Link>
-          </Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
           <CardTitle>{t("settings.profile")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -65,24 +37,6 @@ export default function SettingsPage() {
             <div>
               <Label>{t("settings.email")}</Label>
               <Input defaultValue={db.user.email} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("settings.business")}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label>{t("settings.businessName")}</Label>
-              <Input defaultValue={db.tenant.name} />
-            </div>
-            <div>
-              <Label>{t("settings.vatId")}</Label>
-              <Input defaultValue={db.tenant.vatId} />
             </div>
           </div>
         </CardContent>

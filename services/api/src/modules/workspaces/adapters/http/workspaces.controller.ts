@@ -16,15 +16,19 @@ import { z } from "zod";
 import {
   CreateWorkspaceInputSchema,
   UpdateWorkspaceInputSchema,
+  UpgradeWorkspaceInputSchema,
   type CreateWorkspaceInput,
   type UpdateWorkspaceInput,
+  type UpgradeWorkspaceInput,
 } from "@corely/contracts";
 import { CreateWorkspaceUseCase } from "../../application/use-cases/create-workspace.usecase";
 import { ListWorkspacesUseCase } from "../../application/use-cases/list-workspaces.usecase";
 import { GetWorkspaceUseCase } from "../../application/use-cases/get-workspace.usecase";
 import { UpdateWorkspaceUseCase } from "../../application/use-cases/update-workspace.usecase";
+import { UpgradeWorkspaceUseCase } from "../../application/use-cases/upgrade-workspace.usecase";
 import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
+import { toUseCaseContext } from "../../../../shared/request-context";
 
 // Auth context extraction - compatible with tests and production
 interface AuthUser {
@@ -33,14 +37,9 @@ interface AuthUser {
 }
 
 function extractAuthUser(req: Request, bodyData?: any): AuthUser {
-  // Extract from various sources (headers, user session, or body for tests)
-  const user = (req as any).user;
-  const requestTenantId = (req as any).tenantId;
-  const headerTenantId = req.headers["x-tenant-id"] as string | undefined;
-  const headerUserId = req.headers["x-user-id"] as string | undefined;
-  const tenantId = requestTenantId || headerTenantId || bodyData?.tenantId || user?.tenantId;
-  const userId =
-    headerUserId || bodyData?.createdByUserId || bodyData?.userId || user?.userId || user?.id;
+  const ctx = toUseCaseContext(req as any);
+  const tenantId = ctx.tenantId ?? bodyData?.tenantId;
+  const userId = ctx.userId ?? bodyData?.createdByUserId ?? bodyData?.userId;
 
   if (!tenantId) {
     throw new BadRequestException("Missing tenantId in request context");
@@ -64,7 +63,9 @@ export class WorkspacesController {
     @Inject(GetWorkspaceUseCase)
     private readonly getWorkspace: GetWorkspaceUseCase,
     @Inject(UpdateWorkspaceUseCase)
-    private readonly updateWorkspace: UpdateWorkspaceUseCase
+    private readonly updateWorkspace: UpdateWorkspaceUseCase,
+    @Inject(UpgradeWorkspaceUseCase)
+    private readonly upgradeWorkspace: UpgradeWorkspaceUseCase
   ) {}
 
   @Post()
@@ -111,6 +112,24 @@ export class WorkspacesController {
     const auth = extractAuthUser(req, body);
 
     return this.updateWorkspace.execute({
+      ...input,
+      tenantId: auth.tenantId,
+      userId: auth.id,
+      workspaceId,
+      idempotencyKey: input.idempotencyKey || (req.headers["x-idempotency-key"] as string),
+    });
+  }
+
+  @Post(":workspaceId/upgrade")
+  async upgrade(
+    @Param("workspaceId") workspaceId: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = UpgradeWorkspaceInputSchema.parse(body ?? {});
+    const auth = extractAuthUser(req, body as UpgradeWorkspaceInput);
+
+    return this.upgradeWorkspace.execute({
       ...input,
       tenantId: auth.tenantId,
       userId: auth.id,

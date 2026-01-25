@@ -24,6 +24,10 @@ import {
   LockTaxSnapshotInputSchema,
   ListTaxReportsInputSchema,
   UpsertTaxConsultantInputSchema,
+  ListVatPeriodsInputSchema,
+  MarkVatPeriodSubmittedInputSchema,
+  MarkVatPeriodNilInputSchema,
+  ArchiveVatPeriodInputSchema,
   type GetTaxProfileOutput,
   type UpsertTaxProfileOutput,
   type ListTaxCodesOutput,
@@ -50,11 +54,19 @@ import { CreateTaxCodeUseCase } from "./application/use-cases/create-tax-code.us
 import { CalculateTaxUseCase } from "./application/use-cases/calculate-tax.use-case";
 import { LockTaxSnapshotUseCase } from "./application/use-cases/lock-tax-snapshot.use-case";
 import type { UseCaseContext } from "./application/use-cases/use-case-context";
+import { toUseCaseContext } from "../../shared/request-context";
 import { GetTaxSummaryUseCase } from "./application/use-cases/get-tax-summary.use-case";
 import { ListTaxReportsUseCase } from "./application/use-cases/list-tax-reports.use-case";
 import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-report-submitted.use-case";
 import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
 import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
+import { ListVatPeriodsUseCase } from "./application/use-cases/list-vat-periods.use-case";
+import { GetVatPeriodSummaryUseCase } from "./application/use-cases/get-vat-period-summary.use-case";
+import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-period-details.use-case";
+import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
+import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
+import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
+import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 @Controller("tax")
 @UseGuards(AuthGuard)
@@ -71,7 +83,14 @@ export class TaxController {
     private readonly listTaxReportsUseCase: ListTaxReportsUseCase,
     private readonly markTaxReportSubmittedUseCase: MarkTaxReportSubmittedUseCase,
     private readonly getTaxConsultantUseCase: GetTaxConsultantUseCase,
-    private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase
+    private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase,
+    private readonly listVatPeriodsUseCase: ListVatPeriodsUseCase,
+    private readonly getVatPeriodSummaryUseCase: GetVatPeriodSummaryUseCase,
+    private readonly getVatPeriodDetailsUseCase: GetVatPeriodDetailsUseCase,
+    private readonly markVatPeriodSubmittedUseCase: MarkVatPeriodSubmittedUseCase,
+    private readonly markVatPeriodNilUseCase: MarkVatPeriodNilUseCase,
+    private readonly archiveVatPeriodUseCase: ArchiveVatPeriodUseCase,
+    private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
   // ============================================================================
@@ -182,6 +201,71 @@ export class TaxController {
   }
 
   // ============================================================================
+  // VAT Periods
+  // ============================================================================
+
+  @Get("periods")
+  async listVatPeriods(@Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const input = ListVatPeriodsInputSchema.parse({
+      from: query.from,
+      to: query.to,
+      year: query.year ? Number(query.year) : undefined,
+      type: query.type,
+    });
+    return this.listVatPeriodsUseCase.execute(input, ctx);
+  }
+
+  @Get("periods/:key")
+  async getVatPeriodSummary(@Param("key") key: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const period = this.vatPeriodResolver.resolveQuarter(key);
+
+    // We convert key to start/end for the use case which follows the contract
+    return this.getVatPeriodSummaryUseCase.execute(
+      {
+        periodStart: period.start.toISOString(),
+        periodEnd: period.end.toISOString(),
+      },
+      ctx
+    );
+  }
+
+  @Get("periods/:key/details")
+  async getVatPeriodDetails(@Param("key") key: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    // Use case internally resolves key (as I implemented it to take periodKey)
+    // Wait, let's verify GetVatPeriodDetailsUseCase implementation.
+    // Yes, it takes (periodKey, ctx).
+    return this.getVatPeriodDetailsUseCase.execute(key, ctx);
+  }
+
+  @Post("reports/vat/quarterly/:key/mark-submitted")
+  async markVatPeriodSubmitted(
+    @Param("key") key: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = MarkVatPeriodSubmittedInputSchema.parse(body);
+    const ctx = this.buildContext(req);
+    return this.markVatPeriodSubmittedUseCase.execute(key, input, ctx);
+  }
+
+  @Post("reports/vat/quarterly/:key/mark-nil")
+  async markVatPeriodNil(@Param("key") key: string, @Body() body: unknown, @Req() req: Request) {
+    const input = MarkVatPeriodNilInputSchema.parse(body);
+    const ctx = this.buildContext(req);
+    return this.markVatPeriodNilUseCase.execute(key, input, ctx);
+  }
+
+  @Post("reports/vat/quarterly/:key/archive")
+  async archiveVatPeriod(@Param("key") key: string, @Body() body: unknown, @Req() req: Request) {
+    const input = ArchiveVatPeriodInputSchema.parse(body);
+    const ctx = this.buildContext(req);
+    return this.archiveVatPeriodUseCase.execute(key, input, ctx);
+  }
+
+  // ============================================================================
   // Consultant
   // ============================================================================
 
@@ -206,30 +290,26 @@ export class TaxController {
   // ============================================================================
 
   private buildContext(req: Request): UseCaseContext {
-    // Extract tenant/user from request (in real app, from JWT)
-    const tenantId =
-      (req as any).tenantId ||
-      (req.headers["x-tenant-id"] as string | undefined) ||
-      (req.headers["x-workspace-id"] as string | undefined);
-    const userId =
-      (req.headers["x-user-id"] as string | undefined) ??
-      (req as any).user?.userId ??
-      (req as any).user?.id;
+    const ctx = toUseCaseContext(req as any);
 
-    if (!tenantId) {
+    if (!ctx.tenantId) {
       throw new BadRequestException("Missing tenantId in request context");
     }
-    if (!userId) {
+    if (!ctx.userId) {
       throw new BadRequestException("Missing userId in request context");
     }
-    if (tenantId === "default-tenant") {
+    if (!ctx.workspaceId) {
+      throw new BadRequestException("Missing workspaceId in request context");
+    }
+    if (ctx.tenantId === "default-tenant") {
       throw new BadRequestException("Invalid tenantId in request context");
     }
 
     return {
-      tenantId,
-      userId,
-      correlationId: req.headers["x-correlation-id"] as string | undefined,
+      tenantId: ctx.tenantId!,
+      workspaceId: ctx.workspaceId!,
+      userId: ctx.userId!,
+      correlationId: ctx.correlationId,
       idempotencyKey: req.headers["x-idempotency-key"] as string | undefined,
     };
   }
@@ -244,8 +324,10 @@ export class TaxController {
       vatId: entity.vatId,
       currency: entity.currency,
       filingFrequency: entity.filingFrequency,
+      vatAccountingMethod: entity.vatAccountingMethod,
       taxYearStartMonth: entity.taxYearStartMonth,
       localTaxOfficeName: entity.localTaxOfficeName,
+      vatExemptionParagraph: entity.vatExemptionParagraph ?? null,
       effectiveFrom: entity.effectiveFrom.toISOString(),
       effectiveTo: entity.effectiveTo?.toISOString() || null,
       createdAt: entity.createdAt.toISOString(),

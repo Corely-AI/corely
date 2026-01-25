@@ -79,6 +79,7 @@ export class CreateWorkspaceUseCase {
     const result: CreateWorkspaceOutput = {
       workspace: {
         id: workspace.id,
+        legalEntityId: legalEntity.id,
         name: workspace.name,
         kind: legalEntity.kind as any,
         legalName: legalEntity.legalName,

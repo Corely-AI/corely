@@ -3,6 +3,7 @@ import { generateObject } from "ai";
 import type { LanguageModel } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import type { EnvService } from "@corely/config";
+import { type PromptRegistry } from "@corely/prompts";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
 import type { InventoryApplication } from "../../application/inventory.application";
 import {
@@ -14,6 +15,8 @@ import {
   PickListCardSchema,
   StockChangeExplanationCardSchema,
 } from "@corely/contracts";
+import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
+import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 
 const validationError = (issues: unknown) => ({
   ok: false,
@@ -24,7 +27,9 @@ const validationError = (issues: unknown) => ({
 
 export const buildInventoryTools = (
   _app: InventoryApplication,
-  env: EnvService
+  env: EnvService,
+  promptRegistry: PromptRegistry,
+  promptUsageLogger: PromptUsageLogger
 ): DomainToolPort[] => {
   const defaultModel = anthropic(env.AI_MODEL_ID) as unknown as LanguageModel;
 
@@ -36,13 +41,30 @@ export const buildInventoryTools = (
       inputSchema: z.object({
         sourceText: z.string(),
       }),
-      execute: async ({ input }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z.object({ sourceText: z.string() }).safeParse(input);
         if (!parsed.success) {
           return validationError(parsed.error.flatten());
         }
 
         const { sourceText } = parsed.data;
+        const prompt = promptRegistry.render(
+          "inventory.extract_product_proposal",
+          buildPromptContext({ env, tenantId }),
+          { SOURCE_TEXT: sourceText }
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "inventory_createProductFromText",
+          purpose: "inventory.extract_product_proposal",
+        });
 
         const { object } = await generateObject({
           model: defaultModel,
@@ -58,7 +80,7 @@ export const buildInventoryTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Extract a product proposal from this text.\n\nText:\n${sourceText}`,
+          prompt: prompt.content,
         });
 
         return ProductProposalCardSchema.parse({
@@ -92,13 +114,30 @@ export const buildInventoryTools = (
       inputSchema: z.object({
         sourceText: z.string(),
       }),
-      execute: async ({ input }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z.object({ sourceText: z.string() }).safeParse(input);
         if (!parsed.success) {
           return validationError(parsed.error.flatten());
         }
 
         const { sourceText } = parsed.data;
+        const prompt = promptRegistry.render(
+          "inventory.extract_receipt_draft",
+          buildPromptContext({ env, tenantId }),
+          { SOURCE_TEXT: sourceText }
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "inventory_generateReceiptFromText",
+          purpose: "inventory.extract_receipt_draft",
+        });
 
         const { object } = await generateObject({
           model: defaultModel,
@@ -119,7 +158,7 @@ export const buildInventoryTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Extract a receipt draft from this text.\n\nText:\n${sourceText}`,
+          prompt: prompt.content,
         });
 
         return ReceiptDraftProposalCardSchema.parse({
@@ -150,13 +189,30 @@ export const buildInventoryTools = (
       inputSchema: z.object({
         sourceText: z.string(),
       }),
-      execute: async ({ input }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z.object({ sourceText: z.string() }).safeParse(input);
         if (!parsed.success) {
           return validationError(parsed.error.flatten());
         }
 
         const { sourceText } = parsed.data;
+        const prompt = promptRegistry.render(
+          "inventory.extract_delivery_draft",
+          buildPromptContext({ env, tenantId }),
+          { SOURCE_TEXT: sourceText }
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "inventory_generateDeliveryFromText",
+          purpose: "inventory.extract_delivery_draft",
+        });
 
         const { object } = await generateObject({
           model: defaultModel,
@@ -176,7 +232,7 @@ export const buildInventoryTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Extract a delivery draft from this text.\n\nText:\n${sourceText}`,
+          prompt: prompt.content,
         });
 
         return DeliveryDraftProposalCardSchema.parse({
@@ -209,7 +265,7 @@ export const buildInventoryTools = (
         warehouseId: z.string(),
         historyWindowDays: z.number().int().positive().optional(),
       }),
-      execute: async ({ input }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z
           .object({
             productId: z.string(),
@@ -221,6 +277,24 @@ export const buildInventoryTools = (
           return validationError(parsed.error.flatten());
         }
 
+        const prompt = promptRegistry.render(
+          "inventory.suggest_reorder_policy",
+          buildPromptContext({ env, tenantId }),
+          {}
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "inventory_suggestReorderPolicy",
+          purpose: "inventory.suggest_reorder_policy",
+        });
+
         const { object } = await generateObject({
           model: defaultModel,
           schema: z.object({
@@ -231,7 +305,7 @@ export const buildInventoryTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: "Suggest a reorder policy based on recent demand patterns.",
+          prompt: prompt.content,
         });
 
         return ReorderPolicyProposalCardSchema.parse({

@@ -21,7 +21,7 @@ All API error responses follow this structure:
 ```typescript
 interface ProblemDetails {
   // RFC 7807 base fields
-  type: string; // "https://errors.corely.com/Invoices:Locked"
+  type: string; // "https://errors.corely.one/Invoices:Locked"
   title: string; // "Conflict"
   status: number; // 409
   detail: string; // "This invoice has already been finalized"

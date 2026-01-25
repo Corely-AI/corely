@@ -24,6 +24,7 @@ import { ListMessagesUseCase } from "../../application/use-cases/list-messages.u
 import { EnvService } from "@corely/config";
 import { type CopilotMessage } from "../../domain/entities/message.entity";
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
+import { toUseCaseContext } from "../../../../shared/request-context";
 
 type AuthedRequest = Request & { tenantId?: string; user?: { userId?: string }; traceId?: string };
 
@@ -54,9 +55,11 @@ export class CopilotController {
       throw new BadRequestException("Missing X-Idempotency-Key");
     }
 
-    const tenantId = req.tenantId as string;
-    const userId = req.user?.userId || "unknown";
-    const requestId = req.traceId || "unknown";
+    const ctx = toUseCaseContext(req as any);
+    const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
+    const userId = ctx.userId || "unknown";
+    const requestId = ctx.requestId || "unknown";
+    const workspaceId = ctx.workspaceId ?? tenantId;
 
     return this.streamCopilotChat.execute({
       messages: body.messages || [],
@@ -68,7 +71,7 @@ export class CopilotController {
       response: res,
       intent: body.requestData?.activeModule,
       requestId,
-      workspaceId: tenantId,
+      workspaceId,
       workspaceKind: "COMPANY",
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,
@@ -87,9 +90,11 @@ export class CopilotController {
     if (!idempotencyKey) {
       throw new BadRequestException("Missing X-Idempotency-Key");
     }
-    const tenantId = req.tenantId as string;
-    const userId = req.user?.userId || "unknown";
-    const requestId = req.traceId || "unknown";
+    const ctx = toUseCaseContext(req as any);
+    const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
+    const userId = ctx.userId || "unknown";
+    const requestId = ctx.requestId || "unknown";
+    const workspaceId = ctx.workspaceId ?? tenantId;
 
     const { runId } = await this.createRun.execute({
       runId: body.id,
@@ -105,7 +110,8 @@ export class CopilotController {
   @Get("runs/:id")
   @UseGuards(IdentityAuthGuard, TenantGuard)
   async get(@Param("id") id: string, @Req() req: AuthedRequest) {
-    const tenantId = req.tenantId as string;
+    const ctx = toUseCaseContext(req as any);
+    const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
     const run = await this.getRun.execute({ tenantId, runId: id });
     return { run };
   }
@@ -113,7 +119,8 @@ export class CopilotController {
   @Get("runs/:id/messages")
   @UseGuards(IdentityAuthGuard, TenantGuard)
   async listMessages(@Param("id") id: string, @Req() req: AuthedRequest) {
-    const tenantId = req.tenantId as string;
+    const ctx = toUseCaseContext(req as any);
+    const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
     const messages = await this.listMessagesUseCase.execute({ tenantId, runId: id });
     return { items: messages };
   }
@@ -122,13 +129,17 @@ export class CopilotController {
   @UseGuards(IdentityAuthGuard, TenantGuard)
   async resume(@Param("id") id: string, @Req() req: AuthedRequest, @Res() res: Response) {
     // Resume streams are not persisted yet; return 204 to indicate no active stream
-    res.status(204).json({ status: "NO_ACTIVE_STREAM", runId: id, tenantId: req.tenantId });
+    const ctx = toUseCaseContext(req as any);
+    res
+      .status(204)
+      .json({ status: "NO_ACTIVE_STREAM", runId: id, tenantId: ctx.workspaceId ?? ctx.tenantId });
   }
 
   @Get("chat/:id/history")
   @UseGuards(IdentityAuthGuard, TenantGuard)
   async history(@Param("id") id: string, @Req() req: AuthedRequest) {
-    const tenantId = req.tenantId as string;
+    const ctx = toUseCaseContext(req as any);
+    const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
     const messages = await this.listMessagesUseCase.execute({ tenantId, runId: id });
     return {
       items: messages.map((msg) => this.mapToUiMessage(msg)),
@@ -147,9 +158,11 @@ export class CopilotController {
     if (!idempotencyKey) {
       throw new BadRequestException("Missing X-Idempotency-Key");
     }
-    const tenantId = req.tenantId as string;
-    const userId = req.user?.userId || "unknown";
-    const requestId = req.traceId || "unknown";
+    const ctx = toUseCaseContext(req as any);
+    const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
+    const userId = ctx.userId || "unknown";
+    const requestId = ctx.requestId || "unknown";
+    const workspaceId = ctx.workspaceId ?? tenantId;
 
     await this.streamCopilotChat.execute({
       messages: body.messages || [],
@@ -161,7 +174,7 @@ export class CopilotController {
       response: res,
       intent: body.requestData?.activeModule,
       requestId,
-      workspaceId: tenantId,
+      workspaceId,
       workspaceKind: "COMPANY",
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,

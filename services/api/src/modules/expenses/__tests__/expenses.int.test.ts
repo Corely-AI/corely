@@ -8,7 +8,6 @@ import {
   stopSharedContainer,
 } from "@corely/testkit";
 import type { PrismaService } from "@corely/data";
-import { buildRequestContext } from "@shared/context/request-context";
 import { CreateExpenseUseCase } from "../application/use-cases/create-expense.usecase";
 import { MockAuditPort } from "@shared/testkit/mocks/mock-audit-port";
 
@@ -69,18 +68,20 @@ describe("Expenses integration (Postgres)", () => {
     const user = await createUser(prisma, { email: "owner@a.test" });
     await createCustomerParty(prisma, tenantA.id);
 
-    const ctxA = buildRequestContext({ tenantId: tenantA.id, actorUserId: user.id });
-    const expense = await useCase.execute({
-      tenantId: tenantA.id,
-      merchant: "Vendor A",
-      totalCents: 1234,
-      currency: "USD",
-      category: "Travel",
-      issuedAt: new Date("2024-02-01"),
-      createdByUserId: user.id,
-      idempotencyKey: "expense-1",
-      context: ctxA,
-    });
+    const ctxA = { tenantId: tenantA.id, userId: user.id, requestId: "req-ctx-a" } as any;
+    const expense = await useCase.execute(
+      {
+        tenantId: tenantA.id,
+        merchant: "Vendor A",
+        totalCents: 1234,
+        currency: "USD",
+        category: "Travel",
+        issuedAt: new Date("2024-02-01"),
+        createdByUserId: user.id,
+        idempotencyKey: "expense-1",
+      },
+      ctxA
+    );
 
     const repo = new ExpenseRepo(prisma);
     const crossTenantResult = await repo.findById(tenantB.id, expense.id);
@@ -94,7 +95,7 @@ describe("Expenses integration (Postgres)", () => {
     const tenant = await createTenant(prisma, { name: "Tenant Main" });
     const user = await createUser(prisma, { email: "owner@main.test" });
     await createCustomerParty(prisma, tenant.id);
-    const ctx = buildRequestContext({ tenantId: tenant.id, actorUserId: user.id });
+    const ctx = { tenantId: tenant.id, userId: user.id, requestId: "req-ctx" } as any;
     const baseInput = {
       tenantId: tenant.id,
       merchant: "Vendor",
@@ -104,11 +105,10 @@ describe("Expenses integration (Postgres)", () => {
       issuedAt: new Date("2024-03-10"),
       createdByUserId: user.id,
       idempotencyKey: "same-key",
-      context: ctx,
     };
 
-    const first = await useCase.execute(baseInput);
-    const second = await useCase.execute(baseInput);
+    const first = await useCase.execute(baseInput, ctx);
+    const second = await useCase.execute(baseInput, ctx);
 
     expect(second.id).toBe(first.id);
 

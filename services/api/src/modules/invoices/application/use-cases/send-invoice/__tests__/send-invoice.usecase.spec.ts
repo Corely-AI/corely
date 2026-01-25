@@ -50,7 +50,7 @@ describe("SendInvoiceUseCase", () => {
           message: "Thank you!",
           attachPdf: false,
         },
-        { tenantId: "tenant-1", correlationId: "corr-123" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1", correlationId: "corr-123" }
       );
 
       // Assert
@@ -102,7 +102,7 @@ describe("SendInvoiceUseCase", () => {
           bcc: ["archive@example.com"],
           attachPdf: true,
         },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
 
       // Assert
@@ -118,7 +118,7 @@ describe("SendInvoiceUseCase", () => {
     it("returns NotFoundError when invoice does not exist", async () => {
       const result = await useCase.execute(
         { invoiceId: "non-existent", to: "customer@example.com", attachPdf: false },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
 
       expect(isErr(result)).toBe(true);
@@ -143,7 +143,7 @@ describe("SendInvoiceUseCase", () => {
       // Act
       const result = await useCase.execute(
         { invoiceId: "inv-1", to: "customer@example.com", attachPdf: false },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
 
       // Assert
@@ -171,7 +171,7 @@ describe("SendInvoiceUseCase", () => {
       // Act
       const result = await useCase.execute(
         { invoiceId: "inv-1", to: "customer@example.com", attachPdf: false },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
 
       // Assert
@@ -200,11 +200,11 @@ describe("SendInvoiceUseCase", () => {
       // Act: Call twice
       const result1 = await useCase.execute(
         { invoiceId: "inv-1", to: "customer@example.com", attachPdf: false },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
       const result2 = await useCase.execute(
         { invoiceId: "inv-1", to: "customer@example.com", attachPdf: false },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
 
       // Assert: Same delivery ID returned
@@ -243,7 +243,7 @@ describe("SendInvoiceUseCase", () => {
           attachPdf: false,
           idempotencyKey: customKey,
         },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
       const result2 = await useCase.execute(
         {
@@ -252,7 +252,7 @@ describe("SendInvoiceUseCase", () => {
           attachPdf: false,
           idempotencyKey: customKey,
         },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
 
       // Assert
@@ -280,11 +280,11 @@ describe("SendInvoiceUseCase", () => {
       // Act: Send to different recipients
       const result1 = await useCase.execute(
         { invoiceId: "inv-1", to: "customer1@example.com", attachPdf: false },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
       const result2 = await useCase.execute(
         { invoiceId: "inv-1", to: "customer2@example.com", attachPdf: false },
-        { tenantId: "tenant-1" }
+        { tenantId: "tenant-1", workspaceId: "tenant-1" }
       );
 
       // Assert: Different delivery IDs

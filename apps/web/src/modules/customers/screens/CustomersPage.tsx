@@ -1,45 +1,69 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Users, Plus, Mail, Phone, MapPin } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Users, Plus, Mail, Phone, MapPin, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { customersApi } from "@/lib/customers-api";
 import { EmptyState } from "@/shared/components/EmptyState";
+import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
+import { toast } from "sonner";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 export default function CustomersPage() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const { data: customersData } = useQuery({
-    queryKey: ["customers"],
+  const {
+    data: customersData,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
   const customers = customersData?.customers || [];
 
-  return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">{t("customers.title")}</h1>
-        <Button
-          variant="accent"
-          onClick={() => navigate("/customers/new")}
-          data-testid="add-customer-button"
-        >
-          <Plus className="h-4 w-4" />
-          {t("customers.addCustomer")}
-        </Button>
-      </div>
+  const archiveCustomer = useMutation({
+    mutationFn: (id: string) => customersApi.archiveCustomer(id),
+    onSuccess: async () => {
+      toast.success("Customer archived");
+      await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.customers.all() });
+    },
+    onError: () => toast.error("Failed to archive customer"),
+  });
 
+  const primaryAction = (
+    <Button
+      variant="accent"
+      onClick={() => navigate("/customers/new")}
+      data-testid="add-customer-button"
+    >
+      <Plus className="h-4 w-4" />
+      Add customer
+    </Button>
+  );
+
+  return (
+    <CrudListPageLayout
+      title="Customers"
+      subtitle="Manage contacts and billing details"
+      primaryAction={primaryAction}
+    >
       <Card>
         <CardContent className="p-0">
-          {customers.length === 0 ? (
+          {isLoading ? (
+            <div className="p-8 text-center text-muted-foreground">Loading customers...</div>
+          ) : isError ? (
+            <div className="p-8 text-center text-destructive">Failed to load customers.</div>
+          ) : customers.length === 0 ? (
             <EmptyState
               icon={Users}
-              title={t("customers.noCustomers")}
-              description={t("customers.noCustomersDescription")}
+              title="No customers yet"
+              description="Create your first customer to start tracking relationships."
+              action={primaryAction}
             />
           ) : (
             <div className="overflow-x-auto">
@@ -47,25 +71,25 @@ export default function CustomersPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      {t("customers.name")}
+                      Name
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      {t("customers.email")}
+                      Email
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      {t("customers.phone")}
+                      Phone
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      {t("customers.city")}
+                      City
                     </th>
+                    <th />
                   </tr>
                 </thead>
                 <tbody>
                   {customers.map((customer) => (
                     <tr
                       key={customer.id}
-                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-                      onClick={() => navigate(`/customers/${customer.id}`)}
+                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -112,6 +136,26 @@ export default function CustomersPage() {
                           <span className="text-muted-foreground">—</span>
                         )}
                       </td>
+                      <td className="px-4 py-3 text-right">
+                        <CrudRowActions
+                          primaryAction={{
+                            label: "Open",
+                            href: `/customers/${customer.id}`,
+                          }}
+                          secondaryActions={[
+                            {
+                              label: "Edit",
+                              href: `/customers/${customer.id}`,
+                            },
+                            {
+                              label: "Archive",
+                              destructive: true,
+                              icon: <Trash2 className="h-4 w-4" />,
+                              onClick: () => setDeleteTarget(customer.id),
+                            },
+                          ]}
+                        />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -120,6 +164,25 @@ export default function CustomersPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+      <ConfirmDeleteDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+          }
+        }}
+        trigger={null}
+        title="Archive customer"
+        description="This will archive the customer. You can unarchive them later."
+        isLoading={archiveCustomer.isPending}
+        onConfirm={() => {
+          if (!deleteTarget) {
+            return;
+          }
+          archiveCustomer.mutate(deleteTarget);
+          setDeleteTarget(null);
+        }}
+      />
+    </CrudListPageLayout>
   );
 }

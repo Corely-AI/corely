@@ -3,6 +3,7 @@ import { InvoicesHttpController } from "./invoices.controller";
 import { InvoicesApplication } from "../../application/invoices.application";
 import { HttpException } from "@nestjs/common";
 import { NotFoundError, err, ok } from "@corely/kernel";
+import { HEADER_TENANT_ID } from "@shared/request-context";
 
 const invoice = {
   id: "inv-1",
@@ -63,10 +64,10 @@ describe("InvoicesHttpController", () => {
   });
 
   it("returns invoice dto via get endpoint", async () => {
-    const req = { headers: { "x-tenant-id": "tenant-1" } } as any;
+    const req = { headers: { [HEADER_TENANT_ID]: "tenant-1" } } as any;
     const result = await controller.getInvoice("inv-1", req);
 
-    expect(result).toEqual(invoice);
+    expect(result).toEqual({ invoice, capabilities: undefined });
     expect(getExecute).toHaveBeenCalledWith(
       { invoiceId: "inv-1" },
       expect.objectContaining({ tenantId: "tenant-1" })
@@ -75,7 +76,7 @@ describe("InvoicesHttpController", () => {
 
   it("maps use case errors to http exceptions", async () => {
     getExecute.mockResolvedValueOnce(err(new NotFoundError("missing invoice")));
-    const req = { headers: { "x-tenant-id": "tenant-1" } } as any;
+    const req = { headers: { [HEADER_TENANT_ID]: "tenant-1" } } as any;
 
     await expect(controller.getInvoice("missing", req)).rejects.toBeInstanceOf(HttpException);
   });

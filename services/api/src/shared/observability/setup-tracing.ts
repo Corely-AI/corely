@@ -119,13 +119,8 @@ export async function setupTracing(serviceName: string): Promise<void> {
   });
 
   try {
-    const startResult = sdk.start();
-    if (startResult instanceof Promise) {
-      await startResult;
-      console.info("[observability] tracing started");
-    } else {
-      console.info("[observability] tracing start invoked");
-    }
+    await Promise.resolve(sdk.start());
+    console.info("[observability] tracing started");
   } catch (error) {
     console.error("[observability] failed to start tracing", error);
   }
@@ -135,9 +130,6 @@ export async function shutdownTracing(): Promise<void> {
   if (!sdk) {
     return;
   }
-  const shutdownResult = sdk.shutdown();
-  if (shutdownResult instanceof Promise) {
-    await shutdownResult;
-  }
+  await Promise.resolve(sdk.shutdown());
   sdk = undefined;
 }

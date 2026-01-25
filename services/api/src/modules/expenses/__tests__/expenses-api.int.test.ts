@@ -8,6 +8,7 @@ import {
   seedDefaultTenant,
   stopSharedContainer,
 } from "@corely/testkit";
+import { HEADER_TENANT_ID } from "@shared/request-context";
 
 vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
@@ -50,7 +51,7 @@ describe("POST /expenses (API)", () => {
     const res = await request(server)
       .post("/expenses")
       .set("x-idempotency-key", "web-payload-1")
-      .set("x-tenant-id", tenantId)
+      .set(HEADER_TENANT_ID, tenantId)
       .set("x-user-id", userId)
       .send(payload);
 

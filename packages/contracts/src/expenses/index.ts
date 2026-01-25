@@ -1,6 +1,7 @@
 export * from "./expense.types";
 export * from "./create-expense.schema";
 export * from "./update-expense.schema";
+export * from "./expense-capabilities.schema";
 export * from "./add-expense-line.schema";
 export * from "./update-expense-line.schema";
 export * from "./attach-receipt.schema";

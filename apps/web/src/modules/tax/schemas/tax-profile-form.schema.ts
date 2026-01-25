@@ -19,6 +19,7 @@ export const taxProfileFormSchema = z.object({
   filingFrequency: VatFilingFrequencySchema,
   taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
   localTaxOfficeName: z.string().optional().nullable(),
+  vatExemptionParagraph: z.string().optional().nullable(),
   effectiveFrom: z.date(),
   effectiveTo: z.date().optional().nullable(),
 });
@@ -39,6 +40,7 @@ export function toUpsertTaxProfileInput(form: TaxProfileFormData): UpsertTaxProf
     filingFrequency: form.filingFrequency,
     taxYearStartMonth: form.taxYearStartMonth ?? null,
     localTaxOfficeName: form.localTaxOfficeName ?? null,
+    vatExemptionParagraph: form.vatExemptionParagraph ?? null,
     effectiveFrom: form.effectiveFrom.toISOString(),
     effectiveTo: form.effectiveTo?.toISOString() || undefined,
   };
@@ -73,6 +75,7 @@ export function taxProfileDtoToFormData(dto: any): TaxProfileFormData {
     filingFrequency: dto.filingFrequency,
     taxYearStartMonth: dto.taxYearStartMonth ?? null,
     localTaxOfficeName: dto.localTaxOfficeName ?? null,
+    vatExemptionParagraph: dto.vatExemptionParagraph ?? null,
     effectiveFrom: new Date(dto.effectiveFrom),
     effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : undefined,
   };

@@ -4,7 +4,7 @@ import type { TokenStorage } from "./storage/storage.interface";
 export interface SignUpData {
   email: string;
   password: string;
-  tenantName: string;
+  tenantName?: string;
   userName?: string;
 }
 
@@ -133,7 +133,8 @@ export class AuthClient {
         body: data,
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
-      const workspaceId = result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId;
+      const workspaceId =
+        result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId;
       if (workspaceId) {
         await this.storage.setActiveWorkspaceId(workspaceId);
       }

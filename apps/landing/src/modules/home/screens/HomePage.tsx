@@ -159,7 +159,7 @@ export function HomePage() {
                 </a>
                 <a
                   className={buttonVariants({ variant: "ghost", size: "lg" })}
-                  href="https://github.com/corely"
+                  href="https://github.com/Corely-AI/corely"
                 >
                   View GitHub
                 </a>
@@ -396,7 +396,7 @@ export function HomePage() {
                 </Link>
                 <a
                   className={buttonVariants({ variant: "ghost" })}
-                  href="https://github.com/corely"
+                  href="https://github.com/Corely-AI/corely"
                 >
                   Browse modules
                 </a>

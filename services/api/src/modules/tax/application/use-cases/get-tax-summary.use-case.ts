@@ -8,8 +8,11 @@ export class GetTaxSummaryUseCase {
   constructor(private readonly resolver: TaxStrategyResolverService) {}
 
   async execute(ctx: UseCaseContext): Promise<GetTaxSummaryOutput> {
-    const strategy = await this.resolver.resolve(ctx.tenantId);
-    const summary = await strategy.computeSummary({ tenantId: ctx.tenantId });
+    const strategy = await this.resolver.resolve(ctx.workspaceId);
+    const summary = await strategy.computeSummary({
+      tenantId: ctx.tenantId,
+      workspaceId: ctx.workspaceId,
+    });
     return summary;
   }
 }

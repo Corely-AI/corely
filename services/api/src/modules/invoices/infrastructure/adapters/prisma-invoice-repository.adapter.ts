@@ -6,7 +6,13 @@ import {
   ListInvoicesResult,
 } from "../../application/ports/invoice-repository.port";
 import { InvoiceAggregate } from "../../domain/invoice.aggregate";
-import { InvoiceLine, InvoicePayment, InvoiceStatus, PdfStatus } from "../../domain/invoice.types";
+import {
+  InvoiceLine,
+  InvoicePayment,
+  InvoiceStatus,
+  PdfStatus,
+  PaymentDetailsSnapshot,
+} from "../../domain/invoice.types";
 import { LocalDate } from "@corely/kernel";
 
 const toPrismaDate = (localDate: LocalDate | null): Date | null =>
@@ -19,9 +25,9 @@ const fromPrismaDate = (value: Date | null | undefined): LocalDate | null =>
 export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(tenantId: string, invoice: InvoiceAggregate): Promise<void> {
-    if (tenantId !== invoice.tenantId) {
-      throw new Error("Tenant mismatch when saving invoice");
+  async save(workspaceId: string, invoice: InvoiceAggregate): Promise<void> {
+    if (workspaceId !== invoice.tenantId) {
+      throw new Error("Workspace mismatch when saving invoice");
     }
 
     await this.prisma.invoice.upsert({
@@ -51,6 +57,9 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         pdfSourceVersion: invoice.pdfSourceVersion,
         pdfStatus: invoice.pdfStatus as any,
         pdfFailureReason: invoice.pdfFailureReason,
+        sourceType: invoice.sourceType,
+        sourceId: invoice.sourceId,
+        paymentDetails: invoice.paymentDetails as any,
       },
       create: {
         id: invoice.id,
@@ -80,6 +89,9 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         pdfSourceVersion: invoice.pdfSourceVersion,
         pdfStatus: invoice.pdfStatus as any,
         pdfFailureReason: invoice.pdfFailureReason,
+        sourceType: invoice.sourceType,
+        sourceId: invoice.sourceId,
+        paymentDetails: invoice.paymentDetails as any,
         lines: {
           create: invoice.lineItems.map((line) => ({
             id: line.id,
@@ -112,13 +124,13 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     }
   }
 
-  async create(tenantId: string, invoice: InvoiceAggregate): Promise<void> {
-    await this.save(tenantId, invoice);
+  async create(workspaceId: string, invoice: InvoiceAggregate): Promise<void> {
+    await this.save(workspaceId, invoice);
   }
 
-  async findById(tenantId: string, id: string): Promise<InvoiceAggregate | null> {
+  async findById(workspaceId: string, id: string): Promise<InvoiceAggregate | null> {
     const data = await this.prisma.invoice.findFirst({
-      where: { id, tenantId },
+      where: { id, tenantId: workspaceId },
       include: { lines: true },
     });
     if (!data) {
@@ -161,16 +173,19 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       pdfSourceVersion: (data as any).pdfSourceVersion ?? null,
       pdfStatus: ((data as any).pdfStatus as PdfStatus) ?? "NONE",
       pdfFailureReason: (data as any).pdfFailureReason ?? null,
+      sourceType: (data as any).sourceType ?? null,
+      sourceId: (data as any).sourceId ?? null,
+      paymentDetails: ((data as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
     });
   }
 
   async list(
-    tenantId: string,
+    workspaceId: string,
     filters: ListInvoicesFilters,
     pageSize = 20,
     cursor?: string
   ): Promise<ListInvoicesResult> {
-    const where: any = { tenantId };
+    const where: any = { tenantId: workspaceId };
     if (filters.status) {
       where.status = filters.status;
     }
@@ -233,6 +248,9 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         pdfSourceVersion: (row as any).pdfSourceVersion ?? null,
         pdfStatus: ((row as any).pdfStatus as PdfStatus) ?? "NONE",
         pdfFailureReason: (row as any).pdfFailureReason ?? null,
+        sourceType: (row as any).sourceType ?? null,
+        sourceId: (row as any).sourceId ?? null,
+        paymentDetails: ((row as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
       });
     });
 
@@ -240,8 +258,8 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     return { items, nextCursor };
   }
 
-  async isInvoiceNumberTaken(tenantId: string, number: string): Promise<boolean> {
-    const count = await this.prisma.invoice.count({ where: { tenantId, number } });
+  async isInvoiceNumberTaken(workspaceId: string, number: string): Promise<boolean> {
+    const count = await this.prisma.invoice.count({ where: { tenantId: workspaceId, number } });
     return count > 0;
   }
 }

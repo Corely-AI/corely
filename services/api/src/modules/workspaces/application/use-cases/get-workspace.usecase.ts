@@ -40,6 +40,7 @@ export class GetWorkspaceUseCase {
     return {
       workspace: {
         id: workspace.id,
+        legalEntityId: workspace.legalEntityId,
         name: workspace.name,
         kind: workspace.legalEntity?.kind as any,
         legalName: workspace.legalEntity?.legalName,

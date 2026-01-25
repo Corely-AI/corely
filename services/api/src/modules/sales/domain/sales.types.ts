@@ -101,6 +101,8 @@ export type SalesInvoiceProps = {
   sourceSalesOrderId?: string | null;
   sourceQuoteId?: string | null;
   issuedJournalEntryId?: string | null;
+  paymentMethodId?: string | null;
+  paymentSnapshot?: unknown | null;
 };
 
 export type SalesPayment = {

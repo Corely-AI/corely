@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, PlusCircle, Building2, User } from "lucide-react";
+import { ChevronsUpDown, PlusCircle, Briefcase, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspace } from "./workspace-provider";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
+import { cn } from "@/shared/lib/utils";
 
 interface WorkspaceSwitcherProps {
   collapsed?: boolean;
@@ -29,12 +30,12 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed 
     return (
       <Button
         variant="secondary"
-        className="w-full justify-start"
+        className={cn("w-full transition-all", collapsed ? "justify-center px-0" : "justify-start")}
         onClick={() => navigate("/onboarding")}
         data-testid="workspace-create-shortcut"
       >
-        <PlusCircle className="h-4 w-4 mr-2" />
-        {collapsed ? "" : "Create workspace"}
+        <PlusCircle className={cn("h-4 w-4 shrink-0", !collapsed && "mr-2")} />
+        {!collapsed && <span>Create workspace</span>}
       </Button>
     );
   }
@@ -46,26 +47,29 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed 
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="w-full justify-between"
+          className={cn(
+            "w-full justify-between transition-all outline-none focus-visible:ring-0",
+            collapsed && "justify-center px-0"
+          )}
           size="sm"
           data-testid="workspace-switcher-trigger"
         >
           <div className="flex items-center gap-2 text-left">
             {active.kind === "COMPANY" ? (
-              <Building2 className="h-4 w-4 text-muted-foreground" />
+              <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
             ) : (
-              <User className="h-4 w-4 text-muted-foreground" />
+              <User className="h-4 w-4 text-muted-foreground shrink-0" />
             )}
-            <div className="flex flex-col">
-              <span className="text-sm font-medium leading-tight">{active.name}</span>
-              {!collapsed && (
-                <span className="text-xs text-muted-foreground">
+            {!collapsed && (
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-sm font-medium leading-tight truncate">{active.name}</span>
+                <span className="text-xs text-muted-foreground truncate">
                   {active.currency ?? "—"} · {active.countryCode ?? "—"}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          {!collapsed && <ChevronsUpDown className="h-4 w-4 text-muted-foreground shrink-0" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64" align="start" data-testid="workspace-switcher-menu">
@@ -79,7 +83,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed 
           >
             <div className="flex items-center gap-2">
               {ws.kind === "COMPANY" ? (
-                <Building2 className="h-4 w-4 text-muted-foreground" />
+                <Briefcase className="h-4 w-4 text-muted-foreground" />
               ) : (
                 <User className="h-4 w-4 text-muted-foreground" />
               )}

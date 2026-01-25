@@ -34,9 +34,11 @@ import { SalesApplication } from "../../application/sales.application";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
 import { AuthGuard } from "../../../identity";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../../platform";
 
 @Controller("sales")
-@UseGuards(AuthGuard, RbacGuard)
+@UseGuards(AuthGuard, RbacGuard, WorkspaceCapabilityGuard)
+@RequireWorkspaceCapability("sales.quotes")
 export class SalesController {
   constructor(private readonly app: SalesApplication) {}
 
@@ -226,116 +228,6 @@ export class SalesController {
     const input = CreateInvoiceFromOrderInputSchema.parse({ ...(body as object), orderId });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.createInvoiceFromOrder.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  // Invoices
-  @Get("invoices")
-  @RequirePermission("sales.invoices.read")
-  async listInvoices(@Query() query: any, @Req() req: Request) {
-    const input = ListSalesInvoicesInputSchema.parse({
-      status: query.status,
-      customerPartyId: query.customerPartyId,
-      fromDate: query.fromDate,
-      toDate: query.toDate,
-      cursor: query.cursor,
-      pageSize: query.pageSize ? Number(query.pageSize) : undefined,
-    });
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.listInvoices.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  @Post("invoices")
-  @RequirePermission("sales.invoices.manage")
-  async createInvoice(@Body() body: unknown, @Req() req: Request) {
-    const input = CreateSalesInvoiceInputSchema.parse(body);
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.createInvoice.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  @Get("invoices/:invoiceId")
-  @RequirePermission("sales.invoices.read")
-  async getInvoice(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
-    const input = GetSalesInvoiceInputSchema.parse({ invoiceId });
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.getInvoice.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  @Patch("invoices/:invoiceId")
-  @RequirePermission("sales.invoices.manage")
-  async updateInvoice(
-    @Param("invoiceId") invoiceId: string,
-    @Body() body: unknown,
-    @Req() req: Request
-  ) {
-    const input = UpdateSalesInvoiceInputSchema.parse({ ...(body as object), invoiceId });
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.updateInvoice.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  @Post("invoices/:invoiceId/issue")
-  @RequirePermission("sales.invoices.issue")
-  async issueInvoice(
-    @Param("invoiceId") invoiceId: string,
-    @Body() body: unknown,
-    @Req() req: Request
-  ) {
-    const input = IssueSalesInvoiceInputSchema.parse({ ...(body as object), invoiceId });
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.issueInvoice.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  @Post("invoices/:invoiceId/void")
-  @RequirePermission("sales.invoices.void")
-  async voidInvoice(
-    @Param("invoiceId") invoiceId: string,
-    @Body() body: unknown,
-    @Req() req: Request
-  ) {
-    const input = VoidSalesInvoiceInputSchema.parse({ ...(body as object), invoiceId });
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.voidInvoice.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  // Payments
-  @Post("invoices/:invoiceId/payments")
-  @RequirePermission("sales.payments.record")
-  async recordPayment(
-    @Param("invoiceId") invoiceId: string,
-    @Body() body: unknown,
-    @Req() req: Request
-  ) {
-    const input = SalesRecordPaymentInputSchema.parse({ ...(body as object), invoiceId });
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.recordPayment.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  @Get("invoices/:invoiceId/payments")
-  @RequirePermission("sales.invoices.read")
-  async listPayments(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
-    const input = ListPaymentsInputSchema.parse({ invoiceId });
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.listPayments.execute(input, ctx);
-    return mapResultToHttp(result);
-  }
-
-  @Post("payments/:paymentId/reverse")
-  @RequirePermission("sales.payments.record")
-  async reversePayment(
-    @Param("paymentId") paymentId: string,
-    @Body() body: unknown,
-    @Req() req: Request
-  ) {
-    const input = ReversePaymentInputSchema.parse({ ...(body as object), paymentId });
-    const ctx = buildUseCaseContext(req);
-    const result = await this.app.reversePayment.execute(input, ctx);
     return mapResultToHttp(result);
   }
 

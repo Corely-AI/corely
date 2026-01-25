@@ -5,7 +5,11 @@
     "exactOptionalPropertyTypes": false,
     "paths": {
       "@corely/testkit": ["./src/index.ts"],
-      "@corely/testkit/*": ["./src/*"]
+      "@corely/testkit/*": ["./src/*"],
+      "@corely/data": ["../data/src/index.ts"],
+      "@corely/data/*": ["../data/src/*"],
+      "@/*": ["../../services/api/src/*"],
+      "@shared/*": ["../../services/api/src/shared/*"]
     }
   },
   "include": ["src"]

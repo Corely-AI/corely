@@ -25,6 +25,11 @@ export default function OrderDetailPage() {
     queryKey: ["customers"],
     queryFn: () => customersApi.listCustomers(),
   });
+  const customers = (customersData?.customers ?? []).flatMap((customer) =>
+    customer.id && customer.displayName
+      ? [{ id: customer.id, displayName: customer.displayName }]
+      : []
+  );
 
   const order = orderData?.order;
   const isDraft = order?.status === "DRAFT";
@@ -122,7 +127,7 @@ export default function OrderDetailPage() {
       <Card>
         <CardContent className="p-6">
           <OrderForm
-            customers={customersData?.customers ?? []}
+            customers={customers}
             initial={order}
             disabled={!isDraft}
             onSubmit={(values) => updateMutation.mutate(values)}

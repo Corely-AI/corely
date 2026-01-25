@@ -6,6 +6,7 @@ import { EnvService } from "@corely/config";
 import { StreamCopilotChatUseCase } from "./application/use-cases/stream-copilot-chat.usecase";
 import { PrismaAgentRunRepository } from "./infrastructure/adapters/prisma-agent-run-repository.adapter";
 import { PrismaMessageRepository } from "./infrastructure/adapters/prisma-message-repository.adapter";
+import { PrismaChatStoreAdapter } from "./infrastructure/adapters/prisma-chat-store.adapter";
 import { PrismaToolExecutionRepository } from "./infrastructure/adapters/prisma-tool-execution-repository.adapter";
 import { ToolRegistry } from "./infrastructure/tools/tool-registry";
 import { AiSdkModelAdapter } from "./infrastructure/model/ai-sdk.model-adapter";
@@ -23,6 +24,7 @@ import { IdempotencyService } from "../../shared/infrastructure/idempotency/idem
 import { InvoicesModule } from "../invoices/invoices.module";
 import { InvoicesApplication } from "../invoices/application/invoices.application";
 import { buildInvoiceTools } from "../invoices/adapters/tools/invoice.tools";
+import { buildInvoiceWorkflowTools } from "./infrastructure/tools/invoice-workflow.tools";
 import { PartyModule } from "../party";
 import { PartyApplication } from "../party/application/party.application";
 import { buildCustomerTools } from "../party/adapters/tools/customer.tools";
@@ -44,6 +46,12 @@ import { type ObservabilityPort } from "@corely/kernel";
 import { CreateRunUseCase } from "./application/use-cases/create-run.usecase";
 import { GetRunUseCase } from "./application/use-cases/get-run.usecase";
 import { ListMessagesUseCase } from "./application/use-cases/list-messages.usecase";
+import { PromptModule } from "../../shared/prompts/prompt.module";
+import { PromptRegistry } from "@corely/prompts";
+import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
+import { CHAT_STORE_PORT, type ChatStorePort } from "./application/ports/chat-store.port";
+import { CopilotContextBuilder } from "./application/services/copilot-context.builder";
+import { CopilotTaskStateTracker } from "./application/services/copilot-task-state.service";
 
 @Module({
   imports: [
@@ -55,11 +63,13 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
     PurchasingModule,
     InventoryModule,
     EngagementModule,
+    PromptModule,
   ],
   controllers: [CopilotController],
   providers: [
     PrismaAgentRunRepository,
     PrismaMessageRepository,
+    PrismaChatStoreAdapter,
     PrismaToolExecutionRepository,
     ToolRegistry,
     PrismaAuditAdapter,
@@ -75,10 +85,20 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         outbox: OutboxPort,
         env: EnvService,
         logger: NestLoggerAdapter,
-        observability: ObservabilityPort
+        observability: ObservabilityPort,
+        promptRegistry: PromptRegistry,
+        promptUsageLogger: PromptUsageLogger
       ) => {
         logger.debug("Creating AiSdkModelAdapter");
-        return new AiSdkModelAdapter(toolExec, audit, outbox, env, observability);
+        return new AiSdkModelAdapter(
+          toolExec,
+          audit,
+          outbox,
+          env,
+          observability,
+          promptRegistry,
+          promptUsageLogger
+        );
       },
       inject: [
         PrismaToolExecutionRepository,
@@ -87,6 +107,8 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         EnvService,
         "COPILOT_LOGGER",
         "OBSERVABILITY_PORT",
+        PromptRegistry,
+        PromptUsageLogger,
       ],
     },
     {
@@ -109,6 +131,12 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
       inject: [PrismaMessageRepository],
     },
     {
+      provide: CHAT_STORE_PORT,
+      useClass: PrismaChatStoreAdapter,
+    },
+    CopilotContextBuilder,
+    CopilotTaskStateTracker,
+    {
       provide: "OBSERVABILITY_PORT",
       useFactory: (env: EnvService) =>
         new OtelObservabilityAdapter({ maskingMode: env.OBSERVABILITY_MASKING_MODE }),
@@ -123,14 +151,17 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         purchasing: PurchasingApplication,
         inventory: InventoryApplication,
         engagement: EngagementApplication,
-        env: EnvService
+        env: EnvService,
+        promptRegistry: PromptRegistry,
+        promptUsageLogger: PromptUsageLogger
       ) => [
+        ...buildInvoiceWorkflowTools(invoices, partyCrm),
         ...buildInvoiceTools(invoices),
         ...buildCustomerTools(partyCrm),
         ...buildSalesTools(sales),
-        ...buildPurchasingTools(purchasing, env),
-        ...buildInventoryTools(inventory, env),
-        ...buildApprovalTools(env),
+        ...buildPurchasingTools(purchasing, env, promptRegistry, promptUsageLogger),
+        ...buildInventoryTools(inventory, env, promptRegistry, promptUsageLogger),
+        ...buildApprovalTools(env, promptRegistry, promptUsageLogger),
         ...buildEngagementTools(engagement, partyCrm),
       ],
       inject: [
@@ -141,13 +172,15 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         InventoryApplication,
         EngagementApplication,
         EnvService,
+        PromptRegistry,
+        PromptUsageLogger,
       ],
     },
     {
       provide: StreamCopilotChatUseCase,
       useFactory: (
         runs: PrismaAgentRunRepository,
-        messages: PrismaMessageRepository,
+        chatStore: ChatStorePort,
         toolExec: PrismaToolExecutionRepository,
         tools: ToolRegistry,
         model: AiSdkModelAdapter,
@@ -156,12 +189,14 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         idem: PrismaCopilotIdempotencyAdapter,
         clock: ClockPort,
         logger: NestLoggerAdapter,
-        observability: ObservabilityPort
+        observability: ObservabilityPort,
+        contextBuilder: CopilotContextBuilder,
+        taskTracker: CopilotTaskStateTracker
       ) => {
         logger.debug("Creating StreamCopilotChatUseCase");
         return new StreamCopilotChatUseCase(
           runs,
-          messages,
+          chatStore,
           toolExec,
           tools,
           model,
@@ -169,12 +204,14 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
           outbox as OutboxPort,
           idem,
           clock,
-          observability
+          observability,
+          contextBuilder,
+          taskTracker
         );
       },
       inject: [
         PrismaAgentRunRepository,
-        PrismaMessageRepository,
+        CHAT_STORE_PORT,
         PrismaToolExecutionRepository,
         ToolRegistry,
         AiSdkModelAdapter,
@@ -184,6 +221,8 @@ import { ListMessagesUseCase } from "./application/use-cases/list-messages.useca
         "COPILOT_CLOCK",
         "COPILOT_LOGGER",
         "OBSERVABILITY_PORT",
+        CopilotContextBuilder,
+        CopilotTaskStateTracker,
       ],
     },
   ],

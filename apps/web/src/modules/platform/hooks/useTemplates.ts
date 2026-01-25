@@ -38,14 +38,14 @@ export interface TemplateResult {
  * Fetch all available templates
  */
 export function useTemplates(category?: string) {
-  return useQuery({
+  return useQuery<Template[], Error>({
     queryKey: ["platform", "templates", category],
     queryFn: async () => {
       const params = category ? `?category=${category}` : "";
       const response = await apiClient.get<{ templates: Template[] }>(
         `/platform/templates${params}`
       );
-      return response.data.templates;
+      return response.templates;
     },
   });
 }
@@ -54,11 +54,11 @@ export function useTemplates(category?: string) {
  * Fetch template details
  */
 export function useTemplate(templateId: string) {
-  return useQuery({
+  return useQuery<Template, Error>({
     queryKey: ["platform", "templates", templateId],
     queryFn: async () => {
       const response = await apiClient.get<Template>(`/platform/templates/${templateId}`);
-      return response.data;
+      return response;
     },
     enabled: !!templateId,
   });
@@ -80,7 +80,7 @@ export function usePlanTemplate() {
         `/platform/templates/${templateId}/plan`,
         { params }
       );
-      return response.data;
+      return response;
     },
   });
 }
@@ -103,7 +103,7 @@ export function useApplyTemplate() {
         `/platform/templates/${templateId}/apply`,
         { params }
       );
-      return response.data;
+      return response;
     },
     onSuccess: () => {
       // Invalidate relevant queries after template application

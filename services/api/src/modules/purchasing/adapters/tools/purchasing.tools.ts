@@ -2,6 +2,7 @@ import { z } from "zod";
 import { generateObject } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import type { EnvService } from "@corely/config";
+import { type PromptRegistry } from "@corely/prompts";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
 import type { PurchasingApplication } from "../../application/purchasing.application";
 import {
@@ -14,6 +15,8 @@ import {
   ExpenseChangesNarrativeCardSchema,
   PostingExplanationCardSchema,
 } from "@corely/contracts";
+import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
+import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 
 const validationError = (issues: unknown) => ({
   ok: false,
@@ -24,7 +27,9 @@ const validationError = (issues: unknown) => ({
 
 export const buildPurchasingTools = (
   _app: PurchasingApplication,
-  env: EnvService
+  env: EnvService,
+  promptRegistry: PromptRegistry,
+  promptUsageLogger: PromptUsageLogger
 ): DomainToolPort[] => {
   const defaultModel = anthropic(env.AI_MODEL_ID) as any;
 
@@ -43,6 +48,23 @@ export const buildPurchasingTools = (
         }
 
         const { sourceText } = parsed.data;
+        const prompt = promptRegistry.render(
+          "purchasing.extract_supplier",
+          buildPromptContext({ env, tenantId }),
+          { SOURCE_TEXT: sourceText }
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "purchasing_createSupplierFromText",
+          purpose: "purchasing.extract_supplier",
+        });
 
         const { object } = await generateObject({
           model: defaultModel,
@@ -55,7 +77,7 @@ export const buildPurchasingTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Extract supplier information from this text.\n\nText:\n${sourceText}`,
+          prompt: prompt.content,
         });
 
         const proposal = SupplierPartyProposalCardSchema.parse({
@@ -99,6 +121,23 @@ export const buildPurchasingTools = (
         }
 
         const { sourceText, supplierPartyId } = parsed.data;
+        const prompt = promptRegistry.render(
+          "purchasing.extract_purchase_order",
+          buildPromptContext({ env, tenantId }),
+          { SOURCE_TEXT: sourceText }
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "purchasing_createPOFromText",
+          purpose: "purchasing.extract_purchase_order",
+        });
 
         const { object } = await generateObject({
           model: defaultModel,
@@ -121,7 +160,7 @@ export const buildPurchasingTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Extract a purchase order draft from this text.\n\nText:\n${sourceText}`,
+          prompt: prompt.content,
         });
 
         const proposal = PurchaseOrderDraftProposalCardSchema.parse({
@@ -164,6 +203,23 @@ export const buildPurchasingTools = (
         }
 
         const { sourceText } = parsed.data;
+        const prompt = promptRegistry.render(
+          "purchasing.extract_vendor_bill",
+          buildPromptContext({ env, tenantId }),
+          { SOURCE_TEXT: sourceText }
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "purchasing_createBillFromText",
+          purpose: "purchasing.extract_vendor_bill",
+        });
 
         const { object } = await generateObject({
           model: defaultModel,
@@ -189,7 +245,7 @@ export const buildPurchasingTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Extract a vendor bill draft from this text.\n\nText:\n${sourceText}`,
+          prompt: prompt.content,
         });
 
         const proposal = VendorBillDraftProposalCardSchema.parse({
@@ -254,6 +310,24 @@ export const buildPurchasingTools = (
           return validationError(parsed.error.flatten());
         }
 
+        const prompt = promptRegistry.render(
+          "purchasing.categorize_bill_lines",
+          buildPromptContext({ env, tenantId }),
+          {}
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "purchasing_categorizeBillLines",
+          purpose: "purchasing.categorize_bill_lines",
+        });
+
         const { object } = await generateObject({
           model: defaultModel,
           schema: z.object({
@@ -270,7 +344,7 @@ export const buildPurchasingTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Categorize vendor bill lines and suggest GL accounts.`,
+          prompt: prompt.content,
         });
 
         return LineCategorizationCardSchema.parse({
@@ -323,13 +397,34 @@ export const buildPurchasingTools = (
         objective: z.string(),
         context: z.string().optional(),
       }),
-      execute: async ({ input }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z
           .object({ objective: z.string(), context: z.string().optional() })
           .safeParse(input);
         if (!parsed.success) {
           return validationError(parsed.error.flatten());
         }
+
+        const prompt = promptRegistry.render(
+          "purchasing.draft_vendor_email",
+          buildPromptContext({ env, tenantId }),
+          {
+            OBJECTIVE: parsed.data.objective,
+            CONTEXT: parsed.data.context ?? "",
+          }
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "purchasing_draftVendorEmail",
+          purpose: "purchasing.draft_vendor_email",
+        });
 
         const { object } = await generateObject({
           model: defaultModel,
@@ -339,7 +434,7 @@ export const buildPurchasingTools = (
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Draft a vendor email for this objective: ${parsed.data.objective}\n\nContext:\n${parsed.data.context ?? ""}`,
+          prompt: prompt.content,
         });
 
         return MessageDraftCardSchema.parse({

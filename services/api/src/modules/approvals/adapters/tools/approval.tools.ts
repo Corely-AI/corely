@@ -3,8 +3,11 @@ import { generateObject } from "ai";
 import type { LanguageModel } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import type { EnvService } from "@corely/config";
+import { type PromptRegistry } from "@corely/prompts";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
 import { ApprovalPolicySuggestionCardSchema } from "@corely/contracts";
+import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
+import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 
 const validationError = (issues: unknown) => ({
   ok: false,
@@ -13,7 +16,11 @@ const validationError = (issues: unknown) => ({
   details: issues,
 });
 
-export const buildApprovalTools = (env: EnvService): DomainToolPort[] => {
+export const buildApprovalTools = (
+  env: EnvService,
+  promptRegistry: PromptRegistry,
+  promptUsageLogger: PromptUsageLogger
+): DomainToolPort[] => {
   const defaultModel = anthropic(env.AI_MODEL_ID) as unknown as LanguageModel;
 
   return [
@@ -26,7 +33,7 @@ export const buildApprovalTools = (env: EnvService): DomainToolPort[] => {
         description: z.string().optional(),
         samplePayload: z.record(z.unknown()).optional(),
       }),
-      execute: async ({ input }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z
           .object({
             actionKey: z.string(),
@@ -39,6 +46,27 @@ export const buildApprovalTools = (env: EnvService): DomainToolPort[] => {
         }
 
         const { actionKey, description, samplePayload } = parsed.data;
+        const prompt = promptRegistry.render(
+          "approvals.suggest_policy",
+          buildPromptContext({ env, tenantId }),
+          {
+            ACTION_KEY: actionKey,
+            DESCRIPTION: description ?? "(none)",
+            SAMPLE_PAYLOAD: samplePayload ? JSON.stringify(samplePayload) : "(none)",
+          }
+        );
+        promptUsageLogger.logUsage({
+          promptId: prompt.promptId,
+          promptVersion: prompt.promptVersion,
+          promptHash: prompt.promptHash,
+          modelId: env.AI_MODEL_ID,
+          provider: "anthropic",
+          tenantId,
+          userId,
+          runId,
+          toolName: "approvals_suggestPolicy",
+          purpose: "approvals.suggest_policy",
+        });
 
         const { object } = await generateObject({
           model: defaultModel,
@@ -99,13 +127,7 @@ export const buildApprovalTools = (env: EnvService): DomainToolPort[] => {
             confidence: z.number().min(0).max(1),
             rationale: z.string(),
           }),
-          prompt: `Suggest an approval policy for the following action.
-
-Action key: ${actionKey}
-Description: ${description ?? "(none)"}
-Sample payload: ${samplePayload ? JSON.stringify(samplePayload) : "(none)"}
-
-Return steps and rules that indicate when approval is required.`,
+          prompt: prompt.content,
         });
 
         return ApprovalPolicySuggestionCardSchema.parse({

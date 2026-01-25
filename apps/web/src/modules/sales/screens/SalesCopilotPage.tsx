@@ -7,7 +7,6 @@ import {
   PricingSuggestionCardSchema,
   MessageDraftCardSchema,
   StalledQuotesCardSchema,
-  PostingExplanationCardSchema,
   SalesSummaryCardSchema,
   type QuoteDraftProposalCard,
   type LineItemsProposalCard,
@@ -22,7 +21,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatMoney } from "@/shared/lib/formatters";
 import { salesApi } from "@/lib/sales-api";
 import { customersApi } from "@/lib/customers-api";
-import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
+import {
+  fetchCopilotHistory,
+  useCopilotChatOptions,
+  type CopilotChatMessage,
+} from "@/lib/copilot-api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { salesQueryKeys } from "../queries/sales.queryKeys";
@@ -30,6 +33,7 @@ import { salesQueryKeys } from "../queries/sales.queryKeys";
 type MessagePart = {
   type: string;
   text?: string;
+  data?: unknown;
   toolCallId?: string;
   toolName?: string;
   input?: unknown;
@@ -82,11 +86,24 @@ export default function SalesCopilotPage() {
     locale: "en",
   });
 
-  const { messages, input, handleInputChange, handleSubmit, addToolApprovalResponse, setMessages } =
-    useChat(chatOptions.options);
+  const { messages, sendMessage, addToolApprovalResponse, setMessages } =
+    useChat<CopilotChatMessage>(chatOptions.options);
   const [dismissedToolCalls, setDismissedToolCalls] = useState<string[]>([]);
   const [customerOverrides, setCustomerOverrides] = useState<Record<string, string>>({});
   const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
+  const [input, setInput] = useState("");
+  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(event.target.value);
+  };
+  const handleSubmit = (event?: { preventDefault?: () => void }) => {
+    event?.preventDefault?.();
+    const trimmed = input.trim();
+    if (!trimmed) {
+      return;
+    }
+    void sendMessage({ text: trimmed });
+    setInput("");
+  };
 
   const { data: customersData } = useQuery({
     queryKey: ["customers"],
@@ -135,7 +152,7 @@ export default function SalesCopilotPage() {
     void fetchCopilotHistory({
       runId: chatOptions.runId,
       apiBase: chatOptions.apiBase,
-      tenantId: chatOptions.tenantId,
+      workspaceId: chatOptions.workspaceId,
       accessToken: chatOptions.accessToken,
     })
       .then((history) => {
@@ -154,7 +171,7 @@ export default function SalesCopilotPage() {
     chatOptions.accessToken,
     chatOptions.apiBase,
     chatOptions.runId,
-    chatOptions.tenantId,
+    chatOptions.workspaceId,
     hydratedRunId,
     setMessages,
   ]);
@@ -451,44 +468,6 @@ export default function SalesCopilotPage() {
       );
     }
 
-    const postingCard = PostingExplanationCardSchema.safeParse(result);
-    if (postingCard.success) {
-      return (
-        <Card className="bg-white">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="font-semibold">Posting Explanation</div>
-              <Badge variant="secondary">Accounting</Badge>
-            </div>
-            <div className="text-sm">{postingCard.data.explanation}</div>
-            {postingCard.data.journalEntryId ? (
-              <div className="text-sm text-muted-foreground">
-                Journal Entry:{" "}
-                <span className="text-foreground">{postingCard.data.journalEntryId}</span>
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-2">
-              <Button variant="ghost" size="sm" onClick={() => dismissTool(toolCallId)}>
-                Dismiss
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate("/accounting/journal-entries")}
-              >
-                View Journal Entries
-              </Button>
-            </div>
-            <MetaFooter
-              confidence={postingCard.data.confidence}
-              rationale={postingCard.data.rationale}
-              provenance={postingCard.data.provenance}
-            />
-          </CardContent>
-        </Card>
-      );
-    }
-
     const summaryCard = SalesSummaryCardSchema.safeParse(result);
     if (summaryCard.success) {
       return (
@@ -617,6 +596,20 @@ export default function SalesCopilotPage() {
     return null;
   };
 
+  const formatMessageContent = (value: unknown) => {
+    if (value == null) {
+      return "";
+    }
+    if (typeof value === "string") {
+      return value;
+    }
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
@@ -630,7 +623,7 @@ export default function SalesCopilotPage() {
         <CardContent className="p-4 space-y-4">
           <div className="text-sm text-muted-foreground">
             Try prompts like: “Create a quote for website redesign,” “Draft a follow-up for quote
-            123,” or “Explain posting for invoice 456.”
+            123.”
           </div>
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Textarea
@@ -654,7 +647,9 @@ export default function SalesCopilotPage() {
                 ? (message.parts as MessagePart[]).map((part, idx) => (
                     <div key={idx}>{renderPart(part, message.id)}</div>
                   ))
-                : message.content && <p className="whitespace-pre-wrap">{message.content}</p>}
+                : message.content != null && (
+                    <p className="whitespace-pre-wrap">{formatMessageContent(message.content)}</p>
+                  )}
             </MessageBubble>
           </div>
         ))}

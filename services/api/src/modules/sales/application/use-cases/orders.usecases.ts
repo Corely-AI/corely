@@ -32,17 +32,17 @@ import type {
   ListSalesOrdersOutput,
 } from "@corely/contracts";
 import { SalesOrderAggregate } from "../../domain/order.aggregate";
-import { SalesInvoiceAggregate } from "../../domain/invoice.aggregate";
 import type { OrderLineItem } from "../../domain/sales.types";
 import type { SalesOrderRepositoryPort } from "../ports/order-repository.port";
-import type { SalesInvoiceRepositoryPort } from "../ports/invoice-repository.port";
 import type { SalesSettingsRepositoryPort } from "../ports/settings-repository.port";
 import { SalesSettingsAggregate } from "../../domain/settings.aggregate";
-import { toOrderDto, toInvoiceDto } from "../mappers/sales-dto.mapper";
+import { toOrderDto, mapUnifiedInvoiceToSalesInvoice } from "../mappers/sales-dto.mapper";
 import { allocateUniqueNumber } from "./numbering";
 import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
 import { getIdempotentResult, storeIdempotentResult } from "./idempotency";
 import type { CustomerQueryPort } from "../../../party/application/ports/customer-query.port";
+import { type InvoiceCommandsPort } from "../../../invoices/application/ports/invoice-commands.port";
+import { isErr } from "@corely/kernel";
 
 const buildLineItems = (params: {
   idGenerator: IdGeneratorPort;
@@ -71,13 +71,13 @@ const buildLineItems = (params: {
 type OrderDeps = {
   logger: LoggerPort;
   orderRepo: SalesOrderRepositoryPort;
-  invoiceRepo: SalesInvoiceRepositoryPort;
   settingsRepo: SalesSettingsRepositoryPort;
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
   customerQuery: CustomerQueryPort;
   idempotency: IdempotencyStoragePort;
   audit: AuditPort;
+  invoiceCommands: InvoiceCommandsPort;
 };
 
 export class CreateSalesOrderUseCase extends BaseUseCase<
@@ -430,23 +430,33 @@ export class CreateInvoiceFromOrderUseCase extends BaseUseCase<
     }
 
     const now = this.services.clock.now();
-    const invoice = SalesInvoiceAggregate.createDraft({
-      id: this.services.idGenerator.newId(),
-      tenantId: ctx.tenantId,
-      customerPartyId: order.customerPartyId,
-      customerContactPartyId: order.customerContactPartyId,
-      issueDate: order.orderDate,
-      dueDate: null,
-      currency: order.currency,
-      paymentTerms: null,
-      notes: order.notes,
-      lineItems: order.lineItems.map((line) => ({ ...line })),
-      sourceSalesOrderId: order.id,
-      sourceQuoteId: order.sourceQuoteId,
-      now,
-    });
 
-    await this.services.invoiceRepo.create(ctx.tenantId, invoice);
+    // Delegate to unified Invoice module via command port
+    const result = await this.services.invoiceCommands.createDraftFromSalesSource(
+      {
+        sourceType: "order",
+        sourceId: order.id,
+        customerPartyId: order.customerPartyId,
+        customerContactPartyId: order.customerContactPartyId || undefined,
+        currency: order.currency,
+        invoiceDate: order.orderDate || undefined,
+        notes: order.notes || undefined,
+        lineItems: order.lineItems.map((line) => ({
+          description: line.description,
+          qty: line.quantity,
+          unitPriceCents: line.unitPriceCents,
+        })),
+        idempotencyKey: input.idempotencyKey,
+      },
+      ctx
+    );
+
+    if (isErr(result)) {
+      return result;
+    }
+
+    const { invoice } = result.value;
+
     order.markInvoiced(invoice.id, now);
     await this.services.orderRepo.save(ctx.tenantId, order);
     await this.services.audit.log({
@@ -458,7 +468,7 @@ export class CreateInvoiceFromOrderUseCase extends BaseUseCase<
       metadata: { invoiceId: invoice.id },
     });
 
-    const payload = { invoice: toInvoiceDto(invoice) };
+    const payload = { invoice: mapUnifiedInvoiceToSalesInvoice(invoice) };
     await storeIdempotentResult({
       idempotency: this.services.idempotency,
       actionKey: "sales.create-invoice-from-order",

@@ -1,9 +1,9 @@
-import type { OutboxPort } from "@corely/kernel";
+import { ValidationFailedError } from "@corely/domain";
+import type { OutboxPort, UseCaseContext } from "@corely/kernel";
 import type { AuditPort } from "../../../../shared/ports/audit.port";
 import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
-import type { RequestContext } from "../../../../shared/context/request-context";
 import {
   type CustomFieldDefinitionPort,
   type CustomFieldIndexPort,
@@ -21,10 +21,9 @@ export interface CreateExpenseInput {
   currency: string;
   category?: string | null;
   issuedAt: Date;
-  createdByUserId: string;
+  createdByUserId?: string;
   custom?: Record<string, unknown>;
   idempotencyKey: string;
-  context: RequestContext;
 }
 
 export class CreateExpenseUseCase {
@@ -41,7 +40,13 @@ export class CreateExpenseUseCase {
     private readonly customFieldIndexes: CustomFieldIndexPort
   ) {}
 
-  async execute(input: CreateExpenseInput): Promise<Expense> {
+  async execute(input: CreateExpenseInput, ctx: UseCaseContext): Promise<Expense> {
+    if (!input.tenantId) {
+      throw new ValidationFailedError("tenantId is required", [
+        { message: "tenantId is required", members: ["tenantId"] },
+      ]);
+    }
+
     const cached = await this.idempotency.get(this.actionKey, input.tenantId, input.idempotencyKey);
     if (cached) {
       const body = cached.body as any;
@@ -77,21 +82,21 @@ export class CreateExpenseUseCase {
       input.currency,
       input.category ?? null,
       input.issuedAt,
-      input.createdByUserId,
+      input.createdByUserId ?? ctx.userId ?? "system",
       this.clock.now(),
       null,
       null,
       Object.keys(normalizedCustom).length ? normalizedCustom : null
     );
 
-    await this.expenseRepo.save(expense);
+    await this.expenseRepo.create(expense);
     await this.audit.log({
       tenantId: input.tenantId,
-      userId: input.createdByUserId,
+      userId: input.createdByUserId ?? ctx.userId ?? "system",
       action: "expense.created",
       entityType: "Expense",
       entityId: expense.id,
-      metadata: { context: input.context },
+      metadata: {},
     });
 
     await this.outbox.enqueue({

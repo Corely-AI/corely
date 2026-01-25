@@ -18,6 +18,7 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src"),
       "@shared": path.resolve(__dirname, "src/shared"),
+      "@corely/config": path.resolve(__dirname, "../..", "packages/config/src"),
       "@corely/kernel": path.resolve(__dirname, "../..", "packages/kernel/src"),
       "@corely/testkit": path.resolve(__dirname, "../..", "packages/testkit/src"),
       "@corely/data": path.resolve(__dirname, "../..", "packages/data/src"),

@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   SetMetadata,
   Inject,
+  Logger,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
@@ -15,6 +16,12 @@ import {
   computeEffectivePermissionSet,
   hasPermission,
 } from "../../../../shared/permissions/effective-permissions";
+import { PlatformModule, WorkspaceTemplateService } from "../../../platform";
+import { resolveRequestContext } from "../../../../shared/request-context";
+import {
+  WORKSPACE_REPOSITORY_PORT,
+  type WorkspaceRepositoryPort,
+} from "../../../workspaces/application/ports/workspace-repository.port";
 
 export const REQUIRE_PERMISSION = "require_permission";
 
@@ -25,12 +32,17 @@ export const REQUIRE_PERMISSION = "require_permission";
  */
 @Injectable()
 export class RbacGuard implements CanActivate {
+  private readonly logger = new Logger(RbacGuard.name);
+
   constructor(
     private readonly reflector: Reflector,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
     private readonly membershipRepo: MembershipRepositoryPort,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
-    private readonly grantRepo: RolePermissionGrantRepositoryPort
+    private readonly grantRepo: RolePermissionGrantRepositoryPort,
+    private readonly workspaceTemplateService: WorkspaceTemplateService,
+    @Inject(WORKSPACE_REPOSITORY_PORT)
+    private readonly workspaceRepo: WorkspaceRepositoryPort
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -41,11 +53,37 @@ export class RbacGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const userId = request.user?.userId;
-    const tenantId = request.tenantId;
+    const ctx = request.context ?? resolveRequestContext(request);
+    const userId = ctx?.userId ?? request.user?.userId;
+    const tenantId = ctx?.tenantId ?? request.tenantId;
+    const workspaceId = (ctx?.workspaceId as string | null | undefined) ?? null;
+    if (!workspaceId) {
+      this.logger.warn("RBAC: workspaceId missing in request context", {
+        userId,
+        tenantId,
+        requiredPermission,
+        headerWorkspaceId: request.headers["x-workspace-id"],
+        requestWorkspaceId: request.workspaceId,
+        routeWorkspaceId: (request.params || {}).workspaceId,
+        contextSources: ctx?.sources,
+      });
+    }
 
     if (!userId || !tenantId) {
       throw new ForbiddenException("User or tenant not found in context");
+    }
+
+    // If workspace has RBAC disabled, allow access (capability gate handles visibility)
+    if (workspaceId) {
+      const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
+        tenantId,
+        workspaceId
+      );
+      const workspaceKind = workspace?.legalEntity?.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
+      const capabilities = this.workspaceTemplateService.getDefaultCapabilities(workspaceKind);
+      if (!capabilities["workspace.rbac"]) {
+        return true;
+      }
     }
 
     // Get user's membership and role

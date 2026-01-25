@@ -14,7 +14,9 @@
     "@corely/data": "workspace:*",
     "@corely/domain": "workspace:*",
     "@corely/kernel": "workspace:*",
+    "@corely/prompts": "workspace:*",
     "@google-cloud/storage": "^7.14.0",
+    "@google-cloud/tasks": "^4.1.0",
     "@langfuse/otel": "^4.5.1",
     "@nestjs/common": "catalog:",
     "@nestjs/core": "catalog:",
@@ -57,7 +59,7 @@
     "supertest": "catalog:"
   },
   "scripts": {
-    "dev": "node dev-tsc.mjs",
+    "dev": "node dev.mjs",
     "dev:esbuild": "node dev.mjs",
     "dev:debug": "node dev-tsc.mjs --inspect",
     "build": "tsc -p tsconfig.json",

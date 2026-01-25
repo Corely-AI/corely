@@ -5,7 +5,6 @@ import {
   SalesSummarizeDealOrQuoteInputSchema,
   SalesDraftFollowUpMessageInputSchema,
   SalesDetectStalledQuotesInputSchema,
-  SalesExplainPostingInputSchema,
 } from "@corely/contracts";
 import type {
   QuoteDraftProposalCard,
@@ -14,7 +13,6 @@ import type {
   SalesSummaryCard,
   MessageDraftCard,
   StalledQuotesCard,
-  PostingExplanationCard,
 } from "@corely/contracts";
 import { type DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
 import { type SalesApplication } from "../../application/sales.application";
@@ -279,61 +277,6 @@ export const buildSalesTools = (app: SalesApplication): DomainToolPort[] => [
             id: alert.quoteId,
             name: alert.quoteNumber ?? "Quote",
           })),
-        },
-      };
-      return card;
-    },
-  },
-  {
-    name: "sales_explainAccountingPosting",
-    description: "Explain accounting postings for an invoice or payment.",
-    kind: "server",
-    inputSchema: SalesExplainPostingInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
-      const parsed = SalesExplainPostingInputSchema.safeParse(input);
-      if (!parsed.success) {
-        return validationError(parsed.error.flatten());
-      }
-
-      if (parsed.data.invoiceId) {
-        const result = await app.getInvoice.execute(
-          { invoiceId: parsed.data.invoiceId },
-          buildCtx(tenantId, userId, toolCallId, runId)
-        );
-        if ("error" in result) {
-          return {
-            ok: false,
-            code: result.error.code,
-            message: result.error.message,
-            details: result.error.details,
-          };
-        }
-        const card: PostingExplanationCard = {
-          ok: true,
-          explanation: `Invoice ${result.value.invoice.number ?? result.value.invoice.id} was posted to Accounts Receivable (debit) and Revenue (credit).`,
-          journalEntryId: result.value.invoice.issuedJournalEntryId ?? undefined,
-          confidence: 0.85,
-          rationale: "Based on the deterministic invoice posting rule (AR/Revenue).",
-          provenance: {
-            referencedEntities: [
-              {
-                type: "invoice",
-                id: result.value.invoice.id,
-                name: result.value.invoice.number ?? "Invoice",
-              },
-            ],
-          },
-        };
-        return card;
-      }
-
-      const card: PostingExplanationCard = {
-        ok: true,
-        explanation: "Payment postings debit Bank and credit Accounts Receivable.",
-        confidence: 0.8,
-        rationale: "Based on the deterministic payment posting rule (Bank/AR).",
-        provenance: {
-          referencedEntities: [],
         },
       };
       return card;

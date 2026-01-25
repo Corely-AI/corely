@@ -21,18 +21,6 @@ import type {
   CreateInvoiceFromOrderOutput,
   GetSalesOrderOutput,
   ListSalesOrdersOutput,
-  CreateSalesInvoiceInput,
-  CreateSalesInvoiceOutput,
-  UpdateSalesInvoiceInput,
-  UpdateSalesInvoiceOutput,
-  IssueSalesInvoiceOutput,
-  VoidSalesInvoiceOutput,
-  GetSalesInvoiceOutput,
-  ListSalesInvoicesOutput,
-  RecordPaymentInput,
-  RecordPaymentOutput,
-  ListPaymentsOutput,
-  ReversePaymentOutput,
   GetSalesSettingsOutput,
   UpdateSalesSettingsInput,
   UpdateSalesSettingsOutput,
@@ -216,98 +204,6 @@ export class SalesApi {
       `/sales/orders/${orderId}/create-invoice`,
       {},
       { idempotencyKey: apiClient.generateIdempotencyKey() }
-    );
-  }
-
-  async listInvoices(params?: {
-    status?: string;
-    customerPartyId?: string;
-    fromDate?: string;
-    toDate?: string;
-    cursor?: string;
-    pageSize?: number;
-  }) {
-    const queryParams = new URLSearchParams();
-    if (params?.status) {
-      queryParams.append("status", params.status);
-    }
-    if (params?.customerPartyId) {
-      queryParams.append("customerPartyId", params.customerPartyId);
-    }
-    if (params?.fromDate) {
-      queryParams.append("fromDate", params.fromDate);
-    }
-    if (params?.toDate) {
-      queryParams.append("toDate", params.toDate);
-    }
-    if (params?.cursor) {
-      queryParams.append("cursor", params.cursor);
-    }
-    if (params?.pageSize) {
-      queryParams.append("pageSize", params.pageSize.toString());
-    }
-    const queryString = queryParams.toString();
-    const endpoint = queryString ? `/sales/invoices?${queryString}` : "/sales/invoices";
-    return apiClient.get<ListSalesInvoicesOutput>(endpoint);
-  }
-
-  async getInvoice(invoiceId: string) {
-    return apiClient.get<GetSalesInvoiceOutput>(`/sales/invoices/${invoiceId}`);
-  }
-
-  async createInvoice(input: CreateSalesInvoiceInput) {
-    return apiClient.post<CreateSalesInvoiceOutput>("/sales/invoices", input, {
-      idempotencyKey: input.idempotencyKey || apiClient.generateIdempotencyKey(),
-    });
-  }
-
-  async updateInvoice(invoiceId: string, input: UpdateSalesInvoiceInput) {
-    return apiClient.patch<UpdateSalesInvoiceOutput>(`/sales/invoices/${invoiceId}`, input, {
-      idempotencyKey: input.idempotencyKey,
-    });
-  }
-
-  async issueInvoice(invoiceId: string) {
-    return apiClient.post<IssueSalesInvoiceOutput>(
-      `/sales/invoices/${invoiceId}/issue`,
-      {},
-      {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-      }
-    );
-  }
-
-  async voidInvoice(invoiceId: string, reason?: string) {
-    return apiClient.post<VoidSalesInvoiceOutput>(
-      `/sales/invoices/${invoiceId}/void`,
-      { reason },
-      {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-      }
-    );
-  }
-
-  async recordPayment(input: RecordPaymentInput) {
-    return apiClient.post<RecordPaymentOutput>(
-      `/sales/invoices/${input.invoiceId}/payments`,
-      input,
-      {
-        idempotencyKey: input.idempotencyKey || apiClient.generateIdempotencyKey(),
-      }
-    );
-  }
-
-  async listPayments(invoiceId: string) {
-    return apiClient.get<ListPaymentsOutput>(`/sales/invoices/${invoiceId}/payments`);
-  }
-
-  async reversePayment(paymentId: string) {
-    return apiClient.post<ReversePaymentOutput>(
-      `/sales/payments/${paymentId}/reverse`,
-      {},
-      {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-      }
     );
   }
 

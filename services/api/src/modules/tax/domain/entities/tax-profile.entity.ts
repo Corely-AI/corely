@@ -1,4 +1,4 @@
-import type { TaxRegime, VatFilingFrequency } from "@corely/contracts";
+import type { TaxRegime, VatFilingFrequency, VatAccountingMethod } from "@corely/contracts";
 
 export interface TaxProfileEntity {
   id: string;
@@ -9,8 +9,10 @@ export interface TaxProfileEntity {
   vatId: string | null;
   currency: string;
   filingFrequency: VatFilingFrequency;
+  vatAccountingMethod?: VatAccountingMethod;
   taxYearStartMonth?: number | null;
   localTaxOfficeName?: string | null;
+  vatExemptionParagraph?: string | null;
   effectiveFrom: Date;
   effectiveTo: Date | null;
   createdAt: Date;

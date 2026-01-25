@@ -28,7 +28,7 @@ export class EntitlementGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const tenantId = request.tenantId;
+    const tenantId = request.context?.tenantId ?? request.tenantId;
 
     if (!tenantId) {
       throw new ForbiddenError("Tenant context not found", {

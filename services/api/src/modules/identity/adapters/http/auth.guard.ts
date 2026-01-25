@@ -38,16 +38,20 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException("Invalid or expired token");
     }
 
-    // Prefer tenant from header (workspace switch) and fall back to token claim
-    const headerTenantId = request.headers["x-tenant-id"] as string | undefined;
+    const roleIds = Array.isArray(decoded.roleIds) ? decoded.roleIds : [];
 
-    // Set user, tenant, and roles on request
+    // Set user, tenant, and roles on request (typed principal)
     request.user = {
       userId: decoded.userId,
       email: decoded.email,
+      tenantId: decoded.tenantId,
+      workspaceId: decoded.tenantId, // token does not yet carry workspace; default to tenant
+      roleIds,
     };
-    request.tenantId = headerTenantId ?? decoded.tenantId;
-    request.roleIds = Array.isArray(decoded.roleIds) ? decoded.roleIds : [];
+
+    request.tenantId = decoded.tenantId;
+    request.roleIds = roleIds;
+    request.workspaceId = request.user.workspaceId ?? null;
 
     return true;
   }

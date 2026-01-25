@@ -18,6 +18,7 @@ import {
   PiggyBank,
 } from "lucide-react";
 import { formatMoney, formatRelativeTime } from "@/shared/lib/formatters";
+import { TaxHistoryCard } from "../components/TaxHistoryCard";
 
 export default function TaxesOverviewPage() {
   const navigate = useNavigate();
@@ -62,6 +63,19 @@ export default function TaxesOverviewPage() {
 
   const summary = data;
   const formatCents = (cents: number) => formatMoney(cents, locale);
+  const isMissingSettings = summary.configurationStatus === "MISSING_SETTINGS";
+  const isNotApplicable = summary.configurationStatus === "NOT_APPLICABLE";
+
+  // Get current period info
+  const now = new Date();
+  const currentQuarter = Math.floor(now.getUTCMonth() / 3) + 1;
+  const currentYear = now.getUTCFullYear();
+  const currentPeriodKey = `${currentYear}-Q${currentQuarter}`;
+
+  // Calculate period dates
+  const quarterStartMonth = (currentQuarter - 1) * 3;
+  const periodStart = new Date(Date.UTC(currentYear, quarterStartMonth, 1));
+  const periodEnd = new Date(Date.UTC(currentYear, quarterStartMonth + 3, 1));
 
   return (
     <div className="p-6 lg:p-8 space-y-8 animate-fade-in">
@@ -88,6 +102,42 @@ export default function TaxesOverviewPage() {
         </div>
       </div>
 
+      {/* Current Period Banner */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <CalendarClock className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">
+                  Current VAT Period: Q{currentQuarter} {currentYear}
+                </h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {periodStart.toLocaleDateString(locale)} -{" "}
+                {new Date(periodEnd.getTime() - 1).toLocaleDateString(locale)}
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-sm text-muted-foreground">Estimated VAT due</div>
+                <div className="text-2xl font-bold text-primary">
+                  {isMissingSettings ? (
+                    <span className="text-muted-foreground text-base">Not configured</span>
+                  ) : (
+                    formatCents(summary.taxesToBePaidEstimatedCents || 0)
+                  )}
+                </div>
+              </div>
+              <Button variant="default" onClick={() => navigate(`/tax/period/${currentPeriodKey}`)}>
+                View details
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card variant="elevated" className="relative overflow-hidden">
@@ -97,10 +147,24 @@ export default function TaxesOverviewPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-2xl font-semibold">
-              {formatCents(summary.taxesToBePaidEstimatedCents || 0)}
+              {isMissingSettings ? (
+                <span className="text-muted-foreground">Not configured</span>
+              ) : (
+                formatCents(summary.taxesToBePaidEstimatedCents || 0)
+              )}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/tax/reports")}>
-              See taxes overview <ArrowRight className="h-4 w-4 ml-2" />
+            {isNotApplicable && (
+              <Badge variant="secondary" className="mt-1">
+                VAT not applicable
+              </Badge>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(isMissingSettings ? "/tax/settings" : "/tax/reports")}
+            >
+              {isMissingSettings ? "Complete tax setup" : "See taxes overview"}
+              <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </CardContent>
         </Card>
@@ -133,6 +197,31 @@ export default function TaxesOverviewPage() {
           </CardContent>
         </Card>
       </div>
+
+      {summary.warnings?.length ? (
+        <Alert>
+          <AlertTitle>Heads up</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc list-inside space-y-1">
+              {summary.warnings.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {isMissingSettings && (
+        <Alert>
+          <AlertTitle>Tax settings incomplete</AlertTitle>
+          <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <span>Configure your tax profile to estimate what you owe.</span>
+            <Button size="sm" onClick={() => navigate("/tax/settings")}>
+              Go to tax settings
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Helper card */}
       <Card className="bg-muted/50">
@@ -195,6 +284,8 @@ export default function TaxesOverviewPage() {
           )}
         </CardContent>
       </Card>
+
+      <TaxHistoryCard />
 
       {/* Local tax office */}
       <Card>

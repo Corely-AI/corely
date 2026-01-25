@@ -1,7 +1,15 @@
 import { z } from "zod";
 import { WorkspaceDtoSchema, WorkspaceProfileSchema } from "./workspace.types";
 
-const WorkspaceUpdatePayloadSchema = WorkspaceProfileSchema.partial();
+const WorkspaceUpdatePayloadSchema = WorkspaceProfileSchema.partial().extend({
+  legalName: z.preprocess((value) => {
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      return trimmed === "" ? undefined : trimmed;
+    }
+    return value;
+  }, z.string().min(1).optional()),
+});
 
 export const UpdateWorkspaceInputSchema = WorkspaceUpdatePayloadSchema.extend({
   idempotencyKey: z.string().optional(),

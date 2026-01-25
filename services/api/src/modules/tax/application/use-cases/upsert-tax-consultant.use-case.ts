@@ -11,7 +11,7 @@ export class UpsertTaxConsultantUseCase {
     input: UpsertTaxConsultantInput,
     ctx: UseCaseContext
   ): Promise<UpsertTaxConsultantOutput> {
-    const consultant = await this.repo.upsert(ctx.tenantId, {
+    const consultant = await this.repo.upsert(ctx.workspaceId, {
       name: input.name,
       email: input.email ?? null,
       phone: input.phone ?? null,

@@ -5,7 +5,7 @@ import {
   CustomFieldDefinitionRepository,
   CustomFieldIndexRepository,
 } from "@corely/data";
-import { ExpensesController } from "./adapters/http/expenses.controller";
+import { ExpensesController } from "./http/expenses.controller";
 import {
   IdempotencyStoragePort,
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
@@ -15,9 +15,11 @@ import { ClockPort, CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
 import { EXPENSE_REPOSITORY } from "./application/ports/expense-repository.port";
 import { ArchiveExpenseUseCase } from "./application/use-cases/archive-expense.usecase";
 import { CreateExpenseUseCase } from "./application/use-cases/create-expense.usecase";
+import { ListExpensesUseCase } from "./application/use-cases/list-expenses.usecase";
+import { GetExpenseUseCase } from "./application/use-cases/get-expense.usecase";
+import { UpdateExpenseUseCase } from "./application/use-cases/update-expense.usecase";
 import { UnarchiveExpenseUseCase } from "./application/use-cases/unarchive-expense.usecase";
 import { PrismaExpenseRepository } from "./infrastructure/adapters/prisma-expense-repository.adapter";
-import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 
 @Module({
@@ -27,8 +29,6 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     // Repository
     PrismaExpenseRepository,
     { provide: EXPENSE_REPOSITORY, useExisting: PrismaExpenseRepository },
-
-    IdempotencyInterceptor,
 
     // Use Cases
     {
@@ -66,14 +66,31 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     },
     {
       provide: ArchiveExpenseUseCase,
-      useFactory: (repo: PrismaExpenseRepository, clock: ClockPort) =>
-        new ArchiveExpenseUseCase(repo, clock),
-      inject: [EXPENSE_REPOSITORY, CLOCK_PORT_TOKEN],
+      useFactory: (repo: PrismaExpenseRepository, clock: ClockPort, audit) =>
+        new ArchiveExpenseUseCase(repo, clock, audit),
+      inject: [EXPENSE_REPOSITORY, CLOCK_PORT_TOKEN, AUDIT_PORT],
     },
     {
       provide: UnarchiveExpenseUseCase,
-      useFactory: (repo: PrismaExpenseRepository) => new UnarchiveExpenseUseCase(repo),
+      useFactory: (repo: PrismaExpenseRepository, audit) =>
+        new UnarchiveExpenseUseCase(repo, audit),
+      inject: [EXPENSE_REPOSITORY, AUDIT_PORT],
+    },
+    {
+      provide: ListExpensesUseCase,
+      useFactory: (repo: PrismaExpenseRepository) => new ListExpensesUseCase(repo),
       inject: [EXPENSE_REPOSITORY],
+    },
+    {
+      provide: GetExpenseUseCase,
+      useFactory: (repo: PrismaExpenseRepository) => new GetExpenseUseCase(repo),
+      inject: [EXPENSE_REPOSITORY],
+    },
+    {
+      provide: UpdateExpenseUseCase,
+      useFactory: (repo: PrismaExpenseRepository, audit, clock: ClockPort) =>
+        new UpdateExpenseUseCase(repo, audit, clock),
+      inject: [EXPENSE_REPOSITORY, AUDIT_PORT, CLOCK_PORT_TOKEN],
     },
   ],
   exports: [CreateExpenseUseCase],

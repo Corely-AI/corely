@@ -20,6 +20,16 @@ import {
   Boxes,
   Menu,
   HelpCircle,
+  Building,
+  CreditCard,
+  User,
+  ShieldAlert,
+  Percent,
+  FileCheck,
+  Briefcase,
+  ShoppingBag,
+  Settings2,
+  Cpu,
 } from "lucide-react";
 
 /**
@@ -47,6 +57,16 @@ export const iconMap: Record<string, LucideIcon> = {
   Boxes,
   Menu,
   HelpCircle,
+  Building,
+  CreditCard,
+  User,
+  ShieldAlert,
+  Percent,
+  FileCheck,
+  Briefcase,
+  ShoppingBag,
+  Settings2,
+  Cpu,
 };
 
 /**

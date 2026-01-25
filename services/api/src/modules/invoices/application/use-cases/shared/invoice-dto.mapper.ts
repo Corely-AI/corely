@@ -37,4 +37,6 @@ export const toInvoiceDto = (invoice: InvoiceAggregate): InvoiceDto => ({
     note: p.note,
   })),
   totals: { ...invoice.totals },
+  sourceType: invoice.sourceType,
+  sourceId: invoice.sourceId,
 });

@@ -3,6 +3,7 @@ import type { RequestPersonalDataExportUseCase } from "../../application/use-cas
 import type { RequestAccountErasureUseCase } from "../../application/use-cases/request-account-erasure/request-account-erasure.usecase";
 import type { GetPrivacyRequestStatusUseCase } from "../../application/use-cases/get-privacy-request-status/get-privacy-request-status.usecase";
 import type { Request } from "express";
+import { HEADER_TENANT_ID } from "@shared/request-context";
 
 @Controller("privacy")
 export class PrivacyController {
@@ -14,7 +15,7 @@ export class PrivacyController {
 
   @Post("export")
   async export(@Body() body: any, @Req() req: Request) {
-    const tenantId = (req.headers["x-tenant-id"] as string) ?? body.tenantId;
+    const tenantId = (req.headers[HEADER_TENANT_ID] as string) ?? body.tenantId;
     const subjectUserId = body.subjectUserId ?? (req as any).user?.id;
     const requestedByUserId = (req as any).user?.id ?? subjectUserId;
     return this.exportUseCase.execute({ tenantId, subjectUserId, requestedByUserId });
@@ -22,7 +23,7 @@ export class PrivacyController {
 
   @Post("erase")
   async erase(@Body() body: any, @Req() req: Request) {
-    const tenantId = (req.headers["x-tenant-id"] as string) ?? body.tenantId;
+    const tenantId = (req.headers[HEADER_TENANT_ID] as string) ?? body.tenantId;
     const subjectUserId = body.subjectUserId ?? (req as any).user?.id;
     const requestedByUserId = (req as any).user?.id ?? subjectUserId;
     return this.eraseUseCase.execute({ tenantId, subjectUserId, requestedByUserId });
@@ -30,7 +31,7 @@ export class PrivacyController {
 
   @Get("requests/:id")
   async status(@Param("id") id: string, @Req() req: Request) {
-    const tenantId = (req.headers["x-tenant-id"] as string) ?? (req.query.tenantId as string);
+    const tenantId = (req.headers[HEADER_TENANT_ID] as string) ?? (req.query.tenantId as string);
     return this.statusUseCase.execute({ tenantId, requestId: id });
   }
 }

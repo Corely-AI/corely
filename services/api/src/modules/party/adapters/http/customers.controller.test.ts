@@ -3,6 +3,7 @@ import { CustomersHttpController } from "./customers.controller";
 import { PartyApplication } from "../../application/party.application";
 import { err, NotFoundError, ok } from "@corely/kernel";
 import { HttpException } from "@nestjs/common";
+import { HEADER_TENANT_ID } from "@shared/request-context";
 
 const customer = {
   id: "cust-1",
@@ -38,7 +39,7 @@ describe("CustomersHttpController", () => {
   });
 
   it("returns customer dto", async () => {
-    const req = { headers: { "x-tenant-id": "tenant-1" } } as any;
+    const req = { headers: { [HEADER_TENANT_ID]: "tenant-1" } } as any;
     const result = await controller.get("cust-1", req);
 
     expect(result).toEqual(customer);
@@ -50,7 +51,7 @@ describe("CustomersHttpController", () => {
 
   it("maps use case errors to http exception", async () => {
     getExecute.mockResolvedValueOnce(err(new NotFoundError("missing")));
-    const req = { headers: { "x-tenant-id": "tenant-1" } } as any;
+    const req = { headers: { [HEADER_TENANT_ID]: "tenant-1" } } as any;
     await expect(controller.get("missing", req)).rejects.toBeInstanceOf(HttpException);
   });
 });

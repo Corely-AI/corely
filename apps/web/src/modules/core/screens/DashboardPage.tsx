@@ -21,63 +21,90 @@ import { CardSkeleton } from "@/shared/components/Skeleton";
 import { invoicesApi } from "@/lib/invoices-api";
 import { customersApi } from "@/lib/customers-api";
 import { expensesApi } from "@/lib/expenses-api";
-import { useMenu } from "@/modules/platform/hooks/useMenu";
+import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
 
-  // Server-driven UI configuration from menu API
-  const { data: menu } = useMenu("web");
-  const capabilities = menu?.workspace?.capabilities ?? {
-    multiUser: false,
-    quotes: false,
-    aiCopilot: false,
-    rbac: false,
-  };
-  const terminology = menu?.workspace?.terminology ?? {
+  const { config, hasCapability } = useWorkspaceConfig();
+  const terminology = config?.terminology ?? {
     partyLabel: "Client",
     partyLabelPlural: "Clients",
+    invoiceLabel: "Invoice",
+    invoiceLabelPlural: "Invoices",
+    quoteLabel: "Quote",
+    quoteLabelPlural: "Quotes",
+    projectLabel: "Project",
+    projectLabelPlural: "Projects",
+    expenseLabel: "Expense",
+    expenseLabelPlural: "Expenses",
   };
 
   // Fetch invoices
   const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
-    queryKey: ["invoices"],
+    queryKey: workspaceQueryKeys.invoices.list(),
     queryFn: () => invoicesApi.listInvoices(),
   });
 
   // Fetch customers
   const { data: customersData, isLoading: isLoadingCustomers } = useQuery({
-    queryKey: ["customers"],
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
   // Fetch expenses
-  const { data: expenses = [], isLoading: isLoadingExpenses } = useQuery({
-    queryKey: ["expenses"],
+  const { data: expensesData, isLoading: isLoadingExpenses } = useQuery({
+    queryKey: workspaceQueryKeys.expenses.list(),
     queryFn: () => expensesApi.listExpenses(),
   });
 
+  const expenses = expensesData?.items ?? [];
   const customers = customersData?.customers || [];
   const isLoading = isLoadingInvoices || isLoadingCustomers || isLoadingExpenses;
 
   // Calculate dashboard metrics
   const dashboard = React.useMemo(() => {
     const now = new Date();
-    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const computeRevenueForRange = (start: Date, end: Date) => {
+      return invoices.reduce((sum, inv) => {
+        const payments = inv.payments ?? [];
+        if (payments.length > 0) {
+          const paidInRange = payments.filter((payment) => {
+            const paidDate = new Date(payment.paidAt);
+            return paidDate >= start && paidDate < end;
+          });
+          return (
+            sum + paidInRange.reduce((paidSum, payment) => paidSum + (payment.amountCents || 0), 0)
+          );
+        }
+
+        if (inv.status !== "PAID") {
+          return sum;
+        }
+
+        const paidDate = new Date(inv.updatedAt);
+        if (paidDate >= start && paidDate < end) {
+          return sum + (inv.totals?.totalCents || 0);
+        }
+
+        return sum;
+      }, 0);
+    };
 
     // Revenue this month (paid invoices)
-    const revenueThisMonthCents = invoices
-      .filter((inv) => {
-        const paidAt = inv.payments?.[0]?.paidAt;
-        if (!paidAt || inv.status !== "PAID") {
-          return false;
-        }
-        const paidDate = new Date(paidAt);
-        return paidDate >= thisMonth && paidDate < nextMonth;
-      })
-      .reduce((sum, inv) => sum + (inv.totals?.totalCents || 0), 0);
+    const revenueThisMonthCents = computeRevenueForRange(thisMonthStart, nextMonthStart);
+    const revenueLastMonthCents = computeRevenueForRange(lastMonthStart, thisMonthStart);
+
+    const revenueMoMPercent =
+      revenueLastMonthCents === 0
+        ? null
+        : ((revenueThisMonthCents - revenueLastMonthCents) / revenueLastMonthCents) * 100;
 
     // Outstanding invoices (issued/sent but not paid)
     const outstandingInvoices = invoices.filter(
@@ -92,7 +119,7 @@ export default function DashboardPage() {
     const expensesThisMonthCents = expenses
       .filter((exp) => {
         const expDate = new Date(exp.expenseDate || exp.createdAt);
-        return expDate >= thisMonth && expDate < nextMonth;
+        return expDate >= thisMonthStart && expDate < nextMonthStart;
       })
       .reduce((sum, exp) => sum + (exp.totalAmountCents || 0), 0);
 
@@ -117,6 +144,7 @@ export default function DashboardPage() {
       expensesThisMonthCents,
       recentInvoices,
       recentExpenses,
+      revenueMoMPercent,
     };
   }, [invoices, expenses]);
 
@@ -165,7 +193,13 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold text-foreground">
               {formatMoney(dashboard.revenueThisMonthCents, locale)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">+12% from last month</p>
+            {dashboard.revenueMoMPercent !== null && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {`${dashboard.revenueMoMPercent >= 0 ? "+" : ""}${Math.round(
+                  dashboard.revenueMoMPercent
+                )}% from last month`}
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -213,7 +247,7 @@ export default function DashboardPage() {
         <h2 className="text-h3 text-foreground mb-4">{t("dashboard.quickActions")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Always show: Add expense with AI */}
-          {capabilities.aiCopilot && (
+          {hasCapability("ai.copilot") && (
             <Link to="/assistant">
               <Card variant="interactive" className="group">
                 <CardContent className="p-6 flex items-center gap-4">
@@ -240,7 +274,7 @@ export default function DashboardPage() {
                 <div className="flex-1">
                   <div className="font-medium text-foreground">{t("dashboard.createInvoice")}</div>
                   <div className="text-sm text-muted-foreground">
-                    {capabilities.aiCopilot ? "Generate with AI" : "Create new"}
+                    {hasCapability("ai.copilot") ? "Generate with AI" : "Create new"}
                   </div>
                 </div>
                 <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-success transition-colors" />
@@ -249,8 +283,8 @@ export default function DashboardPage() {
           </Link>
 
           {/* Conditional: Show quotes for company mode, assistant for freelancer */}
-          {capabilities.quotes ? (
-            <Link to="/quotes">
+          {hasCapability("sales.quotes") ? (
+            <Link to="/sales/quotes">
               <Card variant="interactive" className="group">
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="h-12 w-12 rounded-xl bg-warning/10 flex items-center justify-center group-hover:bg-warning/20 transition-colors">
@@ -267,7 +301,7 @@ export default function DashboardPage() {
               </Card>
             </Link>
           ) : (
-            capabilities.aiCopilot && (
+            hasCapability("ai.copilot") && (
               <Link to="/assistant">
                 <Card variant="interactive" className="group">
                   <CardContent className="p-6 flex items-center gap-4">
@@ -288,7 +322,7 @@ export default function DashboardPage() {
           )}
 
           {/* Conditional: Team management for multi-user companies */}
-          {capabilities.multiUser && (
+          {hasCapability("workspace.multiUser") && (
             <Link to="/settings/team">
               <Card variant="interactive" className="group">
                 <CardContent className="p-6 flex items-center gap-4">

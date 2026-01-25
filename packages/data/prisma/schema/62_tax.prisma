@@ -14,7 +14,9 @@ model TaxProfile {
   currency        String              @default("EUR")
   filingFrequency VatFilingFrequency
   taxYearStartMonth Int?
+  vatAccountingMethod VatAccountingMethod @default(IST)
   localTaxOfficeName String?
+  vatExemptionParagraph String?
   effectiveFrom   DateTime            @db.Timestamptz(6)
   effectiveTo     DateTime?           @db.Timestamptz(6)
   createdAt       DateTime            @default(now()) @db.Timestamptz(6)
@@ -24,9 +26,15 @@ model TaxProfile {
   @@index([tenantId, country])
 }
 
+enum VatAccountingMethod {
+  IST   // Cash accounting (received date)
+  SOLL  // Accrual accounting (invoice date)
+}
+
 enum TaxRegime {
   SMALL_BUSINESS // Kleinunternehmer (§19 UStG) - no VAT charged
   STANDARD_VAT   // Regular VAT
+  VAT_EXEMPT     // Exempt from VAT according to §4 Tax Act
 }
 
 enum VatFilingFrequency {
@@ -142,8 +150,12 @@ model VatPeriodSummary {
 }
 
 enum VatPeriodStatus {
-  OPEN      // Period is still being aggregated
-  FINALIZED // Period is locked for reporting
+  OPEN
+  OVERDUE
+  SUBMITTED
+  PAID
+  NIL
+  ARCHIVED
 }
 
 // Tax Consultant
@@ -176,11 +188,17 @@ model TaxReport {
   amountFinalCents     Int?
   currency             String           @default("EUR")
   submittedAt          DateTime?        @db.Timestamptz(6)
+  submissionReference  String?
+  submissionNotes      String?
+  archivedReason       String?
+  pdfStorageKey        String?
+  pdfGeneratedAt       DateTime?        @db.Timestamptz(6)
   createdAt            DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime         @updatedAt @db.Timestamptz(6)
 
   @@index([tenantId, status])
   @@index([tenantId, periodStart, periodEnd])
+  @@unique([tenantId, type, periodStart, periodEnd])
 }
 
 enum TaxReportStatus {
@@ -188,6 +206,9 @@ enum TaxReportStatus {
   OPEN
   SUBMITTED
   OVERDUE
+  PAID
+  NIL
+  ARCHIVED
 }
 
 enum TaxReportType {

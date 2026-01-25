@@ -12,6 +12,7 @@ import {
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import { type GetInvoiceByIdCommand, type GetInvoiceByIdResult } from "./types";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
+import { buildInvoiceCapabilities } from "../../../domain/invoice-capabilities.builder";
 
 type Deps = {
   logger: LoggerPort;
@@ -39,16 +40,25 @@ export class GetInvoiceByIdUseCase extends BaseUseCase<
     ctx: UseCaseContext
   ): Promise<Result<GetInvoiceByIdResult, UseCaseError>> {
     if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
+      return err(new ValidationError("tenantId missing from context"));
+    }
+    if (!ctx.workspaceId) {
+      return err(new ValidationError("workspaceId missing from context"));
     }
 
-    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.tenantId, input.invoiceId);
+    const invoice = await this.useCaseDeps.invoiceRepo.findById(ctx.workspaceId, input.invoiceId);
     if (!invoice) {
       return err(
         new NotFoundError("Invoice not found", { invoiceId: input.invoiceId }, "INVOICE_NOT_FOUND")
       );
     }
 
-    return ok({ invoice: toInvoiceDto(invoice) });
+    // Build capabilities based on current invoice state
+    const capabilities = buildInvoiceCapabilities(invoice);
+
+    return ok({
+      invoice: toInvoiceDto(invoice),
+      capabilities,
+    });
   }
 }

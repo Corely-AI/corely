@@ -13,7 +13,11 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { inventoryApi } from "@/lib/inventory-api";
-import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
+import {
+  fetchCopilotHistory,
+  useCopilotChatOptions,
+  type CopilotChatMessage,
+} from "@/lib/copilot-api";
 
 type MessagePart = {
   type: string;
@@ -77,22 +81,34 @@ export default function InventoryCopilotPage() {
     options: chatOptions,
     runId,
     apiBase,
-    tenantId,
+    workspaceId,
     accessToken,
   } = useCopilotChatOptions({
     activeModule: "inventory",
     locale: "en",
   });
 
-  const { messages, input, handleInputChange, handleSubmit, addToolApprovalResponse, setMessages } =
-    useChat(chatOptions);
+  const { messages, sendMessage, addToolApprovalResponse, setMessages } =
+    useChat<CopilotChatMessage>(chatOptions);
+  const [input, setInput] = useState("");
   const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
-  const setPrompt = (value: string) =>
-    handleInputChange({ target: { value } } as React.ChangeEvent<HTMLInputElement>);
+  const setPrompt = (value: string) => setInput(value);
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(event.target.value);
+  };
+  const handleSubmit = (event?: { preventDefault?: () => void }) => {
+    event?.preventDefault?.();
+    const trimmed = input.trim();
+    if (!trimmed) {
+      return;
+    }
+    void sendMessage({ text: trimmed });
+    setInput("");
+  };
 
   useEffect(() => {
     let cancelled = false;
-    void fetchCopilotHistory({ runId, apiBase, tenantId, accessToken })
+    void fetchCopilotHistory({ runId, apiBase, workspaceId, accessToken })
       .then((history) => {
         if (!cancelled && (!hydratedRunId || hydratedRunId !== runId)) {
           setMessages(history);
@@ -105,7 +121,7 @@ export default function InventoryCopilotPage() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, tenantId]);
+  }, [accessToken, apiBase, hydratedRunId, runId, setMessages, workspaceId]);
 
   const renderHints = (missingFields?: string[], followUpQuestions?: string[]) => {
     if (!missingFields?.length && !followUpQuestions?.length) {
@@ -185,7 +201,6 @@ export default function InventoryCopilotPage() {
           applyDisabled={!canApply}
         >
           <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(proposal, null, 2)}</pre>
-          {renderHints(proposal.missingFields, proposal.followUpQuestions)}
         </ProposalCard>
       );
     }
@@ -222,7 +237,6 @@ export default function InventoryCopilotPage() {
           applyDisabled={!canApply}
         >
           <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(proposal, null, 2)}</pre>
-          {renderHints(proposal.missingFields, proposal.followUpQuestions)}
         </ProposalCard>
       );
     }
@@ -254,7 +268,6 @@ export default function InventoryCopilotPage() {
           applyDisabled={!canApply}
         >
           <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(proposal, null, 2)}</pre>
-          {renderHints(proposal.missingFields, proposal.followUpQuestions)}
         </ProposalCard>
       );
     }
@@ -375,6 +388,20 @@ export default function InventoryCopilotPage() {
     return null;
   };
 
+  const formatMessageContent = (value: unknown) => {
+    if (value == null) {
+      return "";
+    }
+    if (typeof value === "string") {
+      return value;
+    }
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -403,7 +430,9 @@ export default function InventoryCopilotPage() {
                 <div className="text-xs uppercase text-muted-foreground">{m.role}</div>
                 {(m.parts as MessagePart[] | undefined)?.length
                   ? (m.parts as MessagePart[]).map((p, idx) => <div key={idx}>{renderPart(p)}</div>)
-                  : m.content && <p className="whitespace-pre-wrap">{m.content}</p>}
+                  : m.content != null && (
+                      <p className="whitespace-pre-wrap">{formatMessageContent(m.content)}</p>
+                    )}
               </div>
             ))}
           </div>

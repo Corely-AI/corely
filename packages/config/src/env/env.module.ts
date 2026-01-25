@@ -65,8 +65,11 @@ export class EnvModule {
         }
       : process.env;
 
+    // Normalize config aliases before validation.
+    const normalizedEnv = normalizeGcpStorageEnv(envToValidate);
+
     // Validate and parse environment
-    const config = validateEnv(envToValidate);
+    const config = validateEnv(normalizedEnv);
 
     return {
       global: true,
@@ -97,8 +100,45 @@ export class EnvModule {
         NODE_ENV: "test",
         DATABASE_URL: "postgresql://test:test@localhost:5432/test",
         REDIS_URL: "redis://localhost:6379",
+        WORKFLOW_QUEUE_DRIVER: "memory",
         ...overrides,
       },
     });
+  }
+}
+
+function normalizeGcpStorageEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const normalized: NodeJS.ProcessEnv = { ...env };
+
+  if (normalized.GCP_BUCKET_NAME && !normalized.STORAGE_BUCKET) {
+    normalized.STORAGE_BUCKET = normalized.GCP_BUCKET_NAME;
+  }
+
+  if (normalized.GCP_STORAGE_SERVICE_ACCOUNT && !normalized.GOOGLE_APPLICATION_CREDENTIALS) {
+    normalized.GOOGLE_APPLICATION_CREDENTIALS = normalized.GCP_STORAGE_SERVICE_ACCOUNT;
+  }
+
+  if (normalized.GCP_STORAGE_SERVICE_ACCOUNT && !normalized.GOOGLE_CLOUD_PROJECT) {
+    const parsed = tryParseServiceAccount(normalized.GCP_STORAGE_SERVICE_ACCOUNT);
+    if (parsed?.project_id) {
+      normalized.GOOGLE_CLOUD_PROJECT = parsed.project_id;
+    }
+  }
+
+  return normalized;
+}
+
+function tryParseServiceAccount(value: string | undefined): { project_id?: string } | undefined {
+  if (!value) {
+    return undefined;
+  }
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("{")) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(trimmed) as { project_id?: string };
+  } catch {
+    return undefined;
   }
 }

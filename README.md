@@ -67,6 +67,7 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
 - `pnpm` workspace orchestrates apps (`apps/web`, `apps/pos`, `apps/e2e`), services (`services/api`, `services/worker`, `services/mock-server`), and shared packages.
 - Contracts package centralizes schemas, enums, and tool cards so frontend, API, and worker speak the same language.
 - Mock server simulates latency, pagination, idempotency, and assistant-tool endpoints, enabling a UI-first workflow before the full stack is ready.
+- Prompt definitions and versioning live in `docs/prompt-management.md`.
 
 ## Open-source kernel, commercial packs
 

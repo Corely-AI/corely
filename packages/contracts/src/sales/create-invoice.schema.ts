@@ -23,6 +23,7 @@ export const CreateSalesInvoiceInputSchema = z.object({
   lineItems: z.array(SalesInvoiceLineInputSchema).min(1),
   sourceSalesOrderId: z.string().optional(),
   sourceQuoteId: z.string().optional(),
+  paymentMethodId: z.string().optional(),
   idempotencyKey: z.string().optional(),
 });
 

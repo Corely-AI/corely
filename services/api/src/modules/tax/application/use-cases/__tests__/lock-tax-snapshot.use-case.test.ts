@@ -24,6 +24,7 @@ describe("LockTaxSnapshotUseCase", () => {
 
   const ctx: UseCaseContext = {
     tenantId,
+    workspaceId: tenantId,
     userId,
     correlationId: "test-correlation-id",
     idempotencyKey: "test-idempotency-key",
@@ -45,6 +46,7 @@ describe("LockTaxSnapshotUseCase", () => {
       tenantId,
       country: "DE",
       regime: "STANDARD_VAT",
+      vatEnabled: true,
       vatId: null,
       currency: "EUR",
       filingFrequency: "QUARTERLY",

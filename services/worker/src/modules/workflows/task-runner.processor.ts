@@ -1,14 +1,20 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
-import { Worker, type Job } from "bullmq";
-import { WORKFLOW_TASK_QUEUE, type WorkflowEventInput } from "@corely/contracts";
+import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { EnvService } from "@corely/config";
+import {
+  WORKFLOW_ORCHESTRATOR_QUEUE_PORT,
+  WORKFLOW_TASK_QUEUE,
+  WORKFLOW_TASK_QUEUE_PORT,
+  type WorkflowEventInput,
+  type WorkflowOrchestratorQueuePayload,
+  type WorkflowTaskQueuePayload,
+} from "@corely/contracts";
 import {
   PrismaService,
   WorkflowEventRepository,
   WorkflowInstanceRepository,
   WorkflowTaskRepository,
 } from "@corely/data";
-import type { TransactionContext } from "@corely/kernel";
-import { WorkflowQueues } from "./workflow-queues";
+import type { QueueJob, QueuePort, QueueSubscription } from "@corely/kernel";
 import { WorkflowMetricsService } from "./workflow-metrics.service";
 import { TaskHandlerRegistry } from "./handlers/task-handler.registry";
 import type { WorkflowTaskPayload } from "./handlers/task-handler.interface";
@@ -18,15 +24,9 @@ import { SystemHttpAdapter } from "./ports/system-http.adapter";
 import { ConsoleEmailAdapter } from "./ports/console-email.adapter";
 import { NoopLlmAdapter } from "./ports/noop-llm.adapter";
 
-interface TaskRunnerJobPayload {
-  tenantId: string;
-  taskId: string;
-  instanceId: string;
-}
-
 @Injectable()
 export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestroy {
-  private worker: Worker | undefined;
+  private subscription: QueueSubscription | undefined;
   private readonly logger = new Logger(WorkflowTaskRunnerProcessor.name);
   private readonly workerId = `workflow-worker-${process.pid}`;
   private readonly ports: WorkflowPorts = {
@@ -37,33 +37,33 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
   };
 
   constructor(
+    private readonly env: EnvService,
     private readonly prisma: PrismaService,
     private readonly tasks: WorkflowTaskRepository,
     private readonly instances: WorkflowInstanceRepository,
     private readonly events: WorkflowEventRepository,
-    private readonly queues: WorkflowQueues,
     private readonly metrics: WorkflowMetricsService,
-    private readonly registry: TaskHandlerRegistry
+    private readonly registry: TaskHandlerRegistry,
+    @Inject(WORKFLOW_TASK_QUEUE_PORT)
+    private readonly taskQueue: QueuePort<WorkflowTaskQueuePayload>,
+    @Inject(WORKFLOW_ORCHESTRATOR_QUEUE_PORT)
+    private readonly orchestratorQueue: QueuePort<WorkflowOrchestratorQueuePayload>
   ) {}
 
-  onModuleInit() {
-    this.worker = new Worker(
-      WORKFLOW_TASK_QUEUE,
-      async (job) => this.process(job as Job<TaskRunnerJobPayload>),
-      {
-        connection: this.queues.connection,
-        concurrency: 10,
-      }
-    );
+  async onModuleInit() {
+    if (this.env.WORKFLOW_QUEUE_DRIVER === "cloudtasks") {
+      return;
+    }
+    this.subscription = await this.taskQueue.subscribe(async (job) => this.handleJob(job), {
+      concurrency: 10,
+    });
   }
 
   async onModuleDestroy() {
-    if (this.worker) {
-      await this.worker.close();
-    }
+    await this.subscription?.close();
   }
 
-  private async process(job: Job<TaskRunnerJobPayload>) {
+  async handleJob(job: QueueJob<WorkflowTaskQueuePayload>) {
     const startedAt = Date.now();
     this.metrics.recordQueueLatency({
       queue: WORKFLOW_TASK_QUEUE,
@@ -139,7 +139,7 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
             ...(result.output ?? {}),
             suggestedEvent: result.suggestedEvent ?? null,
           }),
-          tx as TransactionContext
+          tx as any
         );
 
         await this.events.append(
@@ -149,7 +149,7 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
             type: "TASK_COMPLETED",
             payload: JSON.stringify({ taskId: task.id, output: result.output ?? {} }),
           },
-          tx as TransactionContext
+          tx as any
         );
       });
 
@@ -160,17 +160,17 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
         status: "SUCCEEDED",
       });
 
-      await this.queues.orchestratorQueue.add(
-        `orchestrate:${task.instanceId}`,
+      await this.orchestratorQueue.enqueue(
         {
           tenantId,
           instanceId: task.instanceId,
           events: followupEvents,
         },
         {
+          jobName: `orchestrate:${task.instanceId}`,
           jobId: `${task.instanceId}:${Date.now()}`,
           attempts: 5,
-          backoff: { type: "exponential", delay: 2000 },
+          backoff: { type: "exponential", delayMs: 2000 },
         }
       );
     } catch (error) {
@@ -190,13 +190,7 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
     const status = willRetry ? "PENDING" : "FAILED";
 
     await this.prisma.$transaction(async (tx) => {
-      await this.tasks.markFailed(
-        tenantId,
-        task.id,
-        JSON.stringify(error),
-        status,
-        tx as TransactionContext
-      );
+      await this.tasks.markFailed(tenantId, task.id, JSON.stringify(error), status, tx as any);
 
       await this.events.append(
         {
@@ -205,16 +199,11 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
           type: "TASK_FAILED",
           payload: JSON.stringify({ taskId: task.id, error, willRetry }),
         },
-        tx as TransactionContext
+        tx as any
       );
 
       if (!willRetry) {
-        await this.instances.updateStatus(
-          tenantId,
-          task.instanceId,
-          "FAILED",
-          tx as TransactionContext
-        );
+        await this.instances.updateStatus(tenantId, task.instanceId, "FAILED", tx as any);
       }
     });
 
@@ -226,17 +215,17 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
     });
 
     if (!willRetry) {
-      await this.queues.orchestratorQueue.add(
-        `orchestrate:${task.instanceId}`,
+      await this.orchestratorQueue.enqueue(
         {
           tenantId,
           instanceId: task.instanceId,
           events: [{ type: "TASK_FAILED", payload: { taskId: task.id, error } }],
         },
         {
+          jobName: `orchestrate:${task.instanceId}`,
           jobId: `${task.instanceId}:${Date.now()}`,
           attempts: 3,
-          backoff: { type: "exponential", delay: 2000 },
+          backoff: { type: "exponential", delayMs: 2000 },
         }
       );
     }
