@@ -7,6 +7,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { formatMoney, formatDueDate } from "@/shared/lib/formatters";
 import { CheckCircle2, Clock, Download, FileText, FileSignature } from "lucide-react";
+import { toast } from "sonner";
 
 export default function TaxReportsPage() {
   const [tab, setTab] = React.useState<"upcoming" | "submitted">("upcoming");
@@ -95,11 +96,16 @@ function ReportGroup({
   onSubmit,
   canSubmit,
 }: ReportGroupProps) {
-  const handleDownload = (storageKey?: string | null) => {
-    if (!storageKey) {return;}
-    if (storageKey.startsWith("http") || storageKey.startsWith("/")) {
-      window.open(storageKey, "_blank", "noopener,noreferrer");
-    }
+  const handleDownload = (id: string) => {
+    const promise = taxApi.getReportPdfUrl(id).then((res) => {
+      window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
+    });
+
+    toast.promise(promise, {
+      loading: "Generating PDF...",
+      success: "Download started",
+      error: "Failed to download PDF",
+    });
   };
 
   return (
@@ -137,12 +143,7 @@ function ReportGroup({
                   </Button>
                 )}
                 {!canSubmit && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={!report.pdfStorageKey}
-                    onClick={() => handleDownload(report.pdfStorageKey)}
-                  >
+                  <Button size="sm" variant="ghost" onClick={() => handleDownload(report.id)}>
                     <Download className="mr-2 h-4 w-4" />
                     Download PDF
                   </Button>

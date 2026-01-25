@@ -23,26 +23,47 @@ export class GenerateTaxReportPdfUseCase {
     private readonly workspaceRepo: WorkspaceRepositoryPort
   ) {}
 
-  async execute(ctx: UseCaseContext, periodKey: string): Promise<{ downloadUrl: string }> {
-    const period = this.periodResolver.resolveQuarter(periodKey);
+  async execute(
+    ctx: UseCaseContext,
+    selector: { periodKey?: string; reportId?: string }
+  ): Promise<{ downloadUrl: string }> {
+    let report: any; // using any to avoid import strictness issues temporarily, or TaxReportEntity
+    let periodStart: Date;
+    let periodEnd: Date;
+    let periodLabel: string;
 
-    // 1. Find the report
-    const reports = await this.reportRepo.listByPeriodRange(
-      ctx.workspaceId,
-      "VAT_ADVANCE", // Assumption: currently handling VAT Advance
-      period.start,
-      new Date(period.end.getTime() + 1000) // inclusive
-    );
+    if (selector.reportId) {
+      const r = await this.reportRepo.findById(ctx.tenantId, selector.reportId);
+      if (!r) {
+        throw new NotFoundException("Tax report not found");
+      }
+      report = r;
+      periodStart = r.periodStart;
+      periodEnd = r.periodEnd;
+      periodLabel = r.periodLabel;
+    } else if (selector.periodKey) {
+      const period = this.periodResolver.resolveQuarter(selector.periodKey);
+      periodStart = period.start;
+      periodEnd = period.end;
+      periodLabel = period.label;
 
-    // Find the exact match for this period
-    const report = reports.find(
-      (r) =>
-        r.periodStart.getTime() === period.start.getTime() &&
-        r.periodEnd.getTime() === period.end.getTime()
-    );
+      const reports = await this.reportRepo.listByPeriodRange(
+        ctx.workspaceId,
+        "VAT_ADVANCE",
+        period.start,
+        new Date(period.end.getTime() + 1000)
+      );
+      report = reports.find(
+        (r) =>
+          r.periodStart.getTime() === period.start.getTime() &&
+          r.periodEnd.getTime() === period.end.getTime()
+      );
 
-    if (!report) {
-      throw new NotFoundException("Tax report not found for this period");
+      if (!report) {
+        throw new NotFoundException("Tax report not found for this period");
+      }
+    } else {
+      throw new Error("Either periodKey or reportId must be provided");
     }
 
     // 2. Check if we already have a key
@@ -50,13 +71,12 @@ export class GenerateTaxReportPdfUseCase {
       const url = await this.objectStorage.createSignedDownloadUrl({
         tenantId: ctx.workspaceId,
         objectKey: report.pdfStorageKey,
-        expiresInSeconds: 300, // 5 minutes
+        expiresInSeconds: 300,
       });
       return { downloadUrl: url.url };
     }
 
     // 3. Generate PDF
-    // We need to fetch details to populate the PDF
     const profile = await this.taxProfileRepo.getActive(ctx.workspaceId, new Date());
     const method = profile?.vatAccountingMethod ?? "IST";
 
@@ -67,17 +87,17 @@ export class GenerateTaxReportPdfUseCase {
 
     const inputs = await this.vatPeriodQuery.getInputs(
       ctx.workspaceId,
-      period.start,
-      period.end,
+      periodStart,
+      periodEnd,
       method as VatAccountingMethod
     );
 
     const pdfBuffer = await this.pdfRenderer.render({
       title: "Advance VAT Declaration",
       tenantName: workspace?.legalEntity?.legalName ?? workspace?.name ?? "Unknown Business",
-      periodLabel: period.label,
-      periodStart: period.start,
-      periodEnd: period.end,
+      periodLabel,
+      periodStart,
+      periodEnd,
       generatedAt: new Date(),
       items: [
         { label: "Sales (Net)", value: this.formatCurrency(inputs.salesNetCents) },
@@ -98,7 +118,9 @@ export class GenerateTaxReportPdfUseCase {
     });
 
     // 4. Upload
-    const objectKey = `workspaces/${ctx.workspaceId}/tax-reports/${periodKey}.pdf`;
+    // Use periodKey if available, else derive strictly from label or just use report ID
+    const filenameKey = selector.periodKey ?? periodLabel.replace(/\s/g, "-");
+    const objectKey = `workspaces/${ctx.workspaceId}/tax-reports/${filenameKey}.pdf`;
     await this.objectStorage.putObject({
       tenantId: ctx.workspaceId,
       objectKey,

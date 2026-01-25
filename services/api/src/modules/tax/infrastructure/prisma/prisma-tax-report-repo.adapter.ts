@@ -26,6 +26,13 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     return rows.map((row) => this.toDomain(row));
   }
 
+  async findById(tenantId: string, id: string): Promise<TaxReportEntity | null> {
+    const row = await this.prisma.taxReport.findFirst({
+      where: { id, tenantId },
+    });
+    return row ? this.toDomain(row) : null;
+  }
+
   async markSubmitted(tenantId: string, id: string, submittedAt: Date): Promise<TaxReportEntity> {
     const updated = await this.prisma.taxReport.updateMany({
       where: { id, tenantId },

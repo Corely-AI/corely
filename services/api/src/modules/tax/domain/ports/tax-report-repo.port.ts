@@ -6,6 +6,8 @@ export abstract class TaxReportRepoPort {
     status: "upcoming" | "submitted"
   ): Promise<TaxReportEntity[]>;
 
+  abstract findById(tenantId: string, id: string): Promise<TaxReportEntity | null>;
+
   abstract markSubmitted(tenantId: string, id: string, submittedAt: Date): Promise<TaxReportEntity>;
 
   abstract listByPeriodRange(

@@ -270,7 +270,13 @@ export class TaxController {
   @Get("reports/vat/quarterly/:key/pdf-url")
   async getVatPeriodPdfUrl(@Param("key") key: string, @Req() req: Request) {
     const ctx = this.buildContext(req);
-    return this.generateTaxReportPdfUseCase.execute(ctx, key);
+    return this.generateTaxReportPdfUseCase.execute(ctx, { periodKey: key });
+  }
+
+  @Get("reports/:id/pdf-url")
+  async getReportPdfUrl(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.generateTaxReportPdfUseCase.execute(ctx, { reportId: id });
   }
 
   // ============================================================================
