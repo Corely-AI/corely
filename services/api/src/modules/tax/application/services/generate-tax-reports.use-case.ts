@@ -23,7 +23,9 @@ export class GenerateTaxReportsUseCase {
     const { tenantId, periodStart, periodEnd, periodLabel } = params;
 
     const profile = await this.profileRepo.getActive(tenantId, periodEnd);
-    if (!profile) {return;} // Should log or throw
+    if (!profile) {
+      return;
+    } // Should log or throw
 
     const ctx: ReportGenerationContext = {
       tenantId,
@@ -31,6 +33,8 @@ export class GenerateTaxReportsUseCase {
       periodEnd,
       profile: {
         ...profile,
+        country: profile.country as "DE", // Constraint from contracts
+        vatAccountingMethod: profile.vatAccountingMethod ?? "IST",
         effectiveFrom: profile.effectiveFrom.toISOString(),
         effectiveTo: profile.effectiveTo?.toISOString(),
         createdAt: profile.createdAt.toISOString(),
@@ -48,9 +52,12 @@ export class GenerateTaxReportsUseCase {
 
         // Determine group (mapping)
         let group: TaxReportGroup = "COMPLIANCE"; // default
-        if (strategy.type === "VAT_ADVANCE") {group = "ADVANCE_VAT";}
-        if (strategy.type === "VAT_ANNUAL" || strategy.type === "INCOME_TAX")
-          {group = "ANNUAL_REPORT";}
+        if (strategy.type === "VAT_ADVANCE") {
+          group = "ADVANCE_VAT";
+        }
+        if (strategy.type === "VAT_ANNUAL" || strategy.type === "INCOME_TAX") {
+          group = "ANNUAL_REPORT";
+        }
 
         // Persist
         if (!params.dryRun) {
