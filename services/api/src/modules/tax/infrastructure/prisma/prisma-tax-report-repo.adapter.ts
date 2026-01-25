@@ -29,6 +29,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
   async findById(tenantId: string, id: string): Promise<TaxReportEntity | null> {
     const row = await this.prisma.taxReport.findFirst({
       where: { id, tenantId },
+      include: { lines: true },
     });
     return row ? this.toDomain(row) : null;
   }
@@ -206,6 +207,16 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
       archivedReason: model.archivedReason ?? null,
       pdfStorageKey: model.pdfStorageKey ?? null,
       pdfGeneratedAt: model.pdfGeneratedAt ?? null,
+      meta: (model.meta as any) ?? null,
+      lines: model.lines
+        ? model.lines.map((l: any) => ({
+            section: l.section,
+            label: l.label,
+            netAmountCents: l.netAmountCents,
+            taxAmountCents: l.taxAmountCents,
+            meta: l.meta,
+          }))
+        : undefined,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     };

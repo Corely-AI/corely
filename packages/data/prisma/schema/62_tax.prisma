@@ -17,6 +17,12 @@ model TaxProfile {
   vatAccountingMethod VatAccountingMethod @default(IST)
   localTaxOfficeName String?
   vatExemptionParagraph String?
+  
+  // Flags
+  euB2BSales      Boolean             @default(false)
+  hasEmployees    Boolean             @default(false)
+  usesTaxAdvisor  Boolean             @default(false)
+
   effectiveFrom   DateTime            @db.Timestamptz(6)
   effectiveTo     DateTime?           @db.Timestamptz(6)
   createdAt       DateTime            @default(now()) @db.Timestamptz(6)
@@ -196,6 +202,8 @@ model TaxReport {
   createdAt            DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime         @updatedAt @db.Timestamptz(6)
 
+  lines                TaxReportLine[]
+
   @@index([tenantId, status])
   @@index([tenantId, periodStart, periodEnd])
   @@unique([tenantId, type, periodStart, periodEnd])
@@ -215,9 +223,44 @@ enum TaxReportType {
   VAT_ADVANCE
   VAT_ANNUAL
   INCOME_TAX
+  EU_SALES_LIST
+  INTRASTAT
+  PAYROLL_TAX
+  PROFIT_LOSS
+  BALANCE_SHEET
+  TRADE_TAX
+  FIXED_ASSETS
 }
 
 enum TaxReportGroup {
   ADVANCE_VAT
   ANNUAL_REPORT
+  COMPLIANCE
+  PAYROLL
+  FINANCIAL_STATEMENT
 }
+
+// Tax Report Lines (for ESL, Intrastat, etc.)
+model TaxReportLine {
+  id              String    @id @default(cuid())
+  tenantId        String
+  reportId        String
+  report          TaxReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  // Generic line data
+  section         String?   // e.g., "Goods", "Services"
+  label           String?   // e.g., Customer Name
+  
+  // Amounts
+  netAmountCents  Int
+  taxAmountCents  Int?
+
+  // Metadata (ESL: vatId, country; Intrastat: commodityCode, weight)
+  meta            Json?
+
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([reportId])
+}
+

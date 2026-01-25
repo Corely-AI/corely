@@ -56,6 +56,10 @@ describe("FinalizeInvoiceUseCase", () => {
       vatId: "DE123456789",
       currency: "EUR",
       filingFrequency: "QUARTERLY",
+      vatExemptionParagraph: null,
+      euB2BSales: false,
+      hasEmployees: false,
+      usesTaxAdvisor: false,
       effectiveFrom: new Date("2024-01-01"),
       effectiveTo: null,
     });

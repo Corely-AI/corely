@@ -39,6 +39,7 @@ import type {
   TaxRateDto,
   TaxBreakdownDto,
   TaxSnapshotDto,
+  TaxReportDto,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -178,6 +179,13 @@ export class TaxApi {
     return apiClient.get<ListTaxReportsOutput>(`/tax/reports?status=${status}`, {
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  async getReport(id: string): Promise<TaxReportDto> {
+    const result = await apiClient.get<{ report: TaxReportDto }>(`/tax/reports/${id}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+    return result.report;
   }
 
   async markReportSubmitted(id: string) {

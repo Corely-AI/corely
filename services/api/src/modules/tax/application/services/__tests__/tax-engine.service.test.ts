@@ -28,11 +28,17 @@ describe("TaxEngineService", () => {
       tenantId,
       country: "DE",
       regime: "STANDARD_VAT",
+      vatEnabled: true,
       vatId: "DE123456789",
       currency: "EUR",
       filingFrequency: "QUARTERLY",
       effectiveFrom: new Date("2025-01-01T00:00:00Z"),
       effectiveTo: null,
+      // Flags
+      euB2BSales: false,
+      hasEmployees: false,
+      usesTaxAdvisor: false,
+      vatExemptionParagraph: null,
     });
 
     // Setup tax codes
@@ -110,11 +116,16 @@ describe("TaxEngineService", () => {
         tenantId,
         country: "DE",
         regime: "SMALL_BUSINESS", // Different regime
+        vatEnabled: false,
         vatId: null,
         currency: "EUR",
         filingFrequency: "YEARLY",
         effectiveFrom: new Date("2026-01-01T00:00:00Z"),
         effectiveTo: null,
+        euB2BSales: false,
+        hasEmployees: false,
+        usesTaxAdvisor: false,
+        vatExemptionParagraph: null,
       });
 
       // Calculate for Jan 2025 (should use STANDARD_VAT)

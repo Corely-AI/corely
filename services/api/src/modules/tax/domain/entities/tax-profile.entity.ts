@@ -13,6 +13,11 @@ export interface TaxProfileEntity {
   taxYearStartMonth?: number | null;
   localTaxOfficeName?: string | null;
   vatExemptionParagraph?: string | null;
+  // Flags
+  euB2BSales: boolean;
+  hasEmployees: boolean;
+  usesTaxAdvisor: boolean;
+
   effectiveFrom: Date;
   effectiveTo: Date | null;
   createdAt: Date;

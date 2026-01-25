@@ -98,6 +98,10 @@ describe("FinalizeInvoice UseCase - DB Integration", () => {
       currency: "EUR",
       filingFrequency: "QUARTERLY",
       vatAccountingMethod: "IST",
+      vatExemptionParagraph: null,
+      euB2BSales: false,
+      hasEmployees: false,
+      usesTaxAdvisor: false,
       effectiveFrom: new Date("2020-01-01"),
       effectiveTo: null,
     });

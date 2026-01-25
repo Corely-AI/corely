@@ -67,6 +67,7 @@ import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-
 import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
 import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
+import { GetTaxReportUseCase } from "./application/use-cases/get-tax-report.use-case";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 @Controller("tax")
@@ -82,6 +83,7 @@ export class TaxController {
     private readonly lockTaxSnapshotUseCase: LockTaxSnapshotUseCase,
     private readonly getTaxSummaryUseCase: GetTaxSummaryUseCase,
     private readonly listTaxReportsUseCase: ListTaxReportsUseCase,
+    private readonly getTaxReportUseCase: GetTaxReportUseCase,
     private readonly markTaxReportSubmittedUseCase: MarkTaxReportSubmittedUseCase,
     private readonly getTaxConsultantUseCase: GetTaxConsultantUseCase,
     private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase,
@@ -194,6 +196,13 @@ export class TaxController {
     });
     const ctx = this.buildContext(req);
     return this.listTaxReportsUseCase.execute(parsed.status ?? "upcoming", parsed, ctx);
+  }
+
+  @Get("reports/:id")
+  async getReport(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const report = await this.getTaxReportUseCase.execute(ctx.tenantId, id);
+    return { report };
   }
 
   @Post("reports/:id/mark-submitted")
@@ -342,6 +351,9 @@ export class TaxController {
       taxYearStartMonth: entity.taxYearStartMonth,
       localTaxOfficeName: entity.localTaxOfficeName,
       vatExemptionParagraph: entity.vatExemptionParagraph ?? null,
+      euB2BSales: entity.euB2BSales ?? false,
+      hasEmployees: entity.hasEmployees ?? false,
+      usesTaxAdvisor: entity.usesTaxAdvisor ?? false,
       effectiveFrom: entity.effectiveFrom.toISOString(),
       effectiveTo: entity.effectiveTo?.toISOString() || null,
       createdAt: entity.createdAt.toISOString(),

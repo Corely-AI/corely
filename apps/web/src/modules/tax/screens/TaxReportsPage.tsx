@@ -53,6 +53,15 @@ export default function TaxReportsPage() {
             canSubmit
           />
           <ReportGroup
+            title="Compliance (EU Sales & Intrastat)"
+            icon={<FileText className="h-4 w-4 text-blue-500" />}
+            isLoading={isLoading}
+            reports={data?.reports?.filter((r) => r.group === "COMPLIANCE") ?? []}
+            locale={locale}
+            onSubmit={(id) => markSubmitted.mutate(id)}
+            canSubmit
+          />
+          <ReportGroup
             title="Annual reports"
             icon={<FileSignature className="h-4 w-4 text-muted-foreground" />}
             isLoading={isLoading}
@@ -142,7 +151,7 @@ function ReportGroup({
                 <Badge
                   variant="outline"
                   className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
-                  onClick={() => navigate(`/tax/period/${getReportKey(report)}`)}
+                  onClick={() => navigate(`/tax/reports/${report.id}`)}
                 >
                   {report.status}
                 </Badge>
@@ -174,8 +183,18 @@ function humanizeReportType(type: string) {
       return "Annual VAT report";
     case "INCOME_TAX":
       return "Income tax";
+    case "EU_SALES_LIST":
+      return "EU Sales List (ZM)";
+    case "INTRASTAT":
+      return "Intrastat Declaration";
+    case "TRADE_TAX":
+      return "Trade Tax (Gewerbesteuer)";
+    case "PROFIT_LOSS":
+      return "P&L Statement (EÜR)";
+    case "PAYROLL_TAX":
+      return "Payroll Tax";
     default:
-      return "Tax report";
+      return type.replace(/_/g, " ").toLowerCase();
   }
 }
 

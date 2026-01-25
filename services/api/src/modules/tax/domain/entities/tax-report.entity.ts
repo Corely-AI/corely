@@ -19,6 +19,14 @@ export interface TaxReportEntity {
   archivedReason?: string | null;
   pdfStorageKey?: string | null;
   pdfGeneratedAt?: Date | null;
+  meta?: Record<string, any> | null;
+  lines?: {
+    section?: string | null;
+    label?: string | null;
+    netAmountCents: number;
+    taxAmountCents?: number | null;
+    meta?: Record<string, any> | null;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }

@@ -13,6 +13,7 @@ import { CalculateTaxUseCase } from "./application/use-cases/calculate-tax.use-c
 import { LockTaxSnapshotUseCase } from "./application/use-cases/lock-tax-snapshot.use-case";
 import { GetTaxSummaryUseCase } from "./application/use-cases/get-tax-summary.use-case";
 import { ListTaxReportsUseCase } from "./application/use-cases/list-tax-reports.use-case";
+import { GetTaxReportUseCase } from "./application/use-cases/get-tax-report.use-case";
 import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-report-submitted.use-case";
 import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
 import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
@@ -23,6 +24,7 @@ import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-
 import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
 import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
+import { GenerateTaxReportsUseCase } from "./application/services/generate-tax-reports.use-case";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -32,6 +34,12 @@ import { PersonalTaxStrategy } from "./application/services/personal-tax-strateg
 import { CompanyTaxStrategy } from "./application/services/company-tax-strategy";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 import { TaxPdfRenderer } from "./infrastructure/pdf/tax-pdf-renderer";
+
+// Reporting
+import { ReportRegistry } from "./domain/reporting/report-registry";
+import { VatAdvanceDeStrategy } from "./domain/reporting/strategies/de/vat-advance-de.strategy";
+import { EuSalesListDeStrategy } from "./domain/reporting/strategies/de/eu-sales-list-de.strategy";
+import { IncomeTaxDeStrategy } from "./domain/reporting/strategies/de/income-tax-de.strategy";
 
 // Repository ports
 import {
@@ -71,6 +79,7 @@ import { DocumentsModule } from "../documents/documents.module";
     LockTaxSnapshotUseCase,
     GetTaxSummaryUseCase,
     ListTaxReportsUseCase,
+    GetTaxReportUseCase,
     MarkTaxReportSubmittedUseCase,
     GetTaxConsultantUseCase,
     UpsertTaxConsultantUseCase,
@@ -81,6 +90,7 @@ import { DocumentsModule } from "../documents/documents.module";
     MarkVatPeriodNilUseCase,
     ArchiveVatPeriodUseCase,
     GenerateTaxReportPdfUseCase,
+    GenerateTaxReportsUseCase,
 
     // Services
     TaxEngineService,
@@ -90,6 +100,12 @@ import { DocumentsModule } from "../documents/documents.module";
     CompanyTaxStrategy,
     VatPeriodResolver,
     TaxPdfRenderer,
+
+    // Reporting Registry
+    ReportRegistry,
+    VatAdvanceDeStrategy,
+    EuSalesListDeStrategy,
+    IncomeTaxDeStrategy,
 
     // Repository adapters bound to ports
     {
@@ -134,6 +150,18 @@ import { DocumentsModule } from "../documents/documents.module";
     CalculateTaxUseCase,
     LockTaxSnapshotUseCase,
     TaxEngineService,
+    GenerateTaxReportsUseCase,
   ],
 })
-export class TaxModule {}
+export class TaxModule {
+  constructor(
+    private readonly registry: ReportRegistry,
+    private readonly vatAdvanceDe: VatAdvanceDeStrategy,
+    private readonly euSalesDe: EuSalesListDeStrategy,
+    private readonly incomeTaxDe: IncomeTaxDeStrategy
+  ) {
+    this.registry.register(vatAdvanceDe);
+    this.registry.register(euSalesDe);
+    this.registry.register(incomeTaxDe);
+  }
+}
