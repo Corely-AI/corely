@@ -36,9 +36,9 @@ export class VatPeriodResolver {
     const month = date.getUTCMonth(); // 0-11
 
     let q = 1;
-    if (month >= 3 && month < 6) q = 2;
-    if (month >= 6 && month < 9) q = 3;
-    if (month >= 9) q = 4;
+    if (month >= 3 && month < 6) {q = 2;}
+    if (month >= 6 && month < 9) {q = 3;}
+    if (month >= 9) {q = 4;}
 
     return this.fromKey(`${year}-Q${q}`);
   }
@@ -50,12 +50,12 @@ export class VatPeriodResolver {
     const q = parseInt(qStr.replace("Q", ""), 10);
 
     let startMonth = 0;
-    if (q === 2) startMonth = 3;
-    if (q === 3) startMonth = 6;
-    if (q === 4) startMonth = 9;
+    if (q === 2) {startMonth = 3;}
+    if (q === 3) {startMonth = 6;}
+    if (q === 4) {startMonth = 9;}
 
     const start = new Date(Date.UTC(year, startMonth, 1, 0, 0, 0, 0));
-    
+
     // End is start of next quarter
     // If Q4 (month 9), next is month 12 (which wraps to 0 of next year in Date.UTC)
     const end = new Date(Date.UTC(year, startMonth + 3, 1, 0, 0, 0, 0));

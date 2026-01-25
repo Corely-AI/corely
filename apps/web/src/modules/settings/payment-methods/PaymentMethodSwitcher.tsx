@@ -34,7 +34,10 @@ export function PaymentMethodSwitcher({
   });
 
   const methods = data?.paymentMethods ?? [];
-  const selectedMethod = methods.find((m) => m.id === selectedId) || methods.find((m) => m.isDefaultForInvoicing) || methods[0];
+  const selectedMethod =
+    methods.find((m) => m.id === selectedId) ||
+    methods.find((m) => m.isDefaultForInvoicing) ||
+    methods[0];
 
   // Auto-select default if none selected
   React.useEffect(() => {
@@ -62,7 +65,9 @@ export function PaymentMethodSwitcher({
               </div>
               <div className="flex gap-2">
                 <span className="text-muted-foreground min-w-[70px]">IBAN:</span>
-                <span className="text-foreground">{selectedMethod.bankAccountId ? "Selected Bank Account" : "N/A"}</span>
+                <span className="text-foreground">
+                  {selectedMethod.bankAccountId ? "Selected Bank Account" : "N/A"}
+                </span>
               </div>
             </div>
           ) : (
@@ -74,15 +79,15 @@ export function PaymentMethodSwitcher({
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Select your payment method</DialogTitle>
         </DialogHeader>
-        
+
         <div className="mt-4 space-y-3">
           {methods.map((method) => (
             <div
               key={method.id}
               className={cn(
                 "flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer hover:border-accent/50",
-                selectedId === method.id 
-                  ? "border-accent bg-accent/5 shadow-sm" 
+                selectedId === method.id
+                  ? "border-accent bg-accent/5 shadow-sm"
                   : "border-transparent bg-muted/30"
               )}
               onClick={() => {
@@ -92,12 +97,17 @@ export function PaymentMethodSwitcher({
             >
               <div className="flex flex-col gap-0.5">
                 <span className="font-medium text-sm">{method.label}</span>
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">{method.type}</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                  {method.type}
+                </span>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 {method.isDefaultForInvoicing && (
-                  <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-50 text-[10px] h-5 px-1.5 uppercase font-bold tracking-tighter">
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-50 text-[10px] h-5 px-1.5 uppercase font-bold tracking-tighter"
+                  >
                     Default
                   </Badge>
                 )}
@@ -118,8 +128,8 @@ export function PaymentMethodSwitcher({
             </div>
           ))}
 
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full mt-2 rounded-xl border-dashed border-2 py-6 gap-2 text-accent border-accent/30 hover:border-accent/50 hover:bg-accent/5"
             onClick={() => {
               // Navigate to settings or open another dialog?

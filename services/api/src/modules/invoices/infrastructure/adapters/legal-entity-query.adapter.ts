@@ -15,7 +15,7 @@ export class PrismaLegalEntityQueryAdapter implements LegalEntityQueryPort {
     // For now, if no ID, we might pick the first one or fail?
     // The requirement says "defaults mostly".
     // Let's assume the use case handles "defaulting" logic by passing ID, OR we find a default here.
-    
+
     let entity;
 
     if (legalEntityId) {
@@ -30,19 +30,21 @@ export class PrismaLegalEntityQueryAdapter implements LegalEntityQueryPort {
       });
     }
 
-    if (!entity) return null;
+    if (!entity) {return null;}
 
     const address = entity.address as any;
-    
+
     return {
       name: entity.legalName,
-      address: address ? {
-        line1: address.line1,
-        line2: address.line2,
-        city: address.city,
-        postalCode: address.postalCode,
-        country: entity.countryCode, // or address.countryCode
-      } : undefined,
+      address: address
+        ? {
+            line1: address.line1,
+            line2: address.line2,
+            city: address.city,
+            postalCode: address.postalCode,
+            country: entity.countryCode, // or address.countryCode
+          }
+        : undefined,
       taxId: entity.taxId ?? undefined,
       vatId: entity.vatId ?? undefined,
       contact: {

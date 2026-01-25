@@ -1,12 +1,6 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -22,7 +16,7 @@ interface ContactDetailsDialogProps {
 export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialogProps) {
   const { activeWorkspace, refresh } = useWorkspace();
   const queryClient = useQueryClient();
-  
+
   const [phone, setPhone] = useState(activeWorkspace?.phone || "");
   const [email, setEmail] = useState(activeWorkspace?.email || "");
   const [website, setWebsite] = useState(activeWorkspace?.website || "");
@@ -57,19 +51,18 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
     }
     try {
       // Allow URLs with or without protocol
-      const urlToTest = value.startsWith('http://') || value.startsWith('https://') 
-        ? value 
-        : `https://${value}`;
+      const urlToTest =
+        value.startsWith("http://") || value.startsWith("https://") ? value : `https://${value}`;
       const url = new URL(urlToTest);
-      
+
       // Additional validation: must have a proper domain with at least one dot
       // This matches Zod's URL validation more closely
       const hostname = url.hostname;
-      if (!hostname.includes('.') || hostname.length < 3) {
+      if (!hostname.includes(".") || hostname.length < 3) {
         setWebsiteError("Invalid URL - must be a valid domain");
         return false;
       }
-      
+
       setWebsiteError("");
       return true;
     } catch {
@@ -89,7 +82,7 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
   };
 
   // Check if form has any data or changes
-  const hasChanges = 
+  const hasChanges =
     phone.trim() !== (activeWorkspace?.phone || "") ||
     email.trim() !== (activeWorkspace?.email || "") ||
     website.trim() !== (activeWorkspace?.website || "");
@@ -120,14 +113,18 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
     // Final validation before save
     const isEmailValid = validateEmail(email);
     const isWebsiteValid = validateWebsite(website);
-    
+
     if (!isEmailValid || !isWebsiteValid) {
       return;
     }
 
     // Normalize website URL - add protocol if missing
     let normalizedWebsite = website.trim();
-    if (normalizedWebsite && !normalizedWebsite.startsWith('http://') && !normalizedWebsite.startsWith('https://')) {
+    if (
+      normalizedWebsite &&
+      !normalizedWebsite.startsWith("http://") &&
+      !normalizedWebsite.startsWith("https://")
+    ) {
       normalizedWebsite = `https://${normalizedWebsite}`;
     }
 
@@ -172,9 +169,7 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
               placeholder="e.g. foo@company.com"
               className={emailError ? "border-destructive" : ""}
             />
-            {emailError && (
-              <p className="text-sm text-destructive">{emailError}</p>
-            )}
+            {emailError && <p className="text-sm text-destructive">{emailError}</p>}
           </div>
 
           {/* Website */}
@@ -190,9 +185,7 @@ export function ContactDetailsDialog({ open, onOpenChange }: ContactDetailsDialo
               placeholder="e.g. www.company.com"
               className={websiteError ? "border-destructive" : ""}
             />
-            {websiteError && (
-              <p className="text-sm text-destructive">{websiteError}</p>
-            )}
+            {websiteError && <p className="text-sm text-destructive">{websiteError}</p>}
           </div>
         </div>
 

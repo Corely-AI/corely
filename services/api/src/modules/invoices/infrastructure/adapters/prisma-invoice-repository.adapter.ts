@@ -60,6 +60,10 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         sourceType: invoice.sourceType,
         sourceId: invoice.sourceId,
         paymentDetails: invoice.paymentDetails as any,
+        taxSnapshot: invoice.taxSnapshot as any,
+        issuerSnapshot: invoice.issuerSnapshot as any,
+        legalEntityId: invoice.legalEntityId,
+        paymentMethodId: invoice.paymentMethodId,
       },
       create: {
         id: invoice.id,
@@ -92,6 +96,10 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         sourceType: invoice.sourceType,
         sourceId: invoice.sourceId,
         paymentDetails: invoice.paymentDetails as any,
+        taxSnapshot: invoice.taxSnapshot as any,
+        issuerSnapshot: invoice.issuerSnapshot as any,
+        legalEntityId: invoice.legalEntityId,
+        paymentMethodId: invoice.paymentMethodId,
         lines: {
           create: invoice.lineItems.map((line) => ({
             id: line.id,
@@ -176,6 +184,10 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       sourceType: (data as any).sourceType ?? null,
       sourceId: (data as any).sourceId ?? null,
       paymentDetails: ((data as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
+      taxSnapshot: ((data as any).taxSnapshot as any) ?? null,
+      issuerSnapshot: ((data as any).issuerSnapshot as any) ?? null,
+      legalEntityId: (data as any).legalEntityId ?? null,
+      paymentMethodId: (data as any).paymentMethodId ?? null,
     });
   }
 
@@ -251,6 +263,10 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         sourceType: (row as any).sourceType ?? null,
         sourceId: (row as any).sourceId ?? null,
         paymentDetails: ((row as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
+        taxSnapshot: ((row as any).taxSnapshot as any) ?? null,
+        issuerSnapshot: ((row as any).issuerSnapshot as any) ?? null,
+        legalEntityId: (row as any).legalEntityId ?? null,
+        paymentMethodId: (row as any).paymentMethodId ?? null,
       });
     });
 

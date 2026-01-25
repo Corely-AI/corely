@@ -20,6 +20,7 @@ export class UpsertTaxProfileUseCase {
       vatId: input.vatId || null,
       currency: input.currency,
       filingFrequency: input.filingFrequency,
+      vatAccountingMethod: input.vatAccountingMethod ?? "IST",
       taxYearStartMonth: input.taxYearStartMonth ?? null,
       localTaxOfficeName: input.localTaxOfficeName ?? null,
       vatExemptionParagraph: input.vatExemptionParagraph ?? null,

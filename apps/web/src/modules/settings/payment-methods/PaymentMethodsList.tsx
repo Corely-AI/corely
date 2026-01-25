@@ -59,7 +59,9 @@ export function PaymentMethodsList({ legalEntityId }: PaymentMethodsListProps) {
   }
 
   const getBankAccountLabel = (bankAccountId: string | null | undefined) => {
-    if (!bankAccountId) {return null;}
+    if (!bankAccountId) {
+      return null;
+    }
     const account = bankAccounts.find((a) => a.id === bankAccountId);
     return account?.label || "Unknown Account";
   };
