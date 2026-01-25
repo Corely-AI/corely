@@ -241,15 +241,36 @@ export function TaxHistoryCard() {
                     {selectedPeriod.archivedReason && (
                       <div>Archive reason: {selectedPeriod.archivedReason}</div>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-fit"
-                      disabled={!selectedPeriod.pdfStorageKey}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download PDF
-                    </Button>
+                    <div className="relative inline-block">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-fit"
+                        disabled={!selectedPeriod.pdfStorageKey}
+                        onClick={() => {
+                          if (selectedPeriod.pdfStorageKey) {
+                            if (
+                              selectedPeriod.pdfStorageKey.startsWith("http") ||
+                              selectedPeriod.pdfStorageKey.startsWith("/")
+                            ) {
+                              window.open(
+                                selectedPeriod.pdfStorageKey,
+                                "_blank",
+                                "noopener,noreferrer"
+                              );
+                            }
+                          }
+                        }}
+                        title={
+                          !selectedPeriod.pdfStorageKey
+                            ? "PDF generation coming soon"
+                            : "Download VAT period PDF"
+                        }
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download PDF
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-2">
