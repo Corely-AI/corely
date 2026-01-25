@@ -21,9 +21,12 @@ import { UpdateExpenseUseCase } from "./application/use-cases/update-expense.use
 import { UnarchiveExpenseUseCase } from "./application/use-cases/unarchive-expense.usecase";
 import { PrismaExpenseRepository } from "./infrastructure/adapters/prisma-expense-repository.adapter";
 import { KernelModule } from "../../shared/kernel/kernel.module";
+import { PlatformModule } from "../platform/platform.module";
+import { WORKSPACE_REPOSITORY_PORT } from "../workspaces/application/ports/workspace-repository.port";
+import { WorkspaceTemplateService } from "../platform/application/services/workspace-template.service";
 
 @Module({
-  imports: [DataModule, KernelModule],
+  imports: [DataModule, KernelModule, PlatformModule],
   controllers: [ExpensesController],
   providers: [
     // Repository
@@ -41,7 +44,9 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
         idGen: IdGeneratorPort,
         clock: ClockPort,
         customDefs: CustomFieldDefinitionRepository,
-        customIndexes: CustomFieldIndexRepository
+        customIndexes: CustomFieldIndexRepository,
+        workspaceRepo,
+        templateService: WorkspaceTemplateService
       ) =>
         new CreateExpenseUseCase(
           repo,
@@ -51,7 +56,9 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
           idGen,
           clock,
           customDefs,
-          customIndexes
+          customIndexes,
+          workspaceRepo,
+          templateService
         ),
       inject: [
         EXPENSE_REPOSITORY,
@@ -62,6 +69,8 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
         CLOCK_PORT_TOKEN,
         CustomFieldDefinitionRepository,
         CustomFieldIndexRepository,
+        WORKSPACE_REPOSITORY_PORT,
+        WorkspaceTemplateService,
       ],
     },
     {

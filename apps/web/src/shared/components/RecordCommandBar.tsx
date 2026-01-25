@@ -105,7 +105,9 @@ const ICON_MAP: Record<string, React.ElementType> = {
 };
 
 function getIcon(iconName?: string): React.ElementType | null {
-  if (!iconName) {return null;}
+  if (!iconName) {
+    return null;
+  }
   return ICON_MAP[iconName] || null;
 }
 
@@ -163,8 +165,12 @@ function StatusChip({ capabilities, onTransition, disabled }: StatusChipProps) {
     : STATUS_TONE_CLASSES.muted;
 
   const handleTransitionClick = (transition: RecordCapabilities["transitions"][number]) => {
-    if (!transition.enabled) {return;}
-    if (!transition.to) {return;}
+    if (!transition.enabled) {
+      return;
+    }
+    if (!transition.to) {
+      return;
+    }
 
     if (transition.dangerous) {
       setConfirmTransition(transition);
@@ -177,8 +183,12 @@ function StatusChip({ capabilities, onTransition, disabled }: StatusChipProps) {
   };
 
   const handleConfirm = async () => {
-    if (!confirmTransition) {return;}
-    if (!confirmTransition.to) {return;}
+    if (!confirmTransition) {
+      return;
+    }
+    if (!confirmTransition.to) {
+      return;
+    }
     const input = confirmTransition.requiresInput
       ? { [confirmTransition.requiresInput]: confirmInput }
       : undefined;
@@ -350,7 +360,9 @@ const BADGE_TONE_VARIANTS: Record<string, "default" | "secondary" | "destructive
 };
 
 function DerivedBadges({ badges }: { badges?: RecordCapabilities["badges"] }) {
-  if (!badges?.length) {return null;}
+  if (!badges?.length) {
+    return null;
+  }
 
   return (
     <div className="flex items-center gap-1.5">
@@ -449,7 +461,9 @@ function OverflowMenu({ actions, onAction }: OverflowMenuProps) {
   };
 
   const handleConfirm = async () => {
-    if (!confirmAction) {return;}
+    if (!confirmAction) {
+      return;
+    }
     if (confirmAction.key) {
       await onAction?.(confirmAction.key);
     }

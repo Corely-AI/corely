@@ -135,9 +135,9 @@ export function VatPeriodDetailsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sales.map((item: any) => (
+                    {sales.map((item: any, index: number) => (
                       <tr
-                        key={item.id}
+                        key={item.id || `sale-${index}`}
                         className="bg-background border-b last:border-0 hover:bg-muted/20"
                       >
                         <td className="px-4 py-3 whitespace-nowrap">
@@ -183,9 +183,9 @@ export function VatPeriodDetailsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {purchases.map((item: any) => (
+                    {purchases.map((item: any, index: number) => (
                       <tr
-                        key={item.id}
+                        key={item.id || `purchase-${index}`}
                         className="bg-background border-b last:border-0 hover:bg-muted/20"
                       >
                         <td className="px-4 py-3 whitespace-nowrap">

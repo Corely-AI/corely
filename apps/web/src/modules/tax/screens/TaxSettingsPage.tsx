@@ -304,6 +304,34 @@ export default function TaxSettingsPage() {
                   )}
                 />
               </div>
+
+              <div>
+                <Label htmlFor="vatAccountingMethod">VAT Accounting Method</Label>
+                <Controller
+                  control={form.control}
+                  name="vatAccountingMethod"
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select method" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="IST">Cash Basis (Ist-Versteuerung)</SelectItem>
+                        <SelectItem value="SOLL">Accrual Basis (Soll-Versteuerung)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Cash Basis: You owe VAT when payment is received.
+                  <br />
+                  Accrual Basis: You owe VAT when invoice is issued.
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

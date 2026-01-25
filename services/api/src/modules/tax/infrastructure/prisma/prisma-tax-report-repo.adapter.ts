@@ -26,6 +26,14 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     return rows.map((row) => this.toDomain(row));
   }
 
+  async findById(tenantId: string, id: string): Promise<TaxReportEntity | null> {
+    const row = await this.prisma.taxReport.findFirst({
+      where: { id, tenantId },
+      include: { lines: true },
+    });
+    return row ? this.toDomain(row) : null;
+  }
+
   async markSubmitted(tenantId: string, id: string, submittedAt: Date): Promise<TaxReportEntity> {
     const updated = await this.prisma.taxReport.updateMany({
       where: { id, tenantId },
@@ -75,6 +83,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     submissionNotes?: string | null;
     archivedReason?: string | null;
     submittedAt?: Date | null;
+    pdfStorageKey?: string | null;
   }): Promise<TaxReportEntity> {
     const row = await this.prisma.taxReport.upsert({
       where: {
@@ -102,6 +111,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
         submissionReference: input.submissionReference ?? null,
         submissionNotes: input.submissionNotes ?? null,
         archivedReason: input.archivedReason ?? null,
+        pdfStorageKey: input.pdfStorageKey ?? null,
       },
       update: {
         status: input.status as any,
@@ -110,6 +120,16 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
         submissionReference: input.submissionReference ?? null,
         submissionNotes: input.submissionNotes ?? null,
         archivedReason: input.archivedReason ?? null,
+        pdfStorageKey: input.pdfStorageKey ?? undefined, // Only update if provided? wrapper function passes null defaults.
+        // Actually, if input.pdfStorageKey is passed (even null), we might overwrite.
+        // Logic: if undefined, don't update. if null, clear it?
+        // The input interface has optional pdfStorageKey.
+        // Let's use `input.pdfStorageKey` directly, but if undefined we might want to skip.
+        // The previous code had `?? null` to force nulls.
+        // If I use `input.pdfStorageKey ?? undefined`, then explicit nulls become null, undefined becomes undefined (skip update in prisma).
+        // But `??` coalesces null and undefined.
+        // `input.pdfStorageKey === undefined ? undefined : input.pdfStorageKey` is safer.
+        // However, Prisma `create` requires a value (or null). `update` allows undefined to skip.
         updatedAt: new Date(),
       },
     });
@@ -129,9 +149,10 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     const quarterEnd = new Date(
       Date.UTC(quarterStart.getUTCFullYear(), quarterStart.getUTCMonth() + 3, 0)
     );
-    const due = new Date(
-      Date.UTC(quarterEnd.getUTCFullYear(), quarterEnd.getUTCMonth(), quarterEnd.getUTCDate() + 10)
-    );
+
+    // Calculate due date: 10 days after quarter ends
+    const due = new Date(quarterEnd);
+    due.setUTCDate(due.getUTCDate() + 10);
 
     await this.prisma.taxReport.createMany({
       data: [
@@ -156,7 +177,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
           periodLabel: `${year}`,
           periodStart: new Date(Date.UTC(year, 0, 1)),
           periodEnd: new Date(Date.UTC(year, 11, 31)),
-          dueDate: new Date(Date.UTC(year + 1, 1, 10)),
+          dueDate: new Date(Date.UTC(year + 1, 4, 31)), // May 31 of following year
           status: "UPCOMING",
           amountEstimatedCents: null,
           currency: "EUR",
@@ -186,6 +207,16 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
       archivedReason: model.archivedReason ?? null,
       pdfStorageKey: model.pdfStorageKey ?? null,
       pdfGeneratedAt: model.pdfGeneratedAt ?? null,
+      meta: (model.meta as any) ?? null,
+      lines: model.lines
+        ? model.lines.map((l: any) => ({
+            section: l.section,
+            label: l.label,
+            netAmountCents: l.netAmountCents,
+            taxAmountCents: l.taxAmountCents,
+            meta: l.meta,
+          }))
+        : undefined,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,
     };

@@ -228,7 +228,12 @@ export default function NewInvoicePage() {
   });
 
   const runStatusFlow = React.useCallback(
-    async (invoiceId: string, currentStatus: InvoiceStatus, desiredStatus: InvoiceStatus, paymentMethodId?: string) => {
+    async (
+      invoiceId: string,
+      currentStatus: InvoiceStatus,
+      desiredStatus: InvoiceStatus,
+      paymentMethodId?: string
+    ) => {
       if (desiredStatus === currentStatus) {
         return currentStatus;
       }
@@ -263,7 +268,12 @@ export default function NewInvoicePage() {
   const onSubmit = async (data: InvoiceFormData) => {
     try {
       const invoice = await createInvoiceMutation.mutateAsync(data);
-      const finalStatus = await runStatusFlow(invoice.id, invoice.status ?? "DRAFT", targetStatus, data.paymentMethodId);
+      const finalStatus = await runStatusFlow(
+        invoice.id,
+        invoice.status ?? "DRAFT",
+        targetStatus,
+        data.paymentMethodId
+      );
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success(
         finalStatus === targetStatus ? t("invoices.created") : "Invoice saved (status unchanged)"
@@ -613,8 +623,6 @@ export default function NewInvoicePage() {
                       </form>
                     </DialogContent>
                   </Dialog>
-
-
                 </div>
 
                 {/* Right column - Invoice metadata */}

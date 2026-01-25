@@ -181,8 +181,11 @@ export class InvoiceCapabilitiesBuilder {
           const hasLineItems = lineItems.length > 0;
           const enabled = hasCustomer && hasLineItems;
           let reason: string | undefined;
-          if (!hasCustomer) {reason = "Customer is required";}
-          else if (!hasLineItems) {reason = "At least one line item is required";}
+          if (!hasCustomer) {
+            reason = "Customer is required";
+          } else if (!hasLineItems) {
+            reason = "At least one line item is required";
+          }
 
           transitions.push({
             to: "ISSUED",

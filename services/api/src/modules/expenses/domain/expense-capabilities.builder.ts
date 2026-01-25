@@ -9,9 +9,11 @@ import {
 
 export class ExpenseCapabilitiesBuilder {
   private readonly expense: ExpenseDto;
+  private readonly approvalsEnabled: boolean;
 
-  constructor(expense: ExpenseDto) {
+  constructor(expense: ExpenseDto, approvalsEnabled = true) {
     this.expense = expense;
+    this.approvalsEnabled = approvalsEnabled;
   }
 
   public build(): ExpenseCapabilities {
@@ -63,6 +65,11 @@ export class ExpenseCapabilitiesBuilder {
   }
 
   private buildTransitions(): ExpenseTransition[] {
+    // In freelancer mode (approvals disabled), no transitions are needed
+    if (!this.approvalsEnabled) {
+      return [];
+    }
+
     const transitions: ExpenseTransition[] = [];
     const s = this.expense.status;
 

@@ -108,6 +108,7 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
         };
       } catch (taxError: unknown) {
         // If tax calculation fails, log but don't block finalization
+        console.error("TAX CALC FAILURE:", JSON.stringify(taxError, null, 2));
         this.useCaseDeps.logger.warn(
           `Failed to calculate tax for invoice ${invoice.id}`,
           taxError as Record<string, unknown>

@@ -78,7 +78,9 @@ export const invalidateAllWorkspaceQueries = async (queryClient: QueryClient) =>
  */
 export const clearWorkspaceQueryCache = (queryClient: QueryClient, workspaceId?: string | null) => {
   const wsId = workspaceId ?? getActiveWorkspaceId();
-  if (!wsId) {return;}
+  if (!wsId) {
+    return;
+  }
 
   // Remove all queries that have this workspaceId in their key
   queryClient.removeQueries({

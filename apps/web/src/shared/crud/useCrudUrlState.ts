@@ -10,7 +10,9 @@ export type CrudUrlState = {
 };
 
 const parseNumber = (value: string | null, fallback: number) => {
-  if (!value) {return fallback;}
+  if (!value) {
+    return fallback;
+  }
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };

@@ -66,6 +66,8 @@ import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-peri
 import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
 import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
+import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
+import { GetTaxReportUseCase } from "./application/use-cases/get-tax-report.use-case";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 @Controller("tax")
@@ -81,6 +83,7 @@ export class TaxController {
     private readonly lockTaxSnapshotUseCase: LockTaxSnapshotUseCase,
     private readonly getTaxSummaryUseCase: GetTaxSummaryUseCase,
     private readonly listTaxReportsUseCase: ListTaxReportsUseCase,
+    private readonly getTaxReportUseCase: GetTaxReportUseCase,
     private readonly markTaxReportSubmittedUseCase: MarkTaxReportSubmittedUseCase,
     private readonly getTaxConsultantUseCase: GetTaxConsultantUseCase,
     private readonly upsertTaxConsultantUseCase: UpsertTaxConsultantUseCase,
@@ -90,6 +93,7 @@ export class TaxController {
     private readonly markVatPeriodSubmittedUseCase: MarkVatPeriodSubmittedUseCase,
     private readonly markVatPeriodNilUseCase: MarkVatPeriodNilUseCase,
     private readonly archiveVatPeriodUseCase: ArchiveVatPeriodUseCase,
+    private readonly generateTaxReportPdfUseCase: GenerateTaxReportPdfUseCase,
     private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
@@ -194,6 +198,13 @@ export class TaxController {
     return this.listTaxReportsUseCase.execute(parsed.status ?? "upcoming", parsed, ctx);
   }
 
+  @Get("reports/:id")
+  async getReport(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const report = await this.getTaxReportUseCase.execute(ctx.tenantId, id);
+    return { report };
+  }
+
   @Post("reports/:id/mark-submitted")
   async markSubmitted(@Param("id") id: string, @Req() req: Request) {
     const ctx = this.buildContext(req);
@@ -265,6 +276,18 @@ export class TaxController {
     return this.archiveVatPeriodUseCase.execute(key, input, ctx);
   }
 
+  @Get("reports/vat/quarterly/:key/pdf-url")
+  async getVatPeriodPdfUrl(@Param("key") key: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.generateTaxReportPdfUseCase.execute(ctx, { periodKey: key });
+  }
+
+  @Get("reports/:id/pdf-url")
+  async getReportPdfUrl(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.generateTaxReportPdfUseCase.execute(ctx, { reportId: id });
+  }
+
   // ============================================================================
   // Consultant
   // ============================================================================
@@ -328,6 +351,9 @@ export class TaxController {
       taxYearStartMonth: entity.taxYearStartMonth,
       localTaxOfficeName: entity.localTaxOfficeName,
       vatExemptionParagraph: entity.vatExemptionParagraph ?? null,
+      euB2BSales: entity.euB2BSales ?? false,
+      hasEmployees: entity.hasEmployees ?? false,
+      usesTaxAdvisor: entity.usesTaxAdvisor ?? false,
       effectiveFrom: entity.effectiveFrom.toISOString(),
       effectiveTo: entity.effectiveTo?.toISOString() || null,
       createdAt: entity.createdAt.toISOString(),

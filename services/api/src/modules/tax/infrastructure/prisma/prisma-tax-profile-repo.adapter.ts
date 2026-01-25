@@ -48,6 +48,9 @@ export class PrismaTaxProfileRepoAdapter extends TaxProfileRepoPort {
           localTaxOfficeName: profile.localTaxOfficeName,
           vatAccountingMethod: profile.vatAccountingMethod,
           vatExemptionParagraph: profile.vatExemptionParagraph,
+          euB2BSales: profile.euB2BSales,
+          hasEmployees: profile.hasEmployees,
+          usesTaxAdvisor: profile.usesTaxAdvisor,
           effectiveTo: profile.effectiveTo,
         },
       });
@@ -68,6 +71,11 @@ export class PrismaTaxProfileRepoAdapter extends TaxProfileRepoPort {
         localTaxOfficeName: profile.localTaxOfficeName,
         vatAccountingMethod: profile.vatAccountingMethod,
         vatExemptionParagraph: profile.vatExemptionParagraph,
+        // Flags
+        euB2BSales: profile.euB2BSales,
+        hasEmployees: profile.hasEmployees,
+        usesTaxAdvisor: profile.usesTaxAdvisor,
+
         effectiveFrom: profile.effectiveFrom,
         effectiveTo: profile.effectiveTo,
       },
@@ -98,6 +106,9 @@ export class PrismaTaxProfileRepoAdapter extends TaxProfileRepoPort {
       localTaxOfficeName: model.localTaxOfficeName,
       vatAccountingMethod: model.vatAccountingMethod,
       vatExemptionParagraph: model.vatExemptionParagraph,
+      euB2BSales: model.euB2BSales ?? false,
+      hasEmployees: model.hasEmployees ?? false,
+      usesTaxAdvisor: model.usesTaxAdvisor ?? false,
       effectiveFrom: model.effectiveFrom,
       effectiveTo: model.effectiveTo,
       createdAt: model.createdAt,

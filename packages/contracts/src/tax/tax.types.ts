@@ -49,13 +49,30 @@ export const TaxReportStatusSchema = z.enum([
 ]);
 export type TaxReportStatus = z.infer<typeof TaxReportStatusSchema>;
 
-export const TaxReportTypeSchema = z.enum(["VAT_ADVANCE", "VAT_ANNUAL", "INCOME_TAX"]);
+export const TaxReportTypeSchema = z.enum([
+  "VAT_ADVANCE",
+  "VAT_ANNUAL",
+  "INCOME_TAX",
+  "EU_SALES_LIST",
+  "INTRASTAT",
+  "PAYROLL_TAX",
+  "PROFIT_LOSS",
+  "BALANCE_SHEET",
+  "TRADE_TAX",
+  "FIXED_ASSETS",
+]);
 export type TaxReportType = z.infer<typeof TaxReportTypeSchema>;
 
-export const TaxReportGroupSchema = z.enum(["ADVANCE_VAT", "ANNUAL_REPORT"]);
+export const TaxReportGroupSchema = z.enum([
+  "ADVANCE_VAT",
+  "ANNUAL_REPORT",
+  "COMPLIANCE",
+  "PAYROLL",
+  "FINANCIAL_STATEMENT",
+]);
 export type TaxReportGroup = z.infer<typeof TaxReportGroupSchema>;
 
-export const VatPeriodTypeSchema = z.enum(["VAT_QUARTERLY"]);
+export const VatPeriodTypeSchema = z.enum(["VAT_QUARTERLY", "VAT_MONTHLY"]);
 export type VatPeriodType = z.infer<typeof VatPeriodTypeSchema>;
 
 export const VatAccountingMethodSchema = z.enum(["IST", "SOLL"]);
@@ -82,6 +99,10 @@ export const TaxProfileDtoSchema = z.object({
   vatAccountingMethod: VatAccountingMethodSchema.default("IST"),
   localTaxOfficeName: z.string().optional().nullable(),
   vatExemptionParagraph: z.string().optional().nullable(),
+  // Flags
+  euB2BSales: z.boolean().default(false),
+  hasEmployees: z.boolean().default(false),
+  usesTaxAdvisor: z.boolean().default(false),
   effectiveFrom: z.string().datetime(),
   effectiveTo: z.string().datetime().optional().nullable(),
   createdAt: z.string().datetime(),
@@ -312,6 +333,18 @@ export const TaxReportDtoSchema = z.object({
   archivedReason: z.string().optional().nullable(),
   pdfStorageKey: z.string().optional().nullable(),
   pdfGeneratedAt: z.string().datetime().optional().nullable(),
+  meta: z.record(z.any()).optional().nullable(),
+  lines: z
+    .array(
+      z.object({
+        section: z.string().optional().nullable(),
+        label: z.string().optional().nullable(),
+        netAmountCents: z.number().int(),
+        taxAmountCents: z.number().int().optional().nullable(),
+        meta: z.record(z.any()).optional().nullable(),
+      })
+    )
+    .optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });

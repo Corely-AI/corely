@@ -50,7 +50,9 @@ export function SendInvoiceDialog({
   }, [open, invoice]);
 
   const handleSend = () => {
-    if (!to) {return;}
+    if (!to) {
+      return;
+    }
     void onSend({ to, subject, message, sendCopy });
   };
 

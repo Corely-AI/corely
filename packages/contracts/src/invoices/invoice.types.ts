@@ -68,7 +68,7 @@ export const InvoiceDtoSchema = z.object({
   // Sales source tracking
   sourceType: z.enum(["order", "quote", "deal", "manual"]).nullable().optional(),
   sourceId: z.string().nullable().optional(),
-  
+
   // Issuer & Payment Config
   legalEntityId: z.string().nullable().optional(),
   paymentMethodId: z.string().nullable().optional(),

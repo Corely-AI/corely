@@ -17,8 +17,11 @@ import {
   Home,
   PiggyBank,
 } from "lucide-react";
-import { formatMoney, formatRelativeTime } from "@/shared/lib/formatters";
+import { useTranslation } from "react-i18next";
+import { formatMoney, formatDueDate } from "../../../shared/lib/formatters";
 import { TaxHistoryCard } from "../components/TaxHistoryCard";
+
+import { AnnualReportsSection } from "../components/AnnualReportsSection";
 
 export default function TaxesOverviewPage() {
   const navigate = useNavigate();
@@ -26,6 +29,11 @@ export default function TaxesOverviewPage() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["tax-summary"],
     queryFn: () => taxApi.getSummary(),
+  });
+
+  const { data: annualReports, isLoading: isLoadingAnnual } = useQuery({
+    queryKey: ["tax-reports", "upcoming"],
+    queryFn: () => taxApi.listReports("upcoming"),
   });
 
   const firstName = user?.name?.split(" ")[0] ?? "there";
@@ -241,6 +249,13 @@ export default function TaxesOverviewPage() {
         </CardContent>
       </Card>
 
+      {/* Annual Reports Section */}
+      <AnnualReportsSection
+        reports={annualReports?.reports?.filter((r) => r.group === "ANNUAL_REPORT") ?? []}
+        isLoading={isLoadingAnnual}
+        locale={locale}
+      />
+
       {/* Reports section */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -272,7 +287,7 @@ export default function TaxesOverviewPage() {
                   </div>
                   <div className="text-right space-y-1">
                     <div className="text-sm text-muted-foreground">
-                      Due {formatRelativeTime(report.dueDate, locale)}
+                      Due {formatDueDate(report.dueDate, locale)}
                     </div>
                     <div className="font-semibold">
                       {formatCents(report.amountEstimatedCents ?? report.amountFinalCents ?? 0)}

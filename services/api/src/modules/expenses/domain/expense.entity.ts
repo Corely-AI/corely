@@ -1,7 +1,10 @@
+export type ExpenseStatus = "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "PAID";
+
 export class Expense {
   constructor(
     public readonly id: string,
     public readonly tenantId: string,
+    public status: ExpenseStatus,
     public merchant: string,
     public totalCents: number,
     public taxAmountCents: number | null,
@@ -58,5 +61,9 @@ export class Expense {
     if (data.custom !== undefined) {
       this.custom = data.custom;
     }
+  }
+
+  updateStatus(newStatus: ExpenseStatus) {
+    this.status = newStatus;
   }
 }

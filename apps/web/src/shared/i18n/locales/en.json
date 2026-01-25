@@ -253,6 +253,13 @@
     "thisYear": "This year",
     "daysAgo": "{{count}} days ago"
   },
+  "dueDate": {
+    "today": "due today",
+    "inDays": "in {{count}} days",
+    "inDays_one": "in 1 day",
+    "overdue": "{{count}} days overdue",
+    "overdue_one": "1 day overdue"
+  },
   "errors": {
     "loadMenuFailed": "Failed to load menu"
   }

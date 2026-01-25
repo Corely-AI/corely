@@ -29,12 +29,18 @@ export const interpolateTemplate = (
     }
     if (isProfileSpecific) {
       const specific = ctx[key];
-      if (specific) {return String(specific);}
+      if (specific) {
+        return String(specific);
+      }
       if (channelKey) {
         const fallbackKey = `profileUrl_${channelKey}`;
-        if (ctx[fallbackKey]) {return String(ctx[fallbackKey]);}
+        if (ctx[fallbackKey]) {
+          return String(ctx[fallbackKey]);
+        }
       }
-      if (ctx.profileUrl) {return String(ctx.profileUrl);}
+      if (ctx.profileUrl) {
+        return String(ctx.profileUrl);
+      }
     }
     const value = ctx[key];
     return value ? String(value) : "";

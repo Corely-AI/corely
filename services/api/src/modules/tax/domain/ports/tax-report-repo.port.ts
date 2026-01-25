@@ -6,6 +6,8 @@ export abstract class TaxReportRepoPort {
     status: "upcoming" | "submitted"
   ): Promise<TaxReportEntity[]>;
 
+  abstract findById(tenantId: string, id: string): Promise<TaxReportEntity | null>;
+
   abstract markSubmitted(tenantId: string, id: string, submittedAt: Date): Promise<TaxReportEntity>;
 
   abstract listByPeriodRange(
@@ -29,6 +31,7 @@ export abstract class TaxReportRepoPort {
     submissionNotes?: string | null;
     archivedReason?: string | null;
     submittedAt?: Date | null;
+    pdfStorageKey?: string | null;
   }): Promise<TaxReportEntity>;
 
   abstract seedDefaultReports(tenantId: string): Promise<void>;

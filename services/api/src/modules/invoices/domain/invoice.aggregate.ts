@@ -105,7 +105,7 @@ export class InvoiceAggregate {
   issuerSnapshot: IssuerSnapshot | null;
   taxSnapshot: TaxSnapshot | null;
   paymentSnapshot: PaymentDetailsSnapshot | null;
-  
+
   totals: InvoiceTotals;
 
   constructor(props: InvoiceProps) {
@@ -179,7 +179,7 @@ export class InvoiceAggregate {
       issuedAt: null,
       sentAt: null,
       updatedAt: params.createdAt,
-      paymentDetails: params.paymentSnapshot ?? null, 
+      paymentDetails: params.paymentSnapshot ?? null,
     });
     if (params.billToSnapshot) {
       aggregate.setBillToSnapshot(params.billToSnapshot);
@@ -256,6 +256,7 @@ export class InvoiceAggregate {
       this.paymentSnapshot = props.paymentSnapshot;
       this.paymentDetails = props.paymentSnapshot;
     }
+    this.recalculateTotals();
     this.touch(now);
   }
 
@@ -348,7 +349,7 @@ export class InvoiceAggregate {
 
   private calculateTotals(): InvoiceTotals {
     const subtotal = this.lineItems.reduce((sum, line) => sum + line.qty * line.unitPriceCents, 0);
-    const taxCents = 0;
+    const taxCents = this.taxSnapshot?.taxTotalAmountCents ?? 0;
     const discountCents = 0;
     const totalCents = subtotal + taxCents - discountCents;
     const paidCents = this.payments.reduce((sum, p) => sum + p.amountCents, 0);

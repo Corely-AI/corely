@@ -44,7 +44,9 @@ export const useDealTimeline = (id: string | undefined, filter: TimelineFilter =
     },
     enabled: !!id,
     select: (data: { items: TimelineItem[]; nextCursor?: string }) => {
-      if (filter === "ALL") {return data;}
+      if (filter === "ALL") {
+        return data;
+      }
       if (filter === "STAGE") {
         return {
           ...data,

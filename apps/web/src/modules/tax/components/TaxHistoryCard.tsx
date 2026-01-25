@@ -42,6 +42,14 @@ export function TaxHistoryCard() {
     [periods]
   );
 
+  const chronologicalPeriods = React.useMemo(
+    () =>
+      [...periods].sort(
+        (a, b) => new Date(a.periodStart).getTime() - new Date(b.periodStart).getTime()
+      ),
+    [periods]
+  );
+
   const orderedPeriods = React.useMemo(() => {
     const overdueKeys = new Set(overduePeriods.map((period) => period.periodKey));
     const remaining = periods
@@ -169,15 +177,12 @@ export function TaxHistoryCard() {
             <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
               <div className="space-y-2">
                 <div className="text-sm font-medium text-muted-foreground">Quarter</div>
-                <Select
-                  value={selectedKey ?? undefined}
-                  onValueChange={(value) => setSelectedKey(value)}
-                >
+                <Select value={selectedKey ?? ""} onValueChange={(value) => setSelectedKey(value)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select quarter" />
                   </SelectTrigger>
                   <SelectContent>
-                    {orderedPeriods.map((period) => (
+                    {chronologicalPeriods.map((period) => (
                       <SelectItem key={period.periodKey} value={period.periodKey}>
                         {formatPeriodLabel(period)}
                       </SelectItem>
@@ -241,15 +246,29 @@ export function TaxHistoryCard() {
                     {selectedPeriod.archivedReason && (
                       <div>Archive reason: {selectedPeriod.archivedReason}</div>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-fit"
-                      disabled={!selectedPeriod.pdfStorageKey}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      Download PDF
-                    </Button>
+                    <div className="relative inline-block">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-fit"
+                        onClick={() => {
+                          const promise = taxApi
+                            .getVatPeriodPdfUrl(selectedPeriod.periodKey)
+                            .then((res) => {
+                              window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
+                            });
+
+                          toast.promise(promise, {
+                            loading: "Generating PDF...",
+                            success: "Download started",
+                            error: "Failed to download PDF",
+                          });
+                        }}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download PDF
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-2">
