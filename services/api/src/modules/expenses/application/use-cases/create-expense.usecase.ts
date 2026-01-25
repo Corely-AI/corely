@@ -78,7 +78,7 @@ export class CreateExpenseUseCase {
     }
 
     // Determine initial status based on workspace type
-    const initialStatus = await this.determineInitialStatus(input.tenantId, ctx.workspaceId);
+    const initialStatus = await this.determineInitialStatus(ctx.tenantId, ctx.workspaceId);
 
     const definitions = await this.customFieldDefinitions.listActiveByEntityType(
       input.tenantId,
