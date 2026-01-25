@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -27,6 +28,11 @@ import { GetExpenseUseCase } from "../application/use-cases/get-expense.usecase"
 import { UpdateExpenseUseCase } from "../application/use-cases/update-expense.usecase";
 import type { Expense } from "../domain/expense.entity";
 import { ExpenseCapabilitiesBuilder } from "../domain/expense-capabilities.builder";
+import {
+  WORKSPACE_REPOSITORY_PORT,
+  type WorkspaceRepositoryPort,
+} from "../../workspaces/application/ports/workspace-repository.port";
+import { WorkspaceTemplateService } from "../../platform/application/services/workspace-template.service";
 
 const ExpenseHttpInputSchema = CreateExpenseWebInputSchema.partial().extend({
   tenantId: z.string().optional(),
@@ -47,7 +53,10 @@ export class ExpensesController {
     private readonly unarchiveExpenseUseCase: UnarchiveExpenseUseCase,
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly getExpenseUseCase: GetExpenseUseCase,
-    private readonly updateExpenseUseCase: UpdateExpenseUseCase
+    private readonly updateExpenseUseCase: UpdateExpenseUseCase,
+    @Inject(WORKSPACE_REPOSITORY_PORT)
+    private readonly workspaceRepo: WorkspaceRepositoryPort,
+    private readonly templateService: WorkspaceTemplateService
   ) {}
 
   @Post()
@@ -140,7 +149,10 @@ export class ExpensesController {
 
     const expense = await this.getExpenseUseCase.execute({ expenseId, includeArchived }, ctx);
     const dto = this.mapExpenseDto(expense);
-    const capabilities = new ExpenseCapabilitiesBuilder(dto).build();
+
+    // Determine if approvals are enabled for this workspace
+    const approvalsEnabled = await this.isApprovalsEnabled(ctx.tenantId, ctx.workspaceId);
+    const capabilities = new ExpenseCapabilitiesBuilder(dto, approvalsEnabled).build();
 
     return { expense: dto, capabilities };
   }
@@ -199,7 +211,7 @@ export class ExpensesController {
     return {
       id: expense.id,
       tenantId: expense.tenantId,
-      status: "SUBMITTED",
+      status: expense.status,
       expenseDate: expense.issuedAt.toISOString().slice(0, 10),
       merchantName: expense.merchant,
       supplierPartyId: null,
@@ -215,5 +227,32 @@ export class ExpensesController {
       receipts: [],
       custom: expense.custom ?? undefined,
     };
+  }
+
+  /**
+   * Check if approval workflow is enabled for the workspace
+   */
+  private async isApprovalsEnabled(tenantId: string, workspaceId?: string): Promise<boolean> {
+    if (!workspaceId) {
+      return true; // Default to approvals enabled for safety
+    }
+
+    try {
+      const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
+        tenantId,
+        workspaceId
+      );
+
+      if (!workspace || !workspace.legalEntity) {
+        return true;
+      }
+
+      const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
+      const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
+
+      return capabilities.approvals !== false;
+    } catch (error) {
+      return true; // Default to approvals enabled on error
+    }
   }
 }
