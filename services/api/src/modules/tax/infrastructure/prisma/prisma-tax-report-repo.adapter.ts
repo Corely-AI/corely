@@ -129,9 +129,10 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     const quarterEnd = new Date(
       Date.UTC(quarterStart.getUTCFullYear(), quarterStart.getUTCMonth() + 3, 0)
     );
-    const due = new Date(
-      Date.UTC(quarterEnd.getUTCFullYear(), quarterEnd.getUTCMonth(), quarterEnd.getUTCDate() + 10)
-    );
+
+    // Calculate due date: 10 days after quarter ends
+    const due = new Date(quarterEnd);
+    due.setUTCDate(due.getUTCDate() + 10);
 
     await this.prisma.taxReport.createMany({
       data: [
@@ -156,7 +157,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
           periodLabel: `${year}`,
           periodStart: new Date(Date.UTC(year, 0, 1)),
           periodEnd: new Date(Date.UTC(year, 11, 31)),
-          dueDate: new Date(Date.UTC(year + 1, 1, 10)),
+          dueDate: new Date(Date.UTC(year + 1, 4, 31)), // May 31 of following year
           status: "UPCOMING",
           amountEstimatedCents: null,
           currency: "EUR",
