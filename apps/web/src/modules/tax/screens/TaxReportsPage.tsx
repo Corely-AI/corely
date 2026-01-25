@@ -9,6 +9,7 @@ import { Button } from "@/shared/ui/button";
 import { formatMoney, formatDueDate } from "@/shared/lib/formatters";
 import { CheckCircle2, Clock, Download, FileText, FileSignature } from "lucide-react";
 import { toast } from "sonner";
+import { AnnualReportsSection } from "../components/AnnualReportsSection";
 
 export default function TaxReportsPage() {
   const [tab, setTab] = React.useState<"upcoming" | "submitted">("upcoming");
@@ -61,14 +62,10 @@ export default function TaxReportsPage() {
             onSubmit={(id) => markSubmitted.mutate(id)}
             canSubmit
           />
-          <ReportGroup
-            title="Annual reports"
-            icon={<FileSignature className="h-4 w-4 text-muted-foreground" />}
-            isLoading={isLoading}
+          <AnnualReportsSection
             reports={data?.reports?.filter((r) => r.group === "ANNUAL_REPORT") ?? []}
+            isLoading={isLoading}
             locale={locale}
-            onSubmit={(id) => markSubmitted.mutate(id)}
-            canSubmit
           />
         </TabsContent>
         <TabsContent value="submitted">

@@ -21,12 +21,19 @@ import { useTranslation } from "react-i18next";
 import { formatMoney, formatDueDate } from "../../../shared/lib/formatters";
 import { TaxHistoryCard } from "../components/TaxHistoryCard";
 
+import { AnnualReportsSection } from "../components/AnnualReportsSection";
+
 export default function TaxesOverviewPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["tax-summary"],
     queryFn: () => taxApi.getSummary(),
+  });
+
+  const { data: annualReports, isLoading: isLoadingAnnual } = useQuery({
+    queryKey: ["tax-reports", "upcoming"],
+    queryFn: () => taxApi.listReports("upcoming"),
   });
 
   const firstName = user?.name?.split(" ")[0] ?? "there";
@@ -241,6 +248,13 @@ export default function TaxesOverviewPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Annual Reports Section */}
+      <AnnualReportsSection
+        reports={annualReports?.reports?.filter((r) => r.group === "ANNUAL_REPORT") ?? []}
+        isLoading={isLoadingAnnual}
+        locale={locale}
+      />
 
       {/* Reports section */}
       <Card>
