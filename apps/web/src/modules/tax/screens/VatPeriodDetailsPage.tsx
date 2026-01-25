@@ -21,7 +21,7 @@ export function VatPeriodDetailsPage() {
   });
 
   const handlePrint = useReactToPrint({
-    content: () => printRef.current,
+    contentRef: printRef,
     documentTitle: `VAT Return ${key}`,
   });
 
