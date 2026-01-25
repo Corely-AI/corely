@@ -42,6 +42,14 @@ export function TaxHistoryCard() {
     [periods]
   );
 
+  const chronologicalPeriods = React.useMemo(
+    () =>
+      [...periods].sort(
+        (a, b) => new Date(a.periodStart).getTime() - new Date(b.periodStart).getTime()
+      ),
+    [periods]
+  );
+
   const orderedPeriods = React.useMemo(() => {
     const overdueKeys = new Set(overduePeriods.map((period) => period.periodKey));
     const remaining = periods
@@ -177,7 +185,7 @@ export function TaxHistoryCard() {
                     <SelectValue placeholder="Select quarter" />
                   </SelectTrigger>
                   <SelectContent>
-                    {orderedPeriods.map((period) => (
+                    {chronologicalPeriods.map((period) => (
                       <SelectItem key={period.periodKey} value={period.periodKey}>
                         {formatPeriodLabel(period)}
                       </SelectItem>
