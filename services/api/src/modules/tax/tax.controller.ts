@@ -324,6 +324,7 @@ export class TaxController {
       vatId: entity.vatId,
       currency: entity.currency,
       filingFrequency: entity.filingFrequency,
+      vatAccountingMethod: entity.vatAccountingMethod,
       taxYearStartMonth: entity.taxYearStartMonth,
       localTaxOfficeName: entity.localTaxOfficeName,
       vatExemptionParagraph: entity.vatExemptionParagraph ?? null,

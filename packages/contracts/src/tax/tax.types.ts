@@ -58,6 +58,9 @@ export type TaxReportGroup = z.infer<typeof TaxReportGroupSchema>;
 export const VatPeriodTypeSchema = z.enum(["VAT_QUARTERLY"]);
 export type VatPeriodType = z.infer<typeof VatPeriodTypeSchema>;
 
+export const VatAccountingMethodSchema = z.enum(["IST", "SOLL"]);
+export type VatAccountingMethod = z.infer<typeof VatAccountingMethodSchema>;
+
 // ============================================================================
 // DTOs (wire format - ISO strings for dates)
 // ============================================================================
@@ -76,7 +79,7 @@ export const TaxProfileDtoSchema = z.object({
   currency: z.string().default("EUR"),
   filingFrequency: VatFilingFrequencySchema,
   taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
-  vatAccountingMethod: z.enum(["IST", "SOLL"]).default("IST"),
+  vatAccountingMethod: VatAccountingMethodSchema.default("IST"),
   localTaxOfficeName: z.string().optional().nullable(),
   vatExemptionParagraph: z.string().optional().nullable(),
   effectiveFrom: z.string().datetime(),

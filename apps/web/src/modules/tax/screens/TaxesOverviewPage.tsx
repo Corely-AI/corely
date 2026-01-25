@@ -66,6 +66,17 @@ export default function TaxesOverviewPage() {
   const isMissingSettings = summary.configurationStatus === "MISSING_SETTINGS";
   const isNotApplicable = summary.configurationStatus === "NOT_APPLICABLE";
 
+  // Get current period info
+  const now = new Date();
+  const currentQuarter = Math.floor(now.getUTCMonth() / 3) + 1;
+  const currentYear = now.getUTCFullYear();
+  const currentPeriodKey = `${currentYear}-Q${currentQuarter}`;
+
+  // Calculate period dates
+  const quarterStartMonth = (currentQuarter - 1) * 3;
+  const periodStart = new Date(Date.UTC(currentYear, quarterStartMonth, 1));
+  const periodEnd = new Date(Date.UTC(currentYear, quarterStartMonth + 3, 1));
+
   return (
     <div className="p-6 lg:p-8 space-y-8 animate-fade-in">
       {/* Header */}
@@ -90,6 +101,42 @@ export default function TaxesOverviewPage() {
           </Button>
         </div>
       </div>
+
+      {/* Current Period Banner */}
+      <Card className="bg-primary/5 border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <CalendarClock className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">
+                  Current VAT Period: Q{currentQuarter} {currentYear}
+                </h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {periodStart.toLocaleDateString(locale)} -{" "}
+                {new Date(periodEnd.getTime() - 1).toLocaleDateString(locale)}
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-sm text-muted-foreground">Estimated VAT due</div>
+                <div className="text-2xl font-bold text-primary">
+                  {isMissingSettings ? (
+                    <span className="text-muted-foreground text-base">Not configured</span>
+                  ) : (
+                    formatCents(summary.taxesToBePaidEstimatedCents || 0)
+                  )}
+                </div>
+              </div>
+              <Button variant="default" onClick={() => navigate(`/tax/period/${currentPeriodKey}`)}>
+                View details
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -237,7 +284,7 @@ export default function TaxesOverviewPage() {
           )}
         </CardContent>
       </Card>
-      
+
       <TaxHistoryCard />
 
       {/* Local tax office */}
