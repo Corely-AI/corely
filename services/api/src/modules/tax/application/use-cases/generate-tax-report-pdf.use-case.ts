@@ -33,7 +33,7 @@ export class GenerateTaxReportPdfUseCase {
     let periodLabel: string;
 
     if (selector.reportId) {
-      const r = await this.reportRepo.findById(ctx.tenantId, selector.reportId);
+      const r = await this.reportRepo.findById(ctx.workspaceId, selector.reportId);
       if (!r) {
         throw new NotFoundException("Tax report not found");
       }
