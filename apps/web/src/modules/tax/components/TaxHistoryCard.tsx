@@ -177,10 +177,7 @@ export function TaxHistoryCard() {
             <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
               <div className="space-y-2">
                 <div className="text-sm font-medium text-muted-foreground">Quarter</div>
-                <Select
-                  value={selectedKey ?? undefined}
-                  onValueChange={(value) => setSelectedKey(value)}
-                >
+                <Select value={selectedKey ?? ""} onValueChange={(value) => setSelectedKey(value)}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select quarter" />
                   </SelectTrigger>
