@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { taxApi } from "@/lib/tax-api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -96,6 +97,8 @@ function ReportGroup({
   onSubmit,
   canSubmit,
 }: ReportGroupProps) {
+  const navigate = useNavigate();
+
   const handleDownload = (id: string) => {
     const promise = taxApi.getReportPdfUrl(id).then((res) => {
       window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
@@ -136,7 +139,13 @@ function ReportGroup({
                 <div className="text-sm font-semibold">
                   {formatMoney(report.amountFinalCents ?? report.amountEstimatedCents ?? 0, locale)}
                 </div>
-                <Badge variant="outline">{report.status}</Badge>
+                <Badge
+                  variant="outline"
+                  className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
+                  onClick={() => navigate(`/tax/period/${getReportKey(report)}`)}
+                >
+                  {report.status}
+                </Badge>
                 {canSubmit && (
                   <Button size="sm" variant="ghost" onClick={() => onSubmit(report.id)}>
                     Mark as submitted
@@ -168,4 +177,14 @@ function humanizeReportType(type: string) {
     default:
       return "Tax report";
   }
+}
+
+function getReportKey(report: any) {
+  const date = new Date(report.periodStart);
+  if (report.group === "ANNUAL_REPORT" || report.type === "VAT_ANNUAL") {
+    return `${date.getUTCFullYear()}`;
+  }
+  // Quarterly
+  const q = Math.floor(date.getUTCMonth() / 3) + 1;
+  return `${date.getUTCFullYear()}-Q${q}`;
 }
