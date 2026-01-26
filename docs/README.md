@@ -64,6 +64,12 @@ Specific feature implementation details.
 - [Inventory Notes](./features/INVENTORY_NOTE.md)
 - [POS Implementation](./features/POS_IMPLEMENTATION_STATUS.md)
 - [Workspace Implementation](./features/WORKSPACE_IMPLEMENTATION_SUMMARY.md)
+- [Accounting Core Status](./features/ACCOUNTING_CORE_STATUS.md)
+- [Accounting Frontend Progress](./features/ACCOUNTING_FRONTEND_PROGRESS.md)
+- [CRM Implementation Summary](./features/CRM_IMPLEMENTATION_SUMMARY.md)
+- [Implementation Progress](./features/IMPLEMENTATION_PROGRESS.md)
+- [Payment Methods](./features/PAYMENT_METHODS_IMPLEMENTATION.md)
+- [Tax Snapshot](./features/TAX_SNAPSHOT_IMPLEMENTATION.md)
 
 ### 📚 Guides
 
@@ -73,6 +79,10 @@ General developer guides and references.
 - [Module Implementation Guide](./guides/MODULE_IMPLEMENTATION_GUIDE.md)
 - [Quick Reference](./guides/QUICK_REFERENCE.md)
 - [Module Template](./guides/MODULE-TEMPLATE.md)
+- [Debug Stream](./guides/DEBUG_STREAM.md)
+- [Environment Setup](./guides/ENV_SETUP.md)
+- [Security Guide](./guides/SECURITY.md)
+- [Legacy Implementation Summary](./guides/ROOT_IMPLEMENTATION_SUMMARY.md)
 
 ### 📂 Other Resources
 
@@ -81,3 +91,4 @@ General developer guides and references.
 - [Decisions](./decisions/)
 - [Platform](./platform/)
 - [Workflows](./workflows/)
+- [Trademarks](./TRADEMARKS.md)
