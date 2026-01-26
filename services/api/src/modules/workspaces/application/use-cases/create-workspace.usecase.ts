@@ -112,6 +112,7 @@ export class CreateWorkspaceUseCase {
     return {
       workspace: {
         id: workspace.id,
+        legalEntityId: legalEntity?.id,
         name: workspace.name,
         kind: (legalEntity?.kind ?? "PERSONAL") as any,
         legalName: (legalEntity?.legalName ?? workspace.name) as any,

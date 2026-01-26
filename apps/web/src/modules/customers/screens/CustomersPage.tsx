@@ -8,6 +8,7 @@ import { customersApi } from "@/lib/customers-api";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
 import { toast } from "sonner";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 export default function CustomersPage() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function CustomersPage() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["customers"],
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
@@ -29,7 +30,7 @@ export default function CustomersPage() {
     mutationFn: (id: string) => customersApi.archiveCustomer(id),
     onSuccess: async () => {
       toast.success("Customer archived");
-      await queryClient.invalidateQueries({ queryKey: ["customers"] });
+      await queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.customers.all() });
     },
     onError: () => toast.error("Failed to archive customer"),
   });
@@ -166,14 +167,18 @@ export default function CustomersPage() {
       <ConfirmDeleteDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
-          if (!open) {setDeleteTarget(null);}
+          if (!open) {
+            setDeleteTarget(null);
+          }
         }}
         trigger={null}
         title="Archive customer"
         description="This will archive the customer. You can unarchive them later."
         isLoading={archiveCustomer.isPending}
         onConfirm={() => {
-          if (!deleteTarget) {return;}
+          if (!deleteTarget) {
+            return;
+          }
           archiveCustomer.mutate(deleteTarget);
           setDeleteTarget(null);
         }}

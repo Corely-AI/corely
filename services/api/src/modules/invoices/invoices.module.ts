@@ -14,6 +14,10 @@ import {
   InvoiceNumberingPort,
 } from "./application/ports/invoice-numbering.port";
 import { CUSTOMER_QUERY_PORT, CustomerQueryPort } from "./application/ports/customer-query.port";
+import { PAYMENT_METHOD_QUERY_PORT } from "./application/ports/payment-method-query.port";
+import { PrismaPaymentMethodQueryAdapter } from "./infrastructure/adapters/prisma-payment-method-query.adapter";
+import { LEGAL_ENTITY_QUERY_PORT } from "./application/ports/legal-entity-query.port";
+import { PrismaLegalEntityQueryAdapter } from "./infrastructure/adapters/legal-entity-query.adapter";
 import { INVOICE_PDF_MODEL_PORT } from "./application/ports/invoice-pdf-model.port";
 import { INVOICE_PDF_RENDERER_PORT } from "./application/ports/invoice-pdf-renderer.port";
 import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
@@ -25,6 +29,8 @@ import { PrismaTenantTimeZoneAdapter } from "../../shared/infrastructure/time/pr
 import { TENANT_TIMEZONE_PORT } from "../../shared/time/tenant-timezone.token";
 import { PartyModule } from "../party";
 import { DocumentsModule } from "../documents";
+import { TaxModule } from "../tax/tax.module";
+import { TaxEngineService } from "../tax/application/services/tax-engine.service";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { CreateInvoiceUseCase } from "./application/use-cases/create-invoice/create-invoice.usecase";
 import { FinalizeInvoiceUseCase } from "./application/use-cases/finalize-invoice/finalize-invoice.usecase";
@@ -39,9 +45,11 @@ import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoic
 import { PlaywrightInvoicePdfRendererAdapter } from "./infrastructure/pdf/playwright-invoice-pdf-renderer.adapter";
 import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
 import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-renderer.port";
+import { INVOICE_COMMANDS } from "./application/ports/invoice-commands.port";
+import { InvoiceCommandService } from "./application/services/invoice-command.service";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule],
+  imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule, TaxModule],
   controllers: [InvoicesHttpController, ResendWebhookController],
   providers: [
     PrismaInvoiceRepoAdapter,
@@ -78,6 +86,10 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
           },
         ]),
     PrismaInvoiceEmailDeliveryRepoAdapter,
+    PrismaPaymentMethodQueryAdapter,
+    { provide: PAYMENT_METHOD_QUERY_PORT, useExisting: PrismaPaymentMethodQueryAdapter },
+    PrismaLegalEntityQueryAdapter,
+    { provide: LEGAL_ENTITY_QUERY_PORT, useExisting: PrismaLegalEntityQueryAdapter },
     {
       provide: CreateInvoiceUseCase,
       useFactory: (
@@ -85,7 +97,9 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
         idGen: any,
         clock: any,
         timeService: TimeService,
-        customerQuery: CustomerQueryPort
+        customerQuery: CustomerQueryPort,
+        legalEntityQuery: any,
+        paymentMethodQuery: any
       ) =>
         new CreateInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -94,6 +108,8 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
           clock,
           timeService,
           customerQuery,
+          legalEntityQuery,
+          paymentMethodQuery,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
@@ -101,6 +117,8 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
         CLOCK_PORT_TOKEN,
         TimeService,
         CUSTOMER_QUERY_PORT,
+        LEGAL_ENTITY_QUERY_PORT,
+        PAYMENT_METHOD_QUERY_PORT,
       ],
     },
     {
@@ -109,7 +127,9 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
         repo: PrismaInvoiceRepoAdapter,
         idGen: any,
         clock: any,
-        customerQuery: CustomerQueryPort
+        customerQuery: CustomerQueryPort,
+        legalEntityQuery: any,
+        paymentMethodQuery: any
       ) =>
         new UpdateInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -117,8 +137,17 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
           idGenerator: idGen,
           clock,
           customerQuery,
+          legalEntityQuery,
+          paymentMethodQuery,
         }),
-      inject: [PrismaInvoiceRepoAdapter, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN, CUSTOMER_QUERY_PORT],
+      inject: [
+        PrismaInvoiceRepoAdapter,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        CUSTOMER_QUERY_PORT,
+        LEGAL_ENTITY_QUERY_PORT,
+        PAYMENT_METHOD_QUERY_PORT,
+      ],
     },
     {
       provide: FinalizeInvoiceUseCase,
@@ -126,7 +155,9 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
         repo: PrismaInvoiceRepoAdapter,
         numbering: InvoiceNumberingPort,
         clock: any,
-        customerQuery: CustomerQueryPort
+        customerQuery: CustomerQueryPort,
+        paymentMethodQuery: any,
+        taxEngine: TaxEngineService
       ) =>
         new FinalizeInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -134,12 +165,16 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
           numbering,
           clock,
           customerQuery,
+          paymentMethodQuery,
+          taxEngine,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
         INVOICE_NUMBERING_PORT,
         CLOCK_PORT_TOKEN,
         CUSTOMER_QUERY_PORT,
+        PAYMENT_METHOD_QUERY_PORT,
+        TaxEngineService,
       ],
     },
     {
@@ -252,7 +287,11 @@ import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-ren
         DownloadInvoicePdfUseCase,
       ],
     },
+    {
+      provide: INVOICE_COMMANDS,
+      useClass: InvoiceCommandService,
+    },
   ],
-  exports: [InvoicesApplication],
+  exports: [InvoicesApplication, INVOICE_COMMANDS],
 })
 export class InvoicesModule {}

@@ -24,7 +24,10 @@ describe("GetInvoiceByIdUseCase", () => {
     });
     await repo.save("tenant-1", invoice);
 
-    const result = await useCase.execute({ invoiceId: invoice.id }, { tenantId: "tenant-1" });
+    const result = await useCase.execute(
+      { invoiceId: invoice.id },
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
+    );
     const dto = unwrap(result).invoice;
 
     expect(dto.id).toBe(invoice.id);
@@ -32,7 +35,10 @@ describe("GetInvoiceByIdUseCase", () => {
   });
 
   it("returns not found when invoice is missing", async () => {
-    const result = await useCase.execute({ invoiceId: "missing" }, { tenantId: "tenant-1" });
+    const result = await useCase.execute(
+      { invoiceId: "missing" },
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
+    );
 
     expect(isErr(result)).toBe(true);
     if (isErr(result)) {

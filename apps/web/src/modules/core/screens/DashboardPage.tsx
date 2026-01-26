@@ -22,6 +22,7 @@ import { invoicesApi } from "@/lib/invoices-api";
 import { customersApi } from "@/lib/customers-api";
 import { expensesApi } from "@/lib/expenses-api";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
@@ -43,19 +44,19 @@ export default function DashboardPage() {
 
   // Fetch invoices
   const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
-    queryKey: ["invoices"],
+    queryKey: workspaceQueryKeys.invoices.list(),
     queryFn: () => invoicesApi.listInvoices(),
   });
 
   // Fetch customers
   const { data: customersData, isLoading: isLoadingCustomers } = useQuery({
-    queryKey: ["customers"],
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
   // Fetch expenses
   const { data: expensesData, isLoading: isLoadingExpenses } = useQuery({
-    queryKey: ["expenses"],
+    queryKey: workspaceQueryKeys.expenses.list(),
     queryFn: () => expensesApi.listExpenses(),
   });
 
@@ -66,20 +67,44 @@ export default function DashboardPage() {
   // Calculate dashboard metrics
   const dashboard = React.useMemo(() => {
     const now = new Date();
-    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+    const computeRevenueForRange = (start: Date, end: Date) => {
+      return invoices.reduce((sum, inv) => {
+        const payments = inv.payments ?? [];
+        if (payments.length > 0) {
+          const paidInRange = payments.filter((payment) => {
+            const paidDate = new Date(payment.paidAt);
+            return paidDate >= start && paidDate < end;
+          });
+          return (
+            sum + paidInRange.reduce((paidSum, payment) => paidSum + (payment.amountCents || 0), 0)
+          );
+        }
+
+        if (inv.status !== "PAID") {
+          return sum;
+        }
+
+        const paidDate = new Date(inv.updatedAt);
+        if (paidDate >= start && paidDate < end) {
+          return sum + (inv.totals?.totalCents || 0);
+        }
+
+        return sum;
+      }, 0);
+    };
 
     // Revenue this month (paid invoices)
-    const revenueThisMonthCents = invoices
-      .filter((inv) => {
-        const paidAt = inv.payments?.[0]?.paidAt;
-        if (!paidAt || inv.status !== "PAID") {
-          return false;
-        }
-        const paidDate = new Date(paidAt);
-        return paidDate >= thisMonth && paidDate < nextMonth;
-      })
-      .reduce((sum, inv) => sum + (inv.totals?.totalCents || 0), 0);
+    const revenueThisMonthCents = computeRevenueForRange(thisMonthStart, nextMonthStart);
+    const revenueLastMonthCents = computeRevenueForRange(lastMonthStart, thisMonthStart);
+
+    const revenueMoMPercent =
+      revenueLastMonthCents === 0
+        ? null
+        : ((revenueThisMonthCents - revenueLastMonthCents) / revenueLastMonthCents) * 100;
 
     // Outstanding invoices (issued/sent but not paid)
     const outstandingInvoices = invoices.filter(
@@ -94,7 +119,7 @@ export default function DashboardPage() {
     const expensesThisMonthCents = expenses
       .filter((exp) => {
         const expDate = new Date(exp.expenseDate || exp.createdAt);
-        return expDate >= thisMonth && expDate < nextMonth;
+        return expDate >= thisMonthStart && expDate < nextMonthStart;
       })
       .reduce((sum, exp) => sum + (exp.totalAmountCents || 0), 0);
 
@@ -119,6 +144,7 @@ export default function DashboardPage() {
       expensesThisMonthCents,
       recentInvoices,
       recentExpenses,
+      revenueMoMPercent,
     };
   }, [invoices, expenses]);
 
@@ -167,7 +193,13 @@ export default function DashboardPage() {
             <div className="text-2xl font-bold text-foreground">
               {formatMoney(dashboard.revenueThisMonthCents, locale)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">+12% from last month</p>
+            {dashboard.revenueMoMPercent !== null && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {`${dashboard.revenueMoMPercent >= 0 ? "+" : ""}${Math.round(
+                  dashboard.revenueMoMPercent
+                )}% from last month`}
+              </p>
+            )}
           </CardContent>
         </Card>
 

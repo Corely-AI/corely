@@ -91,6 +91,7 @@ export class UpgradeWorkspaceUseCase {
     const result: UpgradeWorkspaceOutput = {
       workspace: {
         id: updated!.id,
+        legalEntityId: updated!.legalEntityId,
         name: updated!.name,
         kind: updated!.legalEntity?.kind as any,
         legalName: updated!.legalEntity?.legalName,

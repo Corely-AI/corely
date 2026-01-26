@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Building2, CheckCircle2, User, ArrowRight } from "lucide-react";
 import { Button } from "@/shared/ui/button";
@@ -140,7 +140,6 @@ export const WorkspaceOnboardingPage: React.FC = () => {
     navigate("/dashboard");
     return null;
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40">
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">

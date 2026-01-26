@@ -102,7 +102,9 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
                       <span className="ml-2">{channel.label}</span>
                     </Button>
                   );
-                  if (enabled) {return button;}
+                  if (enabled) {
+                    return button;
+                  }
                   return (
                     <Tooltip key={channel.key}>
                       <TooltipTrigger asChild>{button}</TooltipTrigger>

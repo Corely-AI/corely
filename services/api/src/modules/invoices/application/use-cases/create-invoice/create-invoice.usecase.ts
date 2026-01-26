@@ -18,6 +18,8 @@ import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import { InvoiceAggregate } from "../../../domain/invoice.aggregate";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
 import { type CustomerQueryPort } from "../../ports/customer-query.port";
+import { type PaymentMethodQueryPort } from "../../ports/payment-method-query.port";
+import { type LegalEntityQueryPort } from "../../ports/legal-entity-query.port";
 
 type Deps = {
   logger: LoggerPort;
@@ -26,6 +28,8 @@ type Deps = {
   clock: ClockPort;
   timeService: TimeService;
   customerQuery: CustomerQueryPort;
+  legalEntityQuery: LegalEntityQueryPort;
+  paymentMethodQuery: PaymentMethodQueryPort;
 };
 
 export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, CreateInvoiceOutput> {
@@ -53,6 +57,9 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
     if (!ctx.tenantId) {
       return err(new ValidationError("tenantId missing from context"));
     }
+    if (!ctx.workspaceId) {
+      return err(new ValidationError("workspaceId missing from context"));
+    }
 
     const customer = await this.useCaseDeps.customerQuery.getCustomerBillingSnapshot(
       ctx.tenantId,
@@ -61,6 +68,17 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
     if (!customer) {
       return err(new NotFoundError("Customer not found"));
     }
+
+    // Fetch snapshots
+    const issuerSnapshot = await this.useCaseDeps.legalEntityQuery.getIssuerSnapshot(
+      ctx.tenantId,
+      input.legalEntityId
+    );
+
+    const paymentSnapshot = await this.useCaseDeps.paymentMethodQuery.getPaymentMethodSnapshot(
+      ctx.tenantId,
+      input.paymentMethodId
+    );
 
     const createdAt = this.useCaseDeps.clock.now();
     const invoiceDate =
@@ -79,7 +97,7 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
 
     const aggregate = InvoiceAggregate.createDraft({
       id: invoiceId,
-      tenantId: ctx.tenantId,
+      tenantId: ctx.workspaceId,
       customerPartyId: input.customerPartyId,
       currency: input.currency,
       notes: input.notes,
@@ -102,9 +120,16 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
             }
           : undefined,
       },
+      sourceType: input.sourceType ?? null,
+      sourceId: input.sourceId ?? null,
+      // New snapshots
+      legalEntityId: input.legalEntityId ?? null,
+      paymentMethodId: input.paymentMethodId ?? null,
+      issuerSnapshot: issuerSnapshot ?? null,
+      paymentSnapshot: paymentSnapshot ?? null,
     });
 
-    await this.useCaseDeps.invoiceRepo.create(ctx.tenantId, aggregate);
+    await this.useCaseDeps.invoiceRepo.create(ctx.workspaceId, aggregate);
 
     return ok({ invoice: toInvoiceDto(aggregate) });
   }

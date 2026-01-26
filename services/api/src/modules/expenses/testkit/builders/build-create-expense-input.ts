@@ -12,6 +12,7 @@ export const buildCreateExpenseInput = (
     issuedAt: new Date("2023-01-01T00:00:00.000Z"),
     createdByUserId: "user-1",
     idempotencyKey: "expense-1",
+    // context removed as it is passed separately
     ...overrides,
   };
 };

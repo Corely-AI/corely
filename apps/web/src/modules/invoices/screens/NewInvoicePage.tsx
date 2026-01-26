@@ -34,6 +34,8 @@ import { cn } from "@/shared/lib/utils";
 import { customersApi } from "@/lib/customers-api";
 import { invoicesApi } from "@/lib/invoices-api";
 import { toast } from "sonner";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { InvoiceFooter } from "../components/InvoiceFooter";
 import {
   customerFormSchema,
   getDefaultCustomerFormValues,
@@ -48,6 +50,8 @@ import {
   type InvoiceLineFormData,
 } from "../schemas/invoice-form.schema";
 import type { InvoiceStatus } from "@corely/contracts";
+import { invoiceQueryKeys } from "../queries";
+import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 
 const DEFAULT_VAT_RATE = 19;
 const AVAILABLE_VAT_RATES = [0, 7, 19];
@@ -91,9 +95,10 @@ export default function NewInvoicePage() {
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
 
   const { data: customersData } = useQuery({
-    queryKey: ["customers"],
+    queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
   const customers = customersData?.customers ?? [];
@@ -105,7 +110,7 @@ export default function NewInvoicePage() {
   const [customerDialogOpen, setCustomerDialogOpen] = useState(false);
   const [newCustomerDialogOpen, setNewCustomerDialogOpen] = useState(false);
   const [lineItems, setLineItems] = useState<InvoiceLineFormData[]>(defaultValues.lineItems || []);
-  const [targetStatus, setTargetStatus] = useState<InvoiceStatus>("DRAFT");
+  const [targetStatus] = useState<InvoiceStatus>("ISSUED");
 
   const form = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceFormSchema),
@@ -195,7 +200,7 @@ export default function NewInvoicePage() {
     },
     onSuccess: (customer) => {
       if (customer?.id) {
-        void queryClient.invalidateQueries({ queryKey: ["customers"] });
+        void queryClient.invalidateQueries({ queryKey: workspaceQueryKeys.customers.all() });
         form.setValue("customerPartyId", customer.id, { shouldValidate: true, shouldDirty: true });
         toast.success(t("common.success"));
         setNewCustomerDialogOpen(false);
@@ -223,19 +228,24 @@ export default function NewInvoicePage() {
   });
 
   const runStatusFlow = React.useCallback(
-    async (invoiceId: string, currentStatus: InvoiceStatus, desiredStatus: InvoiceStatus) => {
+    async (
+      invoiceId: string,
+      currentStatus: InvoiceStatus,
+      desiredStatus: InvoiceStatus,
+      paymentMethodId?: string
+    ) => {
       if (desiredStatus === currentStatus) {
         return currentStatus;
       }
 
       try {
         if (desiredStatus === "ISSUED") {
-          await invoicesApi.finalizeInvoice(invoiceId);
+          await invoicesApi.finalizeInvoice(invoiceId, paymentMethodId);
           return "ISSUED";
         }
         if (desiredStatus === "SENT") {
           if (currentStatus === "DRAFT") {
-            await invoicesApi.finalizeInvoice(invoiceId);
+            await invoicesApi.finalizeInvoice(invoiceId, paymentMethodId);
           }
           await invoicesApi.sendInvoice(invoiceId);
           return "SENT";
@@ -258,8 +268,13 @@ export default function NewInvoicePage() {
   const onSubmit = async (data: InvoiceFormData) => {
     try {
       const invoice = await createInvoiceMutation.mutateAsync(data);
-      const finalStatus = await runStatusFlow(invoice.id, invoice.status ?? "DRAFT", targetStatus);
-      void queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      const finalStatus = await runStatusFlow(
+        invoice.id,
+        invoice.status ?? "DRAFT",
+        targetStatus,
+        data.paymentMethodId
+      );
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success(
         finalStatus === targetStatus ? t("invoices.created") : "Invoice saved (status unchanged)"
       );
@@ -289,23 +304,6 @@ export default function NewInvoicePage() {
           <h1 className="text-h1 text-foreground">{t("invoices.createNewInvoice")}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="w-48">
-            <Label className="text-xs text-muted-foreground">Status</Label>
-            <Select
-              value={targetStatus}
-              onValueChange={(val: InvoiceStatus) => setTargetStatus(val)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="DRAFT">Draft</SelectItem>
-                <SelectItem value="ISSUED">Issued</SelectItem>
-                <SelectItem value="SENT">Sent</SelectItem>
-                <SelectItem value="CANCELED">Canceled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
           <Button
             variant="outline"
             onClick={() => navigate("/invoices")}
@@ -784,16 +782,25 @@ export default function NewInvoicePage() {
                   <tbody>
                     {lineItems.map((item, index) => {
                       const total = item.qty * item.unitPriceCents;
+                      const lineItemError = form.formState.errors.lineItems?.[index]?.description;
                       return (
                         <tr key={index} className="border-b border-border">
                           <td className="px-4 py-3">
-                            <Input
-                              data-testid={`invoice-line-description-${index}`}
-                              value={item.description}
-                              onChange={(e) => updateLineItem(index, "description", e.target.value)}
-                              placeholder="Description"
-                              className="border-0 focus-visible:ring-0 px-0"
-                            />
+                            <div className="space-y-1">
+                              <Input
+                                data-testid={`invoice-line-description-${index}`}
+                                value={item.description}
+                                onChange={(e) =>
+                                  updateLineItem(index, "description", e.target.value)
+                                }
+                                placeholder="Description"
+                                className="border-0 focus-visible:ring-0 px-0"
+                                aria-invalid={Boolean(lineItemError)}
+                              />
+                              {lineItemError?.message && (
+                                <p className="text-xs text-destructive">{lineItemError.message}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
@@ -878,9 +885,29 @@ export default function NewInvoicePage() {
               </button>
             </div>
 
-            {/* Totals */}
-            <div className="flex justify-end">
-              <div className="w-full lg:w-1/2 space-y-3">
+            {/* Notes and Terms */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-4 pt-6 border-t border-border">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">{t("invoices.notes")}</Label>
+                  <textarea
+                    {...form.register("notes")}
+                    className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder={t("invoices.notesPlaceholder")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">{t("invoices.terms")}</Label>
+                  <textarea
+                    {...form.register("terms")}
+                    className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder={t("invoices.termsPlaceholder")}
+                  />
+                </div>
+              </div>
+
+              {/* Totals */}
+              <div className="space-y-3 pt-6 border-t border-border">
                 <div className="flex justify-between items-center pb-3">
                   <span className="text-sm font-medium">{t("invoices.totalAmountNet")}</span>
                   <span className="text-lg font-semibold">{formatMoney(subtotalCents)}</span>
@@ -914,6 +941,12 @@ export default function NewInvoicePage() {
                 </div>
               </div>
             </div>
+
+            {/* Footer */}
+            <InvoiceFooter
+              paymentMethodId={form.watch("paymentMethodId")}
+              onPaymentMethodSelect={(id) => form.setValue("paymentMethodId", id)}
+            />
           </CardContent>
         </Card>
       </form>

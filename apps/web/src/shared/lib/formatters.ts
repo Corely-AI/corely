@@ -1,4 +1,5 @@
 // Formatting utilities for Bizflow
+import i18n from "../i18n";
 
 export function formatMoney(
   amountCents: number,
@@ -67,6 +68,31 @@ export function formatRelativeTime(isoDate: string, locale: string = "de-DE"): s
   }
 
   return formatDate(isoDate, locale);
+}
+
+/**
+ * Format a due date showing days until/overdue
+ * For future dates: "in X Tagen" / "in X days"
+ * For past dates: "X Tage überfällig" / "X days overdue"
+ */
+export function formatDueDate(isoDate: string, locale: string = "de-DE"): string {
+  const date = new Date(isoDate);
+  const now = new Date();
+  const diffMs = date.getTime() - now.getTime(); // Future dates are positive
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return i18n.t("dueDate.today");
+  }
+
+  if (diffDays > 0) {
+    // Future date
+    return i18n.t("dueDate.inDays", { count: diffDays });
+  } else {
+    // Past date (overdue)
+    const overdueDays = Math.abs(diffDays);
+    return i18n.t("dueDate.overdue", { count: overdueDays });
+  }
 }
 
 export function formatVatRate(rate: number): string {

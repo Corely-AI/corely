@@ -20,9 +20,6 @@ import {
   OrdersPage as SalesOrdersPage,
   NewOrderPage,
   OrderDetailPage,
-  InvoicesPage as SalesInvoicesPage,
-  NewInvoicePage as SalesNewInvoicePage,
-  InvoiceDetailPage as SalesInvoiceDetailPage,
   SalesSettingsPage,
   SalesCopilotPage,
 } from "../../modules/sales";
@@ -56,7 +53,13 @@ import {
 } from "../../modules/inventory";
 import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
-import { TaxSettingsPage, TaxesOverviewPage, TaxReportsPage } from "../../modules/tax";
+import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
+import {
+  TaxSettingsPage,
+  TaxesOverviewPage,
+  TaxReportsPage,
+  VatPeriodDetailsPage,
+} from "../../modules/tax";
 import {
   PlatformPage,
   AppsManagementPage,
@@ -77,7 +80,12 @@ import {
 import { features } from "../../lib/features";
 
 export const Router = () => (
-  <BrowserRouter>
+  <BrowserRouter
+    future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+    }}
+  >
     <Routes>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
@@ -166,7 +174,7 @@ export const Router = () => (
             path="/sales/invoices"
             element={
               <RequireCapability capability="sales.quotes">
-                <SalesInvoicesPage />
+                <InvoicesPage />
               </RequireCapability>
             }
           />
@@ -174,7 +182,7 @@ export const Router = () => (
             path="/sales/invoices/new"
             element={
               <RequireCapability capability="sales.quotes">
-                <SalesNewInvoicePage />
+                <NewInvoicePage />
               </RequireCapability>
             }
           />
@@ -182,7 +190,7 @@ export const Router = () => (
             path="/sales/invoices/:invoiceId"
             element={
               <RequireCapability capability="sales.quotes">
-                <SalesInvoiceDetailPage />
+                <InvoiceDetailPage />
               </RequireCapability>
             }
           />
@@ -190,7 +198,7 @@ export const Router = () => (
             path="/sales/invoices/:invoiceId/edit"
             element={
               <RequireCapability capability="sales.quotes">
-                <SalesInvoiceDetailPage />
+                <InvoiceDetailPage />
               </RequireCapability>
             }
           />
@@ -400,20 +408,18 @@ export const Router = () => (
           {/* <Route path="/tax" element={<Navigate to="/taxes" replace />} /> */}
           <Route path="/tax/reports" element={<Navigate to="/taxes/reports" replace />} />
           <Route path="/tax/settings" element={<Navigate to="/taxes/settings" replace />} />
-          {/* EE-only: workspace management */}
-          {features.multiTenant && (
-            <>
-              <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
-              <Route
-                path="/settings/members"
-                element={
-                  <RequireCapability capability="workspace.multiUser">
-                    <WorkspaceMembersPage />
-                  </RequireCapability>
-                }
-              />
-            </>
-          )}
+          <Route path="/tax/period/:key" element={<VatPeriodDetailsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
+          <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
+          <Route
+            path="/settings/members"
+            element={
+              <RequireCapability capability="workspace.multiUser">
+                <WorkspaceMembersPage />
+              </RequireCapability>
+            }
+          />
           <Route path="/settings/tax" element={<TaxSettingsPage />} />
           <Route
             path="/settings/roles"

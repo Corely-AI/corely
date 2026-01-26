@@ -5,7 +5,12 @@
     "strictNullChecks": false,
     "exactOptionalPropertyTypes": false,
     "jsx": "react-jsx",
+    "baseUrl": ".",
     "paths": {
+      "@/*": ["../api/src/*"],
+      "@shared/*": ["../api/src/shared/*"],
+      "@corely/data": ["../../packages/data/src/index.ts"],
+      "@corely/data/*": ["../../packages/data/src/*"],
       "@corely/testkit": ["../../packages/testkit/src/index.ts"],
       "@corely/testkit/*": ["../../packages/testkit/src/*"]
     }

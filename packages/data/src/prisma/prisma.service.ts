@@ -9,6 +9,11 @@ import { Pool } from "pg";
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+  // Type-only aliases for optional sales models not present in some schemas.
+  declare salesOrder: any;
+  declare salesOrderLine: any;
+  declare salesQuote: any;
+  declare salesQuoteLine: any;
   private pool: Pool | null;
   private readonly skipConnect: boolean;
 

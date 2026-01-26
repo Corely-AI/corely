@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -26,6 +27,12 @@ import { ListExpensesUseCase } from "../application/use-cases/list-expenses.usec
 import { GetExpenseUseCase } from "../application/use-cases/get-expense.usecase";
 import { UpdateExpenseUseCase } from "../application/use-cases/update-expense.usecase";
 import type { Expense } from "../domain/expense.entity";
+import { ExpenseCapabilitiesBuilder } from "../domain/expense-capabilities.builder";
+import {
+  WORKSPACE_REPOSITORY_PORT,
+  type WorkspaceRepositoryPort,
+} from "../../workspaces/application/ports/workspace-repository.port";
+import { WorkspaceTemplateService } from "../../platform/application/services/workspace-template.service";
 
 const ExpenseHttpInputSchema = CreateExpenseWebInputSchema.partial().extend({
   tenantId: z.string().optional(),
@@ -46,13 +53,16 @@ export class ExpensesController {
     private readonly unarchiveExpenseUseCase: UnarchiveExpenseUseCase,
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly getExpenseUseCase: GetExpenseUseCase,
-    private readonly updateExpenseUseCase: UpdateExpenseUseCase
+    private readonly updateExpenseUseCase: UpdateExpenseUseCase,
+    @Inject(WORKSPACE_REPOSITORY_PORT)
+    private readonly workspaceRepo: WorkspaceRepositoryPort,
+    private readonly templateService: WorkspaceTemplateService
   ) {}
 
   @Post()
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = ExpenseHttpInputSchema.parse(body);
-    const ctx = buildUseCaseContext(req as any);
+    const ctx = buildUseCaseContext(req);
 
     const tenantId = input.tenantId ?? ctx.workspaceId ?? ctx.tenantId;
     if (!tenantId) {
@@ -94,7 +104,7 @@ export class ExpensesController {
         createdByUserId: input.createdByUserId ?? ctx.userId ?? "system",
         custom: input.custom,
         issuedAt,
-        idempotencyKey: resolveIdempotencyKey(req as any) ?? input.idempotencyKey ?? "default",
+        idempotencyKey: resolveIdempotencyKey(req) ?? input.idempotencyKey ?? "default",
       },
       ctx
     );
@@ -105,9 +115,9 @@ export class ExpensesController {
   }
 
   @Get()
-  async list(@Query() query: any, @Req() req: Request) {
+  async list(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const listQuery = parseListQuery(query, { defaultPageSize: 20 });
-    const ctx = buildUseCaseContext(req as any);
+    const ctx = buildUseCaseContext(req);
     const category = typeof query.category === "string" ? query.category : undefined;
     const status = typeof query.status === "string" ? (query.status as ExpenseStatus) : undefined;
 
@@ -133,18 +143,24 @@ export class ExpensesController {
 
   @Get(":expenseId")
   async getOne(@Param("expenseId") expenseId: string, @Req() req: Request) {
-    const ctx = buildUseCaseContext(req as any);
+    const ctx = buildUseCaseContext(req);
     const includeArchived =
       req.query?.includeArchived === "true" || req.query?.includeArchived === "1";
 
     const expense = await this.getExpenseUseCase.execute({ expenseId, includeArchived }, ctx);
-    return { expense: this.mapExpenseDto(expense) };
+    const dto = this.mapExpenseDto(expense);
+
+    // Determine if approvals are enabled for this workspace
+    const approvalsEnabled = await this.isApprovalsEnabled(ctx.tenantId, ctx.workspaceId);
+    const capabilities = new ExpenseCapabilitiesBuilder(dto, approvalsEnabled).build();
+
+    return { expense: dto, capabilities };
   }
 
   @Patch(":expenseId")
   async update(@Param("expenseId") expenseId: string, @Body() body: unknown, @Req() req: Request) {
     const input = ExpenseHttpInputSchema.parse(body);
-    const ctx = buildUseCaseContext(req as any);
+    const ctx = buildUseCaseContext(req);
 
     const expenseDateStr = input.expenseDate ?? input.issuedAt;
     const expenseDate = expenseDateStr ? new Date(expenseDateStr) : undefined;
@@ -171,21 +187,21 @@ export class ExpensesController {
 
   @Delete(":expenseId")
   async delete(@Param("expenseId") expenseId: string, @Req() req: Request) {
-    const ctx = buildUseCaseContext(req as any);
+    const ctx = buildUseCaseContext(req);
     await this.archiveExpenseUseCase.execute({ expenseId }, ctx);
     return { archived: true };
   }
 
   @Post(":expenseId/archive")
   async archive(@Param("expenseId") expenseId: string, @Req() req: Request) {
-    const ctx = buildUseCaseContext(req as any);
+    const ctx = buildUseCaseContext(req);
     await this.archiveExpenseUseCase.execute({ expenseId }, ctx);
     return { archived: true };
   }
 
   @Post(":expenseId/unarchive")
   async unarchive(@Param("expenseId") expenseId: string, @Req() req: Request) {
-    const ctx = buildUseCaseContext(req as any);
+    const ctx = buildUseCaseContext(req);
     await this.unarchiveExpenseUseCase.execute({ expenseId }, ctx);
     return { archived: false };
   }
@@ -195,7 +211,7 @@ export class ExpensesController {
     return {
       id: expense.id,
       tenantId: expense.tenantId,
-      status: "SUBMITTED",
+      status: expense.status,
       expenseDate: expense.issuedAt.toISOString().slice(0, 10),
       merchantName: expense.merchant,
       supplierPartyId: null,
@@ -211,5 +227,32 @@ export class ExpensesController {
       receipts: [],
       custom: expense.custom ?? undefined,
     };
+  }
+
+  /**
+   * Check if approval workflow is enabled for the workspace
+   */
+  private async isApprovalsEnabled(tenantId: string, workspaceId?: string): Promise<boolean> {
+    if (!workspaceId) {
+      return true; // Default to approvals enabled for safety
+    }
+
+    try {
+      const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
+        tenantId,
+        workspaceId
+      );
+
+      if (!workspace || !workspace.legalEntity) {
+        return true;
+      }
+
+      const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
+      const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
+
+      return capabilities.approvals !== false;
+    } catch (error) {
+      return true; // Default to approvals enabled on error
+    }
   }
 }

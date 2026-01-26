@@ -16,7 +16,8 @@ let outbox: MockOutboxPort;
 let idempotency: MockIdempotencyStoragePort;
 let customDefs: CustomFieldDefinitionPort;
 let customIndexes: CustomFieldIndexPort;
-const ctx = { tenantId: "tenant-1", userId: "user-1", requestId: "req-1" } as any;
+let workspaceRepo: any;
+let templateService: any;
 
 beforeEach(() => {
   repo = new FakeExpenseRepository();
@@ -33,6 +34,24 @@ beforeEach(() => {
     upsertIndexesForEntity: async () => {},
     deleteIndexesForEntity: async () => {},
   };
+
+  // Mock workspace repository
+  workspaceRepo = {
+    getWorkspaceByIdWithLegalEntity: async () => ({
+      id: "ws-1",
+      legalEntity: {
+        kind: "PERSONAL", // Freelancer mode
+      },
+    }),
+  };
+
+  // Mock template service
+  templateService = {
+    getDefaultCapabilities: (kind: string) => ({
+      approvals: false, // Freelancer mode: no approvals
+    }),
+  };
+
   useCase = new CreateExpenseUseCase(
     repo,
     outbox,
@@ -41,22 +60,30 @@ beforeEach(() => {
     new FakeIdGenerator("exp"),
     new FakeClock(),
     customDefs,
-    customIndexes
+    customIndexes,
+    workspaceRepo,
+    templateService
   );
 });
 
 describe("CreateExpenseUseCase", () => {
   it("creates an expense, audit and outbox entry", async () => {
-    const expense = await useCase.execute(buildCreateExpenseInput(), ctx);
+    const expense = await useCase.execute(buildCreateExpenseInput(), {
+      tenantId: "tenant-1",
+      userId: "user-1",
+      workspaceId: "ws-1",
+    });
 
     expect(repo.expenses).toHaveLength(1);
     expect(audit.entries).toHaveLength(1);
     expect(outbox.events).toHaveLength(1);
     expect(expense.totalCents).toBe(500);
+    expect(expense.status).toBe("APPROVED"); // Freelancer mode auto-approves
   });
 
   it("is idempotent for same key", async () => {
     const input = buildCreateExpenseInput({ idempotencyKey: "same" });
+    const ctx = { tenantId: "tenant-1", userId: "user-1", workspaceId: "ws-1" };
     const first = await useCase.execute(input, ctx);
     const second = await useCase.execute(input, ctx);
 

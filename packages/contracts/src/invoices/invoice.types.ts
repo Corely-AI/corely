@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CustomerDtoSchema } from "../customers/customer.types";
 import { localDateSchema, utcInstantSchema } from "../shared/local-date.schema";
 
 export const InvoiceStatusSchema = z.enum(["DRAFT", "ISSUED", "SENT", "PAID", "CANCELED"]);
@@ -64,5 +65,16 @@ export const InvoiceDtoSchema = z.object({
   pdfSourceVersion: z.string().nullable().optional(),
   pdfStatus: PdfStatusSchema.optional(),
   pdfFailureReason: z.string().nullable().optional(),
+  // Sales source tracking
+  sourceType: z.enum(["order", "quote", "deal", "manual"]).nullable().optional(),
+  sourceId: z.string().nullable().optional(),
+
+  // Issuer & Payment Config
+  legalEntityId: z.string().nullable().optional(),
+  paymentMethodId: z.string().nullable().optional(),
+  issuerSnapshot: z.any().nullable().optional(),
+  taxSnapshot: z.any().nullable().optional(),
+  paymentSnapshot: z.any().nullable().optional(),
+  customer: CustomerDtoSchema.optional(),
 });
 export type InvoiceDto = z.infer<typeof InvoiceDtoSchema>;

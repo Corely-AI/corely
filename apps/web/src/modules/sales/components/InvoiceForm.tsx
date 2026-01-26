@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { SalesInvoiceDto } from "@corely/contracts";
+import type { SalesInvoiceDto, PaymentMethodConfig } from "@corely/contracts";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -14,6 +14,7 @@ export type InvoiceFormValues = {
   dueDate?: string;
   paymentTerms?: string;
   notes?: string;
+  paymentMethodId?: string;
   lineItems: Array<{
     id?: string;
     description: string;
@@ -25,6 +26,7 @@ export type InvoiceFormValues = {
 
 type InvoiceFormProps = {
   customers: Array<{ id: string; displayName: string }>;
+  paymentMethods?: PaymentMethodConfig[];
   initial?: SalesInvoiceDto;
   disabled?: boolean;
   onSubmit: (values: InvoiceFormValues) => void;
@@ -40,6 +42,7 @@ type LineItem = {
 
 export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   customers,
+  paymentMethods = [],
   initial,
   disabled,
   onSubmit,
@@ -50,6 +53,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   const [dueDate, setDueDate] = useState(initial?.dueDate ?? "");
   const [paymentTerms, setPaymentTerms] = useState(initial?.paymentTerms ?? "");
   const [notes, setNotes] = useState(initial?.notes ?? "");
+  const [paymentMethodId, setPaymentMethodId] = useState(initial?.paymentMethodId ?? "");
   const [lineItems, setLineItems] = useState<LineItem[]>(
     initial?.lineItems?.length
       ? initial.lineItems.map((item) => ({
@@ -70,6 +74,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       setDueDate(initial.dueDate ?? "");
       setPaymentTerms(initial.paymentTerms ?? "");
       setNotes(initial.notes ?? "");
+      setPaymentMethodId(initial.paymentMethodId ?? "");
       setLineItems(
         initial.lineItems.map((item) => ({
           id: item.id,
@@ -130,6 +135,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       dueDate: dueDate || undefined,
       paymentTerms: paymentTerms || undefined,
       notes: notes || undefined,
+      paymentMethodId: paymentMethodId || undefined,
       lineItems,
     });
   };
@@ -185,6 +191,24 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
             onChange={(e) => setPaymentTerms(e.target.value)}
             disabled={disabled}
           />
+        </div>
+        <div className="space-y-2 md:col-span-2">
+          <Label>Payment Method (Optional)</Label>
+          <Select value={paymentMethodId} onValueChange={setPaymentMethodId} disabled={disabled}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select payment method" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">None</SelectItem>
+              {paymentMethods
+                .filter((m) => m.isActive)
+                .map((method) => (
+                  <SelectItem key={method.id} value={method.id}>
+                    {method.label} ({method.type})
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

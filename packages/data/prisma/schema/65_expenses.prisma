@@ -12,6 +12,7 @@ model Expense {
   taxAmountCents Int?
   archivedAt     DateTime?      @db.Timestamptz(6)
   archivedByUserId String?
+  createdByUserId String?
   custom         Json?
   createdAt      DateTime       @default(now()) @db.Timestamptz(6)
   updatedAt      DateTime       @updatedAt @db.Timestamptz(6)

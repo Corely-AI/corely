@@ -16,6 +16,36 @@ export {
   type RecordPaymentInput as SalesRecordPaymentInput,
   type RecordPaymentOutput as SalesRecordPaymentOutput,
 } from "./sales/record-payment.schema";
+// Payment Methods exports (aliased as PaymentMethodConfig to avoid conflict with Sales PaymentMethod enum)
+export {
+  PaymentMethodTypeEnum,
+  PaymentMethodSchema as PaymentMethodConfigSchema,
+  PaymentMethodSnapshotSchema,
+  CreatePaymentMethodInputSchema,
+  UpdatePaymentMethodInputSchema,
+  BankAccountSchema,
+  CreateBankAccountInputSchema,
+  UpdateBankAccountInputSchema,
+  ListBankAccountsOutputSchema,
+  ListPaymentMethodsOutputSchema,
+} from "./payment-methods";
+
+// Export both aliased and unaliased types
+export type {
+  // Aliased for frontend (to avoid conflict with Sales PaymentMethod)
+  PaymentMethod as PaymentMethodConfig,
+  // Unaliased for backend use
+  PaymentMethod,
+  PaymentMethodSnapshot,
+  CreatePaymentMethodInput,
+  UpdatePaymentMethodInput,
+  BankAccount,
+  BankAccountDto,
+  CreateBankAccountInput,
+  UpdateBankAccountInput,
+  ListBankAccountsOutput,
+  ListPaymentMethodsOutput,
+} from "./payment-methods";
 export * from "./sales-ai";
 export * from "./purchasing";
 export * from "./purchasing-ai";

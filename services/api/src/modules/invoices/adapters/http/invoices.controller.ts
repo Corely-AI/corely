@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import type { Request } from "express";
 import { InvoicesApplication } from "../../application/invoices.application";
+import { PartyApplication } from "../../../party/application/party.application";
 import {
   CancelInvoiceInputSchema,
   CreateInvoiceInputSchema,
@@ -33,6 +34,7 @@ import { ModuleRef } from "@nestjs/core";
 export class InvoicesHttpController {
   constructor(
     @Inject(InvoicesApplication) @Optional() private readonly app: InvoicesApplication | null,
+    @Inject(PartyApplication) @Optional() private readonly partyApp: PartyApplication | null,
     @Optional() private readonly moduleRef?: ModuleRef
   ) {}
 
@@ -59,8 +61,12 @@ export class InvoicesHttpController {
   }
 
   @Post(":invoiceId/finalize")
-  async finalize(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
-    const input = FinalizeInvoiceInputSchema.parse({ invoiceId });
+  async finalize(
+    @Param("invoiceId") invoiceId: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = FinalizeInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.finalizeInvoice.execute(input, ctx);
     return mapResultToHttp(result).invoice;
@@ -99,8 +105,11 @@ export class InvoicesHttpController {
     const input = DownloadInvoicePdfInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.downloadInvoicePdf.execute(input, ctx);
+    const downloadUrl = result.downloadUrl.startsWith("/")
+      ? `${req.protocol}://${req.get("host")}${result.downloadUrl}`
+      : result.downloadUrl;
     return {
-      downloadUrl: result.downloadUrl,
+      downloadUrl,
       expiresAt: result.expiresAt.toISOString(),
     };
   }
@@ -110,18 +119,36 @@ export class InvoicesHttpController {
     const input = GetInvoiceByIdInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.getInvoiceById.execute(input, ctx);
-    return mapResultToHttp(result).invoice;
+    const mapped = mapResultToHttp(result);
+    // Return invoice with capabilities for RecordCommandBar
+
+    let invoice = mapped.invoice;
+    if (this.partyApp && invoice.customerPartyId) {
+      try {
+        const customerResult = await this.partyApp.getCustomerById.execute(
+          { id: invoice.customerPartyId },
+          ctx
+        );
+        const { customer } = mapResultToHttp(customerResult);
+        invoice = { ...invoice, customer };
+      } catch (error) {
+        console.warn("Customer lookup failed", error);
+      }
+    }
+
+    return { invoice, capabilities: mapped.capabilities };
   }
 
   @Get()
-  async list(@Query() query: any, @Req() req: Request) {
+  async list(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const input = ListInvoicesInputSchema.parse({
-      status: query.status,
-      customerPartyId: query.customerPartyId,
-      fromDate: query.fromDate,
-      toDate: query.toDate,
-      cursor: query.cursor,
-      pageSize: query.pageSize ? Number(query.pageSize) : undefined,
+      status: typeof query.status === "string" ? query.status : undefined,
+      customerPartyId:
+        typeof query.customerPartyId === "string" ? query.customerPartyId : undefined,
+      fromDate: typeof query.fromDate === "string" ? query.fromDate : undefined,
+      toDate: typeof query.toDate === "string" ? query.toDate : undefined,
+      cursor: typeof query.cursor === "string" ? query.cursor : undefined,
+      pageSize: typeof query.pageSize === "string" ? Number(query.pageSize) : undefined,
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listInvoices.execute(input, ctx);

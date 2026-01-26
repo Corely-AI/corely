@@ -12,6 +12,12 @@ import {
 } from "@corely/domain";
 import { Expense } from "../../domain/expense.entity";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
+import { Inject } from "@nestjs/common";
+import {
+  WORKSPACE_REPOSITORY_PORT,
+  type WorkspaceRepositoryPort,
+} from "../../../workspaces/application/ports/workspace-repository.port";
+import { WorkspaceTemplateService } from "../../../platform/application/services/workspace-template.service";
 
 export interface CreateExpenseInput {
   tenantId: string;
@@ -37,7 +43,10 @@ export class CreateExpenseUseCase {
     private readonly idGenerator: IdGeneratorPort,
     private readonly clock: ClockPort,
     private readonly customFieldDefinitions: CustomFieldDefinitionPort,
-    private readonly customFieldIndexes: CustomFieldIndexPort
+    private readonly customFieldIndexes: CustomFieldIndexPort,
+    @Inject(WORKSPACE_REPOSITORY_PORT)
+    private readonly workspaceRepo: WorkspaceRepositoryPort,
+    private readonly templateService: WorkspaceTemplateService
   ) {}
 
   async execute(input: CreateExpenseInput, ctx: UseCaseContext): Promise<Expense> {
@@ -53,6 +62,7 @@ export class CreateExpenseUseCase {
       return new Expense(
         body.id,
         body.tenantId,
+        body.status,
         body.merchant,
         body.totalCents,
         body.taxAmountCents ?? null,
@@ -67,6 +77,9 @@ export class CreateExpenseUseCase {
       );
     }
 
+    // Determine initial status based on workspace type
+    const initialStatus = await this.determineInitialStatus(ctx.tenantId, ctx.workspaceId);
+
     const definitions = await this.customFieldDefinitions.listActiveByEntityType(
       input.tenantId,
       "expense"
@@ -76,6 +89,7 @@ export class CreateExpenseUseCase {
     const expense = new Expense(
       this.idGenerator.newId(),
       input.tenantId,
+      initialStatus,
       input.merchant,
       input.totalCents,
       input.taxAmountCents ?? null,
@@ -96,14 +110,7 @@ export class CreateExpenseUseCase {
       action: "expense.created",
       entityType: "Expense",
       entityId: expense.id,
-      metadata: {
-        context: {
-          tenantId: ctx.tenantId,
-          workspaceId: ctx.workspaceId,
-          userId: ctx.userId,
-          requestId: ctx.requestId,
-        },
-      },
+      metadata: {},
     });
 
     await this.outbox.enqueue({
@@ -144,6 +151,7 @@ export class CreateExpenseUseCase {
     return {
       id: expense.id,
       tenantId: expense.tenantId,
+      status: expense.status,
       merchant: expense.merchant,
       totalCents: expense.totalCents,
       taxAmountCents: expense.taxAmountCents,
@@ -156,5 +164,43 @@ export class CreateExpenseUseCase {
       createdAt: expense.createdAt.toISOString(),
       custom: expense.custom,
     };
+  }
+
+  /**
+   * Determine initial expense status based on workspace type
+   * - Freelancer mode (PERSONAL): No approval workflow needed -> APPROVED
+   * - Company mode: Requires approval workflow -> DRAFT
+   */
+  private async determineInitialStatus(
+    tenantId: string,
+    workspaceId?: string
+  ): Promise<"DRAFT" | "APPROVED"> {
+    if (!workspaceId) {
+      // Fallback to DRAFT if no workspace context
+      return "DRAFT";
+    }
+
+    try {
+      const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
+        tenantId,
+        workspaceId
+      );
+
+      if (!workspace || !workspace.legalEntity) {
+        return "DRAFT";
+      }
+
+      // Determine workspace kind based on legal entity
+      const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
+
+      // Get capabilities for this workspace type
+      const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
+
+      // If approvals are disabled (freelancer mode), auto-approve
+      return capabilities.approvals === false ? "APPROVED" : "DRAFT";
+    } catch (error) {
+      // On error, default to DRAFT (safer)
+      return "DRAFT";
+    }
   }
 }

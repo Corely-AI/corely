@@ -44,7 +44,10 @@ describe("ListInvoicesUseCase", () => {
     });
     repo.invoices = [inv1, inv2];
 
-    const result = await useCase.execute({ status: "ISSUED" }, { tenantId: "tenant-1" });
+    const result = await useCase.execute(
+      { status: "ISSUED" },
+      { tenantId: "tenant-1", workspaceId: "tenant-1" }
+    );
     const dto = unwrap(result);
     expect(dto.items).toHaveLength(1);
     expect(dto.items[0].id).toBe("inv-1");

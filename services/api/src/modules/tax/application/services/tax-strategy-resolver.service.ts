@@ -12,9 +12,9 @@ export class TaxStrategyResolverService {
     private readonly company: CompanyTaxStrategy
   ) {}
 
-  async resolve(tenantId: string): Promise<TaxComputationStrategy> {
-    const workspace = await this.prisma.workspace.findFirst({
-      where: { tenantId },
+  async resolve(workspaceId: string): Promise<TaxComputationStrategy> {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
       include: { legalEntity: true },
     });
     const kind = workspace?.legalEntity?.kind ?? "PERSONAL";

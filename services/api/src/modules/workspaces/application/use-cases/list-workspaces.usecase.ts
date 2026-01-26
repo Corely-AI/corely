@@ -24,12 +24,17 @@ export class ListWorkspacesUseCase {
     return {
       workspaces: workspaces.map((ws) => ({
         id: ws.id,
+        legalEntityId: ws.legalEntityId,
         name: ws.name,
         kind: ws.legalEntity?.kind as any,
         legalName: ws.legalEntity?.legalName,
         countryCode: ws.legalEntity?.countryCode,
         currency: ws.legalEntity?.currency,
         taxId: ws.legalEntity?.taxId,
+        vatId: ws.legalEntity?.vatId,
+        phone: ws.legalEntity?.phone,
+        email: ws.legalEntity?.email,
+        website: ws.legalEntity?.website,
         address: ws.legalEntity?.address as any,
         bankAccount: ws.legalEntity?.bankAccount as any,
         invoiceSettings: ws.invoiceSettings as any,

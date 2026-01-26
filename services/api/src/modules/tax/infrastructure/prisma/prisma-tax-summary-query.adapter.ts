@@ -8,27 +8,27 @@ export class PrismaTaxSummaryQueryAdapter extends TaxSummaryQueryPort {
     super();
   }
 
-  async getTotals(tenantId: string): Promise<TaxSummaryTotals> {
+  async getTotals(workspaceId: string): Promise<TaxSummaryTotals> {
     const [incomeRow] = await this.prisma.$queryRaw<Array<{ total: bigint | null }>>`
       SELECT SUM(l."qty" * l."unitPriceCents") AS total
       FROM "InvoiceLine" l
       INNER JOIN "Invoice" i ON i."id" = l."invoiceId"
-      WHERE i."tenantId" = ${tenantId} AND i."status" IN ('ISSUED','SENT','PAID')
+      WHERE i."tenantId" = ${workspaceId} AND i."status" IN ('ISSUED','SENT','PAID')
     `;
 
     const incomeTotalCents = incomeRow?.total ? Number(incomeRow.total) : 0;
 
     const unpaidInvoicesCount = await this.prisma.invoice.count({
-      where: { tenantId, status: { in: ["DRAFT", "ISSUED", "SENT"] as any } },
+      where: { tenantId: workspaceId, status: { in: ["DRAFT", "ISSUED", "SENT"] as any } },
     });
 
     const expenseAggregation = await this.prisma.expense.aggregate({
-      where: { tenantId, archivedAt: null },
+      where: { tenantId: workspaceId, archivedAt: null },
       _sum: { totalAmountCents: true },
     });
 
     const expenseItemsToReviewCount = await this.prisma.expense.count({
-      where: { tenantId, status: { in: ["DRAFT", "SUBMITTED"] as any } },
+      where: { tenantId: workspaceId, status: { in: ["DRAFT", "SUBMITTED"] as any } },
     });
 
     return {

@@ -81,10 +81,22 @@ export class AuthController {
     @Headers("x-idempotency-key") idempotencyKey?: string,
     @Req() req?: Request
   ): Promise<SignUpResponseDto> {
+    if (!input.email || !input.password) {
+      throw new BadRequestException("Missing required fields");
+    }
+
+    // Calculate a default tenant name if missing (OSS fallback)
+    const tenantName =
+      input.tenantName?.trim() ||
+      input.userName?.trim() ||
+      input.email.split("@")[0] ||
+      "Workspace";
+
     console.log("[AuthController] POST /auth/signup received:", {
       email: input.email,
       hasPassword: !!input.password,
-      tenantName: input.tenantName,
+      tenantName: input.tenantName, // Log original input
+      calculatedTenantName: tenantName,
       bodyIdempotencyKey: input.idempotencyKey,
       headerIdempotencyKey: idempotencyKey,
     });
@@ -104,6 +116,7 @@ export class AuthController {
     try {
       const result = await this.signUpUseCase.execute({
         ...input,
+        tenantName, // Use calculated or provided name
         idempotencyKey: finalIdempotencyKey,
         context: buildRequestContext({
           requestId: req?.headers["x-request-id"] as string | undefined,

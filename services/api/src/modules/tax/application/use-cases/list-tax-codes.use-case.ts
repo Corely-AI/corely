@@ -8,6 +8,6 @@ export class ListTaxCodesUseCase {
   constructor(private readonly repo: TaxCodeRepoPort) {}
 
   async execute(ctx: UseCaseContext): Promise<TaxCodeEntity[]> {
-    return this.repo.findAll(ctx.tenantId);
+    return this.repo.findAll(ctx.workspaceId);
   }
 }

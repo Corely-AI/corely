@@ -10,6 +10,10 @@ model LegalEntity {
   countryCode String          @db.Char(2)
   currency    String          @db.Char(3)
   taxId       String?
+  vatId       String?
+  phone       String?
+  email       String?
+  website     String?
   createdAt   DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime        @updatedAt @db.Timestamptz(6)
 
@@ -18,8 +22,11 @@ model LegalEntity {
   bankAccount Json? // LegalEntityBankAccount: { iban?, bic?, bankName?, accountHolder?, accountNumber?, routingNumber? }
 
   // Relations
-  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  workspaces Workspace[]
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspaces  Workspace[]
+  bankAccounts BankAccount[]
+  paymentMethods PaymentMethod[]
+  invoices    Invoice[]
 
   @@index([tenantId])
   @@index([tenantId, kind])

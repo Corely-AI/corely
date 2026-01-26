@@ -3,6 +3,7 @@ import {
   TaxCountrySchema,
   TaxRegimeSchema,
   VatFilingFrequencySchema,
+  VatAccountingMethodSchema,
   type UpsertTaxProfileInput,
 } from "@corely/contracts";
 
@@ -17,8 +18,10 @@ export const taxProfileFormSchema = z.object({
   vatId: z.string().optional(),
   currency: z.string().default("EUR"),
   filingFrequency: VatFilingFrequencySchema,
+  vatAccountingMethod: VatAccountingMethodSchema,
   taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
   localTaxOfficeName: z.string().optional().nullable(),
+  vatExemptionParagraph: z.string().optional().nullable(),
   effectiveFrom: z.date(),
   effectiveTo: z.date().optional().nullable(),
 });
@@ -37,8 +40,10 @@ export function toUpsertTaxProfileInput(form: TaxProfileFormData): UpsertTaxProf
     vatId: form.vatId || undefined,
     currency: form.currency,
     filingFrequency: form.filingFrequency,
+    vatAccountingMethod: form.vatAccountingMethod,
     taxYearStartMonth: form.taxYearStartMonth ?? null,
     localTaxOfficeName: form.localTaxOfficeName ?? null,
+    vatExemptionParagraph: form.vatExemptionParagraph ?? null,
     effectiveFrom: form.effectiveFrom.toISOString(),
     effectiveTo: form.effectiveTo?.toISOString() || undefined,
   };
@@ -54,6 +59,7 @@ export function getDefaultTaxProfileFormValues(): Partial<TaxProfileFormData> {
     vatEnabled: true,
     currency: "EUR",
     filingFrequency: "QUARTERLY",
+    vatAccountingMethod: "IST",
     taxYearStartMonth: null,
     localTaxOfficeName: "",
     effectiveFrom: new Date(),
@@ -71,8 +77,10 @@ export function taxProfileDtoToFormData(dto: any): TaxProfileFormData {
     vatId: dto.vatId || undefined,
     currency: dto.currency,
     filingFrequency: dto.filingFrequency,
+    vatAccountingMethod: dto.vatAccountingMethod ?? "IST",
     taxYearStartMonth: dto.taxYearStartMonth ?? null,
     localTaxOfficeName: dto.localTaxOfficeName ?? null,
+    vatExemptionParagraph: dto.vatExemptionParagraph ?? null,
     effectiveFrom: new Date(dto.effectiveFrom),
     effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : undefined,
   };

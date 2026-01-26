@@ -1,17 +1,17 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react"; // Used in error state
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
 import { expensesApi } from "@/lib/expenses-api";
 import { expenseKeys } from "../queries";
 import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import { Skeleton } from "@/shared/components/Skeleton";
-import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
+import { invalidateResourceQueries } from "@/shared/crud";
 import { toast } from "sonner";
+import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
 
 export const ExpenseDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +19,7 @@ export const ExpenseDetailPage = () => {
   const queryClient = useQueryClient();
 
   const {
-    data: expense,
+    data: queryResult,
     isLoading,
     isError,
   } = useQuery({
@@ -27,6 +27,34 @@ export const ExpenseDetailPage = () => {
     queryFn: () => (id ? expensesApi.getExpense(id) : Promise.reject(new Error("Missing id"))),
     enabled: Boolean(id),
   });
+
+  const { expense, capabilities } = queryResult || {};
+  const [isProcessing] = React.useState(false);
+
+  // Handle transitions (placeholder for future API)
+  const handleTransition = React.useCallback(async (to: string) => {
+    toast.info(`Transition to ${to} is coming soon`);
+  }, []);
+
+  // Handle actions
+  const handleAction = React.useCallback(
+    async (actionKey: string) => {
+      if (!id) {
+        return;
+      }
+      switch (actionKey) {
+        case "edit":
+          navigate(`/expenses/${id}/edit`);
+          break;
+        case "delete":
+          deleteMutation.mutate(id);
+          break;
+        default:
+          toast.info(`Action ${actionKey} coming soon`);
+      }
+    },
+    [id, navigate]
+  );
 
   const deleteMutation = useMutation({
     mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
@@ -70,45 +98,25 @@ export const ExpenseDetailPage = () => {
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/expenses")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-h1 text-foreground">
-              {expense.merchantName || "Expense"}{" "}
-              <Badge variant="secondary" className="ml-2">
-                {expense.status ?? "SUBMITTED"}
-              </Badge>
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              {formatDate(expense.expenseDate || expense.createdAt, "en-US")}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate(`/expenses/${expense.id}/edit`)}>
-            <Pencil className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
-          <ConfirmDeleteDialog
-            trigger={
-              <Button variant="destructive">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-            }
-            title="Delete expense"
-            description="This will archive the expense. You can restore it later."
-            isLoading={deleteMutation.isPending}
-            onConfirm={() => {
-              if (id) {
-                deleteMutation.mutate(id);
-              }
-            }}
+      <div className="mb-6">
+        {capabilities ? (
+          <RecordCommandBar
+            title={expense.merchantName || "Expense"}
+            subtitle={formatDate(expense.expenseDate || expense.createdAt, "en-US")}
+            capabilities={capabilities}
+            onBack={() => navigate("/expenses")}
+            onTransition={handleTransition}
+            onAction={handleAction}
+            isLoading={isProcessing || deleteMutation.isPending}
           />
-        </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/expenses")}>
+              <span className="text-lg">←</span>
+            </Button>
+            <h1 className="text-h1 text-foreground">{expense.merchantName || "Expense"}</h1>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

@@ -5,6 +5,10 @@ import {
   type InvoiceStatus,
   type InvoiceTotals,
   type PdfStatus,
+  type InvoiceSourceType,
+  type PaymentDetailsSnapshot,
+  type IssuerSnapshot,
+  type TaxSnapshot,
 } from "./invoice.types";
 
 type BillToSnapshot = {
@@ -50,6 +54,16 @@ type InvoiceProps = {
   pdfSourceVersion?: string | null;
   pdfStatus?: PdfStatus;
   pdfFailureReason?: string | null;
+  // Sales source tracking
+  sourceType?: InvoiceSourceType | null;
+  sourceId?: string | null;
+  paymentDetails?: PaymentDetailsSnapshot | null;
+  // New snapshots & references
+  legalEntityId?: string | null;
+  paymentMethodId?: string | null;
+  issuerSnapshot?: IssuerSnapshot | null;
+  taxSnapshot?: TaxSnapshot | null;
+  paymentSnapshot?: PaymentDetailsSnapshot | null;
 };
 
 export class InvoiceAggregate {
@@ -82,6 +96,16 @@ export class InvoiceAggregate {
   pdfSourceVersion: string | null;
   pdfStatus: PdfStatus;
   pdfFailureReason: string | null;
+  sourceType: InvoiceSourceType | null;
+  sourceId: string | null;
+  paymentDetails: PaymentDetailsSnapshot | null;
+  // New props
+  legalEntityId: string | null;
+  paymentMethodId: string | null;
+  issuerSnapshot: IssuerSnapshot | null;
+  taxSnapshot: TaxSnapshot | null;
+  paymentSnapshot: PaymentDetailsSnapshot | null;
+
   totals: InvoiceTotals;
 
   constructor(props: InvoiceProps) {
@@ -114,6 +138,14 @@ export class InvoiceAggregate {
     this.pdfSourceVersion = props.pdfSourceVersion ?? null;
     this.pdfStatus = props.pdfStatus ?? "NONE";
     this.pdfFailureReason = props.pdfFailureReason ?? null;
+    this.sourceType = props.sourceType ?? null;
+    this.sourceId = props.sourceId ?? null;
+    this.paymentDetails = props.paymentDetails ?? null;
+    this.legalEntityId = props.legalEntityId ?? null;
+    this.paymentMethodId = props.paymentMethodId ?? null;
+    this.issuerSnapshot = props.issuerSnapshot ?? null;
+    this.taxSnapshot = props.taxSnapshot ?? null;
+    this.paymentSnapshot = props.paymentSnapshot ?? null;
     this.totals = this.calculateTotals();
   }
 
@@ -129,6 +161,13 @@ export class InvoiceAggregate {
     lineItems: InvoiceLine[];
     createdAt: Date;
     billToSnapshot?: BillToSnapshot | null;
+    sourceType?: InvoiceSourceType | null;
+    sourceId?: string | null;
+    legalEntityId?: string | null;
+    paymentMethodId?: string | null;
+    issuerSnapshot?: IssuerSnapshot | null;
+    taxSnapshot?: TaxSnapshot | null;
+    paymentSnapshot?: PaymentDetailsSnapshot | null;
   }) {
     const aggregate = new InvoiceAggregate({
       ...params,
@@ -140,6 +179,7 @@ export class InvoiceAggregate {
       issuedAt: null,
       sentAt: null,
       updatedAt: params.createdAt,
+      paymentDetails: params.paymentSnapshot ?? null,
     });
     if (params.billToSnapshot) {
       aggregate.setBillToSnapshot(params.billToSnapshot);
@@ -187,6 +227,39 @@ export class InvoiceAggregate {
     this.touch(now);
   }
 
+  updateSnapshots(
+    props: {
+      legalEntityId?: string | null;
+      paymentMethodId?: string | null;
+      issuerSnapshot?: IssuerSnapshot | null;
+      taxSnapshot?: TaxSnapshot | null;
+      paymentSnapshot?: PaymentDetailsSnapshot | null;
+    },
+    now: Date
+  ) {
+    if (this.status !== "DRAFT") {
+      throw new Error("Cannot update snapshots on non-draft invoice");
+    }
+    if (props.legalEntityId !== undefined) {
+      this.legalEntityId = props.legalEntityId;
+    }
+    if (props.paymentMethodId !== undefined) {
+      this.paymentMethodId = props.paymentMethodId;
+    }
+    if (props.issuerSnapshot !== undefined) {
+      this.issuerSnapshot = props.issuerSnapshot;
+    }
+    if (props.taxSnapshot !== undefined) {
+      this.taxSnapshot = props.taxSnapshot;
+    }
+    if (props.paymentSnapshot !== undefined) {
+      this.paymentSnapshot = props.paymentSnapshot;
+      this.paymentDetails = props.paymentSnapshot;
+    }
+    this.recalculateTotals();
+    this.touch(now);
+  }
+
   replaceLineItems(lineItems: InvoiceLine[], now: Date) {
     if (this.status !== "DRAFT") {
       throw new Error("Cannot change line items unless draft");
@@ -196,7 +269,13 @@ export class InvoiceAggregate {
     this.touch(now);
   }
 
-  finalize(number: string, issuedAt: Date, now: Date, billTo: BillToSnapshot) {
+  finalize(
+    number: string,
+    issuedAt: Date,
+    now: Date,
+    billTo: BillToSnapshot,
+    paymentDetails?: PaymentDetailsSnapshot
+  ) {
     if (this.status !== "DRAFT") {
       throw new Error("Only draft invoices can be finalized");
     }
@@ -211,6 +290,9 @@ export class InvoiceAggregate {
     }
 
     this.setBillToSnapshot(billTo);
+    if (paymentDetails) {
+      this.paymentDetails = paymentDetails;
+    }
     this.status = "ISSUED";
     this.number = number;
     this.issuedAt = issuedAt;
@@ -267,7 +349,7 @@ export class InvoiceAggregate {
 
   private calculateTotals(): InvoiceTotals {
     const subtotal = this.lineItems.reduce((sum, line) => sum + line.qty * line.unitPriceCents, 0);
-    const taxCents = 0;
+    const taxCents = this.taxSnapshot?.taxTotalAmountCents ?? 0;
     const discountCents = 0;
     const totalCents = subtotal + taxCents - discountCents;
     const paidCents = this.payments.reduce((sum, p) => sum + p.amountCents, 0);

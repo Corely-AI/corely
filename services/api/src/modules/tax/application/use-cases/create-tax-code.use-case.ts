@@ -10,7 +10,7 @@ export class CreateTaxCodeUseCase {
 
   async execute(input: CreateTaxCodeInput, ctx: UseCaseContext): Promise<TaxCodeEntity> {
     const taxCode: Omit<TaxCodeEntity, "id" | "createdAt" | "updatedAt"> = {
-      tenantId: ctx.tenantId,
+      tenantId: ctx.workspaceId,
       code: input.code,
       kind: input.kind,
       label: input.label,
