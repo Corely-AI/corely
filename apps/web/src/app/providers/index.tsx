@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { PostHogProvider } from "@/shared/lib/posthog";
 import { Toaster } from "@/shared/ui/toaster";
 import { Toaster as Sonner } from "@/shared/ui/sonner";
 import { TooltipProvider } from "@/shared/ui/tooltip";
@@ -29,11 +30,13 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
         <WorkspaceProvider>
           <WorkspaceConfigProvider>
             <OfflineProvider queryClient={queryClient}>
-              <TooltipProvider>
-                {children}
-                <Toaster />
-                <Sonner />
-              </TooltipProvider>
+              <PostHogProvider>
+                <TooltipProvider>
+                  {children}
+                  <Toaster />
+                  <Sonner />
+                </TooltipProvider>
+              </PostHogProvider>
             </OfflineProvider>
           </WorkspaceConfigProvider>
         </WorkspaceProvider>
