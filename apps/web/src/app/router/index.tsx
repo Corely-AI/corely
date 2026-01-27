@@ -77,6 +77,11 @@ import {
   WorkspaceOnboardingPage,
   WorkspaceSettingsPage,
 } from "../../modules/workspaces";
+import {
+  CashRegistersScreen,
+  CashRegisterDetailScreen,
+  DailyCloseScreen,
+} from "../../modules/cash-management";
 import { features } from "../../lib/features";
 
 export const Router = () => (

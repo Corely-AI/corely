@@ -89,6 +89,7 @@ export * from "./errors";
 export * from "./platform";
 export * from "./copilot/collect-inputs.schema";
 export * from "./copilot/chat.schema";
+export * from "./cash-management";
 
 export const CONTRACTS_HELLO = "Corely contracts loaded ✅";
 

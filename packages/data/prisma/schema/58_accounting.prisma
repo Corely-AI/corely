@@ -164,6 +164,7 @@ enum SourceType {
   BillPayment
   Migration
   Adjustment
+  CashEntry
 }
 
 enum AiContextType {

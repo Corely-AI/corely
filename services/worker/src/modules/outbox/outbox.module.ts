@@ -7,7 +7,11 @@ import { EMAIL_SENDER_PORT, EmailSenderPort } from "../notifications/ports/email
 import { ResendEmailSenderAdapter } from "../notifications/infrastructure/resend/resend-email-sender.adapter";
 import { OutboxPollerService } from "./outbox-poller.service";
 
+import { CashEntryCreatedHandler } from "../accounting/handlers/cash-entry-created.handler";
+import { AccountingWorkerModule } from "../accounting/accounting-worker.module";
+
 @Module({
+  imports: [AccountingWorkerModule],
   providers: [
     {
       provide: EMAIL_SENDER_PORT,
@@ -33,10 +37,14 @@ import { OutboxPollerService } from "./outbox-poller.service";
     PrismaInvoiceEmailRepository,
     {
       provide: OutboxPollerService,
-      useFactory: (repo: OutboxRepository, invoiceHandler: InvoiceEmailRequestedHandler) => {
-        return new OutboxPollerService(repo, [invoiceHandler]);
+      useFactory: (
+        repo: OutboxRepository, 
+        invoiceHandler: InvoiceEmailRequestedHandler,
+        cashEntryHandler: CashEntryCreatedHandler
+      ) => {
+        return new OutboxPollerService(repo, [invoiceHandler, cashEntryHandler]);
       },
-      inject: [OutboxRepository, InvoiceEmailRequestedHandler],
+      inject: [OutboxRepository, InvoiceEmailRequestedHandler, CashEntryCreatedHandler],
     },
   ],
 })

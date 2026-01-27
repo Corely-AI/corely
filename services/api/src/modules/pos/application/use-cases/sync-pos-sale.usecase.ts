@@ -2,7 +2,6 @@ import { Inject, Injectable } from "@nestjs/common";
 import type { SyncPosSaleInput, SyncPosSaleOutput } from "@corely/contracts";
 import {
   BaseUseCase,
-  ConflictError,
   NoopLogger,
   type Result,
   type UseCaseContext,
@@ -19,10 +18,16 @@ import {
 // Note: In production, inject SalesApplication for creating invoices/payments
 // For now, this is a placeholder structure showing the integration pattern
 
+import { AddEntryUseCase } from "../../../cash-management/application/use-cases/add-entry.usecase";
+import { CreateRegisterUseCase } from "../../../cash-management/application/use-cases/create-register.usecase";
+import { CreateCashEntry, CashEntryType, CashEntrySourceType } from "@corely/contracts";
+
 @Injectable()
 export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSaleOutput> {
   constructor(
-    @Inject(POS_SALE_IDEMPOTENCY_PORT) private idempotencyStore: PosSaleIdempotencyPort
+    @Inject(POS_SALE_IDEMPOTENCY_PORT) private idempotencyStore: PosSaleIdempotencyPort,
+    private readonly addCashEntryUC: AddEntryUseCase,
+    private readonly createCashRegisterUC: CreateRegisterUseCase
     // TODO: Inject SalesApplication, InventoryApplication (for product validation)
     // TODO: Inject PartyApplication (for customer validation)
   ) {
@@ -87,7 +92,53 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     // }, ctx);
 
     // 6. Record payment(s)
-    // TODO: Use SalesApplication.recordPayment for each payment
+    // TODO: Use SalesApplication.recordPayment for each payment (for Sales Ledger)
+    
+    // Bridge to Cash Management: Record cash movements
+    const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate);
+
+    for (const payment of input.payments) {
+      if (payment.method === "CASH") {
+        const entryData: CreateCashEntry & {
+          tenantId: string;
+          workspaceId: string;
+          createdByUserId: string;
+        } = {
+          tenantId: ctx.tenantId,
+          workspaceId: ctx.workspaceId,
+          registerId: input.registerId,
+          type: CashEntryType.IN,
+          amountCents: payment.amountCents,
+          sourceType: CashEntrySourceType.SALES,
+          description: `POS Sale #${receiptNumber}`,
+          referenceId: input.posSaleId,
+          businessDate: input.saleDate.toISOString().split("T")[0],
+          createdByUserId: ctx.userId || "system",
+        };
+
+        try {
+          await this.addCashEntryUC.execute(entryData);
+        } catch (error: unknown) {
+          // If register not found, auto-create it (Bridge Legacy POS -> New Cash Mgmt)
+          const err = error as Error;
+          if (err?.message === "Cash Register not found") {
+             // Create register
+             await this.createCashRegisterUC.execute({
+                tenantId: ctx.tenantId,
+                workspaceId: ctx.workspaceId,
+                name: `POS Register ${input.registerId.slice(0, 8)}`,
+                currency: "EUR", // Default, or infer from input
+                location: "Main Store",
+             });
+             // Retry adding entry
+             await this.addCashEntryUC.execute(entryData);
+          } else {
+             throw error;
+          }
+        }
+      }
+    }
+
     // const paymentResult = await this.salesApp.recordPayment({
     //   invoiceId: invoiceResult.value.invoiceId,
     //   paymentDate: input.saleDate,
@@ -98,7 +149,7 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
 
     // 7. Generate receipt number
     // TODO: Implement receipt numbering service
-    const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate);
+    // const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate); // Moved up
 
     // 8. Store idempotency mapping
     const result: SyncPosSaleOutput = {
