@@ -27,16 +27,11 @@ import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware.js";
 import { TraceIdService } from "./shared/trace/trace-id.service.js";
 import { RequestContextInterceptor } from "./shared/request-context";
-import { TenancyInterceptor, TenancyModule } from "./shared/tenancy";
 
 @Module({
   controllers: [AppController],
   providers: [
     TraceIdService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TenancyInterceptor,
-    },
     {
       provide: APP_INTERCEPTOR,
       useClass: RequestContextInterceptor,
@@ -45,7 +40,6 @@ import { TenancyInterceptor, TenancyModule } from "./shared/tenancy";
   imports: [
     // Config must be first to validate env before other modules use it
     EnvModule.forRoot(),
-    TenancyModule.forEdition(process.env.EDITION === "ee" ? "ee" : "oss"),
     // DataModule must be imported for global providers (OUTBOX_PORT, AUDIT_PORT, etc.)
     DataModule,
     IdentityModule,

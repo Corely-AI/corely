@@ -1,4 +1,5 @@
 import { type CreateExpenseInput } from "../../application/use-cases/create-expense.usecase";
+import { buildRequestContext } from "../../../../shared/context/request-context";
 
 export const buildCreateExpenseInput = (
   overrides: Partial<CreateExpenseInput> = {}
