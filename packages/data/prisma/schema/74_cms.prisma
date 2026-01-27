@@ -15,7 +15,7 @@ model CmsPost {
  createdAt DateTime @default(now()) @db.Timestamptz(6)
  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
- coverImageFile File? @relation(fields: [coverImageFileId], references: [id], onDelete: SetNull)
+ coverImageFile File? @relation("CmsPostCoverImage", fields: [coverImageFileId], references: [id], onDelete: SetNull)
  comments CmsComment[]
 
  @@unique([tenantId, slug])
@@ -38,8 +38,8 @@ model CmsComment {
 
  post CmsPost @relation(fields: [postId], references: [id], onDelete: Cascade)
  reader CmsReader @relation(fields: [readerId], references: [id], onDelete: Cascade)
- parent CmsComment? @relation(CmsCommentParent, fields: [parentId], references: [id], onDelete: SetNull)
- replies CmsComment[] @relation(CmsCommentParent)
+ parent CmsComment? @relation("CmsCommentParent", fields: [parentId], references: [id], onDelete: SetNull)
+ replies CmsComment[] @relation("CmsCommentParent")
 
  @@index([tenantId])
  @@index([tenantId, workspaceId])
