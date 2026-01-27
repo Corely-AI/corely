@@ -7,11 +7,13 @@ import {
   err,
   ValidationError,
   NotFoundError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { PostJournalEntryInput, PostJournalEntryOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapEntryToDto } from "../mappers/accounting.mapper";
 
+@RequireTenant()
 export class PostJournalEntryUseCase extends BaseUseCase<
   PostJournalEntryInput,
   PostJournalEntryOutput
@@ -24,20 +26,21 @@ export class PostJournalEntryUseCase extends BaseUseCase<
     input: PostJournalEntryInput,
     ctx: UseCaseContext
   ): Promise<Result<PostJournalEntryOutput, UseCaseError>> {
-    if (!ctx.tenantId || !ctx.userId) {
-      return err(new ValidationError("tenantId and userId are required"));
+    const tenantId = ctx.tenantId!;
+    if (!ctx.userId) {
+      return err(new ValidationError("userId is required"));
     }
 
-    const entry = await this.deps.entryRepo.findById(ctx.tenantId, input.entryId);
+    const entry = await this.deps.entryRepo.findById(tenantId, input.entryId);
     if (!entry) {
       return err(new NotFoundError("Journal entry not found"));
     }
 
     // Check period locking
-    const settings = await this.deps.settingsRepo.findByTenant(ctx.tenantId);
+    const settings = await this.deps.settingsRepo.findByTenant(tenantId);
     if (settings?.periodLockingEnabled) {
       const period = await this.deps.periodRepo.findPeriodContainingDate(
-        ctx.tenantId,
+        tenantId,
         entry.postingDate
       );
       if (!period) {
@@ -69,6 +72,6 @@ export class PostJournalEntryUseCase extends BaseUseCase<
 
     await this.deps.entryRepo.save(entry);
 
-    return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, ctx.tenantId) });
+    return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, tenantId) });
   }
 }

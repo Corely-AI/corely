@@ -9,12 +9,10 @@ import { STOCK_MOVE_REPO } from "../application/ports/stock-move-repository.port
 import { STOCK_RESERVATION_REPO } from "../application/ports/stock-reservation-repository.port";
 import { LOCATION_REPO } from "../application/ports/location-repository.port";
 
-import {
-  GetOnHandUseCase,
-  GetAvailableUseCase,
-  ListStockMovesUseCase,
-  ListReservationsUseCase,
-} from "../application/use-cases/stock.usecases";
+import { GetOnHandUseCase } from "../application/use-cases/get-on-hand.usecase";
+import { GetAvailableUseCase } from "../application/use-cases/get-available.usecase";
+import { ListStockMovesUseCase } from "../application/use-cases/list-stock-moves.usecase";
+import { ListReservationsUseCase } from "../application/use-cases/list-reservations.usecase";
 
 export const stockProviders: Provider[] = [
   {

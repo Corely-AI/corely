@@ -7,11 +7,13 @@ import {
   err,
   ValidationError,
   NotFoundError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { ReopenPeriodInput, ReopenPeriodOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapPeriodToDto } from "../mappers/accounting.mapper";
 
+@RequireTenant()
 export class ReopenPeriodUseCase extends BaseUseCase<ReopenPeriodInput, ReopenPeriodOutput> {
   constructor(protected readonly deps: BaseDeps) {
     super({ logger: deps.logger });
@@ -21,11 +23,9 @@ export class ReopenPeriodUseCase extends BaseUseCase<ReopenPeriodInput, ReopenPe
     input: ReopenPeriodInput,
     ctx: UseCaseContext
   ): Promise<Result<ReopenPeriodOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    const tenantId = ctx.tenantId!;
 
-    const period = await this.deps.periodRepo.findById(ctx.tenantId, input.periodId);
+    const period = await this.deps.periodRepo.findById(tenantId, input.periodId);
     if (!period) {
       return err(new NotFoundError("Period not found"));
     }

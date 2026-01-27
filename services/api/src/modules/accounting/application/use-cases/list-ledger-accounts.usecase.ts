@@ -6,11 +6,13 @@ import {
   ok,
   err,
   ValidationError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { ListLedgerAccountsInput, ListLedgerAccountsOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapAccountToDto } from "../mappers/accounting.mapper";
 
+@RequireTenant()
 export class ListLedgerAccountsUseCase extends BaseUseCase<
   ListLedgerAccountsInput,
   ListLedgerAccountsOutput
@@ -23,11 +25,9 @@ export class ListLedgerAccountsUseCase extends BaseUseCase<
     input: ListLedgerAccountsInput,
     ctx: UseCaseContext
   ): Promise<Result<ListLedgerAccountsOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    const tenantId = ctx.tenantId!;
 
-    const result = await this.deps.accountRepo.list(ctx.tenantId, input);
+    const result = await this.deps.accountRepo.list(tenantId, input);
 
     return ok({
       accounts: result.accounts.map(mapAccountToDto),

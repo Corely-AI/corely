@@ -22,13 +22,11 @@ import { WAREHOUSE_REPO } from "../application/ports/warehouse-repository.port";
 import { LOCATION_REPO } from "../application/ports/location-repository.port";
 import { STOCK_RESERVATION_REPO } from "../application/ports/stock-reservation-repository.port";
 
-import {
-  ListReorderPoliciesUseCase,
-  CreateReorderPolicyUseCase,
-  UpdateReorderPolicyUseCase,
-  GetReorderSuggestionsUseCase,
-  GetLowStockUseCase,
-} from "../application/use-cases/reorder.usecases";
+import { ListReorderPoliciesUseCase } from "../application/use-cases/list-reorder-policies.usecase";
+import { CreateReorderPolicyUseCase } from "../application/use-cases/create-reorder-policy.usecase";
+import { UpdateReorderPolicyUseCase } from "../application/use-cases/update-reorder-policy.usecase";
+import { GetReorderSuggestionsUseCase } from "../application/use-cases/get-reorder-suggestions.usecase";
+import { GetLowStockUseCase } from "../application/use-cases/get-low-stock.usecase";
 
 export const reorderProviders: Provider[] = [
   {

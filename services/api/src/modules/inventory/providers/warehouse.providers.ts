@@ -14,12 +14,10 @@ import { type PrismaLocationRepository } from "../infrastructure/adapters/prisma
 import { WAREHOUSE_REPO } from "../application/ports/warehouse-repository.port";
 import { LOCATION_REPO } from "../application/ports/location-repository.port";
 
-import {
-  CreateWarehouseUseCase,
-  UpdateWarehouseUseCase,
-  GetWarehouseUseCase,
-  ListWarehousesUseCase,
-} from "../application/use-cases/warehouses.usecases";
+import { CreateWarehouseUseCase } from "../application/use-cases/create-warehouse.usecase";
+import { UpdateWarehouseUseCase } from "../application/use-cases/update-warehouse.usecase";
+import { GetWarehouseUseCase } from "../application/use-cases/get-warehouse.usecase";
+import { ListWarehousesUseCase } from "../application/use-cases/list-warehouses.usecase";
 
 export const warehouseProviders: Provider[] = [
   {

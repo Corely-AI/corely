@@ -7,11 +7,13 @@ import {
   err,
   ValidationError,
   NotFoundError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { ClosePeriodInput, ClosePeriodOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapPeriodToDto } from "../mappers/accounting.mapper";
 
+@RequireTenant()
 export class ClosePeriodUseCase extends BaseUseCase<ClosePeriodInput, ClosePeriodOutput> {
   constructor(protected readonly deps: BaseDeps) {
     super({ logger: deps.logger });
@@ -21,11 +23,12 @@ export class ClosePeriodUseCase extends BaseUseCase<ClosePeriodInput, ClosePerio
     input: ClosePeriodInput,
     ctx: UseCaseContext
   ): Promise<Result<ClosePeriodOutput, UseCaseError>> {
-    if (!ctx.tenantId || !ctx.userId) {
-      return err(new ValidationError("tenantId and userId are required"));
+    const tenantId = ctx.tenantId!;
+    if (!ctx.userId) {
+      return err(new ValidationError("userId is required"));
     }
 
-    const period = await this.deps.periodRepo.findById(ctx.tenantId, input.periodId);
+    const period = await this.deps.periodRepo.findById(tenantId, input.periodId);
     if (!period) {
       return err(new NotFoundError("Period not found"));
     }

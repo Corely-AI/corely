@@ -8,43 +8,33 @@ import { DeactivateProductUseCase } from "../application/use-cases/deactivate-pr
 import { GetProductUseCase } from "../application/use-cases/get-product.usecase";
 import { ListProductsUseCase } from "../application/use-cases/list-products.usecase";
 
-import {
-  CreateWarehouseUseCase,
-  UpdateWarehouseUseCase,
-  GetWarehouseUseCase,
-  ListWarehousesUseCase,
-} from "../application/use-cases/warehouses.usecases";
+import { CreateWarehouseUseCase } from "../application/use-cases/create-warehouse.usecase";
+import { UpdateWarehouseUseCase } from "../application/use-cases/update-warehouse.usecase";
+import { GetWarehouseUseCase } from "../application/use-cases/get-warehouse.usecase";
+import { ListWarehousesUseCase } from "../application/use-cases/list-warehouses.usecase";
 
-import {
-  CreateLocationUseCase,
-  UpdateLocationUseCase,
-  ListLocationsUseCase,
-} from "../application/use-cases/locations.usecases";
+import { CreateLocationUseCase } from "../application/use-cases/create-location.usecase";
+import { UpdateLocationUseCase } from "../application/use-cases/update-location.usecase";
+import { ListLocationsUseCase } from "../application/use-cases/list-locations.usecase";
 
-import {
-  CreateInventoryDocumentUseCase,
-  UpdateInventoryDocumentUseCase,
-  ConfirmInventoryDocumentUseCase,
-  PostInventoryDocumentUseCase,
-  CancelInventoryDocumentUseCase,
-  GetInventoryDocumentUseCase,
-  ListInventoryDocumentsUseCase,
-} from "../application/use-cases/documents.usecases";
+import { CreateInventoryDocumentUseCase } from "../application/use-cases/create-inventory-document.usecase";
+import { UpdateInventoryDocumentUseCase } from "../application/use-cases/update-inventory-document.usecase";
+import { ConfirmInventoryDocumentUseCase } from "../application/use-cases/confirm-inventory-document.usecase";
+import { PostInventoryDocumentUseCase } from "../application/use-cases/post-inventory-document.usecase";
+import { CancelInventoryDocumentUseCase } from "../application/use-cases/cancel-inventory-document.usecase";
+import { GetInventoryDocumentUseCase } from "../application/use-cases/get-inventory-document.usecase";
+import { ListInventoryDocumentsUseCase } from "../application/use-cases/list-inventory-documents.usecase";
 
-import {
-  GetOnHandUseCase,
-  GetAvailableUseCase,
-  ListStockMovesUseCase,
-  ListReservationsUseCase,
-} from "../application/use-cases/stock.usecases";
+import { GetOnHandUseCase } from "../application/use-cases/get-on-hand.usecase";
+import { GetAvailableUseCase } from "../application/use-cases/get-available.usecase";
+import { ListStockMovesUseCase } from "../application/use-cases/list-stock-moves.usecase";
+import { ListReservationsUseCase } from "../application/use-cases/list-reservations.usecase";
 
-import {
-  ListReorderPoliciesUseCase,
-  CreateReorderPolicyUseCase,
-  UpdateReorderPolicyUseCase,
-  GetReorderSuggestionsUseCase,
-  GetLowStockUseCase,
-} from "../application/use-cases/reorder.usecases";
+import { ListReorderPoliciesUseCase } from "../application/use-cases/list-reorder-policies.usecase";
+import { CreateReorderPolicyUseCase } from "../application/use-cases/create-reorder-policy.usecase";
+import { UpdateReorderPolicyUseCase } from "../application/use-cases/update-reorder-policy.usecase";
+import { GetReorderSuggestionsUseCase } from "../application/use-cases/get-reorder-suggestions.usecase";
+import { GetLowStockUseCase } from "../application/use-cases/get-low-stock.usecase";
 
 export const applicationProviders: Provider[] = [
   {

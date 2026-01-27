@@ -7,6 +7,7 @@ import {
   err,
   ValidationError,
   NotFoundError,
+  RequireTenant,
 } from "@corely/kernel";
 import type {
   UpdateAccountingSettingsInput,
@@ -15,6 +16,7 @@ import type {
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapSettingsToDto } from "../mappers/accounting.mapper";
 
+@RequireTenant()
 export class UpdateAccountingSettingsUseCase extends BaseUseCase<
   UpdateAccountingSettingsInput,
   UpdateAccountingSettingsOutput
@@ -27,11 +29,9 @@ export class UpdateAccountingSettingsUseCase extends BaseUseCase<
     input: UpdateAccountingSettingsInput,
     ctx: UseCaseContext
   ): Promise<Result<UpdateAccountingSettingsOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    const tenantId = ctx.tenantId!;
 
-    const settings = await this.deps.settingsRepo.findByTenant(ctx.tenantId);
+    const settings = await this.deps.settingsRepo.findByTenant(tenantId);
     if (!settings) {
       return err(new NotFoundError("Accounting settings not found"));
     }

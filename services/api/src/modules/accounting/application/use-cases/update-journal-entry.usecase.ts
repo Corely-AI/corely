@@ -7,11 +7,13 @@ import {
   err,
   ValidationError,
   NotFoundError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { UpdateJournalEntryInput, UpdateJournalEntryOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapEntryToDto } from "../mappers/accounting.mapper";
 
+@RequireTenant()
 export class UpdateJournalEntryUseCase extends BaseUseCase<
   UpdateJournalEntryInput,
   UpdateJournalEntryOutput
@@ -24,11 +26,9 @@ export class UpdateJournalEntryUseCase extends BaseUseCase<
     input: UpdateJournalEntryInput,
     ctx: UseCaseContext
   ): Promise<Result<UpdateJournalEntryOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    const tenantId = ctx.tenantId!;
 
-    const entry = await this.deps.entryRepo.findById(ctx.tenantId, input.entryId);
+    const entry = await this.deps.entryRepo.findById(tenantId, input.entryId);
     if (!entry) {
       return err(new NotFoundError("Journal entry not found"));
     }
@@ -60,6 +60,6 @@ export class UpdateJournalEntryUseCase extends BaseUseCase<
 
     await this.deps.entryRepo.save(entry);
 
-    return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, ctx.tenantId) });
+    return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, tenantId) });
   }
 }

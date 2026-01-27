@@ -6,12 +6,14 @@ import {
   ok,
   err,
   ValidationError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { CreateJournalEntryInput, CreateJournalEntryOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapEntryToDto } from "../mappers/accounting.mapper";
 import { JournalEntryAggregate } from "../../domain/journal-entry.aggregate";
 
+@RequireTenant()
 export class CreateJournalEntryUseCase extends BaseUseCase<
   CreateJournalEntryInput,
   CreateJournalEntryOutput
@@ -24,13 +26,14 @@ export class CreateJournalEntryUseCase extends BaseUseCase<
     input: CreateJournalEntryInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateJournalEntryOutput, UseCaseError>> {
-    if (!ctx.tenantId || !ctx.userId) {
-      return err(new ValidationError("tenantId and userId are required"));
+    const tenantId = ctx.tenantId!;
+    if (!ctx.userId) {
+      return err(new ValidationError("userId is required"));
     }
 
     // Validate accounts exist and are active
     for (const line of input.lines) {
-      const account = await this.deps.accountRepo.findById(ctx.tenantId, line.ledgerAccountId);
+      const account = await this.deps.accountRepo.findById(tenantId, line.ledgerAccountId);
       if (!account) {
         return err(new ValidationError(`Account ${line.ledgerAccountId} not found`));
       }
@@ -53,7 +56,7 @@ export class CreateJournalEntryUseCase extends BaseUseCase<
 
     const entry = JournalEntryAggregate.createDraft({
       id: this.deps.idGenerator.newId(),
-      tenantId: ctx.tenantId,
+      tenantId,
       postingDate: input.postingDate,
       memo: input.memo,
       lines,
@@ -66,6 +69,6 @@ export class CreateJournalEntryUseCase extends BaseUseCase<
 
     await this.deps.entryRepo.save(entry);
 
-    return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, ctx.tenantId) });
+    return ok({ entry: await mapEntryToDto(entry, this.deps.accountRepo, tenantId) });
   }
 }

@@ -7,11 +7,13 @@ import {
   err,
   ValidationError,
   NotFoundError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { UpdateLedgerAccountInput, UpdateLedgerAccountOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapAccountToDto } from "../mappers/accounting.mapper";
 
+@RequireTenant()
 export class UpdateLedgerAccountUseCase extends BaseUseCase<
   UpdateLedgerAccountInput,
   UpdateLedgerAccountOutput
@@ -24,11 +26,9 @@ export class UpdateLedgerAccountUseCase extends BaseUseCase<
     input: UpdateLedgerAccountInput,
     ctx: UseCaseContext
   ): Promise<Result<UpdateLedgerAccountOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    const tenantId = ctx.tenantId!;
 
-    const account = await this.deps.accountRepo.findById(ctx.tenantId, input.accountId);
+    const account = await this.deps.accountRepo.findById(tenantId, input.accountId);
     if (!account) {
       return err(new NotFoundError("Account not found"));
     }

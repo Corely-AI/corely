@@ -24,15 +24,13 @@ import { STOCK_MOVE_REPO } from "../application/ports/stock-move-repository.port
 import { STOCK_RESERVATION_REPO } from "../application/ports/stock-reservation-repository.port";
 import { INVENTORY_SETTINGS_REPO } from "../application/ports/settings-repository.port";
 
-import {
-  CreateInventoryDocumentUseCase,
-  UpdateInventoryDocumentUseCase,
-  ConfirmInventoryDocumentUseCase,
-  PostInventoryDocumentUseCase,
-  CancelInventoryDocumentUseCase,
-  GetInventoryDocumentUseCase,
-  ListInventoryDocumentsUseCase,
-} from "../application/use-cases/documents.usecases";
+import { CreateInventoryDocumentUseCase } from "../application/use-cases/create-inventory-document.usecase";
+import { UpdateInventoryDocumentUseCase } from "../application/use-cases/update-inventory-document.usecase";
+import { ConfirmInventoryDocumentUseCase } from "../application/use-cases/confirm-inventory-document.usecase";
+import { PostInventoryDocumentUseCase } from "../application/use-cases/post-inventory-document.usecase";
+import { CancelInventoryDocumentUseCase } from "../application/use-cases/cancel-inventory-document.usecase";
+import { GetInventoryDocumentUseCase } from "../application/use-cases/get-inventory-document.usecase";
+import { ListInventoryDocumentsUseCase } from "../application/use-cases/list-inventory-documents.usecase";
 
 export const documentProviders: Provider[] = [
   {

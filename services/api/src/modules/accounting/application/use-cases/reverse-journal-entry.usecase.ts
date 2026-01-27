@@ -7,12 +7,14 @@ import {
   err,
   ValidationError,
   NotFoundError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { ReverseJournalEntryInput, ReverseJournalEntryOutput } from "@corely/contracts";
 import type { BaseDeps } from "./accounting-use-case.deps";
 import { mapEntryToDto } from "../mappers/accounting.mapper";
 import { JournalEntryAggregate } from "../../domain/journal-entry.aggregate";
 
+@RequireTenant()
 export class ReverseJournalEntryUseCase extends BaseUseCase<
   ReverseJournalEntryInput,
   ReverseJournalEntryOutput
@@ -25,11 +27,12 @@ export class ReverseJournalEntryUseCase extends BaseUseCase<
     input: ReverseJournalEntryInput,
     ctx: UseCaseContext
   ): Promise<Result<ReverseJournalEntryOutput, UseCaseError>> {
-    if (!ctx.tenantId || !ctx.userId) {
-      return err(new ValidationError("tenantId and userId are required"));
+    const tenantId = ctx.tenantId!;
+    if (!ctx.userId) {
+      return err(new ValidationError("userId is required"));
     }
 
-    const originalEntry = await this.deps.entryRepo.findById(ctx.tenantId, input.entryId);
+    const originalEntry = await this.deps.entryRepo.findById(tenantId, input.entryId);
     if (!originalEntry) {
       return err(new NotFoundError("Journal entry not found"));
     }
@@ -43,10 +46,10 @@ export class ReverseJournalEntryUseCase extends BaseUseCase<
     }
 
     // Check period locking for reversal date
-    const settings = await this.deps.settingsRepo.findByTenant(ctx.tenantId);
+    const settings = await this.deps.settingsRepo.findByTenant(tenantId);
     if (settings?.periodLockingEnabled) {
       const period = await this.deps.periodRepo.findPeriodContainingDate(
-        ctx.tenantId,
+        tenantId,
         input.reversalDate
       );
       if (!period) {
@@ -66,7 +69,7 @@ export class ReverseJournalEntryUseCase extends BaseUseCase<
     // Create reversal entry
     const reversalEntry = JournalEntryAggregate.createReversal({
       id: this.deps.idGenerator.newId(),
-      tenantId: ctx.tenantId,
+      tenantId,
       originalEntry,
       reversalDate: input.reversalDate,
       reversalMemo: input.reversalMemo,
@@ -91,8 +94,8 @@ export class ReverseJournalEntryUseCase extends BaseUseCase<
     await this.deps.entryRepo.save(originalEntry);
 
     return ok({
-      originalEntry: await mapEntryToDto(originalEntry, this.deps.accountRepo, ctx.tenantId),
-      reversalEntry: await mapEntryToDto(reversalEntry, this.deps.accountRepo, ctx.tenantId),
+      originalEntry: await mapEntryToDto(originalEntry, this.deps.accountRepo, tenantId),
+      reversalEntry: await mapEntryToDto(reversalEntry, this.deps.accountRepo, tenantId),
     });
   }
 }

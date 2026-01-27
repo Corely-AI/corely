@@ -14,11 +14,9 @@ import { type PrismaLocationRepository } from "../infrastructure/adapters/prisma
 import { WAREHOUSE_REPO } from "../application/ports/warehouse-repository.port";
 import { LOCATION_REPO } from "../application/ports/location-repository.port";
 
-import {
-  CreateLocationUseCase,
-  UpdateLocationUseCase,
-  ListLocationsUseCase,
-} from "../application/use-cases/locations.usecases";
+import { CreateLocationUseCase } from "../application/use-cases/create-location.usecase";
+import { UpdateLocationUseCase } from "../application/use-cases/update-location.usecase";
+import { ListLocationsUseCase } from "../application/use-cases/list-locations.usecase";
 
 export const locationProviders: Provider[] = [
   {
