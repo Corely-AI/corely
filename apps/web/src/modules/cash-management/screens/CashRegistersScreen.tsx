@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Store } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/shared/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/shared/ui/dialog";
 import { formatMoney } from "@/shared/lib/formatters";
 import { cashManagementApi } from "@/lib/cash-management-api";
 import { cashKeys } from "../queries";
@@ -22,25 +29,20 @@ export function CashRegistersScreen() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (name: string) => cashManagementApi.createRegister({ 
-      tenantId: "current", 
-      name,
-      currency: "EUR" 
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: cashKeys.registers.list.queryKey });
+    mutationFn: (name: string) =>
+      cashManagementApi.createRegister({
+        tenantId: "current",
+        name,
+        currency: "EUR",
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: cashKeys.registers.list.queryKey });
       setIsCreateOpen(false);
       setNewName("");
       toast.success("Register created");
     },
     onError: () => toast.error("Failed to create register"),
   });
-
-  useEffect(() => {
-    void queryClient.invalidateQueries({ queryKey: cashKeys.registers.list.queryKey });
-    // Invalidate entries for all registers (wildcard)
-    void queryClient.invalidateQueries({ queryKey: ["cash", "entries", "list"] });
-  }, [queryClient]);
 
   const registers = data?.registers ?? [];
 
@@ -49,6 +51,8 @@ export function CashRegistersScreen() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Cash Management</h1>
+          <p className="text-muted-foreground">Manage your cash registers and daily closes.</p>
+        </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -62,17 +66,22 @@ export function CashRegistersScreen() {
             </DialogHeader>
             <div className="py-4">
               <label className="text-sm font-medium mb-2 block">Name</label>
-              <Input 
-                value={newName} 
-                onChange={(e) => setNewName(e.target.value)} 
-                placeholder="e.g. Main Register" 
+              <Input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Main Register"
               />
             </div>
             <DialogFooter>
-               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-               <Button onClick={() => createMutation.mutate(newName)} disabled={!newName || createMutation.isPending}>
-                 Create
-               </Button>
+              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => createMutation.mutate(newName)}
+                disabled={!newName || createMutation.isPending}
+              >
+                Create
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -102,9 +111,9 @@ export function CashRegistersScreen() {
             </Link>
           ))}
           {registers.length === 0 && (
-             <div className="col-span-full text-center text-muted-foreground py-10">
-                No registers found. Create one to get started.
-             </div>
+            <div className="col-span-full text-center text-muted-foreground py-10">
+              No registers found. Create one to get started.
+            </div>
           )}
         </div>
       )}
