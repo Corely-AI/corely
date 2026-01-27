@@ -268,25 +268,6 @@ export default function TaxSettingsPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div>
-                <Label htmlFor="usesTaxAdvisor" className="base">
-                  I use a tax advisor (Steuerberater)
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Checking this extends your annual tax filing deadline to February 28th of the
-                  second following year.
-                </p>
-              </div>
-              <Controller
-                control={form.control}
-                name="usesTaxAdvisor"
-                render={({ field }) => (
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                )}
-              />
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="vatId">VAT ID (optional)</Label>

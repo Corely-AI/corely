@@ -22,7 +22,6 @@ export const taxProfileFormSchema = z.object({
   taxYearStartMonth: z.number().int().min(1).max(12).optional().nullable(),
   localTaxOfficeName: z.string().optional().nullable(),
   vatExemptionParagraph: z.string().optional().nullable(),
-  usesTaxAdvisor: z.boolean().default(false),
   effectiveFrom: z.date(),
   effectiveTo: z.date().optional().nullable(),
 });
@@ -45,7 +44,6 @@ export function toUpsertTaxProfileInput(form: TaxProfileFormData): UpsertTaxProf
     taxYearStartMonth: form.taxYearStartMonth ?? null,
     localTaxOfficeName: form.localTaxOfficeName ?? null,
     vatExemptionParagraph: form.vatExemptionParagraph ?? null,
-    usesTaxAdvisor: form.usesTaxAdvisor,
     effectiveFrom: form.effectiveFrom.toISOString(),
     effectiveTo: form.effectiveTo?.toISOString() || undefined,
   };
@@ -64,7 +62,6 @@ export function getDefaultTaxProfileFormValues(): Partial<TaxProfileFormData> {
     vatAccountingMethod: "IST",
     taxYearStartMonth: null,
     localTaxOfficeName: "",
-    usesTaxAdvisor: false,
     effectiveFrom: new Date(),
   };
 }
@@ -84,7 +81,6 @@ export function taxProfileDtoToFormData(dto: any): TaxProfileFormData {
     taxYearStartMonth: dto.taxYearStartMonth ?? null,
     localTaxOfficeName: dto.localTaxOfficeName ?? null,
     vatExemptionParagraph: dto.vatExemptionParagraph ?? null,
-    usesTaxAdvisor: dto.usesTaxAdvisor ?? false,
     effectiveFrom: new Date(dto.effectiveFrom),
     effectiveTo: dto.effectiveTo ? new Date(dto.effectiveTo) : undefined,
   };
