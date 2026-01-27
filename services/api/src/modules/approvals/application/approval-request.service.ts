@@ -4,7 +4,6 @@ import { AUDIT_PORT, OUTBOX_PORT } from "@corely/kernel";
 import type { AuditPort, OutboxPort } from "@corely/kernel";
 import {
   DomainEventRepository,
-  PrismaService,
   WorkflowInstanceRepository,
   WorkflowTaskRepository,
 } from "@corely/data";
@@ -22,7 +21,6 @@ import { toAllowedPermissionKeys } from "../../../shared/permissions/effective-p
 @Injectable()
 export class ApprovalRequestService {
   constructor(
-    private readonly prisma: PrismaService,
     private readonly instances: WorkflowInstanceRepository,
     private readonly tasks: WorkflowTaskRepository,
     private readonly workflows: WorkflowService,
@@ -38,15 +36,10 @@ export class ApprovalRequestService {
   ) {}
 
   async listRequests(tenantId: string, filters: { status?: string; businessKey?: string }) {
-    return this.prisma.workflowInstance.findMany({
-      where: {
-        tenantId,
-        ...(filters.status ? { status: filters.status as any } : {}),
-        ...(filters.businessKey ? { businessKey: filters.businessKey } : {}),
-        definition: { type: "APPROVAL" },
-      },
-      include: { definition: true },
-      orderBy: { createdAt: "desc" },
+    return this.instances.list(tenantId, {
+      ...filters,
+      status: filters.status as any,
+      definitionType: "APPROVAL",
     });
   }
 

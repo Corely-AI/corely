@@ -24,7 +24,15 @@ export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> i
 
   protected abstract handle(input: I, ctx: UseCaseContext): Promise<Result<O, E>>;
 
+  protected get requiresTenant(): boolean {
+    return false;
+  }
+
   async execute(input: I, ctx: UseCaseContext): Promise<Result<O, E>> {
+    if (this.requiresTenant && !ctx.tenantId) {
+      return err(new ValidationError("Tenant ID is required") as E);
+    }
+
     const startedAt = Date.now();
     const useCaseName = this.constructor.name || "UseCase";
     const baseMeta = {

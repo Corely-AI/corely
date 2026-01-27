@@ -64,6 +64,8 @@ import { PrismaTaxConsultantRepoAdapter } from "./infrastructure/prisma/prisma-t
 import { PrismaTaxReportRepoAdapter } from "./infrastructure/prisma/prisma-tax-report-repo.adapter";
 import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax-summary-query.adapter";
 import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-period-query.adapter";
+import { WORKSPACE_TAX_SETTINGS_PORT } from "./application/ports/workspace-tax-settings.port";
+import { PrismaWorkspaceTaxSettingsAdapter } from "./infrastructure/prisma/prisma-workspace-tax-settings.adapter";
 import { DocumentsModule } from "../documents/documents.module";
 
 @Module({
@@ -143,6 +145,10 @@ import { DocumentsModule } from "../documents/documents.module";
     {
       provide: VatPeriodQueryPort,
       useClass: PrismaVatPeriodQueryAdapter,
+    },
+    {
+      provide: WORKSPACE_TAX_SETTINGS_PORT,
+      useClass: PrismaWorkspaceTaxSettingsAdapter,
     },
   ],
   exports: [

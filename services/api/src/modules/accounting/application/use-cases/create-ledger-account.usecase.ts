@@ -21,16 +21,16 @@ export class CreateLedgerAccountUseCase extends BaseUseCase<
     super({ logger: deps.logger });
   }
 
+  protected get requiresTenant() {
+    return true;
+  }
+
   protected async handle(
     input: CreateLedgerAccountInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateLedgerAccountOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
-
     // Check for duplicate code
-    const existing = await this.deps.accountRepo.findByCode(ctx.tenantId, input.code);
+    const existing = await this.deps.accountRepo.findByCode(ctx.tenantId!, input.code);
     if (existing) {
       return err(new ConflictError("Account code already exists"));
     }
