@@ -1,0 +1,4 @@
+export const TENANT_RESOLVER_TOKEN = "TENANT_RESOLVER_TOKEN";
+export const TENANT_ROUTING_SERVICE_TOKEN = "TENANT_ROUTING_SERVICE_TOKEN";
+
+export type Edition = "oss" | "ee";

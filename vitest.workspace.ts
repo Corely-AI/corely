@@ -1,6 +1,11 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineWorkspace } from "vitest/config";
 
-export default defineWorkspace([
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const workspaces = [
   {
     extends: "./services/api/vitest.config.ts",
     root: "./services/api",
@@ -145,4 +150,24 @@ export default defineWorkspace([
       ],
     },
   },
-]);
+];
+
+const isEeEdition = process.env.EDITION === "ee" || process.env.VITE_EDITION === "ee";
+const eeConfigPath = path.resolve(__dirname, "ee/vitest.config.ts");
+if (isEeEdition && fs.existsSync(eeConfigPath)) {
+  workspaces.push({
+    extends: eeConfigPath,
+    root: "./ee",
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.int.test.ts",
+        "**/e2e/**",
+        "**/apps/e2e/**",
+      ],
+    },
+  });
+}
+
+export default defineWorkspace(workspaces);

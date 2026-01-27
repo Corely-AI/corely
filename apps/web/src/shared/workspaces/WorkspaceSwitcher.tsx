@@ -2,6 +2,7 @@ import React from "react";
 import { ChevronsUpDown, PlusCircle, Briefcase, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspace } from "./workspace-provider";
+import { features } from "@/lib/features";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,9 @@ interface WorkspaceSwitcherProps {
 }
 
 export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed }) => {
+  if (!features.multiTenant) {
+    return null;
+  }
   const { workspaces, activeWorkspaceId, setWorkspace, isLoading } = useWorkspace();
   const navigate = useNavigate();
 

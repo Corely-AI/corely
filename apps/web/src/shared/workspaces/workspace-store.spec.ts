@@ -5,8 +5,13 @@ import {
   setActiveWorkspaceId,
   subscribeWorkspace,
 } from "./workspace-store";
+import { features } from "@/lib/features";
 
-describe("workspace-store", () => {
+// These tests verify EE mode behavior (multi-tenant workspace switching)
+// Skip in OSS mode where workspace is always locked to default
+const describeEE = features.multiTenant ? describe : describe.skip;
+
+describeEE("workspace-store (EE mode)", () => {
   it("stores and returns the active workspace id", () => {
     setActiveWorkspaceId(null);
     expect(getActiveWorkspaceId()).toBeNull();

@@ -141,8 +141,8 @@ export type MembershipDto = z.infer<typeof MembershipDtoSchema>;
 export const SignupInputSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  tenantName: z.string().min(1),
-  idempotencyKey: z.string(),
+  tenantName: z.string().min(1).optional(),
+  idempotencyKey: z.string().optional(),
 });
 export type SignupInput = z.infer<typeof SignupInputSchema>;
 

@@ -22,6 +22,7 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
       - [UI-first (web + mock server)](#ui-first-web--mock-server)
       - [Full stack (web + API + worker + Postgres/Redis)](#full-stack-web--api--worker--postgresredis)
     - [Environment files](#environment-files)
+    - [Running OSS vs EE Editions](#running-oss-vs-ee-editions)
   - [Environment variables](#environment-variables)
   - [Scripts](#scripts)
   - [Development modes](#development-modes)
@@ -72,9 +73,11 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
 ## Open-source kernel, commercial packs
 
 - **Core OSS kernel:** everything in this repository is AGPL-3.0-only unless a file or folder states otherwise.
-- **Enterprise Packs / EE:** distributed separately under a commercial license; they integrate via ports/interfaces and runtime registration (no direct OSS imports).
-- **Trademarks:** “Corely” name and logos are protected by trademark and brand usage rules.
-- Details: see `docs/licensing.md`, `ee/README.md`, and `TRADEMARKS.md`.
+- **Enterprise Edition (EE):** distributed as workspace packages under `/ee` with a commercial license. EE packages (`@corely/api-ee`, `@corely/web-ee`, `@corely/shared-ee`) provide multi-tenancy and premium features.
+- **Hard dependency boundary:** OSS code **never** statically imports EE packages. EE features are loaded dynamically via bridge loaders (`services/api/src/ee-loader.ts`, `apps/web/src/ee-loader.ts`) when `EDITION=ee` or `VITE_EDITION=ee`.
+- **OSS builds without EE:** The repository can build and run successfully even when `/ee` is deleted or not installed. This ensures the OSS edition remains fully functional as single-tenant.
+- **Trademarks:** "Corely" name and logos are protected by trademark and brand usage rules.
+- Details: see `docs/licensing.md`, `ee/README.md`, `TRADEMARKS.md`, `REFACTOR_SUMMARY.md`, and `VERIFICATION_GUIDE.md`.
 
 ## Architecture at a glance
 
@@ -127,6 +130,7 @@ apps/
 
 services/
   api/                        # NestJS API (RBAC, tools, workflows)
+    src/ee-loader.ts          # Bridge loader for EE backend (dynamic import)
   worker/                     # NestJS worker (outbox, jobs, integrations)
   mock-server/                # Dedicated mock server for UI-first work
 
@@ -146,6 +150,13 @@ packages/
   pos-core/
   testkit/
   tooling/
+
+ee/                           # Enterprise Edition workspace packages
+  api-ee/                     # Backend EE (@corely/api-ee)
+    src/tenancy/              # MultiTenantResolver, RoutingService
+  web-ee/                     # Frontend EE (@corely/web-ee)
+    src/components/           # WorkspaceSwitcher, tenant UI
+  shared-ee/                  # Shared EE utilities (@corely/shared-ee)
 
 docs/
 assets/
@@ -194,30 +205,87 @@ Ensure Postgres/Redis are reachable (use `docker compose -f docker-compose.dev.y
 
 - Global defaults: `.env.example`, `.env.dev.example`, `.env.e2e.example`; copy the one that matches your workflow into a `.env` file at the repo root.
 - Services and apps pick values from that `.env` (web uses `VITE_` prefixed keys, API/worker reference connection strings directly).
+- **Edition configuration:** Set `EDITION=oss` (backend) and `VITE_EDITION=oss` (frontend) for single-tenant OSS, or `ee` for multi-tenant Enterprise Edition. Defaults to `oss`.
+- **E2E compose (API only):** `docker compose --env-file .env.e2e -f docker-compose.e2e.yml up -d --build api`
+- **Reset E2E DB (fresh run):** `pnpm e2e:down` then `pnpm e2e:up` (this drops the docker volumes).
+
+### Running OSS vs EE Editions
+
+**OSS Edition (Single-Tenant) - Default:**
+
+```bash
+# Start with OSS defaults
+pnpm dev:api        # or: pnpm dev:api:oss
+pnpm dev:web        # or: pnpm dev:web:oss
+
+# Build OSS (excludes /ee packages)
+pnpm run build:oss
+```
+
+OSS uses `SingleTenantResolver` and enforces a single `DEFAULT_TENANT_ID`. The workspace switcher UI is hidden.
+
+**EE Edition (Multi-Tenant) - Requires EE Packages:**
+
+```bash
+# First, ensure EE packages are built
+pnpm --filter './ee/**' build
+
+# Start with EE edition
+pnpm dev:api:ee     # Uses MultiTenantResolver
+pnpm dev:web:ee     # Shows workspace switcher
+
+# Build EE (includes all packages)
+pnpm run build:ee
+```
+
+EE dynamically loads `@corely/api-ee` (MultiTenantResolver, tenant routing) and `@corely/web-ee` (WorkspaceSwitcher component) via bridge loaders. Tenants are resolved from routes (`/t/:tenantSlug`), hostnames, or headers.
+
+**Verify OSS Independence:**
+
+```bash
+# This script temporarily removes /ee and builds OSS to prove independence
+pnpm run ci:verify-oss-no-ee
+```
+
+See `VERIFICATION_GUIDE.md` for detailed testing procedures and `ee/README.md` for EE architecture.
 
 ## Environment variables
 
-| Name                                   | Used by                                         | Example                                                         | Notes                                                       |
-| -------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------- |
-| `DATABASE_URL`                         | `@corely/api`, `@corely/worker`, `@corely/data` | `postgresql://corely:corely@postgres:5432/corely?schema=public` | Prisma connection for commands, outbox, and read models.    |
-| `REDIS_URL`                            | `@corely/api`, `@corely/worker`                 | `redis://redis:6379`                                            | Queues, locks, rate limits, idempotency caches.             |
-| `VITE_API_BASE_URL`                    | `apps/web`, `apps/pos`                          | `http://localhost:4000`                                         | Switch between mock (`4000`) and real API (`3000`).         |
-| `LOG_LEVEL`                            | All services                                    | `debug`                                                         | Controls structured logging verbosity.                      |
-| `AI_MODEL_PROVIDER`                    | `@corely/api`                                   | `openai`                                                        | Selects `openai` or `anthropic` for Copilot tool runs.      |
-| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | `@corely/api`                                   | `(redacted)`                                                    | Provider credentials for assistant/tool calls; keep secret. |
-| `EMAIL_PROVIDER`                       | `@corely/api`                                   | `resend`                                                        | Controls transactional email adapter.                       |
-| `WEB_PORT`, `API_PORT`, `MOCK_PORT`    | Apps/services                                   | `5173`, `3000`, `4000`                                          | Override ports when composing services locally.             |
+| Name                                   | Used by                                         | Example                                                         | Notes                                                              |
+| -------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`                         | `@corely/api`, `@corely/worker`, `@corely/data` | `postgresql://corely:corely@postgres:5432/corely?schema=public` | Prisma connection for commands, outbox, and read models.           |
+| `EDITION`                              | `@corely/api`, `@corely/web`                    | `oss` or `ee`                                                   | Controls OSS vs EE module registration. Defaults to `oss`.         |
+| `DEFAULT_TENANT_ID`                    | `@corely/api`, `@corely/web`                    | `default_tenant`                                                | Required for OSS single-tenant enforcement.                        |
+| `DEFAULT_WORKSPACE_ID`                 | `@corely/api`, `@corely/web`                    | `default_workspace`                                             | Required for OSS default workspace.                                |
+| `REDIS_URL`                            | `@corely/api`, `@corely/worker`                 | `redis://redis:6379`                                            | Queues, locks, rate limits, idempotency caches.                    |
+| `VITE_API_BASE_URL`                    | `apps/web`, `apps/pos`                          | `http://localhost:4000`                                         | Switch between mock (`4000`) and real API (`3000`).                |
+| `VITE_EDITION`                         | `apps/web`                                      | `oss` or `ee`                                                   | Enables EE-only UI (tenant switching, /t/:slug routing).           |
+| `VITE_DEFAULT_TENANT_ID`               | `apps/web`                                      | `default_tenant`                                                | OSS fallback tenant id; must match backend DEFAULT_TENANT_ID       |
+| `VITE_DEFAULT_WORKSPACE_ID`            | `apps/web`                                      | `default_workspace`                                             | OSS fallback workspace id; must match backend DEFAULT_WORKSPACE_ID |
+| `LOG_LEVEL`                            | All services                                    | `debug`                                                         | Controls structured logging verbosity.                             |
+| `AI_MODEL_PROVIDER`                    | `@corely/api`                                   | `openai`                                                        | Selects `openai` or `anthropic` for Copilot tool runs.             |
+| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | `@corely/api`                                   | `(redacted)`                                                    | Provider credentials for assistant/tool calls; keep secret.        |
+| `EMAIL_PROVIDER`                       | `@corely/api`                                   | `resend`                                                        | Controls transactional email adapter.                              |
+| `WEB_PORT`, `API_PORT`, `MOCK_PORT`    | Apps/services                                   | `5173`, `3000`, `4000`                                          | Override ports when composing services locally.                    |
 
 ## Scripts
 
 Common scripts include:
 
 - `pnpm dev` – builds shared packages and runs all services/apps in parallel.
-- `pnpm dev:web`, `pnpm dev:mock`, `pnpm dev:api`, `pnpm dev:worker`, `pnpm dev:api:debug` – start each surface individually.
+- `pnpm dev:web`, `pnpm dev:mock`, `pnpm dev:api`, `pnpm dev:worker`, `pnpm dev:api:debug` – start each surface individually (defaults to OSS).
+- **Edition-specific dev:**
+  - `pnpm dev:api:oss`, `pnpm dev:web:oss` – explicitly run OSS edition (single-tenant).
+  - `pnpm dev:api:ee`, `pnpm dev:web:ee` – run EE edition (multi-tenant, requires EE packages).
 - `pnpm build`, `pnpm build:web`, `pnpm build:api` – compile packages plus apps/services.
+- **Edition-specific builds:**
+  - `pnpm build:oss` – build OSS edition only (excludes `/ee` packages).
+  - `pnpm build:ee` – build EE edition with all packages.
+  - `pnpm --filter './ee/**' build` – build EE packages only.
 - `pnpm typecheck`, `pnpm lint`, `pnpm format`, `pnpm format:check` – workspace-wide quality gates.
 - `pnpm check` – `lint` + `typecheck`.
 - `pnpm prisma:migrate`, `pnpm prisma:generate` – keep Prisma schema in sync for `@corely/data`.
+- `pnpm ci:verify-oss-no-ee` – verify OSS builds without `/ee` directory (CI check).
 
 ## Development modes
 

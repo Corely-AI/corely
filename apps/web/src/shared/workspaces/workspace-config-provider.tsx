@@ -4,6 +4,7 @@ import type { WorkspaceCapabilityKey, WorkspaceConfig } from "@corely/contracts"
 import { useWorkspace } from "./workspace-provider";
 import { workspacesApi } from "./workspaces-api";
 import { useAuth } from "@/lib/auth-provider";
+import { features } from "@/lib/features";
 
 interface WorkspaceConfigContextValue {
   config: WorkspaceConfig | null;
@@ -22,6 +23,8 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
   const { isAuthenticated } = useAuth();
   const hasValidWorkspace =
     !!activeWorkspaceId && workspaces.some((w) => w.id === activeWorkspaceId);
+
+  // Both OSS and EE: fetch config from API for the active workspace
   const enabled = isAuthenticated && hasValidWorkspace && !isWorkspacesLoading;
 
   const {
