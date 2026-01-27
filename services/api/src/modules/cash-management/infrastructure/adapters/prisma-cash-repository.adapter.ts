@@ -48,23 +48,22 @@ export class PrismaCashRepository implements CashRepositoryPort {
     id: string,
     data: Partial<CashRegisterEntity>
   ): Promise<CashRegisterEntity> {
-    // Security: Ensure register belongs to tenant before updating
-    const register = await this.prisma.cashRegister.findFirst({
+    // Security: Use updateMany to ensure tenantId matches atomically during update
+    const { count } = await this.prisma.cashRegister.updateMany({
       where: { id, tenantId },
-      select: { id: true },
-    });
-
-    if (!register) {
-      throw new Error(`CashRegister with ID ${id} not found in tenant ${tenantId}`);
-    }
-
-    const res = await this.prisma.cashRegister.update({
-      where: { id },
       data: {
         name: data.name,
         location: data.location,
         currentBalanceCents: data.currentBalanceCents,
       },
+    });
+
+    if (count === 0) {
+      throw new Error(`CashRegister with ID ${id} not found in tenant ${tenantId}`);
+    }
+
+    const res = await this.prisma.cashRegister.findFirstOrThrow({
+      where: { id, tenantId },
     });
     return this.mapRegister(res);
   }
@@ -125,8 +124,12 @@ export class PrismaCashRepository implements CashRepositoryPort {
     const where: Prisma.CashEntryWhereInput = { tenantId, registerId };
     if (filters?.from || filters?.to) {
       where.businessDate = {};
-      if (filters.from) {where.businessDate.gte = filters.from;}
-      if (filters.to) {where.businessDate.lte = filters.to;}
+      if (filters.from) {
+        where.businessDate.gte = filters.from;
+      }
+      if (filters.to) {
+        where.businessDate.lte = filters.to;
+      }
     }
 
     const res = await this.prisma.cashEntry.findMany({
@@ -146,6 +149,18 @@ export class PrismaCashRepository implements CashRepositoryPort {
   // --- Daily Close ---
 
   async saveDailyClose(data: CashDayCloseEntity): Promise<CashDayCloseEntity> {
+    // Security: Ensure register exists and belongs to tenant
+    const register = await this.prisma.cashRegister.findFirst({
+      where: { id: data.registerId, tenantId: data.tenantId },
+      select: { id: true },
+    });
+
+    if (!register) {
+      throw new Error(
+        `CashRegister with ID ${data.registerId} not found in tenant ${data.tenantId}`
+      );
+    }
+
     const res = await this.prisma.cashDayClose.upsert({
       where: {
         registerId_businessDate: {
@@ -189,7 +204,9 @@ export class PrismaCashRepository implements CashRepositoryPort {
         registerId_businessDate: { registerId, businessDate },
       },
     });
-    if (res && res.tenantId !== tenantId) {return null;}
+    if (res && res.tenantId !== tenantId) {
+      return null;
+    }
     return res ? this.mapDailyClose(res) : null;
   }
 

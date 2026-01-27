@@ -12,12 +12,10 @@ import { type ListJournalEntriesUseCase } from "./use-cases/list-journal-entries
 import { type ClosePeriodUseCase } from "./use-cases/close-period.usecase";
 import { type ReopenPeriodUseCase } from "./use-cases/reopen-period.usecase";
 import { type UpdateAccountingSettingsUseCase } from "./use-cases/update-accounting-settings.usecase";
-import {
-  type GetTrialBalanceUseCase,
-  type GetGeneralLedgerUseCase,
-  type GetProfitLossUseCase,
-  type GetBalanceSheetUseCase,
-} from "./use-cases/reports.usecases";
+import { type GetTrialBalanceUseCase } from "./use-cases/get-trial-balance.usecase";
+import { type GetGeneralLedgerUseCase } from "./use-cases/get-general-ledger.usecase";
+import { type GetProfitLossUseCase } from "./use-cases/get-profit-loss.usecase";
+import { type GetBalanceSheetUseCase } from "./use-cases/get-balance-sheet.usecase";
 
 export class AccountingApplication {
   constructor(

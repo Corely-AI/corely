@@ -34,12 +34,10 @@ import { ListJournalEntriesUseCase } from "./application/use-cases/list-journal-
 import { ClosePeriodUseCase } from "./application/use-cases/close-period.usecase";
 import { ReopenPeriodUseCase } from "./application/use-cases/reopen-period.usecase";
 import { UpdateAccountingSettingsUseCase } from "./application/use-cases/update-accounting-settings.usecase";
-import {
-  GetTrialBalanceUseCase,
-  GetGeneralLedgerUseCase,
-  GetProfitLossUseCase,
-  GetBalanceSheetUseCase,
-} from "./application/use-cases/reports.usecases";
+import { GetTrialBalanceUseCase } from "./application/use-cases/get-trial-balance.usecase";
+import { GetGeneralLedgerUseCase } from "./application/use-cases/get-general-ledger.usecase";
+import { GetProfitLossUseCase } from "./application/use-cases/get-profit-loss.usecase";
+import { GetBalanceSheetUseCase } from "./application/use-cases/get-balance-sheet.usecase";
 
 // Application Service
 import { AccountingApplication } from "./application/accounting.application";
@@ -291,73 +289,65 @@ import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
     // Use Cases - Reports
     {
       provide: GetTrialBalanceUseCase,
-      useFactory: (logger, settingsRepo, accountRepo, entryRepo, reportQuery) =>
+      useFactory: (logger, settingsRepo, accountRepo, reportQuery) =>
         new GetTrialBalanceUseCase({
           logger,
           settingsRepo,
           accountRepo,
-          entryRepo,
           reportQuery,
         }),
       inject: [
         NestLoggerAdapter,
         ACCOUNTING_SETTINGS_REPO_PORT,
         LEDGER_ACCOUNT_REPO_PORT,
-        JOURNAL_ENTRY_REPO_PORT,
         ACCOUNTING_REPORT_QUERY_PORT,
       ],
     },
     {
       provide: GetGeneralLedgerUseCase,
-      useFactory: (logger, settingsRepo, accountRepo, entryRepo, reportQuery) =>
+      useFactory: (logger, settingsRepo, accountRepo, reportQuery) =>
         new GetGeneralLedgerUseCase({
           logger,
           settingsRepo,
           accountRepo,
-          entryRepo,
           reportQuery,
         }),
       inject: [
         NestLoggerAdapter,
         ACCOUNTING_SETTINGS_REPO_PORT,
         LEDGER_ACCOUNT_REPO_PORT,
-        JOURNAL_ENTRY_REPO_PORT,
         ACCOUNTING_REPORT_QUERY_PORT,
       ],
     },
     {
       provide: GetProfitLossUseCase,
-      useFactory: (logger, settingsRepo, accountRepo, entryRepo, reportQuery) =>
+      useFactory: (logger, settingsRepo, accountRepo, reportQuery) =>
         new GetProfitLossUseCase({
           logger,
           settingsRepo,
           accountRepo,
-          entryRepo,
           reportQuery,
         }),
       inject: [
         NestLoggerAdapter,
         ACCOUNTING_SETTINGS_REPO_PORT,
         LEDGER_ACCOUNT_REPO_PORT,
-        JOURNAL_ENTRY_REPO_PORT,
         ACCOUNTING_REPORT_QUERY_PORT,
       ],
     },
     {
       provide: GetBalanceSheetUseCase,
-      useFactory: (logger, settingsRepo, accountRepo, entryRepo, reportQuery) =>
+      useFactory: (logger, settingsRepo, accountRepo, reportQuery) =>
         new GetBalanceSheetUseCase({
           logger,
           settingsRepo,
           accountRepo,
-          entryRepo,
           reportQuery,
         }),
       inject: [
         NestLoggerAdapter,
         ACCOUNTING_SETTINGS_REPO_PORT,
         LEDGER_ACCOUNT_REPO_PORT,
-        JOURNAL_ENTRY_REPO_PORT,
         ACCOUNTING_REPORT_QUERY_PORT,
       ],
     },
