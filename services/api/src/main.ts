@@ -6,7 +6,7 @@ import type { NestExpressApplication } from "@nestjs/platform-express";
 import * as path from "path";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
-import { ProblemDetailsExceptionFilter } from "./shared/exceptions/problem-details.filter.js";
+import { ProblemDetailsExceptionFilter } from "./shared/exceptions/problem-details.filter";
 import { setupTracing, shutdownTracing } from "./shared/observability/setup-tracing";
 
 // Load env files before anything else

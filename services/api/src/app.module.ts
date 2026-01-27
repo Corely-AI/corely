@@ -24,8 +24,8 @@ import { ApprovalsModule } from "./modules/approvals";
 import { EngagementModule } from "./modules/engagement/engagement.module";
 import { PlatformModule } from "./modules/platform";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
-import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware.js";
-import { TraceIdService } from "./shared/trace/trace-id.service.js";
+import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
+import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
 import { TenancyInterceptor, TenancyModule } from "./shared/tenancy";
 

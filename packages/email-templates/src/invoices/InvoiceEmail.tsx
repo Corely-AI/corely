@@ -12,7 +12,7 @@ import {
   Row,
   Column,
 } from "@react-email/components";
-import type { InvoiceEmailProps } from "./invoice-email.types.js";
+import type { InvoiceEmailProps } from "./invoice-email.types";
 
 export function InvoiceEmail({
   invoiceNumber,

@@ -29,6 +29,10 @@ export default tseslint.config(
         {
           patterns: [
             {
+              group: ["./*.js", "./**/*.js", "../*.js", "../**/*.js"],
+              message: "Use extensionless relative imports in TS/TSX (no .js).",
+            },
+            {
               group: ["@/modules/*", "@/modules/*/**"],
               message: "shared/* must not import from modules/*.",
             },
@@ -44,6 +48,10 @@ export default tseslint.config(
         "error",
         {
           patterns: [
+            {
+              group: ["./*.js", "./**/*.js", "../*.js", "../**/*.js"],
+              message: "Use extensionless relative imports in TS/TSX (no .js).",
+            },
             {
               group: ["@/modules/*/*", "@/modules/*/*/**"],
               message: "Import other modules via their public index export.",

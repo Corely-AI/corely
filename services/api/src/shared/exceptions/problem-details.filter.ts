@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { AppError } from "@corely/domain";
-import { ExceptionToProblemDetailsMapper } from "./exception-to-problem-details.mapper.js";
+import { ExceptionToProblemDetailsMapper } from "./exception-to-problem-details.mapper";
 
 /**
  * Global exception filter that converts ALL exceptions to ProblemDetails format

@@ -62,8 +62,8 @@
   "scripts": {
     "dev": "node dev.mjs",
     "dev:esbuild": "node dev.mjs",
-    "dev:debug": "node dev-tsc.mjs --inspect",
-    "build": "tsc -p tsconfig.json",
+    "dev:debug": "node dev.mjs --inspect",
+    "build": "node build.mjs",
     "build:esbuild": "node esbuild.config.mjs",
     "start": "node dist/main.js",
     "start:debug": "node --inspect=0.0.0.0:9229 dist/main.js",
