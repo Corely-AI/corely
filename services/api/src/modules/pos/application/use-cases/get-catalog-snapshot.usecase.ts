@@ -9,11 +9,13 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 
 // Note: In production, inject InventoryApplication to fetch products
 // For now, this is a placeholder structure showing the integration pattern
 
+@RequireTenant()
 @Injectable()
 export class GetCatalogSnapshotUseCase extends BaseUseCase<
   GetCatalogSnapshotInput,
@@ -28,9 +30,7 @@ export class GetCatalogSnapshotUseCase extends BaseUseCase<
     input: GetCatalogSnapshotInput,
     ctx: UseCaseContext
   ): Promise<Result<GetCatalogSnapshotOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
+    const tenantId = ctx.tenantId!;
 
     // TODO: Fetch products from inventory
     // const productsResult = await this.inventoryApp.listProducts({

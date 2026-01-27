@@ -1,16 +1,33 @@
 import { Injectable } from "@nestjs/common";
 import { TaxReportRepoPort } from "../../domain/ports/tax-report-repo.port";
-import { TaxReportDto } from "@corely/contracts";
+import { type TaxReportDto } from "@corely/contracts";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+@RequireTenant()
 @Injectable()
-export class GetTaxReportUseCase {
-  constructor(private readonly repo: TaxReportRepoPort) {}
+export class GetTaxReportUseCase extends BaseUseCase<string, TaxReportDto | null> {
+  constructor(private readonly repo: TaxReportRepoPort) {
+    super({ logger: null as any });
+  }
 
-  async execute(tenantId: string, id: string): Promise<TaxReportDto | null> {
+  protected async handle(
+    id: string,
+    ctx: UseCaseContext
+  ): Promise<Result<TaxReportDto | null, UseCaseError>> {
+    const tenantId = ctx.tenantId!;
     const entity = await this.repo.findById(tenantId, id);
-    if (!entity) {return null;}
+    if (!entity) {
+      return ok(null);
+    }
 
-    return {
+    return ok({
       id: entity.id,
       tenantId: entity.tenantId,
       type: entity.type,
@@ -39,6 +56,6 @@ export class GetTaxReportUseCase {
       })),
       createdAt: entity.createdAt.toISOString(),
       updatedAt: entity.updatedAt.toISOString(),
-    };
+    });
   }
 }

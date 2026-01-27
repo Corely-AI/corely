@@ -1,15 +1,29 @@
 import { Injectable } from "@nestjs/common";
 import type { GetTaxConsultantOutput } from "@corely/contracts";
 import { TaxConsultantRepoPort } from "../../domain/ports";
-import type { UseCaseContext } from "./use-case-context";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+@RequireTenant()
 @Injectable()
-export class GetTaxConsultantUseCase {
-  constructor(private readonly repo: TaxConsultantRepoPort) {}
+export class GetTaxConsultantUseCase extends BaseUseCase<void, GetTaxConsultantOutput> {
+  constructor(private readonly repo: TaxConsultantRepoPort) {
+    super({ logger: null as any });
+  }
 
-  async execute(ctx: UseCaseContext): Promise<GetTaxConsultantOutput> {
-    const consultant = await this.repo.get(ctx.workspaceId);
-    return {
+  protected async handle(
+    _input: void,
+    ctx: UseCaseContext
+  ): Promise<Result<GetTaxConsultantOutput, UseCaseError>> {
+    const workspaceId = ctx.workspaceId || ctx.tenantId!;
+    const consultant = await this.repo.get(workspaceId);
+    return ok({
       consultant: consultant
         ? {
             id: consultant.id,
@@ -22,6 +36,6 @@ export class GetTaxConsultantUseCase {
             updatedAt: consultant.updatedAt.toISOString(),
           }
         : null,
-    };
+    });
   }
 }

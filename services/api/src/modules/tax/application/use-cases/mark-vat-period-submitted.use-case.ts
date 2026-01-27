@@ -1,18 +1,32 @@
-import { ForbiddenException, Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, Inject } from "@nestjs/common";
 import type { MarkVatPeriodSubmittedInput, MarkVatPeriodSubmittedOutput } from "@corely/contracts";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 import { TaxProfileRepoPort, TaxReportRepoPort, VatPeriodQueryPort } from "../../domain/ports";
-import type { UseCaseContext } from "./use-case-context";
 import { VatAccountingMethod } from "@corely/contracts";
 import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,
 } from "../../../workspaces/application/ports/workspace-repository.port";
-import { Inject } from "@nestjs/common";
 import { mapTaxReportToDto } from "../mappers/tax-report-dto.mapper";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+export interface MarkVatPeriodSubmittedInputWithKey extends MarkVatPeriodSubmittedInput {
+  periodKey: string;
+}
+
+@RequireTenant()
 @Injectable()
-export class MarkVatPeriodSubmittedUseCase {
+export class MarkVatPeriodSubmittedUseCase extends BaseUseCase<
+  MarkVatPeriodSubmittedInputWithKey,
+  MarkVatPeriodSubmittedOutput
+> {
   constructor(
     private readonly periodResolver: VatPeriodResolver,
     private readonly vatPeriodQuery: VatPeriodQueryPort,
@@ -20,22 +34,24 @@ export class MarkVatPeriodSubmittedUseCase {
     private readonly taxReportRepo: TaxReportRepoPort,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort
-  ) {}
+  ) {
+    super({ logger: null as any });
+  }
 
-  async execute(
-    periodKey: string,
-    input: MarkVatPeriodSubmittedInput,
+  protected async handle(
+    input: MarkVatPeriodSubmittedInputWithKey,
     ctx: UseCaseContext
-  ): Promise<MarkVatPeriodSubmittedOutput> {
+  ): Promise<Result<MarkVatPeriodSubmittedOutput, UseCaseError>> {
     await this.assertWorkspaceAdmin(ctx);
-    const period = this.periodResolver.resolveQuarter(periodKey);
+    const period = this.periodResolver.resolveQuarter(input.periodKey);
     const now = new Date();
+    const workspaceId = ctx.workspaceId || ctx.tenantId!;
 
-    const profile = await this.taxProfileRepo.getActive(ctx.workspaceId, now);
+    const profile = await this.taxProfileRepo.getActive(workspaceId, now);
     const method = profile?.vatAccountingMethod ?? "IST";
 
     const inputs = await this.vatPeriodQuery.getInputs(
-      ctx.workspaceId,
+      workspaceId,
       period.start,
       period.end,
       method as VatAccountingMethod
@@ -46,7 +62,7 @@ export class MarkVatPeriodSubmittedUseCase {
     const submittedAt = input.submissionDate ? new Date(input.submissionDate) : now;
 
     const report = await this.taxReportRepo.upsertByPeriod({
-      tenantId: ctx.workspaceId,
+      tenantId: workspaceId,
       type: "VAT_ADVANCE",
       group: "ADVANCE_VAT",
       periodLabel: period.label,
@@ -61,7 +77,7 @@ export class MarkVatPeriodSubmittedUseCase {
       archivedReason: null,
     });
 
-    return { report: mapTaxReportToDto(report) };
+    return ok({ report: mapTaxReportToDto(report) });
   }
 
   private calculateDueDate(periodEnd: Date) {
@@ -74,17 +90,17 @@ export class MarkVatPeriodSubmittedUseCase {
 
   private async assertWorkspaceAdmin(ctx: UseCaseContext) {
     const hasAccess = await this.workspaceRepo.checkUserHasWorkspaceAccess(
-      ctx.tenantId,
-      ctx.workspaceId,
-      ctx.userId
+      ctx.tenantId!,
+      ctx.workspaceId || ctx.tenantId!,
+      ctx.userId!
     );
     if (!hasAccess) {
       throw new ForbiddenException("You do not have access to this workspace");
     }
 
     const membership = await this.workspaceRepo.getMembershipByUserAndWorkspace(
-      ctx.workspaceId,
-      ctx.userId
+      ctx.workspaceId || ctx.tenantId!,
+      ctx.userId!
     );
     const isAdmin = membership?.role === "OWNER" || membership?.role === "ADMIN";
     if (!isAdmin) {

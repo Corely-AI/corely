@@ -22,9 +22,12 @@ import { CreateRegisterUseCase } from "../../application/use-cases/create-regist
 import { AddEntryUseCase } from "../../application/use-cases/add-entry.usecase";
 import { ReverseEntryUseCase } from "../../application/use-cases/reverse-entry.usecase";
 import { SubmitDailyCloseUseCase } from "../../application/use-cases/submit-daily-close.usecase";
-import type { CashRepositoryPort } from "../../application/ports/cash-repository.port";
+import {
+  type CashRepositoryPort,
+  CASH_REPOSITORY,
+} from "../../application/ports/cash-repository.port";
 import { Inject } from "@nestjs/common";
-import { CASH_REPOSITORY } from "../../application/ports/cash-repository.port";
+import { type Result } from "@corely/kernel";
 
 @Controller()
 export class CashManagementController {
@@ -45,21 +48,23 @@ export class CashManagementController {
     const tenantId = ctx.tenantId;
     const workspaceId = ctx.workspaceId;
 
-    if (!tenantId || !workspaceId) throw new BadRequestException("Missing context");
+    if (!tenantId || !workspaceId) {throw new BadRequestException("Missing context");}
 
-    const register = await this.createRegisterUC.execute({
-      ...input,
-      tenantId,
-      workspaceId,
-    });
+    const result = await this.createRegisterUC.execute(
+      {
+        ...input,
+        tenantId,
+      },
+      ctx
+    );
 
-    return { register };
+    return { register: this.unwrap(result) };
   }
 
   @Get("cash-registers")
   async listRegisters(@Req() req: Request) {
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId || !ctx.workspaceId) throw new BadRequestException("Missing context");
+    if (!ctx.tenantId || !ctx.workspaceId) {throw new BadRequestException("Missing context");}
 
     const registers = await this.repository.findAll(ctx.tenantId, ctx.workspaceId);
     return { registers };
@@ -68,10 +73,10 @@ export class CashManagementController {
   @Get("cash-registers/:id")
   async getRegister(@Param("id") id: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId) throw new BadRequestException("Missing context");
+    if (!ctx.tenantId) {throw new BadRequestException("Missing context");}
 
     const register = await this.repository.findById(ctx.tenantId, id);
-    if (!register) throw new BadRequestException("Not found"); // Should be 404
+    if (!register) {throw new BadRequestException("Not found");} // Should be 404
     return { register };
   }
 
@@ -79,7 +84,7 @@ export class CashManagementController {
   async updateRegister(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const input = UpdateCashRegisterSchema.parse(body);
-    if (!ctx.tenantId) throw new BadRequestException("Missing context");
+    if (!ctx.tenantId) {throw new BadRequestException("Missing context");}
 
     const register = await this.repository.updateRegister(ctx.tenantId, id, input);
     return { register };
@@ -89,36 +94,35 @@ export class CashManagementController {
 
   @Post("cash-registers/:id/entries")
   async createEntry(@Param("id") registerId: string, @Body() body: unknown, @Req() req: Request) {
-    // Note: DTO has registerId, but URL also has it. URL should allow override or check match.
-    // DTO from contract might assume body includes registerId.
-    // The Input schema `CreateCashEntrySchema` has registerId.
     const rawInput = CreateCashEntrySchema.parse(body);
     if (rawInput.registerId && rawInput.registerId !== registerId) {
-       throw new BadRequestException("Register ID mismatch");
+      throw new BadRequestException("Register ID mismatch");
     }
 
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) throw new BadRequestException("Missing context");
+    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId)
+      {throw new BadRequestException("Missing context");}
 
-    const entry = await this.addEntryUC.execute({
-      ...rawInput,
-      registerId, // Force from URL
-      tenantId: ctx.tenantId,
-      workspaceId: ctx.workspaceId,
-      createdByUserId: ctx.userId,
-    });
+    const result = await this.addEntryUC.execute(
+      {
+        ...rawInput,
+        registerId, // Force from URL
+        tenantId: ctx.tenantId,
+      },
+      ctx
+    );
 
-    return { entry };
+    return { entry: this.unwrap(result) };
   }
 
   @Get("cash-registers/:id/entries")
   async listEntries(
-    @Param("id") registerId: string, 
-    @Req() req: Request, 
+    @Param("id") registerId: string,
+    @Req() req: Request,
     @Query() query: { from?: string; to?: string }
   ) {
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId) throw new BadRequestException("Missing context");
+    if (!ctx.tenantId) {throw new BadRequestException("Missing context");}
 
     const entries = await this.repository.findEntries(ctx.tenantId, registerId, {
       from: query.from,
@@ -129,24 +133,24 @@ export class CashManagementController {
 
   @Post("cash-entries/:id/reverse")
   async reverseEntry(@Param("id") entryId: string, @Body() body: unknown, @Req() req: Request) {
-    // DTO expects originalEntryId.
     const rawInput = ReverseCashEntrySchema.parse(body);
-    // Check mismatch
     if (rawInput.originalEntryId && rawInput.originalEntryId !== entryId) {
-       throw new BadRequestException("Entry ID mismatch");
+      throw new BadRequestException("Entry ID mismatch");
     }
 
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId || !ctx.userId) throw new BadRequestException("Missing context");
+    if (!ctx.tenantId || !ctx.userId) {throw new BadRequestException("Missing context");}
 
-    const entry = await this.reverseEntryUC.execute({
-      originalEntryId: entryId,
-      tenantId: ctx.tenantId,
-      reason: rawInput.reason,
-      userId: ctx.userId,
-    });
+    const result = await this.reverseEntryUC.execute(
+      {
+        originalEntryId: entryId,
+        tenantId: ctx.tenantId,
+        reason: rawInput.reason,
+      },
+      ctx
+    );
 
-    return { entry };
+    return { entry: this.unwrap(result) };
   }
 
   // --- DAILY CLOSE ---
@@ -155,31 +159,33 @@ export class CashManagementController {
   async dailyClose(@Param("id") registerId: string, @Body() body: unknown, @Req() req: Request) {
     const rawInput = SubmitDailyCloseSchema.parse(body);
     if (rawInput.registerId && rawInput.registerId !== registerId) {
-        throw new BadRequestException("Register ID mismatch");
+      throw new BadRequestException("Register ID mismatch");
     }
 
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) throw new BadRequestException("Missing context");
+    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId)
+      {throw new BadRequestException("Missing context");}
 
-    const close = await this.submitDailyCloseUC.execute({
-      ...rawInput,
-      registerId,
-      tenantId: ctx.tenantId,
-      workspaceId: ctx.workspaceId,
-      userId: ctx.userId,
-    });
+    const result = await this.submitDailyCloseUC.execute(
+      {
+        ...rawInput,
+        registerId,
+        tenantId: ctx.tenantId,
+      },
+      ctx
+    );
 
-    return { close };
+    return { close: this.unwrap(result) };
   }
 
   @Get("cash-registers/:id/daily-close")
   async listDailyCloses(
-    @Param("id") registerId: string, 
-    @Req() req: Request, 
+    @Param("id") registerId: string,
+    @Req() req: Request,
     @Query() query: { from?: string; to?: string }
   ) {
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId) throw new BadRequestException("Missing context");
+    if (!ctx.tenantId) {throw new BadRequestException("Missing context");}
 
     const closes = await this.repository.findDailyCloses(
       ctx.tenantId,
@@ -188,5 +194,12 @@ export class CashManagementController {
       query.to ?? "2100-01-01"
     );
     return { closes };
+  }
+
+  private unwrap<T>(result: Result<T, any>): T {
+    if ("error" in result) {
+      throw result.error;
+    }
+    return result.value;
   }
 }

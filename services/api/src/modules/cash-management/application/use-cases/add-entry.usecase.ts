@@ -1,33 +1,48 @@
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ValidationError,
+  NotFoundError,
+  err,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
+import type { CreateCashEntry } from "@corely/contracts";
+import { CashEntryType, DailyCloseStatus } from "@corely/contracts";
+import { type CashRepositoryPort, CASH_REPOSITORY } from "../ports/cash-repository.port";
+import type { CashEntryEntity } from "../../domain/entities";
 import { Inject, Injectable } from "@nestjs/common";
-import { CreateCashEntry, CashEntryType, DailyCloseStatus } from "@corely/contracts";
-import type { CashRepositoryPort } from "../ports/cash-repository.port";
-import { CASH_REPOSITORY } from "../ports/cash-repository.port";
-import { CashEntryEntity } from "../../domain/entities";
-import { BadRequestException, NotFoundException } from "@nestjs/common";
-import { OUTBOX_PORT } from "@corely/kernel";
-import type { OutboxPort } from "@corely/kernel";
+import { OUTBOX_PORT, type OutboxPort } from "@corely/kernel";
 
+@RequireTenant()
 @Injectable()
-export class AddEntryUseCase {
+export class AddEntryUseCase extends BaseUseCase<CreateCashEntry, CashEntryEntity> {
   constructor(
     @Inject(CASH_REPOSITORY) private readonly repository: CashRepositoryPort,
     @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort
-  ) {}
+  ) {
+    super({ logger: null as any }); // TODO: Proper logger
+  }
 
-  async execute(
-    data: CreateCashEntry & { tenantId: string; workspaceId: string; createdByUserId: string }
-  ): Promise<CashEntryEntity> {
-    const { tenantId, registerId, amountCents, type, businessDate } = data;
+  protected async handle(
+    input: CreateCashEntry,
+    ctx: UseCaseContext
+  ): Promise<Result<CashEntryEntity, UseCaseError>> {
+    const tenantId = ctx.tenantId!;
+    const { registerId, amountCents, type, businessDate } = input;
 
     // 1. Fetch Register
     const register = await this.repository.findById(tenantId, registerId);
-    if (!register) throw new NotFoundException("Cash Register not found");
+    if (!register) {
+      return err(new NotFoundError("Cash Register not found"));
+    }
 
     // 2. Validation: Negative Balance
     if (type === CashEntryType.OUT) {
       if (register.currentBalanceCents < amountCents) {
-         // Could make configurable, but requirement says "by default"
-         throw new BadRequestException("Insufficient funds in register");
+        return err(new ValidationError("Insufficient funds in register"));
       }
     }
 
@@ -35,27 +50,32 @@ export class AddEntryUseCase {
     if (businessDate) {
       const close = await this.repository.findDailyClose(tenantId, registerId, businessDate);
       if (close && close.status === DailyCloseStatus.LOCKED) {
-        throw new BadRequestException(`Date ${businessDate} is locked`);
+        return err(new ValidationError(`Date ${businessDate} is locked`));
       }
     }
 
     // 4. Create Entry
-    const entry = await this.repository.createEntry(data);
-    
+    const entry = await this.repository.createEntry({
+      ...input,
+      tenantId,
+      workspaceId: ctx.workspaceId || tenantId,
+      createdByUserId: ctx.userId || "system",
+    });
+
     // 5. Emit Event
     await this.outbox.enqueue({
-      tenantId: data.tenantId,
+      tenantId,
       eventType: "cash.entry.created",
       payload: {
         entryId: entry.id,
         registerId: entry.registerId,
         amountCents: entry.amountCents,
-        type: entry.type, // "IN" or "OUT"
+        type: entry.type,
         sourceType: entry.sourceType,
         businessDate: entry.businessDate,
       },
     });
 
-    return entry;
+    return ok(entry);
   }
 }

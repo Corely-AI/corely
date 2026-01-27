@@ -9,6 +9,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import {
   POS_SALE_IDEMPOTENCY_PORT,
@@ -22,6 +23,7 @@ import { AddEntryUseCase } from "../../../cash-management/application/use-cases/
 import { CreateRegisterUseCase } from "../../../cash-management/application/use-cases/create-register.usecase";
 import { CreateCashEntry, CashEntryType, CashEntrySourceType } from "@corely/contracts";
 
+@RequireTenant()
 @Injectable()
 export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSaleOutput> {
   constructor(
@@ -38,12 +40,10 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
     input: SyncPosSaleInput,
     ctx: UseCaseContext
   ): Promise<Result<SyncPosSaleOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
+    const tenantId = ctx.tenantId!;
 
     // 1. Check idempotency - return cached result if duplicate
-    const cached = await this.idempotencyStore.get(ctx.tenantId, input.idempotencyKey);
+    const cached = await this.idempotencyStore.get(tenantId, input.idempotencyKey);
     if (cached) {
       // Duplicate request - return cached result
       return ok(cached);
@@ -93,19 +93,14 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
 
     // 6. Record payment(s)
     // TODO: Use SalesApplication.recordPayment for each payment (for Sales Ledger)
-    
+
     // Bridge to Cash Management: Record cash movements
     const receiptNumber = this.generateReceiptNumber(input.registerId, input.saleDate);
 
     for (const payment of input.payments) {
       if (payment.method === "CASH") {
-        const entryData: CreateCashEntry & {
-          tenantId: string;
-          workspaceId: string;
-          createdByUserId: string;
-        } = {
-          tenantId: ctx.tenantId,
-          workspaceId: ctx.workspaceId,
+        const entryData: CreateCashEntry = {
+          tenantId,
           registerId: input.registerId,
           type: CashEntryType.IN,
           amountCents: payment.amountCents,
@@ -113,27 +108,28 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
           description: `POS Sale #${receiptNumber}`,
           referenceId: input.posSaleId,
           businessDate: input.saleDate.toISOString().split("T")[0],
-          createdByUserId: ctx.userId || "system",
         };
 
         try {
-          await this.addCashEntryUC.execute(entryData);
+          await this.addCashEntryUC.execute(entryData, ctx);
         } catch (error: unknown) {
           // If register not found, auto-create it (Bridge Legacy POS -> New Cash Mgmt)
           const err = error as Error;
           if (err?.message === "Cash Register not found") {
-             // Create register
-             await this.createCashRegisterUC.execute({
-                tenantId: ctx.tenantId,
-                workspaceId: ctx.workspaceId,
+            // Create register
+            await this.createCashRegisterUC.execute(
+              {
+                tenantId,
                 name: `POS Register ${input.registerId.slice(0, 8)}`,
                 currency: "EUR", // Default, or infer from input
                 location: "Main Store",
-             });
-             // Retry adding entry
-             await this.addCashEntryUC.execute(entryData);
+              },
+              ctx
+            );
+            // Retry adding entry
+            await this.addCashEntryUC.execute(entryData, ctx);
           } else {
-             throw error;
+            throw error;
           }
         }
       }
@@ -159,7 +155,7 @@ export class SyncPosSaleUseCase extends BaseUseCase<SyncPosSaleInput, SyncPosSal
       receiptNumber,
     };
 
-    await this.idempotencyStore.store(ctx.tenantId, input.idempotencyKey, input.posSaleId, result);
+    await this.idempotencyStore.store(tenantId, input.idempotencyKey, input.posSaleId, result);
 
     // 9. TODO: Update shift session totals (if sessionId provided)
     // if (input.sessionId) {
