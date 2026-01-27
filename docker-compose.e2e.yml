@@ -11,10 +11,11 @@ services:
     env_file:
       - .env.e2e
     environment:
-      # Use .env.e2e values to keep credentials consistent with DATABASE_URL
-      POSTGRES_DB: ${POSTGRES_DB:-corely_e2e}
-      POSTGRES_USER: ${POSTGRES_USER:-corely}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-corely}
+      # Explicit values so local .env overrides (e.g., POSTGRES_DB=corely) don't
+      # point the e2e stack at a database name that doesn't exist.
+      POSTGRES_DB: corely_e2e
+      POSTGRES_USER: corely
+      POSTGRES_PASSWORD: corely
     ports:
       - "5433:5432"
     volumes:
@@ -63,7 +64,7 @@ services:
       - .env.e2e
     command: >
       sh -c "cd /app/packages/data && /app/node_modules/.bin/prisma migrate deploy &&
-             pnpm --filter @corely/api dev:esbuild"
+             pnpm --filter @corely/api dev"
     restart: unless-stopped
     depends_on:
       postgres:
@@ -72,26 +73,19 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-test}
-      EDITION: ${EDITION:-oss}
       DATABASE_URL: ${DATABASE_URL:-postgresql://corely:corely@postgres:5432/corely_e2e?schema=public}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       TEST_HARNESS_SECRET: ${TEST_HARNESS_SECRET:-test-secret-key}
       JWT_SECRET: ${JWT_SECRET:-test-jwt-secret-change-me}
       RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_e2e}
-      DEFAULT_TENANT_ID: ${DEFAULT_TENANT_ID:-default_tenant}
-      DEFAULT_WORKSPACE_ID: ${DEFAULT_WORKSPACE_ID:-default_workspace}
       NODE_OPTIONS: --enable-source-maps
     ports:
       - "3000:3000"
     networks:
       - corely_e2e
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'curl -fsS -H "x-tenant-id: ${DEFAULT_TENANT_ID:-default_tenant}" http://localhost:3000/health > /dev/null',
-        ]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -118,13 +112,10 @@ services:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-test}
-      EDITION: ${EDITION:-oss}
       DATABASE_URL: ${DATABASE_URL:-postgresql://corely:corely@postgres:5432/corely_e2e?schema=public}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       LOG_LEVEL: ${LOG_LEVEL:-info}
       RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_e2e}
-      DEFAULT_TENANT_ID: ${DEFAULT_TENANT_ID:-default_tenant}
-      DEFAULT_WORKSPACE_ID: ${DEFAULT_WORKSPACE_ID:-default_workspace}
       NODE_OPTIONS: --enable-source-maps
     networks:
       - corely_e2e
@@ -146,9 +137,6 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-test}
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
-      VITE_EDITION: ${VITE_EDITION:-oss}
-      VITE_DEFAULT_TENANT_ID: ${VITE_DEFAULT_TENANT_ID:-default_tenant}
-      VITE_DEFAULT_WORKSPACE_ID: ${VITE_DEFAULT_WORKSPACE_ID:-default_workspace}
     ports:
       - "5173:8080"
     networks:

@@ -62,19 +62,6 @@ export class TestHarnessController {
   }
 
   /**
-   * Lookup user/tenant/workspace snapshot by email
-   */
-  @Post("lookup-user")
-  @HttpCode(HttpStatus.OK)
-  async lookupUser(@Body() payload: { email: string }) {
-    if (!payload.email) {
-      throw new BadRequestException("Missing required field: email");
-    }
-
-    return this.testHarnessService.getUserSnapshot(payload.email);
-  }
-
-  /**
    * Health check endpoint
    */
   @Post("health")
