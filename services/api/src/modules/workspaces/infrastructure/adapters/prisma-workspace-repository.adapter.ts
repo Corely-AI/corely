@@ -23,6 +23,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     const entity = await this.prisma.legalEntity.create({
       data: {
         id: input.id,
+        tenantId: input.tenantId,
         kind: input.kind,
         legalName: input.legalName,
         countryCode: input.countryCode,
@@ -34,9 +35,6 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
         website: input.website,
         address: input.address || null,
         bankAccount: input.bankAccount || null,
-        tenant: {
-          connect: { id: input.tenantId },
-        },
       },
     });
 

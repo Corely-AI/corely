@@ -8,7 +8,6 @@ import type { ClockPort } from "../../../../shared/ports/clock.port";
 import { CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
 import { IDEMPOTENCY_STORAGE_PORT_TOKEN } from "../../../../shared/ports/idempotency-storage.port";
-import { EnvService } from "@corely/config";
 
 export interface CreateWorkspaceCommand extends CreateWorkspaceInput {
   tenantId: string;
@@ -26,8 +25,7 @@ export class CreateWorkspaceUseCase {
     @Inject(CLOCK_PORT_TOKEN)
     private readonly clock: ClockPort,
     @Inject(IDEMPOTENCY_STORAGE_PORT_TOKEN)
-    private readonly idempotency: IdempotencyStoragePort,
-    private readonly env: EnvService
+    private readonly idempotency: IdempotencyStoragePort
   ) {}
 
   async execute(command: CreateWorkspaceCommand): Promise<CreateWorkspaceOutput> {
@@ -40,23 +38,6 @@ export class CreateWorkspaceUseCase {
       );
       if (cached) {
         return cached.body as CreateWorkspaceOutput;
-      }
-    }
-
-    const isEe = this.env.EDITION === "ee";
-
-    // OSS: reuse existing default workspace if present for the user/tenant
-    if (!isEe) {
-      const existing = await this.workspaceRepo.listWorkspacesByTenant(
-        command.tenantId,
-        command.userId
-      );
-      if (existing.length > 0) {
-        const membership = await this.workspaceRepo.getMembershipByUserAndWorkspace(
-          existing[0].id,
-          command.userId
-        );
-        return this.mapToOutput(existing[0], membership);
       }
     }
 
@@ -75,7 +56,7 @@ export class CreateWorkspaceUseCase {
     });
 
     // Create workspace
-    const workspaceId = isEe ? this.idGenerator.newId() : command.tenantId;
+    const workspaceId = this.idGenerator.newId();
     const workspace = await this.workspaceRepo.createWorkspace({
       id: workspaceId,
       tenantId: command.tenantId,
@@ -95,7 +76,33 @@ export class CreateWorkspaceUseCase {
       status: "ACTIVE",
     });
 
-    const result = this.mapToOutput(workspace, membership, legalEntity);
+    const result: CreateWorkspaceOutput = {
+      workspace: {
+        id: workspace.id,
+        legalEntityId: legalEntity.id,
+        name: workspace.name,
+        kind: legalEntity.kind as any,
+        legalName: legalEntity.legalName,
+        countryCode: legalEntity.countryCode,
+        currency: legalEntity.currency,
+        taxId: legalEntity.taxId,
+        address: legalEntity.address as any,
+        bankAccount: legalEntity.bankAccount as any,
+        invoiceSettings: workspace.invoiceSettings as any,
+        onboardingStatus: workspace.onboardingStatus as any,
+        onboardingCompletedAt: workspace.onboardingCompletedAt?.toISOString() || undefined,
+        createdAt: workspace.createdAt.toISOString(),
+        updatedAt: workspace.updatedAt.toISOString(),
+      },
+      membership: {
+        id: membership.id,
+        workspaceId: membership.workspaceId,
+        userId: membership.userId,
+        role: membership.role as any,
+        status: membership.status as any,
+        createdAt: membership.createdAt.toISOString(),
+      },
+    };
 
     // Store in idempotency cache
     if (command.idempotencyKey) {
@@ -106,37 +113,5 @@ export class CreateWorkspaceUseCase {
     }
 
     return result;
-  }
-
-  private mapToOutput(workspace: any, membership?: any, legalEntity?: any): CreateWorkspaceOutput {
-    return {
-      workspace: {
-        id: workspace.id,
-        legalEntityId: legalEntity?.id,
-        name: workspace.name,
-        kind: (legalEntity?.kind ?? "PERSONAL") as any,
-        legalName: (legalEntity?.legalName ?? workspace.name) as any,
-        countryCode: (legalEntity?.countryCode ?? "US") as any,
-        currency: (legalEntity?.currency ?? "USD") as any,
-        taxId: legalEntity?.taxId,
-        address: legalEntity?.address as any,
-        bankAccount: legalEntity?.bankAccount as any,
-        invoiceSettings: workspace.invoiceSettings as any,
-        onboardingStatus: workspace.onboardingStatus as any,
-        onboardingCompletedAt: workspace.onboardingCompletedAt?.toISOString() || undefined,
-        createdAt: workspace.createdAt.toISOString(),
-        updatedAt: workspace.updatedAt.toISOString(),
-      },
-      membership: membership
-        ? {
-            id: membership.id,
-            workspaceId: membership.workspaceId,
-            userId: membership.userId,
-            role: membership.role as any,
-            status: membership.status as any,
-            createdAt: membership.createdAt.toISOString(),
-          }
-        : undefined,
-    };
   }
 }

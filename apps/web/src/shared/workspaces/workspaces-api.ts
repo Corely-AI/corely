@@ -5,7 +5,6 @@ import type {
   CreateWorkspaceOutput,
   CreateWorkspaceInviteInput,
   CreateWorkspaceInviteOutput,
-  GetWorkspaceOutput,
   ListWorkspaceMembersOutput,
   ListWorkspacesOutput,
   UpdateWorkspaceInput,
@@ -44,10 +43,6 @@ class WorkspacesApi {
 
   async listMembers(workspaceId: string): Promise<ListWorkspaceMembersOutput> {
     return apiClient.get<ListWorkspaceMembersOutput>(`/workspaces/${workspaceId}/members`);
-  }
-
-  async getWorkspace(workspaceId: string): Promise<GetWorkspaceOutput> {
-    return apiClient.get<GetWorkspaceOutput>(`/workspaces/${workspaceId}`);
   }
 
   async getWorkspaceConfig(

@@ -163,13 +163,8 @@ export class AuthClient {
     } catch (error) {
       const normalized = normalizeError(error);
       if (normalized.status === 401) {
-        try {
-          await this.refreshAccessToken();
-          return this.getCurrentUser();
-        } catch (refreshError) {
-          await this.clearTokens();
-          throw normalizeError(refreshError);
-        }
+        await this.refreshAccessToken();
+        return this.getCurrentUser();
       }
       throw normalized;
     }
@@ -192,7 +187,6 @@ export class AuthClient {
 
       await this.storeTokens(result.accessToken, result.refreshToken);
     } catch (error) {
-      await this.clearTokens();
       throw normalizeError(error);
     }
   }

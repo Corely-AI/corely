@@ -49,7 +49,6 @@ import {
   TENANT_REPOSITORY_TOKEN,
   type TenantRepositoryPort,
 } from "../../application/ports/tenant-repository.port";
-import { EnvService } from "@corely/config";
 
 /**
  * Auth Controller
@@ -67,8 +66,7 @@ export class AuthController {
     @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
     private readonly membershipRepo: MembershipRepositoryPort,
-    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort,
-    private readonly env: EnvService
+    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort
   ) {}
 
   /**
@@ -85,63 +83,32 @@ export class AuthController {
       throw new BadRequestException("Missing required fields");
     }
 
-    // Calculate a default tenant name if missing (OSS fallback)
     const tenantName =
       input.tenantName?.trim() ||
       input.userName?.trim() ||
       input.email.split("@")[0] ||
       "Workspace";
 
-    console.log("[AuthController] POST /auth/signup received:", {
-      email: input.email,
-      hasPassword: !!input.password,
-      tenantName: input.tenantName, // Log original input
-      calculatedTenantName: tenantName,
-      bodyIdempotencyKey: input.idempotencyKey,
-      headerIdempotencyKey: idempotencyKey,
+    const result = await this.signUpUseCase.execute({
+      ...input,
+      tenantName,
+      idempotencyKey: idempotencyKey ?? input.idempotencyKey ?? "default",
+      context: buildRequestContext({
+        requestId: req?.headers["x-request-id"] as string | undefined,
+        tenantId: undefined,
+        actorUserId: undefined,
+      }),
     });
 
-    if (!input.email || !input.password) {
-      throw new BadRequestException("Missing required fields: email and password");
-    }
-
-    // EE mode requires tenant name, OSS mode uses default tenant
-    if (this.env.EDITION === "ee" && !input.tenantName) {
-      throw new BadRequestException("Tenant name is required in Enterprise Edition");
-    }
-
-    const finalIdempotencyKey = idempotencyKey ?? input.idempotencyKey ?? "default";
-    console.log("[AuthController] Final idempotency key:", finalIdempotencyKey);
-
-    try {
-      const result = await this.signUpUseCase.execute({
-        ...input,
-        tenantName, // Use calculated or provided name
-        idempotencyKey: finalIdempotencyKey,
-        context: buildRequestContext({
-          requestId: req?.headers["x-request-id"] as string | undefined,
-          tenantId: undefined,
-          actorUserId: undefined,
-        }),
-      });
-
-      console.log("[AuthController] Signup successful:", {
-        userId: result.userId,
-        tenantId: result.tenantId,
-      });
-      return {
-        userId: result.userId,
-        email: result.email,
-        tenantId: result.tenantId,
-        tenantName: result.tenantName,
-        membershipId: result.membershipId,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-      };
-    } catch (error) {
-      console.error("[AuthController] Signup error:", error);
-      throw error;
-    }
+    return {
+      userId: result.userId,
+      email: result.email,
+      tenantId: result.tenantId,
+      tenantName: result.tenantName,
+      membershipId: result.membershipId,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+    };
   }
 
   /**

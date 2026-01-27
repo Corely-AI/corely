@@ -1,16 +1,9 @@
-import { features } from "@/lib/features";
-
 const STORAGE_KEY = "corely-active-workspace";
 
 let activeWorkspaceId: string | null = null;
 const subscribers = new Set<(workspaceId: string | null) => void>();
 
 export function loadActiveWorkspaceId(): string | null {
-  // OSS mode: always use default workspace, ignore localStorage
-  if (!features.multiTenant) {
-    return features.defaultWorkspaceId;
-  }
-
   if (activeWorkspaceId) {
     return activeWorkspaceId;
   }
@@ -22,21 +15,10 @@ export function loadActiveWorkspaceId(): string | null {
 }
 
 export function getActiveWorkspaceId(): string | null {
-  // OSS mode: always use default workspace, ignore localStorage
-  if (!features.multiTenant) {
-    return features.defaultWorkspaceId;
-  }
   return activeWorkspaceId ?? loadActiveWorkspaceId();
 }
 
 export function setActiveWorkspaceId(workspaceId: string | null): void {
-  // OSS mode: ignore attempts to change workspace, always use default
-  if (!features.multiTenant) {
-    activeWorkspaceId = features.defaultWorkspaceId;
-    subscribers.forEach((fn) => fn(features.defaultWorkspaceId));
-    return;
-  }
-
   activeWorkspaceId = workspaceId;
   if (typeof window !== "undefined") {
     if (workspaceId) {
