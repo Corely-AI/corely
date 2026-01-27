@@ -138,51 +138,69 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
   }
 
   async seedDefaultReports(tenantId: string): Promise<void> {
-    const existing = await this.prisma.taxReport.count({ where: { tenantId } });
-    if (existing > 0) {
-      return;
-    }
+    // We remove the early 'return' check so we can backfill missing reports (like past year)
+    // if the user already has some reports. skipDuplicates handles the safety.
 
     const now = new Date();
-    const year = now.getUTCFullYear();
-    const quarterStart = new Date(Date.UTC(year, Math.floor(now.getUTCMonth() / 3) * 3, 1));
+    const currentYear = now.getUTCFullYear();
+    const pastYear = currentYear - 1;
+
+    // Current Quarter calculation
+    const quarterStart = new Date(Date.UTC(currentYear, Math.floor(now.getUTCMonth() / 3) * 3, 1));
     const quarterEnd = new Date(
       Date.UTC(quarterStart.getUTCFullYear(), quarterStart.getUTCMonth() + 3, 0)
     );
 
     // Calculate due date: 10 days after quarter ends
-    const due = new Date(quarterEnd);
-    due.setUTCDate(due.getUTCDate() + 10);
+    const quarterDue = new Date(quarterEnd);
+    quarterDue.setUTCDate(quarterDue.getUTCDate() + 10);
+
+    const reports: any[] = [
+      {
+        id: randomUUID(),
+        tenantId,
+        type: "VAT_ADVANCE",
+        group: "ADVANCE_VAT",
+        periodLabel: `Q${Math.floor(now.getUTCMonth() / 3) + 1} ${currentYear}`,
+        periodStart: quarterStart,
+        periodEnd: quarterEnd,
+        dueDate: quarterDue,
+        status: "OPEN",
+        amountEstimatedCents: null,
+        currency: "EUR",
+      },
+      // Past Year (2025)
+      {
+        id: randomUUID(),
+        tenantId,
+        type: "VAT_ANNUAL",
+        group: "ANNUAL_REPORT",
+        periodLabel: `${pastYear}`,
+        periodStart: new Date(Date.UTC(pastYear, 0, 1)),
+        periodEnd: new Date(Date.UTC(pastYear, 11, 31)),
+        dueDate: new Date(Date.UTC(currentYear, 4, 31)), // May 31 of current year
+        status: "OPEN",
+        amountEstimatedCents: null,
+        currency: "EUR",
+      },
+      // Current Year (2026)
+      {
+        id: randomUUID(),
+        tenantId,
+        type: "VAT_ANNUAL",
+        group: "ANNUAL_REPORT",
+        periodLabel: `${currentYear}`,
+        periodStart: new Date(Date.UTC(currentYear, 0, 1)),
+        periodEnd: new Date(Date.UTC(currentYear, 11, 31)),
+        dueDate: new Date(Date.UTC(currentYear + 1, 4, 31)), // May 31 of next year
+        status: "UPCOMING",
+        amountEstimatedCents: null,
+        currency: "EUR",
+      },
+    ];
 
     await this.prisma.taxReport.createMany({
-      data: [
-        {
-          id: randomUUID(),
-          tenantId,
-          type: "VAT_ADVANCE",
-          group: "ADVANCE_VAT",
-          periodLabel: `Q${Math.floor(now.getUTCMonth() / 3) + 1} ${year}`,
-          periodStart: quarterStart,
-          periodEnd: quarterEnd,
-          dueDate: due,
-          status: "OPEN",
-          amountEstimatedCents: null,
-          currency: "EUR",
-        },
-        {
-          id: randomUUID(),
-          tenantId,
-          type: "VAT_ANNUAL",
-          group: "ANNUAL_REPORT",
-          periodLabel: `${year}`,
-          periodStart: new Date(Date.UTC(year, 0, 1)),
-          periodEnd: new Date(Date.UTC(year, 11, 31)),
-          dueDate: new Date(Date.UTC(year + 1, 4, 31)), // May 31 of following year
-          status: "UPCOMING",
-          amountEstimatedCents: null,
-          currency: "EUR",
-        },
-      ],
+      data: reports,
       skipDuplicates: true,
     });
   }
