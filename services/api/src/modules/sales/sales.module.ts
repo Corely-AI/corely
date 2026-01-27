@@ -23,31 +23,27 @@ import { AccountingModule } from "../accounting";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 import { InvoicesModule } from "../invoices/invoices.module";
 import { INVOICE_COMMANDS } from "../invoices/application/ports/invoice-commands.port";
-import {
-  CreateQuoteUseCase,
-  UpdateQuoteUseCase,
-  SendQuoteUseCase,
-  AcceptQuoteUseCase,
-  RejectQuoteUseCase,
-  ConvertQuoteToOrderUseCase,
-  ConvertQuoteToInvoiceUseCase,
-  GetQuoteUseCase,
-  ListQuotesUseCase,
-} from "./application/use-cases/quotes.usecases";
-import {
-  CreateSalesOrderUseCase,
-  UpdateSalesOrderUseCase,
-  ConfirmSalesOrderUseCase,
-  FulfillSalesOrderUseCase,
-  CancelSalesOrderUseCase,
-  CreateInvoiceFromOrderUseCase,
-  GetSalesOrderUseCase,
-  ListSalesOrdersUseCase,
-} from "./application/use-cases/orders.usecases";
-import {
-  GetSalesSettingsUseCase,
-  UpdateSalesSettingsUseCase,
-} from "./application/use-cases/settings.usecases";
+import { CreateQuoteUseCase } from "./application/use-cases/create-quote.usecase";
+import { UpdateQuoteUseCase } from "./application/use-cases/update-quote.usecase";
+import { SendQuoteUseCase } from "./application/use-cases/send-quote.usecase";
+import { AcceptQuoteUseCase } from "./application/use-cases/accept-quote.usecase";
+import { RejectQuoteUseCase } from "./application/use-cases/reject-quote.usecase";
+import { ConvertQuoteToOrderUseCase } from "./application/use-cases/convert-quote-to-order.usecase";
+import { ConvertQuoteToInvoiceUseCase } from "./application/use-cases/convert-quote-to-invoice.usecase";
+import { GetQuoteUseCase } from "./application/use-cases/get-quote.usecase";
+import { ListQuotesUseCase } from "./application/use-cases/list-quotes.usecase";
+
+import { CreateSalesOrderUseCase } from "./application/use-cases/create-sales-order.usecase";
+import { UpdateSalesOrderUseCase } from "./application/use-cases/update-sales-order.usecase";
+import { ConfirmSalesOrderUseCase } from "./application/use-cases/confirm-sales-order.usecase";
+import { FulfillSalesOrderUseCase } from "./application/use-cases/fulfill-sales-order.usecase";
+import { CancelSalesOrderUseCase } from "./application/use-cases/cancel-sales-order.usecase";
+import { CreateInvoiceFromOrderUseCase } from "./application/use-cases/create-invoice-from-order.usecase";
+import { GetSalesOrderUseCase } from "./application/use-cases/get-sales-order.usecase";
+import { ListSalesOrdersUseCase } from "./application/use-cases/list-sales-orders.usecase";
+
+import { GetSalesSettingsUseCase } from "./application/use-cases/get-sales-settings.usecase";
+import { UpdateSalesSettingsUseCase } from "./application/use-cases/update-sales-settings.usecase";
 
 @Module({
   imports: [

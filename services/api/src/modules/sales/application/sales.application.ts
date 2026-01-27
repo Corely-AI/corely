@@ -1,28 +1,24 @@
-import {
-  type CreateQuoteUseCase,
-  type UpdateQuoteUseCase,
-  type SendQuoteUseCase,
-  type AcceptQuoteUseCase,
-  type RejectQuoteUseCase,
-  type ConvertQuoteToOrderUseCase,
-  type ConvertQuoteToInvoiceUseCase,
-  type GetQuoteUseCase,
-  type ListQuotesUseCase,
-} from "./use-cases/quotes.usecases";
-import {
-  type CreateSalesOrderUseCase,
-  type UpdateSalesOrderUseCase,
-  type ConfirmSalesOrderUseCase,
-  type FulfillSalesOrderUseCase,
-  type CancelSalesOrderUseCase,
-  type CreateInvoiceFromOrderUseCase,
-  type GetSalesOrderUseCase,
-  type ListSalesOrdersUseCase,
-} from "./use-cases/orders.usecases";
-import {
-  type GetSalesSettingsUseCase,
-  type UpdateSalesSettingsUseCase,
-} from "./use-cases/settings.usecases";
+import type { CreateQuoteUseCase } from "./use-cases/create-quote.usecase";
+import type { UpdateQuoteUseCase } from "./use-cases/update-quote.usecase";
+import type { SendQuoteUseCase } from "./use-cases/send-quote.usecase";
+import type { AcceptQuoteUseCase } from "./use-cases/accept-quote.usecase";
+import type { RejectQuoteUseCase } from "./use-cases/reject-quote.usecase";
+import type { ConvertQuoteToOrderUseCase } from "./use-cases/convert-quote-to-order.usecase";
+import type { ConvertQuoteToInvoiceUseCase } from "./use-cases/convert-quote-to-invoice.usecase";
+import type { GetQuoteUseCase } from "./use-cases/get-quote.usecase";
+import type { ListQuotesUseCase } from "./use-cases/list-quotes.usecase";
+
+import type { CreateSalesOrderUseCase } from "./use-cases/create-sales-order.usecase";
+import type { UpdateSalesOrderUseCase } from "./use-cases/update-sales-order.usecase";
+import type { ConfirmSalesOrderUseCase } from "./use-cases/confirm-sales-order.usecase";
+import type { FulfillSalesOrderUseCase } from "./use-cases/fulfill-sales-order.usecase";
+import type { CancelSalesOrderUseCase } from "./use-cases/cancel-sales-order.usecase";
+import type { CreateInvoiceFromOrderUseCase } from "./use-cases/create-invoice-from-order.usecase";
+import type { GetSalesOrderUseCase } from "./use-cases/get-sales-order.usecase";
+import type { ListSalesOrdersUseCase } from "./use-cases/list-sales-orders.usecase";
+
+import type { GetSalesSettingsUseCase } from "./use-cases/get-sales-settings.usecase";
+import type { UpdateSalesSettingsUseCase } from "./use-cases/update-sales-settings.usecase";
 
 export class SalesApplication {
   constructor(

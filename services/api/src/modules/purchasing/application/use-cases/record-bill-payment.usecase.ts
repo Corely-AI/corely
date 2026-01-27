@@ -1,48 +1,28 @@
 import {
   BaseUseCase,
-  type ClockPort,
-  type IdGeneratorPort,
-  type LoggerPort,
   type Result,
   type UseCaseContext,
   type UseCaseError,
   ValidationError,
   NotFoundError,
-  type AuditPort,
   err,
   ok,
   parseLocalDate,
+  RequireTenant,
 } from "@corely/kernel";
 import type {
   RecordBillPaymentInput,
   RecordBillPaymentOutput,
-  ListBillPaymentsInput,
-  ListBillPaymentsOutput,
   CreateJournalEntryInput,
   PostJournalEntryInput,
 } from "@corely/contracts";
-import type { VendorBillRepositoryPort } from "../ports/vendor-bill-repository.port";
-import type { BillPaymentRepositoryPort } from "../ports/bill-payment-repository.port";
-import type { PurchasingSettingsRepositoryPort } from "../ports/settings-repository.port";
 import { PurchasingSettingsAggregate } from "../../domain/settings.aggregate";
-import { toBillPaymentDto, toVendorBillDto } from "../mappers/purchasing-dto.mapper";
-import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
+import { toVendorBillDto } from "../mappers/purchasing-dto.mapper";
 import { getIdempotentResult, storeIdempotentResult } from "./idempotency";
-import type { AccountingApplication } from "../../../accounting/application/accounting.application";
+import type { PaymentDeps } from "./purchasing-payment.deps";
 import type { BillPayment } from "../../domain/purchasing.types";
 
-type PaymentDeps = {
-  logger: LoggerPort;
-  billRepo: VendorBillRepositoryPort;
-  paymentRepo: BillPaymentRepositoryPort;
-  settingsRepo: PurchasingSettingsRepositoryPort;
-  idGenerator: IdGeneratorPort;
-  clock: ClockPort;
-  idempotency: IdempotencyStoragePort;
-  accounting: AccountingApplication;
-  audit: AuditPort;
-};
-
+@RequireTenant()
 export class RecordBillPaymentUseCase extends BaseUseCase<
   RecordBillPaymentInput,
   RecordBillPaymentOutput
@@ -55,21 +35,22 @@ export class RecordBillPaymentUseCase extends BaseUseCase<
     input: RecordBillPaymentInput,
     ctx: UseCaseContext
   ): Promise<Result<RecordBillPaymentOutput, UseCaseError>> {
-    if (!ctx.tenantId || !ctx.userId) {
-      return err(new ValidationError("tenantId and userId are required"));
+    const tenantId = ctx.tenantId!;
+    if (!ctx.userId) {
+      return err(new ValidationError("userId is required"));
     }
 
     const cached = await getIdempotentResult<RecordBillPaymentOutput>({
       idempotency: this.services.idempotency,
       actionKey: "purchasing.record-payment",
-      tenantId: ctx.tenantId,
+      tenantId,
       idempotencyKey: input.idempotencyKey,
     });
     if (cached) {
       return ok(cached);
     }
 
-    const vendorBill = await this.services.billRepo.findById(ctx.tenantId, input.vendorBillId);
+    const vendorBill = await this.services.billRepo.findById(tenantId, input.vendorBillId);
     if (!vendorBill) {
       return err(new NotFoundError("Vendor bill not found"));
     }
@@ -78,11 +59,11 @@ export class RecordBillPaymentUseCase extends BaseUseCase<
       return err(new ValidationError("Payment exceeds remaining balance"));
     }
 
-    let settings = await this.services.settingsRepo.findByTenant(ctx.tenantId);
+    let settings = await this.services.settingsRepo.findByTenant(tenantId);
     if (!settings) {
       settings = PurchasingSettingsAggregate.createDefault({
         id: this.services.idGenerator.newId(),
-        tenantId: ctx.tenantId,
+        tenantId,
         now: this.services.clock.now(),
       });
     }
@@ -153,12 +134,12 @@ export class RecordBillPaymentUseCase extends BaseUseCase<
       return err(new ValidationError((error as Error).message));
     }
 
-    await this.services.paymentRepo.create(ctx.tenantId, payment);
-    await this.services.billRepo.save(ctx.tenantId, vendorBill);
+    await this.services.paymentRepo.create(tenantId, payment);
+    await this.services.billRepo.save(tenantId, vendorBill);
     await this.services.settingsRepo.save(settings);
 
     await this.services.audit.log({
-      tenantId: ctx.tenantId,
+      tenantId,
       userId: ctx.userId,
       action: "purchasing.bill.payment.recorded",
       entityType: "VendorBill",
@@ -170,33 +151,11 @@ export class RecordBillPaymentUseCase extends BaseUseCase<
     await storeIdempotentResult({
       idempotency: this.services.idempotency,
       actionKey: "purchasing.record-payment",
-      tenantId: ctx.tenantId,
+      tenantId,
       idempotencyKey: input.idempotencyKey,
       body: result,
     });
 
     return ok(result);
-  }
-}
-
-export class ListBillPaymentsUseCase extends BaseUseCase<
-  ListBillPaymentsInput,
-  ListBillPaymentsOutput
-> {
-  constructor(private readonly services: PaymentDeps) {
-    super({ logger: services.logger });
-  }
-
-  protected async handle(
-    input: ListBillPaymentsInput,
-    ctx: UseCaseContext
-  ): Promise<Result<ListBillPaymentsOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
-
-    const payments = await this.services.paymentRepo.listByBill(ctx.tenantId, input.vendorBillId);
-
-    return ok({ payments: payments.map(toBillPaymentDto) });
   }
 }
