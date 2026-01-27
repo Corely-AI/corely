@@ -11,9 +11,6 @@ export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_ENV: z.string().default("dev"),
   LOG_LEVEL: z.enum(["error", "warn", "info", "debug", "verbose"]).default("info"),
-  EDITION: z.enum(["oss", "ee"]).default("oss"),
-  DEFAULT_TENANT_ID: z.string().default("default_tenant"),
-  DEFAULT_WORKSPACE_ID: z.string().default("default_workspace"),
 
   // ============================================================================
   // POSTGRES DATABASE

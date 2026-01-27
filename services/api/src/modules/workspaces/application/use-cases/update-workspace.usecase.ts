@@ -57,9 +57,6 @@ export class UpdateWorkspaceUseCase {
 
     // Update legal entity fields
     const legalEntityUpdates: any = {};
-    if (command.kind !== undefined) {
-      legalEntityUpdates.kind = command.kind;
-    }
     if (command.legalName !== undefined) {
       legalEntityUpdates.legalName = command.legalName;
     }
@@ -106,17 +103,6 @@ export class UpdateWorkspaceUseCase {
     }
     if (command.invoiceSettings !== undefined) {
       workspaceUpdates.invoiceSettings = command.invoiceSettings;
-    }
-    const shouldCompleteOnboarding =
-      command.name !== undefined &&
-      command.kind !== undefined &&
-      command.legalName !== undefined &&
-      command.address?.line1 &&
-      command.address?.city &&
-      command.address?.postalCode;
-    if (shouldCompleteOnboarding && existing.onboardingStatus !== "DONE") {
-      workspaceUpdates.onboardingStatus = "DONE";
-      workspaceUpdates.onboardingCompletedAt = new Date();
     }
 
     if (Object.keys(workspaceUpdates).length > 0) {

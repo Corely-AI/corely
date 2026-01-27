@@ -4,7 +4,7 @@
  */
 
 import { AuthClient } from "@corely/auth-client";
-import { getActiveWorkspaceId, setActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
+import { setActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
 import { WebStorageAdapter } from "./storage-adapter";
 
 // Re-export types from shared package
@@ -57,14 +57,7 @@ class WebAuthClient {
 
   async signin(data: Parameters<AuthClient["signin"]>[0]) {
     const result = await this.client.signin(data);
-    const existingWorkspaceId = getActiveWorkspaceId();
-    const workspaceId =
-      result.workspaceId ??
-      result.tenantId ??
-      data.workspaceId ??
-      data.tenantId ??
-      existingWorkspaceId ??
-      null;
+    const workspaceId = result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId;
     if (workspaceId) {
       setActiveWorkspaceId(workspaceId);
     }

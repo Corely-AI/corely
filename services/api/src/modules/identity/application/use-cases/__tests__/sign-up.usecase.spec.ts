@@ -16,7 +16,6 @@ import { FakeClock } from "@shared/testkit/fakes/fake-clock";
 import { buildSignUpInput } from "../../../testkit/builders/build-signup-input";
 import { ValidationError } from "@shared/errors/domain-errors";
 import type { PermissionCatalogPort } from "../../ports/permission-catalog.port";
-import type { WorkspaceRepositoryPort } from "../../../../workspaces/application/ports/workspace-repository.port";
 
 let useCase: SignUpUseCase;
 let userRepo: FakeUserRepository;
@@ -29,7 +28,6 @@ let outbox: MockOutbox;
 let audit: MockAudit;
 let idempotency: MockIdempotencyStoragePort;
 let catalogPort: PermissionCatalogPort;
-let workspaceRepo: WorkspaceRepositoryPort;
 
 const setup = () => {
   userRepo = new FakeUserRepository();
@@ -56,27 +54,6 @@ const setup = () => {
       },
     ],
   };
-  // Mock EnvService
-  const mockEnv = {
-    EDITION: (process.env.EDITION || "oss") as "oss" | "ee",
-    DEFAULT_TENANT_ID: process.env.DEFAULT_TENANT_ID || "default_tenant",
-  } as any;
-
-  // Mock WorkspaceRepositoryPort
-  workspaceRepo = {
-    createLegalEntity: async () => ({ id: "legal-entity-id" }) as any,
-    createWorkspace: async () => ({ id: "workspace-id" }) as any,
-    createMembership: async () => ({ id: "workspace-membership-id" }) as any,
-    getLegalEntityById: async () => null,
-    updateLegalEntity: async () => ({}) as any,
-    getWorkspaceById: async () => null,
-    getWorkspaceByIdWithLegalEntity: async () => null,
-    listWorkspacesByTenant: async () => [],
-    updateWorkspace: async () => ({}) as any,
-    getMembershipByUserAndWorkspace: async () => null,
-    listMembershipsByWorkspace: async () => [],
-    checkUserHasWorkspaceAccess: async () => false,
-  };
 
   useCase = new SignUpUseCase(
     userRepo,
@@ -92,9 +69,7 @@ const setup = () => {
     audit,
     idempotency,
     new FakeIdGenerator("id"),
-    new FakeClock(new Date("2023-01-01T00:00:00.000Z")),
-    mockEnv,
-    workspaceRepo
+    new FakeClock(new Date("2023-01-01T00:00:00.000Z"))
   );
 };
 

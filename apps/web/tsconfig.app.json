@@ -27,8 +27,7 @@
       "@corely/contracts": ["../packages/contracts/src/index.ts"],
       "@corely/domain": ["../packages/domain/src/index.ts"],
       "@corely/offline-core": ["../packages/offline-core/src/index.ts"],
-      "@corely/offline-web": ["../packages/offline-web/src/index.ts"],
-      "@corely/web-ee": ["../ee/web-ee/src/index.ts"]
+      "@corely/offline-web": ["../packages/offline-web/src/index.ts"]
     }
   },
   "include": [
@@ -38,7 +37,6 @@
     "../../packages/contracts/src",
     "../../packages/domain/src",
     "../../packages/offline-core/src",
-    "../../packages/offline-web/src",
-    "../../ee/web-ee/src"
+    "../../packages/offline-web/src"
   ]
 }

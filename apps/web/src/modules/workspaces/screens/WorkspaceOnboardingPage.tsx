@@ -9,13 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/shared/ui/use-toast";
 import { workspacesApi } from "@/shared/workspaces/workspaces-api";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
-import { features } from "@/lib/features";
 
 const steps = ["Workspace", "Legal & Address", "Tax & Bank"];
 
 export const WorkspaceOnboardingPage: React.FC = () => {
   const navigate = useNavigate();
-  const { workspaces, setWorkspace, refresh, activeWorkspaceId } = useWorkspace();
+  const { setWorkspace, refresh } = useWorkspace();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -105,24 +104,11 @@ export const WorkspaceOnboardingPage: React.FC = () => {
               }
             : undefined,
       };
-      if (features.multiTenant) {
-        const result = await workspacesApi.createWorkspace(payload);
-        const createdId = result.workspace.id;
-        setWorkspace(createdId);
-        await refresh();
-        toast({
-          title: "Workspace created",
-          description: `${result.workspace.name} is now active.`,
-        });
-      } else {
-        const workspaceId = activeWorkspaceId ?? features.defaultWorkspaceId;
-        const result = await workspacesApi.updateWorkspace(workspaceId, payload);
-        setWorkspace(workspaceId);
-        toast({
-          title: "Workspace updated",
-          description: `${result.workspace.name} is now active.`,
-        });
-      }
+      const result = await workspacesApi.createWorkspace(payload);
+      const createdId = result.workspace.id;
+      setWorkspace(createdId);
+      await refresh();
+      toast({ title: "Workspace created", description: `${result.workspace.name} is now active.` });
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -135,11 +121,6 @@ export const WorkspaceOnboardingPage: React.FC = () => {
     }
   };
 
-  // EE: If user already has a workspace, send them back to dashboard/settings
-  if (features.multiTenant && workspaces.length > 0) {
-    navigate("/dashboard");
-    return null;
-  }
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/40">
       <div className="max-w-4xl mx-auto px-6 py-10 space-y-6">

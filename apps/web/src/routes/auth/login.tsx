@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-provider";
-import { features } from "@/lib/features";
 
 /**
  * Login Page
@@ -14,6 +13,7 @@ export const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [tenantId, setTenantId] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
   // Load remembered credentials on mount
@@ -23,12 +23,15 @@ export const LoginPage: React.FC = () => {
       if (!raw) {
         return;
       }
-      const parsed = JSON.parse(raw) as { email?: string; password?: string };
+      const parsed = JSON.parse(raw) as { email?: string; password?: string; tenantId?: string };
       if (parsed.email) {
         setEmail(parsed.email);
       }
       if (parsed.password) {
         setPassword(parsed.password);
+      }
+      if (parsed.tenantId) {
+        setTenantId(parsed.tenantId);
       }
       setRememberMe(true);
     } catch {
@@ -45,12 +48,15 @@ export const LoginPage: React.FC = () => {
       await signin({
         email,
         password,
-        tenantId: features.edition === "ee" ? undefined : features.defaultTenantId,
+        tenantId: tenantId || undefined,
       });
 
       // Persist credentials if requested
       if (rememberMe) {
-        localStorage.setItem("corely-remember-login", JSON.stringify({ email, password }));
+        localStorage.setItem(
+          "corely-remember-login",
+          JSON.stringify({ email, password, tenantId: tenantId || undefined })
+        );
       } else {
         localStorage.removeItem("corely-remember-login");
       }
