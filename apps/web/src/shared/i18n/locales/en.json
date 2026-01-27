@@ -60,7 +60,15 @@
     "members": "Team Management",
     "roles": "Roles & Permissions",
     "paymentMethods": "Payment Methods",
-    "taxSettings": "Tax Settings"
+    "taxSettings": "Tax Settings",
+    "cashManagement": "Cash Management"
+  },
+  "cashManagement": {
+    "title": "Cash Management",
+    "registers": "Registers",
+    "newRegister": "New Register",
+    "addEntry": "Add Entry",
+    "dailyClose": "Daily Close"
   },
   "dashboard": {
     "title": "Dashboard",

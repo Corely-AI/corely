@@ -30,6 +30,7 @@ import {
   ShoppingBag,
   Settings2,
   Cpu,
+  Coins,
 } from "lucide-react";
 
 /**
@@ -67,6 +68,7 @@ export const iconMap: Record<string, LucideIcon> = {
   ShoppingBag,
   Settings2,
   Cpu,
+  Coins,
 };
 
 /**

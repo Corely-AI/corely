@@ -49,7 +49,15 @@
     "inventoryCopilot": "Inventar - Copilot",
     "automation": "Automatisierung",
     "documents": "Dokumente",
-    "hr": "Personal"
+    "hr": "Personal",
+    "cashManagement": "Kassenbuch"
+  },
+  "cashManagement": {
+    "title": "Kassenbuch",
+    "registers": "Kassen",
+    "newRegister": "Neue Kasse",
+    "addEntry": "Eintrag hinzufügen",
+    "dailyClose": "Tagesabschluss"
   },
   "dashboard": {
     "title": "Übersicht",

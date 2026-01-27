@@ -23,6 +23,9 @@ model Tenant {
   packInstalls      TenantPackInstall[]
   menuOverrides     TenantMenuOverride[]
   seededRecordMeta  SeededRecordMeta[]
+  cashRegisters     CashRegister[]
+  cashEntries       CashEntry[]
+  cashDayCloses     CashDayClose[]
 
   @@index([createdAt])
 }

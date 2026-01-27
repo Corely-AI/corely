@@ -58,6 +58,9 @@ model Workspace {
   registers   Register[]
   shiftSessions ShiftSession[]
   posSaleIdempotency PosSaleIdempotency[]
+  cashRegisters     CashRegister[]
+  cashEntries       CashEntry[]
+  cashDayCloses     CashDayClose[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
