@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import jwt, { type Secret } from "jsonwebtoken";
+import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
 
 export type CmsReaderTokenPayload = {
   readerId: string;
@@ -16,7 +16,8 @@ export class CmsReaderTokenService {
     process.env.JWT_SECRET ||
     process.env.JWT_ACCESS_SECRET ||
     "cms-reader-secret-change-in-production";
-  private readonly expiresIn: string | number = process.env.CMS_READER_JWT_EXPIRES_IN || "7d";
+  private readonly expiresIn: SignOptions["expiresIn"] =
+    (process.env.CMS_READER_JWT_EXPIRES_IN as SignOptions["expiresIn"]) || "7d";
 
   generateAccessToken(payload: CmsReaderTokenPayload): string {
     return jwt.sign(

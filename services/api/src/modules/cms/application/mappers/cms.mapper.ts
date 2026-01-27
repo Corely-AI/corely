@@ -5,9 +5,9 @@ import type {
   CmsCommentDto,
   CmsReaderDto,
 } from "@corely/contracts";
-import { type CmsPostEntity } from "../domain/cms-post.entity";
-import { type CmsCommentEntity } from "../domain/cms-comment.entity";
-import { type CmsReaderEntity } from "../domain/cms-reader.entity";
+import { type CmsPostEntity } from "../../domain/cms-post.entity";
+import { type CmsCommentEntity } from "../../domain/cms-comment.entity";
+import { type CmsReaderEntity } from "../../domain/cms-reader.entity";
 
 export const toCmsPostDto = (post: CmsPostEntity): CmsPostDto => ({
   id: post.id,

@@ -22,8 +22,8 @@ import type { EnvService } from "@corely/config";
 import type { PromptRegistry } from "@corely/prompts";
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
-import { type PrismaAgentRunRepository } from "../../ai-copilot/infrastructure/adapters/prisma-agent-run-repository.adapter";
-import { type PrismaToolExecutionRepository } from "../../ai-copilot/infrastructure/adapters/prisma-tool-execution-repository.adapter";
+import { type PrismaAgentRunRepository } from "../../../ai-copilot/infrastructure/adapters/prisma-agent-run-repository.adapter";
+import { type PrismaToolExecutionRepository } from "../../../ai-copilot/infrastructure/adapters/prisma-tool-execution-repository.adapter";
 
 type Deps = {
   logger: LoggerPort;
