@@ -12,7 +12,9 @@ export class PrismaCashRepository implements CashRepositoryPort {
 
   // --- Registers ---
 
-  async createRegister(data: CreateCashRegister & { tenantId: string; workspaceId: string }): Promise<CashRegisterEntity> {
+  async createRegister(
+    data: CreateCashRegister & { tenantId: string; workspaceId: string }
+  ): Promise<CashRegisterEntity> {
     const res = await this.prisma.cashRegister.create({
       data: {
         tenantId: data.tenantId,
@@ -41,7 +43,21 @@ export class PrismaCashRepository implements CashRepositoryPort {
     return res.map((r) => this.mapRegister(r));
   }
 
-  async updateRegister(tenantId: string, id: string, data: Partial<CashRegisterEntity>): Promise<CashRegisterEntity> {
+  async updateRegister(
+    tenantId: string,
+    id: string,
+    data: Partial<CashRegisterEntity>
+  ): Promise<CashRegisterEntity> {
+    // Security: Ensure register belongs to tenant before updating
+    const register = await this.prisma.cashRegister.findFirst({
+      where: { id, tenantId },
+      select: { id: true },
+    });
+
+    if (!register) {
+      throw new Error(`CashRegister with ID ${id} not found in tenant ${tenantId}`);
+    }
+
     const res = await this.prisma.cashRegister.update({
       where: { id },
       data: {
@@ -55,8 +71,22 @@ export class PrismaCashRepository implements CashRepositoryPort {
 
   // --- Entries ---
 
-  async createEntry(data: CreateCashEntry & { tenantId: string; workspaceId: string; createdByUserId: string }): Promise<CashEntryEntity> {
+  async createEntry(
+    data: CreateCashEntry & { tenantId: string; workspaceId: string; createdByUserId: string }
+  ): Promise<CashEntryEntity> {
     return await this.prisma.$transaction(async (tx) => {
+      // Security: Verify register belongs to tenant
+      const register = await tx.cashRegister.findFirst({
+        where: { id: data.registerId, tenantId: data.tenantId },
+        select: { id: true },
+      });
+
+      if (!register) {
+        throw new Error(
+          `CashRegister with ID ${data.registerId} not found in tenant ${data.tenantId}`
+        );
+      }
+
       // 1. Create Entry
       const entry = await tx.cashEntry.create({
         data: {
@@ -75,7 +105,7 @@ export class PrismaCashRepository implements CashRepositoryPort {
 
       // 2. Update Balance
       const balanceChange = data.type === CashEntryType.IN ? data.amountCents : -data.amountCents;
-      
+
       await tx.cashRegister.update({
         where: { id: data.registerId },
         data: {
@@ -87,14 +117,18 @@ export class PrismaCashRepository implements CashRepositoryPort {
     });
   }
 
-  async findEntries(tenantId: string, registerId: string, filters?: { from?: string; to?: string }): Promise<CashEntryEntity[]> {
+  async findEntries(
+    tenantId: string,
+    registerId: string,
+    filters?: { from?: string; to?: string }
+  ): Promise<CashEntryEntity[]> {
     const where: Prisma.CashEntryWhereInput = { tenantId, registerId };
     if (filters?.from || filters?.to) {
       where.businessDate = {};
-      if (filters.from) where.businessDate.gte = filters.from;
-      if (filters.to) where.businessDate.lte = filters.to;
+      if (filters.from) {where.businessDate.gte = filters.from;}
+      if (filters.to) {where.businessDate.lte = filters.to;}
     }
-    
+
     const res = await this.prisma.cashEntry.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -145,17 +179,26 @@ export class PrismaCashRepository implements CashRepositoryPort {
     return this.mapDailyClose(res);
   }
 
-  async findDailyClose(tenantId: string, registerId: string, businessDate: string): Promise<CashDayCloseEntity | null> {
+  async findDailyClose(
+    tenantId: string,
+    registerId: string,
+    businessDate: string
+  ): Promise<CashDayCloseEntity | null> {
     const res = await this.prisma.cashDayClose.findUnique({
       where: {
         registerId_businessDate: { registerId, businessDate },
       },
     });
-    if (res && res.tenantId !== tenantId) return null;
+    if (res && res.tenantId !== tenantId) {return null;}
     return res ? this.mapDailyClose(res) : null;
   }
 
-  async findDailyCloses(tenantId: string, registerId: string, from: string, to: string): Promise<CashDayCloseEntity[]> {
+  async findDailyCloses(
+    tenantId: string,
+    registerId: string,
+    from: string,
+    to: string
+  ): Promise<CashDayCloseEntity[]> {
     const res = await this.prisma.cashDayClose.findMany({
       where: {
         tenantId,
