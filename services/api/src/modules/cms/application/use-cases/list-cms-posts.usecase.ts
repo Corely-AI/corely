@@ -11,7 +11,7 @@ import {
 import { type ListCmsPostsInput, type ListCmsPostsOutput } from "@corely/contracts";
 import { type CmsPostRepositoryPort } from "../ports/cms-post-repository.port";
 import { toCmsPostSummaryDto } from "../mappers/cms.mapper";
-import { buildPageInfo } from "../../../shared/http/pagination";
+import { buildPageInfo } from "../../../../shared/http/pagination";
 
 type Deps = {
   logger: LoggerPort;

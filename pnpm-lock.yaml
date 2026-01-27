@@ -21401,7 +21401,7 @@ snapshots:
       htmlparser2: 8.0.2
       is-plain-object: 5.0.0
       parse-srcset: 1.0.2
-      postcss: 8.5.6
+      postcss: 8.5.6(patch_hash=659e81f2f98da6f17f4d1768db7dd1f3643c6dde8cbffe7ada04a3f478175e77)
 
   sax@1.4.3: {}
 

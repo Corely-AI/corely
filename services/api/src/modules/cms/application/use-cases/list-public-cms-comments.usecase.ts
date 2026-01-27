@@ -16,7 +16,7 @@ import {
 import { type CmsPostRepositoryPort } from "../ports/cms-post-repository.port";
 import { type CmsCommentRepositoryPort } from "../ports/cms-comment-repository.port";
 import { toCmsCommentDto } from "../mappers/cms.mapper";
-import { buildPageInfo } from "../../../shared/http/pagination";
+import { buildPageInfo } from "../../../../shared/http/pagination";
 
 type Deps = {
   logger: LoggerPort;
