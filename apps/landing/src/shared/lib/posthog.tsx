@@ -11,6 +11,7 @@ export function PostHogProvider({ children }: PropsWithChildren) {
     if (!initialized.current && POSTHOG_KEY) {
       posthog.init(POSTHOG_KEY, {
         api_host: POSTHOG_HOST,
+        person_profiles: "identified_only",
         // For landing page (often SPA or static), default pageview capture is usually fine.
       });
       initialized.current = true;

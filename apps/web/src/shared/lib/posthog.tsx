@@ -13,6 +13,7 @@ export function PostHogProvider({ children }: PropsWithChildren) {
     if (!initialized.current && POSTHOG_KEY) {
       posthog.init(POSTHOG_KEY, {
         api_host: POSTHOG_HOST,
+        person_profiles: "identified_only",
         capture_pageview: false, // We will handle pageviews manually if needed, or set to true.
         // For SPA it is often better to leave it true as PostHog handles history automatically.
         // Let's stick to defaults but be explicit if strictly needed.
