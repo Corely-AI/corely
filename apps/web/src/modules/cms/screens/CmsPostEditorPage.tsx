@@ -148,7 +148,8 @@ export default function CmsPostEditorPage() {
         editorRef.current
           .chain()
           .focus()
-          .setImage({ src: uploaded.url, alt: "", fileId: uploaded.fileId })
+          .setImage({ src: uploaded.url, alt: "" })
+          .updateAttributes("image", { fileId: uploaded.fileId })
           .run();
       }
     } catch (error) {
