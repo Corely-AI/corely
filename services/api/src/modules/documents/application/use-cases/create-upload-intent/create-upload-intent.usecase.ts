@@ -86,6 +86,7 @@ export class CreateUploadIntentUseCase extends BaseUseCase<
         storageProvider: this.useCaseDeps.objectStorage.provider(),
         bucket: this.useCaseDeps.objectStorage.bucket(),
         objectKey,
+        isPublic: input.isPublic ?? false,
         contentType: input.contentType,
         sizeBytes: input.sizeBytes ?? null,
         sha256: input.sha256 ?? null,

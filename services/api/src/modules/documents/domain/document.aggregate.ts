@@ -60,6 +60,7 @@ export class DocumentAggregate {
       storageProvider: StorageProvider;
       bucket: string;
       objectKey: string;
+      isPublic?: boolean;
       contentType?: string | null;
       sizeBytes?: number | null;
       sha256?: string | null;
@@ -76,6 +77,7 @@ export class DocumentAggregate {
             storageProvider: params.file.storageProvider,
             bucket: params.file.bucket,
             objectKey: params.file.objectKey,
+            isPublic: params.file.isPublic ?? false,
             contentType: params.file.contentType,
             sizeBytes: params.file.sizeBytes,
             sha256: params.file.sha256,

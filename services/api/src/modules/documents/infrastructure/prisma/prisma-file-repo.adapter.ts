@@ -13,6 +13,7 @@ const mapFile = (row: any): FileEntity =>
     storageProvider: row.storageProvider,
     bucket: row.bucket,
     objectKey: row.objectKey,
+    isPublic: row.isPublic ?? false,
     contentType: row.contentType,
     sizeBytes: row.sizeBytes,
     sha256: row.sha256,
@@ -33,6 +34,7 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
         storageProvider: file.storageProvider as any,
         bucket: file.bucket,
         objectKey: file.objectKey,
+        isPublic: file.isPublic,
         contentType: file.contentType,
         sizeBytes: file.sizeBytes,
         sha256: file.sha256,
@@ -49,6 +51,7 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
         storageProvider: file.storageProvider as any,
         bucket: file.bucket,
         objectKey: file.objectKey,
+        isPublic: file.isPublic,
         contentType: file.contentType,
         sizeBytes: file.sizeBytes,
         sha256: file.sha256,
@@ -58,6 +61,11 @@ export class PrismaFileRepoAdapter implements FileRepoPort {
 
   async findById(tenantId: string, fileId: string): Promise<FileEntity | null> {
     const row = await this.prisma.file.findFirst({ where: { id: fileId, tenantId } });
+    return row ? mapFile(row) : null;
+  }
+
+  async findByIdGlobal(fileId: string): Promise<FileEntity | null> {
+    const row = await this.prisma.file.findUnique({ where: { id: fileId } });
     return row ? mapFile(row) : null;
   }
 

@@ -9,6 +9,7 @@ export * from "./expenses";
 export * from "./tax";
 export * from "./accounting";
 export * from "./crm";
+export * from "./cms";
 export * from "./sales";
 export {
   RecordPaymentInputSchema as SalesRecordPaymentInputSchema,

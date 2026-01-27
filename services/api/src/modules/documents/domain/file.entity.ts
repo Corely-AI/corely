@@ -8,6 +8,7 @@ type FileProps = {
   storageProvider: StorageProvider;
   bucket: string;
   objectKey: string;
+  isPublic?: boolean;
   contentType?: string | null;
   sizeBytes?: number | null;
   sha256?: string | null;
@@ -22,6 +23,7 @@ export class FileEntity {
   storageProvider: StorageProvider;
   bucket: string;
   objectKey: string;
+  isPublic: boolean;
   contentType?: string | null;
   sizeBytes?: number | null;
   sha256?: string | null;
@@ -35,6 +37,7 @@ export class FileEntity {
     this.storageProvider = props.storageProvider;
     this.bucket = props.bucket;
     this.objectKey = props.objectKey;
+    this.isPublic = props.isPublic ?? false;
     this.contentType = props.contentType ?? null;
     this.sizeBytes = props.sizeBytes ?? null;
     this.sha256 = props.sha256 ?? null;

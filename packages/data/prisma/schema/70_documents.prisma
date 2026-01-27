@@ -27,6 +27,7 @@ model File {
   storageProvider StorageProvider
   bucket          String
   objectKey       String
+  isPublic        Boolean           @default(false)
   contentType     String?
   sizeBytes       Int?
   sha256          String?

@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { DocumentsController } from "./adapters/http/documents.controller";
 import { InvoicePdfController } from "./adapters/http/invoice-pdf.controller";
+import { PublicDocumentsController } from "./adapters/http/public-documents.controller";
 import { DocumentsApplication } from "./application/documents.application";
 import { PrismaDocumentRepoAdapter } from "./infrastructure/prisma/prisma-document-repo.adapter";
 import { PrismaFileRepoAdapter } from "./infrastructure/prisma/prisma-file-repo.adapter";
@@ -26,12 +27,13 @@ import { CompleteUploadUseCase } from "./application/use-cases/complete-upload/c
 import { CreateUploadIntentUseCase } from "./application/use-cases/create-upload-intent/create-upload-intent.usecase";
 import { GenerateInvoicePdfWorker } from "./application/use-cases/generate-invoice-pdf-worker/generate-invoice-pdf.worker";
 import { GetDownloadUrlUseCase } from "./application/use-cases/get-download-url/get-download-url.usecase";
+import { GetPublicFileUrlUseCase } from "./application/use-cases/get-public-file-url/get-public-file-url.usecase";
 import { LinkDocumentUseCase } from "./application/use-cases/link-document/link-document.usecase";
 import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoice-pdf/request-invoice-pdf.usecase";
 
 @Module({
   imports: [IdentityModule, KernelModule],
-  controllers: [DocumentsController, InvoicePdfController],
+  controllers: [DocumentsController, InvoicePdfController, PublicDocumentsController],
   providers: [
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
@@ -124,6 +126,21 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
       ],
     },
     {
+      provide: GetPublicFileUrlUseCase,
+      useFactory: (
+        fileRepo: PrismaFileRepoAdapter,
+        storage: GcsObjectStorageAdapter,
+        env: EnvService
+      ) =>
+        new GetPublicFileUrlUseCase({
+          logger: new NestLoggerAdapter(),
+          fileRepo,
+          objectStorage: storage,
+          downloadTtlSeconds: env.SIGNED_URL_DOWNLOAD_TTL_SECONDS,
+        }),
+      inject: [PrismaFileRepoAdapter, GcsObjectStorageAdapter, EnvService],
+    },
+    {
       provide: LinkDocumentUseCase,
       useFactory: (documentRepo: PrismaDocumentRepoAdapter, linkRepo: PrismaDocumentLinkAdapter) =>
         new LinkDocumentUseCase({
@@ -199,6 +216,7 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
         createUploadIntent: CreateUploadIntentUseCase,
         completeUpload: CompleteUploadUseCase,
         getDownloadUrl: GetDownloadUrlUseCase,
+        getPublicFileUrl: GetPublicFileUrlUseCase,
         linkDocument: LinkDocumentUseCase,
         requestInvoicePdf: RequestInvoicePdfUseCase,
         generateInvoicePdfWorker: GenerateInvoicePdfWorker
@@ -207,6 +225,7 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
           createUploadIntent,
           completeUpload,
           getDownloadUrl,
+          getPublicFileUrl,
           linkDocument,
           requestInvoicePdf,
           generateInvoicePdfWorker
@@ -215,6 +234,7 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
         CreateUploadIntentUseCase,
         CompleteUploadUseCase,
         GetDownloadUrlUseCase,
+        GetPublicFileUrlUseCase,
         LinkDocumentUseCase,
         RequestInvoicePdfUseCase,
         GenerateInvoicePdfWorker,

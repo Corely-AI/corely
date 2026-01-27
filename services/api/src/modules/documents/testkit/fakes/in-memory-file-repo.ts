@@ -21,6 +21,10 @@ export class InMemoryFileRepo implements FileRepoPort {
     return file;
   }
 
+  async findByIdGlobal(fileId: string): Promise<FileEntity | null> {
+    return this.files.get(fileId) ?? null;
+  }
+
   async findByDocument(tenantId: string, documentId: string): Promise<FileEntity[]> {
     return Array.from(this.files.values()).filter(
       (f) => f.tenantId === tenantId && f.documentId === documentId
