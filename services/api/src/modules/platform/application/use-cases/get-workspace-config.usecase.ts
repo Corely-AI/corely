@@ -146,10 +146,10 @@ export class GetWorkspaceConfigUseCase {
     const ungrouped = items.filter((item) => !sectionsInGroups.has(item.section));
     if (ungrouped.length > 0) {
       groups.push({
-        id: "other",
-        labelKey: "nav.groups.other",
-        defaultLabel: "Other",
-        order: 999,
+        id: "tax",
+        labelKey: "nav.groups.tax",
+        defaultLabel: "Tax",
+        order: 90,
         items: ungrouped.sort((a, b) => a.order - b.order),
       });
     }

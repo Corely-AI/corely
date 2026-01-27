@@ -48,7 +48,9 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
   const canOpen = channel?.capabilities.open;
 
   const openUrl = useMemo(() => {
-    if (!channel) {return "";}
+    if (!channel) {
+      return "";
+    }
     const ctx = {
       ...context,
       subject,
@@ -64,7 +66,9 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
 
   const applyTemplate = (id: string) => {
     const tpl = channel.templates.find((t) => t.id === id);
-    if (!tpl) {return;}
+    if (!tpl) {
+      return;
+    }
     setTemplateId(id);
     setBody(interpolateTemplate(tpl.body, context, channel?.key));
     if (channel.capabilities.subject && tpl.subject) {

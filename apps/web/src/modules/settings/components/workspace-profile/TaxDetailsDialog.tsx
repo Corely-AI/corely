@@ -23,7 +23,7 @@ interface TaxDetailsDialogProps {
 export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) {
   const { activeWorkspace, refresh } = useWorkspace();
   const queryClient = useQueryClient();
-  
+
   const [taxId, setTaxId] = useState(activeWorkspace?.taxId || "");
   const [vatId, setVatId] = useState(activeWorkspace?.vatId || "");
 
@@ -82,14 +82,16 @@ export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) 
               className="font-mono"
             />
             <p className="text-xs text-muted-foreground">
-              Your business/freelance tax number from your local tax office. Only for self-employed folks.
+              Your business/freelance tax number from your local tax office. Only for self-employed
+              folks.
             </p>
           </div>
 
           {/* VAT Number */}
           <div className="space-y-2">
             <Label htmlFor="vat-number" className="text-sm font-medium">
-              VAT number (Umsatzsteuer-ID) <span className="text-muted-foreground font-normal">(Optional)</span>
+              VAT number (Umsatzsteuer-ID){" "}
+              <span className="text-muted-foreground font-normal">(Optional)</span>
             </Label>
             <Input
               id="vat-number"
@@ -99,7 +101,8 @@ export function TaxDetailsDialog({ open, onOpenChange }: TaxDetailsDialogProps) 
               className="font-mono"
             />
             <p className="text-xs text-muted-foreground">
-              Your EU business number for cross-border trade. For businesses and freelancers dealing with other EU countries.
+              Your EU business number for cross-border trade. For businesses and freelancers dealing
+              with other EU countries.
             </p>
           </div>
         </div>

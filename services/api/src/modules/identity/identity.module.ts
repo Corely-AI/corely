@@ -52,7 +52,12 @@ import { GetRolePermissionsUseCase } from "./application/use-cases/get-role-perm
 import { UpdateRolePermissionsUseCase } from "./application/use-cases/update-role-permissions.usecase";
 
 @Module({
-  imports: [DataModule, KernelModule, forwardRef(() => PlatformModule)],
+  imports: [
+    DataModule,
+    KernelModule,
+    forwardRef(() => PlatformModule),
+    forwardRef(() => import("../workspaces").then((m) => m.WorkspacesModule)),
+  ],
   controllers: [AuthController, RolesController, PermissionsController],
   providers: [
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()

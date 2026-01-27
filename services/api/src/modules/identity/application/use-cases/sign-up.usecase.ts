@@ -48,6 +48,9 @@ import {
 import { type RequestContext } from "../../../../shared/context/request-context";
 import { ConflictError, ValidationError } from "../../../../shared/errors/domain-errors";
 import { buildDefaultRoleGrants, type DefaultRoleKey } from "../../permissions/default-role-grants";
+import { EnvService } from "@corely/config";
+import type { WorkspaceRepositoryPort } from "../../../workspaces/application/ports/workspace-repository.port";
+import { WORKSPACE_REPOSITORY_PORT } from "../../../workspaces/application/ports/workspace-repository.port";
 
 export interface SignUpInput {
   email: string;
@@ -88,11 +91,24 @@ export class SignUpUseCase {
     @Inject(AUDIT_PORT_TOKEN) private readonly audit: AuditPort,
     @Inject(IDEMPOTENCY_STORAGE_PORT_TOKEN) private readonly idempotency: IdempotencyStoragePort,
     @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
-    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
+    private readonly env: EnvService,
+    @Inject(WORKSPACE_REPOSITORY_PORT) private readonly workspaceRepo: WorkspaceRepositoryPort
   ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
-    const cached = await this.idempotency.get(SIGN_UP_ACTION, null, input.idempotencyKey);
+    console.log("[SignUp] Starting signup with input:", {
+      email: input.email,
+      hasPassword: !!input.password,
+      tenantName: input.tenantName,
+      idempotencyKey: input.idempotencyKey,
+    });
+
+    // Generate idempotency key if not provided
+    const idempotencyKey = input.idempotencyKey || this.idGenerator.newId();
+    console.log("[SignUp] Using idempotency key:", idempotencyKey);
+
+    const cached = await this.idempotency.get(SIGN_UP_ACTION, null, idempotencyKey);
     if (cached) {
       return cached.body as SignUpOutput;
     }
@@ -102,25 +118,57 @@ export class SignUpUseCase {
     const email = Email.create(input.email);
     const password = Password.create(input.password);
 
+    console.log("[SignUp] Checking for existing user with email:", email.getValue());
     const existingUser = await this.userRepo.findByEmail(email.getValue());
     if (existingUser) {
+      console.log("[SignUp] User already exists:", existingUser.getId());
       throw new ConflictError("User with this email already exists");
     }
+    console.log("[SignUp] No existing user found");
 
-    const tenantId = this.idGenerator.newId();
-    const slug = this.generateSlug(input.tenantName);
-    const existingTenant = await this.tenantRepo.findBySlug(slug);
-    if (existingTenant) {
-      throw new ConflictError("Tenant with this slug already exists");
+    const isEe = this.env.EDITION === "ee";
+    const tenantId = isEe ? this.idGenerator.newId() : this.env.DEFAULT_TENANT_ID;
+    const workspaceId = isEe ? undefined : this.env.DEFAULT_WORKSPACE_ID;
+    console.log("[SignUp] Edition check:", { isEe, tenantId, workspaceId });
+
+    let slug: string;
+    let tenantName: string;
+    let tenantCreated = false;
+
+    if (isEe) {
+      // EE mode: tenant name is required
+      if (!input.tenantName) {
+        throw new ValidationError("Tenant name is required in EE mode");
+      }
+      tenantName = input.tenantName;
+      slug = this.generateSlug(input.tenantName);
+      const existingTenant = await this.tenantRepo.findBySlug(slug);
+      if (existingTenant) {
+        throw new ConflictError("Tenant with this slug already exists");
+      }
+      const tenant = Tenant.create(tenantId, input.tenantName, slug);
+      await this.tenantRepo.create(tenant);
+      tenantCreated = true;
+    } else {
+      // OSS mode: use default tenant, ignore provided tenant name
+      tenantName = input.tenantName || "Default Organization";
+      const ossTenant = await this.resolveTenantForOss(tenantId, tenantName);
+      slug = ossTenant.slug;
+      tenantName = ossTenant.name;
+      tenantCreated = ossTenant.created;
     }
 
-    const tenant = Tenant.create(tenantId, input.tenantName, slug);
-    await this.tenantRepo.create(tenant);
-
     const userId = this.idGenerator.newId();
+    console.log("[SignUp] Creating user:", { userId, email: email.getValue(), tenantId });
     const passwordHash = await this.passwordHasher.hash(password.getValue());
     const user = User.create(userId, email, passwordHash, input.userName || null);
-    await this.userRepo.create(user);
+    try {
+      await this.userRepo.create(user);
+      console.log("[SignUp] User created successfully");
+    } catch (error) {
+      console.error("[SignUp] Error creating user:", error);
+      throw error;
+    }
 
     const defaultRoles = await this.ensureDefaultRoles(tenantId);
     await this.seedDefaultRoleGrants(tenantId, userId, defaultRoles);
@@ -128,6 +176,23 @@ export class SignUpUseCase {
     const membershipId = this.idGenerator.newId();
     const membership = Membership.create(membershipId, tenantId, userId, ownerRole);
     await this.membershipRepo.create(membership);
+
+    // OSS mode: create default workspace during signup
+    if (!isEe) {
+      console.log("[SignUp] Creating default workspace for OSS mode");
+      try {
+        await this.createDefaultWorkspaceForOss(
+          tenantId,
+          workspaceId ?? tenantId,
+          userId,
+          input.userName || null
+        );
+        console.log("[SignUp] Default workspace created successfully");
+      } catch (error) {
+        console.error("[SignUp] Error creating default workspace:", error);
+        throw error;
+      }
+    }
 
     const accessToken = this.tokenService.generateAccessToken({
       userId,
@@ -147,13 +212,14 @@ export class SignUpUseCase {
 
     await this.emitOutboxEvents(
       tenantId,
-      input.tenantName,
+      tenantName,
       userId,
       membershipId,
       ownerRole,
       email.getValue(),
       input.userName || null,
-      slug
+      slug,
+      tenantCreated
     );
 
     await this.audit.write({
@@ -175,7 +241,7 @@ export class SignUpUseCase {
       refreshToken,
     };
 
-    await this.idempotency.store(SIGN_UP_ACTION, null, input.idempotencyKey, { body: response });
+    await this.idempotency.store(SIGN_UP_ACTION, null, idempotencyKey, { body: response });
     return response;
   }
 
@@ -186,7 +252,7 @@ export class SignUpUseCase {
     if (!input.password || input.password.length < 6) {
       throw new ValidationError("Password must be at least 6 characters");
     }
-    if (!input.tenantName) {
+    if (!input.tenantName && this.env.EDITION === "ee") {
       throw new ValidationError("Tenant name is required");
     }
   }
@@ -199,6 +265,32 @@ export class SignUpUseCase {
       .replace(/\\s+/g, "-")
       .replace(/-+/g, "-")
       .substring(0, 50);
+  }
+
+  /**
+   * OSS mode: ensure the configured default tenant exists and return its slug.
+   */
+  private async resolveTenantForOss(
+    tenantId: string,
+    tenantName: string
+  ): Promise<{ slug: string; name: string; created: boolean }> {
+    if (!tenantId) {
+      throw new ValidationError("DEFAULT_TENANT_ID is not configured");
+    }
+
+    const existing = await this.tenantRepo.findById(tenantId);
+    if (existing) {
+      return { slug: existing.getSlug(), name: existing.getName(), created: false };
+    }
+
+    let slug = this.generateSlug(tenantName) || tenantId;
+    if (await this.tenantRepo.slugExists(slug)) {
+      slug = this.generateSlug(tenantId) || tenantId;
+    }
+
+    const tenant = Tenant.create(tenantId, tenantName, slug);
+    await this.tenantRepo.create(tenant);
+    return { slug, name: tenantName, created: true };
   }
 
   private async ensureDefaultRoles(tenantId: string): Promise<Record<DefaultRoleKey, string>> {
@@ -261,7 +353,8 @@ export class SignUpUseCase {
     roleId: string,
     email: string,
     name: string | null,
-    slug: string
+    slug: string,
+    tenantCreated: boolean
   ) {
     const userCreatedEvent = new UserCreatedEvent(userId, email, name, null);
     await this.outbox.enqueue({
@@ -270,12 +363,14 @@ export class SignUpUseCase {
       payload: userCreatedEvent,
     });
 
-    const tenantCreatedEvent = new TenantCreatedEvent(tenantId, tenantName, slug);
-    await this.outbox.enqueue({
-      tenantId,
-      eventType: tenantCreatedEvent.eventType,
-      payload: tenantCreatedEvent,
-    });
+    if (tenantCreated) {
+      const tenantCreatedEvent = new TenantCreatedEvent(tenantId, tenantName, slug);
+      await this.outbox.enqueue({
+        tenantId,
+        eventType: tenantCreatedEvent.eventType,
+        payload: tenantCreatedEvent,
+      });
+    }
 
     const membershipCreatedEvent = new MembershipCreatedEvent(
       membershipId,
@@ -292,5 +387,105 @@ export class SignUpUseCase {
 
   private async hashToken(token: string) {
     return createHash("sha256").update(token).digest("hex");
+  }
+
+  /**
+   * Creates the default workspace for OSS mode during signup.
+   * OSS supports exactly one workspace per tenant.
+   */
+  private async createDefaultWorkspaceForOss(
+    tenantId: string,
+    workspaceId: string,
+    userId: string,
+    workspaceName: string
+  ): Promise<void> {
+    console.log("[SignUp:Workspace] Creating default workspace:", {
+      tenantId,
+      workspaceId,
+      userId,
+      workspaceName,
+    });
+
+    // Check if workspace already exists (OSS mode uses a fixed default workspace ID)
+    const existingWorkspace = await this.workspaceRepo.getWorkspaceById(tenantId, workspaceId);
+    if (existingWorkspace) {
+      console.log("[SignUp:Workspace] Workspace already exists, creating membership only");
+      // Workspace exists, just create membership for this user
+      const workspaceMembershipId = this.idGenerator.newId();
+      await this.workspaceRepo.createMembership({
+        id: workspaceMembershipId,
+        workspaceId,
+        userId,
+        role: "OWNER",
+        status: "ACTIVE",
+      });
+      console.log("[SignUp:Workspace] Membership created for existing workspace");
+      return;
+    }
+
+    console.log("[SignUp:Workspace] No existing workspace found, creating new one");
+
+    // Create legal entity with placeholder name - will be configured during onboarding
+    const legalEntityId = this.idGenerator.newId();
+    const defaultLegalName = workspaceName || "My Business";
+    console.log(
+      "[SignUp:Workspace] Creating legal entity:",
+      legalEntityId,
+      "with default name:",
+      defaultLegalName
+    );
+    try {
+      await this.workspaceRepo.createLegalEntity({
+        id: legalEntityId,
+        tenantId,
+        kind: "PERSONAL",
+        legalName: defaultLegalName,
+        countryCode: "US",
+        currency: "USD",
+      });
+      console.log("[SignUp:Workspace] Legal entity created successfully");
+    } catch (error) {
+      console.error("[SignUp:Workspace] Error creating legal entity:", error);
+      throw error;
+    }
+
+    // Create workspace for OSS default tenant
+    const defaultWorkspaceName = workspaceName || "My Workspace";
+    console.log(
+      "[SignUp:Workspace] Creating workspace with ID:",
+      workspaceId,
+      "and name:",
+      defaultWorkspaceName
+    );
+    try {
+      await this.workspaceRepo.createWorkspace({
+        id: workspaceId,
+        tenantId,
+        legalEntityId,
+        name: defaultWorkspaceName,
+        onboardingStatus: "NEW",
+      });
+      console.log("[SignUp:Workspace] Workspace created successfully");
+    } catch (error) {
+      console.error("[SignUp:Workspace] Error creating workspace:", error);
+      throw error;
+    }
+
+    // Create workspace membership
+    const workspaceMembershipId = this.idGenerator.newId();
+    console.log("[SignUp:Workspace] Creating workspace membership:", workspaceMembershipId);
+    try {
+      await this.workspaceRepo.createMembership({
+        id: workspaceMembershipId,
+        workspaceId,
+        userId,
+        role: "OWNER",
+        status: "ACTIVE",
+      });
+      console.log("[SignUp:Workspace] Workspace membership created successfully");
+    } catch (error) {
+      console.error("[SignUp:Workspace] Error creating workspace membership:", error);
+      throw error;
+    }
   }
 }

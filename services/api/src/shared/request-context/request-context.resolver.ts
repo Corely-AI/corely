@@ -52,11 +52,42 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const headerWorkspaceId = pickHeader(req, [HEADER_WORKSPACE_ID]);
   const headerTenantId = pickHeader(req, [HEADER_TENANT_ID]);
 
+  const isEe = process.env.EDITION === "ee";
+  const defaultTenant = process.env.DEFAULT_TENANT_ID || "default_tenant";
+  const defaultWorkspace = process.env.DEFAULT_WORKSPACE_ID || "default_workspace";
+
   // Prefer explicit workspace header (active workspace) over route param to support
   // cross-workspace requests where the route carries tenantId.
-  const workspaceId = headerWorkspaceId ?? routeWorkspaceId ?? req.user?.workspaceId ?? null;
+  let workspaceId = headerWorkspaceId ?? routeWorkspaceId ?? req.user?.workspaceId ?? null;
 
-  const tenantId = req.user?.tenantId ?? headerTenantId ?? undefined;
+  let tenantId = req.tenantId ?? req.user?.tenantId ?? headerTenantId ?? undefined;
+
+  if (!isEe) {
+    // OSS mode: enforce strict single tenant/workspace - reject mismatches
+    const headerMismatch =
+      (headerWorkspaceId && headerWorkspaceId !== defaultWorkspace) ||
+      (headerTenantId && headerTenantId !== defaultTenant);
+    if (headerMismatch) {
+      const error = new Error(
+        `OSS mode only supports the default workspace/tenant. Received: workspaceId=${headerWorkspaceId}, tenantId=${headerTenantId}, expected workspace=${defaultWorkspace}, tenant=${defaultTenant}`
+      );
+      error.name = "TenantMismatchError";
+      if (debug) {
+        debug.error(
+          {
+            headerWorkspaceId,
+            headerTenantId,
+            defaultTenant,
+            defaultWorkspace,
+          },
+          "RequestContextResolver: rejecting mismatched workspace/tenant headers in OSS mode"
+        );
+      }
+      throw error;
+    }
+    tenantId = defaultTenant;
+    workspaceId = defaultWorkspace;
+  }
 
   const finalUserId = userId;
   const userSource: RequestContext["sources"][keyof RequestContext["sources"]] | undefined = userId
@@ -74,7 +105,15 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
       requestId: headerRequestId ? "header" : traceId ? "route" : "generated",
       correlationId: correlationHeader ? "header" : "inferred",
       userId: userSource,
-      tenantId: tenantId ? (tenantId === req.user?.tenantId ? "user" : "header") : undefined,
+      tenantId: tenantId
+        ? req.tenantId
+          ? req.user?.tenantId && req.user?.tenantId === req.tenantId
+            ? "user"
+            : "header"
+          : req.user?.tenantId
+            ? "user"
+            : "header"
+        : undefined,
       workspaceId: workspaceId
         ? headerWorkspaceId
           ? "header"

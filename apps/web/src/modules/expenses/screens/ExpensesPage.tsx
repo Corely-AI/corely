@@ -82,7 +82,9 @@ export default function ExpensesPage() {
   const allSelected = expenses.length > 0 && expenses.every((e) => selectedIds.has(e.id));
 
   const bulkDelete = () => {
-    if (selectedIds.size === 0) {return;}
+    if (selectedIds.size === 0) {
+      return;
+    }
     deleteExpenses.mutate(Array.from(selectedIds));
     setDeleteTarget(null);
   };
@@ -307,14 +309,18 @@ export default function ExpensesPage() {
       <ConfirmDeleteDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
-          if (!open) {setDeleteTarget(null);}
+          if (!open) {
+            setDeleteTarget(null);
+          }
         }}
         trigger={null}
         title="Delete expense"
         description="This will archive the expense and remove it from the list."
         isLoading={deleteExpenses.isPending}
         onConfirm={() => {
-          if (!deleteTarget) {return;}
+          if (!deleteTarget) {
+            return;
+          }
           deleteExpenses.mutate([deleteTarget]);
           setDeleteTarget(null);
         }}

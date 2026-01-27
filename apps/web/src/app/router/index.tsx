@@ -54,7 +54,12 @@ import {
 import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
-import { TaxSettingsPage, TaxesOverviewPage, TaxReportsPage, VatPeriodDetailsPage } from "../../modules/tax";
+import {
+  TaxSettingsPage,
+  TaxesOverviewPage,
+  TaxReportsPage,
+  VatPeriodDetailsPage,
+} from "../../modules/tax";
 import {
   PlatformPage,
   AppsManagementPage,
@@ -72,6 +77,7 @@ import {
   WorkspaceOnboardingPage,
   WorkspaceSettingsPage,
 } from "../../modules/workspaces";
+import { features } from "../../lib/features";
 
 export const Router = () => (
   <BrowserRouter
@@ -88,6 +94,7 @@ export const Router = () => (
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
+          {/* Workspace onboarding - configure the default workspace (OSS) or create new ones (EE) */}
           <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/assistant" element={<AssistantPage />} />

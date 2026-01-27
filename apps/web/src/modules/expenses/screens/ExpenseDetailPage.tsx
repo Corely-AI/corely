@@ -39,7 +39,9 @@ export const ExpenseDetailPage = () => {
   // Handle actions
   const handleAction = React.useCallback(
     async (actionKey: string) => {
-      if (!id) {return;}
+      if (!id) {
+        return;
+      }
       switch (actionKey) {
         case "edit":
           navigate(`/expenses/${id}/edit`);

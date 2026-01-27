@@ -58,8 +58,10 @@ export type IssuerSnapshot = {
   };
 };
 
-export type TaxSnapshot = {
-  regime?: string;
-  taxId?: string;
-  vatId?: string;
+import type { TaxBreakdownDto } from "@corely/contracts";
+
+// ... existing types ...
+
+export type TaxSnapshot = TaxBreakdownDto & {
+  appliedAt?: string | Date;
 };

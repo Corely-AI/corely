@@ -199,7 +199,9 @@ export default function DealDetailPage() {
   };
 
   const handleLogMessage = (payload: { subject?: string; body: string; openUrl?: string }) => {
-    if (!deal || !selectedChannel) {return;}
+    if (!deal || !selectedChannel) {
+      return;
+    }
     logMessageMutation.mutate({
       dealId: deal.id,
       channelKey: selectedChannel.key,

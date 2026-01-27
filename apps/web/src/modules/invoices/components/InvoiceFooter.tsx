@@ -29,7 +29,9 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Tax Number */}
           <div className="flex flex-col gap-2">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Tax Number</Label>
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+              Tax Number
+            </Label>
             {activeWorkspace?.taxId || activeWorkspace?.vatId ? (
               <button
                 type="button"
@@ -65,7 +67,9 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
 
           {/* Payment Method */}
           <div className="flex flex-col gap-2">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Payment Method</Label>
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+              Payment Method
+            </Label>
             {activeWorkspace?.legalEntityId ? (
               <div className="flex-1 min-h-[80px]">
                 <PaymentMethodSwitcher
@@ -88,7 +92,9 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
 
           {/* Contact Details */}
           <div className="flex flex-col gap-2">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wider">Contact Details</Label>
+            <Label className="text-xs text-muted-foreground uppercase tracking-wider">
+              Contact Details
+            </Label>
             {activeWorkspace?.phone || activeWorkspace?.email || activeWorkspace?.website ? (
               <button
                 type="button"
@@ -111,7 +117,9 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
                   {activeWorkspace?.website && (
                     <div className="flex gap-2">
                       <span className="text-muted-foreground min-w-[70px]">Website:</span>
-                      <span className="text-foreground">{activeWorkspace.website.replace(/^https?:\/\//, '')}</span>
+                      <span className="text-foreground">
+                        {activeWorkspace.website.replace(/^https?:\/\//, "")}
+                      </span>
                     </div>
                   )}
                 </div>

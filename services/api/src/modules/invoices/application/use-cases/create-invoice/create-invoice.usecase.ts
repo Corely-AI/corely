@@ -74,7 +74,7 @@ export class CreateInvoiceUseCase extends BaseUseCase<CreateInvoiceInput, Create
       ctx.tenantId,
       input.legalEntityId
     );
-    
+
     const paymentSnapshot = await this.useCaseDeps.paymentMethodQuery.getPaymentMethodSnapshot(
       ctx.tenantId,
       input.paymentMethodId

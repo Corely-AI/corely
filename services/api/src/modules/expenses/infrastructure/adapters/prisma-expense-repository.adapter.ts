@@ -18,6 +18,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       data: {
         id: expense.id,
         tenantId: expense.tenantId,
+        status: expense.status,
         merchantName: expense.merchant,
         expenseDate: expense.issuedAt,
         totalAmountCents: expense.totalCents,
@@ -37,6 +38,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
     await client.expense.update({
       where: { id: expense.id },
       data: {
+        status: expense.status,
         merchantName: expense.merchant,
         expenseDate: expense.issuedAt,
         totalAmountCents: expense.totalCents,
@@ -122,6 +124,7 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
     return new Expense(
       data.id,
       data.tenantId,
+      data.status,
       data.merchantName ?? "",
       data.totalAmountCents,
       data.taxAmountCents ?? null,

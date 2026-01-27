@@ -34,7 +34,9 @@ export const DealHeader: React.FC<DealHeaderProps> = ({
   onDelete,
 }) => {
   const amount = useMemo(() => {
-    if (deal.amountCents === null) {return "No amount";}
+    if (deal.amountCents === null) {
+      return "No amount";
+    }
     try {
       return formatMoney(deal.amountCents, "en-US", deal.currency);
     } catch {

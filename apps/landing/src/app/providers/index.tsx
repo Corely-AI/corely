@@ -1,3 +1,7 @@
 import React from "react";
 
-export const Providers = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+import { PostHogProvider } from "@/shared/lib/posthog";
+
+export const Providers = ({ children }: { children: React.ReactNode }) => (
+  <PostHogProvider>{children}</PostHogProvider>
+);

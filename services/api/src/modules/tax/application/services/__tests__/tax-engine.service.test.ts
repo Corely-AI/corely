@@ -28,11 +28,17 @@ describe("TaxEngineService", () => {
       tenantId,
       country: "DE",
       regime: "STANDARD_VAT",
+      vatEnabled: true,
       vatId: "DE123456789",
       currency: "EUR",
       filingFrequency: "QUARTERLY",
       effectiveFrom: new Date("2025-01-01T00:00:00Z"),
       effectiveTo: null,
+      // Flags
+      euB2BSales: false,
+      hasEmployees: false,
+      usesTaxAdvisor: false,
+      vatExemptionParagraph: null,
     });
 
     // Setup tax codes
@@ -110,11 +116,16 @@ describe("TaxEngineService", () => {
         tenantId,
         country: "DE",
         regime: "SMALL_BUSINESS", // Different regime
+        vatEnabled: false,
         vatId: null,
         currency: "EUR",
         filingFrequency: "YEARLY",
         effectiveFrom: new Date("2026-01-01T00:00:00Z"),
         effectiveTo: null,
+        euB2BSales: false,
+        hasEmployees: false,
+        usesTaxAdvisor: false,
+        vatExemptionParagraph: null,
       });
 
       // Calculate for Jan 2025 (should use STANDARD_VAT)
@@ -169,6 +180,118 @@ describe("TaxEngineService", () => {
       await expect(taxEngine.calculate(input, tenantId)).rejects.toThrow(
         /Jurisdiction pack not found/i
       );
+    });
+    it("calculates tax for multiple line items", async () => {
+      const input: CalculateTaxInput = {
+        jurisdiction: "DE",
+        documentDate: "2025-01-15T00:00:00Z",
+        currency: "EUR",
+        customer: null,
+        lines: [
+          { id: "line-1", qty: 1, netAmountCents: 1000 }, // 190 tax
+          { id: "line-2", qty: 2, netAmountCents: 2000 }, // 380 tax
+        ],
+      };
+
+      const breakdown = await taxEngine.calculate(input, tenantId);
+
+      expect(breakdown.subtotalAmountCents).toBe(3000);
+      expect(breakdown.taxTotalAmountCents).toBe(570); // 190 + 380 = 570
+      expect(breakdown.totalAmountCents).toBe(3570);
+      expect(breakdown.lines.length).toBe(2);
+    });
+
+    it("calculates using reduced tax rate when specified", async () => {
+      // 1. Setup Reduced Tax Code
+      const reducedCode = await taxCodeRepo.create({
+        tenantId,
+        code: "REDUCED_7",
+        kind: "REDUCED",
+        label: "Reduced VAT 7%",
+        isActive: true,
+      });
+      await taxRateRepo.create({
+        tenantId,
+        taxCodeId: reducedCode.id,
+        rateBps: 700,
+        effectiveFrom: new Date("2025-01-01T00:00:00Z"),
+        effectiveTo: null,
+      });
+
+      // 2. Calculate
+      const input: CalculateTaxInput = {
+        jurisdiction: "DE",
+        documentDate: "2025-01-15T00:00:00Z",
+        currency: "EUR",
+        customer: null,
+        lines: [
+          {
+            id: "line-1",
+            qty: 1,
+            netAmountCents: 10000,
+            taxCodeId: reducedCode.id,
+          },
+        ],
+      };
+
+      const breakdown = await taxEngine.calculate(input, tenantId);
+
+      expect(breakdown.taxTotalAmountCents).toBe(700); // 7% of 10000
+      expect(breakdown.lines[0].kind).toBe("REDUCED");
+      expect(breakdown.lines[0].rateBps).toBe(700);
+      expect(breakdown.totalsByKind.REDUCED!.taxAmountCents).toBe(700);
+    });
+
+    it("handles mixed standard and reduced rates", async () => {
+      // 1. Setup Reduced Tax Code
+      const reducedCode = await taxCodeRepo.create({
+        tenantId,
+        code: "REDUCED_7",
+        kind: "REDUCED",
+        label: "Reduced VAT 7%",
+        isActive: true,
+      });
+      await taxRateRepo.create({
+        tenantId,
+        taxCodeId: reducedCode.id,
+        rateBps: 700,
+        effectiveFrom: new Date("2025-01-01T00:00:00Z"),
+        effectiveTo: null,
+      });
+
+      // 2. Calculate mixed lines
+      const input: CalculateTaxInput = {
+        jurisdiction: "DE",
+        documentDate: "2025-01-15T00:00:00Z",
+        currency: "EUR",
+        customer: null,
+        lines: [
+          {
+            id: "std-line",
+            qty: 1,
+            netAmountCents: 1000,
+            // No taxCodeId -> defaults to STANDARD (19%)
+          },
+          {
+            id: "reduced-line",
+            qty: 1,
+            netAmountCents: 1000,
+            taxCodeId: reducedCode.id, // Reduced (7%)
+          },
+        ],
+      };
+
+      const breakdown = await taxEngine.calculate(input, tenantId);
+
+      expect(breakdown.subtotalAmountCents).toBe(2000);
+      const expectedTax = 190 + 70; // 260
+      expect(breakdown.taxTotalAmountCents).toBe(expectedTax);
+
+      expect(breakdown.totalsByKind.STANDARD).toBeDefined();
+      expect(breakdown.totalsByKind.STANDARD!.taxAmountCents).toBe(190);
+
+      expect(breakdown.totalsByKind.REDUCED).toBeDefined();
+      expect(breakdown.totalsByKind.REDUCED!.taxAmountCents).toBe(70);
     });
   });
 
