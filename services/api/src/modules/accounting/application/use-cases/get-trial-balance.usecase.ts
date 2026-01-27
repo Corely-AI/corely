@@ -1,4 +1,4 @@
-import { BaseUseCase, type LoggerPort, ValidationError, NotFoundError } from "@corely/kernel";
+import { BaseUseCase, type LoggerPort, NotFoundError, RequireTenant } from "@corely/kernel";
 import type { Result, UseCaseContext, UseCaseError } from "@corely/kernel";
 import { ok, err } from "@corely/kernel";
 import type { GetTrialBalanceInput, GetTrialBalanceOutput } from "@corely/contracts";
@@ -15,6 +15,7 @@ type Deps = {
   reportQuery: AccountingReportQueryPort;
 };
 
+@RequireTenant()
 export class GetTrialBalanceUseCase extends BaseUseCase<
   GetTrialBalanceInput,
   GetTrialBalanceOutput
@@ -27,23 +28,23 @@ export class GetTrialBalanceUseCase extends BaseUseCase<
     input: GetTrialBalanceInput,
     ctx: UseCaseContext
   ): Promise<Result<GetTrialBalanceOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    // Tenant check handled by @RequireTenant decorator
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const tenantId = ctx.tenantId!;
 
-    const settings = await this.deps.settingsRepo.findByTenant(ctx.tenantId);
+    const settings = await this.deps.settingsRepo.findByTenant(tenantId);
     if (!settings) {
       return err(new NotFoundError("Accounting not set up"));
     }
 
     // Get all accounts
-    const { accounts } = await this.deps.accountRepo.list(ctx.tenantId, { limit: 1000 });
+    const { accounts } = await this.deps.accountRepo.list(tenantId, { limit: 1000 });
 
     // Calculate balances for each account
     const lines = await Promise.all(
       accounts.map(async (account) => {
         const { debits, credits } = await this.calculateAccountActivity(
-          ctx.tenantId,
+          tenantId,
           account.id,
           input.fromDate,
           input.toDate

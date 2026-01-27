@@ -1,14 +1,12 @@
 import { type Provider } from "@nestjs/common";
 import { InventoryApplication } from "../application/inventory.application";
 
-import {
-  CreateProductUseCase,
-  UpdateProductUseCase,
-  ActivateProductUseCase,
-  DeactivateProductUseCase,
-  GetProductUseCase,
-  ListProductsUseCase,
-} from "../application/use-cases/products.usecases";
+import { CreateProductUseCase } from "../application/use-cases/create-product.usecase";
+import { UpdateProductUseCase } from "../application/use-cases/update-product.usecase";
+import { ActivateProductUseCase } from "../application/use-cases/activate-product.usecase";
+import { DeactivateProductUseCase } from "../application/use-cases/deactivate-product.usecase";
+import { GetProductUseCase } from "../application/use-cases/get-product.usecase";
+import { ListProductsUseCase } from "../application/use-cases/list-products.usecase";
 
 import {
   CreateWarehouseUseCase,

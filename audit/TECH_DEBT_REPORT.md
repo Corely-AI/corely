@@ -32,19 +32,19 @@ The `Corely` monorepo demonstrates a **strong foundational architecture** (Hexag
 
 ### Phase 1: Quick Wins (Days 1-2)
 
-1.  **Fix Typecheck**: Resolve the `postcss` and `offline-core` type errors. Nothing else matters if the build is red.
-2.  **Patch Security**: Fix `PrismaCashRepository` to enforce tenant check in the query.
+1.  **Fix Typecheck**: Resolve the `postcss` and `offline-core` type errors. Nothing else matters if the build is red. (In Progress - API Green)
+2.  **Patch Security**: Fix `PrismaCashRepository` to enforce tenant check in the query. (Completed)
 3.  **Halt Leakage**: Add stricter lint rules (using `dependency-cruiser` or `eslint-plugin-boundaries`) to prevent importing `prisma` in `*.service.ts` files.
 
 ### Phase 2: Structural Hygiene (Week 1)
 
-1.  **Explode Use Cases**: Script a refactor to split `accounting.usecases.ts` into individual files (`create-account.usecase.ts`, etc.). This immediately reduces cognitive load.
-2.  **Standardize Tenancy**: Introduce an `@AuthorizedInstance()` decorator or Middleware to handle the `tenantId` check globally, deleting 100+ loc of repetitive manual checks.
+1.  **Explode Use Cases**: Script a refactor to split `accounting.usecases.ts` into individual files (`create-account.usecase.ts`, etc.). (Completed for Reports)
+2.  **Standardize Tenancy**: Introduce an `@AuthorizedInstance()` decorator or Middleware to handle the `tenantId` check globally, deleting 100+ loc of repetitive manual checks. (Decorator `@RequireTenant` Created & Implemented)
 
 ### Phase 3: Strategic Refactoring (> Week 1)
 
 1.  **Decompose Frontend Monoliths**: Break `NewInvoicePage` into `InvoiceForm`, `LineItemsTable`, etc.
-2.  **Refactor God Modules**: Split `InventoryModule` into semantic sub-modules (`Stock`, `Product`, `Warehouse`).
+2.  **Refactor God Modules**: Split `InventoryModule` into semantic sub-modules (`Stock`, `Product`, `Warehouse`). (Providers Extracted)
 
 ## 4. "Do Not Refactor Yet" (Danger Zone)
 

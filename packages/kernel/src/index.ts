@@ -3,6 +3,7 @@ export * from "./application/context";
 export * from "./application/errors";
 export * from "./application/usecase";
 export * from "./application/base-usecase";
+export * from "./application/decorators";
 
 // DI Tokens (canonical source)
 export * from "./tokens";

@@ -1,4 +1,4 @@
-import { BaseUseCase, type LoggerPort, ValidationError, NotFoundError } from "@corely/kernel";
+import { BaseUseCase, type LoggerPort, NotFoundError, RequireTenant } from "@corely/kernel";
 import type { Result, UseCaseContext, UseCaseError } from "@corely/kernel";
 import { ok, err } from "@corely/kernel";
 import type { GetBalanceSheetInput, GetBalanceSheetOutput, AccountType } from "@corely/contracts";
@@ -15,6 +15,7 @@ type Deps = {
   reportQuery: AccountingReportQueryPort;
 };
 
+@RequireTenant()
 export class GetBalanceSheetUseCase extends BaseUseCase<
   GetBalanceSheetInput,
   GetBalanceSheetOutput
@@ -27,16 +28,15 @@ export class GetBalanceSheetUseCase extends BaseUseCase<
     input: GetBalanceSheetInput,
     ctx: UseCaseContext
   ): Promise<Result<GetBalanceSheetOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const tenantId = ctx.tenantId!;
 
-    const settings = await this.deps.settingsRepo.findByTenant(ctx.tenantId);
+    const settings = await this.deps.settingsRepo.findByTenant(tenantId);
     if (!settings) {
       return err(new NotFoundError("Accounting not set up"));
     }
 
-    const { accounts } = await this.deps.accountRepo.list(ctx.tenantId, { limit: 1000 });
+    const { accounts } = await this.deps.accountRepo.list(tenantId, { limit: 1000 });
 
     const assetAccounts = accounts.filter((a) => a.type === "Asset");
     const liabilityAccounts = accounts.filter((a) => a.type === "Liability");
@@ -45,7 +45,7 @@ export class GetBalanceSheetUseCase extends BaseUseCase<
     const assetLines = await Promise.all(
       assetAccounts.map(async (account) => {
         const balance = await this.calculateAccountBalanceAsOf(
-          ctx.tenantId,
+          tenantId,
           account.id,
           account.type,
           input.asOfDate
@@ -63,7 +63,7 @@ export class GetBalanceSheetUseCase extends BaseUseCase<
     const liabilityLines = await Promise.all(
       liabilityAccounts.map(async (account) => {
         const balance = await this.calculateAccountBalanceAsOf(
-          ctx.tenantId,
+          tenantId,
           account.id,
           account.type,
           input.asOfDate
@@ -81,7 +81,7 @@ export class GetBalanceSheetUseCase extends BaseUseCase<
     const equityLines = await Promise.all(
       equityAccounts.map(async (account) => {
         const balance = await this.calculateAccountBalanceAsOf(
-          ctx.tenantId,
+          tenantId,
           account.id,
           account.type,
           input.asOfDate

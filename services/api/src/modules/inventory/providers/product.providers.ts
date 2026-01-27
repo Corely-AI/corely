@@ -1,5 +1,5 @@
 import { type Provider } from "@nestjs/common";
-import { AUDIT_PORT, type AuditPort } from "@corely/kernel";
+import { AUDIT_PORT, type AuditPort, type ClockPort, type IdGeneratorPort } from "@corely/kernel";
 import { NestLoggerAdapter } from "../../../shared/adapters/logger/nest-logger.adapter";
 import {
   type IdempotencyStoragePort,
@@ -11,14 +11,12 @@ import { CLOCK_PORT_TOKEN } from "../../../shared/ports/clock.port";
 import { type PrismaProductRepository } from "../infrastructure/adapters/prisma-product-repository.adapter";
 import { PRODUCT_REPO } from "../application/ports/product-repository.port";
 
-import {
-  CreateProductUseCase,
-  UpdateProductUseCase,
-  ActivateProductUseCase,
-  DeactivateProductUseCase,
-  GetProductUseCase,
-  ListProductsUseCase,
-} from "../application/use-cases/products.usecases";
+import { CreateProductUseCase } from "../application/use-cases/create-product.usecase";
+import { UpdateProductUseCase } from "../application/use-cases/update-product.usecase";
+import { ActivateProductUseCase } from "../application/use-cases/activate-product.usecase";
+import { DeactivateProductUseCase } from "../application/use-cases/deactivate-product.usecase";
+import { GetProductUseCase } from "../application/use-cases/get-product.usecase";
+import { ListProductsUseCase } from "../application/use-cases/list-products.usecase";
 
 export const productProviders: Provider[] = [
   {
@@ -26,8 +24,8 @@ export const productProviders: Provider[] = [
     useFactory: (
       repo: PrismaProductRepository,
       idempotency: IdempotencyStoragePort,
-      idGen: any,
-      clock: any,
+      idGen: IdGeneratorPort,
+      clock: ClockPort,
       audit: AuditPort
     ) =>
       new CreateProductUseCase({
@@ -51,8 +49,8 @@ export const productProviders: Provider[] = [
     useFactory: (
       repo: PrismaProductRepository,
       idempotency: IdempotencyStoragePort,
-      idGen: any,
-      clock: any,
+      idGen: IdGeneratorPort,
+      clock: ClockPort,
       audit: AuditPort
     ) =>
       new UpdateProductUseCase({
@@ -76,8 +74,8 @@ export const productProviders: Provider[] = [
     useFactory: (
       repo: PrismaProductRepository,
       idempotency: IdempotencyStoragePort,
-      idGen: any,
-      clock: any,
+      idGen: IdGeneratorPort,
+      clock: ClockPort,
       audit: AuditPort
     ) =>
       new ActivateProductUseCase({
@@ -101,8 +99,8 @@ export const productProviders: Provider[] = [
     useFactory: (
       repo: PrismaProductRepository,
       idempotency: IdempotencyStoragePort,
-      idGen: any,
-      clock: any,
+      idGen: IdGeneratorPort,
+      clock: ClockPort,
       audit: AuditPort
     ) =>
       new DeactivateProductUseCase({
@@ -126,8 +124,8 @@ export const productProviders: Provider[] = [
     useFactory: (
       repo: PrismaProductRepository,
       idempotency: IdempotencyStoragePort,
-      idGen: any,
-      clock: any,
+      idGen: IdGeneratorPort,
+      clock: ClockPort,
       audit: AuditPort
     ) =>
       new GetProductUseCase({
@@ -151,8 +149,8 @@ export const productProviders: Provider[] = [
     useFactory: (
       repo: PrismaProductRepository,
       idempotency: IdempotencyStoragePort,
-      idGen: any,
-      clock: any,
+      idGen: IdGeneratorPort,
+      clock: ClockPort,
       audit: AuditPort
     ) =>
       new ListProductsUseCase({

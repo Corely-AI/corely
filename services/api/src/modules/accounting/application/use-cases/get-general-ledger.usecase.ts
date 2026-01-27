@@ -1,4 +1,4 @@
-import { BaseUseCase, type LoggerPort, ValidationError, NotFoundError } from "@corely/kernel";
+import { BaseUseCase, type LoggerPort, NotFoundError, RequireTenant } from "@corely/kernel";
 import type { Result, UseCaseContext, UseCaseError } from "@corely/kernel";
 import { ok, err } from "@corely/kernel";
 import type { GetGeneralLedgerInput, GetGeneralLedgerOutput } from "@corely/contracts";
@@ -15,6 +15,7 @@ type Deps = {
   reportQuery: AccountingReportQueryPort;
 };
 
+@RequireTenant()
 export class GetGeneralLedgerUseCase extends BaseUseCase<
   GetGeneralLedgerInput,
   GetGeneralLedgerOutput
@@ -27,23 +28,22 @@ export class GetGeneralLedgerUseCase extends BaseUseCase<
     input: GetGeneralLedgerInput,
     ctx: UseCaseContext
   ): Promise<Result<GetGeneralLedgerOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const tenantId = ctx.tenantId!;
 
-    const settings = await this.deps.settingsRepo.findByTenant(ctx.tenantId);
+    const settings = await this.deps.settingsRepo.findByTenant(tenantId);
     if (!settings) {
       return err(new NotFoundError("Accounting not set up"));
     }
 
-    const account = await this.deps.accountRepo.findById(ctx.tenantId, input.accountId);
+    const account = await this.deps.accountRepo.findById(tenantId, input.accountId);
     if (!account) {
       return err(new NotFoundError("Account not found"));
     }
 
     // Get lines for this account in date range
     const lines = await this.deps.reportQuery.listLedgerLines({
-      tenantId: ctx.tenantId,
+      tenantId,
       accountId: input.accountId,
       fromDate: input.fromDate,
       toDate: input.toDate,
@@ -51,7 +51,7 @@ export class GetGeneralLedgerUseCase extends BaseUseCase<
 
     // Calculate opening balance (before fromDate)
     const openingTotals = await this.deps.reportQuery.getAccountActivityTotals({
-      tenantId: ctx.tenantId,
+      tenantId,
       accountId: input.accountId,
       toDateExclusive: input.fromDate,
     });

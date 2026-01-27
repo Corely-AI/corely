@@ -1,11 +1,9 @@
-import type {
-  CreateProductUseCase,
-  UpdateProductUseCase,
-  ActivateProductUseCase,
-  DeactivateProductUseCase,
-  GetProductUseCase,
-  ListProductsUseCase,
-} from "./use-cases/products.usecases";
+import type { CreateProductUseCase } from "./use-cases/create-product.usecase";
+import type { UpdateProductUseCase } from "./use-cases/update-product.usecase";
+import type { ActivateProductUseCase } from "./use-cases/activate-product.usecase";
+import type { DeactivateProductUseCase } from "./use-cases/deactivate-product.usecase";
+import type { GetProductUseCase } from "./use-cases/get-product.usecase";
+import type { ListProductsUseCase } from "./use-cases/list-products.usecase";
 import type {
   CreateWarehouseUseCase,
   UpdateWarehouseUseCase,
