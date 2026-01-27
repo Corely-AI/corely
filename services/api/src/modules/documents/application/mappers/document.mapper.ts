@@ -9,6 +9,7 @@ export const toFileDto = (file: FileEntity): FileDTO => ({
   storageProvider: file.storageProvider,
   bucket: file.bucket,
   objectKey: file.objectKey,
+  isPublic: file.isPublic,
   contentType: file.contentType ?? undefined,
   sizeBytes: file.sizeBytes ?? undefined,
   sha256: file.sha256 ?? undefined,

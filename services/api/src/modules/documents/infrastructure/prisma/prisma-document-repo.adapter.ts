@@ -14,6 +14,7 @@ const mapFile = (row: any): FileEntity =>
     storageProvider: row.storageProvider,
     bucket: row.bucket,
     objectKey: row.objectKey,
+    isPublic: row.isPublic ?? false,
     contentType: row.contentType,
     sizeBytes: row.sizeBytes,
     sha256: row.sha256,
