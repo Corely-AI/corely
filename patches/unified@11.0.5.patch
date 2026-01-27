@@ -1,0 +1,119 @@
+diff --git a/index.d.ts b/index.d.ts
+index 08d53e38f8a42cf0697e17b4c9443d42458eb3ab..0a0d2f63b71c302b64760f341dc1ef89c4332156 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,5 +1,5 @@
+-import type {Value} from 'vfile'
+-import type {CompileResults} from './lib/index.js'
++import type {Value} from 'vfile';
++import type {CompileResults} from './lib/index.js';
+ 
+ export type {
+   // `CompileResultMap` is typed and exposed below.
+@@ -18,9 +18,9 @@ export type {
+   // `Settings` is typed and exposed below.
+   TransformCallback,
+   Transformer
+-} from './lib/index.js'
++} from './lib/index.js';
+ 
+-export {unified} from './lib/index.js'
++export {unified} from './lib/index.js';
+ 
+ // See: <https://github.com/sindresorhus/type-fest/blob/main/source/empty-object.d.ts>
+ declare const emptyObjectSymbol: unique symbol
+@@ -33,7 +33,7 @@ declare const emptyObjectSymbol: unique symbol
+  * `rehype-react`), you can augment this interface to include that type.
+  *
+  * ```ts
+- * import type {ReactNode} from 'somewhere'
++ * import type {ReactNode} from 'somewhere';
+  *
+  * declare module 'unified' {
+  *   interface CompileResultMap {
+diff --git a/lib/index.d.ts b/lib/index.d.ts
+index a615fd7f9216eb50b6908252057866abe0d3318f..7ba50ec4f953b3c1f2b7ab29c9b1f6064e1a5189 100644
+--- a/lib/index.d.ts
++++ b/lib/index.d.ts
+@@ -1,4 +1,4 @@
+-import {CallableInstance} from './callable-instance.js'
++import {CallableInstance} from './callable-instance.js';
+ /**
+  * @template {Node | undefined} [ParseTree=undefined]
+  *   Output of `parse` (optional).
+@@ -134,7 +134,7 @@ export class Processor<ParseTree extends import("unist").Node | undefined = unde
+      *   This example show how to get and set info:
+      *
+      *   ```js
+-     *   import {unified} from 'unified'
++     *   import {unified} from 'unified';
+      *
+      *   const processor = unified().data('alpha', 'bravo')
+      *
+@@ -194,7 +194,7 @@ export class Processor<ParseTree extends import("unist").Node | undefined = unde
+      *   This example show how to get and set info:
+      *
+      *   ```js
+-     *   import {unified} from 'unified'
++     *   import {unified} from 'unified';
+      *
+      *   const processor = unified().data('alpha', 'bravo')
+      *
+@@ -254,7 +254,7 @@ export class Processor<ParseTree extends import("unist").Node | undefined = unde
+      *   This example show how to get and set info:
+      *
+      *   ```js
+-     *   import {unified} from 'unified'
++     *   import {unified} from 'unified';
+      *
+      *   const processor = unified().data('alpha', 'bravo')
+      *
+@@ -314,7 +314,7 @@ export class Processor<ParseTree extends import("unist").Node | undefined = unde
+      *   This example show how to get and set info:
+      *
+      *   ```js
+-     *   import {unified} from 'unified'
++     *   import {unified} from 'unified';
+      *
+      *   const processor = unified().data('alpha', 'bravo')
+      *
+@@ -687,7 +687,7 @@ export class Processor<ParseTree extends import("unist").Node | undefined = unde
+      *   This example gives an overview:
+      *
+      *   ```js
+-     *   import {unified} from 'unified'
++     *   import {unified} from 'unified';
+      *
+      *   unified()
+      *     // Plugin with options:
+@@ -745,7 +745,7 @@ export class Processor<ParseTree extends import("unist").Node | undefined = unde
+      *   This example gives an overview:
+      *
+      *   ```js
+-     *   import {unified} from 'unified'
++     *   import {unified} from 'unified';
+      *
+      *   unified()
+      *     // Plugin with options:
+@@ -803,7 +803,7 @@ export class Processor<ParseTree extends import("unist").Node | undefined = unde
+      *   This example gives an overview:
+      *
+      *   ```js
+-     *   import {unified} from 'unified'
++     *   import {unified} from 'unified';
+      *
+      *   unified()
+      *     // Plugin with options:
+@@ -854,9 +854,9 @@ export class Processor<ParseTree extends import("unist").Node | undefined = unde
+  *   to **stdin**(4) and **stdout**(4).
+  *
+  *   ```js
+- *   import process from 'node:process'
+- *   import concatStream from 'concat-stream'
+- *   import {remark} from 'remark'
++ *   import process from 'node:process';
++ *   import concatStream from 'concat-stream';
++ *   import {remark} from 'remark';
+  *
+  *   process.stdin.pipe(
+  *     concatStream(function (buf) {

@@ -1,0 +1,287 @@
+diff --git a/index.d.ts b/index.d.ts
+index 1c5c912847f35e5b4530776a5621e24f1215b1a1..510de96db191e441a41af15635cf57ca5328cd89 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,19 +1,19 @@
+-import type {Data, ElementContent, Literal, Properties} from 'hast'
++import type {Data, ElementContent, Literal, Properties} from 'hast';
+ 
+ // Expose types.
+ export type {
+   FootnoteBackContentTemplate,
+   FootnoteBackLabelTemplate
+-} from './lib/footer.js'
+-export type {Handler, Handlers, Options, State} from './lib/state.js'
++} from './lib/footer.js';
++export type {Handler, Handlers, Options, State} from './lib/state.js';
+ 
+ // Expose JS API.
+-export {handlers as defaultHandlers} from './lib/handlers/index.js'
++export {handlers as defaultHandlers} from './lib/handlers/index.js';
+ export {
+   defaultFootnoteBackContent,
+   defaultFootnoteBackLabel
+-} from './lib/footer.js'
+-export {toHast} from './lib/index.js'
++} from './lib/footer.js';
++export {toHast} from './lib/index.js';
+ 
+ /**
+  * Raw string of HTML embedded into HTML AST.
+diff --git a/lib/handlers/blockquote.d.ts b/lib/handlers/blockquote.d.ts
+index 336ab4649a1bb1bbcd68db2de7121be600bf2804..de4addc7eeda9aa156eb12fc7b9fba792ad9474b 100644
+--- a/lib/handlers/blockquote.d.ts
++++ b/lib/handlers/blockquote.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {Blockquote} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element} from 'hast';
++ * @import {Blockquote} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `blockquote` node into hast.
+diff --git a/lib/handlers/break.d.ts b/lib/handlers/break.d.ts
+index 5289478969dae7737bc5c3d8b27ee9e6fa6b5b33..8e861f4b6de00e65fc1a37de80735132b34cc591 100644
+--- a/lib/handlers/break.d.ts
++++ b/lib/handlers/break.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element, Text} from 'hast'
+- * @import {Break} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element, Text} from 'hast';
++ * @import {Break} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `break` node into hast.
+diff --git a/lib/handlers/code.d.ts b/lib/handlers/code.d.ts
+index a709b701c9e6a27ac55abbf8c111cd73d087701d..370472e0980574239604f149f1f41b8f17b62fb4 100644
+--- a/lib/handlers/code.d.ts
++++ b/lib/handlers/code.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element, Properties} from 'hast'
+- * @import {Code} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element, Properties} from 'hast';
++ * @import {Code} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `code` node into hast.
+diff --git a/lib/handlers/delete.d.ts b/lib/handlers/delete.d.ts
+index f64b17832fca2231efe70d218adb326ae920b24b..4b01930983f30b0f2db0cde3c27a516798c5226b 100644
+--- a/lib/handlers/delete.d.ts
++++ b/lib/handlers/delete.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {Delete} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element} from 'hast';
++ * @import {Delete} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `delete` node into hast.
+diff --git a/lib/handlers/emphasis.d.ts b/lib/handlers/emphasis.d.ts
+index 44acbb4c4fd3880a4726aac1fe3d307e05ef0d45..79c5422afefb0f971bad18397c9b9bade44e3508 100644
+--- a/lib/handlers/emphasis.d.ts
++++ b/lib/handlers/emphasis.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {Emphasis} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element} from 'hast';
++ * @import {Emphasis} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `emphasis` node into hast.
+diff --git a/lib/handlers/heading.d.ts b/lib/handlers/heading.d.ts
+index 173e4d2c0dda03e1ab3e1d347fefbaecdbf787d2..f0c22aa9de62982e58e87bed9a4c120abc787161 100644
+--- a/lib/handlers/heading.d.ts
++++ b/lib/handlers/heading.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {Heading} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element} from 'hast';
++ * @import {Heading} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `heading` node into hast.
+diff --git a/lib/handlers/html.d.ts b/lib/handlers/html.d.ts
+index b07246050472837c7c29003745e3675f5bb14fa2..8e2c62a68ee68eb1b5e9a5c27d91fc476acf3ca1 100644
+--- a/lib/handlers/html.d.ts
++++ b/lib/handlers/html.d.ts
+@@ -1,8 +1,8 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {Html} from 'mdast'
+- * @import {State} from '../state.js'
+- * @import {Raw} from '../../index.js'
++ * @import {Element} from 'hast';
++ * @import {Html} from 'mdast';
++ * @import {State} from '../state.js';
++ * @import {Raw} from '../../index.js';
+  */
+ /**
+  * Turn an mdast `html` node into hast (`raw` node in dangerous mode, otherwise
+diff --git a/lib/handlers/inline-code.d.ts b/lib/handlers/inline-code.d.ts
+index c0b9f1b0476b433b4a2562b8ff9fc95f40d61c2d..f2f1e909b92c471892327ee798b82cd8dd94f007 100644
+--- a/lib/handlers/inline-code.d.ts
++++ b/lib/handlers/inline-code.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element, Text} from 'hast'
+- * @import {InlineCode} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element, Text} from 'hast';
++ * @import {InlineCode} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `inlineCode` node into hast.
+diff --git a/lib/handlers/list-item.d.ts b/lib/handlers/list-item.d.ts
+index b904138496edb92a6c4fad2db9bee76479bd179d..57059ebf422d7d16ba16a5eb295e1709ac5eabab 100644
+--- a/lib/handlers/list-item.d.ts
++++ b/lib/handlers/list-item.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {ElementContent, Element, Properties} from 'hast'
+- * @import {ListItem, Parents} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {ElementContent, Element, Properties} from 'hast';
++ * @import {ListItem, Parents} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `listItem` node into hast.
+diff --git a/lib/handlers/list.d.ts b/lib/handlers/list.d.ts
+index 425d30b8b00330957e5bcb4eb81773658b8680e4..e0d451aff25e140149e725246dc28e1e193c7772 100644
+--- a/lib/handlers/list.d.ts
++++ b/lib/handlers/list.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element, Properties} from 'hast'
+- * @import {List} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element, Properties} from 'hast';
++ * @import {List} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `list` node into hast.
+diff --git a/lib/handlers/paragraph.d.ts b/lib/handlers/paragraph.d.ts
+index 5de8deb735c865182b009147f25d1b066a885f68..0ad49ee48de0a472cdc2da559999e498db2a4fd9 100644
+--- a/lib/handlers/paragraph.d.ts
++++ b/lib/handlers/paragraph.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {Paragraph} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element} from 'hast';
++ * @import {Paragraph} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `paragraph` node into hast.
+diff --git a/lib/handlers/root.d.ts b/lib/handlers/root.d.ts
+index fe15d197e4eb08a9d908ab1fe8adb1a3d779769d..cce75ec3ea95833be19c7a502365f79c69bf7545 100644
+--- a/lib/handlers/root.d.ts
++++ b/lib/handlers/root.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Parents as HastParents, Root as HastRoot} from 'hast'
+- * @import {Root as MdastRoot} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Parents as HastParents, Root as HastRoot} from 'hast';
++ * @import {Root as MdastRoot} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `root` node into hast.
+diff --git a/lib/handlers/strong.d.ts b/lib/handlers/strong.d.ts
+index aec2d5401548ffa99b4fdb17ec156d993e3e70df..c8d66db3a2652594dbddd8365b48b3e71a74af38 100644
+--- a/lib/handlers/strong.d.ts
++++ b/lib/handlers/strong.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {Strong} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element} from 'hast';
++ * @import {Strong} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `strong` node into hast.
+diff --git a/lib/handlers/table-cell.d.ts b/lib/handlers/table-cell.d.ts
+index 449ba27f493d26651393994deec878b01d9e7999..3b2821dded989f6494edc881a1ff11c87ce11dc6 100644
+--- a/lib/handlers/table-cell.d.ts
++++ b/lib/handlers/table-cell.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {TableCell} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element} from 'hast';
++ * @import {TableCell} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `tableCell` node into hast.
+diff --git a/lib/handlers/table-row.d.ts b/lib/handlers/table-row.d.ts
+index b6b8d703048ab7a8e60ff17360fe4e2951f49794..5ecb20285e73ab88f6b1f9c55a46e9c71515ceb6 100644
+--- a/lib/handlers/table-row.d.ts
++++ b/lib/handlers/table-row.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element, ElementContent, Properties} from 'hast'
+- * @import {Parents, TableRow} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element, ElementContent, Properties} from 'hast';
++ * @import {Parents, TableRow} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `tableRow` node into hast.
+diff --git a/lib/handlers/thematic-break.d.ts b/lib/handlers/thematic-break.d.ts
+index 7b6eb0009c052690c3266dcb5da61e0e8d5ef1c0..b6f69a76f1bb55d63bf62ec534c11ada6a6f1405 100644
+--- a/lib/handlers/thematic-break.d.ts
++++ b/lib/handlers/thematic-break.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {Element} from 'hast'
+- * @import {ThematicBreak} from 'mdast'
+- * @import {State} from '../state.js'
++ * @import {Element} from 'hast';
++ * @import {ThematicBreak} from 'mdast';
++ * @import {State} from '../state.js';
+  */
+ /**
+  * Turn an mdast `thematicBreak` node into hast.
+diff --git a/lib/revert.d.ts b/lib/revert.d.ts
+index d1a9ea01c8a5be7568e1c1ab941fbcadfe95a6b9..6fe192d945c32eb846a98707b8b54c1314a3dc67 100644
+--- a/lib/revert.d.ts
++++ b/lib/revert.d.ts
+@@ -1,7 +1,7 @@
+ /**
+- * @import {ElementContent} from 'hast'
+- * @import {Reference, Nodes} from 'mdast'
+- * @import {State} from './state.js'
++ * @import {ElementContent} from 'hast';
++ * @import {Reference, Nodes} from 'mdast';
++ * @import {State} from './state.js';
+  */
+ /**
+  * Return the content of a reference without definition as plain text.

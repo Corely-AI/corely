@@ -1,0 +1,13 @@
+diff --git a/index.d.ts b/index.d.ts
+index f616ca16b1ccb5d536d104648e2938785f6dfffa..bff81dadd9f0e9a2f04e230ac99b95418da48eb2 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,6 +1,6 @@
+-export type {Options} from './lib/index.js'
++export type {Options} from './lib/index.js';
+ 
+-export {gfmTableFromMarkdown, gfmTableToMarkdown} from './lib/index.js'
++export {gfmTableFromMarkdown, gfmTableToMarkdown} from './lib/index.js';
+ 
+ // Add custom data tracked to turn markdown into a tree.
+ declare module 'mdast-util-from-markdown' {

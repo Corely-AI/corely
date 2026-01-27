@@ -1,0 +1,10 @@
+diff --git a/index.d.ts b/index.d.ts
+index 0ff949a35b2cfc43477d5414d990fc0a4c3b4b99..e7c5908982f28c9d506c1ed54149c9f65c3685f6 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,4 +1,4 @@
+-export {gfmFootnoteFromMarkdown, gfmFootnoteToMarkdown} from './lib/index.js'
++export {gfmFootnoteFromMarkdown, gfmFootnoteToMarkdown} from './lib/index.js';
+ 
+ export interface ToMarkdownOptions {
+   // To do: next major: change default.

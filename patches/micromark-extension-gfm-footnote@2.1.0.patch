@@ -1,0 +1,24 @@
+diff --git a/dev/index.d.ts b/dev/index.d.ts
+index 1be286871d3a5984a0f8fd12c9a1aef63e1d0af2..499b0ef087bb8832e508543ddd1c04385a40c13f 100644
+--- a/dev/index.d.ts
++++ b/dev/index.d.ts
+@@ -1,5 +1,5 @@
+-export {gfmFootnoteHtml, defaultBackLabel} from './lib/html.js'
+-export {gfmFootnote} from './lib/syntax.js'
++export {gfmFootnoteHtml, defaultBackLabel} from './lib/html.js';
++export {gfmFootnote} from './lib/syntax.js';
+ 
+ /**
+  * Generate a back label dynamically.
+diff --git a/index.d.ts b/index.d.ts
+index 1be286871d3a5984a0f8fd12c9a1aef63e1d0af2..499b0ef087bb8832e508543ddd1c04385a40c13f 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,5 +1,5 @@
+-export {gfmFootnoteHtml, defaultBackLabel} from './lib/html.js'
+-export {gfmFootnote} from './lib/syntax.js'
++export {gfmFootnoteHtml, defaultBackLabel} from './lib/html.js';
++export {gfmFootnote} from './lib/syntax.js';
+ 
+ /**
+  * Generate a back label dynamically.
