@@ -55,6 +55,13 @@ import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/sett
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import {
+  CmsPostsPage,
+  CmsPostEditorPage,
+  CmsCommentsPage,
+  PublicCmsListPage,
+  PublicCmsPostPage,
+} from "../../modules/cms";
+import {
   TaxSettingsPage,
   TaxesOverviewPage,
   TaxReportsPage,
@@ -91,6 +98,8 @@ export const Router = () => (
 
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignupPage />} />
+      <Route path="/p" element={<PublicCmsListPage />} />
+      <Route path="/p/:slug" element={<PublicCmsPostPage />} />
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
@@ -98,6 +107,11 @@ export const Router = () => (
           <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/assistant" element={<AssistantPage />} />
+          <Route path="/cms/posts" element={<CmsPostsPage />} />
+          <Route path="/cms/posts/new" element={<CmsPostEditorPage />} />
+          <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
+          <Route path="/cms/posts/:id/edit" element={<CmsPostEditorPage />} />
+          <Route path="/cms/comments" element={<CmsCommentsPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/expenses/new" element={<NewExpensePage />} />
           <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
