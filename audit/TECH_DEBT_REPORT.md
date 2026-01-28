@@ -24,7 +24,7 @@ The `Corely` monorepo refactoring is **underway with significant progress** in b
 | **P0**   | **Arch**     | Service Layer Prisma Usage            | **Coupling**: detected in `tax`, `approvals`, etc.                | ⚠️ **Improving**                          |
 | **P1**   | **Backend**  | Missing Tenancy Decorators            | **Safety**: Manual checks are fragile.                            | 🟡 **In Progress** (4/9 Modules Complete) |
 | **P1**   | **Frontend** | `InvoiceDetailPage.tsx`               | **Duplication**: Logic duplicated from New Invoice.               | ✅ **Fixed**                              |
-| **P2**   | **Frontend** | `sidebar.tsx`                         | **Coupling**: Hardcoded business logic in UI.                     | 🔴 **Open**                               |
+| **P2**   | **Frontend** | `sidebar.tsx`                         | **Coupling**: Hardcoded business logic in UI.                     | ✅ **Fixed**                              |
 
 ## 3. Progress Update & Completed Works
 
