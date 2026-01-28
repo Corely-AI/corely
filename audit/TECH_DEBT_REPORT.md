@@ -8,23 +8,23 @@
 
 The `Corely` monorepo refactoring is **underway with significant progress** in both Backend architecture and Frontend modularity.
 
-- **Backend Hygiene**: The `@RequireTenant` decorator and `BaseUseCase` pattern have been successfully adopted in 4 major modules (`Tax`, `POS`, `Cash Management`, `Accounting`), improving security and code consistency. Type safety for `services/api` is restored.
+- **Backend Hygiene**: The `@RequireTenant` decorator and `BaseUseCase` pattern have been successfully adopted in all major modules (`Tax`, `POS`, `Cash Management`, `Accounting`, `Inventory`, `Purchasing`, `CRM`, `Invoices`, `Sales`), improving security and code consistency. Type safety for `services/api` is restored.
 - **Frontend De-Monolithing**: The critical `NewInvoicePage.tsx` (formerly ~950 LOC) and `InvoiceDetailPage.tsx` (formerly ~870 LOC) have been decomposed into reusable, atomic components (`InvoiceLineItems`, `CustomerSelection`, `InvoiceTotals`), reducing file sizes by ~50-80% and consolidating logic.
 - **Remaining Riskiest Areas**: The `Inventory` module remains a "God Object" on the backend. The `apps/web` build pipeline is noisy with configuration errors (`TS6305`).
 
 ## 2. Top 10 High-Risk / Impact Items
 
-| Severity | Area         | Item                                  | Risk                                                                                        | Status                                    |
-| :------- | :----------- | :------------------------------------ | :------------------------------------------------------------------------------------------ | :---------------------------------------- |
-| **P0**   | **Security** | `PrismaCashRepository.updateRegister` | **IDOR Vulnerability**: Ignores `tenantId`.                                                 | ✅ **Fixed**                              |
-| **P0**   | **Build**    | `apps/web` Build Config               | **Broken Build**: `TS6305` output file errors pollute build logs.                           | ✅ **Fixed**                              |
-| **P0**   | **Backend**  | `inventory.module.ts` (1103 LOC)      | **Maintainability**: Module definition is a "God Object".                                   | ✅ **Fixed**                              |
-| **P0**   | **Frontend** | `NewInvoicePage.tsx`                  | **Complexity**: UI Monolith (~955 LOC).                                                     | ✅ **Fixed**                              |
-| **P0**   | **Backend**  | `documents.usecases.ts` (900 LOC)     | **Tech Debt**: "Clustered Class" pattern.                                                   | ✅ **Fixed**                              |
-| **P0**   | **Arch**     | Service Layer Prisma Usage            | **Coupling**: Approvals service decoupled; Workflow service decoupled; Tax confirmed clean. | ✅ **Fixed**                              |
-| **P1**   | **Backend**  | Missing Tenancy Decorators            | **Safety**: Manual checks are fragile.                                                      | 🟡 **In Progress** (5/9 Modules Complete) |
-| **P1**   | **Frontend** | `InvoiceDetailPage.tsx`               | **Duplication**: Logic duplicated from New Invoice.                                         | ✅ **Fixed**                              |
-| **P2**   | **Frontend** | `sidebar.tsx`                         | **Coupling**: Hardcoded business logic in UI.                                               | ✅ **Fixed**                              |
+| Severity | Area         | Item                                  | Risk                                                                                        | Status       |
+| :------- | :----------- | :------------------------------------ | :------------------------------------------------------------------------------------------ | :----------- |
+| **P0**   | **Security** | `PrismaCashRepository.updateRegister` | **IDOR Vulnerability**: Ignores `tenantId`.                                                 | ✅ **Fixed** |
+| **P0**   | **Build**    | `apps/web` Build Config               | **Broken Build**: `TS6305` output file errors pollute build logs.                           | ✅ **Fixed** |
+| **P0**   | **Backend**  | `inventory.module.ts` (1103 LOC)      | **Maintainability**: Module definition is a "God Object".                                   | ✅ **Fixed** |
+| **P0**   | **Frontend** | `NewInvoicePage.tsx`                  | **Complexity**: UI Monolith (~955 LOC).                                                     | ✅ **Fixed** |
+| **P0**   | **Backend**  | `documents.usecases.ts` (900 LOC)     | **Tech Debt**: "Clustered Class" pattern.                                                   | ✅ **Fixed** |
+| **P0**   | **Arch**     | Service Layer Prisma Usage            | **Coupling**: Approvals service decoupled; Workflow service decoupled; Tax confirmed clean. | ✅ **Fixed** |
+| **P1**   | **Backend**  | Missing Tenancy Decorators            | **Safety**: Manual checks are fragile.                                                      | ✅ **Fixed** |
+| **P1**   | **Frontend** | `InvoiceDetailPage.tsx`               | **Duplication**: Logic duplicated from New Invoice.                                         | ✅ **Fixed** |
+| **P2**   | **Frontend** | `sidebar.tsx`                         | **Coupling**: Hardcoded business logic in UI.                                               | ✅ **Fixed** |
 
 ## 3. Progress Update & Completed Works
 
@@ -33,7 +33,7 @@ The `Corely` monorepo refactoring is **underway with significant progress** in b
 - **Backend Security & Standards**:
   - Refactored **Tax**, **POS**, **Cash Management**, and **Accounting** use cases.
   - Standardized on `BaseUseCase` abstract class (Result pattern enactment).
-  - Enforced security via `@RequireTenant()` decorator (removed manual `ctx.tenantId` checks).
+  - Enforced security via `@RequireTenant()` decorator across all 9 standard modules (removed manual `ctx.tenantId` checks).
   - Fixed `PrismaCashRepository` IDOR vulnerability.
 - **Frontend Refactoring**:
   - **NewInvoicePage**: Decomposed into `InvoiceMetadata`, `CustomerSelection`, `InvoiceLineItems`, `InvoiceTotals`, `InvoiceNotes`.
@@ -45,11 +45,11 @@ The `Corely` monorepo refactoring is **underway with significant progress** in b
 ### 🟡 In Progress / Next Up
 
 1.  **Backend Expansion**: Apply `BaseUseCase` + `@RequireTenant` to remaining modules:
-    - `Inventory` (High Risk)
-    - `Purchasing`
-    - `CRM`
-    - `Documents`
-    - `Platform` / `Workspaces`
+    - `Inventory` (High Risk) - ✅ Done
+    - `Purchasing` - ✅ Done
+    - `CRM` - ✅ Done
+    - `Documents` - ✅ Done (Standard use cases)
+    - `Platform` / `Workspaces` - (Internal/System pattern)
 2.  **Frontend Build Fixes**: Resolve `TS6305` errors in `apps/web` caused by `composite` project references or `noEmit` misconfiguration.
 
 ## 4. Recommended Next Steps

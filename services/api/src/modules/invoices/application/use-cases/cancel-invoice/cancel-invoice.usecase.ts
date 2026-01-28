@@ -9,6 +9,7 @@ import {
   type UseCaseContext,
   type UseCaseError,
   ValidationError,
+  RequireTenant,
   ok,
 } from "@corely/kernel";
 import type { CancelInvoiceInput, CancelInvoiceOutput } from "@corely/contracts";
@@ -21,6 +22,7 @@ type Deps = {
   clock: ClockPort;
 };
 
+@RequireTenant()
 export class CancelInvoiceUseCase extends BaseUseCase<CancelInvoiceInput, CancelInvoiceOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -30,9 +32,6 @@ export class CancelInvoiceUseCase extends BaseUseCase<CancelInvoiceInput, Cancel
     input: CancelInvoiceInput,
     ctx: UseCaseContext
   ): Promise<Result<CancelInvoiceOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId missing from context"));
     }

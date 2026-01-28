@@ -3,10 +3,13 @@ import { type ApprovalPolicyInput, type ApprovalRules } from "@corely/contracts"
 import { AUDIT_PORT, OUTBOX_PORT } from "@corely/kernel";
 import type { AuditPort, OutboxPort } from "@corely/kernel";
 import { WorkflowService } from "../../workflow/application/workflow.service";
-import { DomainEventRepository } from "@corely/data";
 import { IdempotencyService } from "../../../shared/infrastructure/idempotency/idempotency.service";
 import { ApprovalPolicyService } from "./approval-policy.service";
 import { ApprovalWorkflowEvents } from "./approval-spec.builder";
+import {
+  APPROVAL_DOMAIN_EVENT_REPOSITORY_TOKEN,
+  type ApprovalDomainEventRepositoryPort,
+} from "./ports/approval-domain-event-repository.port";
 
 interface ApprovalGateRequest {
   tenantId: string;
@@ -27,7 +30,8 @@ export class ApprovalGateService {
     private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT)
     private readonly outbox: OutboxPort,
-    private readonly domainEvents: DomainEventRepository,
+    @Inject(APPROVAL_DOMAIN_EVENT_REPOSITORY_TOKEN)
+    private readonly domainEvents: ApprovalDomainEventRepositoryPort,
     private readonly idempotency: IdempotencyService
   ) {}
 

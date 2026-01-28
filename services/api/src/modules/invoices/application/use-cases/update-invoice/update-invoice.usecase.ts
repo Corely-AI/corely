@@ -12,6 +12,7 @@ import {
   err,
   ok,
   parseLocalDate,
+  RequireTenant,
 } from "@corely/kernel";
 import { type UpdateInvoiceInput, type UpdateInvoiceOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
@@ -30,6 +31,7 @@ type Deps = {
   paymentMethodQuery: PaymentMethodQueryPort;
 };
 
+@RequireTenant()
 export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, UpdateInvoiceOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -52,9 +54,6 @@ export class UpdateInvoiceUseCase extends BaseUseCase<UpdateInvoiceInput, Update
     input: UpdateInvoiceInput,
     ctx: UseCaseContext
   ): Promise<Result<UpdateInvoiceOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId missing from context"));
     }

@@ -7,6 +7,7 @@ import {
   type Result,
   type UseCaseContext,
   type UseCaseError,
+  RequireTenant,
   ValidationError,
   parseLocalDate,
   ok,
@@ -17,6 +18,7 @@ import type { DealRepoPort } from "../../ports/deal-repository.port";
 import { DealAggregate } from "../../../domain/deal.aggregate";
 import { toDealDto } from "../../mappers/deal-dto.mapper";
 
+@RequireTenant()
 @Injectable()
 export class CreateDealUseCase extends BaseUseCase<CreateDealInput, CreateDealOutput> {
   constructor(
@@ -50,10 +52,6 @@ export class CreateDealUseCase extends BaseUseCase<CreateDealInput, CreateDealOu
     input: CreateDealInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateDealOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
-
     const now = this.clock.now();
     const deal = DealAggregate.createDeal({
       id: this.idGenerator.newId(),
