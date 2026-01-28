@@ -20,9 +20,9 @@ The `Corely` monorepo refactoring is **underway with significant progress** in b
 | **P0**   | **Build**    | `apps/web` Build Config               | **Broken Build**: `TS6305` output file errors pollute build logs. | ✅ **Fixed**                              |
 | **P0**   | **Backend**  | `inventory.module.ts` (1103 LOC)      | **Maintainability**: Module definition is a "God Object".         | 🔴 **Open**                               |
 | **P0**   | **Frontend** | `NewInvoicePage.tsx`                  | **Complexity**: UI Monolith (~955 LOC).                           | ✅ **Fixed**                              |
-| **P0**   | **Backend**  | `documents.usecases.ts` (900 LOC)     | **Tech Debt**: "Clustered Class" pattern.                         | 🔴 **Open**                               |
+| **P0**   | **Backend**  | `documents.usecases.ts` (900 LOC)     | **Tech Debt**: "Clustered Class" pattern.                         | ✅ **Fixed**                              |
 | **P0**   | **Arch**     | Service Layer Prisma Usage            | **Coupling**: detected in `tax`, `approvals`, etc.                | ⚠️ **Improving**                          |
-| **P1**   | **Backend**  | Missing Tenancy Decorators            | **Safety**: Manual checks are fragile.                            | 🟡 **In Progress** (4/9 Modules Complete) |
+| **P1**   | **Backend**  | Missing Tenancy Decorators            | **Safety**: Manual checks are fragile.                            | 🟡 **In Progress** (5/9 Modules Complete) |
 | **P1**   | **Frontend** | `InvoiceDetailPage.tsx`               | **Duplication**: Logic duplicated from New Invoice.               | ✅ **Fixed**                              |
 | **P2**   | **Frontend** | `sidebar.tsx`                         | **Coupling**: Hardcoded business logic in UI.                     | ✅ **Fixed**                              |
 
