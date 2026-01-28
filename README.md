@@ -59,6 +59,7 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
 ### Security primitives
 
 - Tenant-aware schemata (all tables include `tenantId` checks) and RBAC/ABAC guards in the API.
+- **Declarative Tenancy**: Use cases are protected by `@RequireTenant()` decorators that enforce context validation at the orchestration layer.
 - Audit log captures critical actions, including AI tool executions and POS commands, with immutable metadata.
 - Tool runs surface confidence, provenance, and trace IDs so consumers can safely retry or investigate.
 
@@ -116,6 +117,16 @@ flowchart LR
 - `packages/domain` → `packages/contracts`
 - **Forbidden:** `packages/contracts` importing other workspace code, frontend importing backend internals, backend importing UI assets, or any module writing another module’s tables directly.
 - Architecture patterns: DDD bounded contexts, Hexagonal ports/adapters, Outbox + Worker for automation, CQRS-lite reads for dashboards, idempotent commands and audit trails as defaults.
+
+## Modules
+
+The system is composed of vertical slice modules, each owning its domain logic, data, and API surface:
+
+- **Foundation**: `identity`, `workspaces`, `platform` (apps/packs), `customization` (fields), `documents` (storage).
+- **Commerce**: `crm` (deals/pipelines), `sales` (quotes/orders), `invoices`, `payment-methods`, `products`, `tax`.
+- **Operations**: `inventory`, `purchasing`, `expenses`, `projects` (coming soon).
+- **Automation**: `automation` (triggers/actions), `workflow` (process engine), `approvals`, `ai-copilot`.
+- **Verticals**: `pos` (point of sale), `booking` (coming soon), `production` (coming soon).
 
 ## Monorepo layout
 

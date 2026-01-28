@@ -26,6 +26,7 @@ Shape (from `services/api/src/shared/request-context`):
 - `metadata` (optional)
 - `idempotencyKey` (optional for writes)
   Extraction: use `RequestContextInterceptor` globally + `toUseCaseContext(req)`/`buildUseCaseContext(req)` helpers in controllers. Do not read tenant/workspace headers manually; prefer authenticated principal + workspace header precedence.
+- **Tenancy Enforcement**: Use cases that require tenant context MUST use the `@RequireTenant()` decorator on the class. This ensures `ctx.tenantId` is present before execution.
 
 ## List/query contract (HTTP)
 
