@@ -1,7 +1,14 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
-import { InventoryController } from "./adapters/http/inventory.controller";
+import { ProductsController } from "./adapters/http/products.controller";
+import { WarehousesController } from "./adapters/http/warehouses.controller";
+import { InventoryDocumentsController } from "./adapters/http/inventory-documents.controller";
+import { StockController } from "./adapters/http/stock.controller";
 import { InventoryApplication } from "./application/inventory.application";
+import { ProductsApplication } from "./application/products.application";
+import { WarehousesApplication } from "./application/warehouses.application";
+import { InventoryDocumentsApplication } from "./application/inventory-documents.application";
+import { StockApplication } from "./application/stock.application";
 
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { IdentityModule } from "../identity";
@@ -18,7 +25,12 @@ import { applicationProviders } from "./providers/application.providers";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule],
-  controllers: [InventoryController],
+  controllers: [
+    ProductsController,
+    WarehousesController,
+    InventoryDocumentsController,
+    StockController,
+  ],
   providers: [
     ...repositoryProviders,
     ...productProviders,
@@ -29,6 +41,12 @@ import { applicationProviders } from "./providers/application.providers";
     ...reorderProviders,
     ...applicationProviders,
   ],
-  exports: [InventoryApplication],
+  exports: [
+    InventoryApplication,
+    ProductsApplication,
+    WarehousesApplication,
+    InventoryDocumentsApplication,
+    StockApplication,
+  ],
 })
 export class InventoryModule {}

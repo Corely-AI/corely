@@ -1,5 +1,9 @@
 import { type Provider } from "@nestjs/common";
 import { InventoryApplication } from "../application/inventory.application";
+import { ProductsApplication } from "../application/products.application";
+import { WarehousesApplication } from "../application/warehouses.application";
+import { InventoryDocumentsApplication } from "../application/inventory-documents.application";
+import { StockApplication } from "../application/stock.application";
 
 import { CreateProductUseCase } from "../application/use-cases/create-product.usecase";
 import { UpdateProductUseCase } from "../application/use-cases/update-product.usecase";
@@ -128,6 +132,129 @@ export const applicationProviders: Provider[] = [
       CancelInventoryDocumentUseCase,
       GetInventoryDocumentUseCase,
       ListInventoryDocumentsUseCase,
+      GetOnHandUseCase,
+      GetAvailableUseCase,
+      ListStockMovesUseCase,
+      ListReservationsUseCase,
+      ListReorderPoliciesUseCase,
+      CreateReorderPolicyUseCase,
+      UpdateReorderPolicyUseCase,
+      GetReorderSuggestionsUseCase,
+      GetLowStockUseCase,
+    ],
+  },
+  {
+    provide: ProductsApplication,
+    useFactory: (
+      createProduct: CreateProductUseCase,
+      updateProduct: UpdateProductUseCase,
+      activateProduct: ActivateProductUseCase,
+      deactivateProduct: DeactivateProductUseCase,
+      getProduct: GetProductUseCase,
+      listProducts: ListProductsUseCase
+    ) =>
+      new ProductsApplication(
+        createProduct,
+        updateProduct,
+        activateProduct,
+        deactivateProduct,
+        getProduct,
+        listProducts
+      ),
+    inject: [
+      CreateProductUseCase,
+      UpdateProductUseCase,
+      ActivateProductUseCase,
+      DeactivateProductUseCase,
+      GetProductUseCase,
+      ListProductsUseCase,
+    ],
+  },
+  {
+    provide: WarehousesApplication,
+    useFactory: (
+      createWarehouse: CreateWarehouseUseCase,
+      updateWarehouse: UpdateWarehouseUseCase,
+      getWarehouse: GetWarehouseUseCase,
+      listWarehouses: ListWarehousesUseCase,
+      createLocation: CreateLocationUseCase,
+      updateLocation: UpdateLocationUseCase,
+      listLocations: ListLocationsUseCase
+    ) =>
+      new WarehousesApplication(
+        createWarehouse,
+        updateWarehouse,
+        getWarehouse,
+        listWarehouses,
+        createLocation,
+        updateLocation,
+        listLocations
+      ),
+    inject: [
+      CreateWarehouseUseCase,
+      UpdateWarehouseUseCase,
+      GetWarehouseUseCase,
+      ListWarehousesUseCase,
+      CreateLocationUseCase,
+      UpdateLocationUseCase,
+      ListLocationsUseCase,
+    ],
+  },
+  {
+    provide: InventoryDocumentsApplication,
+    useFactory: (
+      createDocument: CreateInventoryDocumentUseCase,
+      updateDocument: UpdateInventoryDocumentUseCase,
+      confirmDocument: ConfirmInventoryDocumentUseCase,
+      postDocument: PostInventoryDocumentUseCase,
+      cancelDocument: CancelInventoryDocumentUseCase,
+      getDocument: GetInventoryDocumentUseCase,
+      listDocuments: ListInventoryDocumentsUseCase
+    ) =>
+      new InventoryDocumentsApplication(
+        createDocument,
+        updateDocument,
+        confirmDocument,
+        postDocument,
+        cancelDocument,
+        getDocument,
+        listDocuments
+      ),
+    inject: [
+      CreateInventoryDocumentUseCase,
+      UpdateInventoryDocumentUseCase,
+      ConfirmInventoryDocumentUseCase,
+      PostInventoryDocumentUseCase,
+      CancelInventoryDocumentUseCase,
+      GetInventoryDocumentUseCase,
+      ListInventoryDocumentsUseCase,
+    ],
+  },
+  {
+    provide: StockApplication,
+    useFactory: (
+      getOnHand: GetOnHandUseCase,
+      getAvailable: GetAvailableUseCase,
+      listStockMoves: ListStockMovesUseCase,
+      listReservations: ListReservationsUseCase,
+      listReorderPolicies: ListReorderPoliciesUseCase,
+      createReorderPolicy: CreateReorderPolicyUseCase,
+      updateReorderPolicy: UpdateReorderPolicyUseCase,
+      getReorderSuggestions: GetReorderSuggestionsUseCase,
+      getLowStock: GetLowStockUseCase
+    ) =>
+      new StockApplication(
+        getOnHand,
+        getAvailable,
+        listStockMoves,
+        listReservations,
+        listReorderPolicies,
+        createReorderPolicy,
+        updateReorderPolicy,
+        getReorderSuggestions,
+        getLowStock
+      ),
+    inject: [
       GetOnHandUseCase,
       GetAvailableUseCase,
       ListStockMovesUseCase,
