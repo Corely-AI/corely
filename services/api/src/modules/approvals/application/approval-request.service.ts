@@ -2,11 +2,6 @@ import { ForbiddenException, Injectable, NotFoundException, Inject } from "@nest
 import { type ApprovalDecisionInput } from "@corely/contracts";
 import { AUDIT_PORT, OUTBOX_PORT } from "@corely/kernel";
 import type { AuditPort, OutboxPort } from "@corely/kernel";
-import {
-  DomainEventRepository,
-  WorkflowInstanceRepository,
-  WorkflowTaskRepository,
-} from "@corely/data";
 import { WorkflowService } from "../../workflow/application/workflow.service";
 import {
   MEMBERSHIP_REPOSITORY_TOKEN,
@@ -17,18 +12,33 @@ import {
   type RolePermissionGrantRepositoryPort,
 } from "../../identity/application/ports/role-permission-grant-repository.port";
 import { toAllowedPermissionKeys } from "../../../shared/permissions/effective-permissions";
+import {
+  APPROVAL_REQUEST_REPOSITORY_TOKEN,
+  type ApprovalRequestRepositoryPort,
+} from "./ports/approval-request-repository.port";
+import {
+  APPROVAL_TASK_REPOSITORY_TOKEN,
+  type ApprovalTaskRepositoryPort,
+} from "./ports/approval-task-repository.port";
+import {
+  APPROVAL_DOMAIN_EVENT_REPOSITORY_TOKEN,
+  type ApprovalDomainEventRepositoryPort,
+} from "./ports/approval-domain-event-repository.port";
 
 @Injectable()
 export class ApprovalRequestService {
   constructor(
-    private readonly instances: WorkflowInstanceRepository,
-    private readonly tasks: WorkflowTaskRepository,
+    @Inject(APPROVAL_REQUEST_REPOSITORY_TOKEN)
+    private readonly instances: ApprovalRequestRepositoryPort,
+    @Inject(APPROVAL_TASK_REPOSITORY_TOKEN)
+    private readonly tasks: ApprovalTaskRepositoryPort,
     private readonly workflows: WorkflowService,
     @Inject(AUDIT_PORT)
     private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT)
     private readonly outbox: OutboxPort,
-    private readonly domainEvents: DomainEventRepository,
+    @Inject(APPROVAL_DOMAIN_EVENT_REPOSITORY_TOKEN)
+    private readonly domainEvents: ApprovalDomainEventRepositoryPort,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
     private readonly memberships: MembershipRepositoryPort,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
@@ -36,6 +46,7 @@ export class ApprovalRequestService {
   ) {}
 
   async listRequests(tenantId: string, filters: { status?: string; businessKey?: string }) {
+    // Cast status to expected type or let adapter handle it
     return this.instances.list(tenantId, {
       ...filters,
       status: filters.status as any,
