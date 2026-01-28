@@ -1,52 +1,69 @@
 # Technical Debt & Architecture Report
 
-**Date**: 2026-01-27
+**Date**: 2026-01-28
 **Auditor**: Antigravity (Staff Engineer Agent)
 **Scope**: Monorepo Health, Boundaries, Complexity, Security
 
 ## 1. Executive Summary
 
-The `Corely` monorepo demonstrates a **strong foundational architecture** (Hexagonal/Ports & Adapters) with clear separation of concerns in naming conventions. However, **implementation discipline is slipping** in key areas.
+The `Corely` monorepo refactoring is **underway with significant progress** in both Backend architecture and Frontend modularity.
 
-- **Type Safety is Compromised**: `pnpm typecheck` fails. This erodes confidence in the build pipeline.
-- **"Grouping" Anti-Pattern**: The decision to group multiple classes (Use Cases) into single files (`*.usecases.ts`) has created unmaintainable "God Files" (>600-1000 LOC) that hide duplication and hinder reuse.
-- **Boundary Leakage**: `arch:check` confirms that Prisma access is leaking from the Infrastructure layer into the Service layer, threatening the clean architecture.
-- **Multi-Tenancy Risk**: Tenancy enforcement is manual (`if (!ctx.tenantId)`), repetitive, and explicitly missed in at least one repository update method, creating a security vulnerability.
+- **Backend Hygiene**: The `@RequireTenant` decorator and `BaseUseCase` pattern have been successfully adopted in 4 major modules (`Tax`, `POS`, `Cash Management`, `Accounting`), improving security and code consistency. Type safety for `services/api` is restored.
+- **Frontend De-Monolithing**: The critical `NewInvoicePage.tsx` (formerly ~950 LOC) and `InvoiceDetailPage.tsx` (formerly ~870 LOC) have been decomposed into reusable, atomic components (`InvoiceLineItems`, `CustomerSelection`, `InvoiceTotals`), reducing file sizes by ~50-80% and consolidating logic.
+- **Remaining Riskiest Areas**: The `Inventory` module remains a "God Object" on the backend. The `apps/web` build pipeline is noisy with configuration errors (`TS6305`).
 
 ## 2. Top 10 High-Risk / Impact Items
 
-| Severity | Area         | Item                                        | Risk                                                                         |
-| -------- | ------------ | ------------------------------------------- | ---------------------------------------------------------------------------- |
-| **P0**   | **Security** | `PrismaCashRepository.updateRegister`       | **IDOR Vulnerability**: Ignores `tenantId` in update query.                  |
-| **P0**   | **Build**    | `packages/email-templates` & `offline-core` | **Broken Build**: Typecheck fails. CI/CD reliability at risk.                |
-| **P0**   | **Backend**  | `inventory.module.ts` (1103 LOC)            | **Maintainability**: Module definition is a "God Object".                    |
-| **P0**   | **Frontend** | `NewInvoicePage.tsx` (955 LOC)              | **Complexity**: UI Monolith. Hard to test/refactor.                          |
-| **P0**   | **Backend**  | `accounting.usecases.ts` (and others)       | **Tech Debt**: "Clustered Class" pattern forces large files and duplication. |
-| **P0**   | **Arch**     | Service Layer Prisma Usage                  | **Coupling**: Detected in `tax`, `approvals`, `workflow` modules.            |
-| **P1**   | **Backend**  | Missing Tenancy Decorators                  | **Safety**: Relying on manual `if` checks for tenancy is fragile.            |
-| **P1**   | **Backend**  | `documents.usecases.ts` (900 LOC)           | **Complexity**: Logic dump without clear separation.                         |
-| **P1**   | **Backend**  | `purchasing.module.ts` (870 LOC)            | **Maintainability**: Module file too large.                                  |
-| **P2**   | **Frontend** | `sidebar.tsx`                               | **Coupling**: Hardcoded business logic in global navigation UI.              |
+| Severity | Area         | Item                                  | Risk                                                              | Status                                    |
+| :------- | :----------- | :------------------------------------ | :---------------------------------------------------------------- | :---------------------------------------- |
+| **P0**   | **Security** | `PrismaCashRepository.updateRegister` | **IDOR Vulnerability**: Ignores `tenantId`.                       | ✅ **Fixed**                              |
+| **P0**   | **Build**    | `apps/web` Build Config               | **Broken Build**: `TS6305` output file errors pollute build logs. | ⚠️ **Open**                               |
+| **P0**   | **Backend**  | `inventory.module.ts` (1103 LOC)      | **Maintainability**: Module definition is a "God Object".         | 🔴 **Open**                               |
+| **P0**   | **Frontend** | `NewInvoicePage.tsx`                  | **Complexity**: UI Monolith (~955 LOC).                           | ✅ **Fixed**                              |
+| **P0**   | **Backend**  | `documents.usecases.ts` (900 LOC)     | **Tech Debt**: "Clustered Class" pattern.                         | 🔴 **Open**                               |
+| **P0**   | **Arch**     | Service Layer Prisma Usage            | **Coupling**: detected in `tax`, `approvals`, etc.                | ⚠️ **Improving**                          |
+| **P1**   | **Backend**  | Missing Tenancy Decorators            | **Safety**: Manual checks are fragile.                            | 🟡 **In Progress** (4/9 Modules Complete) |
+| **P1**   | **Frontend** | `InvoiceDetailPage.tsx`               | **Duplication**: Logic duplicated from New Invoice.               | ✅ **Fixed**                              |
+| **P2**   | **Frontend** | `sidebar.tsx`                         | **Coupling**: Hardcoded business logic in UI.                     | 🔴 **Open**                               |
 
-## 3. Recommended Remediation Strategy
+## 3. Progress Update & Completed Works
 
-### Phase 1: Quick Wins (Days 1-2)
+### ✅ Completed
 
-1.  **Fix Typecheck**: Resolve the `postcss` and `offline-core` type errors. Nothing else matters if the build is red. (In Progress - API Green)
-2.  **Patch Security**: Fix `PrismaCashRepository` to enforce tenant check in the query. (Completed)
-3.  **Halt Leakage**: Add stricter lint rules (using `dependency-cruiser` or `eslint-plugin-boundaries`) to prevent importing `prisma` in `*.service.ts` files.
+- **Backend Security & Standards**:
+  - Refactored **Tax**, **POS**, **Cash Management**, and **Accounting** use cases.
+  - Standardized on `BaseUseCase` abstract class (Result pattern enactment).
+  - Enforced security via `@RequireTenant()` decorator (removed manual `ctx.tenantId` checks).
+  - Fixed `PrismaCashRepository` IDOR vulnerability.
+- **Frontend Refactoring**:
+  - **NewInvoicePage**: Decomposed into `InvoiceMetadata`, `CustomerSelection`, `InvoiceLineItems`, `InvoiceTotals`, `InvoiceNotes`.
+  - **InvoiceDetailPage**: Refactored to reuse the same components as `NewInvoicePage`.
+  - **Utilities**: Extracted shared logic for invoice number generation and money formatting.
+- **Type Safety**:
+  - `services/api` now passes `tsc` without errors.
 
-### Phase 2: Structural Hygiene (Week 1)
+### 🟡 In Progress / Next Up
 
-1.  **Explode Use Cases**: Script a refactor to split `accounting.usecases.ts` into individual files (`create-account.usecase.ts`, etc.). (Completed for Reports)
-2.  **Standardize Tenancy**: Introduce an `@AuthorizedInstance()` decorator or Middleware to handle the `tenantId` check globally, deleting 100+ loc of repetitive manual checks. (Decorator `@RequireTenant` Created & Implemented)
+1.  **Backend Expansion**: Apply `BaseUseCase` + `@RequireTenant` to remaining modules:
+    - `Inventory` (High Risk)
+    - `Purchasing`
+    - `CRM`
+    - `Documents`
+    - `Platform` / `Workspaces`
+2.  **Frontend Build Fixes**: Resolve `TS6305` errors in `apps/web` caused by `composite` project references or `noEmit` misconfiguration.
 
-### Phase 3: Strategic Refactoring (> Week 1)
+## 4. Recommended Next Steps
 
-1.  **Decompose Frontend Monoliths**: Break `NewInvoicePage` into `InvoiceForm`, `LineItemsTable`, etc.
-2.  **Refactor God Modules**: Split `InventoryModule` into semantic sub-modules (`Stock`, `Product`, `Warehouse`). (Providers Extracted)
+### Phase 3.1: Inventory & Purchasing (The "Hard Stuff")
 
-## 4. "Do Not Refactor Yet" (Danger Zone)
+1.  **Inventory Module**: This is the largest technical debt on the backend. It needs to be broken down handling `Stock`, `Product`, and `Warehouse` domains separately.
+2.  Apply Tenancy decorators to `Inventory` and `Purchasing` use cases.
 
-- **`inventory.module.ts`**: Do not touch this until you have full E2E test coverage of the Inventory flows. Its size suggests hidden dependencies and side-effects.
-- **`shared/ui/sidebar.tsx`**: Touching this breaks navigation for everyone. Move carefully and cover with snapshot tests first.
+### Phase 3.2: Frontend Polish
+
+1.  **Sidebar Decoupling**: Refactor `sidebar.tsx` to read from a configuration provider rather than hardcoding business rules.
+2.  **Linting**: Strict boundaries check to ensure Use Cases do not import React components or UI libraries (and vice versa).
+
+## 5. "Do Not Refactor Yet" (Danger Zone)
+
+- **`inventory.module.ts`**: Still risky. Proceed only with extreme caution or after improved test coverage.
