@@ -9,14 +9,24 @@ import {
   type StartWorkflowInstanceInput,
 } from "@corely/contracts";
 import { getInitialSnapshot, serializeSnapshot } from "@corely/core";
-import {
-  WorkflowDefinitionRepository,
-  WorkflowEventRepository,
-  WorkflowInstanceRepository,
-  WorkflowTaskRepository,
-} from "@corely/data";
 import { UNIT_OF_WORK, type UnitOfWorkPort } from "@corely/kernel";
 import { WorkflowQueueClient } from "../infrastructure/workflow-queue.client";
+import {
+  WORKFLOW_DEFINITION_REPOSITORY_TOKEN,
+  type WorkflowDefinitionRepositoryPort,
+} from "./ports/workflow-definition-repository.port";
+import {
+  WORKFLOW_INSTANCE_REPOSITORY_TOKEN,
+  type WorkflowInstanceRepositoryPort,
+} from "./ports/workflow-instance-repository.port";
+import {
+  WORKFLOW_TASK_REPOSITORY_TOKEN,
+  type WorkflowTaskRepositoryPort,
+} from "./ports/workflow-task-repository.port";
+import {
+  WORKFLOW_EVENT_REPOSITORY_TOKEN,
+  type WorkflowEventRepositoryPort,
+} from "./ports/workflow-event-repository.port";
 
 @Injectable()
 export class WorkflowService {
@@ -25,10 +35,14 @@ export class WorkflowService {
   constructor(
     @Inject(UNIT_OF_WORK)
     private readonly uow: UnitOfWorkPort,
-    private readonly definitions: WorkflowDefinitionRepository,
-    private readonly instances: WorkflowInstanceRepository,
-    private readonly tasks: WorkflowTaskRepository,
-    private readonly events: WorkflowEventRepository,
+    @Inject(WORKFLOW_DEFINITION_REPOSITORY_TOKEN)
+    private readonly definitions: WorkflowDefinitionRepositoryPort,
+    @Inject(WORKFLOW_INSTANCE_REPOSITORY_TOKEN)
+    private readonly instances: WorkflowInstanceRepositoryPort,
+    @Inject(WORKFLOW_TASK_REPOSITORY_TOKEN)
+    private readonly tasks: WorkflowTaskRepositoryPort,
+    @Inject(WORKFLOW_EVENT_REPOSITORY_TOKEN)
+    private readonly events: WorkflowEventRepositoryPort,
     private readonly queue: WorkflowQueueClient
   ) {}
 
