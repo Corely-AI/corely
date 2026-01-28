@@ -1,3 +1,3 @@
-export { InvoiceEmail } from "./InvoiceEmail.js";
-export { buildInvoiceEmailSubject } from "./invoice-email.subject.js";
-export type { InvoiceEmailProps } from "./invoice-email.types.js";
+export { InvoiceEmail } from "./InvoiceEmail";
+export { buildInvoiceEmailSubject } from "./invoice-email.subject";
+export type { InvoiceEmailProps } from "./invoice-email.types";

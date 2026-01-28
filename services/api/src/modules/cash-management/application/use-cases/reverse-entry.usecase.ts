@@ -1,51 +1,55 @@
-import { ReverseCashEntry, CashEntryType, CashEntrySourceType } from "@corely/contracts";
-import { CashRepositoryPort } from "../ports/cash-repository.port";
-import { CashEntryEntity } from "../../domain/entities";
-import { NotFoundException } from "@nestjs/common";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  NotFoundError,
+  err,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
+import type { ReverseCashEntry } from "@corely/contracts";
+import { CashEntryType, CashEntrySourceType } from "@corely/contracts";
+import { type CashRepositoryPort, CASH_REPOSITORY } from "../ports/cash-repository.port";
+import type { CashEntryEntity } from "../../domain/entities";
+import { Inject, Injectable } from "@nestjs/common";
 
-export class ReverseEntryUseCase {
-  constructor(private readonly repository: CashRepositoryPort) {}
+@RequireTenant()
+@Injectable()
+export class ReverseEntryUseCase extends BaseUseCase<ReverseCashEntry, CashEntryEntity> {
+  constructor(@Inject(CASH_REPOSITORY) private readonly repository: CashRepositoryPort) {
+    super({ logger: null as any });
+  }
 
-  async execute(
-    data: ReverseCashEntry & { userId: string }
-  ): Promise<CashEntryEntity> {
-    const { tenantId, originalEntryId, reason, userId } = data;
+  protected async handle(
+    input: ReverseCashEntry,
+    ctx: UseCaseContext
+  ): Promise<Result<CashEntryEntity, UseCaseError>> {
+    const tenantId = ctx.tenantId!;
+    const { originalEntryId, reason } = input;
 
     // 1. Fetch Original
     const original = await this.repository.findEntryById(tenantId, originalEntryId);
-    if (!original) throw new NotFoundException("Original entry not found");
+    if (!original) {
+      return err(new NotFoundError("Original entry not found"));
+    }
 
     // 2. Create Reversal
     const reversalType = original.type === CashEntryType.IN ? CashEntryType.OUT : CashEntryType.IN;
-    
-    // We need workspaceId from original
-    const workspaceId = original.workspaceId;
 
     const entry = await this.repository.createEntry({
       tenantId,
-      workspaceId,
+      workspaceId: original.workspaceId,
       registerId: original.registerId,
       type: reversalType,
       amountCents: original.amountCents,
       sourceType: CashEntrySourceType.MANUAL,
       description: `Reversal: ${original.description}. Reason: ${reason}`,
       referenceId: original.id,
-      businessDate: original.businessDate ?? undefined, // Keep same business date? Or today?
-      // Usually reversals happen "now", but correct the "past"?
-      // Append only means we record it now.
-      // If we put it in the past business date, we change the past close?
-      // "do not update/delete cash entries after posting".
-      // "Daily Close (cash count + reconciliation)".
-      // If I reverse an entry from yesterday, yesterday's close is now wrong?
-      // If the day is locked, can I reverse?
-      // "Disallow creating entries into locked dates".
-      // So if businessDate is locked, I cannot reverse INTO that date.
-      // I must reverse TODAY.
-      // So businessDate should be undefined (defaulting to today in my createEntry logic? No createEntry logic didn't default).
-      // I should default to today if not provided. UseCase adds date.
-      createdByUserId: userId,
+      businessDate: original.businessDate ?? undefined,
+      createdByUserId: ctx.userId || "system",
     });
 
-    return entry;
+    return ok(entry);
   }
 }

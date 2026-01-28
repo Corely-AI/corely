@@ -60,7 +60,7 @@ describe("CmsContentRenderer", () => {
 
     const result = renderer.render(doc);
     expect(result.html).toContain("https://example.com/image.png");
-    expect(result.html).toContain("alt=\"Example image\"");
+    expect(result.html).toContain('alt="Example image"');
     expect(result.html).not.toContain("onerror");
     expect(result.html).not.toContain("javascript:");
   });

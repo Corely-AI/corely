@@ -11,6 +11,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { ShiftSession } from "../../domain/shift-session.aggregate";
 import {
@@ -22,6 +23,7 @@ import {
   type RegisterRepositoryPort,
 } from "../ports/register-repository.port";
 
+@RequireTenant()
 @Injectable()
 export class OpenShiftUseCase extends BaseUseCase<OpenShiftInput, OpenShiftOutput> {
   constructor(
@@ -35,12 +37,10 @@ export class OpenShiftUseCase extends BaseUseCase<OpenShiftInput, OpenShiftOutpu
     input: OpenShiftInput,
     ctx: UseCaseContext
   ): Promise<Result<OpenShiftOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
+    const tenantId = ctx.tenantId!;
 
     // Validate register exists
-    const register = await this.registerRepo.findById(ctx.tenantId, input.registerId);
+    const register = await this.registerRepo.findById(tenantId, input.registerId);
     if (!register) {
       return err(new NotFoundError("REGISTER_NOT_FOUND", "Register not found"));
     }
@@ -50,7 +50,7 @@ export class OpenShiftUseCase extends BaseUseCase<OpenShiftInput, OpenShiftOutpu
     }
 
     // Check if there's already an open session for this register
-    const existingSession = await this.shiftRepo.findOpenByRegister(ctx.tenantId, input.registerId);
+    const existingSession = await this.shiftRepo.findOpenByRegister(tenantId, input.registerId);
     if (existingSession) {
       return err(
         new ConflictError(
@@ -65,7 +65,7 @@ export class OpenShiftUseCase extends BaseUseCase<OpenShiftInput, OpenShiftOutpu
     const session = new ShiftSession(
       input.sessionId, // Client-generated ID for offline support
       input.registerId,
-      ctx.tenantId,
+      tenantId,
       input.openedByEmployeePartyId,
       now,
       input.startingCashCents ?? null,

@@ -5,20 +5,35 @@ import type {
   VatPeriodSummaryDto,
   TaxTotalsByKind,
 } from "@corely/contracts";
-import type { UseCaseContext } from "./use-case-context";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 import { VatPeriodQueryPort, TaxProfileRepoPort, TaxReportRepoPort } from "../../domain/ports";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+@RequireTenant()
 @Injectable()
-export class ListVatPeriodsUseCase {
+export class ListVatPeriodsUseCase extends BaseUseCase<ListVatPeriodsInput, ListVatPeriodsOutput> {
   constructor(
     private readonly periodResolver: VatPeriodResolver,
     private readonly vatPeriodQuery: VatPeriodQueryPort,
     private readonly taxProfileRepo: TaxProfileRepoPort,
     private readonly taxReportRepo: TaxReportRepoPort
-  ) {}
+  ) {
+    super({ logger: null as any });
+  }
 
-  async execute(input: ListVatPeriodsInput, ctx: UseCaseContext): Promise<ListVatPeriodsOutput> {
+  protected async handle(
+    input: ListVatPeriodsInput,
+    ctx: UseCaseContext
+  ): Promise<Result<ListVatPeriodsOutput, UseCaseError>> {
+    const tenantId = ctx.tenantId!;
+    const workspaceId = ctx.workspaceId || tenantId;
     const now = new Date();
     const year =
       input.year ?? (input.from ? new Date(input.from).getUTCFullYear() : now.getUTCFullYear());
@@ -28,12 +43,12 @@ export class ListVatPeriodsUseCase {
     const periods = this.periodResolver.getQuartersOfYear(year);
     const summaries: VatPeriodSummaryDto[] = [];
 
-    const profile = await this.taxProfileRepo.getActive(ctx.workspaceId, now);
+    const profile = await this.taxProfileRepo.getActive(workspaceId, now);
     const method = profile?.vatAccountingMethod ?? "IST";
     const currency = profile?.currency ?? "EUR";
 
     const reports = await this.taxReportRepo.listByPeriodRange(
-      ctx.workspaceId,
+      workspaceId,
       "VAT_ADVANCE",
       yearStart,
       yearEnd
@@ -44,10 +59,10 @@ export class ListVatPeriodsUseCase {
     );
 
     for (const p of periods) {
-      if (input.from && p.end <= new Date(input.from)) continue;
-      if (input.to && p.start >= new Date(input.to)) continue;
+      if (input.from && p.end <= new Date(input.from)) {continue;}
+      if (input.to && p.start >= new Date(input.to)) {continue;}
 
-      const inputs = await this.vatPeriodQuery.getInputs(ctx.workspaceId, p.start, p.end, method);
+      const inputs = await this.vatPeriodQuery.getInputs(workspaceId, p.start, p.end, method);
       const salesGrossCents = inputs.salesNetCents + inputs.salesVatCents;
       const purchaseGrossCents = inputs.purchaseNetCents + inputs.purchaseVatCents;
       const taxDueCents = inputs.salesVatCents - inputs.purchaseVatCents;
@@ -72,7 +87,7 @@ export class ListVatPeriodsUseCase {
 
       summaries.push({
         id: p.key,
-        tenantId: ctx.tenantId,
+        tenantId,
         periodKey: p.key,
         periodStart: p.start.toISOString(),
         periodEnd: p.end.toISOString(),
@@ -97,6 +112,6 @@ export class ListVatPeriodsUseCase {
       });
     }
 
-    return { periods: summaries };
+    return ok({ periods: summaries });
   }
 }

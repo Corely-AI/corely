@@ -7,9 +7,13 @@ import { UseCaseError, ValidationError } from "./errors";
 import { type UseCase } from "./usecase";
 
 type BaseDeps = {
-  logger: LoggerPort;
+  logger?: LoggerPort;
   uow?: UnitOfWorkPort;
   idempotency?: IdempotencyPort;
+};
+
+type InitializedDeps = BaseDeps & {
+  logger: LoggerPort;
 };
 
 export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> implements UseCase<
@@ -17,14 +21,34 @@ export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> i
   O,
   E
 > {
-  protected constructor(protected readonly deps: BaseDeps) {}
+  protected readonly deps: InitializedDeps;
+
+  protected constructor(deps: BaseDeps) {
+    this.deps = {
+      ...deps,
+      logger: deps.logger || {
+        debug: () => {},
+        info: () => {},
+        warn: () => {},
+        error: () => {},
+      },
+    } as InitializedDeps;
+  }
 
   protected validate?(input: I): I;
   protected getIdempotencyKey?(input: I, ctx: UseCaseContext): string | undefined;
 
   protected abstract handle(input: I, ctx: UseCaseContext): Promise<Result<O, E>>;
 
+  protected get requiresTenant(): boolean {
+    return false;
+  }
+
   async execute(input: I, ctx: UseCaseContext): Promise<Result<O, E>> {
+    if (this.requiresTenant && !ctx.tenantId) {
+      return err(new ValidationError("Tenant ID is required") as E);
+    }
+
     const startedAt = Date.now();
     const useCaseName = this.constructor.name || "UseCase";
     const baseMeta = {

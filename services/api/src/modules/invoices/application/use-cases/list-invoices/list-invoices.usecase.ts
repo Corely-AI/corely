@@ -9,6 +9,7 @@ import {
   err,
   ok,
   parseLocalDate,
+  RequireTenant,
 } from "@corely/kernel";
 import { type ListInvoicesInput, type ListInvoicesOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
@@ -16,6 +17,7 @@ import { toInvoiceDto } from "../shared/invoice-dto.mapper";
 
 type Deps = { logger: LoggerPort; invoiceRepo: InvoiceRepoPort; timeService: TimeService };
 
+@RequireTenant()
 export class ListInvoicesUseCase extends BaseUseCase<ListInvoicesInput, ListInvoicesOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -25,9 +27,6 @@ export class ListInvoicesUseCase extends BaseUseCase<ListInvoicesInput, ListInvo
     input: ListInvoicesInput,
     ctx: UseCaseContext
   ): Promise<Result<ListInvoicesOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId/workspaceId is required"));
-    }
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId is required"));
     }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Prisma } from "@prisma/client";
-import { ExceptionToProblemDetailsMapper } from "../exception-to-problem-details.mapper.js";
+import { ExceptionToProblemDetailsMapper } from "../exception-to-problem-details.mapper";
 import { HttpStatus } from "@nestjs/common";
 
 describe("ExceptionToProblemDetailsMapper - Prisma Errors", () => {

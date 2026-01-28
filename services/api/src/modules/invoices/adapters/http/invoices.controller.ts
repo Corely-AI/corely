@@ -104,13 +104,14 @@ export class InvoicesHttpController {
   async downloadPdf(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
     const input = DownloadInvoicePdfInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
-    const result = await this.app.downloadInvoicePdf.execute(input, ctx);
-    const downloadUrl = result.downloadUrl.startsWith("/")
-      ? `${req.protocol}://${req.get("host")}${result.downloadUrl}`
-      : result.downloadUrl;
+    const result = await this.app!.downloadInvoicePdf.execute(input, ctx);
+    const payload = mapResultToHttp(result);
+    const downloadUrl = payload.downloadUrl.startsWith("/")
+      ? `${req.protocol}://${req.get("host")}${payload.downloadUrl}`
+      : payload.downloadUrl;
     return {
       downloadUrl,
-      expiresAt: result.expiresAt.toISOString(),
+      expiresAt: payload.expiresAt.toISOString(),
     };
   }
 

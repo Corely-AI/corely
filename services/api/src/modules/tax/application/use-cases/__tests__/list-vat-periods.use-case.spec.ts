@@ -2,7 +2,13 @@ import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { ListVatPeriodsUseCase } from "../list-vat-periods.use-case";
 import { VatPeriodResolver } from "../../../domain/services/vat-period.resolver";
 import { VatPeriodQueryPort, TaxProfileRepoPort, TaxReportRepoPort } from "../../../domain/ports";
-import type { VatAccountingMethod, TaxReportStatus } from "@corely/contracts";
+import type { VatAccountingMethod, TaxReportStatus, ListVatPeriodsOutput } from "@corely/contracts";
+import { isErr, type Result } from "@corely/kernel";
+
+const unwrap = <T>(result: Result<T, any>): T => {
+  if (isErr(result)) throw result.error;
+  return result.value;
+};
 
 class FakeVatPeriodQuery extends VatPeriodQueryPort {
   async getInputs(_workspaceId: string, _start: Date, _end: Date, _method: VatAccountingMethod) {
@@ -41,7 +47,7 @@ class FakeTaxProfileRepo extends TaxProfileRepoPort {
     } as any;
   }
 
-  async upsert() {
+  async upsert(_profile: any): Promise<any> {
     throw new Error("not used");
   }
 
@@ -73,20 +79,24 @@ class FakeTaxReportRepo extends TaxReportRepoPort {
     return [] as any;
   }
 
-  async markSubmitted() {
+  async markSubmitted(_tenantId: string, _id: string, _submittedAt: Date): Promise<any> {
     throw new Error("not used");
   }
 
-  async seedDefaultReports() {
+  async seedDefaultReports(): Promise<void> {
     return;
   }
 
-  async listByPeriodRange() {
+  async listByPeriodRange(): Promise<any[]> {
     return this.reports as any;
   }
 
-  async upsertByPeriod() {
+  async upsertByPeriod(_input: any): Promise<any> {
     throw new Error("not used");
+  }
+
+  async findById(_tenantId: string, _id: string): Promise<any | null> {
+    return null;
   }
 }
 
@@ -111,11 +121,13 @@ describe("ListVatPeriodsUseCase", () => {
   });
 
   it("marks past quarters as overdue when no submission exists", async () => {
-    const result = await useCase.execute({ year: 2025, type: "VAT_QUARTERLY" }, {
-      tenantId: "tenant-1",
-      workspaceId: "workspace-1",
-      userId: "user-1",
-    } as any);
+    const result = unwrap<ListVatPeriodsOutput>(
+      await useCase.execute({ year: 2025, type: "VAT_QUARTERLY" }, {
+        tenantId: "tenant-1",
+        workspaceId: "workspace-1",
+        userId: "user-1",
+      } as any)
+    );
 
     const q1 = result.periods.find((period) => period.periodKey === "2025-Q1");
     const q2 = result.periods.find((period) => period.periodKey === "2025-Q2");
@@ -143,11 +155,13 @@ describe("ListVatPeriodsUseCase", () => {
       updatedAt: new Date("2025-04-05T00:00:00Z"),
     });
 
-    const result = await useCase.execute({ year: 2025, type: "VAT_QUARTERLY" }, {
-      tenantId: "tenant-1",
-      workspaceId: "workspace-1",
-      userId: "user-1",
-    } as any);
+    const result = unwrap<ListVatPeriodsOutput>(
+      await useCase.execute({ year: 2025, type: "VAT_QUARTERLY" }, {
+        tenantId: "tenant-1",
+        workspaceId: "workspace-1",
+        userId: "user-1",
+      } as any)
+    );
 
     const q1 = result.periods.find((period) => period.periodKey === "2025-Q1");
     expect(q1?.status).toBe("SUBMITTED");

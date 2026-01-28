@@ -156,10 +156,7 @@ export class CmsApi {
     return result.post;
   }
 
-  async updatePostContent(
-    postId: string,
-    input: UpdateCmsPostContentInput
-  ): Promise<CmsPostDto> {
+  async updatePostContent(postId: string, input: UpdateCmsPostContentInput): Promise<CmsPostDto> {
     const result = await apiClient.put<UpdateCmsPostContentOutput>(
       `/cms/posts/${postId}/content`,
       input,
@@ -172,10 +169,14 @@ export class CmsApi {
   }
 
   async publishPost(postId: string): Promise<CmsPostDto> {
-    const result = await apiClient.post<UpdateCmsPostOutput>(`/cms/posts/${postId}/publish`, {}, {
-      idempotencyKey: apiClient.generateIdempotencyKey(),
-      correlationId: apiClient.generateCorrelationId(),
-    });
+    const result = await apiClient.post<UpdateCmsPostOutput>(
+      `/cms/posts/${postId}/publish`,
+      {},
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
     return result.post;
   }
 
@@ -320,20 +321,27 @@ export class CmsApi {
     });
   }
 
-  async uploadCmsAsset(file: File, opts: { purpose: string; category?: string }): Promise<CmsUploadResult> {
+  async uploadCmsAsset(
+    file: File,
+    opts: { purpose: string; category?: string }
+  ): Promise<CmsUploadResult> {
     const contentType = file.type || "application/octet-stream";
-    const intent = await apiClient.post<CreateUploadIntentOutput>("/documents/upload-intent", {
-      filename: file.name,
-      contentType,
-      sizeBytes: file.size,
-      isPublic: true,
-      documentType: "UPLOAD",
-      category: opts.category,
-      purpose: opts.purpose,
-    } satisfies CreateUploadIntentInput, {
-      idempotencyKey: apiClient.generateIdempotencyKey(),
-      correlationId: apiClient.generateCorrelationId(),
-    });
+    const intent = await apiClient.post<CreateUploadIntentOutput>(
+      "/documents/upload-intent",
+      {
+        filename: file.name,
+        contentType,
+        sizeBytes: file.size,
+        isPublic: true,
+        documentType: "UPLOAD",
+        category: opts.category,
+        purpose: opts.purpose,
+      } satisfies CreateUploadIntentInput,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
 
     const headers = new Headers(intent.upload.requiredHeaders ?? {});
     if (!headers.has("Content-Type")) {

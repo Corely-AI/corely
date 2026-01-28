@@ -231,7 +231,8 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
         pdfModel: any,
         renderer: any,
         storage: GcsObjectStorageAdapter
-      ) => new DownloadInvoicePdfUseCase(repo, pdfModel, renderer, storage),
+      ) =>
+        new DownloadInvoicePdfUseCase(repo, pdfModel, renderer, storage, new NestLoggerAdapter()),
       inject: [
         PrismaInvoiceRepoAdapter,
         INVOICE_PDF_MODEL_PORT,

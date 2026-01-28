@@ -81,10 +81,7 @@ const CmsImage = Image.extend({
 });
 
 const toolbarButtonClass = (active?: boolean) =>
-  cn(
-    "h-8 px-2 text-sm",
-    active ? "bg-muted text-foreground" : "text-muted-foreground"
-  );
+  cn("h-8 px-2 text-sm", active ? "bg-muted text-foreground" : "text-muted-foreground");
 
 export default function CmsPostEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -151,7 +148,8 @@ export default function CmsPostEditorPage() {
         editorRef.current
           .chain()
           .focus()
-          .setImage({ src: uploaded.url, alt: "", fileId: uploaded.fileId })
+          .setImage({ src: uploaded.url, alt: "" })
+          .updateAttributes("image", { fileId: uploaded.fileId })
           .run();
       }
     } catch (error) {
@@ -408,7 +406,9 @@ export default function CmsPostEditorPage() {
             </h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Badge variant={statusVariant(status)}>{status}</Badge>
-              {publishedAt ? <span>Published {new Date(publishedAt).toLocaleDateString()}</span> : null}
+              {publishedAt ? (
+                <span>Published {new Date(publishedAt).toLocaleDateString()}</span>
+              ) : null}
             </div>
           </div>
         </div>

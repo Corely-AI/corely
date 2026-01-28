@@ -164,10 +164,15 @@ export default function CmsCommentsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              disabled={moderateMutation.isPending && activeCommentId === comment.id}
+                              disabled={
+                                moderateMutation.isPending && activeCommentId === comment.id
+                              }
                               onClick={() => {
                                 setActiveCommentId(comment.id);
-                                moderateMutation.mutate({ commentId: comment.id, status: "APPROVED" });
+                                moderateMutation.mutate({
+                                  commentId: comment.id,
+                                  status: "APPROVED",
+                                });
                               }}
                             >
                               <CheckCircle2 className="h-4 w-4" />
@@ -176,10 +181,15 @@ export default function CmsCommentsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              disabled={moderateMutation.isPending && activeCommentId === comment.id}
+                              disabled={
+                                moderateMutation.isPending && activeCommentId === comment.id
+                              }
                               onClick={() => {
                                 setActiveCommentId(comment.id);
-                                moderateMutation.mutate({ commentId: comment.id, status: "REJECTED" });
+                                moderateMutation.mutate({
+                                  commentId: comment.id,
+                                  status: "REJECTED",
+                                });
                               }}
                             >
                               <Ban className="h-4 w-4" />
@@ -188,7 +198,9 @@ export default function CmsCommentsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              disabled={moderateMutation.isPending && activeCommentId === comment.id}
+                              disabled={
+                                moderateMutation.isPending && activeCommentId === comment.id
+                              }
                               onClick={() => {
                                 setActiveCommentId(comment.id);
                                 moderateMutation.mutate({ commentId: comment.id, status: "SPAM" });

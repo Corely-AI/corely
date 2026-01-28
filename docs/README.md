@@ -83,6 +83,7 @@ General developer guides and references.
 - [Debug Stream](./guides/DEBUG_STREAM.md)
 - [Environment Setup](./guides/ENV_SETUP.md)
 - [Security Guide](./guides/SECURITY.md)
+- [Import Style](./import-style.md)
 - [Legacy Implementation Summary](./guides/ROOT_IMPLEMENTATION_SUMMARY.md)
 
 ### 📂 Other Resources

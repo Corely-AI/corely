@@ -1,0 +1,46 @@
+diff --git a/dev/index.d.ts b/dev/index.d.ts
+index 037dac3cae287508c6865d427f7b30353b727842..2d3bfb14005ce050cfcaec6c490aae160dceb2df 100644
+--- a/dev/index.d.ts
++++ b/dev/index.d.ts
+@@ -1,5 +1,5 @@
+-export {gfmStrikethroughHtml} from './lib/html.js'
+-export {gfmStrikethrough} from './lib/syntax.js'
++export {gfmStrikethroughHtml} from './lib/html.js';
++export {gfmStrikethrough} from './lib/syntax.js';
+ 
+ /**
+  * Configuration (optional).
+diff --git a/dev/lib/html.d.ts b/dev/lib/html.d.ts
+index aa15edf69ac437816bfed0f4a5b7be931a957255..241d97becf19354ce7cd3face3d082f1ca3c437c 100644
+--- a/dev/lib/html.d.ts
++++ b/dev/lib/html.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {HtmlExtension} from 'micromark-util-types'
++ * @import {HtmlExtension} from 'micromark-util-types';
+  */
+ /**
+  * Create an HTML extension for `micromark` to support GFM strikethrough when
+diff --git a/index.d.ts b/index.d.ts
+index 50a0b7e5f6ef27ed02a887f86832aa1d66021621..3ae7890d81e500264441cb41a7ae2f1fd01660da 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,5 +1,5 @@
+-export {gfmStrikethroughHtml} from './lib/html.js'
+-export {gfmStrikethrough} from './lib/syntax.js'
++export {gfmStrikethroughHtml} from './lib/html.js';
++export {gfmStrikethrough} from './lib/syntax.js';
+ 
+ /**
+  * Configuration (optional).
+diff --git a/lib/html.d.ts b/lib/html.d.ts
+index aa15edf69ac437816bfed0f4a5b7be931a957255..241d97becf19354ce7cd3face3d082f1ca3c437c 100644
+--- a/lib/html.d.ts
++++ b/lib/html.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {HtmlExtension} from 'micromark-util-types'
++ * @import {HtmlExtension} from 'micromark-util-types';
+  */
+ /**
+  * Create an HTML extension for `micromark` to support GFM strikethrough when

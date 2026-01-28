@@ -1,12 +1,12 @@
-import { z } from 'zod';
-import { CmsCommentDtoSchema, CmsCommentStatusSchema } from './cms.types';
+import { z } from "zod";
+import { CmsCommentDtoSchema, CmsCommentStatusSchema } from "./cms.types";
 
 export const UpdateCmsCommentStatusInputSchema = z.object({
- status: CmsCommentStatusSchema,
+  status: CmsCommentStatusSchema,
 });
 
 export const UpdateCmsCommentStatusOutputSchema = z.object({
- comment: CmsCommentDtoSchema,
+  comment: CmsCommentDtoSchema,
 });
 
 export type UpdateCmsCommentStatusInput = z.infer<typeof UpdateCmsCommentStatusInputSchema>;

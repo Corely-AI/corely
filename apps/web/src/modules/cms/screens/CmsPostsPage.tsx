@@ -58,7 +58,7 @@ export default function CmsPostsPage() {
         <Input
           placeholder="Search posts"
           className="pl-8 w-64"
-          defaultValue={listState.q ?? ""} 
+          defaultValue={listState.q ?? ""}
           onChange={(event) => setListState({ q: event.target.value, page: 1 })}
         />
       </div>

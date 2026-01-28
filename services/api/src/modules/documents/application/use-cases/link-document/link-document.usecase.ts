@@ -1,5 +1,12 @@
 import type { LinkDocumentInput, LinkDocumentOutput } from "@corely/contracts";
-import { BaseUseCase, ValidationError, NotFoundError, err, ok } from "@corely/kernel";
+import {
+  BaseUseCase,
+  ValidationError,
+  NotFoundError,
+  err,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 import type { LoggerPort, Result, UseCaseContext, UseCaseError } from "@corely/kernel";
 import type { DocumentLinkRepoPort } from "../../ports/document-link.port";
 import type { DocumentRepoPort } from "../../ports/document-repository.port";
@@ -10,6 +17,7 @@ type Deps = {
   linkRepo: DocumentLinkRepoPort;
 };
 
+@RequireTenant()
 export class LinkDocumentUseCase extends BaseUseCase<LinkDocumentInput, LinkDocumentOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -29,10 +37,6 @@ export class LinkDocumentUseCase extends BaseUseCase<LinkDocumentInput, LinkDocu
     input: LinkDocumentInput,
     ctx: UseCaseContext
   ): Promise<Result<LinkDocumentOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
-
     const document = await this.useCaseDeps.documentRepo.findById(ctx.tenantId, input.documentId);
     if (!document) {
       return err(new NotFoundError("Document not found"));

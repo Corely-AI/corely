@@ -10,6 +10,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { Register } from "../../domain/register.aggregate";
 import {
@@ -19,6 +20,7 @@ import {
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import { ID_GENERATOR_TOKEN } from "../../../../shared/ports/id-generator.port";
 
+@RequireTenant()
 @Injectable()
 export class CreateRegisterUseCase extends BaseUseCase<CreateRegisterInput, CreateRegisterOutput> {
   constructor(
@@ -32,12 +34,10 @@ export class CreateRegisterUseCase extends BaseUseCase<CreateRegisterInput, Crea
     input: CreateRegisterInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateRegisterOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
+    const tenantId = ctx.tenantId!;
 
     // Check if name already exists
-    const exists = await this.registerRepo.existsByName(ctx.tenantId, input.name);
+    const exists = await this.registerRepo.existsByName(tenantId, input.name);
     if (exists) {
       return err(
         new ConflictError(
@@ -51,7 +51,7 @@ export class CreateRegisterUseCase extends BaseUseCase<CreateRegisterInput, Crea
     const now = new Date();
     const register = new Register(
       this.idGenerator.newId(),
-      ctx.tenantId,
+      tenantId,
       input.name,
       input.defaultWarehouseId || null,
       input.defaultBankAccountId || null,

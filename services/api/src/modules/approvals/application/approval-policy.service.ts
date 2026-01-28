@@ -1,10 +1,13 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger, NotFoundException, Inject } from "@nestjs/common";
 import {
   type ApprovalPolicyInput,
   ApprovalPolicyInputSchema,
   WorkflowDefinitionStatusSchema,
 } from "@corely/contracts";
-import { WorkflowDefinitionRepository } from "@corely/data";
+import {
+  APPROVAL_POLICY_REPOSITORY_TOKEN,
+  type ApprovalPolicyRepositoryPort,
+} from "./ports/approval-policy-repository.port";
 import { buildApprovalWorkflowSpec } from "./approval-spec.builder";
 
 const APPROVAL_KEY_PREFIX = "approval.";
@@ -13,7 +16,10 @@ const APPROVAL_KEY_PREFIX = "approval.";
 export class ApprovalPolicyService {
   private readonly logger = new Logger(ApprovalPolicyService.name);
 
-  constructor(private readonly definitions: WorkflowDefinitionRepository) {}
+  constructor(
+    @Inject(APPROVAL_POLICY_REPOSITORY_TOKEN)
+    private readonly definitions: ApprovalPolicyRepositoryPort
+  ) {}
 
   async createPolicy(tenantId: string, input: ApprovalPolicyInput, createdBy?: string) {
     const policy = ApprovalPolicyInputSchema.parse(input);

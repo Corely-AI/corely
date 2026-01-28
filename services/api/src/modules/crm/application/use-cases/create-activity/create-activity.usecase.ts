@@ -8,6 +8,7 @@ import {
   type UseCaseContext,
   type UseCaseError,
   ValidationError,
+  RequireTenant,
   ok,
   err,
 } from "@corely/kernel";
@@ -16,6 +17,7 @@ import type { ActivityRepoPort } from "../../ports/activity-repository.port";
 import { ActivityEntity } from "../../../domain/activity.entity";
 import { toActivityDto } from "../../mappers/activity-dto.mapper";
 
+@RequireTenant()
 @Injectable()
 export class CreateActivityUseCase extends BaseUseCase<CreateActivityInput, CreateActivityOutput> {
   constructor(
@@ -41,10 +43,6 @@ export class CreateActivityUseCase extends BaseUseCase<CreateActivityInput, Crea
     input: CreateActivityInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateActivityOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
-
     const now = this.clock.now();
     const activity = ActivityEntity.create({
       id: this.idGenerator.newId(),

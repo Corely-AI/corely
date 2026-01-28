@@ -1,26 +1,39 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 import { VatPeriodQueryPort, TaxProfileRepoPort } from "../../domain/ports";
-import type { UseCaseContext } from "./use-case-context";
 import { VatAccountingMethod } from "@corely/contracts";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+@RequireTenant()
 @Injectable()
-export class GetVatPeriodDetailsUseCase {
+export class GetVatPeriodDetailsUseCase extends BaseUseCase<string, any> {
   constructor(
     private readonly periodResolver: VatPeriodResolver,
     private readonly vatPeriodQuery: VatPeriodQueryPort,
     private readonly taxProfileRepo: TaxProfileRepoPort
-  ) {}
+  ) {
+    super({ logger: null as any });
+  }
 
-  async execute(periodKey: string, ctx: UseCaseContext) {
+  protected async handle(
+    periodKey: string,
+    ctx: UseCaseContext
+  ): Promise<Result<any, UseCaseError>> {
+    const workspaceId = ctx.workspaceId || ctx.tenantId!;
     const period = this.periodResolver.resolveQuarter(periodKey);
-    // TODO: Validate period bounds?
 
-    const profile = await this.taxProfileRepo.getActive(ctx.workspaceId, new Date());
+    const profile = await this.taxProfileRepo.getActive(workspaceId, new Date());
     const method = profile?.vatAccountingMethod ?? "IST";
 
     const details = await this.vatPeriodQuery.getDetails(
-      ctx.workspaceId,
+      workspaceId,
       period.start,
       period.end,
       method as VatAccountingMethod
@@ -37,7 +50,7 @@ export class GetVatPeriodDetailsUseCase {
       0
     );
 
-    return {
+    return ok({
       periodKey: period.key,
       startDate: period.start.toISOString(),
       endDate: period.end.toISOString(),
@@ -61,6 +74,6 @@ export class GetVatPeriodDetailsUseCase {
         currency: row.currency,
         status: row.status,
       })),
-    };
+    });
   }
 }

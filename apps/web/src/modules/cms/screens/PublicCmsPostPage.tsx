@@ -38,7 +38,11 @@ export default function PublicCmsPostPage() {
   const [authDisplayName, setAuthDisplayName] = useState("");
   const [commentBody, setCommentBody] = useState("");
 
-  const { data: post, isLoading, isError } = useQuery({
+  const {
+    data: post,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: cmsPublicKeys.post(slug),
     queryFn: () => (slug ? cmsApi.getPublicPost(slug) : Promise.resolve(null)),
     enabled: Boolean(slug),
@@ -47,9 +51,7 @@ export default function PublicCmsPostPage() {
   const { data: commentsData } = useQuery({
     queryKey: cmsPublicKeys.comments(slug, { page: 1, pageSize: 50 }),
     queryFn: () =>
-      slug
-        ? cmsApi.listPublicComments(slug, { page: 1, pageSize: 50 })
-        : Promise.resolve(null),
+      slug ? cmsApi.listPublicComments(slug, { page: 1, pageSize: 50 }) : Promise.resolve(null),
     enabled: Boolean(slug),
   });
 
@@ -154,7 +156,10 @@ export default function PublicCmsPostPage() {
                   <img src={coverUrl} alt={post.title} className="w-full h-80 object-cover" />
                 </div>
               ) : null}
-              <div className={contentClass} dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+              <div
+                className={contentClass}
+                dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+              />
             </article>
 
             <section className="space-y-6">

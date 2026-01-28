@@ -1,20 +1,20 @@
-import { z } from 'zod';
-import { CmsReaderDtoSchema } from './cms.types';
+import { z } from "zod";
+import { CmsReaderDtoSchema } from "./cms.types";
 
 export const CmsReaderSignUpInputSchema = z.object({
- email: z.string().email(),
- password: z.string().min(6),
- displayName: z.string().min(1).optional(),
+  email: z.string().email(),
+  password: z.string().min(6),
+  displayName: z.string().min(1).optional(),
 });
 
 export const CmsReaderLoginInputSchema = z.object({
- email: z.string().email(),
- password: z.string().min(6),
+  email: z.string().email(),
+  password: z.string().min(6),
 });
 
 export const CmsReaderAuthOutputSchema = z.object({
- reader: CmsReaderDtoSchema,
- accessToken: z.string(),
+  reader: CmsReaderDtoSchema,
+  accessToken: z.string(),
 });
 
 export type CmsReaderSignUpInput = z.infer<typeof CmsReaderSignUpInputSchema>;

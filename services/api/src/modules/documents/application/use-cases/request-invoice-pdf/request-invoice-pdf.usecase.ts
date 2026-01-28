@@ -10,6 +10,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { type RequestInvoicePdfInput, type RequestInvoicePdfOutput } from "@corely/contracts";
 import { type DocumentRepoPort } from "../../ports/document-repository.port";
@@ -36,6 +37,7 @@ type Deps = {
 
 const EVENT_TYPE = "invoice.pdf.render.requested";
 
+@RequireTenant()
 export class RequestInvoicePdfUseCase extends BaseUseCase<
   RequestInvoicePdfInput,
   RequestInvoicePdfOutput
@@ -55,11 +57,7 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
     input: RequestInvoicePdfInput,
     ctx: UseCaseContext
   ): Promise<Result<RequestInvoicePdfOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
-
-    const tenantId = ctx.tenantId;
+    const tenantId = ctx.tenantId!;
     const existing = await this.useCaseDeps.documentRepo.findByTypeAndEntityLink(
       tenantId,
       "INVOICE_PDF",

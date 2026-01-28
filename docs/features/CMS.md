@@ -62,7 +62,11 @@ Inline images in Tiptap JSON store:
 ```json
 {
   "type": "image",
-  "attrs": { "src": "https://.../public/documents/files/<fileId>", "alt": "...", "fileId": "<fileId>" }
+  "attrs": {
+    "src": "https://.../public/documents/files/<fileId>",
+    "alt": "...",
+    "fileId": "<fileId>"
+  }
 }
 ```
 

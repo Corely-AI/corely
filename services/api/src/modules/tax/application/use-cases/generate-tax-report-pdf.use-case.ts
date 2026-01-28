@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, Inject } from "@nestjs/common";
-import { UseCaseContext } from "./use-case-context";
 import { TaxReportRepoPort, VatPeriodQueryPort, TaxProfileRepoPort } from "../../domain/ports";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 import { TaxPdfRenderer } from "../../infrastructure/pdf/tax-pdf-renderer";
@@ -9,9 +8,26 @@ import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,
 } from "../../../workspaces/application/ports/workspace-repository.port";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+export interface GenerateTaxReportPdfInput {
+  periodKey?: string;
+  reportId?: string;
+}
+
+@RequireTenant()
 @Injectable()
-export class GenerateTaxReportPdfUseCase {
+export class GenerateTaxReportPdfUseCase extends BaseUseCase<
+  GenerateTaxReportPdfInput,
+  { downloadUrl: string }
+> {
   constructor(
     private readonly reportRepo: TaxReportRepoPort,
     private readonly vatPeriodQuery: VatPeriodQueryPort,
@@ -21,19 +37,23 @@ export class GenerateTaxReportPdfUseCase {
     private readonly objectStorage: GcsObjectStorageAdapter,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort
-  ) {}
+  ) {
+    super({ logger: null as any });
+  }
 
-  async execute(
-    ctx: UseCaseContext,
-    selector: { periodKey?: string; reportId?: string }
-  ): Promise<{ downloadUrl: string }> {
-    let report: any; // using any to avoid import strictness issues temporarily, or TaxReportEntity
+  protected async handle(
+    input: GenerateTaxReportPdfInput,
+    ctx: UseCaseContext
+  ): Promise<Result<{ downloadUrl: string }, UseCaseError>> {
+    const tenantId = ctx.tenantId!;
+    const workspaceId = ctx.workspaceId || tenantId;
+    let report: any;
     let periodStart: Date;
     let periodEnd: Date;
     let periodLabel: string;
 
-    if (selector.reportId) {
-      const r = await this.reportRepo.findById(ctx.workspaceId, selector.reportId);
+    if (input.reportId) {
+      const r = await this.reportRepo.findById(workspaceId, input.reportId);
       if (!r) {
         throw new NotFoundException("Tax report not found");
       }
@@ -41,14 +61,14 @@ export class GenerateTaxReportPdfUseCase {
       periodStart = r.periodStart;
       periodEnd = r.periodEnd;
       periodLabel = r.periodLabel;
-    } else if (selector.periodKey) {
-      const period = this.periodResolver.resolveQuarter(selector.periodKey);
+    } else if (input.periodKey) {
+      const period = this.periodResolver.resolveQuarter(input.periodKey);
       periodStart = period.start;
       periodEnd = period.end;
       periodLabel = period.label;
 
       const reports = await this.reportRepo.listByPeriodRange(
-        ctx.workspaceId,
+        workspaceId,
         "VAT_ADVANCE",
         period.start,
         new Date(period.end.getTime() + 1000)
@@ -69,24 +89,24 @@ export class GenerateTaxReportPdfUseCase {
     // 2. Check if we already have a key
     if (report.pdfStorageKey) {
       const url = await this.objectStorage.createSignedDownloadUrl({
-        tenantId: ctx.workspaceId,
+        tenantId: workspaceId,
         objectKey: report.pdfStorageKey,
         expiresInSeconds: 300,
       });
-      return { downloadUrl: url.url };
+      return ok({ downloadUrl: url.url });
     }
 
     // 3. Generate PDF
-    const profile = await this.taxProfileRepo.getActive(ctx.workspaceId, new Date());
+    const profile = await this.taxProfileRepo.getActive(workspaceId, new Date());
     const method = profile?.vatAccountingMethod ?? "IST";
 
     const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
-      ctx.tenantId,
-      ctx.workspaceId
+      tenantId,
+      workspaceId
     );
 
     const inputs = await this.vatPeriodQuery.getInputs(
-      ctx.workspaceId,
+      workspaceId,
       periodStart,
       periodEnd,
       method as VatAccountingMethod
@@ -118,11 +138,10 @@ export class GenerateTaxReportPdfUseCase {
     });
 
     // 4. Upload
-    // Use periodKey if available, else derive strictly from label or just use report ID
-    const filenameKey = selector.periodKey ?? periodLabel.replace(/\s/g, "-");
-    const objectKey = `workspaces/${ctx.workspaceId}/tax-reports/${filenameKey}.pdf`;
+    const filenameKey = input.periodKey ?? periodLabel.replace(/\s/g, "-");
+    const objectKey = `workspaces/${workspaceId}/tax-reports/${filenameKey}.pdf`;
     await this.objectStorage.putObject({
-      tenantId: ctx.workspaceId,
+      tenantId: workspaceId,
       objectKey,
       contentType: "application/pdf",
       bytes: pdfBuffer,
@@ -147,11 +166,11 @@ export class GenerateTaxReportPdfUseCase {
     });
 
     const url = await this.objectStorage.createSignedDownloadUrl({
-      tenantId: ctx.workspaceId,
+      tenantId: workspaceId,
       objectKey,
       expiresInSeconds: 300,
     });
-    return { downloadUrl: url.url };
+    return ok({ downloadUrl: url.url });
   }
 
   private formatCurrency(cents: number): string {

@@ -95,7 +95,11 @@ export default function PublicCmsListPage() {
                   <Card className="h-full hover:shadow-md transition-shadow">
                     {coverUrl ? (
                       <div className="h-40 overflow-hidden rounded-t-lg bg-muted">
-                        <img src={coverUrl} alt={post.title} className="h-full w-full object-cover" />
+                        <img
+                          src={coverUrl}
+                          alt={post.title}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                     ) : null}
                     <CardContent className="p-5 space-y-2">

@@ -26,6 +26,7 @@ export interface WorkflowInstanceFilters {
   status?: "PENDING" | "RUNNING" | "WAITING" | "COMPLETED" | "FAILED" | "CANCELLED";
   definitionId?: string;
   definitionKey?: string;
+  definitionType?: string;
   businessKey?: string;
 }
 
@@ -56,14 +57,22 @@ export class WorkflowInstanceRepository {
   }
 
   async list(tenantId: string, filters: WorkflowInstanceFilters = {}) {
+    const where: any = {
+      tenantId,
+      ...(filters.status ? { status: filters.status } : {}),
+      ...(filters.definitionId ? { definitionId: filters.definitionId } : {}),
+      ...(filters.businessKey ? { businessKey: filters.businessKey } : {}),
+    };
+
+    if (filters.definitionKey || filters.definitionType) {
+      where.definition = {
+        ...(filters.definitionKey ? { key: filters.definitionKey } : {}),
+        ...(filters.definitionType ? { type: filters.definitionType } : {}),
+      };
+    }
+
     return this.prisma.workflowInstance.findMany({
-      where: {
-        tenantId,
-        ...(filters.status ? { status: filters.status } : {}),
-        ...(filters.definitionId ? { definitionId: filters.definitionId } : {}),
-        ...(filters.businessKey ? { businessKey: filters.businessKey } : {}),
-        ...(filters.definitionKey ? { definition: { key: filters.definitionKey } } : {}),
-      },
+      where,
       include: { definition: true },
       orderBy: { createdAt: "desc" },
     });

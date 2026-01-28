@@ -36,8 +36,8 @@ catalog:
   "@vitest/coverage-v8": ^2.1.4
   ai: ^6.0.6
   autoprefixer: ^10.4.21
-  bullmq: ^5.25.1
   bcrypt: ^5.1.1
+  bullmq: ^5.25.1
   class-validator: ^0.14.3
   date-fns: ^3.6.0
   date-fns-tz: ^3.2.0
@@ -72,8 +72,8 @@ catalog:
   typescript-eslint: ^8.38.0
   vite: ^5.4.19
   vitest: ^2.1.4
-  zod: ^3.25.76
   xstate: ^5.13.2
+  zod: ^3.25.76
 
 onlyBuiltDependencies:
   - "@nestjs/core"
@@ -88,3 +88,14 @@ onlyBuiltDependencies:
   - prisma
   - protobufjs
   - ssh2
+
+patchedDependencies:
+  mdast-util-from-markdown@2.0.2: patches/mdast-util-from-markdown@2.0.2.patch
+  mdast-util-gfm-footnote@2.1.0: patches/mdast-util-gfm-footnote@2.1.0.patch
+  mdast-util-gfm-table@2.0.0: patches/mdast-util-gfm-table@2.0.0.patch
+  mdast-util-to-hast@13.2.1: patches/mdast-util-to-hast@13.2.1.patch
+  mdast-util-to-markdown@2.1.2: patches/mdast-util-to-markdown@2.1.2.patch
+  micromark-extension-gfm-footnote@2.1.0: patches/micromark-extension-gfm-footnote@2.1.0.patch
+  micromark-extension-gfm-strikethrough@2.1.0: patches/micromark-extension-gfm-strikethrough@2.1.0.patch
+  postcss@8.5.6: patches/postcss@8.5.6.patch
+  unified@11.0.5: patches/unified@11.0.5.patch

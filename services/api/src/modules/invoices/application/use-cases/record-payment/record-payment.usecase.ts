@@ -11,6 +11,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { type RecordPaymentInput, type RecordPaymentOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
@@ -23,6 +24,7 @@ type Deps = {
   clock: ClockPort;
 };
 
+@RequireTenant()
 export class RecordPaymentUseCase extends BaseUseCase<RecordPaymentInput, RecordPaymentOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -39,9 +41,6 @@ export class RecordPaymentUseCase extends BaseUseCase<RecordPaymentInput, Record
     input: RecordPaymentInput,
     ctx: UseCaseContext
   ): Promise<Result<RecordPaymentOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId missing from context"));
     }

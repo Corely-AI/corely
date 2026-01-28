@@ -11,6 +11,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import {
   SHIFT_SESSION_REPOSITORY_PORT,
@@ -20,6 +21,7 @@ import {
 import { SubmitDailyCloseUseCase } from "../../../cash-management/application/use-cases/submit-daily-close.usecase";
 import { CreateRegisterUseCase } from "../../../cash-management/application/use-cases/create-register.usecase";
 
+@RequireTenant()
 @Injectable()
 export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOutput> {
   constructor(
@@ -34,12 +36,10 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
     input: CloseShiftInput,
     ctx: UseCaseContext
   ): Promise<Result<CloseShiftOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
+    const tenantId = ctx.tenantId!;
 
     // Find session
-    const session = await this.shiftRepo.findById(ctx.tenantId, input.sessionId);
+    const session = await this.shiftRepo.findById(tenantId, input.sessionId);
     if (!session) {
       return err(new NotFoundError("SESSION_NOT_FOUND", "Shift session not found"));
     }
@@ -69,46 +69,49 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
     // This ensures that the POS Shift Close is reflected in the central ledger
     if (input.closingCashCents !== null && input.closingCashCents !== undefined) {
       try {
-        await this.submitDailyCloseUC.execute({
-          tenantId: ctx.tenantId,
-          workspaceId: ctx.workspaceId || ctx.tenantId, // Fallback
-          userId: ctx.userId,
-          registerId: session.registerId,
-          businessDate: new Date().toISOString().split("T")[0], 
-          countedBalanceCents: input.closingCashCents,
-          notes: input.notes ?? `POS Shift Closed by ${ctx.userId}`,
-        });
+        await this.submitDailyCloseUC.execute(
+          {
+            tenantId,
+            registerId: session.registerId,
+            businessDate: new Date().toISOString().split("T")[0],
+            countedBalanceCents: input.closingCashCents,
+            notes: input.notes ?? `POS Shift Closed by ${ctx.userId}`,
+          },
+          ctx
+        );
       } catch (error: unknown) {
-         // If register missing, we try to create it then retry (Auto-healing)
-         const err = error as Error;
-         if (err?.message === "Cash Register not found") {
-            await this.createRegisterUC.execute({
-              tenantId: ctx.tenantId,
-              workspaceId: ctx.workspaceId || ctx.tenantId,
+        // If register missing, we try to create it then retry (Auto-healing)
+        const err = error as Error;
+        if (err?.message === "Cash Register not found") {
+          await this.createRegisterUC.execute(
+            {
+              tenantId,
               name: `POS Register ${session.registerId.slice(0, 8)}`,
               currency: "EUR",
-            });
-            
-            // Retry close
-             await this.submitDailyCloseUC.execute({
-              tenantId: ctx.tenantId,
-              workspaceId: ctx.workspaceId || ctx.tenantId, // Fallback
-              userId: ctx.userId,
+            },
+            ctx
+          );
+
+          // Retry close
+          await this.submitDailyCloseUC.execute(
+            {
+              tenantId,
               registerId: session.registerId,
               businessDate: new Date().toISOString().split("T")[0],
               countedBalanceCents: input.closingCashCents,
               notes: input.notes ?? `POS Shift Closed by ${ctx.userId}`,
-            });
-         }
- else {
-            // Log but don't fail the POS close? Or fail?
-            // "Prevent double-posting...". 
-            // If Cash Mgmt fails, we probably should warn but maybe not rollback POS close if it's already done?
-            // Actually, we haven't returned yet.
-            // Let's log error but proceed, or throw?
-            // Throwing is safer data-integrity wise.
-             throw error;
-         }
+            },
+            ctx
+          );
+        } else {
+          // Log but don't fail the POS close? Or fail?
+          // "Prevent double-posting...".
+          // If Cash Mgmt fails, we probably should warn but maybe not rollback POS close if it's already done?
+          // Actually, we haven't returned yet.
+          // Let's log error but proceed, or throw?
+          // Throwing is safer data-integrity wise.
+          throw error;
+        }
       }
     }
 

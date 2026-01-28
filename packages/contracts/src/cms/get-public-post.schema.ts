@@ -1,12 +1,12 @@
-import { z } from 'zod';
-import { CmsPublicPostDtoSchema } from './cms.types';
+import { z } from "zod";
+import { CmsPublicPostDtoSchema } from "./cms.types";
 
 export const GetPublicCmsPostInputSchema = z.object({
- slug: z.string().min(1),
+  slug: z.string().min(1),
 });
 
 export const GetPublicCmsPostOutputSchema = z.object({
- post: CmsPublicPostDtoSchema,
+  post: CmsPublicPostDtoSchema,
 });
 
 export type GetPublicCmsPostInput = z.infer<typeof GetPublicCmsPostInputSchema>;

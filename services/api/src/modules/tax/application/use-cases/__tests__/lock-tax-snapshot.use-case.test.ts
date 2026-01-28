@@ -8,6 +8,12 @@ import { InMemoryTaxCodeRepo } from "../../../testkit/fakes/in-memory-tax-code-r
 import { InMemoryTaxRateRepo } from "../../../testkit/fakes/in-memory-tax-rate-repo";
 import type { LockTaxSnapshotInput } from "@corely/contracts";
 import type { UseCaseContext } from "../use-case-context";
+import { isErr, type Result } from "@corely/kernel";
+
+const unwrap = <T>(result: Result<T, any>): T => {
+  if (isErr(result)) throw result.error;
+  return result.value;
+};
 
 describe("LockTaxSnapshotUseCase", () => {
   let useCase: LockTaxSnapshotUseCase;
@@ -52,6 +58,9 @@ describe("LockTaxSnapshotUseCase", () => {
       filingFrequency: "QUARTERLY",
       effectiveFrom: new Date("2025-01-01T00:00:00Z"),
       effectiveTo: null,
+      euB2BSales: false,
+      hasEmployees: false,
+      usesTaxAdvisor: false,
     });
 
     // Setup tax code with rate
@@ -91,7 +100,7 @@ describe("LockTaxSnapshotUseCase", () => {
         ],
       };
 
-      const snapshot = await useCase.execute(input, ctx);
+      const snapshot = unwrap(await useCase.execute(input, ctx));
 
       expect(snapshot).toBeDefined();
       expect(snapshot.id).toBeDefined();
@@ -113,10 +122,10 @@ describe("LockTaxSnapshotUseCase", () => {
       };
 
       // First call
-      const snapshot1 = await useCase.execute(input, ctx);
+      const snapshot1 = unwrap(await useCase.execute(input, ctx));
 
       // Second call with same source
-      const snapshot2 = await useCase.execute(input, ctx);
+      const snapshot2 = unwrap(await useCase.execute(input, ctx));
 
       // Should return the exact same snapshot
       expect(snapshot2.id).toBe(snapshot1.id);
@@ -141,8 +150,8 @@ describe("LockTaxSnapshotUseCase", () => {
         sourceId: "invoice-2", // Different source ID
       };
 
-      const snapshot1 = await useCase.execute(input1, ctx);
-      const snapshot2 = await useCase.execute(input2, ctx);
+      const snapshot1 = unwrap(await useCase.execute(input1, ctx));
+      const snapshot2 = unwrap(await useCase.execute(input2, ctx));
 
       // Should create two different snapshots
       expect(snapshot2.id).not.toBe(snapshot1.id);
@@ -165,8 +174,8 @@ describe("LockTaxSnapshotUseCase", () => {
         sourceType: "EXPENSE", // Different source type, same ID
       };
 
-      const snapshot1 = await useCase.execute(inputInvoice, ctx);
-      const snapshot2 = await useCase.execute(inputExpense, ctx);
+      const snapshot1 = unwrap(await useCase.execute(inputInvoice, ctx));
+      const snapshot2 = unwrap(await useCase.execute(inputExpense, ctx));
 
       // Should create two different snapshots
       expect(snapshot2.id).not.toBe(snapshot1.id);
@@ -190,7 +199,7 @@ describe("LockTaxSnapshotUseCase", () => {
         ],
       };
 
-      const snapshot = await useCase.execute(input, ctx);
+      const snapshot = unwrap(await useCase.execute(input, ctx));
 
       // Should store breakdown as JSON
       expect(snapshot.breakdownJson).toBeDefined();
@@ -211,7 +220,7 @@ describe("LockTaxSnapshotUseCase", () => {
         lines: [{ id: "line-1", qty: 1, netAmountCents: 10000 }],
       };
 
-      const snapshot = await useCase.execute(input, ctx);
+      const snapshot = unwrap(await useCase.execute(input, ctx));
 
       // Totals should be denormalized at snapshot level
       expect(snapshot.subtotalAmountCents).toBe(10000);
@@ -230,7 +239,7 @@ describe("LockTaxSnapshotUseCase", () => {
         lines: [{ id: "line-1", qty: 1, netAmountCents: 10000 }],
       };
 
-      const snapshot = await useCase.execute(input, ctx);
+      const snapshot = unwrap(await useCase.execute(input, ctx));
 
       expect(snapshot.regime).toBe("STANDARD_VAT");
     });
@@ -246,7 +255,7 @@ describe("LockTaxSnapshotUseCase", () => {
         lines: [{ id: "line-1", qty: 1, netAmountCents: 10000 }],
       };
 
-      const snapshot = await useCase.execute(input, ctx);
+      const snapshot = unwrap(await useCase.execute(input, ctx));
 
       expect(snapshot.roundingMode).toBe("PER_LINE");
     });
@@ -267,7 +276,9 @@ describe("LockTaxSnapshotUseCase", () => {
         lines: [{ id: "line-1", qty: 1, netAmountCents: 10000 }],
       };
 
-      await expect(useCase.execute(input, ctx)).rejects.toThrow(/No active tax profile/i);
+      await expect(async () => unwrap(await useCase.execute(input, ctx))).rejects.toThrow(
+        /No active tax profile/i
+      );
     });
 
     it("handles empty lines gracefully", async () => {
@@ -284,7 +295,7 @@ describe("LockTaxSnapshotUseCase", () => {
       };
 
       // Use case will process it (schema validation happens in controller)
-      const snapshot = await useCase.execute(input, ctx);
+      const snapshot = unwrap(await useCase.execute(input, ctx));
       expect(snapshot.subtotalAmountCents).toBe(0);
       expect(snapshot.taxTotalAmountCents).toBe(0);
     });
@@ -302,7 +313,7 @@ describe("LockTaxSnapshotUseCase", () => {
         lines: [{ id: "line-1", qty: 1, netAmountCents: 10000 }],
       };
 
-      const snapshot = await useCase.execute(input, ctx);
+      const snapshot = unwrap(await useCase.execute(input, ctx));
 
       // Try to lock again with different amounts (should return original)
       const modifiedInput: LockTaxSnapshotInput = {
@@ -310,7 +321,7 @@ describe("LockTaxSnapshotUseCase", () => {
         lines: [{ id: "line-1", qty: 1, netAmountCents: 20000 }], // Different amount
       };
 
-      const snapshot2 = await useCase.execute(modifiedInput, ctx);
+      const snapshot2 = unwrap(await useCase.execute(modifiedInput, ctx));
 
       // Should return original snapshot, not create new one
       expect(snapshot2.id).toBe(snapshot.id);
@@ -329,7 +340,7 @@ describe("LockTaxSnapshotUseCase", () => {
         lines: [{ id: "line-1", qty: 1, netAmountCents: 10000 }],
       };
 
-      const snapshot = await useCase.execute(input, ctx);
+      const snapshot = unwrap(await useCase.execute(input, ctx));
 
       expect(snapshot.version).toBe(1);
     });

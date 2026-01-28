@@ -1,12 +1,12 @@
-import { z } from 'zod';
-import { CmsPostDtoSchema } from './cms.types';
+import { z } from "zod";
+import { CmsPostDtoSchema } from "./cms.types";
 
 export const UpdateCmsPostContentInputSchema = z.object({
- contentJson: z.unknown(),
+  contentJson: z.unknown(),
 });
 
 export const UpdateCmsPostContentOutputSchema = z.object({
- post: CmsPostDtoSchema,
+  post: CmsPostDtoSchema,
 });
 
 export type UpdateCmsPostContentInput = z.infer<typeof UpdateCmsPostContentInputSchema>;

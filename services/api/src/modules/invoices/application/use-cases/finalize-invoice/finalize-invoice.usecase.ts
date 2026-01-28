@@ -10,6 +10,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { type FinalizeInvoiceInput, type FinalizeInvoiceOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
@@ -29,6 +30,7 @@ type Deps = {
   taxEngine: TaxEngineService;
 };
 
+@RequireTenant()
 export class FinalizeInvoiceUseCase extends BaseUseCase<
   FinalizeInvoiceInput,
   FinalizeInvoiceOutput
@@ -41,9 +43,6 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
     input: FinalizeInvoiceInput,
     ctx: UseCaseContext
   ): Promise<Result<FinalizeInvoiceOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId missing from context"));
     }
