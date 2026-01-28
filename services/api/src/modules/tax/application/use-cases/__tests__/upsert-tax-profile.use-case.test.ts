@@ -4,6 +4,12 @@ import { GetTaxProfileUseCase } from "../get-tax-profile.use-case";
 import { InMemoryTaxProfileRepo } from "../../../testkit/fakes/in-memory-tax-profile-repo";
 import type { UpsertTaxProfileInput } from "@corely/contracts";
 import type { UseCaseContext } from "../use-case-context";
+import { isErr, type Result } from "@corely/kernel";
+
+const unwrap = <T>(result: Result<T, any>): T => {
+  if (isErr(result)) throw result.error;
+  return result.value;
+};
 
 describe("UpsertTaxProfileUseCase", () => {
   let upsertUseCase: UpsertTaxProfileUseCase;
@@ -34,7 +40,7 @@ describe("UpsertTaxProfileUseCase", () => {
         effectiveFrom: "2025-01-01T00:00:00Z",
       };
 
-      const profile = await upsertUseCase.execute(input, ctx);
+      const profile = unwrap(await upsertUseCase.execute(input, ctx));
 
       expect(profile.id).toBeDefined();
       expect(profile.id).toBeDefined();
@@ -57,7 +63,7 @@ describe("UpsertTaxProfileUseCase", () => {
         effectiveFrom: "2025-01-01T00:00:00Z",
       };
 
-      const profile = await upsertUseCase.execute(input, ctx);
+      const profile = unwrap(await upsertUseCase.execute(input, ctx));
 
       expect(profile.vatId).toBeNull();
       expect(profile.regime).toBe("SMALL_BUSINESS");
@@ -73,7 +79,7 @@ describe("UpsertTaxProfileUseCase", () => {
         effectiveTo: "2025-12-31T23:59:59Z",
       };
 
-      const profile = await upsertUseCase.execute(input, ctx);
+      const profile = unwrap(await upsertUseCase.execute(input, ctx));
 
       expect(profile.effectiveFrom).toBeInstanceOf(Date);
       expect(profile.effectiveTo).toBeInstanceOf(Date);
@@ -93,7 +99,7 @@ describe("UpsertTaxProfileUseCase", () => {
       };
 
       // Create
-      const created = await upsertUseCase.execute(input, ctx);
+      const created = unwrap(await upsertUseCase.execute(input, ctx));
 
       // Update with same effectiveFrom
       const updateInput: UpsertTaxProfileInput = {
@@ -103,7 +109,7 @@ describe("UpsertTaxProfileUseCase", () => {
         filingFrequency: "QUARTERLY", // Changed
       };
 
-      const updated = await upsertUseCase.execute(updateInput, ctx);
+      const updated = unwrap(await upsertUseCase.execute(updateInput, ctx));
 
       // Should update existing profile
       expect(updated.id).toBe(created.id);
@@ -127,8 +133,8 @@ describe("UpsertTaxProfileUseCase", () => {
         regime: "STANDARD_VAT",
       };
 
-      const profile1 = await upsertUseCase.execute(input1, ctx);
-      const profile2 = await upsertUseCase.execute(input2, ctx);
+      const profile1 = unwrap(await upsertUseCase.execute(input1, ctx));
+      const profile2 = unwrap(await upsertUseCase.execute(input2, ctx));
 
       // Should create two separate profiles
       expect(profile2.id).not.toBe(profile1.id);
@@ -149,14 +155,14 @@ describe("UpsertTaxProfileUseCase", () => {
 
       await upsertUseCase.execute(input, ctx);
 
-      const active = await getUseCase.execute(ctx);
+      const active = unwrap(await getUseCase.execute(undefined, ctx));
 
       expect(active).not.toBeNull();
       expect(active?.regime).toBe("STANDARD_VAT");
     });
 
     it("returns null if no active profile", async () => {
-      const active = await getUseCase.execute(ctx);
+      const active = unwrap(await getUseCase.execute(undefined, ctx));
 
       expect(active).toBeNull();
     });
@@ -187,7 +193,7 @@ describe("UpsertTaxProfileUseCase", () => {
         ctx
       );
 
-      const active = await getUseCase.execute(ctx);
+      const active = unwrap(await getUseCase.execute(undefined, ctx));
 
       expect(active?.regime).toBe("STANDARD_VAT");
     });
@@ -206,7 +212,7 @@ describe("UpsertTaxProfileUseCase", () => {
         ctx
       );
 
-      const active = await getUseCase.execute(ctx);
+      const active = unwrap(await getUseCase.execute(undefined, ctx));
 
       // Should return null as profile is expired
       expect(active).toBeNull();
@@ -240,7 +246,7 @@ describe("UpsertTaxProfileUseCase", () => {
       );
 
       // Tenant 2 should not see tenant 1's profile
-      const tenant2Profile = await getUseCase.execute(tenant2Ctx);
+      const tenant2Profile = unwrap(await getUseCase.execute(undefined, tenant2Ctx));
 
       expect(tenant2Profile).toBeNull();
     });
