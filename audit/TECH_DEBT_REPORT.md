@@ -17,7 +17,7 @@ The `Corely` monorepo refactoring is **underway with significant progress** in b
 | Severity | Area         | Item                                  | Risk                                                              | Status                                    |
 | :------- | :----------- | :------------------------------------ | :---------------------------------------------------------------- | :---------------------------------------- |
 | **P0**   | **Security** | `PrismaCashRepository.updateRegister` | **IDOR Vulnerability**: Ignores `tenantId`.                       | ✅ **Fixed**                              |
-| **P0**   | **Build**    | `apps/web` Build Config               | **Broken Build**: `TS6305` output file errors pollute build logs. | ⚠️ **Open**                               |
+| **P0**   | **Build**    | `apps/web` Build Config               | **Broken Build**: `TS6305` output file errors pollute build logs. | ✅ **Fixed**                              |
 | **P0**   | **Backend**  | `inventory.module.ts` (1103 LOC)      | **Maintainability**: Module definition is a "God Object".         | 🔴 **Open**                               |
 | **P0**   | **Frontend** | `NewInvoicePage.tsx`                  | **Complexity**: UI Monolith (~955 LOC).                           | ✅ **Fixed**                              |
 | **P0**   | **Backend**  | `documents.usecases.ts` (900 LOC)     | **Tech Debt**: "Clustered Class" pattern.                         | 🔴 **Open**                               |
