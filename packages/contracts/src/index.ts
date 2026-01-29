@@ -7,6 +7,7 @@ export * from "./customers";
 export * from "./workspaces";
 export * from "./shared/local-date.schema";
 export * from "./expenses";
+export * from "./forms";
 export * from "./tax";
 export * from "./accounting";
 export * from "./crm";

@@ -5,7 +5,7 @@ CREATE TYPE CmsPostStatus AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
 CREATE TYPE CmsCommentStatus AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'SPAM', 'DELETED');
 
 -- AlterTable
-ALTER TABLE File ADD COLUMN isPublic BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "File" ADD COLUMN isPublic BOOLEAN NOT NULL DEFAULT false;
 
 -- CreateTable
 CREATE TABLE CmsPost (
@@ -95,7 +95,7 @@ CREATE INDEX CmsComment_postId_status_idx ON CmsComment(postId, status);
 CREATE INDEX CmsComment_tenantId_status_idx ON CmsComment(tenantId, status);
 
 -- AddForeignKey
-ALTER TABLE CmsPost ADD CONSTRAINT CmsPost_coverImageFileId_fkey FOREIGN KEY (coverImageFileId) REFERENCES File(id) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE CmsPost ADD CONSTRAINT CmsPost_coverImageFileId_fkey FOREIGN KEY (coverImageFileId) REFERENCES "File"(id) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE CmsComment ADD CONSTRAINT CmsComment_postId_fkey FOREIGN KEY (postId) REFERENCES CmsPost(id) ON DELETE CASCADE ON UPDATE CASCADE;

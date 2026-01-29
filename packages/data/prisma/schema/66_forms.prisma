@@ -1,0 +1,79 @@
+model FormDefinition {
+  id              String     @id @default(cuid())
+  tenantId        String
+  name            String
+  description     String?
+  status          FormStatus @default(DRAFT)
+  publicId        String?    @unique
+  publicTokenHash String?
+  publishedAt     DateTime?  @db.Timestamptz(6)
+  archivedAt      DateTime?  @db.Timestamptz(6)
+  createdAt       DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime   @updatedAt @db.Timestamptz(6)
+
+  fields       FormField[]
+  submissions  FormSubmission[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, archivedAt])
+}
+
+model FormField {
+  id         String        @id @default(cuid())
+  tenantId   String
+  formId     String
+  key        String
+  label      String
+  type       FormFieldType
+  required   Boolean       @default(false)
+  helpText   String?
+  order      Int           @default(0)
+  configJson Json?
+  createdAt  DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime      @updatedAt @db.Timestamptz(6)
+
+  form FormDefinition @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@unique([formId, key])
+  @@index([formId, order])
+  @@index([tenantId])
+}
+
+model FormSubmission {
+  id              String               @id @default(cuid())
+  tenantId        String
+  formId          String
+  source          FormSubmissionSource @default(PUBLIC)
+  payloadJson     Json
+  submittedAt     DateTime             @default(now()) @db.Timestamptz(6)
+  createdByUserId String?
+  createdAt       DateTime             @default(now()) @db.Timestamptz(6)
+
+  form FormDefinition @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId, submittedAt])
+  @@index([tenantId])
+}
+
+enum FormStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum FormFieldType {
+  SHORT_TEXT
+  LONG_TEXT
+  NUMBER
+  DATE
+  BOOLEAN
+  SINGLE_SELECT
+  MULTI_SELECT
+  EMAIL
+}
+
+enum FormSubmissionSource {
+  PUBLIC
+  INTERNAL
+}

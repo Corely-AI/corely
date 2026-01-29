@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Inject, Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
@@ -161,10 +161,10 @@ import { DocumentsModule } from "../documents/documents.module";
 })
 export class TaxModule {
   constructor(
-    private readonly registry: ReportRegistry,
-    private readonly vatAdvanceDe: VatAdvanceDeStrategy,
-    private readonly euSalesDe: EuSalesListDeStrategy,
-    private readonly incomeTaxDe: IncomeTaxDeStrategy
+    @Inject(ReportRegistry) private readonly registry: ReportRegistry,
+    @Inject(VatAdvanceDeStrategy) private readonly vatAdvanceDe: VatAdvanceDeStrategy,
+    @Inject(EuSalesListDeStrategy) private readonly euSalesDe: EuSalesListDeStrategy,
+    @Inject(IncomeTaxDeStrategy) private readonly incomeTaxDe: IncomeTaxDeStrategy
   ) {
     this.registry.register(vatAdvanceDe);
     this.registry.register(euSalesDe);
