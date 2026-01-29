@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Trash2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { Plus, Trash2, Edit } from "lucide-react";
+import { toast } from "sonner";
+
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { formatMoney, formatDate } from "@/shared/lib/formatters";
@@ -14,11 +15,26 @@ import {
   CrudListPageLayout,
   CrudRowActions,
   ConfirmDeleteDialog,
-  useCrudUrlState,
   invalidateResourceQueries,
 } from "@/shared/crud";
+import {
+  ListToolbar,
+  ActiveFilterChips,
+  useListUrlState,
+  FilterPanel,
+  type FilterFieldDef,
+} from "@/shared/list-kit";
 import { expenseKeys } from "../queries";
-import { toast } from "sonner";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/shared/ui/pagination";
+// ... imports
+
+// ...
 
 const CATEGORY_OPTIONS = [
   { label: "All categories", value: "" },
@@ -38,22 +54,57 @@ export default function ExpensesPage() {
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const filters = useMemo(() => listState.filters ?? {}, [listState.filters]);
+  // URL State
+  const [state, setUrlState] = useListUrlState(
+    {
+      pageSize: 10,
+      sort: "expenseDate:desc",
+    },
+    { storageKey: "expenses-list-v1" }
+  );
+
+  const filterFields = useMemo<FilterFieldDef[]>(
+    () => [
+      {
+        key: "category",
+        label: "Category",
+        type: "select",
+        options: CATEGORY_OPTIONS.filter((o) => o.value),
+      },
+      { key: "expenseDate", label: "Date", type: "date" },
+      { key: "merchantName", label: "Merchant", type: "text" },
+      { key: "totalAmountCents", label: "Amount", type: "number" },
+    ],
+    []
+  );
+
+  const filters = useMemo(() => {
+    const categoryFilter = state.filters?.find(
+      (f) => f.field === "category" && f.operator === "eq"
+    );
+    return {
+      category: categoryFilter ? String(categoryFilter.value) : "",
+    };
+  }, [state.filters]);
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: expenseKeys.list({ ...listState }),
+    queryKey: expenseKeys.list({ ...state }),
     queryFn: () =>
       expensesApi.listExpenses({
-        q: listState.q,
-        page: listState.page,
-        pageSize: listState.pageSize,
-        category: typeof filters.category === "string" ? filters.category : undefined,
+        q: state.q,
+        page: state.page,
+        pageSize: state.pageSize,
+        sort: state.sort,
+        category: filters.category || undefined,
+        filters: state.filters,
       }),
+    placeholderData: keepPreviousData,
   });
 
   const expenses = data?.items ?? [];
+  const pageInfo = data?.pageInfo;
 
   const deleteExpenses = useMutation({
     mutationFn: async (ids: string[]) => {
@@ -89,242 +140,265 @@ export default function ExpensesPage() {
     setDeleteTarget(null);
   };
 
-  const categoryValue = typeof filters.category === "string" ? filters.category : "";
-
-  const toolbar = (
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="relative">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search expenses"
-          className="pl-8 w-64"
-          defaultValue={listState.q ?? ""}
-          onChange={(event) => setListState({ q: event.target.value, page: 1 })}
-        />
-      </div>
-      <select
-        className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-        value={categoryValue}
-        onChange={(event) =>
-          setListState({
-            filters: {
-              ...filters,
-              category: event.target.value || undefined,
-            },
-            page: 1,
-          })
-        }
-      >
-        {CATEGORY_OPTIONS.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      {isError ? (
-        <div className="text-sm text-destructive">
-          {(error as Error)?.message || "Failed to load expenses"}
-        </div>
-      ) : null}
-    </div>
-  );
-
-  const primaryAction = (
-    <Button
-      variant="accent"
-      data-testid="create-expense-button"
-      onClick={() => navigate("/expenses/new")}
-    >
-      <Plus className="h-4 w-4" />
-      Add expense
-    </Button>
-  );
+  const updateCategory = (val: string) => {
+    // Legacy helper, might be unused if we remove the dropdown, but keeping for safely
+    const newFilters = (state.filters ?? []).filter((f) => f.field !== "category");
+    if (val) {
+      newFilters.push({ field: "category", operator: "eq", value: val });
+    }
+    setUrlState({ filters: newFilters, page: 1 });
+  };
 
   return (
-    <CrudListPageLayout
-      title="Expenses"
-      subtitle="Track and manage your spend"
-      primaryAction={primaryAction}
-      toolbar={toolbar}
-    >
-      <Card>
-        <CardContent className="p-0" data-testid="expenses-list">
-          {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading expenses...</div>
-          ) : expenses.length === 0 ? (
-            <EmptyState
-              icon={Trash2}
-              title="No expenses yet"
-              description="Create your first expense to track spending."
-              action={primaryAction}
-            />
-          ) : (
-            <>
-              {selectedIds.size > 0 ? (
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
-                  <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
-                  <ConfirmDeleteDialog
-                    trigger={
-                      <Button variant="destructive" size="sm" disabled={deleteExpenses.isPending}>
-                        Delete selected
-                      </Button>
-                    }
-                    title="Delete selected expenses"
-                    description="This will archive the selected expenses."
-                    isLoading={deleteExpenses.isPending}
-                    onConfirm={bulkDelete}
-                  />
-                </div>
-              ) : null}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="w-12 px-4 py-3">
-                        <Checkbox
-                          checked={allSelected}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedIds(new Set(expenses.map((e) => e.id)));
-                            } else {
-                              setSelectedIds(new Set());
-                            }
-                          }}
-                          aria-label="Select all"
-                        />
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Date
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Merchant
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Category
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        VAT
-                      </th>
-                      <th className="text-right text-sm font-medium text-muted-foreground px-4 py-3">
-                        Amount
-                      </th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {expenses.map((expense) => {
-                      const vatPercent =
-                        expense.taxAmountCents != null && expense.totalAmountCents
-                          ? Math.round((expense.taxAmountCents / expense.totalAmountCents) * 100)
-                          : null;
-                      return (
-                        <tr
-                          key={expense.id}
-                          data-testid={`expense-row-${expense.id}`}
-                          className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-                        >
-                          <td className="px-4 py-3">
-                            <Checkbox
-                              checked={selectedIds.has(expense.id)}
-                              onCheckedChange={() => toggleSelection(expense.id)}
-                              aria-label={`Select expense ${expense.id}`}
-                            />
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            {formatDate(expense.expenseDate || expense.createdAt, "en-US")}
-                          </td>
-                          <td className="px-4 py-3 text-sm font-medium">
-                            {expense.merchantName || "-"}
-                          </td>
-                          <td className="px-4 py-3">
-                            <Badge variant="muted">
-                              {expense.category ? expense.category.replace(/_/g, " ") : "-"}
-                            </Badge>
-                          </td>
-                          <td className="px-4 py-3 text-sm">
-                            {vatPercent != null ? `${vatPercent}%` : "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-right font-medium">
-                            {formatMoney(
-                              expense.totalAmountCents ?? (expense as any).totalCents ?? 0,
-                              "en-US"
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <CrudRowActions
-                              primaryAction={{
-                                label: "View",
-                                href: `/expenses/${expense.id}`,
-                              }}
-                              secondaryActions={[
-                                {
-                                  label: "Edit",
-                                  href: `/expenses/${expense.id}/edit`,
-                                },
-                                {
-                                  label: "Delete",
-                                  onClick: () => setDeleteTarget(expense.id),
-                                  destructive: true,
-                                  icon: <Trash2 className="h-4 w-4" />,
-                                  "data-testid": `expense-delete-${expense.id}`,
-                                },
-                              ]}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+    <>
+      <CrudListPageLayout
+        title="Expenses"
+        subtitle="Track and manage your spend"
+        primaryAction={
+          <Button
+            variant="accent"
+            data-testid="create-expense-button"
+            onClick={() => navigate("/expenses/new")}
+          >
+            <Plus className="h-4 w-4" />
+            Add expense
+          </Button>
+        }
+        toolbar={
+          <ListToolbar
+            search={state.q}
+            onSearchChange={(v) => setUrlState({ q: v, page: 1 })}
+            sort={state.sort}
+            onSortChange={(v) => setUrlState({ sort: v })}
+            sortOptions={[
+              { label: "Date (Newest)", value: "expenseDate:desc" },
+              { label: "Date (Oldest)", value: "expenseDate:asc" },
+              { label: "Amount (High-Low)", value: "totalCents:desc" },
+              { label: "Amount (Low-High)", value: "totalCents:asc" },
+              { label: "Created (Newest)", value: "createdAt:desc" },
+            ]}
+            onFilterClick={() => setIsFilterOpen(true)}
+            filterCount={state.filters?.length}
+          >
+            {isError ? (
+              <div className="text-sm text-destructive">
+                {(error as Error)?.message || "Failed to load expenses"}
               </div>
-              {data?.pageInfo ? (
-                <div className="flex items-center justify-between px-4 py-3 border-t border-border text-sm text-muted-foreground">
-                  <div>
-                    Page {data.pageInfo.page} · {data.pageInfo.total} total
+            ) : null}
+          </ListToolbar>
+        }
+        filters={
+          (state.filters?.length ?? 0) > 0 ? (
+            <ActiveFilterChips
+              filters={state.filters ?? []}
+              onRemove={(f) => {
+                const newFilters = state.filters?.filter((x) => x !== f) ?? [];
+                setUrlState({ filters: newFilters, page: 1 });
+              }}
+              onClearAll={() => setUrlState({ filters: [], page: 1 })}
+            />
+          ) : undefined
+        }
+      >
+        <Card>
+          <CardContent className="p-0" data-testid="expenses-list">
+            {isLoading ? (
+              <div className="space-y-4 p-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-12 w-full animate-pulse rounded bg-muted/20" />
+                ))}
+              </div>
+            ) : expenses.length === 0 ? (
+              <EmptyState
+                icon={Trash2}
+                title="No expenses yet"
+                description="Create your first expense to track spending."
+                action={
+                  <Button variant="outline" onClick={() => setUrlState({ q: "", filters: [] })}>
+                    Clear filters
+                  </Button>
+                }
+              />
+            ) : (
+              <>
+                {selectedIds.size > 0 ? (
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
+                    <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
+                    <ConfirmDeleteDialog
+                      trigger={
+                        <Button variant="destructive" size="sm" disabled={deleteExpenses.isPending}>
+                          Delete selected
+                        </Button>
+                      }
+                      title="Delete selected expenses"
+                      description="This will archive the selected expenses."
+                      isLoading={deleteExpenses.isPending}
+                      onConfirm={bulkDelete}
+                    />
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={listState.page <= 1}
-                      onClick={() => setListState({ page: Math.max(1, listState.page - 1) })}
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={!data.pageInfo.hasNextPage}
-                      onClick={() => setListState({ page: listState.page + 1 })}
-                    >
-                      Next
-                    </Button>
-                  </div>
+                ) : null}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/50">
+                        <th className="w-12 px-4 py-3">
+                          <Checkbox
+                            checked={allSelected}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedIds(new Set(expenses.map((e) => e.id)));
+                              } else {
+                                setSelectedIds(new Set());
+                              }
+                            }}
+                            aria-label="Select all"
+                          />
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                          Date
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                          Merchant
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                          Category
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                          VAT
+                        </th>
+                        <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
+                          Amount
+                        </th>
+                        <th className="w-[50px]"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {expenses.map((expense) => {
+                        const vatPercent =
+                          expense.taxAmountCents != null && expense.totalAmountCents
+                            ? Math.round((expense.taxAmountCents / expense.totalAmountCents) * 100)
+                            : null;
+                        return (
+                          <tr
+                            key={expense.id}
+                            data-testid={`expense-row-${expense.id}`}
+                            className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                          >
+                            <td className="px-4 py-3">
+                              <Checkbox
+                                checked={selectedIds.has(expense.id)}
+                                onCheckedChange={() => toggleSelection(expense.id)}
+                                aria-label={`Select expense ${expense.id}`}
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {formatDate(expense.expenseDate || expense.createdAt, "en-US")}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-medium">
+                              {expense.merchantName || "-"}
+                            </td>
+                            <td className="px-4 py-3">
+                              <Badge variant="muted">
+                                {expense.category ? expense.category.replace(/_/g, " ") : "-"}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              {vatPercent != null ? `${vatPercent}%` : "-"}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right font-medium">
+                              {formatMoney(
+                                expense.totalAmountCents ?? (expense as any).totalCents ?? 0,
+                                "en-US"
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <CrudRowActions
+                                primaryAction={{
+                                  label: "View",
+                                  href: `/expenses/${expense.id}`,
+                                }}
+                                secondaryActions={[
+                                  {
+                                    label: "Edit",
+                                    href: `/expenses/${expense.id}/edit`,
+                                    icon: <Edit className="h-4 w-4" />,
+                                  },
+                                  {
+                                    label: "Delete",
+                                    onClick: () => setDeleteTarget(expense.id),
+                                    destructive: true,
+                                    icon: <Trash2 className="h-4 w-4" />,
+                                    "data-testid": `expense-delete-${expense.id}`,
+                                  },
+                                ]}
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
-              ) : null}
-            </>
-          )}
-        </CardContent>
-      </Card>
-      <ConfirmDeleteDialog
-        open={deleteTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) {
+
+                {/* Pagination */}
+                {pageInfo && (
+                  <Pagination className="border-t border-border p-4">
+                    <PaginationContent>
+                      <PaginationItem>
+                        <span className="text-sm text-muted-foreground mr-4">
+                          Page {pageInfo.page} of {Math.ceil(pageInfo.total / pageInfo.pageSize)}
+                        </span>
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => state.page > 1 && setUrlState({ page: state.page - 1 })}
+                          className={
+                            state.page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() =>
+                            pageInfo.hasNextPage && setUrlState({ page: state.page + 1 })
+                          }
+                          className={
+                            !pageInfo.hasNextPage
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <ConfirmDeleteDialog
+          open={deleteTarget !== null}
+          onOpenChange={(open: boolean) => !open && setDeleteTarget(null)}
+          trigger={null}
+          title="Delete expense"
+          description="This will archive the expense and remove it from the list."
+          isLoading={deleteExpenses.isPending}
+          onConfirm={() => {
+            if (deleteTarget) {
+              deleteExpenses.mutate([deleteTarget]);
+            }
             setDeleteTarget(null);
-          }
-        }}
-        trigger={null}
-        title="Delete expense"
-        description="This will archive the expense and remove it from the list."
-        isLoading={deleteExpenses.isPending}
-        onConfirm={() => {
-          if (!deleteTarget) {
-            return;
-          }
-          deleteExpenses.mutate([deleteTarget]);
-          setDeleteTarget(null);
-        }}
+          }}
+        />
+      </CrudListPageLayout>
+      <FilterPanel
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        filters={state.filters ?? []}
+        onApply={(newFilters) => setUrlState({ filters: newFilters, page: 1 })}
+        fields={filterFields}
       />
-    </CrudListPageLayout>
+    </>
   );
 }
