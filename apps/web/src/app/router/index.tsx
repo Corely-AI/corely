@@ -66,6 +66,7 @@ import {
   TaxesOverviewPage,
   TaxReportsPage,
   VatPeriodDetailsPage,
+  ReportDetailPage,
 } from "../../modules/tax";
 import {
   PlatformPage,
@@ -416,6 +417,7 @@ export const Router = () => (
           <Route path="/copilot" element={<CopilotPage />} />
           <Route path="/taxes" element={<TaxesOverviewPage />} />
           <Route path="/tax/reports" element={<TaxReportsPage />} />
+          <Route path="/tax/reports/:id" element={<ReportDetailPage />} />
           <Route path="/tax/settings" element={<TaxSettingsPage />} />
           {/* <Route path="/tax" element={<Navigate to="/taxes" replace />} /> */}
           <Route path="/tax/reports" element={<Navigate to="/taxes/reports" replace />} />
