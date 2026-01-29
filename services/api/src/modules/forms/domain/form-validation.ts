@@ -28,7 +28,7 @@ export const assertFieldDefinition = (
     configJson?: FormFieldConfig;
   }
 ) => {
-  const errors: { message: string; members?: string[] }[] = [];
+  const errors: { message: string; members: string[] }[] = [];
 
   if (!field.label || field.label.trim().length === 0) {
     errors.push({ message: "Field label is required", members: ["label"] });
@@ -166,7 +166,7 @@ export const validateSubmissionPayload = (
   fields: FormField[],
   payload: Record<string, unknown>
 ) => {
-  const errors: { message: string; members?: string[] }[] = [];
+  const errors: { message: string; members: string[] }[] = [];
 
   for (const field of fields) {
     const value = payload[field.key];
