@@ -65,6 +65,20 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
     {
       provide: "PLAYWRIGHT_BROWSER",
       useFactory: async () => {
+        if (process.env.NODE_ENV === "test" || process.env.CORELY_TEST === "true") {
+          return {
+            async newPage() {
+              return {
+                async setContent() {},
+                async pdf() {
+                  return Buffer.from("");
+                },
+                async close() {},
+              };
+            },
+          };
+        }
+
         return await chromium.launch({ headless: true });
       },
     },

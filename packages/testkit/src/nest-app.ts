@@ -9,6 +9,7 @@ import type { PostgresTestDb } from "./postgres-test-db";
 export async function createApiTestApp(db: PostgresTestDb): Promise<INestApplication> {
   process.env.DATABASE_URL = db.url;
   process.env.NODE_ENV = "test";
+  process.env.WORKFLOW_QUEUE_DRIVER = "memory";
 
   const moduleRef = await Test.createTestingModule({
     imports: [AppModule],

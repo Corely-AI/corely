@@ -6,6 +6,7 @@ import { AssistantPage } from "../../modules/assistant";
 import { ExpensesPage, NewExpensePage, ExpenseDetailPage } from "../../modules/expenses";
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
 import { CustomersPage, NewCustomerPage, EditCustomerPage } from "../../modules/customers";
+import { FormsPage, NewFormPage, FormDetailPage, PublicFormPage } from "../../modules/forms";
 import {
   DealsPage,
   NewDealPage,
@@ -100,6 +101,7 @@ export const Router = () => (
       <Route path="/auth/signup" element={<SignupPage />} />
       <Route path="/p" element={<PublicCmsListPage />} />
       <Route path="/p/:slug" element={<PublicCmsPostPage />} />
+      <Route path="/f/:publicId" element={<PublicFormPage />} />
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
@@ -111,6 +113,9 @@ export const Router = () => (
           <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
           <Route path="/cms/posts/:id/edit" element={<CmsPostEditorPage />} />
           <Route path="/cms/comments" element={<CmsCommentsPage />} />
+          <Route path="/forms" element={<FormsPage />} />
+          <Route path="/forms/new" element={<NewFormPage />} />
+          <Route path="/forms/:id" element={<FormDetailPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/expenses/new" element={<NewExpensePage />} />
           <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
