@@ -14,6 +14,7 @@ import type {
   ListInvoicesOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
+import { buildListQuery } from "./api-query-utils";
 
 export class InvoicesApi {
   /**
@@ -31,23 +32,7 @@ export class InvoicesApi {
    * Get all invoices
    */
   async listInvoices(params?: ListInvoicesInput): Promise<ListInvoicesOutput> {
-    const searchParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          if (typeof value === "object" && key === "filters") {
-            searchParams.append(key, JSON.stringify(value));
-          } else if (Array.isArray(value)) {
-            // Handle duplicate keys or comma separated? Standard is usually separate keys or comma.
-            // Given it's mostly 'status' which might be legacy or new.
-            // If contracts uses new FilterSpec[], it falls into 'object' case above (filters).
-            searchParams.append(key, String(value));
-          } else {
-            searchParams.append(key, String(value));
-          }
-        }
-      });
-    }
+    const searchParams = buildListQuery(params);
 
     const result = await apiClient.get<unknown>(`/invoices?${searchParams.toString()}`, {
       correlationId: apiClient.generateCorrelationId(),

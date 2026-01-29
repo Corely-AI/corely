@@ -10,6 +10,7 @@ import type {
   FilterSpec,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
+import { buildListQuery } from "./api-query-utils";
 
 export type ListExpensesParams = {
   q?: string;
@@ -32,37 +33,7 @@ export type ListExpensesResponse = {
 
 export class ExpensesApi {
   async listExpenses(params: ListExpensesParams = {}): Promise<ListExpensesResponse> {
-    const query = new URLSearchParams();
-    if (params.q) {query.set("q", params.q);}
-    if (params.page) {query.set("page", String(params.page));}
-    if (params.pageSize) {query.set("pageSize", String(params.pageSize));}
-    if (params.sort) {query.set("sort", params.sort);}
-    if (params.category) {query.set("category", params.category);}
-    if (params.fromDate) {query.set("fromDate", params.fromDate);}
-    if (params.toDate) {query.set("toDate", params.toDate);}
-    if (params.includeArchived !== undefined)
-      {query.set("includeArchived", String(params.includeArchived));}
-
-    // New params
-    if (params.status) {
-      if (Array.isArray(params.status)) {
-        // Pass as multiple keys or comma? Usually multiple keys for array in URLSearchParams
-        // Or standard contracts might expect comma.
-        // Let's rely on standard URLSearchParams behavior which is multiple fields if appended.
-        // But my backend parsing logic for multiple fields needs to support it.
-        // Assuming backend uses standard query parser.
-        // Wait, express/nestjs query parser usually handles array 'status=A&status=B'.
-        // URLSearchParams.set overwrites. .append adds. I need to use append for array.
-        // But here I'm using .set everywhere.
-        // Let's reuse logic:
-        params.status.forEach((s) => query.append("status", s));
-      } else {
-        query.set("status", params.status);
-      }
-    }
-    if (params.filters) {
-      query.set("filters", JSON.stringify(params.filters));
-    }
+    const query = buildListQuery(params);
 
     const endpoint = query.toString() ? `/expenses?${query.toString()}` : "/expenses";
     const result = await apiClient.get<{
