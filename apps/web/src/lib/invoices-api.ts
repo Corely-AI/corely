@@ -10,6 +10,8 @@ import type {
   InvoiceCapabilities,
   RecordPaymentInput,
   UpdateInvoiceInput,
+  ListInvoicesInput,
+  ListInvoicesOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -28,13 +30,32 @@ export class InvoicesApi {
   /**
    * Get all invoices
    */
-  async listInvoices(): Promise<InvoiceDto[]> {
-    const result = await apiClient.get<unknown>("/invoices", {
+  async listInvoices(params?: ListInvoicesInput): Promise<ListInvoicesOutput> {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          if (typeof value === "object" && key === "filters") {
+            searchParams.append(key, JSON.stringify(value));
+          } else if (Array.isArray(value)) {
+            // Handle duplicate keys or comma separated? Standard is usually separate keys or comma.
+            // Given it's mostly 'status' which might be legacy or new.
+            // If contracts uses new FilterSpec[], it falls into 'object' case above (filters).
+            searchParams.append(key, String(value));
+          } else {
+            searchParams.append(key, String(value));
+          }
+        }
+      });
+    }
+
+    const result = await apiClient.get<unknown>(`/invoices?${searchParams.toString()}`, {
       correlationId: apiClient.generateCorrelationId(),
     });
 
+    // Normalize response
     if (Array.isArray(result)) {
-      return result as InvoiceDto[];
+      return { items: result as InvoiceDto[] };
     }
 
     if (
@@ -43,19 +64,20 @@ export class InvoicesApi {
       "items" in result &&
       Array.isArray((result as { items: unknown }).items)
     ) {
-      return (result as { items: InvoiceDto[] }).items;
+      return result as ListInvoicesOutput;
     }
 
+    // Fallback/Legacy
     if (
       typeof result === "object" &&
       result !== null &&
       "invoices" in result &&
       Array.isArray((result as { invoices: unknown }).invoices)
     ) {
-      return (result as { invoices: InvoiceDto[] }).invoices;
+      return { items: (result as { invoices: InvoiceDto[] }).invoices };
     }
 
-    return [];
+    return { items: [] };
   }
 
   /**

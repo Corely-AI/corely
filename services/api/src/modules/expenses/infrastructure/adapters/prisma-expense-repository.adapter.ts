@@ -76,8 +76,18 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       tenantId,
       archivedAt: filters.includeArchived ? undefined : null,
     };
+    if (filters.status) {
+      if (Array.isArray(filters.status)) {
+        where.status = { in: filters.status };
+      } else {
+        where.status = filters.status;
+      }
+    }
     if (filters.q) {
-      where.merchantName = { contains: filters.q, mode: "insensitive" };
+      where.OR = [
+        { merchantName: { contains: filters.q, mode: "insensitive" } },
+        { category: { contains: filters.q, mode: "insensitive" } },
+      ];
     }
     if (filters.merchantName) {
       where.merchantName = { contains: filters.merchantName, mode: "insensitive" };
@@ -95,13 +105,43 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       }
     }
 
+    // Structured filters placeholder
+    if (filters.structuredFilters && Array.isArray(filters.structuredFilters)) {
+      for (const f of filters.structuredFilters) {
+        if (f.field === "status" && f.operator === "in" && Array.isArray(f.value)) {
+          where.status = { in: f.value };
+        }
+      }
+    }
+
     const skip = (pagination.page - 1) * pagination.pageSize;
     const take = pagination.pageSize;
+
+    // Sort mapping
+    let orderBy: any[] = [{ expenseDate: "desc" }, { createdAt: "desc" }];
+    if (filters.sort) {
+      const [field, dir] = filters.sort.split(":");
+      const direction = dir === "asc" ? "asc" : "desc";
+      const map: Record<string, string> = {
+        issuedAt: "expenseDate",
+        expenseDate: "expenseDate",
+        totalCents: "totalAmountCents",
+        merchant: "merchantName",
+        category: "category",
+        status: "status",
+        createdAt: "createdAt",
+      };
+      if (map[field]) {
+        orderBy = [{ [map[field]]: direction }];
+        // Secondary sort to ensure determinstic pagination
+        if (field !== "createdAt") {orderBy.push({ createdAt: "desc" });}
+      }
+    }
 
     const [rows, total] = await Promise.all([
       client.expense.findMany({
         where,
-        orderBy: [{ expenseDate: "desc" }, { createdAt: "desc" }],
+        orderBy,
         skip,
         take,
       }),

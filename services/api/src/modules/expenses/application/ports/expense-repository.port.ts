@@ -5,9 +5,12 @@ export interface ExpenseListFilters {
   q?: string;
   merchantName?: string | null;
   category?: string | null;
+  status?: string | string[]; // Support single or multi-status
   fromDate?: Date;
   toDate?: Date;
   includeArchived?: boolean;
+  sort?: string;
+  structuredFilters?: any;
 }
 
 export interface ExpenseListResult {

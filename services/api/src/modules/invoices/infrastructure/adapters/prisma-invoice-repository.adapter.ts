@@ -194,18 +194,24 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   async list(
     workspaceId: string,
     filters: ListInvoicesFilters,
-    pageSize = 20,
-    cursor?: string
+    pagination: { page?: number; pageSize: number; cursor?: string }
   ): Promise<ListInvoicesResult> {
+    const { page = 1, pageSize, cursor } = pagination;
     const where: any = { tenantId: workspaceId };
+
+    // Standard filters
     if (filters.status) {
-      where.status = filters.status;
+      where.status = filters.status; // Legacy scalar status
     }
+    // Handle status array if passed via standard list kit filters?
+    // For now, if 'filters.structuredFilters' contains status, we could use it, but keeping legacy valid is priority.
+
     if (filters.customerPartyId) {
       where.customerPartyId = filters.customerPartyId;
     }
+
     if (filters.fromDate || filters.toDate) {
-      where.createdAt = {};
+      where.createdAt = {}; // Note: Legacy used createdAt, ideally should be issuedAt? Keeping legacy behavior.
       if (filters.fromDate) {
         where.createdAt.gte = filters.fromDate;
       }
@@ -214,14 +220,53 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       }
     }
 
-    const results = await this.prisma.invoice.findMany({
-      where,
-      take: pageSize,
-      skip: cursor ? 1 : 0,
-      ...(cursor ? { cursor: { id: cursor } } : {}),
-      orderBy: { createdAt: "desc" },
-      include: { lines: true },
-    });
+    // New "q" search
+    if (filters.q) {
+      where.OR = [
+        { number: { contains: filters.q, mode: "insensitive" } },
+        { billToName: { contains: filters.q, mode: "insensitive" } },
+      ];
+    }
+
+    // Sort
+    let orderBy: any = { issuedAt: "desc" };
+    if (filters.sort) {
+      // Simple single sort support for now, e.g. "issuedAt:asc" or "totalCents:desc"
+      const [field, dir] = filters.sort.split(":");
+      const direction = dir === "asc" ? "asc" : "desc";
+
+      const allowedSorts = ["issuedAt", "createdAt", "totalCents", "number", "status", "dueDate"];
+      if (allowedSorts.includes(field)) {
+        orderBy = { [field]: direction };
+      }
+    }
+
+    // Structured filters (placeholder for robust implementation)
+    if (filters.structuredFilters && Array.isArray(filters.structuredFilters)) {
+      // Loop through and apply additional Prisma where clauses for known fields
+      // e.g. [{ field: "status", value: ["DRAFT", "ISSUED"], operator: "in" }]
+      for (const f of filters.structuredFilters) {
+        if (f.field === "status" && f.operator === "in" && Array.isArray(f.value)) {
+          where.status = { in: f.value };
+        }
+        if (f.field === "issueDate" && f.operator === "between" && Array.isArray(f.value)) {
+          // Handle range
+          where.issuedAt = { gte: new Date(f.value[0]), lte: new Date(f.value[1]) };
+        }
+      }
+    }
+
+    const [total, results] = await Promise.all([
+      this.prisma.invoice.count({ where }),
+      this.prisma.invoice.findMany({
+        where,
+        take: pageSize,
+        skip: cursor ? 1 : (page - 1) * pageSize,
+        ...(cursor ? { cursor: { id: cursor } } : {}),
+        orderBy,
+        include: { lines: true },
+      }),
+    ]);
 
     const items = results.map((row) => {
       const lines: InvoiceLine[] = row.lines.map((line) => ({
@@ -271,7 +316,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     });
 
     const nextCursor = items.length === pageSize ? items[items.length - 1].id : null;
-    return { items, nextCursor };
+    return { items, nextCursor, total };
   }
 
   async isInvoiceNumberTaken(workspaceId: string, number: string): Promise<boolean> {

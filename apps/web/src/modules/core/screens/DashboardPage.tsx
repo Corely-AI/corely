@@ -43,10 +43,12 @@ export default function DashboardPage() {
   };
 
   // Fetch invoices
-  const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
+  const { data: invoicesData, isLoading: isLoadingInvoices } = useQuery({
     queryKey: workspaceQueryKeys.invoices.list(),
     queryFn: () => invoicesApi.listInvoices(),
   });
+
+  const invoices = invoicesData?.items ?? [];
 
   // Fetch customers
   const { data: customersData, isLoading: isLoadingCustomers } = useQuery({

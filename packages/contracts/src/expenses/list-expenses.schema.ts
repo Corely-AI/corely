@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { ExpenseDtoSchema, ExpenseStatusSchema } from "./expense.types";
 import { localDateSchema } from "../shared/local-date.schema";
+import { ListQuerySchema, PageInfoSchema } from "../common/list.contract";
 
-export const ListExpensesInputSchema = z.object({
+export const ListExpensesInputSchema = ListQuerySchema.extend({
   status: ExpenseStatusSchema.optional(),
   category: z.string().optional(),
   merchantName: z.string().optional(),
@@ -10,12 +11,13 @@ export const ListExpensesInputSchema = z.object({
   toDate: localDateSchema.optional(),
   includeArchived: z.boolean().optional(),
   cursor: z.string().optional(),
-  pageSize: z.number().int().positive().max(100).optional(),
+  // Override pageSize to match specific max constraints if needed, or stick to ListQuery defaults
 });
 
 export const ListExpensesOutputSchema = z.object({
   items: z.array(ExpenseDtoSchema),
   nextCursor: z.string().optional().nullable(),
+  pageInfo: PageInfoSchema.optional(), // Make optional during migration or if cursor-based
 });
 
 export type ListExpensesInput = z.infer<typeof ListExpensesInputSchema>;
