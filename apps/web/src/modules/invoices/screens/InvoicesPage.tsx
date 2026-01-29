@@ -11,9 +11,9 @@ import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 
-import { CrudListPageLayout } from "@/shared/crud/CrudListPageLayout";
-import { CrudRowActions } from "@/shared/crud/CrudRowActions";
+import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
 import {
   ListToolbar,
   ActiveFilterChips,
@@ -39,6 +39,7 @@ export default function InvoicesPage() {
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
   // URL State
   const [state, setUrlState] = useListUrlState(
@@ -157,6 +158,32 @@ export default function InvoicesPage() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await Promise.all(ids.map((id) => invoicesApi.cancelInvoice(id, "Bulk delete")));
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
+      toast.success("Invoices deleted");
+      setSelectedIds(new Set());
+    },
+    onError: () => toast.error("Failed to delete invoices"),
+  });
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const allSelected = invoices.length > 0 && invoices.every((i) => selectedIds.has(i.id));
+
   // Renderers
   return (
     <CrudListPageLayout
@@ -186,7 +213,10 @@ export default function InvoicesPage() {
           ]}
           onFilterClick={() => setIsFilterOpen(true)}
           filterCount={state.filters?.length}
-        >
+        />
+      }
+      filters={
+        (state.filters?.length ?? 0) > 0 ? (
           <ActiveFilterChips
             filters={state.filters ?? []}
             onRemove={(f) => {
@@ -195,7 +225,7 @@ export default function InvoicesPage() {
             }}
             onClearAll={() => setUrlState({ filters: [], page: 1 })}
           />
-        </ListToolbar>
+        ) : undefined
       }
     >
       {invoices.length === 0 && !isLoading ? (
@@ -211,10 +241,39 @@ export default function InvoicesPage() {
         />
       ) : (
         <div className="space-y-4">
+          {selectedIds.size > 0 ? (
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40 rounded-t-md">
+              <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
+              <ConfirmDeleteDialog
+                trigger={
+                  <Button variant="destructive" size="sm" disabled={bulkDeleteMutation.isPending}>
+                    Delete selected
+                  </Button>
+                }
+                title="Delete selected invoices"
+                description="This will cancel and soft-delete the selected invoices."
+                isLoading={bulkDeleteMutation.isPending}
+                onConfirm={() => bulkDeleteMutation.mutate(Array.from(selectedIds))}
+              />
+            </div>
+          ) : null}
           <div className="rounded-md border border-border">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
+                  <th className="w-12 px-4 py-3">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedIds(new Set(invoices.map((i) => i.id)));
+                        } else {
+                          setSelectedIds(new Set());
+                        }
+                      }}
+                      aria-label="Select all"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                     {t("invoices.invoiceNumber")}
                   </th>
@@ -238,7 +297,7 @@ export default function InvoicesPage() {
                 {isLoading
                   ? Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i} className="border-b border-border">
-                        <td colSpan={6} className="h-16 animate-pulse bg-muted/20" />
+                        <td colSpan={7} className="h-16 animate-pulse bg-muted/20" />
                       </tr>
                     ))
                   : invoices.map((invoice) => (
@@ -247,6 +306,13 @@ export default function InvoicesPage() {
                         data-testid={`invoice-row-${invoice.id}`}
                         className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                       >
+                        <td className="px-4 py-3">
+                          <Checkbox
+                            checked={selectedIds.has(invoice.id)}
+                            onCheckedChange={() => toggleSelection(invoice.id)}
+                            aria-label={`Select invoice ${invoice.id}`}
+                          />
+                        </td>
                         <td className="px-4 py-3 text-sm font-medium">
                           {invoice.number || "Draft"}
                         </td>

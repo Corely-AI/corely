@@ -40,6 +40,7 @@ Frontend guidelines and specific docs.
 
 - [Brand](./frontend/BRAND.md)
 - [Menu](./menu/)
+- [List View Standard](./frontend/list-view-implementation.md)
 
 ### 🚀 DevOps & Infra
 
