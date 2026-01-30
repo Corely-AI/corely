@@ -11,7 +11,6 @@ import { FilingStepper, type FilingStepKey } from "../components/filing-stepper"
 import { ReviewStepIncomeAnnual } from "../components/steps/review-step-income-annual";
 import { SubmitStep } from "../components/steps/submit-step";
 import { PayStep } from "../components/steps/pay-step";
-import { IncludedItemsSection } from "../components/included-items-section";
 import { AttachmentsSection } from "../components/attachments-section";
 import { ActivitySection } from "../components/activity-section";
 import { useTaxFilingDetailQuery } from "../hooks/useTaxFilingDetailQuery";
@@ -31,10 +30,6 @@ export const FilingDetailPage = () => {
   const filing = data?.filing;
 
   const [activeStep, setActiveStep] = React.useState<FilingStepKey>("review");
-  const [presetSourceType, setPresetSourceType] = React.useState<
-    TaxFilingItemSourceType | undefined
-  >(undefined);
-  const includedItemsRef = React.useRef<HTMLDivElement | null>(null);
 
   const recalcMutation = useRecalculateFilingMutation(id);
   const submitMutation = useSubmitFilingMutation(id);
@@ -101,11 +96,6 @@ export const FilingDetailPage = () => {
     }
   };
 
-  const handlePresetFilter = (sourceType: TaxFilingItemSourceType) => {
-    setPresetSourceType(sourceType);
-    includedItemsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
   if (isLoading) {
     return (
       <div className="p-6 lg:p-8 space-y-6">
@@ -143,11 +133,11 @@ export const FilingDetailPage = () => {
   const reviewContent =
     filing.type === "income-annual" ? (
       <ReviewStepIncomeAnnual
+        filingId={filing.id}
         totals={filing.totals}
         issues={filing.issues}
         currency={filing.totals?.currency}
         onRecalculate={() => recalcMutation.mutate()}
-        onPresetFilter={handlePresetFilter}
         isRecalculating={recalcMutation.isPending}
       />
     ) : (
@@ -197,8 +187,7 @@ export const FilingDetailPage = () => {
         ) : null}
       </div>
 
-      <div ref={includedItemsRef} className="space-y-6">
-        <IncludedItemsSection filingId={filing.id} presetSourceType={presetSourceType} />
+      <div className="space-y-6">
         <AttachmentsSection filingId={filing.id} />
         <ActivitySection filingId={filing.id} />
       </div>

@@ -11,22 +11,23 @@ import { Badge } from "@/shared/ui/badge";
 import { formatMoney, formatDateTime } from "@/shared/lib/formatters";
 import type { IncomeTaxTotals, TaxIssue } from "@corely/contracts";
 import { Link } from "react-router-dom";
+import { FilingItemsList } from "../filing-items-list";
 
 type ReviewStepIncomeAnnualProps = {
+  filingId: string;
   totals?: IncomeTaxTotals;
   issues: TaxIssue[];
   currency?: string;
   onRecalculate: () => void;
-  onPresetFilter: (sourceType: "income" | "expense") => void;
   isRecalculating?: boolean;
 };
 
 export function ReviewStepIncomeAnnual({
+  filingId,
   totals,
   issues,
   currency,
   onRecalculate,
-  onPresetFilter,
   isRecalculating,
 }: ReviewStepIncomeAnnualProps) {
   const formatOrPlaceholder = (value: number | null | undefined) =>
@@ -114,26 +115,23 @@ export function ReviewStepIncomeAnnual({
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="income-sources">
           <AccordionTrigger>Income sources included</AccordionTrigger>
-          <AccordionContent className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
+          <AccordionContent className="space-y-4">
+            <p className="text-sm text-muted-foreground pb-2">
               Review the invoices included in this filing.
-            </span>
-            <Button variant="ghost" onClick={() => onPresetFilter("income")}>
-              View items
-            </Button>
+            </p>
+            <FilingItemsList filingId={filingId} sourceType="income" />
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="expenses">
           <AccordionTrigger>Expenses included</AccordionTrigger>
-          <AccordionContent className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
+          <AccordionContent className="space-y-4">
+            <p className="text-sm text-muted-foreground pb-2">
               Review deductible expenses and receipts.
-            </span>
-            <Button variant="ghost" onClick={() => onPresetFilter("expense")}>
-              View items
-            </Button>
+            </p>
+            <FilingItemsList filingId={filingId} sourceType="expense" />
           </AccordionContent>
         </AccordionItem>
+
         <AccordionItem value="adjustments">
           <AccordionTrigger>Adjustments (manual)</AccordionTrigger>
           <AccordionContent className="text-sm text-muted-foreground">

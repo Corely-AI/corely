@@ -107,12 +107,20 @@ describe("FilingDetailPage", () => {
     expect(within(stepper).getByText("Review")).toBeInTheDocument();
   });
 
-  it("shows included items toolbar and pagination", async () => {
+  it("renders income sources accordion and toggles items", async () => {
+    const user = userEvent.setup();
     renderPage("/tax/filings/filing-1");
-    const includedItems = await screen.findByTestId("tax-filing-included-items");
-    expect(within(includedItems).getByPlaceholderText("Search...")).toBeInTheDocument();
-    expect(within(includedItems).getByText("Filters")).toBeInTheDocument();
-    expect(within(includedItems).getByText("Page 1 of 1")).toBeInTheDocument();
+
+    const trigger = await screen.findByRole("button", { name: /income sources included/i });
+    await user.click(trigger);
+
+    // Verify items query was triggered for income
+    await waitFor(() => {
+      expect(listFilingItemsMock).toHaveBeenCalledWith(
+        "filing-1",
+        expect.objectContaining({ sourceType: "income" })
+      );
+    });
   });
 
   it("submits confirmation in submit step", async () => {
