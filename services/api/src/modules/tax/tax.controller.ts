@@ -60,7 +60,12 @@ import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-per
 import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
 import { GetTaxReportUseCase } from "./application/use-cases/get-tax-report.use-case";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
-import { type Result } from "@corely/kernel";
+import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-case";
+import { ListTaxFilingsUseCase } from "./application/use-cases/list-tax-filings.use-case";
+import { GetVatFilingPeriodsUseCase } from "./application/use-cases/get-vat-filing-periods.use-case";
+import { CreateTaxFilingUseCase } from "./application/use-cases/create-tax-filing.use-case";
+import { Result } from "@corely/kernel";
+import { CreateTaxFilingInputSchema, GetVatPeriodsInputSchema } from "@corely/contracts";
 
 @Controller("tax")
 @UseGuards(AuthGuard)
@@ -86,7 +91,11 @@ export class TaxController {
     private readonly markVatPeriodNilUseCase: MarkVatPeriodNilUseCase,
     private readonly archiveVatPeriodUseCase: ArchiveVatPeriodUseCase,
     private readonly generateTaxReportPdfUseCase: GenerateTaxReportPdfUseCase,
-    private readonly vatPeriodResolver: VatPeriodResolver
+    private readonly vatPeriodResolver: VatPeriodResolver,
+    private readonly getTaxCenterUseCase: GetTaxCenterUseCase,
+    private readonly listTaxFilingsUseCase: ListTaxFilingsUseCase,
+    private readonly getVatFilingPeriodsUseCase: GetVatFilingPeriodsUseCase,
+    private readonly createTaxFilingUseCase: CreateTaxFilingUseCase
   ) {}
 
   // ============================================================================
@@ -291,6 +300,59 @@ export class TaxController {
   async getReportPdfUrl(@Param("id") id: string, @Req() req: Request) {
     const ctx = this.buildContext(req);
     return this.unwrap(await this.generateTaxReportPdfUseCase.execute({ reportId: id }, ctx));
+  }
+
+  // ============================================================================
+  // Tax Center & Filings (New)
+  // ============================================================================
+
+  @Get("center")
+  async getCenter(@Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(
+      await this.getTaxCenterUseCase.execute(
+        { year: query.year ? Number(query.year) : undefined, entityId: query.entityId },
+        ctx
+      )
+    );
+  }
+
+  @Get("filings")
+  async listFilings(@Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(
+      await this.listTaxFilingsUseCase.execute(
+        {
+          q: query.q,
+          page: query.page ? Number(query.page) : 1,
+          pageSize: query.pageSize ? Number(query.pageSize) : 20,
+          sort: query.sort,
+          type: query.type,
+          status: query.status,
+          year: query.year ? Number(query.year) : undefined,
+          periodKey: query.periodKey,
+          entityId: query.entityId,
+        },
+        ctx
+      )
+    );
+  }
+
+  @Post("filings")
+  async createFiling(@Body() body: unknown, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const input = CreateTaxFilingInputSchema.parse(body);
+    return this.unwrap(await this.createTaxFilingUseCase.execute(input, ctx));
+  }
+
+  @Get("vat/periods")
+  async getVatFilingsPeriods(@Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const input = GetVatPeriodsInputSchema.parse({
+      year: query.year,
+      entityId: query.entityId,
+    });
+    return this.unwrap(await this.getVatFilingPeriodsUseCase.execute(input, ctx));
   }
 
   // ============================================================================

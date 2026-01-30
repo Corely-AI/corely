@@ -33,7 +33,8 @@
     "@nestjs/testing": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest-mock-extended": "^3.1.0"
   },
   "author": "Ha Doan <ha@oneway8x.com>"
 }
