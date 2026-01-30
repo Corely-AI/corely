@@ -128,7 +128,7 @@ export const FilingsListPage = () => {
         { replace: true }
       );
     }
-    if (!searchParams.get("year")) {
+    if (tab === "vat" && !searchParams.get("year")) {
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev);
@@ -163,9 +163,9 @@ export const FilingsListPage = () => {
         next.set("tab", value);
         if (value !== "vat") {
           next.delete("periodKey");
-        }
-        if (!next.get("year")) {
-          next.set("year", String(value === "income-annual" ? lastYear : currentYear));
+          next.delete("year");
+        } else if (!next.get("year")) {
+          next.set("year", String(currentYear));
         }
         next.set("page", "1");
         return next;
@@ -231,7 +231,7 @@ export const FilingsListPage = () => {
     filters: state.filters ?? [],
     type: filingType,
     status: filingStatus,
-    year: selectedYear,
+    year: tab === "vat" ? selectedYear : undefined,
     periodKey: tab === "vat" ? periodKey : undefined,
     entityId: activeWorkspace?.legalEntityId,
   };
@@ -256,11 +256,11 @@ export const FilingsListPage = () => {
       return (
         <EmptyState
           icon={FileText}
-          title={`No annual filings for ${selectedYear}`}
-          description="Create the annual income tax filing when you're ready."
+          title="No annual filings found"
+          description="Create a new annual income tax filing to get started."
           action={
             <Button variant="outline" onClick={() => navigate(createAnnualHref)}>
-              Create annual filing for {selectedYear}
+              Create annual filing
             </Button>
           }
         />
@@ -374,26 +374,6 @@ export const FilingsListPage = () => {
                 onSelectPeriod={handlePeriodChange}
                 entityId={activeWorkspace?.legalEntityId}
               />
-            </div>
-          ) : null}
-          {tab === "income-annual" ? (
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <div className="text-sm text-muted-foreground">Annual year</div>
-              <Select
-                value={String(selectedYear)}
-                onValueChange={(value) => handleYearChange(Number(value))}
-              >
-                <SelectTrigger className="h-8 w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 6 }, (_, i) => currentYear - i).map((year) => (
-                    <SelectItem key={year} value={String(year)}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           ) : null}
 

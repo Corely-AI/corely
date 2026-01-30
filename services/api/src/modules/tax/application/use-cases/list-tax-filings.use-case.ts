@@ -37,7 +37,7 @@ export class ListTaxFilingsUseCase extends BaseUseCase<ListTaxFilingsInput, List
     const tenantId = ctx.tenantId!;
     const workspaceId = ctx.workspaceId || tenantId;
     const now = new Date();
-    const year = input.year ?? now.getUTCFullYear();
+    const year = input.year;
     const filings: TaxFilingSummary[] = [];
     const page = input.page ?? 1;
     const pageSize = input.pageSize ?? 20;
@@ -50,14 +50,23 @@ export class ListTaxFilingsUseCase extends BaseUseCase<ListTaxFilingsInput, List
     const reportTypes = this.resolveReportTypes(input.type);
     const reports = (
       await Promise.all(
-        reportTypes.map((type) =>
-          this.taxReportRepo.listByPeriodRange(
+        reportTypes.map((type) => {
+          if (year) {
+            return this.taxReportRepo.listByPeriodRange(
+              workspaceId,
+              type,
+              new Date(Date.UTC(year, 0, 1)),
+              new Date(Date.UTC(year + 1, 0, 1))
+            );
+          }
+          // If no year, we fetch all reports for these types (using a wide range)
+          return this.taxReportRepo.listByPeriodRange(
             workspaceId,
             type,
-            new Date(Date.UTC(year, 0, 1)),
-            new Date(Date.UTC(year + 1, 0, 1))
-          )
-        )
+            new Date(0),
+            new Date(Date.UTC(2100, 0, 1))
+          );
+        })
       )
     ).flat();
 
