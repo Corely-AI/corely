@@ -189,7 +189,7 @@ describe("FilingsListPage", () => {
     );
   });
 
-  it("annual tab shows empty state CTA for the selected year", async () => {
+  it("annual tab shows empty state CTA without filtering by year", async () => {
     listFilingsMock.mockResolvedValueOnce({
       items: [],
       pageInfo: { page: 1, pageSize: 20, total: 0, hasNextPage: false },
@@ -199,12 +199,10 @@ describe("FilingsListPage", () => {
 
     await waitFor(() =>
       expect(listFilingsMock).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "income-annual", year: 2025 })
+        expect.objectContaining({ type: "income-annual", year: undefined })
       )
     );
 
-    expect(
-      await screen.findByRole("button", { name: "Create annual filing for 2025" })
-    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Create annual filing" })).toBeInTheDocument();
   });
 });
