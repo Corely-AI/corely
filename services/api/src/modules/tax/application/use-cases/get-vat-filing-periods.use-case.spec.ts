@@ -43,6 +43,7 @@ describe("GetVatFilingPeriodsUseCase", () => {
     expect(result.value.periods).toHaveLength(4);
     expect(result.value.periods[0].periodKey).toBe("2025-Q1");
     expect(result.value.periods[3].periodKey).toBe("2025-Q4");
+    return;
   });
 
   it("should mark periods as submitted if report exists", async () => {
@@ -77,5 +78,6 @@ describe("GetVatFilingPeriodsUseCase", () => {
     expect(q1).toBeDefined();
     expect(q1?.status).toBe("SUBMITTED");
     expect(q1?.filingId).toBe("rep-1");
+    return;
   });
 });
