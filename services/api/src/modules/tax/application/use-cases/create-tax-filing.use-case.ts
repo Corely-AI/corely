@@ -7,6 +7,7 @@ import {
   type Result,
   type UseCaseContext,
   type UseCaseError,
+  ValidationError,
   ok,
   err,
   RequireTenant,
@@ -35,10 +36,7 @@ export class CreateTaxFilingUseCase extends BaseUseCase<
 
     // 1. Validate Input
     if (input.type === "VAT" && !input.periodKey) {
-      return err({
-        code: "INVALID_INPUT",
-        message: "Period key is required for VAT filings",
-      });
+      return err(new ValidationError("Period key is required for VAT filings"));
     }
 
     // 2. Resolve Dates
@@ -61,7 +59,9 @@ export class CreateTaxFilingUseCase extends BaseUseCase<
       periodEnd = new Date(Date.UTC(year, 11, 31, 23, 59, 59));
       periodLabel = year.toString();
 
-      if (input.type === "INCOME_TAX_ANNUAL") {mapType = "INCOME_TAX";}
+      if (input.type === "INCOME_TAX_ANNUAL") {
+        mapType = "INCOME_TAX";
+      }
       // ... map other types
     }
 
