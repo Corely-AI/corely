@@ -4,7 +4,7 @@ import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 import { TaxReportRepoPort, TaxProfileRepoPort } from "../../domain/ports";
 import { mock } from "vitest-mock-extended";
 import { TaxProfileEntity } from "../../domain/entities";
-import { isOk } from "@corely/kernel";
+import { isErr } from "@corely/kernel";
 
 describe("GetVatFilingPeriodsUseCase", () => {
   let useCase: GetVatFilingPeriodsUseCase;
@@ -37,12 +37,12 @@ describe("GetVatFilingPeriodsUseCase", () => {
     );
 
     // Assert
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      expect(result.value.periods).toHaveLength(4);
-      expect(result.value.periods[0].periodKey).toBe("2025-Q1");
-      expect(result.value.periods[3].periodKey).toBe("2025-Q4");
+    if (isErr(result)) {
+      throw result.error;
     }
+    expect(result.value.periods).toHaveLength(4);
+    expect(result.value.periods[0].periodKey).toBe("2025-Q1");
+    expect(result.value.periods[3].periodKey).toBe("2025-Q4");
   });
 
   it("should mark periods as submitted if report exists", async () => {
@@ -70,12 +70,12 @@ describe("GetVatFilingPeriodsUseCase", () => {
     );
 
     // Assert
-    expect(isOk(result)).toBe(true);
-    if (isOk(result)) {
-      const q1 = result.value.periods.find((p) => p.periodKey === "2025-Q1");
-      expect(q1).toBeDefined();
-      expect(q1?.status).toBe("SUBMITTED");
-      expect(q1?.filingId).toBe("rep-1");
+    if (isErr(result)) {
+      throw result.error;
     }
+    const q1 = result.value.periods.find((p) => p.periodKey === "2025-Q1");
+    expect(q1).toBeDefined();
+    expect(q1?.status).toBe("SUBMITTED");
+    expect(q1?.filingId).toBe("rep-1");
   });
 });
