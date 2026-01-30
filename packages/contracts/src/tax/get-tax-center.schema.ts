@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { TaxFilingDtoSchema } from "./tax-filing.types";
+import { TaxFilingSummarySchema } from "./tax-filing.types";
 
-export const TaxIssueSchema = z.object({
+export const TaxCenterIssueSchema = z.object({
   id: z.string(),
   kind: z.string(),
   severity: z.enum(["info", "warning", "error"]),
@@ -11,7 +11,7 @@ export const TaxIssueSchema = z.object({
   deepLink: z.string(),
   blocking: z.boolean(),
 });
-export type TaxIssue = z.infer<typeof TaxIssueSchema>;
+export type TaxCenterIssue = z.infer<typeof TaxCenterIssueSchema>;
 
 export const TaxSnapshotKpiSchema = z.object({
   key: z.string(),
@@ -32,17 +32,6 @@ export type GetTaxCenterInput = z.infer<typeof GetTaxCenterInputSchema>;
 export const TaxModeSchema = z.enum(["FREELANCER", "COMPANY"]);
 export type TaxMode = z.infer<typeof TaxModeSchema>;
 
-export const TaxFilingSummarySchema = TaxFilingDtoSchema.pick({
-  id: true,
-  type: true,
-  periodLabel: true,
-  dueDate: true,
-  status: true,
-  amountCents: true,
-  currency: true,
-});
-export type TaxFilingSummary = z.infer<typeof TaxFilingSummarySchema>;
-
 export const TaxSnapshotSchema = z.object({
   kpis: z.array(TaxSnapshotKpiSchema),
   updatedAt: z.string().datetime(),
@@ -61,7 +50,7 @@ export const GetTaxCenterOutputSchema = z.object({
   year: z.number().int(),
   nextUp: TaxFilingSummarySchema.nullable(),
   annual: TaxCenterAnnualSchema,
-  issues: z.array(TaxIssueSchema),
+  issues: z.array(TaxCenterIssueSchema),
   snapshot: TaxSnapshotSchema,
   shortcutsHints: z.array(z.string()),
 });

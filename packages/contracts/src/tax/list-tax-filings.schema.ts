@@ -1,27 +1,30 @@
 import { z } from "zod";
-import { TaxFilingDtoSchema, TaxFilingTypeSchema, TaxFilingStatusSchema } from "./tax-filing.types";
+import { ListQuerySchema, createListResponseSchema } from "../common/list.contract";
+import {
+  TaxFilingSummarySchema,
+  TaxFilingTypeSchema,
+  TaxFilingStatusSchema,
+  TaxPeriodKeySchema,
+} from "./tax-filing.types";
 
-export const ListTaxFilingsInputSchema = z.object({
-  q: z.string().optional(),
-  page: z.number().int().min(1).default(1),
-  pageSize: z.number().int().min(1).max(100).default(20),
-  sort: z.string().optional(),
-  filters: z.string().optional(), // JSON string for advanced filters or standard filters
-
-  // Direct filters
+export const TaxFilingsListQuerySchema = ListQuerySchema.extend({
   type: TaxFilingTypeSchema.optional(),
   status: TaxFilingStatusSchema.optional(),
   year: z.coerce.number().int().optional(),
-  periodKey: z.string().optional(),
+  periodKey: TaxPeriodKeySchema.optional(),
+  dueFrom: z.string().datetime().optional(),
+  dueTo: z.string().datetime().optional(),
+  needsAttention: z.coerce.boolean().optional(),
+  hasIssues: z.coerce.boolean().optional(),
   entityId: z.string().optional(),
 });
-export type ListTaxFilingsInput = z.infer<typeof ListTaxFilingsInputSchema>;
+export type TaxFilingsListQuery = z.infer<typeof TaxFilingsListQuerySchema>;
 
-export const ListTaxFilingsOutputSchema = z.object({
-  items: z.array(TaxFilingDtoSchema),
-  total: z.number().int(),
-  page: z.number().int(),
-  pageSize: z.number().int(),
-  totalPages: z.number().int(),
-});
-export type ListTaxFilingsOutput = z.infer<typeof ListTaxFilingsOutputSchema>;
+export const TaxFilingsListResponseSchema = createListResponseSchema(TaxFilingSummarySchema);
+export type TaxFilingsListResponse = z.infer<typeof TaxFilingsListResponseSchema>;
+
+export const ListTaxFilingsInputSchema = TaxFilingsListQuerySchema;
+export type ListTaxFilingsInput = TaxFilingsListQuery;
+
+export const ListTaxFilingsOutputSchema = TaxFilingsListResponseSchema;
+export type ListTaxFilingsOutput = TaxFilingsListResponse;

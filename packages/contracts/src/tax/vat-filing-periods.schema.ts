@@ -1,15 +1,11 @@
 import { z } from "zod";
-import { TaxFilingStatusSchema } from "./tax-filing.types";
+import { TaxFilingStatusSchema, TaxPeriodKeySchema } from "./tax-filing.types";
 
 export const VatFrequencySchema = z.enum(["monthly", "quarterly"]);
 export type VatFrequency = z.infer<typeof VatFrequencySchema>;
 
 export const TaxPeriodKindSchema = z.enum(["month", "quarter"]);
 export type TaxPeriodKind = z.infer<typeof TaxPeriodKindSchema>;
-
-// Regex for YYYY-MM or YYYY-Q[1-4]
-export const TaxPeriodKeySchema = z.string().regex(/^(\d{4})-(0[1-9]|1[0-2]|Q[1-4])$/);
-export type TaxPeriodKey = z.infer<typeof TaxPeriodKeySchema>;
 
 export const VatPeriodItemSchema = z.object({
   periodKey: TaxPeriodKeySchema,
@@ -34,3 +30,6 @@ export const GetVatPeriodsOutputSchema = z.object({
   periods: z.array(VatPeriodItemSchema),
 });
 export type GetVatPeriodsOutput = z.infer<typeof GetVatPeriodsOutputSchema>;
+
+export const VatPeriodsResponseSchema = GetVatPeriodsOutputSchema;
+export type VatPeriodsResponse = GetVatPeriodsOutput;

@@ -22,7 +22,8 @@ export class GetTaxReportUseCase extends BaseUseCase<string, TaxReportDto | null
     ctx: UseCaseContext
   ): Promise<Result<TaxReportDto | null, UseCaseError>> {
     const tenantId = ctx.tenantId!;
-    const entity = await this.repo.findById(tenantId, id);
+    const workspaceId = ctx.workspaceId || tenantId;
+    const entity = await this.repo.findById(workspaceId, id);
     if (!entity) {
       return ok(null);
     }

@@ -36,12 +36,11 @@ export class GetVatFilingPeriodsUseCase extends BaseUseCase<
     // 1. Determine Frequency from Profile
     const profile = await this.taxProfileRepo.getActive(workspaceId, new Date());
     // Default to quarterly if not set or unknown
-    const frequency: VatFrequency = (profile?.filingFrequency as VatFrequency) || "quarterly";
+    const frequency: VatFrequency =
+      profile?.filingFrequency === "MONTHLY" ? "monthly" : "quarterly";
 
     // 2. Generate Periods
-    // Currently resolver only supports quarterly.
-    // TODO: Extend resolver for monthly if needed. Assuming quarterly for MVP/Code consistency with list-tax-filings.
-    const periods = this.periodResolver.getQuartersOfYear(year);
+    const periods = this.periodResolver.getPeriodsOfYear(year, frequency);
 
     // 3. Fetch Existing Reports for Status
     const reports = await this.taxReportRepo.listByPeriodRange(
@@ -51,7 +50,7 @@ export class GetVatFilingPeriodsUseCase extends BaseUseCase<
       new Date(Date.UTC(year + 1, 0, 1))
     );
     const reportByKey = new Map(
-      reports.map((r) => [this.periodResolver.resolveQuarter(r.periodStart).key, r])
+      reports.map((r) => [this.toVatPeriodKey(r.periodStart, frequency), r])
     );
 
     // 4. Map to Output
@@ -61,7 +60,7 @@ export class GetVatFilingPeriodsUseCase extends BaseUseCase<
       periods: periods.map((p) => {
         const report = reportByKey.get(p.key);
         let filingId: string | null = null;
-        let status: "DRAFT" | "NEEDS_FIX" | "SUBMITTED" | "PAID" | "ARCHIVED" | null = null;
+        let status: "draft" | "needsFix" | "submitted" | "paid" | "archived" | null = null;
 
         if (report) {
           filingId = report.id; // Or period key if ID isn't used for detail view? Using key for now based on ListTaxFilings
@@ -72,10 +71,17 @@ export class GetVatFilingPeriodsUseCase extends BaseUseCase<
           // In ListTaxFilingsUseCase, only for VAT it uses period key as ID.
           filingId = report.id;
 
-          if (report.status === "SUBMITTED") {status = "SUBMITTED";}
-          else if (report.status === "PAID") {status = "PAID";}
-          else if (report.status === "ARCHIVED") {status = "ARCHIVED";}
-          else {status = "DRAFT";}
+          if (report.status === "SUBMITTED" || report.status === "NIL") {
+            status = "submitted";
+          } else if (report.status === "PAID") {
+            status = "paid";
+          } else if (report.status === "ARCHIVED") {
+            status = "archived";
+          } else if (report.status === "OVERDUE") {
+            status = "needsFix";
+          } else {
+            status = "draft";
+          }
         } else {
           status = null;
           filingId = null;
@@ -96,5 +102,14 @@ export class GetVatFilingPeriodsUseCase extends BaseUseCase<
         };
       }),
     });
+  }
+
+  private toVatPeriodKey(date: Date, frequency: VatFrequency) {
+    if (frequency === "monthly") {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      return `${year}-${month}`;
+    }
+    return this.periodResolver.resolveQuarter(date).key;
   }
 }

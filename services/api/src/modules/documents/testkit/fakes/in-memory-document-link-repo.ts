@@ -52,4 +52,21 @@ export class InMemoryDocumentLinkRepo implements DocumentLinkRepoPort {
       )
       .map((link) => link.documentId);
   }
+
+  async deleteLink(params: {
+    tenantId: string;
+    documentId: string;
+    entityType: DocumentLinkEntityType;
+    entityId: string;
+  }): Promise<void> {
+    this.links = this.links.filter(
+      (link) =>
+        !(
+          link.tenantId === params.tenantId &&
+          link.documentId === params.documentId &&
+          link.entityType === params.entityType &&
+          link.entityId === params.entityId
+        )
+    );
+  }
 }

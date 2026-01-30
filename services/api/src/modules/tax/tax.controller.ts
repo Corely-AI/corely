@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -35,6 +36,10 @@ import {
   type ListTaxReportsOutput,
   type UpsertTaxConsultantOutput,
   type GetTaxConsultantOutput,
+  TaxFilingItemsListQuerySchema,
+  SubmitTaxFilingRequestSchema,
+  MarkTaxFilingPaidRequestSchema,
+  AttachTaxFilingDocumentRequestSchema,
 } from "@corely/contracts";
 import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../identity/adapters/http/auth.guard";
@@ -64,8 +69,22 @@ import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-
 import { ListTaxFilingsUseCase } from "./application/use-cases/list-tax-filings.use-case";
 import { GetVatFilingPeriodsUseCase } from "./application/use-cases/get-vat-filing-periods.use-case";
 import { CreateTaxFilingUseCase } from "./application/use-cases/create-tax-filing.use-case";
+import { GetTaxFilingDetailUseCase } from "./application/use-cases/get-tax-filing-detail.use-case";
+import { ListTaxFilingItemsUseCase } from "./application/use-cases/list-tax-filing-items.use-case";
+import { ListTaxFilingAttachmentsUseCase } from "./application/use-cases/list-tax-filing-attachments.use-case";
+import { AttachTaxFilingDocumentUseCase } from "./application/use-cases/attach-tax-filing-document.use-case";
+import { RemoveTaxFilingAttachmentUseCase } from "./application/use-cases/remove-tax-filing-attachment.use-case";
+import { ListTaxFilingActivityUseCase } from "./application/use-cases/list-tax-filing-activity.use-case";
+import { RecalculateTaxFilingUseCase } from "./application/use-cases/recalculate-tax-filing.use-case";
+import { SubmitTaxFilingUseCase } from "./application/use-cases/submit-tax-filing.use-case";
+import { MarkTaxFilingPaidUseCase } from "./application/use-cases/mark-tax-filing-paid.use-case";
+import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filing.use-case";
 import { Result } from "@corely/kernel";
-import { CreateTaxFilingInputSchema, GetVatPeriodsInputSchema } from "@corely/contracts";
+import {
+  CreateTaxFilingInputSchema,
+  GetVatPeriodsInputSchema,
+  ListTaxFilingsInputSchema,
+} from "@corely/contracts";
 
 @Controller("tax")
 @UseGuards(AuthGuard)
@@ -95,7 +114,17 @@ export class TaxController {
     private readonly getTaxCenterUseCase: GetTaxCenterUseCase,
     private readonly listTaxFilingsUseCase: ListTaxFilingsUseCase,
     private readonly getVatFilingPeriodsUseCase: GetVatFilingPeriodsUseCase,
-    private readonly createTaxFilingUseCase: CreateTaxFilingUseCase
+    private readonly createTaxFilingUseCase: CreateTaxFilingUseCase,
+    private readonly getTaxFilingDetailUseCase: GetTaxFilingDetailUseCase,
+    private readonly listTaxFilingItemsUseCase: ListTaxFilingItemsUseCase,
+    private readonly listTaxFilingAttachmentsUseCase: ListTaxFilingAttachmentsUseCase,
+    private readonly attachTaxFilingDocumentUseCase: AttachTaxFilingDocumentUseCase,
+    private readonly removeTaxFilingAttachmentUseCase: RemoveTaxFilingAttachmentUseCase,
+    private readonly listTaxFilingActivityUseCase: ListTaxFilingActivityUseCase,
+    private readonly recalculateTaxFilingUseCase: RecalculateTaxFilingUseCase,
+    private readonly submitTaxFilingUseCase: SubmitTaxFilingUseCase,
+    private readonly markTaxFilingPaidUseCase: MarkTaxFilingPaidUseCase,
+    private readonly deleteTaxFilingUseCase: DeleteTaxFilingUseCase
   ) {}
 
   // ============================================================================
@@ -320,22 +349,112 @@ export class TaxController {
   @Get("filings")
   async listFilings(@Query() query: any, @Req() req: Request) {
     const ctx = this.buildContext(req);
+    const input = ListTaxFilingsInputSchema.parse({
+      q: query.q,
+      page: query.page,
+      pageSize: query.pageSize,
+      sort: query.sort,
+      filters: query.filters,
+      type: query.type,
+      status: query.status,
+      year: query.year,
+      periodKey: query.periodKey,
+      dueFrom: query.dueFrom,
+      dueTo: query.dueTo,
+      needsAttention: query.needsAttention,
+      hasIssues: query.hasIssues,
+      entityId: query.entityId,
+    });
+    return this.unwrap(await this.listTaxFilingsUseCase.execute(input, ctx));
+  }
+
+  @Get("filings/:id")
+  async getFiling(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(await this.getTaxFilingDetailUseCase.execute(id, ctx));
+  }
+
+  @Get("filings/:id/items")
+  async listFilingItems(@Param("id") id: string, @Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const parsed = TaxFilingItemsListQuerySchema.parse({
+      q: query.q,
+      page: query.page,
+      pageSize: query.pageSize,
+      sort: query.sort,
+      filters: query.filters,
+      sourceType: query.sourceType,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      category: query.category,
+      needsAttention: query.needsAttention,
+      missingMapping: query.missingMapping,
+    });
     return this.unwrap(
-      await this.listTaxFilingsUseCase.execute(
-        {
-          q: query.q,
-          page: query.page ? Number(query.page) : 1,
-          pageSize: query.pageSize ? Number(query.pageSize) : 20,
-          sort: query.sort,
-          type: query.type,
-          status: query.status,
-          year: query.year ? Number(query.year) : undefined,
-          periodKey: query.periodKey,
-          entityId: query.entityId,
-        },
+      await this.listTaxFilingItemsUseCase.execute({ filingId: id, query: parsed }, ctx)
+    );
+  }
+
+  @Get("filings/:id/attachments")
+  async listFilingAttachments(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(await this.listTaxFilingAttachmentsUseCase.execute(id, ctx));
+  }
+
+  @Post("filings/:id/attachments")
+  async attachFilingDocument(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const request = AttachTaxFilingDocumentRequestSchema.parse(body);
+    return this.unwrap(
+      await this.attachTaxFilingDocumentUseCase.execute({ filingId: id, request }, ctx)
+    );
+  }
+
+  @Delete("filings/:id/attachments/:attachmentId")
+  async removeFilingAttachment(
+    @Param("id") id: string,
+    @Param("attachmentId") attachmentId: string,
+    @Req() req: Request
+  ) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(
+      await this.removeTaxFilingAttachmentUseCase.execute(
+        { filingId: id, documentId: attachmentId },
         ctx
       )
     );
+  }
+
+  @Get("filings/:id/activity")
+  async getFilingActivity(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(await this.listTaxFilingActivityUseCase.execute(id, ctx));
+  }
+
+  @Post("filings/:id/recalculate")
+  async recalculateFiling(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(await this.recalculateTaxFilingUseCase.execute(id, ctx));
+  }
+
+  @Post("filings/:id/submit")
+  async submitFiling(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const request = SubmitTaxFilingRequestSchema.parse(body);
+    return this.unwrap(await this.submitTaxFilingUseCase.execute({ filingId: id, request }, ctx));
+  }
+
+  @Post("filings/:id/mark-paid")
+  async markFilingPaid(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const request = MarkTaxFilingPaidRequestSchema.parse(body);
+    return this.unwrap(await this.markTaxFilingPaidUseCase.execute({ filingId: id, request }, ctx));
+  }
+
+  @Delete("filings/:id")
+  async deleteFiling(@Param("id") id: string, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(await this.deleteTaxFilingUseCase.execute(id, ctx));
   }
 
   @Post("filings")

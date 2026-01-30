@@ -7,6 +7,8 @@ export interface VatPeriod {
   end: Date; // Exclusive (UTC)
 }
 
+export type VatFilingFrequency = "monthly" | "quarterly";
+
 @Injectable()
 export class VatPeriodResolver {
   /**
@@ -31,14 +33,34 @@ export class VatPeriodResolver {
     ];
   }
 
+  getPeriodsOfYear(year: number, frequency: VatFilingFrequency): VatPeriod[] {
+    if (frequency === "monthly") {
+      return Array.from({ length: 12 }, (_, index) => {
+        const month = String(index + 1).padStart(2, "0");
+        return this.fromMonthKey(`${year}-${month}`);
+      });
+    }
+    return this.getQuartersOfYear(year);
+  }
+
+  resolvePeriodKey(key: string): VatPeriod {
+    return key.includes("-Q") ? this.fromKey(key) : this.fromMonthKey(key);
+  }
+
   private fromDate(date: Date): VatPeriod {
     const year = date.getUTCFullYear();
     const month = date.getUTCMonth(); // 0-11
 
     let q = 1;
-    if (month >= 3 && month < 6) {q = 2;}
-    if (month >= 6 && month < 9) {q = 3;}
-    if (month >= 9) {q = 4;}
+    if (month >= 3 && month < 6) {
+      q = 2;
+    }
+    if (month >= 6 && month < 9) {
+      q = 3;
+    }
+    if (month >= 9) {
+      q = 4;
+    }
 
     return this.fromKey(`${year}-Q${q}`);
   }
@@ -50,9 +72,15 @@ export class VatPeriodResolver {
     const q = parseInt(qStr.replace("Q", ""), 10);
 
     let startMonth = 0;
-    if (q === 2) {startMonth = 3;}
-    if (q === 3) {startMonth = 6;}
-    if (q === 4) {startMonth = 9;}
+    if (q === 2) {
+      startMonth = 3;
+    }
+    if (q === 3) {
+      startMonth = 6;
+    }
+    if (q === 4) {
+      startMonth = 9;
+    }
 
     const start = new Date(Date.UTC(year, startMonth, 1, 0, 0, 0, 0));
 
@@ -63,6 +91,21 @@ export class VatPeriodResolver {
     return {
       key: `${year}-Q${q}`,
       label: `Q${q} ${year}`,
+      start,
+      end,
+    };
+  }
+
+  private fromMonthKey(key: string): VatPeriod {
+    const [yearStr, monthStr] = key.split("-");
+    const year = parseInt(yearStr, 10);
+    const monthIndex = parseInt(monthStr, 10) - 1;
+    const start = new Date(Date.UTC(year, monthIndex, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, monthIndex + 1, 1, 0, 0, 0, 0));
+    const label = start.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+    return {
+      key: `${year}-${monthStr}`,
+      label,
       start,
       end,
     };

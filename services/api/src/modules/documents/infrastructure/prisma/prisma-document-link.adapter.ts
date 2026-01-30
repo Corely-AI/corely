@@ -48,4 +48,20 @@ export class PrismaDocumentLinkAdapter implements DocumentLinkRepoPort {
     });
     return rows.map((row) => row.documentId);
   }
+
+  async deleteLink(params: {
+    tenantId: string;
+    documentId: string;
+    entityType: DocumentLinkEntityType;
+    entityId: string;
+  }): Promise<void> {
+    await this.prisma.documentLink.deleteMany({
+      where: {
+        tenantId: params.tenantId,
+        documentId: params.documentId,
+        entityType: params.entityType,
+        entityId: params.entityId,
+      },
+    });
+  }
 }

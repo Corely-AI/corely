@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { type TaxFilingSummary, TaxFilingDto } from "@corely/contracts";
+import { type TaxFilingSummary } from "@corely/contracts";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Loader2, ArrowRight, FileText, CheckCircle2 } from "lucide-react";
@@ -50,15 +50,15 @@ export const NextUpCard = ({ filing, isLoading }: NextUpCardProps) => {
   }
 
   const isOverdue =
-    (filing.status as string) === "OVERDUE" ||
-    (filing.status !== "PAID" && new Date(filing.dueDate) < new Date());
+    filing.status === "needsFix" ||
+    (filing.status !== "paid" && new Date(filing.dueDate) < new Date());
 
   return (
     <Card className="h-full border-l-4 border-l-primary/40 relative overflow-hidden">
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle>
-            {filing.periodLabel} {filing.type === "VAT" ? "VAT" : "Tax"}
+            {filing.periodLabel} {filing.type === "vat" ? "VAT" : "Tax"}
           </CardTitle>
           {isOverdue && (
             <span className="text-xs font-bold text-destructive bg-destructive/10 px-2 py-1 rounded">

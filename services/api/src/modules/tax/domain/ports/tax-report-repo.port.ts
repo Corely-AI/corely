@@ -9,6 +9,30 @@ export abstract class TaxReportRepoPort {
   abstract findById(tenantId: string, id: string): Promise<TaxReportEntity | null>;
 
   abstract markSubmitted(tenantId: string, id: string, submittedAt: Date): Promise<TaxReportEntity>;
+  abstract submitReport(params: {
+    tenantId: string;
+    reportId: string;
+    submittedAt: Date;
+    submissionReference: string;
+    submissionNotes?: string | null;
+  }): Promise<TaxReportEntity>;
+
+  abstract markPaid(params: {
+    tenantId: string;
+    reportId: string;
+    paidAt: Date;
+    amountCents: number;
+    method: string;
+    proofDocumentId?: string | null;
+  }): Promise<TaxReportEntity>;
+
+  abstract updateMeta(params: {
+    tenantId: string;
+    reportId: string;
+    meta: Record<string, unknown>;
+  }): Promise<TaxReportEntity>;
+
+  abstract delete(tenantId: string, id: string): Promise<void>;
 
   abstract listByPeriodRange(
     tenantId: string,

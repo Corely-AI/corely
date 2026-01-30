@@ -27,9 +27,12 @@ import { CompleteUploadUseCase } from "./application/use-cases/complete-upload/c
 import { CreateUploadIntentUseCase } from "./application/use-cases/create-upload-intent/create-upload-intent.usecase";
 import { GenerateInvoicePdfWorker } from "./application/use-cases/generate-invoice-pdf-worker/generate-invoice-pdf.worker";
 import { GetDownloadUrlUseCase } from "./application/use-cases/get-download-url/get-download-url.usecase";
+import { GetDocumentUseCase } from "./application/use-cases/get-document/get-document.usecase";
 import { GetPublicFileUrlUseCase } from "./application/use-cases/get-public-file-url/get-public-file-url.usecase";
 import { LinkDocumentUseCase } from "./application/use-cases/link-document/link-document.usecase";
+import { ListLinkedDocumentsUseCase } from "./application/use-cases/list-linked-documents/list-linked-documents.usecase";
 import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoice-pdf/request-invoice-pdf.usecase";
+import { UnlinkDocumentUseCase } from "./application/use-cases/unlink-document/unlink-document.usecase";
 
 @Module({
   imports: [IdentityModule, KernelModule],
@@ -126,6 +129,16 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
       ],
     },
     {
+      provide: GetDocumentUseCase,
+      useFactory: (documentRepo: PrismaDocumentRepoAdapter, fileRepo: PrismaFileRepoAdapter) =>
+        new GetDocumentUseCase({
+          logger: new NestLoggerAdapter(),
+          documentRepo,
+          fileRepo,
+        }),
+      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter],
+    },
+    {
       provide: GetPublicFileUrlUseCase,
       useFactory: (
         fileRepo: PrismaFileRepoAdapter,
@@ -149,6 +162,21 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
           linkRepo,
         }),
       inject: [PrismaDocumentRepoAdapter, PrismaDocumentLinkAdapter],
+    },
+    {
+      provide: ListLinkedDocumentsUseCase,
+      useFactory: (
+        documentRepo: PrismaDocumentRepoAdapter,
+        linkRepo: PrismaDocumentLinkAdapter,
+        fileRepo: PrismaFileRepoAdapter
+      ) =>
+        new ListLinkedDocumentsUseCase({
+          logger: new NestLoggerAdapter(),
+          documentRepo,
+          linkRepo,
+          fileRepo,
+        }),
+      inject: [PrismaDocumentRepoAdapter, PrismaDocumentLinkAdapter, PrismaFileRepoAdapter],
     },
     {
       provide: RequestInvoicePdfUseCase,
@@ -186,6 +214,15 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
       ],
     },
     {
+      provide: UnlinkDocumentUseCase,
+      useFactory: (linkRepo: PrismaDocumentLinkAdapter) =>
+        new UnlinkDocumentUseCase({
+          logger: new NestLoggerAdapter(),
+          linkRepo,
+        }),
+      inject: [PrismaDocumentLinkAdapter],
+    },
+    {
       provide: GenerateInvoicePdfWorker,
       useFactory: (
         documentRepo: PrismaDocumentRepoAdapter,
@@ -216,27 +253,36 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
         createUploadIntent: CreateUploadIntentUseCase,
         completeUpload: CompleteUploadUseCase,
         getDownloadUrl: GetDownloadUrlUseCase,
+        getDocument: GetDocumentUseCase,
         getPublicFileUrl: GetPublicFileUrlUseCase,
         linkDocument: LinkDocumentUseCase,
+        listLinkedDocuments: ListLinkedDocumentsUseCase,
         requestInvoicePdf: RequestInvoicePdfUseCase,
+        unlinkDocument: UnlinkDocumentUseCase,
         generateInvoicePdfWorker: GenerateInvoicePdfWorker
       ) =>
         new DocumentsApplication(
           createUploadIntent,
           completeUpload,
           getDownloadUrl,
+          getDocument,
           getPublicFileUrl,
           linkDocument,
+          listLinkedDocuments,
           requestInvoicePdf,
+          unlinkDocument,
           generateInvoicePdfWorker
         ),
       inject: [
         CreateUploadIntentUseCase,
         CompleteUploadUseCase,
         GetDownloadUrlUseCase,
+        GetDocumentUseCase,
         GetPublicFileUrlUseCase,
         LinkDocumentUseCase,
+        ListLinkedDocumentsUseCase,
         RequestInvoicePdfUseCase,
+        UnlinkDocumentUseCase,
         GenerateInvoicePdfWorker,
       ],
     },

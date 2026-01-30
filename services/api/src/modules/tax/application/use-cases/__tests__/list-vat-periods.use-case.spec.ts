@@ -83,6 +83,22 @@ class FakeTaxReportRepo extends TaxReportRepoPort {
     throw new Error("not used");
   }
 
+  async submitReport(): Promise<any> {
+    throw new Error("not used");
+  }
+
+  async markPaid(): Promise<any> {
+    throw new Error("not used");
+  }
+
+  async updateMeta(): Promise<any> {
+    throw new Error("not used");
+  }
+
+  async delete(): Promise<void> {
+    return;
+  }
+
   async seedDefaultReports(): Promise<void> {
     return;
   }

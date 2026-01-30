@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { TaxFilingTypeSchema } from "@corely/contracts";
+import { TaxFilingTypeSchema, TaxPeriodKeySchema } from "@corely/contracts";
 import { taxApi } from "@/lib/tax-api";
 import { Button } from "@/shared/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
@@ -17,20 +17,35 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 const formSchema = z
   .object({
     type: TaxFilingTypeSchema,
-    year: z.coerce.number().int(),
-    periodKey: z.string().optional(), // Required if VAT
+    year: z.coerce.number().int().optional(),
+    periodKey: z.preprocess((value) => {
+      if (typeof value !== "string") {
+        return value;
+      }
+      const trimmed = value.trim();
+      return trimmed.length > 0 ? trimmed : undefined;
+    }, TaxPeriodKeySchema.optional()), // Required if VAT
     entityId: z.string().optional(),
   })
   .refine(
     (data) => {
-      if (data.type === "VAT" && !data.periodKey) {return false;}
+      if (data.type === "vat" && !data.periodKey) {
+        return false;
+      }
+      if (data.type !== "vat" && !data.year) {
+        return false;
+      }
       return true;
     },
     {
       message: "Period is required for VAT filings",
       path: ["periodKey"],
     }
-  );
+  )
+  .refine((data) => (data.type !== "vat" ? !!data.year : true), {
+    message: "Year is required for annual filings",
+    path: ["year"],
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -43,7 +58,7 @@ export const CreateFilingPage = () => {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: (searchParams.get("type") as any) || "VAT",
+      type: (searchParams.get("type") as any) || "vat",
       year: Number(searchParams.get("year")) || new Date().getFullYear(),
       periodKey: searchParams.get("periodKey") || "",
       entityId: searchParams.get("entityId") || activeWorkspace?.legalEntityId || "",
@@ -54,7 +69,11 @@ export const CreateFilingPage = () => {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const result = await taxApi.createFiling(values);
+      const payload = {
+        ...values,
+        periodKey: values.periodKey?.trim() || undefined,
+      };
+      const result = await taxApi.createFiling(payload);
       toast({
         title: "Filing created",
         description: "Redirecting to filing details...",
@@ -93,10 +112,10 @@ export const CreateFilingPage = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="VAT">VAT Return</SelectItem>
-                        <SelectItem value="INCOME_TAX">Income Tax</SelectItem>
-                        <SelectItem value="VAT_ANNUAL">Annual VAT</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
+                        <SelectItem value="vat">VAT Return</SelectItem>
+                        <SelectItem value="income-annual">Income Tax (Annual)</SelectItem>
+                        <SelectItem value="vat-annual">Annual VAT</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -118,7 +137,7 @@ export const CreateFilingPage = () => {
                 )}
               />
 
-              {type === "VAT" && (
+              {type === "vat" && (
                 <FormField
                   control={form.control}
                   name="periodKey"
