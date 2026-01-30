@@ -43,6 +43,7 @@ describe("ExpenseCreatedHandler", () => {
         totalCents: 11900,
         taxAmountCents: 1900,
         currency: "EUR",
+        issuedAt: new Date("2025-01-01T00:00:00Z").toISOString(),
       },
       createdAt: new Date(),
       tenantId: "tenant-1",
@@ -64,6 +65,7 @@ describe("ExpenseCreatedHandler", () => {
         subtotalAmountCents: 10000,
         taxTotalAmountCents: 1900,
         totalAmountCents: 11900,
+        calculatedAt: new Date("2025-01-01T00:00:00Z"),
       }),
       create: expect.objectContaining({
         tenantId: "tenant-1",
@@ -73,6 +75,7 @@ describe("ExpenseCreatedHandler", () => {
         taxTotalAmountCents: 1900,
         totalAmountCents: 11900,
         currency: "EUR",
+        calculatedAt: new Date("2025-01-01T00:00:00Z"),
       }),
     });
   });

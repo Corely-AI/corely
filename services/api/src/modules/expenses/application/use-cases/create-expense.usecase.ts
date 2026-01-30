@@ -122,6 +122,7 @@ export class CreateExpenseUseCase {
         totalCents: expense.totalCents,
         taxAmountCents: expense.taxAmountCents,
         currency: expense.currency,
+        issuedAt: expense.issuedAt.toISOString(),
       },
     });
 

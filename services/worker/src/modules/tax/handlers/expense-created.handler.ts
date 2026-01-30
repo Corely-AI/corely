@@ -11,12 +11,13 @@ export class ExpenseCreatedHandler implements EventHandler {
 
   async handle(event: OutboxEvent): Promise<void> {
     const payload = event.payload as any;
-    const { expenseId, totalCents, taxAmountCents, currency } = payload;
+    const { expenseId, totalCents, taxAmountCents, currency, issuedAt } = payload;
 
     this.logger.log(`Processing Expense Created ${expenseId} for Tax Snapshot`);
 
     const tax = taxAmountCents ?? 0;
     const subtotal = totalCents - tax;
+    const calculatedAt = issuedAt ? new Date(issuedAt) : new Date();
 
     // Use upsert to handle idempotency (re-processing of same event)
     await this.prisma.taxSnapshot.upsert({
@@ -28,14 +29,11 @@ export class ExpenseCreatedHandler implements EventHandler {
         },
       },
       update: {
-        // If it exists, we might want to update it if the expense changed?
-        // For "created" event, usually it means first time.
-        // If we implement expense.updated, we would update.
-        // For now, let's update values to be safe.
         subtotalAmountCents: subtotal,
         taxTotalAmountCents: tax,
         totalAmountCents: totalCents,
         currency,
+        calculatedAt,
       },
       create: {
         tenantId: event.tenantId,
@@ -45,7 +43,7 @@ export class ExpenseCreatedHandler implements EventHandler {
         regime: "STANDARD_VAT",
         roundingMode: "PER_DOCUMENT",
         currency,
-        calculatedAt: new Date(),
+        calculatedAt,
         subtotalAmountCents: subtotal,
         taxTotalAmountCents: tax,
         totalAmountCents: totalCents,
