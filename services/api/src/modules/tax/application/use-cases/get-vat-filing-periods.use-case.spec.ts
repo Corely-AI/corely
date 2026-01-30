@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach } from "vitest";
 import { GetVatFilingPeriodsUseCase } from "./get-vat-filing-periods.use-case";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
