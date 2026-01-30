@@ -1,8 +1,10 @@
+import { describe, it, expect, beforeEach } from "vitest";
 import { GetVatFilingPeriodsUseCase } from "./get-vat-filing-periods.use-case";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 import { TaxReportRepoPort, TaxProfileRepoPort } from "../../domain/ports";
-import { mock } from "jest-mock-extended";
+import { mock } from "vitest-mock-extended";
 import { TaxProfileEntity } from "../../domain/entities";
+import { isOk } from "@corely/kernel";
 
 describe("GetVatFilingPeriodsUseCase", () => {
   let useCase: GetVatFilingPeriodsUseCase;
@@ -35,8 +37,8 @@ describe("GetVatFilingPeriodsUseCase", () => {
     );
 
     // Assert
-    expect(result.isOk()).toBe(true);
-    if (result.isOk()) {
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
       expect(result.value.periods).toHaveLength(4);
       expect(result.value.periods[0].periodKey).toBe("2025-Q1");
       expect(result.value.periods[3].periodKey).toBe("2025-Q4");
@@ -68,8 +70,8 @@ describe("GetVatFilingPeriodsUseCase", () => {
     );
 
     // Assert
-    expect(result.isOk()).toBe(true);
-    if (result.isOk()) {
+    expect(isOk(result)).toBe(true);
+    if (isOk(result)) {
       const q1 = result.value.periods.find((p) => p.periodKey === "2025-Q1");
       expect(q1).toBeDefined();
       expect(q1?.status).toBe("SUBMITTED");
