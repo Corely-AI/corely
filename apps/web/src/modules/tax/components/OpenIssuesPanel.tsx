@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { type TaxIssue } from "@corely/contracts";
+import { type TaxCenterIssue } from "@corely/contracts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { badgeVariants } from "@/shared/ui/badge";
 
 interface OpenIssuesPanelProps {
-  issues: TaxIssue[];
+  issues: TaxCenterIssue[];
   isLoading: boolean;
 }
 

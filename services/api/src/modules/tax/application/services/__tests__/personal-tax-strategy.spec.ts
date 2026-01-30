@@ -80,8 +80,82 @@ class FakeReportRepo extends TaxReportRepoPort {
     return report;
   }
 
+  async submitReport(params: {
+    tenantId: string;
+    reportId: string;
+    submittedAt: Date;
+    submissionReference: string;
+    submissionNotes?: string | null;
+  }): Promise<TaxReportEntity> {
+    const report = this.reports.find(
+      (r) => r.id === params.reportId && r.tenantId === params.tenantId
+    );
+    if (!report) {
+      throw new Error("Report not found");
+    }
+    report.status = "SUBMITTED";
+    report.submittedAt = params.submittedAt;
+    report.submissionReference = params.submissionReference;
+    report.submissionNotes = params.submissionNotes ?? null;
+    report.updatedAt = params.submittedAt;
+    return report;
+  }
+
+  async markPaid(params: {
+    tenantId: string;
+    reportId: string;
+    paidAt: Date;
+    amountCents: number;
+    method: string;
+    proofDocumentId?: string | null;
+  }): Promise<TaxReportEntity> {
+    const report = this.reports.find(
+      (r) => r.id === params.reportId && r.tenantId === params.tenantId
+    );
+    if (!report) {
+      throw new Error("Report not found");
+    }
+    report.status = "PAID";
+    report.amountFinalCents = params.amountCents;
+    report.meta = {
+      ...(report.meta ?? {}),
+      payment: {
+        paidAt: params.paidAt.toISOString(),
+        method: params.method,
+        amountCents: params.amountCents,
+        proofDocumentId: params.proofDocumentId ?? null,
+      },
+    };
+    report.updatedAt = params.paidAt;
+    return report;
+  }
+
+  async updateMeta(params: {
+    tenantId: string;
+    reportId: string;
+    meta: Record<string, unknown>;
+  }): Promise<TaxReportEntity> {
+    const report = this.reports.find(
+      (r) => r.id === params.reportId && r.tenantId === params.tenantId
+    );
+    if (!report) {
+      throw new Error("Report not found");
+    }
+    report.meta = params.meta;
+    report.updatedAt = new Date();
+    return report;
+  }
+
+  async delete(tenantId: string, id: string): Promise<void> {
+    this.reports = this.reports.filter((r) => !(r.id === id && r.tenantId === tenantId));
+  }
+
   async listByPeriodRange(): Promise<TaxReportEntity[]> {
     return this.reports;
+  }
+
+  async findById(tenantId: string, id: string): Promise<TaxReportEntity | null> {
+    return this.reports.find((r) => r.id === id && r.tenantId === tenantId) ?? null;
   }
 
   async upsertByPeriod(input: {

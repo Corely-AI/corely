@@ -1,141 +1,206 @@
 import React from "react";
-import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { taxApi } from "@/lib/tax-api";
-import { Button } from "@/shared/ui/button";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { Skeleton } from "@/shared/components/Skeleton";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@/shared/ui/card";
+import { taxApi } from "@/lib/tax-api";
+import type { TaxFilingItemSourceType } from "@corely/contracts";
+import { FilingDetailHeader } from "../components/filing-detail-header";
+import { FilingStepper, type FilingStepKey } from "../components/filing-stepper";
+import { ReviewStepIncomeAnnual } from "../components/steps/review-step-income-annual";
+import { SubmitStep } from "../components/steps/submit-step";
+import { PayStep } from "../components/steps/pay-step";
+import { IncludedItemsSection } from "../components/included-items-section";
+import { AttachmentsSection } from "../components/attachments-section";
+import { ActivitySection } from "../components/activity-section";
+import { useTaxFilingDetailQuery } from "../hooks/useTaxFilingDetailQuery";
+import {
+  useRecalculateFilingMutation,
+  useSubmitFilingMutation,
+  useMarkPaidFilingMutation,
+  useDeleteFilingMutation,
+} from "../hooks/useTaxFilingMutations";
 
 export const FilingDetailPage = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const { data: filing, isLoading } = useQuery({
-    queryKey: ["tax-filing", id],
-    queryFn: () => taxApi.getReport(id!),
-    enabled: !!id,
-  });
+  const { data, isLoading, isError } = useTaxFilingDetailQuery(id);
+  const filing = data?.filing;
 
-  const year = filing?.periodStart ? new Date(filing.periodStart).getFullYear() : undefined;
+  const [activeStep, setActiveStep] = React.useState<FilingStepKey>("review");
+  const [presetSourceType, setPresetSourceType] = React.useState<
+    TaxFilingItemSourceType | undefined
+  >(undefined);
+  const includedItemsRef = React.useRef<HTMLDivElement | null>(null);
 
-  // Fetch periods to determine prev/next if VAT
-  const isVat = filing?.type === "VAT_ADVANCE";
-  const { data: periodsData } = useQuery({
-    queryKey: ["vat-periods", year],
-    queryFn: () => taxApi.getVatFilingPeriods({ year: year! }),
-    enabled: !!year && isVat,
-  });
+  const recalcMutation = useRecalculateFilingMutation(id);
+  const submitMutation = useSubmitFilingMutation(id);
+  const markPaidMutation = useMarkPaidFilingMutation(id);
+  const deleteMutation = useDeleteFilingMutation(id);
 
-  if (isLoading)
-    {return (
-      <div className="p-6">
-        <Skeleton className="h-12 w-1/3 mb-4" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );}
+  React.useEffect(() => {
+    if (!filing) {
+      return;
+    }
+    if (filing.status === "submitted") {
+      setActiveStep("submit");
+    } else if (filing.status === "paid") {
+      setActiveStep("pay");
+    } else {
+      setActiveStep("review");
+    }
+  }, [filing?.status]);
 
-  const isPeriodKey = /^\d{4}-Q[1-4]$/.test(id || "") || /^\d{4}-(0[1-9]|1[0-2])$/.test(id || "");
+  const handleHeaderAction = async (actionKey: string) => {
+    if (!id || !filing) {
+      return;
+    }
+    if (actionKey === "review") {
+      setActiveStep("review");
+      return;
+    }
+    if (actionKey === "markPaid") {
+      setActiveStep("pay");
+      return;
+    }
+    if (actionKey === "view") {
+      setActiveStep("review");
+      return;
+    }
+    if (actionKey === "recalculate") {
+      await recalcMutation.mutateAsync();
+      toast.success("Recalculation queued");
+      return;
+    }
+    if (actionKey === "exportPdf") {
+      try {
+        const result = await taxApi.getReportPdfUrl(id);
+        window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to export PDF");
+      }
+      return;
+    }
+    if (actionKey === "exportCsv") {
+      toast.info("CSV export coming soon");
+      return;
+    }
+    if (actionKey === "delete") {
+      try {
+        await deleteMutation.mutateAsync();
+        toast.success("Filing deleted");
+        navigate("/tax/filings");
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to delete filing");
+      }
+    }
+  };
 
-  if (!filing && isPeriodKey) {
+  const handlePresetFilter = (sourceType: TaxFilingItemSourceType) => {
+    setPresetSourceType(sourceType);
+    includedItemsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  if (isLoading) {
     return (
-      <div className="p-6 max-w-2xl mx-auto text-center space-y-4">
-        <h1 className="text-2xl font-bold">New Filing for {id}</h1>
-        <p className="text-muted-foreground">This filing period has not been started yet.</p>
-        <Button asChild>
-          <Link to={`/tax/filings/new?type=VAT&periodKey=${id}&year=${id?.split("-")[0]}`}>
-            Start Filing
-          </Link>
-        </Button>
+      <div className="p-6 lg:p-8 space-y-6">
+        <Skeleton className="h-10 w-2/3" />
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
 
-  if (!filing) {return <div className="p-6">Filing not found</div>;}
-
-  const renderPeriodNavigation = () => {
-    if (!periodsData?.periods || !isVat) {return null;}
-
-    const currentIndex = periodsData.periods.findIndex((p) => p.filingId === filing.id);
-    if (currentIndex === -1) {return null;}
-
-    const prev = periodsData.periods[currentIndex - 1];
-    const next = periodsData.periods[currentIndex + 1];
-
+  if (isError || !filing) {
     return (
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" disabled={!prev} asChild={!!prev}>
-          {prev ? (
-            <Link
-              to={
-                prev.filingId
-                  ? `/tax/filings/${prev.filingId}`
-                  : `/tax/filings/new?type=VAT&year=${year}&periodKey=${prev.periodKey}`
-              }
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              {prev.label}
-            </Link>
-          ) : (
-            <span>
-              <ChevronLeft className="h-4 w-4 mr-1" /> Prev
-            </span>
-          )}
+      <div className="p-6 lg:p-8 space-y-4">
+        <Button variant="ghost" onClick={() => navigate("/tax/filings")}>
+          Back to filings
         </Button>
-        <Button variant="outline" size="sm" disabled={!next} asChild={!!next}>
-          {next ? (
-            <Link
-              to={
-                next.filingId
-                  ? `/tax/filings/${next.filingId}`
-                  : `/tax/filings/new?type=VAT&year=${year}&periodKey=${next.periodKey}`
-              }
-            >
-              {next.label}
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          ) : (
-            <span>
-              Next <ChevronRight className="h-4 w-4 ml-1" />
-            </span>
-          )}
-        </Button>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-destructive">Filing not found.</p>
+          </CardContent>
+        </Card>
       </div>
     );
-  };
+  }
+
+  const backTo = (location.state as { from?: string } | undefined)?.from ?? "/tax/filings";
+  const hasBlockers = filing.issues.some((issue) => issue.severity === "blocker");
+
+  const steps = [
+    { key: "review" as const, label: "Review" },
+    { key: "submit" as const, label: "Submit", disabled: hasBlockers },
+    ...(filing.capabilities.paymentsEnabled ? [{ key: "pay" as const, label: "Pay" }] : []),
+  ];
+
+  const reviewContent =
+    filing.type === "income-annual" ? (
+      <ReviewStepIncomeAnnual
+        totals={filing.totals}
+        issues={filing.issues}
+        currency={filing.totals?.currency}
+        onRecalculate={() => recalcMutation.mutate()}
+        onPresetFilter={handlePresetFilter}
+        isRecalculating={recalcMutation.isPending}
+      />
+    ) : (
+      <Card>
+        <CardContent className="p-6 text-sm text-muted-foreground">
+          Review content for this filing type is coming soon.
+        </CardContent>
+      </Card>
+    );
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {filing.periodLabel} {filing.type} Filing
-          </h1>
-          <p className="text-muted-foreground">
-            {filing.status} - Due {new Date(filing.dueDate).toLocaleDateString()}
-          </p>
-        </div>
-        {renderPeriodNavigation()}
+    <div className="p-6 lg:p-8 space-y-6">
+      <FilingDetailHeader
+        filing={filing}
+        onBack={() => navigate(backTo)}
+        onAction={handleHeaderAction}
+        isLoading={recalcMutation.isPending || submitMutation.isPending}
+      />
+
+      <div className="flex flex-col gap-4">
+        <FilingStepper steps={steps} activeStep={activeStep} onStepChange={setActiveStep} />
+        {activeStep === "review" ? reviewContent : null}
+        {activeStep === "submit" ? (
+          <SubmitStep
+            canSubmit={filing.capabilities.canSubmit && !hasBlockers}
+            blockerMessage={hasBlockers ? "Resolve blocker issues before submitting." : undefined}
+            isSubmitting={submitMutation.isPending}
+            onSubmit={(payload) =>
+              submitMutation.mutate(payload, {
+                onSuccess: () => toast.success("Filing submitted"),
+                onError: () => toast.error("Failed to submit filing"),
+              })
+            }
+          />
+        ) : null}
+        {activeStep === "pay" && filing.capabilities.paymentsEnabled ? (
+          <PayStep
+            onMarkPaid={(payload) =>
+              markPaidMutation.mutate(payload, {
+                onSuccess: () => toast.success("Marked as paid"),
+                onError: () => toast.error("Failed to mark paid"),
+              })
+            }
+            isSubmitting={markPaidMutation.isPending}
+            defaultAmountCents={filing.totals?.estimatedTaxDueCents ?? null}
+          />
+        ) : null}
       </div>
 
-      <div className="border rounded-lg p-6 bg-white shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Filing Information</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <span className="text-sm text-gray-500 block">ID</span>
-            <span className="font-mono text-sm">{filing.id}</span>
-          </div>
-          <div>
-            <span className="text-sm text-gray-500 block">Period</span>
-            <span>
-              {filing.periodLabel} ({new Date(filing.periodStart!).toLocaleDateString()} -{" "}
-              {new Date(filing.periodEnd!).toLocaleDateString()})
-            </span>
-          </div>
-          {/* Add more details as needed */}
-        </div>
-
-        <div className="mt-8 p-4 bg-gray-50 rounded border text-center text-gray-500">
-          Form/Stepper Content Placeholder
-        </div>
+      <div ref={includedItemsRef} className="space-y-6">
+        <IncludedItemsSection filingId={filing.id} presetSourceType={presetSourceType} />
+        <AttachmentsSection filingId={filing.id} />
+        <ActivitySection filingId={filing.id} />
       </div>
     </div>
   );

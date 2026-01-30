@@ -1,5 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { GetTaxCenterInput, GetTaxCenterOutput, TaxFilingDto, TaxIssue } from "@corely/contracts";
+import {
+  GetTaxCenterInput,
+  GetTaxCenterOutput,
+  TaxCenterIssue,
+  TaxFilingSummary,
+} from "@corely/contracts";
 import {
   BaseUseCase,
   type Result,
@@ -40,13 +45,12 @@ export class GetTaxCenterUseCase extends BaseUseCase<GetTaxCenterInput, GetTaxCe
       ctx
     );
 
-    let nextUp: TaxFilingDto | null = null;
+    let nextUp: TaxFilingSummary | null = null;
 
     if (filingsResult && "value" in filingsResult) {
       const allFilings = filingsResult.value.items;
       nextUp =
-        allFilings.find((f) => ["DRAFT", "NEEDS_FIX", "READY_FOR_REVIEW"].includes(f.status)) ||
-        null;
+        allFilings.find((f) => ["draft", "needsFix", "readyForReview"].includes(f.status)) || null;
     }
 
     // 1b. Get Annual filings using 'annualYear'
@@ -60,22 +64,15 @@ export class GetTaxCenterUseCase extends BaseUseCase<GetTaxCenterInput, GetTaxCe
       ctx
     );
 
-    let annualItems: TaxFilingDto[] = [];
+    let annualItems: TaxFilingSummary[] = [];
     if (annualFilingsResult && "value" in annualFilingsResult) {
       annualItems = annualFilingsResult.value.items.filter((f) =>
-        [
-          "VAT_ANNUAL",
-          "INCOME_TAX",
-          "INCOME_TAX_ANNUAL",
-          "YEAR_END",
-          "CORPORATE",
-          "CORPORATE_ANNUAL",
-        ].includes(f.type)
+        ["vat-annual", "income-annual", "year-end", "corporate-annual", "trade"].includes(f.type)
       );
     }
 
     // 2. Mock Issues
-    const issues: TaxIssue[] = [];
+    const issues: TaxCenterIssue[] = [];
     const summaryResult = await this.getSummaryUseCase.execute(undefined, ctx);
     if (
       "value" in summaryResult &&

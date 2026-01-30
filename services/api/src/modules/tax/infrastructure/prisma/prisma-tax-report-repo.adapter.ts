@@ -49,6 +49,101 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     return this.toDomain(refreshed);
   }
 
+  async submitReport(params: {
+    tenantId: string;
+    reportId: string;
+    submittedAt: Date;
+    submissionReference: string;
+    submissionNotes?: string | null;
+  }): Promise<TaxReportEntity> {
+    const updated = await this.prisma.taxReport.updateMany({
+      where: { id: params.reportId, tenantId: params.tenantId },
+      data: {
+        status: "SUBMITTED" as any,
+        submittedAt: params.submittedAt,
+        submissionReference: params.submissionReference,
+        submissionNotes: params.submissionNotes ?? null,
+        updatedAt: new Date(),
+      },
+    });
+    if (updated.count === 0) {
+      throw new Error("Report not found for tenant");
+    }
+    const refreshed = await this.prisma.taxReport.findUnique({ where: { id: params.reportId } });
+    if (!refreshed) {
+      throw new Error("Report not found after update");
+    }
+    return this.toDomain(refreshed);
+  }
+
+  async markPaid(params: {
+    tenantId: string;
+    reportId: string;
+    paidAt: Date;
+    amountCents: number;
+    method: string;
+    proofDocumentId?: string | null;
+  }): Promise<TaxReportEntity> {
+    const current = await this.prisma.taxReport.findFirst({
+      where: { id: params.reportId, tenantId: params.tenantId },
+    });
+    if (!current) {
+      throw new Error("Report not found for tenant");
+    }
+    const mergedMeta = {
+      ...(current as any).meta,
+      payment: {
+        paidAt: params.paidAt.toISOString(),
+        method: params.method,
+        amountCents: params.amountCents,
+        proofDocumentId: params.proofDocumentId ?? null,
+      },
+    };
+    const updated = await this.prisma.taxReport.updateMany({
+      where: { id: params.reportId, tenantId: params.tenantId },
+      data: {
+        status: "PAID" as any,
+        amountFinalCents: params.amountCents,
+        meta: mergedMeta as any,
+        updatedAt: new Date(),
+      },
+    });
+    if (updated.count === 0) {
+      throw new Error("Report not found for tenant");
+    }
+    const refreshed = await this.prisma.taxReport.findUnique({ where: { id: params.reportId } });
+    if (!refreshed) {
+      throw new Error("Report not found after update");
+    }
+    return this.toDomain(refreshed);
+  }
+
+  async updateMeta(params: {
+    tenantId: string;
+    reportId: string;
+    meta: Record<string, unknown>;
+  }): Promise<TaxReportEntity> {
+    const updated = await this.prisma.taxReport.updateMany({
+      where: { id: params.reportId, tenantId: params.tenantId },
+      data: {
+        meta: params.meta as any,
+        updatedAt: new Date(),
+      },
+    });
+    if (updated.count === 0) {
+      throw new Error("Report not found for tenant");
+    }
+    const refreshed = await this.prisma.taxReport.findUnique({ where: { id: params.reportId } });
+    if (!refreshed) {
+      throw new Error("Report not found after update");
+    }
+    return this.toDomain(refreshed);
+  }
+
+  async delete(tenantId: string, id: string): Promise<void> {
+    await this.prisma.taxReport.deleteMany({ where: { id, tenantId } });
+  }
+
   async listByPeriodRange(
     tenantId: string,
     type: string,

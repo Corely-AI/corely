@@ -8,6 +8,7 @@ import {
   type UseCaseContext,
   type UseCaseError,
   ValidationError,
+  ConflictError,
   ok,
   err,
   RequireTenant,
@@ -35,8 +36,11 @@ export class CreateTaxFilingUseCase extends BaseUseCase<
     const workspaceId = ctx.workspaceId || tenantId;
 
     // 1. Validate Input
-    if (input.type === "VAT" && !input.periodKey) {
+    if (input.type === "vat" && !input.periodKey) {
       return err(new ValidationError("Period key is required for VAT filings"));
+    }
+    if (input.type !== "vat" && !input.year) {
+      return err(new ValidationError("Year is required for annual filings"));
     }
 
     // 2. Resolve Dates
@@ -45,22 +49,27 @@ export class CreateTaxFilingUseCase extends BaseUseCase<
     let periodLabel: string;
     let mapType = "VAT_ADVANCE"; // Default for VAT
 
-    if (input.type === "VAT" && input.periodKey) {
-      // Assume quarterly for now or parse key
-      // TODO: Handle monthly keys if needed
-      const period = this.periodResolver.resolveQuarter(input.periodKey);
+    if (input.type === "vat" && input.periodKey) {
+      const period = this.periodResolver.resolvePeriodKey(input.periodKey);
       periodStart = period.start;
       periodEnd = period.end;
-      periodLabel = period.label;
+      const yearLabel = String(periodStart.getUTCFullYear());
+      periodLabel = period.label.includes(yearLabel)
+        ? period.label
+        : `${period.label} ${yearLabel}`;
     } else {
       // Annual types
-      const year = input.year;
+      const year = input.year!;
       periodStart = new Date(Date.UTC(year, 0, 1));
       periodEnd = new Date(Date.UTC(year, 11, 31, 23, 59, 59));
       periodLabel = year.toString();
 
-      if (input.type === "INCOME_TAX_ANNUAL") {
+      if (input.type === "income-annual") {
         mapType = "INCOME_TAX";
+      } else if (input.type === "vat-annual") {
+        mapType = "VAT_ANNUAL";
+      } else if (input.type === "trade") {
+        mapType = "TRADE_TAX";
       }
       // ... map other types
     }
@@ -74,24 +83,41 @@ export class CreateTaxFilingUseCase extends BaseUseCase<
       periodStart,
       periodEnd // This range check might be loose, but acceptable for MVP
     );
-    // Strict duplication check?
-    // Repo usually handles this via unique constraint or domain check.
-    // For now assuming we just create a new one or return existing if idempotent.
+    const duplicate = existing.find(
+      (report) =>
+        report.periodStart.getTime() === periodStart.getTime() &&
+        report.periodEnd.getTime() === periodEnd.getTime()
+    );
+    if (duplicate) {
+      return err(
+        new ConflictError("Filing already exists for this period", {
+          filingId: duplicate.id,
+          periodKey: input.periodKey,
+        })
+      );
+    }
 
     // 4. Create (Upsert)
     // We use upsertByPeriod which is the standard way to create/update reports in this domain
     const dueDate = new Date(periodEnd);
     dueDate.setUTCDate(10); // Simple default rule, should ideally use strategy
 
+    const group =
+      mapType === "VAT_ADVANCE"
+        ? "ADVANCE_VAT"
+        : mapType === "VAT_ANNUAL" || mapType === "INCOME_TAX" || mapType === "TRADE_TAX"
+          ? "ANNUAL_REPORT"
+          : "COMPLIANCE";
+
     const newReport = await this.taxReportRepo.upsertByPeriod({
       tenantId: workspaceId,
       type: mapType,
-      group: "tax", // Default group? check entities for valid groups. Assuming 'tax' or derived.
+      group,
       periodLabel,
       periodStart,
       periodEnd,
       dueDate,
-      status: "DRAFT",
+      status: "OPEN",
       // optional fields
       amountFinalCents: null,
       submissionReference: null,

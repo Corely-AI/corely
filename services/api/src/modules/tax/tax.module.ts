@@ -29,6 +29,16 @@ import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-
 import { ListTaxFilingsUseCase } from "./application/use-cases/list-tax-filings.use-case";
 import { GetVatFilingPeriodsUseCase } from "./application/use-cases/get-vat-filing-periods.use-case";
 import { CreateTaxFilingUseCase } from "./application/use-cases/create-tax-filing.use-case";
+import { GetTaxFilingDetailUseCase } from "./application/use-cases/get-tax-filing-detail.use-case";
+import { ListTaxFilingItemsUseCase } from "./application/use-cases/list-tax-filing-items.use-case";
+import { ListTaxFilingAttachmentsUseCase } from "./application/use-cases/list-tax-filing-attachments.use-case";
+import { AttachTaxFilingDocumentUseCase } from "./application/use-cases/attach-tax-filing-document.use-case";
+import { RemoveTaxFilingAttachmentUseCase } from "./application/use-cases/remove-tax-filing-attachment.use-case";
+import { ListTaxFilingActivityUseCase } from "./application/use-cases/list-tax-filing-activity.use-case";
+import { RecalculateTaxFilingUseCase } from "./application/use-cases/recalculate-tax-filing.use-case";
+import { SubmitTaxFilingUseCase } from "./application/use-cases/submit-tax-filing.use-case";
+import { MarkTaxFilingPaidUseCase } from "./application/use-cases/mark-tax-filing-paid.use-case";
+import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filing.use-case";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -102,6 +112,16 @@ import { DocumentsModule } from "../documents/documents.module";
     ListTaxFilingsUseCase,
     GetVatFilingPeriodsUseCase,
     CreateTaxFilingUseCase,
+    GetTaxFilingDetailUseCase,
+    ListTaxFilingItemsUseCase,
+    ListTaxFilingAttachmentsUseCase,
+    AttachTaxFilingDocumentUseCase,
+    RemoveTaxFilingAttachmentUseCase,
+    ListTaxFilingActivityUseCase,
+    RecalculateTaxFilingUseCase,
+    SubmitTaxFilingUseCase,
+    MarkTaxFilingPaidUseCase,
+    DeleteTaxFilingUseCase,
 
     // Services
     TaxEngineService,

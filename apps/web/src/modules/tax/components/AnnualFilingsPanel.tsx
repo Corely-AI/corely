@@ -27,7 +27,14 @@ export const AnnualFilingsPanel = ({
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear - i); // [2026, 2025, 2024, 2023, 2022, 2021]
 
-  const isLastYear = year === currentYear - 1;
+  const statusLabel = {
+    draft: "Draft",
+    needsFix: "Needs attention",
+    readyForReview: "Ready for review",
+    submitted: "Submitted",
+    paid: "Paid",
+    archived: "Archived",
+  } as const;
 
   if (isLoading) {
     return (
@@ -115,7 +122,7 @@ export const AnnualFilingsPanel = ({
                 </div>
                 <div>
                   <div className="font-medium text-sm">
-                    {filing.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                    {filing.type.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     Due {new Date(filing.dueDate).toLocaleDateString()}
@@ -124,7 +131,7 @@ export const AnnualFilingsPanel = ({
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-[10px] uppercase">
-                  {filing.status.replace(/_/g, " ")}
+                  {statusLabel[filing.status] ?? "Draft"}
                 </Badge>
                 <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                   <Link to={`/tax/filings/${filing.id}`}>

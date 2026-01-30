@@ -13,7 +13,7 @@ export function AppShell() {
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block relative z-30 pointer-events-auto">
         <AppSidebar
           variant="desktop"
           collapsed={sidebarCollapsed}
@@ -40,7 +40,7 @@ export function AppShell() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="relative z-0 flex-1 flex flex-col overflow-hidden">
         {/* Mobile Header */}
         <header className="lg:hidden flex items-center h-14 px-4 border-b border-border bg-background">
           <Button variant="ghost" size="icon" onClick={() => setMobileSidebarOpen(true)}>

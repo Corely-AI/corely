@@ -2,12 +2,14 @@ import { Injectable } from "@nestjs/common";
 import {
   ListTaxFilingsInput,
   ListTaxFilingsOutput,
-  TaxFilingDto,
+  TaxFilingSummary,
   TaxFilingType,
   TaxFilingStatus,
+  type FilterSpec,
+  type TaxReportType,
 } from "@corely/contracts";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
-import { VatPeriodQueryPort, TaxProfileRepoPort, TaxReportRepoPort } from "../../domain/ports";
+import { TaxProfileRepoPort, TaxReportRepoPort } from "../../domain/ports";
 import {
   BaseUseCase,
   type Result,
@@ -22,7 +24,6 @@ import {
 export class ListTaxFilingsUseCase extends BaseUseCase<ListTaxFilingsInput, ListTaxFilingsOutput> {
   constructor(
     private readonly periodResolver: VatPeriodResolver,
-    private readonly vatPeriodQuery: VatPeriodQueryPort,
     private readonly taxProfileRepo: TaxProfileRepoPort,
     private readonly taxReportRepo: TaxReportRepoPort
   ) {
@@ -37,144 +38,261 @@ export class ListTaxFilingsUseCase extends BaseUseCase<ListTaxFilingsInput, List
     const workspaceId = ctx.workspaceId || tenantId;
     const now = new Date();
     const year = input.year ?? now.getUTCFullYear();
-    const filings: TaxFilingDto[] = [];
+    const filings: TaxFilingSummary[] = [];
+    const page = input.page ?? 1;
+    const pageSize = input.pageSize ?? 20;
+    const filters = Array.isArray(input.filters) ? (input.filters as FilterSpec[]) : [];
 
-    // 1. VAT Filings (if requested)
-    const includeVat = !input.type || input.type === "VAT";
-    if (includeVat) {
-      let periods = this.periodResolver.getQuartersOfYear(year);
-      if (input.periodKey) {
-        periods = periods.filter((p) => p.key === input.periodKey);
-      }
+    const profile = await this.taxProfileRepo.getActive(workspaceId, now);
+    const currency = profile?.currency ?? "EUR";
+    const vatFrequency = profile?.filingFrequency === "MONTHLY" ? "monthly" : "quarterly";
 
-      const reports = await this.taxReportRepo.listByPeriodRange(
-        workspaceId,
-        "VAT_ADVANCE",
-        new Date(Date.UTC(year, 0, 1)),
-        new Date(Date.UTC(year + 1, 0, 1))
-      );
+    const reportTypes = this.resolveReportTypes(input.type);
+    const reports = (
+      await Promise.all(
+        reportTypes.map((type) =>
+          this.taxReportRepo.listByPeriodRange(
+            workspaceId,
+            type,
+            new Date(Date.UTC(year, 0, 1)),
+            new Date(Date.UTC(year + 1, 0, 1))
+          )
+        )
+      )
+    ).flat();
 
-      const reportByKey = new Map(
-        reports.map((r) => [this.periodResolver.resolveQuarter(r.periodStart).key, r])
-      );
+    for (const report of reports) {
+      const periodKey =
+        report.type === "VAT_ADVANCE"
+          ? this.toVatPeriodKey(report.periodStart, vatFrequency)
+          : undefined;
 
-      for (const p of periods) {
-        // Filter by date range if needed (though typically we show full year)
-
-        const report = reportByKey.get(p.key);
-        // Determine status
-        let status: TaxFilingStatus = "DRAFT";
-        if (report) {
-          if (report.status === "SUBMITTED") {
-            status = "SUBMITTED";
-          } else if (report.status === "PAID") {
-            status = "PAID";
-          } else if (report.status === "ARCHIVED") {
-            status = "ARCHIVED";
-          } else if (report.status === "OVERDUE") {
-            status = "NEEDS_FIX";
-          } // Mapping simplistic for now
-        } else {
-          if (now > p.end) {
-            status = "NEEDS_FIX"; // Overdue effectively
-          } else if (now >= p.start) {
-            status = "DRAFT";
-          } else {
-            continue; // Future period, maybe don't show yet or show as locked?
-          }
-        }
-
-        const hasExtension = false; // TODO: read from profile
-        const dueDate = new Date(p.end);
-        dueDate.setUTCDate(10);
-        // If hasExtension, add 1 month: dueDate.setUTCMonth(dueDate.getUTCMonth() + 1);
-
-        filings.push({
-          id: report?.id ?? p.key, // Use report ID if exists, else key
-          type: "VAT",
-          periodLabel: p.label,
-          periodStart: p.start.toISOString(),
-          periodEnd: p.end.toISOString(),
-          dueDate: dueDate.toISOString(),
-          status,
-          amountCents: report?.amountFinalCents ?? null,
-          currency: "EUR", // Should come from profile
-          allowedActions: status === "SUBMITTED" ? ["mark-paid"] : ["edit", "submit"],
-        });
-      }
-    }
-
-    // 2. Other Filings (Income Tax, etc) form TaxReports
-    const otherTypes =
-      input.type && input.type !== "VAT" ? [input.type] : ["INCOME_TAX", "VAT_ANNUAL", "TRADE"];
-    // Note: This is simplified. Real logic would query checks based on input.type
-    // We fetch all non-VAT reports for the year
-    const allReports = await this.taxReportRepo.listByPeriodRange(
-      workspaceId,
-      // Hack: pass null or ignore type to get all?
-      //Repo likely filters by type. For now let's assume we iterate known types if repo doesn't support "all"
-      "INCOME_TAX",
-      new Date(Date.UTC(year, 0, 1)),
-      new Date(Date.UTC(year + 1, 0, 1))
-    );
-
-    for (const r of allReports) {
-      // Map status
-      let status: TaxFilingStatus = "DRAFT";
-      if (r.status === "SUBMITTED") {
-        status = "SUBMITTED";
-      } else if (r.status === "PAID") {
-        status = "PAID";
-      } else if (r.status === "ARCHIVED") {
-        status = "ARCHIVED";
-      }
-
-      filings.push({
-        id: r.id,
-        type: this.mapReportTypeToFilingType(r.type),
-        periodLabel: r.periodLabel,
-        dueDate: r.dueDate.toISOString(),
+      const status = this.mapReportStatus(report.status, report.dueDate, now);
+      const summary: TaxFilingSummary = {
+        id: report.id,
+        type: this.mapReportTypeToFilingType(report.type),
+        periodLabel: report.periodLabel,
+        periodKey,
+        year: report.periodStart.getUTCFullYear(),
+        dueDate: report.dueDate.toISOString(),
         status,
-        amountCents: r.amountFinalCents ?? r.amountEstimatedCents ?? null,
-        currency: r.currency,
-        allowedActions: [],
-      });
+        amountCents: report.amountFinalCents ?? report.amountEstimatedCents ?? null,
+        currency: report.currency ?? currency,
+      };
+
+      if (input.periodKey) {
+        if (!summary.periodKey || summary.periodKey !== input.periodKey) {
+          continue;
+        }
+      }
+      if (input.status && summary.status !== input.status) {
+        continue;
+      }
+
+      filings.push(summary);
     }
 
-    // 3. Filter & Sort
-    let results = filings;
-    if (input.status) {
-      results = results.filter((f) => f.status === input.status);
+    let results = this.applyFilterSpecs(filings, filters, input);
+
+    if (input.q) {
+      const q = input.q.toLowerCase();
+      results = results.filter(
+        (f) =>
+          f.periodLabel.toLowerCase().includes(q) ||
+          (f.periodKey ? f.periodKey.toLowerCase().includes(q) : false) ||
+          f.id.toLowerCase().includes(q)
+      );
     }
 
-    // Sort by due date
-    results.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    results = this.sortResults(results, input.sort);
 
-    // 4. Paginate
     const total = results.length;
-    const page = input.page;
-    const pageSize = input.pageSize;
-    const paginated = results.slice((page - 1) * pageSize, page * pageSize);
+    const start = (page - 1) * pageSize;
+    const paginated = results.slice(start, start + pageSize);
 
     return ok({
       items: paginated,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
+      pageInfo: {
+        page,
+        pageSize,
+        total,
+        hasNextPage: start + pageSize < total,
+      },
     });
   }
 
-  private mapReportTypeToFilingType(type: string): TaxFilingType {
-    if (type === "INCOME_TAX") {
-      return "INCOME_TAX";
+  private resolveReportTypes(type?: TaxFilingType): TaxReportType[] {
+    if (!type) {
+      return ["VAT_ADVANCE", "VAT_ANNUAL", "INCOME_TAX"];
+    }
+    switch (type) {
+      case "vat":
+        return ["VAT_ADVANCE"];
+      case "vat-annual":
+        return ["VAT_ANNUAL"];
+      case "income-annual":
+        return ["INCOME_TAX"];
+      case "trade":
+        return ["TRADE_TAX"];
+      default:
+        return [];
+    }
+  }
+
+  private mapReportTypeToFilingType(type: TaxReportType): TaxFilingType {
+    if (type === "VAT_ADVANCE") {
+      return "vat";
     }
     if (type === "VAT_ANNUAL") {
-      return "VAT_ANNUAL";
+      return "vat-annual";
+    }
+    if (type === "INCOME_TAX") {
+      return "income-annual";
     }
     if (type === "TRADE_TAX") {
-      return "TRADE";
+      return "trade";
     }
-    return "OTHER";
+    return "other";
+  }
+
+  private toVatPeriodKey(date: Date, frequency: "monthly" | "quarterly") {
+    if (frequency === "monthly") {
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      return `${year}-${month}`;
+    }
+    return this.periodResolver.resolveQuarter(date).key;
+  }
+
+  private mapReportStatus(status: string, dueDate: Date, now: Date): TaxFilingStatus {
+    if (status === "PAID") {
+      return "paid";
+    }
+    if (status === "SUBMITTED" || status === "NIL") {
+      return "submitted";
+    }
+    if (status === "ARCHIVED") {
+      return "archived";
+    }
+    if (status === "OVERDUE") {
+      return "needsFix";
+    }
+    if (now > dueDate) {
+      return "needsFix";
+    }
+    return "draft";
+  }
+
+  private applyFilterSpecs(
+    items: TaxFilingSummary[],
+    filters: FilterSpec[],
+    input: ListTaxFilingsInput
+  ): TaxFilingSummary[] {
+    let results = items;
+
+    const dueFrom = input.dueFrom ? new Date(input.dueFrom) : undefined;
+    const dueTo = input.dueTo ? new Date(input.dueTo) : undefined;
+
+    if (dueFrom || dueTo) {
+      results = results.filter((item) => {
+        const due = new Date(item.dueDate);
+        if (dueFrom && due < dueFrom) {
+          return false;
+        }
+        if (dueTo && due > dueTo) {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    if (typeof input.needsAttention === "boolean") {
+      results = results.filter((item) =>
+        input.needsAttention ? item.status === "needsFix" : item.status !== "needsFix"
+      );
+    }
+
+    if (typeof input.hasIssues === "boolean") {
+      results = results.filter((item) =>
+        input.hasIssues ? item.status === "needsFix" : item.status !== "needsFix"
+      );
+    }
+
+    if (filters.length === 0) {
+      return results;
+    }
+
+    return results.filter((item) =>
+      filters.every((filter) => {
+        if (filter.field === "status" && (filter.operator === "eq" || filter.operator === "in")) {
+          if (Array.isArray(filter.value)) {
+            return filter.value.includes(item.status);
+          }
+          return item.status === filter.value;
+        }
+        if (filter.field === "dueDate") {
+          const due = new Date(item.dueDate);
+          if (filter.operator === "between") {
+            const [from, to] = Array.isArray(filter.value) ? filter.value : [];
+            if (from && new Date(from) > due) {
+              return false;
+            }
+            if (to && new Date(to) < due) {
+              return false;
+            }
+            return true;
+          }
+          if (filter.operator === "gte") {
+            return new Date(filter.value as string) <= due;
+          }
+          if (filter.operator === "lte") {
+            return new Date(filter.value as string) >= due;
+          }
+          if (filter.operator === "eq") {
+            return new Date(filter.value as string).toDateString() === due.toDateString();
+          }
+        }
+        if (
+          filter.field === "needsAttention" &&
+          (filter.operator === "eq" || filter.operator === "in")
+        ) {
+          return String(filter.value) === "true"
+            ? item.status === "needsFix"
+            : item.status !== "needsFix";
+        }
+        if (
+          filter.field === "hasIssues" &&
+          (filter.operator === "eq" || filter.operator === "in")
+        ) {
+          return String(filter.value) === "true"
+            ? item.status === "needsFix"
+            : item.status !== "needsFix";
+        }
+        return true;
+      })
+    );
+  }
+
+  private sortResults(items: TaxFilingSummary[], sort?: string | string[]) {
+    const sortKey = Array.isArray(sort) ? sort[0] : sort;
+    if (!sortKey) {
+      return items.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    }
+    const [field, direction] = sortKey.split(":");
+    const dir = direction === "desc" ? -1 : 1;
+    return items.sort((a, b) => {
+      if (field === "dueDate") {
+        return (new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()) * dir;
+      }
+      if (field === "period") {
+        return a.periodLabel.localeCompare(b.periodLabel) * dir;
+      }
+      if (field === "amountCents") {
+        const left = a.amountCents ?? 0;
+        const right = b.amountCents ?? 0;
+        return (left - right) * dir;
+      }
+      return 0;
+    });
   }
 }
