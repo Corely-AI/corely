@@ -18,6 +18,7 @@ let customDefs: CustomFieldDefinitionPort;
 let customIndexes: CustomFieldIndexPort;
 let workspaceRepo: any;
 let templateService: any;
+let prisma: any;
 
 beforeEach(() => {
   repo = new FakeExpenseRepository();
@@ -52,6 +53,13 @@ beforeEach(() => {
     }),
   };
 
+  // Mock prisma
+  prisma = {
+    taxSnapshot: {
+      upsert: async () => ({}),
+    },
+  };
+
   useCase = new CreateExpenseUseCase(
     repo,
     outbox,
@@ -62,7 +70,8 @@ beforeEach(() => {
     customDefs,
     customIndexes,
     workspaceRepo,
-    templateService
+    templateService,
+    prisma
   );
 });
 
