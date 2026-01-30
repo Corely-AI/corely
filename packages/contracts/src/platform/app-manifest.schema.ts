@@ -17,6 +17,7 @@ export const MenuContributionSchema = z.object({
   requiresCapabilities: z.array(z.string()).optional().describe("Required capability strings"),
   requiresPermissions: z.array(z.string()).optional().describe("Required RBAC permission keys"),
   tags: z.array(z.string()).optional().describe("Search tags"),
+  exact: z.boolean().optional().describe("Match route exactly"),
 });
 
 export type MenuContribution = z.infer<typeof MenuContributionSchema>;

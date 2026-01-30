@@ -117,6 +117,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                       <NavLink
                         key={item.id}
                         to={item.route || "#"}
+                        end={item.exact || item.route === "/tax"}
                         data-testid={`nav-${item.id}`}
                         className={({ isActive }) =>
                           cn(

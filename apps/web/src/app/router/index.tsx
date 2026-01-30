@@ -64,10 +64,12 @@ import {
 } from "../../modules/cms";
 import {
   TaxSettingsPage,
-  TaxesOverviewPage,
-  TaxReportsPage,
-  VatPeriodDetailsPage,
-  ReportDetailPage,
+  TaxCenterPage,
+  FilingsListPage,
+  FilingDetailPage,
+  CreateFilingPage,
+  TaxPaymentsPage,
+  TaxDocumentsPage,
 } from "../../modules/tax";
 import {
   PlatformPage,
@@ -420,14 +422,19 @@ export const Router = () => (
             }
           />
           <Route path="/copilot" element={<CopilotPage />} />
-          <Route path="/taxes" element={<TaxesOverviewPage />} />
-          <Route path="/tax/reports" element={<TaxReportsPage />} />
-          <Route path="/tax/reports/:id" element={<ReportDetailPage />} />
+          <Route path="/tax" element={<TaxCenterPage />} />
+          <Route path="/tax/filings" element={<FilingsListPage />} />
+          <Route path="/tax/filings/new" element={<CreateFilingPage />} />
+          <Route path="/tax/filings/:id" element={<FilingDetailPage />} />
+          <Route path="/tax/payments" element={<TaxPaymentsPage />} />
+          <Route path="/tax/documents" element={<TaxDocumentsPage />} />
           <Route path="/tax/settings" element={<TaxSettingsPage />} />
-          {/* <Route path="/tax" element={<Navigate to="/taxes" replace />} /> */}
-          <Route path="/tax/reports" element={<Navigate to="/taxes/reports" replace />} />
-          <Route path="/tax/settings" element={<Navigate to="/taxes/settings" replace />} />
-          <Route path="/tax/period/:key" element={<VatPeriodDetailsPage />} />
+
+          {/* Legacy Redirects */}
+          <Route path="/taxes" element={<Navigate to="/tax" replace />} />
+          <Route path="/tax/reports" element={<Navigate to="/tax/filings" replace />} />
+          <Route path="/tax/period/:key" element={<Navigate to="/tax/filings/:key" replace />} />
+          <Route path="/settings/tax" element={<Navigate to="/tax/settings" replace />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
           <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />

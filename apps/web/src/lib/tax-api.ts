@@ -40,6 +40,14 @@ import type {
   TaxBreakdownDto,
   TaxSnapshotDto,
   TaxReportDto,
+  GetTaxCenterInput,
+  GetTaxCenterOutput,
+  ListTaxFilingsInput,
+  ListTaxFilingsOutput,
+  GetVatPeriodsInput,
+  GetVatPeriodsOutput,
+  CreateTaxFilingInput,
+  CreateTaxFilingOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -274,6 +282,61 @@ export class TaxApi {
       correlationId: apiClient.generateCorrelationId(),
     });
   }
+
+  // ============================================================================
+  // Tax Center & Filings (New)
+  // ============================================================================
+
+  async getCenter(input: GetTaxCenterInput) {
+    const params = new URLSearchParams();
+    if (input.year) {params.append("year", String(input.year));}
+    if (input.entityId) {params.append("entityId", input.entityId);}
+
+    return apiClient.get<GetTaxCenterOutput>(`/tax/center?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async listFilings(input: ListTaxFilingsInput) {
+    const params = new URLSearchParams();
+    if (input.q) {params.append("q", input.q);}
+    params.append("page", String(input.page || 1));
+    params.append("pageSize", String(input.pageSize || 20));
+    if (input.sort) {params.append("sort", input.sort);}
+    if (input.type) {params.append("type", input.type);}
+    if (input.status) {params.append("status", input.status);}
+    if (input.year) {params.append("year", String(input.year));}
+    if (input.periodKey) {params.append("periodKey", input.periodKey);}
+    if (input.entityId) {params.append("entityId", input.entityId);}
+
+    return apiClient.get<ListTaxFilingsOutput>(`/tax/filings?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getVatFilingPeriods(input: GetVatPeriodsInput) {
+    const params = new URLSearchParams();
+    params.append("year", String(input.year));
+    if (input.entityId) {params.append("entityId", input.entityId);}
+
+    return apiClient.get<GetVatPeriodsOutput>(`/tax/vat/periods?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createFiling(input: CreateTaxFilingInput) {
+    return apiClient.post<CreateTaxFilingOutput>("/tax/filings", input, {
+      correlationId: apiClient.generateCorrelationId(),
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+    });
+  }
+
+  // ============================================================================
+  // React Query Hooks
+  // ============================================================================
+
+  // Note: We usually keep hooks separate but for speed adding helper here or just rely on API
+  // Best practice: hooks in hooks/
 
   // ============================================================================
   // Consultant

@@ -1,5 +1,6 @@
 // Types and DTOs
 export * from "./tax.types";
+export * from "./tax-filing.types";
 
 // Operation schemas
 export * from "./get-tax-profile.schema";
@@ -22,3 +23,9 @@ export * from "./mark-tax-report-submitted.schema";
 export * from "./mark-vat-period-submitted.schema";
 export * from "./mark-vat-period-nil.schema";
 export * from "./archive-vat-period.schema";
+
+// New schemas
+export * from "./get-tax-center.schema";
+export * from "./list-tax-filings.schema";
+export * from "./vat-filing-periods.schema";
+export * from "./create-tax-filing.schema";

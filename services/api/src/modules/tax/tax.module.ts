@@ -25,6 +25,10 @@ import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
 import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
 import { GenerateTaxReportsUseCase } from "./application/services/generate-tax-reports.use-case";
+import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-case";
+import { ListTaxFilingsUseCase } from "./application/use-cases/list-tax-filings.use-case";
+import { GetVatFilingPeriodsUseCase } from "./application/use-cases/get-vat-filing-periods.use-case";
+import { CreateTaxFilingUseCase } from "./application/use-cases/create-tax-filing.use-case";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -92,7 +96,12 @@ import { DocumentsModule } from "../documents/documents.module";
     MarkVatPeriodNilUseCase,
     ArchiveVatPeriodUseCase,
     GenerateTaxReportPdfUseCase,
+    GenerateTaxReportPdfUseCase,
     GenerateTaxReportsUseCase,
+    GetTaxCenterUseCase,
+    ListTaxFilingsUseCase,
+    GetVatFilingPeriodsUseCase,
+    CreateTaxFilingUseCase,
 
     // Services
     TaxEngineService,
