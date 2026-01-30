@@ -5,6 +5,7 @@ import { OutboxModule } from "./modules/outbox/outbox.module";
 import { WorkflowsModule } from "./modules/workflows/workflows.module";
 
 import { AccountingWorkerModule } from "./modules/accounting/accounting-worker.module";
+import { TaxWorkerModule } from "./modules/tax/tax-worker.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { AccountingWorkerModule } from "./modules/accounting/accounting-worker.m
     OutboxModule,
     WorkflowsModule,
     AccountingWorkerModule,
+    TaxWorkerModule,
   ],
 })
 export class WorkerModule {}

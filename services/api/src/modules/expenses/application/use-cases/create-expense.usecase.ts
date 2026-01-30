@@ -120,6 +120,7 @@ export class CreateExpenseUseCase {
         expenseId: expense.id,
         tenantId: expense.tenantId,
         totalCents: expense.totalCents,
+        taxAmountCents: expense.taxAmountCents,
         currency: expense.currency,
       },
     });
