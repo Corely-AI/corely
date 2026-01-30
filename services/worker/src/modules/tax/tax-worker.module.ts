@@ -4,7 +4,12 @@ import { ExpenseCreatedHandler } from "./handlers/expense-created.handler";
 
 @Module({
   imports: [DataModule],
-  providers: [ExpenseCreatedHandler],
-  exports: [ExpenseCreatedHandler],
+  providers: [
+    // Expense snapshots moved to API for immediate consistency
+    // ExpenseCreatedHandler
+  ],
+  exports: [
+    // ExpenseCreatedHandler
+  ],
 })
 export class TaxWorkerModule {}

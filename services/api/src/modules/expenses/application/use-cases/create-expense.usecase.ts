@@ -18,6 +18,7 @@ import {
   type WorkspaceRepositoryPort,
 } from "../../../workspaces/application/ports/workspace-repository.port";
 import { WorkspaceTemplateService } from "../../../platform/application/services/workspace-template.service";
+import { PrismaService } from "@corely/data";
 
 export interface CreateExpenseInput {
   tenantId: string;
@@ -46,7 +47,8 @@ export class CreateExpenseUseCase {
     private readonly customFieldIndexes: CustomFieldIndexPort,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort,
-    private readonly templateService: WorkspaceTemplateService
+    private readonly templateService: WorkspaceTemplateService,
+    private readonly prisma: PrismaService
   ) {}
 
   async execute(input: CreateExpenseInput, ctx: UseCaseContext): Promise<Expense> {
@@ -140,6 +142,43 @@ export class CreateExpenseUseCase {
         expense.id,
         indexRows
       );
+    }
+
+    // Sync Tax Snapshot (moved from worker to API)
+    if (expense.status === "APPROVED") {
+      const tax = expense.taxAmountCents ?? 0;
+      const subtotal = expense.totalCents - tax;
+      await this.prisma.taxSnapshot.upsert({
+        where: {
+          tenantId_sourceType_sourceId: {
+            tenantId: expense.tenantId,
+            sourceType: "EXPENSE",
+            sourceId: expense.id,
+          },
+        },
+        update: {
+          subtotalAmountCents: subtotal,
+          taxTotalAmountCents: tax,
+          totalAmountCents: expense.totalCents,
+          currency: expense.currency,
+          calculatedAt: expense.issuedAt,
+        },
+        create: {
+          tenantId: expense.tenantId,
+          sourceType: "EXPENSE",
+          sourceId: expense.id,
+          jurisdiction: "DE",
+          regime: "STANDARD_VAT",
+          roundingMode: "PER_DOCUMENT",
+          currency: expense.currency,
+          calculatedAt: expense.issuedAt,
+          subtotalAmountCents: subtotal,
+          taxTotalAmountCents: tax,
+          totalAmountCents: expense.totalCents,
+          breakdownJson: "{}",
+          version: 1,
+        },
+      });
     }
 
     await this.idempotency.store(this.actionKey, input.tenantId, input.idempotencyKey, {
