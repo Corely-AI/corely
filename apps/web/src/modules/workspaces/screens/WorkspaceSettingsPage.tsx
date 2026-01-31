@@ -10,6 +10,7 @@ import { workspacesApi } from "@/shared/workspaces/workspaces-api";
 import { useToast } from "@/shared/ui/use-toast";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { Badge } from "@/shared/ui/badge";
+import { Switch } from "@/shared/ui/switch";
 
 export const WorkspaceSettingsPage: React.FC = () => {
   const { activeWorkspace, activeWorkspaceId, refresh } = useWorkspace();
@@ -25,6 +26,8 @@ export const WorkspaceSettingsPage: React.FC = () => {
     addressLine1: "",
     city: "",
     postalCode: "",
+    slug: "",
+    publicEnabled: false,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -40,6 +43,8 @@ export const WorkspaceSettingsPage: React.FC = () => {
         addressLine1: activeWorkspace.address?.line1 ?? "",
         city: activeWorkspace.address?.city ?? "",
         postalCode: activeWorkspace.address?.postalCode ?? "",
+        slug: activeWorkspace.slug ?? "",
+        publicEnabled: activeWorkspace.publicEnabled ?? false,
       });
     }
   }, [activeWorkspace]);
@@ -61,6 +66,8 @@ export const WorkspaceSettingsPage: React.FC = () => {
         countryCode: form.countryCode,
         currency: form.currency,
         taxId: form.taxId || undefined,
+        slug: form.slug || undefined,
+        publicEnabled: form.publicEnabled,
         address:
           form.addressLine1 || form.city || form.postalCode
             ? {
@@ -198,6 +205,56 @@ export const WorkspaceSettingsPage: React.FC = () => {
               onChange={(e) => setForm((f) => ({ ...f, taxId: e.target.value }))}
             />
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Public Site Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="slug">Workspace Slug</Label>
+            <Input
+              id="slug"
+              value={form.slug}
+              onChange={(e) => {
+                const value = e.target.value
+                  .toLowerCase()
+                  .replace(/[^a-z0-9-]/g, "-")
+                  .replace(/-+/g, "-")
+                  .substring(0, 50);
+                setForm((f) => ({ ...f, slug: value }));
+              }}
+              placeholder="my-workspace"
+            />
+            <p className="text-xs text-muted-foreground">
+              This slug will be used in your public URLs:{" "}
+              <code className="bg-muted px-1 rounded">
+                /w/{form.slug || "your-slug"}/rental/...
+              </code>
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between space-x-2">
+            <div className="space-y-1">
+              <Label htmlFor="public-enabled">Enable Public Site</Label>
+              <p className="text-sm text-muted-foreground">
+                Allow public access to your published content (rentals, CMS posts, etc.)
+              </p>
+            </div>
+            <Switch
+              id="public-enabled"
+              checked={form.publicEnabled}
+              onCheckedChange={(checked) => setForm((f) => ({ ...f, publicEnabled: checked }))}
+            />
+          </div>
+
+          {form.publicEnabled && !form.slug && (
+            <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-800 dark:text-yellow-200">
+              ⚠️ You need to set a workspace slug to use the public site features.
+            </div>
+          )}
         </CardContent>
       </Card>
 
