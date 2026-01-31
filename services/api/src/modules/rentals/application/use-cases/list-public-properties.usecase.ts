@@ -4,7 +4,6 @@ import {
   type Result,
   ok,
   type UseCaseError,
-  RequireTenant,
   ValidationError,
   err,
 } from "@corely/kernel";
@@ -12,7 +11,6 @@ import { type ListPublicRentalPropertiesInput, type RentalProperty } from "@core
 import { type PropertyRepoPort } from "../ports/property-repository.port";
 import { assertPublicModuleEnabled } from "../../../../shared/public";
 
-@RequireTenant()
 export class ListPublicPropertiesUseCase extends BaseUseCase<
   ListPublicRentalPropertiesInput,
   RentalProperty[]

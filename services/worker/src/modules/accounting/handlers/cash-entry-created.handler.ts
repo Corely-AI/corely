@@ -35,9 +35,9 @@ export class CashEntryCreatedHandler implements EventHandler {
 
     // Determine Accounts (Hardcoded MVP)
     // TODO: Fetch from settings
-    const CASH_ACCOUNT_CODE = "1000"; 
+    const CASH_ACCOUNT_CODE = "1000";
     const SALES_REVENUE_CODE = "4000";
-    const SUSPENSE_CODE = "9999"; 
+    const SUSPENSE_CODE = "9999";
     const GENERAL_EXPENSE_CODE = "6000";
 
     // Lookup Account IDs
@@ -53,10 +53,12 @@ export class CashEntryCreatedHandler implements EventHandler {
     // Fail if Cash Account missing (critical)
     const cashAccountId = getAccountId(CASH_ACCOUNT_CODE);
     if (!cashAccountId) {
-       this.logger.warn(`Cash Account ${CASH_ACCOUNT_CODE} not found. Creating journal entry skipped (Configuration missing).`);
-       return; 
-       // Optionally throw to retry when config is fixed? 
-       // For now, return to avoid clogging queue.
+      this.logger.warn(
+        `Cash Account ${CASH_ACCOUNT_CODE} not found. Creating journal entry skipped (Configuration missing).`
+      );
+      return;
+      // Optionally throw to retry when config is fixed?
+      // For now, return to avoid clogging queue.
     }
 
     let debitAccountId: string | undefined;
@@ -80,22 +82,22 @@ export class CashEntryCreatedHandler implements EventHandler {
     }
 
     if (!debitAccountId || !creditAccountId) {
-        this.logger.error("Could not determine Debit or Credit account. Skipping.");
-        return;
+      this.logger.error("Could not determine Debit or Credit account. Skipping.");
+      return;
     }
 
     // Create Posted Journal Entry
     // We skip the "Draft" phase and go straight to Posted for automated entries
     // For now use the entryId as the entryNumber placeholder if we don't have a sequence
-    const entryNumber = `JE-CASH-${entryId.slice(0, 8)}`; 
+    const entryNumber = `JE-CASH-${entryId.slice(0, 8)}`;
 
-    // Note: We are interacting directly with Prisma here to bypass complex UseCase overrides/validation 
+    // Note: We are interacting directly with Prisma here to bypass complex UseCase overrides/validation
     // that might not be available in Worker.
-    
+
     await this.prisma.journalEntry.create({
       data: {
         tenantId: event.tenantId,
-        entryNumber: entryNumber,
+        entryNumber,
         status: "Posted",
         postingDate: businessDate ? new Date(businessDate) : new Date(),
         memo: `Cash ${type} - ${sourceType}`,
@@ -112,18 +114,18 @@ export class CashEntryCreatedHandler implements EventHandler {
               ledgerAccountId: debitAccountId,
               direction: "Debit",
               amountCents: Math.abs(amountCents),
-              currency: "EUR"
+              currency: "EUR",
             },
             {
               tenantId: event.tenantId,
               ledgerAccountId: creditAccountId,
               direction: "Credit",
               amountCents: Math.abs(amountCents),
-              currency: "EUR"
-            }
-          ]
-        }
-      }
+              currency: "EUR",
+            },
+          ],
+        },
+      },
     });
 
     this.logger.log(`Journal Entry created for Cash Entry ${entryId}`);

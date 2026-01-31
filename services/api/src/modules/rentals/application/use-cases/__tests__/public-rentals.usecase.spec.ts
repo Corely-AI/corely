@@ -3,7 +3,7 @@ import { ListPublicPropertiesUseCase } from "../list-public-properties.usecase";
 import { GetPublicPropertyUseCase } from "../get-public-property.usecase";
 import { FakePropertyRepo } from "../../../testkit/fakes/fake-property-repo";
 import { NoopLogger, unwrap, isErr } from "@corely/kernel";
-import { PUBLIC_CONTEXT_METADATA_KEY } from "../../../../shared/public";
+import { PUBLIC_CONTEXT_METADATA_KEY } from "../../../../../shared/public";
 
 describe("Public Rentals Use Cases", () => {
   let propertyRepo: FakePropertyRepo;

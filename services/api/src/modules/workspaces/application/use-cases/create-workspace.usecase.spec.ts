@@ -18,6 +18,7 @@ describe("CreateWorkspaceUseCase", () => {
       createLegalEntity: vi.fn(),
       createWorkspace: vi.fn(),
       createMembership: vi.fn(),
+      getWorkspaceBySlug: vi.fn().mockResolvedValue(null),
     } as any;
 
     mockIdGen = {
@@ -41,7 +42,7 @@ describe("CreateWorkspaceUseCase", () => {
     const legalEntity = {
       id: "legal-1",
       tenantId: "tenant-1",
-      kind: "COMPANY",
+      kind: "COMPANY" as const,
       legalName: "Test Company",
       countryCode: "US",
       currency: "USD",
@@ -54,7 +55,7 @@ describe("CreateWorkspaceUseCase", () => {
       tenantId: "tenant-1",
       legalEntityId: "legal-1",
       name: "Test Workspace",
-      onboardingStatus: "PROFILE",
+      onboardingStatus: "PROFILE" as const,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

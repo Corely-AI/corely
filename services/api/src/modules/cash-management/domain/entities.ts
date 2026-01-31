@@ -1,4 +1,8 @@
-import { CashEntryType, CashEntrySourceType, DailyCloseStatus } from "@corely/contracts";
+import {
+  type CashEntryType,
+  type CashEntrySourceType,
+  type DailyCloseStatus,
+} from "@corely/contracts";
 
 export class CashRegisterEntity {
   constructor(
@@ -10,7 +14,7 @@ export class CashRegisterEntity {
     public readonly currentBalanceCents: number,
     public readonly location: string | null,
     public readonly createdAt: Date,
-    public readonly updatedAt: Date,
+    public readonly updatedAt: Date
   ) {}
 }
 
@@ -27,7 +31,7 @@ export class CashEntryEntity {
     public readonly referenceId: string | null,
     public readonly businessDate: string | null,
     public readonly createdByUserId: string,
-    public readonly createdAt: Date,
+    public readonly createdAt: Date
   ) {}
 }
 
@@ -46,6 +50,6 @@ export class CashDayCloseEntity {
     public readonly closedAt: Date | null,
     public readonly closedByUserId: string | null,
     public readonly createdAt: Date,
-    public readonly updatedAt: Date,
+    public readonly updatedAt: Date
   ) {}
 }

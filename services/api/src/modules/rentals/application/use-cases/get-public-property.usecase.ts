@@ -6,14 +6,12 @@ import {
   err,
   NotFoundError,
   type UseCaseError,
-  RequireTenant,
   ValidationError,
 } from "@corely/kernel";
 import { type RentalProperty } from "@corely/contracts";
 import { type PropertyRepoPort } from "../ports/property-repository.port";
 import { assertPublicModuleEnabled } from "../../../../shared/public";
 
-@RequireTenant()
 export class GetPublicPropertyUseCase extends BaseUseCase<{ slug: string }, RentalProperty> {
   constructor(private readonly useCaseDeps: { propertyRepo: PropertyRepoPort }) {
     super({ logger: (useCaseDeps as any).logger });

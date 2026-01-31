@@ -1,12 +1,12 @@
 import {
-  CashRegister,
-  CashEntry,
-  CashDayClose,
-  CreateCashRegister,
-  UpdateCashRegister,
-  CreateCashEntry,
-  ReverseCashEntry,
-  SubmitDailyClose,
+  type CashRegister,
+  type CashEntry,
+  type CashDayClose,
+  type CreateCashRegister,
+  type UpdateCashRegister,
+  type CreateCashEntry,
+  type ReverseCashEntry,
+  type SubmitDailyClose,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -45,8 +45,12 @@ export class CashManagementApi {
     params: { from?: string; to?: string } = {}
   ): Promise<{ entries: CashEntry[] }> {
     const query = new URLSearchParams();
-    if (params.from) query.set("from", params.from);
-    if (params.to) query.set("to", params.to);
+    if (params.from) {
+      query.set("from", params.from);
+    }
+    if (params.to) {
+      query.set("to", params.to);
+    }
 
     return apiClient.get<{ entries: CashEntry[] }>(
       `/cash-registers/${registerId}/entries?${query.toString()}`,
@@ -57,53 +61,52 @@ export class CashManagementApi {
   async createEntry(registerId: string, input: CreateCashEntry): Promise<{ entry: CashEntry }> {
     // Ensuring registerId in input matches
     const payload = { ...input, registerId };
-    return apiClient.post<{ entry: CashEntry }>(
-      `/cash-registers/${registerId}/entries`,
-      payload,
-      {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-        correlationId: apiClient.generateCorrelationId(),
-      }
-    );
+    return apiClient.post<{ entry: CashEntry }>(`/cash-registers/${registerId}/entries`, payload, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
   }
 
   async reverseEntry(entryId: string, input: ReverseCashEntry): Promise<{ entry: CashEntry }> {
-      const payload = { ...input, originalEntryId: entryId };
-      return apiClient.post<{ entry: CashEntry }>(
-          `/cash-entries/${entryId}/reverse`,
-          payload,
-          {
-            idempotencyKey: apiClient.generateIdempotencyKey(),
-            correlationId: apiClient.generateCorrelationId(),
-          }
-      );
+    const payload = { ...input, originalEntryId: entryId };
+    return apiClient.post<{ entry: CashEntry }>(`/cash-entries/${entryId}/reverse`, payload, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
   }
 
   // --- DAILY CLOSE ---
 
   async listDailyCloses(
-      registerId: string,
-      params: { from?: string; to?: string } = {}
-    ): Promise<{ closes: CashDayClose[] }> {
-      const query = new URLSearchParams();
-      if (params.from) query.set("from", params.from);
-      if (params.to) query.set("to", params.to);
-  
-      return apiClient.get<{ closes: CashDayClose[] }>(
-        `/cash-registers/${registerId}/daily-close?${query.toString()}`,
-        { correlationId: apiClient.generateCorrelationId() }
-      );
+    registerId: string,
+    params: { from?: string; to?: string } = {}
+  ): Promise<{ closes: CashDayClose[] }> {
+    const query = new URLSearchParams();
+    if (params.from) {
+      query.set("from", params.from);
     }
-  
-  async submitDailyClose(registerId: string, input: SubmitDailyClose): Promise<{ close: CashDayClose }> {
+    if (params.to) {
+      query.set("to", params.to);
+    }
+
+    return apiClient.get<{ closes: CashDayClose[] }>(
+      `/cash-registers/${registerId}/daily-close?${query.toString()}`,
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
+
+  async submitDailyClose(
+    registerId: string,
+    input: SubmitDailyClose
+  ): Promise<{ close: CashDayClose }> {
     const payload = { ...input, registerId };
     return apiClient.post<{ close: CashDayClose }>(
-        `/cash-registers/${registerId}/daily-close`,
-        payload,
-        {
-          idempotencyKey: apiClient.generateIdempotencyKey(),
-          correlationId: apiClient.generateCorrelationId(),
-        }
+      `/cash-registers/${registerId}/daily-close`,
+      payload,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
     );
   }
 }
