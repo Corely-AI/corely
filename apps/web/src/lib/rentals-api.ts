@@ -22,7 +22,10 @@ const requestPublic = async <T>(
     correlationId?: string;
   }
 ): Promise<T> => {
-  const urlParams = new URL(window.location.href).searchParams;
+  const urlParams =
+    typeof window !== "undefined"
+      ? new URL(window.location.href).searchParams
+      : new URLSearchParams();
   const queryWorkspaceId = urlParams.get("workspaceId");
   const queryTenantId = urlParams.get("tenantId");
 
