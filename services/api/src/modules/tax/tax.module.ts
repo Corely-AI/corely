@@ -26,13 +26,17 @@ import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-per
 import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
 import { GenerateTaxReportsUseCase } from "./application/services/generate-tax-reports.use-case";
 import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-case";
+import { GetTaxCapabilitiesUseCase } from "./application/use-cases/get-tax-capabilities.use-case";
 import { ListTaxFilingsUseCase } from "./application/use-cases/list-tax-filings.use-case";
+import { ListTaxPaymentsUseCase } from "./application/use-cases/list-tax-payments.use-case";
+import { ExportTaxPaymentsUseCase } from "./application/use-cases/export-tax-payments.use-case";
 import { GetVatFilingPeriodsUseCase } from "./application/use-cases/get-vat-filing-periods.use-case";
 import { CreateTaxFilingUseCase } from "./application/use-cases/create-tax-filing.use-case";
 import { GetTaxFilingDetailUseCase } from "./application/use-cases/get-tax-filing-detail.use-case";
 import { ListTaxFilingItemsUseCase } from "./application/use-cases/list-tax-filing-items.use-case";
 import { ListTaxFilingAttachmentsUseCase } from "./application/use-cases/list-tax-filing-attachments.use-case";
 import { AttachTaxFilingDocumentUseCase } from "./application/use-cases/attach-tax-filing-document.use-case";
+import { AttachTaxFilingPaymentProofUseCase } from "./application/use-cases/attach-tax-filing-payment-proof.use-case";
 import { RemoveTaxFilingAttachmentUseCase } from "./application/use-cases/remove-tax-filing-attachment.use-case";
 import { ListTaxFilingActivityUseCase } from "./application/use-cases/list-tax-filing-activity.use-case";
 import { RecalculateTaxFilingUseCase } from "./application/use-cases/recalculate-tax-filing.use-case";
@@ -46,6 +50,7 @@ import { DEPackV1 } from "./application/services/jurisdictions/de-pack.v1";
 import { TaxStrategyResolverService } from "./application/services/tax-strategy-resolver.service";
 import { PersonalTaxStrategy } from "./application/services/personal-tax-strategy";
 import { CompanyTaxStrategy } from "./application/services/company-tax-strategy";
+import { TaxCapabilitiesService } from "./application/services/tax-capabilities.service";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 import { TaxPdfRenderer } from "./infrastructure/pdf/tax-pdf-renderer";
 
@@ -109,13 +114,17 @@ import { DocumentsModule } from "../documents/documents.module";
     GenerateTaxReportPdfUseCase,
     GenerateTaxReportsUseCase,
     GetTaxCenterUseCase,
+    GetTaxCapabilitiesUseCase,
     ListTaxFilingsUseCase,
+    ListTaxPaymentsUseCase,
+    ExportTaxPaymentsUseCase,
     GetVatFilingPeriodsUseCase,
     CreateTaxFilingUseCase,
     GetTaxFilingDetailUseCase,
     ListTaxFilingItemsUseCase,
     ListTaxFilingAttachmentsUseCase,
     AttachTaxFilingDocumentUseCase,
+    AttachTaxFilingPaymentProofUseCase,
     RemoveTaxFilingAttachmentUseCase,
     ListTaxFilingActivityUseCase,
     RecalculateTaxFilingUseCase,
@@ -129,6 +138,7 @@ import { DocumentsModule } from "../documents/documents.module";
     TaxStrategyResolverService,
     PersonalTaxStrategy,
     CompanyTaxStrategy,
+    TaxCapabilitiesService,
     VatPeriodResolver,
     TaxPdfRenderer,
 

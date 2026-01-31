@@ -19,13 +19,15 @@ import {
 } from "@corely/kernel";
 import { TaxReportRepoPort, TaxSnapshotRepoPort } from "../../domain/ports";
 import type { TaxReportEntity } from "../../domain/entities";
+import { TaxCapabilitiesService } from "../services/tax-capabilities.service";
 
 @RequireTenant()
 @Injectable()
 export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDetailResponse> {
   constructor(
     private readonly reportRepo: TaxReportRepoPort,
-    private readonly snapshotRepo: TaxSnapshotRepoPort
+    private readonly snapshotRepo: TaxSnapshotRepoPort,
+    private readonly capabilitiesService: TaxCapabilitiesService
   ) {
     super({ logger: null as any });
   }
@@ -43,6 +45,8 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     const status = this.mapReportStatus(report);
     const issues = this.resolveIssues(report.meta);
     const totals = await this.computeTotals(report, workspaceId);
+
+    const capabilities = await this.capabilitiesService.getCapabilities();
 
     const filing = {
       id: report.id,
@@ -75,7 +79,7 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
         canRecalculate: !["ARCHIVED", "PAID"].includes(report.status),
         canSubmit: this.canSubmit(report, issues),
         canMarkPaid: report.status === "SUBMITTED",
-        paymentsEnabled: false,
+        paymentsEnabled: capabilities.paymentsEnabled,
       },
     };
 

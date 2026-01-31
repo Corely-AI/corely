@@ -26,7 +26,10 @@ export * from "./archive-vat-period.schema";
 
 // New schemas
 export * from "./get-tax-center.schema";
+export * from "./tax-capabilities.schema";
 export * from "./list-tax-filings.schema";
+export * from "./list-tax-payments.schema";
+export * from "./export-tax-payments.schema";
 export * from "./vat-filing-periods.schema";
 export * from "./create-tax-filing.schema";
 export * from "./tax-filing-detail.schema";
@@ -35,4 +38,5 @@ export * from "./tax-filing-attachments.schema";
 export * from "./tax-filing-activity.schema";
 export * from "./submit-tax-filing.schema";
 export * from "./mark-tax-filing-paid.schema";
+export * from "./attach-tax-filing-payment-proof.schema";
 export * from "./recalculate-tax-filing.schema";

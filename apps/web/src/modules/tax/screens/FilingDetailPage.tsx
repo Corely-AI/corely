@@ -127,7 +127,15 @@ export const FilingDetailPage = () => {
   const steps = [
     { key: "review" as const, label: "Review" },
     { key: "submit" as const, label: "Submit", disabled: hasBlockers },
-    ...(filing.capabilities.paymentsEnabled ? [{ key: "pay" as const, label: "Pay" }] : []),
+    ...(filing.capabilities.paymentsEnabled
+      ? [
+          {
+            key: "pay" as const,
+            label: "Pay",
+            disabled: !filing.capabilities.canMarkPaid && filing.status !== "paid",
+          },
+        ]
+      : []),
   ];
 
   const reviewContent =

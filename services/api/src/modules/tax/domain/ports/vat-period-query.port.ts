@@ -1,4 +1,4 @@
-import { VatAccountingMethod } from "@corely/contracts";
+import { type VatAccountingMethod } from "@corely/contracts";
 
 export interface VatPeriodInputs {
   salesNetCents: number;
