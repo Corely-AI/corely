@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { EnvModule } from "@corely/config";
 import { DataModule } from "@corely/data";
@@ -82,7 +82,8 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Apply trace ID middleware to all routes
-    consumer.apply(PublicWorkspacePathMiddleware, TraceIdMiddleware).forRoutes("*");
+    consumer
+      .apply(PublicWorkspacePathMiddleware)
+      .forRoutes({ path: "*", method: RequestMethod.ALL }); // <- important
   }
 }

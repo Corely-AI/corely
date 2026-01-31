@@ -64,6 +64,13 @@ export default function PublicRentalDetailScreen() {
     enabled: checkAvailabilityEnabled,
   });
 
+  const allImages = useMemo(() => {
+    if (!property) {return [];}
+    const list = [...property.images].sort((a, b) => a.sortOrder - b.sortOrder);
+    // If cover image is not in gallery, we could add it, but usually it is.
+    return list;
+  }, [property]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center space-y-4">
@@ -92,12 +99,6 @@ export default function PublicRentalDetailScreen() {
       </div>
     );
   }
-
-  const allImages = useMemo(() => {
-    const list = [...property.images].sort((a, b) => a.sortOrder - b.sortOrder);
-    // If cover image is not in gallery, we could add it, but usually it is.
-    return list;
-  }, [property]);
 
   return (
     <div className="min-h-screen bg-background">
