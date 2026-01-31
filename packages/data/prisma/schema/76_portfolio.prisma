@@ -1,0 +1,190 @@
+model PortfolioShowcase {
+  id            String               @id @default(cuid())
+  tenantId      String
+  workspaceId   String
+  type          PortfolioShowcaseType
+  name          String
+  slug          String
+  primaryDomain String?
+  isPublished   Boolean              @default(false)
+  createdAt     DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime             @updatedAt @db.Timestamptz(6)
+
+  profile       PortfolioProfile?
+  projects      PortfolioProject[]
+  clients       PortfolioClient[]
+  services      PortfolioService[]
+  teamMembers   PortfolioTeamMember[]
+
+  @@unique([tenantId, workspaceId, slug])
+  @@index([tenantId, workspaceId])
+  @@index([tenantId, workspaceId, isPublished])
+}
+
+model PortfolioProfile {
+  id           String            @id @default(cuid())
+  tenantId     String
+  workspaceId  String
+  showcaseId   String            @unique
+  introLine    String?
+  headline     String?
+  subheadline  String?
+  aboutShort   String?
+  aboutLong    String?           @db.Text
+  focusBullets String[]          @default([])
+  ctaTitle     String?
+  ctaText      String?
+  ctaUrl       String?
+  techStacks   String[]          @default([])
+  socialLinks  Json?
+  homeSections String[]          @default([])
+  isPublished  Boolean           @default(false)
+  createdAt    DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(6)
+
+  showcase     PortfolioShowcase @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId])
+}
+
+model PortfolioProject {
+  id            String                @id @default(cuid())
+  tenantId      String
+  workspaceId   String
+  showcaseId    String
+  title         String
+  slug          String
+  summary       String
+  content       String               @db.Text
+  type          PortfolioProjectType
+  status        PortfolioContentStatus @default(draft)
+  featured      Boolean              @default(false)
+  sortOrder     Int?
+  coverImageUrl String?
+  links         Json?
+  techStack     String[]             @default([])
+  metrics       Json?
+  createdAt     DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime             @updatedAt @db.Timestamptz(6)
+
+  showcase      PortfolioShowcase     @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+  projectClients PortfolioProjectClient[]
+
+  @@unique([showcaseId, slug])
+  @@index([tenantId, workspaceId])
+  @@index([showcaseId, status])
+}
+
+model PortfolioClient {
+  id                String                 @id @default(cuid())
+  tenantId          String
+  workspaceId       String
+  showcaseId        String
+  name              String
+  slug              String
+  clientType        PortfolioClientType
+  locationText      String
+  websiteUrl        String?
+  logoImageUrl      String?
+  summary           String?
+  testimonialQuote  String?
+  testimonialAuthor String?
+  featured          Boolean                @default(false)
+  sortOrder         Int?
+  createdAt         DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @db.Timestamptz(6)
+
+  showcase          PortfolioShowcase      @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+  projectClients    PortfolioProjectClient[]
+
+  @@unique([showcaseId, slug])
+  @@index([tenantId, workspaceId])
+  @@index([showcaseId, featured])
+}
+
+model PortfolioProjectClient {
+  projectId   String
+  clientId    String
+  tenantId    String
+  workspaceId String
+
+  project     PortfolioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  client      PortfolioClient  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, clientId])
+  @@index([tenantId, workspaceId])
+}
+
+model PortfolioService {
+  id                String                 @id @default(cuid())
+  tenantId          String
+  workspaceId       String
+  showcaseId        String
+  name              String
+  slug              String
+  shortDescription  String
+  deliverables      String[]               @default([])
+  startingFromPrice String?
+  ctaText           String?
+  ctaUrl            String?
+  status            PortfolioContentStatus @default(draft)
+  sortOrder         Int?
+  createdAt         DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @db.Timestamptz(6)
+
+  showcase          PortfolioShowcase      @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+
+  @@unique([showcaseId, slug])
+  @@index([tenantId, workspaceId])
+  @@index([showcaseId, status])
+}
+
+model PortfolioTeamMember {
+  id           String                 @id @default(cuid())
+  tenantId     String
+  workspaceId  String
+  showcaseId   String
+  name         String
+  roleTitle    String
+  bio          String
+  skills       String[]               @default([])
+  photoUrl     String?
+  socialLinks  Json?
+  status       PortfolioContentStatus @default(draft)
+  sortOrder    Int?
+  createdAt    DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime               @updatedAt @db.Timestamptz(6)
+
+  showcase     PortfolioShowcase      @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId])
+  @@index([showcaseId, status])
+}
+
+enum PortfolioShowcaseType {
+  individual
+  company
+  hybrid
+}
+
+enum PortfolioProjectType {
+  open_source
+  side_hustle
+  startup
+  agency
+  other
+}
+
+enum PortfolioClientType {
+  cto
+  freelancer
+  partner
+  employer
+  other
+}
+
+enum PortfolioContentStatus {
+  draft
+  published
+  archived
+}

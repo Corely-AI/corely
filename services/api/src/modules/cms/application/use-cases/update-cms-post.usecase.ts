@@ -60,12 +60,16 @@ export class UpdateCmsPostUseCase extends BaseUseCase<UpdateCmsPostParams, Updat
     const coverImageFileId = Object.prototype.hasOwnProperty.call(input, "coverImageFileId")
       ? (input.coverImageFileId ?? null)
       : undefined;
+    const tags = Object.prototype.hasOwnProperty.call(input, "tags")
+      ? (input.tags ?? [])
+      : undefined;
 
     post.updateMeta({
       title: input.title?.trim(),
       slug: nextSlug,
       excerpt,
       coverImageFileId,
+      tags,
       status: input.status,
       now,
     });

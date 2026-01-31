@@ -3,6 +3,7 @@ import type { AppManifest } from "@corely/contracts";
 import type { AppRegistryPort } from "../../application/ports/app-registry.port";
 import { invoicesAppManifest } from "../../../invoices/invoices.manifest";
 import { crmAppManifest } from "../../../crm/crm.manifest";
+import { portfolioAppManifest } from "../../../portfolio/portfolio.manifest";
 
 /**
  * App Registry
@@ -113,6 +114,9 @@ export class AppRegistry implements AppRegistryPort {
 
     // CRM App
     this.register(crmAppManifest);
+
+    // Portfolio App
+    this.register(portfolioAppManifest);
 
     // Expenses App
     this.register({

@@ -27,6 +27,7 @@ import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { CmsModule } from "./modules/cms";
 import { FormsModule } from "./modules/forms";
 import { RentalsModule } from "./modules/rentals";
+import { PortfolioModule } from "./modules/portfolio";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -64,6 +65,7 @@ import { RequestContextInterceptor } from "./shared/request-context";
     CmsModule,
     FormsModule,
     RentalsModule,
+    PortfolioModule,
     WorkflowModule,
     AutomationModule,
     ReportingModule,

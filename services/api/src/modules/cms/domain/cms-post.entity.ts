@@ -9,6 +9,7 @@ export type CmsPostProps = {
   title: string;
   excerpt?: string | null;
   coverImageFileId?: string | null;
+  tags?: string[];
   contentJson: unknown;
   contentHtml: string;
   contentText: string;
@@ -27,6 +28,7 @@ export class CmsPostEntity {
   title: string;
   excerpt?: string | null;
   coverImageFileId?: string | null;
+  tags?: string[];
   contentJson: unknown;
   contentHtml: string;
   contentText: string;
@@ -44,6 +46,7 @@ export class CmsPostEntity {
     this.title = props.title;
     this.excerpt = props.excerpt ?? null;
     this.coverImageFileId = props.coverImageFileId ?? null;
+    this.tags = props.tags ?? [];
     this.contentJson = props.contentJson;
     this.contentHtml = props.contentHtml;
     this.contentText = props.contentText;
@@ -65,6 +68,7 @@ export class CmsPostEntity {
     slug?: string;
     excerpt?: string | null;
     coverImageFileId?: string | null;
+    tags?: string[];
     status?: CmsPostStatus;
     now: Date;
   }) {
@@ -79,6 +83,9 @@ export class CmsPostEntity {
     }
     if (params.coverImageFileId !== undefined) {
       this.coverImageFileId = params.coverImageFileId;
+    }
+    if (params.tags !== undefined) {
+      this.tags = params.tags;
     }
     if (params.status !== undefined) {
       this.status = params.status;

@@ -38,6 +38,7 @@ export class ListCmsPostsUseCase extends BaseUseCase<ListCmsPostsInput, ListCmsP
       tenantId: ctx.tenantId,
       workspaceId: ctx.workspaceId,
       status: input.status,
+      tag: input.tag,
       q: input.q,
       page,
       pageSize,

@@ -10,6 +10,7 @@ export const CmsPageInfoSchema = z.object({
 
 export const ListCmsPostsInputSchema = z.object({
   status: CmsPostStatusSchema.optional(),
+  tag: z.string().optional(),
   q: z.string().optional(),
   page: z.number().int().positive().optional(),
   pageSize: z.number().int().positive().max(100).optional(),
