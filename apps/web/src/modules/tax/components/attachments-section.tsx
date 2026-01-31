@@ -1,20 +1,15 @@
 import React from "react";
 import { useRef } from "react";
 import { toast } from "sonner";
-import { apiClient } from "@/lib/api-client";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { formatDateTime } from "@/shared/lib/formatters";
-import type {
-  CreateUploadIntentInput,
-  CreateUploadIntentOutput,
-  CompleteUploadOutput,
-} from "@corely/contracts";
 import { useTaxFilingAttachmentsQuery } from "../hooks/useTaxFilingAttachmentsQuery";
 import {
   useAttachFilingDocumentMutation,
   useRemoveFilingAttachmentMutation,
 } from "../hooks/useTaxFilingMutations";
+import { uploadTaxDocument } from "../utils/upload-document";
 
 type AttachmentsSectionProps = {
   filingId: string;
@@ -30,47 +25,8 @@ export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
 
   const handleUpload = async (file: File) => {
     try {
-      const contentType = file.type || "application/octet-stream";
-      const intent = await apiClient.post<CreateUploadIntentOutput>(
-        "/documents/upload-intent",
-        {
-          filename: file.name,
-          contentType,
-          sizeBytes: file.size,
-          isPublic: false,
-          documentType: "UPLOAD",
-        } satisfies CreateUploadIntentInput,
-        {
-          idempotencyKey: apiClient.generateIdempotencyKey(),
-          correlationId: apiClient.generateCorrelationId(),
-        }
-      );
-
-      const headers = new Headers(intent.upload.requiredHeaders ?? {});
-      if (!headers.has("Content-Type")) {
-        headers.set("Content-Type", contentType);
-      }
-
-      const uploadResponse = await fetch(intent.upload.url, {
-        method: intent.upload.method,
-        headers,
-        body: file,
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload file");
-      }
-
-      const completed = await apiClient.post<CompleteUploadOutput>(
-        `/documents/${intent.document.id}/files/${intent.file.id}/complete`,
-        { sizeBytes: file.size },
-        {
-          idempotencyKey: apiClient.generateIdempotencyKey(),
-          correlationId: apiClient.generateCorrelationId(),
-        }
-      );
-
-      await attachMutation.mutateAsync({ documentId: completed.document.id });
+      const documentId = await uploadTaxDocument(file);
+      await attachMutation.mutateAsync({ documentId });
       toast.success("Attachment uploaded");
     } catch (error) {
       console.error(error);

@@ -1,5 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { type MarkTaxFilingPaidRequest, type MarkTaxFilingPaidResponse } from "@corely/contracts";
+import {
+  type MarkTaxFilingPaidRequest,
+  type MarkTaxFilingPaidResponse,
+  type DocumentLinkEntityType,
+} from "@corely/contracts";
 import {
   BaseUseCase,
   type Result,
@@ -13,6 +17,7 @@ import {
 } from "@corely/kernel";
 import { TaxReportRepoPort } from "../../domain/ports";
 import { GetTaxFilingDetailUseCase } from "./get-tax-filing-detail.use-case";
+import { DocumentsApplication } from "../../../documents/application/documents.application";
 
 export type MarkTaxFilingPaidInput = {
   filingId: string;
@@ -27,7 +32,8 @@ export class MarkTaxFilingPaidUseCase extends BaseUseCase<
 > {
   constructor(
     private readonly reportRepo: TaxReportRepoPort,
-    private readonly detailUseCase: GetTaxFilingDetailUseCase
+    private readonly detailUseCase: GetTaxFilingDetailUseCase,
+    private readonly documentsApp: DocumentsApplication
   ) {
     super({ logger: null as any });
   }
@@ -44,6 +50,20 @@ export class MarkTaxFilingPaidUseCase extends BaseUseCase<
 
     if (report.status !== "SUBMITTED") {
       return err(new ConflictError("Filing must be submitted before marking paid"));
+    }
+
+    if (input.request.proofDocumentId) {
+      const linkResult = await this.documentsApp.linkDocument.execute(
+        {
+          documentId: input.request.proofDocumentId,
+          entityType: "OTHER" as DocumentLinkEntityType,
+          entityId: input.filingId,
+        },
+        ctx
+      );
+      if ("error" in linkResult) {
+        return linkResult;
+      }
     }
 
     await this.reportRepo.markPaid({

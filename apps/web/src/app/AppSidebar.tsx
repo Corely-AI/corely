@@ -19,6 +19,7 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getIconByName } from "@/shared/utils/iconMapping";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { WorkspaceTypeBadge } from "@/shared/workspaces/WorkspaceTypeBadge";
+import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -36,6 +37,24 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
     error: configError,
     navigationGroups: visibleGroups,
   } = useWorkspaceConfig();
+  const hasTaxNav = React.useMemo(
+    () => visibleGroups.some((group) => group.items.some((item) => item.route?.startsWith("/tax"))),
+    [visibleGroups]
+  );
+  const { data: taxCapabilities } = useTaxCapabilitiesQuery(!isConfigLoading && hasTaxNav);
+  const paymentsEnabled = taxCapabilities?.paymentsEnabled ?? false;
+
+  const navigationGroups = React.useMemo(() => {
+    if (paymentsEnabled) {
+      return visibleGroups;
+    }
+    return visibleGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => item.id !== "tax-payments"),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [paymentsEnabled, visibleGroups]);
 
   const changeLanguage = (lang: string) => {
     void i18n.changeLanguage(lang);
@@ -100,10 +119,10 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
           <div className="px-3 py-4 text-sm text-muted-foreground">
             {t("errors.loadMenuFailed")}
           </div>
-        ) : visibleGroups.length > 0 ? (
+        ) : navigationGroups.length > 0 ? (
           /* Server-driven navigation */
           <>
-            {visibleGroups.map((group) => {
+            {navigationGroups.map((group) => {
               return (
                 <div key={group.id} className="space-y-1">
                   {!collapsed && (

@@ -40,6 +40,9 @@ import {
   SubmitTaxFilingRequestSchema,
   MarkTaxFilingPaidRequestSchema,
   AttachTaxFilingDocumentRequestSchema,
+  AttachTaxFilingPaymentProofRequestSchema,
+  ListTaxPaymentsInputSchema,
+  ExportTaxPaymentsInputSchema,
 } from "@corely/contracts";
 import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../identity/adapters/http/auth.guard";
@@ -66,13 +69,17 @@ import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-ta
 import { GetTaxReportUseCase } from "./application/use-cases/get-tax-report.use-case";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-case";
+import { GetTaxCapabilitiesUseCase } from "./application/use-cases/get-tax-capabilities.use-case";
 import { ListTaxFilingsUseCase } from "./application/use-cases/list-tax-filings.use-case";
+import { ListTaxPaymentsUseCase } from "./application/use-cases/list-tax-payments.use-case";
+import { ExportTaxPaymentsUseCase } from "./application/use-cases/export-tax-payments.use-case";
 import { GetVatFilingPeriodsUseCase } from "./application/use-cases/get-vat-filing-periods.use-case";
 import { CreateTaxFilingUseCase } from "./application/use-cases/create-tax-filing.use-case";
 import { GetTaxFilingDetailUseCase } from "./application/use-cases/get-tax-filing-detail.use-case";
 import { ListTaxFilingItemsUseCase } from "./application/use-cases/list-tax-filing-items.use-case";
 import { ListTaxFilingAttachmentsUseCase } from "./application/use-cases/list-tax-filing-attachments.use-case";
 import { AttachTaxFilingDocumentUseCase } from "./application/use-cases/attach-tax-filing-document.use-case";
+import { AttachTaxFilingPaymentProofUseCase } from "./application/use-cases/attach-tax-filing-payment-proof.use-case";
 import { RemoveTaxFilingAttachmentUseCase } from "./application/use-cases/remove-tax-filing-attachment.use-case";
 import { ListTaxFilingActivityUseCase } from "./application/use-cases/list-tax-filing-activity.use-case";
 import { RecalculateTaxFilingUseCase } from "./application/use-cases/recalculate-tax-filing.use-case";
@@ -112,13 +119,17 @@ export class TaxController {
     private readonly generateTaxReportPdfUseCase: GenerateTaxReportPdfUseCase,
     private readonly vatPeriodResolver: VatPeriodResolver,
     private readonly getTaxCenterUseCase: GetTaxCenterUseCase,
+    private readonly getTaxCapabilitiesUseCase: GetTaxCapabilitiesUseCase,
     private readonly listTaxFilingsUseCase: ListTaxFilingsUseCase,
+    private readonly listTaxPaymentsUseCase: ListTaxPaymentsUseCase,
+    private readonly exportTaxPaymentsUseCase: ExportTaxPaymentsUseCase,
     private readonly getVatFilingPeriodsUseCase: GetVatFilingPeriodsUseCase,
     private readonly createTaxFilingUseCase: CreateTaxFilingUseCase,
     private readonly getTaxFilingDetailUseCase: GetTaxFilingDetailUseCase,
     private readonly listTaxFilingItemsUseCase: ListTaxFilingItemsUseCase,
     private readonly listTaxFilingAttachmentsUseCase: ListTaxFilingAttachmentsUseCase,
     private readonly attachTaxFilingDocumentUseCase: AttachTaxFilingDocumentUseCase,
+    private readonly attachTaxFilingPaymentProofUseCase: AttachTaxFilingPaymentProofUseCase,
     private readonly removeTaxFilingAttachmentUseCase: RemoveTaxFilingAttachmentUseCase,
     private readonly listTaxFilingActivityUseCase: ListTaxFilingActivityUseCase,
     private readonly recalculateTaxFilingUseCase: RecalculateTaxFilingUseCase,
@@ -346,6 +357,12 @@ export class TaxController {
     );
   }
 
+  @Get("capabilities")
+  async getCapabilities(@Req() req: Request) {
+    const ctx = this.buildContext(req);
+    return this.unwrap(await this.getTaxCapabilitiesUseCase.execute(undefined, ctx));
+  }
+
   @Get("filings")
   async listFilings(@Query() query: any, @Req() req: Request) {
     const ctx = this.buildContext(req);
@@ -366,6 +383,46 @@ export class TaxController {
       entityId: query.entityId,
     });
     return this.unwrap(await this.listTaxFilingsUseCase.execute(input, ctx));
+  }
+
+  @Get("payments")
+  async listPayments(@Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const input = ListTaxPaymentsInputSchema.parse({
+      q: query.q,
+      page: query.page,
+      pageSize: query.pageSize,
+      sort: query.sort,
+      filters: query.filters,
+      status: query.status,
+      year: query.year,
+      type: query.type,
+      dueFrom: query.dueFrom,
+      dueTo: query.dueTo,
+      paidFrom: query.paidFrom,
+      paidTo: query.paidTo,
+    });
+    return this.unwrap(await this.listTaxPaymentsUseCase.execute(input, ctx));
+  }
+
+  @Get("payments/export")
+  async exportPayments(@Query() query: any, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const input = ExportTaxPaymentsInputSchema.parse({
+      q: query.q,
+      page: query.page,
+      pageSize: query.pageSize,
+      sort: query.sort,
+      filters: query.filters,
+      status: query.status,
+      year: query.year,
+      type: query.type,
+      dueFrom: query.dueFrom,
+      dueTo: query.dueTo,
+      paidFrom: query.paidFrom,
+      paidTo: query.paidTo,
+    });
+    return this.unwrap(await this.exportTaxPaymentsUseCase.execute(input, ctx));
   }
 
   @Get("filings/:id")
@@ -449,6 +506,15 @@ export class TaxController {
     const ctx = this.buildContext(req);
     const request = MarkTaxFilingPaidRequestSchema.parse(body);
     return this.unwrap(await this.markTaxFilingPaidUseCase.execute({ filingId: id, request }, ctx));
+  }
+
+  @Post("filings/:id/payment-proof")
+  async attachPaymentProof(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
+    const ctx = this.buildContext(req);
+    const request = AttachTaxFilingPaymentProofRequestSchema.parse(body);
+    return this.unwrap(
+      await this.attachTaxFilingPaymentProofUseCase.execute({ filingId: id, request }, ctx)
+    );
   }
 
   @Delete("filings/:id")

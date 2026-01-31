@@ -60,6 +60,13 @@ import type {
   MarkTaxFilingPaidRequest,
   MarkTaxFilingPaidResponse,
   RecalculateTaxFilingResponse,
+  TaxPaymentsListQuery,
+  TaxPaymentsListResponse,
+  GetTaxCapabilitiesResponse,
+  ExportTaxPaymentsInput,
+  ExportTaxPaymentsResponse,
+  AttachTaxFilingPaymentProofRequest,
+  AttachTaxFilingPaymentProofResponse,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -313,6 +320,13 @@ export class TaxApi {
     });
   }
 
+  async getCapabilities() {
+    const result = await apiClient.get<GetTaxCapabilitiesResponse>("/tax/capabilities", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+    return result.capabilities;
+  }
+
   async listFilings(input: ListTaxFilingsInput) {
     const params = new URLSearchParams();
     if (input.q) {
@@ -356,6 +370,82 @@ export class TaxApi {
     }
 
     return apiClient.get<ListTaxFilingsOutput>(`/tax/filings?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async listPayments(input: TaxPaymentsListQuery) {
+    const params = new URLSearchParams();
+    if (input.q) {
+      params.append("q", input.q);
+    }
+    params.append("page", String(input.page || 1));
+    params.append("pageSize", String(input.pageSize || 20));
+    const sort = Array.isArray(input.sort) ? input.sort[0] : input.sort;
+    if (sort) {
+      params.append("sort", sort);
+    }
+    if (input.filters && input.filters.length > 0) {
+      params.append("filters", JSON.stringify(input.filters));
+    }
+    if (input.status) {
+      params.append("status", input.status);
+    }
+    if (input.year) {
+      params.append("year", String(input.year));
+    }
+    if (input.type) {
+      params.append("type", input.type);
+    }
+    if (input.dueFrom) {
+      params.append("dueFrom", input.dueFrom);
+    }
+    if (input.dueTo) {
+      params.append("dueTo", input.dueTo);
+    }
+    if (input.paidFrom) {
+      params.append("paidFrom", input.paidFrom);
+    }
+    if (input.paidTo) {
+      params.append("paidTo", input.paidTo);
+    }
+
+    return apiClient.get<TaxPaymentsListResponse>(`/tax/payments?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async exportPayments(input: ExportTaxPaymentsInput) {
+    const params = new URLSearchParams();
+    if (input.q) {
+      params.append("q", input.q);
+    }
+    if (input.filters && input.filters.length > 0) {
+      params.append("filters", JSON.stringify(input.filters));
+    }
+    if (input.status) {
+      params.append("status", input.status);
+    }
+    if (input.year) {
+      params.append("year", String(input.year));
+    }
+    if (input.type) {
+      params.append("type", input.type);
+    }
+    if (input.dueFrom) {
+      params.append("dueFrom", input.dueFrom);
+    }
+    if (input.dueTo) {
+      params.append("dueTo", input.dueTo);
+    }
+    if (input.paidFrom) {
+      params.append("paidFrom", input.paidFrom);
+    }
+    if (input.paidTo) {
+      params.append("paidTo", input.paidTo);
+    }
+
+    return apiClient.get<ExportTaxPaymentsResponse>(`/tax/payments/export?${params.toString()}`, {
       correlationId: apiClient.generateCorrelationId(),
     });
   }
@@ -468,6 +558,14 @@ export class TaxApi {
     return apiClient.post<MarkTaxFilingPaidResponse>(`/tax/filings/${id}/mark-paid`, request, {
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  async attachPaymentProof(id: string, request: AttachTaxFilingPaymentProofRequest) {
+    return apiClient.post<AttachTaxFilingPaymentProofResponse>(
+      `/tax/filings/${id}/payment-proof`,
+      request,
+      { correlationId: apiClient.generateCorrelationId() }
+    );
   }
 
   async deleteFiling(id: string) {

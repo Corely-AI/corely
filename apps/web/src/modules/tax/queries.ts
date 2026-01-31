@@ -2,6 +2,10 @@ import { createWorkspaceQueryKeys, withWorkspace } from "@/shared/workspaces/wor
 import type { QueryKey } from "@tanstack/react-query";
 
 export const taxFilingQueryKeys = createWorkspaceQueryKeys("tax-filings");
+export const taxPaymentsQueryKeys = createWorkspaceQueryKeys("tax-payments");
+
+export const taxCapabilitiesQueryKey = (workspaceId?: string | null): QueryKey =>
+  withWorkspace(["tax", "capabilities"], workspaceId);
 
 export const taxFilingItemsQueryKey = (
   filingId: string,
