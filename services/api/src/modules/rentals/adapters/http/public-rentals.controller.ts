@@ -5,9 +5,11 @@ import {
   ListPublicRentalPropertiesInputSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
+import { PublicWorkspaceRoute } from "../../../../shared/public";
 import { RentalsApplication } from "../../application/rentals.application";
 
 @Controller("public/rentals")
+@PublicWorkspaceRoute()
 export class PublicRentalsController {
   constructor(private readonly app: RentalsApplication) {}
 

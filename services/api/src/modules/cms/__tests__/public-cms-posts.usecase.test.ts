@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NoopLogger } from "@corely/kernel";
+import { PUBLIC_CONTEXT_METADATA_KEY } from "../../../shared/public";
 import { CmsPostEntity } from "../domain/cms-post.entity";
 import type {
   CmsPostListParams,
@@ -67,7 +68,18 @@ describe("Public CMS use cases", () => {
 
     const result = await useCase.execute(
       { page: 1, pageSize: 10 },
-      { tenantId: "tenant-1", workspaceId: "workspace-1" }
+      {
+        tenantId: "tenant-1",
+        workspaceId: "workspace-1",
+        metadata: {
+          [PUBLIC_CONTEXT_METADATA_KEY]: {
+            workspaceSlug: "test",
+            resolutionMethod: "path",
+            publicEnabled: true,
+            publicModules: { cms: true },
+          },
+        },
+      }
     );
 
     expect(result.ok).toBe(true);
@@ -84,7 +96,18 @@ describe("Public CMS use cases", () => {
 
     const result = await useCase.execute(
       { slug: "test-post" },
-      { tenantId: "tenant-1", workspaceId: "workspace-1" }
+      {
+        tenantId: "tenant-1",
+        workspaceId: "workspace-1",
+        metadata: {
+          [PUBLIC_CONTEXT_METADATA_KEY]: {
+            workspaceSlug: "test",
+            resolutionMethod: "path",
+            publicEnabled: true,
+            publicModules: { cms: true },
+          },
+        },
+      }
     );
 
     expect(result.ok).toBe(false);
@@ -101,7 +124,18 @@ describe("Public CMS use cases", () => {
 
     const result = await useCase.execute(
       { slug: "test-post" },
-      { tenantId: "tenant-1", workspaceId: "workspace-1" }
+      {
+        tenantId: "tenant-1",
+        workspaceId: "workspace-1",
+        metadata: {
+          [PUBLIC_CONTEXT_METADATA_KEY]: {
+            workspaceSlug: "test",
+            resolutionMethod: "path",
+            publicEnabled: true,
+            publicModules: { cms: true },
+          },
+        },
+      }
     );
 
     expect(result.ok).toBe(true);

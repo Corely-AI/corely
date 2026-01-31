@@ -2,7 +2,7 @@ import { type PropertyRepoPort } from "../../application/ports/property-reposito
 import { type RentalProperty, type RentalStatus } from "@corely/contracts";
 
 export class FakePropertyRepo implements PropertyRepoPort {
-  public properties: (RentalProperty & { tenantId: string })[] = [];
+  public properties: (RentalProperty & { tenantId: string; workspaceId: string })[] = [];
 
   async findById(tenantId: string, id: string): Promise<RentalProperty | null> {
     return this.properties.find((p) => p.id === id && p.tenantId === tenantId) || null;
@@ -12,10 +12,18 @@ export class FakePropertyRepo implements PropertyRepoPort {
     return this.properties.find((p) => p.slug === slug && p.tenantId === tenantId) || null;
   }
 
-  async findBySlugPublic(tenantId: string, slug: string): Promise<RentalProperty | null> {
+  async findBySlugPublic(
+    tenantId: string,
+    workspaceId: string,
+    slug: string
+  ): Promise<RentalProperty | null> {
     return (
       this.properties.find(
-        (p) => p.slug === slug && p.status === "PUBLISHED" && p.tenantId === tenantId
+        (p) =>
+          p.slug === slug &&
+          p.status === "PUBLISHED" &&
+          p.tenantId === tenantId &&
+          p.workspaceId === workspaceId
       ) || null
     );
   }
@@ -39,9 +47,12 @@ export class FakePropertyRepo implements PropertyRepoPort {
 
   async listPublic(
     tenantId: string,
+    workspaceId: string,
     filters: { categorySlug?: string; q?: string }
   ): Promise<RentalProperty[]> {
-    let result = this.properties.filter((p) => p.status === "PUBLISHED" && p.tenantId === tenantId);
+    let result = this.properties.filter(
+      (p) => p.status === "PUBLISHED" && p.tenantId === tenantId && p.workspaceId === workspaceId
+    );
     if (filters.q) {
       const q = filters.q.toLowerCase();
       result = result.filter((p) => p.name.toLowerCase().includes(q));
@@ -57,9 +68,10 @@ export class FakePropertyRepo implements PropertyRepoPort {
     const existingIndex = property.id ? this.properties.findIndex((p) => p.id === property.id) : -1;
 
     const now = new Date().toISOString();
-    const newProperty: RentalProperty & { tenantId: string } = {
+    const newProperty: RentalProperty & { tenantId: string; workspaceId: string } = {
       id: property.id || `prop-${Math.random().toString(36).substr(2, 9)}`,
       tenantId,
+      workspaceId,
       status: property.status || "DRAFT",
       name: property.name || (existingIndex >= 0 ? this.properties[existingIndex].name : "Unnamed"),
       slug: property.slug || (existingIndex >= 0 ? this.properties[existingIndex].slug : "unnamed"),

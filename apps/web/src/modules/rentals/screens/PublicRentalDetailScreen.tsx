@@ -24,9 +24,12 @@ import { Logo } from "@/shared/components/Logo";
 import { rentalsApi, buildPublicFileUrl } from "@/lib/rentals-api";
 import { rentalsPublicKeys } from "../queries";
 import { cn } from "@/shared/lib/utils";
+import { usePublicWorkspace } from "@/shared/public-workspace";
 
 export default function PublicRentalDetailScreen() {
   const { slug } = useParams<{ slug: string }>();
+  const { workspaceSlug } = usePublicWorkspace();
+  const basePath = workspaceSlug ? `/w/${workspaceSlug}/rental` : "/rental";
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
@@ -38,7 +41,7 @@ export default function PublicRentalDetailScreen() {
     isError,
     error,
   } = useQuery({
-    queryKey: rentalsPublicKeys.property(slug),
+    queryKey: rentalsPublicKeys.property(workspaceSlug, slug),
     queryFn: () => rentalsApi.getPublicProperty(slug!),
     enabled: !!slug,
   });
@@ -47,6 +50,7 @@ export default function PublicRentalDetailScreen() {
 
   const { data: availability, isFetching: isCheckingAvailability } = useQuery({
     queryKey: rentalsPublicKeys.availability(
+      workspaceSlug,
       slug!,
       dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "",
       dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : ""
@@ -59,6 +63,13 @@ export default function PublicRentalDetailScreen() {
       }),
     enabled: checkAvailabilityEnabled,
   });
+
+  const allImages = useMemo(() => {
+    if (!property) {return [];}
+    const list = [...property.images].sort((a, b) => a.sortOrder - b.sortOrder);
+    // If cover image is not in gallery, we could add it, but usually it is.
+    return list;
+  }, [property]);
 
   if (isLoading) {
     return (
@@ -83,17 +94,11 @@ export default function PublicRentalDetailScreen() {
           </p>
         </div>
         <Button asChild variant="outline">
-          <Link to="/stay">Return to browsing</Link>
+          <Link to={basePath}>Return to browsing</Link>
         </Button>
       </div>
     );
   }
-
-  const allImages = useMemo(() => {
-    const list = [...property.images].sort((a, b) => a.sortOrder - b.sortOrder);
-    // If cover image is not in gallery, we could add it, but usually it is.
-    return list;
-  }, [property]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,7 +112,7 @@ export default function PublicRentalDetailScreen() {
               size="sm"
               className="-ml-2 text-muted-foreground hover:text-foreground"
             >
-              <Link to="/stay">
+              <Link to={basePath}>
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Back
               </Link>

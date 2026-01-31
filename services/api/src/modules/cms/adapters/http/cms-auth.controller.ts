@@ -3,8 +3,10 @@ import type { Request } from "express";
 import { CmsReaderLoginInputSchema, CmsReaderSignUpInputSchema } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { CmsApplication } from "../../application/cms.application";
+import { PublicWorkspaceRoute } from "../../../../shared/public";
 
 @Controller("public/cms/auth")
+@PublicWorkspaceRoute()
 export class CmsAuthController {
   constructor(private readonly app: CmsApplication) {}
 

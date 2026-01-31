@@ -1,4 +1,11 @@
-import { Inject, Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import type { UpdateWorkspaceInput, UpdateWorkspaceOutput } from "@corely/contracts";
 import type { WorkspaceRepositoryPort } from "../ports/workspace-repository.port";
 import { WORKSPACE_REPOSITORY_PORT } from "../ports/workspace-repository.port";
@@ -101,6 +108,25 @@ export class UpdateWorkspaceUseCase {
     if (command.name !== undefined) {
       workspaceUpdates.name = command.name;
     }
+    if (command.slug !== undefined) {
+      const normalizedSlug = slugify(command.slug);
+      if (!normalizedSlug) {
+        throw new BadRequestException("Invalid workspace slug");
+      }
+      if (existing.slug !== normalizedSlug) {
+        const conflict = await this.workspaceRepo.getWorkspaceBySlug(normalizedSlug);
+        if (conflict && conflict.id !== existing.id) {
+          throw new ConflictException("Workspace slug already in use");
+        }
+      }
+      workspaceUpdates.slug = normalizedSlug;
+    }
+    if (command.publicEnabled !== undefined) {
+      workspaceUpdates.publicEnabled = command.publicEnabled;
+    }
+    if (command.publicModules !== undefined) {
+      workspaceUpdates.publicModules = command.publicModules;
+    }
     if (command.invoiceSettings !== undefined) {
       workspaceUpdates.invoiceSettings = command.invoiceSettings;
     }
@@ -124,6 +150,9 @@ export class UpdateWorkspaceUseCase {
         id: updated!.id,
         legalEntityId: updated!.legalEntityId,
         name: updated!.name,
+        slug: updated!.slug,
+        publicEnabled: updated!.publicEnabled ?? false,
+        publicModules: updated!.publicModules ?? undefined,
         kind: updated!.legalEntity?.kind as any,
         legalName: updated!.legalEntity?.legalName,
         countryCode: updated!.legalEntity?.countryCode,
@@ -154,3 +183,12 @@ export class UpdateWorkspaceUseCase {
     return result;
   }
 }
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .substring(0, 80);

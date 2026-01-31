@@ -11,12 +11,15 @@ import { formatDate } from "@/shared/lib/formatters";
 import { useCrudUrlState } from "@/shared/crud";
 import { cmsApi, buildPublicFileUrl, buildCmsPostPublicLink } from "@/lib/cms-api";
 import { cmsPublicKeys } from "../queries";
+import { usePublicWorkspace } from "@/shared/public-workspace";
 
 export default function PublicCmsListPage() {
   const [listState, setListState] = useCrudUrlState({ pageSize: 6 });
+  const { workspaceSlug } = usePublicWorkspace();
+  const basePath = workspaceSlug ? `/w/${workspaceSlug}/cms` : "/cms";
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: cmsPublicKeys.posts({
+    queryKey: cmsPublicKeys.posts(workspaceSlug, {
       q: listState.q,
       page: listState.page,
       pageSize: listState.pageSize,
@@ -47,7 +50,7 @@ export default function PublicCmsListPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/p" className="flex items-center gap-2">
+          <Link to={basePath} className="flex items-center gap-2">
             <Logo size="sm" />
             <span className="text-sm text-muted-foreground">Articles</span>
           </Link>
@@ -91,7 +94,7 @@ export default function PublicCmsListPage() {
                 ? buildPublicFileUrl(post.coverImageFileId)
                 : null;
               return (
-                <Link key={post.id} to={buildCmsPostPublicLink(post.slug)}>
+                <Link key={post.id} to={buildCmsPostPublicLink(post.slug, workspaceSlug)}>
                   <Card className="h-full hover:shadow-md transition-shadow">
                     {coverUrl ? (
                       <div className="h-40 overflow-hidden rounded-t-lg bg-muted">

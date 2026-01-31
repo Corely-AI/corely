@@ -3,9 +3,23 @@ import { ListPublicPropertiesUseCase } from "../list-public-properties.usecase";
 import { GetPublicPropertyUseCase } from "../get-public-property.usecase";
 import { FakePropertyRepo } from "../../../testkit/fakes/fake-property-repo";
 import { NoopLogger, unwrap, isErr } from "@corely/kernel";
+import { PUBLIC_CONTEXT_METADATA_KEY } from "../../../../../shared/public";
 
 describe("Public Rentals Use Cases", () => {
   let propertyRepo: FakePropertyRepo;
+
+  const publicCtx = (tenantId?: string, workspaceId?: string) => ({
+    tenantId,
+    workspaceId,
+    metadata: {
+      [PUBLIC_CONTEXT_METADATA_KEY]: {
+        workspaceSlug: "acme",
+        resolutionMethod: "path",
+        publicEnabled: true,
+        publicModules: { rentals: true },
+      },
+    },
+  });
 
   beforeEach(() => {
     propertyRepo = new FakePropertyRepo();
@@ -28,13 +42,18 @@ describe("Public Rentals Use Cases", () => {
         slug: "pub-t2",
         status: "PUBLISHED",
       });
+      await propertyRepo.save("tenant-1", "ws-2", {
+        name: "Published Other Workspace",
+        slug: "pub-ws2",
+        status: "PUBLISHED",
+      });
 
       const useCase = new ListPublicPropertiesUseCase({
         propertyRepo,
         logger: new NoopLogger(),
       } as any);
 
-      const result = await useCase.execute({}, { tenantId: "tenant-1" } as any);
+      const result = await useCase.execute({}, publicCtx("tenant-1", "ws-1") as any);
       const items = unwrap(result);
 
       expect(items).toHaveLength(1);
@@ -47,10 +66,10 @@ describe("Public Rentals Use Cases", () => {
         logger: new NoopLogger(),
       } as any);
 
-      const result = await useCase.execute({}, {} as any);
+      const result = await useCase.execute({}, publicCtx(undefined, "ws-1") as any);
       expect(isErr(result)).toBe(true);
       if (isErr(result)) {
-        expect(result.error.message).toContain("Tenant ID is required");
+        expect(result.error.message).toContain("tenantId or workspaceId");
       }
     });
   });
@@ -68,7 +87,7 @@ describe("Public Rentals Use Cases", () => {
         logger: new NoopLogger(),
       } as any);
 
-      const result = await useCase.execute({ slug: "villa" }, { tenantId: "tenant-1" } as any);
+      const result = await useCase.execute({ slug: "villa" }, publicCtx("tenant-1", "ws-1") as any);
       const property = unwrap(result);
 
       expect(property.slug).toBe("villa");
@@ -87,9 +106,10 @@ describe("Public Rentals Use Cases", () => {
         logger: new NoopLogger(),
       } as any);
 
-      const result = await useCase.execute({ slug: "draft-villa" }, {
-        tenantId: "tenant-1",
-      } as any);
+      const result = await useCase.execute(
+        { slug: "draft-villa" },
+        publicCtx("tenant-1", "ws-1") as any
+      );
       expect(isErr(result)).toBe(true);
     });
 
@@ -105,7 +125,10 @@ describe("Public Rentals Use Cases", () => {
         logger: new NoopLogger(),
       } as any);
 
-      const result = await useCase.execute({ slug: "villa" }, { tenantId: "wrong-tenant" } as any);
+      const result = await useCase.execute(
+        { slug: "villa" },
+        publicCtx("wrong-tenant", "ws-1") as any
+      );
       expect(isErr(result)).toBe(true);
     });
   });

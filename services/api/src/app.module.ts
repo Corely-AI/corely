@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { EnvModule } from "@corely/config";
 import { DataModule } from "@corely/data";
@@ -30,11 +30,13 @@ import { RentalsModule } from "./modules/rentals";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
+import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared/public";
 
 @Module({
   controllers: [AppController],
   providers: [
     TraceIdService,
+    PublicWorkspaceResolver,
     {
       provide: APP_INTERCEPTOR,
       useClass: RequestContextInterceptor,
@@ -80,7 +82,8 @@ import { RequestContextInterceptor } from "./shared/request-context";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Apply trace ID middleware to all routes
-    consumer.apply(TraceIdMiddleware).forRoutes("*");
+    consumer
+      .apply(PublicWorkspacePathMiddleware)
+      .forRoutes({ path: "*", method: RequestMethod.ALL }); // <- important
   }
 }

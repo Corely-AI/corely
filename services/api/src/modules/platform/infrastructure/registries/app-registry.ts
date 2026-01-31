@@ -327,7 +327,7 @@ export class AppRegistry implements AppRegistryPort {
           scope: "web",
           section: "workspace",
           labelKey: "nav.workspace",
-          defaultLabel: "Legal & Address",
+          defaultLabel: "Workspace Settings",
           route: "/settings/workspace",
           icon: "Building",
           order: 90,

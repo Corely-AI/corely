@@ -12,6 +12,7 @@ import {
 import { type GetPublicCmsPostInput, type GetPublicCmsPostOutput } from "@corely/contracts";
 import { type CmsPostRepositoryPort } from "../ports/cms-post-repository.port";
 import { toCmsPublicPostDto } from "../mappers/cms.mapper";
+import { assertPublicModuleEnabled } from "../../../../shared/public";
 
 type Deps = {
   logger: LoggerPort;
@@ -30,6 +31,11 @@ export class GetPublicCmsPostUseCase extends BaseUseCase<
     input: GetPublicCmsPostInput,
     ctx: UseCaseContext
   ): Promise<Result<GetPublicCmsPostOutput, UseCaseError>> {
+    const publishError = assertPublicModuleEnabled(ctx, "cms");
+    if (publishError) {
+      return err(publishError);
+    }
+
     if (!ctx.tenantId || !ctx.workspaceId) {
       return err(new ValidationError("tenantId or workspaceId missing from context"));
     }
