@@ -26,6 +26,7 @@ import { PlatformModule } from "./modules/platform";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { CmsModule } from "./modules/cms";
 import { FormsModule } from "./modules/forms";
+import { RentalsModule } from "./modules/rentals";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -62,6 +63,7 @@ import { RequestContextInterceptor } from "./shared/request-context";
     EngagementModule,
     CmsModule,
     FormsModule,
+    RentalsModule,
     WorkflowModule,
     AutomationModule,
     ReportingModule,

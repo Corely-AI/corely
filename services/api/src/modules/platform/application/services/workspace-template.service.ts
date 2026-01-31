@@ -229,7 +229,15 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.core",
         defaultLabel: "Core",
         order: 1,
-        sectionOrder: ["dashboard", "invoices", "expenses", "clients", "crm", "assistant"],
+        sectionOrder: [
+          "dashboard",
+          "rentals",
+          "invoices",
+          "expenses",
+          "clients",
+          "crm",
+          "assistant",
+        ],
       },
       {
         id: "settings",
@@ -370,7 +378,7 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.sales",
         defaultLabel: "Sales",
         order: 2,
-        sectionOrder: ["invoices", "quotes", "projects", "crm", "customers"],
+        sectionOrder: ["invoices", "rentals", "quotes", "projects", "crm", "customers"],
       },
       {
         id: "purchasing",
@@ -413,6 +421,7 @@ export class WorkspaceTemplateService {
       "parties", // clients
       "crm",
       "tax",
+      "rentals",
       "ai-copilot",
     ];
   }
@@ -427,6 +436,7 @@ export class WorkspaceTemplateService {
       "parties", // customers
       "sales", // quotes, projects
       "tax",
+      "rentals",
       "ai-copilot",
     ];
   }

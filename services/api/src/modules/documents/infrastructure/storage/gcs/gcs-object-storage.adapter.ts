@@ -79,10 +79,11 @@ export class GcsObjectStorageAdapter implements ObjectStoragePort {
   }): Promise<{ etag?: string; sizeBytes: number }> {
     const file = this.client.bucket(this.bucketName).file(args.objectKey);
     await file.save(args.bytes, { contentType: args.contentType, resumable: false });
-    const [metadata] = await file.getMetadata();
-    return {
-      etag: metadata.etag,
-      sizeBytes: metadata.size ? Number(metadata.size) : args.bytes.length,
-    };
+    return { sizeBytes: args.bytes.length };
+  }
+
+  async getObject(args: { tenantId: string; objectKey: string }): Promise<Buffer> {
+    const [buffer] = await this.client.bucket(this.bucketName).file(args.objectKey).download();
+    return buffer;
   }
 }

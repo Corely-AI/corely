@@ -30,6 +30,8 @@ import type {
   CreateUploadIntentInput,
   CreateUploadIntentOutput,
   CompleteUploadOutput,
+  UploadFileBase64Input,
+  UploadFileOutput,
 } from "@corely/contracts";
 import { createIdempotencyKey, request } from "@corely/api-client";
 import { apiClient } from "./api-client";
@@ -93,13 +95,24 @@ const requestPublic = async <T>(
     correlationId?: string;
   }
 ): Promise<T> => {
-  const workspaceId = getActiveWorkspaceId();
+  const urlParams =
+    typeof window !== "undefined"
+      ? new URL(window.location.href).searchParams
+      : new URLSearchParams();
+  const queryWorkspaceId = urlParams.get("workspaceId");
+  const queryTenantId = urlParams.get("tenantId");
+
+  const workspaceId =
+    queryWorkspaceId || getActiveWorkspaceId() || import.meta.env.VITE_PUBLIC_WORKSPACE_ID;
+  const tenantId = queryTenantId || import.meta.env.VITE_PUBLIC_TENANT_ID;
+
   return request<T>({
     url: `${resolveCmsApiBaseUrl()}${endpoint}`,
     method: opts?.method ?? "GET",
     body: opts?.body,
     accessToken: opts?.token,
     workspaceId: workspaceId ?? null,
+    tenantId: tenantId ?? null,
     idempotencyKey: opts?.idempotencyKey,
     correlationId: opts?.correlationId,
   });
@@ -326,41 +339,30 @@ export class CmsApi {
     opts: { purpose: string; category?: string }
   ): Promise<CmsUploadResult> {
     const contentType = file.type || "application/octet-stream";
-    const intent = await apiClient.post<CreateUploadIntentOutput>(
-      "/documents/upload-intent",
+
+    // Read file as base64
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove the data:...base64, prefix
+        const base64Content = result.split(",")[1];
+        resolve(base64Content);
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+
+    const completed = await apiClient.post<UploadFileOutput>(
+      "/documents/upload-base64",
       {
         filename: file.name,
         contentType,
-        sizeBytes: file.size,
+        base64,
         isPublic: true,
-        documentType: "UPLOAD",
         category: opts.category,
         purpose: opts.purpose,
-      } satisfies CreateUploadIntentInput,
-      {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-        correlationId: apiClient.generateCorrelationId(),
-      }
-    );
-
-    const headers = new Headers(intent.upload.requiredHeaders ?? {});
-    if (!headers.has("Content-Type")) {
-      headers.set("Content-Type", contentType);
-    }
-
-    const uploadResponse = await fetch(intent.upload.url, {
-      method: intent.upload.method,
-      headers,
-      body: file,
-    });
-
-    if (!uploadResponse.ok) {
-      throw new Error("Failed to upload file");
-    }
-
-    const completed = await apiClient.post<CompleteUploadOutput>(
-      `/documents/${intent.document.id}/files/${intent.file.id}/complete`,
-      { sizeBytes: file.size },
+      } satisfies UploadFileBase64Input,
       {
         idempotencyKey: apiClient.generateIdempotencyKey(),
         correlationId: apiClient.generateCorrelationId(),

@@ -63,6 +63,12 @@ import {
   PublicCmsPostPage,
 } from "../../modules/cms";
 import {
+  RentalPropertiesPage,
+  RentalPropertyEditorPage,
+  PublicRentalsListScreen,
+  PublicRentalDetailScreen,
+} from "../../modules/rentals";
+import {
   TaxSettingsPage,
   TaxCenterPage,
   FilingsListPage,
@@ -104,6 +110,8 @@ export const Router = () => (
       <Route path="/p" element={<PublicCmsListPage />} />
       <Route path="/p/:slug" element={<PublicCmsPostPage />} />
       <Route path="/f/:publicId" element={<PublicFormPage />} />
+      <Route path="/stay" element={<PublicRentalsListScreen />} />
+      <Route path="/stay/:slug" element={<PublicRentalDetailScreen />} />
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
@@ -115,6 +123,9 @@ export const Router = () => (
           <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
           <Route path="/cms/posts/:id/edit" element={<CmsPostEditorPage />} />
           <Route path="/cms/comments" element={<CmsCommentsPage />} />
+          <Route path="/rentals/properties" element={<RentalPropertiesPage />} />
+          <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
+          <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
           <Route path="/forms" element={<FormsPage />} />
           <Route path="/forms/new" element={<NewFormPage />} />
           <Route path="/forms/:id" element={<FormDetailPage />} />

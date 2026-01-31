@@ -33,6 +33,8 @@ import { LinkDocumentUseCase } from "./application/use-cases/link-document/link-
 import { ListLinkedDocumentsUseCase } from "./application/use-cases/list-linked-documents/list-linked-documents.usecase";
 import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoice-pdf/request-invoice-pdf.usecase";
 import { UnlinkDocumentUseCase } from "./application/use-cases/unlink-document/unlink-document.usecase";
+import { UploadFileUseCase } from "./application/use-cases/upload-file/upload-file.usecase";
+import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/proxy-download.usecase";
 
 @Module({
   imports: [IdentityModule, KernelModule],
@@ -223,6 +225,49 @@ import { UnlinkDocumentUseCase } from "./application/use-cases/unlink-document/u
       inject: [PrismaDocumentLinkAdapter],
     },
     {
+      provide: UploadFileUseCase,
+      useFactory: (
+        documentRepo: PrismaDocumentRepoAdapter,
+        fileRepo: PrismaFileRepoAdapter,
+        storage: GcsObjectStorageAdapter,
+        idGen: IdGeneratorPort,
+        clock: ClockPort,
+        env: EnvService
+      ) =>
+        new UploadFileUseCase({
+          logger: new NestLoggerAdapter(),
+          documentRepo,
+          fileRepo,
+          objectStorage: storage,
+          idGenerator: idGen,
+          clock,
+          keyPrefix: env.STORAGE_KEY_PREFIX,
+          maxUploadBytes: env.MAX_UPLOAD_BYTES,
+        }),
+      inject: [
+        PrismaDocumentRepoAdapter,
+        PrismaFileRepoAdapter,
+        GcsObjectStorageAdapter,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        EnvService,
+      ],
+    },
+    {
+      provide: ProxyDownloadUseCase,
+      useFactory: (
+        documentRepo: PrismaDocumentRepoAdapter,
+        fileRepo: PrismaFileRepoAdapter,
+        storage: GcsObjectStorageAdapter
+      ) =>
+        new ProxyDownloadUseCase({
+          documentRepo,
+          fileRepo,
+          objectStorage: storage,
+        }),
+      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, GcsObjectStorageAdapter],
+    },
+    {
       provide: GenerateInvoicePdfWorker,
       useFactory: (
         documentRepo: PrismaDocumentRepoAdapter,
@@ -259,6 +304,8 @@ import { UnlinkDocumentUseCase } from "./application/use-cases/unlink-document/u
         listLinkedDocuments: ListLinkedDocumentsUseCase,
         requestInvoicePdf: RequestInvoicePdfUseCase,
         unlinkDocument: UnlinkDocumentUseCase,
+        uploadFile: UploadFileUseCase,
+        proxyDownload: ProxyDownloadUseCase,
         generateInvoicePdfWorker: GenerateInvoicePdfWorker
       ) =>
         new DocumentsApplication(
@@ -271,6 +318,8 @@ import { UnlinkDocumentUseCase } from "./application/use-cases/unlink-document/u
           listLinkedDocuments,
           requestInvoicePdf,
           unlinkDocument,
+          uploadFile,
+          proxyDownload,
           generateInvoicePdfWorker
         ),
       inject: [
@@ -283,6 +332,8 @@ import { UnlinkDocumentUseCase } from "./application/use-cases/unlink-document/u
         ListLinkedDocumentsUseCase,
         RequestInvoicePdfUseCase,
         UnlinkDocumentUseCase,
+        UploadFileUseCase,
+        ProxyDownloadUseCase,
         GenerateInvoicePdfWorker,
       ],
     },

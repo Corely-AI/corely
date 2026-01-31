@@ -51,12 +51,32 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
     ?.workspaceId;
   const headerWorkspaceId = pickHeader(req, [HEADER_WORKSPACE_ID]);
   const headerTenantId = pickHeader(req, [HEADER_TENANT_ID]);
+  const queryTenantId = (req.query as Record<string, string | undefined> | undefined)?.[
+    HEADER_TENANT_ID
+  ];
+  const plainQueryTenantId = (req.query as Record<string, string | undefined> | undefined)?.[
+    "tenantId"
+  ];
+
+  const queryWorkspaceId = (req.query as Record<string, string | undefined> | undefined)?.[
+    HEADER_WORKSPACE_ID
+  ];
+  const plainQueryWorkspaceId = (req.query as Record<string, string | undefined> | undefined)?.[
+    "workspaceId"
+  ];
 
   // Prefer explicit workspace header (active workspace) over route param to support
   // cross-workspace requests where the route carries tenantId.
-  const workspaceId = headerWorkspaceId ?? routeWorkspaceId ?? req.user?.workspaceId ?? null;
+  const workspaceId =
+    headerWorkspaceId ??
+    queryWorkspaceId ??
+    plainQueryWorkspaceId ??
+    routeWorkspaceId ??
+    req.user?.workspaceId ??
+    null;
 
-  const tenantId = req.user?.tenantId ?? headerTenantId ?? undefined;
+  const tenantId =
+    req.user?.tenantId ?? headerTenantId ?? queryTenantId ?? plainQueryTenantId ?? undefined;
 
   const finalUserId = userId;
   const userSource: RequestContext["sources"][keyof RequestContext["sources"]] | undefined = userId

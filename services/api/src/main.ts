@@ -5,6 +5,7 @@ import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import * as path from "path";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { json, urlencoded } from "express";
 import { AppModule } from "./app.module";
 import { ProblemDetailsExceptionFilter } from "./shared/exceptions/problem-details.filter";
 import { setupTracing, shutdownTracing } from "./shared/observability/setup-tracing";
@@ -21,7 +22,11 @@ async function bootstrap() {
   logger.log("Starting Nest factory");
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger: ["log", "error", "warn", "debug", "verbose"],
+    bodyParser: false,
   });
+
+  app.use(json({ limit: "50mb" }));
+  app.use(urlencoded({ limit: "50mb", extended: true }));
 
   logger.log(
     `Nest application created in ${Date.now() - startedAt}ms; configuring CORS and Swagger`

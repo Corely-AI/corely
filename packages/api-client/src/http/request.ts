@@ -26,6 +26,7 @@ export type RequestOptions = {
   body?: unknown;
   accessToken?: string | null | undefined;
   workspaceId?: string | null | undefined;
+  tenantId?: string | null | undefined;
   idempotencyKey?: string | undefined;
   correlationId?: string | undefined;
   retry?: Partial<RetryPolicyOptions>;
@@ -50,6 +51,9 @@ export async function request<T = unknown>(opts: RequestOptions): Promise<T> {
   }
   if (opts.workspaceId) {
     headers["X-Workspace-Id"] = opts.workspaceId;
+  }
+  if (opts.tenantId) {
+    headers["X-Tenant-Id"] = opts.tenantId;
   }
   if (idempotencyKey) {
     headers["X-Idempotency-Key"] = idempotencyKey;
