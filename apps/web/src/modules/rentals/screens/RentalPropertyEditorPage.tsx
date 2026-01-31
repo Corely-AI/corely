@@ -6,6 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
+import { RichTextEditor } from "@/shared/ui/rich-text-editor";
 import { Label } from "@/shared/ui/label";
 import { Badge } from "@/shared/ui/badge";
 import { invalidateResourceQueries } from "@/shared/crud";
@@ -332,12 +333,21 @@ export default function RentalPropertyEditorPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Detailed Description</Label>
-                <Textarea
-                  id="description"
-                  className="min-h-[200px]"
+                <RichTextEditor
                   value={descriptionHtml}
-                  onChange={(e) => setDescriptionHtml(e.target.value)}
+                  onChange={setDescriptionHtml}
                   placeholder="Detailed information for guests"
+                  aiConfig={{
+                    presetId: "rental-description",
+                    allowedTags: ["p", "ul", "ol", "li", "strong", "em", "a"],
+                    allowLinks: true,
+                    entityContext: {
+                      module: "rentals",
+                      entityType: "RentalProperty",
+                      entityId: id,
+                      workspaceId: activeWorkspace?.id,
+                    },
+                  }}
                 />
               </div>
             </CardContent>
