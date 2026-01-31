@@ -1,4 +1,9 @@
-import type { Workspace, WorkspaceMembership, LegalEntity } from "../../domain/workspace.entity";
+import type {
+  Workspace,
+  WorkspaceMembership,
+  LegalEntity,
+  WorkspaceDomain,
+} from "../../domain/workspace.entity";
 
 export interface CreateLegalEntityInput {
   id: string;
@@ -21,12 +26,18 @@ export interface CreateWorkspaceInput {
   tenantId: string;
   legalEntityId: string;
   name: string;
+  slug?: string;
+  publicEnabled?: boolean;
+  publicModules?: Record<string, boolean> | null;
   onboardingStatus?: string;
   invoiceSettings?: any;
 }
 
 export interface UpdateWorkspaceInput {
   name?: string;
+  slug?: string;
+  publicEnabled?: boolean;
+  publicModules?: Record<string, boolean> | null;
   onboardingStatus?: string;
   onboardingCompletedAt?: Date;
   invoiceSettings?: any;
@@ -66,6 +77,7 @@ export interface WorkspaceRepositoryPort {
 
   // Workspace operations
   createWorkspace(input: CreateWorkspaceInput): Promise<Workspace>;
+  getWorkspaceBySlug(slug: string): Promise<Workspace | null>;
   getWorkspaceById(tenantId: string, id: string): Promise<Workspace | null>;
   getWorkspaceByIdWithLegalEntity(tenantId: string, id: string): Promise<Workspace | null>;
   listWorkspacesByTenant(tenantId: string, userId: string): Promise<Workspace[]>;
@@ -83,6 +95,17 @@ export interface WorkspaceRepositoryPort {
     workspaceId: string,
     userId: string
   ): Promise<boolean>;
+
+  // Workspace domain operations
+  listWorkspaceDomains(workspaceId: string): Promise<WorkspaceDomain[]>;
+  createWorkspaceDomain(input: {
+    id: string;
+    workspaceId: string;
+    domain: string;
+    isPrimary: boolean;
+  }): Promise<WorkspaceDomain>;
+  deleteWorkspaceDomain(workspaceId: string, domainId: string): Promise<boolean>;
+  setPrimaryWorkspaceDomain(workspaceId: string, domainId: string): Promise<WorkspaceDomain | null>;
 }
 
 export const WORKSPACE_REPOSITORY_PORT = "workspaces/workspace-repository";

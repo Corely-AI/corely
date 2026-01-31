@@ -4,17 +4,23 @@ import type { ListRentalPropertiesInput, ListPublicRentalPropertiesInput } from 
 export const rentalPropertyKeys = createCrudQueryKeys("rentals/properties");
 
 export const rentalsPublicKeys = {
-  properties: (params?: ListPublicRentalPropertiesInput) => [
+  properties: (workspaceSlug?: string | null, params?: ListPublicRentalPropertiesInput) => [
     "rentals/public",
+    workspaceSlug ?? "unknown",
     "properties",
     params ?? {},
   ],
-  property: (slug?: string) => ["rentals/public", "property", slug ?? ""],
-  availability: (slug: string, from: string, to: string) => [
-    "rentals/public/availability",
-    slug,
-    from,
-    to,
+  property: (workspaceSlug?: string | null, slug?: string) => [
+    "rentals/public",
+    workspaceSlug ?? "unknown",
+    "property",
+    slug ?? "",
   ],
+  availability: (
+    workspaceSlug: string | null | undefined,
+    slug: string,
+    from: string,
+    to: string
+  ) => ["rentals/public/availability", workspaceSlug ?? "unknown", slug, from, to],
   adminList: (params?: ListRentalPropertiesInput) => ["rentals/admin/properties", params ?? {}],
 };

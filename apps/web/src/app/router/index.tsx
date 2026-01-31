@@ -94,6 +94,7 @@ import {
   WorkspaceOnboardingPage,
   WorkspaceSettingsPage,
 } from "../../modules/workspaces";
+import { PublicWorkspaceProvider } from "../../shared/public-workspace";
 
 export const Router = () => (
   <BrowserRouter
@@ -107,11 +108,21 @@ export const Router = () => (
 
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignupPage />} />
-      <Route path="/p" element={<PublicCmsListPage />} />
-      <Route path="/p/:slug" element={<PublicCmsPostPage />} />
       <Route path="/f/:publicId" element={<PublicFormPage />} />
-      <Route path="/stay" element={<PublicRentalsListScreen />} />
-      <Route path="/stay/:slug" element={<PublicRentalDetailScreen />} />
+      <Route element={<PublicWorkspaceProvider />}>
+        <Route path="/w/:workspaceSlug/cms" element={<PublicCmsListPage />} />
+        <Route path="/w/:workspaceSlug/cms/:slug" element={<PublicCmsPostPage />} />
+        <Route path="/w/:workspaceSlug/rental" element={<PublicRentalsListScreen />} />
+        <Route path="/w/:workspaceSlug/rental/:slug" element={<PublicRentalDetailScreen />} />
+        <Route path="/cms" element={<PublicCmsListPage />} />
+        <Route path="/cms/:slug" element={<PublicCmsPostPage />} />
+        <Route path="/rental" element={<PublicRentalsListScreen />} />
+        <Route path="/rental/:slug" element={<PublicRentalDetailScreen />} />
+        <Route path="/p" element={<PublicCmsListPage />} />
+        <Route path="/p/:slug" element={<PublicCmsPostPage />} />
+        <Route path="/stay" element={<PublicRentalsListScreen />} />
+        <Route path="/stay/:slug" element={<PublicRentalDetailScreen />} />
+      </Route>
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>

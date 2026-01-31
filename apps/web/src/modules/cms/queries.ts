@@ -9,10 +9,21 @@ export const cmsPostKeys = createCrudQueryKeys("cms-posts");
 export const cmsCommentKeys = createCrudQueryKeys("cms-comments");
 
 export const cmsPublicKeys = {
-  posts: (params?: ListPublicCmsPostsInput) => ["cms-public", "posts", params ?? {}],
-  post: (slug?: string) => ["cms-public", "post", slug ?? ""],
-  comments: (slug?: string, params?: ListPublicCmsCommentsInput) => [
+  posts: (workspaceSlug?: string | null, params?: ListPublicCmsPostsInput) => [
     "cms-public",
+    workspaceSlug ?? "unknown",
+    "posts",
+    params ?? {},
+  ],
+  post: (workspaceSlug?: string | null, slug?: string) => [
+    "cms-public",
+    workspaceSlug ?? "unknown",
+    "post",
+    slug ?? "",
+  ],
+  comments: (workspaceSlug?: string | null, slug?: string, params?: ListPublicCmsCommentsInput) => [
+    "cms-public",
+    workspaceSlug ?? "unknown",
     "comments",
     { slug: slug ?? "", ...(params ?? {}) },
   ],

@@ -30,11 +30,13 @@ import { RentalsModule } from "./modules/rentals";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
+import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared/public";
 
 @Module({
   controllers: [AppController],
   providers: [
     TraceIdService,
+    PublicWorkspaceResolver,
     {
       provide: APP_INTERCEPTOR,
       useClass: RequestContextInterceptor,
@@ -81,6 +83,6 @@ import { RequestContextInterceptor } from "./shared/request-context";
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // Apply trace ID middleware to all routes
-    consumer.apply(TraceIdMiddleware).forRoutes("*");
+    consumer.apply(PublicWorkspacePathMiddleware, TraceIdMiddleware).forRoutes("*");
   }
 }

@@ -46,6 +46,9 @@ export interface Workspace {
   tenantId: string;
   legalEntityId: string;
   name: string;
+  slug?: string;
+  publicEnabled?: boolean;
+  publicModules?: Record<string, boolean>;
   onboardingStatus: WorkspaceOnboardingStatus;
   onboardingCompletedAt?: Date;
   invoiceSettings?: WorkspaceInvoiceSettings;
@@ -54,6 +57,14 @@ export interface Workspace {
 
   // Populated from relation
   legalEntity?: LegalEntity;
+}
+
+export interface WorkspaceDomain {
+  id: string;
+  workspaceId: string;
+  domain: string;
+  isPrimary: boolean;
+  createdAt: Date;
 }
 
 export interface WorkspaceMembershipRole {

@@ -17,6 +17,7 @@ import { type CmsCommentRepositoryPort } from "../ports/cms-comment-repository.p
 import { type CmsPostRepositoryPort } from "../ports/cms-post-repository.port";
 import { type CmsReaderRepositoryPort } from "../ports/cms-reader-repository.port";
 import { toCmsCommentDto } from "../mappers/cms.mapper";
+import { assertPublicModuleEnabled } from "../../../../shared/public";
 
 type Deps = {
   logger: LoggerPort;
@@ -48,6 +49,11 @@ export class CreateCmsCommentUseCase extends BaseUseCase<
     input: CreateCmsCommentParams,
     ctx: UseCaseContext
   ): Promise<Result<CreateCmsCommentOutput, UseCaseError>> {
+    const publishError = assertPublicModuleEnabled(ctx, "cms");
+    if (publishError) {
+      return err(publishError);
+    }
+
     if (!ctx.tenantId || !ctx.workspaceId) {
       return err(new ValidationError("tenantId or workspaceId missing from context"));
     }

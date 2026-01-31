@@ -23,7 +23,6 @@ import type {
 import { apiClient } from "./api-client";
 import { buildListQuery } from "./api-query-utils";
 import { request } from "@corely/api-client";
-import { getActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
 
 export const resolveFormsApiBaseUrl = () =>
   import.meta.env.VITE_API_BASE_URL ||
@@ -31,12 +30,10 @@ export const resolveFormsApiBaseUrl = () =>
   (import.meta.env.DEV ? "/api" : "http://localhost:3000");
 
 const requestPublic = async <T>(endpoint: string, opts?: { method?: string; body?: unknown }) => {
-  const workspaceId = getActiveWorkspaceId();
   return request<T>({
     url: `${resolveFormsApiBaseUrl()}${endpoint}`,
     method: opts?.method ?? "GET",
     body: opts?.body,
-    workspaceId: workspaceId ?? null,
   });
 };
 

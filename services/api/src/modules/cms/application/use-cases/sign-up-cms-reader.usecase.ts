@@ -17,6 +17,7 @@ import { CmsReaderEntity } from "../../domain/cms-reader.entity";
 import { type CmsReaderRepositoryPort } from "../ports/cms-reader-repository.port";
 import { type CmsReaderTokenService } from "../../infrastructure/security/cms-reader-token.service";
 import { toCmsReaderDto } from "../mappers/cms.mapper";
+import { assertPublicModuleEnabled } from "../../../../shared/public";
 
 type Deps = {
   logger: LoggerPort;
@@ -45,6 +46,11 @@ export class SignUpCmsReaderUseCase extends BaseUseCase<CmsReaderSignUpInput, Cm
     input: CmsReaderSignUpInput,
     ctx: UseCaseContext
   ): Promise<Result<CmsReaderAuthOutput, UseCaseError>> {
+    const publishError = assertPublicModuleEnabled(ctx, "cms");
+    if (publishError) {
+      return err(publishError);
+    }
+
     if (!ctx.tenantId || !ctx.workspaceId) {
       return err(new ValidationError("tenantId or workspaceId missing from context"));
     }

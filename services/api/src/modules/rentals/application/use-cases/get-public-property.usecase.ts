@@ -7,9 +7,11 @@ import {
   NotFoundError,
   type UseCaseError,
   RequireTenant,
+  ValidationError,
 } from "@corely/kernel";
 import { type RentalProperty } from "@corely/contracts";
 import { type PropertyRepoPort } from "../ports/property-repository.port";
+import { assertPublicModuleEnabled } from "../../../../shared/public";
 
 @RequireTenant()
 export class GetPublicPropertyUseCase extends BaseUseCase<{ slug: string }, RentalProperty> {
@@ -21,8 +23,18 @@ export class GetPublicPropertyUseCase extends BaseUseCase<{ slug: string }, Rent
     input: { slug: string },
     ctx: UseCaseContext
   ): Promise<Result<RentalProperty, UseCaseError>> {
+    const publishError = assertPublicModuleEnabled(ctx, "rentals");
+    if (publishError) {
+      return err(publishError);
+    }
+
+    if (!ctx.tenantId || !ctx.workspaceId) {
+      return err(new ValidationError("tenantId or workspaceId missing from context"));
+    }
+
     const property = await this.useCaseDeps.propertyRepo.findBySlugPublic(
-      ctx.tenantId!,
+      ctx.tenantId,
+      ctx.workspaceId,
       input.slug
     );
     if (!property) {
