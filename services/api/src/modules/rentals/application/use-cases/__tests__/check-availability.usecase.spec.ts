@@ -32,7 +32,7 @@ describe("CheckAvailabilityUseCase", () => {
         from: "2026-06-01",
         to: "2026-06-10",
       },
-      {} as any
+      { tenantId: "tenant-1" } as any
     );
 
     const output = unwrap(result);
@@ -60,7 +60,7 @@ describe("CheckAvailabilityUseCase", () => {
         from: "2026-06-01",
         to: "2026-06-10",
       },
-      {} as any
+      { tenantId: "tenant-1" } as any
     );
 
     const output = unwrap(result);
@@ -81,7 +81,7 @@ describe("CheckAvailabilityUseCase", () => {
         from: "2026-06-01",
         to: "2026-06-10",
       },
-      {} as any
+      { tenantId: "tenant-1" } as any
     );
 
     expect(isErr(result)).toBe(true);
