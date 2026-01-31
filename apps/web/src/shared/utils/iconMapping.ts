@@ -31,6 +31,7 @@ import {
   Settings2,
   Cpu,
   Coins,
+  Home,
 } from "lucide-react";
 
 /**
@@ -69,6 +70,7 @@ export const iconMap: Record<string, LucideIcon> = {
   Settings2,
   Cpu,
   Coins,
+  Home,
 };
 
 /**

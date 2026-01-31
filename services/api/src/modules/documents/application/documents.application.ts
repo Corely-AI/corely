@@ -8,6 +8,8 @@ import type { LinkDocumentUseCase } from "./use-cases/link-document/link-documen
 import type { ListLinkedDocumentsUseCase } from "./use-cases/list-linked-documents/list-linked-documents.usecase";
 import type { RequestInvoicePdfUseCase } from "./use-cases/request-invoice-pdf/request-invoice-pdf.usecase";
 import type { UnlinkDocumentUseCase } from "./use-cases/unlink-document/unlink-document.usecase";
+import type { UploadFileUseCase } from "./use-cases/upload-file/upload-file.usecase";
+import type { ProxyDownloadUseCase } from "./use-cases/proxy-download/proxy-download.usecase";
 
 export class DocumentsApplication {
   constructor(
@@ -20,6 +22,8 @@ export class DocumentsApplication {
     public readonly listLinkedDocuments: ListLinkedDocumentsUseCase,
     public readonly requestInvoicePdf: RequestInvoicePdfUseCase,
     public readonly unlinkDocument: UnlinkDocumentUseCase,
+    public readonly uploadFile: UploadFileUseCase,
+    public readonly proxyDownload: ProxyDownloadUseCase,
     public readonly generateInvoicePdfWorker: GenerateInvoicePdfWorker
   ) {}
 }

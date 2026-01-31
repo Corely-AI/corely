@@ -62,6 +62,7 @@ import {
   PublicCmsListPage,
   PublicCmsPostPage,
 } from "../../modules/cms";
+import { RentalPropertiesPage, RentalPropertyEditorPage } from "../../modules/rentals";
 import {
   TaxSettingsPage,
   TaxCenterPage,
@@ -115,6 +116,9 @@ export const Router = () => (
           <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
           <Route path="/cms/posts/:id/edit" element={<CmsPostEditorPage />} />
           <Route path="/cms/comments" element={<CmsCommentsPage />} />
+          <Route path="/rentals/properties" element={<RentalPropertiesPage />} />
+          <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
+          <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
           <Route path="/forms" element={<FormsPage />} />
           <Route path="/forms/new" element={<NewFormPage />} />
           <Route path="/forms/:id" element={<FormDetailPage />} />

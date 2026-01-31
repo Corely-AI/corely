@@ -6,3 +6,4 @@ export * from "./get-download-url.schema";
 export * from "./get-public-file-url.schema";
 export * from "./link-document.schema";
 export * from "./request-invoice-pdf.schema";
+export * from "./upload-file.schema";
