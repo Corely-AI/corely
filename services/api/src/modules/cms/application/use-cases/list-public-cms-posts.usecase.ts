@@ -40,6 +40,7 @@ export class ListPublicCmsPostsUseCase extends BaseUseCase<
     const { items, total } = await this.useCaseDeps.postRepo.list({
       tenantId: ctx.tenantId,
       workspaceId: ctx.workspaceId,
+      tag: input.tag,
       q: input.q,
       page,
       pageSize,

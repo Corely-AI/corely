@@ -6,6 +6,7 @@ export const UpdateCmsPostInputSchema = z.object({
   slug: z.string().min(1).optional(),
   excerpt: z.string().nullable().optional(),
   coverImageFileId: z.string().nullable().optional(),
+  tags: z.array(z.string()).optional(),
   status: CmsPostStatusSchema.optional(),
 });
 

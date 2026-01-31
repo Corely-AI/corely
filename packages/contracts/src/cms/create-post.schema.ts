@@ -6,6 +6,7 @@ export const CreateCmsPostInputSchema = z.object({
   slug: z.string().min(1),
   excerpt: z.string().optional(),
   coverImageFileId: z.string().optional(),
+  tags: z.array(z.string()).optional(),
   status: CmsPostStatusSchema.optional(),
   idempotencyKey: z.string().optional(),
 });

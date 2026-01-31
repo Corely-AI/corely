@@ -69,6 +69,19 @@ import {
   PublicRentalDetailScreen,
 } from "../../modules/rentals";
 import {
+  ShowcasesPage,
+  ShowcaseEditorPage,
+  ShowcaseProfilePage,
+  ProjectsPage,
+  ProjectEditorPage,
+  ClientsPage,
+  ClientEditorPage,
+  ServicesPage,
+  ServiceEditorPage,
+  TeamPage,
+  TeamEditorPage,
+} from "../../modules/portfolio";
+import {
   TaxSettingsPage,
   TaxCenterPage,
   FilingsListPage,

@@ -8,6 +8,7 @@ import { inventoryPermissions } from "../../inventory/inventory.permissions";
 import { partyPermissions } from "../../party/party.permissions";
 import { crmPermissions } from "../../crm/crm.permissions";
 import { formsPermissions } from "../../forms/forms.permissions";
+import { portfolioPermissions } from "../../portfolio/portfolio.permissions";
 
 const PERMISSION_KEY_REGEX = /^[a-z][a-z0-9]*(?:[.:][a-z0-9]+)*$/;
 
@@ -18,6 +19,7 @@ export const buildPermissionCatalog = (): PermissionGroup[] => [
   ...partyPermissions,
   ...crmPermissions,
   ...formsPermissions,
+  ...portfolioPermissions,
 ];
 
 const normalizeCatalog = (catalog: PermissionGroup[]): PermissionGroup[] => {

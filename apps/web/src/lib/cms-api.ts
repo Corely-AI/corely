@@ -130,6 +130,9 @@ export class CmsApi {
     if (params?.status) {
       queryParams.append("status", params.status);
     }
+    if (params?.tag) {
+      queryParams.append("tag", params.tag);
+    }
     if (params?.q) {
       queryParams.append("q", params.q);
     }
@@ -255,6 +258,9 @@ export class CmsApi {
 
   async listPublicPosts(params?: ListPublicCmsPostsInput): Promise<ListPublicCmsPostsOutput> {
     const queryParams = new URLSearchParams();
+    if (params?.tag) {
+      queryParams.append("tag", params.tag);
+    }
     if (params?.q) {
       queryParams.append("q", params.q);
     }

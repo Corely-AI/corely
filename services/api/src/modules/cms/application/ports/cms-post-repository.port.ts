@@ -6,6 +6,7 @@ export type CmsPostListParams = {
   tenantId: string;
   workspaceId: string;
   status?: CmsPostStatus;
+  tag?: string;
   q?: string;
   page: number;
   pageSize: number;
