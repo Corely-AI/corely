@@ -12,7 +12,7 @@ export class FakePropertyRepo implements PropertyRepoPort {
     return this.properties.find((p) => p.slug === slug) || null;
   }
 
-  async findBySlugPublic(slug: string): Promise<RentalProperty | null> {
+  async findBySlugPublic(tenantId: string, slug: string): Promise<RentalProperty | null> {
     return this.properties.find((p) => p.slug === slug && p.status === "PUBLISHED") || null;
   }
 
@@ -21,7 +21,9 @@ export class FakePropertyRepo implements PropertyRepoPort {
     filters: { status?: RentalStatus; categoryId?: string; q?: string }
   ): Promise<RentalProperty[]> {
     let result = this.properties;
-    if (filters.status) {result = result.filter((p) => p.status === filters.status);}
+    if (filters.status) {
+      result = result.filter((p) => p.status === filters.status);
+    }
     if (filters.q) {
       const q = filters.q.toLowerCase();
       result = result.filter(
@@ -31,7 +33,10 @@ export class FakePropertyRepo implements PropertyRepoPort {
     return result;
   }
 
-  async listPublic(filters: { categorySlug?: string; q?: string }): Promise<RentalProperty[]> {
+  async listPublic(
+    tenantId: string,
+    filters: { categorySlug?: string; q?: string }
+  ): Promise<RentalProperty[]> {
     let result = this.properties.filter((p) => p.status === "PUBLISHED");
     if (filters.q) {
       const q = filters.q.toLowerCase();

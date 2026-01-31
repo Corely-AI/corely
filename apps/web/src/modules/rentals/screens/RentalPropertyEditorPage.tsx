@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Save, UploadCloud } from "lucide-react";
+import { ArrowLeft, Save, UploadCloud, ExternalLink } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
@@ -61,7 +61,9 @@ export default function RentalPropertyEditorPage() {
   });
 
   useEffect(() => {
-    if (!property) {return;}
+    if (!property) {
+      return;
+    }
     setName(property.name);
     setSlug(property.slug);
     setSlugTouched(true);
@@ -126,7 +128,9 @@ export default function RentalPropertyEditorPage() {
 
   const publishMutation = useMutation({
     mutationFn: async () => {
-      if (!id) {throw new Error("Save first");}
+      if (!id) {
+        throw new Error("Save first");
+      }
       return rentalsApi.publishProperty(id);
     },
     onSuccess: async (updated) => {
@@ -138,7 +142,9 @@ export default function RentalPropertyEditorPage() {
 
   const unpublishMutation = useMutation({
     mutationFn: async () => {
-      if (!id) {throw new Error("Save first");}
+      if (!id) {
+        throw new Error("Save first");
+      }
       return rentalsApi.unpublishProperty(id);
     },
     onSuccess: async (updated) => {
@@ -149,7 +155,9 @@ export default function RentalPropertyEditorPage() {
   });
 
   const handleCoverUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0) {return;}
+    if (!files || files.length === 0) {
+      return;
+    }
 
     // First file is always the cover
     const file = files[0];
@@ -174,9 +182,13 @@ export default function RentalPropertyEditorPage() {
   const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleGalleryUpload = async (files: FileList | File[] | null) => {
-    if (!files) {return;}
+    if (!files) {
+      return;
+    }
     const filesArray = files instanceof FileList ? Array.from(files) : files;
-    if (filesArray.length === 0) {return;}
+    if (filesArray.length === 0) {
+      return;
+    }
 
     // Create preview entries immediately
     const newPreviews = filesArray.map((file, index) => ({
@@ -199,7 +211,9 @@ export default function RentalPropertyEditorPage() {
         setImages((prev) => {
           // Find the first item that is still 'uploading' (matching the preview we just added)
           const index = prev.findIndex((img) => img.isUploading);
-          if (index === -1) {return prev;}
+          if (index === -1) {
+            return prev;
+          }
 
           const updated = [...prev];
           updated[index] = {
@@ -214,7 +228,9 @@ export default function RentalPropertyEditorPage() {
         // Remove the failed preview
         setImages((prev) => {
           const index = prev.findIndex((img) => img.isUploading);
-          if (index === -1) {return prev;}
+          if (index === -1) {
+            return prev;
+          }
           return prev.filter((_, i) => i !== index);
         });
       }
@@ -254,9 +270,17 @@ export default function RentalPropertyEditorPage() {
           </Button>
           {isEdit &&
             (status === "PUBLISHED" ? (
-              <Button variant="outline" onClick={() => unpublishMutation.mutate()}>
-                Unpublish
-              </Button>
+              <>
+                <Button variant="outline" asChild>
+                  <a href={`/stay/${slug}`} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Listing
+                  </a>
+                </Button>
+                <Button variant="outline" onClick={() => unpublishMutation.mutate()}>
+                  Unpublish
+                </Button>
+              </>
             ) : (
               <Button variant="accent" onClick={() => publishMutation.mutate()}>
                 Publish

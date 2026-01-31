@@ -62,7 +62,12 @@ import {
   PublicCmsListPage,
   PublicCmsPostPage,
 } from "../../modules/cms";
-import { RentalPropertiesPage, RentalPropertyEditorPage } from "../../modules/rentals";
+import {
+  RentalPropertiesPage,
+  RentalPropertyEditorPage,
+  PublicRentalsListScreen,
+  PublicRentalDetailScreen,
+} from "../../modules/rentals";
 import {
   TaxSettingsPage,
   TaxCenterPage,
@@ -105,6 +110,8 @@ export const Router = () => (
       <Route path="/p" element={<PublicCmsListPage />} />
       <Route path="/p/:slug" element={<PublicCmsPostPage />} />
       <Route path="/f/:publicId" element={<PublicFormPage />} />
+      <Route path="/stay" element={<PublicRentalsListScreen />} />
+      <Route path="/stay/:slug" element={<PublicRentalDetailScreen />} />
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>

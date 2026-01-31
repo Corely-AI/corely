@@ -16,12 +16,15 @@ export type SaveRentalPropertyInput = Partial<Omit<RentalProperty, "images">> & 
 export interface PropertyRepoPort {
   findById(tenantId: string, id: string): Promise<RentalProperty | null>;
   findBySlug(tenantId: string, slug: string): Promise<RentalProperty | null>;
-  findBySlugPublic(slug: string): Promise<RentalProperty | null>;
+  findBySlugPublic(tenantId: string, slug: string): Promise<RentalProperty | null>;
   list(
     tenantId: string,
     filters: { status?: RentalStatus; categoryId?: string; q?: string }
   ): Promise<RentalProperty[]>;
-  listPublic(filters: { categorySlug?: string; q?: string }): Promise<RentalProperty[]>;
+  listPublic(
+    tenantId: string,
+    filters: { categorySlug?: string; q?: string }
+  ): Promise<RentalProperty[]>;
   save(
     tenantId: string,
     workspaceId: string,

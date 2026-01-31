@@ -157,6 +157,16 @@ export default function RentalPropertiesPage() {
                             label: "Edit",
                             href: `/rentals/properties/${property.id}/edit`,
                           }}
+                          secondaryActions={
+                            property.status === "PUBLISHED"
+                              ? [
+                                  {
+                                    label: "View Public Page",
+                                    href: `/stay/${property.slug}`,
+                                  },
+                                ]
+                              : []
+                          }
                         />
                       </td>
                     </tr>

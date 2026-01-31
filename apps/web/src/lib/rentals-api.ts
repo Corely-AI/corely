@@ -22,13 +22,21 @@ const requestPublic = async <T>(
     correlationId?: string;
   }
 ): Promise<T> => {
-  const workspaceId = getActiveWorkspaceId();
+  const urlParams = new URL(window.location.href).searchParams;
+  const queryWorkspaceId = urlParams.get("workspaceId");
+  const queryTenantId = urlParams.get("tenantId");
+
+  const workspaceId =
+    queryWorkspaceId || getActiveWorkspaceId() || import.meta.env.VITE_PUBLIC_WORKSPACE_ID;
+  const tenantId = queryTenantId || import.meta.env.VITE_PUBLIC_TENANT_ID;
+
   return request<T>({
     url: `${resolveCmsApiBaseUrl()}${endpoint}`,
     method: opts?.method ?? "GET",
     body: opts?.body,
     accessToken: opts?.token,
     workspaceId: workspaceId ?? null,
+    tenantId: tenantId ?? null,
     idempotencyKey: opts?.idempotencyKey,
     correlationId: opts?.correlationId,
   });
@@ -37,9 +45,15 @@ const requestPublic = async <T>(
 export class RentalsApi {
   async listProperties(params?: ListRentalPropertiesInput): Promise<RentalProperty[]> {
     const queryParams = new URLSearchParams();
-    if (params?.status) {queryParams.append("status", params.status);}
-    if (params?.categoryId) {queryParams.append("categoryId", params.categoryId);}
-    if (params?.q) {queryParams.append("q", params.q);}
+    if (params?.status) {
+      queryParams.append("status", params.status);
+    }
+    if (params?.categoryId) {
+      queryParams.append("categoryId", params.categoryId);
+    }
+    if (params?.q) {
+      queryParams.append("q", params.q);
+    }
 
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/rentals/properties?${queryString}` : "/rentals/properties";
@@ -93,8 +107,12 @@ export class RentalsApi {
 
   async listPublicProperties(params?: ListPublicRentalPropertiesInput): Promise<RentalProperty[]> {
     const queryParams = new URLSearchParams();
-    if (params?.q) {queryParams.append("q", params.q);}
-    if (params?.categorySlug) {queryParams.append("categorySlug", params.categorySlug);}
+    if (params?.q) {
+      queryParams.append("q", params.q);
+    }
+    if (params?.categorySlug) {
+      queryParams.append("categorySlug", params.categorySlug);
+    }
 
     const queryString = queryParams.toString();
     const endpoint = queryString

@@ -95,13 +95,21 @@ const requestPublic = async <T>(
     correlationId?: string;
   }
 ): Promise<T> => {
-  const workspaceId = getActiveWorkspaceId();
+  const urlParams = new URL(window.location.href).searchParams;
+  const queryWorkspaceId = urlParams.get("workspaceId");
+  const queryTenantId = urlParams.get("tenantId");
+
+  const workspaceId =
+    queryWorkspaceId || getActiveWorkspaceId() || import.meta.env.VITE_PUBLIC_WORKSPACE_ID;
+  const tenantId = queryTenantId || import.meta.env.VITE_PUBLIC_TENANT_ID;
+
   return request<T>({
     url: `${resolveCmsApiBaseUrl()}${endpoint}`,
     method: opts?.method ?? "GET",
     body: opts?.body,
     accessToken: opts?.token,
     workspaceId: workspaceId ?? null,
+    tenantId: tenantId ?? null,
     idempotencyKey: opts?.idempotencyKey,
     correlationId: opts?.correlationId,
   });

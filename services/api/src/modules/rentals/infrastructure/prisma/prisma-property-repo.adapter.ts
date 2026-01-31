@@ -51,9 +51,9 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
     return row ? this.mapRow(row) : null;
   }
 
-  async findBySlugPublic(slug: string): Promise<RentalProperty | null> {
+  async findBySlugPublic(tenantId: string, slug: string): Promise<RentalProperty | null> {
     const row = await this.prisma.rentalProperty.findFirst({
-      where: { slug, status: "PUBLISHED" },
+      where: { slug, tenantId, status: "PUBLISHED" },
       include: {
         categories: { include: { category: true } },
         images: true,
@@ -67,7 +67,9 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
     filters: { status?: RentalStatus; categoryId?: string; q?: string }
   ): Promise<RentalProperty[]> {
     const where: any = { tenantId };
-    if (filters.status) {where.status = filters.status;}
+    if (filters.status) {
+      where.status = filters.status;
+    }
     if (filters.categoryId) {
       where.categories = { some: { categoryId: filters.categoryId } };
     }
@@ -85,8 +87,11 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
     return rows.map((row) => this.mapRow(row));
   }
 
-  async listPublic(filters: { categorySlug?: string; q?: string }): Promise<RentalProperty[]> {
-    const where: any = { status: "PUBLISHED" };
+  async listPublic(
+    tenantId: string,
+    filters: { categorySlug?: string; q?: string }
+  ): Promise<RentalProperty[]> {
+    const where: any = { tenantId, status: "PUBLISHED" };
     if (filters.categorySlug) {
       where.categories = { some: { category: { slug: filters.categorySlug } } };
     }

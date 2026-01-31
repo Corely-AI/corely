@@ -6,11 +6,13 @@ import {
   err,
   ValidationError,
   type UseCaseError,
+  RequireTenant,
 } from "@corely/kernel";
 import { type CheckAvailabilityInput, type CheckAvailabilityOutput } from "@corely/contracts";
 import { type AvailabilityRepoPort } from "../ports/availability-repository.port";
 import { type PropertyRepoPort } from "../ports/property-repository.port";
 
+@RequireTenant()
 export class CheckAvailabilityUseCase extends BaseUseCase<
   CheckAvailabilityInput,
   CheckAvailabilityOutput
@@ -28,7 +30,10 @@ export class CheckAvailabilityUseCase extends BaseUseCase<
     input: CheckAvailabilityInput,
     ctx: UseCaseContext
   ): Promise<Result<CheckAvailabilityOutput, UseCaseError>> {
-    const property = await this.useCaseDeps.propertyRepo.findBySlugPublic(input.propertySlug);
+    const property = await this.useCaseDeps.propertyRepo.findBySlugPublic(
+      ctx.tenantId!,
+      input.propertySlug
+    );
     if (!property) {
       return err(new ValidationError("Property not found or not published"));
     }
