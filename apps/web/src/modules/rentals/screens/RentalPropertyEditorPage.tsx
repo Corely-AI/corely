@@ -14,7 +14,7 @@ import { cmsApi } from "@/lib/cms-api"; // reuse for image upload
 import { rentalPropertyKeys } from "../queries";
 import { toast } from "sonner";
 import type { RentalStatus } from "@corely/contracts";
-import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { getPublicWorkspaceSlug } from "@/shared/public-workspace";
 import { getPublicRentalUrl } from "@/shared/lib/public-urls";
 
 const slugify = (value: string) =>
@@ -42,7 +42,6 @@ export default function RentalPropertyEditorPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const coverInputRef = useRef<HTMLInputElement | null>(null);
-  const { activeWorkspace } = useWorkspace();
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -276,7 +275,7 @@ export default function RentalPropertyEditorPage() {
               <>
                 <Button variant="outline" asChild>
                   <a
-                    href={getPublicRentalUrl(slug, activeWorkspace?.slug)}
+                    href={getPublicRentalUrl(slug, getPublicWorkspaceSlug() ?? undefined)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
