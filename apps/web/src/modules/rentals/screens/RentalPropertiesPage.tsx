@@ -11,6 +11,8 @@ import { CrudListPageLayout, CrudRowActions, useCrudUrlState } from "@/shared/cr
 import { formatDate } from "@/shared/lib/formatters";
 import { rentalsApi } from "@/lib/rentals-api";
 import { rentalPropertyKeys } from "../queries";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { getPublicRentalUrl } from "@/shared/lib/public-urls";
 
 const statusOptions = [
   { label: "All statuses", value: "" },
@@ -33,6 +35,7 @@ const statusVariant = (status: string) => {
 export default function RentalPropertiesPage() {
   const navigate = useNavigate();
   const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
+  const { activeWorkspace } = useWorkspace();
 
   const filters = useMemo(() => listState.filters ?? {}, [listState.filters]);
   const statusFilter = typeof filters.status === "string" ? filters.status : "";
@@ -162,7 +165,7 @@ export default function RentalPropertiesPage() {
                               ? [
                                   {
                                     label: "View Public Page",
-                                    href: `/stay/${property.slug}`,
+                                    href: getPublicRentalUrl(property.slug, activeWorkspace?.slug),
                                   },
                                 ]
                               : []
