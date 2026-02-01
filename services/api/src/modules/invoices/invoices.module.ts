@@ -65,9 +65,25 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
     {
       provide: "PLAYWRIGHT_BROWSER",
       useFactory: async () => {
-        if (process.env.NODE_ENV === "test" || process.env.CORELY_TEST === "true") {
+        // Skip browser launch in test or production (Docker image lacks browser binaries)
+        if (
+          process.env.NODE_ENV === "test" ||
+          process.env.NODE_ENV === "production" ||
+          process.env.CORELY_TEST === "true"
+        ) {
+          const logger = new Logger("PlaywrightBrowser");
+          if (process.env.NODE_ENV === "production") {
+            logger.warn(
+              "Playwright browser disabled in production. PDF generation will be unavailable."
+            );
+          }
           return {
             async newPage() {
+              if (process.env.NODE_ENV === "production") {
+                throw new InternalServerErrorException(
+                  "PDF generation is unavailable in production. Use a dedicated PDF service."
+                );
+              }
               return {
                 async setContent() {},
                 async pdf() {
