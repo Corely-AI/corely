@@ -27,6 +27,18 @@ fi
 
 echo "✅ Formatting passed."
 
+# Run ESLint
+echo "Running ESLint..."
+pnpm lint
+
+if [ $? -ne 0 ]; then
+  echo "❌ ESLint failed. Fix errors and try again."
+  echo "   To skip: HUSKY=0 git push"
+  exit 1
+fi
+
+echo "✅ ESLint passed."
+
 # Run lightweight typecheck before push
 echo "Running typecheck before push..."
 pnpm typecheck
