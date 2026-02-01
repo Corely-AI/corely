@@ -10,27 +10,36 @@ import {
   ok,
   err,
 } from "@corely/kernel";
-import type { ListPortfolioClientsInput, ListPortfolioClientsOutput, FilterSpec } from "@corely/contracts";
+import type {
+  ListPortfolioClientsInput,
+  ListPortfolioClientsOutput,
+  FilterSpec,
+} from "@corely/contracts";
 import { buildPageInfo } from "../../../../shared/http/pagination";
-import {
-  CLIENT_REPOSITORY_PORT,
-  type ClientRepositoryPort,
-} from "../ports/client-repository.port";
+import { CLIENT_REPOSITORY_PORT, type ClientRepositoryPort } from "../ports/client-repository.port";
 import { toPortfolioClientDto } from "../mappers/portfolio.mapper";
 import { assertPortfolioRead } from "../../policies/portfolio-policies";
 import type { PortfolioClientType } from "../../domain/portfolio.types";
 
 const getFilterValue = (filters: FilterSpec[] | undefined, field: string) => {
-  if (!filters) {return undefined;}
+  if (!filters) {
+    return undefined;
+  }
   const match = filters.find((filter) => filter.field === field && filter.operator === "eq");
   return match?.value;
 };
 
 const toBoolean = (value: unknown): boolean | undefined => {
-  if (typeof value === "boolean") {return value;}
+  if (typeof value === "boolean") {
+    return value;
+  }
   if (typeof value === "string") {
-    if (value.toLowerCase() === "true") {return true;}
-    if (value.toLowerCase() === "false") {return false;}
+    if (value.toLowerCase() === "true") {
+      return true;
+    }
+    if (value.toLowerCase() === "false") {
+      return false;
+    }
   }
   return undefined;
 };

@@ -11,7 +11,9 @@ export interface ListUrlState {
 }
 
 const parseNumber = (value: string | null, fallback: number) => {
-  if (!value) {return fallback;}
+  if (!value) {
+    return fallback;
+  }
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 };
@@ -63,8 +65,11 @@ export const useListUrlState = (
           const newParams = new URLSearchParams(prev);
 
           if (next.q !== undefined) {
-            if (next.q) {newParams.set("q", next.q);}
-            else {newParams.delete("q");}
+            if (next.q) {
+              newParams.set("q", next.q);
+            } else {
+              newParams.delete("q");
+            }
           }
 
           if (next.page !== undefined) {
@@ -76,8 +81,11 @@ export const useListUrlState = (
           }
 
           if (next.sort !== undefined) {
-            if (next.sort) {newParams.set("sort", next.sort);}
-            else {newParams.delete("sort");}
+            if (next.sort) {
+              newParams.set("sort", next.sort);
+            } else {
+              newParams.delete("sort");
+            }
           }
 
           if (next.filters !== undefined) {
@@ -98,7 +106,9 @@ export const useListUrlState = (
 
   // Persistence: Restore
   useEffect(() => {
-    if (!storageKey) {return;}
+    if (!storageKey) {
+      return;
+    }
 
     // If URL has state, don't restore (user likely clicked a specific link)
     // We check for presence of keys in current search params.
@@ -122,7 +132,9 @@ export const useListUrlState = (
 
   // Persistence: Save
   useEffect(() => {
-    if (!storageKey) {return;}
+    if (!storageKey) {
+      return;
+    }
     // Don't save if we are in the middle of a restore (optional but safe)
     // Save current state
     localStorage.setItem(storageKey, JSON.stringify(state));

@@ -14,10 +14,7 @@ import {
 import type { UpdatePortfolioTeamMemberInput, PortfolioTeamMember } from "@corely/contracts";
 import type { PortfolioTeamMember as PortfolioTeamMemberEntity } from "../../domain/portfolio.types";
 import { assertPublishableTeamMember, shouldPublish } from "../../domain/portfolio-rules";
-import {
-  TEAM_REPOSITORY_PORT,
-  type TeamRepositoryPort,
-} from "../ports/team-repository.port";
+import { TEAM_REPOSITORY_PORT, type TeamRepositoryPort } from "../ports/team-repository.port";
 import { toPortfolioTeamMemberDto } from "../mappers/portfolio.mapper";
 import { assertPortfolioWrite } from "../../policies/portfolio-policies";
 

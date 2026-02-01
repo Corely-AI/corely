@@ -15,11 +15,17 @@ export const ActiveFilterChips: React.FC<ActiveFilterChipsProps> = ({
   onRemove,
   onClearAll,
 }) => {
-  if (!filters.length) {return null;}
+  if (!filters.length) {
+    return null;
+  }
 
   const formatValue = (val: any) => {
-    if (Array.isArray(val)) {return val.join(", ");}
-    if (val instanceof Date) {return val.toLocaleDateString();}
+    if (Array.isArray(val)) {
+      return val.join(", ");
+    }
+    if (val instanceof Date) {
+      return val.toLocaleDateString();
+    }
     return String(val);
   };
 

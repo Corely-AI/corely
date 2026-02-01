@@ -11,7 +11,11 @@ import {
   ok,
   err,
 } from "@corely/kernel";
-import type { ListPortfolioServicesInput, ListPortfolioServicesOutput, FilterSpec } from "@corely/contracts";
+import type {
+  ListPortfolioServicesInput,
+  ListPortfolioServicesOutput,
+  FilterSpec,
+} from "@corely/contracts";
 import { buildPageInfo } from "../../../../shared/http/pagination";
 import {
   SERVICE_REPOSITORY_PORT,
@@ -27,7 +31,9 @@ import { assertCompanyMode } from "../../domain/portfolio-rules";
 import type { PortfolioContentStatus } from "../../domain/portfolio.types";
 
 const getFilterValue = (filters: FilterSpec[] | undefined, field: string) => {
-  if (!filters) {return undefined;}
+  if (!filters) {
+    return undefined;
+  }
   const match = filters.find((filter) => filter.field === field && filter.operator === "eq");
   return match?.value;
 };

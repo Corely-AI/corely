@@ -78,7 +78,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   }, [open, initialFilters]);
 
   const addFilter = () => {
-    if (fields.length === 0) {return;}
+    if (fields.length === 0) {
+      return;
+    }
     const defaultField = fields[0];
     const defaultOp = OPERATORS_BY_TYPE[defaultField.type][0].value;
     setLocalFilters([...localFilters, { field: defaultField.key, operator: defaultOp, value: "" }]);

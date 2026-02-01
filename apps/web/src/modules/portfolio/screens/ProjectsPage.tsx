@@ -7,7 +7,12 @@ import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Card, CardContent } from "@/shared/ui/card";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog, useCrudUrlState } from "@/shared/crud";
+import {
+  CrudListPageLayout,
+  CrudRowActions,
+  ConfirmDeleteDialog,
+  useCrudUrlState,
+} from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
 import { portfolioApi } from "@/lib/portfolio-api";
 import { portfolioKeys } from "../queries";
@@ -49,7 +54,8 @@ export default function ProjectsPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const filters = useMemo(() => listState.filters ?? {}, [listState.filters]);
-  const statusFilter = typeof filters.status === "string" ? (filters.status as PortfolioContentStatus) : "";
+  const statusFilter =
+    typeof filters.status === "string" ? (filters.status as PortfolioContentStatus) : "";
   const typeFilter = typeof filters.type === "string" ? (filters.type as PortfolioProjectType) : "";
 
   const { data, isLoading, isError, error } = useQuery({
@@ -63,7 +69,10 @@ export default function ProjectsPage() {
     }),
     queryFn: () => {
       if (!showcaseId) {
-        return Promise.resolve({ items: [], pageInfo: { page: 1, pageSize: 10, total: 0, hasNextPage: false } });
+        return Promise.resolve({
+          items: [],
+          pageInfo: { page: 1, pageSize: 10, total: 0, hasNextPage: false },
+        });
       }
       return portfolioApi.listProjects(showcaseId, {
         q: listState.q,
@@ -84,7 +93,9 @@ export default function ProjectsPage() {
     onSuccess: async () => {
       toast.success("Project deleted");
       if (showcaseId) {
-        await queryClient.invalidateQueries({ queryKey: ["portfolio", "projects", "list", showcaseId] });
+        await queryClient.invalidateQueries({
+          queryKey: ["portfolio", "projects", "list", showcaseId],
+        });
       }
     },
     onError: (err) => {
@@ -212,7 +223,9 @@ export default function ProjectsPage() {
                           <div className="text-sm font-medium">{project.title}</div>
                           <div className="text-xs text-muted-foreground">{project.slug}</div>
                         </td>
-                        <td className="px-4 py-3 text-sm capitalize">{project.type.replace(/_/g, " ")}</td>
+                        <td className="px-4 py-3 text-sm capitalize">
+                          {project.type.replace(/_/g, " ")}
+                        </td>
                         <td className="px-4 py-3 text-sm">
                           <Badge variant={statusVariant(project.status)}>{project.status}</Badge>
                         </td>

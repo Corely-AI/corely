@@ -16,10 +16,7 @@ import {
   SHOWCASE_REPOSITORY_PORT,
   type ShowcaseRepositoryPort,
 } from "../ports/showcase-repository.port";
-import {
-  CLIENT_REPOSITORY_PORT,
-  type ClientRepositoryPort,
-} from "../ports/client-repository.port";
+import { CLIENT_REPOSITORY_PORT, type ClientRepositoryPort } from "../ports/client-repository.port";
 import { toPortfolioClientDto } from "../mappers/portfolio.mapper";
 
 @RequireTenant()

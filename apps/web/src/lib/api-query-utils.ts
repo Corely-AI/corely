@@ -10,7 +10,9 @@
  */
 export function buildListQuery(params: object | undefined | null): URLSearchParams {
   const query = new URLSearchParams();
-  if (!params) {return query;}
+  if (!params) {
+    return query;
+  }
 
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {

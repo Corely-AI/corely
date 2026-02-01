@@ -75,7 +75,10 @@ export default function ProjectEditorPage() {
     queryFn: () =>
       activeShowcaseId
         ? portfolioApi.listClients(activeShowcaseId, { page: 1, pageSize: 100 })
-        : Promise.resolve({ items: [], pageInfo: { page: 1, pageSize: 100, total: 0, hasNextPage: false } }),
+        : Promise.resolve({
+            items: [],
+            pageInfo: { page: 1, pageSize: 100, total: 0, hasNextPage: false },
+          }),
     enabled: Boolean(activeShowcaseId),
   });
 
@@ -90,14 +93,19 @@ export default function ProjectEditorPage() {
         const updated = await portfolioApi.updateProject(id, toUpdateProjectInput(data));
         return { projectId: updated.id, showcaseId: updated.showcaseId };
       }
-      const created = await portfolioApi.createProject(activeShowcaseId as string, toCreateProjectInput(data));
+      const created = await portfolioApi.createProject(
+        activeShowcaseId as string,
+        toCreateProjectInput(data)
+      );
       return { projectId: created.id, showcaseId: created.showcaseId };
     },
     onSuccess: async ({ projectId, showcaseId }) => {
       const clientIds = form.getValues("clientIds") ?? [];
       await portfolioApi.setProjectClients(projectId, { clientIds });
       toast.success(isEdit ? "Project updated" : "Project created");
-      await queryClient.invalidateQueries({ queryKey: ["portfolio", "projects", "list", showcaseId] });
+      await queryClient.invalidateQueries({
+        queryKey: ["portfolio", "projects", "list", showcaseId],
+      });
       await queryClient.invalidateQueries({ queryKey: ["portfolio", "projects", projectId] });
       if (!id) {
         navigate(`/portfolio/projects/${projectId}/edit`, { replace: true });
@@ -185,7 +193,9 @@ export default function ProjectEditorPage() {
                   placeholder="Quik.day"
                 />
                 {form.formState.errors.title && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.title.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.title.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -200,21 +210,27 @@ export default function ProjectEditorPage() {
                   placeholder="quik-day"
                 />
                 {form.formState.errors.slug && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.slug.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.slug.message}
+                  </p>
                 )}
               </div>
               <div>
                 <Label htmlFor="summary">Summary</Label>
                 <Textarea id="summary" rows={3} {...form.register("summary")} />
                 {form.formState.errors.summary && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.summary.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.summary.message}
+                  </p>
                 )}
               </div>
               <div>
                 <Label htmlFor="content">Content</Label>
                 <Textarea id="content" rows={6} {...form.register("content")} />
                 {form.formState.errors.content && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.content.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.content.message}
+                  </p>
                 )}
               </div>
               <div className="grid gap-4 md:grid-cols-2">
@@ -264,20 +280,38 @@ export default function ProjectEditorPage() {
                 </div>
                 <div>
                   <Label htmlFor="coverImageUrl">Cover image URL</Label>
-                  <Input id="coverImageUrl" {...form.register("coverImageUrl")} placeholder="https://..." />
+                  <Input
+                    id="coverImageUrl"
+                    {...form.register("coverImageUrl")}
+                    placeholder="https://..."
+                  />
                 </div>
               </div>
               <div>
                 <Label htmlFor="techStack">Tech stack (comma separated)</Label>
-                <Input id="techStack" {...form.register("techStack")} placeholder="React, Node, Prisma" />
+                <Input
+                  id="techStack"
+                  {...form.register("techStack")}
+                  placeholder="React, Node, Prisma"
+                />
               </div>
               <div>
                 <Label htmlFor="links">Links (JSON)</Label>
-                <Textarea id="links" rows={3} {...form.register("links")} placeholder='{"demo":"https://..."}' />
+                <Textarea
+                  id="links"
+                  rows={3}
+                  {...form.register("links")}
+                  placeholder='{"demo":"https://..."}'
+                />
               </div>
               <div>
                 <Label htmlFor="metrics">Metrics (JSON)</Label>
-                <Textarea id="metrics" rows={3} {...form.register("metrics")} placeholder='{"teamSize":4}' />
+                <Textarea
+                  id="metrics"
+                  rows={3}
+                  {...form.register("metrics")}
+                  placeholder='{"teamSize":4}'
+                />
               </div>
               <div>
                 <Label htmlFor="clientIds">Clients</Label>
@@ -291,7 +325,9 @@ export default function ProjectEditorPage() {
                       className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                       value={field.value ?? []}
                       onChange={(event) => {
-                        const selected = Array.from(event.target.selectedOptions).map((option) => option.value);
+                        const selected = Array.from(event.target.selectedOptions).map(
+                          (option) => option.value
+                        );
                         field.onChange(selected);
                       }}
                     >

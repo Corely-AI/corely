@@ -48,7 +48,9 @@ export class CashManagementController {
     const tenantId = ctx.tenantId;
     const workspaceId = ctx.workspaceId;
 
-    if (!tenantId || !workspaceId) {throw new BadRequestException("Missing context");}
+    if (!tenantId || !workspaceId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const result = await this.createRegisterUC.execute(
       {
@@ -64,7 +66,9 @@ export class CashManagementController {
   @Get("cash-registers")
   async listRegisters(@Req() req: Request) {
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId || !ctx.workspaceId) {throw new BadRequestException("Missing context");}
+    if (!ctx.tenantId || !ctx.workspaceId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const registers = await this.repository.findAll(ctx.tenantId, ctx.workspaceId);
     return { registers };
@@ -73,10 +77,14 @@ export class CashManagementController {
   @Get("cash-registers/:id")
   async getRegister(@Param("id") id: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId) {throw new BadRequestException("Missing context");}
+    if (!ctx.tenantId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const register = await this.repository.findById(ctx.tenantId, id);
-    if (!register) {throw new BadRequestException("Not found");} // Should be 404
+    if (!register) {
+      throw new BadRequestException("Not found");
+    } // Should be 404
     return { register };
   }
 
@@ -84,7 +92,9 @@ export class CashManagementController {
   async updateRegister(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const input = UpdateCashRegisterSchema.parse(body);
-    if (!ctx.tenantId) {throw new BadRequestException("Missing context");}
+    if (!ctx.tenantId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const register = await this.repository.updateRegister(ctx.tenantId, id, input);
     return { register };
@@ -100,8 +110,9 @@ export class CashManagementController {
     }
 
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId)
-      {throw new BadRequestException("Missing context");}
+    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const result = await this.addEntryUC.execute(
       {
@@ -122,7 +133,9 @@ export class CashManagementController {
     @Query() query: { from?: string; to?: string }
   ) {
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId) {throw new BadRequestException("Missing context");}
+    if (!ctx.tenantId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const entries = await this.repository.findEntries(ctx.tenantId, registerId, {
       from: query.from,
@@ -139,7 +152,9 @@ export class CashManagementController {
     }
 
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId || !ctx.userId) {throw new BadRequestException("Missing context");}
+    if (!ctx.tenantId || !ctx.userId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const result = await this.reverseEntryUC.execute(
       {
@@ -163,8 +178,9 @@ export class CashManagementController {
     }
 
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId)
-      {throw new BadRequestException("Missing context");}
+    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const result = await this.submitDailyCloseUC.execute(
       {
@@ -185,7 +201,9 @@ export class CashManagementController {
     @Query() query: { from?: string; to?: string }
   ) {
     const ctx = buildUseCaseContext(req);
-    if (!ctx.tenantId) {throw new BadRequestException("Missing context");}
+    if (!ctx.tenantId) {
+      throw new BadRequestException("Missing context");
+    }
 
     const closes = await this.repository.findDailyCloses(
       ctx.tenantId,

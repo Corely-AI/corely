@@ -16,10 +16,7 @@ import {
   PROJECT_REPOSITORY_PORT,
   type ProjectRepositoryPort,
 } from "../ports/project-repository.port";
-import {
-  CLIENT_REPOSITORY_PORT,
-  type ClientRepositoryPort,
-} from "../ports/client-repository.port";
+import { CLIENT_REPOSITORY_PORT, type ClientRepositoryPort } from "../ports/client-repository.port";
 import { assertPortfolioWrite } from "../../policies/portfolio-policies";
 
 type SetProjectClientsParams = SetProjectClientsInput & { projectId: string };

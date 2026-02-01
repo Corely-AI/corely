@@ -25,16 +25,24 @@ import { assertPortfolioRead } from "../../policies/portfolio-policies";
 import type { PortfolioContentStatus, PortfolioProjectType } from "../../domain/portfolio.types";
 
 const getFilterValue = (filters: FilterSpec[] | undefined, field: string) => {
-  if (!filters) {return undefined;}
+  if (!filters) {
+    return undefined;
+  }
   const match = filters.find((filter) => filter.field === field && filter.operator === "eq");
   return match?.value;
 };
 
 const toBoolean = (value: unknown): boolean | undefined => {
-  if (typeof value === "boolean") {return value;}
+  if (typeof value === "boolean") {
+    return value;
+  }
   if (typeof value === "string") {
-    if (value.toLowerCase() === "true") {return true;}
-    if (value.toLowerCase() === "false") {return false;}
+    if (value.toLowerCase() === "true") {
+      return true;
+    }
+    if (value.toLowerCase() === "false") {
+      return false;
+    }
   }
   return undefined;
 };

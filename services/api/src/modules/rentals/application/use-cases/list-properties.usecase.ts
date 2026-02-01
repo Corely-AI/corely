@@ -1,4 +1,10 @@
-import { BaseUseCase, type UseCaseContext, type Result, ok, type UseCaseError } from "@corely/kernel";
+import {
+  BaseUseCase,
+  type UseCaseContext,
+  type Result,
+  ok,
+  type UseCaseError,
+} from "@corely/kernel";
 import { type ListRentalPropertiesInput, type RentalProperty } from "@corely/contracts";
 import { type PropertyRepoPort } from "../ports/property-repository.port";
 

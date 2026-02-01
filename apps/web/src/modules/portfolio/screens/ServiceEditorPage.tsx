@@ -71,7 +71,9 @@ export default function ServiceEditorPage() {
     onSuccess: async (saved) => {
       toast.success(isEdit ? "Service updated" : "Service created");
       if (activeShowcaseId) {
-        await queryClient.invalidateQueries({ queryKey: ["portfolio", "services", "list", activeShowcaseId] });
+        await queryClient.invalidateQueries({
+          queryKey: ["portfolio", "services", "list", activeShowcaseId],
+        });
       }
       await queryClient.invalidateQueries({ queryKey: ["portfolio", "services", saved.id] });
       if (!id) {
@@ -104,9 +106,7 @@ export default function ServiceEditorPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">
-            {isEdit ? "Edit service" : "Create service"}
-          </h1>
+          <h1 className="text-h1 text-foreground">{isEdit ? "Edit service" : "Create service"}</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(-1)}>
@@ -142,7 +142,9 @@ export default function ServiceEditorPage() {
                   }}
                 />
                 {form.formState.errors.name && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.name.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -156,7 +158,9 @@ export default function ServiceEditorPage() {
                   }}
                 />
                 {form.formState.errors.slug && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.slug.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.slug.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -170,12 +174,20 @@ export default function ServiceEditorPage() {
               </div>
               <div>
                 <Label htmlFor="deliverables">Deliverables (comma separated)</Label>
-                <Input id="deliverables" {...form.register("deliverables")} placeholder="Audit, UX flows" />
+                <Input
+                  id="deliverables"
+                  {...form.register("deliverables")}
+                  placeholder="Audit, UX flows"
+                />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <Label htmlFor="startingFromPrice">Starting from price</Label>
-                  <Input id="startingFromPrice" {...form.register("startingFromPrice")} placeholder="$10,000" />
+                  <Input
+                    id="startingFromPrice"
+                    {...form.register("startingFromPrice")}
+                    placeholder="$10,000"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="sortOrder">Sort order</Label>

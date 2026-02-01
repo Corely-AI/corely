@@ -15,6 +15,18 @@ fi
 
 echo "✅ Unit tests passed."
 
+# Run format check
+echo "Checking formatting..."
+pnpm format:check
+
+if [ $? -ne 0 ]; then
+  echo "❌ Formatting check failed. Run 'pnpm format' to fix."
+  echo "   To skip: HUSKY=0 git push"
+  exit 1
+fi
+
+echo "✅ Formatting passed."
+
 # Run lightweight typecheck before push
 echo "Running typecheck before push..."
 pnpm typecheck

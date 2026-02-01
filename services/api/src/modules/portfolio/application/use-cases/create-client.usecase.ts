@@ -14,10 +14,7 @@ import {
 } from "@corely/kernel";
 import type { CreatePortfolioClientInput, PortfolioClient } from "@corely/contracts";
 import { assertValidSlug } from "../../domain/portfolio-rules";
-import {
-  CLIENT_REPOSITORY_PORT,
-  type ClientRepositoryPort,
-} from "../ports/client-repository.port";
+import { CLIENT_REPOSITORY_PORT, type ClientRepositoryPort } from "../ports/client-repository.port";
 import {
   SHOWCASE_REPOSITORY_PORT,
   type ShowcaseRepositoryPort,

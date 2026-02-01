@@ -20,13 +20,16 @@ export interface ClientRepositoryPort {
     tenantId: string,
     workspaceId: string,
     clientId: string,
-    input: Partial<Omit<PortfolioClient, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioClient, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioClient>;
-  findById(tenantId: string, workspaceId: string, clientId: string): Promise<PortfolioClient | null>;
-  findBySlug(
-    showcaseId: string,
-    slug: string
+  findById(
+    tenantId: string,
+    workspaceId: string,
+    clientId: string
   ): Promise<PortfolioClient | null>;
+  findBySlug(showcaseId: string, slug: string): Promise<PortfolioClient | null>;
   listByShowcase(
     tenantId: string,
     workspaceId: string,
@@ -35,11 +38,7 @@ export interface ClientRepositoryPort {
     pagination: { page: number; pageSize: number }
   ): Promise<ClientListResult>;
   delete(tenantId: string, workspaceId: string, clientId: string): Promise<void>;
-  findByIds(
-    tenantId: string,
-    workspaceId: string,
-    clientIds: string[]
-  ): Promise<PortfolioClient[]>;
+  findByIds(tenantId: string, workspaceId: string, clientIds: string[]): Promise<PortfolioClient[]>;
 }
 
 export const CLIENT_REPOSITORY_PORT = "portfolio/client-repository";

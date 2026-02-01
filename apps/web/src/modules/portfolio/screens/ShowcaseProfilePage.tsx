@@ -33,13 +33,17 @@ export default function ShowcaseProfilePage() {
   });
 
   const { data: showcase } = useQuery({
-    queryKey: showcaseId ? portfolioKeys.showcases.detail(showcaseId) : ["portfolio", "showcases", "none"],
+    queryKey: showcaseId
+      ? portfolioKeys.showcases.detail(showcaseId)
+      : ["portfolio", "showcases", "none"],
     queryFn: () => (showcaseId ? portfolioApi.getShowcase(showcaseId) : Promise.resolve(null)),
     enabled: Boolean(showcaseId),
   });
 
   const { data: profile, isLoading } = useQuery({
-    queryKey: showcaseId ? portfolioKeys.showcases.profile(showcaseId) : ["portfolio", "profiles", "none"],
+    queryKey: showcaseId
+      ? portfolioKeys.showcases.profile(showcaseId)
+      : ["portfolio", "profiles", "none"],
     queryFn: () => (showcaseId ? portfolioApi.getProfile(showcaseId) : Promise.resolve(null)),
     enabled: Boolean(showcaseId),
   });
@@ -80,18 +84,16 @@ export default function ShowcaseProfilePage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/portfolio/showcases")}> 
+          <Button variant="ghost" size="icon" onClick={() => navigate("/portfolio/showcases")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <h1 className="text-h1 text-foreground">Profile</h1>
-            <p className="text-sm text-muted-foreground">
-              {showcase?.name ?? "Showcase profile"}
-            </p>
+            <p className="text-sm text-muted-foreground">{showcase?.name ?? "Showcase profile"}</p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate("/portfolio/showcases")}> 
+          <Button variant="outline" onClick={() => navigate("/portfolio/showcases")}>
             Back to showcases
           </Button>
           <Button
@@ -116,7 +118,11 @@ export default function ShowcaseProfilePage() {
               </div>
               <div>
                 <Label htmlFor="headline">Headline</Label>
-                <Input id="headline" {...form.register("headline")} placeholder="Designing product experiences" />
+                <Input
+                  id="headline"
+                  {...form.register("headline")}
+                  placeholder="Designing product experiences"
+                />
               </div>
               <div>
                 <Label htmlFor="subheadline">Subheadline</Label>
@@ -132,7 +138,11 @@ export default function ShowcaseProfilePage() {
               </div>
               <div>
                 <Label htmlFor="focusBullets">Focus bullets (comma separated)</Label>
-                <Input id="focusBullets" {...form.register("focusBullets")} placeholder="AI product strategy, UI systems" />
+                <Input
+                  id="focusBullets"
+                  {...form.register("focusBullets")}
+                  placeholder="AI product strategy, UI systems"
+                />
               </div>
               <div>
                 <Label htmlFor="ctaTitle">CTA title</Label>
@@ -148,15 +158,28 @@ export default function ShowcaseProfilePage() {
               </div>
               <div>
                 <Label htmlFor="techStacks">Tech stacks (comma separated)</Label>
-                <Input id="techStacks" {...form.register("techStacks")} placeholder="Figma, React, Tailwind" />
+                <Input
+                  id="techStacks"
+                  {...form.register("techStacks")}
+                  placeholder="Figma, React, Tailwind"
+                />
               </div>
               <div>
                 <Label htmlFor="socialLinks">Social links (JSON)</Label>
-                <Textarea id="socialLinks" rows={3} {...form.register("socialLinks")} placeholder='{"linkedin":"https://..."}' />
+                <Textarea
+                  id="socialLinks"
+                  rows={3}
+                  {...form.register("socialLinks")}
+                  placeholder='{"linkedin":"https://..."}'
+                />
               </div>
               <div>
                 <Label htmlFor="homeSections">Home sections (comma separated)</Label>
-                <Input id="homeSections" {...form.register("homeSections")} placeholder="works, services, clients, blog, about" />
+                <Input
+                  id="homeSections"
+                  {...form.register("homeSections")}
+                  placeholder="works, services, clients, blog, about"
+                />
               </div>
               <div className="flex items-center gap-2">
                 <Controller
