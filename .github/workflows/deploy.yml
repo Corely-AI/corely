@@ -68,6 +68,7 @@ jobs:
           flags: --port=8080
           env_vars: |
             NODE_ENV=production
+            WORKFLOW_QUEUE_DRIVER=memory
           # secrets: |
           #   DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest
 
