@@ -39,9 +39,13 @@ RUN pnpm --filter @corely/config build \
  && pnpm --filter @corely/kernel build \
  && pnpm --filter @corely/data build
 
+# Build API service
+RUN pnpm --filter @corely/api build
+
 EXPOSE 3000
 
 # Environment variables are set by docker-compose or .env files
 # NODE_ENV, DATABASE_URL, REDIS_URL, LOG_LEVEL, etc.
 
-CMD ["pnpm", "--filter", "@corely/api", "dev"]
+CMD ["pnpm", "--filter", "@corely/api", "start"]
+
