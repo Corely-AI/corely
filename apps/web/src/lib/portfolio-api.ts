@@ -37,9 +37,13 @@ import { apiClient } from "./api-client";
 import { buildListQuery } from "./api-query-utils";
 
 export class PortfolioApi {
-  async listShowcases(params: ListPortfolioShowcasesInput = {}): Promise<ListPortfolioShowcasesOutput> {
+  async listShowcases(
+    params: ListPortfolioShowcasesInput = {}
+  ): Promise<ListPortfolioShowcasesOutput> {
     const query = buildListQuery(params);
-    const endpoint = query.toString() ? `/portfolio/showcases?${query.toString()}` : "/portfolio/showcases";
+    const endpoint = query.toString()
+      ? `/portfolio/showcases?${query.toString()}`
+      : "/portfolio/showcases";
     return apiClient.get<ListPortfolioShowcasesOutput>(endpoint, {
       correlationId: apiClient.generateCorrelationId(),
     });
@@ -60,10 +64,17 @@ export class PortfolioApi {
     return result.showcase;
   }
 
-  async updateShowcase(id: string, input: UpdatePortfolioShowcaseInput): Promise<PortfolioShowcase> {
-    const result = await apiClient.patch<GetPortfolioShowcaseOutput>(`/portfolio/showcases/${id}`, input, {
-      correlationId: apiClient.generateCorrelationId(),
-    });
+  async updateShowcase(
+    id: string,
+    input: UpdatePortfolioShowcaseInput
+  ): Promise<PortfolioShowcase> {
+    const result = await apiClient.patch<GetPortfolioShowcaseOutput>(
+      `/portfolio/showcases/${id}`,
+      input,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
     return result.showcase;
   }
 
@@ -73,7 +84,7 @@ export class PortfolioApi {
     });
   }
 
-  async getProfile(showcaseId: string): Promise<ReturnType<GetPortfolioProfileOutput["profile"]>> {
+  async getProfile(showcaseId: string): Promise<GetPortfolioProfileOutput["profile"]> {
     const result = await apiClient.get<GetPortfolioProfileOutput>(
       `/portfolio/showcases/${showcaseId}/profile`,
       { correlationId: apiClient.generateCorrelationId() }
@@ -103,7 +114,10 @@ export class PortfolioApi {
     });
   }
 
-  async createProject(showcaseId: string, input: CreatePortfolioProjectInput): Promise<PortfolioProject> {
+  async createProject(
+    showcaseId: string,
+    input: CreatePortfolioProjectInput
+  ): Promise<PortfolioProject> {
     const result = await apiClient.post<GetPortfolioProjectOutput>(
       `/portfolio/showcases/${showcaseId}/projects`,
       input,
@@ -122,9 +136,13 @@ export class PortfolioApi {
   }
 
   async updateProject(id: string, input: UpdatePortfolioProjectInput): Promise<PortfolioProject> {
-    const result = await apiClient.patch<GetPortfolioProjectOutput>(`/portfolio/projects/${id}`, input, {
-      correlationId: apiClient.generateCorrelationId(),
-    });
+    const result = await apiClient.patch<GetPortfolioProjectOutput>(
+      `/portfolio/projects/${id}`,
+      input,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
     return result.project;
   }
 
@@ -153,7 +171,10 @@ export class PortfolioApi {
     });
   }
 
-  async createClient(showcaseId: string, input: CreatePortfolioClientInput): Promise<PortfolioClient> {
+  async createClient(
+    showcaseId: string,
+    input: CreatePortfolioClientInput
+  ): Promise<PortfolioClient> {
     const result = await apiClient.post<GetPortfolioClientOutput>(
       `/portfolio/showcases/${showcaseId}/clients`,
       input,
@@ -173,9 +194,13 @@ export class PortfolioApi {
   }
 
   async updateClient(id: string, input: UpdatePortfolioClientInput): Promise<PortfolioClient> {
-    const result = await apiClient.patch<GetPortfolioClientOutput>(`/portfolio/clients/${id}`, input, {
-      correlationId: apiClient.generateCorrelationId(),
-    });
+    const result = await apiClient.patch<GetPortfolioClientOutput>(
+      `/portfolio/clients/${id}`,
+      input,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
     return result.client;
   }
 
@@ -198,7 +223,10 @@ export class PortfolioApi {
     });
   }
 
-  async createService(showcaseId: string, input: CreatePortfolioServiceInput): Promise<PortfolioService> {
+  async createService(
+    showcaseId: string,
+    input: CreatePortfolioServiceInput
+  ): Promise<PortfolioService> {
     const result = await apiClient.post<GetPortfolioServiceOutput>(
       `/portfolio/showcases/${showcaseId}/services`,
       input,
@@ -218,9 +246,13 @@ export class PortfolioApi {
   }
 
   async updateService(id: string, input: UpdatePortfolioServiceInput): Promise<PortfolioService> {
-    const result = await apiClient.patch<GetPortfolioServiceOutput>(`/portfolio/services/${id}`, input, {
-      correlationId: apiClient.generateCorrelationId(),
-    });
+    const result = await apiClient.patch<GetPortfolioServiceOutput>(
+      `/portfolio/services/${id}`,
+      input,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
     return result.service;
   }
 
@@ -269,9 +301,13 @@ export class PortfolioApi {
     id: string,
     input: UpdatePortfolioTeamMemberInput
   ): Promise<PortfolioTeamMember> {
-    const result = await apiClient.patch<GetPortfolioTeamMemberOutput>(`/portfolio/team/${id}`, input, {
-      correlationId: apiClient.generateCorrelationId(),
-    });
+    const result = await apiClient.patch<GetPortfolioTeamMemberOutput>(
+      `/portfolio/team/${id}`,
+      input,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
     return result.teamMember;
   }
 

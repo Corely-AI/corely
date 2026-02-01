@@ -24,14 +24,19 @@ export const joinCommaList = (values?: string[] | null): string => {
   return values.join(", ");
 };
 
-export const parseJsonRecord = (value?: string | null): Record<string, unknown> | undefined => {
+export const parseJsonRecord = (value?: string | null): Record<string, string> | undefined => {
   if (!value) {
     return undefined;
   }
   try {
     const parsed = JSON.parse(value) as unknown;
     if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-      return parsed as Record<string, unknown>;
+      // Ensure all values are strings
+      const record: Record<string, string> = {};
+      for (const [key, val] of Object.entries(parsed)) {
+        record[key] = String(val);
+      }
+      return record;
     }
     return undefined;
   } catch {

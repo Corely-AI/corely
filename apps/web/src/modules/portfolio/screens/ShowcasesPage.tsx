@@ -7,7 +7,12 @@ import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Card, CardContent } from "@/shared/ui/card";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog, useCrudUrlState } from "@/shared/crud";
+import {
+  CrudListPageLayout,
+  CrudRowActions,
+  ConfirmDeleteDialog,
+  useCrudUrlState,
+} from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
 import { portfolioApi } from "@/lib/portfolio-api";
 import { portfolioKeys } from "../queries";
@@ -36,7 +41,8 @@ export default function ShowcasesPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const filters = useMemo(() => listState.filters ?? {}, [listState.filters]);
-  const typeFilter = typeof filters.type === "string" ? (filters.type as PortfolioShowcaseType) : "";
+  const typeFilter =
+    typeof filters.type === "string" ? (filters.type as PortfolioShowcaseType) : "";
   const publishedFilter = typeof filters.isPublished === "string" ? filters.isPublished : "";
 
   const { data, isLoading, isError, error } = useQuery({
@@ -132,7 +138,7 @@ export default function ShowcasesPage() {
   );
 
   const primaryAction = (
-    <Button variant="accent" onClick={() => navigate("/portfolio/showcases/new")}> 
+    <Button variant="accent" onClick={() => navigate("/portfolio/showcases/new")}>
       <Plus className="h-4 w-4" />
       New showcase
     </Button>
@@ -180,7 +186,14 @@ export default function ShowcasesPage() {
                   <tbody>
                     {showcases.map((showcase) => {
                       const supportsCompany = showcase.type !== "individual";
-                      const secondaryActions = [
+                      const secondaryActions: Array<{
+                        label: string;
+                        onClick?: () => void;
+                        href?: string;
+                        icon?: React.ReactNode;
+                        disabled?: boolean;
+                        destructive?: boolean;
+                      }> = [
                         {
                           label: "Profile",
                           href: `/portfolio/showcases/${showcase.id}/profile`,
