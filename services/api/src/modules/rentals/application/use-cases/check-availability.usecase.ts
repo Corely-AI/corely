@@ -11,6 +11,7 @@ import {
 import { type CheckAvailabilityInput, type CheckAvailabilityOutput } from "@corely/contracts";
 import { type AvailabilityRepoPort } from "../ports/availability-repository.port";
 import { type PropertyRepoPort } from "../ports/property-repository.port";
+import { assertPublicModuleEnabled } from "../../../../shared/public";
 
 @RequireTenant()
 export class CheckAvailabilityUseCase extends BaseUseCase<
@@ -30,8 +31,18 @@ export class CheckAvailabilityUseCase extends BaseUseCase<
     input: CheckAvailabilityInput,
     ctx: UseCaseContext
   ): Promise<Result<CheckAvailabilityOutput, UseCaseError>> {
+    const publishError = assertPublicModuleEnabled(ctx, "rentals");
+    if (publishError) {
+      return err(publishError);
+    }
+
+    if (!ctx.tenantId || !ctx.workspaceId) {
+      return err(new ValidationError("tenantId or workspaceId missing from context"));
+    }
+
     const property = await this.useCaseDeps.propertyRepo.findBySlugPublic(
-      ctx.tenantId!,
+      ctx.tenantId,
+      ctx.workspaceId,
       input.propertySlug
     );
     if (!property) {

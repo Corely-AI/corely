@@ -19,6 +19,7 @@ import {
 } from "@/lib/cms-api";
 import { cmsPublicKeys } from "../queries";
 import { toast } from "sonner";
+import { usePublicWorkspace } from "@/shared/public-workspace";
 
 const contentClass =
   "text-[15px] leading-7 text-foreground space-y-4 " +
@@ -30,6 +31,8 @@ const contentClass =
 
 export default function PublicCmsPostPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { workspaceSlug } = usePublicWorkspace();
+  const basePath = workspaceSlug ? `/w/${workspaceSlug}/cms` : "/cms";
   const queryClient = useQueryClient();
   const [session, setSession] = useState(loadCmsReaderSession());
   const [authMode, setAuthMode] = useState<"login" | "signup">("login");
@@ -43,13 +46,13 @@ export default function PublicCmsPostPage() {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: cmsPublicKeys.post(slug),
+    queryKey: cmsPublicKeys.post(workspaceSlug, slug),
     queryFn: () => (slug ? cmsApi.getPublicPost(slug) : Promise.resolve(null)),
     enabled: Boolean(slug),
   });
 
   const { data: commentsData } = useQuery({
-    queryKey: cmsPublicKeys.comments(slug, { page: 1, pageSize: 50 }),
+    queryKey: cmsPublicKeys.comments(workspaceSlug, slug, { page: 1, pageSize: 50 }),
     queryFn: () =>
       slug ? cmsApi.listPublicComments(slug, { page: 1, pageSize: 50 }) : Promise.resolve(null),
     enabled: Boolean(slug),
@@ -105,7 +108,7 @@ export default function PublicCmsPostPage() {
       setCommentBody("");
       toast.success("Comment submitted for review");
       await queryClient.invalidateQueries({
-        queryKey: cmsPublicKeys.comments(slug, { page: 1, pageSize: 50 }),
+        queryKey: cmsPublicKeys.comments(workspaceSlug, slug, { page: 1, pageSize: 50 }),
       });
     },
     onError: (error) => {
@@ -117,13 +120,13 @@ export default function PublicCmsPostPage() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/p" className="flex items-center gap-2">
+          <Link to={basePath} className="flex items-center gap-2">
             <Logo size="sm" />
             <span className="text-sm text-muted-foreground">Articles</span>
           </Link>
           {post?.slug ? (
             <Link
-              to={buildCmsPostPublicLink(post.slug)}
+              to={buildCmsPostPublicLink(post.slug, workspaceSlug)}
               className="text-sm text-muted-foreground hover:text-foreground"
             >
               Share link
@@ -137,7 +140,7 @@ export default function PublicCmsPostPage() {
           <div className="text-center text-muted-foreground py-12">Loading post...</div>
         ) : isError || !post ? (
           <div className="text-center text-muted-foreground py-12">
-            Post not found. <Link to="/p">Back to articles</Link>
+            Post not found. <Link to={basePath}>Back to articles</Link>
           </div>
         ) : (
           <>

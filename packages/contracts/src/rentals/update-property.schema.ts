@@ -8,3 +8,8 @@ export const UpdateRentalPropertyInputSchema = CreateRentalPropertyInputSchema.p
   status: RentalStatusSchema.optional(),
 });
 export type UpdateRentalPropertyInput = z.infer<typeof UpdateRentalPropertyInputSchema>;
+
+export const AssignPropertyCategoriesInputSchema = z.object({
+  categoryIds: z.array(z.string()),
+});
+export type AssignPropertyCategoriesInput = z.infer<typeof AssignPropertyCategoriesInputSchema>;

@@ -6,14 +6,19 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
+import { RichTextEditor } from "@/shared/ui/rich-text-editor";
 import { Label } from "@/shared/ui/label";
 import { Badge } from "@/shared/ui/badge";
 import { invalidateResourceQueries } from "@/shared/crud";
 import { rentalsApi, buildPublicFileUrl } from "@/lib/rentals-api";
 import { cmsApi } from "@/lib/cms-api"; // reuse for image upload
-import { rentalPropertyKeys } from "../queries";
+import { rentalPropertyKeys, rentalCategoryKeys } from "../queries";
 import { toast } from "sonner";
+import { Checkbox } from "@/shared/ui/checkbox";
 import type { RentalStatus } from "@corely/contracts";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { getPublicRentalUrl } from "@/shared/lib/public-urls";
+import { QuickCreateCategoryDialog } from "../components/QuickCreateCategoryDialog";
 
 const slugify = (value: string) =>
   value
@@ -40,6 +45,7 @@ export default function RentalPropertyEditorPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const coverInputRef = useRef<HTMLInputElement | null>(null);
+  const { activeWorkspace } = useWorkspace();
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -51,6 +57,7 @@ export default function RentalPropertyEditorPage() {
   type GalleryImage = { fileId: string; altText: string; sortOrder: number; isUploading?: boolean };
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [status, setStatus] = useState<RentalStatus>("DRAFT");
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 
   const isEdit = Boolean(id);
 
@@ -58,6 +65,11 @@ export default function RentalPropertyEditorPage() {
     queryKey: rentalPropertyKeys.detail(id ?? ""),
     queryFn: () => (id ? rentalsApi.getProperty(id) : Promise.resolve(null)),
     enabled: isEdit,
+  });
+
+  const { data: availableCategories = [] } = useQuery({
+    queryKey: rentalCategoryKeys.list(),
+    queryFn: () => rentalsApi.listCategories(),
   });
 
   useEffect(() => {
@@ -79,6 +91,7 @@ export default function RentalPropertyEditorPage() {
       }))
     );
     setStatus(property.status);
+    setSelectedCategoryIds((property.categories ?? []).map((c) => c.id));
   }, [property]);
 
   const coverImageUrl = useMemo(
@@ -107,6 +120,7 @@ export default function RentalPropertyEditorPage() {
           altText: img.altText.trim(),
           sortOrder: index,
         })),
+        categoryIds: selectedCategoryIds,
       };
 
       if (id) {
@@ -241,6 +255,12 @@ export default function RentalPropertyEditorPage() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
+    );
+  };
+
   if (isLoading) {
     return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
   }
@@ -272,7 +292,11 @@ export default function RentalPropertyEditorPage() {
             (status === "PUBLISHED" ? (
               <>
                 <Button variant="outline" asChild>
-                  <a href={`/stay/${slug}`} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={getPublicRentalUrl(slug, activeWorkspace?.slug)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     View Listing
                   </a>
@@ -325,12 +349,21 @@ export default function RentalPropertyEditorPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Detailed Description</Label>
-                <Textarea
-                  id="description"
-                  className="min-h-[200px]"
+                <RichTextEditor
                   value={descriptionHtml}
-                  onChange={(e) => setDescriptionHtml(e.target.value)}
+                  onChange={setDescriptionHtml}
                   placeholder="Detailed information for guests"
+                  aiConfig={{
+                    presetId: "rental-description",
+                    allowedTags: ["p", "ul", "ol", "li", "strong", "em", "a"],
+                    allowLinks: true,
+                    entityContext: {
+                      module: "rentals",
+                      entityType: "RentalProperty",
+                      entityId: id,
+                      workspaceId: activeWorkspace?.id,
+                    },
+                  }}
                 />
               </div>
             </CardContent>
@@ -419,6 +452,42 @@ export default function RentalPropertyEditorPage() {
                   value={maxGuests}
                   onChange={(e) => setMaxGuests(parseInt(e.target.value, 10))}
                 />
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <Label>Categories</Label>
+                  <QuickCreateCategoryDialog
+                    onCreated={(id) => {
+                      if (!selectedCategoryIds.includes(id)) {
+                        setSelectedCategoryIds((prev) => [...prev, id]);
+                      }
+                    }}
+                  />
+                </div>
+                {availableCategories.length === 0 ? (
+                  <div className="text-sm text-muted-foreground italic">
+                    No categories found. Click the + icon above to create one.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2">
+                    {availableCategories.map((category) => (
+                      <div key={category.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`cat-${category.id}`}
+                          checked={selectedCategoryIds.includes(category.id)}
+                          onCheckedChange={() => toggleCategory(category.id)}
+                        />
+                        <Label
+                          htmlFor={`cat-${category.id}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {category.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Cover Image</Label>

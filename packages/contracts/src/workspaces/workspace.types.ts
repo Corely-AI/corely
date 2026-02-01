@@ -45,8 +45,16 @@ export const WorkspaceInvoiceSettingsSchema = z.object({
 });
 export type WorkspaceInvoiceSettings = z.infer<typeof WorkspaceInvoiceSettingsSchema>;
 
+export const WorkspacePublicModulesSchema = z.record(z.boolean());
+export type WorkspacePublicModules = z.infer<typeof WorkspacePublicModulesSchema>;
+
 export const WorkspaceProfileSchema = z.object({
   name: z.string().min(1),
+  slug: z
+    .string()
+    .min(1)
+    .regex(/^[a-z0-9-]+$/)
+    .optional(),
   kind: WorkspaceKindSchema,
   legalName: z.string().min(1).optional(),
   countryCode: z.string().length(2).optional(),
@@ -59,6 +67,8 @@ export const WorkspaceProfileSchema = z.object({
   website: z.union([z.string().url(), z.literal("")]).optional(),
   bankAccount: WorkspaceBankAccountSchema.optional(),
   invoiceSettings: WorkspaceInvoiceSettingsSchema.optional(),
+  publicEnabled: z.boolean().optional(),
+  publicModules: WorkspacePublicModulesSchema.optional(),
 });
 export type WorkspaceProfile = z.infer<typeof WorkspaceProfileSchema>;
 

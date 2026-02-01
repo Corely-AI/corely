@@ -57,11 +57,17 @@ export class CreateWorkspaceUseCase {
 
     // Create workspace
     const workspaceId = this.idGenerator.newId();
+    const baseSlug = slugify(command.slug?.trim() || command.name);
+    const fallbackSlug = baseSlug || `workspace-${workspaceId.slice(-6)}`;
+    const slug = await this.resolveUniqueSlug(fallbackSlug);
     const workspace = await this.workspaceRepo.createWorkspace({
       id: workspaceId,
       tenantId: command.tenantId,
       legalEntityId: legalEntity.id,
       name: command.name,
+      slug,
+      publicEnabled: command.publicEnabled ?? false,
+      publicModules: command.publicModules ?? null,
       onboardingStatus: "PROFILE",
       invoiceSettings: command.invoiceSettings,
     });
@@ -81,6 +87,9 @@ export class CreateWorkspaceUseCase {
         id: workspace.id,
         legalEntityId: legalEntity.id,
         name: workspace.name,
+        slug: workspace.slug,
+        publicEnabled: workspace.publicEnabled ?? false,
+        publicModules: workspace.publicModules ?? undefined,
         kind: legalEntity.kind as any,
         legalName: legalEntity.legalName,
         countryCode: legalEntity.countryCode,
@@ -114,4 +123,23 @@ export class CreateWorkspaceUseCase {
 
     return result;
   }
+
+  private async resolveUniqueSlug(baseSlug: string): Promise<string> {
+    let candidate = baseSlug;
+    let suffix = 1;
+    while (await this.workspaceRepo.getWorkspaceBySlug(candidate)) {
+      suffix += 1;
+      candidate = `${baseSlug}-${suffix}`;
+    }
+    return candidate;
+  }
 }
+
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .substring(0, 80);

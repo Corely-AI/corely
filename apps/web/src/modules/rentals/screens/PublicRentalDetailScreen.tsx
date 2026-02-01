@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -12,6 +12,7 @@ import {
   Info,
   Clock,
   ExternalLink,
+  X,
 } from "lucide-react";
 import { format, addDays, isPast, isBefore, isSameDay, parseISO } from "date-fns";
 import { Button } from "@/shared/ui/button";
@@ -20,17 +21,33 @@ import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
 import { Calendar } from "@/shared/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { Dialog, DialogContent, DialogClose } from "@/shared/ui/dialog";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/shared/ui/carousel";
 import { Logo } from "@/shared/components/Logo";
 import { rentalsApi, buildPublicFileUrl } from "@/lib/rentals-api";
 import { rentalsPublicKeys } from "../queries";
 import { cn } from "@/shared/lib/utils";
+import { usePublicWorkspace } from "@/shared/public-workspace";
 
 export default function PublicRentalDetailScreen() {
   const { slug } = useParams<{ slug: string }>();
+  const { workspaceSlug } = usePublicWorkspace();
+  const basePath = workspaceSlug ? `/w/${workspaceSlug}/rental` : "/rental";
   const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
   });
+
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [galleryStartIndex, setGalleryStartIndex] = useState(0);
+  const [api, setApi] = useState<CarouselApi>();
 
   const {
     data: property,
@@ -38,7 +55,7 @@ export default function PublicRentalDetailScreen() {
     isError,
     error,
   } = useQuery({
-    queryKey: rentalsPublicKeys.property(slug),
+    queryKey: rentalsPublicKeys.property(workspaceSlug, slug),
     queryFn: () => rentalsApi.getPublicProperty(slug!),
     enabled: !!slug,
   });
@@ -47,6 +64,7 @@ export default function PublicRentalDetailScreen() {
 
   const { data: availability, isFetching: isCheckingAvailability } = useQuery({
     queryKey: rentalsPublicKeys.availability(
+      workspaceSlug,
       slug!,
       dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : "",
       dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : ""
@@ -59,6 +77,25 @@ export default function PublicRentalDetailScreen() {
       }),
     enabled: checkAvailabilityEnabled,
   });
+
+  const allImages = useMemo(() => {
+    if (!property) {
+      return [];
+    }
+    const list = [...property.images].sort((a, b) => a.sortOrder - b.sortOrder);
+    return list;
+  }, [property]);
+
+  useEffect(() => {
+    if (api && isGalleryOpen) {
+      api.scrollTo(galleryStartIndex, true);
+    }
+  }, [api, isGalleryOpen, galleryStartIndex]);
+
+  const openGallery = (index: number) => {
+    setGalleryStartIndex(index);
+    setIsGalleryOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -83,17 +120,11 @@ export default function PublicRentalDetailScreen() {
           </p>
         </div>
         <Button asChild variant="outline">
-          <Link to="/stay">Return to browsing</Link>
+          <Link to={basePath}>Return to browsing</Link>
         </Button>
       </div>
     );
   }
-
-  const allImages = useMemo(() => {
-    const list = [...property.images].sort((a, b) => a.sortOrder - b.sortOrder);
-    // If cover image is not in gallery, we could add it, but usually it is.
-    return list;
-  }, [property]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,7 +138,7 @@ export default function PublicRentalDetailScreen() {
               size="sm"
               className="-ml-2 text-muted-foreground hover:text-foreground"
             >
-              <Link to="/stay">
+              <Link to={basePath}>
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Back
               </Link>
@@ -134,14 +165,20 @@ export default function PublicRentalDetailScreen() {
         <section className="grid gap-3 grid-cols-1 sm:grid-cols-4 sm:grid-rows-2 h-[400px] sm:h-[550px] rounded-3xl overflow-hidden shadow-2xl">
           {allImages.length > 0 ? (
             <>
-              <div className="sm:col-span-2 sm:row-span-2 relative group cursor-pointer overflow-hidden bg-muted">
+              <div
+                className="sm:col-span-2 sm:row-span-2 relative group cursor-pointer overflow-hidden bg-muted"
+                onClick={() => openGallery(0)}
+              >
                 <img
                   src={buildPublicFileUrl(allImages[0].fileId)}
                   alt={allImages[0].altText || property.name}
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
-              <div className="hidden sm:block sm:col-span-1 relative group cursor-pointer overflow-hidden bg-muted">
+              <div
+                className="hidden sm:block sm:col-span-1 relative group cursor-pointer overflow-hidden bg-muted"
+                onClick={() => openGallery(1)}
+              >
                 {allImages[1] && (
                   <img
                     src={buildPublicFileUrl(allImages[1].fileId)}
@@ -150,7 +187,10 @@ export default function PublicRentalDetailScreen() {
                   />
                 )}
               </div>
-              <div className="hidden sm:block sm:col-span-1 relative group cursor-pointer overflow-hidden bg-muted">
+              <div
+                className="hidden sm:block sm:col-span-1 relative group cursor-pointer overflow-hidden bg-muted"
+                onClick={() => openGallery(2)}
+              >
                 {allImages[2] && (
                   <img
                     src={buildPublicFileUrl(allImages[2].fileId)}
@@ -159,7 +199,10 @@ export default function PublicRentalDetailScreen() {
                   />
                 )}
               </div>
-              <div className="hidden sm:block sm:col-span-1 relative group cursor-pointer overflow-hidden bg-muted">
+              <div
+                className="hidden sm:block sm:col-span-1 relative group cursor-pointer overflow-hidden bg-muted"
+                onClick={() => openGallery(3)}
+              >
                 {allImages[3] && (
                   <img
                     src={buildPublicFileUrl(allImages[3].fileId)}
@@ -168,7 +211,10 @@ export default function PublicRentalDetailScreen() {
                   />
                 )}
               </div>
-              <div className="hidden sm:block sm:col-span-1 relative group cursor-pointer overflow-hidden bg-muted">
+              <div
+                className="hidden sm:block sm:col-span-1 relative group cursor-pointer overflow-hidden bg-muted"
+                onClick={() => openGallery(4)}
+              >
                 {allImages[4] && (
                   <>
                     <img
@@ -425,6 +471,55 @@ export default function PublicRentalDetailScreen() {
           </div>
         </div>
       </footer>
+
+      {/* Gallery Modal */}
+      <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+        <DialogContent className="max-w-screen-xl w-full h-[90vh] md:h-screen max-h-screen p-0 bg-background/95 border-none">
+          <div className="relative w-full h-full flex flex-col">
+            <div className="absolute top-4 left-4 z-50">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsGalleryOpen(false)}
+                className="rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex-1 flex items-center justify-center p-4 md:p-12 overflow-hidden">
+              <Carousel setApi={setApi} className="w-full max-w-5xl">
+                <CarouselContent>
+                  {allImages.map((img, index) => (
+                    <CarouselItem
+                      key={index}
+                      className="flex items-center justify-center h-[70vh] md:h-[80vh]"
+                    >
+                      <img
+                        src={buildPublicFileUrl(img.fileId)}
+                        alt={img.altText || property.name}
+                        className="max-h-full max-w-full object-contain rounded-md"
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="hidden md:block">
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </div>
+              </Carousel>
+            </div>
+
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center text-white/80 text-sm">
+              {api && (
+                <span>
+                  {api.selectedScrollSnap() + 1} / {allImages.length}
+                </span>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

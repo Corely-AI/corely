@@ -3,6 +3,7 @@ import { CheckAvailabilityUseCase } from "../check-availability.usecase";
 import { FakePropertyRepo } from "../../../testkit/fakes/fake-property-repo";
 import { FakeAvailabilityRepo } from "../../../testkit/fakes/fake-availability-repo";
 import { NoopLogger, unwrap, isErr } from "@corely/kernel";
+import { PUBLIC_CONTEXT_METADATA_KEY } from "../../../../../shared/public";
 
 describe("CheckAvailabilityUseCase", () => {
   let propertyRepo: FakePropertyRepo;
@@ -32,7 +33,18 @@ describe("CheckAvailabilityUseCase", () => {
         from: "2026-06-01",
         to: "2026-06-10",
       },
-      { tenantId: "tenant-1" } as any
+      {
+        tenantId: "tenant-1",
+        workspaceId: "ws-1",
+        metadata: {
+          [PUBLIC_CONTEXT_METADATA_KEY]: {
+            workspaceSlug: "villa",
+            resolutionMethod: "path",
+            publicEnabled: true,
+            publicModules: { rentals: true },
+          },
+        },
+      } as any
     );
 
     const output = unwrap(result);
@@ -60,7 +72,18 @@ describe("CheckAvailabilityUseCase", () => {
         from: "2026-06-01",
         to: "2026-06-10",
       },
-      { tenantId: "tenant-1" } as any
+      {
+        tenantId: "tenant-1",
+        workspaceId: "ws-1",
+        metadata: {
+          [PUBLIC_CONTEXT_METADATA_KEY]: {
+            workspaceSlug: "villa",
+            resolutionMethod: "path",
+            publicEnabled: true,
+            publicModules: { rentals: true },
+          },
+        },
+      } as any
     );
 
     const output = unwrap(result);
@@ -81,7 +104,18 @@ describe("CheckAvailabilityUseCase", () => {
         from: "2026-06-01",
         to: "2026-06-10",
       },
-      { tenantId: "tenant-1" } as any
+      {
+        tenantId: "tenant-1",
+        workspaceId: "ws-1",
+        metadata: {
+          [PUBLIC_CONTEXT_METADATA_KEY]: {
+            workspaceSlug: "villa",
+            resolutionMethod: "path",
+            publicEnabled: true,
+            publicModules: { rentals: true },
+          },
+        },
+      } as any
     );
 
     expect(isErr(result)).toBe(true);

@@ -20,6 +20,7 @@ import { parseListQuery } from "../../../../shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { CmsApplication } from "../../application/cms.application";
 import { CmsReaderAuthGuard } from "./cms-reader-auth.guard";
+import { PublicWorkspaceRoute } from "../../../../shared/public";
 
 type CmsReaderRequest = Request & {
   cmsReader?: {
@@ -28,6 +29,7 @@ type CmsReaderRequest = Request & {
 };
 
 @Controller("public/cms")
+@PublicWorkspaceRoute()
 export class CmsPublicController {
   constructor(private readonly app: CmsApplication) {}
 

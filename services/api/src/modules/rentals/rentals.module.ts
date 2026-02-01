@@ -19,11 +19,16 @@ import { PublishPropertyUseCase } from "./application/use-cases/publish-property
 import { CheckAvailabilityUseCase } from "./application/use-cases/check-availability.usecase";
 import { ListPublicPropertiesUseCase } from "./application/use-cases/list-public-properties.usecase";
 import { GetPublicPropertyUseCase } from "./application/use-cases/get-public-property.usecase";
+import { CreateCategoryUseCase } from "./application/use-cases/create-category.usecase";
+import { UpdateCategoryUseCase } from "./application/use-cases/update-category.usecase";
+import { ListCategoriesUseCase } from "./application/use-cases/list-categories.usecase";
+import { DeleteCategoryUseCase } from "./application/use-cases/delete-category.usecase";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
+import { RentalsCategoryController } from "./adapters/http/rentals-category.controller";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule],
-  controllers: [RentalsPropertyController, PublicRentalsController],
+  controllers: [RentalsPropertyController, RentalsCategoryController, PublicRentalsController],
   providers: [
     PrismaPropertyRepoAdapter,
     { provide: PROPERTY_REPO_PORT, useExisting: PrismaPropertyRepoAdapter },
@@ -93,6 +98,30 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
       inject: [PROPERTY_REPO_PORT],
     },
     {
+      provide: CreateCategoryUseCase,
+      useFactory: (repo: PrismaCategoryRepoAdapter) =>
+        new CreateCategoryUseCase({ categoryRepo: repo, logger: new NestLoggerAdapter() } as any),
+      inject: [CATEGORY_REPO_PORT],
+    },
+    {
+      provide: UpdateCategoryUseCase,
+      useFactory: (repo: PrismaCategoryRepoAdapter) =>
+        new UpdateCategoryUseCase({ categoryRepo: repo, logger: new NestLoggerAdapter() } as any),
+      inject: [CATEGORY_REPO_PORT],
+    },
+    {
+      provide: ListCategoriesUseCase,
+      useFactory: (repo: PrismaCategoryRepoAdapter) =>
+        new ListCategoriesUseCase({ categoryRepo: repo, logger: new NestLoggerAdapter() } as any),
+      inject: [CATEGORY_REPO_PORT],
+    },
+    {
+      provide: DeleteCategoryUseCase,
+      useFactory: (repo: PrismaCategoryRepoAdapter) =>
+        new DeleteCategoryUseCase({ categoryRepo: repo, logger: new NestLoggerAdapter() } as any),
+      inject: [CATEGORY_REPO_PORT],
+    },
+    {
       provide: RentalsApplication,
       useFactory: (
         createProperty: CreatePropertyUseCase,
@@ -102,7 +131,11 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
         publishProperty: PublishPropertyUseCase,
         checkAvailability: CheckAvailabilityUseCase,
         listPublicProperties: ListPublicPropertiesUseCase,
-        getPublicProperty: GetPublicPropertyUseCase
+        getPublicProperty: GetPublicPropertyUseCase,
+        createCategory: CreateCategoryUseCase,
+        updateCategory: UpdateCategoryUseCase,
+        listCategories: ListCategoriesUseCase,
+        deleteCategory: DeleteCategoryUseCase
       ) =>
         new RentalsApplication(
           createProperty,
@@ -112,7 +145,11 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
           publishProperty,
           checkAvailability,
           listPublicProperties,
-          getPublicProperty
+          getPublicProperty,
+          createCategory,
+          updateCategory,
+          listCategories,
+          deleteCategory
         ),
       inject: [
         CreatePropertyUseCase,
@@ -123,6 +160,10 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
         CheckAvailabilityUseCase,
         ListPublicPropertiesUseCase,
         GetPublicPropertyUseCase,
+        CreateCategoryUseCase,
+        UpdateCategoryUseCase,
+        ListCategoriesUseCase,
+        DeleteCategoryUseCase,
       ],
     },
   ],

@@ -42,6 +42,9 @@ model Workspace {
   tenantId              String
   legalEntityId         String
   name                  String
+  slug                  String?                   @unique
+  publicEnabled         Boolean                   @default(false)
+  publicModules         Json?
   onboardingStatus      WorkspaceOnboardingStatus @default(NEW)
   onboardingCompletedAt DateTime?                 @db.Timestamptz(6)
   createdAt             DateTime                  @default(now()) @db.Timestamptz(6)
@@ -55,6 +58,7 @@ model Workspace {
   legalEntity LegalEntity           @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
   memberships WorkspaceMembership[]
   invites     WorkspaceInvite[]
+  domains     WorkspaceDomain[]
   registers   Register[]
   shiftSessions ShiftSession[]
   posSaleIdempotency PosSaleIdempotency[]
@@ -67,6 +71,18 @@ model Workspace {
   @@index([legalEntityId])
   @@index([tenantId, createdAt])
   @@index([tenantId, onboardingStatus])
+}
+
+model WorkspaceDomain {
+  id          String   @id @default(cuid())
+  workspaceId String
+  domain      String   @unique
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
 }
 
 model WorkspaceMembership {

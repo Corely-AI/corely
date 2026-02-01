@@ -5,9 +5,11 @@ import {
   ListPublicRentalPropertiesInputSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
+import { PublicWorkspaceRoute } from "../../../../shared/public";
 import { RentalsApplication } from "../../application/rentals.application";
 
 @Controller("public/rentals")
+@PublicWorkspaceRoute()
 export class PublicRentalsController {
   constructor(private readonly app: RentalsApplication) {}
 
@@ -39,6 +41,13 @@ export class PublicRentalsController {
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.checkAvailability.execute(input, ctx);
+    return mapResultToHttp(result);
+  }
+
+  @Get("categories")
+  async listCategories(@Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.listCategories.execute(undefined, ctx);
     return mapResultToHttp(result);
   }
 }

@@ -24,6 +24,11 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
         altText: img.altText,
         sortOrder: img.sortOrder,
       })),
+      categories: (row.categories ?? []).map((c: any) => ({
+        id: c.category?.id || c.categoryId,
+        name: c.category?.name || "",
+        slug: c.category?.slug || "",
+      })),
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     };
@@ -51,9 +56,13 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
     return row ? this.mapRow(row) : null;
   }
 
-  async findBySlugPublic(tenantId: string, slug: string): Promise<RentalProperty | null> {
+  async findBySlugPublic(
+    tenantId: string,
+    workspaceId: string,
+    slug: string
+  ): Promise<RentalProperty | null> {
     const row = await this.prisma.rentalProperty.findFirst({
-      where: { slug, tenantId, status: "PUBLISHED" },
+      where: { slug, tenantId, workspaceId, status: "PUBLISHED" },
       include: {
         categories: { include: { category: true } },
         images: true,
@@ -82,6 +91,10 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
 
     const rows = await this.prisma.rentalProperty.findMany({
       where,
+      include: {
+        categories: { include: { category: true } },
+        images: true,
+      },
       orderBy: { updatedAt: "desc" },
     });
     return rows.map((row) => this.mapRow(row));
@@ -89,9 +102,10 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
 
   async listPublic(
     tenantId: string,
+    workspaceId: string,
     filters: { categorySlug?: string; q?: string }
   ): Promise<RentalProperty[]> {
-    const where: any = { tenantId, status: "PUBLISHED" };
+    const where: any = { tenantId, workspaceId, status: "PUBLISHED" };
     if (filters.categorySlug) {
       where.categories = { some: { category: { slug: filters.categorySlug } } };
     }
@@ -104,6 +118,10 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
 
     const rows = await this.prisma.rentalProperty.findMany({
       where,
+      include: {
+        categories: { include: { category: true } },
+        images: true,
+      },
       orderBy: { publishedAt: "desc" },
     });
     return rows.map((row) => this.mapRow(row));

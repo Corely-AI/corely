@@ -6,11 +6,15 @@ import type {
   ListPublicRentalPropertiesInput,
   CheckAvailabilityInput,
   CheckAvailabilityOutput,
+  RentalCategory,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 import { resolveCmsApiBaseUrl, buildPublicFileUrl } from "./cms-api";
 import { request } from "@corely/api-client";
-import { getActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
+import {
+  resolvePublicWorkspacePathPrefix,
+  resolvePublicWorkspaceSlug,
+} from "@/shared/public-workspace";
 
 const requestPublic = async <T>(
   endpoint: string,
@@ -22,24 +26,15 @@ const requestPublic = async <T>(
     correlationId?: string;
   }
 ): Promise<T> => {
-  const urlParams =
-    typeof window !== "undefined"
-      ? new URL(window.location.href).searchParams
-      : new URLSearchParams();
-  const queryWorkspaceId = urlParams.get("workspaceId");
-  const queryTenantId = urlParams.get("tenantId");
-
-  const workspaceId =
-    queryWorkspaceId || getActiveWorkspaceId() || import.meta.env.VITE_PUBLIC_WORKSPACE_ID;
-  const tenantId = queryTenantId || import.meta.env.VITE_PUBLIC_TENANT_ID;
+  const pathPrefix = resolvePublicWorkspacePathPrefix();
+  const prefixedEndpoint = pathPrefix ? `${pathPrefix}${endpoint}` : endpoint;
+  const url = withPublicWorkspaceQuery(prefixedEndpoint);
 
   return request<T>({
-    url: `${resolveCmsApiBaseUrl()}${endpoint}`,
+    url: `${resolveCmsApiBaseUrl()}${url}`,
     method: opts?.method ?? "GET",
     body: opts?.body,
     accessToken: opts?.token,
-    workspaceId: workspaceId ?? null,
-    tenantId: tenantId ?? null,
     idempotencyKey: opts?.idempotencyKey,
     correlationId: opts?.correlationId,
   });
@@ -145,7 +140,57 @@ export class RentalsApi {
       }
     );
   }
+
+  // Categories (Admin)
+  async listCategories(): Promise<RentalCategory[]> {
+    return apiClient.get<RentalCategory[]>("/rentals/categories", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createCategory(input: { name: string; slug: string }): Promise<RentalCategory> {
+    return apiClient.post<RentalCategory>("/rentals/categories", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updateCategory(id: string, input: { name: string; slug: string }): Promise<RentalCategory> {
+    return apiClient.put<RentalCategory>(`/rentals/categories/${id}`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    return apiClient.delete(`/rentals/categories/${id}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  // Categories (Public)
+  async listPublicCategories(): Promise<RentalCategory[]> {
+    return requestPublic<RentalCategory[]>("/public/rentals/categories", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
 }
 
 export const rentalsApi = new RentalsApi();
 export { buildPublicFileUrl };
+
+const allowPublicWorkspaceQuery = () =>
+  import.meta.env.DEV || import.meta.env.VITE_PUBLIC_WORKSPACE_QUERY_ENABLED === "true";
+
+const withPublicWorkspaceQuery = (endpoint: string): string => {
+  const workspaceSlug = resolvePublicWorkspaceSlug();
+  if (!workspaceSlug || !allowPublicWorkspaceQuery()) {
+    return endpoint;
+  }
+
+  const url = new URL(endpoint, "http://localhost");
+  if (!url.searchParams.has("w")) {
+    url.searchParams.set("w", workspaceSlug);
+  }
+  return `${url.pathname}${url.search}`;
+};

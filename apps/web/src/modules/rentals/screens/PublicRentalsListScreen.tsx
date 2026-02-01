@@ -11,9 +11,12 @@ import { Logo } from "@/shared/components/Logo";
 import { useCrudUrlState } from "@/shared/crud";
 import { rentalsApi, buildPublicFileUrl } from "@/lib/rentals-api";
 import { rentalsPublicKeys } from "../queries";
+import { usePublicWorkspace } from "@/shared/public-workspace";
 
 export default function PublicRentalsListScreen() {
   const [listState, setListState] = useCrudUrlState({ pageSize: 12 });
+  const { workspaceSlug } = usePublicWorkspace();
+  const basePath = workspaceSlug ? `/w/${workspaceSlug}/rental` : "/rental";
 
   const {
     data: properties = [],
@@ -21,13 +24,20 @@ export default function PublicRentalsListScreen() {
     isError,
     error,
   } = useQuery({
-    queryKey: rentalsPublicKeys.properties({
+    queryKey: rentalsPublicKeys.properties(workspaceSlug, {
       q: listState.q,
+      categorySlug: listState.filters?.categorySlug as string,
     }),
     queryFn: () =>
       rentalsApi.listPublicProperties({
         q: listState.q,
+        categorySlug: listState.filters?.categorySlug as string,
       }),
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: rentalsPublicKeys.categories(workspaceSlug),
+    queryFn: () => rentalsApi.listPublicCategories(),
   });
 
   const emptyState = (
@@ -46,7 +56,7 @@ export default function PublicRentalsListScreen() {
     <div className="min-h-screen bg-background font-sans">
       <header className="border-b border-border bg-card sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/stay" className="flex items-center gap-2 group">
+          <Link to={basePath} className="flex items-center gap-2 group">
             <div className="bg-accent/10 p-1.5 rounded-lg group-hover:bg-accent/20 transition-colors">
               <Logo size="sm" />
             </div>
@@ -90,6 +100,40 @@ export default function PublicRentalsListScreen() {
           </div>
         </div>
 
+        {categories.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-6 px-6">
+            <Button
+              variant={!listState.filters?.categorySlug ? "accent" : "outline"}
+              size="sm"
+              className="rounded-full shadow-sm"
+              onClick={() =>
+                setListState({
+                  filters: { ...listState.filters, categorySlug: undefined },
+                  page: 1,
+                })
+              }
+            >
+              All Stays
+            </Button>
+            {categories.map((cat) => (
+              <Button
+                key={cat.id}
+                variant={listState.filters?.categorySlug === cat.slug ? "accent" : "outline"}
+                size="sm"
+                className="rounded-full shadow-sm whitespace-nowrap"
+                onClick={() =>
+                  setListState({
+                    filters: { ...listState.filters, categorySlug: cat.slug },
+                    page: 1,
+                  })
+                }
+              >
+                {cat.name}
+              </Button>
+            ))}
+          </div>
+        )}
+
         {isLoading ? (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -117,7 +161,7 @@ export default function PublicRentalsListScreen() {
                 : "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=800"; // Fallback image if needed
 
               return (
-                <Link key={property.id} to={`/stay/${property.slug}`} className="group">
+                <Link key={property.id} to={`${basePath}/${property.slug}`} className="group">
                   <Card className="h-full border-none shadow-none bg-transparent group-hover:translate-y-[-4px] transition-all duration-300">
                     <div className="relative aspect-[4/3] overflow-hidden rounded-2xl mb-4 shadow-md bg-muted">
                       <img
@@ -138,6 +182,18 @@ export default function PublicRentalsListScreen() {
                           {property.name}
                         </h2>
                       </div>
+                      {property.categories && property.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {property.categories.map((cat) => (
+                            <span
+                              key={cat.id}
+                              className="text-[10px] uppercase tracking-wider font-bold text-accent/70 bg-accent/5 px-1.5 py-0.5 rounded"
+                            >
+                              {cat.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
                         {property.summary || "No summary available."}
                       </p>
@@ -172,17 +228,17 @@ export default function PublicRentalsListScreen() {
             <h4 className="font-bold uppercase tracking-widest text-xs text-foreground">Explore</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <Link to="/stay" className="hover:text-accent transition-colors">
+                <Link to={basePath} className="hover:text-accent transition-colors">
                   All Properties
                 </Link>
               </li>
               <li>
-                <Link to="/stay?type=cabin" className="hover:text-accent transition-colors">
+                <Link to={`${basePath}?type=cabin`} className="hover:text-accent transition-colors">
                   Cabins
                 </Link>
               </li>
               <li>
-                <Link to="/stay?type=beach" className="hover:text-accent transition-colors">
+                <Link to={`${basePath}?type=beach`} className="hover:text-accent transition-colors">
                   Beachfront
                 </Link>
               </li>
