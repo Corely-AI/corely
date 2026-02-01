@@ -69,7 +69,9 @@ export default function TeamEditorPage() {
     onSuccess: async (saved) => {
       toast.success(isEdit ? "Team member updated" : "Team member created");
       if (activeShowcaseId) {
-        await queryClient.invalidateQueries({ queryKey: ["portfolio", "team", "list", activeShowcaseId] });
+        await queryClient.invalidateQueries({
+          queryKey: ["portfolio", "team", "list", activeShowcaseId],
+        });
       }
       await queryClient.invalidateQueries({ queryKey: ["portfolio", "team", saved.id] });
       if (!id) {
@@ -135,7 +137,9 @@ export default function TeamEditorPage() {
                 <Label htmlFor="name">Name</Label>
                 <Input id="name" {...form.register("name")} />
                 {form.formState.errors.name && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.name.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -151,7 +155,9 @@ export default function TeamEditorPage() {
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea id="bio" rows={4} {...form.register("bio")} />
                 {form.formState.errors.bio && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.bio.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.bio.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -164,7 +170,12 @@ export default function TeamEditorPage() {
               </div>
               <div>
                 <Label htmlFor="socialLinks">Social links (JSON)</Label>
-                <Textarea id="socialLinks" rows={3} {...form.register("socialLinks")} placeholder='{"linkedin":"https://..."}' />
+                <Textarea
+                  id="socialLinks"
+                  rows={3}
+                  {...form.register("socialLinks")}
+                  placeholder='{"linkedin":"https://..."}'
+                />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>

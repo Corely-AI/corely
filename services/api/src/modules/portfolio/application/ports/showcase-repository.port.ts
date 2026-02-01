@@ -14,14 +14,22 @@ export type ShowcaseListResult = {
 };
 
 export interface ShowcaseRepositoryPort {
-  create(input: Omit<PortfolioShowcase, "id" | "createdAt" | "updatedAt">): Promise<PortfolioShowcase>;
+  create(
+    input: Omit<PortfolioShowcase, "id" | "createdAt" | "updatedAt">
+  ): Promise<PortfolioShowcase>;
   update(
     tenantId: string,
     workspaceId: string,
     showcaseId: string,
-    input: Partial<Omit<PortfolioShowcase, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioShowcase, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioShowcase>;
-  findById(tenantId: string, workspaceId: string, showcaseId: string): Promise<PortfolioShowcase | null>;
+  findById(
+    tenantId: string,
+    workspaceId: string,
+    showcaseId: string
+  ): Promise<PortfolioShowcase | null>;
   findBySlug(
     tenantId: string,
     workspaceId: string,

@@ -37,7 +37,8 @@ export class PortfolioServicesController {
   ) {
     const listQuery = parseListQuery(query, { defaultPageSize: 20 });
     const ctx = buildUseCaseContext(req);
-    const status = typeof query.status === "string" ? (query.status as PortfolioContentStatus) : undefined;
+    const status =
+      typeof query.status === "string" ? (query.status as PortfolioContentStatus) : undefined;
 
     const result = await this.app.listServices.execute(
       {

@@ -14,14 +14,22 @@ export type ServiceListResult = {
 };
 
 export interface ServiceRepositoryPort {
-  create(input: Omit<PortfolioService, "id" | "createdAt" | "updatedAt">): Promise<PortfolioService>;
+  create(
+    input: Omit<PortfolioService, "id" | "createdAt" | "updatedAt">
+  ): Promise<PortfolioService>;
   update(
     tenantId: string,
     workspaceId: string,
     serviceId: string,
-    input: Partial<Omit<PortfolioService, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioService, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioService>;
-  findById(tenantId: string, workspaceId: string, serviceId: string): Promise<PortfolioService | null>;
+  findById(
+    tenantId: string,
+    workspaceId: string,
+    serviceId: string
+  ): Promise<PortfolioService | null>;
   findBySlug(showcaseId: string, slug: string): Promise<PortfolioService | null>;
   listByShowcase(
     tenantId: string,

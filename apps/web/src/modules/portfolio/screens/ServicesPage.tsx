@@ -7,7 +7,12 @@ import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Card, CardContent } from "@/shared/ui/card";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog, useCrudUrlState } from "@/shared/crud";
+import {
+  CrudListPageLayout,
+  CrudRowActions,
+  ConfirmDeleteDialog,
+  useCrudUrlState,
+} from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
 import { portfolioApi } from "@/lib/portfolio-api";
 import { portfolioKeys } from "../queries";
@@ -40,7 +45,8 @@ export default function ServicesPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const filters = useMemo(() => listState.filters ?? {}, [listState.filters]);
-  const statusFilter = typeof filters.status === "string" ? (filters.status as PortfolioContentStatus) : "";
+  const statusFilter =
+    typeof filters.status === "string" ? (filters.status as PortfolioContentStatus) : "";
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: portfolioKeys.services.list(showcaseId ?? "", {
@@ -52,7 +58,10 @@ export default function ServicesPage() {
     }),
     queryFn: () => {
       if (!showcaseId) {
-        return Promise.resolve({ items: [], pageInfo: { page: 1, pageSize: 10, total: 0, hasNextPage: false } });
+        return Promise.resolve({
+          items: [],
+          pageInfo: { page: 1, pageSize: 10, total: 0, hasNextPage: false },
+        });
       }
       return portfolioApi.listServices(showcaseId, {
         q: listState.q,
@@ -72,7 +81,9 @@ export default function ServicesPage() {
     onSuccess: async () => {
       toast.success("Service deleted");
       if (showcaseId) {
-        await queryClient.invalidateQueries({ queryKey: ["portfolio", "services", "list", showcaseId] });
+        await queryClient.invalidateQueries({
+          queryKey: ["portfolio", "services", "list", showcaseId],
+        });
       }
     },
     onError: (err) => {

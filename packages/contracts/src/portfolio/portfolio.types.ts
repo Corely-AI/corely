@@ -18,7 +18,13 @@ export const PortfolioProjectTypeSchema = z.enum([
 ]);
 export type PortfolioProjectType = z.infer<typeof PortfolioProjectTypeSchema>;
 
-export const PortfolioClientTypeSchema = z.enum(["cto", "freelancer", "partner", "employer", "other"]);
+export const PortfolioClientTypeSchema = z.enum([
+  "cto",
+  "freelancer",
+  "partner",
+  "employer",
+  "other",
+]);
 export type PortfolioClientType = z.infer<typeof PortfolioClientTypeSchema>;
 
 export const PortfolioContentStatusSchema = z.enum(["draft", "published", "archived"]);

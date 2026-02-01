@@ -56,7 +56,7 @@ export const toCreateTeamInput = (data: TeamFormData): CreatePortfolioTeamMember
   bio: data.bio.trim(),
   skills: parseCommaList(data.skills),
   photoUrl: emptyToUndefined(data.photoUrl),
-  socialLinks: data.socialLinks ? parseJsonRecord(data.socialLinks) ?? {} : undefined,
+  socialLinks: data.socialLinks ? (parseJsonRecord(data.socialLinks) ?? {}) : undefined,
   status: data.status,
   sortOrder: parseOptionalNumber(data.sortOrder),
 });
@@ -67,7 +67,7 @@ export const toUpdateTeamInput = (data: TeamFormData): UpdatePortfolioTeamMember
   bio: data.bio.trim(),
   skills: parseCommaList(data.skills),
   photoUrl: emptyToNull(data.photoUrl),
-  socialLinks: data.socialLinks ? parseJsonRecord(data.socialLinks) ?? {} : null,
+  socialLinks: data.socialLinks ? (parseJsonRecord(data.socialLinks) ?? {}) : null,
   status: data.status,
   sortOrder: parseOptionalNumber(data.sortOrder),
 });

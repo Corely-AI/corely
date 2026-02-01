@@ -42,4 +42,6 @@ export type PublicPortfolioProjectsOutput = z.infer<typeof PublicPortfolioProjec
 export type PublicPortfolioProjectOutput = z.infer<typeof PublicPortfolioProjectOutputSchema>;
 export type PublicPortfolioClientsOutput = z.infer<typeof PublicPortfolioClientsOutputSchema>;
 export type PublicPortfolioServicesOutput = z.infer<typeof PublicPortfolioServicesOutputSchema>;
-export type PublicPortfolioTeamMembersOutput = z.infer<typeof PublicPortfolioTeamMembersOutputSchema>;
+export type PublicPortfolioTeamMembersOutput = z.infer<
+  typeof PublicPortfolioTeamMembersOutputSchema
+>;

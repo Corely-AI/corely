@@ -83,8 +83,8 @@ export const toCreateProjectInput = (data: ProjectFormData): CreatePortfolioProj
   sortOrder: parseOptionalNumber(data.sortOrder),
   coverImageUrl: emptyToUndefined(data.coverImageUrl),
   techStack: parseCommaList(data.techStack),
-  links: data.links ? parseJsonRecord(data.links) ?? {} : undefined,
-  metrics: data.metrics ? parseJsonRecord(data.metrics) ?? {} : undefined,
+  links: data.links ? (parseJsonRecord(data.links) ?? {}) : undefined,
+  metrics: data.metrics ? (parseJsonRecord(data.metrics) ?? {}) : undefined,
 });
 
 export const toUpdateProjectInput = (data: ProjectFormData): UpdatePortfolioProjectInput => ({
@@ -98,8 +98,8 @@ export const toUpdateProjectInput = (data: ProjectFormData): UpdatePortfolioProj
   sortOrder: parseOptionalNumber(data.sortOrder),
   coverImageUrl: emptyToNull(data.coverImageUrl),
   techStack: parseCommaList(data.techStack),
-  links: data.links ? parseJsonRecord(data.links) ?? {} : null,
-  metrics: data.metrics ? parseJsonRecord(data.metrics) ?? {} : null,
+  links: data.links ? (parseJsonRecord(data.links) ?? {}) : null,
+  metrics: data.metrics ? (parseJsonRecord(data.metrics) ?? {}) : null,
 });
 
 export const validateProjectPayload = (data: ProjectFormData): string | null => {

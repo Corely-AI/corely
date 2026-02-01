@@ -30,7 +30,9 @@ export class PrismaLegalEntityQueryAdapter implements LegalEntityQueryPort {
       });
     }
 
-    if (!entity) {return null;}
+    if (!entity) {
+      return null;
+    }
 
     const address = entity.address as any;
 

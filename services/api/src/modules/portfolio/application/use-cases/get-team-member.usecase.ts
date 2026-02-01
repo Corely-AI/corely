@@ -12,10 +12,7 @@ import {
   err,
 } from "@corely/kernel";
 import type { GetPortfolioTeamMemberOutput } from "@corely/contracts";
-import {
-  TEAM_REPOSITORY_PORT,
-  type TeamRepositoryPort,
-} from "../ports/team-repository.port";
+import { TEAM_REPOSITORY_PORT, type TeamRepositoryPort } from "../ports/team-repository.port";
 import { toPortfolioTeamMemberDto } from "../mappers/portfolio.mapper";
 import { assertPortfolioRead } from "../../policies/portfolio-policies";
 

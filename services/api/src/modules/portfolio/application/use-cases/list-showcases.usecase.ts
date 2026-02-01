@@ -25,9 +25,7 @@ export class ListShowcasesUseCase extends BaseUseCase<
   ListPortfolioShowcasesInput,
   ListPortfolioShowcasesOutput
 > {
-  constructor(
-    @Inject(SHOWCASE_REPOSITORY_PORT) private readonly repo: ShowcaseRepositoryPort
-  ) {
+  constructor(@Inject(SHOWCASE_REPOSITORY_PORT) private readonly repo: ShowcaseRepositoryPort) {
     super({ logger: new NoopLogger() });
   }
 

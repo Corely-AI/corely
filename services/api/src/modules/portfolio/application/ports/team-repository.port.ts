@@ -14,12 +14,16 @@ export type TeamListResult = {
 };
 
 export interface TeamRepositoryPort {
-  create(input: Omit<PortfolioTeamMember, "id" | "createdAt" | "updatedAt">): Promise<PortfolioTeamMember>;
+  create(
+    input: Omit<PortfolioTeamMember, "id" | "createdAt" | "updatedAt">
+  ): Promise<PortfolioTeamMember>;
   update(
     tenantId: string,
     workspaceId: string,
     memberId: string,
-    input: Partial<Omit<PortfolioTeamMember, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioTeamMember, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioTeamMember>;
   findById(
     tenantId: string,

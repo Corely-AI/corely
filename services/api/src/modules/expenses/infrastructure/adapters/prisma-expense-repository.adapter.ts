@@ -134,7 +134,9 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       if (map[field]) {
         orderBy = [{ [map[field]]: direction }];
         // Secondary sort to ensure determinstic pagination
-        if (field !== "createdAt") {orderBy.push({ createdAt: "desc" });}
+        if (field !== "createdAt") {
+          orderBy.push({ createdAt: "desc" });
+        }
       }
     }
 

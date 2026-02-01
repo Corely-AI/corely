@@ -1,9 +1,6 @@
 import { z } from "zod";
 import { ListQuerySchema, PageInfoSchema } from "../common/list.contract";
-import {
-  PortfolioContentStatusSchema,
-  PortfolioTeamMemberSchema,
-} from "./portfolio.types";
+import { PortfolioContentStatusSchema, PortfolioTeamMemberSchema } from "./portfolio.types";
 
 export const CreatePortfolioTeamMemberInputSchema = z.object({
   name: z.string().min(1),

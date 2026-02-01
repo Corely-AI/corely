@@ -11,10 +11,7 @@ import {
   ok,
   err,
 } from "@corely/kernel";
-import {
-  TEAM_REPOSITORY_PORT,
-  type TeamRepositoryPort,
-} from "../ports/team-repository.port";
+import { TEAM_REPOSITORY_PORT, type TeamRepositoryPort } from "../ports/team-repository.port";
 import { assertPortfolioWrite } from "../../policies/portfolio-policies";
 
 @RequireTenant()

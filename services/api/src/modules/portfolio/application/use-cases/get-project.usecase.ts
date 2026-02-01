@@ -21,7 +21,10 @@ import { assertPortfolioRead } from "../../policies/portfolio-policies";
 
 @RequireTenant()
 @Injectable()
-export class GetProjectUseCase extends BaseUseCase<{ projectId: string }, GetPortfolioProjectOutput> {
+export class GetProjectUseCase extends BaseUseCase<
+  { projectId: string },
+  GetPortfolioProjectOutput
+> {
   constructor(@Inject(PROJECT_REPOSITORY_PORT) private readonly repo: ProjectRepositoryPort) {
     super({ logger: new NoopLogger() });
   }
@@ -40,7 +43,11 @@ export class GetProjectUseCase extends BaseUseCase<{ projectId: string }, GetPor
       return err(new NotFoundError("Project not found"));
     }
 
-    const clientIds = await this.repo.listClientIds(ctx.tenantId!, ctx.workspaceId, input.projectId);
+    const clientIds = await this.repo.listClientIds(
+      ctx.tenantId!,
+      ctx.workspaceId,
+      input.projectId
+    );
 
     return ok({ project: toPortfolioProjectDto(project), clientIds });
   }

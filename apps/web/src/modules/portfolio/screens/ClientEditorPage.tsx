@@ -74,7 +74,9 @@ export default function ClientEditorPage() {
     onSuccess: async (saved) => {
       toast.success(isEdit ? "Client updated" : "Client created");
       if (activeShowcaseId) {
-        await queryClient.invalidateQueries({ queryKey: ["portfolio", "clients", "list", activeShowcaseId] });
+        await queryClient.invalidateQueries({
+          queryKey: ["portfolio", "clients", "list", activeShowcaseId],
+        });
       }
       await queryClient.invalidateQueries({ queryKey: ["portfolio", "clients", saved.id] });
       if (!id) {
@@ -107,9 +109,7 @@ export default function ClientEditorPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">
-            {isEdit ? "Edit client" : "Create client"}
-          </h1>
+          <h1 className="text-h1 text-foreground">{isEdit ? "Edit client" : "Create client"}</h1>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate(-1)}>
@@ -145,7 +145,9 @@ export default function ClientEditorPage() {
                   }}
                 />
                 {form.formState.errors.name && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.name.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -159,7 +161,9 @@ export default function ClientEditorPage() {
                   }}
                 />
                 {form.formState.errors.slug && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.slug.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.slug.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -169,9 +173,13 @@ export default function ClientEditorPage() {
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                   value={form.watch("clientType")}
                   onChange={(event) =>
-                    form.setValue("clientType", event.target.value as ClientFormData["clientType"], {
-                      shouldValidate: true,
-                    })
+                    form.setValue(
+                      "clientType",
+                      event.target.value as ClientFormData["clientType"],
+                      {
+                        shouldValidate: true,
+                      }
+                    )
                   }
                 >
                   {typeOptions.map((option) => (
@@ -183,7 +191,11 @@ export default function ClientEditorPage() {
               </div>
               <div>
                 <Label htmlFor="locationText">Location</Label>
-                <Input id="locationText" {...form.register("locationText")} placeholder="Remote / San Francisco" />
+                <Input
+                  id="locationText"
+                  {...form.register("locationText")}
+                  placeholder="Remote / San Francisco"
+                />
                 {form.formState.errors.locationText && (
                   <p className="text-sm text-destructive mt-1">
                     {form.formState.errors.locationText.message}
@@ -193,11 +205,19 @@ export default function ClientEditorPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <Label htmlFor="websiteUrl">Website</Label>
-                  <Input id="websiteUrl" {...form.register("websiteUrl")} placeholder="https://..." />
+                  <Input
+                    id="websiteUrl"
+                    {...form.register("websiteUrl")}
+                    placeholder="https://..."
+                  />
                 </div>
                 <div>
                   <Label htmlFor="logoImageUrl">Logo URL</Label>
-                  <Input id="logoImageUrl" {...form.register("logoImageUrl")} placeholder="https://..." />
+                  <Input
+                    id="logoImageUrl"
+                    {...form.register("logoImageUrl")}
+                    placeholder="https://..."
+                  />
                 </div>
               </div>
               <div>

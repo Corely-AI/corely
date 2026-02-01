@@ -11,10 +11,7 @@ import {
   ok,
   err,
 } from "@corely/kernel";
-import {
-  CLIENT_REPOSITORY_PORT,
-  type ClientRepositoryPort,
-} from "../ports/client-repository.port";
+import { CLIENT_REPOSITORY_PORT, type ClientRepositoryPort } from "../ports/client-repository.port";
 import { assertPortfolioWrite } from "../../policies/portfolio-policies";
 
 @RequireTenant()

@@ -59,7 +59,9 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
     Boolean(config?.capabilities?.[capability]);
 
   const navigationGroups = React.useMemo(() => {
-    if (!config) {return [];}
+    if (!config) {
+      return [];
+    }
     return filterNavigationGroups(config.navigation.groups, config.capabilities);
   }, [config]);
 

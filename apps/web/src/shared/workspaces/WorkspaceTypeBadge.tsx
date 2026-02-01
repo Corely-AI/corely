@@ -6,7 +6,9 @@ import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provide
 export function WorkspaceTypeBadge() {
   const { config } = useWorkspaceConfig();
 
-  if (!config) {return null;}
+  if (!config) {
+    return null;
+  }
 
   return (
     <div className="px-3 py-2 mt-4">

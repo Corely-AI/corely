@@ -21,7 +21,10 @@ import { assertPortfolioRead } from "../../policies/portfolio-policies";
 
 @RequireTenant()
 @Injectable()
-export class GetServiceUseCase extends BaseUseCase<{ serviceId: string }, GetPortfolioServiceOutput> {
+export class GetServiceUseCase extends BaseUseCase<
+  { serviceId: string },
+  GetPortfolioServiceOutput
+> {
   constructor(@Inject(SERVICE_REPOSITORY_PORT) private readonly repo: ServiceRepositoryPort) {
     super({ logger: new NoopLogger() });
   }

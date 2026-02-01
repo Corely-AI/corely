@@ -11,12 +11,13 @@ import {
   ok,
   err,
 } from "@corely/kernel";
-import type { ListPortfolioTeamMembersInput, ListPortfolioTeamMembersOutput, FilterSpec } from "@corely/contracts";
+import type {
+  ListPortfolioTeamMembersInput,
+  ListPortfolioTeamMembersOutput,
+  FilterSpec,
+} from "@corely/contracts";
 import { buildPageInfo } from "../../../../shared/http/pagination";
-import {
-  TEAM_REPOSITORY_PORT,
-  type TeamRepositoryPort,
-} from "../ports/team-repository.port";
+import { TEAM_REPOSITORY_PORT, type TeamRepositoryPort } from "../ports/team-repository.port";
 import {
   SHOWCASE_REPOSITORY_PORT,
   type ShowcaseRepositoryPort,
@@ -27,7 +28,9 @@ import { assertCompanyMode } from "../../domain/portfolio-rules";
 import type { PortfolioContentStatus } from "../../domain/portfolio.types";
 
 const getFilterValue = (filters: FilterSpec[] | undefined, field: string) => {
-  if (!filters) {return undefined;}
+  if (!filters) {
+    return undefined;
+  }
   const match = filters.find((filter) => filter.field === field && filter.operator === "eq");
   return match?.value;
 };

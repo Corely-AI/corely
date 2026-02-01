@@ -59,8 +59,12 @@ export class ListVatPeriodsUseCase extends BaseUseCase<ListVatPeriodsInput, List
     );
 
     for (const p of periods) {
-      if (input.from && p.end <= new Date(input.from)) {continue;}
-      if (input.to && p.start >= new Date(input.to)) {continue;}
+      if (input.from && p.end <= new Date(input.from)) {
+        continue;
+      }
+      if (input.to && p.start >= new Date(input.to)) {
+        continue;
+      }
 
       const inputs = await this.vatPeriodQuery.getInputs(workspaceId, p.start, p.end, method);
       const salesGrossCents = inputs.salesNetCents + inputs.salesVatCents;
