@@ -12,7 +12,7 @@ model Invoice {
   billToCountry      String?
   number      String?
   status      InvoiceStatus @default(DRAFT)
-  currency    String
+  currency    String          @db.VarChar(3)
   notes       String?
   terms       String?
   

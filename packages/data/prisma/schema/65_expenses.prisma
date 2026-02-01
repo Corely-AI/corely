@@ -5,7 +5,7 @@ model Expense {
   expenseDate    DateTime       @db.Date
   merchantName   String?
   supplierPartyId String?
-  currency       String
+  currency       String            @db.VarChar(3)
   notes          String?
   category       String?
   totalAmountCents Int

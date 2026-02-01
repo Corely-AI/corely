@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { CurrencyCodeSchema } from "../money/currency.schema";
+
 import { CustomerDtoSchema } from "../customers/customer.types";
 import { localDateSchema, utcInstantSchema } from "../shared/local-date.schema";
 
@@ -48,7 +50,7 @@ export const InvoiceDtoSchema = z.object({
   billToCity: z.string().nullable().optional(),
   billToPostalCode: z.string().nullable().optional(),
   billToCountry: z.string().nullable().optional(),
-  currency: z.string(),
+  currency: CurrencyCodeSchema,
   notes: z.string().optional().nullable(),
   terms: z.string().optional().nullable(),
   invoiceDate: localDateSchema.nullable(),

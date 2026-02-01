@@ -17,6 +17,8 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
       descriptionHtml: row.descriptionHtml,
       maxGuests: row.maxGuests,
       coverImageFileId: row.coverImageFileId,
+      price: row.price ? Number(row.price) : null,
+      currency: row.currency,
       publishedAt: row.publishedAt?.toISOString() ?? null,
       images: (row.images ?? []).map((img: any) => ({
         id: img.id,
