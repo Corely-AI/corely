@@ -19,7 +19,7 @@ const mapTeamMember = (row: PortfolioTeamMemberModel): PortfolioTeamMember => ({
   bio: row.bio,
   skills: row.skills ?? [],
   photoUrl: row.photoUrl,
-  socialLinks: row.socialLinks,
+  socialLinks: row.socialLinks as Record<string, string> | null,
   status: row.status,
   sortOrder: row.sortOrder,
   createdAt: row.createdAt,
@@ -55,7 +55,9 @@ export class PrismaTeamRepository implements TeamRepositoryPort {
     tenantId: string,
     workspaceId: string,
     memberId: string,
-    input: Partial<Omit<PortfolioTeamMember, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioTeamMember, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioTeamMember> {
     const row = await this.prisma.portfolioTeamMember.update({
       where: { id: memberId },

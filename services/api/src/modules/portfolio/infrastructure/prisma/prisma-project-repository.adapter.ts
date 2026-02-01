@@ -23,9 +23,9 @@ const mapProject = (row: PortfolioProjectModel): PortfolioProject => ({
   featured: row.featured,
   sortOrder: row.sortOrder,
   coverImageUrl: row.coverImageUrl,
-  links: row.links,
+  links: row.links as Record<string, string> | null,
   techStack: row.techStack ?? [],
-  metrics: row.metrics,
+  metrics: row.metrics as Record<string, unknown> | null,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
 });
@@ -53,7 +53,7 @@ export class PrismaProjectRepository implements ProjectRepositoryPort {
         coverImageUrl: input.coverImageUrl ?? null,
         links: input.links ?? null,
         techStack: input.techStack ?? [],
-        metrics: input.metrics ?? null,
+        metrics: (input.metrics ?? null) as Prisma.InputJsonValue,
       },
     });
     return mapProject(row);
@@ -63,7 +63,9 @@ export class PrismaProjectRepository implements ProjectRepositoryPort {
     tenantId: string,
     workspaceId: string,
     projectId: string,
-    input: Partial<Omit<PortfolioProject, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioProject, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioProject> {
     const row = await this.prisma.portfolioProject.update({
       where: { id: projectId },
@@ -79,7 +81,7 @@ export class PrismaProjectRepository implements ProjectRepositoryPort {
         coverImageUrl: input.coverImageUrl,
         links: input.links,
         techStack: input.techStack,
-        metrics: input.metrics,
+        metrics: input.metrics as Prisma.InputJsonValue | undefined,
       },
     });
     return mapProject(row);
@@ -189,11 +191,7 @@ export class PrismaProjectRepository implements ProjectRepositoryPort {
     });
   }
 
-  async listClientIds(
-    tenantId: string,
-    workspaceId: string,
-    projectId: string
-  ): Promise<string[]> {
+  async listClientIds(tenantId: string, workspaceId: string, projectId: string): Promise<string[]> {
     const rows = await this.prisma.portfolioProjectClient.findMany({
       where: { projectId, tenantId, workspaceId },
       select: { clientId: true },

@@ -19,7 +19,7 @@ const mapProfile = (row: PortfolioProfileModel): PortfolioProfile => ({
   ctaText: row.ctaText,
   ctaUrl: row.ctaUrl,
   techStacks: row.techStacks ?? [],
-  socialLinks: row.socialLinks,
+  socialLinks: row.socialLinks as Record<string, string> | null,
   homeSections: row.homeSections ?? [],
   isPublished: row.isPublished,
   createdAt: row.createdAt,
