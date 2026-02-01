@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { DocumentsController } from "./adapters/http/documents.controller";
 import { InvoicePdfController } from "./adapters/http/invoice-pdf.controller";
+import { PublicDocumentsController } from "./adapters/http/public-documents.controller";
 import { DocumentsApplication } from "./application/documents.application";
 import { PrismaDocumentRepoAdapter } from "./infrastructure/prisma/prisma-document-repo.adapter";
 import { PrismaFileRepoAdapter } from "./infrastructure/prisma/prisma-file-repo.adapter";
@@ -26,12 +27,18 @@ import { CompleteUploadUseCase } from "./application/use-cases/complete-upload/c
 import { CreateUploadIntentUseCase } from "./application/use-cases/create-upload-intent/create-upload-intent.usecase";
 import { GenerateInvoicePdfWorker } from "./application/use-cases/generate-invoice-pdf-worker/generate-invoice-pdf.worker";
 import { GetDownloadUrlUseCase } from "./application/use-cases/get-download-url/get-download-url.usecase";
+import { GetDocumentUseCase } from "./application/use-cases/get-document/get-document.usecase";
+import { GetPublicFileUrlUseCase } from "./application/use-cases/get-public-file-url/get-public-file-url.usecase";
 import { LinkDocumentUseCase } from "./application/use-cases/link-document/link-document.usecase";
+import { ListLinkedDocumentsUseCase } from "./application/use-cases/list-linked-documents/list-linked-documents.usecase";
 import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoice-pdf/request-invoice-pdf.usecase";
+import { UnlinkDocumentUseCase } from "./application/use-cases/unlink-document/unlink-document.usecase";
+import { UploadFileUseCase } from "./application/use-cases/upload-file/upload-file.usecase";
+import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/proxy-download.usecase";
 
 @Module({
   imports: [IdentityModule, KernelModule],
-  controllers: [DocumentsController, InvoicePdfController],
+  controllers: [DocumentsController, InvoicePdfController, PublicDocumentsController],
   providers: [
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
@@ -124,6 +131,31 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
       ],
     },
     {
+      provide: GetDocumentUseCase,
+      useFactory: (documentRepo: PrismaDocumentRepoAdapter, fileRepo: PrismaFileRepoAdapter) =>
+        new GetDocumentUseCase({
+          logger: new NestLoggerAdapter(),
+          documentRepo,
+          fileRepo,
+        }),
+      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter],
+    },
+    {
+      provide: GetPublicFileUrlUseCase,
+      useFactory: (
+        fileRepo: PrismaFileRepoAdapter,
+        storage: GcsObjectStorageAdapter,
+        env: EnvService
+      ) =>
+        new GetPublicFileUrlUseCase({
+          logger: new NestLoggerAdapter(),
+          fileRepo,
+          objectStorage: storage,
+          downloadTtlSeconds: env.SIGNED_URL_DOWNLOAD_TTL_SECONDS,
+        }),
+      inject: [PrismaFileRepoAdapter, GcsObjectStorageAdapter, EnvService],
+    },
+    {
       provide: LinkDocumentUseCase,
       useFactory: (documentRepo: PrismaDocumentRepoAdapter, linkRepo: PrismaDocumentLinkAdapter) =>
         new LinkDocumentUseCase({
@@ -132,6 +164,21 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
           linkRepo,
         }),
       inject: [PrismaDocumentRepoAdapter, PrismaDocumentLinkAdapter],
+    },
+    {
+      provide: ListLinkedDocumentsUseCase,
+      useFactory: (
+        documentRepo: PrismaDocumentRepoAdapter,
+        linkRepo: PrismaDocumentLinkAdapter,
+        fileRepo: PrismaFileRepoAdapter
+      ) =>
+        new ListLinkedDocumentsUseCase({
+          logger: new NestLoggerAdapter(),
+          documentRepo,
+          linkRepo,
+          fileRepo,
+        }),
+      inject: [PrismaDocumentRepoAdapter, PrismaDocumentLinkAdapter, PrismaFileRepoAdapter],
     },
     {
       provide: RequestInvoicePdfUseCase,
@@ -169,6 +216,58 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
       ],
     },
     {
+      provide: UnlinkDocumentUseCase,
+      useFactory: (linkRepo: PrismaDocumentLinkAdapter) =>
+        new UnlinkDocumentUseCase({
+          logger: new NestLoggerAdapter(),
+          linkRepo,
+        }),
+      inject: [PrismaDocumentLinkAdapter],
+    },
+    {
+      provide: UploadFileUseCase,
+      useFactory: (
+        documentRepo: PrismaDocumentRepoAdapter,
+        fileRepo: PrismaFileRepoAdapter,
+        storage: GcsObjectStorageAdapter,
+        idGen: IdGeneratorPort,
+        clock: ClockPort,
+        env: EnvService
+      ) =>
+        new UploadFileUseCase({
+          logger: new NestLoggerAdapter(),
+          documentRepo,
+          fileRepo,
+          objectStorage: storage,
+          idGenerator: idGen,
+          clock,
+          keyPrefix: env.STORAGE_KEY_PREFIX,
+          maxUploadBytes: env.MAX_UPLOAD_BYTES,
+        }),
+      inject: [
+        PrismaDocumentRepoAdapter,
+        PrismaFileRepoAdapter,
+        GcsObjectStorageAdapter,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        EnvService,
+      ],
+    },
+    {
+      provide: ProxyDownloadUseCase,
+      useFactory: (
+        documentRepo: PrismaDocumentRepoAdapter,
+        fileRepo: PrismaFileRepoAdapter,
+        storage: GcsObjectStorageAdapter
+      ) =>
+        new ProxyDownloadUseCase({
+          documentRepo,
+          fileRepo,
+          objectStorage: storage,
+        }),
+      inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, GcsObjectStorageAdapter],
+    },
+    {
       provide: GenerateInvoicePdfWorker,
       useFactory: (
         documentRepo: PrismaDocumentRepoAdapter,
@@ -199,24 +298,42 @@ import { RequestInvoicePdfUseCase } from "./application/use-cases/request-invoic
         createUploadIntent: CreateUploadIntentUseCase,
         completeUpload: CompleteUploadUseCase,
         getDownloadUrl: GetDownloadUrlUseCase,
+        getDocument: GetDocumentUseCase,
+        getPublicFileUrl: GetPublicFileUrlUseCase,
         linkDocument: LinkDocumentUseCase,
+        listLinkedDocuments: ListLinkedDocumentsUseCase,
         requestInvoicePdf: RequestInvoicePdfUseCase,
+        unlinkDocument: UnlinkDocumentUseCase,
+        uploadFile: UploadFileUseCase,
+        proxyDownload: ProxyDownloadUseCase,
         generateInvoicePdfWorker: GenerateInvoicePdfWorker
       ) =>
         new DocumentsApplication(
           createUploadIntent,
           completeUpload,
           getDownloadUrl,
+          getDocument,
+          getPublicFileUrl,
           linkDocument,
+          listLinkedDocuments,
           requestInvoicePdf,
+          unlinkDocument,
+          uploadFile,
+          proxyDownload,
           generateInvoicePdfWorker
         ),
       inject: [
         CreateUploadIntentUseCase,
         CompleteUploadUseCase,
         GetDownloadUrlUseCase,
+        GetDocumentUseCase,
+        GetPublicFileUrlUseCase,
         LinkDocumentUseCase,
+        ListLinkedDocumentsUseCase,
         RequestInvoicePdfUseCase,
+        UnlinkDocumentUseCase,
+        UploadFileUseCase,
+        ProxyDownloadUseCase,
         GenerateInvoicePdfWorker,
       ],
     },

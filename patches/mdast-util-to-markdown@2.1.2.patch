@@ -1,0 +1,204 @@
+diff --git a/index.d.ts b/index.d.ts
+index 5a07a51779e45752303c6e40c3c8c3b2f49da40b..3ac0002d4e5eaa1f9fe298c9e5e1190a50efdeef 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -11,6 +11,6 @@ export type {
+   State,
+   Tracker,
+   Unsafe
+-} from './lib/types.js'
+-export {toMarkdown} from './lib/index.js'
+-export {handle as defaultHandlers} from './lib/handle/index.js'
++} from './lib/types.js';
++export {toMarkdown} from './lib/index.js';
++export {handle as defaultHandlers} from './lib/handle/index.js';
+diff --git a/lib/handle/blockquote.d.ts b/lib/handle/blockquote.d.ts
+index 1a933651eb6920c31d0da26afd759c52c5488e79..5af89c126abb09d99aa1512d0d208e68f08dc44b 100644
+--- a/lib/handle/blockquote.d.ts
++++ b/lib/handle/blockquote.d.ts
+@@ -1,6 +1,6 @@
+ /**
+- * @import {Blockquote, Parents} from 'mdast'
+- * @import {Info, Map, State} from 'mdast-util-to-markdown'
++ * @import {Blockquote, Parents} from 'mdast';
++ * @import {Info, Map, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {Blockquote} node
+diff --git a/lib/handle/paragraph.d.ts b/lib/handle/paragraph.d.ts
+index d1491bb954d5b91f969ba64b4040f1d5395e64ac..84e02cf74bdb6d53729bc34fc4518e138ea54603 100644
+--- a/lib/handle/paragraph.d.ts
++++ b/lib/handle/paragraph.d.ts
+@@ -1,6 +1,6 @@
+ /**
+- * @import {Info, State} from 'mdast-util-to-markdown'
+- * @import {Paragraph, Parents} from 'mdast'
++ * @import {Info, State} from 'mdast-util-to-markdown';
++ * @import {Paragraph, Parents} from 'mdast';
+  */
+ /**
+  * @param {Paragraph} node
+diff --git a/lib/handle/text.d.ts b/lib/handle/text.d.ts
+index 9436fdedeb7a4644e7e7349adfc2de425bdd423c..b4fbd50ee9c741a42e802499ceb761ef644c2910 100644
+--- a/lib/handle/text.d.ts
++++ b/lib/handle/text.d.ts
+@@ -1,6 +1,6 @@
+ /**
+- * @import {Info, State} from 'mdast-util-to-markdown'
+- * @import {Parents, Text} from 'mdast'
++ * @import {Info, State} from 'mdast-util-to-markdown';
++ * @import {Parents, Text} from 'mdast';
+  */
+ /**
+  * @param {Text} node
+diff --git a/lib/types.d.ts b/lib/types.d.ts
+index 4cf0157a1884ecde170ffdb652c48f13b61b8506..0fba130365392b29798e6c03c63d0d8fc3ebdd43 100644
+--- a/lib/types.d.ts
++++ b/lib/types.d.ts
+@@ -5,8 +5,8 @@ import type {
+   TableRow,
+   Association,
+   Nodes
+-} from 'mdast'
+-import type {Point} from 'unist'
++} from 'mdast';
++import type {Point} from 'unist';
+ 
+ /**
+  * Get an identifier from an association to match it to others.
+diff --git a/lib/util/check-bullet-ordered.d.ts b/lib/util/check-bullet-ordered.d.ts
+index 8e71a0a29bb72f6bb71f2a4b69505cf0a2b2c70d..26eb67a462479a7727aeffb907f613a8943b375c 100644
+--- a/lib/util/check-bullet-ordered.d.ts
++++ b/lib/util/check-bullet-ordered.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/check-bullet.d.ts b/lib/util/check-bullet.d.ts
+index 63e27c4a087a1609e40b12da3231bc6216269e12..101d567db8cc89a4692e6a1b77b8c5586dd74506 100644
+--- a/lib/util/check-bullet.d.ts
++++ b/lib/util/check-bullet.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/check-emphasis.d.ts b/lib/util/check-emphasis.d.ts
+index 0963030bf4d7100dcad20edf6c7c395a021fef52..c9dd8661851cd2fe56d525ec9ed341f84ab5d973 100644
+--- a/lib/util/check-emphasis.d.ts
++++ b/lib/util/check-emphasis.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/check-fence.d.ts b/lib/util/check-fence.d.ts
+index 33a33a144c9aed3a9e7c5d1904ae0a8cafa75956..9cca80478ecb044601e2cbb9d38fa6955a1d1f60 100644
+--- a/lib/util/check-fence.d.ts
++++ b/lib/util/check-fence.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/check-list-item-indent.d.ts b/lib/util/check-list-item-indent.d.ts
+index 143f866db15bf46ea13829c8b5f8a249987f51e6..de5970af37944024aca247a8b85f974cfdd12217 100644
+--- a/lib/util/check-list-item-indent.d.ts
++++ b/lib/util/check-list-item-indent.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/check-quote.d.ts b/lib/util/check-quote.d.ts
+index 48b6d82efeb88fdd5bf5fc91dfd8406d69abe342..63173a2e54218ae896150d33a3a56e301a7448dd 100644
+--- a/lib/util/check-quote.d.ts
++++ b/lib/util/check-quote.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/check-rule-repetition.d.ts b/lib/util/check-rule-repetition.d.ts
+index aaa32388b2bd48bb61781b5dfb81062abf00df7a..14e9a293646e775a019da25af740d444e7fc4de0 100644
+--- a/lib/util/check-rule-repetition.d.ts
++++ b/lib/util/check-rule-repetition.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/check-rule.d.ts b/lib/util/check-rule.d.ts
+index 21514d9ef789be75c75f0b7d17c70db417666d39..4f705e4a7da49d5bc1539a869e67c17ce3d90e88 100644
+--- a/lib/util/check-rule.d.ts
++++ b/lib/util/check-rule.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/check-strong.d.ts b/lib/util/check-strong.d.ts
+index 6649c4ca6c175c682b3926a57be1615802007dd8..1f1ec299b28ed305433b23ad1f184e3446f7172d 100644
+--- a/lib/util/check-strong.d.ts
++++ b/lib/util/check-strong.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {Options, State} from 'mdast-util-to-markdown'
++ * @import {Options, State} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {State} state
+diff --git a/lib/util/container-flow.d.ts b/lib/util/container-flow.d.ts
+index 0e4338ffea3b33b6e134768a6e9ad8060ad6aead..93fc0427b016bbb965dd289db397c55fa811e494 100644
+--- a/lib/util/container-flow.d.ts
++++ b/lib/util/container-flow.d.ts
+@@ -1,6 +1,6 @@
+ /**
+- * @import {State} from 'mdast-util-to-markdown'
+- * @import {FlowChildren, FlowParents, TrackFields} from '../types.js'
++ * @import {State} from 'mdast-util-to-markdown';
++ * @import {FlowChildren, FlowParents, TrackFields} from '../types.js';
+  */
+ /**
+  * @param {FlowParents} parent
+diff --git a/lib/util/format-code-as-indented.d.ts b/lib/util/format-code-as-indented.d.ts
+index 88487873e82a43f475d4f72d58e79deb408fe708..1ddf3a5d8f0316539d3c53d5c8484da068724947 100644
+--- a/lib/util/format-code-as-indented.d.ts
++++ b/lib/util/format-code-as-indented.d.ts
+@@ -1,6 +1,6 @@
+ /**
+- * @import {State} from 'mdast-util-to-markdown'
+- * @import {Code} from 'mdast'
++ * @import {State} from 'mdast-util-to-markdown';
++ * @import {Code} from 'mdast';
+  */
+ /**
+  * @param {Code} node
+diff --git a/lib/util/pattern-in-scope.d.ts b/lib/util/pattern-in-scope.d.ts
+index b20731ff7c093ec1b1af97f28ab94a173153b3bf..6998040ea8d8bbfca6a25a88cb185f7b7de7af65 100644
+--- a/lib/util/pattern-in-scope.d.ts
++++ b/lib/util/pattern-in-scope.d.ts
+@@ -1,5 +1,5 @@
+ /**
+- * @import {ConstructName, Unsafe} from 'mdast-util-to-markdown'
++ * @import {ConstructName, Unsafe} from 'mdast-util-to-markdown';
+  */
+ /**
+  * @param {Array<ConstructName>} stack

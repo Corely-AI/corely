@@ -9,6 +9,7 @@ import {
   NotFoundError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { type CompleteUploadInput, type CompleteUploadOutput } from "@corely/contracts";
 import { type DocumentRepoPort } from "../../ports/document-repository.port";
@@ -24,6 +25,7 @@ type Deps = {
   clock: ClockPort;
 };
 
+@RequireTenant()
 export class CompleteUploadUseCase extends BaseUseCase<CompleteUploadInput, CompleteUploadOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -43,10 +45,6 @@ export class CompleteUploadUseCase extends BaseUseCase<CompleteUploadInput, Comp
     input: CompleteUploadInput,
     ctx: UseCaseContext
   ): Promise<Result<CompleteUploadOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
-
     const document = await this.useCaseDeps.documentRepo.findById(ctx.tenantId, input.documentId);
     if (!document) {
       return err(new NotFoundError("Document not found"));

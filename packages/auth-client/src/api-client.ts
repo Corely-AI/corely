@@ -24,6 +24,10 @@ export class ApiClient {
     this.onAuthError = config.onAuthError;
   }
 
+  getBaseUrl(): string {
+    return this.apiUrl;
+  }
+
   generateIdempotencyKey(): string {
     return createIdempotencyKey();
   }
@@ -39,10 +43,12 @@ export class ApiClient {
       idempotencyKey?: string;
       correlationId?: string;
       skipTokenRefresh?: boolean;
+      parseJson?: boolean;
     }
   ): Promise<T> {
     const accessToken = this.authClient.getAccessToken();
     const workspaceId = await this.storage.getActiveWorkspaceId();
+    const parseJson = opts?.parseJson ?? true;
 
     try {
       return await request<T>({
@@ -54,6 +60,7 @@ export class ApiClient {
         workspaceId: workspaceId ?? null,
         idempotencyKey: opts?.idempotencyKey,
         correlationId: opts?.correlationId,
+        parseJson,
       });
     } catch (error) {
       // If we get a 401 and haven't already tried refreshing, attempt token refresh
@@ -140,5 +147,14 @@ export class ApiClient {
 
   async delete<T>(endpoint: string, opts?: { correlationId?: string }): Promise<T> {
     return this.request<T>(endpoint, { method: "DELETE" }, opts);
+  }
+
+  async getBlob(endpoint: string, opts?: { correlationId?: string }): Promise<Blob> {
+    const response = await this.request<Response>(
+      endpoint,
+      { method: "GET" },
+      { ...opts, parseJson: false }
+    );
+    return response.blob();
   }
 }

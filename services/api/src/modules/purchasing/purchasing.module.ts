@@ -30,39 +30,34 @@ import { PURCHASING_SETTINGS_REPO } from "./application/ports/settings-repositor
 import { PURCHASING_ACCOUNT_MAPPING_REPO } from "./application/ports/account-mapping-repository.port";
 import { SUPPLIER_QUERY_PORT } from "./application/ports/supplier-query.port";
 
-import {
-  CreatePurchaseOrderUseCase,
-  UpdatePurchaseOrderUseCase,
-  ApprovePurchaseOrderUseCase,
-  SendPurchaseOrderUseCase,
-  ReceivePurchaseOrderUseCase,
-  ClosePurchaseOrderUseCase,
-  CancelPurchaseOrderUseCase,
-  GetPurchaseOrderUseCase,
-  ListPurchaseOrdersUseCase,
-} from "./application/use-cases/purchase-orders.usecases";
-import {
-  CreateVendorBillUseCase,
-  UpdateVendorBillUseCase,
-  ApproveVendorBillUseCase,
-  PostVendorBillUseCase,
-  VoidVendorBillUseCase,
-  GetVendorBillUseCase,
-  ListVendorBillsUseCase,
-} from "./application/use-cases/vendor-bills.usecases";
-import {
-  RecordBillPaymentUseCase,
-  ListBillPaymentsUseCase,
-} from "./application/use-cases/bill-payments.usecases";
-import {
-  GetPurchasingSettingsUseCase,
-  UpdatePurchasingSettingsUseCase,
-} from "./application/use-cases/settings.usecases";
-import {
-  ListAccountMappingsUseCase,
-  UpsertAccountMappingUseCase,
-} from "./application/use-cases/account-mappings.usecases";
-import { ListSuppliersUseCase } from "./application/use-cases/suppliers.usecases";
+import { CreatePurchaseOrderUseCase } from "./application/use-cases/create-purchase-order.usecase";
+import { UpdatePurchaseOrderUseCase } from "./application/use-cases/update-purchase-order.usecase";
+import { ApprovePurchaseOrderUseCase } from "./application/use-cases/approve-purchase-order.usecase";
+import { SendPurchaseOrderUseCase } from "./application/use-cases/send-purchase-order.usecase";
+import { ReceivePurchaseOrderUseCase } from "./application/use-cases/receive-purchase-order.usecase";
+import { ClosePurchaseOrderUseCase } from "./application/use-cases/close-purchase-order.usecase";
+import { CancelPurchaseOrderUseCase } from "./application/use-cases/cancel-purchase-order.usecase";
+import { GetPurchaseOrderUseCase } from "./application/use-cases/get-purchase-order.usecase";
+import { ListPurchaseOrdersUseCase } from "./application/use-cases/list-purchase-orders.usecase";
+
+import { CreateVendorBillUseCase } from "./application/use-cases/create-vendor-bill.usecase";
+import { UpdateVendorBillUseCase } from "./application/use-cases/update-vendor-bill.usecase";
+import { ApproveVendorBillUseCase } from "./application/use-cases/approve-vendor-bill.usecase";
+import { PostVendorBillUseCase } from "./application/use-cases/post-vendor-bill.usecase";
+import { VoidVendorBillUseCase } from "./application/use-cases/void-vendor-bill.usecase";
+import { GetVendorBillUseCase } from "./application/use-cases/get-vendor-bill.usecase";
+import { ListVendorBillsUseCase } from "./application/use-cases/list-vendor-bills.usecase";
+
+import { RecordBillPaymentUseCase } from "./application/use-cases/record-bill-payment.usecase";
+import { ListBillPaymentsUseCase } from "./application/use-cases/list-bill-payments.usecase";
+
+import { GetPurchasingSettingsUseCase } from "./application/use-cases/get-purchasing-settings.usecase";
+import { UpdatePurchasingSettingsUseCase } from "./application/use-cases/update-purchasing-settings.usecase";
+
+import { ListAccountMappingsUseCase } from "./application/use-cases/list-account-mappings.usecase";
+import { UpsertAccountMappingUseCase } from "./application/use-cases/upsert-account-mapping.usecase";
+
+import { ListSuppliersUseCase } from "./application/use-cases/list-suppliers.usecase";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule, AccountingModule],

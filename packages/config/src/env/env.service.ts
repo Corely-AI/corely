@@ -25,18 +25,6 @@ export class EnvService {
     return this.config.LOG_LEVEL;
   }
 
-  get EDITION(): "oss" | "ee" {
-    return this.config.EDITION;
-  }
-
-  get DEFAULT_TENANT_ID(): string {
-    return this.config.DEFAULT_TENANT_ID;
-  }
-
-  get DEFAULT_WORKSPACE_ID(): string {
-    return this.config.DEFAULT_WORKSPACE_ID;
-  }
-
   // ============================================================================
   // DATABASE
   // ============================================================================

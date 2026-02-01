@@ -16,8 +16,10 @@ import { REGISTER_REPOSITORY_PORT } from "./application/ports/register-repositor
 import { SHIFT_SESSION_REPOSITORY_PORT } from "./application/ports/shift-session-repository.port";
 import { POS_SALE_IDEMPOTENCY_PORT } from "./application/ports/pos-sale-idempotency.port";
 
+import { CashManagementModule } from "../cash-management/cash-management.module";
+
 @Module({
-  imports: [DataModule, KernelModule],
+  imports: [DataModule, KernelModule, CashManagementModule],
   controllers: [PosController],
   providers: [
     // Infrastructure adapters

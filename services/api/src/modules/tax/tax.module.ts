@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Inject, Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
@@ -25,6 +25,24 @@ import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
 import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
 import { GenerateTaxReportsUseCase } from "./application/services/generate-tax-reports.use-case";
+import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-case";
+import { GetTaxCapabilitiesUseCase } from "./application/use-cases/get-tax-capabilities.use-case";
+import { ListTaxFilingsUseCase } from "./application/use-cases/list-tax-filings.use-case";
+import { ListTaxPaymentsUseCase } from "./application/use-cases/list-tax-payments.use-case";
+import { ExportTaxPaymentsUseCase } from "./application/use-cases/export-tax-payments.use-case";
+import { GetVatFilingPeriodsUseCase } from "./application/use-cases/get-vat-filing-periods.use-case";
+import { CreateTaxFilingUseCase } from "./application/use-cases/create-tax-filing.use-case";
+import { GetTaxFilingDetailUseCase } from "./application/use-cases/get-tax-filing-detail.use-case";
+import { ListTaxFilingItemsUseCase } from "./application/use-cases/list-tax-filing-items.use-case";
+import { ListTaxFilingAttachmentsUseCase } from "./application/use-cases/list-tax-filing-attachments.use-case";
+import { AttachTaxFilingDocumentUseCase } from "./application/use-cases/attach-tax-filing-document.use-case";
+import { AttachTaxFilingPaymentProofUseCase } from "./application/use-cases/attach-tax-filing-payment-proof.use-case";
+import { RemoveTaxFilingAttachmentUseCase } from "./application/use-cases/remove-tax-filing-attachment.use-case";
+import { ListTaxFilingActivityUseCase } from "./application/use-cases/list-tax-filing-activity.use-case";
+import { RecalculateTaxFilingUseCase } from "./application/use-cases/recalculate-tax-filing.use-case";
+import { SubmitTaxFilingUseCase } from "./application/use-cases/submit-tax-filing.use-case";
+import { MarkTaxFilingPaidUseCase } from "./application/use-cases/mark-tax-filing-paid.use-case";
+import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filing.use-case";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -32,6 +50,7 @@ import { DEPackV1 } from "./application/services/jurisdictions/de-pack.v1";
 import { TaxStrategyResolverService } from "./application/services/tax-strategy-resolver.service";
 import { PersonalTaxStrategy } from "./application/services/personal-tax-strategy";
 import { CompanyTaxStrategy } from "./application/services/company-tax-strategy";
+import { TaxCapabilitiesService } from "./application/services/tax-capabilities.service";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 import { TaxPdfRenderer } from "./infrastructure/pdf/tax-pdf-renderer";
 
@@ -64,6 +83,8 @@ import { PrismaTaxConsultantRepoAdapter } from "./infrastructure/prisma/prisma-t
 import { PrismaTaxReportRepoAdapter } from "./infrastructure/prisma/prisma-tax-report-repo.adapter";
 import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax-summary-query.adapter";
 import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-period-query.adapter";
+import { WORKSPACE_TAX_SETTINGS_PORT } from "./application/ports/workspace-tax-settings.port";
+import { PrismaWorkspaceTaxSettingsAdapter } from "./infrastructure/prisma/prisma-workspace-tax-settings.adapter";
 import { DocumentsModule } from "../documents/documents.module";
 
 @Module({
@@ -90,7 +111,26 @@ import { DocumentsModule } from "../documents/documents.module";
     MarkVatPeriodNilUseCase,
     ArchiveVatPeriodUseCase,
     GenerateTaxReportPdfUseCase,
+    GenerateTaxReportPdfUseCase,
     GenerateTaxReportsUseCase,
+    GetTaxCenterUseCase,
+    GetTaxCapabilitiesUseCase,
+    ListTaxFilingsUseCase,
+    ListTaxPaymentsUseCase,
+    ExportTaxPaymentsUseCase,
+    GetVatFilingPeriodsUseCase,
+    CreateTaxFilingUseCase,
+    GetTaxFilingDetailUseCase,
+    ListTaxFilingItemsUseCase,
+    ListTaxFilingAttachmentsUseCase,
+    AttachTaxFilingDocumentUseCase,
+    AttachTaxFilingPaymentProofUseCase,
+    RemoveTaxFilingAttachmentUseCase,
+    ListTaxFilingActivityUseCase,
+    RecalculateTaxFilingUseCase,
+    SubmitTaxFilingUseCase,
+    MarkTaxFilingPaidUseCase,
+    DeleteTaxFilingUseCase,
 
     // Services
     TaxEngineService,
@@ -98,6 +138,7 @@ import { DocumentsModule } from "../documents/documents.module";
     TaxStrategyResolverService,
     PersonalTaxStrategy,
     CompanyTaxStrategy,
+    TaxCapabilitiesService,
     VatPeriodResolver,
     TaxPdfRenderer,
 
@@ -144,6 +185,10 @@ import { DocumentsModule } from "../documents/documents.module";
       provide: VatPeriodQueryPort,
       useClass: PrismaVatPeriodQueryAdapter,
     },
+    {
+      provide: WORKSPACE_TAX_SETTINGS_PORT,
+      useClass: PrismaWorkspaceTaxSettingsAdapter,
+    },
   ],
   exports: [
     // Export use cases so other modules can use them
@@ -155,10 +200,10 @@ import { DocumentsModule } from "../documents/documents.module";
 })
 export class TaxModule {
   constructor(
-    private readonly registry: ReportRegistry,
-    private readonly vatAdvanceDe: VatAdvanceDeStrategy,
-    private readonly euSalesDe: EuSalesListDeStrategy,
-    private readonly incomeTaxDe: IncomeTaxDeStrategy
+    @Inject(ReportRegistry) private readonly registry: ReportRegistry,
+    @Inject(VatAdvanceDeStrategy) private readonly vatAdvanceDe: VatAdvanceDeStrategy,
+    @Inject(EuSalesListDeStrategy) private readonly euSalesDe: EuSalesListDeStrategy,
+    @Inject(IncomeTaxDeStrategy) private readonly incomeTaxDe: IncomeTaxDeStrategy
   ) {
     this.registry.register(vatAdvanceDe);
     this.registry.register(euSalesDe);

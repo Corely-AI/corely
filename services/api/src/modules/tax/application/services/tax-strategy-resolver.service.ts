@@ -1,23 +1,23 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
+import { Injectable, Inject } from "@nestjs/common";
 import { PersonalTaxStrategy } from "./personal-tax-strategy";
 import { CompanyTaxStrategy } from "./company-tax-strategy";
 import { TaxComputationStrategy } from "./tax-strategy";
+import {
+  WORKSPACE_TAX_SETTINGS_PORT,
+  type WorkspaceTaxSettingsPort,
+} from "../ports/workspace-tax-settings.port";
 
 @Injectable()
 export class TaxStrategyResolverService {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(WORKSPACE_TAX_SETTINGS_PORT)
+    private readonly settingsRepo: WorkspaceTaxSettingsPort,
     private readonly personal: PersonalTaxStrategy,
     private readonly company: CompanyTaxStrategy
   ) {}
 
   async resolve(workspaceId: string): Promise<TaxComputationStrategy> {
-    const workspace = await this.prisma.workspace.findUnique({
-      where: { id: workspaceId },
-      include: { legalEntity: true },
-    });
-    const kind = workspace?.legalEntity?.kind ?? "PERSONAL";
+    const kind = await this.settingsRepo.getLegalEntityKind(workspaceId);
     return kind === "COMPANY" ? this.company : this.personal;
   }
 }

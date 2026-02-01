@@ -7,6 +7,9 @@ import {
 type StoredObject = { key: string; contentType: string; bytes: Buffer };
 
 export class FakeObjectStoragePort implements ObjectStoragePort {
+  getObject(args: { tenantId: string; objectKey: string }): Promise<Buffer> {
+    throw new Error("Method not implemented.");
+  }
   bucketName = "fake-bucket";
   objects = new Map<string, StoredObject>();
 

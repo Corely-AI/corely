@@ -1,0 +1,71 @@
+diff --git a/dev/index.d.ts b/dev/index.d.ts
+index 2a7eb0b72a19aadc7e682e5d599cb0b34716c2ba..184108c4d4d7738966a4fd4774826e57fd0353cb 100644
+--- a/dev/index.d.ts
++++ b/dev/index.d.ts
+@@ -1,4 +1,4 @@
+-export type {Encoding, Token, Value} from 'micromark-util-types'
++export type {Encoding, Token, Value} from 'micromark-util-types';
+ export type {
+   CompileContext,
+   CompileData,
+@@ -9,8 +9,8 @@ export type {
+   OnExitError,
+   Options,
+   Transform
+-} from './lib/types.js'
+-export {fromMarkdown} from './lib/index.js'
++} from './lib/types.js';
++export {fromMarkdown} from './lib/index.js';
+ 
+ declare module 'micromark-util-types' {
+   interface TokenTypeMap {
+diff --git a/dev/lib/types.d.ts b/dev/lib/types.d.ts
+index 710de761b176901337cab011c8936732f01fb750..aba030060f11556f012f2753f16d17d86a492f45 100644
+--- a/dev/lib/types.d.ts
++++ b/dev/lib/types.d.ts
+@@ -1,5 +1,5 @@
+-import type {Nodes, Parent, PhrasingContent, Root} from 'mdast'
+-import type {ParseOptions, Token} from 'micromark-util-types'
++import type {Nodes, Parent, PhrasingContent, Root} from 'mdast';
++import type {ParseOptions, Token} from 'micromark-util-types';
+ 
+ /**
+  * Compiler context.
+diff --git a/index.d.ts b/index.d.ts
+index 2a7eb0b72a19aadc7e682e5d599cb0b34716c2ba..1fb49c83096fa4cffab9ae0683a815fad06452c1 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,4 +1,4 @@
+-export type {Encoding, Token, Value} from 'micromark-util-types'
++export type {Encoding, Token, Value} from 'micromark-util-types';
+ export type {
+   CompileContext,
+   CompileData,
+@@ -9,8 +9,8 @@ export type {
+   OnExitError,
+   Options,
+   Transform
+-} from './lib/types.js'
+-export {fromMarkdown} from './lib/index.js'
++} from './lib/types.js';
++export {fromMarkdown} from './lib/index.js';
+ 
+ declare module 'micromark-util-types' {
+   interface TokenTypeMap {
+@@ -21,3 +21,4 @@ declare module 'micromark-util-types' {
+     _spread?: boolean
+   }
+ }
++// patched
+diff --git a/lib/types.d.ts b/lib/types.d.ts
+index 1e74c4b627fc55a4ea3a6887d31c39d88dfc0b30..514ba9087b4dce49c8661b464437c501ecf14318 100644
+--- a/lib/types.d.ts
++++ b/lib/types.d.ts
+@@ -1,5 +1,5 @@
+-import type {Nodes, Parent, PhrasingContent, Root} from 'mdast'
+-import type {ParseOptions, TokenizeContext, Token} from 'micromark-util-types'
++import type {Nodes, Parent, PhrasingContent, Root} from 'mdast';
++import type {ParseOptions, TokenizeContext, Token} from 'micromark-util-types';
+ 
+ /**
+  * Compiler context.

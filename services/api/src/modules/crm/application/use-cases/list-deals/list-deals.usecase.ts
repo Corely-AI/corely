@@ -6,6 +6,7 @@ import {
   type UseCaseContext,
   type UseCaseError,
   ValidationError,
+  RequireTenant,
   ok,
   err,
 } from "@corely/kernel";
@@ -13,6 +14,7 @@ import type { ListDealsInput, ListDealsOutput } from "@corely/contracts";
 import type { DealRepoPort } from "../../ports/deal-repository.port";
 import { toDealDto } from "../../mappers/deal-dto.mapper";
 
+@RequireTenant()
 @Injectable()
 export class ListDealsUseCase extends BaseUseCase<ListDealsInput, ListDealsOutput> {
   constructor(
@@ -30,10 +32,6 @@ export class ListDealsUseCase extends BaseUseCase<ListDealsInput, ListDealsOutpu
     input: ListDealsInput,
     ctx: UseCaseContext
   ): Promise<Result<ListDealsOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
-
     const filters = {
       partyId: input.partyId,
       stageId: input.stageId,

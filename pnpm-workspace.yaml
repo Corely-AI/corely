@@ -3,7 +3,6 @@ packages:
   - services/*
   - packages/*
   - packages/tooling/*
-  - ee/*
 
 catalog:
   "@ai-sdk/anthropic": ^3.0.2
@@ -25,6 +24,9 @@ catalog:
   "@tanstack/react-query": ^5.83.0
   "@tanstack/react-query-persist-client": ^5.83.0
   "@testcontainers/postgresql": ^10.8.3
+  "@testing-library/jest-dom": ^6.4.8
+  "@testing-library/react": ^16.0.1
+  "@testing-library/user-event": ^14.5.2
   "@types/bcrypt": ^5.0.2
   "@types/express": ^5.0.6
   "@types/jsonwebtoken": ^9.0.5
@@ -37,8 +39,8 @@ catalog:
   "@vitest/coverage-v8": ^2.1.4
   ai: ^6.0.6
   autoprefixer: ^10.4.21
-  bullmq: ^5.25.1
   bcrypt: ^5.1.1
+  bullmq: ^5.25.1
   class-validator: ^0.14.3
   date-fns: ^3.6.0
   date-fns-tz: ^3.2.0
@@ -49,7 +51,6 @@ catalog:
   husky: ^9.1.7
   jsonwebtoken: ^9.0.2
   lint-staged: ^15.2.10
-  lucide-react: ^0.462.0
   msw: ^2.6.6
   nanoid: ^5.1.6
   neverthrow: ^8.2.0
@@ -59,7 +60,6 @@ catalog:
   prisma: ^7.2.0
   react: ^18.3.1
   react-dom: ^18.3.1
-  react-router-dom: ^7.1.3
   reflect-metadata: ^0.2.2
   resend: ^6.6.0
   rxjs: ^7.8.2
@@ -75,8 +75,8 @@ catalog:
   typescript-eslint: ^8.38.0
   vite: ^5.4.19
   vitest: ^2.1.4
-  zod: ^3.25.76
   xstate: ^5.13.2
+  zod: ^3.25.76
 
 onlyBuiltDependencies:
   - "@nestjs/core"
@@ -91,3 +91,14 @@ onlyBuiltDependencies:
   - prisma
   - protobufjs
   - ssh2
+
+patchedDependencies:
+  mdast-util-from-markdown@2.0.2: patches/mdast-util-from-markdown@2.0.2.patch
+  mdast-util-gfm-footnote@2.1.0: patches/mdast-util-gfm-footnote@2.1.0.patch
+  mdast-util-gfm-table@2.0.0: patches/mdast-util-gfm-table@2.0.0.patch
+  mdast-util-to-hast@13.2.1: patches/mdast-util-to-hast@13.2.1.patch
+  mdast-util-to-markdown@2.1.2: patches/mdast-util-to-markdown@2.1.2.patch
+  micromark-extension-gfm-footnote@2.1.0: patches/micromark-extension-gfm-footnote@2.1.0.patch
+  micromark-extension-gfm-strikethrough@2.1.0: patches/micromark-extension-gfm-strikethrough@2.1.0.patch
+  postcss@8.5.6: patches/postcss@8.5.6.patch
+  unified@11.0.5: patches/unified@11.0.5.patch

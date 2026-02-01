@@ -9,13 +9,16 @@ import {
   err,
   ok,
   parseLocalDate,
+  RequireTenant,
 } from "@corely/kernel";
 import { type ListInvoicesInput, type ListInvoicesOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import { toInvoiceDto } from "../shared/invoice-dto.mapper";
+import { buildPageInfo } from "../../../../../shared/http/pagination";
 
 type Deps = { logger: LoggerPort; invoiceRepo: InvoiceRepoPort; timeService: TimeService };
 
+@RequireTenant()
 export class ListInvoicesUseCase extends BaseUseCase<ListInvoicesInput, ListInvoicesOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -25,14 +28,13 @@ export class ListInvoicesUseCase extends BaseUseCase<ListInvoicesInput, ListInvo
     input: ListInvoicesInput,
     ctx: UseCaseContext
   ): Promise<Result<ListInvoicesOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId/workspaceId is required"));
-    }
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId is required"));
     }
 
-    const pageSize = input.pageSize ?? 20;
+    const page = input.page ?? 1;
+    const pageSize = input.pageSize ?? 50;
+
     const fromDate =
       input.fromDate !== undefined && input.fromDate !== null
         ? await this.useCaseDeps.timeService.localDateToTenantStartOfDayUtc(
@@ -47,18 +49,27 @@ export class ListInvoicesUseCase extends BaseUseCase<ListInvoicesInput, ListInvo
             parseLocalDate(input.toDate)
           )
         : undefined;
-    const { items, nextCursor } = await this.useCaseDeps.invoiceRepo.list(
+
+    const { items, nextCursor, total } = await this.useCaseDeps.invoiceRepo.list(
       ctx.workspaceId,
       {
         status: input.status,
         customerPartyId: input.customerPartyId,
         fromDate,
         toDate,
+        q: input.q,
+        sort: typeof input.sort === "string" ? input.sort : undefined,
+        structuredFilters: Array.isArray(input.filters) ? input.filters : undefined,
       },
-      pageSize,
-      input.cursor
+      {
+        page,
+        pageSize,
+        cursor: input.cursor,
+      }
     );
 
-    return ok({ items: items.map(toInvoiceDto), nextCursor: nextCursor ?? null });
+    const pageInfo = buildPageInfo(total, page, pageSize);
+
+    return ok({ items: items.map(toInvoiceDto), nextCursor: nextCursor ?? null, pageInfo });
   }
 }

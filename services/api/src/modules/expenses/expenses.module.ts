@@ -4,6 +4,7 @@ import {
   DataModule,
   CustomFieldDefinitionRepository,
   CustomFieldIndexRepository,
+  PrismaService,
 } from "@corely/data";
 import { ExpensesController } from "./http/expenses.controller";
 import {
@@ -46,7 +47,8 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
         customDefs: CustomFieldDefinitionRepository,
         customIndexes: CustomFieldIndexRepository,
         workspaceRepo,
-        templateService: WorkspaceTemplateService
+        templateService: WorkspaceTemplateService,
+        prisma: PrismaService
       ) =>
         new CreateExpenseUseCase(
           repo,
@@ -58,8 +60,10 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
           customDefs,
           customIndexes,
           workspaceRepo,
-          templateService
+          templateService,
+          prisma
         ),
+
       inject: [
         EXPENSE_REPOSITORY,
         OUTBOX_PORT,
@@ -71,6 +75,7 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
         CustomFieldIndexRepository,
         WORKSPACE_REPOSITORY_PORT,
         WorkspaceTemplateService,
+        PrismaService,
       ],
     },
     {
@@ -97,9 +102,9 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
     },
     {
       provide: UpdateExpenseUseCase,
-      useFactory: (repo: PrismaExpenseRepository, audit, clock: ClockPort) =>
-        new UpdateExpenseUseCase(repo, audit, clock),
-      inject: [EXPENSE_REPOSITORY, AUDIT_PORT, CLOCK_PORT_TOKEN],
+      useFactory: (repo: PrismaExpenseRepository, audit, clock: ClockPort, prisma: PrismaService) =>
+        new UpdateExpenseUseCase(repo, audit, clock, prisma),
+      inject: [EXPENSE_REPOSITORY, AUDIT_PORT, CLOCK_PORT_TOKEN, PrismaService],
     },
   ],
   exports: [CreateExpenseUseCase],

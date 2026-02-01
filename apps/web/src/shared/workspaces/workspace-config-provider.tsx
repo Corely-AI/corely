@@ -1,10 +1,14 @@
 import React, { createContext, useContext } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { WorkspaceCapabilityKey, WorkspaceConfig } from "@corely/contracts";
+import type {
+  WorkspaceCapabilityKey,
+  WorkspaceConfig,
+  WorkspaceNavigationGroup,
+} from "@corely/contracts";
+import { filterNavigationGroups } from "./navigation";
 import { useWorkspace } from "./workspace-provider";
 import { workspacesApi } from "./workspaces-api";
 import { useAuth } from "@/lib/auth-provider";
-import { features } from "@/lib/features";
 
 interface WorkspaceConfigContextValue {
   config: WorkspaceConfig | null;
@@ -13,6 +17,7 @@ interface WorkspaceConfigContextValue {
   hasCapability: (capability: WorkspaceCapabilityKey) => boolean;
   can: (capability: WorkspaceCapabilityKey) => boolean;
   refresh: () => Promise<void>;
+  navigationGroups: WorkspaceNavigationGroup[];
 }
 
 const WorkspaceConfigContext = createContext<WorkspaceConfigContextValue | undefined>(undefined);
@@ -23,8 +28,6 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
   const { isAuthenticated } = useAuth();
   const hasValidWorkspace =
     !!activeWorkspaceId && workspaces.some((w) => w.id === activeWorkspaceId);
-
-  // Both OSS and EE: fetch config from API for the active workspace
   const enabled = isAuthenticated && hasValidWorkspace && !isWorkspacesLoading;
 
   const {
@@ -55,6 +58,11 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
   const hasCapability = (capability: WorkspaceCapabilityKey) =>
     Boolean(config?.capabilities?.[capability]);
 
+  const navigationGroups = React.useMemo(() => {
+    if (!config) {return [];}
+    return filterNavigationGroups(config.navigation.groups, config.capabilities);
+  }, [config]);
+
   const value: WorkspaceConfigContextValue = {
     config: config ?? null,
     isLoading: isFetching,
@@ -62,11 +70,11 @@ export const WorkspaceConfigProvider = ({ children }: { children: React.ReactNod
     hasCapability,
     can: hasCapability,
     refresh: async () => {
-      await refetch();
       if (activeWorkspaceId) {
         await queryClient.invalidateQueries({ queryKey: ["workspace-config", activeWorkspaceId] });
       }
     },
+    navigationGroups,
   };
 
   return (

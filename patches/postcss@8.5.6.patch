@@ -1,0 +1,360 @@
+diff --git a/lib/at-rule.d.ts b/lib/at-rule.d.ts
+index 89fb505f4aaa855a709b3bca9c2fa5a793b26631..dcd693b70b07e54a23eba0408a19722afff21758 100644
+--- a/lib/at-rule.d.ts
++++ b/lib/at-rule.d.ts
+@@ -1,7 +1,7 @@
+ import Container, {
+   ContainerProps,
+   ContainerWithChildren
+-} from './container.js'
++} from './container.js';
+ 
+ declare namespace AtRule {
+   export interface AtRuleRaws extends Record<string, unknown> {
+diff --git a/lib/comment.d.ts b/lib/comment.d.ts
+index 6f1f66f81dd34ee677a3c30eb91cbfce1a8d6c4f..d0d0435f1cc8c976544967f52dce69415c4df915 100644
+--- a/lib/comment.d.ts
++++ b/lib/comment.d.ts
+@@ -1,5 +1,5 @@
+-import Container from './container.js'
+-import Node, { NodeProps } from './node.js'
++import Container from './container.js';
++import Node, { NodeProps } from './node.js';
+ 
+ declare namespace Comment {
+   export interface CommentRaws extends Record<string, unknown> {
+diff --git a/lib/container.d.ts b/lib/container.d.ts
+index c2b310b6b7bc97ae3f6e9b73d9dcb82dc4b5e86b..15ec596bfe699cbb1d0291abf79369cf2f21697e 100644
+--- a/lib/container.d.ts
++++ b/lib/container.d.ts
+@@ -1,9 +1,9 @@
+-import AtRule from './at-rule.js'
+-import Comment from './comment.js'
+-import Declaration from './declaration.js'
+-import Node, { ChildNode, ChildProps, NodeProps } from './node.js'
+-import { Root } from './postcss.js'
+-import Rule from './rule.js'
++import AtRule from './at-rule.js';
++import Comment from './comment.js';
++import Declaration from './declaration.js';
++import Node, { ChildNode, ChildProps, NodeProps } from './node.js';
++import { Root } from './postcss.js';
++import Rule from './rule.js';
+ 
+ declare namespace Container {
+   export type ContainerWithChildren<Child extends Node = ChildNode> = {
+diff --git a/lib/css-syntax-error.d.ts b/lib/css-syntax-error.d.ts
+index e540d84965caa9c9da064421a14f3049e199f733..c1daec177fb0d12504c0a8d1d60bb83c92528086 100644
+--- a/lib/css-syntax-error.d.ts
++++ b/lib/css-syntax-error.d.ts
+@@ -1,4 +1,4 @@
+-import { FilePosition } from './input.js'
++import { FilePosition } from './input.js';
+ 
+ declare namespace CssSyntaxError {
+   /**
+diff --git a/lib/declaration.d.ts b/lib/declaration.d.ts
+index d489b4270ad976b9570cd44e7032d6e31ed29847..49f4de8a8f86fb52539ddfa7e811d02db91749d9 100644
+--- a/lib/declaration.d.ts
++++ b/lib/declaration.d.ts
+@@ -1,5 +1,5 @@
+-import { ContainerWithChildren } from './container.js'
+-import Node from './node.js'
++import { ContainerWithChildren } from './container.js';
++import Node from './node.js';
+ 
+ declare namespace Declaration {
+   export interface DeclarationRaws extends Record<string, unknown> {
+diff --git a/lib/document.d.ts b/lib/document.d.ts
+index f9e80634990296e7cb278326b55e165bf9366ad4..9f62749337211a84afa1928580bdada1b994e439 100644
+--- a/lib/document.d.ts
++++ b/lib/document.d.ts
+@@ -1,7 +1,7 @@
+-import Container, { ContainerProps } from './container.js'
+-import { ProcessOptions } from './postcss.js'
+-import Result from './result.js'
+-import Root from './root.js'
++import Container, { ContainerProps } from './container.js';
++import { ProcessOptions } from './postcss.js';
++import Result from './result.js';
++import Root from './root.js';
+ 
+ declare namespace Document {
+   export interface DocumentProps extends ContainerProps {
+diff --git a/lib/fromJSON.d.ts b/lib/fromJSON.d.ts
+index e1deedbd3344a7b98d810515b34dad8b4f1eb2d6..2be13ac4560112a2fc2e4746433360dc9a643ac3 100644
+--- a/lib/fromJSON.d.ts
++++ b/lib/fromJSON.d.ts
+@@ -1,4 +1,4 @@
+-import { JSONHydrator } from './postcss.js'
++import { JSONHydrator } from './postcss.js';
+ 
+ interface FromJSON extends JSONHydrator {
+   default: FromJSON
+diff --git a/lib/input.d.ts b/lib/input.d.ts
+index 3207da3e177f168bbe322d1ce17d4e0cbdb5f0f3..f612d0124a2107ebbb60618e243c476bb8b54a0d 100644
+--- a/lib/input.d.ts
++++ b/lib/input.d.ts
+@@ -1,5 +1,5 @@
+-import { CssSyntaxError, ProcessOptions } from './postcss.js'
+-import PreviousMap from './previous-map.js'
++import { CssSyntaxError, ProcessOptions } from './postcss.js';
++import PreviousMap from './previous-map.js';
+ 
+ declare namespace Input {
+   export interface FilePosition {
+diff --git a/lib/lazy-result.d.ts b/lib/lazy-result.d.ts
+index 2eb72796eb7d04d07fe3bd5b261c83a8907cebf7..c8a0fc52023704dbd7dfd87300ba9db439f7edb7 100644
+--- a/lib/lazy-result.d.ts
++++ b/lib/lazy-result.d.ts
+@@ -1,9 +1,9 @@
+-import Document from './document.js'
+-import { SourceMap } from './postcss.js'
+-import Processor from './processor.js'
+-import Result, { Message, ResultOptions } from './result.js'
+-import Root from './root.js'
+-import Warning from './warning.js'
++import Document from './document.js';
++import { SourceMap } from './postcss.js';
++import Processor from './processor.js';
++import Result, { Message, ResultOptions } from './result.js';
++import Root from './root.js';
++import Warning from './warning.js';
+ 
+ declare namespace LazyResult {
+   // eslint-disable-next-line @typescript-eslint/no-use-before-define
+diff --git a/lib/no-work-result.d.ts b/lib/no-work-result.d.ts
+index 094f30ab4677db19fb70319db474500ec07f4195..ddb169599fa9c4ff1f83cc2390e49d534fbb21b0 100644
+--- a/lib/no-work-result.d.ts
++++ b/lib/no-work-result.d.ts
+@@ -1,9 +1,9 @@
+-import LazyResult from './lazy-result.js'
+-import { SourceMap } from './postcss.js'
+-import Processor from './processor.js'
+-import Result, { Message, ResultOptions } from './result.js'
+-import Root from './root.js'
+-import Warning from './warning.js'
++import LazyResult from './lazy-result.js';
++import { SourceMap } from './postcss.js';
++import Processor from './processor.js';
++import Result, { Message, ResultOptions } from './result.js';
++import Root from './root.js';
++import Warning from './warning.js';
+ 
+ declare namespace NoWorkResult {
+   // eslint-disable-next-line @typescript-eslint/no-use-before-define
+diff --git a/lib/node.d.ts b/lib/node.d.ts
+index a09fe4dda29e4ceebbc4baa7baa5284dfdd9edd8..558b016b136231985b71c213304ef30d56355687 100644
+--- a/lib/node.d.ts
++++ b/lib/node.d.ts
+@@ -1,16 +1,16 @@
+ import AtRule = require('./at-rule.js')
+-import { AtRuleProps } from './at-rule.js'
+-import Comment, { CommentProps } from './comment.js'
+-import Container, { NewChild } from './container.js'
+-import CssSyntaxError from './css-syntax-error.js'
+-import Declaration, { DeclarationProps } from './declaration.js'
+-import Document from './document.js'
+-import Input from './input.js'
+-import { Stringifier, Syntax } from './postcss.js'
+-import Result from './result.js'
+-import Root from './root.js'
+-import Rule, { RuleProps } from './rule.js'
+-import Warning, { WarningOptions } from './warning.js'
++import { AtRuleProps } from './at-rule.js';
++import Comment, { CommentProps } from './comment.js';
++import Container, { NewChild } from './container.js';
++import CssSyntaxError from './css-syntax-error.js';
++import Declaration, { DeclarationProps } from './declaration.js';
++import Document from './document.js';
++import Input from './input.js';
++import { Stringifier, Syntax } from './postcss.js';
++import Result from './result.js';
++import Root from './root.js';
++import Rule, { RuleProps } from './rule.js';
++import Warning, { WarningOptions } from './warning.js';
+ 
+ declare namespace Node {
+   export type ChildNode = AtRule.default | Comment | Declaration | Rule
+diff --git a/lib/parse.d.ts b/lib/parse.d.ts
+index 4c943a4d6279c8bb944b3f26004548bb9e4cb98e..dbc2b0db1f3104d45dccf5f2817d04345249f105 100644
+--- a/lib/parse.d.ts
++++ b/lib/parse.d.ts
+@@ -1,4 +1,4 @@
+-import { Parser } from './postcss.js'
++import { Parser } from './postcss.js';
+ 
+ interface Parse extends Parser {
+   default: Parse
+diff --git a/lib/postcss.d.ts b/lib/postcss.d.ts
+index c5e36052ec94db39887ace6a1f77ffcde9307a10..22d9aa1b44a2f07b2c24428f3899321f98b5b23c 100644
+--- a/lib/postcss.d.ts
++++ b/lib/postcss.d.ts
+@@ -1,14 +1,14 @@
+-import { RawSourceMap, SourceMapGenerator } from 'source-map-js'
+-
+-import AtRule, { AtRuleProps } from './at-rule.js'
+-import Comment, { CommentProps } from './comment.js'
+-import Container, { ContainerProps, NewChild } from './container.js'
+-import CssSyntaxError from './css-syntax-error.js'
+-import Declaration, { DeclarationProps } from './declaration.js'
+-import Document, { DocumentProps } from './document.js'
+-import Input, { FilePosition } from './input.js'
+-import LazyResult from './lazy-result.js'
+-import list from './list.js'
++import { RawSourceMap, SourceMapGenerator } from 'source-map-js';
++
++import AtRule, { AtRuleProps } from './at-rule.js';
++import Comment, { CommentProps } from './comment.js';
++import Container, { ContainerProps, NewChild } from './container.js';
++import CssSyntaxError from './css-syntax-error.js';
++import Declaration, { DeclarationProps } from './declaration.js';
++import Document, { DocumentProps } from './document.js';
++import Input, { FilePosition } from './input.js';
++import LazyResult from './lazy-result.js';
++import list from './list.js';
+ import Node, {
+   AnyNode,
+   ChildNode,
+@@ -17,12 +17,12 @@ import Node, {
+   NodeProps,
+   Position,
+   Source
+-} from './node.js'
+-import Processor from './processor.js'
+-import Result, { Message } from './result.js'
+-import Root, { RootProps } from './root.js'
+-import Rule, { RuleProps } from './rule.js'
+-import Warning, { WarningOptions } from './warning.js'
++} from './node.js';
++import Processor from './processor.js';
++import Result, { Message } from './result.js';
++import Root, { RootProps } from './root.js';
++import Rule, { RuleProps } from './rule.js';
++import Warning, { WarningOptions } from './warning.js';
+ 
+ type DocumentProcessor = (
+   document: Document,
+diff --git a/lib/previous-map.d.ts b/lib/previous-map.d.ts
+index 23edeb5c5efc6c0f328282bf4a3b5f338587b11a..4302f70aa619af58a2710538fb8975fbf78f5371 100644
+--- a/lib/previous-map.d.ts
++++ b/lib/previous-map.d.ts
+@@ -1,6 +1,6 @@
+-import { SourceMapConsumer } from 'source-map-js'
++import { SourceMapConsumer } from 'source-map-js';
+ 
+-import { ProcessOptions } from './postcss.js'
++import { ProcessOptions } from './postcss.js';
+ 
+ declare namespace PreviousMap {
+   // eslint-disable-next-line @typescript-eslint/no-use-before-define
+diff --git a/lib/processor.d.ts b/lib/processor.d.ts
+index aa2942c6488aa02d09f3910862fe43ddbd89b381..acd9b5b239308772b9d649bb9523764012590cf2 100644
+--- a/lib/processor.d.ts
++++ b/lib/processor.d.ts
+@@ -1,15 +1,15 @@
+-import Document from './document.js'
+-import LazyResult from './lazy-result.js'
+-import NoWorkResult from './no-work-result.js'
++import Document from './document.js';
++import LazyResult from './lazy-result.js';
++import NoWorkResult from './no-work-result.js';
+ import {
+   AcceptedPlugin,
+   Plugin,
+   ProcessOptions,
+   TransformCallback,
+   Transformer
+-} from './postcss.js'
+-import Result from './result.js'
+-import Root from './root.js'
++} from './postcss.js';
++import Result from './result.js';
++import Root from './root.js';
+ 
+ declare namespace Processor {
+   // eslint-disable-next-line @typescript-eslint/no-use-before-define
+@@ -113,3 +113,4 @@ declare class Processor_ {
+ declare class Processor extends Processor_ {}
+ 
+ export = Processor
++// patched
+diff --git a/lib/result.d.ts b/lib/result.d.ts
+index 3f52efb3db3e398242da43cb9c9bfd7ea5ccec29..e0f062184e7f460d04af0b540db4245f7f49dd38 100644
+--- a/lib/result.d.ts
++++ b/lib/result.d.ts
+@@ -8,8 +8,8 @@ import {
+   TransformCallback,
+   Warning,
+   WarningOptions
+-} from './postcss.js'
+-import Processor from './processor.js'
++} from './postcss.js';
++import Processor from './processor.js';
+ 
+ declare namespace Result {
+   export interface Message {
+diff --git a/lib/root.d.ts b/lib/root.d.ts
+index 5c911396c3b26ad73833940fa19fc9ec3ffd77ae..0cf71e72444f46b31de5fa8ea77828bcca5794cf 100644
+--- a/lib/root.d.ts
++++ b/lib/root.d.ts
+@@ -1,7 +1,7 @@
+-import Container, { ContainerProps } from './container.js'
+-import Document from './document.js'
+-import { ProcessOptions } from './postcss.js'
+-import Result from './result.js'
++import Container, { ContainerProps } from './container.js';
++import Document from './document.js';
++import { ProcessOptions } from './postcss.js';
++import Result from './result.js';
+ 
+ declare namespace Root {
+   export interface RootRaws extends Record<string, any> {
+diff --git a/lib/rule.d.ts b/lib/rule.d.ts
+index 9a951e7b1038e60355e16bc61910a1a3e5b69083..d6dba9b1d08df41430c717e0b7c160db69c9fbf1 100644
+--- a/lib/rule.d.ts
++++ b/lib/rule.d.ts
+@@ -1,7 +1,7 @@
+ import Container, {
+   ContainerProps,
+   ContainerWithChildren
+-} from './container.js'
++} from './container.js';
+ 
+ declare namespace Rule {
+   export interface RuleRaws extends Record<string, unknown> {
+diff --git a/lib/stringifier.d.ts b/lib/stringifier.d.ts
+index b5a6f86feb583d49485d207255896550860bd142..08299b8a6e85085b45b7f8f78d9e4f982c89165b 100644
+--- a/lib/stringifier.d.ts
++++ b/lib/stringifier.d.ts
+@@ -8,7 +8,7 @@ import {
+   Document,
+   Root,
+   Rule
+-} from './postcss.js'
++} from './postcss.js';
+ 
+ declare namespace Stringifier {
+   // eslint-disable-next-line @typescript-eslint/no-use-before-define
+diff --git a/lib/stringify.d.ts b/lib/stringify.d.ts
+index 06ad0b4de4b40de7caae2172f94a75dc7de3b5b1..4c081280b40d18fb6de6ee73725188d06b363f80 100644
+--- a/lib/stringify.d.ts
++++ b/lib/stringify.d.ts
+@@ -1,4 +1,4 @@
+-import { Stringifier } from './postcss.js'
++import { Stringifier } from './postcss.js';
+ 
+ interface Stringify extends Stringifier {
+   default: Stringify
+diff --git a/lib/warning.d.ts b/lib/warning.d.ts
+index b25bba81603e800598a65f70447f35a17b0b9d00..2290b09812f763e1729175afdd9a97987e73cd85 100644
+--- a/lib/warning.d.ts
++++ b/lib/warning.d.ts
+@@ -1,5 +1,5 @@
+-import { RangePosition } from './css-syntax-error.js'
+-import Node from './node.js'
++import { RangePosition } from './css-syntax-error.js';
++import Node from './node.js';
+ 
+ declare namespace Warning {
+   export interface WarningOptions {

@@ -24,5 +24,16 @@ export default {
     ],
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/await-thenable": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            group: ["./*.js", "./**/*.js", "../*.js", "../**/*.js"],
+            message: "Use extensionless relative imports in TS/TSX (no .js).",
+          },
+        ],
+      },
+    ],
   },
 };

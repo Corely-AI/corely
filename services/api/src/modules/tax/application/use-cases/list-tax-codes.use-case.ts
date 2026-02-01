@@ -1,13 +1,27 @@
 import { Injectable } from "@nestjs/common";
-import type { TaxCodeEntity } from "../../domain/entities";
+import { type TaxCodeEntity } from "../../domain/entities";
 import { TaxCodeRepoPort } from "../../domain/ports";
-import type { UseCaseContext } from "./use-case-context";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+@RequireTenant()
 @Injectable()
-export class ListTaxCodesUseCase {
-  constructor(private readonly repo: TaxCodeRepoPort) {}
+export class ListTaxCodesUseCase extends BaseUseCase<void, TaxCodeEntity[]> {
+  constructor(private readonly repo: TaxCodeRepoPort) {
+    super({ logger: null as any });
+  }
 
-  async execute(ctx: UseCaseContext): Promise<TaxCodeEntity[]> {
-    return this.repo.findAll(ctx.workspaceId);
+  protected async handle(
+    _input: void,
+    ctx: UseCaseContext
+  ): Promise<Result<TaxCodeEntity[], UseCaseError>> {
+    const codes = await this.repo.findAll(ctx.workspaceId || ctx.tenantId);
+    return ok(codes);
   }
 }

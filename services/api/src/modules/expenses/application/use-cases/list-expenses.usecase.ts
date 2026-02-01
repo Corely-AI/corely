@@ -29,9 +29,12 @@ export class ListExpensesUseCase {
       q: input.q ?? input.merchantName,
       merchantName: input.merchantName,
       category: input.category ?? null,
+      status: input.status ?? undefined, // Pass status directly
       includeArchived: input.includeArchived,
       fromDate: input.fromDate ? new Date(input.fromDate) : undefined,
       toDate: input.toDate ? new Date(input.toDate) : undefined,
+      sort: input.sort,
+      structuredFilters: (input as any).filters, // Access new contract filters if available // Or properly cast Input
     };
 
     const { items, total, nextCursor } = await this.repo.list(tenantId, filters, {

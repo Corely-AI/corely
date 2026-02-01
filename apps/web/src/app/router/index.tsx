@@ -6,6 +6,7 @@ import { AssistantPage } from "../../modules/assistant";
 import { ExpensesPage, NewExpensePage, ExpenseDetailPage } from "../../modules/expenses";
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
 import { CustomersPage, NewCustomerPage, EditCustomerPage } from "../../modules/customers";
+import { FormsPage, NewFormPage, FormDetailPage, PublicFormPage } from "../../modules/forms";
 import {
   DealsPage,
   NewDealPage,
@@ -55,10 +56,40 @@ import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/sett
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import {
+  CmsPostsPage,
+  CmsPostEditorPage,
+  CmsCommentsPage,
+  PublicCmsListPage,
+  PublicCmsPostPage,
+} from "../../modules/cms";
+import {
+  RentalPropertiesPage,
+  RentalPropertyEditorPage,
+  RentalCategoriesPage,
+  PublicRentalsListScreen,
+  PublicRentalDetailScreen,
+} from "../../modules/rentals";
+import {
+  ShowcasesPage,
+  ShowcaseEditorPage,
+  ShowcaseProfilePage,
+  ProjectsPage,
+  ProjectEditorPage,
+  ClientsPage,
+  ClientEditorPage,
+  ServicesPage,
+  ServiceEditorPage,
+  TeamPage,
+  TeamEditorPage,
+} from "../../modules/portfolio";
+import {
   TaxSettingsPage,
-  TaxesOverviewPage,
-  TaxReportsPage,
-  VatPeriodDetailsPage,
+  TaxCenterPage,
+  FilingsListPage,
+  FilingDetailPage,
+  CreateFilingPage,
+  TaxPaymentsPage,
+  TaxDocumentsPage,
 } from "../../modules/tax";
 import {
   PlatformPage,
@@ -77,7 +108,7 @@ import {
   WorkspaceOnboardingPage,
   WorkspaceSettingsPage,
 } from "../../modules/workspaces";
-import { features } from "../../lib/features";
+import { PublicWorkspaceProvider } from "../../shared/public-workspace";
 
 export const Router = () => (
   <BrowserRouter
@@ -91,13 +122,39 @@ export const Router = () => (
 
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignupPage />} />
+      <Route path="/f/:publicId" element={<PublicFormPage />} />
+      <Route element={<PublicWorkspaceProvider />}>
+        <Route path="/w/:workspaceSlug/cms" element={<PublicCmsListPage />} />
+        <Route path="/w/:workspaceSlug/cms/:slug" element={<PublicCmsPostPage />} />
+        <Route path="/w/:workspaceSlug/rental" element={<PublicRentalsListScreen />} />
+        <Route path="/w/:workspaceSlug/rental/:slug" element={<PublicRentalDetailScreen />} />
+        <Route path="/cms" element={<PublicCmsListPage />} />
+        <Route path="/cms/:slug" element={<PublicCmsPostPage />} />
+        <Route path="/rental" element={<PublicRentalsListScreen />} />
+        <Route path="/rental/:slug" element={<PublicRentalDetailScreen />} />
+        <Route path="/p" element={<PublicCmsListPage />} />
+        <Route path="/p/:slug" element={<PublicCmsPostPage />} />
+        <Route path="/stay" element={<PublicRentalsListScreen />} />
+        <Route path="/stay/:slug" element={<PublicRentalDetailScreen />} />
+      </Route>
 
       <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
-          {/* Workspace onboarding - configure the default workspace (OSS) or create new ones (EE) */}
           <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/assistant" element={<AssistantPage />} />
+          <Route path="/cms/posts" element={<CmsPostsPage />} />
+          <Route path="/cms/posts/new" element={<CmsPostEditorPage />} />
+          <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
+          <Route path="/cms/posts/:id/edit" element={<CmsPostEditorPage />} />
+          <Route path="/cms/comments" element={<CmsCommentsPage />} />
+          <Route path="/rentals/properties" element={<RentalPropertiesPage />} />
+          <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
+          <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
+          <Route path="/rentals/categories" element={<RentalCategoriesPage />} />
+          <Route path="/forms" element={<FormsPage />} />
+          <Route path="/forms/new" element={<NewFormPage />} />
+          <Route path="/forms/:id" element={<FormDetailPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/expenses/new" element={<NewExpensePage />} />
           <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
@@ -402,13 +459,19 @@ export const Router = () => (
             }
           />
           <Route path="/copilot" element={<CopilotPage />} />
-          <Route path="/taxes" element={<TaxesOverviewPage />} />
-          <Route path="/tax/reports" element={<TaxReportsPage />} />
+          <Route path="/tax" element={<TaxCenterPage />} />
+          <Route path="/tax/filings" element={<FilingsListPage />} />
+          <Route path="/tax/filings/new" element={<CreateFilingPage />} />
+          <Route path="/tax/filings/:id" element={<FilingDetailPage />} />
+          <Route path="/tax/payments" element={<TaxPaymentsPage />} />
+          <Route path="/tax/documents" element={<TaxDocumentsPage />} />
           <Route path="/tax/settings" element={<TaxSettingsPage />} />
-          {/* <Route path="/tax" element={<Navigate to="/taxes" replace />} /> */}
-          <Route path="/tax/reports" element={<Navigate to="/taxes/reports" replace />} />
-          <Route path="/tax/settings" element={<Navigate to="/taxes/settings" replace />} />
-          <Route path="/tax/period/:key" element={<VatPeriodDetailsPage />} />
+
+          {/* Legacy Redirects */}
+          <Route path="/taxes" element={<Navigate to="/tax" replace />} />
+          <Route path="/tax/reports" element={<Navigate to="/tax/filings" replace />} />
+          <Route path="/tax/period/:key" element={<Navigate to="/tax/filings/:key" replace />} />
+          <Route path="/settings/tax" element={<Navigate to="/tax/settings" replace />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
           <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />

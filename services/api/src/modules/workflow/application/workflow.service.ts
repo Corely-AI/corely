@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, NotFoundException, Inject } from "@nestjs/common";
 import {
   WORKFLOW_START_EVENT,
   type CompleteWorkflowTaskInput,
@@ -9,25 +9,40 @@ import {
   type StartWorkflowInstanceInput,
 } from "@corely/contracts";
 import { getInitialSnapshot, serializeSnapshot } from "@corely/core";
-import {
-  PrismaService,
-  WorkflowDefinitionRepository,
-  WorkflowEventRepository,
-  WorkflowInstanceRepository,
-  WorkflowTaskRepository,
-} from "@corely/data";
+import { UNIT_OF_WORK, type UnitOfWorkPort } from "@corely/kernel";
 import { WorkflowQueueClient } from "../infrastructure/workflow-queue.client";
+import {
+  WORKFLOW_DEFINITION_REPOSITORY_TOKEN,
+  type WorkflowDefinitionRepositoryPort,
+} from "./ports/workflow-definition-repository.port";
+import {
+  WORKFLOW_INSTANCE_REPOSITORY_TOKEN,
+  type WorkflowInstanceRepositoryPort,
+} from "./ports/workflow-instance-repository.port";
+import {
+  WORKFLOW_TASK_REPOSITORY_TOKEN,
+  type WorkflowTaskRepositoryPort,
+} from "./ports/workflow-task-repository.port";
+import {
+  WORKFLOW_EVENT_REPOSITORY_TOKEN,
+  type WorkflowEventRepositoryPort,
+} from "./ports/workflow-event-repository.port";
 
 @Injectable()
 export class WorkflowService {
   private readonly logger = new Logger(WorkflowService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly definitions: WorkflowDefinitionRepository,
-    private readonly instances: WorkflowInstanceRepository,
-    private readonly tasks: WorkflowTaskRepository,
-    private readonly events: WorkflowEventRepository,
+    @Inject(UNIT_OF_WORK)
+    private readonly uow: UnitOfWorkPort,
+    @Inject(WORKFLOW_DEFINITION_REPOSITORY_TOKEN)
+    private readonly definitions: WorkflowDefinitionRepositoryPort,
+    @Inject(WORKFLOW_INSTANCE_REPOSITORY_TOKEN)
+    private readonly instances: WorkflowInstanceRepositoryPort,
+    @Inject(WORKFLOW_TASK_REPOSITORY_TOKEN)
+    private readonly tasks: WorkflowTaskRepositoryPort,
+    @Inject(WORKFLOW_EVENT_REPOSITORY_TOKEN)
+    private readonly events: WorkflowEventRepositoryPort,
     private readonly queue: WorkflowQueueClient
   ) {}
 
@@ -109,7 +124,7 @@ export class WorkflowService {
     const serialized = serializeSnapshot(snapshot);
     const now = new Date();
 
-    const instance = await this.prisma.$transaction(async (tx) => {
+    const instance = await this.uow.withinTransaction(async (tx) => {
       const created = await this.instances.create(
         {
           tenantId,
@@ -166,7 +181,7 @@ export class WorkflowService {
   }
 
   async cancelInstance(tenantId: string, id: string) {
-    const result = await this.prisma.$transaction(async (tx) => {
+    const result = await this.uow.withinTransaction(async (tx) => {
       const updated = await this.instances.updateStatus(tenantId, id, "CANCELLED", tx as any);
 
       if (updated.count === 0) {
@@ -227,7 +242,7 @@ export class WorkflowService {
 
     const completionEvent = this.extractCompletionEvent(task.input);
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.uow.withinTransaction(async (tx) => {
       await this.tasks.markSucceeded(
         tenantId,
         taskId,
@@ -261,7 +276,7 @@ export class WorkflowService {
       throw new NotFoundException("Workflow task not found");
     }
 
-    await this.prisma.$transaction(async (tx) => {
+    await this.uow.withinTransaction(async (tx) => {
       await this.tasks.markFailed(tenantId, taskId, JSON.stringify(error), "FAILED", tx as any);
 
       await this.events.append(

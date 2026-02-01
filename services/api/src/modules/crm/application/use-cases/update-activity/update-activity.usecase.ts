@@ -8,6 +8,7 @@ import {
   type UseCaseError,
   ValidationError,
   NotFoundError,
+  RequireTenant,
   ok,
   err,
 } from "@corely/kernel";
@@ -15,6 +16,7 @@ import type { UpdateActivityInput, UpdateActivityOutput } from "@corely/contract
 import type { ActivityRepoPort } from "../../ports/activity-repository.port";
 import { toActivityDto } from "../../mappers/activity-dto.mapper";
 
+@RequireTenant()
 @Injectable()
 export class UpdateActivityUseCase extends BaseUseCase<UpdateActivityInput, UpdateActivityOutput> {
   constructor(
@@ -39,10 +41,6 @@ export class UpdateActivityUseCase extends BaseUseCase<UpdateActivityInput, Upda
     input: UpdateActivityInput,
     ctx: UseCaseContext
   ): Promise<Result<UpdateActivityOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
-
     const activity = await this.activityRepo.findById(ctx.tenantId, input.activityId);
     if (!activity) {
       return err(new NotFoundError(`Activity ${input.activityId} not found`));

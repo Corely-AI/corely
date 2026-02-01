@@ -15,6 +15,7 @@ model AccountingSettings {
   updatedAt               DateTime @updatedAt @db.Timestamptz(6)
 
   @@index([tenantId])
+  @@schema("accounting")
 }
 
 // Accounting Periods
@@ -35,6 +36,7 @@ model AccountingPeriod {
   @@index([tenantId, fiscalYearId])
   @@index([tenantId, startDate])
   @@unique([tenantId, fiscalYearId, name])
+  @@schema("accounting")
 }
 
 // Ledger Accounts (Chart of Accounts)
@@ -56,6 +58,7 @@ model LedgerAccount {
   @@index([tenantId, type])
   @@index([tenantId, isActive])
   @@index([tenantId, systemAccountKey])
+  @@schema("accounting")
 }
 
 // Journal Entries
@@ -85,6 +88,7 @@ model JournalEntry {
   @@index([tenantId, reversesEntryId])
   @@index([tenantId, reversedByEntryId])
   @@index([tenantId, sourceType, sourceId])
+  @@schema("accounting")
 }
 
 // Journal Lines
@@ -106,6 +110,7 @@ model JournalLine {
   @@index([journalEntryId])
   @@index([ledgerAccountId])
   @@index([tenantId, ledgerAccountId])
+  @@schema("accounting")
 }
 
 // AI Interaction Audit Log
@@ -125,6 +130,7 @@ model AiInteraction {
   @@index([tenantId, contextType])
   @@index([tenantId, actorUserId])
   @@index([tenantId, createdAt])
+  @@schema("accounting")
 }
 
 // ===========================
@@ -137,22 +143,26 @@ enum AccountType {
   Equity
   Income
   Expense
+  @@schema("accounting")
 }
 
 enum EntryStatus {
   Draft
   Posted
   Reversed
+  @@schema("accounting")
 }
 
 enum LineDirection {
   Debit
   Credit
+  @@schema("accounting")
 }
 
 enum PeriodStatus {
   Open
   Closed
+  @@schema("accounting")
 }
 
 enum SourceType {
@@ -164,6 +174,8 @@ enum SourceType {
   BillPayment
   Migration
   Adjustment
+  CashEntry
+  @@schema("accounting")
 }
 
 enum AiContextType {
@@ -174,12 +186,14 @@ enum AiContextType {
   ExplainReport
   AnomalyScan
   CloseChecklist
+  @@schema("accounting")
 }
 
 enum ConfidenceLevel {
   High
   Medium
   Low
+  @@schema("accounting")
 }
 
 enum AcceptedAction {
@@ -187,4 +201,5 @@ enum AcceptedAction {
   savedDraft
   appliedSuggestion
   dismissed
+  @@schema("accounting")
 }

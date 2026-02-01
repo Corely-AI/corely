@@ -1,0 +1,104 @@
+
+model RentalProperty {
+  id              String         @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  status          RentalStatus   @default(DRAFT)
+  slug            String
+  name            String
+  summary         String?
+  descriptionHtml String?        @db.Text
+  maxGuests       Int?
+  coverImageFileId String?
+  publishedAt     DateTime?      @db.Timestamptz(6)
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime       @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  categories      RentalPropertyCategory[]
+  images          RentalPropertyImage[]
+  availability    RentalAvailabilityRange[]
+
+  @@unique([tenantId, workspaceId, slug])
+  @@index([tenantId, workspaceId])
+  @@index([tenantId, workspaceId, status, publishedAt])
+  @@schema("content")
+}
+
+model RentalCategory {
+  id          String   @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  name        String
+  slug        String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  properties  RentalPropertyCategory[]
+
+  @@unique([tenantId, workspaceId, slug])
+  @@unique([tenantId, workspaceId, name])
+  @@index([tenantId, workspaceId])
+  @@schema("content")
+}
+
+model RentalPropertyCategory {
+  propertyId String
+  categoryId String
+
+  property   RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  category   RentalCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, categoryId])
+  @@schema("content")
+}
+
+model RentalPropertyImage {
+  id          String   @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  propertyId  String
+  fileId      String
+  altText     String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  property    RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId])
+  @@index([propertyId, sortOrder])
+  @@schema("content")
+}
+
+model RentalAvailabilityRange {
+  id          String             @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  propertyId  String
+  startDate   DateTime           @db.Date
+  endDate     DateTime           @db.Date
+  status      AvailabilityStatus @default(AVAILABLE)
+  note        String?
+  createdAt   DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime           @updatedAt @db.Timestamptz(6)
+
+  property    RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId])
+  @@index([propertyId, startDate, endDate])
+  @@schema("content")
+}
+
+enum RentalStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  @@schema("content")
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  BLOCKED
+  @@schema("content")
+}

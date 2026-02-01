@@ -1,15 +1,29 @@
 import { Injectable } from "@nestjs/common";
-import type { TaxProfileEntity } from "../../domain/entities";
+import { type TaxProfileEntity } from "../../domain/entities";
 import { TaxProfileRepoPort } from "../../domain/ports";
-import type { UseCaseContext } from "./use-case-context";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+@RequireTenant()
 @Injectable()
-export class GetTaxProfileUseCase {
-  constructor(private readonly repo: TaxProfileRepoPort) {}
+export class GetTaxProfileUseCase extends BaseUseCase<void, TaxProfileEntity | null> {
+  constructor(private readonly repo: TaxProfileRepoPort) {
+    super({ logger: null as any });
+  }
 
-  async execute(ctx: UseCaseContext): Promise<TaxProfileEntity | null> {
-    // Get active profile for current date
-    const now = new Date();
-    return this.repo.getActive(ctx.workspaceId, now);
+  protected async handle(
+    _input: void,
+    ctx: UseCaseContext
+  ): Promise<Result<TaxProfileEntity | null, UseCaseError>> {
+    const workspaceId = ctx.workspaceId || ctx.tenantId!;
+    // Use getActive with current date as a proxy for "get current profile"
+    const profile = await this.repo.getActive(workspaceId, new Date());
+    return ok(profile);
   }
 }

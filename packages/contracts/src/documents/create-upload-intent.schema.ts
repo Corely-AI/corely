@@ -8,6 +8,7 @@ export const CreateUploadIntentInputSchema = z.object({
   contentType: z.string().min(1),
   sizeBytes: z.number().int().nonnegative().optional(),
   sha256: z.string().optional(),
+  isPublic: z.boolean().optional(),
   documentType: DocumentTypeSchema.optional(),
   category: z.string().optional(),
   purpose: z.string().optional(),

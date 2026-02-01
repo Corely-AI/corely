@@ -65,33 +65,20 @@ test.describe("Authentication", () => {
     const timestamp = Date.now();
     const testEmail = `e2e-signup-${timestamp}@corely.local`;
     const testPassword = "SignupTest123!";
-    const testTenant = `E2E Test Tenant ${timestamp}`;
+    const testName = "E2E Test User";
+    const testWorkspace = `E2E Test Workspace ${timestamp}`;
 
     // Fill signup form
     await page.fill(selectors.auth.signupEmailInput, testEmail);
     await page.fill(selectors.auth.signupPasswordInput, testPassword);
-    const tenantInput = page.locator(selectors.auth.signupTenantInput);
-    if (await tenantInput.count()) {
-      await tenantInput.fill(testTenant);
-    }
+    await page.fill(selectors.auth.signupNameInput, testName);
+    await page.fill(selectors.auth.signupWorkspaceInput, testWorkspace);
 
     // Submit signup form
     await page.click(selectors.auth.signupSubmitButton);
 
     // Wait for redirect to onboarding or dashboard
     await page.waitForURL(/\/(onboarding|dashboard)/, { timeout: 10_000 });
-
-    if (page.url().includes("/onboarding")) {
-      await page.fill(selectors.workspace.onboardingName, "E2E Workspace");
-      await page.click(selectors.workspace.onboardingNext);
-      await page.fill(selectors.workspace.onboardingLegalName, "E2E Legal");
-      await page.fill(selectors.workspace.onboardingAddress, "123 Main St");
-      await page.fill(selectors.workspace.onboardingCity, "Berlin");
-      await page.fill(selectors.workspace.onboardingPostal, "10115");
-      await page.click(selectors.workspace.onboardingNext);
-      await page.click(selectors.workspace.onboardingSubmit);
-      await page.waitForURL(/\/dashboard/, { timeout: 10_000 });
-    }
 
     // Verify user is authenticated by checking for user menu
     const userMenuButton = page.locator(selectors.auth.userMenuButton).first();

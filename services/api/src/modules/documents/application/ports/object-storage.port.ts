@@ -41,4 +41,6 @@ export interface ObjectStoragePort {
     contentType: string;
     bytes: Buffer;
   }): Promise<{ etag?: string; sizeBytes: number }>;
+
+  getObject(args: { tenantId: string; objectKey: string }): Promise<Buffer>;
 }

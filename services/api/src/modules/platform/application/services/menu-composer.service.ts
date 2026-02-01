@@ -160,6 +160,7 @@ export class MenuComposerService {
       pinned: overrides.pins?.includes(item.id),
       tags: item.tags,
       requiredCapabilities: item.requiresCapabilities,
+      exact: item.exact,
     }));
   }
 
@@ -179,6 +180,7 @@ export class MenuComposerService {
         order: item.order,
         tags: item.tags,
         requiredCapabilities: item.requiresCapabilities,
+        exact: item.exact,
       }));
   }
 }

@@ -1,3 +1,4 @@
+import React from "react";
 import { Inject, Injectable } from "@nestjs/common";
 import { PrismaInvoiceEmailRepository } from "./infrastructure/prisma-invoice-email-repository.adapter";
 import { EventHandler, OutboxEvent } from "../outbox/event-handler.interface";

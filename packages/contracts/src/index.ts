@@ -1,15 +1,19 @@
 import { z } from "zod";
 import { CustomValuesSchema } from "./common/customization/custom-field";
+export * from "./common/list.contract";
 export * from "./documents";
 export * from "./invoices";
 export * from "./customers";
 export * from "./workspaces";
 export * from "./shared/local-date.schema";
 export * from "./expenses";
+export * from "./forms";
 export * from "./tax";
 export * from "./accounting";
 export * from "./crm";
+export * from "./cms";
 export * from "./sales";
+export * from "./rentals";
 export {
   RecordPaymentInputSchema as SalesRecordPaymentInputSchema,
   RecordPaymentOutputSchema as SalesRecordPaymentOutputSchema,
@@ -51,6 +55,7 @@ export * from "./purchasing";
 export * from "./purchasing-ai";
 export * from "./inventory";
 export * from "./inventory-ai";
+export * from "./portfolio";
 // POS exports (aliased to avoid clashing with Sales PaymentMethod)
 export {
   PaymentMethod as PosPaymentMethod,
@@ -89,6 +94,8 @@ export * from "./errors";
 export * from "./platform";
 export * from "./copilot/collect-inputs.schema";
 export * from "./copilot/chat.schema";
+export * from "./cash-management";
+export * from "./ai/richtext";
 
 export const CONTRACTS_HELLO = "Corely contracts loaded ✅";
 
@@ -141,8 +148,8 @@ export type MembershipDto = z.infer<typeof MembershipDtoSchema>;
 export const SignupInputSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  tenantName: z.string().min(1).optional(),
-  idempotencyKey: z.string().optional(),
+  tenantName: z.string().min(1),
+  idempotencyKey: z.string(),
 });
 export type SignupInput = z.infer<typeof SignupInputSchema>;
 

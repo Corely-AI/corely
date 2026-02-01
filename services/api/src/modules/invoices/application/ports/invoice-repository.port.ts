@@ -6,11 +6,21 @@ export type ListInvoicesFilters = {
   customerPartyId?: string;
   fromDate?: Date;
   toDate?: Date;
+  q?: string; // Standard search
+  sort?: string; // Standard sort
+  structuredFilters?: any[]; // Standard JSON list filters
+};
+
+export type ListInvoicesPagination = {
+  page?: number;
+  pageSize: number;
+  cursor?: string;
 };
 
 export type ListInvoicesResult = {
   items: InvoiceAggregate[];
   nextCursor?: string | null;
+  total: number;
 };
 
 export interface InvoiceRepoPort {
@@ -18,8 +28,7 @@ export interface InvoiceRepoPort {
   list(
     workspaceId: string,
     filters: ListInvoicesFilters,
-    pageSize?: number,
-    cursor?: string
+    pagination: ListInvoicesPagination
   ): Promise<ListInvoicesResult>;
   save(workspaceId: string, invoice: InvoiceAggregate): Promise<void>;
   create(workspaceId: string, invoice: InvoiceAggregate): Promise<void>;

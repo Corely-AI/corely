@@ -4,6 +4,9 @@ import { DataModule } from "@corely/data";
 import { OutboxModule } from "./modules/outbox/outbox.module";
 import { WorkflowsModule } from "./modules/workflows/workflows.module";
 
+import { AccountingWorkerModule } from "./modules/accounting/accounting-worker.module";
+import { TaxWorkerModule } from "./modules/tax/tax-worker.module";
+
 @Module({
   imports: [
     // Config must be first to validate env before other modules use it
@@ -11,6 +14,8 @@ import { WorkflowsModule } from "./modules/workflows/workflows.module";
     DataModule,
     OutboxModule,
     WorkflowsModule,
+    AccountingWorkerModule,
+    TaxWorkerModule,
   ],
 })
 export class WorkerModule {}

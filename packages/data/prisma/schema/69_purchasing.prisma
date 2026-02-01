@@ -6,6 +6,7 @@ enum PurchaseOrderStatus {
   RECEIVED
   CLOSED
   CANCELED
+  @@schema("commerce")
 }
 
 enum VendorBillStatus {
@@ -15,6 +16,7 @@ enum VendorBillStatus {
   PARTIALLY_PAID
   PAID
   VOID
+  @@schema("commerce")
 }
 
 enum BillPaymentMethod {
@@ -22,6 +24,7 @@ enum BillPaymentMethod {
   CASH
   CARD
   OTHER
+  @@schema("commerce")
 }
 
 model PurchaseOrder {
@@ -54,6 +57,7 @@ model PurchaseOrder {
   @@index([tenantId, supplierPartyId])
   @@index([tenantId, createdAt])
   @@unique([tenantId, poNumber])
+  @@schema("commerce")
 }
 
 model PurchaseOrderLine {
@@ -69,6 +73,7 @@ model PurchaseOrderLine {
   purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
 
   @@index([purchaseOrderId])
+  @@schema("commerce")
 }
 
 model VendorBill {
@@ -108,6 +113,7 @@ model VendorBill {
   @@index([tenantId, supplierPartyId])
   @@index([tenantId, createdAt])
   @@unique([tenantId, supplierPartyId, billNumber])
+  @@schema("commerce")
 }
 
 model VendorBillLine {
@@ -124,6 +130,7 @@ model VendorBillLine {
   vendorBill VendorBill @relation(fields: [vendorBillId], references: [id], onDelete: Cascade)
 
   @@index([vendorBillId])
+  @@schema("commerce")
 }
 
 model BillPayment {
@@ -144,6 +151,7 @@ model BillPayment {
 
   @@index([tenantId, vendorBillId])
   @@index([vendorBillId])
+  @@schema("commerce")
 }
 
 model PurchasingSettings {
@@ -164,6 +172,7 @@ model PurchasingSettings {
   approvalRequiredForBills       Boolean  @default(false)
   createdAt                      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt                      DateTime @updatedAt @db.Timestamptz(6)
+  @@schema("commerce")
 }
 
 model PurchasingAccountMapping {
@@ -177,4 +186,5 @@ model PurchasingAccountMapping {
 
   @@unique([tenantId, supplierPartyId, categoryKey])
   @@index([tenantId, supplierPartyId])
+  @@schema("commerce")
 }

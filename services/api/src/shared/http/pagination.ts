@@ -1,20 +1,11 @@
 import type { ParsedUrlQueryInput } from "querystring";
+import { ListQuerySchema, type ListQuery, type PageInfo } from "@corely/contracts";
 
-export type ParsedListQuery = {
-  q?: string;
-  page: number;
-  pageSize: number;
-  sort?: string;
-  filters?: Record<string, unknown>;
+export type ParsedListQuery = ListQuery & {
   includeArchived?: boolean;
 };
 
-export type PageInfo = {
-  page: number;
-  pageSize: number;
-  total: number;
-  hasNextPage: boolean;
-};
+export { type PageInfo };
 
 const toNumber = (value: unknown): number | undefined => {
   const num = typeof value === "string" ? Number(value) : typeof value === "number" ? value : NaN;
@@ -41,26 +32,50 @@ export const parseListQuery = (
   options?: { defaultPageSize?: number; maxPageSize?: number }
 ): ParsedListQuery => {
   const page = Math.max(toNumber(raw?.page) ?? 1, 1);
-  const defaultPageSize = options?.defaultPageSize ?? 20;
-  const maxPageSize = options?.maxPageSize ?? 100;
+  const defaultPageSize = options?.defaultPageSize ?? 50;
+  const maxPageSize = options?.maxPageSize ?? 1000;
   const pageSize = Math.min(Math.max(toNumber(raw?.pageSize) ?? defaultPageSize, 1), maxPageSize);
   const sort = typeof raw?.sort === "string" ? raw.sort : undefined;
   const q = typeof raw?.q === "string" ? raw.q : undefined;
   const includeArchived = toBoolean((raw as any)?.includeArchived);
 
-  let filters: Record<string, unknown> | undefined;
+  // Parse filters using the schema transformation logic if possible, or fallback manually
+  let filters: any = undefined;
   if (typeof raw?.filters === "string") {
     try {
-      const parsed = JSON.parse(raw.filters);
-      if (parsed && typeof parsed === "object") {
-        filters = parsed as Record<string, unknown>;
-      }
+      filters = JSON.parse(raw.filters);
     } catch {
-      // ignore malformed filters
+      filters = [];
     }
+  } else if (Array.isArray(raw?.filters)) {
+    filters = raw?.filters;
   }
 
-  return { q, page, pageSize, sort, filters, includeArchived };
+  // Validate via Zod to ensure standard compliance
+  const standardQuery = ListQuerySchema.safeParse({
+    q,
+    page,
+    pageSize,
+    sort,
+    filters,
+  });
+
+  if (!standardQuery.success) {
+    // Fallback if something is very wrong, though coercions above handle most cases
+    return {
+      q,
+      page,
+      pageSize,
+      sort,
+      filters: undefined,
+      includeArchived,
+    };
+  }
+
+  return {
+    ...standardQuery.data,
+    includeArchived,
+  };
 };
 
 export const buildPageInfo = (total: number, page: number, pageSize: number): PageInfo => {

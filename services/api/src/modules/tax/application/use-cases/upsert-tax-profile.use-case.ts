@@ -1,36 +1,49 @@
 import { Injectable } from "@nestjs/common";
-import type { UpsertTaxProfileInput } from "@corely/contracts";
-import type { TaxProfileEntity } from "../../domain/entities";
+import { type UpsertTaxProfileInput } from "@corely/contracts";
+import { type TaxProfileEntity } from "../../domain/entities";
 import { TaxProfileRepoPort } from "../../domain/ports";
-import type { UseCaseContext } from "./use-case-context";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+@RequireTenant()
 @Injectable()
-export class UpsertTaxProfileUseCase {
-  constructor(private readonly repo: TaxProfileRepoPort) {}
+export class UpsertTaxProfileUseCase extends BaseUseCase<UpsertTaxProfileInput, TaxProfileEntity> {
+  constructor(private readonly repo: TaxProfileRepoPort) {
+    super({ logger: null as any });
+  }
 
-  async execute(input: UpsertTaxProfileInput, ctx: UseCaseContext): Promise<TaxProfileEntity> {
-    const effectiveFrom = new Date(input.effectiveFrom);
-    const effectiveTo = input.effectiveTo ? new Date(input.effectiveTo) : null;
+  protected async handle(
+    input: UpsertTaxProfileInput,
+    ctx: UseCaseContext
+  ): Promise<Result<TaxProfileEntity, UseCaseError>> {
+    const tenantId = ctx.tenantId!;
+    const workspaceId = ctx.workspaceId || tenantId;
 
-    const profile: Omit<TaxProfileEntity, "id" | "createdAt" | "updatedAt"> = {
-      tenantId: ctx.workspaceId,
+    const saved = await this.repo.upsert({
+      tenantId: workspaceId,
       country: input.country,
       regime: input.regime,
-      vatEnabled: input.vatEnabled ?? true,
+      vatEnabled: input.vatEnabled,
       vatId: input.vatId || null,
       currency: input.currency,
       filingFrequency: input.filingFrequency,
-      vatAccountingMethod: input.vatAccountingMethod ?? "IST",
-      taxYearStartMonth: input.taxYearStartMonth ?? null,
-      localTaxOfficeName: input.localTaxOfficeName ?? null,
-      vatExemptionParagraph: input.vatExemptionParagraph ?? null,
+      vatAccountingMethod: input.vatAccountingMethod,
+      taxYearStartMonth: input.taxYearStartMonth,
+      localTaxOfficeName: input.localTaxOfficeName,
+      vatExemptionParagraph: input.vatExemptionParagraph || null,
       euB2BSales: input.euB2BSales ?? false,
       hasEmployees: input.hasEmployees ?? false,
       usesTaxAdvisor: input.usesTaxAdvisor ?? false,
-      effectiveFrom,
-      effectiveTo,
-    };
+      effectiveFrom: new Date(input.effectiveFrom),
+      effectiveTo: input.effectiveTo ? new Date(input.effectiveTo) : null,
+    });
 
-    return this.repo.upsert(profile);
+    return ok(saved);
   }
 }

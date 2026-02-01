@@ -25,7 +25,9 @@ import {
   SendInvoiceInputSchema,
   UpdateInvoiceInputSchema,
 } from "@corely/contracts";
+import { parseListQuery } from "../../../../shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
+
 import { AuthGuard } from "../../../identity";
 import { ModuleRef } from "@nestjs/core";
 
@@ -104,13 +106,14 @@ export class InvoicesHttpController {
   async downloadPdf(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
     const input = DownloadInvoicePdfInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
-    const result = await this.app.downloadInvoicePdf.execute(input, ctx);
-    const downloadUrl = result.downloadUrl.startsWith("/")
-      ? `${req.protocol}://${req.get("host")}${result.downloadUrl}`
-      : result.downloadUrl;
+    const result = await this.app!.downloadInvoicePdf.execute(input, ctx);
+    const payload = mapResultToHttp(result);
+    const downloadUrl = payload.downloadUrl.startsWith("/")
+      ? `${req.protocol}://${req.get("host")}${payload.downloadUrl}`
+      : payload.downloadUrl;
     return {
       downloadUrl,
-      expiresAt: result.expiresAt.toISOString(),
+      expiresAt: payload.expiresAt.toISOString(),
     };
   }
 
@@ -141,14 +144,15 @@ export class InvoicesHttpController {
 
   @Get()
   async list(@Query() query: Record<string, unknown>, @Req() req: Request) {
+    const listQuery = parseListQuery(query);
     const input = ListInvoicesInputSchema.parse({
+      ...listQuery,
       status: typeof query.status === "string" ? query.status : undefined,
       customerPartyId:
         typeof query.customerPartyId === "string" ? query.customerPartyId : undefined,
       fromDate: typeof query.fromDate === "string" ? query.fromDate : undefined,
       toDate: typeof query.toDate === "string" ? query.toDate : undefined,
       cursor: typeof query.cursor === "string" ? query.cursor : undefined,
-      pageSize: typeof query.pageSize === "string" ? Number(query.pageSize) : undefined,
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listInvoices.execute(input, ctx);

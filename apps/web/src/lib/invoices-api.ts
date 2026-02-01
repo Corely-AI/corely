@@ -10,8 +10,11 @@ import type {
   InvoiceCapabilities,
   RecordPaymentInput,
   UpdateInvoiceInput,
+  ListInvoicesInput,
+  ListInvoicesOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
+import { buildListQuery } from "./api-query-utils";
 
 export class InvoicesApi {
   /**
@@ -28,13 +31,16 @@ export class InvoicesApi {
   /**
    * Get all invoices
    */
-  async listInvoices(): Promise<InvoiceDto[]> {
-    const result = await apiClient.get<unknown>("/invoices", {
+  async listInvoices(params?: ListInvoicesInput): Promise<ListInvoicesOutput> {
+    const searchParams = buildListQuery(params);
+
+    const result = await apiClient.get<unknown>(`/invoices?${searchParams.toString()}`, {
       correlationId: apiClient.generateCorrelationId(),
     });
 
+    // Normalize response
     if (Array.isArray(result)) {
-      return result as InvoiceDto[];
+      return { items: result as InvoiceDto[] };
     }
 
     if (
@@ -43,19 +49,20 @@ export class InvoicesApi {
       "items" in result &&
       Array.isArray((result as { items: unknown }).items)
     ) {
-      return (result as { items: InvoiceDto[] }).items;
+      return result as ListInvoicesOutput;
     }
 
+    // Fallback/Legacy
     if (
       typeof result === "object" &&
       result !== null &&
       "invoices" in result &&
       Array.isArray((result as { invoices: unknown }).invoices)
     ) {
-      return (result as { invoices: InvoiceDto[] }).invoices;
+      return { items: (result as { invoices: InvoiceDto[] }).invoices };
     }
 
-    return [];
+    return { items: [] };
   }
 
   /**

@@ -18,9 +18,7 @@ describe("CreateWorkspaceUseCase", () => {
       createLegalEntity: vi.fn(),
       createWorkspace: vi.fn(),
       createMembership: vi.fn(),
-      getWorkspaceById: vi.fn(),
-      listWorkspacesByTenant: vi.fn().mockResolvedValue([]),
-      getMembershipByUserAndWorkspace: vi.fn(),
+      getWorkspaceBySlug: vi.fn().mockResolvedValue(null),
     } as any;
 
     mockIdGen = {
@@ -36,20 +34,15 @@ describe("CreateWorkspaceUseCase", () => {
       store: vi.fn().mockResolvedValue(undefined),
     } as any;
 
-    const mockEnv = {
-      EDITION: (process.env.EDITION || "oss") as "oss" | "ee",
-      DEFAULT_TENANT_ID: process.env.DEFAULT_TENANT_ID || "default_tenant",
-    } as any;
-
     idCounter = 0;
-    useCase = new CreateWorkspaceUseCase(mockRepo, mockIdGen, mockClock, mockIdempotency, mockEnv);
+    useCase = new CreateWorkspaceUseCase(mockRepo, mockIdGen, mockClock, mockIdempotency);
   });
 
   it("should create workspace with legal entity and owner membership", async () => {
     const legalEntity = {
       id: "legal-1",
       tenantId: "tenant-1",
-      kind: "COMPANY",
+      kind: "COMPANY" as const,
       legalName: "Test Company",
       countryCode: "US",
       currency: "USD",
@@ -62,7 +55,7 @@ describe("CreateWorkspaceUseCase", () => {
       tenantId: "tenant-1",
       legalEntityId: "legal-1",
       name: "Test Workspace",
-      onboardingStatus: "PROFILE",
+      onboardingStatus: "PROFILE" as const,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

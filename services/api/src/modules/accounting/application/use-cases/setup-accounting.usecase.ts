@@ -4,6 +4,7 @@ import {
   type IdGeneratorPort,
   type LoggerPort,
   ValidationError,
+  RequireTenant,
 } from "@corely/kernel";
 import type { SetupAccountingInput, SetupAccountingOutput } from "@corely/contracts";
 import type { Result, UseCaseContext, UseCaseError } from "@corely/kernel";
@@ -27,6 +28,7 @@ type Deps = {
   clock: ClockPort;
 };
 
+@RequireTenant()
 export class SetupAccountingUseCase extends BaseUseCase<
   SetupAccountingInput,
   SetupAccountingOutput
@@ -39,16 +41,14 @@ export class SetupAccountingUseCase extends BaseUseCase<
     input: SetupAccountingInput,
     ctx: UseCaseContext
   ): Promise<Result<SetupAccountingOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
+    const tenantId = ctx.tenantId!;
 
     // Check if already setup
-    const existing = await this.deps.settingsRepo.findByTenant(ctx.tenantId);
+    const existing = await this.deps.settingsRepo.findByTenant(tenantId);
     if (existing) {
       // Idempotent: return existing setup
-      const accounts = await this.deps.accountRepo.list(ctx.tenantId, { limit: 1000 });
-      const periods = await this.deps.periodRepo.list(ctx.tenantId);
+      const accounts = await this.deps.accountRepo.list(tenantId, { limit: 1000 });
+      const periods = await this.deps.periodRepo.list(tenantId);
 
       return ok({
         settings: this.mapSettingsToDto(existing),
@@ -62,7 +62,7 @@ export class SetupAccountingUseCase extends BaseUseCase<
     // Create settings
     const settings = AccountingSettingsAggregate.create({
       id: this.deps.idGenerator.newId(),
-      tenantId: ctx.tenantId,
+      tenantId,
       baseCurrency: input.baseCurrency,
       fiscalYearStartMonthDay: input.fiscalYearStartMonthDay,
       periodLockingEnabled: input.periodLockingEnabled,
@@ -75,7 +75,7 @@ export class SetupAccountingUseCase extends BaseUseCase<
     const accounts = template.map((tpl) =>
       LedgerAccountAggregate.create({
         id: this.deps.idGenerator.newId(),
-        tenantId: ctx.tenantId,
+        tenantId,
         code: tpl.code,
         name: tpl.name,
         type: tpl.type,
@@ -88,7 +88,7 @@ export class SetupAccountingUseCase extends BaseUseCase<
 
     // Generate periods for current fiscal year
     const periods = this.generatePeriodsForCurrentYear(
-      ctx.tenantId,
+      tenantId,
       input.fiscalYearStartMonthDay,
       now
     );

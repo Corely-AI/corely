@@ -1,4 +1,5 @@
 import type { Request } from "express";
+import type { PublicWorkspaceContext } from "../public";
 
 export type ContextSource =
   | "user"
@@ -6,6 +7,7 @@ export type ContextSource =
   | "header"
   | "header-legacy"
   | "route"
+  | "public"
   | "generated"
   | "inferred";
 
@@ -42,4 +44,5 @@ export type ContextAwareRequest = Request & {
   roleIds?: string[];
   traceId?: string;
   id?: string;
+  publicContext?: PublicWorkspaceContext;
 };

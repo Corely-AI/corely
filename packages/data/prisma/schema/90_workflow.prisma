@@ -18,17 +18,20 @@ model WorkflowDefinition {
   @@unique([tenantId, key, version])
   @@index([tenantId, status])
   @@index([tenantId, key])
+  @@schema("workflow")
 }
 
 enum WorkflowDefinitionStatus {
   ACTIVE
   INACTIVE
   ARCHIVED
+  @@schema("workflow")
 }
 
 enum WorkflowDefinitionType {
   GENERAL
   APPROVAL
+  @@schema("workflow")
 }
 
 // Workflow Instance: Runtime execution of a workflow definition
@@ -54,6 +57,7 @@ model WorkflowInstance {
   @@index([tenantId, status])
   @@index([tenantId, businessKey])
   @@index([status, updatedAt])
+  @@schema("workflow")
 }
 
 enum WorkflowInstanceStatus {
@@ -63,6 +67,7 @@ enum WorkflowInstanceStatus {
   COMPLETED   // Successfully finished
   FAILED      // Failed with error
   CANCELLED   // Manually cancelled
+  @@schema("workflow")
 }
 
 // Task: Executable unit within a workflow instance
@@ -100,6 +105,7 @@ model Task {
   @@index([tenantId, assigneeUserId, status])
   @@index([tenantId, assigneeRoleId, status])
   @@index([tenantId, assigneePermissionKey, status])
+  @@schema("workflow")
 }
 
 enum TaskType {
@@ -109,6 +115,7 @@ enum TaskType {
   EMAIL    // Email sending
   AI       // AI/LLM decision or tool execution
   SYSTEM   // Internal system operation
+  @@schema("workflow")
 }
 
 enum TaskStatus {
@@ -118,6 +125,7 @@ enum TaskStatus {
   FAILED     // Failed with error
   CANCELLED  // Manually cancelled
   SKIPPED    // Skipped due to workflow logic
+  @@schema("workflow")
 }
 
 // WorkflowEvent: Audit log for all workflow transitions and events
@@ -134,4 +142,5 @@ model WorkflowEvent {
   @@index([tenantId, instanceId, createdAt])
   @@index([instanceId, type])
   @@index([tenantId, type, createdAt])
+  @@schema("workflow")
 }

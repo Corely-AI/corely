@@ -13,4 +13,11 @@ export interface DocumentLinkRepoPort {
     entityType: DocumentLinkEntityType;
     entityId: string;
   }): Promise<string[]>;
+
+  deleteLink(params: {
+    tenantId: string;
+    documentId: string;
+    entityType: DocumentLinkEntityType;
+    entityId: string;
+  }): Promise<void>;
 }

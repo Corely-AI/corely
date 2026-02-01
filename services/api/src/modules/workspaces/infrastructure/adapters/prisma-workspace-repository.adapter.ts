@@ -8,7 +8,12 @@ import type {
   UpdateLegalEntityInput,
   CreateMembershipInput,
 } from "../../application/ports/workspace-repository.port";
-import type { Workspace, WorkspaceMembership, LegalEntity } from "../../domain/workspace.entity";
+import type {
+  Workspace,
+  WorkspaceMembership,
+  LegalEntity,
+  WorkspaceDomain,
+} from "../../domain/workspace.entity";
 
 @Injectable()
 export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
@@ -23,6 +28,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     const entity = await this.prisma.legalEntity.create({
       data: {
         id: input.id,
+        tenantId: input.tenantId,
         kind: input.kind,
         legalName: input.legalName,
         countryCode: input.countryCode,
@@ -34,9 +40,6 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
         website: input.website,
         address: input.address || null,
         bankAccount: input.bankAccount || null,
-        tenant: {
-          connect: { id: input.tenantId },
-        },
       },
     });
 
@@ -85,12 +88,23 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
         tenantId: input.tenantId,
         legalEntityId: input.legalEntityId,
         name: input.name,
+        slug: input.slug,
+        publicEnabled: input.publicEnabled ?? false,
+        publicModules: input.publicModules ?? null,
         onboardingStatus: (input.onboardingStatus || "NEW") as any,
         invoiceSettings: input.invoiceSettings || null,
       },
     });
 
     return this.mapWorkspaceFromPrisma(workspace);
+  }
+
+  async getWorkspaceBySlug(slug: string): Promise<Workspace | null> {
+    const workspace = await this.prisma.workspace.findFirst({
+      where: { slug },
+    });
+
+    return workspace ? this.mapWorkspaceFromPrisma(workspace) : null;
   }
 
   async getWorkspaceById(tenantId: string, id: string): Promise<Workspace | null> {
@@ -153,6 +167,9 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
       where: { id },
       data: {
         name: input.name,
+        slug: input.slug,
+        publicEnabled: input.publicEnabled,
+        publicModules: input.publicModules,
         onboardingStatus: input.onboardingStatus as any,
         onboardingCompletedAt: input.onboardingCompletedAt,
         invoiceSettings: input.invoiceSettings,
@@ -216,6 +233,68 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     return count > 0;
   }
 
+  // === Workspace Domain Operations ===
+
+  async listWorkspaceDomains(workspaceId: string): Promise<WorkspaceDomain[]> {
+    const domains = await this.prisma.workspaceDomain.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return domains.map(this.mapWorkspaceDomainFromPrisma);
+  }
+
+  async createWorkspaceDomain(input: {
+    id: string;
+    workspaceId: string;
+    domain: string;
+    isPrimary: boolean;
+  }): Promise<WorkspaceDomain> {
+    const domain = await this.prisma.workspaceDomain.create({
+      data: {
+        id: input.id,
+        workspaceId: input.workspaceId,
+        domain: input.domain,
+        isPrimary: input.isPrimary,
+      },
+    });
+
+    return this.mapWorkspaceDomainFromPrisma(domain);
+  }
+
+  async deleteWorkspaceDomain(workspaceId: string, domainId: string): Promise<boolean> {
+    const result = await this.prisma.workspaceDomain.deleteMany({
+      where: { workspaceId, id: domainId },
+    });
+
+    return result.count > 0;
+  }
+
+  async setPrimaryWorkspaceDomain(
+    workspaceId: string,
+    domainId: string
+  ): Promise<WorkspaceDomain | null> {
+    const [_, updateResult, updated] = await this.prisma.$transaction([
+      this.prisma.workspaceDomain.updateMany({
+        where: { workspaceId },
+        data: { isPrimary: false },
+      }),
+      this.prisma.workspaceDomain.updateMany({
+        where: { id: domainId, workspaceId },
+        data: { isPrimary: true },
+      }),
+      this.prisma.workspaceDomain.findUnique({
+        where: { id: domainId },
+      }),
+    ]);
+
+    if (!updateResult.count || !updated || updated.workspaceId !== workspaceId) {
+      return null;
+    }
+
+    return this.mapWorkspaceDomainFromPrisma(updated);
+  }
+
   // === Mappers ===
 
   private mapLegalEntityFromPrisma(entity: any): LegalEntity {
@@ -244,6 +323,9 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
       tenantId: workspace.tenantId,
       legalEntityId: workspace.legalEntityId,
       name: workspace.name,
+      slug: workspace.slug ?? undefined,
+      publicEnabled: workspace.publicEnabled ?? false,
+      publicModules: (workspace.publicModules as Record<string, boolean> | null) ?? undefined,
       onboardingStatus: workspace.onboardingStatus,
       onboardingCompletedAt: workspace.onboardingCompletedAt || undefined,
       invoiceSettings: workspace.invoiceSettings || undefined,
@@ -260,6 +342,16 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
       role: membership.role,
       status: membership.status,
       createdAt: membership.createdAt,
+    };
+  }
+
+  private mapWorkspaceDomainFromPrisma(domain: any): WorkspaceDomain {
+    return {
+      id: domain.id,
+      workspaceId: domain.workspaceId,
+      domain: domain.domain,
+      isPrimary: domain.isPrimary,
+      createdAt: domain.createdAt,
     };
   }
 }

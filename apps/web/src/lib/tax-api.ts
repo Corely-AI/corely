@@ -40,6 +40,33 @@ import type {
   TaxBreakdownDto,
   TaxSnapshotDto,
   TaxReportDto,
+  GetTaxCenterInput,
+  GetTaxCenterOutput,
+  ListTaxFilingsInput,
+  ListTaxFilingsOutput,
+  GetVatPeriodsInput,
+  GetVatPeriodsOutput,
+  CreateTaxFilingInput,
+  CreateTaxFilingOutput,
+  TaxFilingDetailResponse,
+  TaxFilingItemsListQuery,
+  TaxFilingItemsListResponse,
+  TaxFilingAttachmentsResponse,
+  AttachTaxFilingDocumentRequest,
+  AttachTaxFilingDocumentResponse,
+  TaxFilingActivityResponse,
+  SubmitTaxFilingRequest,
+  SubmitTaxFilingResponse,
+  MarkTaxFilingPaidRequest,
+  MarkTaxFilingPaidResponse,
+  RecalculateTaxFilingResponse,
+  TaxPaymentsListQuery,
+  TaxPaymentsListResponse,
+  GetTaxCapabilitiesResponse,
+  ExportTaxPaymentsInput,
+  ExportTaxPaymentsResponse,
+  AttachTaxFilingPaymentProofRequest,
+  AttachTaxFilingPaymentProofResponse,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -274,6 +301,285 @@ export class TaxApi {
       correlationId: apiClient.generateCorrelationId(),
     });
   }
+
+  // ============================================================================
+  // Tax Center & Filings (New)
+  // ============================================================================
+
+  async getCenter(input: GetTaxCenterInput) {
+    const params = new URLSearchParams();
+    if (input.year) {
+      params.append("year", String(input.year));
+    }
+    if (input.entityId) {
+      params.append("entityId", input.entityId);
+    }
+
+    return apiClient.get<GetTaxCenterOutput>(`/tax/center?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getCapabilities() {
+    const result = await apiClient.get<GetTaxCapabilitiesResponse>("/tax/capabilities", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+    return result.capabilities;
+  }
+
+  async listFilings(input: ListTaxFilingsInput) {
+    const params = new URLSearchParams();
+    if (input.q) {
+      params.append("q", input.q);
+    }
+    params.append("page", String(input.page || 1));
+    params.append("pageSize", String(input.pageSize || 20));
+    const sort = Array.isArray(input.sort) ? input.sort[0] : input.sort;
+    if (sort) {
+      params.append("sort", sort);
+    }
+    if (input.filters && input.filters.length > 0) {
+      params.append("filters", JSON.stringify(input.filters));
+    }
+    if (input.type) {
+      params.append("type", input.type);
+    }
+    if (input.status) {
+      params.append("status", input.status);
+    }
+    if (input.year) {
+      params.append("year", String(input.year));
+    }
+    if (input.periodKey) {
+      params.append("periodKey", input.periodKey);
+    }
+    if (input.dueFrom) {
+      params.append("dueFrom", input.dueFrom);
+    }
+    if (input.dueTo) {
+      params.append("dueTo", input.dueTo);
+    }
+    if (input.needsAttention !== undefined) {
+      params.append("needsAttention", String(input.needsAttention));
+    }
+    if (input.hasIssues !== undefined) {
+      params.append("hasIssues", String(input.hasIssues));
+    }
+    if (input.entityId) {
+      params.append("entityId", input.entityId);
+    }
+
+    return apiClient.get<ListTaxFilingsOutput>(`/tax/filings?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async listPayments(input: TaxPaymentsListQuery) {
+    const params = new URLSearchParams();
+    if (input.q) {
+      params.append("q", input.q);
+    }
+    params.append("page", String(input.page || 1));
+    params.append("pageSize", String(input.pageSize || 20));
+    const sort = Array.isArray(input.sort) ? input.sort[0] : input.sort;
+    if (sort) {
+      params.append("sort", sort);
+    }
+    if (input.filters && input.filters.length > 0) {
+      params.append("filters", JSON.stringify(input.filters));
+    }
+    if (input.status) {
+      params.append("status", input.status);
+    }
+    if (input.year) {
+      params.append("year", String(input.year));
+    }
+    if (input.type) {
+      params.append("type", input.type);
+    }
+    if (input.dueFrom) {
+      params.append("dueFrom", input.dueFrom);
+    }
+    if (input.dueTo) {
+      params.append("dueTo", input.dueTo);
+    }
+    if (input.paidFrom) {
+      params.append("paidFrom", input.paidFrom);
+    }
+    if (input.paidTo) {
+      params.append("paidTo", input.paidTo);
+    }
+
+    return apiClient.get<TaxPaymentsListResponse>(`/tax/payments?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async exportPayments(input: ExportTaxPaymentsInput) {
+    const params = new URLSearchParams();
+    if (input.q) {
+      params.append("q", input.q);
+    }
+    if (input.filters && input.filters.length > 0) {
+      params.append("filters", JSON.stringify(input.filters));
+    }
+    if (input.status) {
+      params.append("status", input.status);
+    }
+    if (input.year) {
+      params.append("year", String(input.year));
+    }
+    if (input.type) {
+      params.append("type", input.type);
+    }
+    if (input.dueFrom) {
+      params.append("dueFrom", input.dueFrom);
+    }
+    if (input.dueTo) {
+      params.append("dueTo", input.dueTo);
+    }
+    if (input.paidFrom) {
+      params.append("paidFrom", input.paidFrom);
+    }
+    if (input.paidTo) {
+      params.append("paidTo", input.paidTo);
+    }
+
+    return apiClient.get<ExportTaxPaymentsResponse>(`/tax/payments/export?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getVatFilingPeriods(input: GetVatPeriodsInput) {
+    const params = new URLSearchParams();
+    params.append("year", String(input.year));
+    if (input.entityId) {
+      params.append("entityId", input.entityId);
+    }
+
+    return apiClient.get<GetVatPeriodsOutput>(`/tax/vat/periods?${params.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createFiling(input: CreateTaxFilingInput) {
+    return apiClient.post<CreateTaxFilingOutput>("/tax/filings", input, {
+      correlationId: apiClient.generateCorrelationId(),
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+    });
+  }
+
+  async getFilingDetail(id: string) {
+    return apiClient.get<TaxFilingDetailResponse>(`/tax/filings/${id}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async listFilingItems(id: string, query: TaxFilingItemsListQuery) {
+    const params = new URLSearchParams();
+    if (query.q) {
+      params.append("q", query.q);
+    }
+    params.append("page", String(query.page || 1));
+    params.append("pageSize", String(query.pageSize || 20));
+    if (query.sort) {
+      params.append("sort", Array.isArray(query.sort) ? query.sort[0] : query.sort);
+    }
+    if (query.filters && query.filters.length > 0) {
+      params.append("filters", JSON.stringify(query.filters));
+    }
+    if (query.sourceType) {
+      params.append("sourceType", query.sourceType);
+    }
+    if (query.dateFrom) {
+      params.append("dateFrom", query.dateFrom);
+    }
+    if (query.dateTo) {
+      params.append("dateTo", query.dateTo);
+    }
+    if (query.category) {
+      params.append("category", query.category);
+    }
+    if (query.needsAttention !== undefined) {
+      params.append("needsAttention", String(query.needsAttention));
+    }
+    if (query.missingMapping !== undefined) {
+      params.append("missingMapping", String(query.missingMapping));
+    }
+
+    return apiClient.get<TaxFilingItemsListResponse>(
+      `/tax/filings/${id}/items?${params.toString()}`,
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
+
+  async listFilingAttachments(id: string) {
+    return apiClient.get<TaxFilingAttachmentsResponse>(`/tax/filings/${id}/attachments`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async attachFilingDocument(id: string, request: AttachTaxFilingDocumentRequest) {
+    return apiClient.post<AttachTaxFilingDocumentResponse>(
+      `/tax/filings/${id}/attachments`,
+      request,
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
+
+  async removeFilingAttachment(id: string, attachmentId: string) {
+    return apiClient.delete<{ removed: boolean }>(
+      `/tax/filings/${id}/attachments/${attachmentId}`,
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
+
+  async listFilingActivity(id: string) {
+    return apiClient.get<TaxFilingActivityResponse>(`/tax/filings/${id}/activity`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async recalculateFiling(id: string) {
+    return apiClient.post<RecalculateTaxFilingResponse>(
+      `/tax/filings/${id}/recalculate`,
+      {},
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
+
+  async submitFiling(id: string, request: SubmitTaxFilingRequest) {
+    return apiClient.post<SubmitTaxFilingResponse>(`/tax/filings/${id}/submit`, request, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async markFilingPaid(id: string, request: MarkTaxFilingPaidRequest) {
+    return apiClient.post<MarkTaxFilingPaidResponse>(`/tax/filings/${id}/mark-paid`, request, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async attachPaymentProof(id: string, request: AttachTaxFilingPaymentProofRequest) {
+    return apiClient.post<AttachTaxFilingPaymentProofResponse>(
+      `/tax/filings/${id}/payment-proof`,
+      request,
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
+
+  async deleteFiling(id: string) {
+    return apiClient.delete<{ deleted: boolean }>(`/tax/filings/${id}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  // ============================================================================
+  // React Query Hooks
+  // ============================================================================
+
+  // Note: We usually keep hooks separate but for speed adding helper here or just rely on API
+  // Best practice: hooks in hooks/
 
   // ============================================================================
   // Consultant

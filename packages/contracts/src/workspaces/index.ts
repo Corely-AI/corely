@@ -8,3 +8,4 @@ export * from "./workspace-invites.schema";
 export * from "./workspace-onboarding.schema";
 export * from "./workspace-config.schema";
 export * from "./upgrade-workspace.schema";
+export * from "./workspace-domains.schema";

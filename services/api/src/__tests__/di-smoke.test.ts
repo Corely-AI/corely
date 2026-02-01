@@ -12,6 +12,7 @@
  */
 
 import { Test, TestingModule } from "@nestjs/testing";
+import { AppModule } from "../app.module";
 import { PlatformModule } from "../modules/platform/platform.module";
 import { IdentityModule } from "../modules/identity/identity.module";
 import { KernelModule } from "../shared/kernel/kernel.module";
@@ -26,7 +27,12 @@ describe("DI Smoke Tests", () => {
     // Skip AppModule test - it requires full infrastructure (Redis, Postgres, etc.)
     // For DI smoke testing, we test individual modules below
     it.skip("should create AppModule without DI errors", async () => {
-      // Intentionally left empty; AppModule pulls optional EE dependencies in OSS runs.
+      const module: TestingModule = await Test.createTestingModule({
+        imports: [AppModule],
+      }).compile();
+
+      expect(module).toBeDefined();
+      expect(module.get(AppModule)).toBeDefined();
     });
 
     it("should create KernelModule and provide kernel services", async () => {

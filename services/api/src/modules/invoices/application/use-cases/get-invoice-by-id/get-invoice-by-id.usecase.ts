@@ -8,6 +8,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import { type GetInvoiceByIdCommand, type GetInvoiceByIdResult } from "./types";
@@ -19,6 +20,7 @@ type Deps = {
   invoiceRepo: InvoiceRepoPort;
 };
 
+@RequireTenant()
 export class GetInvoiceByIdUseCase extends BaseUseCase<
   GetInvoiceByIdCommand,
   GetInvoiceByIdResult
@@ -39,9 +41,6 @@ export class GetInvoiceByIdUseCase extends BaseUseCase<
     input: GetInvoiceByIdCommand,
     ctx: UseCaseContext
   ): Promise<Result<GetInvoiceByIdResult, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId missing from context"));
     }

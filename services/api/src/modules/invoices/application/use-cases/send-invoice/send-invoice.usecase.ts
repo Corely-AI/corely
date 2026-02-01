@@ -11,6 +11,7 @@ import {
   buildIdempotencyKey,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { type SendInvoiceInput, type SendInvoiceOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
@@ -26,6 +27,7 @@ type Deps = {
   idGenerator: IdGeneratorPort;
 };
 
+@RequireTenant()
 export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoiceOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -35,9 +37,6 @@ export class SendInvoiceUseCase extends BaseUseCase<SendInvoiceInput, SendInvoic
     input: SendInvoiceInput,
     ctx: UseCaseContext
   ): Promise<Result<SendInvoiceOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId missing from context"));
     }

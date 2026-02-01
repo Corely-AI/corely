@@ -8,6 +8,7 @@ import {
   type UseCaseError,
   ValidationError,
   NotFoundError,
+  RequireTenant,
   ok,
   err,
 } from "@corely/kernel";
@@ -15,6 +16,7 @@ import type { MarkDealLostInput, MarkDealLostOutput } from "@corely/contracts";
 import type { DealRepoPort } from "../../ports/deal-repository.port";
 import { toDealDto } from "../../mappers/deal-dto.mapper";
 
+@RequireTenant()
 @Injectable()
 export class MarkDealLostUseCase extends BaseUseCase<MarkDealLostInput, MarkDealLostOutput> {
   constructor(
@@ -36,10 +38,6 @@ export class MarkDealLostUseCase extends BaseUseCase<MarkDealLostInput, MarkDeal
     input: MarkDealLostInput,
     ctx: UseCaseContext
   ): Promise<Result<MarkDealLostOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
-
     const deal = await this.dealRepo.findById(ctx.tenantId, input.dealId);
     if (!deal) {
       return err(new NotFoundError(`Deal ${input.dealId} not found`));

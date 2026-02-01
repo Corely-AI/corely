@@ -9,12 +9,14 @@ import {
   ValidationError,
   ok,
   err,
+  RequireTenant,
 } from "@corely/kernel";
 import {
   REGISTER_REPOSITORY_PORT,
   type RegisterRepositoryPort,
 } from "../ports/register-repository.port";
 
+@RequireTenant()
 @Injectable()
 export class ListRegistersUseCase extends BaseUseCase<ListRegistersInput, ListRegistersOutput> {
   constructor(@Inject(REGISTER_REPOSITORY_PORT) private registerRepo: RegisterRepositoryPort) {
@@ -25,11 +27,9 @@ export class ListRegistersUseCase extends BaseUseCase<ListRegistersInput, ListRe
     input: ListRegistersInput,
     ctx: UseCaseContext
   ): Promise<Result<ListRegistersOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
+    const tenantId = ctx.tenantId!;
 
-    const registers = await this.registerRepo.findByWorkspace(ctx.tenantId, input.status);
+    const registers = await this.registerRepo.findByWorkspace(tenantId, input.status);
 
     return ok({
       registers: registers.map((r) => r.toDto()),

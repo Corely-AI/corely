@@ -40,6 +40,12 @@
     "@tanstack/query-persist-client-core": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-query-persist-client": "catalog:",
+    "@tiptap/core": "^2.11.0",
+    "@tiptap/extension-image": "^2.11.0",
+    "@tiptap/extension-link": "^2.11.0",
+    "@tiptap/extension-placeholder": "^2.11.0",
+    "@tiptap/react": "^2.11.0",
+    "@tiptap/starter-kit": "^2.11.0",
     "ai": "catalog:",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -73,6 +79,9 @@
   },
   "devDependencies": {
     "@eslint/js": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
@@ -95,7 +104,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc -p tsconfig.app.json --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit"
   },
   "author": "Ha Doan <ha@oneway8x.com>"
 }

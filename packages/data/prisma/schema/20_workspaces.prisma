@@ -31,6 +31,7 @@ model LegalEntity {
   @@index([tenantId])
   @@index([tenantId, kind])
   @@index([tenantId, createdAt])
+  @@schema("platform")
 }
 
 // === WORKSPACES ===
@@ -42,6 +43,9 @@ model Workspace {
   tenantId              String
   legalEntityId         String
   name                  String
+  slug                  String?                   @unique
+  publicEnabled         Boolean                   @default(false)
+  publicModules         Json?
   onboardingStatus      WorkspaceOnboardingStatus @default(NEW)
   onboardingCompletedAt DateTime?                 @db.Timestamptz(6)
   createdAt             DateTime                  @default(now()) @db.Timestamptz(6)
@@ -55,15 +59,33 @@ model Workspace {
   legalEntity LegalEntity           @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
   memberships WorkspaceMembership[]
   invites     WorkspaceInvite[]
+  domains     WorkspaceDomain[]
   registers   Register[]
   shiftSessions ShiftSession[]
   posSaleIdempotency PosSaleIdempotency[]
+  cashRegisters     CashRegister[]
+  cashEntries       CashEntry[]
+  cashDayCloses     CashDayClose[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([legalEntityId])
   @@index([tenantId, createdAt])
   @@index([tenantId, onboardingStatus])
+  @@schema("platform")
+}
+
+model WorkspaceDomain {
+  id          String   @id @default(cuid())
+  workspaceId String
+  domain      String   @unique
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@schema("platform")
 }
 
 model WorkspaceMembership {
@@ -83,6 +105,7 @@ model WorkspaceMembership {
   @@index([userId])
   @@index([workspaceId, status])
   @@index([userId, status])
+  @@schema("platform")
 }
 
 model WorkspaceInvite {
@@ -105,6 +128,7 @@ model WorkspaceInvite {
   @@index([token])
   @@index([status, expiresAt])
   @@index([workspaceId, status])
+  @@schema("platform")
 }
 
 // === ENUMS ===
@@ -115,12 +139,14 @@ enum WorkspaceMembershipRole {
   MEMBER
   ACCOUNTANT
   VIEWER
+  @@schema("platform")
 }
 
 enum WorkspaceMembershipStatus {
   ACTIVE
   INVITED
   DISABLED
+  @@schema("platform")
 }
 
 enum WorkspaceInviteStatus {
@@ -128,6 +154,7 @@ enum WorkspaceInviteStatus {
   ACCEPTED
   EXPIRED
   CANCELED
+  @@schema("platform")
 }
 
 enum WorkspaceOnboardingStatus {
@@ -136,4 +163,5 @@ enum WorkspaceOnboardingStatus {
   TAX
   BANK
   DONE
+  @@schema("platform")
 }

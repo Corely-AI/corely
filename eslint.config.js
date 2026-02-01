@@ -47,6 +47,27 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["./*.js", "./**/*.js", "../*.js", "../**/*.js"],
+              message: "Use extensionless relative imports in TS/TSX (no .js).",
+            },
+            {
+              group: ["**/ee/**", "@corely/*-ee"],
+              message:
+                "EE packages must be loaded via runtime edition bridges (ee-loader.ts), not statically imported",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Allow ee-loader files to import from EE packages
   {
     files: ["**/ee-loader.ts", "**/ee-loader.tsx"],

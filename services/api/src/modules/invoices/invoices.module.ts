@@ -44,7 +44,6 @@ import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoi
 import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoice-pdf-model.adapter";
 import { PlaywrightInvoicePdfRendererAdapter } from "./infrastructure/pdf/playwright-invoice-pdf-renderer.adapter";
 import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
-import type { InvoicePdfRendererPort } from "./application/ports/invoice-pdf-renderer.port";
 import { INVOICE_COMMANDS } from "./application/ports/invoice-commands.port";
 import { InvoiceCommandService } from "./application/services/invoice-command.service";
 
@@ -63,28 +62,31 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
     },
     { provide: INVOICE_NUMBERING_PORT, useClass: InvoiceNumberingAdapter },
     { provide: INVOICE_PDF_MODEL_PORT, useClass: PrismaInvoicePdfModelAdapter },
-    ...(process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_DISABLED === "true"
-      ? [
-          {
-            provide: INVOICE_PDF_RENDERER_PORT,
-            useFactory: (): InvoicePdfRendererPort => ({
-              renderInvoiceToPdf: async () => Buffer.from(""),
-            }),
-          },
-        ]
-      : [
-          {
-            provide: "PLAYWRIGHT_BROWSER",
-            useFactory: async () => {
-              return await chromium.launch({ headless: true });
+    {
+      provide: "PLAYWRIGHT_BROWSER",
+      useFactory: async () => {
+        if (process.env.NODE_ENV === "test" || process.env.CORELY_TEST === "true") {
+          return {
+            async newPage() {
+              return {
+                async setContent() {},
+                async pdf() {
+                  return Buffer.from("");
+                },
+                async close() {},
+              };
             },
-          },
-          {
-            provide: INVOICE_PDF_RENDERER_PORT,
-            useFactory: (browser: any) => new PlaywrightInvoicePdfRendererAdapter(browser),
-            inject: ["PLAYWRIGHT_BROWSER"],
-          },
-        ]),
+          };
+        }
+
+        return await chromium.launch({ headless: true });
+      },
+    },
+    {
+      provide: INVOICE_PDF_RENDERER_PORT,
+      useFactory: (browser: any) => new PlaywrightInvoicePdfRendererAdapter(browser),
+      inject: ["PLAYWRIGHT_BROWSER"],
+    },
     PrismaInvoiceEmailDeliveryRepoAdapter,
     PrismaPaymentMethodQueryAdapter,
     { provide: PAYMENT_METHOD_QUERY_PORT, useExisting: PrismaPaymentMethodQueryAdapter },
@@ -243,7 +245,8 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
         pdfModel: any,
         renderer: any,
         storage: GcsObjectStorageAdapter
-      ) => new DownloadInvoicePdfUseCase(repo, pdfModel, renderer, storage),
+      ) =>
+        new DownloadInvoicePdfUseCase(repo, pdfModel, renderer, storage, new NestLoggerAdapter()),
       inject: [
         PrismaInvoiceRepoAdapter,
         INVOICE_PDF_MODEL_PORT,

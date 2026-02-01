@@ -1,0 +1,78 @@
+// CASH MANAGEMENT
+// Subledger for tracking cash movements in registers
+
+model CashRegister {
+  id                  String   @id @default(cuid())
+  tenantId            String
+  workspaceId         String
+  name                String
+  location            String?
+  currency            String   @db.Char(3) @default("EUR")
+  currentBalanceCents Int      @default(0)
+  createdAt           DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  entries    CashEntry[]
+  dayCloses  CashDayClose[]
+
+  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([workspaceId])
+  @@map("cash_registers")
+  @@schema("accounting")
+}
+
+model CashEntry {
+  id              String   @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  registerId      String
+  type            String   // IN, OUT
+  amountCents     Int // positive, interpretation depends on type
+  sourceType      String   // MANUAL, SALES, EXPENSE, DIFFERENCE
+  description     String
+  referenceId     String? // Linked doc ID or previous entry ID
+  businessDate    String? // YYYY-MM-DD
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  createdByUserId String
+
+  register   CashRegister @relation(fields: [registerId], references: [id], onDelete: Cascade)
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspace  Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, registerId, businessDate])
+  @@index([workspaceId, registerId, businessDate])
+  @@index([tenantId, createdAt])
+  @@map("cash_entries")
+  @@schema("accounting")
+}
+
+model CashDayClose {
+  id                  String   @id @default(cuid())
+  tenantId            String
+  workspaceId         String
+  registerId          String
+  businessDate        String // YYYY-MM-DD
+  status              String // OPEN, SUBMITTED, LOCKED
+  expectedBalanceCents Int
+  countedBalanceCents  Int
+  differenceCents      Int
+  notes                String?
+  closedAt             DateTime? @db.Timestamptz(6)
+  closedByUserId       String?
+  createdAt            DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(6)
+
+  register   CashRegister @relation(fields: [registerId], references: [id], onDelete: Cascade)
+  tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspace  Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([registerId, businessDate])
+  @@index([tenantId])
+  @@index([workspaceId])
+  @@map("cash_day_closes")
+  @@schema("accounting")
+}

@@ -6,12 +6,14 @@ import {
   type UseCaseContext,
   type UseCaseError,
   ValidationError,
+  RequireTenant,
   ok,
   err,
 } from "@corely/kernel";
 import type { GetTimelineInput, GetTimelineOutput } from "@corely/contracts";
 import type { ActivityRepoPort } from "../../ports/activity-repository.port";
 
+@RequireTenant()
 @Injectable()
 export class GetTimelineUseCase extends BaseUseCase<GetTimelineInput, GetTimelineOutput> {
   constructor(
@@ -35,10 +37,6 @@ export class GetTimelineUseCase extends BaseUseCase<GetTimelineInput, GetTimelin
     input: GetTimelineInput,
     ctx: UseCaseContext
   ): Promise<Result<GetTimelineOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
-
     const result = await this.activityRepo.getTimeline(
       ctx.tenantId,
       input.entityType,

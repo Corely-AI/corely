@@ -3,32 +3,47 @@ import type { LockTaxSnapshotInput, TaxSnapshotDto } from "@corely/contracts";
 import { TaxEngineService } from "../services/tax-engine.service";
 import { TaxSnapshotRepoPort, TaxProfileRepoPort } from "../../domain/ports";
 import { TaxSnapshot } from "../../domain/entities";
-import type { UseCaseContext } from "./use-case-context";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
 /**
  * Lock Tax Snapshot Use Case
  * Creates immutable tax calculation for finalized documents
  * MUST be idempotent based on (tenantId, sourceType, sourceId)
  */
+@RequireTenant()
 @Injectable()
-export class LockTaxSnapshotUseCase {
+export class LockTaxSnapshotUseCase extends BaseUseCase<LockTaxSnapshotInput, TaxSnapshotDto> {
   constructor(
     private readonly snapshotRepo: TaxSnapshotRepoPort,
     private readonly profileRepo: TaxProfileRepoPort,
     private readonly taxEngine: TaxEngineService
-  ) {}
+  ) {
+    super({ logger: null as any });
+  }
 
-  async execute(input: LockTaxSnapshotInput, ctx: UseCaseContext): Promise<TaxSnapshotDto> {
+  protected async handle(
+    input: LockTaxSnapshotInput,
+    ctx: UseCaseContext
+  ): Promise<Result<TaxSnapshotDto, UseCaseError>> {
+    const workspaceId = ctx.workspaceId || ctx.tenantId!;
+
     // Check if snapshot already exists (idempotency)
     const existing = await this.snapshotRepo.findBySource(
-      ctx.workspaceId,
+      workspaceId,
       input.sourceType,
       input.sourceId
     );
 
     if (existing) {
       // Return existing snapshot
-      return this.toDto(existing);
+      return ok(this.toDto(existing));
     }
 
     // Calculate tax breakdown
@@ -40,12 +55,12 @@ export class LockTaxSnapshotUseCase {
         customer: input.customer,
         lines: input.lines,
       },
-      ctx.workspaceId
+      workspaceId
     );
 
     // Get profile for regime info
     const documentDate = new Date(input.documentDate);
-    const profile = await this.profileRepo.getActive(ctx.workspaceId, documentDate);
+    const profile = await this.profileRepo.getActive(workspaceId, documentDate);
 
     if (!profile) {
       throw new Error("No active tax profile found");
@@ -53,7 +68,7 @@ export class LockTaxSnapshotUseCase {
 
     // Create immutable snapshot
     const snapshot = TaxSnapshot.create({
-      tenantId: ctx.workspaceId,
+      tenantId: workspaceId,
       sourceType: input.sourceType,
       sourceId: input.sourceId,
       jurisdiction: input.jurisdiction || "DE",
@@ -69,7 +84,7 @@ export class LockTaxSnapshotUseCase {
 
     const created = await this.snapshotRepo.lockSnapshot(snapshot);
 
-    return this.toDto(created);
+    return ok(this.toDto(created));
   }
 
   private toDto(entity: any): TaxSnapshotDto {

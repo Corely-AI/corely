@@ -8,6 +8,7 @@ import {
   type UseCaseContext,
   type UseCaseError,
   ValidationError,
+  RequireTenant,
   ok,
   err,
 } from "@corely/kernel";
@@ -18,6 +19,7 @@ import { toActivityDto } from "../../mappers/activity-dto.mapper";
 
 const SAFE_SCHEMES = ["https://", "mailto:"];
 
+@RequireTenant()
 @Injectable()
 export class LogMessageUseCase extends BaseUseCase<LogMessageInput, LogMessageOutput> {
   constructor(
@@ -49,10 +51,6 @@ export class LogMessageUseCase extends BaseUseCase<LogMessageInput, LogMessageOu
     input: LogMessageInput,
     ctx: UseCaseContext
   ): Promise<Result<LogMessageOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required"));
-    }
-
     const now = this.clock.now();
     const activity = ActivityEntity.create({
       id: this.idGenerator.newId(),

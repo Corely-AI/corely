@@ -1,5 +1,16 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import type { UseCaseContext } from "@corely/kernel";
+import { Inject, Injectable } from "@nestjs/common";
+import {
+  BaseUseCase,
+  type LoggerPort,
+  type Result,
+  type UseCaseContext,
+  RequireTenant,
+  ok,
+  err,
+  ValidationError,
+  NotFoundError,
+  UseCaseError,
+} from "@corely/kernel";
 import type { InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import type { InvoicePdfModelPort } from "../../ports/invoice-pdf-model.port";
 import type { InvoicePdfRendererPort } from "../../ports/invoice-pdf-renderer.port";
@@ -18,52 +29,54 @@ export type DownloadInvoicePdfOutput = {
   expiresAt: Date;
 };
 
+@RequireTenant()
 @Injectable()
-export class DownloadInvoicePdfUseCase {
-  private readonly logger = new Logger(DownloadInvoicePdfUseCase.name);
-
+export class DownloadInvoicePdfUseCase extends BaseUseCase<
+  DownloadInvoicePdfInput,
+  DownloadInvoicePdfOutput
+> {
   constructor(
     private readonly invoiceRepo: InvoiceRepoPort,
     @Inject(INVOICE_PDF_MODEL_PORT) private readonly pdfModelPort: InvoicePdfModelPort,
     @Inject(INVOICE_PDF_RENDERER_PORT) private readonly rendererPort: InvoicePdfRendererPort,
-    private readonly storagePort: ObjectStoragePort
-  ) {}
+    private readonly storagePort: ObjectStoragePort,
+    @Inject("LoggerPort") logger: LoggerPort
+  ) {
+    super({ logger });
+  }
 
-  async execute(
+  protected async handle(
     input: DownloadInvoicePdfInput,
     ctx: UseCaseContext
-  ): Promise<DownloadInvoicePdfOutput> {
+  ): Promise<Result<DownloadInvoicePdfOutput, UseCaseError>> {
     const { invoiceId } = input;
-    const { tenantId, workspaceId } = ctx;
+    const { workspaceId } = ctx;
 
-    if (!tenantId) {
-      throw new Error("tenantId is required in context");
-    }
     if (!workspaceId) {
-      throw new Error("workspaceId is required in context");
+      return err(new ValidationError("workspaceId is required in context"));
     }
 
     // 1. Authorize: Fetch invoice using workspaceId
     const invoice = await this.invoiceRepo.findById(workspaceId, invoiceId);
     if (!invoice) {
-      throw new Error(`Invoice not found: ${invoiceId}`);
+      return err(new NotFoundError(`Invoice not found: ${invoiceId}`));
     }
 
     // 3. Check if valid PDF exists
-    const now = new Date();
     const currentSourceVersion = invoice.updatedAt.toISOString();
 
     if (invoice.isPdfReady()) {
-      this.logger.log(`PDF already exists for invoice ${invoiceId}, returning signed URL`);
-      return this.createSignedDownloadUrl(workspaceId, invoice.pdfStorageKey!);
+      this.deps.logger.info(`PDF already exists for invoice ${invoiceId}, returning signed URL`);
+      return ok(await this.createSignedDownloadUrl(workspaceId, invoice.pdfStorageKey!));
     }
 
     // 4. Generate and store PDF
-    this.logger.log(
+    this.deps.logger.info(
       `Generating PDF for invoice ${invoiceId} (sourceVersion: ${currentSourceVersion})`
     );
 
     // 4a. Mark generating
+    const now = new Date();
     invoice.markPdfGenerating(currentSourceVersion, now);
     await this.invoiceRepo.save(workspaceId, invoice);
 
@@ -72,7 +85,9 @@ export class DownloadInvoicePdfUseCase {
       // We pass workspaceId as tenantId here because we want to load invoice/settings from the workspace scope
       const model = await this.pdfModelPort.getInvoicePdfModel(workspaceId, invoiceId);
       if (!model) {
-        throw new Error("Invoice data incomplete for PDF generation");
+        return err(
+          new UseCaseError("PDF_MODEL_ERROR", "Invoice data incomplete for PDF generation")
+        );
       }
 
       // 4c. Render PDF
@@ -84,7 +99,7 @@ export class DownloadInvoicePdfUseCase {
           paymentSnapshot: model.paymentSnapshot
             ? {
                 ...model.paymentSnapshot,
-                type: model.paymentSnapshot.type || "BANK_TRANSFER",
+                type: (model.paymentSnapshot.type as any) || "BANK_TRANSFER",
                 label: model.paymentSnapshot.label || "Default",
                 referenceText: model.paymentSnapshot.referenceText || "",
               }
@@ -112,14 +127,11 @@ export class DownloadInvoicePdfUseCase {
         });
       } catch (error) {
         if (this.isMissingStorageCredentials(error)) {
-          this.logger.warn(
+          this.deps.logger.warn(
             `Storage credentials missing; serving local PDF for invoice ${invoiceId}`
           );
-          return await this.finalizeLocalPdf(
-            invoice,
-            workspaceId,
-            currentSourceVersion,
-            localFilename
+          return ok(
+            await this.finalizeLocalPdf(invoice, workspaceId, currentSourceVersion, localFilename)
           );
         }
         throw error;
@@ -134,33 +146,37 @@ export class DownloadInvoicePdfUseCase {
       });
       await this.invoiceRepo.save(workspaceId, invoice);
 
-      this.logger.log(`PDF generated successfully for invoice ${invoiceId}`);
+      this.deps.logger.info(`PDF generated successfully for invoice ${invoiceId}`);
 
       // 5. Return signed download URL
       try {
-        return this.createSignedDownloadUrl(workspaceId, storageKey);
+        return ok(await this.createSignedDownloadUrl(workspaceId, storageKey));
       } catch (error) {
         if (this.isMissingStorageCredentials(error)) {
-          this.logger.warn(
+          this.deps.logger.warn(
             `Storage credentials missing during signing; serving local PDF for invoice ${invoiceId}`
           );
-          return await this.finalizeLocalPdf(
-            invoice,
-            workspaceId,
-            currentSourceVersion,
-            localFilename
+          return ok(
+            await this.finalizeLocalPdf(invoice, workspaceId, currentSourceVersion, localFilename)
           );
         }
         throw error;
       }
     } catch (error) {
-      this.logger.error(`PDF generation failed for invoice ${invoiceId}`, error);
+      this.deps.logger.error(`PDF generation failed for invoice ${invoiceId}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       invoice.markPdfFailed(
         error instanceof Error ? error.message : "PDF generation failed",
         new Date()
       );
       await this.invoiceRepo.save(workspaceId, invoice);
-      throw error;
+      return err(
+        new UseCaseError(
+          "PDF_GENERATION_FAILED",
+          error instanceof Error ? error.message : "PDF generation failed"
+        )
+      );
     }
   }
 
@@ -179,9 +195,11 @@ export class DownloadInvoicePdfUseCase {
       // Write the PDF to the local file
       await fs.writeFile(filePath, pdfBytes);
 
-      this.logger.log(`PDF saved locally for tenant ${tenantId}: ${filePath}`);
+      this.deps.logger.info(`PDF saved locally for tenant ${tenantId}: ${filePath}`);
     } catch (error) {
-      this.logger.error(`Failed to save PDF locally for tenant ${tenantId}`, error);
+      this.deps.logger.error(`Failed to save PDF locally for tenant ${tenantId}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
       // Don't throw - we still want to upload to GCS even if local save fails
     }
   }
@@ -227,7 +245,7 @@ export class DownloadInvoicePdfUseCase {
   }
 
   private async finalizeLocalPdf(
-    invoice: { markPdfGenerated: (args: any) => void },
+    invoice: any,
     tenantId: string, // actually workspaceId
     sourceVersion: string,
     filename: string

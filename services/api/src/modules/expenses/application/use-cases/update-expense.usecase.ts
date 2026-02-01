@@ -3,6 +3,7 @@ import type { UseCaseContext } from "@corely/kernel";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
 import type { AuditPort } from "../../../../shared/ports/audit.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
+import { type PrismaService } from "@corely/data";
 
 export interface UpdateExpenseInput {
   expenseId: string;
@@ -19,7 +20,8 @@ export class UpdateExpenseUseCase {
   constructor(
     private readonly repo: ExpenseRepositoryPort,
     private readonly audit: AuditPort,
-    private readonly clock: ClockPort
+    private readonly clock: ClockPort,
+    private readonly prisma: PrismaService
   ) {}
 
   async execute(input: UpdateExpenseInput, ctx: UseCaseContext) {
@@ -57,15 +59,45 @@ export class UpdateExpenseUseCase {
       action: "expense.updated",
       entityType: "Expense",
       entityId: expense.id,
-      metadata: {
-        context: {
-          tenantId: ctx.tenantId,
-          workspaceId: ctx.workspaceId,
-          userId: ctx.userId,
-          requestId: ctx.requestId,
-        },
-      },
+      metadata: {},
     });
+
+    // Sync Tax Snapshot (moved from worker to API)
+    if (expense.status === "APPROVED") {
+      const tax = expense.taxAmountCents ?? 0;
+      const subtotal = expense.totalCents - tax;
+      await this.prisma.taxSnapshot.upsert({
+        where: {
+          tenantId_sourceType_sourceId: {
+            tenantId: expense.tenantId,
+            sourceType: "EXPENSE",
+            sourceId: expense.id,
+          },
+        },
+        update: {
+          subtotalAmountCents: subtotal,
+          taxTotalAmountCents: tax,
+          totalAmountCents: expense.totalCents,
+          currency: expense.currency,
+          calculatedAt: expense.issuedAt,
+        },
+        create: {
+          tenantId: expense.tenantId,
+          sourceType: "EXPENSE",
+          sourceId: expense.id,
+          jurisdiction: "DE",
+          regime: "STANDARD_VAT",
+          roundingMode: "PER_DOCUMENT",
+          currency: expense.currency,
+          calculatedAt: expense.issuedAt,
+          subtotalAmountCents: subtotal,
+          taxTotalAmountCents: tax,
+          totalAmountCents: expense.totalCents,
+          breakdownJson: "{}",
+          version: 1,
+        },
+      });
+    }
 
     return expense;
   }

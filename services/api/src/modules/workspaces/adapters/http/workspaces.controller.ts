@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   Patch,
@@ -12,11 +13,13 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import type { Request } from "express";
-import { z } from "zod";
 import {
   CreateWorkspaceInputSchema,
+  CreateWorkspaceDomainInputSchema,
+  DeleteWorkspaceDomainOutputSchema,
   UpdateWorkspaceInputSchema,
   UpgradeWorkspaceInputSchema,
+  SetPrimaryWorkspaceDomainInputSchema,
   type CreateWorkspaceInput,
   type UpdateWorkspaceInput,
   type UpgradeWorkspaceInput,
@@ -26,10 +29,12 @@ import { ListWorkspacesUseCase } from "../../application/use-cases/list-workspac
 import { GetWorkspaceUseCase } from "../../application/use-cases/get-workspace.usecase";
 import { UpdateWorkspaceUseCase } from "../../application/use-cases/update-workspace.usecase";
 import { UpgradeWorkspaceUseCase } from "../../application/use-cases/upgrade-workspace.usecase";
+import { AddWorkspaceDomainUseCase } from "../../application/use-cases/add-workspace-domain.usecase";
+import { DeleteWorkspaceDomainUseCase } from "../../application/use-cases/delete-workspace-domain.usecase";
+import { SetPrimaryWorkspaceDomainUseCase } from "../../application/use-cases/set-primary-workspace-domain.usecase";
 import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { toUseCaseContext } from "../../../../shared/request-context";
-import { EditionGuard, RequireEdition } from "../../../../shared/guards/edition.guard";
 
 // Auth context extraction - compatible with tests and production
 interface AuthUser {
@@ -53,7 +58,7 @@ function extractAuthUser(req: Request, bodyData?: any): AuthUser {
 }
 
 @Controller("workspaces")
-@UseGuards(AuthGuard, EditionGuard)
+@UseGuards(AuthGuard)
 @UseInterceptors(IdempotencyInterceptor)
 export class WorkspacesController {
   constructor(
@@ -66,11 +71,16 @@ export class WorkspacesController {
     @Inject(UpdateWorkspaceUseCase)
     private readonly updateWorkspace: UpdateWorkspaceUseCase,
     @Inject(UpgradeWorkspaceUseCase)
-    private readonly upgradeWorkspace: UpgradeWorkspaceUseCase
+    private readonly upgradeWorkspace: UpgradeWorkspaceUseCase,
+    @Inject(AddWorkspaceDomainUseCase)
+    private readonly addWorkspaceDomain: AddWorkspaceDomainUseCase,
+    @Inject(DeleteWorkspaceDomainUseCase)
+    private readonly deleteWorkspaceDomain: DeleteWorkspaceDomainUseCase,
+    @Inject(SetPrimaryWorkspaceDomainUseCase)
+    private readonly setPrimaryWorkspaceDomain: SetPrimaryWorkspaceDomainUseCase
   ) {}
 
   @Post()
-  @RequireEdition("ee")
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = CreateWorkspaceInputSchema.parse(body);
     const auth = extractAuthUser(req, body);
@@ -137,6 +147,57 @@ export class WorkspacesController {
       userId: auth.id,
       workspaceId,
       idempotencyKey: input.idempotencyKey || (req.headers["x-idempotency-key"] as string),
+    });
+  }
+
+  @Post(":workspaceId/domains")
+  async addDomain(
+    @Param("workspaceId") workspaceId: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = CreateWorkspaceDomainInputSchema.parse(body);
+    const auth = extractAuthUser(req, body);
+
+    return this.addWorkspaceDomain.execute({
+      tenantId: auth.tenantId,
+      userId: auth.id,
+      workspaceId,
+      domain: input.domain,
+    });
+  }
+
+  @Delete(":workspaceId/domains/:domainId")
+  async deleteDomain(
+    @Param("workspaceId") workspaceId: string,
+    @Param("domainId") domainId: string,
+    @Req() req: Request
+  ) {
+    const auth = extractAuthUser(req, (req as any).body);
+    const result = await this.deleteWorkspaceDomain.execute({
+      tenantId: auth.tenantId,
+      userId: auth.id,
+      workspaceId,
+      domainId,
+    });
+    return DeleteWorkspaceDomainOutputSchema.parse(result);
+  }
+
+  @Patch(":workspaceId/domains/:domainId")
+  async setPrimaryDomain(
+    @Param("workspaceId") workspaceId: string,
+    @Param("domainId") domainId: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    SetPrimaryWorkspaceDomainInputSchema.parse(body ?? {});
+    const auth = extractAuthUser(req, body);
+
+    return this.setPrimaryWorkspaceDomain.execute({
+      tenantId: auth.tenantId,
+      userId: auth.id,
+      workspaceId,
+      domainId,
     });
   }
 }

@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
-import type { Request } from "express";
+import { Body, Controller, Get, Param, Post, Req, Res, UseGuards } from "@nestjs/common";
+import type { Request, Response } from "express";
+import { isErr } from "@corely/kernel";
 import {
   CompleteUploadInputSchema,
   CreateUploadIntentInputSchema,
   GetDownloadUrlInputSchema,
   LinkDocumentInputSchema,
+  UploadFileBase64InputSchema,
 } from "@corely/contracts";
 import { DocumentsApplication } from "../../application/documents.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
@@ -66,5 +68,32 @@ export class DocumentsController {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.linkDocument.execute(input, ctx);
     return mapResultToHttp(result);
+  }
+
+  @Post("upload-base64")
+  async uploadBase64(@Body() body: unknown, @Req() req: Request) {
+    const input = UploadFileBase64InputSchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.uploadFile.execute(input, ctx);
+    return mapResultToHttp(result);
+  }
+
+  @Get(":documentId/files/:fileId/download")
+  async getDownload(
+    @Param("documentId") documentId: string,
+    @Param("fileId") fileId: string,
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    const input = GetDownloadUrlInputSchema.parse({ documentId, fileId });
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.proxyDownload.execute(input, ctx);
+    if (isErr(result)) {
+      return mapResultToHttp(result);
+    }
+    const { buffer, filename, contentType } = result.value;
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return res.send(buffer);
   }
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from "vitest";
-import { TraceIdMiddleware, TRACE_ID_HEADER } from "../trace-id.middleware.js";
-import { TraceIdService } from "../trace-id.service.js";
+import { TraceIdMiddleware, TRACE_ID_HEADER } from "../trace-id.middleware";
+import { TraceIdService } from "../trace-id.service";
 import type { Request, Response, NextFunction } from "express";
 
 describe("TraceIdMiddleware", () => {

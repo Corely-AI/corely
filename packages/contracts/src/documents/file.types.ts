@@ -14,6 +14,7 @@ export const FileDtoSchema = z.object({
   storageProvider: StorageProviderSchema,
   bucket: z.string(),
   objectKey: z.string(),
+  isPublic: z.boolean().optional(),
   contentType: z.string().optional(),
   sizeBytes: z.number().int().nonnegative().optional(),
   sha256: z.string().optional(),

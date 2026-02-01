@@ -23,8 +23,12 @@ model Tenant {
   packInstalls      TenantPackInstall[]
   menuOverrides     TenantMenuOverride[]
   seededRecordMeta  SeededRecordMeta[]
+  cashRegisters     CashRegister[]
+  cashEntries       CashEntry[]
+  cashDayCloses     CashDayClose[]
 
   @@index([createdAt])
+  @@schema("identity")
 }
 
 // === USERS ===
@@ -46,6 +50,7 @@ model User {
 
   @@index([email])
   @@index([createdAt])
+  @@schema("identity")
 }
 
 // === MULTI-TENANCY MEMBERSHIP ===
@@ -67,6 +72,7 @@ model Membership {
   @@index([userId])
   @@index([roleId])
   @@index([tenantId, createdAt])
+  @@schema("identity")
 }
 
 // === RBAC ===
@@ -91,6 +97,7 @@ model Role {
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([tenantId, systemKey])
+  @@schema("identity")
 }
 
 model Permission {
@@ -103,11 +110,13 @@ model Permission {
   rolePermissions RolePermission[]
 
   @@index([key])
+  @@schema("identity")
 }
 
 enum PermissionEffect {
   ALLOW
   DENY
+  @@schema("identity")
 }
 
 model RolePermission {
@@ -122,6 +131,7 @@ model RolePermission {
   @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
+  @@schema("identity")
 }
 
 model RolePermissionGrant {
@@ -141,6 +151,7 @@ model RolePermissionGrant {
   @@unique([tenantId, roleId, permissionKey])
   @@index([tenantId, roleId])
   @@index([permissionKey])
+  @@schema("identity")
 }
 
 // === SESSIONS / TOKENS ===
@@ -162,6 +173,7 @@ model RefreshToken {
   @@index([tenantId])
   @@index([userId, expiresAt])
   @@index([tokenHash])
+  @@schema("identity")
 }
 
 // === API KEYS ===
@@ -180,4 +192,5 @@ model ApiKey {
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([keyHash])
+  @@schema("identity")
 }

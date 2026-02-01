@@ -7,6 +7,7 @@ import {
   HEADER_WORKSPACE_ID,
 } from "./request-context.headers";
 import type { ContextAwareRequest, RequestContext } from "./request-context.types";
+import { PUBLIC_CONTEXT_METADATA_KEY, type PublicWorkspaceContext } from "../public";
 
 const isString = (value: unknown): value is string => typeof value === "string" && value.length > 0;
 
@@ -46,53 +47,63 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const userId = req.user?.userId ?? headerUserId;
   const roleIds = Array.isArray(req.user?.roleIds) ? req.user?.roleIds : undefined;
 
+  const publicContext: PublicWorkspaceContext | undefined = req.publicContext;
+  const usePublicContext = Boolean(publicContext) && !req.user?.userId;
+
   // Workspace / tenant with precedence
   const routeWorkspaceId = (req.params as Record<string, string | undefined> | undefined)
     ?.workspaceId;
   const headerWorkspaceId = pickHeader(req, [HEADER_WORKSPACE_ID]);
   const headerTenantId = pickHeader(req, [HEADER_TENANT_ID]);
+  const queryTenantId = (req.query as Record<string, string | undefined> | undefined)?.[
+    HEADER_TENANT_ID
+  ];
+  const plainQueryTenantId = (req.query as Record<string, string | undefined> | undefined)?.[
+    "tenantId"
+  ];
 
-  const isEe = process.env.EDITION === "ee";
-  const defaultTenant = process.env.DEFAULT_TENANT_ID || "default_tenant";
-  const defaultWorkspace = process.env.DEFAULT_WORKSPACE_ID || "default_workspace";
+  const queryWorkspaceId = (req.query as Record<string, string | undefined> | undefined)?.[
+    HEADER_WORKSPACE_ID
+  ];
+  const plainQueryWorkspaceId = (req.query as Record<string, string | undefined> | undefined)?.[
+    "workspaceId"
+  ];
 
   // Prefer explicit workspace header (active workspace) over route param to support
   // cross-workspace requests where the route carries tenantId.
-  let workspaceId = headerWorkspaceId ?? routeWorkspaceId ?? req.user?.workspaceId ?? null;
+  const workspaceId =
+    (usePublicContext ? publicContext?.workspaceId : undefined) ??
+    headerWorkspaceId ??
+    queryWorkspaceId ??
+    plainQueryWorkspaceId ??
+    routeWorkspaceId ??
+    req.user?.workspaceId ??
+    null;
 
-  let tenantId = req.tenantId ?? req.user?.tenantId ?? headerTenantId ?? undefined;
-
-  if (!isEe) {
-    // OSS mode: enforce strict single tenant/workspace - reject mismatches
-    const headerMismatch =
-      (headerWorkspaceId && headerWorkspaceId !== defaultWorkspace) ||
-      (headerTenantId && headerTenantId !== defaultTenant);
-    if (headerMismatch) {
-      const error = new Error(
-        `OSS mode only supports the default workspace/tenant. Received: workspaceId=${headerWorkspaceId}, tenantId=${headerTenantId}, expected workspace=${defaultWorkspace}, tenant=${defaultTenant}`
-      );
-      error.name = "TenantMismatchError";
-      if (debug) {
-        debug.error(
-          {
-            headerWorkspaceId,
-            headerTenantId,
-            defaultTenant,
-            defaultWorkspace,
-          },
-          "RequestContextResolver: rejecting mismatched workspace/tenant headers in OSS mode"
-        );
-      }
-      throw error;
-    }
-    tenantId = defaultTenant;
-    workspaceId = defaultWorkspace;
-  }
+  const tenantId =
+    (usePublicContext ? publicContext?.tenantId : undefined) ??
+    req.user?.tenantId ??
+    headerTenantId ??
+    queryTenantId ??
+    plainQueryTenantId ??
+    undefined;
 
   const finalUserId = userId;
   const userSource: RequestContext["sources"][keyof RequestContext["sources"]] | undefined = userId
     ? "user"
     : undefined;
+
+  const metadata = usePublicContext
+    ? {
+        ...(req.context?.metadata ?? {}),
+        [PUBLIC_CONTEXT_METADATA_KEY]: {
+          workspaceSlug: publicContext?.workspaceSlug ?? "",
+          resolutionMethod: publicContext?.resolutionMethod ?? "path",
+          publicEnabled: publicContext?.publicEnabled ?? false,
+          publicModules: publicContext?.publicModules ?? undefined,
+        },
+      }
+    : req.context?.metadata;
 
   const ctx: RequestContext = {
     requestId,
@@ -101,27 +112,28 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
     tenantId,
     workspaceId,
     roles: roleIds,
+    metadata,
     sources: {
       requestId: headerRequestId ? "header" : traceId ? "route" : "generated",
       correlationId: correlationHeader ? "header" : "inferred",
       userId: userSource,
       tenantId: tenantId
-        ? req.tenantId
-          ? req.user?.tenantId && req.user?.tenantId === req.tenantId
-            ? "user"
-            : "header"
-          : req.user?.tenantId
+        ? usePublicContext
+          ? "public"
+          : tenantId === req.user?.tenantId
             ? "user"
             : "header"
         : undefined,
       workspaceId: workspaceId
-        ? headerWorkspaceId
-          ? "header"
-          : routeWorkspaceId
-            ? "route"
-            : req.user?.workspaceId
-              ? "user"
-              : undefined
+        ? usePublicContext
+          ? "public"
+          : headerWorkspaceId
+            ? "header"
+            : routeWorkspaceId
+              ? "route"
+              : req.user?.workspaceId
+                ? "user"
+                : undefined
         : undefined,
     },
     deprecated: {},

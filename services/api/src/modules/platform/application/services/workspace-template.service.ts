@@ -229,23 +229,23 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.core",
         defaultLabel: "Core",
         order: 1,
-        sectionOrder: ["dashboard", "invoices", "expenses", "clients", "crm", "assistant"],
+        sectionOrder: [
+          "dashboard",
+          "rentals",
+          "invoices",
+          "expenses",
+          "clients",
+          "portfolio",
+          "crm",
+          "assistant",
+        ],
       },
       {
         id: "settings",
         labelKey: "nav.groups.settings",
         defaultLabel: "Settings",
         order: 99,
-        sectionOrder: [
-          "workspace",
-          "profile",
-          "team",
-          "roles",
-          "tax-settings",
-          "sales",
-          "purchasing",
-          "platform",
-        ],
+        sectionOrder: ["workspace", "profile", "team", "roles", "sales", "purchasing", "platform"],
       },
     ];
   }
@@ -372,14 +372,14 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.core",
         defaultLabel: "Core",
         order: 1,
-        sectionOrder: ["dashboard", "assistant"],
+        sectionOrder: ["dashboard", "portfolio", "assistant"],
       },
       {
         id: "sales",
         labelKey: "nav.groups.sales",
         defaultLabel: "Sales",
         order: 2,
-        sectionOrder: ["invoices", "quotes", "projects", "crm", "customers"],
+        sectionOrder: ["invoices", "rentals", "quotes", "projects", "crm", "customers"],
       },
       {
         id: "purchasing",
@@ -400,23 +400,14 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.finance",
         defaultLabel: "Finance",
         order: 5,
-        sectionOrder: ["accounting", "tax", "reports"],
+        sectionOrder: ["accounting", "reports"],
       },
       {
         id: "settings",
         labelKey: "nav.groups.settings",
         defaultLabel: "Settings",
         order: 99,
-        sectionOrder: [
-          "workspace",
-          "profile",
-          "team",
-          "roles",
-          "tax-settings",
-          "sales",
-          "purchasing",
-          "platform",
-        ],
+        sectionOrder: ["workspace", "profile", "team", "roles", "sales", "purchasing", "platform"],
       },
     ];
   }
@@ -431,6 +422,8 @@ export class WorkspaceTemplateService {
       "parties", // clients
       "crm",
       "tax",
+      "rentals",
+      "portfolio",
       "ai-copilot",
     ];
   }
@@ -445,6 +438,8 @@ export class WorkspaceTemplateService {
       "parties", // customers
       "sales", // quotes, projects
       "tax",
+      "rentals",
+      "portfolio",
       "ai-copilot",
     ];
   }

@@ -3,6 +3,7 @@ import type { AppManifest } from "@corely/contracts";
 import type { AppRegistryPort } from "../../application/ports/app-registry.port";
 import { invoicesAppManifest } from "../../../invoices/invoices.manifest";
 import { crmAppManifest } from "../../../crm/crm.manifest";
+import { portfolioAppManifest } from "../../../portfolio/portfolio.manifest";
 
 /**
  * App Registry
@@ -114,6 +115,9 @@ export class AppRegistry implements AppRegistryPort {
     // CRM App
     this.register(crmAppManifest);
 
+    // Portfolio App
+    this.register(portfolioAppManifest);
+
     // Expenses App
     this.register({
       appId: "expenses",
@@ -186,46 +190,91 @@ export class AppRegistry implements AppRegistryPort {
       ],
     });
 
-    // Tax Settings App (freelancer + company)
+    // Tax App (freelancer + company)
     this.register({
       appId: "tax",
       name: "Tax",
       tier: 2,
-      version: "1.0.0",
-      description: "Tax overview, reports, and settings",
+      version: "2.0.0",
+      description: "Tax Center, Filings, and Compliance",
       dependencies: [],
       capabilities: [],
       permissions: [],
       menu: [
         {
-          id: "tax-overview",
+          id: "tax-center",
           scope: "web",
           section: "tax",
-          labelKey: "nav.tax",
-          defaultLabel: "Taxes",
-          route: "/taxes",
-          icon: "Percent",
-          order: 70,
+          labelKey: "nav.tax.overview",
+          defaultLabel: "Overview",
+          route: "/tax",
+          icon: "LayoutDashboard",
+          order: 10,
+          exact: true,
         },
         {
-          id: "tax-reports",
+          id: "tax-filings",
           scope: "web",
           section: "tax",
-          labelKey: "nav.taxReports",
-          defaultLabel: "Reports",
-          route: "/tax/reports",
-          icon: "ClipboardList",
-          order: 71,
+          labelKey: "nav.tax.filings",
+          defaultLabel: "Filings",
+          route: "/tax/filings",
+          icon: "Files",
+          order: 20,
+        },
+        {
+          id: "tax-payments",
+          scope: "web",
+          section: "tax",
+          labelKey: "nav.tax.payments",
+          defaultLabel: "Payments",
+          route: "/tax/payments",
+          icon: "CreditCard",
+          order: 30,
+        },
+        {
+          id: "tax-documents",
+          scope: "web",
+          section: "tax",
+          labelKey: "nav.tax.documents",
+          defaultLabel: "Documents",
+          route: "/tax/documents",
+          icon: "FileText",
+          order: 40,
         },
         {
           id: "tax-settings",
           scope: "web",
-          section: "tax-settings",
-          labelKey: "nav.taxSettings",
+          section: "tax",
+          labelKey: "nav.tax.settings",
           defaultLabel: "Settings",
           route: "/tax/settings",
-          icon: "SlidersHorizontal",
-          order: 72,
+          icon: "Settings",
+          order: 50,
+        },
+      ],
+    });
+
+    // Cash Management App
+    this.register({
+      appId: "cash-management",
+      name: "Cash Management",
+      tier: 1,
+      version: "1.0.0",
+      description: "Cash registers and daily close",
+      dependencies: [],
+      capabilities: [],
+      permissions: ["cash.read", "cash.write"],
+      menu: [
+        {
+          id: "cash-management",
+          scope: "web",
+          section: "cash",
+          labelKey: "nav.cashManagement",
+          defaultLabel: "Cash Management",
+          route: "/cash-registers",
+          icon: "Coins",
+          order: 60,
         },
       ],
     });
@@ -282,7 +331,7 @@ export class AppRegistry implements AppRegistryPort {
           scope: "web",
           section: "workspace",
           labelKey: "nav.workspace",
-          defaultLabel: "Legal & Address",
+          defaultLabel: "Workspace Settings",
           route: "/settings/workspace",
           icon: "Building",
           order: 90,
@@ -375,6 +424,30 @@ export class AppRegistry implements AppRegistryPort {
           route: "/purchasing/settings",
           icon: "SlidersHorizontal",
           order: 100,
+        },
+      ],
+    });
+
+    // Rentals App
+    this.register({
+      appId: "rentals",
+      name: "Vacation Rentals",
+      tier: 2,
+      version: "1.0.0",
+      description: "Manage vacation home rentals and availability",
+      dependencies: [],
+      capabilities: ["rentals.manage"],
+      permissions: ["rentals.read", "rentals.write"],
+      menu: [
+        {
+          id: "rental-properties",
+          scope: "web",
+          section: "rentals",
+          labelKey: "nav.rentals.properties",
+          defaultLabel: "Vacation Rentals",
+          route: "/rentals/properties",
+          icon: "Home",
+          order: 25,
         },
       ],
     });

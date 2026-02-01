@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from "@nestjs/common";
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from "@nestjs/common";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 import { EnvModule } from "@corely/config";
 import { DataModule } from "@corely/data";
@@ -24,19 +24,21 @@ import { ApprovalsModule } from "./modules/approvals";
 import { EngagementModule } from "./modules/engagement/engagement.module";
 import { PlatformModule } from "./modules/platform";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
-import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware.js";
-import { TraceIdService } from "./shared/trace/trace-id.service.js";
+import { CmsModule } from "./modules/cms";
+import { FormsModule } from "./modules/forms";
+import { RentalsModule } from "./modules/rentals";
+import { PortfolioModule } from "./modules/portfolio";
+import { AiRichTextModule } from "./modules/ai-richtext";
+import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
+import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
-import { TenancyInterceptor, TenancyModule } from "./shared/tenancy";
+import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared/public";
 
 @Module({
   controllers: [AppController],
   providers: [
     TraceIdService,
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TenancyInterceptor,
-    },
+    PublicWorkspaceResolver,
     {
       provide: APP_INTERCEPTOR,
       useClass: RequestContextInterceptor,
@@ -45,7 +47,6 @@ import { TenancyInterceptor, TenancyModule } from "./shared/tenancy";
   imports: [
     // Config must be first to validate env before other modules use it
     EnvModule.forRoot(),
-    TenancyModule.forEdition(process.env.EDITION === "ee" ? "ee" : "oss"),
     // DataModule must be imported for global providers (OUTBOX_PORT, AUDIT_PORT, etc.)
     DataModule,
     IdentityModule,
@@ -64,11 +65,16 @@ import { TenancyInterceptor, TenancyModule } from "./shared/tenancy";
     InventoryModule,
     ApprovalsModule,
     EngagementModule,
+    CmsModule,
+    FormsModule,
+    RentalsModule,
+    PortfolioModule,
     WorkflowModule,
     AutomationModule,
     ReportingModule,
     // CustomizationModule,
     AiCopilotModule,
+    AiRichTextModule,
     // Conditional imports based on env
     ...(function () {
       // We need to access EnvService here, but it's not available yet
@@ -80,7 +86,8 @@ import { TenancyInterceptor, TenancyModule } from "./shared/tenancy";
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Apply trace ID middleware to all routes
-    consumer.apply(TraceIdMiddleware).forRoutes("*");
+    consumer
+      .apply(PublicWorkspacePathMiddleware)
+      .forRoutes({ path: "*", method: RequestMethod.ALL }); // <- important
   }
 }

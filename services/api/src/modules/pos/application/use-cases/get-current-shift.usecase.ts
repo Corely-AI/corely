@@ -9,12 +9,14 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import {
   SHIFT_SESSION_REPOSITORY_PORT,
   type ShiftSessionRepositoryPort,
 } from "../ports/shift-session-repository.port";
 
+@RequireTenant()
 @Injectable()
 export class GetCurrentShiftUseCase extends BaseUseCase<
   GetCurrentShiftInput,
@@ -30,11 +32,9 @@ export class GetCurrentShiftUseCase extends BaseUseCase<
     input: GetCurrentShiftInput,
     ctx: UseCaseContext
   ): Promise<Result<GetCurrentShiftOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
+    const tenantId = ctx.tenantId!;
 
-    const session = await this.shiftRepo.findOpenByRegister(ctx.tenantId, input.registerId);
+    const session = await this.shiftRepo.findOpenByRegister(tenantId, input.registerId);
 
     return ok({
       session: session ? session.toDto() : null,

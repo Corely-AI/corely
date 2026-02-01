@@ -14,11 +14,13 @@ model PrivacyRequest {
 
   @@index([tenantId, subjectUserId, createdAt])
   @@index([tenantId, status, createdAt])
+  @@schema("identity")
 }
 
 enum PrivacyRequestType {
   EXPORT
   ERASE
+  @@schema("identity")
 }
 
 enum PrivacyRequestStatus {
@@ -27,4 +29,5 @@ enum PrivacyRequestStatus {
   READY
   COMPLETED
   FAILED
+  @@schema("identity")
 }

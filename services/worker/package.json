@@ -28,6 +28,7 @@
   },
   "devDependencies": {
     "@corely/testkit": "workspace:*",
+    "@swc/core": "^1.15.7",
     "@types/react": "catalog:",
     "msw": "catalog:"
   },

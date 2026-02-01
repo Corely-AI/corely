@@ -5,9 +5,7 @@
     "lib": ["ES2023"],
     "allowImportingTsExtensions": true,
     "moduleDetection": "force",
-    "composite": true,
-    "noEmit": false,
-    "emitDeclarationOnly": true
+    "noEmit": true
   },
   "include": ["vite.config.ts"]
 }

@@ -1,7 +1,46 @@
 import { defineConfig } from "vitest/config";
 import path from "path";
+import { transform } from "@swc/core";
 
 export default defineConfig({
+  plugins: [
+    {
+      name: "swc-decorator-metadata",
+      enforce: "pre",
+      async transform(code, id) {
+        if (!id.endsWith(".ts") && !id.endsWith(".tsx")) {
+          return null;
+        }
+        if (id.includes("node_modules")) {
+          return null;
+        }
+        const result = await transform(code, {
+          filename: id,
+          jsc: {
+            parser: {
+              syntax: "typescript",
+              decorators: true,
+              dynamicImport: true,
+            },
+            transform: {
+              decoratorMetadata: true,
+              legacyDecorator: true,
+            },
+            target: "es2022",
+            keepClassNames: true,
+          },
+          module: {
+            type: "es6",
+          },
+          sourceMaps: true,
+        });
+        return {
+          code: result.code,
+          map: result.map,
+        };
+      },
+    },
+  ],
   test: {
     globals: true,
     environment: "node",

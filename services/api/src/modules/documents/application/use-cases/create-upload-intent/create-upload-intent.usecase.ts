@@ -9,6 +9,7 @@ import {
   ValidationError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { type CreateUploadIntentInput, type CreateUploadIntentOutput } from "@corely/contracts";
 import { type DocumentRepoPort } from "../../ports/document-repository.port";
@@ -32,6 +33,7 @@ type Deps = {
 
 const DEFAULT_MAX_UPLOAD = 50 * 1024 * 1024;
 
+@RequireTenant()
 export class CreateUploadIntentUseCase extends BaseUseCase<
   CreateUploadIntentInput,
   CreateUploadIntentOutput
@@ -61,10 +63,6 @@ export class CreateUploadIntentUseCase extends BaseUseCase<
     input: CreateUploadIntentInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateUploadIntentOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
-
     const now = this.useCaseDeps.clock.now();
     const documentId = this.useCaseDeps.idGenerator.newId();
     const fileId = this.useCaseDeps.idGenerator.newId();
@@ -86,6 +84,7 @@ export class CreateUploadIntentUseCase extends BaseUseCase<
         storageProvider: this.useCaseDeps.objectStorage.provider(),
         bucket: this.useCaseDeps.objectStorage.bucket(),
         objectKey,
+        isPublic: input.isPublic ?? false,
         contentType: input.contentType,
         sizeBytes: input.sizeBytes ?? null,
         sha256: input.sha256 ?? null,

@@ -1,0 +1,86 @@
+model CmsPost {
+ id String @id @default(cuid())
+ tenantId String
+ workspaceId String
+ status CmsPostStatus @default(DRAFT)
+ slug String
+ title String
+ excerpt String?
+ coverImageFileId String?
+ tags String[] @default([])
+ contentJson Json
+ contentHtml String @db.Text
+ contentText String @db.Text
+ publishedAt DateTime? @db.Timestamptz(6)
+ authorUserId String
+ createdAt DateTime @default(now()) @db.Timestamptz(6)
+ updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+ coverImageFile File? @relation("CmsPostCoverImage", fields: [coverImageFileId], references: [id], onDelete: SetNull)
+ comments CmsComment[]
+
+ @@unique([tenantId, slug])
+ @@index([tenantId])
+ @@index([tenantId, workspaceId])
+ @@index([tenantId, status, publishedAt])
+  @@schema("content")
+}
+
+model CmsComment {
+ id String @id @default(cuid())
+ tenantId String
+ workspaceId String
+ postId String
+ readerId String
+ parentId String?
+ bodyText String
+ status CmsCommentStatus @default(PENDING)
+ createdAt DateTime @default(now()) @db.Timestamptz(6)
+ updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+ post CmsPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+ reader CmsReader @relation(fields: [readerId], references: [id], onDelete: Cascade)
+ parent CmsComment? @relation("CmsCommentParent", fields: [parentId], references: [id], onDelete: SetNull)
+ replies CmsComment[] @relation("CmsCommentParent")
+
+ @@index([tenantId])
+ @@index([tenantId, workspaceId])
+ @@index([tenantId, postId])
+ @@index([postId, status])
+ @@index([tenantId, status])
+  @@schema("content")
+}
+
+model CmsReader {
+ id String @id @default(cuid())
+ tenantId String
+ workspaceId String
+ email String
+ passwordHash String
+ displayName String?
+ createdAt DateTime @default(now()) @db.Timestamptz(6)
+ updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+ comments CmsComment[]
+
+ @@unique([tenantId, email])
+ @@index([tenantId])
+ @@index([tenantId, workspaceId])
+  @@schema("content")
+}
+
+enum CmsPostStatus {
+ DRAFT
+ PUBLISHED
+ ARCHIVED
+  @@schema("content")
+}
+
+enum CmsCommentStatus {
+ PENDING
+ APPROVED
+ REJECTED
+ SPAM
+ DELETED
+  @@schema("content")
+}

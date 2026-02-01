@@ -1,10 +1,9 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut, Building2, User } from "lucide-react";
+import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut } from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
 import { Button } from "@/shared/ui/button";
-import { Settings } from "lucide-react";
 import { useThemeStore } from "@/shared/theme/themeStore";
 import { cn } from "@/shared/lib/utils";
 import { WorkspaceSwitcher } from "@/shared/workspaces/WorkspaceSwitcher";
@@ -18,9 +17,9 @@ import {
 import { useAuth } from "@/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getIconByName } from "@/shared/utils/iconMapping";
-import { Badge } from "@/shared/ui/badge";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
-import { filterNavigationGroups } from "@/shared/workspaces/navigation";
+import { WorkspaceTypeBadge } from "@/shared/workspaces/WorkspaceTypeBadge";
+import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -33,12 +32,29 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
   const { theme, setTheme } = useThemeStore();
   const { user, logout } = useAuth();
   const { activeWorkspace } = useWorkspace();
-  const { config, isLoading: isConfigLoading, error: configError } = useWorkspaceConfig();
+  const {
+    isLoading: isConfigLoading,
+    error: configError,
+    navigationGroups: visibleGroups,
+  } = useWorkspaceConfig();
+  const hasTaxNav = React.useMemo(
+    () => visibleGroups.some((group) => group.items.some((item) => item.route?.startsWith("/tax"))),
+    [visibleGroups]
+  );
+  const { data: taxCapabilities } = useTaxCapabilitiesQuery(!isConfigLoading && hasTaxNav);
+  const paymentsEnabled = taxCapabilities?.paymentsEnabled ?? false;
 
-  const navigationGroups = config?.navigation.groups ?? [];
-  const visibleGroups = config?.capabilities
-    ? filterNavigationGroups(navigationGroups, config.capabilities)
-    : navigationGroups;
+  const navigationGroups = React.useMemo(() => {
+    if (paymentsEnabled) {
+      return visibleGroups;
+    }
+    return visibleGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => item.id !== "tax-payments"),
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [paymentsEnabled, visibleGroups]);
 
   const changeLanguage = (lang: string) => {
     void i18n.changeLanguage(lang);
@@ -103,10 +119,10 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
           <div className="px-3 py-4 text-sm text-muted-foreground">
             {t("errors.loadMenuFailed")}
           </div>
-        ) : visibleGroups.length > 0 ? (
+        ) : navigationGroups.length > 0 ? (
           /* Server-driven navigation */
           <>
-            {visibleGroups.map((group) => {
+            {navigationGroups.map((group) => {
               return (
                 <div key={group.id} className="space-y-1">
                   {!collapsed && (
@@ -120,6 +136,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                       <NavLink
                         key={item.id}
                         to={item.route || "#"}
+                        end={item.exact || item.route === "/tax"}
                         data-testid={`nav-${item.id}`}
                         className={({ isActive }) =>
                           cn(
@@ -143,23 +160,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
             })}
 
             {/* Workspace mode indicator */}
-            {!collapsed && config && (
-              <div className="px-3 py-2 mt-4">
-                <Badge variant="outline" className="text-xs">
-                  {config.kind === "PERSONAL" ? (
-                    <>
-                      <User className="h-3 w-3 mr-1" />
-                      Freelancer
-                    </>
-                  ) : (
-                    <>
-                      <Building2 className="h-3 w-3 mr-1" />
-                      Company
-                    </>
-                  )}
-                </Badge>
-              </div>
-            )}
+            {!collapsed && <WorkspaceTypeBadge />}
           </>
         ) : null}
       </nav>

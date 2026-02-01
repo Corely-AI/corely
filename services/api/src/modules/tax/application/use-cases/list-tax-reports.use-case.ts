@@ -1,23 +1,39 @@
 import { Injectable } from "@nestjs/common";
 import type { ListTaxReportsOutput } from "@corely/contracts";
 import { TaxStrategyResolverService } from "../services/tax-strategy-resolver.service";
-import type { UseCaseContext } from "./use-case-context";
+import {
+  BaseUseCase,
+  type Result,
+  type UseCaseContext,
+  type UseCaseError,
+  ok,
+  RequireTenant,
+} from "@corely/kernel";
 
+export interface ListTaxReportsInput {
+  status: "upcoming" | "submitted";
+  group?: string | null;
+  type?: string | null;
+}
+
+@RequireTenant()
 @Injectable()
-export class ListTaxReportsUseCase {
-  constructor(private readonly resolver: TaxStrategyResolverService) {}
+export class ListTaxReportsUseCase extends BaseUseCase<ListTaxReportsInput, ListTaxReportsOutput> {
+  constructor(private readonly resolver: TaxStrategyResolverService) {
+    super({ logger: null as any });
+  }
 
-  async execute(
-    status: "upcoming" | "submitted",
-    filters: { group?: string | null; type?: string | null } | undefined,
+  protected async handle(
+    input: ListTaxReportsInput,
     ctx: UseCaseContext
-  ): Promise<ListTaxReportsOutput> {
-    const strategy = await this.resolver.resolve(ctx.workspaceId);
+  ): Promise<Result<ListTaxReportsOutput, UseCaseError>> {
+    const workspaceId = ctx.workspaceId || ctx.tenantId!;
+    const strategy = await this.resolver.resolve(workspaceId);
     const reports = await strategy.listReports(
-      { tenantId: ctx.tenantId, workspaceId: ctx.workspaceId },
-      status,
-      filters
+      { tenantId: ctx.tenantId!, workspaceId },
+      input.status,
+      { group: input.group, type: input.type }
     );
-    return { reports };
+    return ok({ reports });
   }
 }

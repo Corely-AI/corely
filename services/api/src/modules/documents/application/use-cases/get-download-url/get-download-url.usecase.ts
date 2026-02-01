@@ -8,6 +8,7 @@ import {
   NotFoundError,
   err,
   ok,
+  RequireTenant,
 } from "@corely/kernel";
 import { type GetDownloadUrlInput, type GetDownloadUrlOutput } from "@corely/contracts";
 import { type DocumentRepoPort } from "../../ports/document-repository.port";
@@ -22,6 +23,7 @@ type Deps = {
   downloadTtlSeconds: number;
 };
 
+@RequireTenant()
 export class GetDownloadUrlUseCase extends BaseUseCase<GetDownloadUrlInput, GetDownloadUrlOutput> {
   constructor(private readonly useCaseDeps: Deps) {
     super({ logger: useCaseDeps.logger });
@@ -38,10 +40,6 @@ export class GetDownloadUrlUseCase extends BaseUseCase<GetDownloadUrlInput, GetD
     input: GetDownloadUrlInput,
     ctx: UseCaseContext
   ): Promise<Result<GetDownloadUrlOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId missing from context"));
-    }
-
     const document = await this.useCaseDeps.documentRepo.findById(ctx.tenantId, input.documentId);
     if (!document) {
       return err(new NotFoundError("Document not found"));
