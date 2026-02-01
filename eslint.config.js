@@ -25,6 +25,8 @@ export default tseslint.config(
       "**/vitest.config.ts",
       "vitest.workspace.ts",
       "vitest.workspace.int.ts",
+      "**/vite.config.ts",
+      "**/tailwind.config.ts",
     ],
   },
   config.base,

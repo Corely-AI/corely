@@ -127,11 +127,12 @@ export function usePosErrorHandler(options: UsePosErrorHandlerOptions) {
           showError(strategy.reason, apiError.traceId, "warning");
           break;
 
-        case "show":
+        case "show": {
           // Show error to user
           const { message, traceId } = getErrorDisplayMessage(error);
           showError(message, traceId, "error");
           break;
+        }
       }
     },
     [options, showError]

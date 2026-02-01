@@ -27,6 +27,18 @@ fi
 
 echo "✅ Formatting passed."
 
+# Run ESLint with increased memory limit (fail on errors only, not warnings)
+echo "Running ESLint (errors only)..."
+NODE_OPTIONS="--max-old-space-size=8192" pnpm exec eslint . --cache --quiet
+
+if [ $? -ne 0 ]; then
+  echo "❌ ESLint errors found. Fix errors and try again."
+  echo "   To skip: HUSKY=0 git push"
+  exit 1
+fi
+
+echo "✅ ESLint passed (no errors)."
+
 # Run lightweight typecheck before push
 echo "Running typecheck before push..."
 pnpm typecheck

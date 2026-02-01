@@ -11,6 +11,7 @@ coverage
 !.env.e2e.example
 bun.lockb
 *.log
+.eslintcache
 
 # E2E test artifacts
 test-results/
