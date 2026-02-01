@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, Logger, InternalServerErrorException } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { OUTBOX_PORT } from "@corely/kernel";
 import type { OutboxPort } from "@corely/kernel";
@@ -79,7 +79,25 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
           };
         }
 
-        return await chromium.launch({ headless: true });
+        try {
+          return await chromium.launch({ headless: true });
+        } catch (error) {
+          const logger = new Logger("PlaywrightBrowser");
+          logger.error(
+            "Failed to launch Playwright browser. PDF generation will be unavailable.",
+            error instanceof Error ? error.stack : error
+          );
+
+          // Return a safe fallback to prevent app crash
+          return {
+            newPage: async () => {
+              throw new InternalServerErrorException(
+                "PDF generation is unavailable because the browser failed to launch on startup."
+              );
+            },
+            close: async () => {},
+          } as any;
+        }
       },
     },
     {
