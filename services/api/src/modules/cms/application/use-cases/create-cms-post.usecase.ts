@@ -66,6 +66,7 @@ export class CreateCmsPostUseCase extends BaseUseCase<CreateCmsPostInput, Create
       title: input.title.trim(),
       excerpt: input.excerpt ?? null,
       coverImageFileId: input.coverImageFileId ?? null,
+      tags: input.tags ?? [],
       contentJson: { type: "doc", content: [] },
       contentHtml: rendered.html,
       contentText: rendered.text,

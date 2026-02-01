@@ -27,6 +27,7 @@ import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { CmsModule } from "./modules/cms";
 import { FormsModule } from "./modules/forms";
 import { RentalsModule } from "./modules/rentals";
+import { PortfolioModule } from "./modules/portfolio";
 import { AiRichTextModule } from "./modules/ai-richtext";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
@@ -67,6 +68,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     CmsModule,
     FormsModule,
     RentalsModule,
+    PortfolioModule,
     WorkflowModule,
     AutomationModule,
     ReportingModule,

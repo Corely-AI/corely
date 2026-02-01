@@ -7,6 +7,7 @@ model CmsPost {
  title String
  excerpt String?
  coverImageFileId String?
+ tags String[] @default([])
  contentJson Json
  contentHtml String @db.Text
  contentText String @db.Text

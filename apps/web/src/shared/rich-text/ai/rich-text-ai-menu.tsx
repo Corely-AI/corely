@@ -32,7 +32,9 @@ export function RichTextAiMenu({ editor, config }: RichTextAiMenuProps) {
   const [customPromptOpen, setCustomPromptOpen] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
 
-  if (!editor) {return null;}
+  if (!editor) {
+    return null;
+  }
 
   const handleAction = async (operation: any) => {
     try {
@@ -45,7 +47,9 @@ export function RichTextAiMenu({ editor, config }: RichTextAiMenuProps) {
 
   const handleCustomSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customPrompt.trim()) {return;}
+    if (!customPrompt.trim()) {
+      return;
+    }
 
     setCustomPromptOpen(false);
     try {

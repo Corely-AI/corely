@@ -17,6 +17,7 @@ const mapPost = (row: CmsPost): CmsPostEntity =>
     title: row.title,
     excerpt: row.excerpt,
     coverImageFileId: row.coverImageFileId,
+    tags: row.tags ?? [],
     contentJson: row.contentJson,
     contentHtml: row.contentHtml,
     contentText: row.contentText,
@@ -41,6 +42,7 @@ export class PrismaCmsPostRepository implements CmsPostRepositoryPort {
         title: post.title,
         excerpt: post.excerpt,
         coverImageFileId: post.coverImageFileId,
+        tags: post.tags ?? [],
         contentJson: post.contentJson as Prisma.InputJsonValue,
         contentHtml: post.contentHtml,
         contentText: post.contentText,
@@ -61,6 +63,7 @@ export class PrismaCmsPostRepository implements CmsPostRepositoryPort {
         title: post.title,
         excerpt: post.excerpt,
         coverImageFileId: post.coverImageFileId,
+        tags: post.tags ?? [],
         contentJson: post.contentJson as Prisma.InputJsonValue,
         contentHtml: post.contentHtml,
         contentText: post.contentText,
@@ -100,6 +103,10 @@ export class PrismaCmsPostRepository implements CmsPostRepositoryPort {
       where.publishedAt = { not: null };
     } else if (params.status) {
       where.status = params.status;
+    }
+
+    if (params.tag) {
+      where.tags = { has: params.tag };
     }
 
     if (params.q) {
