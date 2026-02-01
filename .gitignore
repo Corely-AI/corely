@@ -20,3 +20,4 @@ storageState.json
 .env.test
 services/api/pdfs/
 .env.prod
+gcp-key.json
