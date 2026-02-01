@@ -6,6 +6,7 @@ import type {
   ListPublicRentalPropertiesInput,
   CheckAvailabilityInput,
   CheckAvailabilityOutput,
+  RentalCategory,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 import { resolveCmsApiBaseUrl, buildPublicFileUrl } from "./cms-api";
@@ -138,6 +139,40 @@ export class RentalsApi {
         correlationId: apiClient.generateCorrelationId(),
       }
     );
+  }
+
+  // Categories (Admin)
+  async listCategories(): Promise<RentalCategory[]> {
+    return apiClient.get<RentalCategory[]>("/rentals/categories", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createCategory(input: { name: string; slug: string }): Promise<RentalCategory> {
+    return apiClient.post<RentalCategory>("/rentals/categories", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updateCategory(id: string, input: { name: string; slug: string }): Promise<RentalCategory> {
+    return apiClient.put<RentalCategory>(`/rentals/categories/${id}`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    return apiClient.delete(`/rentals/categories/${id}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  // Categories (Public)
+  async listPublicCategories(): Promise<RentalCategory[]> {
+    return requestPublic<RentalCategory[]>("/public/rentals/categories", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
   }
 }
 

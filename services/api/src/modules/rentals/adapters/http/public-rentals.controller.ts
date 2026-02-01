@@ -43,4 +43,11 @@ export class PublicRentalsController {
     const result = await this.app.checkAvailability.execute(input, ctx);
     return mapResultToHttp(result);
   }
+
+  @Get("categories")
+  async listCategories(@Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.listCategories.execute(undefined, ctx);
+    return mapResultToHttp(result);
+  }
 }

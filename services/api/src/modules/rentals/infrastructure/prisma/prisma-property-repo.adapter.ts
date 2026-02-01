@@ -24,6 +24,11 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
         altText: img.altText,
         sortOrder: img.sortOrder,
       })),
+      categories: (row.categories ?? []).map((c: any) => ({
+        id: c.category?.id || c.categoryId,
+        name: c.category?.name || "",
+        slug: c.category?.slug || "",
+      })),
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
     };
@@ -86,6 +91,10 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
 
     const rows = await this.prisma.rentalProperty.findMany({
       where,
+      include: {
+        categories: { include: { category: true } },
+        images: true,
+      },
       orderBy: { updatedAt: "desc" },
     });
     return rows.map((row) => this.mapRow(row));
@@ -109,6 +118,10 @@ export class PrismaPropertyRepoAdapter implements PropertyRepoPort {
 
     const rows = await this.prisma.rentalProperty.findMany({
       where,
+      include: {
+        categories: { include: { category: true } },
+        images: true,
+      },
       orderBy: { publishedAt: "desc" },
     });
     return rows.map((row) => this.mapRow(row));

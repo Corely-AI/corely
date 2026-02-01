@@ -65,6 +65,7 @@ import {
 import {
   RentalPropertiesPage,
   RentalPropertyEditorPage,
+  RentalCategoriesPage,
   PublicRentalsListScreen,
   PublicRentalDetailScreen,
 } from "../../modules/rentals";
@@ -137,6 +138,7 @@ export const Router = () => (
           <Route path="/rentals/properties" element={<RentalPropertiesPage />} />
           <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
           <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
+          <Route path="/rentals/categories" element={<RentalCategoriesPage />} />
           <Route path="/forms" element={<FormsPage />} />
           <Route path="/forms/new" element={<NewFormPage />} />
           <Route path="/forms/:id" element={<FormDetailPage />} />

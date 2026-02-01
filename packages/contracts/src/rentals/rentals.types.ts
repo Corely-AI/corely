@@ -14,6 +14,13 @@ export const RentalPropertyImageSchema = z.object({
 });
 export type RentalPropertyImage = z.infer<typeof RentalPropertyImageSchema>;
 
+export const RentalCategorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+});
+export type RentalCategory = z.infer<typeof RentalCategorySchema>;
+
 export const RentalPropertySchema = z.object({
   id: z.string(),
   status: RentalStatusSchema,
@@ -24,18 +31,12 @@ export const RentalPropertySchema = z.object({
   maxGuests: z.number().nullable(),
   coverImageFileId: z.string().nullable(),
   images: z.array(RentalPropertyImageSchema),
+  categories: z.array(RentalCategorySchema).optional(),
   publishedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
 export type RentalProperty = z.infer<typeof RentalPropertySchema>;
-
-export const RentalCategorySchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  slug: z.string(),
-});
-export type RentalCategory = z.infer<typeof RentalCategorySchema>;
 
 export const RentalAvailabilityRangeSchema = z.object({
   id: z.string(),

@@ -26,11 +26,18 @@ export default function PublicRentalsListScreen() {
   } = useQuery({
     queryKey: rentalsPublicKeys.properties(workspaceSlug, {
       q: listState.q,
+      categorySlug: listState.filters?.categorySlug as string,
     }),
     queryFn: () =>
       rentalsApi.listPublicProperties({
         q: listState.q,
+        categorySlug: listState.filters?.categorySlug as string,
       }),
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: rentalsPublicKeys.categories(workspaceSlug),
+    queryFn: () => rentalsApi.listPublicCategories(),
   });
 
   const emptyState = (
@@ -93,6 +100,40 @@ export default function PublicRentalsListScreen() {
           </div>
         </div>
 
+        {categories.length > 0 && (
+          <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-6 px-6">
+            <Button
+              variant={!listState.filters?.categorySlug ? "accent" : "outline"}
+              size="sm"
+              className="rounded-full shadow-sm"
+              onClick={() =>
+                setListState({
+                  filters: { ...listState.filters, categorySlug: undefined },
+                  page: 1,
+                })
+              }
+            >
+              All Stays
+            </Button>
+            {categories.map((cat) => (
+              <Button
+                key={cat.id}
+                variant={listState.filters?.categorySlug === cat.slug ? "accent" : "outline"}
+                size="sm"
+                className="rounded-full shadow-sm whitespace-nowrap"
+                onClick={() =>
+                  setListState({
+                    filters: { ...listState.filters, categorySlug: cat.slug },
+                    page: 1,
+                  })
+                }
+              >
+                {cat.name}
+              </Button>
+            ))}
+          </div>
+        )}
+
         {isLoading ? (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -141,6 +182,18 @@ export default function PublicRentalsListScreen() {
                           {property.name}
                         </h2>
                       </div>
+                      {property.categories && property.categories.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {property.categories.map((cat) => (
+                            <span
+                              key={cat.id}
+                              className="text-[10px] uppercase tracking-wider font-bold text-accent/70 bg-accent/5 px-1.5 py-0.5 rounded"
+                            >
+                              {cat.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                       <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
                         {property.summary || "No summary available."}
                       </p>
