@@ -8,8 +8,8 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # TODO: Add this secret to your repo
-  REGION: europe-west3 # Frankfurt, Germany
-  GAR_LOCATION: europe-west3 # Frankfurt, Germany
+  REGION: europe-west4 # Netherlands (better domain mapping support)
+  GAR_LOCATION: europe-west4 # Netherlands
   REPOSITORY: corely-images # TODO: Create this Artifact Registry repository
 
 jobs:
@@ -65,6 +65,7 @@ jobs:
           service: corely-api
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
+          flags: --port=8080
           env_vars: |
             NODE_ENV=production
           # secrets: |
@@ -76,6 +77,7 @@ jobs:
           service: corely-worker
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
+          flags: --port=8080
           env_vars: |
             NODE_ENV=production
             WORKFLOW_QUEUE_DRIVER=cloudtasks
