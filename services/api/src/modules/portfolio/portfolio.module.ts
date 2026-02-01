@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { IdentityModule } from "../identity";
+import { PlatformModule } from "../platform";
 import { PortfolioShowcasesController } from "./http/portfolio-showcases.controller";
 import { PortfolioProfileController } from "./http/portfolio-profile.controller";
 import { PortfolioProjectsController } from "./http/portfolio-projects.controller";
@@ -58,7 +59,7 @@ import { SERVICE_REPOSITORY_PORT } from "./application/ports/service-repository.
 import { TEAM_REPOSITORY_PORT } from "./application/ports/team-repository.port";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule],
+  imports: [DataModule, KernelModule, IdentityModule, PlatformModule],
   controllers: [
     PortfolioShowcasesController,
     PortfolioProfileController,
