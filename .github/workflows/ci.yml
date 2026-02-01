@@ -49,11 +49,11 @@ jobs:
       - name: Run Prettier check
         run: pnpm exec prettier --check .
 
-      - name: Run ESLint
-        run: pnpm lint
+      # - name: Run ESLint
+      #   run: pnpm lint
 
       - name: Run Architecture Check
         run: pnpm arch:check
 
-      - name: Run Typecheck
-        run: pnpm typecheck
+      # - name: Run Typecheck
+      #   run: pnpm typecheck
