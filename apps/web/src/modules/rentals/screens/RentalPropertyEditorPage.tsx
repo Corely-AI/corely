@@ -10,7 +10,6 @@ import { RichTextEditor } from "@/shared/ui/rich-text-editor";
 import { Label } from "@/shared/ui/label";
 import { Badge } from "@/shared/ui/badge";
 import { invalidateResourceQueries } from "@/shared/crud";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { rentalsApi, buildPublicFileUrl } from "@/lib/rentals-api";
 import { cmsApi } from "@/lib/cms-api"; // reuse for image upload
 import { rentalPropertyKeys, rentalCategoryKeys } from "../queries";
@@ -20,6 +19,7 @@ import type { RentalStatus } from "@corely/contracts";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getPublicRentalUrl } from "@/shared/lib/public-urls";
 import { QuickCreateCategoryDialog } from "../components/QuickCreateCategoryDialog";
+import { CurrencySelect } from "@/shared/components/CurrencySelect";
 
 const slugify = (value: string) =>
   value
@@ -464,18 +464,12 @@ export default function RentalPropertyEditorPage() {
                     className="flex-1"
                     placeholder="0.00"
                   />
-                  <Select value={currency} onValueChange={setCurrency}>
-                    <SelectTrigger className="w-[100px]">
-                      <SelectValue placeholder="Currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                      <SelectItem value="GBP">GBP</SelectItem>
-                      <SelectItem value="CAD">CAD</SelectItem>
-                      <SelectItem value="AUD">AUD</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <CurrencySelect
+                    value={currency}
+                    onValueChange={setCurrency}
+                    persistCustomKey="rentals.currencies"
+                    showSymbol={false}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
