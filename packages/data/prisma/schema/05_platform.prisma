@@ -23,6 +23,7 @@ model AppCatalog {
 
   @@index([tier])
   @@index([updatedAt])
+  @@schema("platform")
 }
 
 // =============================================================================
@@ -49,6 +50,7 @@ model TenantAppInstall {
   @@unique([tenantId, appId])
   @@index([tenantId, enabled])
   @@index([tenantId, createdAt])
+  @@schema("platform")
 }
 
 // =============================================================================
@@ -69,6 +71,7 @@ model TemplateCatalog {
 
   @@index([category])
   @@index([updatedAt])
+  @@schema("platform")
 }
 
 // =============================================================================
@@ -93,6 +96,7 @@ model TenantTemplateInstall {
 
   @@unique([tenantId, templateId])
   @@index([tenantId, createdAt])
+  @@schema("platform")
 }
 
 // =============================================================================
@@ -109,6 +113,7 @@ model PackCatalog {
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([updatedAt])
+  @@schema("platform")
 }
 
 // =============================================================================
@@ -121,6 +126,7 @@ enum PackInstallStatus {
   RUNNING
   FAILED
   COMPLETED
+  @@schema("platform")
 }
 
 model TenantPackInstall {
@@ -144,6 +150,7 @@ model TenantPackInstall {
   @@unique([tenantId, packId, version])
   @@index([tenantId, status])
   @@index([tenantId, createdAt])
+  @@schema("platform")
 }
 
 // =============================================================================
@@ -153,6 +160,7 @@ model TenantPackInstall {
 enum MenuScope {
   WEB
   POS
+  @@schema("platform")
 }
 
 model TenantMenuOverride {
@@ -169,6 +177,7 @@ model TenantMenuOverride {
 
   @@unique([tenantId, scope])
   @@index([tenantId])
+  @@schema("platform")
 }
 
 // =============================================================================
@@ -196,4 +205,5 @@ model SeededRecordMeta {
   @@unique([tenantId, targetTable, targetId])
   @@index([tenantId, sourceTemplateId])
   @@index([tenantId, targetTable, isCustomized])
+  @@schema("platform")
 }

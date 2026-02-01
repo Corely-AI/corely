@@ -245,7 +245,7 @@ Common scripts include:
 
 1. **Contracts first:** add Zod schemas, enums, and tool definitions inside `packages/contracts/src/<module>` so web, POS, API, and worker share the surface.
 2. **Backend module:** create `services/api/src/modules/<module>` folders with domains, use cases, DTOs, and Nest controllers that depend only on ports/adapters.
-3. **Data nor cross-writes:** add migrations under `packages/data/prisma/schema/` and let repositories in `packages/data/src` own DB writes; no other module touches those tables directly.
+3. **Database persistence:** For small modules, use `ext.kv` or `ext.entity_attr` (no new tables). For larger modules, add models to `packages/data/prisma/schema/*.prisma` assigned to the correct domain bucket (e.g., `@@schema("crm")`) and create a repository in `packages/data/src`.
 4. **Frontend module:** mirror the module in `apps/web/src/modules/<module>` (screens, hooks, routes) and point to the shared contracts plus the HTTP client.
 5. **Mock routes:** register UI-first routes/seeds in `services/mock-server/src/routes` so the mock server stays up to date.
 

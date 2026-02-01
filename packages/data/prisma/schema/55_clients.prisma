@@ -11,4 +11,5 @@ model Client {
 
   @@index([tenantId])
   @@unique([tenantId, email])
+  @@schema("crm")
 }

@@ -23,6 +23,7 @@ model CmsPost {
  @@index([tenantId])
  @@index([tenantId, workspaceId])
  @@index([tenantId, status, publishedAt])
+  @@schema("content")
 }
 
 model CmsComment {
@@ -47,6 +48,7 @@ model CmsComment {
  @@index([tenantId, postId])
  @@index([postId, status])
  @@index([tenantId, status])
+  @@schema("content")
 }
 
 model CmsReader {
@@ -64,12 +66,14 @@ model CmsReader {
  @@unique([tenantId, email])
  @@index([tenantId])
  @@index([tenantId, workspaceId])
+  @@schema("content")
 }
 
 enum CmsPostStatus {
  DRAFT
  PUBLISHED
  ARCHIVED
+  @@schema("content")
 }
 
 enum CmsCommentStatus {
@@ -78,4 +82,5 @@ enum CmsCommentStatus {
  REJECTED
  SPAM
  DELETED
+  @@schema("content")
 }

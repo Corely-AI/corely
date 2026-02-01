@@ -17,6 +17,7 @@ model Register {
   @@unique([workspaceId, name])
   @@index([workspaceId, status])
   @@map("registers")
+  @@schema("commerce")
 }
 
 model ShiftSession {
@@ -43,6 +44,7 @@ model ShiftSession {
   @@index([workspaceId, registerId, status])
   @@index([workspaceId, status, closedAt])
   @@map("shift_sessions")
+  @@schema("commerce")
 }
 
 model PosSaleIdempotency {
@@ -59,4 +61,5 @@ model PosSaleIdempotency {
   @@index([workspaceId])
   @@index([posSaleId])
   @@map("pos_sale_idempotency")
+  @@schema("commerce")
 }

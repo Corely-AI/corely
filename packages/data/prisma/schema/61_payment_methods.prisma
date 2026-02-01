@@ -7,6 +7,7 @@ enum PaymentMethodType {
   CASH
   CARD
   OTHER
+  @@schema("billing")
 }
 
 model BankAccount {
@@ -34,6 +35,7 @@ model BankAccount {
   @@index([tenantId, legalEntityId])
   @@index([tenantId, isDefault])
   @@index([legalEntityId, isDefault])
+  @@schema("billing")
 }
 
 model PaymentMethod {
@@ -62,4 +64,5 @@ model PaymentMethod {
   @@index([tenantId, legalEntityId])
   @@index([tenantId, isDefaultForInvoicing])
   @@index([bankAccountId])
+  @@schema("billing")
 }

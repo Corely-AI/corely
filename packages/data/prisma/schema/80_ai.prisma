@@ -13,6 +13,7 @@ model AgentRun {
   toolExecutions ToolExecution[]
 
   @@index([tenantId, createdAt])
+  @@schema("platform")
 }
 
 model Message {
@@ -27,6 +28,7 @@ model Message {
   run AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, runId, createdAt])
+  @@schema("platform")
 }
 
 model ToolExecution {
@@ -46,4 +48,5 @@ model ToolExecution {
   run AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, runId, toolCallId])
+  @@schema("platform")
 }

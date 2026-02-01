@@ -2,16 +2,19 @@ enum CheckInStatus {
   ACTIVE
   COMPLETED
   CANCELED
+  @@schema("crm")
 }
 
 enum CheckInByType {
   SELF_SERVICE
   EMPLOYEE
+  @@schema("crm")
 }
 
 enum LoyaltyAccountStatus {
   ACTIVE
   SUSPENDED
+  @@schema("crm")
 }
 
 enum LoyaltyEntryType {
@@ -19,6 +22,7 @@ enum LoyaltyEntryType {
   REDEEM
   ADJUST
   EXPIRE
+  @@schema("crm")
 }
 
 enum LoyaltyReasonCode {
@@ -26,6 +30,7 @@ enum LoyaltyReasonCode {
   MANUAL_ADJUSTMENT
   REWARD_REDEMPTION
   EXPIRATION
+  @@schema("crm")
 }
 
 model CheckInEvent {
@@ -49,6 +54,7 @@ model CheckInEvent {
   @@index([tenantId, customerPartyId, checkedInAt])
   @@index([tenantId, registerId, checkedInAt])
   @@index([tenantId, status])
+  @@schema("crm")
 }
 
 model LoyaltyAccount {
@@ -64,6 +70,7 @@ model LoyaltyAccount {
 
   @@unique([tenantId, customerPartyId], name: "tenantId_customerPartyId")
   @@index([tenantId, status])
+  @@schema("crm")
 }
 
 model LoyaltyLedgerEntry {
@@ -83,6 +90,7 @@ model LoyaltyLedgerEntry {
   @@index([tenantId, customerPartyId, createdAt])
   @@index([tenantId, entryType])
   @@unique([tenantId, sourceType, sourceId, reasonCode], name: "tenantId_sourceType_sourceId_reasonCode")
+  @@schema("crm")
 }
 
 model EngagementSettings {
@@ -97,4 +105,5 @@ model EngagementSettings {
   kioskBrandingJson           String?
   createdAt                   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt                   DateTime @updatedAt @db.Timestamptz(6)
+  @@schema("crm")
 }

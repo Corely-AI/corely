@@ -5,6 +5,7 @@ enum SalesQuoteStatus {
   REJECTED
   CONVERTED
   EXPIRED
+  @@schema("commerce")
 }
 
 enum SalesOrderStatus {
@@ -13,6 +14,7 @@ enum SalesOrderStatus {
   FULFILLED
   INVOICED
   CANCELED
+  @@schema("commerce")
 }
 
 
@@ -35,4 +37,5 @@ model SalesSettings {
   autoPostOnPayment              Boolean  @default(true)
   createdAt                      DateTime @default(now()) @db.Timestamptz(6)
   updatedAt                      DateTime @updatedAt @db.Timestamptz(6)
+  @@schema("commerce")
 }

@@ -11,6 +11,12 @@ export * from "./adapters/prisma-outbox.adapter";
 export * from "./adapters/prisma-audit.adapter";
 export * from "./adapters/prisma-idempotency.adapter";
 
+// Extension storage
+export * from "./ports/ext-storage.port";
+export * from "./adapters/prisma-ext-kv.adapter";
+export * from "./adapters/prisma-ext-entity-attr.adapter";
+export * from "./adapters/prisma-ext-entity-link.adapter";
+
 // Repositories
 export * from "./adapters/prisma-outbox-repository.adapter";
 export * from "./adapters/prisma-custom-field-definition-repository.adapter";
