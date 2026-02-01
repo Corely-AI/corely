@@ -8,8 +8,8 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # TODO: Add this secret to your repo
-  REGION: europe-west3 # Frankfurt, Germany
-  GAR_LOCATION: europe-west3 # Frankfurt, Germany
+  REGION: europe-west4 # Netherlands (better domain mapping support)
+  GAR_LOCATION: europe-west4 # Netherlands
   REPOSITORY: corely-images # TODO: Create this Artifact Registry repository
 
 jobs:
