@@ -16,20 +16,25 @@ export const Money: FC<MoneyProps> = ({
   className = "",
   showSign = false,
 }) => {
-  const amount = amountCents / 100;
-  const isNegative = amount < 0;
+  const isNegative = amountCents < 0;
+  const absAmount = Math.abs(amountCents) / 100;
 
-  const formatted = new Intl.NumberFormat("en-US", {
+  // Use the formatting logic, but we can also use formatMoney from kernel if we export it to web
+  // For now, let's keep it embedded but aligned
+  const formatted = new Intl.NumberFormat(undefined, {
     style: "currency",
-    currency,
+    currency: currency.toUpperCase(),
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(Math.abs(amount));
+  }).format(absAmount);
 
-  const sign = isNegative ? "-" : showSign && amount > 0 ? "+" : "";
+  const sign = isNegative ? "-" : showSign && amountCents > 0 ? "+" : "";
 
   return (
-    <span className={`font-mono tabular-nums ${isNegative ? "text-red-600" : ""} ${className}`}>
+    <span
+      className={`font-mono tabular-nums ${isNegative ? "text-red-600" : ""} ${className}`}
+      id={`money-${currency}-${amountCents}`}
+    >
       {sign}
       {formatted}
     </span>

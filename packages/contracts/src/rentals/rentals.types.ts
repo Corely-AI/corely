@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CurrencyCodeSchema } from "../money/currency.schema";
 
 export const RentalStatusSchema = z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]);
 export type RentalStatus = z.infer<typeof RentalStatusSchema>;
@@ -31,7 +32,7 @@ export const RentalPropertySchema = z.object({
   maxGuests: z.number().nullable(),
   coverImageFileId: z.string().nullable(),
   price: z.number().nullable().optional(),
-  currency: z.string().nullable().optional(),
+  currency: CurrencyCodeSchema.nullable().optional(),
   images: z.array(RentalPropertyImageSchema),
   categories: z.array(RentalCategorySchema).optional(),
   publishedAt: z.string().nullable(),

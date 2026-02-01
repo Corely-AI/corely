@@ -23,7 +23,7 @@ model SalesSettings {
   id                             String   @id @default(cuid())
   tenantId                       String   @unique
   defaultPaymentTerms            String?
-  defaultCurrency                String   @default("EUR")
+  defaultCurrency                String   @db.VarChar(3) @default("EUR")
   quoteNumberPrefix              String   @default("Q-")
   quoteNextNumber                Int      @default(1)
   orderNumberPrefix              String   @default("SO-")

@@ -11,7 +11,7 @@ model TaxProfile {
   regime          TaxRegime
   vatEnabled      Boolean             @default(true)
   vatId           String?
-  currency        String              @default("EUR")
+  currency        String              @db.VarChar(3) @default("EUR")
   filingFrequency VatFilingFrequency
   taxYearStartMonth Int?
   vatAccountingMethod VatAccountingMethod @default(IST)
@@ -110,7 +110,7 @@ model TaxSnapshot {
   jurisdiction         String         // e.g., "DE"
   regime               TaxRegime
   roundingMode         TaxRoundingMode
-  currency             String
+  currency             String           @db.VarChar(3)
   calculatedAt         DateTime       @db.Timestamptz(6)
 
   // Totals (denormalized for performance)
@@ -150,7 +150,7 @@ model VatPeriodSummary {
   tenantId       String
   periodStart    DateTime          @db.Timestamptz(6)
   periodEnd      DateTime          @db.Timestamptz(6)
-  currency       String
+  currency       String            @db.VarChar(3)
 
   // Totals by kind (stored as JSON)
   totalsByKindJson String          @db.Text // stringified TaxTotalsByKind
@@ -205,7 +205,7 @@ model TaxReport {
   status               TaxReportStatus
   amountEstimatedCents Int?
   amountFinalCents     Int?
-  currency             String           @default("EUR")
+  currency             String           @db.VarChar(3) @default("EUR")
   submittedAt          DateTime?        @db.Timestamptz(6)
   submissionReference  String?
   submissionNotes      String?
