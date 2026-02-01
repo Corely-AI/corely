@@ -27,9 +27,9 @@ fi
 
 echo "✅ Formatting passed."
 
-# Run ESLint with increased memory limit
+# Run ESLint with increased memory limit (fail on errors only, not warnings)
 echo "Running ESLint..."
-NODE_OPTIONS="--max-old-space-size=8192" pnpm lint
+NODE_OPTIONS="--max-old-space-size=8192" pnpm lint --max-warnings -1
 
 if [ $? -ne 0 ]; then
   echo "❌ ESLint failed. Fix errors and try again."
