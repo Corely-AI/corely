@@ -188,7 +188,33 @@ cd apps/api
 mkdir -p src/modules/{module}/{domain,infrastructure,application}
 ```
 
-### 2.2 Domain Layer (Business Logic)
+### 2.2 Define Database Schema (Prisma)
+
+**Before writing code, define how your data is stored.**
+
+- **Small Module?** Use `ExtKvService` (Tier 2). No new tables needed.
+- **Medium Module?** Create tables in a domain bucket (Tier 1).
+
+**File: `packages/data/prisma/schema/99_my_module.prisma`**
+
+```prisma
+model MyEntity {
+  id        String   @id @default(cuid())
+  tenantId  String
+  // ... fields
+
+  @@schema("platform") // 👈 Must assign to a domain bucket
+  @@index([tenantId])
+}
+```
+
+Run migration:
+
+```bash
+pnpm prisma:migrate
+```
+
+### 2.3 Domain Layer (Business Logic)
 
 **File: `src/modules/{module}/domain/{module}.entity.ts`**
 
@@ -259,7 +285,7 @@ export interface XFilters {
 }
 ```
 
-### 2.3 Application Layer (Use Cases)
+### 2.4 Application Layer (Use Cases)
 
 **File: `src/modules/{module}/application/create-{module}.use-case.ts`**
 
@@ -306,7 +332,7 @@ export class CreateXUseCase {
 }
 ```
 
-### 2.4 Infrastructure Layer (Repository)
+### 2.5 Infrastructure Layer (Repository)
 
 **File: `src/modules/{module}/infrastructure/prisma-{module}-repo.adapter.ts`**
 
@@ -401,7 +427,7 @@ export class PrismaXRepoAdapter implements XRepoPort {
 }
 ```
 
-### 2.5 Controller Layer
+### 2.6 Controller Layer
 
 **File: `src/modules/{module}/{module}.controller.ts`**
 
@@ -476,7 +502,7 @@ export class XController {
 }
 ```
 
-### 2.6 Module Definition
+### 2.7 Module Definition
 
 **File: `src/modules/{module}/{module}.module.ts`**
 
@@ -1113,6 +1139,7 @@ When implementing a new module, check:
 
 ### Backend ✅
 
+- [ ] Database schema defined in `packages/data` (Tier 1 or Tier 2)
 - [ ] Domain entities in `src/modules/{module}/domain/{module}.entity.ts`
 - [ ] Repository port in `src/modules/{module}/domain/{module}-repo.port.ts`
 - [ ] Use cases in `src/modules/{module}/application/`

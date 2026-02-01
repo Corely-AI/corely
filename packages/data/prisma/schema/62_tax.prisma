@@ -30,23 +30,27 @@ model TaxProfile {
 
   @@unique([tenantId, effectiveFrom])
   @@index([tenantId, country])
+  @@schema("billing")
 }
 
 enum VatAccountingMethod {
   IST   // Cash accounting (received date)
   SOLL  // Accrual accounting (invoice date)
+  @@schema("billing")
 }
 
 enum TaxRegime {
   SMALL_BUSINESS // Kleinunternehmer (§19 UStG) - no VAT charged
   STANDARD_VAT   // Regular VAT
   VAT_EXEMPT     // Exempt from VAT according to §4 Tax Act
+  @@schema("billing")
 }
 
 enum VatFilingFrequency {
   MONTHLY
   QUARTERLY
   YEARLY
+  @@schema("billing")
 }
 
 // Tax Code
@@ -65,6 +69,7 @@ model TaxCode {
 
   @@unique([tenantId, code])
   @@index([tenantId, isActive])
+  @@schema("billing")
 }
 
 enum TaxCodeKind {
@@ -73,6 +78,7 @@ enum TaxCodeKind {
   REVERSE_CHARGE // B2B cross-border (no VAT charged, customer self-assesses)
   EXEMPT         // Exempt from VAT
   ZERO           // 0% VAT rate
+  @@schema("billing")
 }
 
 // Tax Rate
@@ -91,6 +97,7 @@ model TaxRate {
 
   @@index([tenantId, taxCodeId])
   @@index([effectiveFrom])
+  @@schema("billing")
 }
 
 // Tax Snapshot
@@ -121,16 +128,19 @@ model TaxSnapshot {
   @@unique([tenantId, sourceType, sourceId]) // Idempotency key
   @@index([tenantId, sourceType])
   @@index([calculatedAt])
+  @@schema("billing")
 }
 
 enum TaxSourceType {
   INVOICE
   EXPENSE
+  @@schema("billing")
 }
 
 enum TaxRoundingMode {
   PER_LINE      // Round tax on each line item
   PER_DOCUMENT  // Round total tax at document level
+  @@schema("billing")
 }
 
 // VAT Period Summary
@@ -153,6 +163,7 @@ model VatPeriodSummary {
   @@unique([tenantId, periodStart, periodEnd])
   @@index([tenantId, status])
   @@index([periodStart])
+  @@schema("billing")
 }
 
 enum VatPeriodStatus {
@@ -162,6 +173,7 @@ enum VatPeriodStatus {
   PAID
   NIL
   ARCHIVED
+  @@schema("billing")
 }
 
 // Tax Consultant
@@ -177,6 +189,7 @@ model TaxConsultant {
 
   @@unique([tenantId, name])
   @@index([tenantId])
+  @@schema("billing")
 }
 
 // Tax Reports (scheduled obligations)
@@ -208,6 +221,7 @@ model TaxReport {
   @@index([tenantId, status])
   @@index([tenantId, periodStart, periodEnd])
   @@unique([tenantId, type, periodStart, periodEnd])
+  @@schema("billing")
 }
 
 enum TaxReportStatus {
@@ -218,6 +232,7 @@ enum TaxReportStatus {
   PAID
   NIL
   ARCHIVED
+  @@schema("billing")
 }
 
 enum TaxReportType {
@@ -231,6 +246,7 @@ enum TaxReportType {
   BALANCE_SHEET
   TRADE_TAX
   FIXED_ASSETS
+  @@schema("billing")
 }
 
 enum TaxReportGroup {
@@ -239,6 +255,7 @@ enum TaxReportGroup {
   COMPLIANCE
   PAYROLL
   FINANCIAL_STATEMENT
+  @@schema("billing")
 }
 
 // Tax Report Lines (for ESL, Intrastat, etc.)
@@ -263,4 +280,5 @@ model TaxReportLine {
   updatedAt       DateTime  @updatedAt @db.Timestamptz(6)
 
   @@index([reportId])
+  @@schema("billing")
 }

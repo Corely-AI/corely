@@ -54,6 +54,7 @@ model Invoice {
   @@index([legalEntityId])
   @@index([paymentMethodId])
   @@unique([tenantId, number])
+  @@schema("billing")
 }
 
 model InvoiceLine {
@@ -66,6 +67,7 @@ model InvoiceLine {
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
+  @@schema("billing")
 }
 
 model InvoicePayment {
@@ -78,6 +80,7 @@ model InvoicePayment {
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@index([invoiceId])
+  @@schema("billing")
 }
 
 enum InvoiceStatus {
@@ -86,6 +89,7 @@ enum InvoiceStatus {
   SENT
   PAID
   CANCELED
+  @@schema("billing")
 }
 
 model InvoiceEmailDelivery {
@@ -104,6 +108,7 @@ model InvoiceEmailDelivery {
   @@unique([tenantId, idempotencyKey])
   @@index([tenantId, invoiceId])
   @@index([providerMessageId])
+  @@schema("billing")
 }
 
 enum DeliveryStatus {
@@ -113,6 +118,7 @@ enum DeliveryStatus {
   BOUNCED
   FAILED
   DELAYED
+  @@schema("billing")
 }
 
 enum PdfStatus {
@@ -120,4 +126,5 @@ enum PdfStatus {
   GENERATING
   READY
   FAILED
+  @@schema("billing")
 }

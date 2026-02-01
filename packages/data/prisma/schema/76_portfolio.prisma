@@ -19,6 +19,7 @@ model PortfolioShowcase {
   @@unique([tenantId, workspaceId, slug])
   @@index([tenantId, workspaceId])
   @@index([tenantId, workspaceId, isPublished])
+  @@schema("content")
 }
 
 model PortfolioProfile {
@@ -45,6 +46,7 @@ model PortfolioProfile {
   showcase     PortfolioShowcase @relation(fields: [showcaseId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, workspaceId])
+  @@schema("content")
 }
 
 model PortfolioProject {
@@ -73,6 +75,7 @@ model PortfolioProject {
   @@unique([showcaseId, slug])
   @@index([tenantId, workspaceId])
   @@index([showcaseId, status])
+  @@schema("content")
 }
 
 model PortfolioClient {
@@ -100,6 +103,7 @@ model PortfolioClient {
   @@unique([showcaseId, slug])
   @@index([tenantId, workspaceId])
   @@index([showcaseId, featured])
+  @@schema("content")
 }
 
 model PortfolioProjectClient {
@@ -113,6 +117,7 @@ model PortfolioProjectClient {
 
   @@id([projectId, clientId])
   @@index([tenantId, workspaceId])
+  @@schema("content")
 }
 
 model PortfolioService {
@@ -137,6 +142,7 @@ model PortfolioService {
   @@unique([showcaseId, slug])
   @@index([tenantId, workspaceId])
   @@index([showcaseId, status])
+  @@schema("content")
 }
 
 model PortfolioTeamMember {
@@ -159,12 +165,14 @@ model PortfolioTeamMember {
 
   @@index([tenantId, workspaceId])
   @@index([showcaseId, status])
+  @@schema("content")
 }
 
 enum PortfolioShowcaseType {
   individual
   company
   hybrid
+  @@schema("content")
 }
 
 enum PortfolioProjectType {
@@ -173,6 +181,7 @@ enum PortfolioProjectType {
   startup
   agency
   other
+  @@schema("content")
 }
 
 enum PortfolioClientType {
@@ -181,10 +190,12 @@ enum PortfolioClientType {
   partner
   employer
   other
+  @@schema("content")
 }
 
 enum PortfolioContentStatus {
   draft
   published
   archived
+  @@schema("content")
 }

@@ -22,6 +22,7 @@ model CashRegister {
   @@index([tenantId])
   @@index([workspaceId])
   @@map("cash_registers")
+  @@schema("accounting")
 }
 
 model CashEntry {
@@ -46,6 +47,7 @@ model CashEntry {
   @@index([workspaceId, registerId, businessDate])
   @@index([tenantId, createdAt])
   @@map("cash_entries")
+  @@schema("accounting")
 }
 
 model CashDayClose {
@@ -72,4 +74,5 @@ model CashDayClose {
   @@index([tenantId])
   @@index([workspaceId])
   @@map("cash_day_closes")
+  @@schema("accounting")
 }

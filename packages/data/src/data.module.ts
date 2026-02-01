@@ -13,6 +13,10 @@ import { WorkflowInstanceRepository } from "./adapters/prisma-workflow-instance-
 import { WorkflowTaskRepository } from "./adapters/prisma-workflow-task-repository.adapter";
 import { WorkflowEventRepository } from "./adapters/prisma-workflow-event-repository.adapter";
 import { DomainEventRepository } from "./adapters/prisma-domain-event-repository.adapter";
+import { PrismaExtKvAdapter } from "./adapters/prisma-ext-kv.adapter";
+import { PrismaExtEntityAttrAdapter } from "./adapters/prisma-ext-entity-attr.adapter";
+import { PrismaExtEntityLinkAdapter } from "./adapters/prisma-ext-entity-link.adapter";
+import { EXT_KV_PORT, EXT_ENTITY_ATTR_PORT, EXT_ENTITY_LINK_PORT } from "./ports/ext-storage.port";
 
 /**
  * Global DataModule that provides all data access infrastructure.
@@ -45,6 +49,16 @@ import { DomainEventRepository } from "./adapters/prisma-domain-event-repository
     PrismaIdempotencyAdapter,
     { provide: IDEMPOTENCY_PORT, useExisting: PrismaIdempotencyAdapter },
 
+    // Extension storage ports
+    PrismaExtKvAdapter,
+    { provide: EXT_KV_PORT, useExisting: PrismaExtKvAdapter },
+
+    PrismaExtEntityAttrAdapter,
+    { provide: EXT_ENTITY_ATTR_PORT, useExisting: PrismaExtEntityAttrAdapter },
+
+    PrismaExtEntityLinkAdapter,
+    { provide: EXT_ENTITY_LINK_PORT, useExisting: PrismaExtEntityLinkAdapter },
+
     // Repositories
     OutboxRepository,
     CustomFieldDefinitionRepository,
@@ -67,8 +81,16 @@ import { DomainEventRepository } from "./adapters/prisma-domain-event-repository
     AUDIT_PORT,
     IDEMPOTENCY_PORT,
 
+    // Extension storage port tokens
+    EXT_KV_PORT,
+    EXT_ENTITY_ATTR_PORT,
+    EXT_ENTITY_LINK_PORT,
+
     // Concrete implementations (for DI by class)
     PrismaIdempotencyAdapter,
+    PrismaExtKvAdapter,
+    PrismaExtEntityAttrAdapter,
+    PrismaExtEntityLinkAdapter,
     OutboxRepository,
     CustomFieldDefinitionRepository,
     CustomFieldIndexRepository,

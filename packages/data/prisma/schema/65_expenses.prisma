@@ -23,6 +23,7 @@ model Expense {
   @@index([tenantId, expenseDate])
   @@index([tenantId, status])
   @@index([tenantId, archivedAt])
+  @@schema("billing")
 }
 
 model ExpenseLine {
@@ -41,6 +42,7 @@ model ExpenseLine {
 
   @@index([tenantId])
   @@index([expenseId])
+  @@schema("billing")
 }
 
 enum ExpenseStatus {
@@ -49,4 +51,5 @@ enum ExpenseStatus {
   APPROVED
   REJECTED
   PAID
+  @@schema("billing")
 }

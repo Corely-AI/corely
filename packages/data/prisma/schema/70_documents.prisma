@@ -17,6 +17,7 @@ model Document {
   @@index([tenantId])
   @@index([tenantId, type])
   @@index([tenantId, archivedAt])
+  @@schema("platform")
 }
 
 model File {
@@ -39,6 +40,7 @@ model File {
   @@index([tenantId])
   @@index([tenantId, documentId])
   @@index([objectKey])
+  @@schema("platform")
 }
 
 model DocumentLink {
@@ -53,6 +55,7 @@ model DocumentLink {
 
   @@index([tenantId])
   @@index([tenantId, entityType, entityId])
+  @@schema("platform")
 }
 
 enum DocumentType {
@@ -61,6 +64,7 @@ enum DocumentType {
   CONTRACT
   INVOICE_PDF
   OTHER
+  @@schema("platform")
 }
 
 enum DocumentStatus {
@@ -68,18 +72,21 @@ enum DocumentStatus {
   READY
   FAILED
   QUARANTINED
+  @@schema("platform")
 }
 
 enum FileKind {
   ORIGINAL
   DERIVED
   GENERATED
+  @@schema("platform")
 }
 
 enum StorageProvider {
   gcs
   s3
   azure
+  @@schema("platform")
 }
 
 enum DocumentLinkEntityType {
@@ -88,4 +95,5 @@ enum DocumentLinkEntityType {
   AGENT_RUN
   MESSAGE
   OTHER
+  @@schema("platform")
 }

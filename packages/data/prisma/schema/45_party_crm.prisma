@@ -3,21 +3,25 @@ enum PartyRoleType {
   SUPPLIER
   EMPLOYEE
   CONTACT
+  @@schema("crm")
 }
 
 enum ContactPointType {
   EMAIL
   PHONE
+  @@schema("crm")
 }
 
 enum AddressType {
   BILLING
+  @@schema("crm")
 }
 
 enum DealStatus {
   OPEN
   WON
   LOST
+  @@schema("crm")
 }
 
 enum ActivityType {
@@ -26,12 +30,14 @@ enum ActivityType {
   CALL
   MEETING
   EMAIL_DRAFT
+  @@schema("crm")
 }
 
 enum ActivityStatus {
   OPEN
   COMPLETED
   CANCELED
+  @@schema("crm")
 }
 
 model Party {
@@ -55,6 +61,7 @@ model Party {
   @@index([tenantId, displayName])
   @@index([tenantId, archivedAt])
   @@index([tenantId])
+  @@schema("crm")
 }
 
 model PartyRole {
@@ -67,6 +74,7 @@ model PartyRole {
 
   @@unique([tenantId, partyId, role], name: "tenantId_partyId_role")
   @@index([tenantId, role])
+  @@schema("crm")
 }
 
 model ContactPoint {
@@ -83,6 +91,7 @@ model ContactPoint {
 
   @@unique([tenantId, partyId, type], name: "tenantId_partyId_type")
   @@index([tenantId, partyId, type])
+  @@schema("crm")
 }
 
 model Address {
@@ -102,6 +111,7 @@ model Address {
 
   @@unique([tenantId, partyId, type], name: "tenantId_partyId_type_address")
   @@index([tenantId, type])
+  @@schema("crm")
 }
 
 model Deal {
@@ -133,6 +143,7 @@ model Deal {
   @@index([tenantId, ownerUserId])
   @@index([tenantId, stageId])
   @@index([tenantId, createdAt])
+  @@schema("crm")
 }
 
 model Activity {
@@ -162,6 +173,7 @@ model Activity {
   @@index([tenantId, dealId, createdAt])
   @@index([tenantId, assignedToUserId, status])
   @@index([tenantId, createdAt])
+  @@schema("crm")
 }
 
 model DealStageTransition {
@@ -176,6 +188,7 @@ model DealStageTransition {
   deal Deal @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, dealId, transitionedAt])
+  @@schema("crm")
 }
 
 model PipelineConfig {
@@ -184,4 +197,5 @@ model PipelineConfig {
   stagesJson String
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  @@schema("crm")
 }

@@ -2,6 +2,7 @@ enum ProductType {
   STOCKABLE
   CONSUMABLE
   SERVICE
+  @@schema("commerce")
 }
 
 enum LocationType {
@@ -9,6 +10,7 @@ enum LocationType {
   RECEIVING
   SHIPPING
   VIRTUAL
+  @@schema("commerce")
 }
 
 enum InventoryDocumentType {
@@ -16,6 +18,7 @@ enum InventoryDocumentType {
   DELIVERY
   TRANSFER
   ADJUSTMENT
+  @@schema("commerce")
 }
 
 enum InventoryDocumentStatus {
@@ -23,6 +26,7 @@ enum InventoryDocumentStatus {
   CONFIRMED
   POSTED
   CANCELED
+  @@schema("commerce")
 }
 
 enum StockMoveReason {
@@ -30,21 +34,25 @@ enum StockMoveReason {
   SHIPMENT
   TRANSFER
   ADJUSTMENT
+  @@schema("commerce")
 }
 
 enum ReservationStatus {
   ACTIVE
   RELEASED
   FULFILLED
+  @@schema("commerce")
 }
 
 enum NegativeStockPolicy {
   DISALLOW
   ALLOW
+  @@schema("commerce")
 }
 
 enum ReservationPolicy {
   FULL_ONLY
+  @@schema("commerce")
 }
 
 model InventoryProduct {
@@ -67,6 +75,7 @@ model InventoryProduct {
   @@unique([tenantId, sku])
   @@index([tenantId, productType])
   @@index([tenantId, isActive])
+  @@schema("commerce")
 }
 
 model InventoryWarehouse {
@@ -83,6 +92,7 @@ model InventoryWarehouse {
   locations InventoryLocation[]
 
   @@index([tenantId, isDefault])
+  @@schema("commerce")
 }
 
 model InventoryLocation {
@@ -100,6 +110,7 @@ model InventoryLocation {
   warehouse InventoryWarehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, warehouseId])
+  @@schema("commerce")
 }
 
 model InventoryDocument {
@@ -130,6 +141,7 @@ model InventoryDocument {
   @@index([tenantId, partyId])
   @@index([tenantId, createdAt])
   @@unique([tenantId, documentNumber])
+  @@schema("commerce")
 }
 
 model InventoryDocumentLine {
@@ -147,6 +159,7 @@ model InventoryDocumentLine {
 
   @@index([documentId])
   @@index([productId])
+  @@schema("commerce")
 }
 
 model StockMove {
@@ -166,6 +179,7 @@ model StockMove {
   @@index([tenantId, productId])
   @@index([tenantId, locationId])
   @@index([tenantId, postingDate])
+  @@schema("commerce")
 }
 
 model StockReservation {
@@ -183,6 +197,7 @@ model StockReservation {
 
   @@index([tenantId, documentId])
   @@index([tenantId, productId])
+  @@schema("commerce")
 }
 
 model ReorderPolicy {
@@ -201,6 +216,7 @@ model ReorderPolicy {
 
   @@unique([tenantId, productId, warehouseId])
   @@index([tenantId, warehouseId])
+  @@schema("commerce")
 }
 
 model InventorySettings {
@@ -219,4 +235,5 @@ model InventorySettings {
   defaultWarehouseId String?
   createdAt          DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+  @@schema("commerce")
 }

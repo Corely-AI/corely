@@ -11,6 +11,7 @@ model OutboxEvent {
   updatedAt   DateTime @updatedAt
 
   @@index([tenantId, status, availableAt])
+  @@schema("workflow")
 }
 
 model DomainEvent {
@@ -21,6 +22,7 @@ model DomainEvent {
   createdAt DateTime @default(now())
 
   @@index([tenantId, eventType])
+  @@schema("workflow")
 }
 
 model AuditLog {
@@ -35,6 +37,7 @@ model AuditLog {
 
   @@index([tenantId, entity, entityId])
   @@index([tenantId, action])
+  @@schema("workflow")
 }
 
 model IdempotencyKey {
@@ -54,10 +57,12 @@ model IdempotencyKey {
 
   @@unique([tenantId, actionKey, key])
   @@index([tenantId, actionKey])
+  @@schema("workflow")
 }
 
 enum OutboxStatus {
   PENDING
   SENT
   FAILED
+  @@schema("workflow")
 }

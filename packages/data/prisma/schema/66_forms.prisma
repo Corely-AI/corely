@@ -18,6 +18,7 @@ model FormDefinition {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, archivedAt])
+  @@schema("platform")
 }
 
 model FormField {
@@ -39,6 +40,7 @@ model FormField {
   @@unique([formId, key])
   @@index([formId, order])
   @@index([tenantId])
+  @@schema("platform")
 }
 
 model FormSubmission {
@@ -55,11 +57,13 @@ model FormSubmission {
 
   @@index([formId, submittedAt])
   @@index([tenantId])
+  @@schema("platform")
 }
 
 enum FormStatus {
   DRAFT
   PUBLISHED
+  @@schema("platform")
 }
 
 enum FormFieldType {
@@ -71,9 +75,11 @@ enum FormFieldType {
   SINGLE_SELECT
   MULTI_SELECT
   EMAIL
+  @@schema("platform")
 }
 
 enum FormSubmissionSource {
   PUBLIC
   INTERNAL
+  @@schema("platform")
 }
