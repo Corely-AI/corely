@@ -9,6 +9,8 @@ export class RentalPropertyEntity {
   descriptionHtml?: string | null;
   maxGuests?: number | null;
   coverImageFileId?: string | null;
+  price?: number | null;
+  currency?: string | null;
   publishedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;

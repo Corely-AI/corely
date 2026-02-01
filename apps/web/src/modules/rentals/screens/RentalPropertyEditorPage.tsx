@@ -10,6 +10,7 @@ import { RichTextEditor } from "@/shared/ui/rich-text-editor";
 import { Label } from "@/shared/ui/label";
 import { Badge } from "@/shared/ui/badge";
 import { invalidateResourceQueries } from "@/shared/crud";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { rentalsApi, buildPublicFileUrl } from "@/lib/rentals-api";
 import { cmsApi } from "@/lib/cms-api"; // reuse for image upload
 import { rentalPropertyKeys, rentalCategoryKeys } from "../queries";
@@ -53,6 +54,8 @@ export default function RentalPropertyEditorPage() {
   const [summary, setSummary] = useState("");
   const [descriptionHtml, setDescriptionHtml] = useState("");
   const [maxGuests, setMaxGuests] = useState<number>(2);
+  const [price, setPrice] = useState<number | undefined>(undefined);
+  const [currency, setCurrency] = useState<string>("USD");
   const [coverImageFileId, setCoverImageFileId] = useState<string | null>(null);
   type GalleryImage = { fileId: string; altText: string; sortOrder: number; isUploading?: boolean };
   const [images, setImages] = useState<GalleryImage[]>([]);
@@ -82,6 +85,8 @@ export default function RentalPropertyEditorPage() {
     setSummary(property.summary ?? "");
     setDescriptionHtml(property.descriptionHtml ?? "");
     setMaxGuests(property.maxGuests ?? 2);
+    setPrice(property.price ?? undefined);
+    setCurrency(property.currency ?? "USD");
     setCoverImageFileId(property.coverImageFileId ?? null);
     setImages(
       (property.images ?? []).map((img) => ({
@@ -114,6 +119,8 @@ export default function RentalPropertyEditorPage() {
         summary: summary.trim() || undefined,
         descriptionHtml: descriptionHtml.trim() || undefined,
         maxGuests,
+        price,
+        currency,
         coverImageFileId: coverImageFileId ?? undefined,
         images: images.map((img, index) => ({
           fileId: img.fileId,
@@ -444,6 +451,33 @@ export default function RentalPropertyEditorPage() {
           <Card>
             <CardContent className="p-6 space-y-4">
               <h2 className="text-h3 text-foreground">Configuration</h2>
+              <div className="space-y-2">
+                <Label htmlFor="price">Price per night</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="price"
+                    type="number"
+                    value={price ?? ""}
+                    onChange={(e) =>
+                      setPrice(e.target.value ? parseFloat(e.target.value) : undefined)
+                    }
+                    className="flex-1"
+                    placeholder="0.00"
+                  />
+                  <Select value={currency} onValueChange={setCurrency}>
+                    <SelectTrigger className="w-[100px]">
+                      <SelectValue placeholder="Currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD</SelectItem>
+                      <SelectItem value="EUR">EUR</SelectItem>
+                      <SelectItem value="GBP">GBP</SelectItem>
+                      <SelectItem value="CAD">CAD</SelectItem>
+                      <SelectItem value="AUD">AUD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="guests">Max Guests</Label>
                 <Input

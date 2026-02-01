@@ -8,6 +8,8 @@ export const CreateRentalPropertyInputSchema = z.object({
   maxGuests: z.number().int().positive().optional(),
   categoryIds: z.array(z.string()).optional(),
   coverImageFileId: z.string().optional(),
+  price: z.number().optional(),
+  currency: z.string().optional(),
   images: z
     .array(
       z.object({

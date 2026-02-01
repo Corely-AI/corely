@@ -138,42 +138,56 @@ export default function RentalPropertiesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {properties.map((property) => (
-                    <tr
-                      key={property.id}
-                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="px-4 py-3">
-                        <div className="text-sm font-medium">{property.name}</div>
-                        <div className="text-xs text-muted-foreground">{property.slug}</div>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <Badge variant={statusVariant(property.status)}>{property.status}</Badge>
-                      </td>
-                      <td className="px-4 py-3 text-sm">{property.maxGuests ?? "—"}</td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {formatDate(property.updatedAt, "en-US")}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <CrudRowActions
-                          primaryAction={{
-                            label: "Edit",
-                            href: `/rentals/properties/${property.id}/edit`,
-                          }}
-                          secondaryActions={
-                            property.status === "PUBLISHED"
-                              ? [
-                                  {
-                                    label: "View Public Page",
-                                    href: getPublicRentalUrl(property.slug, activeWorkspace?.slug),
-                                  },
-                                ]
-                              : []
-                          }
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                  {properties.map((property) => {
+                    const priceFormatted =
+                      property.price && property.currency
+                        ? new Intl.NumberFormat("en-US", {
+                            style: "currency",
+                            currency: property.currency,
+                          }).format(property.price)
+                        : "—";
+
+                    return (
+                      <tr
+                        key={property.id}
+                        className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                      >
+                        <td className="px-4 py-3">
+                          <div className="text-sm font-medium">{property.name}</div>
+                          <div className="text-xs text-muted-foreground">{property.slug}</div>
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <Badge variant={statusVariant(property.status)}>{property.status}</Badge>
+                        </td>
+                        <td className="px-4 py-3 text-sm font-medium">{priceFormatted}</td>
+                        <td className="px-4 py-3 text-sm">{property.maxGuests ?? "—"}</td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {formatDate(property.updatedAt, "en-US")}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <CrudRowActions
+                            primaryAction={{
+                              label: "Edit",
+                              href: `/rentals/properties/${property.id}/edit`,
+                            }}
+                            secondaryActions={
+                              property.status === "PUBLISHED"
+                                ? [
+                                    {
+                                      label: "View Public Page",
+                                      href: getPublicRentalUrl(
+                                        property.slug,
+                                        activeWorkspace?.slug
+                                      ),
+                                    },
+                                  ]
+                                : []
+                            }
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -30,6 +30,8 @@ export const RentalPropertySchema = z.object({
   descriptionHtml: z.string().nullable(),
   maxGuests: z.number().nullable(),
   coverImageFileId: z.string().nullable(),
+  price: z.number().nullable().optional(),
+  currency: z.string().nullable().optional(),
   images: z.array(RentalPropertyImageSchema),
   categories: z.array(RentalCategorySchema).optional(),
   publishedAt: z.string().nullable(),

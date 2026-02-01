@@ -337,8 +337,22 @@ export default function PublicRentalDetailScreen() {
             <Card className="sticky top-24 shadow-xl border-border/60 bg-card rounded-3xl overflow-hidden">
               <CardHeader className="bg-accent/[0.03] pb-6">
                 <div className="flex items-end gap-2">
-                  <span className="text-3xl font-extrabold text-foreground">Check</span>
-                  <span className="text-muted-foreground font-medium pb-1">availability</span>
+                  {property.price && property.currency ? (
+                    <>
+                      <span className="text-3xl font-extrabold text-foreground">
+                        {new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: property.currency,
+                        }).format(property.price)}
+                      </span>
+                      <span className="text-muted-foreground font-medium pb-1">night</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-3xl font-extrabold text-foreground">Check</span>
+                      <span className="text-muted-foreground font-medium pb-1">availability</span>
+                    </>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
