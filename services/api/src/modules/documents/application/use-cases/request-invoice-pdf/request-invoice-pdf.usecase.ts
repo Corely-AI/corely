@@ -100,11 +100,9 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
       const now = this.useCaseDeps.clock.now();
       const documentId = this.useCaseDeps.idGenerator.newId();
       const fileId = this.useCaseDeps.idGenerator.newId();
-      const prefix =
-        this.useCaseDeps.keyPrefix ??
-        process.env.STORAGE_KEY_PREFIX ??
-        `env/${process.env.NODE_ENV ?? "dev"}`;
-      const objectKey = `${prefix}/tenant/${tenantId}/documents/${documentId}/files/${fileId}/invoice.pdf`;
+      const rawPrefix = this.useCaseDeps.keyPrefix ?? process.env.STORAGE_KEY_PREFIX ?? "";
+      const prefix = rawPrefix ? `${rawPrefix}/` : "";
+      const objectKey = `${prefix}tenant/${tenantId}/documents/${documentId}/files/${fileId}/invoice.pdf`;
 
       document = DocumentAggregate.create({
         id: documentId,
@@ -134,11 +132,9 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
       const now = this.useCaseDeps.clock.now();
       if (!file) {
         const fileId = this.useCaseDeps.idGenerator.newId();
-        const prefix =
-          this.useCaseDeps.keyPrefix ??
-          process.env.STORAGE_KEY_PREFIX ??
-          `env/${process.env.NODE_ENV ?? "dev"}`;
-        const objectKey = `${prefix}/tenant/${tenantId}/documents/${document.id}/files/${fileId}/invoice.pdf`;
+        const rawPrefix = this.useCaseDeps.keyPrefix ?? process.env.STORAGE_KEY_PREFIX ?? "";
+        const prefix = rawPrefix ? `${rawPrefix}/` : "";
+        const objectKey = `${prefix}tenant/${tenantId}/documents/${document.id}/files/${fileId}/invoice.pdf`;
         file = new FileEntity({
           id: fileId,
           tenantId,
