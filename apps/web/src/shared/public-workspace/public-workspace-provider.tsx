@@ -33,7 +33,7 @@ export const PublicWorkspaceProvider = () => {
 
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const queryWorkspace = queryParams.get("w");
-  const workspaceSlug = params.workspaceSlug ?? (import.meta.env.DEV ? queryWorkspace : null);
+  const workspaceSlug = params.workspaceSlug ?? queryWorkspace ?? null;
 
   useEffect(() => {
     setPublicWorkspaceSlug(workspaceSlug ?? null);
@@ -41,9 +41,7 @@ export const PublicWorkspaceProvider = () => {
   }, [workspaceSlug]);
 
   useEffect(() => {
-    if (!import.meta.env.DEV) {
-      return;
-    }
+    // Simplified: always redirect to canonical path structure
     if (params.workspaceSlug || !queryWorkspace) {
       return;
     }

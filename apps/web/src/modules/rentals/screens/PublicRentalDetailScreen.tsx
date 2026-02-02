@@ -48,6 +48,20 @@ export default function PublicRentalDetailScreen() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [galleryStartIndex, setGalleryStartIndex] = useState(0);
   const [api, setApi] = useState<CarouselApi>();
+  const [mobileApi, setMobileApi] = useState<CarouselApi>();
+  const [currentMobile, setCurrentMobile] = useState(0);
+
+  useEffect(() => {
+    if (!mobileApi) {
+      return;
+    }
+
+    setCurrentMobile(mobileApi.selectedScrollSnap() + 1);
+
+    mobileApi.on("select", () => {
+      setCurrentMobile(mobileApi.selectedScrollSnap() + 1);
+    });
+  }, [mobileApi]);
 
   const {
     data: property,
@@ -162,7 +176,40 @@ export default function PublicRentalDetailScreen() {
 
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-12">
         {/* Gallery Grid */}
-        <section className="grid gap-3 grid-cols-1 sm:grid-cols-4 sm:grid-rows-2 h-[400px] sm:h-[550px] rounded-3xl overflow-hidden shadow-2xl">
+        {/* Mobile Gallery Slider */}
+        <div className="block sm:hidden mb-6 relative rounded-2xl overflow-hidden shadow-xl aspect-[4/3] bg-muted">
+          {allImages.length > 0 ? (
+            <Carousel setApi={setMobileApi} className="w-full h-full">
+              <CarouselContent className="h-full -ml-0">
+                {allImages.map((img, index) => (
+                  <CarouselItem
+                    key={index}
+                    onClick={() => openGallery(index)}
+                    className="pl-0 h-full cursor-pointer"
+                  >
+                    <img
+                      src={buildPublicFileUrl(img.fileId)}
+                      alt={img.altText || property.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              {allImages.length > 1 && (
+                <div className="absolute bottom-3 right-3 bg-black/60 text-white px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm shadow-sm pointer-events-none">
+                  {currentMobile} / {allImages.length}
+                </div>
+              )}
+            </Carousel>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <p className="text-muted-foreground text-sm">No images</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Gallery Grid */}
+        <section className="hidden sm:grid gap-3 sm:grid-cols-4 sm:grid-rows-2 h-[400px] sm:h-[550px] rounded-3xl overflow-hidden shadow-2xl">
           {allImages.length > 0 ? (
             <>
               <div

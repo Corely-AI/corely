@@ -67,11 +67,9 @@ export class CreateUploadIntentUseCase extends BaseUseCase<
     const documentId = this.useCaseDeps.idGenerator.newId();
     const fileId = this.useCaseDeps.idGenerator.newId();
     const safeFilename = sanitizeFilename(input.filename);
-    const prefix =
-      this.useCaseDeps.keyPrefix ??
-      process.env.STORAGE_KEY_PREFIX ??
-      `env/${process.env.NODE_ENV ?? "dev"}`;
-    const objectKey = `${prefix}/tenant/${ctx.tenantId}/documents/${documentId}/files/${fileId}/${safeFilename}`;
+    const rawPrefix = this.useCaseDeps.keyPrefix ?? process.env.STORAGE_KEY_PREFIX ?? "";
+    const prefix = rawPrefix ? `${rawPrefix}/` : "";
+    const objectKey = `${prefix}tenant/${ctx.tenantId}/documents/${documentId}/files/${fileId}/${safeFilename}`;
 
     const document = DocumentAggregate.create({
       id: documentId,

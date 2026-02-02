@@ -53,11 +53,9 @@ export class UploadFileUseCase extends BaseUseCase<UploadFileBase64Input, Upload
     const fileId = this.useCaseDeps.idGenerator.newId();
     const safeFilename = input.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
 
-    const prefix =
-      this.useCaseDeps.keyPrefix ??
-      process.env.STORAGE_KEY_PREFIX ??
-      `env/${process.env.NODE_ENV ?? "dev"}`;
-    const objectKey = `${prefix}/tenant/${ctx.tenantId}/documents/${documentId}/files/${fileId}/${safeFilename}`;
+    const rawPrefix = this.useCaseDeps.keyPrefix ?? process.env.STORAGE_KEY_PREFIX ?? "";
+    const prefix = rawPrefix ? `${rawPrefix}/` : "";
+    const objectKey = `${prefix}tenant/${ctx.tenantId}/documents/${documentId}/files/${fileId}/${safeFilename}`;
 
     // Upload to GCS
     await this.useCaseDeps.objectStorage.putObject({
