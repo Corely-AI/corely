@@ -129,7 +129,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 <div key={group.id} className="space-y-1">
                   {!collapsed && (
                     <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {group.defaultLabel}
+                      {t(group.labelKey ?? group.defaultLabel)}
                     </div>
                   )}
                   {group.items.map((item) => {
@@ -150,7 +150,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                         }
                       >
                         <Icon className="h-5 w-5 shrink-0" />
-                        {!collapsed && <span>{item.label}</span>}
+                        {!collapsed && <span>{t(item.labelKey ?? item.label)}</span>}
                         {!collapsed && item.pinned && (
                           <span className="ml-auto text-xs text-muted-foreground">📌</span>
                         )}
@@ -189,7 +189,9 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 size="icon-sm"
                 className="text-muted-foreground hover:text-foreground"
               >
-                <Globe className="h-4 w-4" />
+                <span className="text-lg leading-none">
+                  {i18n.language === "de" ? "🇩🇪" : i18n.language === "vi" ? "🇻🇳" : "🇬🇧"}
+                </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32">

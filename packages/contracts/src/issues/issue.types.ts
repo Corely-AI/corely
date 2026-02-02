@@ -41,6 +41,7 @@ export type IssueTranscriptionSegment = z.infer<typeof IssueTranscriptionSegment
 
 export const IssueAttachmentSchema = AttachmentMetadataSchema.extend({
   id: z.string(),
+  fileId: z.string().optional(),
   issueId: z.string(),
   commentId: z.string().optional().nullable(),
   transcriptText: z.string().optional().nullable(),

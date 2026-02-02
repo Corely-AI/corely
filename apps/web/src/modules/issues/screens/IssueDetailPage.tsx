@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { CheckCircle2, ArrowLeft, RefreshCw, MessageSquarePlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { issuesApi } from "@/lib/issues-api";
+import { buildPublicFileUrl } from "@/lib/rentals-api";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent } from "@/shared/ui/card";
@@ -125,14 +126,6 @@ export default function IssueDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => addCommentMutation.mutate()}
-            disabled={!commentBody.trim() || addCommentMutation.isPending}
-          >
-            <MessageSquarePlus className="h-4 w-4" />
-            {t("issues.comments.add")}
-          </Button>
           {issue.status !== "RESOLVED" ? (
             <Button
               variant="accent"
@@ -221,6 +214,16 @@ export default function IssueDetailPage() {
             onChange={(event) => setCommentBody(event.target.value)}
             placeholder={t("issues.comments.placeholder")}
           />
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => addCommentMutation.mutate()}
+              disabled={!commentBody.trim() || addCommentMutation.isPending}
+            >
+              <MessageSquarePlus className="h-4 w-4 mr-2" />
+              {t("issues.comments.add")}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -259,21 +262,45 @@ export default function IssueDetailPage() {
         <CardContent className="p-6 space-y-4">
           <h2 className="text-lg font-semibold">{t("issues.attachments.title")}</h2>
           {issue.attachments?.length ? (
-            <ul className="text-sm text-muted-foreground list-disc list-inside">
-              {issue.attachments.map((attachment) => (
-                <li key={attachment.id}>
-                  {attachment.kind} • {attachment.mimeType} •{" "}
-                  {t("common.bytes", { count: attachment.sizeBytes })}
-                  {attachment.transcriptText ? (
-                    <span className="block text-xs text-foreground mt-1">
-                      {t("issues.attachments.transcript", {
-                        transcript: attachment.transcriptText,
-                      })}
-                    </span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-4">
+              {issue.attachments.some((a) => a.kind === "IMAGE") && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {issue.attachments
+                    .filter((a) => a.kind === "IMAGE")
+                    .map((attachment) => (
+                      <div
+                        key={attachment.id}
+                        className="group relative aspect-square rounded-md border overflow-hidden bg-muted"
+                      >
+                        <img
+                          src={buildPublicFileUrl(attachment.fileId ?? attachment.documentId)}
+                          alt="Attachment"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                </div>
+              )}
+              {issue.attachments.some((a) => a.kind !== "IMAGE") && (
+                <ul className="text-sm text-muted-foreground list-disc list-inside">
+                  {issue.attachments
+                    .filter((a) => a.kind !== "IMAGE")
+                    .map((attachment) => (
+                      <li key={attachment.id}>
+                        {attachment.kind} • {attachment.mimeType} •{" "}
+                        {t("common.bytes", { count: attachment.sizeBytes })}
+                        {attachment.transcriptText ? (
+                          <span className="block text-xs text-foreground mt-1">
+                            {t("issues.attachments.transcript", {
+                              transcript: attachment.transcriptText,
+                            })}
+                          </span>
+                        ) : null}
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">{t("issues.attachments.empty")}</p>
           )}

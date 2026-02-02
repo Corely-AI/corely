@@ -37,9 +37,31 @@
   },
   "nav": {
     "dashboard": "Tổng quan",
+    "portfolio": "Hồ sơ năng lực",
+    "rentals": {
+      "properties": "Bất động sản"
+    },
+    "quotes": "Báo giá",
+    "clients": "Khách hàng",
+    "tax": {
+      "overview": "Tổng quan",
+      "filings": "Kê khai",
+      "payments": "Thanh toán",
+      "documents": "Tài liệu",
+      "settings": "Cài đặt thuế"
+    },
     "assistant": "Trợ lý",
     "expenses": "Chi phí",
     "invoices": "Hóa đơn",
+    "groups": {
+      "core": "Chính",
+      "sales": "Bán hàng",
+      "purchasing": "Mua hàng",
+      "inventory": "Kho",
+      "finance": "Tài chính",
+      "settings": "Cài đặt",
+      "tax": "Thuế"
+    },
     "customers": "Khách hàng",
     "salesQuotes": "Báo giá",
     "salesOrders": "Đơn bán hàng",
@@ -58,7 +80,107 @@
     "inventoryCopilot": "Kho - Trợ lý",
     "automation": "Tự động hóa",
     "documents": "Tài liệu",
-    "hr": "Nhân sự"
+    "hr": "Nhân sự",
+    "workspace": "Cài đặt không gian làm việc",
+    "profile": "Tài khoản & Hồ sơ",
+    "members": "Quản lý thành viên",
+    "roles": "Vai trò & Quyền",
+    "paymentMethods": "Phương thức thanh toán",
+    "issues": "Vấn đề"
+  },
+  "issues": {
+    "title": "Vấn đề",
+    "reportTitle": "Báo cáo vấn đề mới",
+    "unassigned": "Chưa giao",
+    "description": {
+      "empty": "Không có mô tả."
+    },
+    "createdAt": "Đã tạo {{date}}",
+    "status": {
+      "change": "Thay đổi trạng thái",
+      "update": "Cập nhật trạng thái",
+      "updated": "Đã cập nhật trạng thái",
+      "updateFailed": "Không thể cập nhật trạng thái",
+      "resolved": "Đã giải quyết vấn đề",
+      "resolveFailed": "Không thể giải quyết vấn đề",
+      "reopened": "Đã mở lại vấn đề",
+      "reopenFailed": "Không thể mở lại vấn đề"
+    },
+    "actions": {
+      "resolve": "Giải quyết",
+      "reopen": "Mở lại"
+    },
+    "fields": {
+      "title": "Tiêu đề",
+      "priority": "Mức độ ưu tiên",
+      "description": "Mô tả",
+      "siteType": "Loại địa điểm",
+      "siteIdOptional": "ID địa điểm (Tùy chọn)",
+      "customerIdOptional": "ID khách hàng (Tùy chọn)",
+      "manufacturerIdOptional": "ID nhà sản xuất (Tùy chọn)",
+      "transcriptOptional": "Bản ghi âm giọng nói (Tùy chọn)",
+      "site": "Địa điểm",
+      "assignee": "Người được giao"
+    },
+    "placeholders": {
+      "priority": "Chọn mức độ ưu tiên",
+      "siteType": "Chọn loại địa điểm"
+    },
+    "priority": {
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "high": "Cao",
+      "urgent": "Khẩn cấp"
+    },
+    "siteTypes": {
+      "field": "Hiện trường",
+      "customer": "Khách hàng",
+      "manufacturer": "Nhà sản xuất"
+    },
+    "statuses": {
+      "NEW": "Mới",
+      "TRIAGED": "Đã phân loại",
+      "IN_PROGRESS": "Đang xử lý",
+      "WAITING": "Đang chờ",
+      "RESOLVED": "Đã giải quyết",
+      "CLOSED": "Đã đóng",
+      "REOPENED": "Đã mở lại"
+    },
+    "attachments": {
+      "title": "Tài liệu đính kèm",
+      "images": "Hình ảnh",
+      "audio": "Ghi âm",
+      "voiceNote": "Ghi chú giọng nói",
+      "uploaded": "Tài liệu đã tải lên:",
+      "empty": "Không có tài liệu đính kèm.",
+      "transcript": "Bản ghi: {{transcript}}"
+    },
+    "voiceNote": "Ghi chú giọng nói",
+    "startRecording": "Bắt đầu ghi âm",
+    "stopRecording": "Dừng ghi âm",
+    "submitting": "Đang gửi...",
+    "submit": "Gửi vấn đề",
+    "speech": {
+      "liveTranscription": "Đang chuyển giọng nói thành văn bản",
+      "notAvailable": "Nhận dạng giọng nói không khả dụng trên trình duyệt này"
+    },
+    "comments": {
+      "title": "Bình luận",
+      "addTitle": "Thêm bình luận",
+      "add": "Thêm bình luận",
+      "added": "Đã thêm bình luận",
+      "addFailed": "Không thể thêm bình luận",
+      "placeholder": "Viết bình luận...",
+      "empty": "Chưa có bình luận nào."
+    },
+    "activity": {
+      "title": "Lịch sử hoạt động",
+      "empty": "Chưa có hoạt động nào."
+    },
+    "errors": {
+      "microphoneDenied": "Đã từ chối quyền truy cập micro",
+      "loadFailed": "Không thể tải chi tiết vấn đề"
+    }
   },
   "dashboard": {
     "title": "Tổng quan",

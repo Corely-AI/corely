@@ -37,9 +37,31 @@
   },
   "nav": {
     "dashboard": "Übersicht",
+    "portfolio": "Portfolio",
+    "rentals": {
+      "properties": "Immobilien"
+    },
+    "quotes": "Angebote",
+    "clients": "Kunden",
+    "tax": {
+      "overview": "Übersicht",
+      "filings": "Meldungen",
+      "payments": "Zahlungen",
+      "documents": "Dokumente",
+      "settings": "Einstellungen"
+    },
     "assistant": "Assistent",
     "expenses": "Ausgaben",
     "invoices": "Rechnungen",
+    "groups": {
+      "core": "Kernfunktionen",
+      "sales": "Verkauf",
+      "purchasing": "Einkauf",
+      "inventory": "Lager",
+      "finance": "Finanzen",
+      "settings": "Einstellungen",
+      "tax": "Steuern"
+    },
     "customers": "Kunden",
     "salesQuotes": "Angebote",
     "salesOrders": "Aufträge",
@@ -59,7 +81,107 @@
     "automation": "Automatisierung",
     "documents": "Dokumente",
     "hr": "Personal",
-    "cashManagement": "Kassenbuch"
+    "cashManagement": "Kassenbuch",
+    "workspace": "Workspace Einstellungen",
+    "profile": "Profil & Konto",
+    "members": "Teamverwaltung",
+    "roles": "Rollen & Rechte",
+    "paymentMethods": "Zahlungsmethoden",
+    "issues": "Probleme"
+  },
+  "issues": {
+    "title": "Probleme",
+    "reportTitle": "Neues Problem melden",
+    "unassigned": "Nicht zugewiesen",
+    "description": {
+      "empty": "Keine Beschreibung vorhanden."
+    },
+    "createdAt": "Erstellt am {{date}}",
+    "status": {
+      "change": "Status ändern",
+      "update": "Status aktualisieren",
+      "updated": "Status erfolgreich aktualisiert",
+      "updateFailed": "Status konnte nicht aktualisiert werden",
+      "resolved": "Problem gelöst",
+      "resolveFailed": "Problem konnte nicht als gelöst markiert werden",
+      "reopened": "Problem wiedereröffnet",
+      "reopenFailed": "Problem konnte nicht wiedereröffnet werden"
+    },
+    "actions": {
+      "resolve": "Lösen",
+      "reopen": "Wiedereröffnen"
+    },
+    "fields": {
+      "title": "Titel",
+      "priority": "Priorität",
+      "description": "Beschreibung",
+      "siteType": "Standorttyp",
+      "siteIdOptional": "Standort-ID (Optional)",
+      "customerIdOptional": "Kunden-ID (Optional)",
+      "manufacturerIdOptional": "Hersteller-ID (Optional)",
+      "transcriptOptional": "Sprachnotiz-Transkript (Optional)",
+      "site": "Standort",
+      "assignee": "Bearbeiter"
+    },
+    "placeholders": {
+      "priority": "Priorität auswählen",
+      "siteType": "Standorttyp auswählen"
+    },
+    "priority": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch",
+      "urgent": "Dringend"
+    },
+    "siteTypes": {
+      "field": "Feld",
+      "customer": "Kunde",
+      "manufacturer": "Hersteller"
+    },
+    "statuses": {
+      "NEW": "Neu",
+      "TRIAGED": "Triagiert",
+      "IN_PROGRESS": "In Bearbeitung",
+      "WAITING": "Wartend",
+      "RESOLVED": "Gelöst",
+      "CLOSED": "Geschlossen",
+      "REOPENED": "Wiedereröffnet"
+    },
+    "attachments": {
+      "title": "Anhänge",
+      "images": "Bilder",
+      "audio": "Audioaufnahmen",
+      "voiceNote": "Sprachnotiz",
+      "uploaded": "Hochgeladene Anhänge:",
+      "empty": "Keine Anhänge.",
+      "transcript": "Transkript: {{transcript}}"
+    },
+    "voiceNote": "Sprachnotiz",
+    "startRecording": "Aufnahme starten",
+    "stopRecording": "Aufnahme stoppen",
+    "submitting": "Wird gesendet...",
+    "submit": "Problem melden",
+    "speech": {
+      "liveTranscription": "Live-Transkription aktiviert",
+      "notAvailable": "Spracherkennung in diesem Browser nicht verfügbar"
+    },
+    "comments": {
+      "title": "Kommentare",
+      "addTitle": "Kommentar hinzufügen",
+      "add": "Kommentar hinzufügen",
+      "added": "Kommentar hinzugefügt",
+      "addFailed": "Kommentar konnte nicht hinzugefügt werden",
+      "placeholder": "Kommentar schreiben...",
+      "empty": "Noch keine Kommentare."
+    },
+    "activity": {
+      "title": "Aktivitätsverlauf",
+      "empty": "Keine Aktivität aufgezeichnet."
+    },
+    "errors": {
+      "microphoneDenied": "Mikrofonzugriff verweigert",
+      "loadFailed": "Problemdetails konnten nicht geladen werden"
+    }
   },
   "cashManagement": {
     "title": "Kassenbuch",

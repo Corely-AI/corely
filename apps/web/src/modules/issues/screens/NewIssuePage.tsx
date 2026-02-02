@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import type { AttachmentMetadata, UploadFileOutput } from "@corely/contracts";
 import { apiClient } from "@/lib/api-client";
 import { issuesApi } from "@/lib/issues-api";
+import { cmsApi, buildPublicFileUrl } from "@/lib/cms-api";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Input } from "@/shared/ui/input";
@@ -23,6 +24,7 @@ const SpeechRecognitionCtor =
 
 type UploadedAttachment = AttachmentMetadata & {
   name: string;
+  fileId?: string;
 };
 
 const fileToBase64 = (file: Blob) =>
@@ -53,7 +55,16 @@ export default function NewIssuePage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  type ImageState = {
+    id: string;
+    file: File;
+    previewUrl: string;
+    isUploading: boolean;
+    fileId?: string;
+    documentId?: string;
+  };
+
+  const [imageState, setImageState] = useState<ImageState[]>([]);
   const [audioFiles, setAudioFiles] = useState<File[]>([]);
   const [isRecording, setIsRecording] = useState(false);
   const [voiceNoteUrl, setVoiceNoteUrl] = useState<string | null>(null);
@@ -96,8 +107,17 @@ export default function NewIssuePage() {
     mutationFn: async (values: IssueFormValues) => {
       const attachments: UploadedAttachment[] = [];
 
-      for (const file of imageFiles) {
-        attachments.push(await uploadFile(file, "IMAGE"));
+      for (const img of imageState) {
+        if (img.documentId && img.fileId) {
+          attachments.push({
+            documentId: img.documentId,
+            fileId: img.fileId,
+            kind: "IMAGE",
+            mimeType: img.file.type || "application/octet-stream",
+            sizeBytes: img.file.size,
+            name: img.file.name,
+          });
+        }
       }
 
       for (const file of audioFiles) {
@@ -268,16 +288,134 @@ export default function NewIssuePage() {
             </div>
 
             <div className="space-y-3">
-              <Label>{t("issues.attachments.images")}</Label>
-              <Input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(event) => {
-                  const files = event.target.files ? Array.from(event.target.files) : [];
-                  setImageFiles(files);
-                }}
-              />
+              <div className="flex items-center justify-between">
+                <Label>{t("issues.attachments.images")}</Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    id="image-upload"
+                    onChange={async (event) => {
+                      const files = event.target.files ? Array.from(event.target.files) : [];
+                      if (!files.length) {
+                        return;
+                      }
+
+                      // Create temporary previews
+                      const newImages = files.map((file) => ({
+                        id: Math.random().toString(36).substring(7),
+                        file,
+                        previewUrl: URL.createObjectURL(file), // temp local url
+                        isUploading: true,
+                        fileId: undefined as string | undefined, // Will be populated after upload
+                        documentId: undefined as string | undefined,
+                      }));
+
+                      setImageState((prev) => [...prev, ...newImages]);
+
+                      // Upload files
+                      for (const image of newImages) {
+                        try {
+                          const uploaded = await cmsApi.uploadCmsAsset(image.file, {
+                            purpose: "issue-attachment",
+                            category: "issue",
+                          });
+
+                          setImageState((prev) =>
+                            prev.map((p) =>
+                              p.id === image.id
+                                ? {
+                                    ...p,
+                                    isUploading: false,
+                                    fileId: uploaded.fileId,
+                                    documentId: uploaded.documentId,
+                                    previewUrl: buildPublicFileUrl(uploaded.fileId), // Use public url after upload
+                                  }
+                                : p
+                            )
+                          );
+                        } catch (error) {
+                          console.error("Upload failed", error);
+                          toast.error(`Failed to upload ${image.file.name}`);
+                          setImageState((prev) => prev.filter((p) => p.id !== image.id));
+                        }
+                      }
+
+                      // Reset input
+                      event.target.value = "";
+                    }}
+                  />
+                  {imageState.length > 0 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setImageState([])}
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      {t("common.delete")}
+                    </Button>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById("image-upload")?.click()}
+                  >
+                    {t("issues.attachments.images")}
+                  </Button>
+                </div>
+              </div>
+
+              {imageState.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {imageState.map((image) => (
+                    <div
+                      key={image.id}
+                      className="group relative aspect-square rounded-md border overflow-hidden bg-muted"
+                    >
+                      <img
+                        src={image.previewUrl}
+                        alt="Preview"
+                        className={`w-full h-full object-cover transition-opacity ${image.isUploading ? "opacity-50" : "opacity-100"}`}
+                        onError={(e) => {
+                          if (image.isUploading) {
+                            return;
+                          } // Ignore errors during upload/switching
+                          (e.target as HTMLImageElement).src = image.previewUrl; // Fallback? Or just log
+                        }}
+                      />
+                      {image.isUploading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        </div>
+                      )}
+
+                      {!image.isUploading && (
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() =>
+                              setImageState((prev) => prev.filter((p) => p.id !== image.id))
+                            }
+                          >
+                            &times;
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-32 bg-muted flex items-center justify-center rounded-md border border-dashed text-muted-foreground text-sm">
+                  {t("issues.attachments.empty")}
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
