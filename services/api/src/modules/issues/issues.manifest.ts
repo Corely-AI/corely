@@ -7,8 +7,8 @@ export const issuesAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Issue tracking and management",
   dependencies: [],
-  capabilities: [],
-  permissions: [],
+  capabilities: ["issues.manage", "issues.voice"],
+  permissions: ["issues.read", "issues.write", "issues.delete", "issues.resolve", "issues.assign"],
   menu: [
     {
       id: "issues",
@@ -19,6 +19,7 @@ export const issuesAppManifest: AppManifest = {
       route: "/issues",
       icon: "Bug",
       order: 30,
+      requiresPermissions: ["issues.read"],
     },
   ],
 };

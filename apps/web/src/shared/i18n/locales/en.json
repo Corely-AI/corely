@@ -34,7 +34,12 @@
       "usd": "US Dollar",
       "gbp": "British Pound",
       "chf": "Swiss Franc"
-    }
+    },
+    "reset": "Reset",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "notes": "Notes"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -190,6 +195,49 @@
       "microphoneDenied": "Microphone access denied",
       "cameraDenied": "Camera access denied",
       "loadFailed": "Failed to load issue details"
+    }
+  },
+  "tax": {
+    "title": "Tax Center",
+    "subtitle": "Manage your tax profile, filings, and compliance",
+    "profile": {
+      "title": "Tax Profile",
+      "vatEnabled": "VAT/Sales Tax Registered",
+      "vatEnabledHelp": "Enable this if your business is registered for VAT or Sales Tax",
+      "country": "Tax Jurisdiction",
+      "countryHelp": "Select the primary country where your business is registered for tax",
+      "regime": "VAT Regime",
+      "usesAdvisor": "Use Tax Advisor / Bookkeeper",
+      "usesAdvisorHelp": "Enable if you work with an external professional for tax filings",
+      "vatIdOptional": "VAT/Tax ID (Optional)",
+      "filingFrequency": "Filing Frequency",
+      "accountingMethod": "Accounting Method",
+      "taxYearStartMonth": "Tax Year Start Month",
+      "localTaxOffice": "Local Tax Office",
+      "save": "Save Tax Profile"
+    },
+    "countries": {
+      "de": "Germany"
+    },
+    "regimes": {
+      "standardVat": "Standard VAT"
+    },
+    "filing": {
+      "quarterly": "Quarterly"
+    },
+    "accounting": {
+      "cashBasis": "Cash Basis",
+      "cashBasisHelp": "Revenue is recorded when cash is received",
+      "accrualBasisHelp": "Revenue is recorded when earned, regardless of when cash is received"
+    },
+    "placeholders": {
+      "vatId": "Enter your VAT ID (e.g., DE123456789)",
+      "month": "Select month",
+      "localTaxOffice": "Enter your local tax office name"
+    },
+    "consultant": {
+      "title": "Tax Consultant",
+      "save": "Save Consultant Info"
     }
   },
   "cashManagement": {

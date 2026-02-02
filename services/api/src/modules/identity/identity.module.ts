@@ -50,6 +50,7 @@ import { DeleteRoleUseCase } from "./application/use-cases/delete-role.usecase";
 import { GetPermissionCatalogUseCase } from "./application/use-cases/get-permission-catalog.usecase";
 import { GetRolePermissionsUseCase } from "./application/use-cases/get-role-permissions.usecase";
 import { UpdateRolePermissionsUseCase } from "./application/use-cases/update-role-permissions.usecase";
+import { SyncRolePermissionsFromManifestsUseCase } from "./application/use-cases/sync-role-permissions-from-manifests.usecase";
 
 @Module({
   imports: [DataModule, KernelModule, forwardRef(() => PlatformModule)],
@@ -133,6 +134,7 @@ import { UpdateRolePermissionsUseCase } from "./application/use-cases/update-rol
     GetPermissionCatalogUseCase,
     GetRolePermissionsUseCase,
     UpdateRolePermissionsUseCase,
+    SyncRolePermissionsFromManifestsUseCase,
 
     // Permission catalog
     PermissionCatalogRegistry,

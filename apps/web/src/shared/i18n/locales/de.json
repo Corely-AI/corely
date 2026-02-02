@@ -33,7 +33,12 @@
       "usd": "US-Dollar",
       "gbp": "Britisches Pfund",
       "chf": "Schweizer Franken"
-    }
+    },
+    "reset": "Zurücksetzen",
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "notes": "Notizen"
   },
   "nav": {
     "dashboard": "Übersicht",
@@ -184,6 +189,49 @@
       "microphoneDenied": "Mikrofonzugriff verweigert",
       "cameraDenied": "Kamerazugriff verweigert",
       "loadFailed": "Problemdetails konnten nicht geladen werden"
+    }
+  },
+  "tax": {
+    "title": "Steuerzentrum",
+    "subtitle": "Verwalten Sie Ihr Steuerprofil, Meldungen und Compliance",
+    "profile": {
+      "title": "Steuerprofil",
+      "vatEnabled": "Umsatzsteuerpflichtig",
+      "vatEnabledHelp": "Aktivieren Sie dies, wenn Ihr Unternehmen für die Umsatzsteuer registriert ist",
+      "country": "Steuerjurisdiktion",
+      "countryHelp": "Wählen Sie das primäre Land aus, in dem Ihr Unternehmen steuerlich registriert ist",
+      "regime": "Umsatzsteuer-Regelung",
+      "usesAdvisor": "Steuerberater / Buchhalter verwenden",
+      "usesAdvisorHelp": "Aktivieren Sie dies, wenn Sie mit einem externen Fachmann für Steuererklärungen zusammenarbeiten",
+      "vatIdOptional": "Umsatzsteuer-ID (Optional)",
+      "filingFrequency": "Meldezeitraum",
+      "accountingMethod": "Gewinnermittlungsart",
+      "taxYearStartMonth": "Beginn des Steuerjahres",
+      "localTaxOffice": "Zuständiges Finanzamt",
+      "save": "Steuerprofil speichern"
+    },
+    "countries": {
+      "de": "Deutschland"
+    },
+    "regimes": {
+      "standardVat": "Regelbesteuerung"
+    },
+    "filing": {
+      "quarterly": "Vierteljährlich"
+    },
+    "accounting": {
+      "cashBasis": "Einnahmen-Überschuss-Rechnung (EÜR)",
+      "cashBasisHelp": "Einnahmen werden erfasst, wenn sie zufließen",
+      "accrualBasisHelp": "Einnahmen werden erfasst, wenn sie entstehen, unabhängig vom Zahlungszeitpunkt"
+    },
+    "placeholders": {
+      "vatId": "Umsatzsteuer-ID eingeben (z.B. DE123456789)",
+      "month": "Monat wählen",
+      "localTaxOffice": "Name Ihres Finanzamtes eingeben"
+    },
+    "consultant": {
+      "title": "Steuerberater",
+      "save": "Beraterinfo speichern"
     }
   },
   "cashManagement": {

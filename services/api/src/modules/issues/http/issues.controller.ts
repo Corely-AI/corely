@@ -12,7 +12,7 @@ import {
 } from "@corely/contracts";
 import { parseListQuery, buildPageInfo } from "@/shared/http/pagination";
 import { buildUseCaseContext, resolveIdempotencyKey } from "@/shared/http/usecase-mappers";
-import { AuthGuard } from "../../identity";
+import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
 import { CreateIssueUseCase } from "../application/use-cases/create-issue.usecase";
 import { ListIssuesUseCase } from "../application/use-cases/list-issues.usecase";
 import { GetIssueUseCase } from "../application/use-cases/get-issue.usecase";
@@ -28,7 +28,7 @@ import {
 } from "../application/mappers/issue-dto.mapper";
 
 @Controller("issues")
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, RbacGuard)
 export class IssuesController {
   constructor(
     private readonly createIssueUseCase: CreateIssueUseCase,
@@ -42,6 +42,7 @@ export class IssuesController {
   ) {}
 
   @Post()
+  @RequirePermission("issues.write")
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = CreateIssueRequestSchema.parse(body);
     const ctx = buildUseCaseContext(req);
@@ -58,6 +59,7 @@ export class IssuesController {
   }
 
   @Get()
+  @RequirePermission("issues.read")
   async list(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const listQuery = parseListQuery(query, { defaultPageSize: 20 });
     const input = ListIssuesRequestSchema.parse({
@@ -86,6 +88,7 @@ export class IssuesController {
   }
 
   @Get(":issueId")
+  @RequirePermission("issues.read")
   async get(@Param("issueId") issueId: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const input = GetIssueRequestSchema.parse({ issueId });
@@ -104,6 +107,7 @@ export class IssuesController {
   }
 
   @Post(":issueId/comments")
+  @RequirePermission("issues.write")
   async addComment(@Param("issueId") issueId: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const input = AddIssueCommentRequestSchema.parse({
@@ -123,6 +127,7 @@ export class IssuesController {
   }
 
   @Post(":issueId/status")
+  @RequirePermission("issues.resolve")
   async changeStatus(
     @Param("issueId") issueId: string,
     @Body() body: unknown,
@@ -146,6 +151,7 @@ export class IssuesController {
   }
 
   @Post(":issueId/resolve")
+  @RequirePermission("issues.resolve")
   async resolve(@Param("issueId") issueId: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const input = ResolveIssueRequestSchema.parse({
@@ -165,6 +171,7 @@ export class IssuesController {
   }
 
   @Post(":issueId/reopen")
+  @RequirePermission("issues.resolve")
   async reopen(@Param("issueId") issueId: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const input = ReopenIssueRequestSchema.parse({ ...(body as object), issueId });
@@ -182,6 +189,7 @@ export class IssuesController {
   }
 
   @Post(":issueId/assign")
+  @RequirePermission("issues.assign")
   async assign(@Param("issueId") issueId: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const input = AssignIssueRequestSchema.parse({

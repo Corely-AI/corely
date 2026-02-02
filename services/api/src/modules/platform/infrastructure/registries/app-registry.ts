@@ -358,6 +358,7 @@ export class AppRegistry implements AppRegistryPort {
           defaultLabel: "Account & Profile",
           route: "/settings",
           icon: "User",
+          exact: true,
           order: 95,
         },
         {

@@ -33,7 +33,12 @@
       "usd": "Đô la Mỹ",
       "gbp": "Bảng Anh",
       "chf": "Franc Thụy Sĩ"
-    }
+    },
+    "reset": "Đặt lại",
+    "name": "Tên",
+    "email": "Email",
+    "phone": "Số điện thoại",
+    "notes": "Ghi chú"
   },
   "nav": {
     "dashboard": "Tổng quan",
@@ -182,6 +187,49 @@
     "errors": {
       "microphoneDenied": "Đã từ chối quyền truy cập micro",
       "loadFailed": "Không thể tải chi tiết vấn đề"
+    }
+  },
+  "tax": {
+    "title": "Trung tâm Thuế",
+    "subtitle": "Quản lý hồ sơ thuế, kê khai và tuân thủ",
+    "profile": {
+      "title": "Hồ sơ Thuế",
+      "vatEnabled": "Đã đăng ký Thuế GTGT",
+      "vatEnabledHelp": "Bật tính năng này nếu doanh nghiệp của bạn đã đăng ký thuế GTGT hoặc thuế bán hàng",
+      "country": "Quyền hạn Thuế",
+      "countryHelp": "Chọn quốc gia chính nơi doanh nghiệp của bạn đăng ký thuế",
+      "regime": "Chế độ Thuế GTGT",
+      "usesAdvisor": "Sử dụng Cố vấn Thuế / Kế toán",
+      "usesAdvisorHelp": "Bật nếu bạn làm việc với một chuyên gia bên ngoài để kê khai thuế",
+      "vatIdOptional": "Mã số thuế (Tùy chọn)",
+      "filingFrequency": "Tần suất Kê khai",
+      "accountingMethod": "Phương pháp Kế toán",
+      "taxYearStartMonth": "Tháng Bắt đầu Năm Thuế",
+      "localTaxOffice": "Cơ quan Thuế Địa phương",
+      "save": "Lưu Hồ sơ Thuế"
+    },
+    "countries": {
+      "de": "Đức"
+    },
+    "regimes": {
+      "standardVat": "Thuế GTGT Chuẩn"
+    },
+    "filing": {
+      "quarterly": "Hàng quý"
+    },
+    "accounting": {
+      "cashBasis": "Kế toán Tiền mặt",
+      "cashBasisHelp": "Doanh thu được ghi nhận khi nhận được tiền mặt",
+      "accrualBasisHelp": "Doanh thu được ghi nhận khi phát sinh, bất kể khi nào nhận được tiền mặt"
+    },
+    "placeholders": {
+      "vatId": "Nhập mã số thuế của bạn (ví dụ: DE123456789)",
+      "month": "Chọn tháng",
+      "localTaxOffice": "Nhập tên cơ quan thuế địa phương của bạn"
+    },
+    "consultant": {
+      "title": "Cố vấn Thuế",
+      "save": "Lưu thông tin cố vấn"
     }
   },
   "dashboard": {

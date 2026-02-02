@@ -27,6 +27,7 @@ import { UpdateRoleUseCase } from "../../application/use-cases/update-role.useca
 import { DeleteRoleUseCase } from "../../application/use-cases/delete-role.usecase";
 import { GetRolePermissionsUseCase } from "../../application/use-cases/get-role-permissions.usecase";
 import { UpdateRolePermissionsUseCase } from "../../application/use-cases/update-role-permissions.usecase";
+import { SyncRolePermissionsFromManifestsUseCase } from "../../application/use-cases/sync-role-permissions-from-manifests.usecase";
 import { buildRequestContext } from "../../../../shared/context/request-context";
 import { mapErrorToHttp } from "../../../../shared/errors/domain-errors";
 
@@ -42,7 +43,9 @@ export class RolesController {
     @Inject(GetRolePermissionsUseCase)
     private readonly getRolePermissionsUseCase: GetRolePermissionsUseCase,
     @Inject(UpdateRolePermissionsUseCase)
-    private readonly updateRolePermissionsUseCase: UpdateRolePermissionsUseCase
+    private readonly updateRolePermissionsUseCase: UpdateRolePermissionsUseCase,
+    @Inject(SyncRolePermissionsFromManifestsUseCase)
+    private readonly syncRolePermissionsFromManifests: SyncRolePermissionsFromManifestsUseCase
   ) {}
 
   @Get()
@@ -151,6 +154,24 @@ export class RolesController {
         context: buildRequestContext({ requestId, tenantId, actorUserId: userId }),
       });
       return { success: true };
+    } catch (error) {
+      throw this.mapDomainError(error);
+    }
+  }
+
+  @Post(":roleId/permissions/sync-manifests")
+  @RequirePermission("settings.roles.manage")
+  async syncRolePermissions(
+    @Param("roleId") roleId: string,
+    @CurrentTenantId() tenantId: string,
+    @CurrentUserId() userId: string
+  ) {
+    try {
+      return await this.syncRolePermissionsFromManifests.execute({
+        tenantId,
+        actorUserId: userId,
+        roleId,
+      });
     } catch (error) {
       throw this.mapDomainError(error);
     }
