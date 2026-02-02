@@ -4,6 +4,7 @@ import { type RichTextAiRequest, type RichTextAiResponse } from "@corely/contrac
 import { type RichTextAiConfig } from "./types";
 import { apiClient } from "@/lib/api-client";
 import { toast } from "sonner";
+import i18n from "@/shared/i18n";
 
 export function useRichTextAi(config: RichTextAiConfig, editor: any) {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,7 +54,7 @@ export function useRichTextAi(config: RichTextAiConfig, editor: any) {
       return data;
     } catch (err) {
       console.error(err);
-      toast.error("AI Action failed");
+      toast.error(i18n.t("ai.richText.actionFailed"));
       throw err;
     } finally {
       setIsLoading(false);

@@ -1,6 +1,7 @@
 import React from "react";
 import { ChevronsUpDown, PlusCircle, Briefcase, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useWorkspace } from "./workspace-provider";
 import {
   DropdownMenu,
@@ -21,6 +22,7 @@ interface WorkspaceSwitcherProps {
 export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed }) => {
   const { workspaces, activeWorkspaceId, setWorkspace, isLoading } = useWorkspace();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return <Skeleton className="h-10 w-full" />;
@@ -35,7 +37,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed 
         data-testid="workspace-create-shortcut"
       >
         <PlusCircle className={cn("h-4 w-4 shrink-0", !collapsed && "mr-2")} />
-        {!collapsed && <span>Create workspace</span>}
+        {!collapsed && <span>{t("workspace.create")}</span>}
       </Button>
     );
   }
@@ -73,7 +75,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed 
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64" align="start" data-testid="workspace-switcher-menu">
-        <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("workspace.title")}</DropdownMenuLabel>
         {workspaces.map((ws) => (
           <DropdownMenuItem
             key={ws.id}
@@ -99,7 +101,7 @@ export const WorkspaceSwitcher: React.FC<WorkspaceSwitcherProps> = ({ collapsed 
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate("/onboarding")}>
           <PlusCircle className="h-4 w-4 mr-2" />
-          Create workspace
+          {t("workspace.create")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

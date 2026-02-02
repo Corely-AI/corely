@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../shared/ui/card";
 import { Button } from "../../../shared/ui/button";
 import { Input } from "../../../shared/ui/input";
@@ -31,6 +32,7 @@ import {
 } from "../schemas/tax-consultant-form.schema";
 
 export default function TaxSettingsPage() {
+  const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
 
   // Load tax profile
@@ -81,11 +83,11 @@ export default function TaxSettingsPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["tax-profile"] });
-      toast.success("Tax profile saved successfully");
+      toast.success(t("tax.profile.saveSuccess"));
     },
     onError: (error) => {
       console.error("Error saving tax profile:", error);
-      toast.error("Failed to save tax profile");
+      toast.error(t("tax.profile.saveFailed"));
     },
   });
 
@@ -100,44 +102,44 @@ export default function TaxSettingsPage() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["tax-consultant"] });
-      toast.success("Consultant saved");
+      toast.success(t("tax.consultant.saveSuccess"));
     },
     onError: () => {
-      toast.error("Failed to save consultant");
+      toast.error(t("tax.consultant.saveFailed"));
     },
   });
 
   const regimeOptions = [
-    { value: "SMALL_BUSINESS", label: "Small Business (Kleinunternehmer §19 UStG)" },
-    { value: "STANDARD_VAT", label: "Standard VAT" },
-    { value: "VAT_EXEMPT", label: "I am VAT exempt according to §4 Tax Act" },
+    { value: "SMALL_BUSINESS", label: t("tax.regimes.smallBusiness") },
+    { value: "STANDARD_VAT", label: t("tax.regimes.standardVat") },
+    { value: "VAT_EXEMPT", label: t("tax.regimes.vatExempt") },
   ];
 
   const exemptionParagraphs = [
-    { value: "4.1", label: "§ 4 Nr. 1 - Export deliveries" },
-    { value: "4.2", label: "§ 4 Nr. 2 - Intra-community deliveries" },
-    { value: "4.8", label: "§ 4 Nr. 8 - Financial services" },
-    { value: "4.11", label: "§ 4 Nr. 11 - Insurance services" },
-    { value: "4.12", label: "§ 4 Nr. 12 - Letting and leasing" },
-    { value: "4.14", label: "§ 4 Nr. 14 - Medical services" },
-    { value: "4.21", label: "§ 4 Nr. 21 - Educational services" },
+    { value: "4.1", label: t("tax.exemptions.exportDeliveries") },
+    { value: "4.2", label: t("tax.exemptions.intraCommunityDeliveries") },
+    { value: "4.8", label: t("tax.exemptions.financialServices") },
+    { value: "4.11", label: t("tax.exemptions.insuranceServices") },
+    { value: "4.12", label: t("tax.exemptions.lettingLeasing") },
+    { value: "4.14", label: t("tax.exemptions.medicalServices") },
+    { value: "4.21", label: t("tax.exemptions.educationalServices") },
   ];
 
   const selectedRegime = form.watch("regime");
   const isVatExempt = selectedRegime === "VAT_EXEMPT";
 
-  const countryOptions = [{ value: "DE", label: "Germany (DE)" }];
+  const countryOptions = [{ value: "DE", label: t("tax.countries.de") }];
 
   const filingOptions = [
-    { value: "MONTHLY", label: "Monthly" },
-    { value: "QUARTERLY", label: "Quarterly" },
-    { value: "YEARLY", label: "Yearly" },
+    { value: "MONTHLY", label: t("tax.filing.monthly") },
+    { value: "QUARTERLY", label: t("tax.filing.quarterly") },
+    { value: "YEARLY", label: t("tax.filing.yearly") },
   ];
 
   if (isLoading || isLoadingConsultant) {
     return (
       <div className="p-6 lg:p-8">
-        <div className="text-muted-foreground">Loading tax settings...</div>
+        <div className="text-muted-foreground">{t("tax.loading")}</div>
       </div>
     );
   }
@@ -145,22 +147,20 @@ export default function TaxSettingsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Tax Settings</h1>
-        <p className="text-muted-foreground mt-1">Configure your tax profile and VAT settings</p>
+        <h1 className="text-3xl font-bold">{t("tax.title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("tax.subtitle")}</p>
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardHeader>
-            <CardTitle>Tax Profile</CardTitle>
+            <CardTitle>{t("tax.profile.title")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
-                <p className="font-medium text-foreground">VAT enabled</p>
-                <p className="text-sm text-muted-foreground">
-                  Toggle if you are registered and required to file VAT.
-                </p>
+                <p className="font-medium text-foreground">{t("tax.profile.vatEnabled")}</p>
+                <p className="text-sm text-muted-foreground">{t("tax.profile.vatEnabledHelp")}</p>
               </div>
               <Controller
                 control={form.control}
@@ -173,7 +173,7 @@ export default function TaxSettingsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor="country">{t("tax.profile.country")}</Label>
                 <Controller
                   control={form.control}
                   name="country"
@@ -185,7 +185,7 @@ export default function TaxSettingsPage() {
                       disabled
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select country" />
+                        <SelectValue placeholder={t("tax.placeholders.country")} />
                       </SelectTrigger>
                       <SelectContent>
                         {countryOptions.map((opt) => (
@@ -197,13 +197,11 @@ export default function TaxSettingsPage() {
                     </Select>
                   )}
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Currently only Germany is supported
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">{t("tax.profile.countryHelp")}</p>
               </div>
 
               <div>
-                <Label htmlFor="regime">Tax Regime</Label>
+                <Label htmlFor="regime">{t("tax.profile.regime")}</Label>
                 <Controller
                   control={form.control}
                   name="regime"
@@ -214,7 +212,7 @@ export default function TaxSettingsPage() {
                       defaultValue={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select tax regime" />
+                        <SelectValue placeholder={t("tax.placeholders.regime")} />
                       </SelectTrigger>
                       <SelectContent>
                         {regimeOptions.map((opt) => (
@@ -236,7 +234,7 @@ export default function TaxSettingsPage() {
 
             {isVatExempt && (
               <div className="rounded-lg border p-4 bg-muted/50">
-                <Label htmlFor="vatExemptionParagraph">VAT Exemption paragraph</Label>
+                <Label htmlFor="vatExemptionParagraph">{t("tax.profile.vatExemption")}</Label>
                 <div className="mt-2">
                   <Controller
                     control={form.control}
@@ -248,7 +246,7 @@ export default function TaxSettingsPage() {
                         defaultValue={field.value ?? undefined}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select exemption paragraph" />
+                          <SelectValue placeholder={t("tax.placeholders.vatExemption")} />
                         </SelectTrigger>
                         <SelectContent>
                           {exemptionParagraphs.map((opt) => (
@@ -261,8 +259,7 @@ export default function TaxSettingsPage() {
                     )}
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    Please select the paragraph of the German Tax Act (§4 UStG) that applies to your
-                    business.
+                    {t("tax.profile.vatExemptionHelp")}
                   </p>
                 </div>
               </div>
@@ -271,12 +268,9 @@ export default function TaxSettingsPage() {
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div>
                 <Label htmlFor="usesTaxAdvisor" className="base">
-                  I use a tax advisor (Steuerberater)
+                  {t("tax.profile.usesAdvisor")}
                 </Label>
-                <p className="text-sm text-muted-foreground">
-                  Checking this extends your annual tax filing deadline to February 28th of the
-                  second following year.
-                </p>
+                <p className="text-sm text-muted-foreground">{t("tax.profile.usesAdvisorHelp")}</p>
               </div>
               <Controller
                 control={form.control}
@@ -289,8 +283,12 @@ export default function TaxSettingsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="vatId">VAT ID (optional)</Label>
-                <Input id="vatId" {...form.register("vatId")} placeholder="DE123456789" />
+                <Label htmlFor="vatId">{t("tax.profile.vatIdOptional")}</Label>
+                <Input
+                  id="vatId"
+                  {...form.register("vatId")}
+                  placeholder={t("tax.placeholders.vatId")}
+                />
                 {form.formState.errors.vatId && (
                   <p className="text-sm text-destructive mt-1">
                     {form.formState.errors.vatId.message}
@@ -299,7 +297,7 @@ export default function TaxSettingsPage() {
               </div>
 
               <div>
-                <Label htmlFor="filingFrequency">Filing Frequency</Label>
+                <Label htmlFor="filingFrequency">{t("tax.profile.filingFrequency")}</Label>
                 <Controller
                   control={form.control}
                   name="filingFrequency"
@@ -310,7 +308,7 @@ export default function TaxSettingsPage() {
                       defaultValue={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select filing frequency" />
+                        <SelectValue placeholder={t("tax.placeholders.filingFrequency")} />
                       </SelectTrigger>
                       <SelectContent>
                         {filingOptions.map((opt) => (
@@ -325,7 +323,7 @@ export default function TaxSettingsPage() {
               </div>
 
               <div>
-                <Label htmlFor="vatAccountingMethod">VAT Accounting Method</Label>
+                <Label htmlFor="vatAccountingMethod">{t("tax.profile.accountingMethod")}</Label>
                 <Controller
                   control={form.control}
                   name="vatAccountingMethod"
@@ -336,26 +334,26 @@ export default function TaxSettingsPage() {
                       defaultValue={field.value}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select method" />
+                        <SelectValue placeholder={t("tax.placeholders.accountingMethod")} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="IST">Cash Basis (Ist-Versteuerung)</SelectItem>
-                        <SelectItem value="SOLL">Accrual Basis (Soll-Versteuerung)</SelectItem>
+                        <SelectItem value="IST">{t("tax.accounting.cashBasis")}</SelectItem>
+                        <SelectItem value="SOLL">{t("tax.accounting.accrualBasis")}</SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Cash Basis: You owe VAT when payment is received.
+                  {t("tax.accounting.cashBasisHelp")}
                   <br />
-                  Accrual Basis: You owe VAT when invoice is issued.
+                  {t("tax.accounting.accrualBasisHelp")}
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="taxYearStartMonth">Tax year start month</Label>
+                <Label htmlFor="taxYearStartMonth">{t("tax.profile.taxYearStartMonth")}</Label>
                 <Controller
                   control={form.control}
                   name="taxYearStartMonth"
@@ -365,12 +363,12 @@ export default function TaxSettingsPage() {
                       onValueChange={(val) => field.onChange(val ? Number(val) : null)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select month" />
+                        <SelectValue placeholder={t("tax.placeholders.month")} />
                       </SelectTrigger>
                       <SelectContent>
                         {[...Array(12)].map((_, idx) => (
                           <SelectItem key={idx + 1} value={String(idx + 1)}>
-                            {new Date(0, idx).toLocaleString("en", { month: "long" })}
+                            {new Date(0, idx).toLocaleString(i18n.language, { month: "long" })}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -379,10 +377,10 @@ export default function TaxSettingsPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="localTaxOfficeName">Local tax office</Label>
+                <Label htmlFor="localTaxOfficeName">{t("tax.profile.localTaxOffice")}</Label>
                 <Input
                   id="localTaxOfficeName"
-                  placeholder="Finanzamt Berlin"
+                  placeholder={t("tax.placeholders.localTaxOffice")}
                   {...form.register("localTaxOfficeName")}
                 />
               </div>
@@ -395,10 +393,10 @@ export default function TaxSettingsPage() {
                 onClick={() => form.reset()}
                 disabled={saveMutation.isPending}
               >
-                Reset
+                {t("common.reset")}
               </Button>
               <Button type="submit" variant="default" disabled={saveMutation.isPending}>
-                {saveMutation.isPending ? "Saving..." : "Save Tax Profile"}
+                {saveMutation.isPending ? t("common.saving") : t("tax.profile.save")}
               </Button>
             </div>
           </CardContent>
@@ -407,7 +405,7 @@ export default function TaxSettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Tax Consultant</CardTitle>
+          <CardTitle>{t("tax.consultant.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <form
@@ -416,27 +414,27 @@ export default function TaxSettingsPage() {
           >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label htmlFor="consultantName">Name</Label>
+                <Label htmlFor="consultantName">{t("common.name")}</Label>
                 <Input id="consultantName" {...consultantForm.register("name")} />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="consultantEmail">Email</Label>
+                <Label htmlFor="consultantEmail">{t("common.email")}</Label>
                 <Input id="consultantEmail" {...consultantForm.register("email")} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label htmlFor="consultantPhone">Phone</Label>
+                <Label htmlFor="consultantPhone">{t("common.phone")}</Label>
                 <Input id="consultantPhone" {...consultantForm.register("phone")} />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="consultantNotes">Notes</Label>
+                <Label htmlFor="consultantNotes">{t("common.notes")}</Label>
                 <Textarea id="consultantNotes" {...consultantForm.register("notes")} />
               </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button type="submit" disabled={saveConsultant.isPending}>
-                {saveConsultant.isPending ? "Saving..." : "Save consultant"}
+                {saveConsultant.isPending ? t("common.saving") : t("tax.consultant.save")}
               </Button>
             </div>
           </form>

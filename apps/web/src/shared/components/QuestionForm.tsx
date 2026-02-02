@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import {
   type CollectInputsToolInput,
@@ -184,6 +185,7 @@ const ensureRepeaterError = (fieldErrors: FieldErrors, fieldKey: string) => {
 };
 
 export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, disabled }) => {
+  const { t } = useTranslation();
   const fields = Array.isArray(request.fields) ? request.fields : [];
 
   const [values, setValues] = useState<Record<string, unknown>>(
@@ -466,10 +468,10 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
       return (
         <div className="space-y-3">
           {itemFields.length === 0 ? (
-            <div className="text-xs text-destructive">Repeater fields require itemFields.</div>
+            <div className="text-xs text-destructive">{t("forms.repeater.missingItemFields")}</div>
           ) : null}
           {value.length === 0 ? (
-            <div className="text-xs text-muted-foreground">No rows yet.</div>
+            <div className="text-xs text-muted-foreground">{t("forms.repeater.empty")}</div>
           ) : null}
           {layout === "cards" ? (
             <div className="space-y-3">
@@ -478,7 +480,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
                 const rowTitle =
                   rowLabelValue !== undefined && rowLabelValue !== ""
                     ? String(rowLabelValue)
-                    : `Row ${rowIndex + 1}`;
+                    : t("forms.repeater.row", { index: rowIndex + 1 });
                 return (
                   <Card key={`repeater-${field.key}-${rowIndex}`}>
                     <CardContent className="p-4 space-y-3">
@@ -496,7 +498,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
                             )
                           }
                         >
-                          {field.ui?.removeLabel || "Remove"}
+                          {field.ui?.removeLabel || t("forms.repeater.remove")}
                         </Button>
                       </div>
                       {itemFields.map((itemField) => {
@@ -582,7 +584,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
                         )
                       }
                     >
-                      {field.ui?.removeLabel || "Remove"}
+                      {field.ui?.removeLabel || t("forms.repeater.remove")}
                     </Button>
                   </div>
                 </div>
@@ -597,7 +599,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
             disabled={disabled || isSubmitting || value.length >= maxItems}
             onClick={() => handleChange(field.key, [...value, buildRepeaterRow(itemFields)])}
           >
-            {field.ui?.addLabel || "Add row"}
+            {field.ui?.addLabel || t("forms.repeater.add")}
           </Button>
         </div>
       );
@@ -650,7 +652,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
           })}
           <div className="flex gap-2">
             <Button type="submit" disabled={disabled || isSubmitting} size="sm">
-              {request.submitLabel || "Submit"}
+              {request.submitLabel || t("forms.submit")}
             </Button>
             {request.allowCancel !== false && (
               <Button
@@ -668,7 +670,7 @@ export const QuestionForm: React.FC<Props> = ({ request, onSubmit, onCancel, dis
                   });
                 }}
               >
-                {request.cancelLabel || "Cancel"}
+                {request.cancelLabel || t("common.cancel")}
               </Button>
             )}
           </div>

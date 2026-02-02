@@ -12,11 +12,14 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { v4 as uuidv4 } from "@lukeed/uuid";
 import { useShiftStore } from "@/stores/shiftStore";
+import { useTranslation } from "react-i18next";
 
 export default function OpenShiftScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { openShift, isLoading } = useShiftStore();
   const [startingCash, setStartingCash] = useState("");
+  const currencySymbol = t("common.currencySymbol");
 
   // TODO: Get actual register from settings/selection
   const registerId = "placeholder-register-id";
@@ -25,7 +28,7 @@ export default function OpenShiftScreen() {
     const startingCashCents = startingCash ? Math.round(parseFloat(startingCash) * 100) : null;
 
     if (startingCash && (isNaN(startingCashCents!) || startingCashCents! < 0)) {
-      Alert.alert("Invalid Amount", "Please enter a valid starting cash amount");
+      Alert.alert(t("shift.invalidAmountTitle"), t("shift.invalidAmountMessage"));
       return;
     }
 
@@ -36,14 +39,15 @@ export default function OpenShiftScreen() {
         startingCashCents,
       });
 
-      Alert.alert("Shift Opened", "Your shift has been opened successfully", [
+      Alert.alert(t("shift.openedTitle"), t("shift.openedMessage"), [
         {
-          text: "OK",
+          text: t("common.confirm"),
           onPress: () => router.replace("/(main)"),
         },
       ]);
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to open shift");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : t("shift.openFailed");
+      Alert.alert(t("common.error"), message);
     }
   };
 
@@ -53,7 +57,7 @@ export default function OpenShiftScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.title}>Open Shift</Text>
+        <Text style={styles.title}>{t("shift.openTitle")}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -62,18 +66,15 @@ export default function OpenShiftScreen() {
           <Ionicons name="time-outline" size={64} color="#2196f3" />
         </View>
 
-        <Text style={styles.description}>
-          Start a new shift to begin selling. Enter the starting cash amount in the register drawer
-          (optional).
-        </Text>
+        <Text style={styles.description}>{t("shift.openDescription")}</Text>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Starting Cash (Optional)</Text>
+          <Text style={styles.label}>{t("shift.startingCashOptional")}</Text>
           <View style={styles.inputContainer}>
-            <Text style={styles.currencySymbol}>$</Text>
+            <Text style={styles.currencySymbol}>{currencySymbol}</Text>
             <TextInput
               style={styles.input}
-              placeholder="0.00"
+              placeholder={t("common.amountPlaceholder")}
               value={startingCash}
               onChangeText={setStartingCash}
               keyboardType="decimal-pad"
@@ -81,7 +82,7 @@ export default function OpenShiftScreen() {
             />
           </View>
 
-          <Text style={styles.hint}>This helps track cash variance at the end of your shift</Text>
+          <Text style={styles.hint}>{t("shift.startingCashHint")}</Text>
         </View>
 
         <TouchableOpacity
@@ -94,7 +95,7 @@ export default function OpenShiftScreen() {
           ) : (
             <>
               <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
-              <Text style={styles.buttonText}>Open Shift</Text>
+              <Text style={styles.buttonText}>{t("shift.openShift")}</Text>
             </>
           )}
         </TouchableOpacity>

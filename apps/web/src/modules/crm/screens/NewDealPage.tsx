@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Calendar as CalendarIcon } from "lucide-react";
 import { z } from "zod";
 import { DEFAULT_PIPELINE_STAGES } from "@corely/contracts";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -30,30 +30,36 @@ import { customersApi } from "@/lib/customers-api";
 import { cn } from "@/shared/lib/utils";
 import { toast } from "sonner";
 
-const dealFormSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  partyId: z.string().min(1, "Customer is required"),
-  stageId: z.string().min(1, "Stage is required"),
-  amount: z
-    .string()
-    .optional()
-    .refine((val) => !val || !Number.isNaN(Number(val)), "Amount must be a number"),
-  currency: z.string().min(1, "Currency is required"),
-  expectedCloseDate: z.string().optional(),
-  probability: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || (!Number.isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 100),
-      "Probability must be between 0 and 100"
-    ),
-  notes: z.string().optional(),
-  tags: z.string().optional(),
-});
-
-type DealFormValues = z.infer<typeof dealFormSchema>;
-
 export default function NewDealPage() {
+  const { t, i18n } = useTranslation();
+  const dealFormSchema = useMemo(
+    () =>
+      z.object({
+        title: z.string().min(1, t("crm.deals.validation.titleRequired")),
+        partyId: z.string().min(1, t("crm.deals.validation.customerRequired")),
+        stageId: z.string().min(1, t("crm.deals.validation.stageRequired")),
+        amount: z
+          .string()
+          .optional()
+          .refine(
+            (val) => !val || !Number.isNaN(Number(val)),
+            t("crm.deals.validation.amountNumber")
+          ),
+        currency: z.string().min(1, t("crm.deals.validation.currencyRequired")),
+        expectedCloseDate: z.string().optional(),
+        probability: z
+          .string()
+          .optional()
+          .refine(
+            (val) => !val || (!Number.isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 100),
+            t("crm.deals.validation.probabilityRange")
+          ),
+        notes: z.string().optional(),
+        tags: z.string().optional(),
+      }),
+    [t]
+  );
+  type DealFormValues = z.infer<typeof dealFormSchema>;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -111,7 +117,7 @@ export default function NewDealPage() {
       return deal;
     },
     onSuccess: (deal) => {
-      toast.success("Deal created");
+      toast.success(t("crm.deals.created"));
       void queryClient.invalidateQueries({ queryKey: ["deals"] });
       if (deal?.id) {
         navigate(`/crm/deals/${deal.id}`);
@@ -121,7 +127,7 @@ export default function NewDealPage() {
     },
     onError: (error) => {
       console.error("Error creating deal:", error);
-      toast.error("Failed to create deal. Please try again.");
+      toast.error(t("crm.deals.createFailed"));
     },
   });
 
@@ -142,8 +148,8 @@ export default function NewDealPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">New Deal</h1>
-            <p className="text-muted-foreground">Create a new opportunity in your pipeline.</p>
+            <h1 className="text-h1 text-foreground">{t("crm.deals.newTitle")}</h1>
+            <p className="text-muted-foreground">{t("crm.deals.newSubtitle")}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -152,7 +158,7 @@ export default function NewDealPage() {
             onClick={() => navigate("/crm/deals")}
             disabled={createDealMutation.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             variant="accent"
@@ -160,7 +166,7 @@ export default function NewDealPage() {
             disabled={createDealMutation.isPending}
             data-testid="submit-deal-button"
           >
-            {createDealMutation.isPending ? "Saving..." : "Create Deal"}
+            {createDealMutation.isPending ? t("common.saving") : t("crm.deals.create")}
           </Button>
         </div>
       </div>
@@ -179,9 +185,9 @@ export default function NewDealPage() {
                   name="title"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Deal title</FormLabel>
+                      <FormLabel>{t("crm.deals.titleLabel")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Implementation for Acme Corp" {...field} />
+                        <Input placeholder={t("crm.deals.titlePlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -193,10 +199,10 @@ export default function NewDealPage() {
                   name="partyId"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Customer / Party</FormLabel>
+                      <FormLabel>{t("crm.deals.customer")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Select a customer or paste a party ID"
+                          placeholder={t("crm.deals.customerPlaceholder")}
                           list="deal-customer-options"
                           autoComplete="off"
                           {...field}
@@ -204,8 +210,8 @@ export default function NewDealPage() {
                       </FormControl>
                       <FormDescription>
                         {customersLoading
-                          ? "Loading customers..."
-                          : "Start typing to find an existing customer."}
+                          ? t("crm.deals.customersLoading")
+                          : t("crm.deals.customersHint")}
                       </FormDescription>
                       <FormMessage />
                       <datalist id="deal-customer-options">
@@ -224,11 +230,11 @@ export default function NewDealPage() {
                   name="stageId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Stage</FormLabel>
+                      <FormLabel>{t("crm.deals.stage")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select stage" />
+                            <SelectValue placeholder={t("crm.deals.stagePlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -249,7 +255,7 @@ export default function NewDealPage() {
                   name="expectedCloseDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Expected close date</FormLabel>
+                      <FormLabel>{t("crm.deals.expectedCloseLabel")}</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -261,7 +267,15 @@ export default function NewDealPage() {
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {closeDate ? format(closeDate, "PPP") : <span>Select a date</span>}
+                              {closeDate ? (
+                                closeDate.toLocaleDateString(i18n.language, {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })
+                              ) : (
+                                <span>{t("crm.deals.selectDate")}</span>
+                              )}
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
@@ -270,7 +284,7 @@ export default function NewDealPage() {
                             mode="single"
                             selected={closeDate}
                             onSelect={(date) =>
-                              field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                              field.onChange(date ? date.toISOString().slice(0, 10) : "")
                             }
                           />
                         </PopoverContent>
@@ -285,9 +299,15 @@ export default function NewDealPage() {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Amount</FormLabel>
+                      <FormLabel>{t("crm.deals.amount")}</FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" min="0" placeholder="0.00" {...field} />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder={t("crm.deals.amountPlaceholder")}
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -299,17 +319,17 @@ export default function NewDealPage() {
                   name="currency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Currency</FormLabel>
+                      <FormLabel>{t("crm.deals.currency")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select currency" />
+                            <SelectValue placeholder={t("crm.deals.currencyPlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="EUR">EUR (€)</SelectItem>
-                          <SelectItem value="USD">USD ($)</SelectItem>
-                          <SelectItem value="GBP">GBP (£)</SelectItem>
+                          <SelectItem value="EUR">{t("common.currencies.eur")}</SelectItem>
+                          <SelectItem value="USD">{t("common.currencies.usd")}</SelectItem>
+                          <SelectItem value="GBP">{t("common.currencies.gbp")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -322,14 +342,14 @@ export default function NewDealPage() {
                   name="probability"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Probability (%)</FormLabel>
+                      <FormLabel>{t("crm.deals.probabilityLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           min="0"
                           max="100"
                           step="1"
-                          placeholder="50"
+                          placeholder={t("crm.deals.probabilityPlaceholder")}
                           {...field}
                         />
                       </FormControl>
@@ -344,13 +364,9 @@ export default function NewDealPage() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes</FormLabel>
+                    <FormLabel>{t("common.notes")}</FormLabel>
                     <FormControl>
-                      <Textarea
-                        rows={4}
-                        placeholder="Context, next steps, stakeholders..."
-                        {...field}
-                      />
+                      <Textarea rows={4} placeholder={t("crm.deals.notesPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -362,12 +378,9 @@ export default function NewDealPage() {
                 name="tags"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tags</FormLabel>
+                    <FormLabel>{t("common.tags")}</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Comma separated tags (e.g. enterprise, pilot)"
-                        {...field}
-                      />
+                      <Input placeholder={t("crm.deals.tagsPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -379,8 +392,8 @@ export default function NewDealPage() {
           <div className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Pipeline</CardTitle>
-                <CardDescription>Stages used to track progress.</CardDescription>
+                <CardTitle>{t("crm.deals.pipelineTitle")}</CardTitle>
+                <CardDescription>{t("crm.deals.pipelineDescription")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {DEFAULT_PIPELINE_STAGES.map((stage) => (
@@ -390,7 +403,7 @@ export default function NewDealPage() {
                       <div className="text-muted-foreground">{stage.id}</div>
                     </div>
                     <Badge variant={stage.isClosedStage ? "outline" : "secondary"}>
-                      {stage.isClosedStage ? "Closed" : "Open"}
+                      {stage.isClosedStage ? t("common.closed") : t("common.open")}
                     </Badge>
                   </div>
                 ))}
@@ -399,13 +412,13 @@ export default function NewDealPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Tips</CardTitle>
-                <CardDescription>Keep deals actionable and owned.</CardDescription>
+                <CardTitle>{t("crm.deals.tipsTitle")}</CardTitle>
+                <CardDescription>{t("crm.deals.tipsSubtitle")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted-foreground">
-                <div>Use clear titles that state the problem and offer.</div>
-                <div>Set a close date and probability to improve forecasting.</div>
-                <div>Tag deals so you can filter them later.</div>
+                <div>{t("crm.deals.tipsOne")}</div>
+                <div>{t("crm.deals.tipsTwo")}</div>
+                <div>{t("crm.deals.tipsThree")}</div>
               </CardContent>
             </Card>
           </div>

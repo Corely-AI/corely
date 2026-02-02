@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,22 +8,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import type { DealDto } from "@corely/contracts";
-import { format } from "date-fns";
 import { cn } from "@/shared/lib/utils";
-
-const detailsSchema = z.object({
-  notes: z.string().optional(),
-  probability: z
-    .string()
-    .optional()
-    .refine(
-      (val) => !val || (!Number.isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 100),
-      "Probability must be between 0 and 100"
-    ),
-  expectedCloseDate: z.string().optional(),
-});
-
-type DetailFormValues = z.infer<typeof detailsSchema>;
+import { useTranslation } from "react-i18next";
 
 interface DealDetailsCardProps {
   deal: DealDto;
@@ -40,6 +26,23 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
   editing,
   onEditingChange,
 }) => {
+  const { t, i18n } = useTranslation();
+  const detailsSchema = useMemo(
+    () =>
+      z.object({
+        notes: z.string().optional(),
+        probability: z
+          .string()
+          .optional()
+          .refine(
+            (val) => !val || (!Number.isNaN(Number(val)) && Number(val) >= 0 && Number(val) <= 100),
+            t("crm.deals.probabilityValidation")
+          ),
+        expectedCloseDate: z.string().optional(),
+      }),
+    [t]
+  );
+  type DetailFormValues = z.infer<typeof detailsSchema>;
   const [isEditing, setIsEditing] = useState(editing ?? false);
 
   const form = useForm<DetailFormValues>({
@@ -93,7 +96,7 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
                 size="sm"
                 onClick={() => (onEditingChange ? onEditingChange(false) : setIsEditing(false))}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 size="sm"
@@ -101,7 +104,7 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
                 disabled={isSaving}
                 data-testid="save-deal-details"
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? t("common.saving") : t("common.save")}
               </Button>
             </>
           ) : (
@@ -110,7 +113,7 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
               size="sm"
               onClick={() => (onEditingChange ? onEditingChange(true) : setIsEditing(true))}
             >
-              Edit
+              {t("common.edit")}
             </Button>
           )}
         </div>
@@ -124,9 +127,9 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes</FormLabel>
+                    <FormLabel>{t("common.notes")}</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} placeholder="Add deal context or next steps" {...field} />
+                      <Textarea rows={4} placeholder={t("crm.deals.notesPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -138,7 +141,7 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
                   name="probability"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Probability (%)</FormLabel>
+                      <FormLabel>{t("crm.deals.probabilityLabel")}</FormLabel>
                       <FormControl>
                         <Input type="number" min="0" max="100" step="1" {...field} />
                       </FormControl>
@@ -151,7 +154,7 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
                   name="expectedCloseDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Expected close date</FormLabel>
+                      <FormLabel>{t("crm.deals.expectedCloseLabel")}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -165,33 +168,57 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
         ) : (
           <div className="space-y-3 text-sm">
             <div>
-              <p className="text-muted-foreground">Notes</p>
+              <p className="text-muted-foreground">{t("common.notes")}</p>
               <p className={cn("mt-1", !deal.notes && "text-muted-foreground")}>
-                {deal.notes || "No notes yet"}
+                {deal.notes || t("crm.deals.noNotes")}
               </p>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <p className="text-muted-foreground">Probability</p>
-                <p>{deal.probability !== null ? `${deal.probability}%` : "Not set"}</p>
+                <p className="text-muted-foreground">{t("crm.deals.probability")}</p>
+                <p>
+                  {deal.probability !== null
+                    ? t("crm.deals.probabilityValue", { probability: deal.probability })
+                    : t("common.notSet")}
+                </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Expected close</p>
+                <p className="text-muted-foreground">{t("crm.deals.expectedCloseTitle")}</p>
                 <p>
                   {deal.expectedCloseDate
-                    ? format(new Date(deal.expectedCloseDate), "PPP")
-                    : "Not set"}
+                    ? new Date(deal.expectedCloseDate).toLocaleDateString(i18n.language, {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : t("common.notSet")}
                 </p>
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <p className="text-muted-foreground">Created</p>
-                <p>{format(new Date(deal.createdAt), "PPp")}</p>
+                <p className="text-muted-foreground">{t("common.created")}</p>
+                <p>
+                  {new Date(deal.createdAt).toLocaleString(i18n.language, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Updated</p>
-                <p>{format(new Date(deal.updatedAt), "PPp")}</p>
+                <p className="text-muted-foreground">{t("common.updated")}</p>
+                <p>
+                  {new Date(deal.updatedAt).toLocaleString(i18n.language, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
               </div>
             </div>
           </div>

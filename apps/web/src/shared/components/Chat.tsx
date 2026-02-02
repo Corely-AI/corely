@@ -11,6 +11,7 @@ import { useRotatingStatusText } from "@/shared/components/chat/useRotatingStatu
 import { type StatusPhase } from "@/shared/components/chat/statusTexts";
 import { type CollectInputsToolInput, type CollectInputsToolOutput } from "@corely/contracts";
 import { cn } from "@/shared/lib/utils";
+import i18n from "@/shared/i18n";
 
 type ToolInvocationPart = {
   type: "dynamic-tool" | `tool-${string}` | "tool-call" | "tool-result";
@@ -79,7 +80,11 @@ const renderPart = (
       const request = part.input as CollectInputsToolInput | undefined;
       const isSubmitting = helpers.submittingToolIds.has(toolCallId);
       if (!request) {
-        return <span className="text-xs text-muted-foreground">Awaiting collect_inputs...</span>;
+        return (
+          <span className="text-xs text-muted-foreground">
+            {i18n.t("assistant.awaitingInputs")}
+          </span>
+        );
       }
       return (
         <QuestionForm
@@ -126,10 +131,11 @@ const renderPart = (
       return (
         <Card className="border-dashed border-accent/40 bg-accent/5 shadow-[0_20px_60px_-45px_rgba(0,0,0,0.6)]">
           <CardContent className="p-4 text-xs space-y-3">
-            <div className="font-semibold text-foreground">Approval required: {toolName}</div>
+            <div className="font-semibold text-foreground">
+              {i18n.t("assistant.approvalRequired", { toolName })}
+            </div>
             <div className="text-muted-foreground leading-relaxed">
-              The assistant wants to call <strong className="text-foreground">{toolName}</strong>.
-              Allow?
+              {i18n.t("assistant.approvalDescription", { toolName })}
             </div>
             <div className="flex gap-2">
               <Button
@@ -139,7 +145,7 @@ const renderPart = (
                   helpers.addToolApprovalResponse?.({ id: approvalId, approved: true })
                 }
               >
-                Allow
+                {i18n.t("common.allow")}
               </Button>
               <Button
                 size="sm"
@@ -148,7 +154,7 @@ const renderPart = (
                   helpers.addToolApprovalResponse?.({ id: approvalId, approved: false })
                 }
               >
-                Deny
+                {i18n.t("common.deny")}
               </Button>
             </div>
           </CardContent>
@@ -162,7 +168,7 @@ const renderPart = (
         return (
           <Card className="border-border/60 bg-background/70 shadow-[0_14px_40px_-30px_rgba(0,0,0,0.5)]">
             <CardContent className="p-4 text-xs space-y-2">
-              <div className="font-semibold">Tool result: {toolName}</div>
+              <div className="font-semibold">{i18n.t("assistant.toolResult", { toolName })}</div>
               <Markdown content={rawOutput} className="text-muted-foreground" />
             </CardContent>
           </Card>
@@ -171,7 +177,7 @@ const renderPart = (
       return (
         <Card className="border-border/60 bg-background/70 shadow-[0_14px_40px_-30px_rgba(0,0,0,0.5)]">
           <CardContent className="p-4 text-xs space-y-2">
-            <div className="font-semibold">Tool result: {toolName}</div>
+            <div className="font-semibold">{i18n.t("assistant.toolResult", { toolName })}</div>
             <pre className="whitespace-pre-wrap text-muted-foreground">
               {JSON.stringify(rawOutput, null, 2)}
             </pre>
@@ -183,7 +189,10 @@ const renderPart = (
     if (part.state === "output-error" || part.state === "output-denied") {
       return (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-          Tool {toolName} failed: {part.errorText ?? "Denied"}
+          {i18n.t("assistant.toolFailed", {
+            toolName,
+            reason: part.errorText ?? i18n.t("assistant.denied"),
+          })}
         </div>
       );
     }

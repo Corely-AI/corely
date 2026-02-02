@@ -24,7 +24,16 @@
     "error": "Đã xảy ra lỗi",
     "success": "Thành công",
     "currency": "VND",
-    "locale": "vi-VN"
+    "locale": "vi-VN",
+    "view": "Xem",
+    "status": "Trạng thái",
+    "unknown": "Không rõ",
+    "currencies": {
+      "eur": "Euro",
+      "usd": "Đô la Mỹ",
+      "gbp": "Bảng Anh",
+      "chf": "Franc Thụy Sĩ"
+    }
   },
   "nav": {
     "dashboard": "Tổng quan",
@@ -249,5 +258,214 @@
   },
   "errors": {
     "loadMenuFailed": "Không thể tải menu"
+  },
+  "accounting": {
+    "entryStatus": {
+      "draft": "Nháp",
+      "posted": "Đã ghi sổ",
+      "reversed": "Đã đảo"
+    },
+    "accountTypes": {
+      "asset": "Tài sản",
+      "liability": "Nợ phải trả",
+      "equity": "Vốn chủ sở hữu",
+      "income": "Doanh thu",
+      "expense": "Chi phí"
+    },
+    "accountSelect": {
+      "placeholder": "Chọn tài khoản...",
+      "searchPlaceholder": "Tìm tài khoản...",
+      "empty": "Không tìm thấy tài khoản."
+    },
+    "journalLines": {
+      "title": "Dòng bút toán",
+      "addLine": "Thêm dòng",
+      "emptyMessage": "Chưa có dòng nào. Nhấn \"{{action}}\" để bắt đầu.",
+      "account": "Tài khoản",
+      "type": "Loại",
+      "debit": "Nợ",
+      "credit": "Có",
+      "memo": "Diễn giải",
+      "memoOptional": "Diễn giải (tùy chọn)",
+      "minimumLines": "Cần tối thiểu 2 dòng",
+      "removeLine": "Xóa dòng",
+      "totals": "Tổng",
+      "imbalance": "Chênh lệch",
+      "balanced": "✓ Cân đối"
+    },
+    "journalEntries": {
+      "title": "Bút toán",
+      "subtitle": "Xem và quản lý tất cả bút toán kế toán",
+      "newEntry": "Bút toán mới",
+      "searchPlaceholder": "Tìm theo diễn giải hoặc số bút toán...",
+      "allStatuses": "Tất cả trạng thái",
+      "entries": "Bút toán",
+      "entriesFound": "Tìm thấy {{count}} bút toán",
+      "entriesFound_one": "Tìm thấy {{count}} bút toán",
+      "entriesFound_other": "Tìm thấy {{count}} bút toán",
+      "loading": "Đang tải bút toán...",
+      "emptyTitle": "Không tìm thấy bút toán",
+      "emptyAction": "Tạo bút toán đầu tiên",
+      "entryNumber": "Số bút toán",
+      "date": "Ngày",
+      "memo": "Diễn giải",
+      "amount": "Số tiền",
+      "linesCount": "{{count}} dòng",
+      "linesCount_one": "{{count}} dòng",
+      "linesCount_other": "{{count}} dòng"
+    },
+    "chartOfAccounts": {
+      "title": "Hệ thống tài khoản",
+      "subtitle": "Quản lý tài khoản kế toán",
+      "newAccount": "Tài khoản mới",
+      "searchPlaceholder": "Tìm theo mã hoặc tên...",
+      "allTypes": "Tất cả loại",
+      "allStatuses": "Tất cả trạng thái",
+      "activeOnly": "Chỉ đang hoạt động",
+      "inactiveOnly": "Chỉ không hoạt động",
+      "accounts": "Tài khoản",
+      "accountsFound": "Tìm thấy {{count}} tài khoản",
+      "accountsFound_one": "Tìm thấy {{count}} tài khoản",
+      "accountsFound_other": "Tìm thấy {{count}} tài khoản",
+      "loading": "Đang tải tài khoản...",
+      "empty": "Không có tài khoản phù hợp",
+      "code": "Mã",
+      "name": "Tên",
+      "type": "Loại",
+      "active": "Hoạt động",
+      "inactive": "Không hoạt động"
+    },
+    "dashboard": {
+      "title": "Kế toán",
+      "subtitle": "Quản lý sổ sách và báo cáo tài chính",
+      "newEntry": "Bút toán mới",
+      "newEntryDescription": "Tạo bút toán",
+      "chartOfAccounts": "Hệ thống tài khoản",
+      "activeAccounts": "Tài khoản đang hoạt động",
+      "journalEntries": "Bút toán",
+      "totalEntries": "Tổng bút toán",
+      "reports": "Báo cáo",
+      "reportsDescription": "Xem báo cáo tài chính",
+      "recentEntries": "Bút toán gần đây",
+      "recentEntriesDescription": "Bút toán mới nhất",
+      "noEntries": "Chưa có bút toán. Tạo bút toán đầu tiên để bắt đầu.",
+      "viewAllEntries": "Xem tất cả bút toán",
+      "quickLinks": "Liên kết nhanh",
+      "quickLinksDescription": "Tác vụ kế toán thường dùng",
+      "viewTrialBalance": "Xem bảng cân đối thử",
+      "viewProfitLoss": "Báo cáo lãi lỗ",
+      "settings": "Cài đặt kế toán"
+    },
+    "reports": {
+      "title": "Báo cáo tài chính",
+      "subtitle": "Truy cập báo cáo để phân tích dữ liệu tài chính",
+      "viewReport": "Xem báo cáo",
+      "aboutTitle": "Về báo cáo tài chính",
+      "aboutLine1": "Tất cả báo cáo được tạo theo thời gian thực từ các bút toán đã ghi sổ. Bút toán nháp không được tính.",
+      "aboutLine2": "Bạn có thể xuất báo cáo sang PDF hoặc Excel và lọc theo khoảng thời gian.",
+      "aboutLine3": "💡 Có sẵn phân tích AI trên từng báo cáo để giúp bạn hiểu xu hướng và bất thường.",
+      "trialBalance": {
+        "title": "Bảng cân đối thử",
+        "description": "Tóm tắt số dư các tài khoản để kiểm tra tổng Nợ bằng tổng Có"
+      },
+      "generalLedger": {
+        "title": "Sổ cái",
+        "description": "Lịch sử giao dịch chi tiết cho từng tài khoản"
+      },
+      "profitLoss": {
+        "title": "Báo cáo lãi lỗ",
+        "description": "Báo cáo kết quả kinh doanh thể hiện doanh thu, chi phí và lợi nhuận ròng"
+      },
+      "balanceSheet": {
+        "title": "Bảng cân đối kế toán",
+        "description": "Ảnh chụp tài sản, nợ phải trả và vốn chủ sở hữu tại một thời điểm"
+      }
+    },
+    "setup": {
+      "title": "Thiết lập kế toán",
+      "subtitle": "Cấu hình kế toán và hệ thống tài khoản để bắt đầu",
+      "basic": {
+        "title": "Thiết lập cơ bản",
+        "description": "Cấu hình các thiết lập kế toán cơ bản"
+      },
+      "baseCurrency": "Tiền tệ cơ sở",
+      "selectCurrency": "Chọn tiền tệ",
+      "baseCurrencyHelp": "Tiền tệ chính cho sổ sách kế toán",
+      "fiscalYearStart": "Bắt đầu năm tài chính",
+      "selectFiscalStart": "Chọn ngày bắt đầu năm tài chính",
+      "fiscalStart": {
+        "jan1": "1 Tháng 1 (Năm dương lịch)",
+        "apr1": "1 Tháng 4",
+        "jul1": "1 Tháng 7",
+        "oct1": "1 Tháng 10"
+      },
+      "fiscalYearHelp": "Thời điểm bắt đầu năm tài chính (ảnh hưởng đến kỳ kế toán)",
+      "periodLocking": "Bật khóa kỳ",
+      "periodLockingHelp": "Ngăn ghi sổ vào các kỳ đã đóng (khuyến nghị dùng khi vận hành)",
+      "chartOfAccountsTitle": "Hệ thống tài khoản",
+      "chartOfAccountsDescription": "Chọn mẫu có sẵn để bắt đầu (bạn có thể thêm tài khoản sau)",
+      "templates": {
+        "minimal": {
+          "label": "Tối giản (5 tài khoản)",
+          "description": "Thiết lập cơ bản cho nhu cầu kế toán rất đơn giản"
+        },
+        "freelancer": {
+          "label": "Freelancer (16 tài khoản)",
+          "description": "Phù hợp cho freelancer và tư vấn độc lập"
+        },
+        "smallBusiness": {
+          "label": "Doanh nghiệp nhỏ (35 tài khoản)",
+          "description": "Thiết lập toàn diện cho doanh nghiệp nhỏ"
+        },
+        "standard": {
+          "label": "Tiêu chuẩn (79 tài khoản) (Khuyến nghị)",
+          "description": "Hệ thống tài khoản đầy đủ cho hầu hết doanh nghiệp"
+        }
+      },
+      "next": {
+        "title": "Tiếp theo sẽ diễn ra",
+        "line1": "Mẫu hệ thống tài khoản đã chọn sẽ được tạo với tất cả tài khoản định sẵn",
+        "line2": "12 kỳ kế toán theo tháng sẽ được tạo cho năm tài chính hiện tại",
+        "line3": "Bạn có thể tùy chỉnh, thêm tài khoản mới và bắt đầu tạo bút toán",
+        "line4": "Tất cả báo cáo tài chính sẽ có sẵn ngay lập tức"
+      },
+      "settingUp": "Đang thiết lập...",
+      "complete": "Hoàn tất thiết lập"
+    },
+    "validation": {
+      "accountRequired": "Cần chọn tài khoản",
+      "amountPositive": "Số tiền phải lớn hơn 0",
+      "invalidDate": "Định dạng ngày không hợp lệ",
+      "memoRequired": "Cần nhập diễn giải",
+      "minimumLines": "Cần tối thiểu 2 dòng",
+      "debitsEqualCredits": "Tổng Nợ phải bằng tổng Có",
+      "accountCodeRequired": "Cần mã tài khoản",
+      "accountCodeMax": "Mã không được quá 20 ký tự",
+      "accountCodeFormat": "Mã chỉ gồm chữ in hoa, số và dấu gạch nối",
+      "accountNameRequired": "Cần tên tài khoản",
+      "accountNameMax": "Tên không được quá 100 ký tự"
+    },
+    "toasts": {
+      "accountCreated": "Đã tạo tài khoản \"{{name}}\"",
+      "accountCreateFailed": "Không thể tạo tài khoản: {{message}}",
+      "accountUpdated": "Đã cập nhật tài khoản \"{{name}}\"",
+      "accountUpdateFailed": "Không thể cập nhật tài khoản: {{message}}",
+      "journalEntryDraftCreated": "Đã tạo bút toán nháp",
+      "journalEntryCreateFailed": "Không thể tạo bút toán: {{message}}",
+      "journalEntryDraftUpdated": "Đã cập nhật bút toán nháp",
+      "journalEntryUpdateFailed": "Không thể cập nhật bút toán: {{message}}",
+      "journalEntryPosted": "Đã ghi sổ bút toán {{entryNumber}}",
+      "journalEntryPostFailed": "Không thể ghi sổ bút toán: {{message}}",
+      "journalEntryReversed": "Đã đảo bút toán. Gốc: {{original}}, Đảo: {{reversal}}",
+      "journalEntryReverseFailed": "Không thể đảo bút toán: {{message}}",
+      "setupCompleted": "Thiết lập kế toán thành công",
+      "setupFailed": "Không thể thiết lập kế toán: {{message}}",
+      "settingsUpdated": "Đã cập nhật cài đặt kế toán",
+      "settingsUpdateFailed": "Không thể cập nhật cài đặt: {{message}}",
+      "periodClosed": "Đã đóng kỳ {{name}}",
+      "periodCloseFailed": "Không thể đóng kỳ: {{message}}",
+      "periodReopened": "Đã mở lại kỳ {{name}}",
+      "periodReopenFailed": "Không thể mở lại kỳ: {{message}}"
+    }
   }
 }

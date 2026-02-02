@@ -24,7 +24,16 @@
     "error": "Etwas ist schief gelaufen",
     "success": "Erfolgreich",
     "currency": "EUR",
-    "locale": "de-DE"
+    "locale": "de-DE",
+    "view": "Ansehen",
+    "status": "Status",
+    "unknown": "Unbekannt",
+    "currencies": {
+      "eur": "Euro",
+      "usd": "US-Dollar",
+      "gbp": "Britisches Pfund",
+      "chf": "Schweizer Franken"
+    }
   },
   "nav": {
     "dashboard": "Übersicht",
@@ -259,5 +268,214 @@
   },
   "errors": {
     "loadMenuFailed": "Menü konnte nicht geladen werden"
+  },
+  "accounting": {
+    "entryStatus": {
+      "draft": "Entwurf",
+      "posted": "Gebucht",
+      "reversed": "Storniert"
+    },
+    "accountTypes": {
+      "asset": "Aktiva",
+      "liability": "Passiva",
+      "equity": "Eigenkapital",
+      "income": "Erträge",
+      "expense": "Aufwendungen"
+    },
+    "accountSelect": {
+      "placeholder": "Konto auswählen...",
+      "searchPlaceholder": "Konten suchen...",
+      "empty": "Kein Konto gefunden."
+    },
+    "journalLines": {
+      "title": "Buchungszeilen",
+      "addLine": "Zeile hinzufügen",
+      "emptyMessage": "Noch keine Zeilen. Klicken Sie auf \"{{action}}\", um zu beginnen.",
+      "account": "Konto",
+      "type": "Typ",
+      "debit": "Soll",
+      "credit": "Haben",
+      "memo": "Buchungstext",
+      "memoOptional": "Optionaler Buchungstext",
+      "minimumLines": "Mindestens 2 Zeilen erforderlich",
+      "removeLine": "Zeile entfernen",
+      "totals": "Summen",
+      "imbalance": "Differenz",
+      "balanced": "✓ Ausgeglichen"
+    },
+    "journalEntries": {
+      "title": "Buchungen",
+      "subtitle": "Alle Buchungen anzeigen und verwalten",
+      "newEntry": "Neue Buchung",
+      "searchPlaceholder": "Nach Buchungstext oder Nummer suchen...",
+      "allStatuses": "Alle Status",
+      "entries": "Buchungen",
+      "entriesFound": "{{count}} Buchungen gefunden",
+      "entriesFound_one": "{{count}} Buchung gefunden",
+      "entriesFound_other": "{{count}} Buchungen gefunden",
+      "loading": "Buchungen werden geladen...",
+      "emptyTitle": "Keine Buchungen gefunden",
+      "emptyAction": "Erste Buchung erstellen",
+      "entryNumber": "Buchungsnr.",
+      "date": "Datum",
+      "memo": "Buchungstext",
+      "amount": "Betrag",
+      "linesCount": "{{count}} Zeilen",
+      "linesCount_one": "{{count}} Zeile",
+      "linesCount_other": "{{count}} Zeilen"
+    },
+    "chartOfAccounts": {
+      "title": "Kontenplan",
+      "subtitle": "Verwalten Sie Ihre Sachkonten",
+      "newAccount": "Neues Konto",
+      "searchPlaceholder": "Nach Kontocode oder Name suchen...",
+      "allTypes": "Alle Typen",
+      "allStatuses": "Alle Status",
+      "activeOnly": "Nur aktiv",
+      "inactiveOnly": "Nur inaktiv",
+      "accounts": "Konten",
+      "accountsFound": "{{count}} Konten gefunden",
+      "accountsFound_one": "{{count}} Konto gefunden",
+      "accountsFound_other": "{{count}} Konten gefunden",
+      "loading": "Konten werden geladen...",
+      "empty": "Keine Konten gefunden, die Ihren Kriterien entsprechen",
+      "code": "Code",
+      "name": "Name",
+      "type": "Typ",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "dashboard": {
+      "title": "Buchhaltung",
+      "subtitle": "Verwalten Sie Ihre Finanzdaten und Berichte",
+      "newEntry": "Neue Buchung",
+      "newEntryDescription": "Buchung erstellen",
+      "chartOfAccounts": "Kontenplan",
+      "activeAccounts": "Aktive Konten",
+      "journalEntries": "Buchungen",
+      "totalEntries": "Buchungen gesamt",
+      "reports": "Berichte",
+      "reportsDescription": "Finanzberichte anzeigen",
+      "recentEntries": "Letzte Buchungen",
+      "recentEntriesDescription": "Neueste Buchungen",
+      "noEntries": "Noch keine Buchungen. Erstellen Sie Ihre erste Buchung, um zu beginnen.",
+      "viewAllEntries": "Alle Buchungen anzeigen",
+      "quickLinks": "Schnellzugriff",
+      "quickLinksDescription": "Häufige Buchhaltungsaufgaben",
+      "viewTrialBalance": "Saldenliste anzeigen",
+      "viewProfitLoss": "GuV-Bericht",
+      "settings": "Buchhaltungseinstellungen"
+    },
+    "reports": {
+      "title": "Finanzberichte",
+      "subtitle": "Greifen Sie auf umfassende Berichte zur Analyse Ihrer Finanzdaten zu",
+      "viewReport": "Bericht anzeigen",
+      "aboutTitle": "Über Finanzberichte",
+      "aboutLine1": "Alle Berichte werden in Echtzeit aus Ihren gebuchten Buchungen erstellt. Entwürfe werden nicht berücksichtigt.",
+      "aboutLine2": "Sie können Berichte als PDF oder Excel exportieren und Zeiträume filtern.",
+      "aboutLine3": "💡 KI-gestützte Einblicke stehen in jedem Bericht zur Verfügung, um Trends und Anomalien zu verstehen.",
+      "trialBalance": {
+        "title": "Saldenliste",
+        "description": "Zusammenfassung aller Kontensalden, um Soll und Haben auszugleichen"
+      },
+      "generalLedger": {
+        "title": "Hauptbuch",
+        "description": "Detaillierte Buchungshistorie für einzelne Konten"
+      },
+      "profitLoss": {
+        "title": "Gewinn- und Verlustrechnung",
+        "description": "Erfolgsrechnung mit Erträgen, Aufwendungen und Nettoergebnis"
+      },
+      "balanceSheet": {
+        "title": "Bilanz",
+        "description": "Übersicht über Aktiva, Passiva und Eigenkapital zu einem Stichtag"
+      }
+    },
+    "setup": {
+      "title": "Buchhaltung einrichten",
+      "subtitle": "Konfigurieren Sie Ihre Buchhaltung und den Kontenplan, um zu starten",
+      "basic": {
+        "title": "Grundeinstellungen",
+        "description": "Legen Sie Ihre grundlegenden Buchhaltungspräferenzen fest"
+      },
+      "baseCurrency": "Basiswährung",
+      "selectCurrency": "Währung auswählen",
+      "baseCurrencyHelp": "Die primäre Währung für Ihre Buchhaltungsdaten",
+      "fiscalYearStart": "Beginn des Geschäftsjahres",
+      "selectFiscalStart": "Beginn des Geschäftsjahres auswählen",
+      "fiscalStart": {
+        "jan1": "1. Januar (Kalenderjahr)",
+        "apr1": "1. April",
+        "jul1": "1. Juli",
+        "oct1": "1. Oktober"
+      },
+      "fiscalYearHelp": "Wann Ihr Geschäftsjahr beginnt (wirkt sich auf Perioden aus)",
+      "periodLocking": "Periodensperre aktivieren",
+      "periodLockingHelp": "Buchungen in geschlossenen Perioden verhindern (empfohlen für produktiven Einsatz)",
+      "chartOfAccountsTitle": "Kontenplan",
+      "chartOfAccountsDescription": "Wählen Sie eine Vorlage (Sie können später weitere Konten hinzufügen)",
+      "templates": {
+        "minimal": {
+          "label": "Minimal (5 Konten)",
+          "description": "Basis-Setup für sehr einfache Anforderungen"
+        },
+        "freelancer": {
+          "label": "Freelancer (16 Konten)",
+          "description": "Ideal für Freiberufler und Berater"
+        },
+        "smallBusiness": {
+          "label": "Kleines Unternehmen (35 Konten)",
+          "description": "Umfassendes Setup für kleine Unternehmen"
+        },
+        "standard": {
+          "label": "Standard (79 Konten) (Empfohlen)",
+          "description": "Vollständiger Kontenplan für die meisten Unternehmen"
+        }
+      },
+      "next": {
+        "title": "Was als Nächstes passiert",
+        "line1": "Die ausgewählte Kontenplan-Vorlage wird mit allen vordefinierten Konten erstellt",
+        "line2": "12 monatliche Buchhaltungsperioden werden für das aktuelle Geschäftsjahr erstellt",
+        "line3": "Sie können Konten anpassen, neue hinzufügen und Buchungen erstellen",
+        "line4": "Alle Finanzberichte sind sofort verfügbar"
+      },
+      "settingUp": "Einrichtung läuft...",
+      "complete": "Einrichtung abschließen"
+    },
+    "validation": {
+      "accountRequired": "Konto ist erforderlich",
+      "amountPositive": "Betrag muss positiv sein",
+      "invalidDate": "Ungültiges Datumsformat",
+      "memoRequired": "Buchungstext ist erforderlich",
+      "minimumLines": "Mindestens 2 Zeilen sind erforderlich",
+      "debitsEqualCredits": "Soll und Haben müssen übereinstimmen",
+      "accountCodeRequired": "Kontocode ist erforderlich",
+      "accountCodeMax": "Code darf höchstens 20 Zeichen lang sein",
+      "accountCodeFormat": "Code darf nur Großbuchstaben, Zahlen und Bindestriche enthalten",
+      "accountNameRequired": "Kontoname ist erforderlich",
+      "accountNameMax": "Name darf höchstens 100 Zeichen lang sein"
+    },
+    "toasts": {
+      "accountCreated": "Konto \"{{name}}\" erfolgreich erstellt",
+      "accountCreateFailed": "Konto konnte nicht erstellt werden: {{message}}",
+      "accountUpdated": "Konto \"{{name}}\" erfolgreich aktualisiert",
+      "accountUpdateFailed": "Konto konnte nicht aktualisiert werden: {{message}}",
+      "journalEntryDraftCreated": "Entwurfsbuchung erfolgreich erstellt",
+      "journalEntryCreateFailed": "Buchung konnte nicht erstellt werden: {{message}}",
+      "journalEntryDraftUpdated": "Entwurfsbuchung erfolgreich aktualisiert",
+      "journalEntryUpdateFailed": "Buchung konnte nicht aktualisiert werden: {{message}}",
+      "journalEntryPosted": "Buchung {{entryNumber}} erfolgreich gebucht",
+      "journalEntryPostFailed": "Buchung konnte nicht gebucht werden: {{message}}",
+      "journalEntryReversed": "Buchung storniert. Original: {{original}}, Storno: {{reversal}}",
+      "journalEntryReverseFailed": "Buchung konnte nicht storniert werden: {{message}}",
+      "setupCompleted": "Buchhaltung erfolgreich eingerichtet",
+      "setupFailed": "Buchhaltung konnte nicht eingerichtet werden: {{message}}",
+      "settingsUpdated": "Buchhaltungseinstellungen aktualisiert",
+      "settingsUpdateFailed": "Einstellungen konnten nicht aktualisiert werden: {{message}}",
+      "periodClosed": "Periode {{name}} erfolgreich geschlossen",
+      "periodCloseFailed": "Periode konnte nicht geschlossen werden: {{message}}",
+      "periodReopened": "Periode {{name}} erfolgreich geöffnet",
+      "periodReopenFailed": "Periode konnte nicht geöffnet werden: {{message}}"
+    }
   }
 }

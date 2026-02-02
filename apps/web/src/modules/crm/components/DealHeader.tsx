@@ -9,10 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { MoreHorizontal, Copy, Pencil, Trophy, XOctagon } from "lucide-react";
-import { formatMoney } from "@/shared/lib/formatters";
+import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import type { DealDto } from "@corely/contracts";
 import { DealStatusBadge } from "./DealStatusBadge";
 import { DealStageSelect } from "./DealStageSelect";
+import { useTranslation } from "react-i18next";
 
 interface DealHeaderProps {
   deal: DealDto;
@@ -33,16 +34,17 @@ export const DealHeader: React.FC<DealHeaderProps> = ({
   onMarkLost,
   onDelete,
 }) => {
+  const { t, i18n } = useTranslation();
   const amount = useMemo(() => {
     if (deal.amountCents === null) {
-      return "No amount";
+      return t("crm.deals.noAmount");
     }
     try {
-      return formatMoney(deal.amountCents, "en-US", deal.currency);
+      return formatMoney(deal.amountCents, i18n.t("common.locale"), deal.currency);
     } catch {
       return `${deal.amountCents / 100} ${deal.currency}`;
     }
-  }, [deal.amountCents, deal.currency]);
+  }, [deal.amountCents, deal.currency, i18n.language]);
 
   const copyLink = async () => {
     const url = window.location.href;
@@ -65,11 +67,17 @@ export const DealHeader: React.FC<DealHeaderProps> = ({
             onChange={(value) => onChangeStage?.(value)}
             showBadge
           />
-          {deal.probability !== null && <span>• Probability: {deal.probability}%</span>}
+          {deal.probability !== null && (
+            <span>• {t("crm.deals.probability", { probability: deal.probability })}</span>
+          )}
           {deal.expectedCloseDate && (
             <>
               <span>•</span>
-              <span>Close: {deal.expectedCloseDate}</span>
+              <span>
+                {t("crm.deals.expectedClose", {
+                  date: formatDate(deal.expectedCloseDate, i18n.t("common.locale")),
+                })}
+              </span>
             </>
           )}
         </div>
@@ -78,12 +86,12 @@ export const DealHeader: React.FC<DealHeaderProps> = ({
       <div className="flex items-center gap-2">
         <Button variant="outline" onClick={copyLink} size="sm">
           <Copy className="h-4 w-4 mr-1" />
-          Copy link
+          {t("common.copyLink")}
         </Button>
         {onMarkWon && (
           <Button variant="accent" size="sm" onClick={onMarkWon}>
             <Trophy className="h-4 w-4 mr-1" />
-            Mark won
+            {t("crm.deals.markWon")}
           </Button>
         )}
         <DropdownMenu>
@@ -93,23 +101,23 @@ export const DealHeader: React.FC<DealHeaderProps> = ({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {onEdit && (
               <DropdownMenuItem onClick={onEdit}>
                 <Pencil className="mr-2 h-4 w-4" />
-                Edit deal
+                {t("crm.deals.edit")}
               </DropdownMenuItem>
             )}
             {onMarkLost && (
               <DropdownMenuItem onClick={onMarkLost}>
                 <XOctagon className="mr-2 h-4 w-4" />
-                Mark lost
+                {t("crm.deals.markLost")}
               </DropdownMenuItem>
             )}
             {onDelete && (
               <DropdownMenuItem className="text-destructive" onClick={onDelete}>
-                Delete deal
+                {t("crm.deals.delete")}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>

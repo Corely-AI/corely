@@ -3,10 +3,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useCartStore } from "@/stores/cartStore";
 import { SaleBuilder } from "@corely/pos-core";
+import { useTranslation } from "react-i18next";
 
 const saleBuilder = new SaleBuilder();
 
 export default function CartScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { items, updateQuantity, removeItem, clearCart, getTotals } = useCartStore();
   const totals = getTotals();
@@ -34,8 +36,8 @@ export default function CartScreen() {
       <View style={styles.container}>
         <View style={styles.emptyState}>
           <Ionicons name="cart-outline" size={64} color="#999" />
-          <Text style={styles.emptyTitle}>Cart is Empty</Text>
-          <Text style={styles.emptyText}>Add products to start a new sale</Text>
+          <Text style={styles.emptyTitle}>{t("cart.emptyTitle")}</Text>
+          <Text style={styles.emptyText}>{t("cart.emptyDescription")}</Text>
         </View>
       </View>
     );
@@ -57,7 +59,11 @@ export default function CartScreen() {
             <View style={styles.cartItem}>
               <View style={styles.itemInfo}>
                 <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemPrice}>${(item.unitPriceCents / 100).toFixed(2)} each</Text>
+                <Text style={styles.itemPrice}>
+                  {t("cart.unitPriceEach", {
+                    price: `$${(item.unitPriceCents / 100).toFixed(2)}`,
+                  })}
+                </Text>
               </View>
 
               <View style={styles.quantityControls}>
@@ -88,7 +94,7 @@ export default function CartScreen() {
         ListFooterComponent={
           <View style={styles.footer}>
             <TouchableOpacity style={styles.clearButton} onPress={clearCart}>
-              <Text style={styles.clearButtonText}>Clear Cart</Text>
+              <Text style={styles.clearButtonText}>{t("cart.clear")}</Text>
             </TouchableOpacity>
           </View>
         }
@@ -96,21 +102,21 @@ export default function CartScreen() {
 
       <View style={styles.totalsContainer}>
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Subtotal</Text>
+          <Text style={styles.totalLabel}>{t("common.subtotal")}</Text>
           <Text style={styles.totalValue}>${(totals.subtotalCents / 100).toFixed(2)}</Text>
         </View>
         <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Tax</Text>
+          <Text style={styles.totalLabel}>{t("common.tax")}</Text>
           <Text style={styles.totalValue}>${(totals.taxCents / 100).toFixed(2)}</Text>
         </View>
         <View style={[styles.totalRow, styles.grandTotalRow]}>
-          <Text style={styles.grandTotalLabel}>Total</Text>
+          <Text style={styles.grandTotalLabel}>{t("common.total")}</Text>
           <Text style={styles.grandTotalValue}>${(totals.totalCents / 100).toFixed(2)}</Text>
         </View>
       </View>
 
       <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
-        <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+        <Text style={styles.checkoutButtonText}>{t("cart.checkout")}</Text>
       </TouchableOpacity>
     </View>
   );
