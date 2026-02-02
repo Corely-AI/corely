@@ -14,10 +14,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   declare salesOrderLine: any;
   declare salesQuote: any;
   declare salesQuoteLine: any;
-  declare issue: any;
-  declare issueComment: any;
-  declare issueAttachment: any;
-  declare issueActivity: any;
+
   private pool: Pool | null;
   private readonly skipConnect: boolean;
 
