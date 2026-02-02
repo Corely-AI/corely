@@ -22,3 +22,5 @@ storageState.json
 services/api/pdfs/
 .env.prod
 gcp-key.json
+.vercel
+.env*.local
