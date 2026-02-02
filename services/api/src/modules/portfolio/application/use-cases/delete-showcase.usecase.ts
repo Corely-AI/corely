@@ -20,9 +20,7 @@ import { assertPortfolioWrite } from "../../policies/portfolio-policies";
 @RequireTenant()
 @Injectable()
 export class DeleteShowcaseUseCase extends BaseUseCase<{ showcaseId: string }, { deleted: true }> {
-  constructor(
-    @Inject(SHOWCASE_REPOSITORY_PORT) private readonly repo: ShowcaseRepositoryPort
-  ) {
+  constructor(@Inject(SHOWCASE_REPOSITORY_PORT) private readonly repo: ShowcaseRepositoryPort) {
     super({ logger: new NoopLogger() });
   }
 

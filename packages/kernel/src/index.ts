@@ -35,3 +35,4 @@ export * from "./auditing";
 export * from "./identity";
 export * from "./party";
 export * from "./idempotency";
+export * from "./money";

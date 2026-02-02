@@ -11,6 +11,8 @@ model RentalProperty {
   maxGuests       Int?
   coverImageFileId String?
   publishedAt     DateTime?      @db.Timestamptz(6)
+  price           Decimal?       @db.Decimal(19, 4)
+  currency        String?          @db.VarChar(3)
   createdAt       DateTime       @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime       @updatedAt @db.Timestamptz(6)
 

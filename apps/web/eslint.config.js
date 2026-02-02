@@ -4,7 +4,7 @@ import tseslint from "typescript-eslint";
 import config from "@corely/eslint-config";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  { ignores: ["dist", "vite.config.ts", "tailwind.config.ts"] },
   config.base,
   config.typescript,
   config.react,

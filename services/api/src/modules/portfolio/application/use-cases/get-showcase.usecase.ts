@@ -22,9 +22,7 @@ import { assertPortfolioRead } from "../../policies/portfolio-policies";
 @RequireTenant()
 @Injectable()
 export class GetShowcaseUseCase extends BaseUseCase<{ showcaseId: string }, PortfolioShowcase> {
-  constructor(
-    @Inject(SHOWCASE_REPOSITORY_PORT) private readonly repo: ShowcaseRepositoryPort
-  ) {
+  constructor(@Inject(SHOWCASE_REPOSITORY_PORT) private readonly repo: ShowcaseRepositoryPort) {
     super({ logger: new NoopLogger() });
   }
 

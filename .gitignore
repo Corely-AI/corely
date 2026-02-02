@@ -11,6 +11,7 @@ coverage
 !.env.e2e.example
 bun.lockb
 *.log
+.eslintcache
 
 # E2E test artifacts
 test-results/
@@ -19,3 +20,5 @@ storageState.json
 .claude/settings.local.json
 .env.test
 services/api/pdfs/
+.env.prod
+gcp-key.json

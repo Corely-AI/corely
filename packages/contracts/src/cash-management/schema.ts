@@ -20,8 +20,8 @@ export const CashEntrySchema = z.object({
   tenantId: z.string(),
   registerId: z.string(),
   type: z.nativeEnum(CashEntryType),
-  amountCents: z.number().int().positive(), // Absolute value representation often handy, or signed? 
-  // Prompt says "Cash Entries (cash-in / cash-out)". 
+  amountCents: z.number().int().positive(), // Absolute value representation often handy, or signed?
+  // Prompt says "Cash Entries (cash-in / cash-out)".
   // Let's keep amount positive and use type to determine direction.
   sourceType: z.nativeEnum(CashEntrySourceType),
   description: z.string(),

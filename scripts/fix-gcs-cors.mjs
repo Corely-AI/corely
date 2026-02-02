@@ -5,7 +5,8 @@ import path from "path";
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 const projectId = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCP_PROJECT_ID;
-const credentialsRaw = process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GCP_STORAGE_SERVICE_ACCOUNT;
+const credentialsRaw =
+  process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GCP_STORAGE_SERVICE_ACCOUNT;
 const bucketName = process.env.STORAGE_BUCKET || process.env.GCP_BUCKET_NAME;
 
 if (!bucketName) {
@@ -15,7 +16,11 @@ if (!bucketName) {
 
 const tryParseJson = (val) => {
   if (!val || !val.trim().startsWith("{")) return undefined;
-  try { return JSON.parse(val); } catch { return undefined; }
+  try {
+    return JSON.parse(val);
+  } catch {
+    return undefined;
+  }
 };
 
 const credentials = tryParseJson(credentialsRaw);
@@ -35,7 +40,13 @@ async function fixCors() {
         maxAgeSeconds: 3600,
         method: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
         origin: ["http://localhost:8080", "http://localhost:3000", "http://localhost:5173"],
-        responseHeader: ["Content-Type", "Authorization", "Content-Length", "User-Agent", "x-goog-resumable"],
+        responseHeader: [
+          "Content-Type",
+          "Authorization",
+          "Content-Length",
+          "User-Agent",
+          "x-goog-resumable",
+        ],
       },
     ]);
     console.log("✅ CORS configuration updated successfully!");

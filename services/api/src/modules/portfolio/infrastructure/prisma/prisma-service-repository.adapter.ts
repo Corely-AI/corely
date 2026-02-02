@@ -57,7 +57,9 @@ export class PrismaServiceRepository implements ServiceRepositoryPort {
     tenantId: string,
     workspaceId: string,
     serviceId: string,
-    input: Partial<Omit<PortfolioService, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioService, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioService> {
     const row = await this.prisma.portfolioService.update({
       where: { id: serviceId },

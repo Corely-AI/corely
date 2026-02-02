@@ -60,7 +60,6 @@ export function toCreateInvoiceInput(form: InvoiceFormData): CreateInvoiceInput 
       qty: item.qty,
       unitPriceCents: item.unitPriceCents,
     })),
-    // @ts-ignore - explicitly passing paymentMethodId for backend to snapshot
     paymentMethodId: form.paymentMethodId,
   };
 }

@@ -12,10 +12,7 @@ import {
   err,
 } from "@corely/kernel";
 import type { GetPortfolioClientOutput } from "@corely/contracts";
-import {
-  CLIENT_REPOSITORY_PORT,
-  type ClientRepositoryPort,
-} from "../ports/client-repository.port";
+import { CLIENT_REPOSITORY_PORT, type ClientRepositoryPort } from "../ports/client-repository.port";
 import { toPortfolioClientDto } from "../mappers/portfolio.mapper";
 import { assertPortfolioRead } from "../../policies/portfolio-policies";
 

@@ -24,18 +24,12 @@ import {
   PROJECT_REPOSITORY_PORT,
   type ProjectRepositoryPort,
 } from "../ports/project-repository.port";
-import {
-  CLIENT_REPOSITORY_PORT,
-  type ClientRepositoryPort,
-} from "../ports/client-repository.port";
+import { CLIENT_REPOSITORY_PORT, type ClientRepositoryPort } from "../ports/client-repository.port";
 import {
   SERVICE_REPOSITORY_PORT,
   type ServiceRepositoryPort,
 } from "../ports/service-repository.port";
-import {
-  TEAM_REPOSITORY_PORT,
-  type TeamRepositoryPort,
-} from "../ports/team-repository.port";
+import { TEAM_REPOSITORY_PORT, type TeamRepositoryPort } from "../ports/team-repository.port";
 import {
   toPortfolioShowcaseDto,
   toPortfolioProfileDto,
@@ -47,7 +41,10 @@ import {
 
 @RequireTenant()
 @Injectable()
-export class GetPublicShowcaseUseCase extends BaseUseCase<{ slug: string }, PublicPortfolioShowcaseOutput> {
+export class GetPublicShowcaseUseCase extends BaseUseCase<
+  { slug: string },
+  PublicPortfolioShowcaseOutput
+> {
   constructor(
     @Inject(SHOWCASE_REPOSITORY_PORT) private readonly showcaseRepo: ShowcaseRepositoryPort,
     @Inject(PROFILE_REPOSITORY_PORT) private readonly profileRepo: ProfileRepositoryPort,

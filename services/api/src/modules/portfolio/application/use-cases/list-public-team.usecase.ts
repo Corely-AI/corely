@@ -16,10 +16,7 @@ import {
   SHOWCASE_REPOSITORY_PORT,
   type ShowcaseRepositoryPort,
 } from "../ports/showcase-repository.port";
-import {
-  TEAM_REPOSITORY_PORT,
-  type TeamRepositoryPort,
-} from "../ports/team-repository.port";
+import { TEAM_REPOSITORY_PORT, type TeamRepositoryPort } from "../ports/team-repository.port";
 import { toPortfolioTeamMemberDto } from "../mappers/portfolio.mapper";
 
 @RequireTenant()

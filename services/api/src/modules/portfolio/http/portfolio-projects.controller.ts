@@ -40,7 +40,8 @@ export class PortfolioProjectsController {
   ) {
     const listQuery = parseListQuery(query, { defaultPageSize: 20 });
     const ctx = buildUseCaseContext(req);
-    const status = typeof query.status === "string" ? (query.status as PortfolioContentStatus) : undefined;
+    const status =
+      typeof query.status === "string" ? (query.status as PortfolioContentStatus) : undefined;
     const type = typeof query.type === "string" ? (query.type as PortfolioProjectType) : undefined;
     const featured =
       typeof query.featured === "string"

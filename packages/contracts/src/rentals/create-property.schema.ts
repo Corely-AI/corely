@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CurrencyCodeSchema } from "../money/currency.schema";
 
 export const CreateRentalPropertyInputSchema = z.object({
   name: z.string().min(1),
@@ -8,6 +9,8 @@ export const CreateRentalPropertyInputSchema = z.object({
   maxGuests: z.number().int().positive().optional(),
   categoryIds: z.array(z.string()).optional(),
   coverImageFileId: z.string().optional(),
+  price: z.number().optional(),
+  currency: CurrencyCodeSchema.optional(),
   images: z
     .array(
       z.object({

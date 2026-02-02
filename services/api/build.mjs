@@ -12,7 +12,7 @@ await build({
   format: "esm",
   outdir: "dist",
   sourcemap: true,
-  packages: "external",
+  packages: "external", // Keep all packages external, rely on node_modules in production
   tsconfig: "tsconfig.json",
   logLevel: "info",
   plugins: [

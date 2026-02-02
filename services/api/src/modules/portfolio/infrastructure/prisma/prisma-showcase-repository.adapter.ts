@@ -47,7 +47,9 @@ export class PrismaShowcaseRepository implements ShowcaseRepositoryPort {
     tenantId: string,
     workspaceId: string,
     showcaseId: string,
-    input: Partial<Omit<PortfolioShowcase, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioShowcase, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioShowcase> {
     const row = await this.prisma.portfolioShowcase.update({
       where: { id: showcaseId },

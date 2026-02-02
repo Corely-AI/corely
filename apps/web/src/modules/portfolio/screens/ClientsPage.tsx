@@ -7,7 +7,12 @@ import { Badge } from "@/shared/ui/badge";
 import { Input } from "@/shared/ui/input";
 import { Card, CardContent } from "@/shared/ui/card";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog, useCrudUrlState } from "@/shared/crud";
+import {
+  CrudListPageLayout,
+  CrudRowActions,
+  ConfirmDeleteDialog,
+  useCrudUrlState,
+} from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
 import { portfolioApi } from "@/lib/portfolio-api";
 import { portfolioKeys } from "../queries";
@@ -31,7 +36,8 @@ export default function ClientsPage() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const filters = useMemo(() => listState.filters ?? {}, [listState.filters]);
-  const typeFilter = typeof filters.clientType === "string" ? (filters.clientType as PortfolioClientType) : "";
+  const typeFilter =
+    typeof filters.clientType === "string" ? (filters.clientType as PortfolioClientType) : "";
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: portfolioKeys.clients.list(showcaseId ?? "", {
@@ -43,7 +49,10 @@ export default function ClientsPage() {
     }),
     queryFn: () => {
       if (!showcaseId) {
-        return Promise.resolve({ items: [], pageInfo: { page: 1, pageSize: 10, total: 0, hasNextPage: false } });
+        return Promise.resolve({
+          items: [],
+          pageInfo: { page: 1, pageSize: 10, total: 0, hasNextPage: false },
+        });
       }
       return portfolioApi.listClients(showcaseId, {
         q: listState.q,
@@ -63,7 +72,9 @@ export default function ClientsPage() {
     onSuccess: async () => {
       toast.success("Client deleted");
       if (showcaseId) {
-        await queryClient.invalidateQueries({ queryKey: ["portfolio", "clients", "list", showcaseId] });
+        await queryClient.invalidateQueries({
+          queryKey: ["portfolio", "clients", "list", showcaseId],
+        });
       }
     },
     onError: (err) => {

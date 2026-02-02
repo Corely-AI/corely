@@ -82,7 +82,7 @@ export default function ShowcaseEditorPage() {
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/portfolio/showcases")}> 
+          <Button variant="ghost" size="icon" onClick={() => navigate("/portfolio/showcases")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-h1 text-foreground">
@@ -124,7 +124,9 @@ export default function ShowcaseEditorPage() {
                   placeholder="Oneway8x Studio"
                 />
                 {form.formState.errors.name && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.name.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.name.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -139,7 +141,9 @@ export default function ShowcaseEditorPage() {
                   placeholder="oneway8x"
                 />
                 {form.formState.errors.slug && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.slug.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.slug.message}
+                  </p>
                 )}
               </div>
               <div>
@@ -161,12 +165,18 @@ export default function ShowcaseEditorPage() {
                   ))}
                 </select>
                 {form.formState.errors.type && (
-                  <p className="text-sm text-destructive mt-1">{form.formState.errors.type.message}</p>
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.type.message}
+                  </p>
                 )}
               </div>
               <div>
                 <Label htmlFor="primaryDomain">Primary domain</Label>
-                <Input id="primaryDomain" {...form.register("primaryDomain")} placeholder="oneway8x.com" />
+                <Input
+                  id="primaryDomain"
+                  {...form.register("primaryDomain")}
+                  placeholder="oneway8x.com"
+                />
               </div>
               <div className="flex items-center gap-2">
                 <Controller

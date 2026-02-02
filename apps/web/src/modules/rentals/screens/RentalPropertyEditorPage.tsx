@@ -19,6 +19,7 @@ import type { RentalStatus } from "@corely/contracts";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getPublicRentalUrl } from "@/shared/lib/public-urls";
 import { QuickCreateCategoryDialog } from "../components/QuickCreateCategoryDialog";
+import { CurrencySelect } from "@/shared/components/CurrencySelect";
 
 const slugify = (value: string) =>
   value
@@ -53,6 +54,8 @@ export default function RentalPropertyEditorPage() {
   const [summary, setSummary] = useState("");
   const [descriptionHtml, setDescriptionHtml] = useState("");
   const [maxGuests, setMaxGuests] = useState<number>(2);
+  const [price, setPrice] = useState<number | undefined>(undefined);
+  const [currency, setCurrency] = useState<string>("USD");
   const [coverImageFileId, setCoverImageFileId] = useState<string | null>(null);
   type GalleryImage = { fileId: string; altText: string; sortOrder: number; isUploading?: boolean };
   const [images, setImages] = useState<GalleryImage[]>([]);
@@ -82,6 +85,8 @@ export default function RentalPropertyEditorPage() {
     setSummary(property.summary ?? "");
     setDescriptionHtml(property.descriptionHtml ?? "");
     setMaxGuests(property.maxGuests ?? 2);
+    setPrice(property.price ?? undefined);
+    setCurrency(property.currency ?? "USD");
     setCoverImageFileId(property.coverImageFileId ?? null);
     setImages(
       (property.images ?? []).map((img) => ({
@@ -114,6 +119,8 @@ export default function RentalPropertyEditorPage() {
         summary: summary.trim() || undefined,
         descriptionHtml: descriptionHtml.trim() || undefined,
         maxGuests,
+        price,
+        currency,
         coverImageFileId: coverImageFileId ?? undefined,
         images: images.map((img, index) => ({
           fileId: img.fileId,
@@ -444,6 +451,27 @@ export default function RentalPropertyEditorPage() {
           <Card>
             <CardContent className="p-6 space-y-4">
               <h2 className="text-h3 text-foreground">Configuration</h2>
+              <div className="space-y-2">
+                <Label htmlFor="price">Price per night</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="price"
+                    type="number"
+                    value={price ?? ""}
+                    onChange={(e) =>
+                      setPrice(e.target.value ? parseFloat(e.target.value) : undefined)
+                    }
+                    className="flex-1"
+                    placeholder="0.00"
+                  />
+                  <CurrencySelect
+                    value={currency}
+                    onValueChange={setCurrency}
+                    persistCustomKey="rentals.currencies"
+                    showSymbol={false}
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="guests">Max Guests</Label>
                 <Input

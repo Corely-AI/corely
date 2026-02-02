@@ -81,7 +81,9 @@ export default function InvoiceDetailPage() {
   // Prepare additional customer options from invoice data
   const additionalCustomerOptions = useMemo<CustomerOption[]>(() => {
     const list: CustomerOption[] = [];
-    if (!invoice) {return list;}
+    if (!invoice) {
+      return list;
+    }
 
     if (invoice.customer) {
       list.push({
@@ -203,7 +205,9 @@ export default function InvoiceDetailPage() {
 
   const handleTransition = useCallback(
     async (to: string, input?: Record<string, string>) => {
-      if (!id || !invoice) {return;}
+      if (!id || !invoice) {
+        return;
+      }
 
       if (to === "SENT") {
         setSendDialogOpen(true);
@@ -233,7 +237,9 @@ export default function InvoiceDetailPage() {
 
   const handleAction = useCallback(
     async (actionKey: string) => {
-      if (!id) {return;}
+      if (!id) {
+        return;
+      }
 
       if (actionKey === "send") {
         setSendDialogOpen(true);
@@ -283,7 +289,9 @@ export default function InvoiceDetailPage() {
   );
 
   const onFormSubmit = async (data: InvoiceFormData) => {
-    if (!id || !invoice) {return;}
+    if (!id || !invoice) {
+      return;
+    }
     try {
       const createInput = toCreateInvoiceInput(data);
       const isDraft = invoice.status === "DRAFT";
@@ -316,7 +324,9 @@ export default function InvoiceDetailPage() {
   };
 
   const recordPayment = () => {
-    if (!id) {return;}
+    if (!id) {
+      return;
+    }
     const amountCents = Math.round(parseFloat(paymentAmount || "0") * 100);
     if (!amountCents || Number.isNaN(amountCents)) {
       toast.error("Invalid amount");

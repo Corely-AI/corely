@@ -70,7 +70,7 @@ export const toUpsertProfileInput = (data: ProfileFormData): UpsertPortfolioProf
   ctaText: emptyToNull(data.ctaText),
   ctaUrl: emptyToNull(data.ctaUrl),
   techStacks: parseCommaList(data.techStacks),
-  socialLinks: data.socialLinks ? parseJsonRecord(data.socialLinks) ?? {} : undefined,
+  socialLinks: data.socialLinks ? (parseJsonRecord(data.socialLinks) ?? {}) : undefined,
   homeSections: parseCommaList(data.homeSections),
   isPublished: data.isPublished ?? false,
 });

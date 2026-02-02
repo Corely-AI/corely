@@ -13,9 +13,21 @@ import type {
   ProjectListFilters,
   ProjectListResult,
 } from "../application/ports/project-repository.port";
-import type { ClientRepositoryPort, ClientListFilters, ClientListResult } from "../application/ports/client-repository.port";
-import type { ServiceRepositoryPort, ServiceListFilters, ServiceListResult } from "../application/ports/service-repository.port";
-import type { TeamRepositoryPort, TeamListFilters, TeamListResult } from "../application/ports/team-repository.port";
+import type {
+  ClientRepositoryPort,
+  ClientListFilters,
+  ClientListResult,
+} from "../application/ports/client-repository.port";
+import type {
+  ServiceRepositoryPort,
+  ServiceListFilters,
+  ServiceListResult,
+} from "../application/ports/service-repository.port";
+import type {
+  TeamRepositoryPort,
+  TeamListFilters,
+  TeamListResult,
+} from "../application/ports/team-repository.port";
 import type {
   PortfolioClient,
   PortfolioContentStatus,
@@ -31,7 +43,9 @@ import type {
 class FakeShowcaseRepo implements ShowcaseRepositoryPort {
   showcases: PortfolioShowcase[] = [];
 
-  async create(input: Omit<PortfolioShowcase, "id" | "createdAt" | "updatedAt">): Promise<PortfolioShowcase> {
+  async create(
+    input: Omit<PortfolioShowcase, "id" | "createdAt" | "updatedAt">
+  ): Promise<PortfolioShowcase> {
     const showcase: PortfolioShowcase = {
       ...input,
       id: "showcase-1",
@@ -46,7 +60,9 @@ class FakeShowcaseRepo implements ShowcaseRepositoryPort {
     _tenantId: string,
     _workspaceId: string,
     _showcaseId: string,
-    _input: Partial<Omit<PortfolioShowcase, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    _input: Partial<
+      Omit<PortfolioShowcase, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioShowcase> {
     throw new Error("Not implemented");
   }
@@ -86,11 +102,7 @@ class FakeShowcaseRepo implements ShowcaseRepositoryPort {
     return { items: [], total: 0 };
   }
 
-  async delete(
-    _tenantId: string,
-    _workspaceId: string,
-    _showcaseId: string
-  ): Promise<void> {
+  async delete(_tenantId: string, _workspaceId: string, _showcaseId: string): Promise<void> {
     return;
   }
 }
@@ -124,7 +136,9 @@ class FakeProjectRepo implements ProjectRepositoryPort {
     _tenantId: string,
     _workspaceId: string,
     _projectId: string,
-    _input: Partial<Omit<PortfolioProject, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    _input: Partial<
+      Omit<PortfolioProject, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioProject> {
     throw new Error("Not implemented");
   }
@@ -162,11 +176,7 @@ class FakeProjectRepo implements ProjectRepositoryPort {
     return { items: [], total: 0 };
   }
 
-  async delete(
-    _tenantId: string,
-    _workspaceId: string,
-    _projectId: string
-  ): Promise<void> {
+  async delete(_tenantId: string, _workspaceId: string, _projectId: string): Promise<void> {
     return;
   }
 
@@ -201,7 +211,9 @@ class FakeClientRepo implements ClientRepositoryPort {
     _tenantId: string,
     _workspaceId: string,
     _clientId: string,
-    _input: Partial<Omit<PortfolioClient, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    _input: Partial<
+      Omit<PortfolioClient, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioClient> {
     throw new Error("Not implemented");
   }
@@ -228,11 +240,7 @@ class FakeClientRepo implements ClientRepositoryPort {
     return { items: [], total: 0 };
   }
 
-  async delete(
-    _tenantId: string,
-    _workspaceId: string,
-    _clientId: string
-  ): Promise<void> {
+  async delete(_tenantId: string, _workspaceId: string, _clientId: string): Promise<void> {
     return;
   }
 
@@ -260,7 +268,9 @@ class FakeServiceRepo implements ServiceRepositoryPort {
     _tenantId: string,
     _workspaceId: string,
     _serviceId: string,
-    _input: Partial<Omit<PortfolioService, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    _input: Partial<
+      Omit<PortfolioService, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioService> {
     throw new Error("Not implemented");
   }
@@ -283,11 +293,7 @@ class FakeServiceRepo implements ServiceRepositoryPort {
   ): Promise<ServiceListResult> {
     return { items: [], total: 0 };
   }
-  async delete(
-    _tenantId: string,
-    _workspaceId: string,
-    _serviceId: string
-  ): Promise<void> {
+  async delete(_tenantId: string, _workspaceId: string, _serviceId: string): Promise<void> {
     return;
   }
 }
@@ -324,11 +330,7 @@ class FakeTeamRepo implements TeamRepositoryPort {
   ): Promise<TeamListResult> {
     return { items: [], total: 0 };
   }
-  async delete(
-    _tenantId: string,
-    _workspaceId: string,
-    _memberId: string
-  ): Promise<void> {
+  async delete(_tenantId: string, _workspaceId: string, _memberId: string): Promise<void> {
     return;
   }
 }

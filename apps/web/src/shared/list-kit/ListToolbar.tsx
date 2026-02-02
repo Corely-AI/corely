@@ -51,7 +51,8 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (localSearch !== search) {
+      const currentSearch = search ?? "";
+      if (localSearch !== currentSearch) {
         onSearchChange?.(localSearch);
       }
     }, 300);

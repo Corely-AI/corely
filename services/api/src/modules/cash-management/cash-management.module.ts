@@ -21,11 +21,6 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     ReverseEntryUseCase,
     SubmitDailyCloseUseCase,
   ],
-  exports: [
-    CASH_REPOSITORY, 
-    AddEntryUseCase, 
-    CreateRegisterUseCase,
-    SubmitDailyCloseUseCase
-  ], 
+  exports: [CASH_REPOSITORY, AddEntryUseCase, CreateRegisterUseCase, SubmitDailyCloseUseCase],
 })
 export class CashManagementModule {}

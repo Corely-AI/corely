@@ -38,7 +38,7 @@ import { AccountingWorkerModule } from "../accounting/accounting-worker.module";
     {
       provide: OutboxPollerService,
       useFactory: (
-        repo: OutboxRepository, 
+        repo: OutboxRepository,
         invoiceHandler: InvoiceEmailRequestedHandler,
         cashEntryHandler: CashEntryCreatedHandler
       ) => {

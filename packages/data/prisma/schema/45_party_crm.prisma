@@ -121,7 +121,7 @@ model Deal {
   partyId           String
   stageId           String
   amountCents       Int?
-  currency          String     @default("EUR")
+  currency          String     @db.VarChar(3) @default("EUR")
   expectedCloseDate DateTime?  @db.Date
   probability       Int?
   status            DealStatus @default(OPEN)

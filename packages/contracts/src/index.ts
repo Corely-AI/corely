@@ -100,7 +100,12 @@ export * from "./ai/richtext";
 export const CONTRACTS_HELLO = "Corely contracts loaded ✅";
 
 // Legacy helpers used by domain utils
-export type Currency = "EUR";
+import type { CurrencyCode } from "./money/currency.schema";
+export * from "./money/currency.schema";
+
+// Legacy helpers used by domain utils
+export type Currency = CurrencyCode;
+
 export type Locale = "de-DE" | "en-US";
 export type ExpenseCategory = "Office" | "Meals" | "Travel" | "Software" | "Other";
 export interface Receipt {
@@ -109,7 +114,7 @@ export interface Receipt {
   issuedAtISO: string;
   totalCents: number;
   vatRate: number;
-  currency: Currency;
+  currency: CurrencyCode;
   category?: ExpenseCategory;
 }
 export const mockReceipts: Receipt[] = [];

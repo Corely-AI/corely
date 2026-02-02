@@ -8,7 +8,7 @@ model LegalEntity {
   kind        String          // PERSONAL, COMPANY (stored as string for now, matches WorkspaceKind enum values)
   legalName   String
   countryCode String          @db.Char(2)
-  currency    String          @db.Char(3)
+  currency    String          @db.VarChar(3)
   taxId       String?
   vatId       String?
   phone       String?

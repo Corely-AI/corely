@@ -6,7 +6,7 @@
 model AccountingSettings {
   id                      String   @id @default(cuid())
   tenantId                String   @unique
-  baseCurrency            String
+  baseCurrency            String   @db.VarChar(3)
   fiscalYearStartMonthDay String   // Format: "MM-DD" e.g., "01-01"
   periodLockingEnabled    Boolean  @default(false)
   entryNumberPrefix       String   @default("JE")
@@ -99,7 +99,7 @@ model JournalLine {
   ledgerAccountId  String
   direction        LineDirection
   amountCents      Int
-  currency         String
+  currency         String   @db.VarChar(3)
   lineMemo         String?
   reference        String?
   tags             String?       // JSON array of tags

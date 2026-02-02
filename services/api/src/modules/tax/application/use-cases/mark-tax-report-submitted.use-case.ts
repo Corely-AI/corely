@@ -31,10 +31,7 @@ export class MarkTaxReportSubmittedUseCase extends BaseUseCase<
     if (!strategy.markSubmitted) {
       return err(new NotFoundError("Mark submitted not available for this strategy"));
     }
-    const report = await strategy.markSubmitted(
-      { tenantId: ctx.tenantId!, workspaceId },
-      id
-    );
+    const report = await strategy.markSubmitted({ tenantId: ctx.tenantId!, workspaceId }, id);
     return ok({ report });
   }
 }

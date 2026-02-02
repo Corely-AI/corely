@@ -15,7 +15,7 @@ import type { CheckInRepositoryPort } from "../ports/checkin-repository.port";
 import type { LoyaltyRepositoryPort } from "../ports/loyalty-repository.port";
 import type { EngagementSettingsRepositoryPort } from "../ports/engagement-settings-repository.port";
 import type { EngagementSettingsRecord } from "../../domain/engagement.types";
-import { v4 as uuidv4 } from "@lukeed/uuid";
+import { nanoid } from "nanoid";
 
 type Deps = {
   logger: LoggerPort;
@@ -127,7 +127,7 @@ export class CreateCheckInEventUseCase extends BaseUseCase<
         "VISIT_CHECKIN"
       );
       if (!existing) {
-        const entryId = uuidv4();
+        const entryId = nanoid();
         await this.deps.loyalty.createLedgerEntry({
           entryId,
           tenantId,

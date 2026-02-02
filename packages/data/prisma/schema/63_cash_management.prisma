@@ -7,7 +7,7 @@ model CashRegister {
   workspaceId         String
   name                String
   location            String?
-  currency            String   @db.Char(3) @default("EUR")
+  currency            String   @db.VarChar(3) @default("EUR")
   currentBalanceCents Int      @default(0)
   createdAt           DateTime @default(now()) @db.Timestamptz(6)
   updatedAt           DateTime @updatedAt @db.Timestamptz(6)

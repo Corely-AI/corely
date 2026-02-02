@@ -199,9 +199,24 @@ export default function PublicRentalsListScreen() {
                       </p>
                     </CardContent>
                     <CardFooter className="p-0 mt-4 flex items-center justify-between border-t border-border pt-4">
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-                        Details
-                      </span>
+                      <div className="flex flex-col">
+                        {property.price && property.currency ? (
+                          <span className="text-sm font-bold">
+                            {new Intl.NumberFormat("en-US", {
+                              style: "currency",
+                              currency: property.currency,
+                              maximumFractionDigits: 0,
+                            }).format(property.price)}{" "}
+                            <span className="text-muted-foreground font-normal text-xs">
+                              / night
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+                            Details
+                          </span>
+                        )}
+                      </div>
                       <ArrowRight className="h-4 w-4 text-accent transition-transform group-hover:translate-x-1" />
                     </CardFooter>
                   </Card>

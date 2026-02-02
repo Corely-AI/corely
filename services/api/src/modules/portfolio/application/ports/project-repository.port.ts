@@ -20,14 +20,22 @@ export type ProjectListResult = {
 };
 
 export interface ProjectRepositoryPort {
-  create(input: Omit<PortfolioProject, "id" | "createdAt" | "updatedAt">): Promise<PortfolioProject>;
+  create(
+    input: Omit<PortfolioProject, "id" | "createdAt" | "updatedAt">
+  ): Promise<PortfolioProject>;
   update(
     tenantId: string,
     workspaceId: string,
     projectId: string,
-    input: Partial<Omit<PortfolioProject, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">>
+    input: Partial<
+      Omit<PortfolioProject, "id" | "tenantId" | "workspaceId" | "createdAt" | "updatedAt">
+    >
   ): Promise<PortfolioProject>;
-  findById(tenantId: string, workspaceId: string, projectId: string): Promise<PortfolioProject | null>;
+  findById(
+    tenantId: string,
+    workspaceId: string,
+    projectId: string
+  ): Promise<PortfolioProject | null>;
   findBySlug(
     showcaseId: string,
     slug: string,

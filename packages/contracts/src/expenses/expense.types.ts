@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { CurrencyCodeSchema } from "../money/currency.schema";
+
 import { localDateSchema, utcInstantSchema } from "../shared/local-date.schema";
 
 export const ExpenseStatusSchema = z.enum(["DRAFT", "SUBMITTED", "APPROVED", "REJECTED", "PAID"]);
@@ -28,7 +30,7 @@ export const ExpenseDtoSchema = z.object({
   expenseDate: localDateSchema,
   merchantName: z.string().optional().nullable(),
   supplierPartyId: z.string().optional().nullable(),
-  currency: z.string(),
+  currency: CurrencyCodeSchema,
   notes: z.string().optional().nullable(),
   category: z.string().optional().nullable(),
   totalAmountCents: z.number().int(),

@@ -19,7 +19,7 @@ model BankAccount {
   iban              String
   bic               String?
   bankName          String?
-  currency          String   @default("EUR") @db.Char(3)
+  currency          String   @db.VarChar(3) @default("EUR")
   country           String?  @db.Char(2)
   isActive          Boolean  @default(true)
   isDefault         Boolean  @default(false)
