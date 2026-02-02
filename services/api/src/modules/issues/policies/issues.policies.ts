@@ -9,7 +9,7 @@ const hasPrivilegedRole = (roles?: string[]) =>
 
 export const assertReporterCanResolve = (issue: Issue, ctx: UseCaseContext) => {
   if (!ctx.userId) {
-    throw new ForbiddenError("User context is required", { code: "Issues:Forbidden" });
+    throw new ForbiddenError("User context is required", "Issues:Forbidden");
   }
   if (issue.reporterUserId && issue.reporterUserId === ctx.userId) {
     return;
@@ -17,14 +17,12 @@ export const assertReporterCanResolve = (issue: Issue, ctx: UseCaseContext) => {
   if (hasPrivilegedRole(ctx.roles)) {
     return;
   }
-  throw new ForbiddenError("Reporter cannot resolve this issue", {
-    code: "Issues:ResolveForbidden",
-  });
+  throw new ForbiddenError("Reporter cannot resolve this issue", "Issues:ResolveForbidden");
 };
 
 export const assertLeadCanTransition = (issue: Issue, ctx: UseCaseContext) => {
   if (!ctx.userId) {
-    throw new ForbiddenError("User context is required", { code: "Issues:Forbidden" });
+    throw new ForbiddenError("User context is required", "Issues:Forbidden");
   }
   if (hasPrivilegedRole(ctx.roles)) {
     return;
@@ -32,14 +30,14 @@ export const assertLeadCanTransition = (issue: Issue, ctx: UseCaseContext) => {
   if (issue.assigneeUserId && issue.assigneeUserId === ctx.userId) {
     return;
   }
-  throw new ForbiddenError("User cannot change issue status", { code: "Issues:StatusForbidden" });
+  throw new ForbiddenError("User cannot change issue status", "Issues:StatusForbidden");
 };
 
 export const assertLeadCanAssign = (ctx: UseCaseContext) => {
   if (!ctx.userId) {
-    throw new ForbiddenError("User context is required", { code: "Issues:Forbidden" });
+    throw new ForbiddenError("User context is required", "Issues:Forbidden");
   }
   if (!hasPrivilegedRole(ctx.roles)) {
-    throw new ForbiddenError("User cannot assign issue owner", { code: "Issues:AssignForbidden" });
+    throw new ForbiddenError("User cannot assign issue owner", "Issues:AssignForbidden");
   }
 };

@@ -1,6 +1,6 @@
 import { unwrap } from "@corely/kernel";
 import type { DocumentsPort } from "../../application/ports/documents.port";
-import { type DocumentsApplication } from "../../documents/application/documents.application";
+import { type DocumentsApplication } from "../../../documents/application/documents.application";
 
 export class DocumentsPortAdapter implements DocumentsPort {
   constructor(private readonly documents: DocumentsApplication) {}
