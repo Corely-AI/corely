@@ -49,15 +49,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build and Push Worker
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.worker
-          push: true
-          tags: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      # - name: Build and Push Worker
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: .
+      #     file: Dockerfile.worker
+      #     push: true
+      #     tags: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
 
       - name: Deploy API to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
@@ -65,22 +65,22 @@ jobs:
           service: corely-api
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
-          flags: --port=8080
+          flags: --port=8080 --allow-unauthenticated
           env_vars: |
             NODE_ENV=production
             WORKFLOW_QUEUE_DRIVER=memory
           # secrets: |
           #   DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest
 
-      - name: Deploy Worker to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: corely-worker
-          region: ${{ env.REGION }}
-          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
-          flags: --port=8080
-          env_vars: |
-            NODE_ENV=production
-            WORKFLOW_QUEUE_DRIVER=cloudtasks
-          # secrets: |
-          #   DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest
+      # - name: Deploy Worker to Cloud Run
+      #   uses: google-github-actions/deploy-cloudrun@v2
+      #   with:
+      #     service: corely-worker
+      #     region: ${{ env.REGION }}
+      #     image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
+      #     flags: --port=8080
+      #     env_vars: |
+      #       NODE_ENV=production
+      #       WORKFLOW_QUEUE_DRIVER=cloudtasks
+      #     # secrets: |
+      #     #   DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest
