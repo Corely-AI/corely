@@ -104,6 +104,8 @@ export default function RentalPropertyEditorPage() {
     [coverImageFileId]
   );
 
+  const isUploading = useMemo(() => images.some((img) => img.isUploading), [images]);
+
   const handleNameChange = (value: string) => {
     setName(value);
     if (!slugTouched) {
@@ -262,6 +264,10 @@ export default function RentalPropertyEditorPage() {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const clearAllImages = () => {
+    setImages([]);
+  };
+
   const toggleCategory = (categoryId: string) => {
     setSelectedCategoryIds((prev) =>
       prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
@@ -290,10 +296,10 @@ export default function RentalPropertyEditorPage() {
           <Button
             variant="outline"
             onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
+            disabled={saveMutation.isPending || isUploading}
           >
             <Save className="h-4 w-4" />
-            Save changes
+            {isUploading ? "Uploading..." : "Save changes"}
           </Button>
           {isEdit &&
             (status === "PUBLISHED" ? (
@@ -380,7 +386,7 @@ export default function RentalPropertyEditorPage() {
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-h3 text-foreground">Property Gallery</h2>
-                <div>
+                <div className="flex gap-2">
                   <input
                     ref={galleryInputRef}
                     type="file"
@@ -389,6 +395,16 @@ export default function RentalPropertyEditorPage() {
                     className="hidden"
                     onChange={(e) => handleGalleryUpload(e.target.files)}
                   />
+                  {images.length > 0 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearAllImages}
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      Clear All
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
