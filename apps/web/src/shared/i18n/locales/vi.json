@@ -85,6 +85,10 @@
     "inventoryCopilot": "Kho - Trợ lý",
     "automation": "Tự động hóa",
     "documents": "Tài liệu",
+    "cms": {
+      "posts": "Bài viết CMS",
+      "comments": "Bình luận CMS"
+    },
     "hr": "Nhân sự",
     "workspace": "Cài đặt không gian làm việc",
     "profile": "Tài khoản & Hồ sơ",

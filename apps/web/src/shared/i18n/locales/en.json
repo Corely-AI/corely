@@ -90,6 +90,10 @@
     "inventoryCopilot": "Inventory - Copilot",
     "automation": "Automation",
     "documents": "Documents",
+    "cms": {
+      "posts": "CMS Posts",
+      "comments": "CMS Comments"
+    },
     "hr": "HR",
     "workspace": "Workspace Settings",
     "profile": "Profile & Account",

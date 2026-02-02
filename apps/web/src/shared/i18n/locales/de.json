@@ -85,6 +85,10 @@
     "inventoryCopilot": "Inventar - Copilot",
     "automation": "Automatisierung",
     "documents": "Dokumente",
+    "cms": {
+      "posts": "CMS Beiträge",
+      "comments": "CMS Kommentare"
+    },
     "hr": "Personal",
     "cashManagement": "Kassenbuch",
     "workspace": "Workspace Einstellungen",

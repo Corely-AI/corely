@@ -5,6 +5,7 @@ import { invoicesAppManifest } from "../../../invoices/invoices.manifest";
 import { crmAppManifest } from "../../../crm/crm.manifest";
 import { portfolioAppManifest } from "../../../portfolio/portfolio.manifest";
 import { issuesAppManifest } from "../../../issues/issues.manifest";
+import { cmsAppManifest } from "../../../cms/cms.manifest";
 
 /**
  * App Registry
@@ -121,6 +122,9 @@ export class AppRegistry implements AppRegistryPort {
 
     // Issues App
     this.register(issuesAppManifest);
+
+    // CMS App
+    this.register(cmsAppManifest);
 
     // Expenses App
     this.register({
