@@ -65,6 +65,8 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
+  const unknownLabel = t("common.unknown");
+
   return (
     <aside
       className={cn(
@@ -191,8 +193,15 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32">
-              <DropdownMenuItem onClick={() => changeLanguage("de")}>🇩🇪 Deutsch</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("en")}>🇬🇧 English</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage("de")}>
+                🇩🇪 {t("settings.languages.de")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage("en")}>
+                🇬🇧 {t("settings.languages.en")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage("vi")}>
+                🇻🇳 {t("settings.languages.vi")}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -216,13 +225,13 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
 
                   return (
                     <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground text-sm font-medium">
-                      {userInitials}
+                      {userInitials || unknownLabel}
                     </div>
                   );
                 })()}
                 <div className="flex-1 text-left">
                   <div className="text-sm font-medium text-sidebar-foreground truncate">
-                    {user?.name ?? "Unknown"}
+                    {user?.name ?? unknownLabel}
                   </div>
                   <div className="text-xs text-muted-foreground truncate">
                     {activeWorkspace?.name || ""}
@@ -232,7 +241,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56" data-testid="user-menu">
               <div className="px-2 py-1.5">
-                <div className="text-sm font-medium">{user?.name ?? "Unknown"}</div>
+                <div className="text-sm font-medium">{user?.name ?? unknownLabel}</div>
                 <div className="text-xs text-muted-foreground">{user.email}</div>
               </div>
               <DropdownMenuSeparator />
@@ -245,7 +254,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 }}
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                {t("common.logout", "Log out")}
+                {t("common.logout")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

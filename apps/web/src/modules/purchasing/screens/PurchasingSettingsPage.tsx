@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -8,6 +9,7 @@ import { Switch } from "@/shared/ui/switch";
 import { purchasingApi } from "@/lib/purchasing-api";
 
 export default function PurchasingSettingsPage() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data } = useQuery({
     queryKey: ["purchasingSettings"],
@@ -60,9 +62,9 @@ export default function PurchasingSettingsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Purchasing Settings</h1>
+        <h1 className="text-h1 text-foreground">{t("purchasing.settings.title")}</h1>
         <Button variant="accent" onClick={() => saveSettings.mutate()}>
-          Save Settings
+          {t("purchasing.settings.save")}
         </Button>
       </div>
 
@@ -70,42 +72,42 @@ export default function PurchasingSettingsPage() {
         <CardContent className="p-6 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Default Currency</Label>
+              <Label>{t("purchasing.settings.defaultCurrency")}</Label>
               <Input
                 value={defaultCurrency}
                 onChange={(event) => setDefaultCurrency(event.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>Default Payment Terms</Label>
+              <Label>{t("purchasing.settings.defaultPaymentTerms")}</Label>
               <Input
                 value={defaultPaymentTerms}
                 onChange={(event) => setDefaultPaymentTerms(event.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>PO Numbering Prefix</Label>
+              <Label>{t("purchasing.settings.poNumberPrefix")}</Label>
               <Input
                 value={poNumberingPrefix}
                 onChange={(event) => setPoNumberingPrefix(event.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>Default AP Account</Label>
+              <Label>{t("purchasing.settings.defaultApAccount")}</Label>
               <Input
                 value={defaultAccountsPayableAccountId}
                 onChange={(event) => setDefaultAccountsPayableAccountId(event.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>Default Expense Account</Label>
+              <Label>{t("purchasing.settings.defaultExpenseAccount")}</Label>
               <Input
                 value={defaultExpenseAccountId}
                 onChange={(event) => setDefaultExpenseAccountId(event.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label>Default Bank Account</Label>
+              <Label>{t("purchasing.settings.defaultBankAccount")}</Label>
               <Input
                 value={defaultBankAccountId}
                 onChange={(event) => setDefaultBankAccountId(event.target.value)}
@@ -116,18 +118,18 @@ export default function PurchasingSettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <Label>Auto-post when bill is posted</Label>
+                <Label>{t("purchasing.settings.autoPostBill")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Creates and posts journal entries on bill posting.
+                  {t("purchasing.settings.autoPostBillHelp")}
                 </p>
               </div>
               <Switch checked={autoPostOnBillPost} onCheckedChange={setAutoPostOnBillPost} />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label>Auto-post when payment is recorded</Label>
+                <Label>{t("purchasing.settings.autoPostPayment")}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Creates AP/Bank journal entries for payments.
+                  {t("purchasing.settings.autoPostPaymentHelp")}
                 </p>
               </div>
               <Switch
@@ -137,8 +139,10 @@ export default function PurchasingSettingsPage() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label>Duplicate detection</Label>
-                <p className="text-sm text-muted-foreground">Warn when bills look duplicated.</p>
+                <Label>{t("purchasing.settings.duplicateDetection")}</Label>
+                <p className="text-sm text-muted-foreground">
+                  {t("purchasing.settings.duplicateDetectionHelp")}
+                </p>
               </div>
               <Switch
                 checked={billDuplicateDetectionEnabled}
@@ -147,8 +151,10 @@ export default function PurchasingSettingsPage() {
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <Label>Approval required for bills</Label>
-                <p className="text-sm text-muted-foreground">Require approval before posting.</p>
+                <Label>{t("purchasing.settings.approvalRequired")}</Label>
+                <p className="text-sm text-muted-foreground">
+                  {t("purchasing.settings.approvalRequiredHelp")}
+                </p>
               </div>
               <Switch
                 checked={approvalRequiredForBills}

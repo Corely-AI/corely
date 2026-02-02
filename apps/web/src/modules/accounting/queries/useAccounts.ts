@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { accountingApi } from "@/lib/accounting-api";
 import { accountingQueryKeys } from "./accounting.queryKeys";
 import type {
@@ -30,11 +31,12 @@ export function useAccount(accountId: string | undefined) {
 // Mutation: Create account
 export function useCreateAccount() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: (input: CreateLedgerAccountInput) => accountingApi.createAccount(input),
     onSuccess: (account) => {
-      toast.success(`Account "${account.name}" created successfully`);
+      toast.success(t("accounting.toasts.accountCreated", { name: account.name }));
       // Invalidate all account lists and the detail
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.accounts.lists() });
       void queryClient.invalidateQueries({
@@ -42,7 +44,7 @@ export function useCreateAccount() {
       });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to create account: ${error.message}`);
+      toast.error(t("accounting.toasts.accountCreateFailed", { message: error.message }));
     },
   });
 }
@@ -50,6 +52,7 @@ export function useCreateAccount() {
 // Mutation: Update account
 export function useUpdateAccount() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: ({
@@ -60,7 +63,7 @@ export function useUpdateAccount() {
       patch: Omit<UpdateLedgerAccountInput, "accountId">;
     }) => accountingApi.updateAccount(accountId, patch),
     onSuccess: (account) => {
-      toast.success(`Account "${account.name}" updated successfully`);
+      toast.success(t("accounting.toasts.accountUpdated", { name: account.name }));
       // Invalidate all account lists and the specific detail
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.accounts.lists() });
       void queryClient.invalidateQueries({
@@ -68,7 +71,7 @@ export function useUpdateAccount() {
       });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to update account: ${error.message}`);
+      toast.error(t("accounting.toasts.accountUpdateFailed", { message: error.message }));
     },
   });
 }

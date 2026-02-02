@@ -12,9 +12,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useShiftStore } from "@/stores/shiftStore";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export default function CloseShiftScreen() {
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { currentShift, closeShift, isLoading } = useShiftStore();
   const [closingCash, setClosingCash] = useState("");
@@ -24,10 +25,10 @@ export default function CloseShiftScreen() {
       <View style={styles.container}>
         <View style={styles.emptyState}>
           <Ionicons name="alert-circle-outline" size={64} color="#999" />
-          <Text style={styles.emptyTitle}>No Active Shift</Text>
-          <Text style={styles.emptyText}>There is no active shift to close</Text>
+          <Text style={styles.emptyTitle}>{t("shift.noActiveTitle")}</Text>
+          <Text style={styles.emptyText}>{t("shift.noActiveDescription")}</Text>
           <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-            <Text style={styles.buttonText}>Go Back</Text>
+            <Text style={styles.buttonText}>{t("shift.goBack")}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -38,35 +39,32 @@ export default function CloseShiftScreen() {
     const closingCashCents = closingCash ? Math.round(parseFloat(closingCash) * 100) : null;
 
     if (closingCash && (isNaN(closingCashCents!) || closingCashCents! < 0)) {
-      Alert.alert("Invalid Amount", "Please enter a valid closing cash amount");
+      Alert.alert(t("shift.invalidAmountTitle"), t("shift.invalidClosingAmountMessage"));
       return;
     }
 
-    Alert.alert(
-      "Close Shift",
-      "Are you sure you want to close this shift? This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Close Shift",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await closeShift({ closingCashCents });
+    Alert.alert(t("shift.closeTitle"), t("shift.closeConfirm"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("shift.closeShift"),
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await closeShift({ closingCashCents });
 
-              Alert.alert("Shift Closed", "Your shift has been closed successfully", [
-                {
-                  text: "OK",
-                  onPress: () => router.replace("/(main)/settings"),
-                },
-              ]);
-            } catch (error: any) {
-              Alert.alert("Error", error.message || "Failed to close shift");
-            }
-          },
+            Alert.alert(t("shift.closedTitle"), t("shift.closedMessage"), [
+              {
+                text: t("common.confirm"),
+                onPress: () => router.replace("/(main)/settings"),
+              },
+            ]);
+          } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : t("shift.closeFailed");
+            Alert.alert(t("common.error"), message);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const startingCash = currentShift.startingCashCents ?? 0;
@@ -82,45 +80,53 @@ export default function CloseShiftScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.title}>Close Shift</Text>
+        <Text style={styles.title}>{t("shift.closeTitle")}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.content}>
         <View style={styles.shiftInfo}>
           <Ionicons name="time-outline" size={48} color="#2196f3" />
-          <Text style={styles.shiftTitle}>Active Shift</Text>
+          <Text style={styles.shiftTitle}>{t("shift.activeShift")}</Text>
           <Text style={styles.shiftTime}>
-            Started {format(new Date(currentShift.openedAt), "MMM d, h:mm a")}
+            {t("shift.startedAt", {
+              date: new Date(currentShift.openedAt).toLocaleString(i18n.language, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            })}
           </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Shift Summary</Text>
+          <Text style={styles.sectionTitle}>{t("shift.summary")}</Text>
           <View style={styles.card}>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Total Sales</Text>
+              <Text style={styles.summaryLabel}>{t("shift.totalSales")}</Text>
               <Text style={styles.summaryValue}>${(totalSales / 100).toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Starting Cash</Text>
+              <Text style={styles.summaryLabel}>{t("shift.startingCash")}</Text>
               <Text style={styles.summaryValue}>${(startingCash / 100).toFixed(2)}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Cash Received</Text>
+              <Text style={styles.summaryLabel}>{t("shift.cashReceived")}</Text>
               <Text style={styles.summaryValue}>${(totalCashReceived / 100).toFixed(2)}</Text>
             </View>
             <View style={[styles.summaryRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>Expected Cash</Text>
+              <Text style={styles.totalLabel}>{t("shift.expectedCash")}</Text>
               <Text style={styles.totalValue}>${(expectedCash / 100).toFixed(2)}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cash Count</Text>
+          <Text style={styles.sectionTitle}>{t("shift.cashCount")}</Text>
           <View style={styles.form}>
-            <Text style={styles.label}>Closing Cash (Optional)</Text>
+            <Text style={styles.label}>{t("shift.closingCashOptional")}</Text>
             <View style={styles.inputContainer}>
               <Text style={styles.currencySymbol}>$</Text>
               <TextInput
@@ -135,7 +141,7 @@ export default function CloseShiftScreen() {
 
             {variance !== null && (
               <View style={styles.variance}>
-                <Text style={styles.varianceLabel}>Variance</Text>
+                <Text style={styles.varianceLabel}>{t("shift.variance")}</Text>
                 <Text
                   style={[
                     styles.varianceValue,
@@ -148,9 +154,7 @@ export default function CloseShiftScreen() {
               </View>
             )}
 
-            <Text style={styles.hint}>
-              Count the cash in your drawer and enter the total amount
-            </Text>
+            <Text style={styles.hint}>{t("shift.cashCountHint")}</Text>
           </View>
         </View>
 
@@ -164,7 +168,7 @@ export default function CloseShiftScreen() {
           ) : (
             <>
               <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
-              <Text style={styles.buttonText}>Close Shift</Text>
+              <Text style={styles.buttonText}>{t("shift.closeShift")}</Text>
             </>
           )}
         </TouchableOpacity>

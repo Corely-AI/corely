@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth-provider";
 
 /**
  * Signup Page
  */
 export const SignupPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { signup, error: authError } = useAuth();
 
@@ -21,7 +23,7 @@ export const SignupPage: React.FC = () => {
 
     // Basic validation
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError(t("auth.errors.passwordLength"));
       setIsLoading(false);
       return;
     }
@@ -34,7 +36,7 @@ export const SignupPage: React.FC = () => {
 
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Signup failed");
+      setError(t("auth.errors.signupFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +47,7 @@ export const SignupPage: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+            {t("auth.signup.title")}
           </h2>
         </div>
 
@@ -59,7 +61,7 @@ export const SignupPage: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+                {t("auth.fields.email")}
               </label>
               <input
                 id="email"
@@ -68,7 +70,7 @@ export const SignupPage: React.FC = () => {
                 autoComplete="email"
                 required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="you@example.com"
+                placeholder={t("auth.placeholders.email")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -76,7 +78,7 @@ export const SignupPage: React.FC = () => {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t("auth.fields.password")}
               </label>
               <input
                 id="password"
@@ -85,11 +87,11 @@ export const SignupPage: React.FC = () => {
                 autoComplete="new-password"
                 required
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="Min. 6 characters"
+                placeholder={t("auth.placeholders.passwordMin")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <p className="mt-1 text-xs text-gray-500">Must be at least 6 characters</p>
+              <p className="mt-1 text-xs text-gray-500">{t("auth.help.passwordMin")}</p>
             </div>
           </div>
 
@@ -99,15 +101,15 @@ export const SignupPage: React.FC = () => {
               disabled={isLoading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isLoading ? "Creating account..." : "Sign up"}
+              {isLoading ? t("auth.signup.creating") : t("auth.signup.cta")}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{" "}
+              {t("auth.signup.hasAccount")}{" "}
               <Link to="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-                Sign in
+                {t("auth.signin.cta")}
               </Link>
             </p>
           </div>

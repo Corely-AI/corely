@@ -1,6 +1,7 @@
 import React, { type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart3, TrendingUp, Scale, PieChart } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 
@@ -12,51 +13,50 @@ interface ReportCard {
   path: string;
 }
 
-const reports: ReportCard[] = [
-  {
-    id: "trial-balance",
-    title: "Trial Balance",
-    description: "Summary of all account balances to verify debits equal credits",
-    icon: Scale,
-    path: "/accounting/reports/trial-balance",
-  },
-  {
-    id: "general-ledger",
-    title: "General Ledger",
-    description: "Detailed transaction history for individual accounts",
-    icon: BarChart3,
-    path: "/accounting/reports/general-ledger",
-  },
-  {
-    id: "profit-loss",
-    title: "Profit & Loss",
-    description: "Income statement showing revenue, expenses, and net income",
-    icon: TrendingUp,
-    path: "/accounting/reports/profit-loss",
-  },
-  {
-    id: "balance-sheet",
-    title: "Balance Sheet",
-    description: "Snapshot of assets, liabilities, and equity at a specific date",
-    icon: PieChart,
-    path: "/accounting/reports/balance-sheet",
-  },
-];
-
 /**
  * Reports hub showing all available financial reports
  */
 export const ReportsHub: FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const reports: ReportCard[] = [
+    {
+      id: "trial-balance",
+      title: t("accounting.reports.trialBalance.title"),
+      description: t("accounting.reports.trialBalance.description"),
+      icon: Scale,
+      path: "/accounting/reports/trial-balance",
+    },
+    {
+      id: "general-ledger",
+      title: t("accounting.reports.generalLedger.title"),
+      description: t("accounting.reports.generalLedger.description"),
+      icon: BarChart3,
+      path: "/accounting/reports/general-ledger",
+    },
+    {
+      id: "profit-loss",
+      title: t("accounting.reports.profitLoss.title"),
+      description: t("accounting.reports.profitLoss.description"),
+      icon: TrendingUp,
+      path: "/accounting/reports/profit-loss",
+    },
+    {
+      id: "balance-sheet",
+      title: t("accounting.reports.balanceSheet.title"),
+      description: t("accounting.reports.balanceSheet.description"),
+      icon: PieChart,
+      path: "/accounting/reports/balance-sheet",
+    },
+  ];
 
   return (
     <div className="container py-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Financial Reports</h1>
-        <p className="text-muted-foreground">
-          Access comprehensive reports to analyze your financial data
-        </p>
+        <h1 className="text-3xl font-bold">{t("accounting.reports.title")}</h1>
+        <p className="text-muted-foreground">{t("accounting.reports.subtitle")}</p>
       </div>
 
       {/* Report Cards Grid */}
@@ -82,7 +82,7 @@ export const ReportsHub: FC = () => {
               </CardHeader>
               <CardContent>
                 <Button variant="outline" className="w-full" onClick={() => navigate(report.path)}>
-                  View Report
+                  {t("accounting.reports.viewReport")}
                 </Button>
               </CardContent>
             </Card>
@@ -93,21 +93,12 @@ export const ReportsHub: FC = () => {
       {/* Info Section */}
       <Card className="bg-muted/50">
         <CardHeader>
-          <CardTitle className="text-lg">About Financial Reports</CardTitle>
+          <CardTitle className="text-lg">{t("accounting.reports.aboutTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
-          <p>
-            All reports are generated in real-time from your posted journal entries. Draft entries
-            are not included in reports.
-          </p>
-          <p>
-            You can export reports to PDF or Excel formats, and use date range filters to analyze
-            specific periods.
-          </p>
-          <p className="text-primary font-medium">
-            💡 AI-powered insights are available on each report to help you understand trends and
-            anomalies.
-          </p>
+          <p>{t("accounting.reports.aboutLine1")}</p>
+          <p>{t("accounting.reports.aboutLine2")}</p>
+          <p className="text-primary font-medium">{t("accounting.reports.aboutLine3")}</p>
         </CardContent>
       </Card>
     </div>

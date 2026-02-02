@@ -1,4 +1,5 @@
 import React, { type FC, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -29,15 +30,17 @@ interface AccountSelectProps {
 export const AccountSelect: FC<AccountSelectProps> = ({
   value,
   onValueChange,
-  placeholder = "Select account...",
+  placeholder,
   filterType,
   disabled = false,
   className,
 }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
   const { data, isLoading } = useAccounts({ limit: 1000, type: filterType, isActive: true });
 
   const accounts = useMemo(() => data?.accounts || [], [data]);
+  const resolvedPlaceholder = placeholder ?? t("accounting.accountSelect.placeholder");
 
   const selectedAccount = useMemo(
     () => accounts.find((acc) => acc.id === value),
@@ -62,16 +65,16 @@ export const AccountSelect: FC<AccountSelectProps> = ({
               <span>{selectedAccount.name}</span>
             </span>
           ) : (
-            <span className="text-muted-foreground">{placeholder}</span>
+            <span className="text-muted-foreground">{resolvedPlaceholder}</span>
           )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0">
         <Command>
-          <CommandInput placeholder="Search accounts..." />
+          <CommandInput placeholder={t("accounting.accountSelect.searchPlaceholder")} />
           <CommandList>
-            <CommandEmpty>No account found.</CommandEmpty>
+            <CommandEmpty>{t("accounting.accountSelect.empty")}</CommandEmpty>
             <CommandGroup>
               {accounts.map((account) => (
                 <CommandItem
@@ -93,7 +96,9 @@ export const AccountSelect: FC<AccountSelectProps> = ({
                       {account.code}
                     </span>
                     <span>{account.name}</span>
-                    <span className="text-xs text-muted-foreground ml-auto">{account.type}</span>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {t(`accounting.accountTypes.${account.type.toLowerCase()}`)}
+                    </span>
                   </span>
                 </CommandItem>
               ))}

@@ -14,6 +14,7 @@ import { Label } from "@/shared/ui/label";
 import { Textarea } from "@/shared/ui/textarea";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { FileText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface SendInvoiceDialogProps {
   open: boolean;
@@ -35,6 +36,7 @@ export function SendInvoiceDialog({
   onSend,
   isSending,
 }: SendInvoiceDialogProps) {
+  const { t } = useTranslation();
   const [to, setTo] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -43,11 +45,16 @@ export function SendInvoiceDialog({
   useEffect(() => {
     if (open && invoice) {
       setTo(invoice.billToEmail || "");
-      setSubject(`Invoice #${invoice.number} from Corely`);
+      setSubject(
+        t("invoices.email.subject", {
+          number: invoice.number ?? "",
+          brand: t("common.appName"),
+        })
+      );
       setMessage("");
       setSendCopy(false);
     }
-  }, [open, invoice]);
+  }, [open, invoice, t]);
 
   const handleSend = () => {
     if (!to) {
@@ -60,65 +67,65 @@ export function SendInvoiceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[650px]">
         <DialogHeader>
-          <DialogTitle>Email invoice</DialogTitle>
-          <DialogDescription>Send your invoice directly from the platform.</DialogDescription>
+          <DialogTitle>{t("invoices.email.title")}</DialogTitle>
+          <DialogDescription>{t("invoices.email.subtitle")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* To Field */}
           <div className="space-y-2">
-            <Label htmlFor="to">To</Label>
+            <Label htmlFor="to">{t("invoices.email.to")}</Label>
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <Input
                 id="to"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                placeholder="email@example.com"
+                placeholder={t("invoices.email.toPlaceholder")}
                 className="flex-1"
               />
               <div className="flex items-center space-x-2">
                 <Checkbox id="copy" checked={sendCopy} onCheckedChange={(c) => setSendCopy(!!c)} />
                 <Label htmlFor="copy" className="font-normal cursor-pointer text-sm">
-                  Send a copy to my email
+                  {t("invoices.email.sendCopy")}
                 </Label>
               </div>
             </div>
             {invoice.billToName && (
               <p className="text-xs text-muted-foreground">
-                Will be saved for future emails to {invoice.billToName}
+                {t("invoices.email.savedForFuture", { name: invoice.billToName })}
               </p>
             )}
           </div>
 
           {/* Subject */}
           <div className="space-y-2">
-            <Label htmlFor="subject">Subject</Label>
+            <Label htmlFor="subject">{t("common.subject")}</Label>
             <Input id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} />
           </div>
 
           {/* Message */}
           <div className="space-y-2">
-            <Label htmlFor="message">Message</Label>
+            <Label htmlFor="message">{t("common.message")}</Label>
             <Textarea
               id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               rows={6}
-              placeholder="Write your message here"
+              placeholder={t("invoices.email.messagePlaceholder")}
               className="resize-none"
             />
           </div>
 
           {/* Attachments */}
           <div className="space-y-2">
-            <Label>Attachments</Label>
-            <p className="text-sm text-muted-foreground">
-              Your invoice will be attached to the email
-            </p>
+            <Label>{t("common.attachments")}</Label>
+            <p className="text-sm text-muted-foreground">{t("invoices.email.attachmentsHint")}</p>
             <div className="flex items-center gap-3 p-3 border rounded-md bg-muted/10 w-fit">
               <FileText className="h-5 w-5 text-blue-500" />
               <span className="text-sm text-blue-600 font-medium">
-                {invoice.number ? `Invoice-${invoice.number}.pdf` : "invoice.pdf"}
+                {invoice.number
+                  ? t("invoices.email.attachmentName", { number: invoice.number })
+                  : t("invoices.email.attachmentFallback")}
               </span>
             </div>
           </div>
@@ -132,18 +139,18 @@ export function SendInvoiceDialog({
               /* Placeholder */
             }}
           >
-            Send me a test email
+            {t("invoices.email.sendTest")}
           </Button>
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSend}
               disabled={isSending || !to}
               className="bg-blue-500 hover:bg-blue-600 text-white"
             >
-              {isSending ? "Sending..." : "Email invoice"}
+              {isSending ? t("invoices.email.sending") : t("invoices.email.send")}
             </Button>
           </div>
         </DialogFooter>

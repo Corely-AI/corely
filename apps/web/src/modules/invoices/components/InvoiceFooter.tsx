@@ -4,6 +4,7 @@ import { Label } from "@/shared/ui/label";
 import { PaymentMethodSwitcher, ContactDetailsDialog, TaxDetailsDialog } from "@/modules/settings";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 interface InvoiceFooterProps {
   paymentMethodId?: string;
@@ -11,6 +12,7 @@ interface InvoiceFooterProps {
 }
 
 export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: InvoiceFooterProps) {
+  const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
   const [taxDialogOpen, setTaxDialogOpen] = useState(false);
@@ -30,7 +32,7 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
           {/* Tax Number */}
           <div className="flex flex-col gap-2">
             <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-              Tax Number
+              {t("invoices.footer.taxDetails")}
             </Label>
             {activeWorkspace?.taxId || activeWorkspace?.vatId ? (
               <button
@@ -41,13 +43,17 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
                 <div className="space-y-1.5 text-sm">
                   {activeWorkspace?.vatId && (
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[90px]">VAT-ID:</span>
+                      <span className="text-muted-foreground min-w-[90px]">
+                        {t("invoices.footer.vatIdLabel")}
+                      </span>
                       <span className="font-mono text-foreground">{activeWorkspace.vatId}</span>
                     </div>
                   )}
                   {activeWorkspace?.taxId && (
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[90px]">Tax Number:</span>
+                      <span className="text-muted-foreground min-w-[90px]">
+                        {t("invoices.footer.taxNumberLabel")}
+                      </span>
                       <span className="font-mono text-foreground">{activeWorkspace.taxId}</span>
                     </div>
                   )}
@@ -60,7 +66,7 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
                 className="flex-1 min-h-[80px] border-2 border-dashed border-accent rounded-lg py-2 px-3 text-accent hover:bg-accent/5 transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <Plus className="h-4 w-4" />
-                Add tax details
+                {t("invoices.footer.addTaxDetails")}
               </button>
             )}
           </div>
@@ -68,7 +74,7 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
           {/* Payment Method */}
           <div className="flex flex-col gap-2">
             <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-              Payment Method
+              {t("invoices.footer.paymentMethod")}
             </Label>
             {activeWorkspace?.legalEntityId ? (
               <div className="flex-1 min-h-[80px]">
@@ -85,7 +91,7 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
                 className="flex-1 min-h-[80px] border-2 border-dashed border-accent rounded-lg py-2 px-3 text-accent hover:bg-accent/5 transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <Plus className="h-4 w-4" />
-                Add payment method
+                {t("invoices.footer.addPaymentMethod")}
               </button>
             )}
           </div>
@@ -93,7 +99,7 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
           {/* Contact Details */}
           <div className="flex flex-col gap-2">
             <Label className="text-xs text-muted-foreground uppercase tracking-wider">
-              Contact Details
+              {t("invoices.footer.contactDetails")}
             </Label>
             {activeWorkspace?.phone || activeWorkspace?.email || activeWorkspace?.website ? (
               <button
@@ -104,19 +110,25 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
                 <div className="space-y-1.5 text-sm">
                   {activeWorkspace?.phone && (
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[70px]">Tel.:</span>
+                      <span className="text-muted-foreground min-w-[70px]">
+                        {t("common.phoneShort")}
+                      </span>
                       <span className="text-foreground">{activeWorkspace.phone}</span>
                     </div>
                   )}
                   {activeWorkspace?.email && (
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[70px]">E-Mail:</span>
+                      <span className="text-muted-foreground min-w-[70px]">
+                        {t("common.emailShort")}
+                      </span>
                       <span className="text-foreground">{activeWorkspace.email}</span>
                     </div>
                   )}
                   {activeWorkspace?.website && (
                     <div className="flex gap-2">
-                      <span className="text-muted-foreground min-w-[70px]">Website:</span>
+                      <span className="text-muted-foreground min-w-[70px]">
+                        {t("common.website")}
+                      </span>
                       <span className="text-foreground">
                         {activeWorkspace.website.replace(/^https?:\/\//, "")}
                       </span>
@@ -131,7 +143,7 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
                 className="flex-1 min-h-[80px] border-2 border-dashed border-accent rounded-lg py-2 px-3 text-accent hover:bg-accent/5 transition-colors flex items-center justify-center gap-2 text-sm"
               >
                 <Plus className="h-4 w-4" />
-                Add contact details
+                {t("invoices.footer.addContactDetails")}
               </button>
             )}
           </div>

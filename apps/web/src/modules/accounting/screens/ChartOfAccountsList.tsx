@@ -1,6 +1,7 @@
 import React, { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
@@ -15,6 +16,7 @@ import type { AccountType } from "@corely/contracts";
  * Chart of Accounts list with filtering and search
  */
 export const ChartOfAccountsList: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<AccountType | "all">("all");
@@ -34,19 +36,19 @@ export const ChartOfAccountsList: FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Chart of Accounts</h1>
-          <p className="text-muted-foreground">Manage your ledger accounts</p>
+          <h1 className="text-3xl font-bold">{t("accounting.chartOfAccounts.title")}</h1>
+          <p className="text-muted-foreground">{t("accounting.chartOfAccounts.subtitle")}</p>
         </div>
         <Button onClick={() => navigate("/accounting/accounts/new")}>
           <Plus className="h-4 w-4 mr-2" />
-          New Account
+          {t("accounting.chartOfAccounts.newAccount")}
         </Button>
       </div>
 
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
+          <CardTitle className="text-lg">{t("common.filter")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
@@ -54,7 +56,7 @@ export const ChartOfAccountsList: FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by code or name..."
+                  placeholder={t("accounting.chartOfAccounts.searchPlaceholder")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -66,15 +68,15 @@ export const ChartOfAccountsList: FC = () => {
               onValueChange={(value) => setTypeFilter(value as AccountType | "all")}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Types" />
+                <SelectValue placeholder={t("accounting.chartOfAccounts.allTypes")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="Asset">Asset</SelectItem>
-                <SelectItem value="Liability">Liability</SelectItem>
-                <SelectItem value="Equity">Equity</SelectItem>
-                <SelectItem value="Income">Income</SelectItem>
-                <SelectItem value="Expense">Expense</SelectItem>
+                <SelectItem value="all">{t("accounting.chartOfAccounts.allTypes")}</SelectItem>
+                <SelectItem value="Asset">{t("accounting.accountTypes.asset")}</SelectItem>
+                <SelectItem value="Liability">{t("accounting.accountTypes.liability")}</SelectItem>
+                <SelectItem value="Equity">{t("accounting.accountTypes.equity")}</SelectItem>
+                <SelectItem value="Income">{t("accounting.accountTypes.income")}</SelectItem>
+                <SelectItem value="Expense">{t("accounting.accountTypes.expense")}</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -82,12 +84,14 @@ export const ChartOfAccountsList: FC = () => {
               onValueChange={(value) => setActiveFilter(value as "all" | "active" | "inactive")}
             >
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t("common.status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active Only</SelectItem>
-                <SelectItem value="inactive">Inactive Only</SelectItem>
+                <SelectItem value="all">{t("accounting.chartOfAccounts.allStatuses")}</SelectItem>
+                <SelectItem value="active">{t("accounting.chartOfAccounts.activeOnly")}</SelectItem>
+                <SelectItem value="inactive">
+                  {t("accounting.chartOfAccounts.inactiveOnly")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -99,28 +103,34 @@ export const ChartOfAccountsList: FC = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Accounts</CardTitle>
+              <CardTitle>{t("accounting.chartOfAccounts.accounts")}</CardTitle>
               <CardDescription>
-                {data?.total || 0} account{data?.total !== 1 ? "s" : ""} found
+                {t("accounting.chartOfAccounts.accountsFound", { count: data?.total || 0 })}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading accounts...</div>
+            <div className="text-center py-8 text-muted-foreground">
+              {t("accounting.chartOfAccounts.loading")}
+            </div>
           ) : accounts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No accounts found matching your criteria</p>
+              <p>{t("accounting.chartOfAccounts.empty")}</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">Code</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead className="w-[120px]">Type</TableHead>
-                  <TableHead className="w-[100px]">Status</TableHead>
+                  <TableHead className="w-[100px]">
+                    {t("accounting.chartOfAccounts.code")}
+                  </TableHead>
+                  <TableHead>{t("accounting.chartOfAccounts.name")}</TableHead>
+                  <TableHead className="w-[120px]">
+                    {t("accounting.chartOfAccounts.type")}
+                  </TableHead>
+                  <TableHead className="w-[100px]">{t("common.status")}</TableHead>
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -148,11 +158,11 @@ export const ChartOfAccountsList: FC = () => {
                     <TableCell>
                       {account.isActive ? (
                         <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Active
+                          {t("accounting.chartOfAccounts.active")}
                         </Badge>
                       ) : (
                         <Badge variant="secondary" className="bg-gray-100 text-gray-800">
-                          Inactive
+                          {t("accounting.chartOfAccounts.inactive")}
                         </Badge>
                       )}
                     </TableCell>
@@ -165,7 +175,7 @@ export const ChartOfAccountsList: FC = () => {
                           navigate(`/accounting/accounts/${account.id}`);
                         }}
                       >
-                        View
+                        {t("common.view")}
                       </Button>
                     </TableCell>
                   </TableRow>

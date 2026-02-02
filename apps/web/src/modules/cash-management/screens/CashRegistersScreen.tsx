@@ -17,8 +17,10 @@ import { formatMoney } from "@/shared/lib/formatters";
 import { cashManagementApi } from "@/lib/cash-management-api";
 import { cashKeys } from "../queries";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export function CashRegistersScreen() {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
@@ -39,9 +41,9 @@ export function CashRegistersScreen() {
       await queryClient.invalidateQueries({ queryKey: cashKeys.registers.list.queryKey });
       setIsCreateOpen(false);
       setNewName("");
-      toast.success("Register created");
+      toast.success(t("cash.registers.created"));
     },
-    onError: () => toast.error("Failed to create register"),
+    onError: () => toast.error(t("cash.registers.createFailed")),
   });
 
   const registers = data?.registers ?? [];
@@ -50,37 +52,37 @@ export function CashRegistersScreen() {
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Cash Management</h1>
-          <p className="text-muted-foreground">Manage your cash registers and daily closes.</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("cash.title")}</h1>
+          <p className="text-muted-foreground">{t("cash.subtitle")}</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Add Register
+              {t("cash.registers.add")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Cash Register</DialogTitle>
+              <DialogTitle>{t("cash.registers.addTitle")}</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <label className="text-sm font-medium mb-2 block">Name</label>
+              <label className="text-sm font-medium mb-2 block">{t("common.name")}</label>
               <Input
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g. Main Register"
+                placeholder={t("cash.registers.namePlaceholder")}
               />
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 onClick={() => createMutation.mutate(newName)}
                 disabled={!newName || createMutation.isPending}
               >
-                Create
+                {t("common.create")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -88,7 +90,7 @@ export function CashRegistersScreen() {
       </div>
 
       {isLoading ? (
-        <div>Loading...</div>
+        <div>{t("common.loading")}</div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {registers.map((reg) => (
@@ -99,20 +101,24 @@ export function CashRegistersScreen() {
                     <Store className="h-5 w-5 text-muted-foreground" />
                     {reg.name}
                   </CardTitle>
-                  <CardDescription>{reg.location || "No location set"}</CardDescription>
+                  <CardDescription>
+                    {reg.location || t("cash.registers.noLocation")}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
                     {formatMoney(reg.currentBalanceCents, reg.currency)}
                   </div>
-                  <p className="text-sm text-muted-foreground">Current Balance</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("cash.registers.currentBalance")}
+                  </p>
                 </CardContent>
               </Card>
             </Link>
           ))}
           {registers.length === 0 && (
             <div className="col-span-full text-center text-muted-foreground py-10">
-              No registers found. Create one to get started.
+              {t("cash.registers.empty")}
             </div>
           )}
         </div>

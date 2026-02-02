@@ -25,7 +25,16 @@
     "error": "Something went wrong",
     "success": "Success",
     "currency": "EUR",
-    "locale": "en-DE"
+    "locale": "en-DE",
+    "view": "View",
+    "status": "Status",
+    "unknown": "Unknown",
+    "currencies": {
+      "eur": "Euro",
+      "usd": "US Dollar",
+      "gbp": "British Pound",
+      "chf": "Swiss Franc"
+    }
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -270,5 +279,224 @@
   },
   "errors": {
     "loadMenuFailed": "Failed to load menu"
+  },
+  "accounting": {
+    "entryStatus": {
+      "draft": "Draft",
+      "posted": "Posted",
+      "reversed": "Reversed"
+    },
+    "accountTypes": {
+      "asset": "Asset",
+      "liability": "Liability",
+      "equity": "Equity",
+      "income": "Income",
+      "expense": "Expense"
+    },
+    "accountSelect": {
+      "placeholder": "Select account...",
+      "searchPlaceholder": "Search accounts...",
+      "empty": "No account found."
+    },
+    "journalLines": {
+      "title": "Journal Lines",
+      "addLine": "Add Line",
+      "emptyMessage": "No lines yet. Click \"{{action}}\" to start.",
+      "account": "Account",
+      "type": "Type",
+      "debit": "Debit",
+      "credit": "Credit",
+      "memo": "Memo",
+      "memoOptional": "Optional memo",
+      "minimumLines": "Minimum 2 lines required",
+      "removeLine": "Remove line",
+      "totals": "Totals",
+      "imbalance": "Imbalance",
+      "balanced": "✓ Balanced"
+    },
+    "journalEntries": {
+      "title": "Journal Entries",
+      "subtitle": "View and manage all accounting transactions",
+      "newEntry": "New Entry",
+      "searchPlaceholder": "Search by memo or entry number...",
+      "allStatuses": "All Statuses",
+      "entries": "Entries",
+      "entriesFound": "{{count}} entries found",
+      "entriesFound_one": "{{count}} entry found",
+      "entriesFound_other": "{{count}} entries found",
+      "loading": "Loading entries...",
+      "emptyTitle": "No journal entries found",
+      "emptyAction": "Create your first entry",
+      "entryNumber": "Entry #",
+      "date": "Date",
+      "memo": "Memo",
+      "amount": "Amount",
+      "linesCount": "{{count}} lines",
+      "linesCount_one": "{{count}} line",
+      "linesCount_other": "{{count}} lines"
+    },
+    "chartOfAccounts": {
+      "title": "Chart of Accounts",
+      "subtitle": "Manage your ledger accounts",
+      "newAccount": "New Account",
+      "searchPlaceholder": "Search by code or name...",
+      "allTypes": "All Types",
+      "allStatuses": "All Status",
+      "activeOnly": "Active Only",
+      "inactiveOnly": "Inactive Only",
+      "accounts": "Accounts",
+      "accountsFound": "{{count}} accounts found",
+      "accountsFound_one": "{{count}} account found",
+      "accountsFound_other": "{{count}} accounts found",
+      "loading": "Loading accounts...",
+      "empty": "No accounts found matching your criteria",
+      "code": "Code",
+      "name": "Name",
+      "type": "Type",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "dashboard": {
+      "title": "Accounting",
+      "subtitle": "Manage your financial records and reports",
+      "newEntry": "New Entry",
+      "newEntryDescription": "Create journal entry",
+      "chartOfAccounts": "Chart of Accounts",
+      "activeAccounts": "Active accounts",
+      "journalEntries": "Journal Entries",
+      "totalEntries": "Total entries",
+      "reports": "Reports",
+      "reportsDescription": "View financial reports",
+      "recentEntries": "Recent Entries",
+      "recentEntriesDescription": "Latest journal entries",
+      "noEntries": "No entries yet. Create your first entry to get started.",
+      "viewAllEntries": "View All Entries",
+      "quickLinks": "Quick Links",
+      "quickLinksDescription": "Common accounting tasks",
+      "viewTrialBalance": "View Trial Balance",
+      "viewProfitLoss": "Profit & Loss Report",
+      "settings": "Accounting Settings"
+    },
+    "reports": {
+      "title": "Financial Reports",
+      "subtitle": "Access comprehensive reports to analyze your financial data",
+      "viewReport": "View Report",
+      "aboutTitle": "About Financial Reports",
+      "aboutLine1": "All reports are generated in real-time from your posted journal entries. Draft entries are not included in reports.",
+      "aboutLine2": "You can export reports to PDF or Excel formats, and use date range filters to analyze specific periods.",
+      "aboutLine3": "💡 AI-powered insights are available on each report to help you understand trends and anomalies.",
+      "trialBalance": {
+        "title": "Trial Balance",
+        "description": "Summary of all account balances to verify debits equal credits"
+      },
+      "generalLedger": {
+        "title": "General Ledger",
+        "description": "Detailed transaction history for individual accounts"
+      },
+      "profitLoss": {
+        "title": "Profit & Loss",
+        "description": "Income statement showing revenue, expenses, and net income"
+      },
+      "balanceSheet": {
+        "title": "Balance Sheet",
+        "description": "Snapshot of assets, liabilities, and equity at a specific date"
+      }
+    },
+    "setup": {
+      "title": "Set Up Accounting",
+      "subtitle": "Configure your accounting settings and chart of accounts to get started",
+      "basic": {
+        "title": "Basic Settings",
+        "description": "Configure your fundamental accounting preferences"
+      },
+      "baseCurrency": "Base Currency",
+      "selectCurrency": "Select currency",
+      "baseCurrencyHelp": "The primary currency for your accounting records",
+      "fiscalYearStart": "Fiscal Year Start",
+      "selectFiscalStart": "Select fiscal year start",
+      "fiscalStart": {
+        "jan1": "January 1st (Calendar Year)",
+        "apr1": "April 1st",
+        "jul1": "July 1st",
+        "oct1": "October 1st"
+      },
+      "fiscalYearHelp": "When your fiscal year begins (affects period generation)",
+      "periodLocking": "Enable Period Locking",
+      "periodLockingHelp": "Prevent posting entries to closed periods (recommended for production use)",
+      "chartOfAccountsTitle": "Chart of Accounts",
+      "chartOfAccountsDescription": "Choose a pre-built template to start with (you can add more accounts later)",
+      "templates": {
+        "minimal": {
+          "label": "Minimal (5 accounts)",
+          "description": "Basic setup for very simple accounting needs"
+        },
+        "freelancer": {
+          "label": "Freelancer (16 accounts)",
+          "description": "Ideal for independent contractors and consultants"
+        },
+        "smallBusiness": {
+          "label": "Small Business (35 accounts)",
+          "description": "Comprehensive setup for small businesses"
+        },
+        "standard": {
+          "label": "Standard (79 accounts) (Recommended)",
+          "description": "Full-featured chart of accounts for most businesses"
+        }
+      },
+      "next": {
+        "title": "What Happens Next",
+        "line1": "Your selected chart of accounts template will be created with all predefined accounts",
+        "line2": "12 monthly accounting periods will be generated for the current fiscal year",
+        "line3": "You can customize accounts, add new ones, and start creating journal entries",
+        "line4": "All financial reports will be available immediately"
+      },
+      "settingUp": "Setting up...",
+      "complete": "Complete Setup"
+    },
+    "validation": {
+      "accountRequired": "Account is required",
+      "amountPositive": "Amount must be positive",
+      "invalidDate": "Invalid date format",
+      "memoRequired": "Memo is required",
+      "minimumLines": "At least 2 lines are required",
+      "debitsEqualCredits": "Debits must equal credits",
+      "accountCodeRequired": "Account code is required",
+      "accountCodeMax": "Code must be 20 characters or less",
+      "accountCodeFormat": "Code must contain only uppercase letters, numbers, and hyphens",
+      "accountNameRequired": "Account name is required",
+      "accountNameMax": "Name must be 100 characters or less"
+    },
+    "toasts": {
+      "accountCreated": "Account \"{{name}}\" created successfully",
+      "accountCreateFailed": "Failed to create account: {{message}}",
+      "accountUpdated": "Account \"{{name}}\" updated successfully",
+      "accountUpdateFailed": "Failed to update account: {{message}}",
+      "journalEntryDraftCreated": "Draft journal entry created successfully",
+      "journalEntryCreateFailed": "Failed to create journal entry: {{message}}",
+      "journalEntryDraftUpdated": "Draft journal entry updated successfully",
+      "journalEntryUpdateFailed": "Failed to update journal entry: {{message}}",
+      "journalEntryPosted": "Journal entry {{entryNumber}} posted successfully",
+      "journalEntryPostFailed": "Failed to post journal entry: {{message}}",
+      "journalEntryReversed": "Entry reversed. Original: {{original}}, Reversal: {{reversal}}",
+      "journalEntryReverseFailed": "Failed to reverse journal entry: {{message}}",
+      "setupCompleted": "Accounting setup completed successfully",
+      "setupFailed": "Failed to set up accounting: {{message}}",
+      "settingsUpdated": "Accounting settings updated successfully",
+      "settingsUpdateFailed": "Failed to update settings: {{message}}",
+      "periodClosed": "Period {{name}} closed successfully",
+      "periodCloseFailed": "Failed to close period: {{message}}",
+      "periodReopened": "Period {{name}} reopened successfully",
+      "periodReopenFailed": "Failed to reopen period: {{message}}"
+    }
+  },
+  "forms": {
+    "submit": "Submit",
+    "repeater": {
+      "missingItemFields": "Missing repeater item fields",
+      "empty": "No rows added",
+      "row": "Row {{index}}",
+      "remove": "Remove",
+      "add": "Add row"
+    }
   }
 }

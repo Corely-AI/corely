@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { crmApi } from "@/lib/crm-api";
@@ -9,6 +10,7 @@ import { EmptyState } from "@/shared/components/EmptyState";
 import { DealCard } from "../components/DealCard";
 
 export default function DealsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const { data: dealsData } = useQuery({
@@ -21,10 +23,10 @@ export default function DealsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Deals</h1>
+        <h1 className="text-h1 text-foreground">{t("crm.deals.title")}</h1>
         <Button variant="accent" onClick={() => navigate("/crm/deals/new")}>
           <Plus className="h-4 w-4" />
-          New Deal
+          {t("crm.deals.new")}
         </Button>
       </div>
 
@@ -33,8 +35,8 @@ export default function DealsPage() {
           <CardContent className="p-0">
             <EmptyState
               icon={Briefcase}
-              title="No deals yet"
-              description="Create your first deal to start tracking opportunities"
+              title={t("crm.deals.emptyTitle")}
+              description={t("crm.deals.emptyDescription")}
             />
           </CardContent>
         </Card>

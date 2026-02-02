@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { DealStageSelect } from "./DealStageSelect";
 import type { ChannelDefinition, DealDto } from "@corely/contracts";
 import { Mail, MessageCircle, StickyNote, Trash2, Linkedin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface DealQuickActionsProps {
   deal: DealDto;
@@ -37,6 +38,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
   contactContext = {},
   channelsLoading = false,
 }) => {
+  const { t } = useTranslation();
   const [noteSubject, setNoteSubject] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const channelIcons: Record<string, JSX.Element> = useMemo(
@@ -54,7 +56,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
+        <CardTitle>{t("crm.deals.quickActions")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <DealStageSelect
@@ -65,7 +67,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
         />
         <div className="flex gap-2">
           <Button className="flex-1" variant="accent" onClick={onMarkWon} disabled={disabled}>
-            Mark won
+            {t("crm.deals.markWon")}
           </Button>
           <Button
             className="flex-1"
@@ -73,15 +75,15 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
             onClick={() => onMarkLost?.()}
             disabled={disabled}
           >
-            Mark lost
+            {t("crm.deals.markLost")}
           </Button>
         </div>
         <div className="space-y-2">
-          <p className="text-sm font-medium">Message</p>
+          <p className="text-sm font-medium">{t("crm.deals.message")}</p>
           {channelsLoading ? (
-            <p className="text-sm text-muted-foreground">Loading channels...</p>
+            <p className="text-sm text-muted-foreground">{t("crm.deals.channelsLoading")}</p>
           ) : channels.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No channels configured</p>
+            <p className="text-sm text-muted-foreground">{t("crm.deals.noChannels")}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {channels
@@ -109,7 +111,9 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
                     <Tooltip key={channel.key}>
                       <TooltipTrigger asChild>{button}</TooltipTrigger>
                       <TooltipContent>
-                        Missing: {channel.requiredContactFields.join(", ")}
+                        {t("crm.deals.missingContactFields", {
+                          fields: channel.requiredContactFields.join(", "),
+                        })}
                       </TooltipContent>
                     </Tooltip>
                   );
@@ -120,16 +124,16 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium">
             <StickyNote className="h-4 w-4" />
-            Quick note
+            {t("crm.deals.quickNote")}
           </div>
           <Input
-            placeholder="Subject"
+            placeholder={t("crm.deals.noteSubject")}
             value={noteSubject}
             onChange={(e) => setNoteSubject(e.target.value)}
           />
           <Textarea
             rows={3}
-            placeholder="Details"
+            placeholder={t("crm.deals.noteDetails")}
             value={noteBody}
             onChange={(e) => setNoteBody(e.target.value)}
           />
@@ -142,7 +146,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
               setNoteBody("");
             }}
           >
-            Add note
+            {t("crm.deals.addNote")}
           </Button>
         </div>
         <Button
@@ -152,7 +156,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
           disabled={disabled}
         >
           <Trash2 className="h-4 w-4 mr-2" />
-          Delete deal
+          {t("crm.deals.delete")}
         </Button>
       </CardContent>
     </Card>
