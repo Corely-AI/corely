@@ -1,4 +1,5 @@
-import { type PrismaService } from "@corely/data";
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "@corely/data";
 import type { IssueAttachment, IssueTranscriptionSegment } from "../../domain/issue.types";
 import type { IssueAttachmentRepositoryPort } from "../../application/ports/issue-attachment-repository.port";
 
@@ -35,6 +36,7 @@ const toIssueAttachment = (row: any): IssueAttachment => ({
 const serializeSegments = (segments?: IssueTranscriptionSegment[] | null) =>
   segments ? JSON.stringify(segments) : null;
 
+@Injectable()
 export class PrismaIssueAttachmentRepositoryAdapter implements IssueAttachmentRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
@@ -70,7 +72,29 @@ export class PrismaIssueAttachmentRepositoryAdapter implements IssueAttachmentRe
       orderBy: { createdAt: "asc" },
     });
 
-    return rows.map(toIssueAttachment);
+    if (!rows.length) {
+      return [];
+    }
+
+    const documentIds = [...new Set(rows.map((r: any) => r.documentId))] as string[];
+    const files = await this.prisma.file.findMany({
+      where: {
+        tenantId,
+        documentId: { in: documentIds },
+      },
+      select: {
+        id: true,
+        documentId: true,
+      },
+      distinct: ["documentId"], // Assuming one primary file per document in this context
+    });
+
+    const fileMap = new Map(files.map((f) => [f.documentId, f.id]));
+
+    return rows.map((row) => ({
+      ...toIssueAttachment(row),
+      fileId: fileMap.get(row.documentId),
+    }));
   }
 
   async listByComment(tenantId: string, commentId: string): Promise<IssueAttachment[]> {
@@ -79,7 +103,29 @@ export class PrismaIssueAttachmentRepositoryAdapter implements IssueAttachmentRe
       orderBy: { createdAt: "asc" },
     });
 
-    return rows.map(toIssueAttachment);
+    if (!rows.length) {
+      return [];
+    }
+
+    const documentIds = [...new Set(rows.map((r: any) => r.documentId))] as string[];
+    const files = await this.prisma.file.findMany({
+      where: {
+        tenantId,
+        documentId: { in: documentIds },
+      },
+      select: {
+        id: true,
+        documentId: true,
+      },
+      distinct: ["documentId"],
+    });
+
+    const fileMap = new Map(files.map((f) => [f.documentId, f.id]));
+
+    return rows.map((row) => ({
+      ...toIssueAttachment(row),
+      fileId: fileMap.get(row.documentId),
+    }));
   }
 
   async update(

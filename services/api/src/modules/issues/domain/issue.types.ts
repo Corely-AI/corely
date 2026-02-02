@@ -56,6 +56,7 @@ export type IssueAttachment = {
   tenantId: string;
   commentId?: string | null;
   documentId: string;
+  fileId?: string;
   kind: IssueAttachmentKind;
   mimeType: string;
   sizeBytes: number;

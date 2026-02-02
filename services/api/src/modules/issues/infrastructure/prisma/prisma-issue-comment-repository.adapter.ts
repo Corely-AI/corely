@@ -1,4 +1,5 @@
-import { type PrismaService } from "@corely/data";
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "@corely/data";
 import type { IssueComment } from "../../domain/issue.types";
 import type { IssueCommentRepositoryPort } from "../../application/ports/issue-comment-repository.port";
 
@@ -11,6 +12,7 @@ const toIssueComment = (row: any): IssueComment => ({
   createdAt: row.createdAt,
 });
 
+@Injectable()
 export class PrismaIssueCommentRepositoryAdapter implements IssueCommentRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 

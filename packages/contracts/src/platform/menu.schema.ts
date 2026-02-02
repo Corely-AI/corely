@@ -15,6 +15,7 @@ export const MenuItemSchema = z.object({
   id: z.string(),
   section: z.string(),
   label: z.string().describe("Resolved label (after i18n and overrides)"),
+  labelKey: z.string().optional(),
   route: z.string().optional(),
   screen: z.string().optional(),
   icon: z.string(),

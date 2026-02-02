@@ -1,13 +1,23 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, ArrowLeft, RefreshCw, MessageSquarePlus } from "lucide-react";
+import { CheckCircle2, ArrowLeft, RefreshCw, MessageSquarePlus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { issuesApi } from "@/lib/issues-api";
+import { buildPublicFileUrl } from "@/lib/cms-api";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent } from "@/shared/ui/card";
+import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/shared/ui/carousel";
 import { Textarea } from "@/shared/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { formatDate } from "@/shared/lib/formatters";
@@ -31,6 +41,9 @@ export default function IssueDetailPage() {
   const queryClient = useQueryClient();
   const [commentBody, setCommentBody] = useState("");
   const [statusSelection, setStatusSelection] = useState<IssueStatus | "">("");
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [galleryStartIndex, setGalleryStartIndex] = useState(0);
+  const [galleryApi, setGalleryApi] = useState<CarouselApi>();
 
   const issueId = id ?? "";
 
@@ -43,6 +56,25 @@ export default function IssueDetailPage() {
   const issue = data?.issue;
   const comments = data?.comments ?? [];
   const activity = data?.activity ?? [];
+
+  const imageAttachments = useMemo(
+    () =>
+      issue?.attachments?.filter(
+        (attachment) => attachment.kind === "IMAGE" && attachment.fileId
+      ) ?? [],
+    [issue]
+  );
+
+  useEffect(() => {
+    if (galleryApi && isGalleryOpen) {
+      galleryApi.scrollTo(galleryStartIndex, true);
+    }
+  }, [galleryApi, isGalleryOpen, galleryStartIndex]);
+
+  const openGallery = (index: number) => {
+    setGalleryStartIndex(index);
+    setIsGalleryOpen(true);
+  };
 
   const changeStatusMutation = useMutation({
     mutationFn: (status: IssueStatus) => issuesApi.changeStatus({ issueId, status }),
@@ -125,14 +157,6 @@ export default function IssueDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => addCommentMutation.mutate()}
-            disabled={!commentBody.trim() || addCommentMutation.isPending}
-          >
-            <MessageSquarePlus className="h-4 w-4" />
-            {t("issues.comments.add")}
-          </Button>
           {issue.status !== "RESOLVED" ? (
             <Button
               variant="accent"
@@ -221,6 +245,16 @@ export default function IssueDetailPage() {
             onChange={(event) => setCommentBody(event.target.value)}
             placeholder={t("issues.comments.placeholder")}
           />
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => addCommentMutation.mutate()}
+              disabled={!commentBody.trim() || addCommentMutation.isPending}
+            >
+              <MessageSquarePlus className="h-4 w-4 mr-2" />
+              {t("issues.comments.add")}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -259,21 +293,45 @@ export default function IssueDetailPage() {
         <CardContent className="p-6 space-y-4">
           <h2 className="text-lg font-semibold">{t("issues.attachments.title")}</h2>
           {issue.attachments?.length ? (
-            <ul className="text-sm text-muted-foreground list-disc list-inside">
-              {issue.attachments.map((attachment) => (
-                <li key={attachment.id}>
-                  {attachment.kind} • {attachment.mimeType} •{" "}
-                  {t("common.bytes", { count: attachment.sizeBytes })}
-                  {attachment.transcriptText ? (
-                    <span className="block text-xs text-foreground mt-1">
-                      {t("issues.attachments.transcript", {
-                        transcript: attachment.transcriptText,
-                      })}
-                    </span>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-4">
+              {imageAttachments.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {imageAttachments.map((attachment, index) => (
+                    <button
+                      key={attachment.id}
+                      type="button"
+                      onClick={() => openGallery(index)}
+                      className="group relative aspect-square rounded-md border overflow-hidden bg-muted text-left"
+                    >
+                      <img
+                        src={buildPublicFileUrl(attachment.fileId!)}
+                        alt="Attachment"
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+              {issue.attachments.some((a) => a.kind !== "IMAGE") && (
+                <ul className="text-sm text-muted-foreground list-disc list-inside">
+                  {issue.attachments
+                    .filter((a) => a.kind !== "IMAGE")
+                    .map((attachment) => (
+                      <li key={attachment.id}>
+                        {attachment.kind} • {attachment.mimeType} •{" "}
+                        {t("common.bytes", { count: attachment.sizeBytes })}
+                        {attachment.transcriptText ? (
+                          <span className="block text-xs text-foreground mt-1">
+                            {t("issues.attachments.transcript", {
+                              transcript: attachment.transcriptText,
+                            })}
+                          </span>
+                        ) : null}
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">{t("issues.attachments.empty")}</p>
           )}
@@ -297,6 +355,54 @@ export default function IssueDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
+        <DialogContent className="max-w-screen-xl w-full h-[90vh] md:h-screen max-h-screen p-0 bg-background/95 border-none">
+          <div className="relative w-full h-full flex flex-col">
+            <div className="absolute top-4 left-4 z-50">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsGalleryOpen(false)}
+                className="rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex-1 flex items-center justify-center p-4 md:p-12 overflow-hidden">
+              <Carousel setApi={setGalleryApi} className="w-full max-w-5xl">
+                <CarouselContent>
+                  {imageAttachments.map((attachment) => (
+                    <CarouselItem
+                      key={attachment.id}
+                      className="flex items-center justify-center h-[70vh] md:h-[80vh]"
+                    >
+                      <img
+                        src={buildPublicFileUrl(attachment.fileId!)}
+                        alt="Attachment"
+                        className="max-h-full max-w-full object-contain rounded-md"
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <div className="hidden md:block">
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </div>
+              </Carousel>
+            </div>
+
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center text-white/80 text-sm">
+              {galleryApi && imageAttachments.length > 0 && (
+                <span>
+                  {galleryApi.selectedScrollSnap() + 1} / {imageAttachments.length}
+                </span>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

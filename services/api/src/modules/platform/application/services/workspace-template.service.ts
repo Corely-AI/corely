@@ -372,7 +372,7 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.core",
         defaultLabel: "Core",
         order: 1,
-        sectionOrder: ["dashboard", "portfolio", "assistant"],
+        sectionOrder: ["dashboard", "portfolio", "issues", "assistant"],
       },
       {
         id: "sales",
@@ -440,6 +440,7 @@ export class WorkspaceTemplateService {
       "tax",
       "rentals",
       "portfolio",
+      "issues",
       "ai-copilot",
     ];
   }

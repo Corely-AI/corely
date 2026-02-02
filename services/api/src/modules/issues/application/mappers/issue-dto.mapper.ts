@@ -23,6 +23,7 @@ export const toIssueAttachmentDto = (attachment: IssueAttachment): IssueAttachme
   issueId: attachment.issueId,
   commentId: attachment.commentId ?? null,
   documentId: attachment.documentId,
+  fileId: attachment.fileId ?? undefined,
   kind: attachment.kind,
   mimeType: attachment.mimeType,
   sizeBytes: attachment.sizeBytes,

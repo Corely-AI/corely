@@ -38,9 +38,31 @@
   },
   "nav": {
     "dashboard": "Dashboard",
+    "portfolio": "Portfolio",
+    "rentals": {
+      "properties": "Properties"
+    },
+    "quotes": "Quotes",
+    "clients": "Clients",
+    "tax": {
+      "overview": "Overview",
+      "filings": "Filings",
+      "payments": "Payments",
+      "documents": "Documents",
+      "settings": "Tax Settings"
+    },
     "assistant": "Assistant",
     "expenses": "Expenses",
     "invoices": "Invoices",
+    "groups": {
+      "core": "Core",
+      "sales": "Sales",
+      "purchasing": "Purchasing",
+      "inventory": "Inventory",
+      "finance": "Finance",
+      "settings": "Settings",
+      "tax": "Tax"
+    },
     "customers": "Customers",
     "salesQuotes": "Sales Quotes",
     "salesOrders": "Sales Orders",
@@ -70,7 +92,105 @@
     "roles": "Roles & Permissions",
     "paymentMethods": "Payment Methods",
     "taxSettings": "Tax Settings",
-    "cashManagement": "Cash Management"
+    "cashManagement": "Cash Management",
+    "issues": "Issues"
+  },
+  "issues": {
+    "title": "Issues",
+    "reportTitle": "Report New Issue",
+    "unassigned": "Unassigned",
+    "description": {
+      "empty": "No description provided."
+    },
+    "createdAt": "Created {{date}}",
+    "status": {
+      "change": "Change status",
+      "update": "Update status",
+      "updated": "Status updated successfully",
+      "updateFailed": "Failed to update status",
+      "resolved": "Issue resolved",
+      "resolveFailed": "Failed to resolve issue",
+      "reopened": "Issue reopened",
+      "reopenFailed": "Failed to reopen issue"
+    },
+    "actions": {
+      "resolve": "Resolve",
+      "reopen": "Reopen"
+    },
+    "fields": {
+      "title": "Title",
+      "priority": "Priority",
+      "description": "Description",
+      "siteType": "Site Type",
+      "siteIdOptional": "Site ID (Optional)",
+      "customerIdOptional": "Customer ID (Optional)",
+      "manufacturerIdOptional": "Manufacturer ID (Optional)",
+      "transcriptOptional": "Voice Note Transcript (Optional)",
+      "site": "Site",
+      "assignee": "Assignee"
+    },
+    "placeholders": {
+      "priority": "Select priority",
+      "siteType": "Select site type"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "siteTypes": {
+      "field": "Field",
+      "customer": "Customer",
+      "manufacturer": "Manufacturer"
+    },
+    "statuses": {
+      "NEW": "New",
+      "TRIAGED": "Triaged",
+      "IN_PROGRESS": "In Progress",
+      "WAITING": "Waiting",
+      "RESOLVED": "Resolved",
+      "CLOSED": "Closed",
+      "REOPENED": "Reopened"
+    },
+    "attachments": {
+      "title": "Attachments",
+      "images": "Images",
+      "addImages": "Add Images",
+      "takePicture": "Take Picture",
+      "audio": "Audio Recordings",
+      "voiceNote": "Voice Note",
+      "uploaded": "Uploaded attachments:",
+      "empty": "No attachments.",
+      "transcript": "Transcript: {{transcript}}"
+    },
+    "voiceNote": "Voice Note",
+    "startRecording": "Start Recording",
+    "stopRecording": "Stop Recording",
+    "submitting": "Submitting...",
+    "submit": "Submit Issue",
+    "speech": {
+      "liveTranscription": "Live transcription enabled",
+      "notAvailable": "Speech recognition not available in this browser"
+    },
+    "comments": {
+      "title": "Comments",
+      "addTitle": "Add Comment",
+      "add": "Add Comment",
+      "added": "Comment added",
+      "addFailed": "Failed to add comment",
+      "placeholder": "Write a comment...",
+      "empty": "No comments yet."
+    },
+    "activity": {
+      "title": "Activity History",
+      "empty": "No activity recorded."
+    },
+    "errors": {
+      "microphoneDenied": "Microphone access denied",
+      "cameraDenied": "Camera access denied",
+      "loadFailed": "Failed to load issue details"
+    }
   },
   "cashManagement": {
     "title": "Cash Management",
@@ -487,6 +607,39 @@
       "periodCloseFailed": "Failed to close period: {{message}}",
       "periodReopened": "Period {{name}} reopened successfully",
       "periodReopenFailed": "Failed to reopen period: {{message}}"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "Sign in to your account",
+      "rememberMe": "Remember me",
+      "cta": "Sign in",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?"
+    },
+    "signup": {
+      "title": "Create your account",
+      "cta": "Sign up",
+      "creating": "Creating account...",
+      "hasAccount": "Already have an account?"
+    },
+    "fields": {
+      "email": "Email address",
+      "password": "Password"
+    },
+    "placeholders": {
+      "email": "Email address",
+      "password": "Password",
+      "passwordMin": "Minimum 6 characters"
+    },
+    "help": {
+      "passwordMin": "Password must be at least 6 characters long."
+    },
+    "errors": {
+      "loginFailed": "Invalid email or password",
+      "passwordLength": "Password must be at least 6 characters",
+      "signupFailed": "Failed to create account",
+      "networkError": "Network error. Please check if the server is running."
     }
   },
   "forms": {
