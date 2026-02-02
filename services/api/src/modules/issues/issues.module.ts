@@ -11,6 +11,7 @@ import {
 } from "@/shared/ports/idempotency-storage.port";
 import { IssuesController } from "./http/issues.controller";
 import { DocumentsModule } from "../documents/documents.module";
+import { IdentityModule } from "../identity/identity.module";
 import { DocumentsApplication } from "../documents/application/documents.application";
 import { PrismaIssueRepositoryAdapter } from "./infrastructure/prisma/prisma-issue-repository.adapter";
 import { PrismaIssueCommentRepositoryAdapter } from "./infrastructure/prisma/prisma-issue-comment-repository.adapter";
@@ -50,7 +51,7 @@ import {
 } from "./application/ports/speech-to-text.port";
 
 @Module({
-  imports: [DataModule, KernelModule, DocumentsModule],
+  imports: [DataModule, KernelModule, DocumentsModule, IdentityModule],
   controllers: [IssuesController],
   providers: [
     PrismaIssueRepositoryAdapter,

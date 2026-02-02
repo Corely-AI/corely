@@ -61,7 +61,8 @@
     "roles": "Roles & Permissions",
     "paymentMethods": "Payment Methods",
     "taxSettings": "Tax Settings",
-    "cashManagement": "Cash Management"
+    "cashManagement": "Cash Management",
+    "issues": "Issues"
   },
   "cashManagement": {
     "title": "Cash Management",

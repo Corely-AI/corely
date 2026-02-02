@@ -1,4 +1,5 @@
-import { type PrismaService } from "@corely/data";
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "@corely/data";
 import type { IssueActivity } from "../../domain/issue.types";
 import type { IssueActivityRepositoryPort } from "../../application/ports/issue-activity-repository.port";
 
@@ -23,6 +24,7 @@ const toIssueActivity = (row: any): IssueActivity => ({
   createdByUserId: row.createdByUserId,
 });
 
+@Injectable()
 export class PrismaIssueActivityRepositoryAdapter implements IssueActivityRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 

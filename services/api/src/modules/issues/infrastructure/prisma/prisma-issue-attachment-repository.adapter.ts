@@ -1,4 +1,5 @@
-import { type PrismaService } from "@corely/data";
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "@corely/data";
 import type { IssueAttachment, IssueTranscriptionSegment } from "../../domain/issue.types";
 import type { IssueAttachmentRepositoryPort } from "../../application/ports/issue-attachment-repository.port";
 
@@ -35,6 +36,7 @@ const toIssueAttachment = (row: any): IssueAttachment => ({
 const serializeSegments = (segments?: IssueTranscriptionSegment[] | null) =>
   segments ? JSON.stringify(segments) : null;
 
+@Injectable()
 export class PrismaIssueAttachmentRepositoryAdapter implements IssueAttachmentRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
 
