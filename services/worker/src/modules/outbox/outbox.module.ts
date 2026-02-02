@@ -9,9 +9,11 @@ import { OutboxPollerService } from "./outbox-poller.service";
 
 import { CashEntryCreatedHandler } from "../accounting/handlers/cash-entry-created.handler";
 import { AccountingWorkerModule } from "../accounting/accounting-worker.module";
+import { IssuesWorkerModule } from "../issues/issues-worker.module";
+import { IssueTranscriptionRequestedHandler } from "../issues/issue-transcription-requested.handler";
 
 @Module({
-  imports: [AccountingWorkerModule],
+  imports: [AccountingWorkerModule, IssuesWorkerModule],
   providers: [
     {
       provide: EMAIL_SENDER_PORT,
@@ -40,11 +42,21 @@ import { AccountingWorkerModule } from "../accounting/accounting-worker.module";
       useFactory: (
         repo: OutboxRepository,
         invoiceHandler: InvoiceEmailRequestedHandler,
-        cashEntryHandler: CashEntryCreatedHandler
+        cashEntryHandler: CashEntryCreatedHandler,
+        issueTranscriptionHandler: IssueTranscriptionRequestedHandler
       ) => {
-        return new OutboxPollerService(repo, [invoiceHandler, cashEntryHandler]);
+        return new OutboxPollerService(repo, [
+          invoiceHandler,
+          cashEntryHandler,
+          issueTranscriptionHandler,
+        ]);
       },
-      inject: [OutboxRepository, InvoiceEmailRequestedHandler, CashEntryCreatedHandler],
+      inject: [
+        OutboxRepository,
+        InvoiceEmailRequestedHandler,
+        CashEntryCreatedHandler,
+        IssueTranscriptionRequestedHandler,
+      ],
     },
   ],
 })

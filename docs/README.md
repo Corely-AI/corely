@@ -70,6 +70,7 @@ Specific feature implementation details.
 - [CRM Implementation Summary](./features/CRM_IMPLEMENTATION_SUMMARY.md)
 - [Implementation Progress](./features/IMPLEMENTATION_PROGRESS.md)
 - [CMS Module](./features/CMS.md)
+- [Issues Module](./features/issues.md)
 - [Payment Methods](./features/PAYMENT_METHODS_IMPLEMENTATION.md)
 - [Tax Snapshot](./features/TAX_SNAPSHOT_IMPLEMENTATION.md)
 

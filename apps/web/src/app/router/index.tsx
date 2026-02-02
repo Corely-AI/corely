@@ -7,6 +7,7 @@ import { ExpensesPage, NewExpensePage, ExpenseDetailPage } from "../../modules/e
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
 import { CustomersPage, NewCustomerPage, EditCustomerPage } from "../../modules/customers";
 import { FormsPage, NewFormPage, FormDetailPage, PublicFormPage } from "../../modules/forms";
+import { IssuesListPage, IssueDetailPage, NewIssuePage } from "../../modules/issues";
 import {
   DealsPage,
   NewDealPage,
@@ -155,6 +156,9 @@ export const Router = () => (
           <Route path="/forms" element={<FormsPage />} />
           <Route path="/forms/new" element={<NewFormPage />} />
           <Route path="/forms/:id" element={<FormDetailPage />} />
+          <Route path="/issues" element={<IssuesListPage />} />
+          <Route path="/issues/new" element={<NewIssuePage />} />
+          <Route path="/issues/:id" element={<IssueDetailPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/expenses/new" element={<NewExpensePage />} />
           <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
