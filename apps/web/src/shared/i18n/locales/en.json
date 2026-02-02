@@ -703,5 +703,43 @@
       "remove": "Remove",
       "add": "Add row"
     }
+  },
+  "portfolioPublic": {
+    "nav": {
+      "works": "Works",
+      "clients": "Clients",
+      "services": "Services",
+      "team": "Team",
+      "blog": "Blog"
+    },
+    "home": {
+      "welcome": "Welcome to",
+      "about": "About",
+      "featuredProjects": "Featured Projects",
+      "viewAll": "View all",
+      "trustedBy": "Trusted By"
+    },
+    "works": {
+      "title": "Works",
+      "subtitle": "A selection of my recent projects."
+    },
+    "project": {
+      "backToWorks": "Back to Works",
+      "links": "Project Links",
+      "liveDemo": "Live Demo",
+      "sourceCode": "Source Code",
+      "techStack": "Tech Stack"
+    },
+    "common": {
+      "contact": "Contact",
+      "contactMe": "Contact Me",
+      "viewDetails": "View Details"
+    },
+    "errors": {
+      "notFound": "Showcase Not Found",
+      "notFoundDesc": "The portfolio you are looking for does not exist or has not been published yet.",
+      "error": "Something went wrong",
+      "errorDesc": "We encountered an error loading this portfolio."
+    }
   }
 }

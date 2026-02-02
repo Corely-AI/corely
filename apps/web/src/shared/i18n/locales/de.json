@@ -697,5 +697,43 @@
       "remove": "Entfernen",
       "add": "Zeile hinzufügen"
     }
+  },
+  "portfolioPublic": {
+    "nav": {
+      "works": "Projekte",
+      "clients": "Kunden",
+      "services": "Leistungen",
+      "team": "Team",
+      "blog": "Blog"
+    },
+    "home": {
+      "welcome": "Willkommen bei",
+      "about": "Über",
+      "featuredProjects": "Ausgewählte Projekte",
+      "viewAll": "Alle ansehen",
+      "trustedBy": "Vertraut von"
+    },
+    "works": {
+      "title": "Projekte",
+      "subtitle": "Eine Auswahl meiner aktuellen Arbeiten."
+    },
+    "project": {
+      "backToWorks": "Zurück zu Projekte",
+      "links": "Projekt-Links",
+      "liveDemo": "Live Demo",
+      "sourceCode": "Quellcode",
+      "techStack": "Technologien"
+    },
+    "common": {
+      "contact": "Kontakt",
+      "contactMe": "Kontaktieren",
+      "viewDetails": "Details ansehen"
+    },
+    "errors": {
+      "notFound": "Showcase nicht gefunden",
+      "notFoundDesc": "Das gesuchte Portfolio existiert nicht oder wurde noch nicht veröffentlicht.",
+      "error": "Etwas ist schief gelaufen",
+      "errorDesc": "Beim Laden dieses Portfolios ist ein Fehler aufgetreten."
+    }
   }
 }

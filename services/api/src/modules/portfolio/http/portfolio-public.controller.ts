@@ -22,6 +22,17 @@ export class PortfolioPublicController {
     return PublicPortfolioShowcaseOutputSchema.parse(mapResultToHttp(result));
   }
 
+  @Get("resolve")
+  async resolveShowcase(@Req() req: Request) {
+    const host = req.query.host as string;
+    if (!host) {
+      throw new Error("Host query parameter is required");
+    }
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.getPublicShowcase.execute({ domain: host }, ctx);
+    return PublicPortfolioShowcaseOutputSchema.parse(mapResultToHttp(result));
+  }
+
   @Get("showcases/:slug/projects")
   async listProjects(@Param("slug") slug: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
