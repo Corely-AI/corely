@@ -12,18 +12,13 @@
  * For API calls and server-side resolution, always use the full /public/rentals/properties/:slug path.
  */
 export function getPublicRentalUrl(propertySlug: string, workspaceSlug?: string): string {
-  // Check if we're in local development (localhost or .local domains)
-  const isLocal =
-    window.location.hostname === "localhost" ||
-    window.location.hostname.endsWith(".local") ||
-    window.location.hostname === "127.0.0.1";
-
-  // If local and we have a workspace slug, use path-based routing with /public prefix
-  if (isLocal && workspaceSlug) {
+  // If we have a workspace slug, use path-based routing: /w/:workspaceSlug/rental/:slug
+  // This ensures the workspace context is preserved in all environments
+  if (workspaceSlug) {
     return `/w/${workspaceSlug}/rental/${propertySlug}`;
   }
 
-  // Otherwise, use the shorthand frontend route (works with custom domains/subdomains)
+  // Otherwise, fallback to the shorthand route (requires implicit workspace context or separate handling)
   return `/stay/${propertySlug}`;
 }
 
@@ -33,12 +28,7 @@ export function getPublicRentalUrl(propertySlug: string, workspaceSlug?: string)
  * In production with custom domain/subdomain, uses: /cms/:slug or /p/:slug
  */
 export function getPublicCmsUrl(postSlug: string, workspaceSlug?: string): string {
-  const isLocal =
-    window.location.hostname === "localhost" ||
-    window.location.hostname.endsWith(".local") ||
-    window.location.hostname === "127.0.0.1";
-
-  if (isLocal && workspaceSlug) {
+  if (workspaceSlug) {
     return `/w/${workspaceSlug}/cms/${postSlug}`;
   }
 
