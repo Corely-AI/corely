@@ -150,6 +150,8 @@
     "attachments": {
       "title": "Anhänge",
       "images": "Bilder",
+      "addImages": "Bilder hinzufügen",
+      "takePicture": "Foto aufnehmen",
       "audio": "Audioaufnahmen",
       "voiceNote": "Sprachnotiz",
       "uploaded": "Hochgeladene Anhänge:",
@@ -180,6 +182,7 @@
     },
     "errors": {
       "microphoneDenied": "Mikrofonzugriff verweigert",
+      "cameraDenied": "Kamerazugriff verweigert",
       "loadFailed": "Problemdetails konnten nicht geladen werden"
     }
   },
@@ -598,6 +601,39 @@
       "periodCloseFailed": "Periode konnte nicht geschlossen werden: {{message}}",
       "periodReopened": "Periode {{name}} erfolgreich geöffnet",
       "periodReopenFailed": "Periode konnte nicht geöffnet werden: {{message}}"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "In Ihr Konto einloggen",
+      "rememberMe": "An mich erinnern",
+      "cta": "Anmelden",
+      "signingIn": "Anmeldung...",
+      "noAccount": "Haben Sie noch kein Konto?"
+    },
+    "signup": {
+      "title": "Konto erstellen",
+      "cta": "Registrieren",
+      "creating": "Konto wird erstellt...",
+      "hasAccount": "Haben Sie bereits ein Konto?"
+    },
+    "fields": {
+      "email": "E-Mail-Adresse",
+      "password": "Passwort"
+    },
+    "placeholders": {
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "passwordMin": "Mindestens 6 Zeichen"
+    },
+    "help": {
+      "passwordMin": "Das Passwort muss mindestens 6 Zeichen lang sein."
+    },
+    "errors": {
+      "loginFailed": "Ungültige E-Mail-Adresse oder Passwort",
+      "passwordLength": "Passwort muss mindestens 6 Zeichen lang sein",
+      "signupFailed": "Konto konnte nicht erstellt werden",
+      "networkError": "Netzwerkfehler. Bitte überprüfen Sie, ob der Server läuft."
     }
   },
   "forms": {

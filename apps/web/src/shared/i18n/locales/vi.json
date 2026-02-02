@@ -149,6 +149,8 @@
     "attachments": {
       "title": "Tài liệu đính kèm",
       "images": "Hình ảnh",
+      "addImages": "Thêm hình ảnh",
+      "takePicture": "Chụp ảnh",
       "audio": "Ghi âm",
       "voiceNote": "Ghi chú giọng nói",
       "uploaded": "Tài liệu đã tải lên:",
@@ -588,6 +590,39 @@
       "periodCloseFailed": "Không thể đóng kỳ: {{message}}",
       "periodReopened": "Đã mở lại kỳ {{name}}",
       "periodReopenFailed": "Không thể mở lại kỳ: {{message}}"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "Đăng nhập vào tài khoản của bạn",
+      "rememberMe": "Ghi nhớ tôi",
+      "cta": "Đăng nhập",
+      "signingIn": "Đang đăng nhập...",
+      "noAccount": "Chưa có tài khoản?"
+    },
+    "signup": {
+      "title": "Tạo tài khoản của bạn",
+      "cta": "Đăng ký",
+      "creating": "Đang tạo tài khoản...",
+      "hasAccount": "Đã có tài khoản?"
+    },
+    "fields": {
+      "email": "Địa chỉ email",
+      "password": "Mật khẩu"
+    },
+    "placeholders": {
+      "email": "Địa chỉ email",
+      "password": "Mật khẩu",
+      "passwordMin": "Tối thiểu 6 ký tự"
+    },
+    "help": {
+      "passwordMin": "Mật khẩu phải có ít nhất 6 ký tự."
+    },
+    "errors": {
+      "loginFailed": "Email hoặc mật khẩu không hợp lệ",
+      "passwordLength": "Mật khẩu phải có ít nhất 6 ký tự",
+      "signupFailed": "Không thể tạo tài khoản",
+      "networkError": "Lỗi kết nối mạng. Vui lòng kiểm tra lại máy chủ."
     }
   },
   "forms": {

@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mic, MicOff } from "lucide-react";
+import { Mic, MicOff, Camera, RefreshCw } from "lucide-react";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { AttachmentMetadata, UploadFileOutput } from "@corely/contracts";
@@ -71,6 +72,11 @@ export default function NewIssuePage() {
   const [uploadedAttachments, setUploadedAttachments] = useState<UploadedAttachment[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const speechRef = useRef<any | null>(null);
+
+  // Camera state
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const form = useForm<IssueFormValues>({
     resolver: zodResolver(issueFormSchema),
@@ -203,6 +209,128 @@ export default function NewIssuePage() {
     }
   };
 
+  // Stop camera when dialog closes
+  React.useEffect(() => {
+    if (!isCameraOpen) {
+      stopCamera();
+    }
+    return () => stopCamera();
+  }, [isCameraOpen]);
+
+  const startCamera = async (node?: HTMLVideoElement | null) => {
+    const video = node || videoRef.current;
+    try {
+      if (video && navigator.mediaDevices) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode },
+          audio: false,
+        });
+        video.srcObject = stream;
+      }
+    } catch (error) {
+      console.error("Camera access denied:", error);
+      toast.error(t("issues.errors.cameraDenied") || "Camera access denied");
+      setIsCameraOpen(false);
+    }
+  };
+
+  const videoRefCallback = React.useCallback(
+    (node: HTMLVideoElement | null) => {
+      if (node) {
+        videoRef.current = node;
+        void startCamera(node);
+      } else {
+        stopCamera();
+        videoRef.current = null;
+      }
+    },
+    [facingMode]
+  );
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+  };
+
+  const processFiles = async (files: File[]) => {
+    if (!files.length) {
+      return;
+    }
+
+    // Create temporary previews
+    const newImages = files.map((file) => ({
+      id: Math.random().toString(36).substring(7),
+      file,
+      previewUrl: URL.createObjectURL(file),
+      isUploading: true,
+      fileId: undefined as string | undefined,
+      documentId: undefined as string | undefined,
+    }));
+
+    setImageState((prev) => [...prev, ...newImages]);
+
+    // Upload files
+    for (const image of newImages) {
+      try {
+        const uploaded = await cmsApi.uploadCmsAsset(image.file, {
+          purpose: "issue-attachment",
+          category: "issue",
+        });
+
+        setImageState((prev) =>
+          prev.map((p) =>
+            p.id === image.id
+              ? {
+                  ...p,
+                  isUploading: false,
+                  fileId: uploaded.fileId,
+                  documentId: uploaded.documentId,
+                  previewUrl: buildPublicFileUrl(uploaded.fileId),
+                }
+              : p
+          )
+        );
+      } catch (error) {
+        console.error("Upload failed", error);
+        toast.error(`Failed to upload ${image.file.name}`);
+        setImageState((prev) => prev.filter((p) => p.id !== image.id));
+      }
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files ? Array.from(event.target.files) : [];
+    await processFiles(files);
+    event.target.value = "";
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], `photo-${Date.now()}.jpg`, { type: "image/jpeg" });
+            void processFiles([file]);
+            setIsCameraOpen(false);
+          }
+        }, "image/jpeg");
+      }
+    }
+  };
+
+  const toggleCamera = () => {
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+  };
+
   const onSubmit = (values: IssueFormValues) => {
     createMutation.mutate(values);
   };
@@ -297,55 +425,7 @@ export default function NewIssuePage() {
                     multiple
                     className="hidden"
                     id="image-upload"
-                    onChange={async (event) => {
-                      const files = event.target.files ? Array.from(event.target.files) : [];
-                      if (!files.length) {
-                        return;
-                      }
-
-                      // Create temporary previews
-                      const newImages = files.map((file) => ({
-                        id: Math.random().toString(36).substring(7),
-                        file,
-                        previewUrl: URL.createObjectURL(file), // temp local url
-                        isUploading: true,
-                        fileId: undefined as string | undefined, // Will be populated after upload
-                        documentId: undefined as string | undefined,
-                      }));
-
-                      setImageState((prev) => [...prev, ...newImages]);
-
-                      // Upload files
-                      for (const image of newImages) {
-                        try {
-                          const uploaded = await cmsApi.uploadCmsAsset(image.file, {
-                            purpose: "issue-attachment",
-                            category: "issue",
-                          });
-
-                          setImageState((prev) =>
-                            prev.map((p) =>
-                              p.id === image.id
-                                ? {
-                                    ...p,
-                                    isUploading: false,
-                                    fileId: uploaded.fileId,
-                                    documentId: uploaded.documentId,
-                                    previewUrl: buildPublicFileUrl(uploaded.fileId), // Use public url after upload
-                                  }
-                                : p
-                            )
-                          );
-                        } catch (error) {
-                          console.error("Upload failed", error);
-                          toast.error(`Failed to upload ${image.file.name}`);
-                          setImageState((prev) => prev.filter((p) => p.id !== image.id));
-                        }
-                      }
-
-                      // Reset input
-                      event.target.value = "";
-                    }}
+                    onChange={handleImageUpload}
                   />
                   {imageState.length > 0 && (
                     <Button
@@ -364,10 +444,45 @@ export default function NewIssuePage() {
                     size="sm"
                     onClick={() => document.getElementById("image-upload")?.click()}
                   >
-                    {t("issues.attachments.images")}
+                    {t("issues.attachments.addImages")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsCameraOpen(true)}
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    {t("issues.attachments.takePicture")}
                   </Button>
                 </div>
               </div>
+
+              <Dialog open={isCameraOpen} onOpenChange={setIsCameraOpen}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>{t("issues.attachments.takePicture")}</DialogTitle>
+                  </DialogHeader>
+                  <div className="relative aspect-video bg-black rounded-lg overflow-hidden">
+                    <video
+                      ref={videoRefCallback}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <DialogFooter className="flex items-center justify-between sm:justify-between w-full">
+                    <Button variant="ghost" size="icon" onClick={toggleCamera}>
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    <Button onClick={capturePhoto} variant="default" className="w-full mx-4">
+                      <Camera className="h-4 w-4 mr-2" />
+                      {t("issues.attachments.takePicture")}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               {imageState.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

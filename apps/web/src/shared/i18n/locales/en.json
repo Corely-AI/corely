@@ -156,6 +156,8 @@
     "attachments": {
       "title": "Attachments",
       "images": "Images",
+      "addImages": "Add Images",
+      "takePicture": "Take Picture",
       "audio": "Audio Recordings",
       "voiceNote": "Voice Note",
       "uploaded": "Uploaded attachments:",
@@ -186,6 +188,7 @@
     },
     "errors": {
       "microphoneDenied": "Microphone access denied",
+      "cameraDenied": "Camera access denied",
       "loadFailed": "Failed to load issue details"
     }
   },
@@ -604,6 +607,39 @@
       "periodCloseFailed": "Failed to close period: {{message}}",
       "periodReopened": "Period {{name}} reopened successfully",
       "periodReopenFailed": "Failed to reopen period: {{message}}"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "Sign in to your account",
+      "rememberMe": "Remember me",
+      "cta": "Sign in",
+      "signingIn": "Signing in...",
+      "noAccount": "Don't have an account?"
+    },
+    "signup": {
+      "title": "Create your account",
+      "cta": "Sign up",
+      "creating": "Creating account...",
+      "hasAccount": "Already have an account?"
+    },
+    "fields": {
+      "email": "Email address",
+      "password": "Password"
+    },
+    "placeholders": {
+      "email": "Email address",
+      "password": "Password",
+      "passwordMin": "Minimum 6 characters"
+    },
+    "help": {
+      "passwordMin": "Password must be at least 6 characters long."
+    },
+    "errors": {
+      "loginFailed": "Invalid email or password",
+      "passwordLength": "Password must be at least 6 characters",
+      "signupFailed": "Failed to create account",
+      "networkError": "Network error. Please check if the server is running."
     }
   },
   "forms": {
