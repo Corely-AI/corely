@@ -1,7 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useFormContext, Controller } from "react-hook-form";
-import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -17,7 +16,7 @@ interface InvoiceMetadataProps {
 }
 
 export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     register,
     control,
@@ -48,7 +47,7 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {field.value ? (
-                    format(field.value, "dd/MM/yyyy")
+                    field.value.toLocaleDateString(i18n.language)
                   ) : (
                     <span>{t("invoices.selectDate")}</span>
                   )}
@@ -77,8 +76,8 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
               <CalendarIcon className="mr-2 h-4 w-4" />
               {watch("serviceDateStart") && watch("serviceDateEnd") ? (
                 <>
-                  {format(watch("serviceDateStart")!, "dd.MM.yyyy")} →{" "}
-                  {format(watch("serviceDateEnd")!, "dd.MM.yyyy")}
+                  {watch("serviceDateStart")?.toLocaleDateString(i18n.language)} →{" "}
+                  {watch("serviceDateEnd")?.toLocaleDateString(i18n.language)}
                 </>
               ) : (
                 <span className="text-muted-foreground">{t("invoices.selectDateRange")}</span>
@@ -142,7 +141,9 @@ export function InvoiceMetadata({ onGenerateInvoiceNumber }: InvoiceMetadataProp
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {field.value ? format(field.value, "dd/MM/yyyy") : t("invoices.selectDate")}
+                  {field.value
+                    ? field.value.toLocaleDateString(i18n.language)
+                    : t("invoices.selectDate")}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">

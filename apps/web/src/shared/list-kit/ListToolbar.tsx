@@ -12,6 +12,7 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/shared/ui/dropdown-menu";
 import { cn } from "@/shared/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export interface ListToolbarProps {
   search?: string;
@@ -32,7 +33,7 @@ export interface ListToolbarProps {
 export const ListToolbar: React.FC<ListToolbarProps> = ({
   search,
   onSearchChange,
-  placeholder = "Search...",
+  placeholder,
   onFilterClick,
   filterCount,
   sort,
@@ -41,6 +42,8 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
   className,
   children,
 }) => {
+  const { t } = useTranslation();
+  const searchPlaceholder = placeholder ?? t("list.searchPlaceholder");
   const [localSearch, setLocalSearch] = useState(search ?? "");
 
   // Sync prop changes to local state
@@ -66,7 +69,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           type="search"
-          placeholder={placeholder}
+          placeholder={searchPlaceholder}
           className="pl-9 pr-8"
           value={localSearch}
           onChange={(e) => setLocalSearch(e.target.value)}
@@ -90,11 +93,11 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2">
               <ArrowUpDown className="h-4 w-4" />
-              Sort
+              {t("list.sort")}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("list.sortBy")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {sortOptions.map((opt) => (
               <DropdownMenuCheckboxItem
@@ -109,7 +112,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => onSortChange(undefined)}>
-                  Clear sort
+                  {t("list.clearSort")}
                 </DropdownMenuItem>
               </>
             )}
@@ -121,7 +124,7 @@ export const ListToolbar: React.FC<ListToolbarProps> = ({
       {onFilterClick && (
         <Button variant="outline" size="sm" className="gap-2" onClick={onFilterClick}>
           <SlidersHorizontal className="h-4 w-4" />
-          Filters
+          {t("list.filters")}
           {filterCount ? (
             <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] text-primary-foreground">
               {filterCount}

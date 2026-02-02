@@ -51,6 +51,7 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
 import { cn } from "@/shared/lib/utils";
+import { useTranslation } from "react-i18next";
 type RecordCapabilities = {
   status?: {
     value?: string;
@@ -151,6 +152,7 @@ interface StatusChipProps {
 }
 
 function StatusChip({ capabilities, onTransition, disabled }: StatusChipProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [confirmTransition, setConfirmTransition] = useState<
     RecordCapabilities["transitions"][number] | null
@@ -215,20 +217,20 @@ function StatusChip({ capabilities, onTransition, disabled }: StatusChipProps) {
             type="button"
           >
             <span className="h-2 w-2 rounded-full bg-current opacity-70" />
-            {status.label ?? "Status"}
+            {status.label ?? t("common.status")}
             {hasTransitions && !disabled && <ChevronDown className="h-3.5 w-3.5 opacity-60" />}
           </button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-72 p-0">
           <div className="p-3 border-b border-border">
-            <p className="text-sm font-medium text-foreground">Change status</p>
+            <p className="text-sm font-medium text-foreground">{t("common.changeStatus")}</p>
           </div>
           <div className="p-1">
             {/* Current status */}
             <div className="flex items-center gap-2 px-3 py-2 text-sm">
               <span className={cn("h-2 w-2 rounded-full", toneClass)} />
-              <span className="font-medium">{status.label ?? "Status"}</span>
-              <span className="text-muted-foreground text-xs">(current)</span>
+              <span className="font-medium">{status.label ?? t("common.status")}</span>
+              <span className="text-muted-foreground text-xs">({t("common.current")})</span>
             </div>
 
             {/* Available transitions */}
@@ -249,7 +251,7 @@ function StatusChip({ capabilities, onTransition, disabled }: StatusChipProps) {
                         )}
                       >
                         <span className="h-2 w-2 rounded-full bg-muted-foreground/40" />
-                        {transition.label ?? "Action"}
+                        {transition.label ?? t("common.action")}
                       </button>
                     </TooltipTrigger>
                     {!transition.enabled && transition.reason && (
@@ -282,7 +284,7 @@ function StatusChip({ capabilities, onTransition, disabled }: StatusChipProps) {
                             )}
                           >
                             <XCircle className="h-4 w-4" />
-                            {transition.label ?? "Action"}
+                            {transition.label ?? t("common.action")}
                           </button>
                         </TooltipTrigger>
                         {!transition.enabled && transition.reason && (
@@ -297,7 +299,7 @@ function StatusChip({ capabilities, onTransition, disabled }: StatusChipProps) {
             )}
           </div>
           <div className="p-3 border-t border-border bg-muted/30">
-            <p className="text-xs text-muted-foreground">Status changes are tracked in audit log</p>
+            <p className="text-xs text-muted-foreground">{t("common.statusAuditTrail")}</p>
           </div>
         </PopoverContent>
       </Popover>
@@ -310,36 +312,38 @@ function StatusChip({ capabilities, onTransition, disabled }: StatusChipProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmTransition?.confirmTitle || "Confirm action"}
+              {confirmTransition?.confirmTitle || t("common.confirmAction")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmTransition?.confirmMessage || "Are you sure you want to proceed?"}
+              {confirmTransition?.confirmMessage || t("common.confirmMessage")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {confirmTransition?.requiresInput && (
             <div className="py-4">
               <Label htmlFor="confirm-input" className="text-sm font-medium">
                 {confirmTransition.requiresInput === "reason"
-                  ? "Reason"
+                  ? t("common.reason")
                   : confirmTransition.requiresInput}
               </Label>
               <Input
                 id="confirm-input"
                 value={confirmInput}
                 onChange={(e) => setConfirmInput(e.target.value)}
-                placeholder={confirmTransition.requiresInput === "reason" ? "Enter reason..." : ""}
+                placeholder={
+                  confirmTransition.requiresInput === "reason" ? t("common.reasonPlaceholder") : ""
+                }
                 className="mt-2"
               />
             </div>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={confirmTransition?.requiresInput && !confirmInput.trim()}
             >
-              Confirm
+              {t("common.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -360,6 +364,7 @@ const BADGE_TONE_VARIANTS: Record<string, "default" | "secondary" | "destructive
 };
 
 function DerivedBadges({ badges }: { badges?: RecordCapabilities["badges"] }) {
+  const { t } = useTranslation();
   if (!badges?.length) {
     return null;
   }
@@ -372,7 +377,7 @@ function DerivedBadges({ badges }: { badges?: RecordCapabilities["badges"] }) {
           variant={BADGE_TONE_VARIANTS[badge.tone ?? "muted"] || "outline"}
           className="text-xs"
         >
-          {badge.label ?? "Badge"}
+          {badge.label ?? t("common.badge")}
         </Badge>
       ))}
     </div>
@@ -390,9 +395,10 @@ interface ActionButtonProps {
 }
 
 function ActionButton({ action, onAction, variant = "outline" }: ActionButtonProps) {
+  const { t } = useTranslation();
   const Icon = getIcon(action.icon);
   const isEnabled = action.enabled ?? false;
-  const label = action.label ?? "Action";
+  const label = action.label ?? t("common.action");
   const key = action.key;
 
   if (!key) {
@@ -437,6 +443,7 @@ interface OverflowMenuProps {
 }
 
 function OverflowMenu({ actions, onAction }: OverflowMenuProps) {
+  const { t } = useTranslation();
   const safeActions = actions ?? [];
   const overflowActions = safeActions.filter((a) => a.placement === "overflow");
   const dangerActions = safeActions.filter((a) => a.placement === "danger");
@@ -477,16 +484,16 @@ function OverflowMenu({ actions, onAction }: OverflowMenuProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
             <MoreVertical className="h-4 w-4" />
-            <span className="sr-only">More actions</span>
+            <span className="sr-only">{t("common.moreActions")}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
           {overflowActions.length > 0 && (
             <>
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
               {overflowActions.map((action, index) => {
                 const Icon = getIcon(action.icon);
-                const label = action.label ?? "Action";
+                const label = action.label ?? t("common.action");
                 return (
                   <DropdownMenuItem
                     key={action.key ?? action.label ?? index}
@@ -505,10 +512,12 @@ function OverflowMenu({ actions, onAction }: OverflowMenuProps) {
           {dangerActions.length > 0 && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-destructive">Danger Zone</DropdownMenuLabel>
+              <DropdownMenuLabel className="text-destructive">
+                {t("common.dangerZone")}
+              </DropdownMenuLabel>
               {dangerActions.map((action, index) => {
                 const Icon = getIcon(action.icon);
-                const label = action.label ?? "Action";
+                const label = action.label ?? t("common.action");
                 return (
                   <DropdownMenuItem
                     key={action.key ?? action.label ?? index}
@@ -533,33 +542,39 @@ function OverflowMenu({ actions, onAction }: OverflowMenuProps) {
       <AlertDialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{confirmAction?.confirmTitle || "Confirm action"}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {confirmAction?.confirmTitle || t("common.confirmAction")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {confirmAction?.confirmMessage || "Are you sure you want to proceed?"}
+              {confirmAction?.confirmMessage || t("common.confirmMessage")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {confirmAction?.requiresInput && (
             <div className="py-4">
               <Label htmlFor="action-confirm-input" className="text-sm font-medium">
-                {confirmAction.requiresInput === "reason" ? "Reason" : confirmAction.requiresInput}
+                {confirmAction.requiresInput === "reason"
+                  ? t("common.reason")
+                  : confirmAction.requiresInput}
               </Label>
               <Input
                 id="action-confirm-input"
                 value={confirmInput}
                 onChange={(e) => setConfirmInput(e.target.value)}
-                placeholder={confirmAction.requiresInput === "reason" ? "Enter reason..." : ""}
+                placeholder={
+                  confirmAction.requiresInput === "reason" ? t("common.reasonPlaceholder") : ""
+                }
                 className="mt-2"
               />
             </div>
           )}
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={confirmAction?.requiresInput ? !confirmInput.trim() : false}
             >
-              Confirm
+              {t("common.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -581,6 +596,7 @@ export function RecordCommandBar({
   onAction,
   isLoading,
 }: RecordCommandBarProps) {
+  const { t } = useTranslation();
   const actions = capabilities.actions ?? [];
   const badges = capabilities.badges ?? [];
 
@@ -594,7 +610,7 @@ export function RecordCommandBar({
         {onBack && (
           <Button variant="ghost" size="icon" onClick={onBack}>
             <ArrowLeft className="h-5 w-5" />
-            <span className="sr-only">Go back</span>
+            <span className="sr-only">{t("common.goBack")}</span>
           </Button>
         )}
         <div>

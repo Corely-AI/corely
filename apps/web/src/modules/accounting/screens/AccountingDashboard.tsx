@@ -1,6 +1,7 @@
 import React, { type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calculator, FileText, BarChart3, Settings, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { useSetupStatus, useJournalEntries, useAccounts } from "../queries";
@@ -9,6 +10,7 @@ import { useSetupStatus, useJournalEntries, useAccounts } from "../queries";
  * Main accounting dashboard/home screen
  */
 export const AccountingDashboard: FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { data: setupStatus, isLoading: setupLoading } = useSetupStatus();
   const { data: entriesData } = useJournalEntries({ limit: 5 });
@@ -28,8 +30,8 @@ export const AccountingDashboard: FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Accounting</h1>
-          <p className="text-muted-foreground">Manage your financial records and reports</p>
+          <h1 className="text-3xl font-bold">{t("accounting.dashboard.title")}</h1>
+          <p className="text-muted-foreground">{t("accounting.dashboard.subtitle")}</p>
         </div>
       </div>
 
@@ -40,11 +42,15 @@ export const AccountingDashboard: FC = () => {
           onClick={() => navigate("/accounting/journal-entries/new")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Entry</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("accounting.dashboard.newEntry")}
+            </CardTitle>
             <Plus className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">Create journal entry</p>
+            <p className="text-xs text-muted-foreground">
+              {t("accounting.dashboard.newEntryDescription")}
+            </p>
           </CardContent>
         </Card>
 
@@ -53,12 +59,16 @@ export const AccountingDashboard: FC = () => {
           onClick={() => navigate("/accounting/accounts")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Chart of Accounts</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("accounting.dashboard.chartOfAccounts")}
+            </CardTitle>
             <Calculator className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{accountCount}</div>
-            <p className="text-xs text-muted-foreground">Active accounts</p>
+            <p className="text-xs text-muted-foreground">
+              {t("accounting.dashboard.activeAccounts")}
+            </p>
           </CardContent>
         </Card>
 
@@ -67,12 +77,16 @@ export const AccountingDashboard: FC = () => {
           onClick={() => navigate("/accounting/journal-entries")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Journal Entries</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("accounting.dashboard.journalEntries")}
+            </CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{entriesData?.total || 0}</div>
-            <p className="text-xs text-muted-foreground">Total entries</p>
+            <p className="text-xs text-muted-foreground">
+              {t("accounting.dashboard.totalEntries")}
+            </p>
           </CardContent>
         </Card>
 
@@ -81,11 +95,15 @@ export const AccountingDashboard: FC = () => {
           onClick={() => navigate("/accounting/reports")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Reports</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("accounting.dashboard.reports")}
+            </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">View financial reports</p>
+            <p className="text-xs text-muted-foreground">
+              {t("accounting.dashboard.reportsDescription")}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -94,13 +112,13 @@ export const AccountingDashboard: FC = () => {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Entries</CardTitle>
-            <CardDescription>Latest journal entries</CardDescription>
+            <CardTitle>{t("accounting.dashboard.recentEntries")}</CardTitle>
+            <CardDescription>{t("accounting.dashboard.recentEntriesDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {recentEntries.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No entries yet. Create your first entry to get started.
+                {t("accounting.dashboard.noEntries")}
               </p>
             ) : (
               <div className="space-y-3">
@@ -113,8 +131,8 @@ export const AccountingDashboard: FC = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{entry.memo}</p>
                       <p className="text-xs text-muted-foreground">
-                        {entry.entryNumber || "Draft"} •{" "}
-                        {new Date(entry.postingDate).toLocaleDateString()}
+                        {entry.entryNumber || t("accounting.entryStatus.draft")} •{" "}
+                        {new Date(entry.postingDate).toLocaleDateString(i18n.language)}
                       </p>
                     </div>
                   </div>
@@ -124,7 +142,7 @@ export const AccountingDashboard: FC = () => {
                   className="w-full"
                   onClick={() => navigate("/accounting/journal-entries")}
                 >
-                  View All Entries
+                  {t("accounting.dashboard.viewAllEntries")}
                 </Button>
               </div>
             )}
@@ -133,8 +151,8 @@ export const AccountingDashboard: FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Links</CardTitle>
-            <CardDescription>Common accounting tasks</CardDescription>
+            <CardTitle>{t("accounting.dashboard.quickLinks")}</CardTitle>
+            <CardDescription>{t("accounting.dashboard.quickLinksDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Button
@@ -143,7 +161,7 @@ export const AccountingDashboard: FC = () => {
               onClick={() => navigate("/accounting/reports/trial-balance")}
             >
               <BarChart3 className="h-4 w-4 mr-2" />
-              View Trial Balance
+              {t("accounting.dashboard.viewTrialBalance")}
             </Button>
             <Button
               variant="outline"
@@ -151,7 +169,7 @@ export const AccountingDashboard: FC = () => {
               onClick={() => navigate("/accounting/reports/profit-loss")}
             >
               <BarChart3 className="h-4 w-4 mr-2" />
-              Profit & Loss Report
+              {t("accounting.dashboard.viewProfitLoss")}
             </Button>
             <Button
               variant="outline"
@@ -159,7 +177,7 @@ export const AccountingDashboard: FC = () => {
               onClick={() => navigate("/accounting/settings")}
             >
               <Settings className="h-4 w-4 mr-2" />
-              Accounting Settings
+              {t("accounting.dashboard.settings")}
             </Button>
           </CardContent>
         </Card>

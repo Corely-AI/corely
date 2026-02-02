@@ -1,7 +1,7 @@
 import React, { type FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search } from "lucide-react";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
@@ -15,6 +15,7 @@ import type { EntryStatus } from "@corely/contracts";
  * Journal Entries list with filtering and search
  */
 export const JournalEntriesList: FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<EntryStatus | "all">("all");
@@ -40,19 +41,19 @@ export const JournalEntriesList: FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Journal Entries</h1>
-          <p className="text-muted-foreground">View and manage all accounting transactions</p>
+          <h1 className="text-3xl font-bold">{t("accounting.journalEntries.title")}</h1>
+          <p className="text-muted-foreground">{t("accounting.journalEntries.subtitle")}</p>
         </div>
         <Button onClick={() => navigate("/accounting/journal-entries/new")}>
           <Plus className="h-4 w-4 mr-2" />
-          New Entry
+          {t("accounting.journalEntries.newEntry")}
         </Button>
       </div>
 
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
+          <CardTitle className="text-lg">{t("common.filter")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">
@@ -60,7 +61,7 @@ export const JournalEntriesList: FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by memo or entry number..."
+                  placeholder={t("accounting.journalEntries.searchPlaceholder")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
@@ -72,13 +73,13 @@ export const JournalEntriesList: FC = () => {
               onValueChange={(value) => setStatusFilter(value as EntryStatus | "all")}
             >
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Statuses" />
+                <SelectValue placeholder={t("accounting.journalEntries.allStatuses")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="Draft">Draft</SelectItem>
-                <SelectItem value="Posted">Posted</SelectItem>
-                <SelectItem value="Reversed">Reversed</SelectItem>
+                <SelectItem value="all">{t("accounting.journalEntries.allStatuses")}</SelectItem>
+                <SelectItem value="Draft">{t("accounting.entryStatus.draft")}</SelectItem>
+                <SelectItem value="Posted">{t("accounting.entryStatus.posted")}</SelectItem>
+                <SelectItem value="Reversed">{t("accounting.entryStatus.reversed")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,36 +91,42 @@ export const JournalEntriesList: FC = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Entries</CardTitle>
+              <CardTitle>{t("accounting.journalEntries.entries")}</CardTitle>
               <CardDescription>
-                {data?.total || 0} entr{data?.total === 1 ? "y" : "ies"} found
+                {t("accounting.journalEntries.entriesFound", { count: data?.total || 0 })}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading entries...</div>
+            <div className="text-center py-8 text-muted-foreground">
+              {t("accounting.journalEntries.loading")}
+            </div>
           ) : entries.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No journal entries found</p>
+              <p>{t("accounting.journalEntries.emptyTitle")}</p>
               <Button
                 variant="link"
                 className="mt-2"
                 onClick={() => navigate("/accounting/journal-entries/new")}
               >
-                Create your first entry
+                {t("accounting.journalEntries.emptyAction")}
               </Button>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[120px]">Entry #</TableHead>
-                  <TableHead className="w-[120px]">Date</TableHead>
-                  <TableHead>Memo</TableHead>
-                  <TableHead className="w-[120px]">Status</TableHead>
-                  <TableHead className="w-[140px] text-right">Amount</TableHead>
+                  <TableHead className="w-[120px]">
+                    {t("accounting.journalEntries.entryNumber")}
+                  </TableHead>
+                  <TableHead className="w-[120px]">{t("accounting.journalEntries.date")}</TableHead>
+                  <TableHead>{t("accounting.journalEntries.memo")}</TableHead>
+                  <TableHead className="w-[120px]">{t("common.status")}</TableHead>
+                  <TableHead className="w-[140px] text-right">
+                    {t("accounting.journalEntries.amount")}
+                  </TableHead>
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -132,17 +139,21 @@ export const JournalEntriesList: FC = () => {
                   >
                     <TableCell className="font-mono text-sm">
                       {entry.entryNumber || (
-                        <span className="text-muted-foreground italic">Draft</span>
+                        <span className="text-muted-foreground italic">
+                          {t("accounting.entryStatus.draft")}
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="text-sm">
-                      {format(new Date(entry.postingDate), "MMM d, yyyy")}
+                      {new Date(entry.postingDate).toLocaleDateString(i18n.language)}
                     </TableCell>
                     <TableCell>
                       <div className="max-w-md">
                         <div className="font-medium line-clamp-1">{entry.memo}</div>
                         <div className="text-xs text-muted-foreground">
-                          {entry.lines.length} line{entry.lines.length !== 1 ? "s" : ""}
+                          {t("accounting.journalEntries.linesCount", {
+                            count: entry.lines.length,
+                          })}
                         </div>
                       </div>
                     </TableCell>
@@ -164,7 +175,7 @@ export const JournalEntriesList: FC = () => {
                           navigate(`/accounting/journal-entries/${entry.id}`);
                         }}
                       >
-                        View
+                        {t("common.view")}
                       </Button>
                     </TableCell>
                   </TableRow>

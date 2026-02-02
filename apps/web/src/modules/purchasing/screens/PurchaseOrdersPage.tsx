@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, MoreHorizontal, Check, Send, PackageCheck, XCircle, Archive } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -18,6 +19,7 @@ import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { EmptyState } from "@/shared/components/EmptyState";
 
 export default function PurchaseOrdersPage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -56,14 +58,14 @@ export default function PurchaseOrdersPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Purchase Orders</h1>
+        <h1 className="text-h1 text-foreground">{t("purchasing.purchaseOrders.title")}</h1>
         <div className="flex gap-2">
           <Button variant="accent" onClick={() => navigate("/purchasing/purchase-orders/new")}>
             <Plus className="h-4 w-4" />
-            New PO
+            {t("purchasing.purchaseOrders.new")}
           </Button>
           <Button variant="outline" onClick={() => navigate("/purchasing/copilot")}>
-            AI: Create PO from text
+            {t("purchasing.purchaseOrders.aiCreate")}
           </Button>
         </div>
       </div>
@@ -72,8 +74,8 @@ export default function PurchaseOrdersPage() {
         <CardContent className="p-0">
           {orders.length === 0 ? (
             <EmptyState
-              title="No purchase orders"
-              description="Create your first PO or use AI to draft one."
+              title={t("purchasing.purchaseOrders.emptyTitle")}
+              description={t("purchasing.purchaseOrders.emptyDescription")}
             />
           ) : (
             <div className="overflow-x-auto">
@@ -81,19 +83,19 @@ export default function PurchaseOrdersPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      PO #
+                      {t("purchasing.purchaseOrders.columns.number")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Supplier
+                      {t("purchasing.fields.supplier")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Status
+                      {t("common.status")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Expected Delivery
+                      {t("purchasing.fields.expectedDelivery")}
                     </th>
                     <th className="text-right text-sm font-medium text-muted-foreground px-4 py-3">
-                      Total
+                      {t("common.total")}
                     </th>
                     <th className="w-12"></th>
                   </tr>
@@ -104,18 +106,20 @@ export default function PurchaseOrdersPage() {
                       key={order.id}
                       className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                     >
-                      <td className="px-4 py-3 text-sm font-medium">{order.poNumber || "Draft"}</td>
+                      <td className="px-4 py-3 text-sm font-medium">
+                        {order.poNumber || t("purchasing.statuses.draft")}
+                      </td>
                       <td className="px-4 py-3 text-sm">{order.supplierPartyId}</td>
                       <td className="px-4 py-3">
-                        <Badge>{order.status}</Badge>
+                        <Badge>{t(`purchasing.statuses.${order.status.toLowerCase()}`)}</Badge>
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {order.expectedDeliveryDate
-                          ? formatDate(order.expectedDeliveryDate, "en-US")
-                          : "-"}
+                          ? formatDate(order.expectedDeliveryDate, i18n.t("common.locale"))
+                          : t("common.empty")}
                       </td>
                       <td className="px-4 py-3 text-sm text-right font-medium">
-                        {formatMoney(order.totals.totalCents, "en-US")}
+                        {formatMoney(order.totals.totalCents, i18n.t("common.locale"))}
                       </td>
                       <td className="px-2 py-3 text-right">
                         <DropdownMenu>
@@ -125,29 +129,29 @@ export default function PurchaseOrdersPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t("common.actions")}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => navigate(`/purchasing/purchase-orders/${order.id}`)}
                             >
-                              View
+                              {t("common.view")}
                             </DropdownMenuItem>
                             {order.status === "DRAFT" && (
                               <DropdownMenuItem onClick={() => approve.mutate(order.id)}>
                                 <Check className="mr-2 h-4 w-4" />
-                                Approve
+                                {t("purchasing.actions.approve")}
                               </DropdownMenuItem>
                             )}
                             {order.status === "APPROVED" && (
                               <DropdownMenuItem onClick={() => markSent.mutate(order.id)}>
                                 <Send className="mr-2 h-4 w-4" />
-                                Mark Sent
+                                {t("purchasing.actions.markSent")}
                               </DropdownMenuItem>
                             )}
                             {(order.status === "SENT" || order.status === "APPROVED") && (
                               <DropdownMenuItem onClick={() => markReceived.mutate(order.id)}>
                                 <PackageCheck className="mr-2 h-4 w-4" />
-                                Mark Received
+                                {t("purchasing.actions.markReceived")}
                               </DropdownMenuItem>
                             )}
                             {(order.status === "SENT" ||
@@ -155,13 +159,13 @@ export default function PurchaseOrdersPage() {
                               order.status === "APPROVED") && (
                               <DropdownMenuItem onClick={() => close.mutate(order.id)}>
                                 <Archive className="mr-2 h-4 w-4" />
-                                Close
+                                {t("common.close")}
                               </DropdownMenuItem>
                             )}
                             {order.status !== "CLOSED" && order.status !== "CANCELED" && (
                               <DropdownMenuItem onClick={() => cancel.mutate(order.id)}>
                                 <XCircle className="mr-2 h-4 w-4" />
-                                Cancel
+                                {t("common.cancel")}
                               </DropdownMenuItem>
                             )}
                           </DropdownMenuContent>

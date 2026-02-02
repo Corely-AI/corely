@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { accountingApi } from "@/lib/accounting-api";
 import { accountingQueryKeys } from "./accounting.queryKeys";
 import type { UpdateAccountingSettingsInput, SetupAccountingInput } from "@corely/contracts";
@@ -16,11 +17,12 @@ export function useAccountingSettings() {
 // Mutation: Setup accounting (initial setup)
 export function useSetupAccounting() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: (input: SetupAccountingInput) => accountingApi.setupAccounting(input),
     onSuccess: () => {
-      toast.success("Accounting setup completed successfully");
+      toast.success(t("accounting.toasts.setupCompleted"));
       // Invalidate setup status, settings, accounts, and periods
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.setupStatus() });
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.settings() });
@@ -28,7 +30,7 @@ export function useSetupAccounting() {
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.periods.all() });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to setup accounting: ${error.message}`);
+      toast.error(t("accounting.toasts.setupFailed", { message: error.message }));
     },
   });
 }
@@ -36,16 +38,17 @@ export function useSetupAccounting() {
 // Mutation: Update accounting settings
 export function useUpdateAccountingSettings() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: (patch: UpdateAccountingSettingsInput) => accountingApi.updateSettings(patch),
     onSuccess: () => {
-      toast.success("Accounting settings updated successfully");
+      toast.success(t("accounting.toasts.settingsUpdated"));
       // Invalidate settings
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.settings() });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to update settings: ${error.message}`);
+      toast.error(t("accounting.toasts.settingsUpdateFailed", { message: error.message }));
     },
   });
 }

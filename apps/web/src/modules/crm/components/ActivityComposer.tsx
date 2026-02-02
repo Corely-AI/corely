@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,20 +12,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Calendar } from "@/shared/ui/calendar";
 import { Calendar as CalendarIcon, Clock3, Plus } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { format } from "date-fns";
 import { useAddDealActivity } from "../hooks/useDeal";
+import { useTranslation } from "react-i18next";
 
 const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "EMAIL_DRAFT"] as const;
-
-const activitySchema = z.object({
-  type: z.enum(ACTIVITY_TYPES),
-  subject: z.string().min(1, "Subject is required"),
-  body: z.string().optional(),
-  dueDate: z.date().optional(),
-  dueTime: z.string().optional(),
-});
-
-type ActivityFormValues = z.infer<typeof activitySchema>;
 
 interface ActivityComposerProps {
   dealId: string;
@@ -33,7 +23,20 @@ interface ActivityComposerProps {
 }
 
 export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, partyId }) => {
+  const { t, i18n } = useTranslation();
   const addActivity = useAddDealActivity();
+  const activitySchema = useMemo(
+    () =>
+      z.object({
+        type: z.enum(ACTIVITY_TYPES),
+        subject: z.string().min(1, t("crm.activity.subjectRequired")),
+        body: z.string().optional(),
+        dueDate: z.date().optional(),
+        dueTime: z.string().optional(),
+      }),
+    [t]
+  );
+  type ActivityFormValues = z.infer<typeof activitySchema>;
 
   const form = useForm<ActivityFormValues>({
     resolver: zodResolver(activitySchema),
@@ -81,8 +84,8 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-medium">Add activity</p>
-            <p className="text-sm text-muted-foreground">Log a note, task, call, or meeting.</p>
+            <p className="font-medium">{t("crm.activity.addTitle")}</p>
+            <p className="text-sm text-muted-foreground">{t("crm.activity.addSubtitle")}</p>
           </div>
           <Button
             variant="accent"
@@ -91,7 +94,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
             disabled={addActivity.isPending}
           >
             <Plus className="h-4 w-4 mr-1" />
-            Add
+            {t("common.add")}
           </Button>
         </div>
 
@@ -103,17 +106,17 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                 name="type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Type</FormLabel>
+                    <FormLabel>{t("crm.activity.type")}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
+                          <SelectValue placeholder={t("crm.activity.selectType")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {ACTIVITY_TYPES.map((type) => (
                           <SelectItem key={type} value={type}>
-                            {type}
+                            {t(`crm.activity.types.${type.toLowerCase()}`)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -127,7 +130,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                 name="dueDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Due date</FormLabel>
+                    <FormLabel>{t("crm.activity.dueDate")}</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -139,7 +142,13 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                             )}
                           >
                             <CalendarIcon className="mr-2 h-4 w-4" />
-                            {field.value ? format(field.value, "PPP") : "Pick a date"}
+                            {field.value
+                              ? field.value.toLocaleDateString(i18n.language, {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })
+                              : t("crm.activity.pickDate")}
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
@@ -160,7 +169,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                 name="dueTime"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Time</FormLabel>
+                    <FormLabel>{t("crm.activity.time")}</FormLabel>
                     <FormControl>
                       <div className="flex items-center gap-2">
                         <Clock3 className="h-4 w-4 text-muted-foreground" />
@@ -178,9 +187,9 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
               name="subject"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Subject</FormLabel>
+                  <FormLabel>{t("crm.activity.subject")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Follow up with client" {...field} />
+                    <Input placeholder={t("crm.activity.subjectPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -192,9 +201,13 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
               name="body"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes</FormLabel>
+                  <FormLabel>{t("common.notes")}</FormLabel>
                   <FormControl>
-                    <Textarea rows={3} placeholder="What was discussed? Next steps?" {...field} />
+                    <Textarea
+                      rows={3}
+                      placeholder={t("crm.activity.notesPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

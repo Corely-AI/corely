@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
@@ -55,6 +56,7 @@ const DealSkeleton = () => (
 );
 
 export default function DealDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [detailsEditing, setDetailsEditing] = useState(false);
@@ -145,7 +147,7 @@ export default function DealDetailPage() {
       return;
     }
     markLost.mutate(
-      { dealId: deal.id, reason: lostReason || "Deleted" },
+      { dealId: deal.id, reason: lostReason || t("crm.deals.deletedReason") },
       {
         onSuccess: () => {
           navigate("/crm/deals");
@@ -227,16 +229,14 @@ export default function DealDetailPage() {
       <div className="p-6 lg:p-8 space-y-4">
         <Card>
           <CardContent className="p-6 space-y-4">
-            <p className="text-lg font-semibold">Failed to load deal</p>
-            <p className="text-muted-foreground">
-              Check your connection or permissions and try again.
-            </p>
+            <p className="text-lg font-semibold">{t("crm.deals.loadFailed")}</p>
+            <p className="text-muted-foreground">{t("crm.deals.loadFailedHint")}</p>
             <div className="flex gap-3">
               <Button variant="accent" onClick={() => refetch()}>
-                Retry
+                {t("common.retry")}
               </Button>
               <Button variant="outline" onClick={() => navigate("/crm/deals")}>
-                Back to deals
+                {t("crm.deals.backToDeals")}
               </Button>
             </div>
           </CardContent>
@@ -275,16 +275,16 @@ export default function DealDetailPage() {
               >
                 <div className="flex items-center justify-between px-6 pt-6">
                   <div>
-                    <p className="text-lg font-semibold">Timeline</p>
-                    <p className="text-sm text-muted-foreground">Activities and stage changes.</p>
+                    <p className="text-lg font-semibold">{t("crm.timeline.title")}</p>
+                    <p className="text-sm text-muted-foreground">{t("crm.timeline.subtitle")}</p>
                   </div>
                   <TabsList>
-                    <TabsTrigger value="ALL">All</TabsTrigger>
-                    <TabsTrigger value="NOTE">Notes</TabsTrigger>
-                    <TabsTrigger value="CALL">Calls</TabsTrigger>
-                    <TabsTrigger value="MEETING">Meetings</TabsTrigger>
-                    <TabsTrigger value="TASK">Tasks</TabsTrigger>
-                    <TabsTrigger value="STAGE">Stage</TabsTrigger>
+                    <TabsTrigger value="ALL">{t("crm.timeline.filters.all")}</TabsTrigger>
+                    <TabsTrigger value="NOTE">{t("crm.timeline.filters.notes")}</TabsTrigger>
+                    <TabsTrigger value="CALL">{t("crm.timeline.filters.calls")}</TabsTrigger>
+                    <TabsTrigger value="MEETING">{t("crm.timeline.filters.meetings")}</TabsTrigger>
+                    <TabsTrigger value="TASK">{t("crm.timeline.filters.tasks")}</TabsTrigger>
+                    <TabsTrigger value="STAGE">{t("crm.timeline.filters.stage")}</TabsTrigger>
                   </TabsList>
                 </div>
                 <TabsContent value={timelineFilter}>
@@ -341,21 +341,19 @@ export default function DealDetailPage() {
       <Dialog open={lostDialogOpen} onOpenChange={setLostDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mark deal as lost</DialogTitle>
+            <DialogTitle>{t("crm.deals.markLostTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Provide an optional reason to track why this deal was lost.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("crm.deals.markLostDescription")}</p>
             <Input
-              placeholder="Reason (optional)"
+              placeholder={t("crm.deals.markLostPlaceholder")}
               value={lostReason}
               onChange={(e) => setLostReason(e.target.value)}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setLostDialogOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -365,7 +363,7 @@ export default function DealDetailPage() {
                 setLostReason("");
               }}
             >
-              Mark lost
+              {t("crm.deals.markLost")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -376,27 +374,26 @@ export default function DealDetailPage() {
         onOpenChange={(open) => {
           setDeleteDialogOpen(open);
           if (open) {
-            setLostReason("Deleted");
+            setLostReason(t("crm.deals.deletedReason"));
           }
         }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete deal</AlertDialogTitle>
+            <AlertDialogTitle>{t("crm.deals.deleteTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will mark the deal as lost with reason "Deleted". You can still find it in
-              records.
+              {t("crm.deals.deleteDescription", { reason: t("crm.deals.deletedReason") })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 handleDelete();
                 setDeleteDialogOpen(false);
               }}
             >
-              Delete deal
+              {t("crm.deals.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { CheckCircle2, ArrowLeft, RefreshCw, MessageSquarePlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { issuesApi } from "@/lib/issues-api";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -24,6 +25,7 @@ const STATUS_OPTIONS: IssueStatus[] = [
 ];
 
 export default function IssueDetailPage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -46,28 +48,28 @@ export default function IssueDetailPage() {
     mutationFn: (status: IssueStatus) => issuesApi.changeStatus({ issueId, status }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) });
-      toast.success("Status updated");
+      toast.success(t("issues.status.updated"));
       setStatusSelection("");
     },
-    onError: () => toast.error("Failed to update status"),
+    onError: () => toast.error(t("issues.status.updateFailed")),
   });
 
   const resolveMutation = useMutation({
     mutationFn: () => issuesApi.resolveIssue({ issueId }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) });
-      toast.success("Issue resolved");
+      toast.success(t("issues.status.resolved"));
     },
-    onError: () => toast.error("Failed to resolve issue"),
+    onError: () => toast.error(t("issues.status.resolveFailed")),
   });
 
   const reopenMutation = useMutation({
     mutationFn: () => issuesApi.reopenIssue(issueId),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) });
-      toast.success("Issue reopened");
+      toast.success(t("issues.status.reopened"));
     },
-    onError: () => toast.error("Failed to reopen issue"),
+    onError: () => toast.error(t("issues.status.reopenFailed")),
   });
 
   const addCommentMutation = useMutation({
@@ -75,16 +77,16 @@ export default function IssueDetailPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) });
       setCommentBody("");
-      toast.success("Comment added");
+      toast.success(t("issues.comments.added"));
     },
-    onError: () => toast.error("Failed to add comment"),
+    onError: () => toast.error(t("issues.comments.addFailed")),
   });
 
   const statusBadge = useMemo(() => {
     if (!issue) {
       return null;
     }
-    return <Badge variant="secondary">{issue.status.replace(/_/g, " ")}</Badge>;
+    return <Badge variant="secondary">{t(`issues.statuses.${issue.status}`)}</Badge>;
   }, [issue]);
 
   if (isLoading) {
@@ -98,7 +100,7 @@ export default function IssueDetailPage() {
   if (isError || !issue) {
     return (
       <div className="p-6 lg:p-8">
-        <p className="text-sm text-destructive">Failed to load issue.</p>
+        <p className="text-sm text-destructive">{t("issues.errors.loadFailed")}</p>
       </div>
     );
   }
@@ -115,7 +117,9 @@ export default function IssueDetailPage() {
             <div className="flex items-center gap-2 mt-1">
               {statusBadge}
               <span className="text-xs text-muted-foreground">
-                Created {formatDate(issue.createdAt, "en-US")}
+                {t("issues.createdAt", {
+                  date: formatDate(issue.createdAt, i18n.t("common.locale")),
+                })}
               </span>
             </div>
           </div>
@@ -127,7 +131,7 @@ export default function IssueDetailPage() {
             disabled={!commentBody.trim() || addCommentMutation.isPending}
           >
             <MessageSquarePlus className="h-4 w-4" />
-            Add comment
+            {t("issues.comments.add")}
           </Button>
           {issue.status !== "RESOLVED" ? (
             <Button
@@ -136,7 +140,7 @@ export default function IssueDetailPage() {
               disabled={resolveMutation.isPending}
             >
               <CheckCircle2 className="h-4 w-4" />
-              Resolve
+              {t("issues.actions.resolve")}
             </Button>
           ) : (
             <Button
@@ -145,7 +149,7 @@ export default function IssueDetailPage() {
               disabled={reopenMutation.isPending}
             >
               <RefreshCw className="h-4 w-4" />
-              Reopen
+              {t("issues.actions.reopen")}
             </Button>
           )}
         </div>
@@ -155,23 +159,29 @@ export default function IssueDetailPage() {
         <CardContent className="p-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <p className="text-xs text-muted-foreground">Priority</p>
-              <p className="text-sm font-medium">{issue.priority ?? "MEDIUM"}</p>
+              <p className="text-xs text-muted-foreground">{t("issues.fields.priority")}</p>
+              <p className="text-sm font-medium">
+                {t(`issues.priority.${(issue.priority ?? "MEDIUM").toLowerCase()}`)}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Site</p>
-              <p className="text-sm font-medium">{issue.siteType}</p>
+              <p className="text-xs text-muted-foreground">{t("issues.fields.site")}</p>
+              <p className="text-sm font-medium">
+                {issue.siteType ? t(`issues.siteTypes.${issue.siteType.toLowerCase()}`) : "—"}
+              </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Assignee</p>
-              <p className="text-sm font-medium">{issue.assigneeUserId ?? "Unassigned"}</p>
+              <p className="text-xs text-muted-foreground">{t("issues.fields.assignee")}</p>
+              <p className="text-sm font-medium">
+                {issue.assigneeUserId ?? t("issues.unassigned")}
+              </p>
             </div>
           </div>
 
           <div>
-            <p className="text-xs text-muted-foreground">Description</p>
+            <p className="text-xs text-muted-foreground">{t("issues.fields.description")}</p>
             <p className="text-sm whitespace-pre-line">
-              {issue.description ?? "No description provided."}
+              {issue.description ?? t("issues.description.empty")}
             </p>
           </div>
 
@@ -181,12 +191,12 @@ export default function IssueDetailPage() {
               onValueChange={(value) => setStatusSelection(value as IssueStatus)}
             >
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Change status" />
+                <SelectValue placeholder={t("issues.status.change")} />
               </SelectTrigger>
               <SelectContent>
                 {STATUS_OPTIONS.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {status.replace(/_/g, " ")}
+                    {t(`issues.statuses.${status}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -196,7 +206,7 @@ export default function IssueDetailPage() {
               onClick={() => statusSelection && changeStatusMutation.mutate(statusSelection)}
               disabled={!statusSelection || changeStatusMutation.isPending}
             >
-              Update status
+              {t("issues.status.update")}
             </Button>
           </div>
         </CardContent>
@@ -204,34 +214,36 @@ export default function IssueDetailPage() {
 
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold">Add comment</h2>
+          <h2 className="text-lg font-semibold">{t("issues.comments.addTitle")}</h2>
           <Textarea
             rows={3}
             value={commentBody}
             onChange={(event) => setCommentBody(event.target.value)}
-            placeholder="Add details or updates"
+            placeholder={t("issues.comments.placeholder")}
           />
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold">Comments</h2>
+          <h2 className="text-lg font-semibold">{t("issues.comments.title")}</h2>
           {comments.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No comments yet.</p>
+            <p className="text-sm text-muted-foreground">{t("issues.comments.empty")}</p>
           ) : (
             <div className="space-y-4">
               {comments.map((comment) => (
                 <div key={comment.id} className="rounded-md border border-border p-3">
                   <p className="text-sm whitespace-pre-line">{comment.body}</p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    {comment.createdByUserId} • {formatDate(comment.createdAt, "en-US")}
+                    {comment.createdByUserId} •{" "}
+                    {formatDate(comment.createdAt, i18n.t("common.locale"))}
                   </p>
                   {comment.attachments?.length ? (
                     <ul className="text-xs text-muted-foreground mt-2 list-disc list-inside">
                       {comment.attachments.map((attachment) => (
                         <li key={attachment.id}>
-                          {attachment.kind} • {attachment.mimeType} • {attachment.sizeBytes} bytes
+                          {attachment.kind} • {attachment.mimeType} •{" "}
+                          {t("common.bytes", { count: attachment.sizeBytes })}
                         </li>
                       ))}
                     </ul>
@@ -245,39 +257,43 @@ export default function IssueDetailPage() {
 
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold">Attachments</h2>
+          <h2 className="text-lg font-semibold">{t("issues.attachments.title")}</h2>
           {issue.attachments?.length ? (
             <ul className="text-sm text-muted-foreground list-disc list-inside">
               {issue.attachments.map((attachment) => (
                 <li key={attachment.id}>
-                  {attachment.kind} • {attachment.mimeType} • {attachment.sizeBytes} bytes
+                  {attachment.kind} • {attachment.mimeType} •{" "}
+                  {t("common.bytes", { count: attachment.sizeBytes })}
                   {attachment.transcriptText ? (
                     <span className="block text-xs text-foreground mt-1">
-                      Transcript: {attachment.transcriptText}
+                      {t("issues.attachments.transcript", {
+                        transcript: attachment.transcriptText,
+                      })}
                     </span>
                   ) : null}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">No attachments.</p>
+            <p className="text-sm text-muted-foreground">{t("issues.attachments.empty")}</p>
           )}
         </CardContent>
       </Card>
 
       <Card>
         <CardContent className="p-6 space-y-4">
-          <h2 className="text-lg font-semibold">Activity</h2>
+          <h2 className="text-lg font-semibold">{t("issues.activity.title")}</h2>
           {activity.length ? (
             <ul className="space-y-2 text-sm text-muted-foreground">
               {activity.map((item) => (
                 <li key={item.id}>
-                  {item.type.replace(/_/g, " ")} • {formatDate(item.createdAt, "en-US")}
+                  {item.type.replace(/_/g, " ")} •{" "}
+                  {formatDate(item.createdAt, i18n.t("common.locale"))}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">No activity yet.</p>
+            <p className="text-sm text-muted-foreground">{t("issues.activity.empty")}</p>
           )}
         </CardContent>
       </Card>

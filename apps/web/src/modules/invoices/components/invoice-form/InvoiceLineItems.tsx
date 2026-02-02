@@ -22,6 +22,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
     formState: { errors },
     watch,
   } = useFormContext<InvoiceFormData>();
+  const currency = watch("currency") || t("common.currency");
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -122,7 +123,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                           />
                         )}
                       />
-                      <span className="ml-2 text-sm text-muted-foreground">EUR</span>
+                      <span className="ml-2 text-sm text-muted-foreground">{currency}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right font-medium">{formatMoney(total, locale)}</td>

@@ -2,9 +2,10 @@ import { useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 export default function SyncScreen() {
+  const { t, i18n } = useTranslation();
   const { pendingCommands, syncStatus, isOnline, triggerSync, retryFailedCommand } =
     useSyncEngine();
   const [refreshing, setRefreshing] = useState(false);
@@ -40,28 +41,28 @@ export default function SyncScreen() {
             <View
               style={[styles.statusDot, { backgroundColor: isOnline ? "#4caf50" : "#d32f2f" }]}
             />
-            <Text style={styles.statusText}>{isOnline ? "Online" : "Offline"}</Text>
+            <Text style={styles.statusText}>{isOnline ? t("sync.online") : t("sync.offline")}</Text>
           </View>
           <TouchableOpacity style={styles.syncButton} onPress={handleRefresh} disabled={!isOnline}>
             <Ionicons name="sync-outline" size={20} color="#fff" />
-            <Text style={styles.syncButtonText}>Sync Now</Text>
+            <Text style={styles.syncButtonText}>{t("sync.syncNow")}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.stats}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{pendingCommands.length}</Text>
-            <Text style={styles.statLabel}>Pending</Text>
+            <Text style={styles.statLabel}>{t("sync.pending")}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>
               {pendingCommands.filter((c) => c.status === "FAILED").length}
             </Text>
-            <Text style={styles.statLabel}>Failed</Text>
+            <Text style={styles.statLabel}>{t("sync.failed")}</Text>
           </View>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{syncStatus === "syncing" ? "..." : "0"}</Text>
-            <Text style={styles.statLabel}>Syncing</Text>
+            <Text style={styles.statLabel}>{t("sync.syncing")}</Text>
           </View>
         </View>
       </View>
@@ -77,7 +78,13 @@ export default function SyncScreen() {
               <View style={styles.commandInfo}>
                 <Text style={styles.commandType}>{item.type}</Text>
                 <Text style={styles.commandDate}>
-                  {format(new Date(item.createdAt), "MMM d, h:mm a")}
+                  {new Date(item.createdAt).toLocaleString(i18n.language, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </Text>
               </View>
               {item.status === "FAILED" && (
@@ -93,26 +100,32 @@ export default function SyncScreen() {
             {item.status === "FAILED" && item.error && (
               <View style={styles.errorContainer}>
                 <Text style={styles.errorText}>{item.error.message}</Text>
-                {item.error.code && <Text style={styles.errorCode}>Code: {item.error.code}</Text>}
+                {item.error.code && (
+                  <Text style={styles.errorCode}>
+                    {t("sync.errorCode", { code: item.error.code })}
+                  </Text>
+                )}
               </View>
             )}
             {item.status === "CONFLICT" && (
               <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>Conflict detected</Text>
-                <Text style={styles.errorCode}>Review and retry</Text>
+                <Text style={styles.errorText}>{t("sync.conflictDetected")}</Text>
+                <Text style={styles.errorCode}>{t("sync.reviewAndRetry")}</Text>
               </View>
             )}
 
             {item.attempts > 1 && (
-              <Text style={styles.attemptsText}>Attempts: {item.attempts}</Text>
+              <Text style={styles.attemptsText}>
+                {t("sync.attempts", { count: item.attempts })}
+              </Text>
             )}
           </View>
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Ionicons name="checkmark-done-outline" size={64} color="#999" />
-            <Text style={styles.emptyTitle}>All Synced</Text>
-            <Text style={styles.emptyText}>No pending commands to sync</Text>
+            <Text style={styles.emptyTitle}>{t("sync.allSynced")}</Text>
+            <Text style={styles.emptyText}>{t("sync.noPending")}</Text>
           </View>
         }
       />

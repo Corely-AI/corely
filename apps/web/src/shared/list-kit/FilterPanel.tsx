@@ -14,6 +14,7 @@ import { Label } from "@/shared/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import type { FilterSpec, FilterOperator } from "@corely/contracts";
+import { useTranslation } from "react-i18next";
 
 export type FilterFieldType = "text" | "number" | "date" | "select" | "boolean";
 
@@ -66,6 +67,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onApply,
   fields,
 }) => {
+  const { t } = useTranslation();
   const [localFilters, setLocalFilters] = useState<FilterSpec[]>([]);
   const prevOpen = React.useRef(open);
 
@@ -117,10 +119,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:w-[540px] flex flex-col p-0 gap-0">
         <SheetHeader className="p-6 border-b border-border">
-          <SheetTitle>Filters</SheetTitle>
-          <SheetDescription>
-            Narrow down your results by adding one or more filters.
-          </SheetDescription>
+          <SheetTitle>{t("list.filters")}</SheetTitle>
+          <SheetDescription>{t("list.filtersDescription")}</SheetDescription>
         </SheetHeader>
 
         <ScrollArea className="flex-1 p-6">
@@ -148,7 +148,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   <div className="flex gap-2">
                     {/* Field Select */}
                     <div className="w-1/3">
-                      <Label className="text-xs text-muted-foreground mb-1 block">Field</Label>
+                      <Label className="text-xs text-muted-foreground mb-1 block">
+                        {t("list.filterField")}
+                      </Label>
                       <Select
                         value={filter.field}
                         onValueChange={(val) => updateFilter(index, { field: val })}
@@ -168,7 +170,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
                     {/* Operator Select */}
                     <div className="w-1/3">
-                      <Label className="text-xs text-muted-foreground mb-1 block">Operator</Label>
+                      <Label className="text-xs text-muted-foreground mb-1 block">
+                        {t("list.filterOperator")}
+                      </Label>
                       <Select
                         value={filter.operator}
                         onValueChange={(val) =>
@@ -193,14 +197,16 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   <div>
                     {filter.operator === "isNull" || filter.operator === "isNotNull" ? null : (
                       <>
-                        <Label className="text-xs text-muted-foreground mb-1 block">Value</Label>
+                        <Label className="text-xs text-muted-foreground mb-1 block">
+                          {t("list.filterValue")}
+                        </Label>
                         {fieldDef?.type === "select" && fieldDef.options ? (
                           <Select
                             value={String(filter.value)}
                             onValueChange={(val) => updateFilter(index, { value: val })}
                           >
                             <SelectTrigger className="h-9">
-                              <SelectValue placeholder="Select value" />
+                              <SelectValue placeholder={t("list.selectValue")} />
                             </SelectTrigger>
                             <SelectContent>
                               {fieldDef.options.map((opt) => (
@@ -234,7 +240,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
             {localFilters.length === 0 && (
               <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-lg">
-                No active filters
+                {t("list.noActiveFilters")}
               </div>
             )}
 
@@ -245,16 +251,16 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               className="w-full border-dashed"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Filter
+              {t("list.addFilter")}
             </Button>
           </div>
         </ScrollArea>
 
         <SheetFooter className="p-6 border-t border-border mt-auto">
           <Button variant="outline" onClick={() => setLocalFilters([])}>
-            Clear all
+            {t("list.clearAll")}
           </Button>
-          <Button onClick={handleApply}>Apply Filters</Button>
+          <Button onClick={handleApply}>{t("list.applyFilters")}</Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

@@ -182,7 +182,9 @@ export function CustomerSelection({ additionalOptions = [] }: CustomerSelectionP
             <div className="text-sm text-muted-foreground">{selectedCustomer.email}</div>
           )}
           {selectedCustomer.vatId && (
-            <div className="text-sm text-muted-foreground">VAT: {selectedCustomer.vatId}</div>
+            <div className="text-sm text-muted-foreground">
+              {t("customers.vatLabel", { vatId: selectedCustomer.vatId })}
+            </div>
           )}
         </div>
       )}

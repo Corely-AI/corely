@@ -11,8 +11,10 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/stores/authStore";
+import { useTranslation } from "react-i18next";
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { login, isLoading } = useAuthStore();
   const [email, setEmail] = useState("");
@@ -24,8 +26,12 @@ export default function LoginScreen() {
     try {
       await login(email, password);
       router.replace("/(main)");
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message) {
+        setError(err.message);
+      } else {
+        setError(t("auth.loginFailed"));
+      }
     }
   };
 
@@ -35,14 +41,14 @@ export default function LoginScreen() {
       style={styles.container}
     >
       <View style={styles.content}>
-        <Text style={styles.title}>Corely POS</Text>
-        <Text style={styles.subtitle}>Sign in to continue</Text>
+        <Text style={styles.title}>{t("common.appName")}</Text>
+        <Text style={styles.subtitle}>{t("common.continueSignIn")}</Text>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
+          placeholder={t("common.email")}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -52,7 +58,7 @@ export default function LoginScreen() {
 
         <TextInput
           style={styles.input}
-          placeholder="Password"
+          placeholder={t("common.password")}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
@@ -67,7 +73,7 @@ export default function LoginScreen() {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Sign In</Text>
+            <Text style={styles.buttonText}>{t("common.signIn")}</Text>
           )}
         </TouchableOpacity>
       </View>

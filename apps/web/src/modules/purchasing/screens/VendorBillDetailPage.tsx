@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save, Check, Upload, CreditCard, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -12,6 +13,7 @@ import { purchasingApi } from "@/lib/purchasing-api";
 import { formatMoney } from "@/shared/lib/formatters";
 
 export default function VendorBillDetailPage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -85,10 +87,10 @@ export default function VendorBillDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Vendor Bill</h1>
+            <h1 className="text-h1 text-foreground">{t("purchasing.vendorBills.detailTitle")}</h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{data.billNumber || "Draft"}</span>
-              <Badge>{data.status}</Badge>
+              <span>{data.billNumber || t("purchasing.statuses.draft")}</span>
+              <Badge>{t(`purchasing.statuses.${data.status.toLowerCase()}`)}</Badge>
             </div>
           </div>
         </div>
@@ -96,19 +98,19 @@ export default function VendorBillDetailPage() {
           {editable && (
             <Button variant="accent" onClick={() => updateMutation.mutate()}>
               <Save className="h-4 w-4" />
-              Save Draft
+              {t("purchasing.actions.saveDraft")}
             </Button>
           )}
           {data.status === "DRAFT" && (
             <Button variant="outline" onClick={() => approve.mutate()}>
               <Check className="h-4 w-4" />
-              Approve
+              {t("purchasing.actions.approve")}
             </Button>
           )}
           {data.status === "APPROVED" && (
             <Button variant="outline" onClick={() => post.mutate()}>
               <Upload className="h-4 w-4" />
-              Post
+              {t("purchasing.actions.post")}
             </Button>
           )}
           {data.status === "POSTED" && (
@@ -117,13 +119,13 @@ export default function VendorBillDetailPage() {
               onClick={() => navigate(`/purchasing/vendor-bills/${data.id}/pay`)}
             >
               <CreditCard className="h-4 w-4" />
-              Record Payment
+              {t("purchasing.actions.recordPayment")}
             </Button>
           )}
           {data.status !== "VOID" && (
             <Button variant="ghost" onClick={() => voidBill.mutate()}>
               <XCircle className="h-4 w-4" />
-              Void
+              {t("purchasing.actions.void")}
             </Button>
           )}
         </div>
@@ -134,29 +136,29 @@ export default function VendorBillDetailPage() {
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <Label>Supplier</Label>
+                <Label>{t("purchasing.fields.supplier")}</Label>
                 <Input value={data.supplierPartyId} disabled />
               </div>
               <div>
-                <Label>Bill Number</Label>
+                <Label>{t("purchasing.fields.billNumber")}</Label>
                 <Input value={data.billNumber || ""} disabled />
               </div>
               <div>
-                <Label>Bill Date</Label>
+                <Label>{t("purchasing.fields.billDate")}</Label>
                 <Input value={data.billDate} disabled />
               </div>
               <div>
-                <Label>Due Date</Label>
+                <Label>{t("purchasing.fields.dueDate")}</Label>
                 <Input value={data.dueDate} disabled />
               </div>
               <div>
-                <Label>Currency</Label>
+                <Label>{t("purchasing.fields.currency")}</Label>
                 <Input value={data.currency} disabled={!editable} />
               </div>
             </div>
 
             <div>
-              <Label>Notes</Label>
+              <Label>{t("common.notes")}</Label>
               <Textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
@@ -165,7 +167,7 @@ export default function VendorBillDetailPage() {
             </div>
 
             <div className="space-y-3">
-              <Label>Line Items</Label>
+              <Label>{t("purchasing.fields.lineItems")}</Label>
               {lineItems.map((item, idx) => (
                 <div key={item.id} className="grid grid-cols-12 gap-2">
                   <Input className="col-span-6" value={item.description} disabled />
@@ -200,22 +202,22 @@ export default function VendorBillDetailPage() {
         <div className="flex flex-col gap-4">
           <Card>
             <CardContent className="p-6 space-y-3">
-              <h2 className="text-lg font-semibold">Totals</h2>
+              <h2 className="text-lg font-semibold">{t("common.totals")}</h2>
               <div className="flex items-center justify-between text-sm">
-                <span>Subtotal</span>
-                <span>{formatMoney(data.totals.subtotalCents, "en-US")}</span>
+                <span>{t("common.subtotal")}</span>
+                <span>{formatMoney(data.totals.subtotalCents, i18n.t("common.locale"))}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>Tax</span>
-                <span>{formatMoney(data.totals.taxCents, "en-US")}</span>
+                <span>{t("common.tax")}</span>
+                <span>{formatMoney(data.totals.taxCents, i18n.t("common.locale"))}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>Paid</span>
-                <span>{formatMoney(data.totals.paidCents, "en-US")}</span>
+                <span>{t("common.paid")}</span>
+                <span>{formatMoney(data.totals.paidCents, i18n.t("common.locale"))}</span>
               </div>
               <div className="flex items-center justify-between font-semibold">
-                <span>Due</span>
-                <span>{formatMoney(data.totals.dueCents, "en-US")}</span>
+                <span>{t("common.due")}</span>
+                <span>{formatMoney(data.totals.dueCents, i18n.t("common.locale"))}</span>
               </div>
             </CardContent>
           </Card>

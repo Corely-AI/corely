@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { CheckSquare, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
 import { crmApi } from "@/lib/crm-api";
@@ -9,6 +10,7 @@ import { EmptyState } from "@/shared/components/EmptyState";
 import { ActivityCard } from "../components/ActivityCard";
 
 export default function ActivitiesPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const { data: activitiesData } = useQuery({
@@ -21,10 +23,10 @@ export default function ActivitiesPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Activities</h1>
+        <h1 className="text-h1 text-foreground">{t("crm.activities.title")}</h1>
         <Button variant="accent" onClick={() => navigate("/crm/activities/new")}>
           <Plus className="h-4 w-4" />
-          New Activity
+          {t("crm.activities.new")}
         </Button>
       </div>
 
@@ -33,8 +35,8 @@ export default function ActivitiesPage() {
           <CardContent className="p-0">
             <EmptyState
               icon={CheckSquare}
-              title="No activities yet"
-              description="Create tasks, calls, and meetings to track your work"
+              title={t("crm.activities.emptyTitle")}
+              description={t("crm.activities.emptyDescription")}
             />
           </CardContent>
         </Card>

@@ -2,33 +2,38 @@ import type { FC } from "react";
 import type { ActivityType, TimelineItem } from "@corely/contracts";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
 import { ArrowRight } from "lucide-react";
-import { format } from "date-fns";
 import { MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface TimelineViewProps {
   items: TimelineItem[];
 }
 
 export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
+  const { t, i18n } = useTranslation();
   if (items.length === 0) {
-    return <div className="text-center text-muted-foreground py-8">No timeline items yet</div>;
+    return <div className="text-center text-muted-foreground py-8">{t("crm.timeline.empty")}</div>;
   }
 
   const grouped = items.reduce<Record<string, TimelineItem[]>>((acc, item) => {
-    const dateKey = format(new Date(item.timestamp), "PPP");
+    const dateKey = new Date(item.timestamp).toISOString().slice(0, 10);
     acc[dateKey] = acc[dateKey] ? [...acc[dateKey], item] : [item];
     return acc;
   }, {});
 
-  const sortedDates = Object.keys(grouped).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime()
-  );
+  const sortedDates = Object.keys(grouped).sort((a, b) => (a < b ? 1 : -1));
 
   return (
     <div className="space-y-6">
       {sortedDates.map((date) => (
         <div key={date} className="space-y-3">
-          <p className="text-xs font-semibold text-muted-foreground">{date}</p>
+          <p className="text-xs font-semibold text-muted-foreground">
+            {new Date(date).toLocaleDateString(i18n.language, {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </p>
           <div className="space-y-3">
             {grouped[date].map((item) => {
               const isStageChange = item.type === "STAGE_TRANSITION";
@@ -55,7 +60,7 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                       <div>
                         <h4 className="font-medium text-sm">
                           {item.type === "MESSAGE" && item.channelKey
-                            ? `${item.channelKey} message`
+                            ? t("crm.timeline.channelMessage", { channel: item.channelKey })
                             : item.subject}
                         </h4>
                         {item.body && (
@@ -65,17 +70,33 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                         )}
                         {isActivity && item.metadata?.dueAt && (
                           <p className="text-xs text-muted-foreground">
-                            Due {format(new Date(item.metadata.dueAt as string), "PPp")}
+                            {t("crm.timeline.due", {
+                              date: new Date(item.metadata.dueAt as string).toLocaleString(
+                                i18n.language,
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              ),
+                            })}
                           </p>
                         )}
                         {isStageChange && item.metadata?.toStageId && (
                           <p className="text-xs text-muted-foreground">
-                            Stage: {String(item.metadata.toStageId)}
+                            {t("crm.timeline.stage", {
+                              stage: String(item.metadata.toStageId),
+                            })}
                           </p>
                         )}
                       </div>
                       <time className="text-xs text-muted-foreground">
-                        {format(new Date(item.timestamp), "p")}
+                        {new Date(item.timestamp).toLocaleTimeString(i18n.language, {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </time>
                     </div>
                   </div>

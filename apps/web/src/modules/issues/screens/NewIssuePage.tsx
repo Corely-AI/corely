@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Mic, MicOff } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import type { AttachmentMetadata, UploadFileOutput } from "@corely/contracts";
 import { apiClient } from "@/lib/api-client";
 import { issuesApi } from "@/lib/issues-api";
@@ -49,6 +50,7 @@ const getAudioDuration = (file: Blob) =>
   });
 
 export default function NewIssuePage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -149,7 +151,11 @@ export default function NewIssuePage() {
 
       if (SpeechRecognitionCtor) {
         const recognition = new SpeechRecognitionCtor();
-        recognition.lang = "vi-VN";
+        const preferredLocale = i18n.t("common.locale");
+        recognition.lang =
+          typeof preferredLocale === "string" && preferredLocale.trim().length > 0
+            ? preferredLocale
+            : i18n.language || "en-US";
         recognition.interimResults = true;
         recognition.onresult = (event: any) => {
           let transcript = "";
@@ -163,7 +169,7 @@ export default function NewIssuePage() {
       }
     } catch (error) {
       console.error(error);
-      toast.error("Microphone access denied");
+      toast.error(t("issues.errors.microphoneDenied"));
     }
   };
 
@@ -184,9 +190,9 @@ export default function NewIssuePage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Report Issue</h1>
+        <h1 className="text-h1 text-foreground">{t("issues.reportTitle")}</h1>
         <Button variant="outline" onClick={() => navigate("/issues")}>
-          Cancel
+          {t("common.cancel")}
         </Button>
       </div>
 
@@ -195,11 +201,11 @@ export default function NewIssuePage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">{t("issues.fields.title")}</Label>
                 <Input id="title" {...form.register("title")} />
               </div>
               <div className="space-y-2">
-                <Label>Priority</Label>
+                <Label>{t("issues.fields.priority")}</Label>
                 <Select
                   value={form.watch("priority")}
                   onValueChange={(value) =>
@@ -207,26 +213,26 @@ export default function NewIssuePage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
+                    <SelectValue placeholder={t("issues.placeholders.priority")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="LOW">Low</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
-                    <SelectItem value="URGENT">Urgent</SelectItem>
+                    <SelectItem value="LOW">{t("issues.priority.low")}</SelectItem>
+                    <SelectItem value="MEDIUM">{t("issues.priority.medium")}</SelectItem>
+                    <SelectItem value="HIGH">{t("issues.priority.high")}</SelectItem>
+                    <SelectItem value="URGENT">{t("issues.priority.urgent")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t("issues.fields.description")}</Label>
               <Textarea id="description" rows={4} {...form.register("description")} />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>Site type</Label>
+                <Label>{t("issues.fields.siteType")}</Label>
                 <Select
                   value={form.watch("siteType")}
                   onValueChange={(value) =>
@@ -234,31 +240,35 @@ export default function NewIssuePage() {
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select site" />
+                    <SelectValue placeholder={t("issues.placeholders.siteType")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="FIELD">Field</SelectItem>
-                    <SelectItem value="CUSTOMER">Customer</SelectItem>
-                    <SelectItem value="MANUFACTURER">Manufacturer</SelectItem>
+                    <SelectItem value="FIELD">{t("issues.siteTypes.field")}</SelectItem>
+                    <SelectItem value="CUSTOMER">{t("issues.siteTypes.customer")}</SelectItem>
+                    <SelectItem value="MANUFACTURER">
+                      {t("issues.siteTypes.manufacturer")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="siteId">Site ID (optional)</Label>
+                <Label htmlFor="siteId">{t("issues.fields.siteIdOptional")}</Label>
                 <Input id="siteId" {...form.register("siteId")} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="customerPartyId">Customer ID (optional)</Label>
+                <Label htmlFor="customerPartyId">{t("issues.fields.customerIdOptional")}</Label>
                 <Input id="customerPartyId" {...form.register("customerPartyId")} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="manufacturerPartyId">Manufacturer ID (optional)</Label>
+                <Label htmlFor="manufacturerPartyId">
+                  {t("issues.fields.manufacturerIdOptional")}
+                </Label>
                 <Input id="manufacturerPartyId" {...form.register("manufacturerPartyId")} />
               </div>
             </div>
 
             <div className="space-y-3">
-              <Label>Image attachments</Label>
+              <Label>{t("issues.attachments.images")}</Label>
               <Input
                 type="file"
                 accept="image/*"
@@ -271,7 +281,7 @@ export default function NewIssuePage() {
             </div>
 
             <div className="space-y-3">
-              <Label>Voice note</Label>
+              <Label>{t("issues.voiceNote")}</Label>
               <div className="flex items-center gap-3">
                 <Button
                   type="button"
@@ -279,28 +289,26 @@ export default function NewIssuePage() {
                   onClick={isRecording ? stopRecording : startRecording}
                 >
                   {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                  {isRecording ? "Stop recording" : "Record"}
+                  {isRecording ? t("issues.stopRecording") : t("issues.startRecording")}
                 </Button>
                 {voiceNoteUrl ? <audio controls src={voiceNoteUrl} className="h-8" /> : null}
               </div>
               {canUseSpeech ? (
                 <p className="text-xs text-muted-foreground">
-                  Live transcription will appear below while recording.
+                  {t("issues.speech.liveTranscription")}
                 </p>
               ) : (
-                <p className="text-xs text-muted-foreground">
-                  Speech recognition is not available in this browser.
-                </p>
+                <p className="text-xs text-muted-foreground">{t("issues.speech.notAvailable")}</p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="transcript">Transcript (optional)</Label>
+              <Label htmlFor="transcript">{t("issues.fields.transcriptOptional")}</Label>
               <Textarea id="transcript" rows={3} {...form.register("transcript")} />
             </div>
 
             <div className="space-y-2">
-              <Label>Audio attachments</Label>
+              <Label>{t("issues.attachments.audio")}</Label>
               <Input
                 type="file"
                 accept="audio/*"
@@ -314,7 +322,7 @@ export default function NewIssuePage() {
 
             {uploadedAttachments.length ? (
               <div className="rounded-md border border-border bg-muted/40 p-3 text-sm">
-                <p className="font-medium">Uploaded attachments</p>
+                <p className="font-medium">{t("issues.attachments.uploaded")}</p>
                 <ul className="list-disc list-inside">
                   {uploadedAttachments.map((file) => (
                     <li key={file.documentId}>{file.name}</li>
@@ -325,7 +333,7 @@ export default function NewIssuePage() {
 
             <div className="flex justify-end gap-2">
               <Button type="submit" variant="accent" disabled={createMutation.isPending}>
-                {createMutation.isPending ? "Submitting..." : "Submit issue"}
+                {createMutation.isPending ? t("issues.submitting") : t("issues.submit")}
               </Button>
             </div>
           </form>
