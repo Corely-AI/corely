@@ -488,5 +488,15 @@
       "periodReopened": "Period {{name}} reopened successfully",
       "periodReopenFailed": "Failed to reopen period: {{message}}"
     }
+  },
+  "forms": {
+    "submit": "Submit",
+    "repeater": {
+      "missingItemFields": "Missing repeater item fields",
+      "empty": "No rows added",
+      "row": "Row {{index}}",
+      "remove": "Remove",
+      "add": "Add row"
+    }
   }
 }

@@ -477,5 +477,15 @@
       "periodReopened": "Periode {{name}} erfolgreich geöffnet",
       "periodReopenFailed": "Periode konnte nicht geöffnet werden: {{message}}"
     }
+  },
+  "forms": {
+    "submit": "Absenden",
+    "repeater": {
+      "missingItemFields": "Fehlende Wiederholungsfelder",
+      "empty": "Keine Zeilen hinzugefügt",
+      "row": "Zeile {{index}}",
+      "remove": "Entfernen",
+      "add": "Zeile hinzufügen"
+    }
   }
 }

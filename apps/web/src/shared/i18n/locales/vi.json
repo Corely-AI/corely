@@ -467,5 +467,15 @@
       "periodReopened": "Đã mở lại kỳ {{name}}",
       "periodReopenFailed": "Không thể mở lại kỳ: {{message}}"
     }
+  },
+  "forms": {
+    "submit": "Gửi",
+    "repeater": {
+      "missingItemFields": "Thiếu trường của mục lặp",
+      "empty": "Chưa có dòng nào",
+      "row": "Dòng {{index}}",
+      "remove": "Xóa",
+      "add": "Thêm dòng"
+    }
   }
 }

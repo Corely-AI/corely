@@ -2,6 +2,8 @@
 import React, { act } from "react";
 import { describe, expect, it } from "vitest";
 import { createRoot } from "react-dom/client";
+import { I18nextProvider } from "react-i18next";
+import i18n from "@/shared/i18n";
 import { QuestionForm } from "./QuestionForm";
 import type { CollectInputsToolInput, CollectInputsToolOutput } from "@corely/contracts";
 
@@ -33,12 +35,14 @@ describe("QuestionForm repeater", () => {
 
     act(() => {
       root.render(
-        <QuestionForm
-          request={request}
-          onSubmit={(output) => {
-            submitted = output;
-          }}
-        />
+        <I18nextProvider i18n={i18n}>
+          <QuestionForm
+            request={request}
+            onSubmit={(output) => {
+              submitted = output;
+            }}
+          />
+        </I18nextProvider>
       );
     });
 
@@ -73,12 +77,16 @@ describe("QuestionForm repeater", () => {
     const root = createRoot(container);
 
     act(() => {
-      root.render(<QuestionForm request={request} onSubmit={() => undefined} />);
+      root.render(
+        <I18nextProvider i18n={i18n}>
+          <QuestionForm request={request} onSubmit={() => undefined} />
+        </I18nextProvider>
+      );
     });
 
     expect(container.querySelectorAll("input")).toHaveLength(1);
 
-    const addButton = findButtonByLabel(container, "Add row");
+    const addButton = findButtonByLabel(container, i18n.t("forms.repeater.add"));
     act(() => {
       addButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
@@ -86,7 +94,7 @@ describe("QuestionForm repeater", () => {
     expect(container.querySelectorAll("input")).toHaveLength(2);
 
     const removeButtons = Array.from(container.querySelectorAll("button")).filter(
-      (button) => button.textContent === "Remove"
+      (button) => button.textContent === i18n.t("forms.repeater.remove")
     );
     act(() => {
       removeButtons[0]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
