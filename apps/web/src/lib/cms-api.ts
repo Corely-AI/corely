@@ -48,9 +48,7 @@ export type CmsReaderSession = {
 };
 
 export const resolveCmsApiBaseUrl = () =>
-  import.meta.env.VITE_API_BASE_URL ||
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? "/api" : "http://localhost:3000");
+  import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "/api" : "http://localhost:3000");
 
 export const buildPublicFileUrl = (fileId: string) =>
   `${resolveCmsApiBaseUrl()}/public/documents/files/${fileId}`;

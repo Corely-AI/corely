@@ -685,6 +685,9 @@ importers:
         specifier: ^4.5.7
         version: 4.5.7(@types/react@18.3.27)(react@18.3.1)
     devDependencies:
+      '@corely/vite-config':
+        specifier: workspace:*
+        version: link:../../packages/tooling/vite-config
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.39.2
