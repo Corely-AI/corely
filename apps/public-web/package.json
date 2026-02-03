@@ -1,0 +1,46 @@
+{
+  "name": "@corely/public-web",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "dependencies": {
+    "@corely/api-client": "workspace:*",
+    "@corely/contracts": "workspace:*",
+    "@corely/ui": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "lucide-react": "^0.462.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router-dom": "^6.30.1"
+  },
+  "devDependencies": {
+    "@corely/vite-config": "workspace:*",
+    "@eslint/js": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react-swc": "catalog:",
+    "autoprefixer": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vite": "catalog:"
+  },
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "pnpm --filter @corely/vite-config build",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

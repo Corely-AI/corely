@@ -27,6 +27,7 @@ import type { GetTeamMemberUseCase } from "./use-cases/get-team-member.usecase";
 import type { ListTeamMembersUseCase } from "./use-cases/list-team-members.usecase";
 import type { DeleteTeamMemberUseCase } from "./use-cases/delete-team-member.usecase";
 import type { GetPublicShowcaseUseCase } from "./use-cases/get-public-showcase.usecase";
+import type { ListPublicShowcasesUseCase } from "./use-cases/list-public-showcases.usecase";
 import type { ListPublicProjectsUseCase } from "./use-cases/list-public-projects.usecase";
 import type { GetPublicProjectUseCase } from "./use-cases/get-public-project.usecase";
 import type { ListPublicClientsUseCase } from "./use-cases/list-public-clients.usecase";
@@ -64,6 +65,7 @@ export class PortfolioApplication {
     public readonly listTeamMembers: ListTeamMembersUseCase,
     public readonly deleteTeamMember: DeleteTeamMemberUseCase,
     public readonly getPublicShowcase: GetPublicShowcaseUseCase,
+    public readonly listPublicShowcases: ListPublicShowcasesUseCase,
     public readonly listPublicProjects: ListPublicProjectsUseCase,
     public readonly getPublicProject: GetPublicProjectUseCase,
     public readonly listPublicClients: ListPublicClientsUseCase,

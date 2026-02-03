@@ -11,6 +11,7 @@ import {
   err,
 } from "@corely/kernel";
 import type { PublicPortfolioShowcaseOutput } from "@corely/contracts";
+import { assertPublicModuleEnabled, getPublicWorkspaceMetadata } from "../../../../shared/public";
 import {
   SHOWCASE_REPOSITORY_PORT,
   type ShowcaseRepositoryPort,
@@ -57,6 +58,13 @@ export class GetPublicShowcaseUseCase extends BaseUseCase<
     input: { slug?: string; domain?: string },
     ctx: UseCaseContext
   ): Promise<Result<PublicPortfolioShowcaseOutput, UseCaseError>> {
+    if (getPublicWorkspaceMetadata(ctx)) {
+      const publishError = assertPublicModuleEnabled(ctx, "portfolio");
+      if (publishError) {
+        return err(publishError);
+      }
+    }
+
     if (!input.slug && !input.domain) {
       return err(new ValidationError("Either slug or domain is required"));
     }
@@ -67,7 +75,8 @@ export class GetPublicShowcaseUseCase extends BaseUseCase<
     } else {
       showcase = await this.showcaseRepo.findBySlug(input.slug ?? "", {
         publishedOnly: true,
-        tenantId: ctx.tenantId, // Optional: if tenant context exists, use it? Or just global lookup.
+        tenantId: ctx.tenantId,
+        workspaceId: ctx.workspaceId,
         // For safety, let's allow finding by slug globally if no tenant provided.
       });
     }

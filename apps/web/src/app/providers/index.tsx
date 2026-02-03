@@ -9,8 +9,10 @@ import { AuthProvider } from "@/lib/auth-provider";
 import { WorkspaceProvider } from "@/shared/workspaces/workspace-provider";
 import { WorkspaceConfigProvider } from "@/shared/workspaces/workspace-config-provider";
 import { OfflineProvider } from "@/offline/offline-provider";
+import { useThemeStore } from "@/shared/theme/themeStore";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
+  const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
   const queryClient = useMemo(
     () =>
       new QueryClient({
@@ -34,7 +36,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
                 <TooltipProvider>
                   {children}
                   <Toaster />
-                  <Sonner />
+                  <Sonner theme={resolvedTheme} />
                 </TooltipProvider>
               </PostHogProvider>
             </OfflineProvider>

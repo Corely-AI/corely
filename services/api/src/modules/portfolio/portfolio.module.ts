@@ -10,6 +10,7 @@ import { PortfolioClientsController } from "./http/portfolio-clients.controller"
 import { PortfolioServicesController } from "./http/portfolio-services.controller";
 import { PortfolioTeamController } from "./http/portfolio-team.controller";
 import { PortfolioPublicController } from "./http/portfolio-public.controller";
+import { PortfolioPublicSiteController } from "./http/portfolio-public-site.controller";
 import { PrismaShowcaseRepository } from "./infrastructure/prisma/prisma-showcase-repository.adapter";
 import { PrismaProfileRepository } from "./infrastructure/prisma/prisma-profile-repository.adapter";
 import { PrismaProjectRepository } from "./infrastructure/prisma/prisma-project-repository.adapter";
@@ -46,6 +47,7 @@ import { GetTeamMemberUseCase } from "./application/use-cases/get-team-member.us
 import { ListTeamMembersUseCase } from "./application/use-cases/list-team-members.usecase";
 import { DeleteTeamMemberUseCase } from "./application/use-cases/delete-team-member.usecase";
 import { GetPublicShowcaseUseCase } from "./application/use-cases/get-public-showcase.usecase";
+import { ListPublicShowcasesUseCase } from "./application/use-cases/list-public-showcases.usecase";
 import { ListPublicProjectsUseCase } from "./application/use-cases/list-public-projects.usecase";
 import { GetPublicProjectUseCase } from "./application/use-cases/get-public-project.usecase";
 import { ListPublicClientsUseCase } from "./application/use-cases/list-public-clients.usecase";
@@ -68,6 +70,7 @@ import { TEAM_REPOSITORY_PORT } from "./application/ports/team-repository.port";
     PortfolioServicesController,
     PortfolioTeamController,
     PortfolioPublicController,
+    PortfolioPublicSiteController,
   ],
   providers: [
     PrismaShowcaseRepository,
@@ -112,6 +115,7 @@ import { TEAM_REPOSITORY_PORT } from "./application/ports/team-repository.port";
     ListTeamMembersUseCase,
     DeleteTeamMemberUseCase,
     GetPublicShowcaseUseCase,
+    ListPublicShowcasesUseCase,
     ListPublicProjectsUseCase,
     GetPublicProjectUseCase,
     ListPublicClientsUseCase,
@@ -149,6 +153,7 @@ import { TEAM_REPOSITORY_PORT } from "./application/ports/team-repository.port";
         listTeamMembers: ListTeamMembersUseCase,
         deleteTeamMember: DeleteTeamMemberUseCase,
         getPublicShowcase: GetPublicShowcaseUseCase,
+        listPublicShowcases: ListPublicShowcasesUseCase,
         listPublicProjects: ListPublicProjectsUseCase,
         getPublicProject: GetPublicProjectUseCase,
         listPublicClients: ListPublicClientsUseCase,
@@ -185,6 +190,7 @@ import { TEAM_REPOSITORY_PORT } from "./application/ports/team-repository.port";
           listTeamMembers,
           deleteTeamMember,
           getPublicShowcase,
+          listPublicShowcases,
           listPublicProjects,
           getPublicProject,
           listPublicClients,
@@ -221,6 +227,7 @@ import { TEAM_REPOSITORY_PORT } from "./application/ports/team-repository.port";
         ListTeamMembersUseCase,
         DeleteTeamMemberUseCase,
         GetPublicShowcaseUseCase,
+        ListPublicShowcasesUseCase,
         ListPublicProjectsUseCase,
         GetPublicProjectUseCase,
         ListPublicClientsUseCase,

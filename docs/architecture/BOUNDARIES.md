@@ -10,11 +10,13 @@ Allowed imports:
 - `app/*` → `modules/*`, `shared/*`
 - `modules/*` → `shared/*`
 - `shared/*` → no module imports
+- `apps/*` → `packages/ui` for shared design-system components
 
 Forbidden:
 
 - `shared/*` importing `modules/*`
 - `modules/*` deep-importing another module's internals
+- `apps/*` importing UI/components from another app (use `@corely/ui`)
 
 Examples:
 
