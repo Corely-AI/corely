@@ -1,1 +1,1 @@
-export * from "@corely/ui";
+export { SonnerToaster as Toaster, sonnerToast as toast } from "@corely/ui";

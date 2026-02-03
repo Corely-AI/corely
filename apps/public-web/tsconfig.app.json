@@ -20,8 +20,16 @@
 
     "baseUrl": "..",
     "paths": {
-      "@/*": ["public-web/src/*"]
+      "@/*": ["public-web/src/*"],
+      "@corely/api-client": ["../packages/api-client/src/index.ts"],
+      "@corely/contracts": ["../packages/contracts/src/index.ts"],
+      "@corely/ui": ["../packages/ui/src/index.ts"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "../../packages/api-client/src",
+    "../../packages/contracts/src",
+    "../../packages/ui/src"
+  ]
 }
