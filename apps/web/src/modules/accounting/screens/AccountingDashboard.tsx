@@ -2,8 +2,8 @@ import React, { type FC } from "react";
 import { useNavigate } from "react-router-dom";
 import { Calculator, FileText, BarChart3, Settings, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { useSetupStatus, useJournalEntries, useAccounts } from "../queries";
 
 /**

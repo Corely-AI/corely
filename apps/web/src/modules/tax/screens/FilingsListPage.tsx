@@ -4,10 +4,10 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { AlertTriangle, FileText, Plus } from "lucide-react";
 import { taxApi } from "@/lib/tax-api";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@corely/ui";
 import { VatPeriodNavigator } from "../components/VatPeriodNavigator";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
+import { Badge } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import { CrudListPageLayout, CrudRowActions } from "@/shared/crud";
@@ -24,14 +24,14 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/shared/ui/pagination";
+} from "@corely/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+} from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import type {
   ListTaxFilingsInput,
   TaxFilingStatus,

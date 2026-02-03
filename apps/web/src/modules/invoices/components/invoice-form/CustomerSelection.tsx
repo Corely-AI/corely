@@ -6,9 +6,9 @@ import { Plus } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
-import { Input } from "@/shared/ui/input";
+import { Button } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Input } from "@corely/ui";
 import {
   CommandDialog,
   CommandEmpty,
@@ -16,7 +16,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/shared/ui/command";
+} from "@corely/ui";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +24,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
+} from "@corely/ui";
 import { customersApi } from "@/lib/customers-api";
 import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
 import {

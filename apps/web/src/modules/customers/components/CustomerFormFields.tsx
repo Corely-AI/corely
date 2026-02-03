@@ -3,9 +3,9 @@ import type { UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/shared/lib/utils";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
 
 import type { CustomerFormData } from "../schemas/customer-form.schema";
 

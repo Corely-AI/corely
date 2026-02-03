@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Store } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "@/shared/ui/dialog";
+} from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
 import { cashManagementApi } from "@/lib/cash-management-api";
 import { cashKeys } from "../queries";

@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Button } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { Skeleton } from "@/shared/components/Skeleton";
 import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
+import { Badge } from "@corely/ui";
 import { useVatPeriodsQuery } from "../hooks/useVatPeriodsQuery";
 import type { VatPeriodItem } from "@corely/contracts";
 

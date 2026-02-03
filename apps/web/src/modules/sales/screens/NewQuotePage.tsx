@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/shared/ui/card";
+import { Card, CardContent } from "@corely/ui";
 import { salesApi } from "@/lib/sales-api";
 import { customersApi } from "@/lib/customers-api";
 import { QuoteForm, type QuoteFormValues } from "../components/QuoteForm";

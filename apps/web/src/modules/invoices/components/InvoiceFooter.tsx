@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
-import { Label } from "@/shared/ui/label";
+import { Label } from "@corely/ui";
 import { PaymentMethodSwitcher, ContactDetailsDialog, TaxDetailsDialog } from "@/modules/settings";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { useNavigate } from "react-router-dom";

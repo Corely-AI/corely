@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 
 // Mock the Select UI components to avoid Radix Portal issues in tests
 // and to ensure clean rendering.
-vi.mock("@/shared/ui/select", () => ({
+vi.mock("@corely/ui", () => ({
   Select: ({ children }: any) => <div data-testid="select-root">{children}</div>,
   SelectTrigger: ({ children }: any) => <button role="combobox">{children}</button>,
   SelectValue: ({ placeholder }: any) => <span>{placeholder || "Select"}</span>,

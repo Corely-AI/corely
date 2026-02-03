@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@corely/ui";
 import { DealStageSelect } from "./DealStageSelect";
 import type { ChannelDefinition, DealDto } from "@corely/contracts";
 import { Mail, MessageCircle, StickyNote, Trash2, Linkedin } from "lucide-react";

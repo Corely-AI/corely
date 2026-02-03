@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { type TaxFilingSummary } from "@corely/contracts";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Loader2, ArrowRight, FileText, CheckCircle2 } from "lucide-react";
 
 interface NextUpCardProps {

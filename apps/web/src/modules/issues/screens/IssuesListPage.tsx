@@ -2,9 +2,9 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions } from "@/shared/crud";
 import {
@@ -20,7 +20,7 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/shared/ui/pagination";
+} from "@corely/ui";
 import { formatDate } from "@/shared/lib/formatters";
 import { issuesApi } from "@/lib/issues-api";
 import { issueKeys } from "../queries";

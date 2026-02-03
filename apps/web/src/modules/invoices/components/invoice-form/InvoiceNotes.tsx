@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useFormContext } from "react-hook-form";
-import { Label } from "@/shared/ui/label";
+import { Label } from "@corely/ui";
 import { type InvoiceFormData } from "../../schemas/invoice-form.schema";
 
 export function InvoiceNotes() {

@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
-import { Button } from "@/shared/ui/button";
-import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Alert, AlertDescription } from "@corely/ui";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useTenants } from "../../hooks/useTenants";
 import type { TenantDto } from "@corely/contracts";

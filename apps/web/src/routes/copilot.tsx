@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 import {
   fetchCopilotHistory,

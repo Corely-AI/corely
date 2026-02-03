@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import type { PublicPortfolioShowcaseOutput } from "@corely/contracts";
 import { portfolioPublicApi } from "@/lib/portfolio-public-api";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import { Link } from "react-router-dom";
 
 const PublicPortfolioContext = createContext<PublicPortfolioShowcaseOutput | null>(null);

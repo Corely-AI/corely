@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
-import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Input } from "@/shared/ui/input";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Input } from "@corely/ui";
 import { Copy, ExternalLink, Send } from "lucide-react";
 import type { ChannelDefinition } from "@corely/contracts";
 import { interpolateTemplate, buildChannelUrl } from "../lib/channel-templating";

@@ -6,10 +6,10 @@ import { CheckCircle2, ArrowLeft, RefreshCw, MessageSquarePlus, X } from "lucide
 import { useTranslation } from "react-i18next";
 import { issuesApi } from "@/lib/issues-api";
 import { buildPublicFileUrl } from "@/lib/cms-api";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Dialog, DialogContent } from "@corely/ui";
 import {
   Carousel,
   CarouselContent,
@@ -17,9 +17,9 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from "@/shared/ui/carousel";
-import { Textarea } from "@/shared/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+} from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { formatDate } from "@/shared/lib/formatters";
 import { issueKeys } from "../queries";
 import type { IssueStatus } from "@corely/contracts";

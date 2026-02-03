@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
+import { Badge } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,10 +14,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
+} from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
 import { useCreateRole, useDeleteRole, useRoles, useUpdateRole } from "../hooks/useRoles";
 import type { RoleDto } from "@corely/contracts";
 

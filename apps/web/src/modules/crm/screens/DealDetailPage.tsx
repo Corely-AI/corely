@@ -2,9 +2,9 @@ import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,9 +14,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
+} from "@corely/ui";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
+import { Input } from "@corely/ui";
 import { Skeleton } from "@/shared/components/Skeleton";
 import { DealHeader } from "../components/DealHeader";
 import { DealDetailsCard } from "../components/DealDetailsCard";

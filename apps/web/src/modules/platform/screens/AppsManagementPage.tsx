@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Alert, AlertDescription } from "@corely/ui";
 import { Loader2, Power, PowerOff, AlertCircle, CheckCircle2, Package } from "lucide-react";
 import { usePlatformApps, useEnableApp, useDisableApp } from "../hooks/usePlatformApps";
 import type { AppWithStatus } from "../hooks/usePlatformApps";

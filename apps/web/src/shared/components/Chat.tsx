@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Badge } from "@/shared/ui/badge";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import { Badge } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { fetchCopilotHistory, useCopilotChatOptions } from "@/lib/copilot-api";
 import { QuestionForm } from "@/shared/components/QuestionForm";
 import { Markdown } from "@/shared/components/Markdown";

@@ -4,10 +4,10 @@ import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tansta
 import { Plus, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
 
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Checkbox } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { expensesApi } from "@/lib/expenses-api";
@@ -31,7 +31,7 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/shared/ui/pagination";
+} from "@corely/ui";
 // ... imports
 
 // ...

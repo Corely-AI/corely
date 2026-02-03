@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut, Users } from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import { useThemeStore } from "@/shared/theme/themeStore";
 import { cn } from "@/shared/lib/utils";
 import { WorkspaceSwitcher } from "@/shared/workspaces/WorkspaceSwitcher";
@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/shared/ui/dropdown-menu";
+} from "@corely/ui";
 import { useAuth } from "@/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getIconByName } from "@/shared/utils/iconMapping";

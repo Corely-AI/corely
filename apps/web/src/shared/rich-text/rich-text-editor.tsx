@@ -3,10 +3,10 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
-import { Button } from "./button";
-import { Bold, Italic, List, ListOrdered, Link as LinkIcon, Split } from "lucide-react";
-import { RichTextAiMenu } from "../rich-text/ai/rich-text-ai-menu";
-import { type RichTextAiConfig } from "../rich-text/ai/types";
+import { Button } from "@corely/ui";
+import { Bold, Italic, List, ListOrdered } from "lucide-react";
+import { RichTextAiMenu } from "./ai/rich-text-ai-menu";
+import { type RichTextAiConfig } from "./ai/types";
 
 interface RichTextEditorProps {
   value: string;

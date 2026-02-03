@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { type TaxFilingSummary, type TaxMode } from "@corely/contracts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { Skeleton } from "@/shared/components/Skeleton";
-import { Badge } from "@/shared/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Badge } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { CalendarDays, FileText, ArrowRight } from "lucide-react";
 
 interface AnnualFilingsPanelProps {

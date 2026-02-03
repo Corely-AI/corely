@@ -4,9 +4,9 @@ import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tansta
 import { Plus, Trash2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import {
   CrudListPageLayout,
@@ -27,7 +27,7 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/shared/ui/pagination";
+} from "@corely/ui";
 import { formatDate } from "@/shared/lib/formatters";
 import { formsApi } from "@/lib/forms-api";
 import { formKeys } from "../queries";

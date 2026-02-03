@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@corely/ui";
 import type { DealDto } from "@corely/contracts";
 import { DealStatusBadge } from "./DealStatusBadge";
 

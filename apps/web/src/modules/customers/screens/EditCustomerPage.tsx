@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { customersApi } from "@/lib/customers-api";
 import { toast } from "sonner";
 import {

@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Ban, AlertTriangle } from "lucide-react";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Input } from "@corely/ui";
 import { CrudListPageLayout, useCrudUrlState } from "@/shared/crud";
 import { formatDateTime } from "@/shared/lib/formatters";
 import { cmsApi } from "@/lib/cms-api";

@@ -9,16 +9,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from "@/shared/ui/dropdown-menu";
-import { Button } from "@/shared/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
+} from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@corely/ui";
+import { Input } from "@corely/ui";
 import { type RichTextAiConfig } from "./types";
 import { useRichTextAi } from "./rich-text-ai-client";
 import { toast } from "sonner";

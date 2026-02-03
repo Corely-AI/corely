@@ -20,16 +20,16 @@ import {
   type FilterFieldDef,
   useListUrlState,
 } from "@/shared/list-kit";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
+import { Badge } from "@corely/ui";
+import { Button } from "@corely/ui";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/shared/ui/pagination";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
+} from "@corely/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
 import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import { useTaxCapabilitiesQuery } from "../hooks/useTaxCapabilitiesQuery";
 import { useTaxPaymentsQuery } from "../hooks/useTaxPaymentsQuery";

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import {
   ListToolbar,
@@ -16,7 +16,7 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/shared/ui/pagination";
+} from "@corely/ui";
 import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import type { FilterSpec, TaxFilingItemSourceType } from "@corely/contracts";
 import { useTaxFilingItemsQuery } from "../hooks/useTaxFilingItemsQuery";

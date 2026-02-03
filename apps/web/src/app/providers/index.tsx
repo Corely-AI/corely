@@ -1,8 +1,6 @@
 import React, { useMemo } from "react";
 import { PostHogProvider } from "@/shared/lib/posthog";
-import { Toaster } from "@/shared/ui/toaster";
-import { Toaster as Sonner } from "@/shared/ui/sonner";
-import { TooltipProvider } from "@/shared/ui/tooltip";
+import { SonnerToaster, Toaster, TooltipProvider } from "@corely/ui";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { computeBackoffDelayMs, defaultRetryPolicy } from "@corely/api-client";
 import { AuthProvider } from "@/lib/auth-provider";
@@ -36,7 +34,7 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
                 <TooltipProvider>
                   {children}
                   <Toaster />
-                  <Sonner theme={resolvedTheme} />
+                  <SonnerToaster theme={resolvedTheme} />
                 </TooltipProvider>
               </PostHogProvider>
             </OfflineProvider>

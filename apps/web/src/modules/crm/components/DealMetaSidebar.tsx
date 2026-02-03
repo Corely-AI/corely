@@ -1,7 +1,7 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Button } from "@corely/ui";
 import type { DealDto } from "@corely/contracts";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";

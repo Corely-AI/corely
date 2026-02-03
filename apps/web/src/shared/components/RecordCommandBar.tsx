@@ -26,9 +26,9 @@ import {
   XCircle,
   MoreVertical,
 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,7 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuLabel,
-} from "@/shared/ui/dropdown-menu";
+} from "@corely/ui";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,10 +46,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/shared/ui/tooltip";
+} from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { useTranslation } from "react-i18next";
 type RecordCapabilities = {
