@@ -35,7 +35,7 @@ export class FeatureCatalogService implements OnModuleInit {
 
   private processAppManifest(app: AppManifest) {
     // 1. Process explicit features
-    // @ts-expect-error: legacy logic - Contract types might be stale
+
     const appAny = app as any;
     const appFeatureKeys: string[] = [];
     if (appAny.features) {

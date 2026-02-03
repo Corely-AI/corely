@@ -32,7 +32,7 @@ export class TenantEntitlementsService {
 
   private async computeEntitlements(tenantId: string): Promise<TenantEntitlements> {
     // 1. Fetch overrides
-    // @ts-expect-error: legacy logic - Prisma schema update might not be picked up by types yet
+
     const overrides = await this.prisma.tenantFeatureOverride.findMany({
       where: { tenantId },
     });
@@ -110,7 +110,6 @@ export class TenantEntitlementsService {
             continue;
           }
 
-          // @ts-expect-error: legacy logic
           await tx.tenantFeatureOverride.upsert({
             where: { tenantId_featureKey: { tenantId, featureKey: depDef.enabledFeatureKey } },
             create: {
@@ -148,7 +147,7 @@ export class TenantEntitlementsService {
             if (!def) {
               continue;
             }
-            // @ts-expect-error: legacy logic
+
             await tx.tenantFeatureOverride.upsert({
               where: { tenantId_featureKey: { tenantId, featureKey: def.enabledFeatureKey } },
               create: {
@@ -165,7 +164,7 @@ export class TenantEntitlementsService {
 
       if (!cascade) {
         // If cascade was false and no dependents found
-        // @ts-expect-error: legacy logic
+
         await this.prisma.tenantFeatureOverride.upsert({
           where: {
             tenantId_featureKey: { tenantId, featureKey: appEntitlement.enabledFeatureKey },
@@ -201,7 +200,6 @@ export class TenantEntitlementsService {
 
     await this.prisma.$transaction(async (tx) => {
       for (const update of updates) {
-        // @ts-expect-error: legacy logic
         await tx.tenantFeatureOverride.upsert({
           where: { tenantId_featureKey: { tenantId, featureKey: update.key } },
           create: {
@@ -219,7 +217,6 @@ export class TenantEntitlementsService {
   }
 
   async resetFeature(tenantId: string, featureKey: string): Promise<void> {
-    // @ts-expect-error: legacy logic
     await this.prisma.tenantFeatureOverride
       .delete({
         where: { tenantId_featureKey: { tenantId, featureKey } },
