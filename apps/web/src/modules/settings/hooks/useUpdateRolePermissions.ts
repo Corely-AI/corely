@@ -19,3 +19,18 @@ export function useUpdateRolePermissions(roleId: string) {
     },
   });
 }
+
+export function useSyncOwnerPermissions(roleId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => identityApi.syncRolePermissionsAll(roleId),
+    onSuccess: () => {
+      toast.success("Owner permissions synced");
+      void queryClient.invalidateQueries({ queryKey: settingsQueryKeys.roles.permissions(roleId) });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to sync owner permissions: ${error.message}`);
+    },
+  });
+}

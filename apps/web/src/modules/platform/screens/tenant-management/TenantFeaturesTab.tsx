@@ -10,6 +10,7 @@ import { Badge } from "@/shared/ui/badge";
 import { Search, Save, RotateCcw } from "lucide-react";
 import { useToast } from "@/shared/ui/use-toast";
 import { Switch } from "@/shared/ui/switch";
+import { useTranslation } from "react-i18next";
 
 interface TenantFeaturesTabProps {
   tenantId: string;
@@ -20,11 +21,15 @@ interface TenantFeaturesTabProps {
 export function TenantFeaturesTab({ tenantId, features, onRefresh }: TenantFeaturesTabProps) {
   const [search, setSearch] = useState("");
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [editing, setEditing] = useState<Record<string, any>>({});
+
+  const getFeatureLabel = (key: string) => t(`featureFlags.${key}`, { defaultValue: key });
 
   const filteredFeatures = features.filter(
     (f) =>
       f.key.toLowerCase().includes(search.toLowerCase()) ||
+      getFeatureLabel(f.key).toLowerCase().includes(search.toLowerCase()) ||
       (typeof f.value === "string" && f.value.toLowerCase().includes(search.toLowerCase()))
   );
 
@@ -108,9 +113,15 @@ export function TenantFeaturesTab({ tenantId, features, onRefresh }: TenantFeatu
           <TableBody>
             {filteredFeatures.map((feat) => {
               const isEdited = editing[feat.key] !== undefined;
+              const label = getFeatureLabel(feat.key);
               return (
                 <TableRow key={feat.key}>
-                  <TableCell className="font-mono text-sm">{feat.key}</TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-medium">{label}</div>
+                      <div className="font-mono text-xs text-muted-foreground">{feat.key}</div>
+                    </div>
+                  </TableCell>
                   <TableCell>{renderEditor(feat, editing[feat.key])}</TableCell>
                   <TableCell>
                     <Badge variant={feat.source === "tenantOverride" ? "secondary" : "outline"}>

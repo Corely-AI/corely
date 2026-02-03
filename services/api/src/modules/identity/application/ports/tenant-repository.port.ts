@@ -20,6 +20,11 @@ export interface TenantRepositoryPort {
   findBySlug(slug: string): Promise<Tenant | null>;
 
   /**
+   * List all tenants (host-level)
+   */
+  listAll(): Promise<Tenant[]>;
+
+  /**
    * Check if slug exists
    */
   slugExists(slug: string): Promise<boolean>;

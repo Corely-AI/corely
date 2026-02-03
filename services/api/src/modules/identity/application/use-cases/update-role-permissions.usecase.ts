@@ -3,6 +3,8 @@ import type { RolePermissionEffect } from "@corely/contracts";
 import { NotFoundError, ValidationError } from "../../../../shared/errors/domain-errors";
 import type { RoleRepositoryPort } from "../ports/role-repository.port";
 import { ROLE_REPOSITORY_TOKEN } from "../ports/role-repository.port";
+import type { MembershipRepositoryPort } from "../ports/membership-repository.port";
+import { MEMBERSHIP_REPOSITORY_TOKEN } from "../ports/membership-repository.port";
 import type { PermissionCatalogPort } from "../ports/permission-catalog.port";
 import { PERMISSION_CATALOG_PORT } from "../ports/permission-catalog.port";
 import type { RolePermissionGrantRepositoryPort } from "../ports/role-permission-grant-repository.port";
@@ -23,6 +25,8 @@ export interface UpdateRolePermissionsCommand {
 export class UpdateRolePermissionsUseCase {
   constructor(
     @Inject(ROLE_REPOSITORY_TOKEN) private readonly roleRepo: RoleRepositoryPort,
+    @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
+    private readonly membershipRepo: MembershipRepositoryPort,
     @Inject(PERMISSION_CATALOG_PORT) private readonly catalogPort: PermissionCatalogPort,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
     private readonly grantRepo: RolePermissionGrantRepositoryPort,
@@ -36,7 +40,19 @@ export class UpdateRolePermissionsUseCase {
     }
 
     if (role.isSystem || role.systemKey) {
-      throw new ValidationError("System roles cannot be edited");
+      const actorMembership = await this.membershipRepo.findByTenantAndUser(
+        command.tenantId,
+        command.actorUserId
+      );
+      const hostMembership = await this.membershipRepo.findHostMembership(command.actorUserId);
+      const actorRoleId = actorMembership?.getRoleId();
+      const actorRole = actorRoleId
+        ? await this.roleRepo.findById(command.tenantId, actorRoleId)
+        : null;
+      const actorIsOwner = actorRole?.systemKey === "OWNER";
+      if (!actorIsOwner && !hostMembership) {
+        throw new ValidationError("System roles cannot be edited");
+      }
     }
 
     const catalog = this.catalogPort.getCatalog();

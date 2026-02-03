@@ -11,6 +11,8 @@ import {
 import { Reflector } from "@nestjs/core";
 import type { MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
 import { MEMBERSHIP_REPOSITORY_TOKEN } from "../../application/ports/membership-repository.port";
+import type { RoleRepositoryPort } from "../../application/ports/role-repository.port";
+import { ROLE_REPOSITORY_TOKEN } from "../../application/ports/role-repository.port";
 import type { RolePermissionGrantRepositoryPort } from "../../application/ports/role-permission-grant-repository.port";
 import { ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN } from "../../application/ports/role-permission-grant-repository.port";
 import {
@@ -39,6 +41,8 @@ export class RbacGuard implements CanActivate {
     private readonly reflector: Reflector,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
     private readonly membershipRepo: MembershipRepositoryPort,
+    @Inject(ROLE_REPOSITORY_TOKEN)
+    private readonly roleRepo: RoleRepositoryPort,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
     private readonly grantRepo: RolePermissionGrantRepositoryPort,
     @Inject(forwardRef(() => WorkspaceTemplateService))
@@ -79,19 +83,24 @@ export class RbacGuard implements CanActivate {
       }
     }
 
-    const roleIds: string[] = [];
-
     // 1. Fetch Host Membership (Super Admin)
     const hostMembership = await this.membershipRepo.findHostMembership(userId);
     if (hostMembership) {
-      roleIds.push(hostMembership.getRoleId());
+      return true;
     }
+
+    const roleIds: string[] = [];
 
     // 2. Fetch Tenant Membership
     if (tenantId) {
       const tenantMembership = await this.membershipRepo.findByTenantAndUser(tenantId, userId);
       if (tenantMembership) {
-        roleIds.push(tenantMembership.getRoleId());
+        const roleId = tenantMembership.getRoleId();
+        const role = await this.roleRepo.findById(tenantId, roleId);
+        if (role?.systemKey === "OWNER") {
+          return true;
+        }
+        roleIds.push(roleId);
       }
     }
 
