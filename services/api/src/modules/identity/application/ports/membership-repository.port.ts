@@ -20,6 +20,11 @@ export interface MembershipRepositoryPort {
   findByUserId(userId: string): Promise<Membership[]>;
 
   /**
+   * Find host membership for a user
+   */
+  findHostMembership(userId: string): Promise<Membership | null>;
+
+  /**
    * Find all memberships for a tenant
    */
   findByTenantId(tenantId: string): Promise<Membership[]>;

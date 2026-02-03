@@ -19,6 +19,19 @@ export class FakeRolePermissionGrantRepository implements RolePermissionGrantRep
       .map((grant) => ({ key: grant.key, effect: grant.effect }));
   }
 
+  async listByRoleIds(
+    roleIds: string[]
+  ): Promise<Array<{ key: string; effect: RolePermissionEffect }>> {
+    const uniqueRoles = Array.from(new Set(roleIds));
+    if (uniqueRoles.length === 0) {
+      return [];
+    }
+
+    return this.grants
+      .filter((grant) => uniqueRoles.includes(grant.roleId))
+      .map((grant) => ({ key: grant.key, effect: grant.effect }));
+  }
+
   async replaceAll(
     tenantId: string,
     roleId: string,

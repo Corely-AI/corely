@@ -22,6 +22,7 @@ model Tenant {
   templateInstalls  TenantTemplateInstall[]
   packInstalls      TenantPackInstall[]
   menuOverrides     TenantMenuOverride[]
+  featureOverrides  TenantFeatureOverride[]
   seededRecordMeta  SeededRecordMeta[]
   cashRegisters     CashRegister[]
   cashEntries       CashEntry[]
@@ -55,17 +56,23 @@ model User {
 
 // === MULTI-TENANCY MEMBERSHIP ===
 
+enum RoleScope {
+  HOST
+  TENANT
+  @@schema("identity")
+}
+
 model Membership {
   id        String   @id @default(cuid())
-  tenantId  String
+  tenantId  String?
   userId    String
   roleId    String
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
   // Relations
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role   @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role    @relation(fields: [roleId], references: [id], onDelete: Restrict)
 
   @@unique([tenantId, userId])
   @@index([tenantId])
@@ -78,17 +85,18 @@ model Membership {
 // === RBAC ===
 
 model Role {
-  id        String   @id @default(cuid())
-  tenantId  String
+  id        String    @id @default(cuid())
+  tenantId  String?
   name      String
-  systemKey String?  // OWNER, ADMIN, MEMBER (null for custom roles)
+  scope     RoleScope @default(TENANT)
+  systemKey String?   // OWNER, ADMIN, MEMBER (null for custom roles)
   description String?
-  isSystem  Boolean  @default(false)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  isSystem  Boolean   @default(false)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @db.Timestamptz(6)
 
   // Relations
-  tenant              Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant              Tenant?             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   memberships         Membership[]
   rolePermissions     RolePermission[]
   rolePermissionGrants RolePermissionGrant[]
@@ -136,7 +144,7 @@ model RolePermission {
 
 model RolePermissionGrant {
   id            String           @id @default(cuid())
-  tenantId      String
+  tenantId      String?
   roleId        String
   permissionKey String
   effect        PermissionEffect @default(ALLOW)
@@ -144,7 +152,7 @@ model RolePermissionGrant {
   createdBy     String?
 
   // Relations
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
   createdByUser User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
 

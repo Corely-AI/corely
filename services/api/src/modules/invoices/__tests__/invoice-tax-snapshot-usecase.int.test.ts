@@ -28,7 +28,7 @@ describe("FinalizeInvoice UseCase - DB Integration", () => {
     prisma = new PrismaService();
     // Connect explicitly if needed, PrismaService usually does usually onModuleInit
     // but in test we might need simple connect
-    // @ts-ignore private method access or just rely on lazy connect
+    // @ts-expect-error: legacy logic private method access or just rely on lazy connect
     // prisma.$connect();
 
     // Setup Repos

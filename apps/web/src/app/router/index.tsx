@@ -98,6 +98,7 @@ import {
   TemplatesPage,
   MenuCustomizerPage,
 } from "../../modules/platform";
+import { TenantEntitlementsPage } from "../../modules/platform/screens/tenant-management/TenantEntitlementsPage";
 import NotFound from "../../shared/components/NotFound";
 import { LoginPage } from "../../routes/auth/login";
 import SignupPage from "../../routes/auth/signup";
@@ -631,6 +632,14 @@ export const Router = () => (
             element={
               <RequirePermission permission="platform.menu.customize">
                 <MenuCustomizerPage />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/settings/tenants/:tenantId"
+            element={
+              <RequirePermission permission="platform.tenants.manage">
+                <TenantEntitlementsPage />
               </RequirePermission>
             }
           />

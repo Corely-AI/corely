@@ -1,6 +1,11 @@
-import { Injectable, CanActivate, ExecutionContext, SetMetadata } from "@nestjs/common";
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  SetMetadata,
+  ForbiddenException,
+} from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { ForbiddenError } from "@corely/kernel";
 import { WorkspaceTemplateService } from "../application/services/workspace-template.service";
 import {
   WORKSPACE_REPOSITORY_PORT,
@@ -38,15 +43,11 @@ export class WorkspaceCapabilityGuard implements CanActivate {
       null;
 
     if (!tenantId) {
-      throw new ForbiddenError("Tenant context not found", {
-        code: "Workspace:NoTenantContext",
-      });
+      throw new ForbiddenException("Tenant context not found");
     }
 
     if (!workspaceId) {
-      throw new ForbiddenError("Workspace context not found", {
-        code: "Workspace:NoWorkspaceContext",
-      });
+      throw new ForbiddenException("Workspace context not found");
     }
 
     const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
@@ -54,18 +55,14 @@ export class WorkspaceCapabilityGuard implements CanActivate {
       workspaceId
     );
     if (!workspace || !workspace.legalEntity) {
-      throw new ForbiddenError("Workspace not found", {
-        code: "Workspace:NotFound",
-      });
+      throw new ForbiddenException("Workspace not found");
     }
 
     const workspaceKind = workspace.legalEntity.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
     const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
 
     if (!capabilities[requiredCapability as keyof typeof capabilities]) {
-      throw new ForbiddenError(`Capability "${requiredCapability}" is not available`, {
-        code: "Workspace:CapabilityNotAvailable",
-      });
+      throw new ForbiddenException(`Capability "${requiredCapability}" is not available`);
     }
 
     return true;

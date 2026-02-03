@@ -46,7 +46,7 @@ vi.mock("@corely/data", () => {
   };
 });
 
-// @ts-expect-error test-only mock export
+// @ts-expect-error: legacy logic test-only mock export
 import { __resetIdempotencyMock, prisma } from "@corely/data";
 import { IdempotencyService } from "./idempotency.service";
 

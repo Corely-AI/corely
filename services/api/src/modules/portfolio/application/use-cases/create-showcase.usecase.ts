@@ -42,7 +42,10 @@ export class CreateShowcaseUseCase extends BaseUseCase<
     const slug = input.slug.trim();
     assertValidSlug(slug);
 
-    const existing = await this.repo.findBySlug(ctx.tenantId!, ctx.workspaceId, slug);
+    const existing = await this.repo.findBySlug(slug, {
+      tenantId: ctx.tenantId!,
+      workspaceId: ctx.workspaceId,
+    });
     if (existing) {
       return err(new ConflictError("Showcase slug already exists"));
     }

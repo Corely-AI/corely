@@ -24,3 +24,4 @@ services/api/pdfs/
 gcp-key.json
 .vercel
 .env*.local
+local/

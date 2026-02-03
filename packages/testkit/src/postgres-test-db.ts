@@ -82,25 +82,37 @@ export class PostgresTestDb {
       "schema"
     );
 
-    await execa(
-      "pnpm",
-      ["--filter", "@corely/data", "exec", "prisma", "migrate", "deploy", "--schema", schemaDir],
-      {
-        env: { ...process.env, DATABASE_URL: this.connectionString },
-        stdout: "inherit",
-        stderr: "inherit",
-      }
-    );
+    try {
+      await execa(
+        "pnpm",
+        [
+          "--filter",
+          "@corely/data",
+          "exec",
+          "prisma",
+          "migrate",
+          "deploy",
+          "--schema",
+          "prisma/schema",
+        ],
+        {
+          env: { ...process.env, DATABASE_URL: this.connectionString },
+          stdio: "pipe",
+        }
+      );
 
-    await execa(
-      "pnpm",
-      ["--filter", "@corely/data", "exec", "prisma", "generate", "--schema", schemaDir],
-      {
-        env: { ...process.env, DATABASE_URL: this.connectionString },
-        stdout: "inherit",
-        stderr: "inherit",
-      }
-    );
+      await execa(
+        "pnpm",
+        ["--filter", "@corely/data", "exec", "prisma", "generate", "--schema", "prisma/schema"],
+        {
+          env: { ...process.env, DATABASE_URL: this.connectionString },
+          stdio: "pipe",
+        }
+      );
+    } catch (e: any) {
+      console.error("Migrate/Generate failed:", e.stderr || e.message);
+      throw e;
+    }
 
     // Now that Prisma client is generated, create the PrismaService instance
     await this.ensureClient();

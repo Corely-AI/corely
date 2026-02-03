@@ -43,12 +43,11 @@ export class GetPublicProjectUseCase extends BaseUseCase<
       return err(new ValidationError("workspaceId is required"));
     }
 
-    const showcase = await this.showcaseRepo.findBySlug(
-      ctx.tenantId!,
-      ctx.workspaceId,
-      input.slug,
-      { publishedOnly: true }
-    );
+    const showcase = await this.showcaseRepo.findBySlug(input.slug, {
+      tenantId: ctx.tenantId!,
+      workspaceId: ctx.workspaceId,
+      publishedOnly: true,
+    });
     if (!showcase || !showcase.isPublished) {
       return err(new NotFoundError("Showcase not found"));
     }

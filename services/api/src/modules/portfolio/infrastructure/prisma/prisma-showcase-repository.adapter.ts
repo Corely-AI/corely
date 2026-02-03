@@ -80,8 +80,12 @@ export class PrismaShowcaseRepository implements ShowcaseRepositoryPort {
     opts?: { publishedOnly?: boolean; tenantId?: string; workspaceId?: string }
   ): Promise<PortfolioShowcase | null> {
     const where: Prisma.PortfolioShowcaseWhereInput = { slug };
-    if (opts?.tenantId) {where.tenantId = opts.tenantId;}
-    if (opts?.workspaceId) {where.workspaceId = opts.workspaceId;}
+    if (opts?.tenantId) {
+      where.tenantId = opts.tenantId;
+    }
+    if (opts?.workspaceId) {
+      where.workspaceId = opts.workspaceId;
+    }
     if (opts?.publishedOnly) {
       where.isPublished = true;
     }

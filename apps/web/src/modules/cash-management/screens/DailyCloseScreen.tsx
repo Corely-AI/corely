@@ -21,27 +21,29 @@ export function DailyCloseScreen() {
   const [countedStr, setCountedStr] = useState("");
   const [notes, setNotes] = useState("");
 
-  if (!id) {
-    return null;
-  }
-
   const { data: regData, isLoading: regLoading } = useQuery({
-    queryKey: cashKeys.registers.detail(id),
-    queryFn: () => cashManagementApi.getRegister(id),
+    queryKey: id ? cashKeys.registers.detail(id) : ["cash", "registers", "none"],
+    queryFn: () => (id ? cashManagementApi.getRegister(id) : Promise.reject("No ID")),
+    enabled: !!id,
   });
 
-  const register = regData?.register;
-
   const submitMutation = useMutation({
-    mutationFn: (data: { counted: number; notes: string; date: string }) =>
-      cashManagementApi.submitDailyClose(id, {
+    mutationFn: (data: { counted: number; notes: string; date: string }) => {
+      if (!id) {
+        throw new Error("No register ID");
+      }
+      return cashManagementApi.submitDailyClose(id, {
         tenantId: "current",
         registerId: id,
         countedBalanceCents: data.counted,
         notes: data.notes,
         businessDate: data.date,
-      }),
+      });
+    },
     onSuccess: async () => {
+      if (!id) {
+        return;
+      }
       await queryClient.invalidateQueries({ queryKey: cashKeys.registers.detail(id) });
       await queryClient.invalidateQueries({ queryKey: cashKeys.dailyCloses.list(id, {}) });
       toast.success("Daily close submitted");
@@ -51,6 +53,12 @@ export function DailyCloseScreen() {
       toast.error("Failed to close: " + (err.response?.data?.message || err.message));
     },
   });
+
+  if (!id) {
+    return null;
+  }
+
+  const register = regData?.register;
 
   if (regLoading) {
     return <div className="p-6">Loading...</div>;

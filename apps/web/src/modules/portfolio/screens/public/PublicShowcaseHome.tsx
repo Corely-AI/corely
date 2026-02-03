@@ -13,7 +13,9 @@ export const PublicShowcaseHome = () => {
   const { t } = useTranslation();
 
   const buildLink = (path: string) => {
-    if (isSlugMode) {return `/p/${slug}${path}`;}
+    if (isSlugMode) {
+      return `/p/${slug}${path}`;
+    }
     return path;
   };
 

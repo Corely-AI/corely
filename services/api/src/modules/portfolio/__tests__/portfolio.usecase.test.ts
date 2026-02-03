@@ -76,14 +76,30 @@ class FakeShowcaseRepo implements ShowcaseRepositoryPort {
   }
 
   async findBySlug(
-    tenantId: string,
-    workspaceId: string,
     slug: string,
+    opts?: { publishedOnly?: boolean; tenantId?: string; workspaceId?: string }
+  ): Promise<PortfolioShowcase | null> {
+    const match = this.showcases.find((item) => {
+      if (item.slug !== slug) return false;
+      if (opts?.tenantId && item.tenantId !== opts.tenantId) return false;
+      if (opts?.workspaceId && item.workspaceId !== opts.workspaceId) return false;
+      return true;
+    });
+
+    if (!match) {
+      return null;
+    }
+    if (opts?.publishedOnly && !match.isPublished) {
+      return null;
+    }
+    return match;
+  }
+
+  async findByDomain(
+    domain: string,
     opts?: { publishedOnly?: boolean }
   ): Promise<PortfolioShowcase | null> {
-    const match = this.showcases.find(
-      (item) => item.tenantId === tenantId && item.workspaceId === workspaceId && item.slug === slug
-    );
+    const match = this.showcases.find((item) => item.primaryDomain === domain);
     if (!match) {
       return null;
     }
