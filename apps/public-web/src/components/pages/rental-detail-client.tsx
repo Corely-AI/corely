@@ -164,6 +164,12 @@ export function RentalDetailClient({
     [property.images]
   );
 
+  const checkInLabel = property.checkIn || "After 3:00 PM";
+  const checkOutLabel = property.checkOut || "11:00 AM";
+  const offers = property.offers?.length
+    ? property.offers
+    : ["Wifi", "Kitchen", "Free parking on premises", "Air conditioning"];
+
   useEffect(() => {
     if (api && isGalleryOpen) {
       api.scrollTo(galleryStartIndex, true);
@@ -428,11 +434,11 @@ export function RentalDetailClient({
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm">Check-in: After 3:00 PM</span>
+                    <span className="text-sm">Check-in: {checkInLabel}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Clock className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm">Check-out: 11:00 AM</span>
+                    <span className="text-sm">Check-out: {checkOutLabel}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Users className="h-5 w-5 text-muted-foreground" />
@@ -443,22 +449,12 @@ export function RentalDetailClient({
               <div className="space-y-6">
                 <h3 className="text-xl font-bold">What this place offers</h3>
                 <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span className="text-sm font-medium">Wifi</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span className="text-sm font-medium">Kitchen</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span className="text-sm font-medium">Free parking on premises</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-accent" />
-                    <span className="text-sm font-medium">Air conditioning</span>
-                  </div>
+                  {offers.map((offer) => (
+                    <div key={offer} className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-accent" />
+                      <span className="text-sm font-medium">{offer}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
