@@ -25,3 +25,4 @@ gcp-key.json
 .vercel
 .env*.local
 local/
+.next

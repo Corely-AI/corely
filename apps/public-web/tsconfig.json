@@ -1,4 +1,29 @@
 {
   "extends": "@corely/tsconfig/react.json",
-  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
+  "compilerOptions": {
+    "jsx": "preserve",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "allowJs": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/app/**/*",
+    "src/components/**/*",
+    "src/lib/**/*",
+    "src/middleware.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "src/legacy/**"]
 }

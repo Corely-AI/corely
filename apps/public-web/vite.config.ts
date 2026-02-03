@@ -13,6 +13,9 @@ export default defineConfig(() => {
       "@corely/contracts": path.resolve(__dirname, "../../packages/contracts/src"),
       "@corely/ui": path.resolve(__dirname, "../../packages/ui/src"),
     },
+    apiProxy: {
+      target: "http://localhost:3000",
+    },
   });
 
   return {

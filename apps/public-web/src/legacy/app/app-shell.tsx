@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { Badge, Button, Logo, cn } from "@corely/ui";
 import { buildWorkspacePath, useWorkspaceSlug } from "@/shared/lib/workspace";
 
@@ -10,6 +10,12 @@ const navItems = [
 
 export function AppShell() {
   const workspaceSlug = useWorkspaceSlug();
+  const location = useLocation();
+  const isRentalsRoute = /^\/(?:w\/[^/]+\/)?rentals(\/|$)/.test(location.pathname);
+
+  if (isRentalsRoute) {
+    return <Outlet />;
+  }
 
   return (
     <div className="min-h-screen bg-background">

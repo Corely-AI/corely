@@ -1,5 +1,6 @@
 import { request } from "@corely/api-client";
 import {
+  CheckAvailabilityOutputSchema,
   GetPublicCmsPostOutputSchema,
   ListPublicCmsPostsOutputSchema,
   GetPublicRentalPropertyOutputSchema,
@@ -12,7 +13,11 @@ import {
   PublicPortfolioProjectOutputSchema,
 } from "@corely/contracts";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+export const resolvePublicApiBaseUrl = () =>
+  import.meta.env.VITE_API_BASE_URL || (import.meta.env.DEV ? "/api" : "http://localhost:3000");
+
+export const buildPublicFileUrl = (fileId: string) =>
+  `${resolvePublicApiBaseUrl().replace(/\/$/, "")}/public/documents/files/${fileId}`;
 
 const buildUrl = (
   path: string,
@@ -20,16 +25,25 @@ const buildUrl = (
   workspaceSlug?: string
 ) => {
   const prefix = workspaceSlug ? `/w/${workspaceSlug}` : "";
-  const url = new URL(`${API_BASE_URL}${prefix}${path}`);
-  if (params) {
-    Object.entries(params).forEach(([key, value]) => {
-      if (value === undefined) {
-        return;
-      }
-      url.searchParams.set(key, String(value));
-    });
+  const baseUrl = resolvePublicApiBaseUrl().replace(/\/$/, "");
+  const url = `${baseUrl}${prefix}${path}`;
+  if (!params) {
+    return url;
   }
-  return url.toString();
+
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined) {
+      return;
+    }
+    searchParams.set(key, String(value));
+  });
+
+  const query = searchParams.toString();
+  if (!query) {
+    return url;
+  }
+  return `${url}${url.includes("?") ? "&" : "?"}${query}`;
 };
 
 export const publicApi = {
@@ -102,6 +116,21 @@ export const publicApi = {
     const url = buildUrl("/public/rentals/categories", undefined, workspaceSlug);
     const data = await request({ url });
     return ListRentalCategoriesOutputSchema.parse(data);
+  },
+
+  async checkRentalAvailability(input: {
+    propertySlug: string;
+    from: string;
+    to: string;
+    workspaceSlug?: string;
+  }) {
+    const url = buildUrl(
+      `/public/rentals/properties/${input.propertySlug}/availability`,
+      { from: input.from, to: input.to },
+      input.workspaceSlug
+    );
+    const data = await request({ url });
+    return CheckAvailabilityOutputSchema.parse(data);
   },
 
   async listBlogPosts(input: {
