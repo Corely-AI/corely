@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { PortfolioProject } from "@corely/contracts";
-import { Badge, Button } from "@corely/ui";
+import { Badge, Button } from "@/components/ui";
 import { buildWorkspacePath } from "@/lib/urls";
 
 export function PortfolioProjectContent({

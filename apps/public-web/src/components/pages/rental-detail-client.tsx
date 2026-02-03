@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   CheckCircle2,
   ChevronLeft,
+  ChevronRight,
   Clock,
   Heart,
   Info,
@@ -26,8 +27,6 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-  Dialog,
-  DialogContent,
   Logo,
   Popover,
   PopoverContent,
@@ -35,7 +34,7 @@ import {
   Separator,
   cn,
   type CarouselApi,
-} from "@corely/ui";
+} from "@/components/ui";
 import type { RentalProperty } from "@corely/contracts";
 import { buildPublicFileUrl, publicApi } from "@/lib/public-api";
 import { AnswerBlock } from "@/components/sections/answer-block";
@@ -100,6 +99,7 @@ export function RentalDetailClient({
   const [api, setApi] = useState<CarouselApi>();
   const [mobileApi, setMobileApi] = useState<CarouselApi>();
   const [currentMobile, setCurrentMobile] = useState(0);
+  const [currentGallery, setCurrentGallery] = useState(0);
 
   useEffect(() => {
     if (!mobileApi) {
@@ -169,6 +169,42 @@ export function RentalDetailClient({
       api.scrollTo(galleryStartIndex, true);
     }
   }, [api, isGalleryOpen, galleryStartIndex]);
+
+  useEffect(() => {
+    if (!api || !isGalleryOpen) {
+      return;
+    }
+
+    const updateCurrent = () => {
+      setCurrentGallery(api.selectedScrollSnap() + 1);
+    };
+
+    updateCurrent();
+    api.on("select", updateCurrent);
+    api.on("reInit", updateCurrent);
+
+    return () => {
+      api.off("select", updateCurrent);
+      api.off("reInit", updateCurrent);
+    };
+  }, [api, isGalleryOpen]);
+
+  useEffect(() => {
+    if (!isGalleryOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsGalleryOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isGalleryOpen]);
 
   const openGallery = (index: number) => {
     setGalleryStartIndex(index);
@@ -372,7 +408,7 @@ export function RentalDetailClient({
 
             <Separator />
 
-            <AnswerBlock summary={summary} bullets={bullets} />
+            {/* <AnswerBlock summary={summary} bullets={bullets} /> */}
 
             <div className="space-y-6">
               <h2 className="text-2xl font-bold">About this space</h2>
@@ -585,9 +621,23 @@ export function RentalDetailClient({
         </div>
       </footer>
 
-      <Dialog open={isGalleryOpen} onOpenChange={setIsGalleryOpen}>
-        <DialogContent className="max-w-screen-xl w-full h-[90vh] md:h-screen max-h-screen p-0 bg-background/95 border-none">
-          <div className="relative w-full h-full flex flex-col">
+      {isGalleryOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${property.name} photo gallery`}
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/80"
+            aria-label="Close gallery"
+            onClick={() => setIsGalleryOpen(false)}
+          />
+          <div
+            className="relative w-full h-[90vh] md:h-screen max-h-screen max-w-screen-xl p-0 bg-background/95 border-none flex flex-col"
+            onClick={(event) => event.stopPropagation()}
+          >
             <div className="absolute top-4 left-4 z-50">
               <Button
                 variant="outline"
@@ -599,7 +649,7 @@ export function RentalDetailClient({
               </Button>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-4 md:p-12 overflow-hidden">
+            <div className="flex-1 flex items-center justify-center p-4 md:p-12 overflow-hidden h-full">
               <Carousel setApi={setApi} className="w-full max-w-5xl">
                 <CarouselContent>
                   {allImages.map((img) => (
@@ -616,8 +666,22 @@ export function RentalDetailClient({
                   ))}
                 </CarouselContent>
                 <div className="hidden md:block">
-                  <CarouselPrevious />
-                  <CarouselNext />
+                  <button
+                    type="button"
+                    aria-label="Previous photo"
+                    onClick={() => api?.scrollPrev()}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white shadow-lg backdrop-blur-md transition hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next photo"
+                    onClick={() => api?.scrollNext()}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white shadow-lg backdrop-blur-md transition hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
                 </div>
               </Carousel>
             </div>
@@ -625,13 +689,13 @@ export function RentalDetailClient({
             <div className="absolute bottom-4 left-0 right-0 flex justify-center text-white/80 text-sm">
               {api && (
                 <span>
-                  {api.selectedScrollSnap() + 1} / {allImages.length}
+                  {currentGallery} / {allImages.length}
                 </span>
               )}
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      ) : null}
     </div>
   );
 }

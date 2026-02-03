@@ -21,14 +21,15 @@ export default async function WorkspaceRentalsPage({
   searchParams,
 }: {
   params: Promise<{ workspaceSlug: string }>;
-  searchParams?: { q?: string; category?: string };
+  searchParams?: Promise<{ q?: string; category?: string }>;
 }) {
   const ctx = await getRequestContext();
   const { workspaceSlug } = await params;
+  const resolvedSearchParams = await searchParams;
   const result = await getRentalsListPageData({
     ctx,
     workspaceSlug,
-    searchParams,
+    searchParams: resolvedSearchParams,
   });
   if (result.kind === "disabled") {
     return <PublicDisabledState message={result.message} />;

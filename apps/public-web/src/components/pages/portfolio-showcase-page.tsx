@@ -7,7 +7,7 @@ import type {
   PortfolioService,
   PortfolioTeamMember,
 } from "@corely/contracts";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { buildWorkspacePath } from "@/lib/urls";
 
 export function PortfolioShowcaseContent({

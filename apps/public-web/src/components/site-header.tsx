@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Badge, Button, Logo } from "@corely/ui";
+import { Badge, Button, Logo } from "@/components/ui";
 import { resolveWorkspacePath } from "@/lib/urls";
 
 export function SiteHeader({

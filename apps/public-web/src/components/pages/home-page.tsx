@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { buildWorkspacePath } from "@/lib/urls";
 
 const sections = [

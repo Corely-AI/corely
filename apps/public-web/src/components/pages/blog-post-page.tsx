@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Button } from "@corely/ui";
+import { Badge, Button } from "@/components/ui";
 import type { CmsPublicPostDto } from "@corely/contracts";
 import { formatDate, estimateReadTime } from "@/lib/format";
 import { buildPublicFileUrl } from "@/lib/public-api";

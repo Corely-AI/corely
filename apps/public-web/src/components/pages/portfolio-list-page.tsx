@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { PortfolioShowcase } from "@corely/contracts";
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { buildWorkspacePath } from "@/lib/urls";
 
 export function PortfolioListContent({

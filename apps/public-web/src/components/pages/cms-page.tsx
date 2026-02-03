@@ -1,4 +1,4 @@
-import { Badge, Button } from "@corely/ui";
+import { Badge, Button } from "@/components/ui";
 import Link from "next/link";
 import type { CmsPublicPostDto } from "@corely/contracts";
 import { buildWorkspacePath } from "@/lib/urls";

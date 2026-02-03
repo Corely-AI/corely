@@ -1,6 +1,15 @@
 import Link from "next/link";
 import { ArrowRight, Search, Users } from "lucide-react";
-import { Badge, Button, Card, CardContent, CardFooter, EmptyState, Input, Logo } from "@corely/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  EmptyState,
+  Input,
+  Logo,
+} from "@/components/ui";
 import type { RentalProperty, RentalCategory } from "@corely/contracts";
 import { buildPublicFileUrl } from "@/lib/public-api";
 

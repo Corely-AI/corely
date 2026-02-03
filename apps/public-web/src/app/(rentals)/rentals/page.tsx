@@ -18,10 +18,11 @@ export async function generateMetadata() {
 export default async function RentalsPage({
   searchParams,
 }: {
-  searchParams?: { q?: string; category?: string };
+  searchParams?: Promise<{ q?: string; category?: string }>;
 }) {
   const ctx = await getRequestContext();
-  const result = await getRentalsListPageData({ ctx, searchParams });
+  const resolvedSearchParams = await searchParams;
+  const result = await getRentalsListPageData({ ctx, searchParams: resolvedSearchParams });
   if (result.kind === "disabled") {
     return <PublicDisabledState message={result.message} />;
   }

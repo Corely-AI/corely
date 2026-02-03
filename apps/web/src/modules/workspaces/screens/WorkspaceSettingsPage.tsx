@@ -269,20 +269,28 @@ export const WorkspaceSettingsPage: React.FC = () => {
               {workspaceKind === "PERSONAL" ? "Freelancer" : "Company"}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Freelancer workspaces use minimal defaults. Upgrading keeps all data and unlocks company
-            capabilities.
-          </p>
-          <div>
-            <Button onClick={handleUpgrade} disabled={!canUpgrade || isUpgrading}>
-              {isUpgrading ? "Upgrading..." : "Upgrade to Company"}
-            </Button>
-            {!config?.currentUser.isWorkspaceAdmin && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Only workspace admins can upgrade.
+          {workspaceKind === "PERSONAL" ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Freelancer workspaces use minimal defaults. Upgrading keeps all data and unlocks
+                company capabilities.
               </p>
-            )}
-          </div>
+              <div>
+                <Button onClick={handleUpgrade} disabled={!canUpgrade || isUpgrading}>
+                  {isUpgrading ? "Upgrading..." : "Upgrade to Company"}
+                </Button>
+                {!config?.currentUser.isWorkspaceAdmin && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Only workspace admins can upgrade.
+                  </p>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Your workspace is already using company features and capabilities.
+            </p>
+          )}
         </CardContent>
       </Card>
 

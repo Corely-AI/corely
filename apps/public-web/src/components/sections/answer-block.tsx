@@ -1,5 +1,5 @@
 import React from "react";
-import { Badge } from "@corely/ui";
+import { Badge } from "@/components/ui";
 
 export function AnswerBlock({
   title,

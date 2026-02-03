@@ -2,3 +2,7 @@
 @import "@corely/ui/tokens.css";
 @tailwind components;
 @tailwind utilities;
+
+html.dark {
+  color-scheme: dark;
+}

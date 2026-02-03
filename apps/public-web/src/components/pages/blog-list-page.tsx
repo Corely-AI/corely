@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import type { CmsPostSummaryDto } from "@corely/contracts";
 import { formatDate } from "@/lib/format";
 import { buildPublicFileUrl } from "@/lib/public-api";
