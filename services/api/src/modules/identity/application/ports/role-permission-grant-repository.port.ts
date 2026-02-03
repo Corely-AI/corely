@@ -7,6 +7,8 @@ export interface RolePermissionGrantRepositoryPort {
     roleIds: string[]
   ): Promise<Array<{ key: string; effect: RolePermissionEffect }>>;
 
+  listByRoleIds(roleIds: string[]): Promise<Array<{ key: string; effect: RolePermissionEffect }>>;
+
   replaceAll(
     tenantId: string,
     roleId: string,

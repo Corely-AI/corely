@@ -19,7 +19,9 @@ export const PublicShowcaseWorks = () => {
   });
 
   const buildLink = (path: string) => {
-    if (isSlugMode) {return `/p/${slug}${path}`;}
+    if (isSlugMode) {
+      return `/p/${slug}${path}`;
+    }
     return path;
   };
 

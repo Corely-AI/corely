@@ -23,6 +23,7 @@ import { InventoryModule } from "./modules/inventory";
 import { ApprovalsModule } from "./modules/approvals";
 import { EngagementModule } from "./modules/engagement/engagement.module";
 import { PlatformModule } from "./modules/platform";
+import { PlatformEntitlementsModule } from "./modules/platform-entitlements/platform-entitlements.module";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { CmsModule } from "./modules/cms";
 import { FormsModule } from "./modules/forms";
@@ -52,6 +53,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     DataModule,
     IdentityModule,
     PlatformModule,
+    PlatformEntitlementsModule,
     PartyModule,
     CrmModule,
     WorkspacesModule,

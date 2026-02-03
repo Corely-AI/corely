@@ -26,38 +26,42 @@ export function CashRegisterDetailScreen() {
   const [paramAmount, setParamAmount] = useState("");
   const [paramDesc, setParamDesc] = useState("");
 
-  if (!id) {
-    return null;
-  }
-
   const { data: regData, isLoading: regLoading } = useQuery({
-    queryKey: cashKeys.registers.detail(id),
-    queryFn: () => cashManagementApi.getRegister(id),
+    queryKey: id ? cashKeys.registers.detail(id) : ["cash", "registers", "none"],
+    queryFn: () => (id ? cashManagementApi.getRegister(id) : Promise.reject("No ID")),
+    enabled: !!id,
   });
 
   const { data: entriesData } = useQuery({
-    queryKey: cashKeys.entries.list(id, {}),
-    queryFn: () => cashManagementApi.listEntries(id, {}),
+    queryKey: id ? cashKeys.entries.list(id, {}) : ["cash", "entries", "none"],
+    queryFn: () => (id ? cashManagementApi.listEntries(id, {}) : Promise.reject("No ID")),
     enabled: !!id,
   });
 
   const { data: closesData } = useQuery({
-    queryKey: cashKeys.dailyCloses.list(id, {}),
-    queryFn: () => cashManagementApi.listDailyCloses(id, {}),
+    queryKey: id ? cashKeys.dailyCloses.list(id, {}) : ["cash", "daily-closes", "none"],
+    queryFn: () => (id ? cashManagementApi.listDailyCloses(id, {}) : Promise.reject("No ID")),
     enabled: !!id,
   });
 
   const createEntryMutation = useMutation({
-    mutationFn: (vars: { type: CashEntryType; amountCents: number; desc: string }) =>
-      cashManagementApi.createEntry(id, {
+    mutationFn: (vars: { type: CashEntryType; amountCents: number; desc: string }) => {
+      if (!id) {
+        throw new Error("No register ID");
+      }
+      return cashManagementApi.createEntry(id, {
         tenantId: "current",
         registerId: id,
         type: vars.type,
         amountCents: vars.amountCents,
         sourceType: CashEntrySourceType.MANUAL,
         description: vars.desc,
-      }),
+      });
+    },
     onSuccess: async () => {
+      if (!id) {
+        return;
+      }
       await queryClient.invalidateQueries({ queryKey: cashKeys.registers.detail(id) });
       await queryClient.invalidateQueries({ queryKey: cashKeys.entries.list(id, {}) });
       setEntryType(null);
@@ -69,6 +73,10 @@ export function CashRegisterDetailScreen() {
       toast.error("Failed to add entry: " + (err.response?.data?.message || err.message));
     },
   });
+
+  if (!id) {
+    return null;
+  }
 
   const handleCreateEntry = () => {
     if (!entryType || !paramAmount || !paramDesc) {

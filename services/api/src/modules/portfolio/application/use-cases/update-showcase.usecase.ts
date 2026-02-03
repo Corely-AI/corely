@@ -47,7 +47,10 @@ export class UpdateShowcaseUseCase extends BaseUseCase<UpdateShowcaseParams, Por
     const nextSlug = input.slug?.trim();
     if (nextSlug && nextSlug !== existing.slug) {
       assertValidSlug(nextSlug);
-      const conflict = await this.repo.findBySlug(ctx.tenantId!, ctx.workspaceId, nextSlug);
+      const conflict = await this.repo.findBySlug(nextSlug, {
+        tenantId: ctx.tenantId!,
+        workspaceId: ctx.workspaceId,
+      });
       if (conflict && conflict.id !== existing.id) {
         return err(new ConflictError("Showcase slug already exists"));
       }

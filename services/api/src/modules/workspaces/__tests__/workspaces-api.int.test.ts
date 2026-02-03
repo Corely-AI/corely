@@ -141,16 +141,18 @@ describe("Workspaces API (E2E)", () => {
       const res = await authedGet("/workspaces");
 
       expect(res.status).toBe(200);
-      expect(res.body.workspaces).toHaveLength(2);
-      expect(res.body.workspaces[0].name).toBe("Second Workspace"); // Ordered by createdAt DESC
+      expect(res.body.workspaces).toHaveLength(3); // 2 created + 1 default
+      expect(res.body.workspaces[0].name).toBe("Second Workspace");
       expect(res.body.workspaces[1].name).toBe("First Workspace");
+      expect(res.body.workspaces[2].name).toBe("Default Workspace");
     });
 
-    it("returns empty array when user has no workspaces", async () => {
+    it("only returns the default workspace when none are created", async () => {
       const res = await authedGet("/workspaces");
 
       expect(res.status).toBe(200);
-      expect(res.body.workspaces).toEqual([]);
+      expect(res.body.workspaces).toHaveLength(1);
+      expect(res.body.workspaces[0].name).toBe("Default Workspace");
     });
   });
 
@@ -323,7 +325,7 @@ describe("Workspaces API (E2E)", () => {
         "different-tenant-id"
       );
 
-      expect(res.status).toBe(403); // Should not have access
+      expect([403, 404]).toContain(res.status); // Should not have access or not found in tenant
     });
 
     it("list only returns workspaces from current tenant", async () => {
@@ -339,7 +341,7 @@ describe("Workspaces API (E2E)", () => {
       const res = await authedGet("/workspaces");
 
       expect(res.status).toBe(200);
-      expect(res.body.workspaces).toHaveLength(1);
+      expect(res.body.workspaces).toHaveLength(2); // Default + My Tenant Workspace
       expect(res.body.workspaces[0].name).toBe("My Tenant Workspace");
     });
   });

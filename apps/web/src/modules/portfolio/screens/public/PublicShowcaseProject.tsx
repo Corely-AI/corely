@@ -23,7 +23,9 @@ export const PublicShowcaseProject = () => {
   });
 
   const buildLink = (path: string) => {
-    if (isSlugMode && slug) {return `/p/${slug}${path}`;}
+    if (isSlugMode && slug) {
+      return `/p/${slug}${path}`;
+    }
     return path;
   };
 
@@ -31,7 +33,9 @@ export const PublicShowcaseProject = () => {
     return <div className="container py-10 animate-pulse">Loading project...</div>;
   }
 
-  if (!data) {return <div className="container py-10">Project not found</div>;}
+  if (!data) {
+    return <div className="container py-10">Project not found</div>;
+  }
 
   const { project } = data;
 

@@ -39,11 +39,15 @@ export const PublicPortfolioLayout = () => {
     // Don't retry 404s endlessly
     retry: (failureCount, error: unknown) => {
       const status = (error as { status?: number })?.status;
-      if (status === 404) {return false;}
+      if (status === 404) {
+        return false;
+      }
       return failureCount < 2;
     },
     staleTime: 60 * 1000,
   });
+
+  const { t } = useTranslation();
 
   if (isLoading) {
     return (
@@ -55,9 +59,6 @@ export const PublicPortfolioLayout = () => {
       </div>
     );
   }
-
-  const { t } = useTranslation();
-
   if (error || !data) {
     const status =
       (error as { status?: number; response?: { status?: number } })?.status ??

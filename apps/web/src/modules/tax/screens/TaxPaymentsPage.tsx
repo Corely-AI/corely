@@ -319,6 +319,12 @@ export const TaxPaymentsPage = () => {
     );
   }, [status, year, type, dueFrom, dueTo, paidFrom, paidTo, setSearchParams]);
 
+  React.useEffect(() => {
+    if (!isCapabilitiesLoading && !isCapabilitiesError && !paymentsEnabled) {
+      navigate("/tax/filings", { replace: true });
+    }
+  }, [navigate, paymentsEnabled, isCapabilitiesLoading, isCapabilitiesError]);
+
   if (isCapabilitiesLoading) {
     return (
       <div className="p-6 lg:p-8">
@@ -343,12 +349,6 @@ export const TaxPaymentsPage = () => {
       </div>
     );
   }
-
-  React.useEffect(() => {
-    if (!paymentsEnabled) {
-      navigate("/tax/filings", { replace: true });
-    }
-  }, [navigate, paymentsEnabled]);
 
   if (!paymentsEnabled) {
     return null;

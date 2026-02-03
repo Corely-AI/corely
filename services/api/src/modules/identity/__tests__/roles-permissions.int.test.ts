@@ -17,9 +17,14 @@ describe("Identity roles permissions (E2E)", () => {
   let db: PostgresTestDb;
 
   beforeAll(async () => {
-    db = await createTestDb();
-    app = await createApiTestApp(db);
-    server = app.getHttpServer();
+    try {
+      db = await createTestDb();
+      app = await createApiTestApp(db);
+      server = app.getHttpServer();
+    } catch (e) {
+      console.error("beforeAll failed", e);
+      throw e;
+    }
   });
 
   beforeEach(async () => {
@@ -27,8 +32,8 @@ describe("Identity roles permissions (E2E)", () => {
   });
 
   afterAll(async () => {
-    await app.close();
-    await db.down();
+    if (app) await app.close();
+    if (db) await db.down();
     await stopSharedContainer();
   });
 
@@ -73,9 +78,23 @@ describe("Identity roles permissions (E2E)", () => {
     expect(roleInTenantB).toBeTruthy();
 
     const tokenA = await login("owner@example.com", "Password123!", tenantA.tenantId);
+
+    const workspaceA = await prisma.workspace.findFirst({
+      where: { tenantId: tenantA.tenantId },
+      include: { legalEntity: true },
+    });
+
+    if (workspaceA?.legalEntity) {
+      await prisma.legalEntity.update({
+        where: { id: workspaceA.legalEntity.id },
+        data: { kind: "COMPANY" },
+      });
+    }
+
     const res = await request(server)
       .get(`/identity/roles/${roleInTenantB!.id}/permissions`)
-      .set("Authorization", `Bearer ${tokenA}`);
+      .set("Authorization", `Bearer ${tokenA}`)
+      .set("x-workspace-id", workspaceA!.id);
 
     expect(res.status).toBe(404);
   });

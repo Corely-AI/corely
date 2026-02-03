@@ -6,6 +6,7 @@ import {
   SetMetadata,
   Inject,
   Logger,
+  forwardRef,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import type { MembershipRepositoryPort } from "../../application/ports/membership-repository.port";
@@ -40,6 +41,7 @@ export class RbacGuard implements CanActivate {
     private readonly membershipRepo: MembershipRepositoryPort,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
     private readonly grantRepo: RolePermissionGrantRepositoryPort,
+    @Inject(forwardRef(() => WorkspaceTemplateService))
     private readonly workspaceTemplateService: WorkspaceTemplateService,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort
@@ -57,43 +59,51 @@ export class RbacGuard implements CanActivate {
     const userId = ctx?.userId ?? request.user?.userId;
     const tenantId = ctx?.tenantId ?? request.tenantId;
     const workspaceId = (ctx?.workspaceId as string | null | undefined) ?? null;
-    if (!workspaceId) {
-      this.logger.warn("RBAC: workspaceId missing in request context", {
-        userId,
-        tenantId,
-        requiredPermission,
-        headerWorkspaceId: request.headers["x-workspace-id"],
-        requestWorkspaceId: request.workspaceId,
-        routeWorkspaceId: (request.params || {}).workspaceId,
-        contextSources: ctx?.sources,
-      });
-    }
 
-    if (!userId || !tenantId) {
-      throw new ForbiddenException("User or tenant not found in context");
+    if (!userId) {
+      throw new ForbiddenException("User not authenticated");
     }
 
     // If workspace has RBAC disabled, allow access (capability gate handles visibility)
-    if (workspaceId) {
+    if (workspaceId && tenantId) {
       const workspace = await this.workspaceRepo.getWorkspaceByIdWithLegalEntity(
         tenantId,
         workspaceId
       );
-      const workspaceKind = workspace?.legalEntity?.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
-      const capabilities = this.workspaceTemplateService.getDefaultCapabilities(workspaceKind);
-      if (!capabilities["workspace.rbac"]) {
-        return true;
+      if (workspace) {
+        const workspaceKind = workspace.legalEntity?.kind === "COMPANY" ? "COMPANY" : "PERSONAL";
+        const capabilities = this.workspaceTemplateService.getDefaultCapabilities(workspaceKind);
+        if (!capabilities["workspace.rbac"]) {
+          return true;
+        }
       }
     }
 
-    // Get user's membership and role
-    const membership = await this.membershipRepo.findByTenantAndUser(tenantId, userId);
+    const roleIds: string[] = [];
 
-    if (!membership) {
-      throw new ForbiddenException("User is not a member of this tenant");
+    // 1. Fetch Host Membership (Super Admin)
+    const hostMembership = await this.membershipRepo.findHostMembership(userId);
+    if (hostMembership) {
+      roleIds.push(hostMembership.getRoleId());
     }
 
-    const grants = await this.grantRepo.listByRoleIdsAndTenant(tenantId, [membership.getRoleId()]);
+    // 2. Fetch Tenant Membership
+    if (tenantId) {
+      const tenantMembership = await this.membershipRepo.findByTenantAndUser(tenantId, userId);
+      if (tenantMembership) {
+        roleIds.push(tenantMembership.getRoleId());
+      }
+    }
+
+    if (roleIds.length === 0) {
+      if (tenantId) {
+        throw new ForbiddenException("User is not a member of this tenant");
+      }
+      throw new ForbiddenException("Access denied");
+    }
+
+    // 3. Resolve permissions from all roles (Host + Tenant)
+    const grants = await this.grantRepo.listByRoleIds(roleIds);
     const grantSet = computeEffectivePermissionSet(grants);
     const canAccess = hasPermission(grantSet, requiredPermission);
 

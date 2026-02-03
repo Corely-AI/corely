@@ -17,6 +17,12 @@ export class FakeMembershipRepository implements MembershipRepositoryPort {
     return this.memberships.filter((m) => m.getUserId() === userId);
   }
 
+  async findHostMembership(userId: string): Promise<Membership | null> {
+    return (
+      this.memberships.find((m) => m.getUserId() === userId && m.getTenantId() === null) ?? null
+    );
+  }
+
   async findByTenantId(tenantId: string): Promise<Membership[]> {
     return this.memberships.filter((m) => m.getTenantId() === tenantId);
   }

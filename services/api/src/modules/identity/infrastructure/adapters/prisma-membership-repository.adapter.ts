@@ -46,6 +46,20 @@ export class PrismaMembershipRepository implements MembershipRepositoryPort {
     return data.map((item) => Membership.restore(item));
   }
 
+  async findHostMembership(userId: string): Promise<Membership | null> {
+    const data = await this.prisma.membership.findFirst({
+      where: {
+        userId,
+        tenantId: null,
+      },
+    });
+
+    if (!data) {
+      return null;
+    }
+    return Membership.restore(data);
+  }
+
   async findByTenantId(tenantId: string): Promise<Membership[]> {
     const data = await this.prisma.membership.findMany({
       where: { tenantId },
