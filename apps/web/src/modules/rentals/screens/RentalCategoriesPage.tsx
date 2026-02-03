@@ -203,6 +203,7 @@ export default function RentalCategoriesPage() {
       </Drawer>
 
       <ConfirmDeleteDialog
+        trigger={null}
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}
