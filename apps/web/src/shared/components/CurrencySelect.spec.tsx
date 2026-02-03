@@ -3,15 +3,14 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import { CurrencySelect } from "./CurrencySelect";
 import userEvent from "@testing-library/user-event";
-import type * as CorelyUi from "@corely/ui";
 
 // Mock the Select UI components to avoid Radix Portal issues in tests
 // and to ensure clean rendering.
 vi.mock("@corely/ui", async (importOriginal) => {
-  const actual = await importOriginal<CorelyUi>();
+  const actual = await importOriginal();
 
   return {
-    ...actual,
+    ...(actual as Record<string, unknown>),
     Select: ({ children }: { children: React.ReactNode }) => (
       <div data-testid="select-root">{children}</div>
     ),

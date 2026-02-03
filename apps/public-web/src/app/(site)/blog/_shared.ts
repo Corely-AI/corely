@@ -211,7 +211,6 @@ export async function getBlogPostPageData(input: {
     imageUrl: post.coverImageFileId ? buildPublicFileUrl(post.coverImageFileId) : null,
     datePublished: post.publishedAt ?? undefined,
     dateModified: post.updatedAt ?? undefined,
-    authorName: post.authorUserId,
     speakable: ["/html/body/main/article/header/h1", "/html/body/main/article/section[1]/p"],
   });
 

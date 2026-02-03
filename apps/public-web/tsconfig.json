@@ -11,6 +11,7 @@
       "@/*": ["./src/*"]
     },
     "allowJs": true,
+    "exactOptionalPropertyTypes": false,
     "plugins": [
       {
         "name": "next"
@@ -19,6 +20,7 @@
   },
   "include": [
     "next-env.d.ts",
+    "src/**/*.d.ts",
     "src/app/**/*",
     "src/components/**/*",
     "src/lib/**/*",

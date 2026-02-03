@@ -3,7 +3,6 @@ import {
   IssueTranscriptionSegmentSchema,
   type AttachmentMetadata,
   type CreateIssueRequest,
-  type IssueTranscriptionSegment,
 } from "@corely/contracts";
 import type { OutboxPort, UseCaseContext } from "@corely/kernel";
 import { RequireTenant } from "@corely/kernel";
@@ -22,6 +21,7 @@ import type {
   Issue,
   IssueAttachment,
   IssueComment,
+  IssueTranscriptionSegment,
   IssueTranscriptionStatus,
 } from "../../domain/issue.types";
 import { assertAttachmentsValid } from "../issue-attachments";
@@ -250,13 +250,13 @@ export class CreateIssueUseCase {
             language: "vi",
           });
 
-          const segments: IssueTranscriptionSegment[] = (result.segments ?? []).map((segment) =>
-            IssueTranscriptionSegmentSchema.parse(segment)
+          const segments: IssueTranscriptionSegment[] = (result.segments ?? []).map(
+            (segment) => IssueTranscriptionSegmentSchema.parse(segment) as IssueTranscriptionSegment
           );
 
           await this.attachmentRepo.update(issue.tenantId, attachment.id, {
             transcriptText: result.text,
-            transcriptSegments: segments as IssueTranscriptionSegment[],
+            transcriptSegments: segments,
             transcriptionStatus: "COMPLETED",
           });
 
