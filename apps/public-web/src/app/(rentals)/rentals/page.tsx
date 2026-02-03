@@ -2,13 +2,9 @@ import { RentalsListContent } from "@/components/pages/rentals-list-page";
 import { getRequestContext } from "@/lib/request-context";
 import { JsonLd } from "@/components/seo/json-ld";
 import { PublicDisabledState } from "@/components/sections/public-disabled";
-import {
-  RENTALS_REVALIDATE,
-  getRentalsListMetadata,
-  getRentalsListPageData,
-} from "@/app/(rentals)/rentals/_shared";
+import { getRentalsListMetadata, getRentalsListPageData } from "@/app/(rentals)/rentals/_shared";
 
-export const revalidate = RENTALS_REVALIDATE;
+export const revalidate = 300;
 
 export async function generateMetadata() {
   const ctx = await getRequestContext();

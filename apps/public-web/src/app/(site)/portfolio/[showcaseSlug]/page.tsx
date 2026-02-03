@@ -3,12 +3,11 @@ import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
 import {
-  PORTFOLIO_REVALIDATE,
   getPortfolioShowcaseMetadata,
   getPortfolioShowcasePageData,
 } from "@/app/(site)/portfolio/_shared";
 
-export const revalidate = PORTFOLIO_REVALIDATE;
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ showcaseSlug: string }> }) {
   const ctx = await getRequestContext();

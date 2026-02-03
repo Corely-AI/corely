@@ -2,13 +2,9 @@ import { BlogListContent } from "@/components/pages/blog-list-page";
 import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
-import {
-  BLOG_REVALIDATE,
-  getBlogListMetadata,
-  getBlogListPageData,
-} from "@/app/(site)/blog/_shared";
+import { getBlogListMetadata, getBlogListPageData } from "@/app/(site)/blog/_shared";
 
-export const revalidate = BLOG_REVALIDATE;
+export const revalidate = 300;
 
 export async function generateMetadata() {
   const ctx = await getRequestContext();
