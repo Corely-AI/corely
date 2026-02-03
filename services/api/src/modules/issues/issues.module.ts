@@ -19,6 +19,7 @@ import { PrismaIssueCommentRepositoryAdapter } from "./infrastructure/prisma/pri
 import { PrismaIssueAttachmentRepositoryAdapter } from "./infrastructure/prisma/prisma-issue-attachment-repository.adapter";
 import { PrismaIssueActivityRepositoryAdapter } from "./infrastructure/prisma/prisma-issue-activity-repository.adapter";
 import { DocumentsPortAdapter } from "./infrastructure/documents/documents-port.adapter";
+import { GoogleSpeechToTextAdapter } from "./infrastructure/speech-to-text/google-speech-to-text.adapter";
 import { OpenAiSpeechToTextAdapter } from "./infrastructure/speech-to-text/openai-speech-to-text.adapter";
 import { NullSpeechToTextAdapter } from "./infrastructure/speech-to-text/null-speech-to-text.adapter";
 import { CreateIssueUseCase } from "./application/use-cases/create-issue.usecase";
@@ -74,8 +75,28 @@ import {
     {
       provide: SPEECH_TO_TEXT_PORT,
       useFactory: (env: EnvService) => {
+        if (env.SPEECH_TO_TEXT_PROVIDER === "none") {
+          return new NullSpeechToTextAdapter();
+        }
+        if (env.SPEECH_TO_TEXT_PROVIDER === "google") {
+          return new GoogleSpeechToTextAdapter({
+            projectId: env.GOOGLE_CLOUD_PROJECT,
+            keyFilename: env.GOOGLE_APPLICATION_CREDENTIALS,
+          });
+        }
+        if (env.SPEECH_TO_TEXT_PROVIDER === "openai") {
+          return env.OPENAI_API_KEY
+            ? new OpenAiSpeechToTextAdapter(env.OPENAI_API_KEY)
+            : new NullSpeechToTextAdapter();
+        }
         if (env.OPENAI_API_KEY) {
           return new OpenAiSpeechToTextAdapter(env.OPENAI_API_KEY);
+        }
+        if (env.GOOGLE_CLOUD_PROJECT || env.GOOGLE_APPLICATION_CREDENTIALS) {
+          return new GoogleSpeechToTextAdapter({
+            projectId: env.GOOGLE_CLOUD_PROJECT,
+            keyFilename: env.GOOGLE_APPLICATION_CREDENTIALS,
+          });
         }
         return new NullSpeechToTextAdapter();
       },

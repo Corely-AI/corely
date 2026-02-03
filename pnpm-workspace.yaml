@@ -54,7 +54,7 @@ catalog:
   msw: ^2.6.6
   nanoid: ^5.1.6
   neverthrow: ^8.2.0
-  next: ^15.1.7
+  next: 15.5.7
   pg: ^8.13.1
   postcss: ^8.5.6
   prettier: ^3.3.3

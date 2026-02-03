@@ -12,14 +12,15 @@
  * For API calls and server-side resolution, always use the full /public/rentals/properties/:slug path.
  */
 export function getPublicRentalUrl(propertySlug: string, workspaceSlug?: string): string {
-  // If we have a workspace slug, use path-based routing: /w/:workspaceSlug/rental/:slug
-  // This ensures the workspace context is preserved in all environments
-  if (workspaceSlug) {
-    return `/w/${workspaceSlug}/rental/${propertySlug}`;
-  }
+  const publicWebBaseUrl =
+    import.meta.env.VITE_PUBLIC_WEB_BASE_URL ||
+    (import.meta.env.DEV ? "http://localhost:8082" : "https://corely.one");
 
-  // Otherwise, fallback to the shorthand route (requires implicit workspace context or separate handling)
-  return `/stay/${propertySlug}`;
+  const path = workspaceSlug
+    ? `/w/${workspaceSlug}/rentals/${propertySlug}`
+    : `/rentals/${propertySlug}`;
+
+  return publicWebBaseUrl ? new URL(path, publicWebBaseUrl).toString() : path;
 }
 
 /**

@@ -62,12 +62,13 @@ Policies live in `services/api/src/modules/issues/policies` and rely on `ctx.rol
 
 - Attachments are stored via the Documents module (document ID + metadata in the Issue module).
 - **Vietnamese-first**: language hint `"vi"` is passed to the STT provider.
-- **Sync path**: if audio is small (`<= 5MB`) and the API has OpenAI configured, the issue is transcribed inline.
+- **Sync path**: if audio is small (`<= 5MB`) and the API has a speech-to-text provider configured, the issue is transcribed inline.
   - If `description` is empty, transcript becomes the description.
   - Otherwise a system comment is created.
   - A `issue.transcription.completed` outbox event is emitted.
 - **Async path**: larger audio or failed sync transcriptions enqueue `issue.transcription.requested`.
   - Worker downloads the audio via documents storage, transcribes, updates attachment transcript fields, and emits `issue.transcription.completed`.
+- **Provider selection**: set `SPEECH_TO_TEXT_PROVIDER=openai|google|none` to force a provider. If unset, OpenAI is used when `OPENAI_API_KEY` is present; otherwise Google is used when GCP credentials are available; otherwise transcription is disabled.
 
 ## Failure Modes & Retries
 
