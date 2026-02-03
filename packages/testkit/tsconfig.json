@@ -8,6 +8,8 @@
       "@corely/testkit/*": ["./src/*"],
       "@corely/data": ["../data/src/index.ts"],
       "@corely/data/*": ["../data/src/*"],
+      "@corely/contracts": ["../contracts/src/index.ts"],
+      "@corely/contracts/*": ["../contracts/src/*"],
       "@/*": ["../../services/api/src/*"],
       "@shared/*": ["../../services/api/src/shared/*"]
     }
