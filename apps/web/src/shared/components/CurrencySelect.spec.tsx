@@ -1,25 +1,47 @@
+import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, cleanup, within } from "@testing-library/react";
+import { render, screen, cleanup } from "@testing-library/react";
 import { CurrencySelect } from "./CurrencySelect";
 import userEvent from "@testing-library/user-event";
+import type * as CorelyUi from "@corely/ui";
 
 // Mock the Select UI components to avoid Radix Portal issues in tests
 // and to ensure clean rendering.
-vi.mock("@corely/ui", () => ({
-  Select: ({ children }: any) => <div data-testid="select-root">{children}</div>,
-  SelectTrigger: ({ children }: any) => <button role="combobox">{children}</button>,
-  SelectValue: ({ placeholder }: any) => <span>{placeholder || "Select"}</span>,
-  SelectContent: ({ children }: any) => (
-    <div data-testid="select-content" role="listbox">
-      {children}
-    </div>
-  ),
-  SelectItem: ({ children, value, ...props }: any) => (
-    <div role="option" data-value={value} {...props}>
-      {children}
-    </div>
-  ),
-}));
+vi.mock("@corely/ui", async (importOriginal) => {
+  const actual = await importOriginal<CorelyUi>();
+
+  return {
+    ...actual,
+    Select: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="select-root">{children}</div>
+    ),
+    SelectTrigger: ({
+      children,
+      ...props
+    }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children: React.ReactNode }) => (
+      <button role="combobox" type="button" {...props}>
+        {children}
+      </button>
+    ),
+    SelectValue: ({ placeholder }: { placeholder?: string }) => (
+      <span>{placeholder || "Select"}</span>
+    ),
+    SelectContent: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="select-content" role="listbox">
+        {children}
+      </div>
+    ),
+    SelectItem: ({
+      children,
+      value,
+      ...props
+    }: React.HTMLAttributes<HTMLDivElement> & { children: React.ReactNode; value: string }) => (
+      <div role="option" data-value={value} {...props}>
+        {children}
+      </div>
+    ),
+  };
+});
 
 afterEach(() => {
   cleanup();
@@ -111,10 +133,9 @@ describe("CurrencySelect", () => {
 
   it("includes current value even if not in list", () => {
     const onValueChange = vi.fn();
-    const { getByRole } = render(
+    render(
       <CurrencySelect value="XYZ" onValueChange={onValueChange} currencies={["USD", "EUR"]} />
     );
-    const trigger = getByRole("combobox");
     // SelectValue displays placeholder in our mock if no value handling in mock
     // But CurrencySelect passes `value` to Select.
     // Our Mock `Select` does not pass `value` to `SelectTrigger` or `SelectValue`.
