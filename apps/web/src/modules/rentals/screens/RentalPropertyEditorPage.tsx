@@ -41,6 +41,25 @@ const statusVariant = (status: RentalStatus) => {
   }
 };
 
+type GalleryImage = { fileId: string; altText: string; sortOrder: number; isUploading?: boolean };
+type RentalPropertyDraft = {
+  name: string;
+  slug: string;
+  slugTouched: boolean;
+  summary: string;
+  descriptionHtml: string;
+  maxGuests: number;
+  price?: number;
+  currency: string;
+  coverImageFileId: string | null;
+  images: GalleryImage[];
+  status: RentalStatus;
+  selectedCategoryIds: string[];
+  updatedAt: string;
+};
+
+const isBlobUrl = (value: string) => value.startsWith("blob:");
+
 export default function RentalPropertyEditorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -57,12 +76,23 @@ export default function RentalPropertyEditorPage() {
   const [price, setPrice] = useState<number | undefined>(undefined);
   const [currency, setCurrency] = useState<string>("USD");
   const [coverImageFileId, setCoverImageFileId] = useState<string | null>(null);
-  type GalleryImage = { fileId: string; altText: string; sortOrder: number; isUploading?: boolean };
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [status, setStatus] = useState<RentalStatus>("DRAFT");
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
 
   const isEdit = Boolean(id);
+  const draftQueryKey = useMemo(
+    () => [
+      "rentals",
+      "property-editor-draft",
+      {
+        workspaceId: activeWorkspace?.id ?? "global",
+        propertyId: id ?? "new",
+      },
+    ],
+    [activeWorkspace?.id, id]
+  );
+  const hydratedRef = useRef(false);
 
   const { data: property, isLoading } = useQuery({
     queryKey: rentalPropertyKeys.detail(id ?? ""),
@@ -75,10 +105,56 @@ export default function RentalPropertyEditorPage() {
     queryFn: () => rentalsApi.listCategories(),
   });
 
+  const { data: draft } = useQuery<RentalPropertyDraft | null>({
+    queryKey: draftQueryKey,
+    queryFn: async () => null,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+
   useEffect(() => {
+    hydratedRef.current = false;
+    setName("");
+    setSlug("");
+    setSlugTouched(false);
+    setSummary("");
+    setDescriptionHtml("");
+    setMaxGuests(2);
+    setPrice(undefined);
+    setCurrency("USD");
+    setCoverImageFileId(null);
+    setImages([]);
+    setStatus("DRAFT");
+    setSelectedCategoryIds([]);
+  }, [draftQueryKey]);
+
+  useEffect(() => {
+    if (hydratedRef.current) {
+      return;
+    }
+
+    if (draft) {
+      hydratedRef.current = true;
+      setName(draft.name);
+      setSlug(draft.slug);
+      setSlugTouched(draft.slugTouched);
+      setSummary(draft.summary);
+      setDescriptionHtml(draft.descriptionHtml);
+      setMaxGuests(draft.maxGuests);
+      setPrice(draft.price);
+      setCurrency(draft.currency);
+      setCoverImageFileId(draft.coverImageFileId);
+      setImages(draft.images);
+      setStatus(draft.status);
+      setSelectedCategoryIds(draft.selectedCategoryIds);
+      return;
+    }
+
     if (!property) {
       return;
     }
+
+    hydratedRef.current = true;
     setName(property.name);
     setSlug(property.slug);
     setSlugTouched(true);
@@ -97,7 +173,55 @@ export default function RentalPropertyEditorPage() {
     );
     setStatus(property.status);
     setSelectedCategoryIds((property.categories ?? []).map((c) => c.id));
-  }, [property]);
+  }, [draft, property]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      const draft: RentalPropertyDraft = {
+        name,
+        slug,
+        slugTouched,
+        summary,
+        descriptionHtml,
+        maxGuests,
+        price,
+        currency,
+        coverImageFileId,
+        images: images
+          .filter((img) => !img.isUploading && !isBlobUrl(img.fileId))
+          .map((img, index) => ({
+            fileId: img.fileId,
+            altText: img.altText,
+            sortOrder: index,
+          })),
+        status,
+        selectedCategoryIds,
+        updatedAt: new Date().toISOString(),
+      };
+      queryClient.setQueryData(draftQueryKey, draft);
+    }, 300);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    name,
+    slug,
+    slugTouched,
+    summary,
+    descriptionHtml,
+    maxGuests,
+    price,
+    currency,
+    coverImageFileId,
+    images,
+    status,
+    selectedCategoryIds,
+    draftQueryKey,
+    queryClient,
+  ]);
 
   const coverImageUrl = useMemo(
     () => (coverImageFileId ? buildPublicFileUrl(coverImageFileId) : null),
@@ -139,6 +263,7 @@ export default function RentalPropertyEditorPage() {
     },
     onSuccess: async (saved) => {
       toast.success(isEdit ? "Property updated" : "Property created");
+      queryClient.removeQueries({ queryKey: draftQueryKey, exact: true });
       await invalidateResourceQueries(queryClient, "rentals/properties", { id: saved.id });
       if (!id) {
         navigate(`/rentals/properties/${saved.id}/edit`, { replace: true });
