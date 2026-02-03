@@ -2,14 +2,10 @@ import { RentalDetailClient } from "@/components/pages/rental-detail-client";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
 import { PublicDisabledState } from "@/components/sections/public-disabled";
-import {
-  RENTALS_REVALIDATE,
-  getRentalDetailMetadata,
-  getRentalDetailPageData,
-} from "@/app/(rentals)/rentals/_shared";
+import { getRentalDetailMetadata, getRentalDetailPageData } from "@/app/(rentals)/rentals/_shared";
 import { buildFaqSchema } from "@/lib/structured-data";
 
-export const revalidate = RENTALS_REVALIDATE;
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const ctx = await getRequestContext();

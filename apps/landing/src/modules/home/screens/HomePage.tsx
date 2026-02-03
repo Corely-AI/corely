@@ -147,13 +147,13 @@ export function HomePage() {
               <div className="flex flex-wrap gap-3">
                 <a
                   className={buttonVariants({ variant: "accent", size: "lg" })}
-                  href="mailto:hello@corely.ai"
+                  href="mailto:hello@corely.one"
                 >
                   Get early access
                 </a>
                 <a
                   className={buttonVariants({ variant: "outline", size: "lg" })}
-                  href="https://docs.corely.ai"
+                  href="https://docs.corely.one"
                 >
                   Read docs
                 </a>
@@ -267,7 +267,7 @@ export function HomePage() {
                   </Link>
                   <a
                     className={buttonVariants({ variant: "link", size: "sm" })}
-                    href="mailto:hello@corely.ai"
+                    href="mailto:hello@corely.one"
                   >
                     Talk to us
                   </a>
@@ -492,7 +492,7 @@ export function HomePage() {
               <div className="flex flex-wrap gap-3">
                 <a
                   className={buttonVariants({ variant: "secondary", size: "lg" })}
-                  href="mailto:hello@corely.ai"
+                  href="mailto:hello@corely.one"
                 >
                   Get early access
                 </a>

@@ -6,7 +6,7 @@ export const siteConfig = {
   siteUrl: import.meta.env.VITE_SITE_URL || "https://corely.one",
   social: {
     github: "https://github.com/Corely-AI/corely",
-    docs: "https://docs.corely.ai",
+    docs: "https://docs.corely.one",
   },
 };
 
@@ -24,7 +24,7 @@ export const footerNav = {
   ],
   platform: [
     { label: "Developers", href: "/developers" },
-    { label: "Request access", href: "mailto:hello@corely.ai" },
+    { label: "Request access", href: "mailto:hello@corely.one" },
     { label: "GitHub", href: "https://github.com/Corely-AI/corely" },
   ],
   legal: [

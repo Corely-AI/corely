@@ -2,9 +2,9 @@ import { CmsPageContent } from "@/components/pages/cms-page";
 import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
-import { CMS_REVALIDATE, getCmsPageMetadata, getCmsPageData } from "@/app/(site)/pages/_shared";
+import { getCmsPageMetadata, getCmsPageData } from "@/app/(site)/pages/_shared";
 
-export const revalidate = CMS_REVALIDATE;
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,

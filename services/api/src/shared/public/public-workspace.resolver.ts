@@ -11,7 +11,7 @@ import type {
   PublicWorkspaceModules,
 } from "./public-workspace.types";
 
-const DEFAULT_PUBLIC_BASE_DOMAIN = "corely.app";
+const DEFAULT_PUBLIC_BASE_DOMAIN = "corely.one";
 
 @Injectable()
 export class PublicWorkspaceResolver {
