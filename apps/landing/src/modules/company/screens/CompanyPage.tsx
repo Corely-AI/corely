@@ -30,13 +30,13 @@ export function CompanyPage() {
               <div className="flex flex-wrap gap-3">
                 <a
                   className={buttonVariants({ variant: "accent", size: "lg" })}
-                  href="mailto:hello@corely.ai"
+                  href="mailto:hello@corely.one"
                 >
                   Request access
                 </a>
                 <a
                   className={buttonVariants({ variant: "outline", size: "lg" })}
-                  href="https://docs.corely.ai"
+                  href="https://docs.corely.one"
                 >
                   Read docs
                 </a>

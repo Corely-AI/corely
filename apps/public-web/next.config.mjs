@@ -32,10 +32,6 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "corely.app",
-      },
-      {
-        protocol: "https",
         hostname: "corely.one",
       },
       {

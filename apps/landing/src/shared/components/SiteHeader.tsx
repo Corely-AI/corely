@@ -37,13 +37,13 @@ export function SiteHeader() {
               "hidden md:inline-flex",
               buttonVariants({ variant: "ghost", size: "sm" })
             )}
-            href="https://docs.corely.ai"
+            href="https://docs.corely.one"
           >
             Read docs
           </a>
           <a
             className={buttonVariants({ variant: "accent", size: "sm" })}
-            href="mailto:hello@corely.ai"
+            href="mailto:hello@corely.one"
           >
             Get early access
           </a>
@@ -79,7 +79,7 @@ export function SiteHeader() {
             <hr className="border-border" />
             <a
               className="text-sm font-medium text-muted-foreground hover:text-foreground"
-              href="https://docs.corely.ai"
+              href="https://docs.corely.one"
             >
               Read docs
             </a>

@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://corely.ai/sitemap.xml
+Sitemap: https://corely.one/sitemap.xml

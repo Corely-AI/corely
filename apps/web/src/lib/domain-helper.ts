@@ -8,13 +8,24 @@ export const isCustomDomain = (): boolean => {
 
   // Exclude known admin domains
   // Check env vars first
-  const appHost = import.meta.env.VITE_APP_HOST || "app.corely.com";
-  if (host === appHost) {
+  const appHostsRaw =
+    import.meta.env.VITE_APP_HOSTS ?? import.meta.env.VITE_APP_HOST ?? "app.corely.one";
+  const appHosts = appHostsRaw
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (appHosts.includes(host)) {
     return false;
   }
-  if (host.endsWith(".corely.com")) {
+
+  const baseDomainsRaw = import.meta.env.VITE_APP_BASE_DOMAINS ?? "corely.one";
+  const baseDomains = baseDomainsRaw
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  if (baseDomains.some((domain) => host === domain || host.endsWith(`.${domain}`))) {
     return false;
-  } // assuming corely.com is the main domain
+  }
 
   return true;
 };
