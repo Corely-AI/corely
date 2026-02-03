@@ -5,8 +5,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..", "..");
 
 const resolveApiHost = () => {
-  const baseUrl =
-    process.env.PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "";
+  const baseUrl = process.env.PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "";
   if (!baseUrl) {
     return null;
   }

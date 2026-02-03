@@ -4,12 +4,24 @@ import { resolveWorkspaceSlugFromHost } from "@/lib/tenant";
 const PUBLIC_FILE = /\.[^/]+$/;
 
 const shouldSkip = (pathname: string) => {
-  if (pathname.startsWith("/_next")) {return true;}
-  if (pathname.startsWith("/api")) {return true;}
-  if (pathname.startsWith("/assets")) {return true;}
-  if (pathname.startsWith("/favicon")) {return true;}
-  if (pathname.startsWith("/fonts")) {return true;}
-  if (pathname.startsWith("/.well-known")) {return true;}
+  if (pathname.startsWith("/_next")) {
+    return true;
+  }
+  if (pathname.startsWith("/api")) {
+    return true;
+  }
+  if (pathname.startsWith("/assets")) {
+    return true;
+  }
+  if (pathname.startsWith("/favicon")) {
+    return true;
+  }
+  if (pathname.startsWith("/fonts")) {
+    return true;
+  }
+  if (pathname.startsWith("/.well-known")) {
+    return true;
+  }
   return PUBLIC_FILE.test(pathname);
 };
 

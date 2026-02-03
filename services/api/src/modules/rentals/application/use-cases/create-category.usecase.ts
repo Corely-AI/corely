@@ -28,11 +28,11 @@ export class CreateCategoryUseCase extends BaseUseCase<CreateRentalCategoryInput
       return err(new ValidationError("Category with this slug already exists"));
     }
 
-    const category = await this.useCaseDeps.categoryRepo.save(
-      ctx.tenantId!,
-      ctx.workspaceId!,
-      { ...input, name: input.name, slug: input.slug }
-    );
+    const category = await this.useCaseDeps.categoryRepo.save(ctx.tenantId!, ctx.workspaceId!, {
+      ...input,
+      name: input.name,
+      slug: input.slug,
+    });
     return ok(category);
   }
 }

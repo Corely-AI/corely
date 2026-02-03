@@ -53,10 +53,11 @@ export class UpdateEngagementSettingsUseCase extends BaseUseCase<
 
     const existing =
       (await this.deps.settings.getByTenant(ctx.tenantId)) ?? defaultSettings(ctx.tenantId);
-    const rewardRules =
-      (input.rewardRules
+    const rewardRules = (
+      input.rewardRules
         ? input.rewardRules.map((rule) => RewardRuleSchema.parse(rule))
-        : existing.rewardRules) as EngagementSettingsRecord["rewardRules"];
+        : existing.rewardRules
+    ) as EngagementSettingsRecord["rewardRules"];
 
     const updated: EngagementSettingsRecord = {
       ...existing,

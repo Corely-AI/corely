@@ -36,11 +36,11 @@ export class UpdateCategoryUseCase extends BaseUseCase<UpdateRentalCategoryInput
       }
     }
 
-    const updated = await this.useCaseDeps.categoryRepo.save(
-      ctx.tenantId!,
-      ctx.workspaceId!,
-      { ...input, name: input.name, slug: input.slug }
-    );
+    const updated = await this.useCaseDeps.categoryRepo.save(ctx.tenantId!, ctx.workspaceId!, {
+      ...input,
+      name: input.name,
+      slug: input.slug,
+    });
     return ok(updated);
   }
 }
