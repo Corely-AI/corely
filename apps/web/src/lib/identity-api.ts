@@ -42,4 +42,12 @@ export const identityApi = {
   async updateRolePermissions(roleId: string, input: UpdateRolePermissionsRequest): Promise<void> {
     await apiClient.put(`/identity/roles/${roleId}/permissions`, input);
   },
+
+  async syncRolePermissionsAll(
+    roleId: string
+  ): Promise<{ success: boolean; grantedCount: number }> {
+    return apiClient.post<{ success: boolean; grantedCount: number }>(
+      `/identity/roles/${roleId}/permissions/sync-all`
+    );
+  },
 };

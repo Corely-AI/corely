@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut } from "lucide-react";
+import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut, Users } from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
 import { Button } from "@/shared/ui/button";
 import { useThemeStore } from "@/shared/theme/themeStore";
@@ -20,6 +20,7 @@ import { getIconByName } from "@/shared/utils/iconMapping";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { WorkspaceTypeBadge } from "@/shared/workspaces/WorkspaceTypeBadge";
 import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
+import { useIsSuperAdmin } from "@/shared/lib/permissions";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -32,6 +33,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
   const { theme, setTheme } = useThemeStore();
   const { user, logout } = useAuth();
   const { activeWorkspace } = useWorkspace();
+  const isSuperAdmin = useIsSuperAdmin();
   const {
     isLoading: isConfigLoading,
     error: configError,
@@ -121,7 +123,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
           <div className="px-3 py-4 text-sm text-muted-foreground">
             {t("errors.loadMenuFailed")}
           </div>
-        ) : navigationGroups.length > 0 ? (
+        ) : navigationGroups.length > 0 || isSuperAdmin ? (
           /* Server-driven navigation */
           <>
             {navigationGroups.map((group) => {
@@ -160,6 +162,32 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 </div>
               );
             })}
+
+            {isSuperAdmin && (
+              <div className="space-y-1">
+                {!collapsed && (
+                  <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {t("nav.groups.platform")}
+                  </div>
+                )}
+                <NavLink
+                  to="/settings/tenants"
+                  end
+                  data-testid="nav-platform-tenants"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    )
+                  }
+                >
+                  <Users className="h-5 w-5 shrink-0" />
+                  {!collapsed && <span>{t("nav.tenants")}</span>}
+                </NavLink>
+              </div>
+            )}
 
             {/* Workspace mode indicator */}
             {!collapsed && <WorkspaceTypeBadge />}

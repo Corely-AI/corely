@@ -51,6 +51,7 @@ export class GetRolePermissionsUseCase {
         name: role.name,
         description: role.description ?? null,
         isSystem: role.isSystem,
+        systemKey: role.systemKey ?? null,
       },
       catalog,
       grants: states,

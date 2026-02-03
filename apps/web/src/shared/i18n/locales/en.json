@@ -59,6 +59,7 @@
     "assistant": "Assistant",
     "expenses": "Expenses",
     "invoices": "Invoices",
+    "tenants": "Tenants",
     "groups": {
       "core": "Core",
       "sales": "Sales",
@@ -66,6 +67,7 @@
       "inventory": "Inventory",
       "finance": "Finance",
       "settings": "Settings",
+      "platform": "Platform",
       "tax": "Tax"
     },
     "customers": "Customers",
@@ -103,6 +105,58 @@
     "taxSettings": "Tax Settings",
     "cashManagement": "Cash Management",
     "issues": "Issues"
+  },
+  "featureFlags": {
+    "app": {
+      "core": {
+        "enabled": "Core"
+      },
+      "platform": {
+        "enabled": "Platform"
+      },
+      "invoices": {
+        "enabled": "Invoices"
+      },
+      "crm": {
+        "enabled": "CRM"
+      },
+      "portfolio": {
+        "enabled": "Portfolio"
+      },
+      "issues": {
+        "enabled": "Issues"
+      },
+      "cms": {
+        "enabled": "CMS"
+      },
+      "expenses": {
+        "enabled": "Expenses"
+      },
+      "parties": {
+        "enabled": "Parties"
+      },
+      "ai-copilot": {
+        "enabled": "AI Copilot"
+      },
+      "tax": {
+        "enabled": "Tax"
+      },
+      "cash-management": {
+        "enabled": "Cash Management"
+      },
+      "sales": {
+        "enabled": "Sales"
+      },
+      "workspaces": {
+        "enabled": "Workspaces"
+      },
+      "purchasing": {
+        "enabled": "Purchasing"
+      },
+      "rentals": {
+        "enabled": "Rentals"
+      }
+    }
   },
   "issues": {
     "title": "Issues",

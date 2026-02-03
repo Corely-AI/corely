@@ -58,6 +58,7 @@
     "assistant": "Assistent",
     "expenses": "Ausgaben",
     "invoices": "Rechnungen",
+    "tenants": "Mandanten",
     "groups": {
       "core": "Kernfunktionen",
       "sales": "Verkauf",
@@ -65,6 +66,7 @@
       "inventory": "Lager",
       "finance": "Finanzen",
       "settings": "Einstellungen",
+      "platform": "Plattform",
       "tax": "Steuern"
     },
     "customers": "Kunden",
@@ -97,6 +99,58 @@
     "roles": "Rollen & Rechte",
     "paymentMethods": "Zahlungsmethoden",
     "issues": "Probleme"
+  },
+  "featureFlags": {
+    "app": {
+      "core": {
+        "enabled": "Kern"
+      },
+      "platform": {
+        "enabled": "Plattform"
+      },
+      "invoices": {
+        "enabled": "Rechnungen"
+      },
+      "crm": {
+        "enabled": "CRM"
+      },
+      "portfolio": {
+        "enabled": "Portfolio"
+      },
+      "issues": {
+        "enabled": "Issues"
+      },
+      "cms": {
+        "enabled": "CMS"
+      },
+      "expenses": {
+        "enabled": "Ausgaben"
+      },
+      "parties": {
+        "enabled": "Partner"
+      },
+      "ai-copilot": {
+        "enabled": "KI-Copilot"
+      },
+      "tax": {
+        "enabled": "Steuern"
+      },
+      "cash-management": {
+        "enabled": "Cash Management"
+      },
+      "sales": {
+        "enabled": "Vertrieb"
+      },
+      "workspaces": {
+        "enabled": "Arbeitsbereiche"
+      },
+      "purchasing": {
+        "enabled": "Einkauf"
+      },
+      "rentals": {
+        "enabled": "Vermietung"
+      }
+    }
   },
   "issues": {
     "title": "Probleme",

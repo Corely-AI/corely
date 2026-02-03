@@ -46,6 +46,14 @@ export class PrismaTenantRepository implements TenantRepositoryPort {
     return Tenant.restore(data);
   }
 
+  async listAll(): Promise<Tenant[]> {
+    const data = await this.prisma.tenant.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return data.map((row) => Tenant.restore(row));
+  }
+
   async slugExists(slug: string): Promise<boolean> {
     const count = await this.prisma.tenant.count({
       where: { slug },

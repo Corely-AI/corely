@@ -1,6 +1,11 @@
 import { useAuth } from "@/lib/auth-provider";
 import type { RolePermissionState } from "@corely/contracts";
 
+export const useIsSuperAdmin = () => {
+  const { user } = useAuth();
+  return user?.memberships?.some((membership) => membership.tenantId === "host") ?? false;
+};
+
 export const useActiveRoleId = () => {
   const { user } = useAuth();
   const activeTenantId = user?.activeWorkspaceId ?? user?.activeTenantId;
