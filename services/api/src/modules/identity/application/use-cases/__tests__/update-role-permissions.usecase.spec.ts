@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { UpdateRolePermissionsUseCase } from "../update-role-permissions.usecase";
 import { FakeRoleRepository } from "../../../testkit/fakes/fake-role-repo";
 import { FakeRolePermissionGrantRepository } from "../../../testkit/fakes/fake-role-permission-grant-repo";
+import { FakeMembershipRepository } from "../../../testkit/fakes/fake-membership-repo";
 import { MockAudit } from "../../../testkit/mocks/mock-audit";
 import type { PermissionCatalogPort } from "../../ports/permission-catalog.port";
 import { ValidationError } from "@shared/errors/domain-errors";
@@ -11,11 +12,13 @@ const roleId = "role-1";
 
 let useCase: UpdateRolePermissionsUseCase;
 let roleRepo: FakeRoleRepository;
+let membershipRepo: FakeMembershipRepository;
 let grantRepo: FakeRolePermissionGrantRepository;
 let catalogPort: PermissionCatalogPort;
 
 beforeEach(async () => {
   roleRepo = new FakeRoleRepository();
+  membershipRepo = new FakeMembershipRepository();
   grantRepo = new FakeRolePermissionGrantRepository();
   catalogPort = {
     getCatalog: () => [
@@ -41,7 +44,13 @@ beforeEach(async () => {
     isSystem: false,
   });
 
-  useCase = new UpdateRolePermissionsUseCase(roleRepo, catalogPort, grantRepo, new MockAudit());
+  useCase = new UpdateRolePermissionsUseCase(
+    roleRepo,
+    membershipRepo,
+    catalogPort,
+    grantRepo,
+    new MockAudit()
+  );
 });
 
 describe("UpdateRolePermissionsUseCase", () => {
