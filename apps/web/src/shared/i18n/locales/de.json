@@ -100,6 +100,58 @@
     "paymentMethods": "Zahlungsmethoden",
     "issues": "Probleme"
   },
+  "featureFlags": {
+    "app": {
+      "core": {
+        "enabled": "Kern"
+      },
+      "platform": {
+        "enabled": "Plattform"
+      },
+      "invoices": {
+        "enabled": "Rechnungen"
+      },
+      "crm": {
+        "enabled": "CRM"
+      },
+      "portfolio": {
+        "enabled": "Portfolio"
+      },
+      "issues": {
+        "enabled": "Issues"
+      },
+      "cms": {
+        "enabled": "CMS"
+      },
+      "expenses": {
+        "enabled": "Ausgaben"
+      },
+      "parties": {
+        "enabled": "Partner"
+      },
+      "ai-copilot": {
+        "enabled": "KI-Copilot"
+      },
+      "tax": {
+        "enabled": "Steuern"
+      },
+      "cash-management": {
+        "enabled": "Cash Management"
+      },
+      "sales": {
+        "enabled": "Vertrieb"
+      },
+      "workspaces": {
+        "enabled": "Arbeitsbereiche"
+      },
+      "purchasing": {
+        "enabled": "Einkauf"
+      },
+      "rentals": {
+        "enabled": "Vermietung"
+      }
+    }
+  },
   "issues": {
     "title": "Probleme",
     "reportTitle": "Neues Problem melden",

@@ -99,6 +99,58 @@
     "paymentMethods": "Phương thức thanh toán",
     "issues": "Vấn đề"
   },
+  "featureFlags": {
+    "app": {
+      "core": {
+        "enabled": "Cốt lõi"
+      },
+      "platform": {
+        "enabled": "Nền tảng"
+      },
+      "invoices": {
+        "enabled": "Hóa đơn"
+      },
+      "crm": {
+        "enabled": "CRM"
+      },
+      "portfolio": {
+        "enabled": "Danh mục"
+      },
+      "issues": {
+        "enabled": "Vấn đề"
+      },
+      "cms": {
+        "enabled": "CMS"
+      },
+      "expenses": {
+        "enabled": "Chi phí"
+      },
+      "parties": {
+        "enabled": "Đối tác"
+      },
+      "ai-copilot": {
+        "enabled": "Trợ lý AI"
+      },
+      "tax": {
+        "enabled": "Thuế"
+      },
+      "cash-management": {
+        "enabled": "Quản lý tiền mặt"
+      },
+      "sales": {
+        "enabled": "Bán hàng"
+      },
+      "workspaces": {
+        "enabled": "Không gian làm việc"
+      },
+      "purchasing": {
+        "enabled": "Mua hàng"
+      },
+      "rentals": {
+        "enabled": "Cho thuê"
+      }
+    }
+  },
   "issues": {
     "title": "Vấn đề",
     "reportTitle": "Báo cáo vấn đề mới",
