@@ -4,12 +4,12 @@ import { getRequestContext } from "@/lib/request-context";
 import { getHomeMetadata, getHomePageData } from "@/app/(site)/_home-shared";
 
 export async function generateMetadata() {
-  const ctx = getRequestContext();
+  const ctx = await getRequestContext();
   return getHomeMetadata({ ctx });
 }
 
 export default async function HomePage() {
-  const ctx = getRequestContext();
+  const ctx = await getRequestContext();
   const { organizationSchema, websiteSchema } = await getHomePageData({ ctx });
 
   return (

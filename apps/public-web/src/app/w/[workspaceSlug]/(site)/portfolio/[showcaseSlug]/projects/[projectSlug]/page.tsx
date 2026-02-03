@@ -1,4 +1,5 @@
 import { PortfolioProjectContent } from "@/components/pages/portfolio-project-page";
+import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
 import {
@@ -12,38 +13,43 @@ export const revalidate = PORTFOLIO_REVALIDATE;
 export async function generateMetadata({
   params,
 }: {
-  params: { workspaceSlug: string; showcaseSlug: string; projectSlug: string };
+  params: Promise<{ workspaceSlug: string; showcaseSlug: string; projectSlug: string }>;
 }) {
-  const ctx = getRequestContext();
+  const ctx = await getRequestContext();
+  const { workspaceSlug, showcaseSlug, projectSlug } = await params;
   return getPortfolioProjectMetadata({
     ctx,
-    workspaceSlug: params.workspaceSlug,
-    showcaseSlug: params.showcaseSlug,
-    projectSlug: params.projectSlug,
+    workspaceSlug,
+    showcaseSlug,
+    projectSlug,
   });
 }
 
 export default async function WorkspacePortfolioProjectPage({
   params,
 }: {
-  params: { workspaceSlug: string; showcaseSlug: string; projectSlug: string };
+  params: Promise<{ workspaceSlug: string; showcaseSlug: string; projectSlug: string }>;
 }) {
-  const ctx = getRequestContext();
-  const { project, breadcrumb, schema } = await getPortfolioProjectPageData({
+  const ctx = await getRequestContext();
+  const { workspaceSlug, showcaseSlug, projectSlug } = await params;
+  const result = await getPortfolioProjectPageData({
     ctx,
-    workspaceSlug: params.workspaceSlug,
-    showcaseSlug: params.showcaseSlug,
-    projectSlug: params.projectSlug,
+    workspaceSlug,
+    showcaseSlug,
+    projectSlug,
   });
+  if (result.kind === "disabled") {
+    return <PublicDisabledState message={result.message} />;
+  }
 
   return (
     <>
-      <JsonLd data={breadcrumb} />
-      <JsonLd data={schema} />
+      <JsonLd data={result.breadcrumb} />
+      <JsonLd data={result.schema} />
       <PortfolioProjectContent
-        project={project}
-        showcaseSlug={params.showcaseSlug}
-        workspaceSlug={params.workspaceSlug}
+        project={result.project}
+        showcaseSlug={showcaseSlug}
+        workspaceSlug={workspaceSlug}
       />
     </>
   );

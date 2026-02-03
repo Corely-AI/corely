@@ -4,7 +4,11 @@ import typography from "@tailwindcss/typography";
 
 export default {
   presets: [preset],
-  content: ["./src/app/**/*.{ts,tsx}", "./src/components/**/*.{ts,tsx}"],
+  content: [
+    "./src/app/**/*.{ts,tsx}",
+    "./src/components/**/*.{ts,tsx}",
+    "../../packages/ui/src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     extend: {},

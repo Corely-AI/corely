@@ -27,7 +27,6 @@ export default tseslint.config(
       "vitest.workspace.int.ts",
       "**/vite.config.ts",
       "**/tailwind.config.ts",
-      "apps/public-web/src/legacy/**",
       "apps/public-web/next-env.d.ts",
       "apps/public-web/.next/**",
     ],

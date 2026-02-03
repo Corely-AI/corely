@@ -1,4 +1,5 @@
 import { PortfolioListContent } from "@/components/pages/portfolio-list-page";
+import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
 import {
@@ -10,18 +11,21 @@ import {
 export const revalidate = PORTFOLIO_REVALIDATE;
 
 export async function generateMetadata() {
-  const ctx = getRequestContext();
+  const ctx = await getRequestContext();
   return getPortfolioListMetadata({ ctx });
 }
 
 export default async function PortfolioPage() {
-  const ctx = getRequestContext();
-  const { showcases, collection } = await getPortfolioListPageData({ ctx });
+  const ctx = await getRequestContext();
+  const result = await getPortfolioListPageData({ ctx });
+  if (result.kind === "disabled") {
+    return <PublicDisabledState message={result.message} />;
+  }
 
   return (
     <>
-      <JsonLd data={collection} />
-      <PortfolioListContent showcases={showcases} />
+      <JsonLd data={result.collection} />
+      <PortfolioListContent showcases={result.showcases} />
     </>
   );
 }

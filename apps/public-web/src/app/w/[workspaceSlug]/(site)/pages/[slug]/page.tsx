@@ -1,4 +1,5 @@
 import { CmsPageContent } from "@/components/pages/cms-page";
+import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
 import { CMS_REVALIDATE, getCmsPageMetadata, getCmsPageData } from "@/app/(site)/pages/_shared";
@@ -8,33 +9,38 @@ export const revalidate = CMS_REVALIDATE;
 export async function generateMetadata({
   params,
 }: {
-  params: { workspaceSlug: string; slug: string };
+  params: Promise<{ workspaceSlug: string; slug: string }>;
 }) {
-  const ctx = getRequestContext();
+  const ctx = await getRequestContext();
+  const { workspaceSlug, slug } = await params;
   return getCmsPageMetadata({
     ctx,
-    workspaceSlug: params.workspaceSlug,
-    slug: params.slug,
+    workspaceSlug,
+    slug,
   });
 }
 
 export default async function WorkspaceCmsPage({
   params,
 }: {
-  params: { workspaceSlug: string; slug: string };
+  params: Promise<{ workspaceSlug: string; slug: string }>;
 }) {
-  const ctx = getRequestContext();
-  const { page, breadcrumb, schema } = await getCmsPageData({
+  const ctx = await getRequestContext();
+  const { workspaceSlug, slug } = await params;
+  const result = await getCmsPageData({
     ctx,
-    workspaceSlug: params.workspaceSlug,
-    slug: params.slug,
+    workspaceSlug,
+    slug,
   });
+  if (result.kind === "disabled") {
+    return <PublicDisabledState message={result.message} />;
+  }
 
   return (
     <>
-      <JsonLd data={breadcrumb} />
-      <JsonLd data={schema} />
-      <CmsPageContent page={page} workspaceSlug={params.workspaceSlug} />
+      <JsonLd data={result.breadcrumb} />
+      <JsonLd data={result.schema} />
+      <CmsPageContent page={result.page} workspaceSlug={workspaceSlug} />
     </>
   );
 }

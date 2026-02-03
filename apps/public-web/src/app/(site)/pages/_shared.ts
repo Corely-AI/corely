@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { publicApi } from "@/lib/public-api";
 import { resolveCanonicalUrl } from "@/lib/urls";
 import { buildWebPageSchema, buildBreadcrumbList } from "@/lib/structured-data";
+import { resolvePublicError } from "@/lib/public-errors";
 
 export const CMS_REVALIDATE = 300;
 
@@ -40,11 +41,16 @@ export async function getCmsPageMetadata(input: {
         type: "article",
       },
     };
-  } catch {
-    return {
-      title: "Page not found",
-      alternates: { canonical },
-    };
+  } catch (error) {
+    const resolved = resolvePublicError(error);
+    if (resolved?.kind === "disabled") {
+      return {
+        title: "Public site not published",
+        description: resolved.message,
+        alternates: { canonical },
+      };
+    }
+    return { title: "Page not found", alternates: { canonical } };
   }
 }
 
@@ -54,11 +60,21 @@ export async function getCmsPageData(input: {
   slug: string;
 }) {
   const { host, protocol } = input.ctx;
-  const data = await publicApi.getPage(input.slug, input.workspaceSlug ?? null).catch(() => null);
-  if (!data) {
-    notFound();
+  const result = await publicApi
+    .getPage(input.slug, input.workspaceSlug ?? null)
+    .catch((error) => ({ error }));
+  if ("error" in result) {
+    const resolved = resolvePublicError(result.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    if (resolved?.kind === "not-found") {
+      notFound();
+    }
+    throw result.error;
   }
 
+  const data = result;
   const canonical = resolveCanonicalUrl({
     host,
     protocol,
@@ -86,5 +102,5 @@ export async function getCmsPageData(input: {
     description: page.excerpt ?? page.contentText.slice(0, 160),
   });
 
-  return { page, breadcrumb, schema };
+  return { kind: "ok" as const, page, breadcrumb, schema };
 }

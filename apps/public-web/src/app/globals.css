@@ -1,5 +1,4 @@
-@import "@corely/ui/tokens.css";
-
 @tailwind base;
+@import "@corely/ui/tokens.css";
 @tailwind components;
 @tailwind utilities;

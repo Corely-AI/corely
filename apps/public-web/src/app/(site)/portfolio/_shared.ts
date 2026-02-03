@@ -7,6 +7,7 @@ import {
   buildBreadcrumbList,
   buildWebPageSchema,
 } from "@/lib/structured-data";
+import { resolvePublicError } from "@/lib/public-errors";
 
 export const PORTFOLIO_REVALIDATE = 300;
 
@@ -44,9 +45,20 @@ export async function getPortfolioListPageData(input: {
   workspaceSlug?: string | null;
 }) {
   const { host, protocol } = input.ctx;
-  const data = await publicApi.listPortfolioShowcases({
-    workspaceSlug: input.workspaceSlug ?? null,
-  });
+  const result = await publicApi
+    .listPortfolioShowcases({
+      workspaceSlug: input.workspaceSlug ?? null,
+    })
+    .catch((error) => ({ error }));
+  if ("error" in result) {
+    const resolved = resolvePublicError(result.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    throw result.error;
+  }
+
+  const data = result;
   const canonical = resolveCanonicalUrl({
     host,
     protocol,
@@ -69,7 +81,7 @@ export async function getPortfolioListPageData(input: {
     })),
   });
 
-  return { showcases: data.items, collection };
+  return { kind: "ok" as const, showcases: data.items, collection };
 }
 
 export async function getPortfolioShowcaseMetadata(input: {
@@ -100,7 +112,15 @@ export async function getPortfolioShowcaseMetadata(input: {
         type: "profile",
       },
     };
-  } catch {
+  } catch (error) {
+    const resolved = resolvePublicError(error);
+    if (resolved?.kind === "disabled") {
+      return {
+        title: "Public site not published",
+        description: resolved.message,
+        alternates: { canonical },
+      };
+    }
     return { title: "Showcase not found", alternates: { canonical } };
   }
 }
@@ -111,13 +131,21 @@ export async function getPortfolioShowcasePageData(input: {
   showcaseSlug: string;
 }) {
   const { host, protocol } = input.ctx;
-  const data = await publicApi
+  const result = await publicApi
     .getPortfolioShowcase(input.showcaseSlug, input.workspaceSlug ?? null)
-    .catch(() => null);
-  if (!data) {
-    notFound();
+    .catch((error) => ({ error }));
+  if ("error" in result) {
+    const resolved = resolvePublicError(result.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    if (resolved?.kind === "not-found") {
+      notFound();
+    }
+    throw result.error;
   }
 
+  const data = result;
   const canonical = resolveCanonicalUrl({
     host,
     protocol,
@@ -154,6 +182,7 @@ export async function getPortfolioShowcasePageData(input: {
   });
 
   return {
+    kind: "ok" as const,
     showcase: data.showcase,
     profile: data.profile,
     featuredProjects: data.featuredProjects,
@@ -195,7 +224,15 @@ export async function getPortfolioProjectMetadata(input: {
         type: "article",
       },
     };
-  } catch {
+  } catch (error) {
+    const resolved = resolvePublicError(error);
+    if (resolved?.kind === "disabled") {
+      return {
+        title: "Public site not published",
+        description: resolved.message,
+        alternates: { canonical },
+      };
+    }
     return { title: "Project not found", alternates: { canonical } };
   }
 }
@@ -207,13 +244,21 @@ export async function getPortfolioProjectPageData(input: {
   projectSlug: string;
 }) {
   const { host, protocol } = input.ctx;
-  const data = await publicApi
+  const result = await publicApi
     .getPortfolioProject(input.showcaseSlug, input.projectSlug, input.workspaceSlug ?? null)
-    .catch(() => null);
-  if (!data) {
-    notFound();
+    .catch((error) => ({ error }));
+  if ("error" in result) {
+    const resolved = resolvePublicError(result.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    if (resolved?.kind === "not-found") {
+      notFound();
+    }
+    throw result.error;
   }
 
+  const data = result;
   const canonical = resolveCanonicalUrl({
     host,
     protocol,
@@ -249,5 +294,5 @@ export async function getPortfolioProjectPageData(input: {
     description: data.project.summary,
   });
 
-  return { project: data.project, breadcrumb, schema };
+  return { kind: "ok" as const, project: data.project, breadcrumb, schema };
 }

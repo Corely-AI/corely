@@ -3,8 +3,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { getRequestContext } from "@/lib/request-context";
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
-  const { host } = getRequestContext();
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const { host } = await getRequestContext();
 
   return (
     <div className="min-h-screen bg-background">

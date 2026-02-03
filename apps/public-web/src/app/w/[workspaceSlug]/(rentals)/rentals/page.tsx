@@ -1,6 +1,7 @@
 import { RentalsListContent } from "@/components/pages/rentals-list-page";
 import { getRequestContext } from "@/lib/request-context";
 import { JsonLd } from "@/components/seo/json-ld";
+import { PublicDisabledState } from "@/components/sections/public-disabled";
 import {
   RENTALS_REVALIDATE,
   getRentalsListMetadata,
@@ -9,25 +10,30 @@ import {
 
 export const revalidate = RENTALS_REVALIDATE;
 
-export async function generateMetadata({ params }: { params: { workspaceSlug: string } }) {
-  const ctx = getRequestContext();
-  return getRentalsListMetadata({ ctx, workspaceSlug: params.workspaceSlug });
+export async function generateMetadata({ params }: { params: Promise<{ workspaceSlug: string }> }) {
+  const ctx = await getRequestContext();
+  const { workspaceSlug } = await params;
+  return getRentalsListMetadata({ ctx, workspaceSlug });
 }
 
 export default async function WorkspaceRentalsPage({
   params,
   searchParams,
 }: {
-  params: { workspaceSlug: string };
+  params: Promise<{ workspaceSlug: string }>;
   searchParams?: { q?: string; category?: string };
 }) {
-  const ctx = getRequestContext();
-  const { properties, categories, query, categorySlug, basePath, collection } =
-    await getRentalsListPageData({
-      ctx,
-      workspaceSlug: params.workspaceSlug,
-      searchParams,
-    });
+  const ctx = await getRequestContext();
+  const { workspaceSlug } = await params;
+  const result = await getRentalsListPageData({
+    ctx,
+    workspaceSlug,
+    searchParams,
+  });
+  if (result.kind === "disabled") {
+    return <PublicDisabledState message={result.message} />;
+  }
+  const { properties, categories, query, categorySlug, basePath, collection } = result;
 
   return (
     <>

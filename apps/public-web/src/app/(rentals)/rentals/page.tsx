@@ -1,6 +1,7 @@
 import { RentalsListContent } from "@/components/pages/rentals-list-page";
 import { getRequestContext } from "@/lib/request-context";
 import { JsonLd } from "@/components/seo/json-ld";
+import { PublicDisabledState } from "@/components/sections/public-disabled";
 import {
   RENTALS_REVALIDATE,
   getRentalsListMetadata,
@@ -10,7 +11,7 @@ import {
 export const revalidate = RENTALS_REVALIDATE;
 
 export async function generateMetadata() {
-  const ctx = getRequestContext();
+  const ctx = await getRequestContext();
   return getRentalsListMetadata({ ctx });
 }
 
@@ -19,9 +20,12 @@ export default async function RentalsPage({
 }: {
   searchParams?: { q?: string; category?: string };
 }) {
-  const ctx = getRequestContext();
-  const { properties, categories, query, categorySlug, basePath, collection } =
-    await getRentalsListPageData({ ctx, searchParams });
+  const ctx = await getRequestContext();
+  const result = await getRentalsListPageData({ ctx, searchParams });
+  if (result.kind === "disabled") {
+    return <PublicDisabledState message={result.message} />;
+  }
+  const { properties, categories, query, categorySlug, basePath, collection } = result;
 
   return (
     <>

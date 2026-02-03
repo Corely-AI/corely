@@ -1,6 +1,7 @@
 import { RentalDetailClient } from "@/components/pages/rental-detail-client";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
+import { PublicDisabledState } from "@/components/sections/public-disabled";
 import {
   RENTALS_REVALIDATE,
   getRentalDetailMetadata,
@@ -10,15 +11,20 @@ import { buildFaqSchema } from "@/lib/structured-data";
 
 export const revalidate = RENTALS_REVALIDATE;
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const ctx = getRequestContext();
-  return getRentalDetailMetadata({ ctx, slug: params.slug });
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const ctx = await getRequestContext();
+  const { slug } = await params;
+  return getRentalDetailMetadata({ ctx, slug });
 }
 
-export default async function RentalDetailPage({ params }: { params: { slug: string } }) {
-  const ctx = getRequestContext();
-  const { property, summary, bullets, faqs, basePath, breadcrumb, schema } =
-    await getRentalDetailPageData({ ctx, slug: params.slug });
+export default async function RentalDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const ctx = await getRequestContext();
+  const { slug } = await params;
+  const result = await getRentalDetailPageData({ ctx, slug });
+  if (result.kind === "disabled") {
+    return <PublicDisabledState message={result.message} />;
+  }
+  const { property, summary, bullets, faqs, basePath, breadcrumb, schema } = result;
 
   return (
     <>

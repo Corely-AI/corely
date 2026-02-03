@@ -8,6 +8,7 @@ import {
   buildRentalSchema,
 } from "@/lib/structured-data";
 import { buildBulletList, buildSummary } from "@/lib/summary";
+import { resolvePublicError } from "@/lib/public-errors";
 
 export const RENTALS_REVALIDATE = 300;
 
@@ -51,14 +52,35 @@ export async function getRentalsListPageData(input: {
   const query = input.searchParams?.q ?? "";
   const categorySlug = input.searchParams?.category;
 
-  const [properties, categories] = await Promise.all([
-    publicApi.listRentals({
-      q: query || undefined,
-      categorySlug,
-      workspaceSlug: input.workspaceSlug ?? null,
-    }),
-    publicApi.listRentalCategories(input.workspaceSlug ?? null),
+  const [propertiesResult, categoriesResult] = await Promise.all([
+    publicApi
+      .listRentals({
+        q: query || undefined,
+        categorySlug,
+        workspaceSlug: input.workspaceSlug ?? null,
+      })
+      .catch((error) => ({ error })),
+    publicApi.listRentalCategories(input.workspaceSlug ?? null).catch((error) => ({ error })),
   ]);
+
+  if ("error" in propertiesResult) {
+    const resolved = resolvePublicError(propertiesResult.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    throw propertiesResult.error;
+  }
+
+  if ("error" in categoriesResult) {
+    const resolved = resolvePublicError(categoriesResult.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    throw categoriesResult.error;
+  }
+
+  const properties = propertiesResult;
+  const categories = categoriesResult;
 
   const canonical = resolveCanonicalUrl({
     host,
@@ -89,6 +111,7 @@ export async function getRentalsListPageData(input: {
   });
 
   return {
+    kind: "ok" as const,
     properties,
     categories,
     query,
@@ -142,13 +165,22 @@ export async function getRentalDetailPageData(input: {
   slug: string;
 }) {
   const { host, protocol } = input.ctx;
-  const property = await publicApi
+  const propertyResult = await publicApi
     .getRentalProperty(input.slug, input.workspaceSlug ?? null)
-    .catch(() => null);
+    .catch((error) => ({ error }));
 
-  if (!property) {
-    notFound();
+  if ("error" in propertyResult) {
+    const resolved = resolvePublicError(propertyResult.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    if (resolved?.kind === "not-found") {
+      notFound();
+    }
+    throw propertyResult.error;
   }
+
+  const property = propertyResult;
 
   const canonical = resolveCanonicalUrl({
     host,
@@ -224,6 +256,7 @@ export async function getRentalDetailPageData(input: {
   });
 
   return {
+    kind: "ok" as const,
     property,
     summary,
     bullets,

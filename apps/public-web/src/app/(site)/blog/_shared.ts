@@ -9,6 +9,7 @@ import {
   buildFaqSchema,
 } from "@/lib/structured-data";
 import { buildBulletList, buildSummary } from "@/lib/summary";
+import { resolvePublicError } from "@/lib/public-errors";
 
 export const BLOG_REVALIDATE = 300;
 
@@ -48,7 +49,18 @@ export async function getBlogListPageData(input: {
   workspaceSlug?: string | null;
 }) {
   const { host, protocol } = input.ctx;
-  const data = await publicApi.listBlogPosts({ workspaceSlug: input.workspaceSlug ?? null });
+  const result = await publicApi
+    .listBlogPosts({ workspaceSlug: input.workspaceSlug ?? null })
+    .catch((error) => ({ error }));
+  if ("error" in result) {
+    const resolved = resolvePublicError(result.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    throw result.error;
+  }
+
+  const data = result;
   const canonical = resolveCanonicalUrl({
     host,
     protocol,
@@ -71,7 +83,7 @@ export async function getBlogListPageData(input: {
     })),
   });
 
-  return { posts: data.items, collection };
+  return { kind: "ok" as const, posts: data.items, collection };
 }
 
 export async function getBlogPostMetadata(input: {
@@ -105,11 +117,16 @@ export async function getBlogPostMetadata(input: {
         images: ogImage ? [ogImage] : undefined,
       },
     };
-  } catch {
-    return {
-      title: "Post not found",
-      alternates: { canonical },
-    };
+  } catch (error) {
+    const resolved = resolvePublicError(error);
+    if (resolved?.kind === "disabled") {
+      return {
+        title: "Public site not published",
+        description: resolved.message,
+        alternates: { canonical },
+      };
+    }
+    return { title: "Post not found", alternates: { canonical } };
   }
 }
 
@@ -119,13 +136,21 @@ export async function getBlogPostPageData(input: {
   slug: string;
 }) {
   const { host, protocol } = input.ctx;
-  const data = await publicApi
+  const result = await publicApi
     .getBlogPost(input.slug, input.workspaceSlug ?? null)
-    .catch(() => null);
-  if (!data) {
-    notFound();
+    .catch((error) => ({ error }));
+  if ("error" in result) {
+    const resolved = resolvePublicError(result.error);
+    if (resolved?.kind === "disabled") {
+      return { kind: "disabled", message: resolved.message } as const;
+    }
+    if (resolved?.kind === "not-found") {
+      notFound();
+    }
+    throw result.error;
   }
 
+  const data = result;
   const canonical = resolveCanonicalUrl({
     host,
     protocol,
@@ -191,6 +216,7 @@ export async function getBlogPostPageData(input: {
   });
 
   return {
+    kind: "ok" as const,
     post,
     summary,
     bullets,

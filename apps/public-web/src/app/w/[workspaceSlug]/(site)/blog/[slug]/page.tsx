@@ -1,4 +1,5 @@
 import { BlogPostContent } from "@/components/pages/blog-post-page";
+import { PublicDisabledState } from "@/components/sections/public-disabled";
 import { JsonLd } from "@/components/seo/json-ld";
 import { getRequestContext } from "@/lib/request-context";
 import {
@@ -12,40 +13,44 @@ export const revalidate = BLOG_REVALIDATE;
 export async function generateMetadata({
   params,
 }: {
-  params: { workspaceSlug: string; slug: string };
+  params: Promise<{ workspaceSlug: string; slug: string }>;
 }) {
-  const ctx = getRequestContext();
+  const ctx = await getRequestContext();
+  const { workspaceSlug, slug } = await params;
   return getBlogPostMetadata({
     ctx,
-    workspaceSlug: params.workspaceSlug,
-    slug: params.slug,
+    workspaceSlug,
+    slug,
   });
 }
 
 export default async function WorkspaceBlogPostPage({
   params,
 }: {
-  params: { workspaceSlug: string; slug: string };
+  params: Promise<{ workspaceSlug: string; slug: string }>;
 }) {
-  const ctx = getRequestContext();
-  const { post, summary, bullets, faqs, breadcrumb, blogSchema, faqSchema } =
-    await getBlogPostPageData({
-      ctx,
-      workspaceSlug: params.workspaceSlug,
-      slug: params.slug,
-    });
+  const ctx = await getRequestContext();
+  const { workspaceSlug, slug } = await params;
+  const result = await getBlogPostPageData({
+    ctx,
+    workspaceSlug,
+    slug,
+  });
+  if (result.kind === "disabled") {
+    return <PublicDisabledState message={result.message} />;
+  }
 
   return (
     <>
-      <JsonLd data={breadcrumb} />
-      <JsonLd data={blogSchema} />
-      <JsonLd data={faqSchema} />
+      <JsonLd data={result.breadcrumb} />
+      <JsonLd data={result.blogSchema} />
+      <JsonLd data={result.faqSchema} />
       <BlogPostContent
-        post={post}
-        summary={summary}
-        bullets={bullets}
-        faqs={faqs}
-        workspaceSlug={params.workspaceSlug}
+        post={result.post}
+        summary={result.summary}
+        bullets={result.bullets}
+        faqs={result.faqs}
+        workspaceSlug={workspaceSlug}
       />
     </>
   );
