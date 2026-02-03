@@ -10,6 +10,7 @@ import { PlatformModule } from "../platform";
 import { AuthController } from "./adapters/http/auth.controller";
 import { RolesController } from "./adapters/http/roles.controller";
 import { PermissionsController } from "./adapters/http/permissions.controller";
+import { TenantsController } from "./adapters/http/tenants.controller";
 
 // Infrastructure adapters
 import { SignUpUseCase } from "./application/use-cases/sign-up.usecase";
@@ -51,10 +52,11 @@ import { GetPermissionCatalogUseCase } from "./application/use-cases/get-permiss
 import { GetRolePermissionsUseCase } from "./application/use-cases/get-role-permissions.usecase";
 import { UpdateRolePermissionsUseCase } from "./application/use-cases/update-role-permissions.usecase";
 import { SyncRolePermissionsFromManifestsUseCase } from "./application/use-cases/sync-role-permissions-from-manifests.usecase";
+import { ListTenantsUseCase } from "./application/use-cases/list-tenants.usecase";
 
 @Module({
   imports: [DataModule, KernelModule, forwardRef(() => PlatformModule)],
-  controllers: [AuthController, RolesController, PermissionsController],
+  controllers: [AuthController, RolesController, PermissionsController, TenantsController],
   providers: [
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()
     PrismaUserRepository,
@@ -135,6 +137,7 @@ import { SyncRolePermissionsFromManifestsUseCase } from "./application/use-cases
     GetRolePermissionsUseCase,
     UpdateRolePermissionsUseCase,
     SyncRolePermissionsFromManifestsUseCase,
+    ListTenantsUseCase,
 
     // Permission catalog
     PermissionCatalogRegistry,

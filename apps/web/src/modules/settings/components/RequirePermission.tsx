@@ -1,6 +1,6 @@
 import React from "react";
 import NotFound from "@/shared/components/NotFound";
-import { hasPermission, useActiveRoleId } from "@/shared/lib/permissions";
+import { hasPermission, useActiveRoleId, useIsSuperAdmin } from "@/shared/lib/permissions";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { useRolePermissions } from "../hooks/useRolePermissions";
 
@@ -12,11 +12,20 @@ interface RequirePermissionProps {
 export const RequirePermission: React.FC<RequirePermissionProps> = ({ permission, children }) => {
   const { hasCapability, isLoading: isConfigLoading } = useWorkspaceConfig();
   const rbacEnabled = hasCapability("workspace.rbac");
+  const isSuperAdmin = useIsSuperAdmin();
   const { roleId } = useActiveRoleId();
   const { data, isLoading } = useRolePermissions(rbacEnabled ? roleId : undefined);
 
   if (isConfigLoading) {
     return null;
+  }
+
+  if (isSuperAdmin) {
+    return <>{children}</>;
+  }
+
+  if (data?.role?.systemKey === "OWNER") {
+    return <>{children}</>;
   }
 
   if (!rbacEnabled) {

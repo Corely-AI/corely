@@ -59,6 +59,7 @@
     "assistant": "Assistant",
     "expenses": "Expenses",
     "invoices": "Invoices",
+    "tenants": "Tenants",
     "groups": {
       "core": "Core",
       "sales": "Sales",
@@ -66,6 +67,7 @@
       "inventory": "Inventory",
       "finance": "Finance",
       "settings": "Settings",
+      "platform": "Platform",
       "tax": "Tax"
     },
     "customers": "Customers",

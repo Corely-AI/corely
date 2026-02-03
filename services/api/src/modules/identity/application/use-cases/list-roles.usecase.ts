@@ -25,6 +25,7 @@ export class ListRolesUseCase {
         name: role.name,
         description: role.description ?? null,
         isSystem: role.isSystem,
+        systemKey: role.systemKey ?? null,
       })),
     };
   }
