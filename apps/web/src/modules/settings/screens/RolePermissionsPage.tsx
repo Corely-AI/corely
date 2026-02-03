@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { RolePermissionsEditor } from "../components/RolePermissionsEditor";
 import { useRolePermissions } from "../hooks/useRolePermissions";
 import {

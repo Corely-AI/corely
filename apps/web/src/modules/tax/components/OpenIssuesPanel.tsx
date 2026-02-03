@@ -1,10 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { type TaxCenterIssue } from "@corely/contracts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { badgeVariants } from "@/shared/ui/badge";
+import { Button } from "@corely/ui";
+import { badgeVariants } from "@corely/ui";
 
 interface OpenIssuesPanelProps {
   issues: TaxCenterIssue[];

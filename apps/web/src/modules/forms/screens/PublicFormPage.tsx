@@ -3,13 +3,13 @@ import { useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Checkbox } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { formsApi } from "@/lib/forms-api";
 import type { PublicFormFieldDto } from "@corely/contracts";
 

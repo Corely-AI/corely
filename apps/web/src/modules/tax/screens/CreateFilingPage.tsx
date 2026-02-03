@@ -5,12 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TaxFilingTypeSchema, TaxPeriodKeySchema } from "@corely/contracts";
 import { taxApi } from "@/lib/tax-api";
-import { Button } from "@/shared/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { useToast } from "@/shared/ui/use-toast";
+import { Button } from "@corely/ui";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { useToast } from "@corely/ui";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 // Schema for the form

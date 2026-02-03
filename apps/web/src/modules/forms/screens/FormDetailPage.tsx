@@ -12,17 +12,17 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Badge } from "@/shared/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Switch } from "@/shared/ui/switch";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Switch } from "@corely/ui";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@corely/ui";
 import { formsApi, buildFormPublicLink } from "@/lib/forms-api";
 import { formKeys } from "../queries";
 import type {

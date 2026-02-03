@@ -7,14 +7,14 @@ import {
   type CollectRepeaterField,
   type CollectInputsToolOutput,
 } from "@corely/contracts";
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Calendar } from "@/shared/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { Button } from "@corely/ui";
+import { Checkbox } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Calendar } from "@corely/ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { Calendar as CalendarIcon } from "lucide-react";
 

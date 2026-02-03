@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Label } from "@/shared/ui/label";
+import { Card, CardContent } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 

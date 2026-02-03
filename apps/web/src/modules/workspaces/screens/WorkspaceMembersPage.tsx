@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { UserPlus, Shield, Mail, Loader2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { workspacesApi } from "@/shared/workspaces/workspaces-api";
-import { useToast } from "@/shared/ui/use-toast";
+import { useToast } from "@corely/ui";
 import type { WorkspaceMemberDto } from "@corely/contracts";
 
 export const WorkspaceMembersPage: React.FC = () => {

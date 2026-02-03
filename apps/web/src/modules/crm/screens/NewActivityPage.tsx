@@ -7,8 +7,8 @@ import { ArrowLeft, Calendar as CalendarIcon, Clock3 } from "lucide-react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import {
   Form,
   FormControl,
@@ -17,12 +17,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Textarea } from "@/shared/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { Calendar } from "@/shared/ui/calendar";
+} from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
+import { Calendar } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { crmApi } from "@/lib/crm-api";
 import { toast } from "sonner";

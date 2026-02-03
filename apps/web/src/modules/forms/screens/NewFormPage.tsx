@@ -6,11 +6,11 @@ import { useMutation } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
 import { formsApi } from "@/lib/forms-api";
 import {
   formCreateSchema,

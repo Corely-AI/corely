@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { RentalCategorySchema } from "./rentals.types";
 
 export const CreateRentalCategoryInputSchema = z.object({
   name: z.string().min(1),
@@ -10,3 +11,6 @@ export const UpdateRentalCategoryInputSchema = CreateRentalCategoryInputSchema.e
   id: z.string(),
 });
 export type UpdateRentalCategoryInput = z.infer<typeof UpdateRentalCategoryInputSchema>;
+
+export const ListRentalCategoriesOutputSchema = z.array(RentalCategorySchema);
+export type ListRentalCategoriesOutput = z.infer<typeof ListRentalCategoriesOutputSchema>;

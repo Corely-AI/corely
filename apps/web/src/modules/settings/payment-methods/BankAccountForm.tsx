@@ -2,10 +2,10 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/shared/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Button } from "@corely/ui";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { useCreateBankAccount } from "./hooks/useBankAccounts";
 
 const BankAccountFormSchema = z.object({

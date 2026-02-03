@@ -9,8 +9,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/shared/ui/alert-dialog";
-import { Button } from "@/shared/ui/button";
+} from "@corely/ui";
+import { Button } from "@corely/ui";
 
 type ConfirmDeleteDialogProps = {
   title?: string;

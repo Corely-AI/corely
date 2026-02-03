@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
 import { TenantAppsTab } from "./TenantAppsTab";
 import { TenantFeaturesTab } from "./TenantFeaturesTab";
 import {

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { Plus } from "lucide-react";
 import {
   DEFAULT_CURRENCY_CODES,

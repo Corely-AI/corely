@@ -12,6 +12,7 @@ import {
   err,
 } from "@corely/kernel";
 import type { PublicPortfolioTeamMembersOutput } from "@corely/contracts";
+import { assertPublicModuleEnabled } from "../../../../shared/public";
 import {
   SHOWCASE_REPOSITORY_PORT,
   type ShowcaseRepositoryPort,
@@ -36,6 +37,11 @@ export class ListPublicTeamUseCase extends BaseUseCase<
     input: { slug: string },
     ctx: UseCaseContext
   ): Promise<Result<PublicPortfolioTeamMembersOutput, UseCaseError>> {
+    const publishError = assertPublicModuleEnabled(ctx, "portfolio");
+    if (publishError) {
+      return err(publishError);
+    }
+
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId is required"));
     }

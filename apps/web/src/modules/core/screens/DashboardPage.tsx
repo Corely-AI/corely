@@ -13,9 +13,9 @@ import {
   Users,
   ShoppingCart,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { formatMoney, formatRelativeTime } from "@/shared/lib/formatters";
 import { CardSkeleton } from "@/shared/components/Skeleton";
 import { invoicesApi } from "@/lib/invoices-api";

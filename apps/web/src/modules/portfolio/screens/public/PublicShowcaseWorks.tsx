@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { usePublicPortfolioContext } from "./PublicPortfolioLayout";
 import { portfolioPublicApi } from "@/lib/portfolio-public-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { Link, useParams } from "react-router-dom";
 
 export const PublicShowcaseWorks = () => {

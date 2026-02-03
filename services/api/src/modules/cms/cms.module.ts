@@ -9,6 +9,7 @@ import { CLOCK_PORT_TOKEN, type ClockPort } from "../../shared/ports/clock.port"
 import { CmsPostsController } from "./adapters/http/cms-posts.controller";
 import { CmsCommentsController } from "./adapters/http/cms-comments.controller";
 import { CmsPublicController } from "./adapters/http/cms-public.controller";
+import { CmsPublicSiteController } from "./adapters/http/cms-public-site.controller";
 import { CmsAuthController } from "./adapters/http/cms-auth.controller";
 import { CmsAiController } from "./adapters/http/cms-ai.controller";
 import { CmsReaderAuthGuard } from "./adapters/http/cms-reader-auth.guard";
@@ -45,6 +46,7 @@ import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
     CmsPostsController,
     CmsCommentsController,
     CmsPublicController,
+    CmsPublicSiteController,
     CmsAuthController,
     CmsAiController,
   ],

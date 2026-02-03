@@ -1,0 +1,42 @@
+{
+  "name": "@corely/public-web",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "dependencies": {
+    "@corely/api-client": "workspace:*",
+    "@corely/contracts": "workspace:*",
+    "@corely/ui": "workspace:*",
+    "lucide-react": "^0.462.0",
+    "next": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "turndown": "catalog:",
+    "turndown-plugin-gfm": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@tailwindcss/typography": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "autoprefixer": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "catalog:",
+    "postcss": "catalog:",
+    "tailwindcss": "catalog:",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
+  },
+  "scripts": {
+    "dev": "next dev -p 8082",
+    "build": "next build",
+    "lint": "eslint .",
+    "start": "next start",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

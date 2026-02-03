@@ -156,11 +156,15 @@ export class RolesController {
   ) {
     try {
       const input = UpdateRolePermissionsRequestSchema.parse(body);
+      const grants = input.grants.map((grant) => ({
+        key: String(grant.key),
+        effect: (grant.effect ?? "ALLOW") as "ALLOW" | "DENY",
+      }));
       await this.updateRolePermissionsUseCase.execute({
         tenantId,
         actorUserId: userId,
         roleId,
-        grants: input.grants,
+        grants,
         context: buildRequestContext({ requestId, tenantId, actorUserId: userId }),
       });
       return { success: true };
@@ -205,10 +209,10 @@ export class RolesController {
       const catalog = this.catalogPort.getCatalog();
       const grants = catalog.flatMap((group) =>
         group.permissions.map((permission) => ({
-          key: permission.key,
+          key: String(permission.key),
           effect: "ALLOW" as const,
         }))
-      );
+      ) as Array<{ key: string; effect: "ALLOW" | "DENY" }>;
       await this.updateRolePermissionsUseCase.execute({
         tenantId,
         actorUserId: userId,

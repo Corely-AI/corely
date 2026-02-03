@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next";
 import { useFormContext, Controller } from "react-hook-form";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
-import { Input } from "@/shared/ui/input";
-import { Calendar } from "@/shared/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { Button } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Calendar } from "@corely/ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { type InvoiceFormData } from "../../schemas/invoice-form.schema";
 

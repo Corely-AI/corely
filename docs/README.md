@@ -41,6 +41,7 @@ Frontend guidelines and specific docs.
 - [Brand](./frontend/BRAND.md)
 - [Menu](./menu/)
 - [List View Standard](./frontend/list-view-implementation.md)
+- [Shared UI Package](./frontend/shared-ui.md)
 
 ### 🚀 DevOps & Infra
 

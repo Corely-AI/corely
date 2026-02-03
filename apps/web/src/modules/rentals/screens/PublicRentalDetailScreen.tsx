@@ -15,13 +15,13 @@ import {
   X,
 } from "lucide-react";
 import { format, addDays, isPast, isBefore, isSameDay, parseISO } from "date-fns";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
-import { Separator } from "@/shared/ui/separator";
-import { Calendar } from "@/shared/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { Dialog, DialogContent, DialogClose } from "@/shared/ui/dialog";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Separator } from "@corely/ui";
+import { Calendar } from "@corely/ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
+import { Dialog, DialogContent, DialogClose } from "@corely/ui";
 import {
   Carousel,
   CarouselContent,
@@ -29,7 +29,7 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from "@/shared/ui/carousel";
+} from "@corely/ui";
 import { Logo } from "@/shared/components/Logo";
 import { rentalsApi, buildPublicFileUrl } from "@/lib/rentals-api";
 import { rentalsPublicKeys } from "../queries";

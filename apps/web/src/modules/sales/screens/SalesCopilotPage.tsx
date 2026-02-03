@@ -13,11 +13,11 @@ import {
   type MessageDraftCard,
   type Provenance,
 } from "@corely/contracts";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Textarea } from "@/shared/ui/textarea";
-import { Badge } from "@/shared/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
 import { salesApi } from "@/lib/sales-api";
 import { customersApi } from "@/lib/customers-api";

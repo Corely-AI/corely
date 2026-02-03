@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,7 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@corely/ui";
 import { MoreHorizontal, Copy, Pencil, Trophy, XOctagon } from "lucide-react";
 import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import type { DealDto } from "@corely/contracts";

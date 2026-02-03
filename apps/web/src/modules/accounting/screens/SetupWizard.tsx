@@ -5,8 +5,8 @@ import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { Calculator, CheckCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import {
   Form,
   FormControl,
@@ -15,10 +15,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
-import { Label } from "@/shared/ui/label";
+} from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { RadioGroup, RadioGroupItem } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { useSetupAccounting } from "../queries";
 
 const setupFormSchema = z.object({

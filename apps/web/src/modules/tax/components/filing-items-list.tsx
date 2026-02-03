@@ -11,7 +11,7 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/shared/ui/pagination";
+} from "@corely/ui";
 
 type FilingItemsListProps = {
   filingId: string;

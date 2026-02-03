@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { purchasingApi } from "@/lib/purchasing-api";
 
 export default function RecordBillPaymentPage() {

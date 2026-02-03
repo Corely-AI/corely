@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Badge } from "@/shared/ui/badge";
+import { Badge } from "@corely/ui";
 import type { DealStatus } from "@corely/contracts";
 
 interface DealStatusBadgeProps {

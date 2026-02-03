@@ -93,6 +93,10 @@ export class EnvService {
     return this.config.AI_MODEL_ID;
   }
 
+  get SPEECH_TO_TEXT_PROVIDER(): "openai" | "google" | "none" | undefined {
+    return this.config.SPEECH_TO_TEXT_PROVIDER;
+  }
+
   get OPENAI_API_KEY(): string | undefined {
     return this.config.OPENAI_API_KEY;
   }

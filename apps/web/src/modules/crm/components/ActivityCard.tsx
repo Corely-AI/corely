@@ -1,8 +1,8 @@
 import type { FC } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@corely/ui";
 import type { ActivityDto } from "@corely/contracts";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
-import { Badge } from "@/shared/ui/badge";
+import { Badge } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 
 interface ActivityCardProps {

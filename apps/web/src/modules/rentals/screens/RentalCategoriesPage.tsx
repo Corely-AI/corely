@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Edit2, Trash2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@/shared/ui/drawer";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { rentalsApi } from "@/lib/rentals-api";
 import { rentalCategoryKeys } from "../queries";
 import { toast } from "sonner";
@@ -203,6 +203,7 @@ export default function RentalCategoriesPage() {
       </Drawer>
 
       <ConfirmDeleteDialog
+        trigger={null}
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         onConfirm={() => deleteId && deleteMutation.mutate(deleteId)}

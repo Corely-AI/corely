@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
+import { Input } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { Search, X, SlidersHorizontal, ArrowUpDown } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
   DropdownMenuCheckboxItem,
-} from "@/shared/ui/dropdown-menu";
+} from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { useTranslation } from "react-i18next";
 

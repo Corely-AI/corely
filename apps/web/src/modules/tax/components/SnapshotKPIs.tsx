@@ -1,6 +1,6 @@
 import React from "react";
 import { type TaxSnapshot } from "@corely/contracts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Skeleton } from "@/shared/components/Skeleton";
 
 interface SnapshotKPIsProps {

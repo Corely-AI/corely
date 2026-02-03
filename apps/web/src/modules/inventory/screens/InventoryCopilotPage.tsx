@@ -10,8 +10,8 @@ import {
   StockChangeExplanationCardSchema,
   type Provenance,
 } from "@corely/contracts";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import {
   fetchCopilotHistory,

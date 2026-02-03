@@ -4,11 +4,11 @@ import {
   type ResolvedAppEntitlement,
   platformEntitlementsApi,
 } from "@/lib/platform-entitlements-api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { Loader2, Power, PowerOff, AlertCircle, CheckCircle2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/shared/ui/alert";
+import { Alert, AlertDescription } from "@corely/ui";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +18,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
+} from "@corely/ui";
 
 interface TenantAppsTabProps {
   tenantId: string;

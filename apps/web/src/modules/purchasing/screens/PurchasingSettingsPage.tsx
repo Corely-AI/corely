@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Switch } from "@/shared/ui/switch";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Switch } from "@corely/ui";
 import { purchasingApi } from "@/lib/purchasing-api";
 
 export default function PurchasingSettingsPage() {

@@ -7,12 +7,12 @@ import {
   SheetTitle,
   SheetDescription,
   SheetFooter,
-} from "@/shared/ui/sheet";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { ScrollArea } from "@/shared/ui/scroll-area";
+} from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { ScrollArea } from "@corely/ui";
 import type { FilterSpec, FilterOperator } from "@corely/contracts";
 import { useTranslation } from "react-i18next";
 

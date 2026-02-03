@@ -41,6 +41,7 @@ export const envSchema = z.object({
   // ============================================================================
   AI_MODEL_PROVIDER: z.enum(["openai", "anthropic"]).default("openai"),
   AI_MODEL_ID: z.string().default("gpt-4o-mini"),
+  SPEECH_TO_TEXT_PROVIDER: z.enum(["openai", "google", "none"]).optional(),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
 

@@ -1,4 +1,8 @@
-import type { UpdateCustomerInput, UpdateCustomerOutput } from "@corely/contracts";
+import {
+  CustomerBillingAddressSchema,
+  type UpdateCustomerInput,
+  type UpdateCustomerOutput,
+} from "@corely/contracts";
 import type {
   ClockPort,
   IdGeneratorPort,
@@ -17,6 +21,8 @@ import {
 } from "@corely/kernel";
 import { toCustomerDto } from "../../mappers/customer-dto.mapper";
 import type { PartyRepoPort } from "../../ports/party-repository.port";
+import type { Address } from "../../../domain/address";
+import type { CustomerPatch } from "../../../domain/party.aggregate";
 type Deps = {
   logger: LoggerPort;
   partyRepo: PartyRepoPort;
@@ -55,7 +61,15 @@ export class UpdateCustomerUseCase extends BaseUseCase<UpdateCustomerInput, Upda
 
     try {
       const now = this.useCaseDeps.clock.now();
-      existing.updateCustomer(input.patch, now, () => this.useCaseDeps.idGenerator.newId());
+      const billingAddress = input.patch.billingAddress;
+      const patch = {
+        ...input.patch,
+        billingAddress:
+          billingAddress === undefined || billingAddress === null
+            ? billingAddress
+            : (CustomerBillingAddressSchema.parse(billingAddress) as Address),
+      } as CustomerPatch;
+      existing.updateCustomer(patch, now, () => this.useCaseDeps.idGenerator.newId());
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid update";
       return err(new ValidationError(message));

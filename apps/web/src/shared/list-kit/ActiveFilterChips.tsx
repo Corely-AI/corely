@@ -1,7 +1,7 @@
 import React from "react";
 import { X } from "lucide-react";
-import { Badge } from "@/shared/ui/badge"; // Ensure badge exists or use div
-import { Button } from "@/shared/ui/button";
+import { Badge } from "@corely/ui"; // Ensure badge exists or use div
+import { Button } from "@corely/ui";
 import type { FilterSpec } from "@corely/contracts";
 
 export interface ActiveFilterChipsProps {

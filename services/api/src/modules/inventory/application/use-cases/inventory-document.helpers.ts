@@ -16,8 +16,8 @@ export const buildLineItems = (params: {
   idGenerator: IdGeneratorPort;
   lineItems: Array<{
     id?: string;
-    productId: string;
-    quantity: number;
+    productId?: string;
+    quantity?: number;
     unitCostCents?: number;
     fromLocationId?: string;
     toLocationId?: string;
@@ -26,14 +26,21 @@ export const buildLineItems = (params: {
 }): InventoryDocumentLine[] =>
   params.lineItems.map((item) => ({
     id: item.id ?? params.idGenerator.newId(),
-    productId: item.productId,
-    quantity: item.quantity,
+    productId: requireValue(item.productId, "productId"),
+    quantity: requireValue(item.quantity, "quantity"),
     unitCostCents: item.unitCostCents ?? null,
     fromLocationId: item.fromLocationId ?? null,
     toLocationId: item.toLocationId ?? null,
     notes: item.notes ?? null,
     reservedQuantity: null,
   }));
+
+const requireValue = <T>(value: T | null | undefined, label: string): NonNullable<T> => {
+  if (value === null || value === undefined) {
+    throw new ValidationError(`${label} is required`);
+  }
+  return value as NonNullable<T>;
+};
 
 export const localDateFromIso = (value?: string | null) => (value ? parseLocalDate(value) : null);
 

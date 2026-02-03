@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Separator } from "@/shared/ui/separator";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Separator } from "@corely/ui";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { workspacesApi } from "@/shared/workspaces/workspaces-api";
-import { useToast } from "@/shared/ui/use-toast";
+import { useToast } from "@corely/ui";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
-import { Badge } from "@/shared/ui/badge";
-import { Switch } from "@/shared/ui/switch";
+import { Badge } from "@corely/ui";
+import { Switch } from "@corely/ui";
 
 export const WorkspaceSettingsPage: React.FC = () => {
   const { activeWorkspace, activeWorkspaceId, refresh } = useWorkspace();
@@ -269,20 +269,28 @@ export const WorkspaceSettingsPage: React.FC = () => {
               {workspaceKind === "PERSONAL" ? "Freelancer" : "Company"}
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Freelancer workspaces use minimal defaults. Upgrading keeps all data and unlocks company
-            capabilities.
-          </p>
-          <div>
-            <Button onClick={handleUpgrade} disabled={!canUpgrade || isUpgrading}>
-              {isUpgrading ? "Upgrading..." : "Upgrade to Company"}
-            </Button>
-            {!config?.currentUser.isWorkspaceAdmin && (
-              <p className="text-xs text-muted-foreground mt-2">
-                Only workspace admins can upgrade.
+          {workspaceKind === "PERSONAL" ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Freelancer workspaces use minimal defaults. Upgrading keeps all data and unlocks
+                company capabilities.
               </p>
-            )}
-          </div>
+              <div>
+                <Button onClick={handleUpgrade} disabled={!canUpgrade || isUpgrading}>
+                  {isUpgrading ? "Upgrading..." : "Upgrade to Company"}
+                </Button>
+                {!config?.currentUser.isWorkspaceAdmin && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Only workspace admins can upgrade.
+                  </p>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Your workspace is already using company features and capabilities.
+            </p>
+          )}
         </CardContent>
       </Card>
 

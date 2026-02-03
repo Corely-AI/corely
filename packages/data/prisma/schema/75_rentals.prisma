@@ -8,6 +8,9 @@ model RentalProperty {
   name            String
   summary         String?
   descriptionHtml String?        @db.Text
+  checkIn         String?
+  checkOut        String?
+  offers          String[]       @default([])
   maxGuests       Int?
   coverImageFileId String?
   publishedAt     DateTime?      @db.Timestamptz(6)

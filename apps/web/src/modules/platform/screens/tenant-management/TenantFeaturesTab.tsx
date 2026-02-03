@@ -3,13 +3,13 @@ import {
   type ResolvedFeatureValue,
   platformEntitlementsApi,
 } from "@/lib/platform-entitlements-api";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { Search, Save, RotateCcw } from "lucide-react";
-import { useToast } from "@/shared/ui/use-toast";
-import { Switch } from "@/shared/ui/switch";
+import { useToast } from "@corely/ui";
+import { Switch } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 
 interface TenantFeaturesTabProps {

@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { MoreHorizontal } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 
 export type CrudAction = {

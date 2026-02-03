@@ -1,8 +1,12 @@
-import { Controller, Get, Param, Query, Req } from "@nestjs/common";
+import { Controller, Get, Header, Param, Query, Req } from "@nestjs/common";
 import type { Request } from "express";
 import {
   CheckAvailabilityInputSchema,
+  CheckAvailabilityOutputSchema,
+  GetPublicRentalPropertyOutputSchema,
   ListPublicRentalPropertiesInputSchema,
+  ListPublicRentalPropertiesOutputSchema,
+  ListRentalCategoriesOutputSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { PublicWorkspaceRoute } from "../../../../shared/public";
@@ -14,21 +18,24 @@ export class PublicRentalsController {
   constructor(private readonly app: RentalsApplication) {}
 
   @Get("properties")
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async list(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const input = ListPublicRentalPropertiesInputSchema.parse(query);
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicProperties.execute(input, ctx);
-    return mapResultToHttp(result);
+    return ListPublicRentalPropertiesOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Get("properties/:slug")
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async getOne(@Param("slug") slug: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.getPublicProperty.execute({ slug }, ctx);
-    return mapResultToHttp(result);
+    return GetPublicRentalPropertyOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Get("properties/:slug/availability")
+  @Header("Cache-Control", "no-store")
   async checkAvailability(
     @Param("slug") slug: string,
     @Query() query: Record<string, unknown>,
@@ -41,13 +48,14 @@ export class PublicRentalsController {
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.checkAvailability.execute(input, ctx);
-    return mapResultToHttp(result);
+    return CheckAvailabilityOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Get("categories")
+  @Header("Cache-Control", "public, max-age=300, s-maxage=900, stale-while-revalidate=300")
   async listCategories(@Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listCategories.execute(undefined, ctx);
-    return mapResultToHttp(result);
+    return ListRentalCategoriesOutputSchema.parse(mapResultToHttp(result));
   }
 }

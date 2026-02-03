@@ -7,9 +7,9 @@ import { NextUpCard } from "../components/NextUpCard";
 import { OpenIssuesPanel } from "../components/OpenIssuesPanel";
 import { SnapshotKPIs } from "../components/SnapshotKPIs";
 import { ShortcutsCard } from "../components/ShortcutsCard";
-import { Button } from "@/shared/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Button } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Alert, AlertDescription, AlertTitle } from "@corely/ui";
 
 import { AnnualFilingsPanel } from "../components/AnnualFilingsPanel";
 

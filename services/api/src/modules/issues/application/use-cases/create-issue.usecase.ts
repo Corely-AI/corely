@@ -1,8 +1,8 @@
 import { ValidationFailedError } from "@corely/domain";
-import type {
-  AttachmentMetadata,
-  CreateIssueRequest,
-  IssueTranscriptionSegment,
+import {
+  IssueTranscriptionSegmentSchema,
+  type AttachmentMetadata,
+  type CreateIssueRequest,
 } from "@corely/contracts";
 import type { OutboxPort, UseCaseContext } from "@corely/kernel";
 import { RequireTenant } from "@corely/kernel";
@@ -21,6 +21,7 @@ import type {
   Issue,
   IssueAttachment,
   IssueComment,
+  IssueTranscriptionSegment,
   IssueTranscriptionStatus,
 } from "../../domain/issue.types";
 import { assertAttachmentsValid } from "../issue-attachments";
@@ -249,13 +250,17 @@ export class CreateIssueUseCase {
             language: "vi",
           });
 
+          const segments: IssueTranscriptionSegment[] = (result.segments ?? []).map(
+            (segment) => IssueTranscriptionSegmentSchema.parse(segment) as IssueTranscriptionSegment
+          );
+
           await this.attachmentRepo.update(issue.tenantId, attachment.id, {
             transcriptText: result.text,
-            transcriptSegments: (result.segments ?? []) as IssueTranscriptionSegment[],
+            transcriptSegments: segments,
             transcriptionStatus: "COMPLETED",
           });
 
-          await this.maybeApplyTranscript(issue, result.text, result.segments ?? [], ctx);
+          await this.maybeApplyTranscript(issue, result.text, segments, ctx);
 
           await this.outbox.enqueue({
             tenantId: issue.tenantId,
@@ -265,7 +270,7 @@ export class CreateIssueUseCase {
               tenantId: issue.tenantId,
               attachmentId: attachment.id,
               transcriptText: result.text,
-              transcriptSegments: result.segments ?? null,
+              transcriptSegments: segments.length ? segments : null,
               completedAt: this.clock.now().toISOString(),
             },
           });

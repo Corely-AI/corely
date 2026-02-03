@@ -2,19 +2,19 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save, UploadCloud, ExternalLink } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import { RichTextEditor } from "@/shared/ui/rich-text-editor";
-import { Label } from "@/shared/ui/label";
-import { Badge } from "@/shared/ui/badge";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { RichTextEditor } from "@/shared/rich-text/rich-text-editor";
+import { Label } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { invalidateResourceQueries } from "@/shared/crud";
 import { rentalsApi, buildPublicFileUrl } from "@/lib/rentals-api";
 import { cmsApi } from "@/lib/cms-api"; // reuse for image upload
 import { rentalPropertyKeys, rentalCategoryKeys } from "../queries";
 import { toast } from "sonner";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { Checkbox } from "@corely/ui";
 import type { RentalStatus } from "@corely/contracts";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getPublicRentalUrl } from "@/shared/lib/public-urls";
@@ -48,6 +48,9 @@ type RentalPropertyDraft = {
   slugTouched: boolean;
   summary: string;
   descriptionHtml: string;
+  checkIn: string;
+  checkOut: string;
+  offersText: string;
   maxGuests: number;
   price?: number;
   currency: string;
@@ -59,6 +62,16 @@ type RentalPropertyDraft = {
 };
 
 const isBlobUrl = (value: string) => value.startsWith("blob:");
+
+const DEFAULT_CHECK_IN = "After 3:00 PM";
+const DEFAULT_CHECK_OUT = "11:00 AM";
+const DEFAULT_OFFERS_TEXT = "Wifi\nKitchen\nFree parking on premises\nAir conditioning";
+
+const parseOffersText = (text: string) =>
+  text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 
 export default function RentalPropertyEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,6 +85,9 @@ export default function RentalPropertyEditorPage() {
   const [slugTouched, setSlugTouched] = useState(false);
   const [summary, setSummary] = useState("");
   const [descriptionHtml, setDescriptionHtml] = useState("");
+  const [checkIn, setCheckIn] = useState(DEFAULT_CHECK_IN);
+  const [checkOut, setCheckOut] = useState(DEFAULT_CHECK_OUT);
+  const [offersText, setOffersText] = useState(DEFAULT_OFFERS_TEXT);
   const [maxGuests, setMaxGuests] = useState<number>(2);
   const [price, setPrice] = useState<number | undefined>(undefined);
   const [currency, setCurrency] = useState<string>("USD");
@@ -119,6 +135,9 @@ export default function RentalPropertyEditorPage() {
     setSlugTouched(false);
     setSummary("");
     setDescriptionHtml("");
+    setCheckIn(DEFAULT_CHECK_IN);
+    setCheckOut(DEFAULT_CHECK_OUT);
+    setOffersText(DEFAULT_OFFERS_TEXT);
     setMaxGuests(2);
     setPrice(undefined);
     setCurrency("USD");
@@ -140,6 +159,9 @@ export default function RentalPropertyEditorPage() {
       setSlugTouched(draft.slugTouched);
       setSummary(draft.summary);
       setDescriptionHtml(draft.descriptionHtml);
+      setCheckIn(draft.checkIn || DEFAULT_CHECK_IN);
+      setCheckOut(draft.checkOut || DEFAULT_CHECK_OUT);
+      setOffersText(draft.offersText || DEFAULT_OFFERS_TEXT);
       setMaxGuests(draft.maxGuests);
       setPrice(draft.price);
       setCurrency(draft.currency);
@@ -160,6 +182,11 @@ export default function RentalPropertyEditorPage() {
     setSlugTouched(true);
     setSummary(property.summary ?? "");
     setDescriptionHtml(property.descriptionHtml ?? "");
+    setCheckIn(property.checkIn ?? DEFAULT_CHECK_IN);
+    setCheckOut(property.checkOut ?? DEFAULT_CHECK_OUT);
+    setOffersText(
+      (property.offers?.length ? property.offers : parseOffersText(DEFAULT_OFFERS_TEXT)).join("\n")
+    );
     setMaxGuests(property.maxGuests ?? 2);
     setPrice(property.price ?? undefined);
     setCurrency(property.currency ?? "USD");
@@ -187,6 +214,9 @@ export default function RentalPropertyEditorPage() {
         slugTouched,
         summary,
         descriptionHtml,
+        checkIn,
+        checkOut,
+        offersText,
         maxGuests,
         price,
         currency,
@@ -212,6 +242,9 @@ export default function RentalPropertyEditorPage() {
     slugTouched,
     summary,
     descriptionHtml,
+    checkIn,
+    checkOut,
+    offersText,
     maxGuests,
     price,
     currency,
@@ -239,11 +272,15 @@ export default function RentalPropertyEditorPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const offers = parseOffersText(offersText);
       const payload = {
         name: name.trim(),
         slug: slug.trim() || slugify(name),
         summary: summary.trim() || undefined,
         descriptionHtml: descriptionHtml.trim() || undefined,
+        checkIn: checkIn.trim() || null,
+        checkOut: checkOut.trim() || null,
+        offers,
         maxGuests,
         price,
         currency,
@@ -503,6 +540,43 @@ export default function RentalPropertyEditorPage() {
                     },
                   }}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <h2 className="text-h3 text-foreground">Guest Policies</h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="check-in">Check-in</Label>
+                  <Input
+                    id="check-in"
+                    value={checkIn}
+                    onChange={(e) => setCheckIn(e.target.value)}
+                    placeholder={DEFAULT_CHECK_IN}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="check-out">Check-out</Label>
+                  <Input
+                    id="check-out"
+                    value={checkOut}
+                    onChange={(e) => setCheckOut(e.target.value)}
+                    placeholder={DEFAULT_CHECK_OUT}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="offers">What this place offers</Label>
+                <Textarea
+                  id="offers"
+                  value={offersText}
+                  onChange={(e) => setOffersText(e.target.value)}
+                  placeholder={DEFAULT_OFFERS_TEXT}
+                  rows={5}
+                />
+                <p className="text-xs text-muted-foreground">One item per line.</p>
               </div>
             </CardContent>
           </Card>

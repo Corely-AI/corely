@@ -1,6 +1,6 @@
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Badge } from "@/shared/ui/badge";
+import { Badge } from "@corely/ui";
 import type { EntryStatus } from "@corely/contracts";
 
 interface EntryStatusBadgeProps {

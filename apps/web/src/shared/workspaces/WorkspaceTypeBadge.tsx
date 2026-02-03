@@ -1,6 +1,6 @@
 import React from "react";
 import { User, Building2 } from "lucide-react";
-import { Badge } from "@/shared/ui/badge";
+import { Badge } from "@corely/ui";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 
 export function WorkspaceTypeBadge() {

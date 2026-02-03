@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { usePublicPortfolioContext } from "./PublicPortfolioLayout";
 import { portfolioPublicApi } from "@/lib/portfolio-public-api";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
+import { Badge } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { ArrowLeft, ExternalLink, Github } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 // If you have a Markdown renderer, import it. simplified for now.

@@ -10,9 +10,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { Button } from "@/shared/ui/button";
-import { Skeleton } from "@/shared/ui/skeleton";
+} from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Skeleton } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 
 interface WorkspaceSwitcherProps {

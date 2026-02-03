@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import type { PermissionGroup } from "@corely/contracts";
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
-import { Input } from "@/shared/ui/input";
-import { ScrollArea } from "@/shared/ui/scroll-area";
-import { Badge } from "@/shared/ui/badge";
+import { Button } from "@corely/ui";
+import { Checkbox } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { ScrollArea } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 
 interface RolePermissionsEditorProps {

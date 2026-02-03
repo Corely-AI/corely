@@ -11,6 +11,7 @@ import {
   NotFoundError,
   UseCaseError,
 } from "@corely/kernel";
+import type { DownloadInvoicePdfInput, DownloadInvoicePdfOutput } from "@corely/contracts";
 import type { InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import type { InvoicePdfModelPort } from "../../ports/invoice-pdf-model.port";
 import type { InvoicePdfRendererPort } from "../../ports/invoice-pdf-renderer.port";
@@ -19,15 +20,6 @@ import { INVOICE_PDF_MODEL_PORT } from "../../ports/invoice-pdf-model.port";
 import { INVOICE_PDF_RENDERER_PORT } from "../../ports/invoice-pdf-renderer.port";
 import * as fs from "fs/promises";
 import * as path from "path";
-
-export type DownloadInvoicePdfInput = {
-  invoiceId: string;
-};
-
-export type DownloadInvoicePdfOutput = {
-  downloadUrl: string;
-  expiresAt: Date;
-};
 
 @RequireTenant()
 @Injectable()
@@ -228,7 +220,7 @@ export class DownloadInvoicePdfUseCase extends BaseUseCase<
       const filename = storageKey.slice("local:".length);
       return {
         downloadUrl: `/__local/pdfs/${filename}`,
-        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
       };
     }
 
@@ -240,7 +232,7 @@ export class DownloadInvoicePdfUseCase extends BaseUseCase<
 
     return {
       downloadUrl: signedDownload.url,
-      expiresAt: signedDownload.expiresAt,
+      expiresAt: signedDownload.expiresAt.toISOString(),
     };
   }
 

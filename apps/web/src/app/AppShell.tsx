@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { Menu } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { WorkspaceSwitcher } from "@/shared/workspaces/WorkspaceSwitcher";
 

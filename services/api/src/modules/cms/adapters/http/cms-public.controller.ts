@@ -8,13 +8,17 @@ import {
   Req,
   UseGuards,
   UnauthorizedException,
+  Header,
 } from "@nestjs/common";
 import type { Request } from "express";
 import {
   CreateCmsCommentInputSchema,
   GetPublicCmsPostInputSchema,
+  GetPublicCmsPostOutputSchema,
   ListPublicCmsPostsInputSchema,
+  ListPublicCmsPostsOutputSchema,
   ListPublicCmsCommentsInputSchema,
+  ListPublicCmsCommentsOutputSchema,
 } from "@corely/contracts";
 import { parseListQuery } from "../../../../shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
@@ -34,6 +38,7 @@ export class CmsPublicController {
   constructor(private readonly app: CmsApplication) {}
 
   @Get("posts")
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async listPosts(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const listQuery = parseListQuery(query, { defaultPageSize: 20 });
     const input = ListPublicCmsPostsInputSchema.parse({
@@ -43,18 +48,20 @@ export class CmsPublicController {
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicPosts.execute(input, ctx);
-    return mapResultToHttp(result);
+    return ListPublicCmsPostsOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Get("posts/:slug")
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async getPost(@Param("slug") slug: string, @Req() req: Request) {
     const input = GetPublicCmsPostInputSchema.parse({ slug });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.getPublicPost.execute(input, ctx);
-    return mapResultToHttp(result);
+    return GetPublicCmsPostOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Get("posts/:slug/comments")
+  @Header("Cache-Control", "public, max-age=30, s-maxage=120, stale-while-revalidate=60")
   async listComments(
     @Param("slug") slug: string,
     @Query() query: Record<string, unknown>,
@@ -67,7 +74,7 @@ export class CmsPublicController {
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicComments.execute({ ...input, slug }, ctx);
-    return mapResultToHttp(result);
+    return ListPublicCmsCommentsOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Post("posts/:slug/comments")

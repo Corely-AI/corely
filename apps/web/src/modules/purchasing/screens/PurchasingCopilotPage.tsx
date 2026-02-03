@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
 import { purchasingApi } from "@/lib/purchasing-api";
 import { useTranslation } from "react-i18next";
 import {

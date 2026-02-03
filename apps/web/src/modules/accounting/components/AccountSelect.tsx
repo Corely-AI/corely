@@ -2,7 +2,7 @@ import React, { type FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import {
   Command,
   CommandEmpty,
@@ -10,8 +10,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/shared/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+} from "@corely/ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import { useAccounts } from "../queries";
 import type { AccountType } from "@corely/contracts";
 

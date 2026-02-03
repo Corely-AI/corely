@@ -1,15 +1,9 @@
 import React, { useState } from "react";
 import { Plus, Trash2, Check, CreditCard, Banknote, DollarSign } from "lucide-react";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/shared/ui/dialog";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@corely/ui";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,7 +11,7 @@ import {
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogTitle,
-} from "@/shared/ui/alert-dialog";
+} from "@corely/ui";
 import {
   usePaymentMethods,
   useCreatePaymentMethod,

@@ -1,9 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { usePublicPortfolioContext } from "./PublicPortfolioLayout";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Badge } from "@/shared/ui/badge";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { Link, useParams } from "react-router-dom";
 
 export const PublicShowcaseHome = () => {

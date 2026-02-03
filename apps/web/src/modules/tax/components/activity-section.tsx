@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { formatDateTime } from "@/shared/lib/formatters";
 import { useTaxFilingActivityQuery } from "../hooks/useTaxFilingActivityQuery";
 

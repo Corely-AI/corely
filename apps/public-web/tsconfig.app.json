@@ -1,0 +1,35 @@
+{
+  "extends": "@corely/tsconfig/react.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+    "composite": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+
+    /* Linting - relaxed for gradual migration */
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": false,
+    "exactOptionalPropertyTypes": false,
+    "ignoreDeprecations": "5.0",
+
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["public-web/src/*"],
+      "@corely/api-client": ["../packages/api-client/src/index.ts"],
+      "@corely/contracts": ["../packages/contracts/src/index.ts"],
+      "@corely/ui": ["../packages/ui/src/index.ts"]
+    }
+  },
+  "include": [
+    "src",
+    "../../packages/api-client/src",
+    "../../packages/contracts/src",
+    "../../packages/ui/src"
+  ]
+}

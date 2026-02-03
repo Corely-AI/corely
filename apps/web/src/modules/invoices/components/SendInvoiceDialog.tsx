@@ -7,12 +7,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import { Checkbox } from "@/shared/ui/checkbox";
+} from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Checkbox } from "@corely/ui";
 import { FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 

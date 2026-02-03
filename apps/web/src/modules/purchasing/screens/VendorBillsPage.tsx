@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, MoreHorizontal, Check, Upload, CreditCard, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
+} from "@corely/ui";
 import { purchasingApi } from "@/lib/purchasing-api";
 import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { EmptyState } from "@/shared/components/EmptyState";
