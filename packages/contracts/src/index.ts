@@ -56,6 +56,7 @@ export * from "./purchasing-ai";
 export * from "./inventory";
 export * from "./inventory-ai";
 export * from "./portfolio";
+export * from "./issues";
 // POS exports (aliased to avoid clashing with Sales PaymentMethod)
 export {
   PaymentMethod as PosPaymentMethod,
@@ -141,6 +142,11 @@ export const TenantDtoSchema = z.object({
   slug: z.string(),
 });
 export type TenantDto = z.infer<typeof TenantDtoSchema>;
+
+export const ListTenantsOutputSchema = z.object({
+  tenants: z.array(TenantDtoSchema),
+});
+export type ListTenantsOutput = z.infer<typeof ListTenantsOutputSchema>;
 
 export const MembershipDtoSchema = z.object({
   id: z.string(),

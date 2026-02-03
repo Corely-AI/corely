@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
 import { purchasingApi } from "@/lib/purchasing-api";
+import { useTranslation } from "react-i18next";
 import {
   fetchCopilotHistory,
   useCopilotChatOptions,
@@ -15,38 +16,49 @@ type MessagePart = {
   toolCallId?: string;
   toolName?: string;
   input?: unknown;
-  output?: any;
-  result?: any;
+  output?: unknown;
+  result?: unknown;
   state?: string;
   approval?: { id: string; approved?: boolean; reason?: string };
   errorText?: string;
 };
+
+type ToolResult = {
+  ok?: boolean;
+  confidence?: number;
+  proposal?: Record<string, unknown>;
+} & Record<string, unknown>;
 
 const ProposalCard: React.FC<{
   title: string;
   summary?: string;
   onApply?: () => void;
   children?: React.ReactNode;
-}> = ({ title, summary, onApply, children }) => (
-  <Card className="border border-border bg-muted/30">
-    <CardContent className="p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="text-sm font-semibold">{title}</div>
-          {summary && <div className="text-xs text-muted-foreground">{summary}</div>}
+}> = ({ title, summary, onApply, children }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Card className="border border-border bg-muted/30">
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm font-semibold">{title}</div>
+            {summary && <div className="text-xs text-muted-foreground">{summary}</div>}
+          </div>
+          {onApply && (
+            <Button size="sm" onClick={onApply}>
+              {t("common.apply")}
+            </Button>
+          )}
         </div>
-        {onApply && (
-          <Button size="sm" onClick={onApply}>
-            Apply
-          </Button>
-        )}
-      </div>
-      {children}
-    </CardContent>
-  </Card>
-);
+        {children}
+      </CardContent>
+    </Card>
+  );
+};
 
 export default function PurchasingCopilotPage() {
+  const { t, i18n } = useTranslation();
   const {
     options: chatOptions,
     runId,
@@ -55,7 +67,7 @@ export default function PurchasingCopilotPage() {
     accessToken,
   } = useCopilotChatOptions({
     activeModule: "purchasing",
-    locale: "en",
+    locale: i18n.language,
   });
 
   const { messages, sendMessage, addToolApprovalResponse, setMessages } =
@@ -92,25 +104,30 @@ export default function PurchasingCopilotPage() {
     };
   }, [accessToken, apiBase, hydratedRunId, runId, setMessages, workspaceId]);
 
-  const renderToolResult = (toolName: string, result: any) => {
-    if (!result || result.ok !== true) {
-      return <div className="text-xs text-muted-foreground">No structured output.</div>;
+  const renderToolResult = (toolName: string, result: unknown) => {
+    const parsed = result as ToolResult | null;
+    if (!parsed || parsed.ok !== true) {
+      return <div className="text-xs text-muted-foreground">{t("copilot.noStructuredOutput")}</div>;
     }
 
     if (toolName === "purchasing_createPOFromText") {
-      const proposal = result.proposal;
+      const proposal = parsed.proposal ?? {};
       return (
         <ProposalCard
-          title="Purchase Order Draft"
-          summary={`Confidence ${(result.confidence * 100).toFixed(0)}%`}
+          title={t("purchasing.copilot.purchaseOrderDraft")}
+          summary={t("copilot.confidence", {
+            percent: Math.round((parsed.confidence ?? 0) * 100),
+          })}
           onApply={async () => {
             await purchasingApi.createPurchaseOrder({
-              supplierPartyId: proposal.supplierPartyId || "",
-              currency: proposal.currency || "EUR",
-              orderDate: proposal.orderDate,
-              expectedDeliveryDate: proposal.expectedDeliveryDate,
-              notes: proposal.notes,
-              lineItems: proposal.lineItems,
+              supplierPartyId: String(proposal.supplierPartyId ?? ""),
+              currency: String(proposal.currency ?? "EUR"),
+              orderDate: String(proposal.orderDate ?? ""),
+              expectedDeliveryDate: proposal.expectedDeliveryDate
+                ? String(proposal.expectedDeliveryDate)
+                : undefined,
+              notes: proposal.notes ? String(proposal.notes) : undefined,
+              lineItems: Array.isArray(proposal.lineItems) ? proposal.lineItems : [],
             });
           }}
         >
@@ -120,21 +137,23 @@ export default function PurchasingCopilotPage() {
     }
 
     if (toolName === "purchasing_createBillFromText") {
-      const proposal = result.proposal;
+      const proposal = parsed.proposal ?? {};
       return (
         <ProposalCard
-          title="Vendor Bill Draft"
-          summary={`Confidence ${(result.confidence * 100).toFixed(0)}%`}
+          title={t("purchasing.copilot.vendorBillDraft")}
+          summary={t("copilot.confidence", {
+            percent: Math.round((parsed.confidence ?? 0) * 100),
+          })}
           onApply={async () => {
             await purchasingApi.createVendorBill({
-              supplierPartyId: proposal.supplierPartyId || "",
-              billNumber: proposal.billNumber,
-              billDate: proposal.billDate,
-              dueDate: proposal.dueDate,
-              currency: proposal.currency || "EUR",
-              notes: proposal.notes,
-              paymentTerms: proposal.paymentTerms,
-              lineItems: proposal.lineItems,
+              supplierPartyId: String(proposal.supplierPartyId ?? ""),
+              billNumber: proposal.billNumber ? String(proposal.billNumber) : undefined,
+              billDate: proposal.billDate ? String(proposal.billDate) : undefined,
+              dueDate: proposal.dueDate ? String(proposal.dueDate) : undefined,
+              currency: String(proposal.currency ?? "EUR"),
+              notes: proposal.notes ? String(proposal.notes) : undefined,
+              paymentTerms: proposal.paymentTerms ? String(proposal.paymentTerms) : undefined,
+              lineItems: Array.isArray(proposal.lineItems) ? proposal.lineItems : [],
             });
           }}
         >
@@ -146,7 +165,9 @@ export default function PurchasingCopilotPage() {
     return (
       <ProposalCard
         title={toolName}
-        summary={`Confidence ${(result.confidence * 100).toFixed(0)}%`}
+        summary={t("copilot.confidence", {
+          percent: Math.round((parsed.confidence ?? 0) * 100),
+        })}
       >
         <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
       </ProposalCard>
@@ -163,7 +184,9 @@ export default function PurchasingCopilotPage() {
     if (part.state === "approval-requested" && part.approval?.id) {
       return (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Allow {part.toolName}?</span>
+          <span className="text-muted-foreground">
+            {t("copilot.allowTool", { toolName: part.toolName ?? "" })}
+          </span>
           <Button
             size="sm"
             variant="accent"
@@ -171,7 +194,7 @@ export default function PurchasingCopilotPage() {
               addToolApprovalResponse?.({ id: part.approval?.id ?? "", approved: true })
             }
           >
-            Allow
+            {t("common.allow")}
           </Button>
           <Button
             size="sm"
@@ -180,7 +203,7 @@ export default function PurchasingCopilotPage() {
               addToolApprovalResponse?.({ id: part.approval?.id ?? "", approved: false })
             }
           >
-            Deny
+            {t("common.deny")}
           </Button>
         </div>
       );
@@ -200,11 +223,18 @@ export default function PurchasingCopilotPage() {
       if (part.state === "output-error" || part.state === "output-denied") {
         return (
           <div className="text-xs text-destructive">
-            Tool {part.toolName} failed: {part.errorText ?? "Denied"}
+            {t("copilot.toolFailed", {
+              toolName: part.toolName ?? "",
+              reason: part.errorText ?? t("copilot.denied"),
+            })}
           </div>
         );
       }
-      return <div className="text-xs text-muted-foreground">Tool call: {part.toolName}</div>;
+      return (
+        <div className="text-xs text-muted-foreground">
+          {t("copilot.toolCall", { toolName: part.toolName ?? "" })}
+        </div>
+      );
     }
     if (part.type === "tool-result") {
       return (
@@ -233,19 +263,13 @@ export default function PurchasingCopilotPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Purchasing Copilot</h1>
+        <h1 className="text-h1 text-foreground">{t("purchasing.copilot.title")}</h1>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setInput("Create a vendor bill from this text: ...")}
-          >
-            Prompt: Bill from text
+          <Button variant="outline" onClick={() => setInput(t("purchasing.copilot.promptBill"))}>
+            {t("purchasing.copilot.promptBillLabel")}
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => setInput("Create a purchase order from this text: ...")}
-          >
-            Prompt: PO from text
+          <Button variant="outline" onClick={() => setInput(t("purchasing.copilot.promptPo"))}>
+            {t("purchasing.copilot.promptPoLabel")}
           </Button>
         </div>
       </div>
@@ -255,7 +279,9 @@ export default function PurchasingCopilotPage() {
           <div className="h-[60vh] overflow-y-auto space-y-4">
             {messages.map((m) => (
               <div key={m.id} className="space-y-2">
-                <div className="text-xs uppercase text-muted-foreground">{m.role}</div>
+                <div className="text-xs uppercase text-muted-foreground">
+                  {m.role === "user" ? t("copilot.roles.user") : t("copilot.roles.assistant")}
+                </div>
                 {(m.parts as MessagePart[] | undefined)?.length
                   ? (m.parts as MessagePart[]).map((p, idx) => <div key={idx}>{renderPart(p)}</div>)
                   : m.content != null && (
@@ -270,9 +296,9 @@ export default function PurchasingCopilotPage() {
               className="flex-1 border rounded px-3 py-2 text-sm"
               value={input}
               onChange={handleInputChange}
-              placeholder="Ask Purchasing Copilot..."
+              placeholder={t("purchasing.copilot.placeholder")}
             />
-            <Button type="submit">Send</Button>
+            <Button type="submit">{t("common.send")}</Button>
           </form>
         </CardContent>
       </Card>

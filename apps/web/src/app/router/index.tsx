@@ -7,6 +7,7 @@ import { ExpensesPage, NewExpensePage, ExpenseDetailPage } from "../../modules/e
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
 import { CustomersPage, NewCustomerPage, EditCustomerPage } from "../../modules/customers";
 import { FormsPage, NewFormPage, FormDetailPage, PublicFormPage } from "../../modules/forms";
+import { IssuesListPage, IssueDetailPage, NewIssuePage } from "../../modules/issues";
 import {
   DealsPage,
   NewDealPage,
@@ -54,6 +55,7 @@ import {
 } from "../../modules/inventory";
 import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
+import { RequireSuperAdmin } from "../../modules/settings/components/RequireSuperAdmin";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import {
   CmsPostsPage,
@@ -97,6 +99,8 @@ import {
   TemplatesPage,
   MenuCustomizerPage,
 } from "../../modules/platform";
+import { TenantsListPage } from "../../modules/platform/screens/tenant-management/TenantsListPage";
+import { TenantEntitlementsPage } from "../../modules/platform/screens/tenant-management/TenantEntitlementsPage";
 import NotFound from "../../shared/components/NotFound";
 import { LoginPage } from "../../routes/auth/login";
 import SignupPage from "../../routes/auth/signup";
@@ -110,6 +114,18 @@ import {
 } from "../../modules/workspaces";
 import { PublicWorkspaceProvider } from "../../shared/public-workspace";
 
+import { isCustomDomain } from "../../lib/domain-helper";
+import {
+  PublicPortfolioLayout,
+  PublicShowcaseHome,
+  PublicShowcaseWorks,
+  PublicShowcaseProject,
+  PublicShowcaseClients,
+  PublicShowcaseServices,
+  PublicShowcaseTeam,
+  PublicShowcaseBlog,
+} from "../../modules/portfolio";
+
 export const Router = () => (
   <BrowserRouter
     future={{
@@ -118,7 +134,39 @@ export const Router = () => (
     }}
   >
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      {/* Root Route: Domain Mode Portfolio OR Dashboard Redirect */}
+      <Route
+        path="/"
+        element={
+          isCustomDomain() ? <PublicPortfolioLayout /> : <Navigate to="/dashboard" replace />
+        }
+      >
+        {/* Only active if PublicPortfolioLayout renders Outlet (i.e. custom domain) */}
+        {/* But wait, if Navigate renders, it redirects. If Layout renders, it renders Outlet. */}
+        {/* So we put the Home screen as index here. */}
+        <Route index element={<PublicShowcaseHome />} />
+      </Route>
+
+      {/* Domain Mode Sub-routes */}
+      <Route element={isCustomDomain() ? <PublicPortfolioLayout /> : undefined}>
+        <Route path="/works" element={<PublicShowcaseWorks />} />
+        <Route path="/works/:projectSlug" element={<PublicShowcaseProject />} />
+        <Route path="/clients" element={<PublicShowcaseClients />} />
+        <Route path="/services" element={<PublicShowcaseServices />} />
+        <Route path="/team" element={<PublicShowcaseTeam />} />
+        <Route path="/blog" element={<PublicShowcaseBlog />} />
+      </Route>
+
+      {/* Slug Mode Routes */}
+      <Route path="/p/:slug" element={<PublicPortfolioLayout />}>
+        <Route index element={<PublicShowcaseHome />} />
+        <Route path="works" element={<PublicShowcaseWorks />} />
+        <Route path="works/:projectSlug" element={<PublicShowcaseProject />} />
+        <Route path="clients" element={<PublicShowcaseClients />} />
+        <Route path="services" element={<PublicShowcaseServices />} />
+        <Route path="team" element={<PublicShowcaseTeam />} />
+        <Route path="blog" element={<PublicShowcaseBlog />} />
+      </Route>
 
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignupPage />} />
@@ -133,7 +181,29 @@ export const Router = () => (
         <Route path="/rental" element={<PublicRentalsListScreen />} />
         <Route path="/rental/:slug" element={<PublicRentalDetailScreen />} />
         <Route path="/p" element={<PublicCmsListPage />} />
-        <Route path="/p/:slug" element={<PublicCmsPostPage />} />
+        {/* Note: /p was mapped to CMS list page in legacy? I should remove or keep? 
+            Original code: <Route path="/p" element={<PublicCmsListPage />} />
+            Original code: <Route path="/p/:slug" element={<PublicCmsPostPage />} />
+            I AM OVERWRITING THIS!
+            This creates a conflict. "/p" -> CMS, but "/p/:slug" -> Portfolio?
+            If I have /p/:slug earlier, it takes precedence.
+            But the original code had /p/:slug for post page.
+            I should check if I broke CMS public posts.
+            "Use the same strategy as Rental Properties".
+            "Non-goals: No new blog tables; reuse CMS public queries".
+            Maybe I should move Portfolio to `/portfolio/:slug` instead of `/p`?
+            But requirements said: "/p/:showcaseSlug -> Home".
+            So there IS a conflict with existing CMS routes.
+            I must resolve this.
+            The user said "/p/:showcaseSlug" explicitly.
+            Maybe the existing CMS route uses `/p` as "posts"?
+            If so, I should probably stick to requirements and maybe rename existing CMS route or assume user knows what they are doing.
+            But wait, `PublicCmsPostPage` is mapped to `/p/:slug`.
+            If I map `/p/:slug` to Portfolio, I claim namespace.
+            I'll remove the legacy CMS routes from here as I am overwriting them with Portfolio.
+            Or typically `/p/` stands for "post" or "portfolio".
+            Given the explicit prompt "/p/:showcaseSlug", I will prioritize Portfolio.
+        */}
         <Route path="/stay" element={<PublicRentalsListScreen />} />
         <Route path="/stay/:slug" element={<PublicRentalDetailScreen />} />
       </Route>
@@ -152,9 +222,40 @@ export const Router = () => (
           <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
           <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
           <Route path="/rentals/categories" element={<RentalCategoriesPage />} />
+          <Route path="/portfolio/showcases" element={<ShowcasesPage />} />
+          <Route path="/portfolio/showcases/new" element={<ShowcaseEditorPage />} />
+          <Route path="/portfolio/showcases/:id/edit" element={<ShowcaseEditorPage />} />
+          <Route
+            path="/portfolio/showcases/:showcaseId/profile"
+            element={<ShowcaseProfilePage />}
+          />
+          <Route path="/portfolio/showcases/:showcaseId/projects" element={<ProjectsPage />} />
+          <Route
+            path="/portfolio/showcases/:showcaseId/projects/new"
+            element={<ProjectEditorPage />}
+          />
+          <Route path="/portfolio/projects/:id/edit" element={<ProjectEditorPage />} />
+          <Route path="/portfolio/showcases/:showcaseId/clients" element={<ClientsPage />} />
+          <Route
+            path="/portfolio/showcases/:showcaseId/clients/new"
+            element={<ClientEditorPage />}
+          />
+          <Route path="/portfolio/clients/:id/edit" element={<ClientEditorPage />} />
+          <Route path="/portfolio/showcases/:showcaseId/services" element={<ServicesPage />} />
+          <Route
+            path="/portfolio/showcases/:showcaseId/services/new"
+            element={<ServiceEditorPage />}
+          />
+          <Route path="/portfolio/services/:id/edit" element={<ServiceEditorPage />} />
+          <Route path="/portfolio/showcases/:showcaseId/team" element={<TeamPage />} />
+          <Route path="/portfolio/showcases/:showcaseId/team/new" element={<TeamEditorPage />} />
+          <Route path="/portfolio/team/:id/edit" element={<TeamEditorPage />} />
           <Route path="/forms" element={<FormsPage />} />
           <Route path="/forms/new" element={<NewFormPage />} />
           <Route path="/forms/:id" element={<FormDetailPage />} />
+          <Route path="/issues" element={<IssuesListPage />} />
+          <Route path="/issues/new" element={<NewIssuePage />} />
+          <Route path="/issues/:id" element={<IssueDetailPage />} />
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/expenses/new" element={<NewExpensePage />} />
           <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
@@ -534,6 +635,26 @@ export const Router = () => (
               <RequirePermission permission="platform.menu.customize">
                 <MenuCustomizerPage />
               </RequirePermission>
+            }
+          />
+          <Route
+            path="/settings/tenants"
+            element={
+              <RequireSuperAdmin>
+                <RequirePermission permission="platform.tenants.manage">
+                  <TenantsListPage />
+                </RequirePermission>
+              </RequireSuperAdmin>
+            }
+          />
+          <Route
+            path="/settings/tenants/:tenantId"
+            element={
+              <RequireSuperAdmin>
+                <RequirePermission permission="platform.tenants.manage">
+                  <TenantEntitlementsPage />
+                </RequirePermission>
+              </RequireSuperAdmin>
             }
           />
         </Route>

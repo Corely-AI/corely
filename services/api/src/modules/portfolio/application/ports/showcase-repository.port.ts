@@ -31,9 +31,11 @@ export interface ShowcaseRepositoryPort {
     showcaseId: string
   ): Promise<PortfolioShowcase | null>;
   findBySlug(
-    tenantId: string,
-    workspaceId: string,
     slug: string,
+    opts?: { publishedOnly?: boolean; tenantId?: string; workspaceId?: string }
+  ): Promise<PortfolioShowcase | null>;
+  findByDomain(
+    domain: string,
     opts?: { publishedOnly?: boolean }
   ): Promise<PortfolioShowcase | null>;
   list(

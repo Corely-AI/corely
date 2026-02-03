@@ -78,20 +78,31 @@ export class FakePropertyRepo implements PropertyRepoPort {
       createdAt: existingIndex >= 0 ? this.properties[existingIndex].createdAt : now,
       updatedAt: now,
       summary:
-        property.summary || (existingIndex >= 0 ? this.properties[existingIndex].summary : ""),
+        property.summary ?? (existingIndex >= 0 ? this.properties[existingIndex].summary : null),
       descriptionHtml:
-        property.descriptionHtml ||
-        (existingIndex >= 0 ? this.properties[existingIndex].descriptionHtml : ""),
+        property.descriptionHtml ??
+        (existingIndex >= 0 ? this.properties[existingIndex].descriptionHtml : null),
+      checkIn:
+        property.checkIn ?? (existingIndex >= 0 ? this.properties[existingIndex].checkIn : null),
+      checkOut:
+        property.checkOut ?? (existingIndex >= 0 ? this.properties[existingIndex].checkOut : null),
+      offers: property.offers ?? (existingIndex >= 0 ? this.properties[existingIndex].offers : []),
       maxGuests:
-        property.maxGuests || (existingIndex >= 0 ? this.properties[existingIndex].maxGuests : 2),
+        property.maxGuests ?? (existingIndex >= 0 ? this.properties[existingIndex].maxGuests : 2),
       coverImageFileId:
-        property.coverImageFileId ||
-        (existingIndex >= 0 ? this.properties[existingIndex].coverImageFileId : ""),
+        property.coverImageFileId ??
+        (existingIndex >= 0 ? this.properties[existingIndex].coverImageFileId : null),
+      price: property.price ?? (existingIndex >= 0 ? this.properties[existingIndex].price : null),
+      currency:
+        property.currency ?? (existingIndex >= 0 ? this.properties[existingIndex].currency : null),
       images: property.images || (existingIndex >= 0 ? this.properties[existingIndex].images : []),
       publishedAt:
-        property.publishedAt ||
-        (existingIndex >= 0 ? this.properties[existingIndex].publishedAt : undefined),
-    } as any;
+        property.publishedAt ??
+        (existingIndex >= 0 ? this.properties[existingIndex].publishedAt : null),
+      categories:
+        property.categories ??
+        (existingIndex >= 0 ? this.properties[existingIndex].categories : []),
+    };
 
     if (existingIndex >= 0) {
       this.properties[existingIndex] = newProperty;

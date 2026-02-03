@@ -10,9 +10,14 @@ import {
   err,
   ok,
 } from "@corely/kernel";
-import { type CreateCustomerInput, type CreateCustomerOutput } from "@corely/contracts";
+import {
+  CustomerBillingAddressSchema,
+  type CreateCustomerInput,
+  type CreateCustomerOutput,
+} from "@corely/contracts";
 import { type PartyRepoPort } from "../../ports/party-repository.port";
 import { PartyAggregate } from "../../../domain/party.aggregate";
+import type { Address } from "../../../domain/address";
 import { toCustomerDto } from "../../mappers/customer-dto.mapper";
 
 type Deps = {
@@ -43,13 +48,17 @@ export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, Crea
     }
 
     const now = this.useCaseDeps.clock.now();
+    const billingAddress = input.billingAddress
+      ? (CustomerBillingAddressSchema.parse(input.billingAddress) as Address)
+      : null;
+
     const party = PartyAggregate.createCustomer({
       id: this.useCaseDeps.idGenerator.newId(),
       tenantId: ctx.tenantId,
       displayName: input.displayName,
       email: input.email ?? null,
       phone: input.phone ?? null,
-      billingAddress: input.billingAddress ?? null,
+      billingAddress,
       vatId: input.vatId ?? null,
       notes: input.notes ?? null,
       tags: input.tags ?? [],

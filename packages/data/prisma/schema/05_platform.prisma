@@ -54,6 +54,27 @@ model TenantAppInstall {
 }
 
 // =============================================================================
+// TENANT ENTITLEMENTS & FEATURE OVERRIDES
+// =============================================================================
+
+model TenantFeatureOverride {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  featureKey  String   @map("feature_key")
+  valueJson   String   @map("value_json") // JSON: value (boolean, number, string, object)
+  updatedBy   String?  @map("updated_by")
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  reason      String?
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, featureKey])
+  @@index([tenantId])
+  @@schema("platform")
+}
+
+// =============================================================================
 // TEMPLATE CATALOG
 // =============================================================================
 

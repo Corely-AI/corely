@@ -1,13 +1,8 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/shared/ui/accordion";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { formatMoney, formatDateTime } from "@/shared/lib/formatters";
 import type { IncomeTaxTotals, TaxIssue } from "@corely/contracts";
 import { Link } from "react-router-dom";

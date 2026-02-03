@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save, Check, Send, PackageCheck, Archive, XCircle } from "lucide-react";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import { Label } from "@/shared/ui/label";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { purchasingApi } from "@/lib/purchasing-api";
 import { formatMoney } from "@/shared/lib/formatters";
 
 export default function PurchaseOrderDetailPage() {
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -97,10 +99,12 @@ export default function PurchaseOrderDetailPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">Purchase Order</h1>
+            <h1 className="text-h1 text-foreground">
+              {t("purchasing.purchaseOrders.detailTitle")}
+            </h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{data.poNumber || "Draft"}</span>
-              <Badge>{data.status}</Badge>
+              <span>{data.poNumber || t("purchasing.statuses.draft")}</span>
+              <Badge>{t(`purchasing.statuses.${data.status.toLowerCase()}`)}</Badge>
             </div>
           </div>
         </div>
@@ -108,37 +112,37 @@ export default function PurchaseOrderDetailPage() {
           {editable && (
             <Button variant="accent" onClick={() => updateMutation.mutate()}>
               <Save className="h-4 w-4" />
-              Save Draft
+              {t("purchasing.actions.saveDraft")}
             </Button>
           )}
           {data.status === "DRAFT" && (
             <Button variant="outline" onClick={() => approve.mutate()}>
               <Check className="h-4 w-4" />
-              Approve
+              {t("purchasing.actions.approve")}
             </Button>
           )}
           {data.status === "APPROVED" && (
             <Button variant="outline" onClick={() => markSent.mutate()}>
               <Send className="h-4 w-4" />
-              Mark Sent
+              {t("purchasing.actions.markSent")}
             </Button>
           )}
           {(data.status === "SENT" || data.status === "APPROVED") && (
             <Button variant="outline" onClick={() => markReceived.mutate()}>
               <PackageCheck className="h-4 w-4" />
-              Receive
+              {t("purchasing.actions.receive")}
             </Button>
           )}
           {(data.status === "SENT" || data.status === "RECEIVED" || data.status === "APPROVED") && (
             <Button variant="outline" onClick={() => close.mutate()}>
               <Archive className="h-4 w-4" />
-              Close
+              {t("common.close")}
             </Button>
           )}
           {data.status !== "CLOSED" && data.status !== "CANCELED" && (
             <Button variant="ghost" onClick={() => cancel.mutate()}>
               <XCircle className="h-4 w-4" />
-              Cancel
+              {t("common.cancel")}
             </Button>
           )}
         </div>
@@ -149,25 +153,25 @@ export default function PurchaseOrderDetailPage() {
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div>
-                <Label>Supplier</Label>
+                <Label>{t("purchasing.fields.supplier")}</Label>
                 <Input value={data.supplierPartyId} disabled />
               </div>
               <div>
-                <Label>Currency</Label>
+                <Label>{t("purchasing.fields.currency")}</Label>
                 <Input value={data.currency} disabled={!editable} />
               </div>
               <div>
-                <Label>Order Date</Label>
+                <Label>{t("purchasing.fields.orderDate")}</Label>
                 <Input value={data.orderDate || ""} disabled />
               </div>
               <div>
-                <Label>Expected Delivery</Label>
+                <Label>{t("purchasing.fields.expectedDelivery")}</Label>
                 <Input value={data.expectedDeliveryDate || ""} disabled />
               </div>
             </div>
 
             <div>
-              <Label>Notes</Label>
+              <Label>{t("common.notes")}</Label>
               <Textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
@@ -176,7 +180,7 @@ export default function PurchaseOrderDetailPage() {
             </div>
 
             <div className="space-y-3">
-              <Label>Line Items</Label>
+              <Label>{t("purchasing.fields.lineItems")}</Label>
               {lineItems.map((item, idx) => (
                 <div key={item.id} className="grid grid-cols-12 gap-2">
                   <Input className="col-span-6" value={item.description} disabled />
@@ -211,18 +215,18 @@ export default function PurchaseOrderDetailPage() {
         <div className="flex flex-col gap-4">
           <Card>
             <CardContent className="p-6 space-y-3">
-              <h2 className="text-lg font-semibold">Totals</h2>
+              <h2 className="text-lg font-semibold">{t("common.totals")}</h2>
               <div className="flex items-center justify-between text-sm">
-                <span>Subtotal</span>
-                <span>{formatMoney(data.totals.subtotalCents, "en-US")}</span>
+                <span>{t("common.subtotal")}</span>
+                <span>{formatMoney(data.totals.subtotalCents, i18n.t("common.locale"))}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span>Tax</span>
-                <span>{formatMoney(data.totals.taxCents, "en-US")}</span>
+                <span>{t("common.tax")}</span>
+                <span>{formatMoney(data.totals.taxCents, i18n.t("common.locale"))}</span>
               </div>
               <div className="flex items-center justify-between font-semibold">
-                <span>Total</span>
-                <span>{formatMoney(data.totals.totalCents, "en-US")}</span>
+                <span>{t("common.total")}</span>
+                <span>{formatMoney(data.totals.totalCents, i18n.t("common.locale"))}</span>
               </div>
             </CardContent>
           </Card>

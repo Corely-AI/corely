@@ -12,6 +12,7 @@ import {
   err,
 } from "@corely/kernel";
 import type { PublicPortfolioClientsOutput } from "@corely/contracts";
+import { assertPublicModuleEnabled } from "../../../../shared/public";
 import {
   SHOWCASE_REPOSITORY_PORT,
   type ShowcaseRepositoryPort,
@@ -36,16 +37,20 @@ export class ListPublicClientsUseCase extends BaseUseCase<
     input: { slug: string },
     ctx: UseCaseContext
   ): Promise<Result<PublicPortfolioClientsOutput, UseCaseError>> {
+    const publishError = assertPublicModuleEnabled(ctx, "portfolio");
+    if (publishError) {
+      return err(publishError);
+    }
+
     if (!ctx.workspaceId) {
       return err(new ValidationError("workspaceId is required"));
     }
 
-    const showcase = await this.showcaseRepo.findBySlug(
-      ctx.tenantId!,
-      ctx.workspaceId,
-      input.slug,
-      { publishedOnly: true }
-    );
+    const showcase = await this.showcaseRepo.findBySlug(input.slug, {
+      tenantId: ctx.tenantId!,
+      workspaceId: ctx.workspaceId,
+      publishedOnly: true,
+    });
     if (!showcase || !showcase.isPublished) {
       return err(new NotFoundError("Showcase not found"));
     }

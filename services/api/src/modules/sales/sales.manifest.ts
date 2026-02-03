@@ -1,0 +1,46 @@
+import type { AppManifest } from "@corely/contracts";
+
+export const salesAppManifest: AppManifest = {
+  appId: "sales",
+  name: "Sales",
+  tier: 3,
+  version: "1.0.0",
+  description: "Sales quotes and projects",
+  dependencies: ["parties"],
+  capabilities: ["sales.quotes", "sales.projects"],
+  permissions: ["sales.read", "sales.write"],
+  menu: [
+    {
+      id: "quotes",
+      scope: "web",
+      section: "quotes",
+      labelKey: "nav.quotes",
+      defaultLabel: "Quotes",
+      route: "/sales/quotes",
+      icon: "FileCheck",
+      order: 12,
+      requiresCapabilities: ["sales.quotes"],
+    },
+    {
+      id: "projects",
+      scope: "web",
+      section: "projects",
+      labelKey: "nav.projects",
+      defaultLabel: "Projects",
+      route: "/projects",
+      icon: "Briefcase",
+      order: 13,
+      requiresCapabilities: ["sales.projects"],
+    },
+    {
+      id: "sales-settings",
+      scope: "web",
+      section: "sales",
+      labelKey: "nav.salesSettings",
+      defaultLabel: "Sales Settings",
+      route: "/sales/settings",
+      icon: "Settings2",
+      order: 100,
+    },
+  ],
+};

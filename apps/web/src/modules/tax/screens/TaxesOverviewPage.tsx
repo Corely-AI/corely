@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { taxApi } from "@/lib/tax-api";
 import { useAuth } from "@/lib/auth-provider";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { Skeleton } from "@/shared/components/Skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@corely/ui";
 import {
   ArrowRight,
   Building,

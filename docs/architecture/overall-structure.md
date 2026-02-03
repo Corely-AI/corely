@@ -9,7 +9,9 @@ This document describes the **repo hierarchy** for Corely (pnpm monorepo) and sh
 ```text
 corely/
   apps/
-    webs/                              # Frontend (Vite + React + TS)
+    web/                               # Admin web (Vite + React + TS)
+    public-web/                        # Public web (Vite + React + TS)
+    landing/                           # Marketing site (Vite + React + TS)
 
   services/
     api/                               # Backend API (NestJS)
@@ -20,7 +22,7 @@ corely/
     contracts/                         # Shared FE/BE: schemas + types + enums
     domain/                            # Shared pure domain rules (optional)
     data/                              # Backend-only DB layer (optional)
-    ui/                                # Frontend-only design system (optional)
+    ui/                                # Frontend-only design system (shared UI)
 
   docs/
   assets/
@@ -31,10 +33,10 @@ corely/
 
 ---
 
-## Frontend hierarchy (apps/webs)
+## Frontend hierarchy (apps/web)
 
 ```text
-apps/webs/
+apps/web/
   public/
   src/
     app/
@@ -113,6 +115,53 @@ apps/webs/
         index.ts
 
     assets/
+    main.tsx
+    index.css
+
+  vite.config.ts
+  tsconfig.json
+  package.json
+```
+
+## Frontend hierarchy (apps/public-web)
+
+```text
+apps/public-web/
+  assets/
+  src/
+    app/
+      AppShell.tsx
+      router/
+        index.tsx
+      providers/
+        index.tsx
+
+    modules/
+      home/
+        screens/
+        index.ts
+      portfolio/
+        screens/
+        index.ts
+      rentals/
+        screens/
+        index.ts
+      blog/
+        screens/
+        index.ts
+      pages/
+        screens/
+        index.ts
+
+    shared/
+      api/
+        public-api.ts
+      lib/
+        site.ts
+        workspace.ts
+      seo/
+        Seo.tsx
+
     main.tsx
     index.css
 

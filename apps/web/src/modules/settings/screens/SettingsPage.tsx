@@ -1,9 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { useThemeStore } from "@/shared/theme/themeStore";
 import { getDb } from "@/shared/mock/mockDb";
 import { Moon, Sun, Monitor, Globe } from "lucide-react";

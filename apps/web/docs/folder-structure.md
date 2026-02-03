@@ -134,7 +134,7 @@ Subfolders:
 
 - `shared/api/`: HTTP client, endpoint helpers, request wrappers, error normalization
 - `shared/components/`: reusable business-agnostic UI (Drawer, DataTable, EmptyState, Skeleton)
-- `shared/ui/`: design system primitives (buttons, inputs, cards) or shadcn-like components
+- UI primitives come from `@corely/ui` (import directly, no local `shared/ui` wrapper)
 - `shared/lib/`: pure utilities (format money/date, idempotency keys, small helpers)
 - `shared/i18n/`: i18n init + locale JSONs
 - `shared/theme/`: theme tokens, theme provider/toggle

@@ -11,6 +11,7 @@ import {
 import {
   type UpdateEngagementSettingsInput,
   type UpdateEngagementSettingsOutput,
+  RewardRuleSchema,
 } from "@corely/contracts";
 import { toEngagementSettingsDto } from "../mappers/engagement-dto.mappers";
 import type { EngagementSettingsRepositoryPort } from "../ports/engagement-settings-repository.port";
@@ -52,6 +53,12 @@ export class UpdateEngagementSettingsUseCase extends BaseUseCase<
 
     const existing =
       (await this.deps.settings.getByTenant(ctx.tenantId)) ?? defaultSettings(ctx.tenantId);
+    const rewardRules = (
+      input.rewardRules
+        ? input.rewardRules.map((rule) => RewardRuleSchema.parse(rule))
+        : existing.rewardRules
+    ) as EngagementSettingsRecord["rewardRules"];
+
     const updated: EngagementSettingsRecord = {
       ...existing,
       checkInModeEnabled: input.checkInModeEnabled ?? existing.checkInModeEnabled,
@@ -59,7 +66,7 @@ export class UpdateEngagementSettingsUseCase extends BaseUseCase<
         input.checkInDuplicateWindowMinutes ?? existing.checkInDuplicateWindowMinutes,
       loyaltyEnabled: input.loyaltyEnabled ?? existing.loyaltyEnabled,
       pointsPerVisit: input.pointsPerVisit ?? existing.pointsPerVisit,
-      rewardRules: input.rewardRules ?? existing.rewardRules,
+      rewardRules,
       aiEnabled: input.aiEnabled ?? existing.aiEnabled,
       kioskBranding: input.kioskBranding ?? existing.kioskBranding,
       updatedAt: new Date(),

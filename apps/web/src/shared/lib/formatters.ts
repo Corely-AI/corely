@@ -1,48 +1,64 @@
 // Formatting utilities for Bizflow
 import i18n from "../i18n";
 
+function resolveLocale(locale?: string): string {
+  if (locale) {
+    return locale;
+  }
+  const configuredLocale = i18n.t("common.locale");
+  if (typeof configuredLocale === "string" && configuredLocale.trim().length > 0) {
+    return configuredLocale;
+  }
+  return i18n.language || "en-US";
+}
+
 export function formatMoney(
   amountCents: number,
-  locale: string = "de-DE",
+  locale?: string,
   currency: string = "EUR"
 ): string {
+  const resolvedLocale = resolveLocale(locale);
   const amount = amountCents / 100;
-  return new Intl.NumberFormat(locale, {
+  return new Intl.NumberFormat(resolvedLocale, {
     style: "currency",
     currency,
   }).format(amount);
 }
 
-export function formatDate(isoDate: string, locale: string = "de-DE"): string {
+export function formatDate(isoDate: string, locale?: string): string {
+  const resolvedLocale = resolveLocale(locale);
   const date = new Date(isoDate);
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(resolvedLocale, {
     year: "numeric",
     month: "short",
     day: "numeric",
   }).format(date);
 }
 
-export function formatDateLong(isoDate: string, locale: string = "de-DE"): string {
+export function formatDateLong(isoDate: string, locale?: string): string {
+  const resolvedLocale = resolveLocale(locale);
   const date = new Date(isoDate);
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(resolvedLocale, {
     year: "numeric",
     month: "long",
     day: "numeric",
   }).format(date);
 }
 
-export function formatDateShort(isoDate: string, locale: string = "de-DE"): string {
+export function formatDateShort(isoDate: string, locale?: string): string {
+  const resolvedLocale = resolveLocale(locale);
   const date = new Date(isoDate);
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(resolvedLocale, {
     month: "2-digit",
     day: "2-digit",
     year: "2-digit",
   }).format(date);
 }
 
-export function formatDateTime(isoDate: string, locale: string = "de-DE"): string {
+export function formatDateTime(isoDate: string, locale?: string): string {
+  const resolvedLocale = resolveLocale(locale);
   const date = new Date(isoDate);
-  return new Intl.DateTimeFormat(locale, {
+  return new Intl.DateTimeFormat(resolvedLocale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -51,23 +67,24 @@ export function formatDateTime(isoDate: string, locale: string = "de-DE"): strin
   }).format(date);
 }
 
-export function formatRelativeTime(isoDate: string, locale: string = "de-DE"): string {
+export function formatRelativeTime(isoDate: string, locale?: string): string {
+  const resolvedLocale = resolveLocale(locale);
   const date = new Date(isoDate);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
-    return locale.startsWith("de") ? "Heute" : "Today";
+    return i18n.t("time.today");
   }
   if (diffDays === 1) {
-    return locale.startsWith("de") ? "Gestern" : "Yesterday";
+    return i18n.t("time.yesterday");
   }
   if (diffDays < 7) {
-    return locale.startsWith("de") ? `vor ${diffDays} Tagen` : `${diffDays} days ago`;
+    return i18n.t("time.daysAgo", { count: diffDays });
   }
 
-  return formatDate(isoDate, locale);
+  return formatDate(isoDate, resolvedLocale);
 }
 
 /**
@@ -75,7 +92,7 @@ export function formatRelativeTime(isoDate: string, locale: string = "de-DE"): s
  * For future dates: "in X Tagen" / "in X days"
  * For past dates: "X Tage überfällig" / "X days overdue"
  */
-export function formatDueDate(isoDate: string, locale: string = "de-DE"): string {
+export function formatDueDate(isoDate: string, locale?: string): string {
   const date = new Date(isoDate);
   const now = new Date();
   const diffMs = date.getTime() - now.getTime(); // Future dates are positive
@@ -99,8 +116,9 @@ export function formatVatRate(rate: number): string {
   return `${rate}%`;
 }
 
-export function formatPercentage(value: number, locale: string = "de-DE"): string {
-  return new Intl.NumberFormat(locale, {
+export function formatPercentage(value: number, locale?: string): string {
+  const resolvedLocale = resolveLocale(locale);
+  return new Intl.NumberFormat(resolvedLocale, {
     style: "percent",
     minimumFractionDigits: 0,
     maximumFractionDigits: 1,

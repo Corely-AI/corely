@@ -24,11 +24,21 @@ export class CreatePropertyUseCase extends BaseUseCase<CreateRentalPropertyInput
       return err(new ValidationError("Property with this slug already exists"));
     }
 
-    const property = await this.useCaseDeps.propertyRepo.save(
-      ctx.tenantId!,
-      ctx.workspaceId!,
-      input
-    );
+    const images = input.images?.map((image, index) => {
+      if (!image.fileId) {
+        throw new ValidationError("image.fileId is required");
+      }
+      return {
+        fileId: image.fileId,
+        altText: image.altText ?? null,
+        sortOrder: image.sortOrder ?? index,
+      };
+    });
+
+    const property = await this.useCaseDeps.propertyRepo.save(ctx.tenantId!, ctx.workspaceId!, {
+      ...input,
+      images,
+    });
     return ok(property);
   }
 }

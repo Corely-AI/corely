@@ -1,4 +1,4 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Inject } from "@nestjs/common";
 import {
   BaseUseCase,
   NoopLogger,
@@ -7,11 +7,11 @@ import {
   type UseCaseError,
   NotFoundError,
   ValidationError,
-  RequireTenant,
   ok,
   err,
 } from "@corely/kernel";
 import type { PublicPortfolioShowcaseOutput } from "@corely/contracts";
+import { assertPublicModuleEnabled, getPublicWorkspaceMetadata } from "../../../../shared/public";
 import {
   SHOWCASE_REPOSITORY_PORT,
   type ShowcaseRepositoryPort,
@@ -39,10 +39,8 @@ import {
   toPortfolioTeamMemberDto,
 } from "../mappers/portfolio.mapper";
 
-@RequireTenant()
-@Injectable()
 export class GetPublicShowcaseUseCase extends BaseUseCase<
-  { slug: string },
+  { slug?: string; domain?: string },
   PublicPortfolioShowcaseOutput
 > {
   constructor(
@@ -57,32 +55,44 @@ export class GetPublicShowcaseUseCase extends BaseUseCase<
   }
 
   protected async handle(
-    input: { slug: string },
+    input: { slug?: string; domain?: string },
     ctx: UseCaseContext
   ): Promise<Result<PublicPortfolioShowcaseOutput, UseCaseError>> {
-    if (!ctx.workspaceId) {
-      return err(new ValidationError("workspaceId is required"));
+    if (getPublicWorkspaceMetadata(ctx)) {
+      const publishError = assertPublicModuleEnabled(ctx, "portfolio");
+      if (publishError) {
+        return err(publishError);
+      }
     }
 
-    const showcase = await this.showcaseRepo.findBySlug(
-      ctx.tenantId!,
-      ctx.workspaceId,
-      input.slug,
-      { publishedOnly: true }
-    );
+    if (!input.slug && !input.domain) {
+      return err(new ValidationError("Either slug or domain is required"));
+    }
+
+    let showcase;
+    if (input.domain) {
+      showcase = await this.showcaseRepo.findByDomain(input.domain, { publishedOnly: true });
+    } else {
+      showcase = await this.showcaseRepo.findBySlug(input.slug ?? "", {
+        publishedOnly: true,
+        tenantId: ctx.tenantId,
+        workspaceId: ctx.workspaceId,
+        // For safety, let's allow finding by slug globally if no tenant provided.
+      });
+    }
     if (!showcase || !showcase.isPublished) {
       return err(new NotFoundError("Showcase not found"));
     }
 
     const profile = await this.profileRepo.findByShowcaseId(
-      ctx.tenantId!,
-      ctx.workspaceId,
+      showcase.tenantId,
+      showcase.workspaceId,
       showcase.id
     );
 
     const featuredProjects = await this.projectRepo.listByShowcase(
-      ctx.tenantId!,
-      ctx.workspaceId,
+      showcase.tenantId,
+      showcase.workspaceId,
       showcase.id,
       {
         featured: true,
@@ -93,8 +103,8 @@ export class GetPublicShowcaseUseCase extends BaseUseCase<
     );
 
     const featuredClients = await this.clientRepo.listByShowcase(
-      ctx.tenantId!,
-      ctx.workspaceId,
+      showcase.tenantId,
+      showcase.workspaceId,
       showcase.id,
       {
         featured: true,
@@ -104,8 +114,8 @@ export class GetPublicShowcaseUseCase extends BaseUseCase<
     );
 
     const featuredServices = await this.serviceRepo.listByShowcase(
-      ctx.tenantId!,
-      ctx.workspaceId,
+      showcase.tenantId,
+      showcase.workspaceId,
       showcase.id,
       {
         status: "published",
@@ -115,8 +125,8 @@ export class GetPublicShowcaseUseCase extends BaseUseCase<
     );
 
     const featuredTeam = await this.teamRepo.listByShowcase(
-      ctx.tenantId!,
-      ctx.workspaceId,
+      showcase.tenantId,
+      showcase.workspaceId,
       showcase.id,
       {
         status: "published",

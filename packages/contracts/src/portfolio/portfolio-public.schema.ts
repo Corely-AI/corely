@@ -5,8 +5,20 @@ import {
   PortfolioProjectSchema,
   PortfolioServiceSchema,
   PortfolioShowcaseSchema,
+  PortfolioShowcaseTypeSchema,
   PortfolioTeamMemberSchema,
 } from "./portfolio.types";
+import { createPortfolioListResponseSchema } from "./portfolio-list.schema";
+
+export const PublicPortfolioShowcaseListInputSchema = z.object({
+  q: z.string().optional(),
+  type: PortfolioShowcaseTypeSchema.optional(),
+  page: z.number().int().positive().optional(),
+  pageSize: z.number().int().positive().max(100).optional(),
+});
+
+export const PublicPortfolioShowcasesOutputSchema =
+  createPortfolioListResponseSchema(PortfolioShowcaseSchema);
 
 export const PublicPortfolioShowcaseOutputSchema = z.object({
   showcase: PortfolioShowcaseSchema,
@@ -37,6 +49,10 @@ export const PublicPortfolioTeamMembersOutputSchema = z.object({
   items: z.array(PortfolioTeamMemberSchema),
 });
 
+export type PublicPortfolioShowcaseListInput = z.infer<
+  typeof PublicPortfolioShowcaseListInputSchema
+>;
+export type PublicPortfolioShowcasesOutput = z.infer<typeof PublicPortfolioShowcasesOutputSchema>;
 export type PublicPortfolioShowcaseOutput = z.infer<typeof PublicPortfolioShowcaseOutputSchema>;
 export type PublicPortfolioProjectsOutput = z.infer<typeof PublicPortfolioProjectsOutputSchema>;
 export type PublicPortfolioProjectOutput = z.infer<typeof PublicPortfolioProjectOutputSchema>;

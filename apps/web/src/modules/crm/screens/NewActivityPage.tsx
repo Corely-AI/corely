@@ -1,14 +1,14 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Calendar as CalendarIcon, Clock3 } from "lucide-react";
 import { z } from "zod";
-import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import {
   Form,
   FormControl,
@@ -17,35 +17,38 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Textarea } from "@/shared/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { Calendar } from "@/shared/ui/calendar";
+} from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
+import { Calendar } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { crmApi } from "@/lib/crm-api";
 import { toast } from "sonner";
 
 const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "EMAIL_DRAFT"] as const;
 
-const activityFormSchema = z
-  .object({
-    type: z.enum(ACTIVITY_TYPES),
-    subject: z.string().min(1, "Subject is required"),
-    body: z.string().optional(),
-    partyId: z.string().optional(),
-    dealId: z.string().optional(),
-    dueAt: z.string().optional(),
-  })
-  .refine((value) => Boolean(value.partyId || value.dealId), {
-    message: "Link to a deal or party",
-    path: ["partyId"],
-  });
-
-type ActivityFormValues = z.infer<typeof activityFormSchema>;
-
 export default function NewActivityPage() {
+  const { t, i18n } = useTranslation();
+  const activityFormSchema = useMemo(
+    () =>
+      z
+        .object({
+          type: z.enum(ACTIVITY_TYPES),
+          subject: z.string().min(1, t("crm.activity.subjectRequired")),
+          body: z.string().optional(),
+          partyId: z.string().optional(),
+          dealId: z.string().optional(),
+          dueAt: z.string().optional(),
+        })
+        .refine((value) => Boolean(value.partyId || value.dealId), {
+          message: t("crm.activity.linkRequired"),
+          path: ["partyId"],
+        }),
+    [t]
+  );
+  type ActivityFormValues = z.infer<typeof activityFormSchema>;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -78,13 +81,13 @@ export default function NewActivityPage() {
       });
     },
     onSuccess: () => {
-      toast.success("Activity created");
+      toast.success(t("crm.activity.created"));
       void queryClient.invalidateQueries({ queryKey: ["activities"] });
       navigate("/crm/activities");
     },
     onError: (error) => {
       console.error("Error creating activity:", error);
-      toast.error("Failed to create activity. Please try again.");
+      toast.error(t("crm.activity.createFailed"));
     },
   });
 
@@ -95,7 +98,7 @@ export default function NewActivityPage() {
   const dueAtRaw = form.watch("dueAt");
   const parsedDueAt = dueAtRaw ? new Date(dueAtRaw) : undefined;
   const dueAt = parsedDueAt && !Number.isNaN(parsedDueAt.getTime()) ? parsedDueAt : undefined;
-  const dueTime = dueAt ? format(dueAt, "HH:mm") : "";
+  const dueTime = dueAt ? dueAt.toISOString().slice(11, 16) : "";
 
   const updateDueAt = (date: Date | undefined, time: string | undefined) => {
     if (!date) {
@@ -124,8 +127,8 @@ export default function NewActivityPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-h1 text-foreground">New Activity</h1>
-            <p className="text-muted-foreground">Create a task, call, meeting, or note.</p>
+            <h1 className="text-h1 text-foreground">{t("crm.activity.newTitle")}</h1>
+            <p className="text-muted-foreground">{t("crm.activity.newSubtitle")}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -134,7 +137,7 @@ export default function NewActivityPage() {
             onClick={() => navigate("/crm/activities")}
             disabled={createMutation.isPending}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             variant="accent"
@@ -142,7 +145,7 @@ export default function NewActivityPage() {
             disabled={createMutation.isPending}
             data-testid="submit-activity-button"
           >
-            {createMutation.isPending ? "Saving..." : "Create Activity"}
+            {createMutation.isPending ? t("common.saving") : t("crm.activity.create")}
           </Button>
         </div>
       </div>
@@ -161,9 +164,9 @@ export default function NewActivityPage() {
                   name="subject"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>Subject</FormLabel>
+                      <FormLabel>{t("crm.activity.subject")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Follow up call with ACME" {...field} />
+                        <Input placeholder={t("crm.activity.subjectPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -175,17 +178,17 @@ export default function NewActivityPage() {
                   name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Type</FormLabel>
+                      <FormLabel>{t("crm.activity.type")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
+                            <SelectValue placeholder={t("crm.activity.selectType")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {ACTIVITY_TYPES.map((type) => (
                             <SelectItem key={type} value={type}>
-                              {type}
+                              {t(`crm.activity.types.${type.toLowerCase()}`)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -200,7 +203,7 @@ export default function NewActivityPage() {
                   name="dueAt"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Due at</FormLabel>
+                      <FormLabel>{t("crm.activity.dueAt")}</FormLabel>
                       <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
                         <Popover>
                           <PopoverTrigger asChild>
@@ -213,7 +216,15 @@ export default function NewActivityPage() {
                                 )}
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
-                                {dueAt ? format(dueAt, "PPP") : <span>Select date</span>}
+                                {dueAt ? (
+                                  dueAt.toLocaleDateString(i18n.language, {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  })
+                                ) : (
+                                  <span>{t("crm.activity.selectDate")}</span>
+                                )}
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
@@ -238,7 +249,7 @@ export default function NewActivityPage() {
                           </div>
                         </FormControl>
                       </div>
-                      <FormDescription>Optional reminder date & time.</FormDescription>
+                      <FormDescription>{t("crm.activity.reminderHint")}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -249,11 +260,11 @@ export default function NewActivityPage() {
                   name="dealId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Deal ID (optional)</FormLabel>
+                      <FormLabel>{t("crm.activity.dealIdOptional")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Link to a deal" {...field} />
+                        <Input placeholder={t("crm.activity.dealIdPlaceholder")} {...field} />
                       </FormControl>
-                      <FormDescription>Required: link to a deal or party.</FormDescription>
+                      <FormDescription>{t("crm.activity.linkRequiredHint")}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -264,11 +275,11 @@ export default function NewActivityPage() {
                   name="partyId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Party ID (optional)</FormLabel>
+                      <FormLabel>{t("crm.activity.partyIdOptional")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Link to a customer/contact" {...field} />
+                        <Input placeholder={t("crm.activity.partyIdPlaceholder")} {...field} />
                       </FormControl>
-                      <FormDescription>Required: link to a deal or party.</FormDescription>
+                      <FormDescription>{t("crm.activity.linkRequiredHint")}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -280,9 +291,13 @@ export default function NewActivityPage() {
                 name="body"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes</FormLabel>
+                    <FormLabel>{t("common.notes")}</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} placeholder="Details, agenda, or next steps" {...field} />
+                      <Textarea
+                        rows={4}
+                        placeholder={t("crm.activity.notesPlaceholder")}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -293,13 +308,13 @@ export default function NewActivityPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Tip</CardTitle>
-              <CardDescription>Short, actionable subjects work best.</CardDescription>
+              <CardTitle>{t("crm.activity.tipTitle")}</CardTitle>
+              <CardDescription>{t("crm.activity.tipSubtitle")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
-              <div>Include who, what, and when in the subject.</div>
-              <div>Link to a deal or party to keep context together.</div>
-              <div>Add a due date so it shows up in your task list.</div>
+              <div>{t("crm.activity.tipOne")}</div>
+              <div>{t("crm.activity.tipTwo")}</div>
+              <div>{t("crm.activity.tipThree")}</div>
             </CardContent>
           </Card>
         </form>

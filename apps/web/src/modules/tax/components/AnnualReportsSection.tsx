@@ -1,8 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
 import { HelpCircle, Pencil, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";

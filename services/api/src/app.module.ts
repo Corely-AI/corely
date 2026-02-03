@@ -23,11 +23,13 @@ import { InventoryModule } from "./modules/inventory";
 import { ApprovalsModule } from "./modules/approvals";
 import { EngagementModule } from "./modules/engagement/engagement.module";
 import { PlatformModule } from "./modules/platform";
+import { PlatformEntitlementsModule } from "./modules/platform-entitlements/platform-entitlements.module";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { CmsModule } from "./modules/cms";
 import { FormsModule } from "./modules/forms";
 import { RentalsModule } from "./modules/rentals";
 import { PortfolioModule } from "./modules/portfolio";
+import { IssuesModule } from "./modules/issues";
 import { AiRichTextModule } from "./modules/ai-richtext";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
@@ -51,6 +53,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     DataModule,
     IdentityModule,
     PlatformModule,
+    PlatformEntitlementsModule,
     PartyModule,
     CrmModule,
     WorkspacesModule,
@@ -69,6 +72,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     FormsModule,
     RentalsModule,
     PortfolioModule,
+    IssuesModule,
     WorkflowModule,
     AutomationModule,
     ReportingModule,

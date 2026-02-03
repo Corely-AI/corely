@@ -2,11 +2,11 @@ import React, { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut, MessageSquare, UserPlus } from "lucide-react";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import { Label } from "@/shared/ui/label";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { Logo } from "@/shared/components/Logo";
 import { formatDateLong, formatDateTime } from "@/shared/lib/formatters";
 import {

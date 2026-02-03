@@ -2,7 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import {
   Form,
   FormControl,
@@ -11,10 +11,10 @@ import {
   FormLabel,
   FormMessage,
   FormDescription,
-} from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+} from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { useCreatePaymentMethod } from "./hooks/usePaymentMethods";
 import type { BankAccountDto } from "@corely/contracts";
 

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import {
   Dialog,
   DialogContent,
@@ -10,9 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+} from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { rentalsApi } from "@/lib/rentals-api";
 import { rentalCategoryKeys } from "../queries";
 import { toast } from "sonner";

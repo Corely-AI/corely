@@ -3,12 +3,15 @@
  * Permissions for managing tenant apps, templates, packs, and menu
  */
 
+export type PermissionSide = "HOST" | "TENANT" | "BOTH";
+
 export interface PermissionDefinition {
   key: string;
   group: string;
   label: string;
   description?: string;
   danger?: boolean;
+  side?: PermissionSide; // Default to TENANT if undefined
 }
 
 export interface PermissionGroup {
@@ -28,6 +31,7 @@ export const platformPermissions: PermissionGroup[] = [
         label: "Manage Apps",
         description: "Enable and disable apps for the tenant",
         danger: true,
+        side: "HOST",
       },
       {
         key: "platform.templates.apply",
@@ -35,6 +39,7 @@ export const platformPermissions: PermissionGroup[] = [
         label: "Apply Templates",
         description: "Apply configuration templates to the tenant",
         danger: false,
+        side: "HOST",
       },
       {
         key: "platform.packs.install",
@@ -42,6 +47,7 @@ export const platformPermissions: PermissionGroup[] = [
         label: "Install Packs",
         description: "Install app bundles and configuration packs",
         danger: true,
+        side: "HOST",
       },
       {
         key: "platform.menu.customize",
@@ -49,6 +55,23 @@ export const platformPermissions: PermissionGroup[] = [
         label: "Customize Menu",
         description: "Customize tenant menu layout and visibility",
         danger: false,
+        side: "TENANT", // Menu customization is usually tenant-admin level
+      },
+      {
+        key: "platform.tenants.manage",
+        group: "platform",
+        label: "Manage Tenants",
+        description: "Create and manage tenants",
+        danger: true,
+        side: "HOST",
+      },
+      {
+        key: "platform.settings.write",
+        group: "platform",
+        label: "Platform Settings",
+        description: "Manage global platform settings",
+        danger: true,
+        side: "HOST",
       },
     ],
   },

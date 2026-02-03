@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Switch } from "@/shared/ui/switch";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Switch } from "@corely/ui";
 import { salesApi } from "@/lib/sales-api";
 import { salesQueryKeys } from "../queries/sales.queryKeys";
 import { toast } from "sonner";

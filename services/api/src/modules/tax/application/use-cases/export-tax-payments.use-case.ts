@@ -35,7 +35,23 @@ export class ExportTaxPaymentsUseCase extends BaseUseCase<
       return result;
     }
 
-    const csv = this.toCsv(result.value.items);
+    const csv = this.toCsv(
+      result.value.items.map((item) => ({
+        filingId: item.filingId ?? "",
+        filingType: item.filingType ?? "",
+        periodLabel: item.periodLabel ?? "",
+        dueDate: item.dueDate ?? "",
+        amount: {
+          value: item.amount?.value ?? 0,
+          currency: item.amount?.currency ?? "",
+          direction: item.amount?.direction ?? "",
+        },
+        paymentStatus: item.paymentStatus ?? "",
+        paidAt: item.paidAt ?? null,
+        method: item.method ?? null,
+        proofDocumentId: item.proofDocumentId ?? null,
+      }))
+    );
     return ok({ csv });
   }
 

@@ -9,18 +9,100 @@ import { partyPermissions } from "../../party/party.permissions";
 import { crmPermissions } from "../../crm/crm.permissions";
 import { formsPermissions } from "../../forms/forms.permissions";
 import { portfolioPermissions } from "../../portfolio/portfolio.permissions";
+import { AppRegistry } from "../../platform/infrastructure/registries/app-registry";
 
 const PERMISSION_KEY_REGEX = /^[a-z][a-z0-9]*(?:[.:][a-z0-9]+)*$/;
 
-export const buildPermissionCatalog = (): PermissionGroup[] => [
-  ...identityPermissions,
-  ...salesPermissions,
-  ...inventoryPermissions,
-  ...partyPermissions,
-  ...crmPermissions,
-  ...formsPermissions,
-  ...portfolioPermissions,
-];
+export const buildPermissionCatalog = (): PermissionGroup[] => {
+  const base: PermissionGroup[] = [
+    ...identityPermissions,
+    ...salesPermissions,
+    ...inventoryPermissions,
+    ...partyPermissions,
+    ...crmPermissions,
+    ...formsPermissions,
+    ...portfolioPermissions,
+  ];
+
+  return mergeManifestPermissions(base, buildManifestPermissionGroups());
+};
+
+const toTitleCase = (value: string) =>
+  value
+    .replace(/[_-]/g, " ")
+    .replace(/\./g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const buildManifestPermissionGroups = (): PermissionGroup[] => {
+  const registry = new AppRegistry();
+  registry.loadManifests();
+
+  const groups = new Map<string, PermissionGroup>();
+
+  for (const manifest of registry.list()) {
+    const permissions = manifest.permissions ?? [];
+    if (!permissions.length) {
+      continue;
+    }
+
+    const groupId = manifest.appId;
+    const group =
+      groups.get(groupId) ??
+      ({
+        id: groupId,
+        label: manifest.name,
+        permissions: [],
+      } satisfies PermissionGroup);
+
+    for (const key of permissions) {
+      group.permissions.push({
+        key,
+        group: groupId,
+        label: toTitleCase(key),
+        description: `Generated from ${manifest.name} manifest`,
+      });
+    }
+
+    groups.set(groupId, group);
+  }
+
+  return Array.from(groups.values());
+};
+
+const mergeManifestPermissions = (
+  base: PermissionGroup[],
+  manifests: PermissionGroup[]
+): PermissionGroup[] => {
+  const existingKeys = new Set(
+    base.flatMap((group) => group.permissions.map((permission) => permission.key))
+  );
+
+  const groupMap = new Map<string, PermissionGroup>(
+    base.map((group) => [group.id, { ...group, permissions: [...group.permissions] }])
+  );
+
+  for (const manifestGroup of manifests) {
+    const target =
+      groupMap.get(manifestGroup.id) ??
+      ({
+        id: manifestGroup.id,
+        label: manifestGroup.label,
+        permissions: [],
+      } satisfies PermissionGroup);
+
+    for (const permission of manifestGroup.permissions) {
+      if (existingKeys.has(permission.key)) {
+        continue;
+      }
+      existingKeys.add(permission.key);
+      target.permissions.push(permission);
+    }
+
+    groupMap.set(target.id, target);
+  }
+
+  return Array.from(groupMap.values());
+};
 
 const normalizeCatalog = (catalog: PermissionGroup[]): PermissionGroup[] => {
   return catalog

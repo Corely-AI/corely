@@ -1,8 +1,8 @@
 import React from "react";
 import { useRef } from "react";
 import { toast } from "sonner";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { formatDateTime } from "@/shared/lib/formatters";
 import { useTaxFilingAttachmentsQuery } from "../hooks/useTaxFilingAttachmentsQuery";
 import {

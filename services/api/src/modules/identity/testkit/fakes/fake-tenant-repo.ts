@@ -17,6 +17,10 @@ export class FakeTenantRepository implements TenantRepositoryPort {
     return this.tenants.find((t) => t.getSlug() === slug) ?? null;
   }
 
+  async listAll(): Promise<Tenant[]> {
+    return [...this.tenants];
+  }
+
   async slugExists(slug: string): Promise<boolean> {
     return this.tenants.some((t) => t.getSlug() === slug);
   }

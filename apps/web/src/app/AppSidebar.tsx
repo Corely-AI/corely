@@ -1,9 +1,9 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut } from "lucide-react";
+import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut, Users } from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
 import { useThemeStore } from "@/shared/theme/themeStore";
 import { cn } from "@/shared/lib/utils";
 import { WorkspaceSwitcher } from "@/shared/workspaces/WorkspaceSwitcher";
@@ -13,13 +13,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/shared/ui/dropdown-menu";
+} from "@corely/ui";
 import { useAuth } from "@/lib/auth-provider";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getIconByName } from "@/shared/utils/iconMapping";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { WorkspaceTypeBadge } from "@/shared/workspaces/WorkspaceTypeBadge";
 import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
+import { useIsSuperAdmin } from "@/shared/lib/permissions";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -32,6 +33,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
   const { theme, setTheme } = useThemeStore();
   const { user, logout } = useAuth();
   const { activeWorkspace } = useWorkspace();
+  const isSuperAdmin = useIsSuperAdmin();
   const {
     isLoading: isConfigLoading,
     error: configError,
@@ -64,6 +66,8 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
+
+  const unknownLabel = t("common.unknown");
 
   return (
     <aside
@@ -119,7 +123,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
           <div className="px-3 py-4 text-sm text-muted-foreground">
             {t("errors.loadMenuFailed")}
           </div>
-        ) : navigationGroups.length > 0 ? (
+        ) : navigationGroups.length > 0 || isSuperAdmin ? (
           /* Server-driven navigation */
           <>
             {navigationGroups.map((group) => {
@@ -127,7 +131,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 <div key={group.id} className="space-y-1">
                   {!collapsed && (
                     <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {group.defaultLabel}
+                      {t(group.labelKey ?? group.defaultLabel)}
                     </div>
                   )}
                   {group.items.map((item) => {
@@ -148,7 +152,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                         }
                       >
                         <Icon className="h-5 w-5 shrink-0" />
-                        {!collapsed && <span>{item.label}</span>}
+                        {!collapsed && <span>{t(item.labelKey ?? item.label)}</span>}
                         {!collapsed && item.pinned && (
                           <span className="ml-auto text-xs text-muted-foreground">📌</span>
                         )}
@@ -158,6 +162,32 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 </div>
               );
             })}
+
+            {isSuperAdmin && (
+              <div className="space-y-1">
+                {!collapsed && (
+                  <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {t("nav.groups.platform")}
+                  </div>
+                )}
+                <NavLink
+                  to="/settings/tenants"
+                  end
+                  data-testid="nav-platform-tenants"
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    )
+                  }
+                >
+                  <Users className="h-5 w-5 shrink-0" />
+                  {!collapsed && <span>{t("nav.tenants")}</span>}
+                </NavLink>
+              </div>
+            )}
 
             {/* Workspace mode indicator */}
             {!collapsed && <WorkspaceTypeBadge />}
@@ -187,12 +217,21 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 size="icon-sm"
                 className="text-muted-foreground hover:text-foreground"
               >
-                <Globe className="h-4 w-4" />
+                <span className="text-lg leading-none">
+                  {i18n.language === "de" ? "🇩🇪" : i18n.language === "vi" ? "🇻🇳" : "🇬🇧"}
+                </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-32">
-              <DropdownMenuItem onClick={() => changeLanguage("de")}>🇩🇪 Deutsch</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("en")}>🇬🇧 English</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage("de")}>
+                🇩🇪 {t("settings.languages.de")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage("en")}>
+                🇬🇧 {t("settings.languages.en")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage("vi")}>
+                🇻🇳 {t("settings.languages.vi")}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -216,13 +255,13 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
 
                   return (
                     <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground text-sm font-medium">
-                      {userInitials}
+                      {userInitials || unknownLabel}
                     </div>
                   );
                 })()}
                 <div className="flex-1 text-left">
                   <div className="text-sm font-medium text-sidebar-foreground truncate">
-                    {user?.name ?? "Unknown"}
+                    {user?.name ?? unknownLabel}
                   </div>
                   <div className="text-xs text-muted-foreground truncate">
                     {activeWorkspace?.name || ""}
@@ -232,7 +271,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56" data-testid="user-menu">
               <div className="px-2 py-1.5">
-                <div className="text-sm font-medium">{user?.name ?? "Unknown"}</div>
+                <div className="text-sm font-medium">{user?.name ?? unknownLabel}</div>
                 <div className="text-xs text-muted-foreground">{user.email}</div>
               </div>
               <DropdownMenuSeparator />
@@ -245,7 +284,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 }}
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                {t("common.logout", "Log out")}
+                {t("common.logout")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

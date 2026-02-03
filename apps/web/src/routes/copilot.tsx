@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 import {
   fetchCopilotHistory,
   useCopilotChatOptions,
@@ -25,38 +26,53 @@ const ConfirmCard: React.FC<{
   toolName: string;
   onConfirm: () => void;
   onCancel: () => void;
-}> = ({ toolCallId, toolName, onConfirm, onCancel }) => (
-  <div className="border rounded p-3 my-2 bg-white shadow-sm">
-    <div className="text-sm font-semibold">Tool confirmation</div>
-    <div className="text-xs text-gray-600">
-      {toolName} (call: {toolCallId})
+}> = ({ toolCallId, toolName, onConfirm, onCancel }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="border rounded p-3 my-2 bg-white shadow-sm">
+      <div className="text-sm font-semibold">{t("copilot.confirmation.title")}</div>
+      <div className="text-xs text-gray-600">
+        {t("copilot.confirmation.subtitle", { toolName, toolCallId })}
+      </div>
+      <div className="flex gap-2 mt-2">
+        <Button size="sm" onClick={onConfirm} data-testid={`confirm-${toolCallId}`}>
+          {t("common.confirm")}
+        </Button>
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={onCancel}
+          data-testid={`cancel-${toolCallId}`}
+        >
+          {t("common.cancel")}
+        </Button>
+      </div>
     </div>
-    <div className="flex gap-2 mt-2">
-      <Button size="sm" onClick={onConfirm} data-testid={`confirm-${toolCallId}`}>
-        Confirm
-      </Button>
-      <Button size="sm" variant="secondary" onClick={onCancel} data-testid={`cancel-${toolCallId}`}>
-        Cancel
-      </Button>
-    </div>
-  </div>
-);
+  );
+};
 
 const MessageBubble: React.FC<{
   role: string;
   children: React.ReactNode;
-}> = ({ role, children }) => (
-  <div
-    className={`max-w-3xl w-full p-3 rounded-lg ${
-      role === "user" ? "bg-blue-50 text-gray-900 ml-auto" : "bg-gray-50 text-gray-900"
-    } border border-gray-200 shadow-sm`}
-  >
-    <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">{role}</div>
-    <div className="space-y-1 text-sm leading-relaxed">{children}</div>
-  </div>
-);
+}> = ({ role, children }) => {
+  const { t } = useTranslation();
+  const roleLabel = role === "user" ? t("copilot.roles.user") : t("copilot.roles.assistant");
+
+  return (
+    <div
+      className={`max-w-3xl w-full p-3 rounded-lg ${
+        role === "user" ? "bg-blue-50 text-gray-900 ml-auto" : "bg-gray-50 text-gray-900"
+      } border border-gray-200 shadow-sm`}
+    >
+      <div className="text-[11px] uppercase tracking-wide text-gray-500 mb-1">{roleLabel}</div>
+      <div className="space-y-1 text-sm leading-relaxed">{children}</div>
+    </div>
+  );
+};
 
 export const CopilotPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const {
     options: chatOptions,
     runId,
@@ -65,7 +81,7 @@ export const CopilotPage: React.FC = () => {
     accessToken,
   } = useCopilotChatOptions({
     activeModule: "freelancer",
-    locale: "en",
+    locale: i18n.language,
   });
 
   const { messages, sendMessage, addToolResult, addToolApprovalResponse, setMessages } =
@@ -157,20 +173,26 @@ export const CopilotPage: React.FC = () => {
       if (part.state === "output-available") {
         return (
           <div className="text-xs text-green-700">
-            Tool result {toolName}: {JSON.stringify(part.output ?? part.result ?? part.input)}
+            {t("copilot.toolResult", {
+              toolName,
+              result: JSON.stringify(part.output ?? part.result ?? part.input),
+            })}
           </div>
         );
       }
       if (part.state === "output-error" || part.state === "output-denied") {
         return (
           <div className="text-xs text-destructive">
-            Tool {toolName} failed: {part.errorText ?? "Denied"}
+            {t("copilot.toolFailed", {
+              toolName,
+              reason: part.errorText ?? t("copilot.denied"),
+            })}
           </div>
         );
       }
       return (
         <div className="text-xs text-gray-600">
-          Tool call: {toolName} ({toolCallId})
+          {t("copilot.toolCall", { toolName, toolCallId })}
         </div>
       );
     }
@@ -196,7 +218,7 @@ export const CopilotPage: React.FC = () => {
 
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-semibold">Copilot</h1>
+      <h1 className="text-xl font-semibold">{t("copilot.title")}</h1>
 
       <div className="border rounded p-3 h-[60vh] overflow-y-auto bg-white shadow-sm">
         {messages.map((m) => (
@@ -219,9 +241,9 @@ export const CopilotPage: React.FC = () => {
           className="flex-1 border rounded px-3 py-2"
           value={input}
           onChange={handleInputChange}
-          placeholder="Ask Copilot..."
+          placeholder={t("copilot.placeholder")}
         />
-        <Button type="submit">Send</Button>
+        <Button type="submit">{t("common.send")}</Button>
       </form>
     </div>
   );

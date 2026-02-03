@@ -5,11 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { Button } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Checkbox } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { portfolioApi } from "@/lib/portfolio-api";
 import { portfolioKeys } from "../queries";
 import {
@@ -106,94 +107,161 @@ export default function ShowcaseEditorPage() {
       {isLoading && isEdit ? (
         <div className="text-sm text-muted-foreground">Loading showcase...</div>
       ) : (
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <Card>
-            <CardContent className="p-8 space-y-6">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={form.watch("name")}
-                  onChange={(event) => {
-                    const value = event.target.value;
-                    form.setValue("name", value, { shouldValidate: true });
-                    if (!slugTouched) {
-                      form.setValue("slug", slugify(value), { shouldValidate: true });
-                    }
-                  }}
-                  placeholder="Oneway8x Studio"
-                />
-                {form.formState.errors.name && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.name.message}
+        <div className="space-y-6">
+          {isEdit && showcase && (
+            <Card className="bg-muted/30 border-dashed">
+              <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-foreground flex items-center gap-2">
+                    Public Link
+                    <Badge variant={showcase.isPublished ? "default" : "secondary"}>
+                      {showcase.isPublished ? "Published" : "Unpublished"}
+                    </Badge>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Your portfolio is accessible via these links.
+                    {!showcase.isPublished && " (Only visible to you while unpublished)"}
                   </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="slug">Slug</Label>
-                <Input
-                  id="slug"
-                  value={form.watch("slug")}
-                  onChange={(event) => {
-                    setSlugTouched(true);
-                    form.setValue("slug", event.target.value, { shouldValidate: true });
-                  }}
-                  placeholder="oneway8x"
-                />
-                {form.formState.errors.slug && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.slug.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="type">Type</Label>
-                <select
-                  id="type"
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                  value={form.watch("type")}
-                  onChange={(event) =>
-                    form.setValue("type", event.target.value as ShowcaseFormData["type"], {
-                      shouldValidate: true,
-                    })
-                  }
-                >
-                  {typeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                {form.formState.errors.type && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.type.message}
-                  </p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="primaryDomain">Primary domain</Label>
-                <Input
-                  id="primaryDomain"
-                  {...form.register("primaryDomain")}
-                  placeholder="oneway8x.com"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <Controller
-                  control={form.control}
-                  name="isPublished"
-                  render={({ field }) => (
-                    <Checkbox
-                      checked={field.value ?? false}
-                      onCheckedChange={(checked) => field.onChange(Boolean(checked))}
-                    />
+                </div>
+                <div className="flex flex-col gap-2 w-full sm:w-auto">
+                  {showcase.primaryDomain && (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        readOnly
+                        value={`https://${showcase.primaryDomain}`}
+                        className="h-8 w-60 bg-background font-mono text-xs"
+                      />
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          void navigator.clipboard
+                            .writeText(`https://${showcase.primaryDomain}`)
+                            .then(() => toast.success("Copied custom domain link"));
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
                   )}
-                />
-                <Label htmlFor="isPublished">Published</Label>
-              </div>
-            </CardContent>
-          </Card>
-        </form>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      readOnly
+                      value={`${window.location.origin}/p/${showcase.slug}`}
+                      className="h-8 w-60 bg-background font-mono text-xs"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        void navigator.clipboard
+                          .writeText(`${window.location.origin}/p/${showcase.slug}`)
+                          .then(() => toast.success("Copied slug link"));
+                      }}
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                  {showcase.primaryDomain && (
+                    <p className="text-[10px] text-muted-foreground max-w-xs">
+                      * Ensure your DNS CNAME points <strong>{showcase.primaryDomain}</strong> to{" "}
+                      <strong>{window.location.host}</strong> to use the custom domain.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <Card>
+              <CardContent className="p-8 space-y-6">
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    value={form.watch("name")}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      form.setValue("name", value, { shouldValidate: true });
+                      if (!slugTouched) {
+                        form.setValue("slug", slugify(value), { shouldValidate: true });
+                      }
+                    }}
+                    placeholder="Oneway8x Studio"
+                  />
+                  {form.formState.errors.name && (
+                    <p className="text-sm text-destructive mt-1">
+                      {form.formState.errors.name.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="slug">Slug</Label>
+                  <Input
+                    id="slug"
+                    value={form.watch("slug")}
+                    onChange={(event) => {
+                      setSlugTouched(true);
+                      form.setValue("slug", event.target.value, { shouldValidate: true });
+                    }}
+                    placeholder="oneway8x"
+                  />
+                  {form.formState.errors.slug && (
+                    <p className="text-sm text-destructive mt-1">
+                      {form.formState.errors.slug.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="type">Type</Label>
+                  <select
+                    id="type"
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    value={form.watch("type")}
+                    onChange={(event) =>
+                      form.setValue("type", event.target.value as ShowcaseFormData["type"], {
+                        shouldValidate: true,
+                      })
+                    }
+                  >
+                    {typeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {form.formState.errors.type && (
+                    <p className="text-sm text-destructive mt-1">
+                      {form.formState.errors.type.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="primaryDomain">Primary domain</Label>
+                  <Input
+                    id="primaryDomain"
+                    {...form.register("primaryDomain")}
+                    placeholder="oneway8x.com"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <Controller
+                    control={form.control}
+                    name="isPublished"
+                    render={({ field }) => (
+                      <Checkbox
+                        checked={field.value ?? false}
+                        onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                      />
+                    )}
+                  />
+                  <Label htmlFor="isPublished">Published</Label>
+                </div>
+              </CardContent>
+            </Card>
+          </form>
+        </div>
       )}
     </div>
   );

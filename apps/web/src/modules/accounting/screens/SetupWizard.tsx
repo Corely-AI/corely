@@ -4,8 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 import { Calculator, CheckCircle2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { useTranslation } from "react-i18next";
+import { Button } from "@corely/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import {
   Form,
   FormControl,
@@ -14,10 +15,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/shared/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
-import { Label } from "@/shared/ui/label";
+} from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { RadioGroup, RadioGroupItem } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { useSetupAccounting } from "../queries";
 
 const setupFormSchema = z.object({
@@ -30,33 +31,11 @@ const setupFormSchema = z.object({
 
 type SetupFormData = z.infer<typeof setupFormSchema>;
 
-const templates = [
-  {
-    value: "minimal" as const,
-    label: "Minimal (5 accounts)",
-    description: "Basic setup for very simple accounting needs",
-  },
-  {
-    value: "freelancer" as const,
-    label: "Freelancer (16 accounts)",
-    description: "Ideal for independent contractors and consultants",
-  },
-  {
-    value: "smallBusiness" as const,
-    label: "Small Business (35 accounts)",
-    description: "Comprehensive setup for small businesses",
-  },
-  {
-    value: "standard" as const,
-    label: "Standard (79 accounts) (Recommended)",
-    description: "Full-featured chart of accounts for most businesses",
-  },
-];
-
 /**
  * Setup wizard for initializing accounting module
  */
 export const SetupWizard: FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const setupMutation = useSetupAccounting();
 
@@ -82,6 +61,29 @@ export const SetupWizard: FC = () => {
     navigate("/accounting");
   };
 
+  const templates = [
+    {
+      value: "minimal" as const,
+      label: t("accounting.setup.templates.minimal.label"),
+      description: t("accounting.setup.templates.minimal.description"),
+    },
+    {
+      value: "freelancer" as const,
+      label: t("accounting.setup.templates.freelancer.label"),
+      description: t("accounting.setup.templates.freelancer.description"),
+    },
+    {
+      value: "smallBusiness" as const,
+      label: t("accounting.setup.templates.smallBusiness.label"),
+      description: t("accounting.setup.templates.smallBusiness.description"),
+    },
+    {
+      value: "standard" as const,
+      label: t("accounting.setup.templates.standard.label"),
+      description: t("accounting.setup.templates.standard.description"),
+    },
+  ];
+
   return (
     <div className="container max-w-3xl py-8">
       <div className="mb-8 text-center">
@@ -90,10 +92,8 @@ export const SetupWizard: FC = () => {
             <Calculator className="h-8 w-8 text-primary" />
           </div>
         </div>
-        <h1 className="text-3xl font-bold mb-2">Set Up Accounting</h1>
-        <p className="text-muted-foreground">
-          Configure your accounting settings and chart of accounts to get started
-        </p>
+        <h1 className="text-3xl font-bold mb-2">{t("accounting.setup.title")}</h1>
+        <p className="text-muted-foreground">{t("accounting.setup.subtitle")}</p>
       </div>
 
       <Form {...form}>
@@ -101,8 +101,8 @@ export const SetupWizard: FC = () => {
           {/* Basic Settings */}
           <Card>
             <CardHeader>
-              <CardTitle>Basic Settings</CardTitle>
-              <CardDescription>Configure your fundamental accounting preferences</CardDescription>
+              <CardTitle>{t("accounting.setup.basic.title")}</CardTitle>
+              <CardDescription>{t("accounting.setup.basic.description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -110,23 +110,21 @@ export const SetupWizard: FC = () => {
                 name="baseCurrency"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Base Currency</FormLabel>
+                    <FormLabel>{t("accounting.setup.baseCurrency")}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select currency" />
+                          <SelectValue placeholder={t("accounting.setup.selectCurrency")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="EUR">EUR - Euro</SelectItem>
-                        <SelectItem value="USD">USD - US Dollar</SelectItem>
-                        <SelectItem value="GBP">GBP - British Pound</SelectItem>
-                        <SelectItem value="CHF">CHF - Swiss Franc</SelectItem>
+                        <SelectItem value="EUR">EUR - {t("common.currencies.eur")}</SelectItem>
+                        <SelectItem value="USD">USD - {t("common.currencies.usd")}</SelectItem>
+                        <SelectItem value="GBP">GBP - {t("common.currencies.gbp")}</SelectItem>
+                        <SelectItem value="CHF">CHF - {t("common.currencies.chf")}</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormDescription>
-                      The primary currency for your accounting records
-                    </FormDescription>
+                    <FormDescription>{t("accounting.setup.baseCurrencyHelp")}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -137,23 +135,29 @@ export const SetupWizard: FC = () => {
                 name="fiscalYearStartMonthDay"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fiscal Year Start</FormLabel>
+                    <FormLabel>{t("accounting.setup.fiscalYearStart")}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select fiscal year start" />
+                          <SelectValue placeholder={t("accounting.setup.selectFiscalStart")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="01-01">January 1st (Calendar Year)</SelectItem>
-                        <SelectItem value="04-01">April 1st</SelectItem>
-                        <SelectItem value="07-01">July 1st</SelectItem>
-                        <SelectItem value="10-01">October 1st</SelectItem>
+                        <SelectItem value="01-01">
+                          {t("accounting.setup.fiscalStart.jan1")}
+                        </SelectItem>
+                        <SelectItem value="04-01">
+                          {t("accounting.setup.fiscalStart.apr1")}
+                        </SelectItem>
+                        <SelectItem value="07-01">
+                          {t("accounting.setup.fiscalStart.jul1")}
+                        </SelectItem>
+                        <SelectItem value="10-01">
+                          {t("accounting.setup.fiscalStart.oct1")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormDescription>
-                      When your fiscal year begins (affects period generation)
-                    </FormDescription>
+                    <FormDescription>{t("accounting.setup.fiscalYearHelp")}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -173,10 +177,8 @@ export const SetupWizard: FC = () => {
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>Enable Period Locking</FormLabel>
-                      <FormDescription>
-                        Prevent posting entries to closed periods (recommended for production use)
-                      </FormDescription>
+                      <FormLabel>{t("accounting.setup.periodLocking")}</FormLabel>
+                      <FormDescription>{t("accounting.setup.periodLockingHelp")}</FormDescription>
                     </div>
                   </FormItem>
                 )}
@@ -187,10 +189,8 @@ export const SetupWizard: FC = () => {
           {/* Chart of Accounts Template */}
           <Card>
             <CardHeader>
-              <CardTitle>Chart of Accounts</CardTitle>
-              <CardDescription>
-                Choose a pre-built template to start with (you can add more accounts later)
-              </CardDescription>
+              <CardTitle>{t("accounting.setup.chartOfAccountsTitle")}</CardTitle>
+              <CardDescription>{t("accounting.setup.chartOfAccountsDescription")}</CardDescription>
             </CardHeader>
             <CardContent>
               <FormField
@@ -238,33 +238,26 @@ export const SetupWizard: FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
-                What Happens Next
+                {t("accounting.setup.next.title")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">•</span>
-                  <span>
-                    Your selected chart of accounts template will be created with all predefined
-                    accounts
-                  </span>
+                  <span>{t("accounting.setup.next.line1")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">•</span>
-                  <span>
-                    12 monthly accounting periods will be generated for the current fiscal year
-                  </span>
+                  <span>{t("accounting.setup.next.line2")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">•</span>
-                  <span>
-                    You can customize accounts, add new ones, and start creating journal entries
-                  </span>
+                  <span>{t("accounting.setup.next.line3")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-0.5">•</span>
-                  <span>All financial reports will be available immediately</span>
+                  <span>{t("accounting.setup.next.line4")}</span>
                 </li>
               </ul>
             </CardContent>
@@ -273,10 +266,12 @@ export const SetupWizard: FC = () => {
           {/* Actions */}
           <div className="flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => navigate("/")}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={setupMutation.isPending}>
-              {setupMutation.isPending ? "Setting up..." : "Complete Setup"}
+              {setupMutation.isPending
+                ? t("accounting.setup.settingUp")
+                : t("accounting.setup.complete")}
             </Button>
           </div>
         </form>

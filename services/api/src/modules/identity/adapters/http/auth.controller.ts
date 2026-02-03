@@ -201,10 +201,18 @@ export class AuthController {
     const memberships = await this.membershipRepo.findByUserId(userId);
     const membershipDtos = await Promise.all(
       memberships.map(async (membership) => {
-        const tenant = await this.tenantRepo.findById(membership.getTenantId());
+        const tId = membership.getTenantId();
+        if (!tId) {
+          return {
+            tenantId: "host",
+            tenantName: "Platform Admin",
+            roleId: membership.getRoleId(),
+          };
+        }
+        const tenant = await this.tenantRepo.findById(tId);
         return {
-          tenantId: membership.getTenantId(),
-          tenantName: tenant?.getName() ?? membership.getTenantId(),
+          tenantId: tId,
+          tenantName: tenant?.getName() ?? tId,
           roleId: membership.getRoleId(),
         };
       })

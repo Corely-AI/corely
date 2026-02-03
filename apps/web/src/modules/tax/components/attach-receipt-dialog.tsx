@@ -7,8 +7,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
+} from "@corely/ui";
+import { Button } from "@corely/ui";
 import { uploadTaxDocument } from "../utils/upload-document";
 
 type AttachReceiptDialogProps = {

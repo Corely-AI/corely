@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
 import { BankAccountsList } from "./BankAccountsList";
 import { PaymentMethodsList } from "./PaymentMethodsList";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";

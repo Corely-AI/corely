@@ -76,12 +76,28 @@ export class PrismaShowcaseRepository implements ShowcaseRepositoryPort {
   }
 
   async findBySlug(
-    tenantId: string,
-    workspaceId: string,
     slug: string,
+    opts?: { publishedOnly?: boolean; tenantId?: string; workspaceId?: string }
+  ): Promise<PortfolioShowcase | null> {
+    const where: Prisma.PortfolioShowcaseWhereInput = { slug };
+    if (opts?.tenantId) {
+      where.tenantId = opts.tenantId;
+    }
+    if (opts?.workspaceId) {
+      where.workspaceId = opts.workspaceId;
+    }
+    if (opts?.publishedOnly) {
+      where.isPublished = true;
+    }
+    const row = await this.prisma.portfolioShowcase.findFirst({ where });
+    return row ? mapShowcase(row) : null;
+  }
+
+  async findByDomain(
+    domain: string,
     opts?: { publishedOnly?: boolean }
   ): Promise<PortfolioShowcase | null> {
-    const where: Prisma.PortfolioShowcaseWhereInput = { tenantId, workspaceId, slug };
+    const where: Prisma.PortfolioShowcaseWhereInput = { primaryDomain: domain };
     if (opts?.publishedOnly) {
       where.isPublished = true;
     }

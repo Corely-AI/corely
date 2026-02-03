@@ -38,6 +38,35 @@ export const AppManifestSchema = z.object({
   permissions: z.array(z.string()).describe("RBAC permission keys used by this app"),
   menu: z.array(MenuContributionSchema).describe("Menu contributions from this app"),
   settingsSchema: z.any().optional().describe("JSON Schema for tenant-specific app settings"),
+
+  // Entitlement & Features
+  entitlement: z
+    .object({
+      enabledFeatureKey: z.string().optional().describe("Feature key that controls app enablement"),
+      defaultEnabled: z.boolean().optional().describe("Whether enabled by default"),
+    })
+    .optional(),
+
+  features: z
+    .array(
+      z.object({
+        key: z.string(),
+        type: z.enum(["boolean", "number", "string", "json"]),
+        defaultValue: z.unknown(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        category: z.string().optional(),
+        constraints: z
+          .object({
+            min: z.number().optional(),
+            max: z.number().optional(),
+            enum: z.array(z.string()).optional(),
+          })
+          .optional(),
+        tenantOverridable: z.boolean().optional().default(true),
+      })
+    )
+    .optional(),
 });
 
 export type AppManifest = z.infer<typeof AppManifestSchema>;

@@ -20,6 +20,10 @@ export class UpdateCategoryUseCase extends BaseUseCase<UpdateRentalCategoryInput
     input: UpdateRentalCategoryInput,
     ctx: UseCaseContext
   ): Promise<Result<RentalCategory, UseCaseError>> {
+    if (!input.name || !input.slug) {
+      return err(new ValidationError("name and slug are required"));
+    }
+
     const category = await this.useCaseDeps.categoryRepo.findById(ctx.tenantId!, input.id);
     if (!category) {
       return err(new NotFoundError("Category not found"));
@@ -32,11 +36,11 @@ export class UpdateCategoryUseCase extends BaseUseCase<UpdateRentalCategoryInput
       }
     }
 
-    const updated = await this.useCaseDeps.categoryRepo.save(
-      ctx.tenantId!,
-      ctx.workspaceId!,
-      input
-    );
+    const updated = await this.useCaseDeps.categoryRepo.save(ctx.tenantId!, ctx.workspaceId!, {
+      ...input,
+      name: input.name,
+      slug: input.slug,
+    });
     return ok(updated);
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req } from "@nestjs/common";
+import { Controller, Get, Header, Param, Req } from "@nestjs/common";
 import type { Request } from "express";
 import {
   PublicPortfolioShowcaseOutputSchema,
@@ -9,6 +9,7 @@ import {
   PublicPortfolioTeamMembersOutputSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../shared/http/usecase-mappers";
+import { PublicWorkspaceRoute } from "../../../shared/public";
 import { PortfolioApplication } from "../application/portfolio.application";
 
 @Controller("public/portfolio")
@@ -16,13 +17,29 @@ export class PortfolioPublicController {
   constructor(private readonly app: PortfolioApplication) {}
 
   @Get("showcases/:slug")
+  @PublicWorkspaceRoute()
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async getShowcase(@Param("slug") slug: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.getPublicShowcase.execute({ slug }, ctx);
     return PublicPortfolioShowcaseOutputSchema.parse(mapResultToHttp(result));
   }
 
+  @Get("resolve")
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
+  async resolveShowcase(@Req() req: Request) {
+    const host = req.query.host as string;
+    if (!host) {
+      throw new Error("Host query parameter is required");
+    }
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.getPublicShowcase.execute({ domain: host }, ctx);
+    return PublicPortfolioShowcaseOutputSchema.parse(mapResultToHttp(result));
+  }
+
   @Get("showcases/:slug/projects")
+  @PublicWorkspaceRoute()
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async listProjects(@Param("slug") slug: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicProjects.execute({ slug }, ctx);
@@ -30,6 +47,8 @@ export class PortfolioPublicController {
   }
 
   @Get("showcases/:slug/projects/:projectSlug")
+  @PublicWorkspaceRoute()
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async getProject(
     @Param("slug") slug: string,
     @Param("projectSlug") projectSlug: string,
@@ -41,6 +60,8 @@ export class PortfolioPublicController {
   }
 
   @Get("showcases/:slug/clients")
+  @PublicWorkspaceRoute()
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async listClients(@Param("slug") slug: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicClients.execute({ slug }, ctx);
@@ -48,6 +69,8 @@ export class PortfolioPublicController {
   }
 
   @Get("showcases/:slug/services")
+  @PublicWorkspaceRoute()
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async listServices(@Param("slug") slug: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicServices.execute({ slug }, ctx);
@@ -55,6 +78,8 @@ export class PortfolioPublicController {
   }
 
   @Get("showcases/:slug/team")
+  @PublicWorkspaceRoute()
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
   async listTeam(@Param("slug") slug: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicTeam.execute({ slug }, ctx);

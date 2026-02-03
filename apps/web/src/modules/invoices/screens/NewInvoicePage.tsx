@@ -7,8 +7,8 @@ import { ArrowLeft } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { invoicesApi } from "@/lib/invoices-api";
 import { InvoiceFooter } from "../components/InvoiceFooter";
 import {
@@ -39,7 +39,7 @@ import { generateInvoiceNumber } from "../utils/invoice-generators";
 
 export default function NewInvoicePage() {
   const { t, i18n } = useTranslation();
-  const locale = i18n.language === "de" ? "de-DE" : "en-DE";
+  const locale = i18n.t("common.locale");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -96,17 +96,17 @@ export default function NewInvoicePage() {
           return "SENT";
         }
         if (desiredStatus === "CANCELED") {
-          await invoicesApi.cancelInvoice(invoiceId, "Canceled from form");
+          await invoicesApi.cancelInvoice(invoiceId, t("invoices.status.cancelReason"));
           return "CANCELED";
         }
         return currentStatus;
       } catch (err) {
         console.error("Status change failed", err);
-        toast.error("Could not update invoice status");
+        toast.error(t("invoices.status.updateFailed"));
         return currentStatus;
       }
     },
-    []
+    [t]
   );
 
   const onSubmit = async (data: InvoiceFormData) => {
@@ -120,7 +120,7 @@ export default function NewInvoicePage() {
       );
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       toast.success(
-        finalStatus === targetStatus ? t("invoices.created") : "Invoice saved (status unchanged)"
+        finalStatus === targetStatus ? t("invoices.created") : t("invoices.savedUnchanged")
       );
       navigate("/invoices");
     } catch {

@@ -25,6 +25,23 @@ export class PrismaRolePermissionGrantRepository implements RolePermissionGrantR
     return grants.map((grant) => ({ key: grant.permissionKey, effect: grant.effect }));
   }
 
+  async listByRoleIds(
+    roleIds: string[]
+  ): Promise<Array<{ key: string; effect: RolePermissionEffect }>> {
+    const uniqueRoles = Array.from(new Set(roleIds));
+
+    if (uniqueRoles.length === 0) {
+      return [];
+    }
+
+    const grants = await this.prisma.rolePermissionGrant.findMany({
+      where: { roleId: { in: uniqueRoles } },
+      select: { permissionKey: true, effect: true },
+    });
+
+    return grants.map((grant) => ({ key: grant.permissionKey, effect: grant.effect }));
+  }
+
   async replaceAll(
     tenantId: string,
     roleId: string,

@@ -1,5 +1,6 @@
 import type { FC } from "react";
-import { Badge } from "@/shared/ui/badge";
+import { useTranslation } from "react-i18next";
+import { Badge } from "@corely/ui";
 import type { AccountType } from "@corely/contracts";
 
 interface AccountTypeBadgeProps {
@@ -18,9 +19,10 @@ const typeColors: Record<AccountType, string> = {
  * Badge showing account type with appropriate color coding
  */
 export const AccountTypeBadge: FC<AccountTypeBadgeProps> = ({ type }) => {
+  const { t } = useTranslation();
   return (
     <Badge variant="secondary" className={typeColors[type]}>
-      {type}
+      {t(`accounting.accountTypes.${type.toLowerCase()}`)}
     </Badge>
   );
 };

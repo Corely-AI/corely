@@ -4,10 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
 import { invoicesApi } from "@/lib/invoices-api";
 import { toast } from "sonner";
@@ -18,7 +19,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/shared/ui/dialog";
+} from "@corely/ui";
 import {
   invoiceFormSchema,
   toCreateInvoiceInput,
@@ -46,8 +47,8 @@ export default function InvoiceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { i18n } = useTranslation(); // Helper to access i18n if needed
-  const locale = "en-DE"; // Hardcoded for now in this file's context, or use i18n logic
+  const { t, i18n } = useTranslation();
+  const locale = i18n.t("common.locale");
 
   const {
     data: invoiceData,
@@ -107,7 +108,7 @@ export default function InvoiceDetailPage() {
 
       list.push({
         id: invoice.customerPartyId,
-        displayName: invoice.billToName ?? "Unknown Customer",
+        displayName: invoice.billToName ?? t("customers.unknown"),
         billingAddress:
           addressLine1 || city || country ? { line1: addressLine1, city, country } : undefined,
       });
@@ -155,7 +156,7 @@ export default function InvoiceDetailPage() {
     },
     onError: (error) => {
       console.error("Download PDF failed", error);
-      toast.error("Failed to download invoice PDF");
+      toast.error(t("invoices.errors.downloadFailed"));
     },
   });
 
@@ -168,7 +169,7 @@ export default function InvoiceDetailPage() {
     },
     onError: (err) => {
       console.error("Update invoice failed", err);
-      toast.error("Failed to update invoice");
+      toast.error(t("invoices.errors.updateFailed"));
     },
   });
 
@@ -191,13 +192,13 @@ export default function InvoiceDetailPage() {
         subject: data.subject,
         message: data.message,
       });
-      toast.success("Invoice sent successfully");
+      toast.success(t("invoices.email.sent"));
       setSendDialogOpen(false);
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
     } catch (err) {
       console.error("Failed to send invoice", err);
-      toast.error("Failed to send invoice");
+      toast.error(t("invoices.email.sendFailed"));
     } finally {
       setIsProcessing(false);
     }
@@ -227,7 +228,7 @@ export default function InvoiceDetailPage() {
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       } catch (err) {
         console.error("Transition failed", err);
-        toast.error("Could not update invoice status");
+        toast.error(t("invoices.status.updateFailed"));
       } finally {
         setIsProcessing(false);
       }
@@ -349,7 +350,7 @@ export default function InvoiceDetailPage() {
       })
       .catch((err) => {
         console.error("Record payment failed", err);
-        toast.error("Failed to record payment");
+        toast.error(t("invoices.payments.recordFailed"));
       })
       .finally(() => {
         setIsProcessing(false);
@@ -361,7 +362,7 @@ export default function InvoiceDetailPage() {
       <div className="p-6 lg:p-8">
         <div className="flex items-center gap-3 text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Loading invoice...
+          {t("invoices.loading")}
         </div>
       </div>
     );
@@ -375,13 +376,13 @@ export default function InvoiceDetailPage() {
             <Button variant="ghost" size="icon" onClick={() => navigate("/invoices")}>
               <span className="text-lg">←</span>
             </Button>
-            <h1 className="text-h2 text-foreground">Invoice not found</h1>
+            <h1 className="text-h2 text-foreground">{t("invoices.notFound")}</h1>
           </div>
           <Button variant="accent" onClick={() => navigate("/invoices")}>
-            Back to invoices
+            {t("invoices.backToList")}
           </Button>
         </div>
-        <p className="text-muted-foreground">We couldn&apos;t load this invoice.</p>
+        <p className="text-muted-foreground">{t("invoices.notFoundDescription")}</p>
       </div>
     );
   }
@@ -391,8 +392,14 @@ export default function InvoiceDetailPage() {
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
         {capabilities && (
           <RecordCommandBar
-            title={`Invoice ${invoice.number ?? "Draft"}`}
-            subtitle={`Created ${invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : "-"}`}
+            title={t("invoices.titleWithNumber", {
+              number: invoice.number ?? t("common.draft"),
+            })}
+            subtitle={t("common.createdAt", {
+              date: invoice.createdAt
+                ? new Date(invoice.createdAt).toLocaleDateString(i18n.language)
+                : t("common.empty"),
+            })}
             capabilities={capabilities}
             onBack={() => navigate("/invoices")}
             onTransition={handleTransition}
@@ -407,9 +414,15 @@ export default function InvoiceDetailPage() {
               <span className="text-lg">←</span>
             </Button>
             <div>
-              <h1 className="text-h1 text-foreground">Invoice {invoice.number ?? "Draft"}</h1>
+              <h1 className="text-h1 text-foreground">
+                {t("invoices.titleWithNumber", { number: invoice.number ?? t("common.draft") })}
+              </h1>
               <p className="text-sm text-muted-foreground">
-                Created {invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : "-"}
+                {t("common.createdAt", {
+                  date: invoice.createdAt
+                    ? new Date(invoice.createdAt).toLocaleDateString(i18n.language)
+                    : t("common.empty"),
+                })}
               </p>
             </div>
           </div>
@@ -426,14 +439,12 @@ export default function InvoiceDetailPage() {
         <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Record payment</DialogTitle>
-              <DialogDescription>
-                Log a payment to update the outstanding balance.
-              </DialogDescription>
+              <DialogTitle>{t("invoices.payments.recordTitle")}</DialogTitle>
+              <DialogDescription>{t("invoices.payments.recordDescription")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="payment-amount">Amount</Label>
+                <Label htmlFor="payment-amount">{t("common.amount")}</Label>
                 <Input
                   id="payment-amount"
                   type="number"
@@ -443,11 +454,17 @@ export default function InvoiceDetailPage() {
                   onChange={(e) => setPaymentAmount(e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Due: {formatMoney(invoice.totals?.dueCents ?? 0, "en-DE", invoice.currency)}
+                  {t("invoices.payments.dueAmount", {
+                    amount: formatMoney(
+                      invoice.totals?.dueCents ?? 0,
+                      i18n.t("common.locale"),
+                      invoice.currency
+                    ),
+                  })}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment-date">Date</Label>
+                <Label htmlFor="payment-date">{t("common.date")}</Label>
                 <Input
                   id="payment-date"
                   type="date"
@@ -456,21 +473,21 @@ export default function InvoiceDetailPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="payment-note">Note (optional)</Label>
+                <Label htmlFor="payment-note">{t("common.noteOptional")}</Label>
                 <Input
                   id="payment-note"
                   value={paymentNote}
                   onChange={(e) => setPaymentNote(e.target.value)}
-                  placeholder="e.g. Bank transfer"
+                  placeholder={t("invoices.payments.notePlaceholder")}
                 />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button onClick={recordPayment} disabled={isProcessing}>
-                {isProcessing ? "Saving..." : "Save payment"}
+                {isProcessing ? t("common.saving") : t("invoices.payments.save")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -509,7 +526,7 @@ export default function InvoiceDetailPage() {
                   variant="accent"
                   disabled={updateInvoice.isPending || isProcessing}
                 >
-                  {updateInvoice.isPending ? "Saving..." : "Save Changes"}
+                  {updateInvoice.isPending ? t("common.saving") : t("common.saveChanges")}
                 </Button>
               </div>
             </CardContent>
@@ -518,12 +535,4 @@ export default function InvoiceDetailPage() {
       </div>
     </FormProvider>
   );
-}
-
-// Dummy helper for hook
-function useTranslation() {
-  return {
-    t: (key: string) => key,
-    i18n: { language: "en" },
-  };
 }

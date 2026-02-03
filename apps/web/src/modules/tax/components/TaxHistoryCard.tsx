@@ -1,18 +1,18 @@
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taxApi } from "@/lib/tax-api";
-import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
 import { Loader2, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Textarea } from "@/shared/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
+import { Alert, AlertDescription, AlertTitle } from "@corely/ui";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Textarea } from "@corely/ui";
 import { toast } from "sonner";
 
 const FINAL_STATUSES = ["SUBMITTED", "PAID", "NIL", "ARCHIVED"] as const;

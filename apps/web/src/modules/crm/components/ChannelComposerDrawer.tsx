@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/shared/ui/drawer";
-import { Button } from "@/shared/ui/button";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
-import { Input } from "@/shared/ui/input";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { Input } from "@corely/ui";
 import { Copy, ExternalLink, Send } from "lucide-react";
 import type { ChannelDefinition } from "@corely/contracts";
 import { interpolateTemplate, buildChannelUrl } from "../lib/channel-templating";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 type ChannelComposerDrawerProps = {
   open: boolean;
@@ -25,6 +26,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
   context,
   onLog,
 }) => {
+  const { t } = useTranslation();
   const [templateId, setTemplateId] = useState<string | undefined>();
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -79,9 +81,9 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(body);
-      toast.success("Copied to clipboard");
+      toast.success(t("crm.channel.copySuccess"));
     } catch {
-      toast.error("Failed to copy");
+      toast.error(t("crm.channel.copyFailed"));
     }
   };
 
@@ -99,15 +101,15 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="p-6 space-y-4">
         <DrawerHeader>
-          <DrawerTitle>Message via {channel.label}</DrawerTitle>
+          <DrawerTitle>{t("crm.channel.messageVia", { channel: channel.label })}</DrawerTitle>
         </DrawerHeader>
 
         {channel.templates.length > 0 && (
           <div className="space-y-2">
-            <Label>Template</Label>
+            <Label>{t("crm.channel.template")}</Label>
             <Select value={templateId} onValueChange={applyTemplate}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose template" />
+                <SelectValue placeholder={t("crm.channel.chooseTemplate")} />
               </SelectTrigger>
               <SelectContent>
                 {channel.templates.map((tpl) => (
@@ -122,13 +124,13 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
 
         {channel.capabilities.subject && (
           <div className="space-y-2">
-            <Label>Subject</Label>
+            <Label>{t("crm.channel.subject")}</Label>
             <Input value={subject} onChange={(e) => setSubject(e.target.value)} />
           </div>
         )}
 
         <div className="space-y-2">
-          <Label>Message</Label>
+          <Label>{t("crm.channel.message")}</Label>
           <Textarea rows={5} value={body} onChange={(e) => setBody(e.target.value)} />
         </div>
 
@@ -136,18 +138,18 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
           {canCopy && (
             <Button variant="secondary" onClick={handleCopy}>
               <Copy className="h-4 w-4 mr-1" />
-              Copy
+              {t("common.copy")}
             </Button>
           )}
           {canOpen && (
             <Button variant="outline" onClick={handleOpen} disabled={!openUrl}>
               <ExternalLink className="h-4 w-4 mr-1" />
-              Open
+              {t("common.open")}
             </Button>
           )}
           <Button variant="accent" onClick={handleLog}>
             <Send className="h-4 w-4 mr-1" />
-            Log
+            {t("crm.channel.log")}
           </Button>
         </DrawerFooter>
       </DrawerContent>

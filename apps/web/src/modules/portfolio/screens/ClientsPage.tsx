@@ -2,10 +2,10 @@ import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, Plus, Search, Star, Trash2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
-import { Card, CardContent } from "@/shared/ui/card";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import {
   CrudListPageLayout,

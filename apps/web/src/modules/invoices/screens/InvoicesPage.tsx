@@ -9,9 +9,9 @@ import { invoicesApi } from "@/lib/invoices-api";
 import { customersApi } from "@/lib/customers-api";
 import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { Badge } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Checkbox } from "@corely/ui";
 
 import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
 import {
@@ -31,7 +31,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/shared/ui/pagination";
+} from "@corely/ui";
 
 export default function InvoicesPage() {
   const { t, i18n } = useTranslation();

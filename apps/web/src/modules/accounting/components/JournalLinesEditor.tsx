@@ -1,10 +1,11 @@
 import React, { type FC } from "react";
+import { useTranslation } from "react-i18next";
 import { useFieldArray, type Control } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { AccountSelect } from "./AccountSelect";
 import { Money } from "./Money";
 import type { LineDirection } from "@corely/contracts";
@@ -33,6 +34,7 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
   currency,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const { fields, append, remove } = useFieldArray<Record<string, JournalLine[]>, string>({
     control: control as unknown as Control<Record<string, JournalLine[]>>,
     name: fieldName,
@@ -65,27 +67,41 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label>Journal Lines</Label>
+        <Label>{t("accounting.journalLines.title")}</Label>
         <Button type="button" variant="outline" size="sm" onClick={addLine} disabled={disabled}>
           <Plus className="h-4 w-4 mr-1" />
-          Add Line
+          {t("accounting.journalLines.addLine")}
         </Button>
       </div>
 
       {lines.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-md">
-          <p>No lines yet. Click "Add Line" to start.</p>
+          <p>
+            {t("accounting.journalLines.emptyMessage", {
+              action: t("accounting.journalLines.addLine"),
+            })}
+          </p>
         </div>
       ) : (
         <div className="border rounded-md overflow-hidden">
           <table className="w-full">
             <thead className="bg-muted">
               <tr>
-                <th className="text-left p-2 text-sm font-medium">Account</th>
-                <th className="text-left p-2 text-sm font-medium w-32">Type</th>
-                <th className="text-right p-2 text-sm font-medium w-40">Debit</th>
-                <th className="text-right p-2 text-sm font-medium w-40">Credit</th>
-                <th className="text-left p-2 text-sm font-medium">Memo</th>
+                <th className="text-left p-2 text-sm font-medium">
+                  {t("accounting.journalLines.account")}
+                </th>
+                <th className="text-left p-2 text-sm font-medium w-32">
+                  {t("accounting.journalLines.type")}
+                </th>
+                <th className="text-right p-2 text-sm font-medium w-40">
+                  {t("accounting.journalLines.debit")}
+                </th>
+                <th className="text-right p-2 text-sm font-medium w-40">
+                  {t("accounting.journalLines.credit")}
+                </th>
+                <th className="text-left p-2 text-sm font-medium">
+                  {t("accounting.journalLines.memo")}
+                </th>
                 <th className="w-12"></th>
               </tr>
             </thead>
@@ -99,7 +115,7 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
                         control._formValues[fieldName][index].ledgerAccountId = value;
                       }}
                       disabled={disabled}
-                      placeholder="Select account..."
+                      placeholder={t("accounting.accountSelect.placeholder")}
                     />
                   </td>
                   <td className="p-2">
@@ -114,8 +130,10 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Debit">Debit</SelectItem>
-                        <SelectItem value="Credit">Credit</SelectItem>
+                        <SelectItem value="Debit">{t("accounting.journalLines.debit")}</SelectItem>
+                        <SelectItem value="Credit">
+                          {t("accounting.journalLines.credit")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </td>
@@ -162,7 +180,7 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
                         control._formValues[fieldName][index].lineMemo = e.target.value;
                       }}
                       disabled={disabled}
-                      placeholder="Optional memo"
+                      placeholder={t("accounting.journalLines.memoOptional")}
                     />
                   </td>
                   <td className="p-2">
@@ -172,7 +190,11 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
                       size="icon"
                       onClick={() => remove(index)}
                       disabled={disabled || lines.length <= 2}
-                      title={lines.length <= 2 ? "Minimum 2 lines required" : "Remove line"}
+                      title={
+                        lines.length <= 2
+                          ? t("accounting.journalLines.minimumLines")
+                          : t("accounting.journalLines.removeLine")
+                      }
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -183,7 +205,7 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
             <tfoot className="bg-muted border-t-2">
               <tr>
                 <td colSpan={2} className="p-2 font-semibold">
-                  Totals
+                  {t("accounting.journalLines.totals")}
                 </td>
                 <td className="p-2 text-right">
                   <Money amountCents={totalDebits} currency={currency} />
@@ -194,12 +216,14 @@ export const JournalLinesEditor: FC<JournalLinesEditorProps> = ({
                 <td colSpan={2} className="p-2">
                   {!isBalanced && lines.length > 0 && (
                     <span className="text-sm text-destructive">
-                      Imbalance:{" "}
+                      {t("accounting.journalLines.imbalance")}:{" "}
                       <Money amountCents={Math.abs(imbalance)} currency={currency} showSign />
                     </span>
                   )}
                   {isBalanced && (
-                    <span className="text-sm text-green-600 font-medium">✓ Balanced</span>
+                    <span className="text-sm text-green-600 font-medium">
+                      {t("accounting.journalLines.balanced")}
+                    </span>
                   )}
                 </td>
               </tr>

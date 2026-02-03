@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { accountingApi } from "@/lib/accounting-api";
 import { accountingQueryKeys } from "./accounting.queryKeys";
 
@@ -15,17 +16,18 @@ export function useAccountingPeriods() {
 // Mutation: Close period
 export function useClosePeriod() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: ({ periodId, confirmation }: { periodId: string; confirmation: boolean }) =>
       accountingApi.closePeriod(periodId, confirmation),
     onSuccess: (period) => {
-      toast.success(`Period ${period.name} closed successfully`);
+      toast.success(t("accounting.toasts.periodClosed", { name: period.name }));
       // Invalidate periods list
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.periods.list() });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to close period: ${error.message}`);
+      toast.error(t("accounting.toasts.periodCloseFailed", { message: error.message }));
     },
   });
 }
@@ -33,17 +35,18 @@ export function useClosePeriod() {
 // Mutation: Reopen period
 export function useReopenPeriod() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   return useMutation({
     mutationFn: ({ periodId, reason }: { periodId: string; reason: string }) =>
       accountingApi.reopenPeriod(periodId, reason),
     onSuccess: (period) => {
-      toast.success(`Period ${period.name} reopened successfully`);
+      toast.success(t("accounting.toasts.periodReopened", { name: period.name }));
       // Invalidate periods list
       void queryClient.invalidateQueries({ queryKey: accountingQueryKeys.periods.list() });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to reopen period: ${error.message}`);
+      toast.error(t("accounting.toasts.periodReopenFailed", { message: error.message }));
     },
   });
 }

@@ -1,6 +1,6 @@
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { Link } from "react-router-dom";
 import { Package, FileText, Boxes, Menu } from "lucide-react";
 

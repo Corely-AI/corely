@@ -1,8 +1,9 @@
 import type { FC } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/shared/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@corely/ui";
 import type { ActivityDto } from "@corely/contracts";
 import { ActivityTypeIcon } from "./ActivityTypeIcon";
-import { Badge } from "@/shared/ui/badge";
+import { Badge } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 
 interface ActivityCardProps {
   activity: ActivityDto;
@@ -10,6 +11,7 @@ interface ActivityCardProps {
 }
 
 export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
+  const { t, i18n } = useTranslation();
   const statusColor =
     activity.status === "COMPLETED"
       ? "bg-green-100 text-green-800"
@@ -26,9 +28,15 @@ export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
             <CardTitle className="text-base">{activity.subject}</CardTitle>
             <CardDescription className="flex items-center gap-2 mt-1">
               <Badge variant="secondary" className={statusColor}>
-                {activity.status}
+                {t(`crm.activity.statuses.${activity.status.toLowerCase()}`)}
               </Badge>
-              {activity.dueAt && <span>Due: {new Date(activity.dueAt).toLocaleDateString()}</span>}
+              {activity.dueAt && (
+                <span>
+                  {t("crm.activity.due", {
+                    date: new Date(activity.dueAt).toLocaleDateString(i18n.language),
+                  })}
+                </span>
+              )}
             </CardDescription>
           </div>
         </div>

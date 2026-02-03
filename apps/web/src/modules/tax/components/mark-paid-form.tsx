@@ -1,8 +1,8 @@
 import React from "react";
 import { toast } from "sonner";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
 import { uploadTaxDocument } from "../utils/upload-document";
 import type { MarkTaxFilingPaidRequest } from "@corely/contracts";
 

@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Minus, Lock } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/shared/ui/dialog";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
 import { formatMoney, formatDate } from "@/shared/lib/formatters";
 import { cashManagementApi } from "@/lib/cash-management-api";
 import { cashKeys } from "../queries";
@@ -26,38 +26,42 @@ export function CashRegisterDetailScreen() {
   const [paramAmount, setParamAmount] = useState("");
   const [paramDesc, setParamDesc] = useState("");
 
-  if (!id) {
-    return null;
-  }
-
   const { data: regData, isLoading: regLoading } = useQuery({
-    queryKey: cashKeys.registers.detail(id),
-    queryFn: () => cashManagementApi.getRegister(id),
+    queryKey: id ? cashKeys.registers.detail(id) : ["cash", "registers", "none"],
+    queryFn: () => (id ? cashManagementApi.getRegister(id) : Promise.reject("No ID")),
+    enabled: !!id,
   });
 
   const { data: entriesData } = useQuery({
-    queryKey: cashKeys.entries.list(id, {}),
-    queryFn: () => cashManagementApi.listEntries(id, {}),
+    queryKey: id ? cashKeys.entries.list(id, {}) : ["cash", "entries", "none"],
+    queryFn: () => (id ? cashManagementApi.listEntries(id, {}) : Promise.reject("No ID")),
     enabled: !!id,
   });
 
   const { data: closesData } = useQuery({
-    queryKey: cashKeys.dailyCloses.list(id, {}),
-    queryFn: () => cashManagementApi.listDailyCloses(id, {}),
+    queryKey: id ? cashKeys.dailyCloses.list(id, {}) : ["cash", "daily-closes", "none"],
+    queryFn: () => (id ? cashManagementApi.listDailyCloses(id, {}) : Promise.reject("No ID")),
     enabled: !!id,
   });
 
   const createEntryMutation = useMutation({
-    mutationFn: (vars: { type: CashEntryType; amountCents: number; desc: string }) =>
-      cashManagementApi.createEntry(id, {
+    mutationFn: (vars: { type: CashEntryType; amountCents: number; desc: string }) => {
+      if (!id) {
+        throw new Error("No register ID");
+      }
+      return cashManagementApi.createEntry(id, {
         tenantId: "current",
         registerId: id,
         type: vars.type,
         amountCents: vars.amountCents,
         sourceType: CashEntrySourceType.MANUAL,
         description: vars.desc,
-      }),
+      });
+    },
     onSuccess: async () => {
+      if (!id) {
+        return;
+      }
       await queryClient.invalidateQueries({ queryKey: cashKeys.registers.detail(id) });
       await queryClient.invalidateQueries({ queryKey: cashKeys.entries.list(id, {}) });
       setEntryType(null);
@@ -69,6 +73,10 @@ export function CashRegisterDetailScreen() {
       toast.error("Failed to add entry: " + (err.response?.data?.message || err.message));
     },
   });
+
+  if (!id) {
+    return null;
+  }
 
   const handleCreateEntry = () => {
     if (!entryType || !paramAmount || !paramDesc) {

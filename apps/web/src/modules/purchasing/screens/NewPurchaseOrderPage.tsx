@@ -2,14 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-import { Card, CardContent } from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
-import { Textarea } from "@/shared/ui/textarea";
+import { useTranslation } from "react-i18next";
+import { Card, CardContent } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Textarea } from "@corely/ui";
 import { purchasingApi } from "@/lib/purchasing-api";
 
+type LineItem = {
+  description: string;
+  quantity: number;
+  unitCostCents: number;
+};
+
 export default function NewPurchaseOrderPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: suppliersData } = useQuery({
@@ -23,7 +31,9 @@ export default function NewPurchaseOrderPage() {
   const [orderDate, setOrderDate] = useState(new Date().toISOString().slice(0, 10));
   const [expectedDeliveryDate, setExpectedDeliveryDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [lineItems, setLineItems] = useState([{ description: "", quantity: 1, unitCostCents: 0 }]);
+  const [lineItems, setLineItems] = useState<LineItem[]>([
+    { description: "", quantity: 1, unitCostCents: 0 },
+  ]);
 
   useEffect(() => {
     if (!supplierPartyId && suppliers.length) {
@@ -51,9 +61,13 @@ export default function NewPurchaseOrderPage() {
     },
   });
 
-  const updateLineItem = (index: number, field: string, value: string | number) => {
+  const updateLineItem = <TKey extends keyof LineItem>(
+    index: number,
+    field: TKey,
+    value: LineItem[TKey]
+  ) => {
     const next = [...lineItems];
-    next[index] = { ...next[index], [field]: value } as any;
+    next[index] = { ...next[index], [field]: value };
     setLineItems(next);
   };
 
@@ -79,10 +93,10 @@ export default function NewPurchaseOrderPage() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">New Purchase Order</h1>
+          <h1 className="text-h1 text-foreground">{t("purchasing.purchaseOrders.newTitle")}</h1>
         </div>
         <Button variant="outline" onClick={() => navigate("/purchasing/purchase-orders")}>
-          Cancel
+          {t("common.cancel")}
         </Button>
       </div>
 
@@ -91,7 +105,7 @@ export default function NewPurchaseOrderPage() {
           <CardContent className="p-6 space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Supplier</Label>
+                <Label>{t("purchasing.fields.supplier")}</Label>
                 <select
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={supplierPartyId}
@@ -105,11 +119,11 @@ export default function NewPurchaseOrderPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label>Currency</Label>
+                <Label>{t("purchasing.fields.currency")}</Label>
                 <Input value={currency} onChange={(event) => setCurrency(event.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Order Date</Label>
+                <Label>{t("purchasing.fields.orderDate")}</Label>
                 <Input
                   type="date"
                   value={orderDate}
@@ -117,7 +131,7 @@ export default function NewPurchaseOrderPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Expected Delivery</Label>
+                <Label>{t("purchasing.fields.expectedDelivery")}</Label>
                 <Input
                   type="date"
                   value={expectedDeliveryDate}
@@ -127,29 +141,29 @@ export default function NewPurchaseOrderPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Notes</Label>
+              <Label>{t("common.notes")}</Label>
               <Textarea value={notes} onChange={(event) => setNotes(event.target.value)} />
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Line Items</Label>
+                <Label>{t("purchasing.fields.lineItems")}</Label>
                 <Button variant="outline" size="sm" onClick={addLineItem}>
                   <Plus className="h-4 w-4" />
-                  Add line
+                  {t("purchasing.lineItems.add")}
                 </Button>
               </div>
               {lineItems.map((item, index) => (
                 <div key={index} className="grid grid-cols-12 gap-3 items-end">
                   <div className="col-span-6">
-                    <Label>Description</Label>
+                    <Label>{t("common.description")}</Label>
                     <Input
                       value={item.description}
                       onChange={(event) => updateLineItem(index, "description", event.target.value)}
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label>Qty</Label>
+                    <Label>{t("purchasing.lineItems.quantity")}</Label>
                     <Input
                       type="number"
                       min="1"
@@ -160,7 +174,7 @@ export default function NewPurchaseOrderPage() {
                     />
                   </div>
                   <div className="col-span-3">
-                    <Label>Unit Cost (cents)</Label>
+                    <Label>{t("purchasing.lineItems.unitCostCents")}</Label>
                     <Input
                       type="number"
                       min="0"
@@ -184,17 +198,17 @@ export default function NewPurchaseOrderPage() {
         <div className="flex flex-col gap-4">
           <Card>
             <CardContent className="p-6 space-y-4">
-              <h2 className="text-lg font-semibold">Review</h2>
-              <p className="text-sm text-muted-foreground">
-                Confirm supplier, dates, and line items before creating the draft.
-              </p>
+              <h2 className="text-lg font-semibold">{t("purchasing.review.title")}</h2>
+              <p className="text-sm text-muted-foreground">{t("purchasing.review.description")}</p>
               <Button
                 variant="accent"
                 className="w-full"
                 onClick={() => createMutation.mutate()}
                 disabled={!supplierPartyId || createMutation.isPending}
               >
-                {createMutation.isPending ? "Creating..." : "Create PO Draft"}
+                {createMutation.isPending
+                  ? t("purchasing.review.creating")
+                  : t("purchasing.review.createDraft")}
               </Button>
             </CardContent>
           </Card>

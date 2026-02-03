@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Home } from "lucide-react";
-import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
-import { Input } from "@/shared/ui/input";
-import { Card, CardContent } from "@/shared/ui/card";
+import { Plus, Search, Home, Tags } from "lucide-react";
+import { Button } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Input } from "@corely/ui";
+import { Card, CardContent } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, useCrudUrlState } from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
@@ -93,10 +93,16 @@ export default function RentalPropertiesPage() {
   );
 
   const primaryAction = (
-    <Button variant="accent" onClick={() => navigate("/rentals/properties/new")}>
-      <Plus className="h-4 w-4" />
-      New Property
-    </Button>
+    <>
+      <Button variant="outline" onClick={() => navigate("/rentals/categories")}>
+        <Tags className="h-4 w-4" />
+        Categories
+      </Button>
+      <Button variant="accent" onClick={() => navigate("/rentals/properties/new")}>
+        <Plus className="h-4 w-4" />
+        New Property
+      </Button>
+    </>
   );
 
   return (

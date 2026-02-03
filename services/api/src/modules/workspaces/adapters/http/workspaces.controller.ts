@@ -17,6 +17,7 @@ import {
   CreateWorkspaceInputSchema,
   CreateWorkspaceDomainInputSchema,
   DeleteWorkspaceDomainOutputSchema,
+  ListWorkspaceMembersOutputSchema,
   UpdateWorkspaceInputSchema,
   UpgradeWorkspaceInputSchema,
   SetPrimaryWorkspaceDomainInputSchema,
@@ -32,6 +33,7 @@ import { UpgradeWorkspaceUseCase } from "../../application/use-cases/upgrade-wor
 import { AddWorkspaceDomainUseCase } from "../../application/use-cases/add-workspace-domain.usecase";
 import { DeleteWorkspaceDomainUseCase } from "../../application/use-cases/delete-workspace-domain.usecase";
 import { SetPrimaryWorkspaceDomainUseCase } from "../../application/use-cases/set-primary-workspace-domain.usecase";
+import { ListWorkspaceMembersUseCase } from "../../application/use-cases/list-workspace-members.usecase";
 import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { toUseCaseContext } from "../../../../shared/request-context";
@@ -77,7 +79,9 @@ export class WorkspacesController {
     @Inject(DeleteWorkspaceDomainUseCase)
     private readonly deleteWorkspaceDomain: DeleteWorkspaceDomainUseCase,
     @Inject(SetPrimaryWorkspaceDomainUseCase)
-    private readonly setPrimaryWorkspaceDomain: SetPrimaryWorkspaceDomainUseCase
+    private readonly setPrimaryWorkspaceDomain: SetPrimaryWorkspaceDomainUseCase,
+    @Inject(ListWorkspaceMembersUseCase)
+    private readonly listWorkspaceMembers: ListWorkspaceMembersUseCase
   ) {}
 
   @Post()
@@ -112,6 +116,17 @@ export class WorkspacesController {
       userId: auth.id,
       workspaceId,
     });
+  }
+
+  @Get(":workspaceId/members")
+  async listMembers(@Param("workspaceId") workspaceId: string, @Req() req: Request) {
+    const auth = extractAuthUser(req, (req as any).body);
+    const result = await this.listWorkspaceMembers.execute({
+      tenantId: auth.tenantId,
+      userId: auth.id,
+      workspaceId,
+    });
+    return ListWorkspaceMembersOutputSchema.parse(result);
   }
 
   @Patch(":workspaceId")

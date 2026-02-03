@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import type { Request } from "express";
 import {
   CreateRentalCategoryInputSchema,
@@ -37,9 +48,10 @@ export class RentalsCategoryController {
   }
 
   @Delete(":id")
+  @HttpCode(204)
   async delete(@Param("id") id: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.deleteCategory.execute(id, ctx);
-    return mapResultToHttp(result);
+    mapResultToHttp(result);
   }
 }

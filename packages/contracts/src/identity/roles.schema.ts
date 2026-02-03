@@ -6,6 +6,7 @@ export const RoleDtoSchema = z.object({
   name: z.string(),
   description: z.string().nullable().optional(),
   isSystem: z.boolean(),
+  systemKey: z.string().nullable().optional(),
 });
 export type RoleDto = z.infer<typeof RoleDtoSchema>;
 

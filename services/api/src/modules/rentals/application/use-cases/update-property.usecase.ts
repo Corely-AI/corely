@@ -32,11 +32,21 @@ export class UpdatePropertyUseCase extends BaseUseCase<UpdateRentalPropertyInput
       }
     }
 
-    const updated = await this.useCaseDeps.propertyRepo.save(
-      ctx.tenantId!,
-      ctx.workspaceId!,
-      input
-    );
+    const images = input.images?.map((image, index) => {
+      if (!image.fileId) {
+        throw new ValidationError("image.fileId is required");
+      }
+      return {
+        fileId: image.fileId,
+        altText: image.altText ?? null,
+        sortOrder: image.sortOrder ?? index,
+      };
+    });
+
+    const updated = await this.useCaseDeps.propertyRepo.save(ctx.tenantId!, ctx.workspaceId!, {
+      ...input,
+      images,
+    });
     return ok(updated);
   }
 }

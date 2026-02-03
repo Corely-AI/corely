@@ -15,6 +15,7 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 ## Runtime surfaces
 
 - **Web (`apps/web`, Vite + React):** Admin/backoffice UI. Uses TanStack Query with backoff from `@corely/api-client`, workspace + auth providers, and an offline provider backed by `@corely/offline-web` (IndexedDB cache + outbox; transport is still a placeholder).
+- **Public Web (`apps/public-web`, Vite + React):** Public-facing UI for portfolios, rentals, blog, and CMS pages. Uses `@corely/ui` for shared design-system components and the public API surface under `/public/*`.
 - **POS (`apps/pos`, Expo + React Native):** Offline-first shell wired to `@corely/offline-core`, `@corely/offline-rn`, and `@corely/pos-core`.
 - **API (`services/api`, NestJS 11):** Modules for identity, accounting, sales, purchasing, inventory, approvals, engagements, workflows, AI copilot, etc. Global env validation via `@corely/config`, Prisma-powered `DataModule`, and trace-ID middleware.
 - **Worker (`services/worker`, NestJS 11):** Outbox poller (invoice email delivery via Resend) and workflow orchestrator/task runners using queue adapters defined in `@corely/contracts`.

@@ -2,9 +2,9 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useFormContext, useFieldArray, Controller } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { Input } from "@corely/ui";
+import { Button } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { type InvoiceFormData } from "../../schemas/invoice-form.schema";
 import { formatMoney } from "@/shared/lib/formatters";
 
@@ -22,6 +22,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
     formState: { errors },
     watch,
   } = useFormContext<InvoiceFormData>();
+  const currency = watch("currency") || t("common.currency");
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -122,7 +123,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                           />
                         )}
                       />
-                      <span className="ml-2 text-sm text-muted-foreground">EUR</span>
+                      <span className="ml-2 text-sm text-muted-foreground">{currency}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-right font-medium">{formatMoney(total, locale)}</td>

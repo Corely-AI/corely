@@ -5,7 +5,7 @@
 export class Membership {
   private constructor(
     private readonly id: string,
-    private readonly tenantId: string,
+    private readonly tenantId: string | null,
     private readonly userId: string,
     private readonly roleId: string,
     private readonly createdAt: Date
@@ -13,13 +13,13 @@ export class Membership {
 
   static create(
     id: string,
-    tenantId: string,
+    tenantId: string | null,
     userId: string,
     roleId: string,
     createdAt: Date = new Date()
   ): Membership {
-    if (!tenantId || !userId || !roleId) {
-      throw new Error("Tenant ID, User ID, and Role ID are required");
+    if (!userId || !roleId) {
+      throw new Error("User ID and Role ID are required");
     }
 
     return new Membership(id, tenantId, userId, roleId, createdAt);
@@ -27,7 +27,7 @@ export class Membership {
 
   static restore(data: {
     id: string;
-    tenantId: string;
+    tenantId: string | null;
     userId: string;
     roleId: string;
     createdAt: Date;
@@ -39,7 +39,7 @@ export class Membership {
     return this.id;
   }
 
-  getTenantId(): string {
+  getTenantId(): string | null {
     return this.tenantId;
   }
 

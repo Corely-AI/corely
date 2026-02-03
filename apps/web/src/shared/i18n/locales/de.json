@@ -24,13 +24,51 @@
     "error": "Etwas ist schief gelaufen",
     "success": "Erfolgreich",
     "currency": "EUR",
-    "locale": "de-DE"
+    "locale": "de-DE",
+    "view": "Ansehen",
+    "status": "Status",
+    "unknown": "Unbekannt",
+    "currencies": {
+      "eur": "Euro",
+      "usd": "US-Dollar",
+      "gbp": "Britisches Pfund",
+      "chf": "Schweizer Franken"
+    },
+    "reset": "Zurücksetzen",
+    "name": "Name",
+    "email": "E-Mail",
+    "phone": "Telefon",
+    "notes": "Notizen"
   },
   "nav": {
     "dashboard": "Übersicht",
+    "portfolio": "Portfolio",
+    "rentals": {
+      "properties": "Immobilien"
+    },
+    "quotes": "Angebote",
+    "clients": "Kunden",
+    "tax": {
+      "overview": "Übersicht",
+      "filings": "Meldungen",
+      "payments": "Zahlungen",
+      "documents": "Dokumente",
+      "settings": "Einstellungen"
+    },
     "assistant": "Assistent",
     "expenses": "Ausgaben",
     "invoices": "Rechnungen",
+    "tenants": "Mandanten",
+    "groups": {
+      "core": "Kernfunktionen",
+      "sales": "Verkauf",
+      "purchasing": "Einkauf",
+      "inventory": "Lager",
+      "finance": "Finanzen",
+      "settings": "Einstellungen",
+      "platform": "Plattform",
+      "tax": "Steuern"
+    },
     "customers": "Kunden",
     "salesQuotes": "Angebote",
     "salesOrders": "Aufträge",
@@ -49,8 +87,210 @@
     "inventoryCopilot": "Inventar - Copilot",
     "automation": "Automatisierung",
     "documents": "Dokumente",
+    "cms": {
+      "posts": "CMS Beiträge",
+      "comments": "CMS Kommentare"
+    },
     "hr": "Personal",
-    "cashManagement": "Kassenbuch"
+    "cashManagement": "Kassenbuch",
+    "workspace": "Workspace Einstellungen",
+    "profile": "Profil & Konto",
+    "members": "Teamverwaltung",
+    "roles": "Rollen & Rechte",
+    "paymentMethods": "Zahlungsmethoden",
+    "issues": "Probleme"
+  },
+  "featureFlags": {
+    "app": {
+      "core": {
+        "enabled": "Kern"
+      },
+      "platform": {
+        "enabled": "Plattform"
+      },
+      "invoices": {
+        "enabled": "Rechnungen"
+      },
+      "crm": {
+        "enabled": "CRM"
+      },
+      "portfolio": {
+        "enabled": "Portfolio"
+      },
+      "issues": {
+        "enabled": "Issues"
+      },
+      "cms": {
+        "enabled": "CMS"
+      },
+      "expenses": {
+        "enabled": "Ausgaben"
+      },
+      "parties": {
+        "enabled": "Partner"
+      },
+      "ai-copilot": {
+        "enabled": "KI-Copilot"
+      },
+      "tax": {
+        "enabled": "Steuern"
+      },
+      "cash-management": {
+        "enabled": "Cash Management"
+      },
+      "sales": {
+        "enabled": "Vertrieb"
+      },
+      "workspaces": {
+        "enabled": "Arbeitsbereiche"
+      },
+      "purchasing": {
+        "enabled": "Einkauf"
+      },
+      "rentals": {
+        "enabled": "Vermietung"
+      }
+    }
+  },
+  "issues": {
+    "title": "Probleme",
+    "reportTitle": "Neues Problem melden",
+    "unassigned": "Nicht zugewiesen",
+    "description": {
+      "empty": "Keine Beschreibung vorhanden."
+    },
+    "createdAt": "Erstellt am {{date}}",
+    "status": {
+      "change": "Status ändern",
+      "update": "Status aktualisieren",
+      "updated": "Status erfolgreich aktualisiert",
+      "updateFailed": "Status konnte nicht aktualisiert werden",
+      "resolved": "Problem gelöst",
+      "resolveFailed": "Problem konnte nicht als gelöst markiert werden",
+      "reopened": "Problem wiedereröffnet",
+      "reopenFailed": "Problem konnte nicht wiedereröffnet werden"
+    },
+    "actions": {
+      "resolve": "Lösen",
+      "reopen": "Wiedereröffnen"
+    },
+    "fields": {
+      "title": "Titel",
+      "priority": "Priorität",
+      "description": "Beschreibung",
+      "siteType": "Standorttyp",
+      "siteIdOptional": "Standort-ID (Optional)",
+      "customerIdOptional": "Kunden-ID (Optional)",
+      "manufacturerIdOptional": "Hersteller-ID (Optional)",
+      "transcriptOptional": "Sprachnotiz-Transkript (Optional)",
+      "site": "Standort",
+      "assignee": "Bearbeiter"
+    },
+    "placeholders": {
+      "priority": "Priorität auswählen",
+      "siteType": "Standorttyp auswählen"
+    },
+    "priority": {
+      "low": "Niedrig",
+      "medium": "Mittel",
+      "high": "Hoch",
+      "urgent": "Dringend"
+    },
+    "siteTypes": {
+      "field": "Feld",
+      "customer": "Kunde",
+      "manufacturer": "Hersteller"
+    },
+    "statuses": {
+      "NEW": "Neu",
+      "TRIAGED": "Triagiert",
+      "IN_PROGRESS": "In Bearbeitung",
+      "WAITING": "Wartend",
+      "RESOLVED": "Gelöst",
+      "CLOSED": "Geschlossen",
+      "REOPENED": "Wiedereröffnet"
+    },
+    "attachments": {
+      "title": "Anhänge",
+      "images": "Bilder",
+      "addImages": "Bilder hinzufügen",
+      "takePicture": "Foto aufnehmen",
+      "audio": "Audioaufnahmen",
+      "voiceNote": "Sprachnotiz",
+      "uploaded": "Hochgeladene Anhänge:",
+      "empty": "Keine Anhänge.",
+      "transcript": "Transkript: {{transcript}}"
+    },
+    "voiceNote": "Sprachnotiz",
+    "startRecording": "Aufnahme starten",
+    "stopRecording": "Aufnahme stoppen",
+    "submitting": "Wird gesendet...",
+    "submit": "Problem melden",
+    "speech": {
+      "liveTranscription": "Live-Transkription aktiviert",
+      "notAvailable": "Spracherkennung in diesem Browser nicht verfügbar"
+    },
+    "comments": {
+      "title": "Kommentare",
+      "addTitle": "Kommentar hinzufügen",
+      "add": "Kommentar hinzufügen",
+      "added": "Kommentar hinzugefügt",
+      "addFailed": "Kommentar konnte nicht hinzugefügt werden",
+      "placeholder": "Kommentar schreiben...",
+      "empty": "Noch keine Kommentare."
+    },
+    "activity": {
+      "title": "Aktivitätsverlauf",
+      "empty": "Keine Aktivität aufgezeichnet."
+    },
+    "errors": {
+      "microphoneDenied": "Mikrofonzugriff verweigert",
+      "cameraDenied": "Kamerazugriff verweigert",
+      "loadFailed": "Problemdetails konnten nicht geladen werden"
+    }
+  },
+  "tax": {
+    "title": "Steuerzentrum",
+    "subtitle": "Verwalten Sie Ihr Steuerprofil, Meldungen und Compliance",
+    "profile": {
+      "title": "Steuerprofil",
+      "vatEnabled": "Umsatzsteuerpflichtig",
+      "vatEnabledHelp": "Aktivieren Sie dies, wenn Ihr Unternehmen für die Umsatzsteuer registriert ist",
+      "country": "Steuerjurisdiktion",
+      "countryHelp": "Wählen Sie das primäre Land aus, in dem Ihr Unternehmen steuerlich registriert ist",
+      "regime": "Umsatzsteuer-Regelung",
+      "usesAdvisor": "Steuerberater / Buchhalter verwenden",
+      "usesAdvisorHelp": "Aktivieren Sie dies, wenn Sie mit einem externen Fachmann für Steuererklärungen zusammenarbeiten",
+      "vatIdOptional": "Umsatzsteuer-ID (Optional)",
+      "filingFrequency": "Meldezeitraum",
+      "accountingMethod": "Gewinnermittlungsart",
+      "taxYearStartMonth": "Beginn des Steuerjahres",
+      "localTaxOffice": "Zuständiges Finanzamt",
+      "save": "Steuerprofil speichern"
+    },
+    "countries": {
+      "de": "Deutschland"
+    },
+    "regimes": {
+      "standardVat": "Regelbesteuerung"
+    },
+    "filing": {
+      "quarterly": "Vierteljährlich"
+    },
+    "accounting": {
+      "cashBasis": "Einnahmen-Überschuss-Rechnung (EÜR)",
+      "cashBasisHelp": "Einnahmen werden erfasst, wenn sie zufließen",
+      "accrualBasisHelp": "Einnahmen werden erfasst, wenn sie entstehen, unabhängig vom Zahlungszeitpunkt"
+    },
+    "placeholders": {
+      "vatId": "Umsatzsteuer-ID eingeben (z.B. DE123456789)",
+      "month": "Monat wählen",
+      "localTaxOffice": "Name Ihres Finanzamtes eingeben"
+    },
+    "consultant": {
+      "title": "Steuerberater",
+      "save": "Beraterinfo speichern"
+    }
   },
   "cashManagement": {
     "title": "Kassenbuch",
@@ -259,5 +499,295 @@
   },
   "errors": {
     "loadMenuFailed": "Menü konnte nicht geladen werden"
+  },
+  "accounting": {
+    "entryStatus": {
+      "draft": "Entwurf",
+      "posted": "Gebucht",
+      "reversed": "Storniert"
+    },
+    "accountTypes": {
+      "asset": "Aktiva",
+      "liability": "Passiva",
+      "equity": "Eigenkapital",
+      "income": "Erträge",
+      "expense": "Aufwendungen"
+    },
+    "accountSelect": {
+      "placeholder": "Konto auswählen...",
+      "searchPlaceholder": "Konten suchen...",
+      "empty": "Kein Konto gefunden."
+    },
+    "journalLines": {
+      "title": "Buchungszeilen",
+      "addLine": "Zeile hinzufügen",
+      "emptyMessage": "Noch keine Zeilen. Klicken Sie auf \"{{action}}\", um zu beginnen.",
+      "account": "Konto",
+      "type": "Typ",
+      "debit": "Soll",
+      "credit": "Haben",
+      "memo": "Buchungstext",
+      "memoOptional": "Optionaler Buchungstext",
+      "minimumLines": "Mindestens 2 Zeilen erforderlich",
+      "removeLine": "Zeile entfernen",
+      "totals": "Summen",
+      "imbalance": "Differenz",
+      "balanced": "✓ Ausgeglichen"
+    },
+    "journalEntries": {
+      "title": "Buchungen",
+      "subtitle": "Alle Buchungen anzeigen und verwalten",
+      "newEntry": "Neue Buchung",
+      "searchPlaceholder": "Nach Buchungstext oder Nummer suchen...",
+      "allStatuses": "Alle Status",
+      "entries": "Buchungen",
+      "entriesFound": "{{count}} Buchungen gefunden",
+      "entriesFound_one": "{{count}} Buchung gefunden",
+      "entriesFound_other": "{{count}} Buchungen gefunden",
+      "loading": "Buchungen werden geladen...",
+      "emptyTitle": "Keine Buchungen gefunden",
+      "emptyAction": "Erste Buchung erstellen",
+      "entryNumber": "Buchungsnr.",
+      "date": "Datum",
+      "memo": "Buchungstext",
+      "amount": "Betrag",
+      "linesCount": "{{count}} Zeilen",
+      "linesCount_one": "{{count}} Zeile",
+      "linesCount_other": "{{count}} Zeilen"
+    },
+    "chartOfAccounts": {
+      "title": "Kontenplan",
+      "subtitle": "Verwalten Sie Ihre Sachkonten",
+      "newAccount": "Neues Konto",
+      "searchPlaceholder": "Nach Kontocode oder Name suchen...",
+      "allTypes": "Alle Typen",
+      "allStatuses": "Alle Status",
+      "activeOnly": "Nur aktiv",
+      "inactiveOnly": "Nur inaktiv",
+      "accounts": "Konten",
+      "accountsFound": "{{count}} Konten gefunden",
+      "accountsFound_one": "{{count}} Konto gefunden",
+      "accountsFound_other": "{{count}} Konten gefunden",
+      "loading": "Konten werden geladen...",
+      "empty": "Keine Konten gefunden, die Ihren Kriterien entsprechen",
+      "code": "Code",
+      "name": "Name",
+      "type": "Typ",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "dashboard": {
+      "title": "Buchhaltung",
+      "subtitle": "Verwalten Sie Ihre Finanzdaten und Berichte",
+      "newEntry": "Neue Buchung",
+      "newEntryDescription": "Buchung erstellen",
+      "chartOfAccounts": "Kontenplan",
+      "activeAccounts": "Aktive Konten",
+      "journalEntries": "Buchungen",
+      "totalEntries": "Buchungen gesamt",
+      "reports": "Berichte",
+      "reportsDescription": "Finanzberichte anzeigen",
+      "recentEntries": "Letzte Buchungen",
+      "recentEntriesDescription": "Neueste Buchungen",
+      "noEntries": "Noch keine Buchungen. Erstellen Sie Ihre erste Buchung, um zu beginnen.",
+      "viewAllEntries": "Alle Buchungen anzeigen",
+      "quickLinks": "Schnellzugriff",
+      "quickLinksDescription": "Häufige Buchhaltungsaufgaben",
+      "viewTrialBalance": "Saldenliste anzeigen",
+      "viewProfitLoss": "GuV-Bericht",
+      "settings": "Buchhaltungseinstellungen"
+    },
+    "reports": {
+      "title": "Finanzberichte",
+      "subtitle": "Greifen Sie auf umfassende Berichte zur Analyse Ihrer Finanzdaten zu",
+      "viewReport": "Bericht anzeigen",
+      "aboutTitle": "Über Finanzberichte",
+      "aboutLine1": "Alle Berichte werden in Echtzeit aus Ihren gebuchten Buchungen erstellt. Entwürfe werden nicht berücksichtigt.",
+      "aboutLine2": "Sie können Berichte als PDF oder Excel exportieren und Zeiträume filtern.",
+      "aboutLine3": "💡 KI-gestützte Einblicke stehen in jedem Bericht zur Verfügung, um Trends und Anomalien zu verstehen.",
+      "trialBalance": {
+        "title": "Saldenliste",
+        "description": "Zusammenfassung aller Kontensalden, um Soll und Haben auszugleichen"
+      },
+      "generalLedger": {
+        "title": "Hauptbuch",
+        "description": "Detaillierte Buchungshistorie für einzelne Konten"
+      },
+      "profitLoss": {
+        "title": "Gewinn- und Verlustrechnung",
+        "description": "Erfolgsrechnung mit Erträgen, Aufwendungen und Nettoergebnis"
+      },
+      "balanceSheet": {
+        "title": "Bilanz",
+        "description": "Übersicht über Aktiva, Passiva und Eigenkapital zu einem Stichtag"
+      }
+    },
+    "setup": {
+      "title": "Buchhaltung einrichten",
+      "subtitle": "Konfigurieren Sie Ihre Buchhaltung und den Kontenplan, um zu starten",
+      "basic": {
+        "title": "Grundeinstellungen",
+        "description": "Legen Sie Ihre grundlegenden Buchhaltungspräferenzen fest"
+      },
+      "baseCurrency": "Basiswährung",
+      "selectCurrency": "Währung auswählen",
+      "baseCurrencyHelp": "Die primäre Währung für Ihre Buchhaltungsdaten",
+      "fiscalYearStart": "Beginn des Geschäftsjahres",
+      "selectFiscalStart": "Beginn des Geschäftsjahres auswählen",
+      "fiscalStart": {
+        "jan1": "1. Januar (Kalenderjahr)",
+        "apr1": "1. April",
+        "jul1": "1. Juli",
+        "oct1": "1. Oktober"
+      },
+      "fiscalYearHelp": "Wann Ihr Geschäftsjahr beginnt (wirkt sich auf Perioden aus)",
+      "periodLocking": "Periodensperre aktivieren",
+      "periodLockingHelp": "Buchungen in geschlossenen Perioden verhindern (empfohlen für produktiven Einsatz)",
+      "chartOfAccountsTitle": "Kontenplan",
+      "chartOfAccountsDescription": "Wählen Sie eine Vorlage (Sie können später weitere Konten hinzufügen)",
+      "templates": {
+        "minimal": {
+          "label": "Minimal (5 Konten)",
+          "description": "Basis-Setup für sehr einfache Anforderungen"
+        },
+        "freelancer": {
+          "label": "Freelancer (16 Konten)",
+          "description": "Ideal für Freiberufler und Berater"
+        },
+        "smallBusiness": {
+          "label": "Kleines Unternehmen (35 Konten)",
+          "description": "Umfassendes Setup für kleine Unternehmen"
+        },
+        "standard": {
+          "label": "Standard (79 Konten) (Empfohlen)",
+          "description": "Vollständiger Kontenplan für die meisten Unternehmen"
+        }
+      },
+      "next": {
+        "title": "Was als Nächstes passiert",
+        "line1": "Die ausgewählte Kontenplan-Vorlage wird mit allen vordefinierten Konten erstellt",
+        "line2": "12 monatliche Buchhaltungsperioden werden für das aktuelle Geschäftsjahr erstellt",
+        "line3": "Sie können Konten anpassen, neue hinzufügen und Buchungen erstellen",
+        "line4": "Alle Finanzberichte sind sofort verfügbar"
+      },
+      "settingUp": "Einrichtung läuft...",
+      "complete": "Einrichtung abschließen"
+    },
+    "validation": {
+      "accountRequired": "Konto ist erforderlich",
+      "amountPositive": "Betrag muss positiv sein",
+      "invalidDate": "Ungültiges Datumsformat",
+      "memoRequired": "Buchungstext ist erforderlich",
+      "minimumLines": "Mindestens 2 Zeilen sind erforderlich",
+      "debitsEqualCredits": "Soll und Haben müssen übereinstimmen",
+      "accountCodeRequired": "Kontocode ist erforderlich",
+      "accountCodeMax": "Code darf höchstens 20 Zeichen lang sein",
+      "accountCodeFormat": "Code darf nur Großbuchstaben, Zahlen und Bindestriche enthalten",
+      "accountNameRequired": "Kontoname ist erforderlich",
+      "accountNameMax": "Name darf höchstens 100 Zeichen lang sein"
+    },
+    "toasts": {
+      "accountCreated": "Konto \"{{name}}\" erfolgreich erstellt",
+      "accountCreateFailed": "Konto konnte nicht erstellt werden: {{message}}",
+      "accountUpdated": "Konto \"{{name}}\" erfolgreich aktualisiert",
+      "accountUpdateFailed": "Konto konnte nicht aktualisiert werden: {{message}}",
+      "journalEntryDraftCreated": "Entwurfsbuchung erfolgreich erstellt",
+      "journalEntryCreateFailed": "Buchung konnte nicht erstellt werden: {{message}}",
+      "journalEntryDraftUpdated": "Entwurfsbuchung erfolgreich aktualisiert",
+      "journalEntryUpdateFailed": "Buchung konnte nicht aktualisiert werden: {{message}}",
+      "journalEntryPosted": "Buchung {{entryNumber}} erfolgreich gebucht",
+      "journalEntryPostFailed": "Buchung konnte nicht gebucht werden: {{message}}",
+      "journalEntryReversed": "Buchung storniert. Original: {{original}}, Storno: {{reversal}}",
+      "journalEntryReverseFailed": "Buchung konnte nicht storniert werden: {{message}}",
+      "setupCompleted": "Buchhaltung erfolgreich eingerichtet",
+      "setupFailed": "Buchhaltung konnte nicht eingerichtet werden: {{message}}",
+      "settingsUpdated": "Buchhaltungseinstellungen aktualisiert",
+      "settingsUpdateFailed": "Einstellungen konnten nicht aktualisiert werden: {{message}}",
+      "periodClosed": "Periode {{name}} erfolgreich geschlossen",
+      "periodCloseFailed": "Periode konnte nicht geschlossen werden: {{message}}",
+      "periodReopened": "Periode {{name}} erfolgreich geöffnet",
+      "periodReopenFailed": "Periode konnte nicht geöffnet werden: {{message}}"
+    }
+  },
+  "auth": {
+    "signin": {
+      "title": "In Ihr Konto einloggen",
+      "rememberMe": "An mich erinnern",
+      "cta": "Anmelden",
+      "signingIn": "Anmeldung...",
+      "noAccount": "Haben Sie noch kein Konto?"
+    },
+    "signup": {
+      "title": "Konto erstellen",
+      "cta": "Registrieren",
+      "creating": "Konto wird erstellt...",
+      "hasAccount": "Haben Sie bereits ein Konto?"
+    },
+    "fields": {
+      "email": "E-Mail-Adresse",
+      "password": "Passwort"
+    },
+    "placeholders": {
+      "email": "E-Mail-Adresse",
+      "password": "Passwort",
+      "passwordMin": "Mindestens 6 Zeichen"
+    },
+    "help": {
+      "passwordMin": "Das Passwort muss mindestens 6 Zeichen lang sein."
+    },
+    "errors": {
+      "loginFailed": "Ungültige E-Mail-Adresse oder Passwort",
+      "passwordLength": "Passwort muss mindestens 6 Zeichen lang sein",
+      "signupFailed": "Konto konnte nicht erstellt werden",
+      "networkError": "Netzwerkfehler. Bitte überprüfen Sie, ob der Server läuft."
+    }
+  },
+  "forms": {
+    "submit": "Absenden",
+    "repeater": {
+      "missingItemFields": "Fehlende Wiederholungsfelder",
+      "empty": "Keine Zeilen hinzugefügt",
+      "row": "Zeile {{index}}",
+      "remove": "Entfernen",
+      "add": "Zeile hinzufügen"
+    }
+  },
+  "portfolioPublic": {
+    "nav": {
+      "works": "Projekte",
+      "clients": "Kunden",
+      "services": "Leistungen",
+      "team": "Team",
+      "blog": "Blog"
+    },
+    "home": {
+      "welcome": "Willkommen bei",
+      "about": "Über",
+      "featuredProjects": "Ausgewählte Projekte",
+      "viewAll": "Alle ansehen",
+      "trustedBy": "Vertraut von"
+    },
+    "works": {
+      "title": "Projekte",
+      "subtitle": "Eine Auswahl meiner aktuellen Arbeiten."
+    },
+    "project": {
+      "backToWorks": "Zurück zu Projekte",
+      "links": "Projekt-Links",
+      "liveDemo": "Live Demo",
+      "sourceCode": "Quellcode",
+      "techStack": "Technologien"
+    },
+    "common": {
+      "contact": "Kontakt",
+      "contactMe": "Kontaktieren",
+      "viewDetails": "Details ansehen"
+    },
+    "errors": {
+      "notFound": "Showcase nicht gefunden",
+      "notFoundDesc": "Das gesuchte Portfolio existiert nicht oder wurde noch nicht veröffentlicht.",
+      "error": "Etwas ist schief gelaufen",
+      "errorDesc": "Beim Laden dieses Portfolios ist ein Fehler aufgetreten."
+    }
   }
 }

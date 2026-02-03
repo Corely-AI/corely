@@ -17,6 +17,7 @@
     "build:api": "pnpm build:packages && pnpm --filter @corely/api build",
     "typecheck": "pnpm -r typecheck",
     "dev:web": "pnpm build:web-packages && pnpm --filter @corely/web dev",
+    "dev:public": "pnpm build:web-packages && pnpm --filter @corely/public-web dev",
     "build:web": "pnpm build:packages && pnpm --filter @corely/web build",
     "dev:api": "pnpm build:packages && pnpm --filter @corely/api dev:esbuild",
     "dev:api:debug": "pnpm build:packages && pnpm --filter @corely/api dev:debug",
