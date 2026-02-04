@@ -17,6 +17,8 @@ import { SignInUseCase } from "../../application/use-cases/sign-in.usecase";
 import { RefreshTokenUseCase } from "../../application/use-cases/refresh-token.usecase";
 import { SignOutUseCase } from "../../application/use-cases/sign-out.usecase";
 import { SwitchTenantUseCase } from "../../application/use-cases/switch-tenant.usecase";
+import { RequestPasswordResetUseCase } from "../../application/use-cases/request-password-reset.usecase";
+import { ConfirmPasswordResetUseCase } from "../../application/use-cases/confirm-password-reset.usecase";
 
 // DTOs
 import {
@@ -37,6 +39,12 @@ import { AuthGuard } from "./auth.guard";
 import { CurrentUserId, CurrentTenantId } from "./current-user.decorator";
 import { buildRequestContext } from "../../../../shared/context/request-context";
 import type { Request } from "express";
+import {
+  PasswordResetRequestInputSchema,
+  PasswordResetConfirmInputSchema,
+  type PasswordResetRequestResponse,
+  type PasswordResetConfirmResponse,
+} from "@corely/contracts";
 import {
   USER_REPOSITORY_TOKEN,
   type UserRepositoryPort,
@@ -63,6 +71,10 @@ export class AuthController {
     @Inject(RefreshTokenUseCase) private readonly refreshTokenUseCase: RefreshTokenUseCase,
     @Inject(SignOutUseCase) private readonly signOutUseCase: SignOutUseCase,
     @Inject(SwitchTenantUseCase) private readonly switchTenantUseCase: SwitchTenantUseCase,
+    @Inject(RequestPasswordResetUseCase)
+    private readonly requestPasswordResetUseCase: RequestPasswordResetUseCase,
+    @Inject(ConfirmPasswordResetUseCase)
+    private readonly confirmPasswordResetUseCase: ConfirmPasswordResetUseCase,
     @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN)
     private readonly membershipRepo: MembershipRepositoryPort,
@@ -137,6 +149,53 @@ export class AuthController {
       refreshToken: result.refreshToken,
       memberships: result.memberships,
     };
+  }
+
+  /**
+   * POST /auth/password-reset/request
+   */
+  @Post("password-reset/request")
+  async requestPasswordReset(
+    @Body() body: unknown,
+    @Req() req?: Request
+  ): Promise<PasswordResetRequestResponse> {
+    const parsed = PasswordResetRequestInputSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.message);
+    }
+
+    await this.requestPasswordResetUseCase.execute({
+      email: parsed.data.email,
+      context: buildRequestContext({
+        requestId: req?.headers["x-request-id"] as string | undefined,
+      }),
+    });
+
+    return { ok: true };
+  }
+
+  /**
+   * POST /auth/password-reset/confirm
+   */
+  @Post("password-reset/confirm")
+  async confirmPasswordReset(
+    @Body() body: unknown,
+    @Req() req?: Request
+  ): Promise<PasswordResetConfirmResponse> {
+    const parsed = PasswordResetConfirmInputSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.message);
+    }
+
+    await this.confirmPasswordResetUseCase.execute({
+      token: parsed.data.token,
+      newPassword: parsed.data.newPassword,
+      context: buildRequestContext({
+        requestId: req?.headers["x-request-id"] as string | undefined,
+      }),
+    });
+
+    return { ok: true };
   }
 
   /**

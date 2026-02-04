@@ -2,6 +2,7 @@
 import { Module, forwardRef } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { DataModule, PrismaOutboxAdapter } from "@corely/data";
+import { EnvService } from "@corely/config";
 import { OUTBOX_PORT } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { PlatformModule } from "../platform";
@@ -32,12 +33,16 @@ import { AUDIT_PORT_TOKEN } from "./application/ports/audit.port";
 import { PrismaAuditRepository } from "./infrastructure/adapters/prisma-audit-repository.adapter";
 import { PrismaMembershipRepository } from "./infrastructure/adapters/prisma-membership-repository.adapter";
 import { PrismaRefreshTokenRepository } from "./infrastructure/adapters/prisma-refresh-token-repository.adapter";
+import { PrismaPasswordResetTokenRepository } from "./infrastructure/adapters/prisma-password-reset-token-repository.adapter";
+import { ResendPasswordResetEmailAdapter } from "./infrastructure/adapters/resend-password-reset-email.adapter";
 import { PrismaRoleRepository } from "./infrastructure/adapters/prisma-role-repository.adapter";
 import { PrismaRolePermissionGrantRepository } from "./infrastructure/adapters/prisma-role-permission-grant-repository.adapter";
 import { PrismaTenantRepository } from "./infrastructure/adapters/prisma-tenant-repository.adapter";
 import { PrismaUserRepository } from "./infrastructure/adapters/prisma-user-repository.adapter";
 import { MEMBERSHIP_REPOSITORY_TOKEN } from "./application/ports/membership-repository.port";
 import { REFRESH_TOKEN_REPOSITORY_TOKEN } from "./application/ports/refresh-token-repository.port";
+import { PASSWORD_RESET_TOKEN_REPOSITORY_TOKEN } from "./application/ports/password-reset-token-repository.port";
+import { PASSWORD_RESET_EMAIL_PORT } from "./application/ports/password-reset-email.port";
 import { ROLE_REPOSITORY_TOKEN } from "./application/ports/role-repository.port";
 import { ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN } from "./application/ports/role-permission-grant-repository.port";
 import { TENANT_REPOSITORY_TOKEN } from "./application/ports/tenant-repository.port";
@@ -53,6 +58,8 @@ import { GetRolePermissionsUseCase } from "./application/use-cases/get-role-perm
 import { UpdateRolePermissionsUseCase } from "./application/use-cases/update-role-permissions.usecase";
 import { SyncRolePermissionsFromManifestsUseCase } from "./application/use-cases/sync-role-permissions-from-manifests.usecase";
 import { ListTenantsUseCase } from "./application/use-cases/list-tenants.usecase";
+import { RequestPasswordResetUseCase } from "./application/use-cases/request-password-reset.usecase";
+import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-password-reset.usecase";
 
 @Module({
   imports: [DataModule, KernelModule, forwardRef(() => PlatformModule)],
@@ -63,6 +70,7 @@ import { ListTenantsUseCase } from "./application/use-cases/list-tenants.usecase
     PrismaTenantRepository,
     PrismaMembershipRepository,
     PrismaRefreshTokenRepository,
+    PrismaPasswordResetTokenRepository,
     PrismaRoleRepository,
     PrismaRolePermissionGrantRepository,
     PrismaAuditRepository,
@@ -93,6 +101,25 @@ import { ListTenantsUseCase } from "./application/use-cases/list-tenants.usecase
     {
       provide: REFRESH_TOKEN_REPOSITORY_TOKEN,
       useExisting: PrismaRefreshTokenRepository,
+    },
+    {
+      provide: PASSWORD_RESET_TOKEN_REPOSITORY_TOKEN,
+      useExisting: PrismaPasswordResetTokenRepository,
+    },
+    {
+      provide: PASSWORD_RESET_EMAIL_PORT,
+      useFactory: (env: EnvService) => {
+        const provider = env.EMAIL_PROVIDER;
+        if (provider !== "resend") {
+          throw new Error(`Unsupported email provider: ${provider}`);
+        }
+        return new ResendPasswordResetEmailAdapter(
+          env.RESEND_API_KEY,
+          env.RESEND_FROM,
+          env.RESEND_REPLY_TO
+        );
+      },
+      inject: [EnvService],
     },
     {
       provide: ROLE_REPOSITORY_TOKEN,
@@ -129,6 +156,8 @@ import { ListTenantsUseCase } from "./application/use-cases/list-tenants.usecase
     RefreshTokenUseCase,
     SignOutUseCase,
     SwitchTenantUseCase,
+    RequestPasswordResetUseCase,
+    ConfirmPasswordResetUseCase,
     ListRolesUseCase,
     CreateRoleUseCase,
     UpdateRoleUseCase,

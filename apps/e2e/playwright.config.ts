@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const isCI = !!process.env.CI;
 const isPublicWeb = process.env.PUBLIC_WEB_E2E === "true";
 const baseURL =
-  process.env.BASE_URL || (isPublicWeb ? "http://localhost:5174" : "http://localhost:5173");
+  process.env.BASE_URL || (isPublicWeb ? "http://localhost:5174" : "http://localhost:8080");
 
 export default defineConfig({
   testDir: "./tests",
@@ -39,7 +39,7 @@ export default defineConfig({
     {
       command: isPublicWeb
         ? "pnpm --filter @corely/public-web dev --host 0.0.0.0 --port 5174"
-        : "pnpm --filter @corely/web dev --host 0.0.0.0 --port 5173",
+        : "pnpm --filter @corely/web dev --host 0.0.0.0 --port 8080",
       url: baseURL,
       reuseExistingServer: !isCI,
       timeout: 60_000,

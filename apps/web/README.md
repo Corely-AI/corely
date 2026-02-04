@@ -54,3 +54,5 @@ Recommended hosting providers:
 - Netlify
 - Cloudflare Pages
 - AWS S3 + CloudFront
+
+Note: `apps/web/vercel.json` applies the Vercel rewrite that sends all paths to `index.html`, preventing 404s on deep-link refreshes.

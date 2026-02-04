@@ -217,7 +217,7 @@ Ensure Postgres/Redis are reachable (use `docker compose -f docker-compose.dev.y
 | `AI_MODEL_PROVIDER`                    | `@corely/api`                                   | `openai`                                                        | Selects `openai` or `anthropic` for Copilot tool runs.      |
 | `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | `@corely/api`                                   | `(redacted)`                                                    | Provider credentials for assistant/tool calls; keep secret. |
 | `EMAIL_PROVIDER`                       | `@corely/api`                                   | `resend`                                                        | Controls transactional email adapter.                       |
-| `WEB_PORT`, `API_PORT`, `MOCK_PORT`    | Apps/services                                   | `5173`, `3000`, `4000`                                          | Override ports when composing services locally.             |
+| `WEB_PORT`, `API_PORT`, `MOCK_PORT`    | Apps/services                                   | `8080`, `3000`, `4000`                                          | Override ports when composing services locally.             |
 
 ## Scripts
 

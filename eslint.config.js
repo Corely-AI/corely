@@ -9,6 +9,8 @@ export default tseslint.config(
       "build/",
       "coverage/",
       ".next/",
+      ".vercel/",
+      "**/.vercel/**",
       "out/",
       ".git/",
       ".husky/",

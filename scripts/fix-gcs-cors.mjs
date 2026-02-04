@@ -39,7 +39,7 @@ async function fixCors() {
       {
         maxAgeSeconds: 3600,
         method: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
-        origin: ["http://localhost:8080", "http://localhost:3000", "http://localhost:5173"],
+        origin: ["http://localhost:8080", "http://localhost:3000", "http://localhost:8080"],
         responseHeader: [
           "Content-Type",
           "Authorization",

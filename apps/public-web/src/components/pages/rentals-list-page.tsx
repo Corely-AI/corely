@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import type { RentalProperty, RentalCategory } from "@corely/contracts";
 import { buildPublicFileUrl } from "@/lib/public-api";
+import { siteConfig } from "@/lib/site";
 
 const FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&q=80&w=800";
@@ -46,7 +47,7 @@ export function RentalsListContent({
           </Link>
           <div className="flex items-center gap-6">
             <Link
-              href="/auth/login"
+              href={`${siteConfig.appUrl}/auth/login`}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Staff login

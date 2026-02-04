@@ -152,6 +152,12 @@ export const LoginPage: React.FC = () => {
                     {t("auth.signin.rememberMe")}
                   </span>
                 </label>
+                <Link
+                  to="/auth/forgot-password"
+                  className="text-sm font-medium text-accent hover:underline underline-offset-4"
+                >
+                  {t("auth.signin.forgotPassword")}
+                </Link>
               </div>
 
               <Button
