@@ -69,8 +69,8 @@ jobs:
           env_vars: |
             NODE_ENV=production
             WORKFLOW_QUEUE_DRIVER=memory
-          # secrets: |
-          #   DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest
+            PORT=8080
+            API_PORT=8080
 
       # - name: Deploy Worker to Cloud Run
       #   uses: google-github-actions/deploy-cloudrun@v2
