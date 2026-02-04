@@ -115,16 +115,22 @@ function parseArgs(argv: string[]): {
   const args = [...argv];
   while (args.length > 0) {
     const token = args.shift();
-    if (!token) break;
+    if (!token) {
+      break;
+    }
     if (token === "--email") {
       const email = args.shift();
-      if (!email) throw new Error("Missing value for --email");
+      if (!email) {
+        throw new Error("Missing value for --email");
+      }
       defaults.email = email;
       continue;
     }
     if (token === "--name") {
       const name = args.shift();
-      if (!name) throw new Error("Missing value for --name");
+      if (!name) {
+        throw new Error("Missing value for --name");
+      }
       defaults.name = name;
       continue;
     }
@@ -134,7 +140,9 @@ function parseArgs(argv: string[]): {
     }
     if (token === "--env-file") {
       const envFile = args.shift();
-      if (!envFile) throw new Error("Missing value for --env-file");
+      if (!envFile) {
+        throw new Error("Missing value for --env-file");
+      }
       defaults.envFile = envFile;
       continue;
     }
