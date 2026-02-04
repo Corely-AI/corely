@@ -71,6 +71,46 @@ jobs:
             WORKFLOW_QUEUE_DRIVER=memory
             PORT=8080
             API_PORT=8080
+            RESEND_FROM=${{ secrets.RESEND_FROM }}
+            RESEND_REPLY_TO=${{ secrets.RESEND_REPLY_TO }}
+          secrets: |
+            DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest
+            RESEND_API_KEY=projects/${{ env.PROJECT_ID }}/secrets/RESEND_API_KEY:latest
+            JWT_ACCESS_SECRET=projects/${{ env.PROJECT_ID }}/secrets/JWT_ACCESS_SECRET:latest
+            JWT_REFRESH_SECRET=projects/${{ env.PROJECT_ID }}/secrets/JWT_REFRESH_SECRET:latest
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Run DB migrations (Cloud Run job)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          JOB_NAME="corely-api-migrate"
+          IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}"
+
+          if gcloud run jobs describe "$JOB_NAME" --region "${{ env.REGION }}" >/dev/null 2>&1; then
+            gcloud run jobs update "$JOB_NAME" \
+              --region "${{ env.REGION }}" \
+              --image "$IMAGE" \
+              --command "sh" \
+              --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
+              --set-env-vars "NODE_ENV=production" \
+              --set-secrets "DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest"
+          else
+            gcloud run jobs create "$JOB_NAME" \
+              --region "${{ env.REGION }}" \
+              --image "$IMAGE" \
+              --command "sh" \
+              --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
+              --set-env-vars "NODE_ENV=production" \
+              --set-secrets "DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest"
+          fi
+
+          gcloud run jobs execute "$JOB_NAME" --region "${{ env.REGION }}" --wait
 
       # - name: Deploy Worker to Cloud Run
       #   uses: google-github-actions/deploy-cloudrun@v2
