@@ -11,6 +11,7 @@ import { ForbiddenError, ValidationFailedError } from "@corely/domain";
 import type { ExtKvPort } from "@corely/data";
 import { FakeRolePermissionGrantRepository } from "../../../testkit/fakes/fake-role-permission-grant-repo";
 import { PLATFORM_PERMISSION_KEYS } from "../../policies/platform-permissions.policy";
+import { FakeTenantRoleSeeder } from "../../../testkit/fakes/fake-tenant-role-seeder";
 
 const buildContext = (userId?: string, roles: string[] = []) => ({
   userId,
@@ -28,6 +29,7 @@ describe("CreateTenantUseCase", () => {
   let audit: MockAudit;
   let idempotency: MockIdempotencyStoragePort;
   let extKv: ExtKvPort;
+  let roleSeeder: FakeTenantRoleSeeder;
 
   beforeEach(() => {
     tenantRepo = new FakeTenantRepository();
@@ -35,6 +37,7 @@ describe("CreateTenantUseCase", () => {
     outbox = new MockOutbox();
     audit = new MockAudit();
     idempotency = new MockIdempotencyStoragePort();
+    roleSeeder = new FakeTenantRoleSeeder();
     extKv = {
       get: async () => null,
       set: async (input) => ({
@@ -59,7 +62,8 @@ describe("CreateTenantUseCase", () => {
       idempotency,
       new FakeIdGenerator("tenant-id"),
       new FakeClock(new Date("2024-01-01T00:00:00.000Z")),
-      extKv
+      extKv,
+      roleSeeder
     );
   });
 
