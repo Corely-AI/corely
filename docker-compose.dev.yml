@@ -134,7 +134,7 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
     ports:
-      - "${WEB_PORT:-5173}:8080"
+      - "${WEB_PORT:-8080}:8080"
     volumes:
       - ./apps/web/src:/app/apps/web/src
       - ./apps/web/public:/app/apps/web/public

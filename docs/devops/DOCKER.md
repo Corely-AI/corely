@@ -42,7 +42,7 @@ docker compose --profile demo up --build
 
 Services will be available at:
 
-- **Frontend**: http://localhost:5173
+- **Frontend**: http://localhost:8080
 - **Mock Server**: http://localhost:4000
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
@@ -55,7 +55,7 @@ docker compose --profile full up --build
 
 Services will be available at:
 
-- **Frontend**: http://localhost:5173
+- **Frontend**: http://localhost:8080
 - **API**: http://localhost:3000
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
@@ -169,7 +169,7 @@ REDIS_URL=redis://redis:6379
 VITE_API_BASE_URL=http://localhost:4000
 
 # Ports
-WEB_PORT=5173
+WEB_PORT=8080
 API_PORT=3000
 ```
 
@@ -237,7 +237,7 @@ If you get `bind: address already in use`:
 
 ```bash
 # macOS/Linux
-lsof -i :5173
+lsof -i :8080
 lsof -i :3000
 lsof -i :5432
 

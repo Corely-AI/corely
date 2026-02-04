@@ -719,6 +719,7 @@
     "signin": {
       "title": "Sign in to your account",
       "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
       "cta": "Sign in",
       "signingIn": "Signing in...",
       "noAccount": "Don't have an account?"
@@ -728,6 +729,24 @@
       "cta": "Sign up",
       "creating": "Creating account...",
       "hasAccount": "Already have an account?"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "cta": "Send reset link",
+      "sending": "Sending link...",
+      "successMessage": "If an account exists for {{email}}, we've sent a password reset link.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "title": "Set a new password",
+      "cta": "Update password",
+      "updating": "Updating password...",
+      "successToast": "Password updated",
+      "missingTokenTitle": "Missing reset token",
+      "missingTokenMessage": "The password reset link is invalid or incomplete.",
+      "requestNewLink": "Request a new link",
+      "confirmLabel": "Confirm password"
     },
     "fields": {
       "email": "Email address",
@@ -744,6 +763,10 @@
     "errors": {
       "loginFailed": "Invalid email or password",
       "passwordLength": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match",
+      "missingResetToken": "Reset token is missing",
+      "requestFailed": "Unable to send reset link",
+      "resetFailed": "Unable to reset password",
       "signupFailed": "Failed to create account",
       "networkError": "Network error. Please check if the server is running."
     }

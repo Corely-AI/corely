@@ -46,6 +46,7 @@ model User {
   // Relations
   memberships         Membership[]
   refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
   workspaceMemberships WorkspaceMembership[]
   rolePermissionGrants RolePermissionGrant[]
 
@@ -180,6 +181,22 @@ model RefreshToken {
   @@index([userId])
   @@index([tenantId])
   @@index([userId, expiresAt])
+  @@index([tokenHash])
+  @@schema("identity")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime @db.Timestamptz(6)
+  usedAt    DateTime?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
   @@index([tokenHash])
   @@schema("identity")
 }

@@ -209,6 +209,14 @@ export class EnvService {
     return this.config.JWT_SECRET;
   }
 
+  get WEB_BASE_URL(): string | undefined {
+    return this.config.WEB_BASE_URL;
+  }
+
+  get PASSWORD_RESET_TOKEN_TTL_MINUTES(): number {
+    return this.config.PASSWORD_RESET_TOKEN_TTL_MINUTES;
+  }
+
   // ============================================================================
   // HELPER METHODS
   // ============================================================================

@@ -104,6 +104,8 @@ import { TenantEntitlementsPage } from "../../modules/platform/screens/tenant-ma
 import NotFound from "../../shared/components/NotFound";
 import { LoginPage } from "../../routes/auth/login";
 import SignupPage from "../../routes/auth/signup";
+import ForgotPasswordPage from "../../routes/auth/forgot-password";
+import ResetPasswordPage from "../../routes/auth/reset-password";
 import { RequireAuth } from "./require-auth";
 import { CopilotPage } from "../../routes/copilot";
 import { RequireCapability } from "../../shared/workspaces/RequireCapability";
@@ -170,6 +172,8 @@ export const Router = () => (
 
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignupPage />} />
+      <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
       <Route path="/f/:publicId" element={<PublicFormPage />} />
       <Route element={<PublicWorkspaceProvider />}>
         <Route path="/w/:workspaceSlug/cms" element={<PublicCmsListPage />} />

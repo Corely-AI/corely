@@ -138,7 +138,7 @@ services:
       NODE_ENV: ${NODE_ENV:-test}
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
     ports:
-      - "5173:8080"
+      - "8080:8080"
     networks:
       - corely_e2e
 

@@ -5,22 +5,30 @@
 
 /**
  * Generate a public URL for a rental property.
- * In local development, uses path-based routing: /w/:workspaceSlug/public/rentals/properties/:slug
- * In production with custom domain/subdomain, uses: /public/rentals/properties/:slug
- *
- * Note: The shorthand routes like /rental/:slug or /stay/:slug are handled by frontend routing only.
- * For API calls and server-side resolution, always use the full /public/rentals/properties/:slug path.
+ * In local development, uses path-based routing: /w/:workspaceSlug/rentals/:slug
+ * In production, prefers subdomain routing: https://:workspaceSlug.<rootDomain>/rentals/:slug
+ * Falls back to path-based routing if a root domain is not available.
  */
 export function getPublicRentalUrl(propertySlug: string, workspaceSlug?: string): string {
   const publicWebBaseUrl =
     import.meta.env.VITE_PUBLIC_WEB_BASE_URL ||
-    (import.meta.env.DEV ? "http://localhost:8082" : "https://corely.one");
+    (import.meta.env.DEV ? "http://localhost:8082" : "https://my.corely.one");
 
-  const path = workspaceSlug
-    ? `/w/${workspaceSlug}/rentals/${propertySlug}`
-    : `/rentals/${propertySlug}`;
+  const baseUrl = new URL(publicWebBaseUrl);
+  const rootDomain = import.meta.env.VITE_PUBLIC_ROOT_DOMAIN || baseUrl.hostname;
+  const canUseSubdomain =
+    import.meta.env.PROD && Boolean(workspaceSlug) && baseUrl.hostname === rootDomain;
 
-  return publicWebBaseUrl ? new URL(path, publicWebBaseUrl).toString() : path;
+  const origin = canUseSubdomain
+    ? `${baseUrl.protocol}//${workspaceSlug}.${rootDomain}`
+    : baseUrl.origin;
+  const path = canUseSubdomain
+    ? `/rentals/${propertySlug}`
+    : workspaceSlug
+      ? `/w/${workspaceSlug}/rentals/${propertySlug}`
+      : `/rentals/${propertySlug}`;
+
+  return new URL(path, origin).toString();
 }
 
 /**

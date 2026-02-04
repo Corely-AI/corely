@@ -32,7 +32,7 @@ export const envSchema = z.object({
   // PORTS
   // ============================================================================
   API_PORT: z.coerce.number().int().positive().default(3000),
-  WEB_PORT: z.coerce.number().int().positive().default(5173),
+  WEB_PORT: z.coerce.number().int().positive().default(8080),
   MOCK_PORT: z.coerce.number().int().positive().default(4000),
   WORKER_PORT: z.coerce.number().int().positive().default(3001),
 
@@ -84,6 +84,8 @@ export const envSchema = z.object({
   // SECURITY & AUTH
   // ============================================================================
   JWT_SECRET: z.string().optional(),
+  WEB_BASE_URL: z.string().url().optional(),
+  PASSWORD_RESET_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().default(60),
 
   // ============================================================================
   // CLOUD RUN / K8S MARKERS (for detection only, not user-configurable)

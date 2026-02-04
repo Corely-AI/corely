@@ -6,7 +6,7 @@ async function globalSetup(_config: FullConfig) {
   // and handles authentication independently for better test isolation
 
   // Verify API is reachable
-  const baseURL = process.env.BASE_URL || "http://localhost:5173";
+  const baseURL = process.env.BASE_URL || "http://localhost:8080";
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
