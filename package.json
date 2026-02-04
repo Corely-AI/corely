@@ -66,5 +66,9 @@
     "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
-  "author": "Ha Doan <ha@oneway8x.com>"
+  "author": "Ha Doan <ha@oneway8x.com>",
+  "dependencies": {
+    "@types/pg": "catalog:",
+    "pg": "catalog:"
+  }
 }
