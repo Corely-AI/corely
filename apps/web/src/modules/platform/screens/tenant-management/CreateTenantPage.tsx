@@ -124,7 +124,7 @@ export default function CreateTenantPage() {
                   placeholder="acme-inc"
                   onChange={(event) => {
                     setSlugTouched(true);
-                    slugRegister.onChange(event);
+                    void slugRegister.onChange(event);
                   }}
                   data-testid="tenant-slug-input"
                 />
