@@ -35,9 +35,7 @@ export class ResendPasswordResetEmailAdapter implements PasswordResetEmailPort {
       html,
       text,
       ...(this.replyTo ? { replyTo: this.replyTo } : {}),
-      ...(request.correlationId
-        ? { headers: { "X-Correlation-ID": request.correlationId } }
-        : {}),
+      ...(request.correlationId ? { headers: { "X-Correlation-ID": request.correlationId } } : {}),
     };
 
     const sendOptions: { idempotencyKey: string } | undefined = request.idempotencyKey
