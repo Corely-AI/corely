@@ -69,7 +69,6 @@ jobs:
           env_vars: |
             NODE_ENV=production
             WORKFLOW_QUEUE_DRIVER=memory
-            PORT=3000
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
