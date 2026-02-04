@@ -12,19 +12,25 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepositoryPort 
   async create(data: {
     id: string;
     userId: string;
-    tenantId: string;
+    tenantId?: string | null;
     tokenHash: string;
     expiresAt: Date;
   }): Promise<void> {
     await this.prisma.refreshToken.create({
-      data,
+      data: {
+        id: data.id,
+        userId: data.userId,
+        tenantId: data.tenantId ?? null,
+        tokenHash: data.tokenHash,
+        expiresAt: data.expiresAt,
+      },
     });
   }
 
   async findValidByHash(hash: string): Promise<{
     id: string;
     userId: string;
-    tenantId: string;
+    tenantId: string | null;
     expiresAt: Date;
     revokedAt: Date | null;
   } | null> {
@@ -52,9 +58,9 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepositoryPort 
     });
   }
 
-  async revokeAllForUserInTenant(userId: string, tenantId: string): Promise<void> {
+  async revokeAllForUserInTenant(userId: string, tenantId?: string | null): Promise<void> {
     await this.prisma.refreshToken.updateMany({
-      where: { userId, tenantId, revokedAt: null },
+      where: { userId, tenantId: tenantId ?? null, revokedAt: null },
       data: { revokedAt: new Date() },
     });
   }

@@ -18,14 +18,14 @@ import { createHash, randomUUID } from "crypto";
 
 export interface SwitchTenantInput {
   userId: string;
-  fromTenantId: string;
-  toTenantId: string;
+  fromTenantId: string | null;
+  toTenantId: string | null;
 }
 
 export interface SwitchTenantOutput {
   accessToken: string;
   refreshToken: string;
-  tenantId: string;
+  tenantId: string | null;
 }
 
 /**

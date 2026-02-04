@@ -20,7 +20,7 @@ export class JwtTokenService implements TokenServicePort {
   generateAccessToken(data: {
     userId: string;
     email: string;
-    tenantId: string;
+    tenantId: string | null;
     roleIds: string[];
   }): string {
     return jwt.sign(
@@ -53,7 +53,7 @@ export class JwtTokenService implements TokenServicePort {
   async verifyAccessToken(token: string): Promise<{
     userId: string;
     email: string;
-    tenantId: string;
+    tenantId: string | null;
     roleIds: string[];
     iat: number;
     exp: number;
@@ -62,7 +62,7 @@ export class JwtTokenService implements TokenServicePort {
       const decoded = jwt.verify(token, this.accessTokenSecret) as {
         userId: string;
         email: string;
-        tenantId: string;
+        tenantId: string | null;
         roleIds?: string[];
         iat: number;
         exp: number;

@@ -60,7 +60,7 @@ export class PrismaMembershipRepository implements MembershipRepositoryPort {
     return Membership.restore(data);
   }
 
-  async findByTenantId(tenantId: string): Promise<Membership[]> {
+  async findByTenantId(tenantId: string | null): Promise<Membership[]> {
     const data = await this.prisma.membership.findMany({
       where: { tenantId },
     });
@@ -68,9 +68,9 @@ export class PrismaMembershipRepository implements MembershipRepositoryPort {
     return data.map((item) => Membership.restore(item));
   }
 
-  async findByTenantAndUser(tenantId: string, userId: string): Promise<Membership | null> {
-    const data = await this.prisma.membership.findUnique({
-      where: { tenantId_userId: { tenantId, userId } },
+  async findByTenantAndUser(tenantId: string | null, userId: string): Promise<Membership | null> {
+    const data = await this.prisma.membership.findFirst({
+      where: { tenantId, userId },
     });
 
     if (!data) {
@@ -79,7 +79,7 @@ export class PrismaMembershipRepository implements MembershipRepositoryPort {
     return Membership.restore(data);
   }
 
-  async existsByTenantAndUser(tenantId: string, userId: string): Promise<boolean> {
+  async existsByTenantAndUser(tenantId: string | null, userId: string): Promise<boolean> {
     const count = await this.prisma.membership.count({
       where: { tenantId, userId },
     });
@@ -87,7 +87,7 @@ export class PrismaMembershipRepository implements MembershipRepositoryPort {
     return count > 0;
   }
 
-  async existsByRole(tenantId: string, roleId: string): Promise<boolean> {
+  async existsByRole(tenantId: string | null, roleId: string): Promise<boolean> {
     const count = await this.prisma.membership.count({
       where: { tenantId, roleId },
     });

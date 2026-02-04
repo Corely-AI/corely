@@ -8,7 +8,7 @@ export interface RefreshTokenRepositoryPort {
   create(data: {
     id: string;
     userId: string;
-    tenantId: string;
+    tenantId?: string | null;
     tokenHash: string;
     expiresAt: Date;
   }): Promise<void>;
@@ -19,7 +19,7 @@ export interface RefreshTokenRepositoryPort {
   findValidByHash(hash: string): Promise<{
     id: string;
     userId: string;
-    tenantId: string;
+    tenantId?: string | null;
     expiresAt: Date;
     revokedAt: Date | null;
   } | null>;
@@ -32,7 +32,7 @@ export interface RefreshTokenRepositoryPort {
   /**
    * Revoke all tokens for a user in a tenant
    */
-  revokeAllForUserInTenant(userId: string, tenantId: string): Promise<void>;
+  revokeAllForUserInTenant(userId: string, tenantId?: string | null): Promise<void>;
 
   /**
    * Clean up expired tokens

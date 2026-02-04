@@ -27,22 +27,22 @@ export interface MembershipRepositoryPort {
   /**
    * Find all memberships for a tenant
    */
-  findByTenantId(tenantId: string): Promise<Membership[]>;
+  findByTenantId(tenantId: string | null): Promise<Membership[]>;
 
   /**
    * Find membership by tenant and user
    */
-  findByTenantAndUser(tenantId: string, userId: string): Promise<Membership | null>;
+  findByTenantAndUser(tenantId: string | null, userId: string): Promise<Membership | null>;
 
   /**
    * Check if membership exists
    */
-  existsByTenantAndUser(tenantId: string, userId: string): Promise<boolean>;
+  existsByTenantAndUser(tenantId: string | null, userId: string): Promise<boolean>;
 
   /**
    * Check if any membership uses a role in a tenant
    */
-  existsByRole(tenantId: string, roleId: string): Promise<boolean>;
+  existsByRole(tenantId: string | null, roleId: string): Promise<boolean>;
 
   /**
    * Update membership (e.g., change role)

@@ -9,7 +9,7 @@ export interface TokenServicePort {
   generateAccessToken(data: {
     userId: string;
     email: string;
-    tenantId: string;
+    tenantId: string | null;
     roleIds: string[];
   }): string;
 
@@ -24,7 +24,7 @@ export interface TokenServicePort {
   verifyAccessToken(token: string): Promise<{
     userId: string;
     email: string;
-    tenantId: string;
+    tenantId: string | null;
     roleIds: string[];
     iat: number;
     exp: number;
