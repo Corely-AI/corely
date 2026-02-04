@@ -181,7 +181,7 @@ pnpm typecheck
 
 **Issue:** 2 packages (`config`, `kernel`) have TypeScript errors due to strictness options in base.json:
 
-- `packages/config`: `exactOptionalPropertyTypes` issue with `API_PORT` type
+- `packages/config`: `exactOptionalPropertyTypes` issue with `PORT` type
 - `packages/kernel`: Function signature mismatch in tests
 
 **Workaround:** Per-package overrides can be added:

@@ -7,7 +7,7 @@ let nodeProcess = null;
 let buildProcess = null;
 let restartPromise = Promise.resolve();
 
-const apiPort = Number(process.env.API_PORT || 3000);
+const apiPort = Number(process.env.PORT || 3000);
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -75,7 +75,7 @@ const ensurePortFree = async (port) => {
 
   const freed = await waitForPortToClose(port);
   if (!freed) {
-    throw new Error(`Port ${port} is still busy. Set API_PORT or free it manually.`);
+    throw new Error(`Port ${port} is still busy. Set PORT or free it manually.`);
   }
 };
 

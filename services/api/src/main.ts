@@ -58,8 +58,8 @@ async function bootstrap() {
   logger.log("Initializing Nest application");
   await app.init();
 
-  // Cloud Run injects PORT, but we fallback to API_PORT or 3000
-  const port = parseInt(process.env.PORT || process.env.API_PORT || "3000", 10);
+  // Cloud Run injects PORT; fallback to 3000 for local dev
+  const port = parseInt(process.env.PORT || "3000", 10);
   logger.log(`Starting HTTP server on port ${port}`);
   await app.listen(port, "0.0.0.0");
 

@@ -65,8 +65,8 @@ export class EnvService {
   // PORTS
   // ============================================================================
 
-  get API_PORT(): number {
-    return this.config.API_PORT;
+  get PORT(): number {
+    return this.config.PORT;
   }
 
   get WEB_PORT(): number {
