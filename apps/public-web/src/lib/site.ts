@@ -4,5 +4,6 @@ export const siteConfig = {
   description: "Public-facing pages for portfolios, rentals, blog, and CMS content.",
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL || "https://corely.one",
   rootDomain: process.env.NEXT_PUBLIC_ROOT_DOMAIN || "corely.one",
+  appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://app.corely.one",
   defaultOgImage: "/og-corely.png",
 };
