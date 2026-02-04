@@ -28,25 +28,16 @@ COPY tsconfig.base.json tsconfig.node.json ./
 COPY packages/tooling/tsconfig/*.json ./packages/tooling/tsconfig/
 COPY packages ./packages
 COPY services/worker ./services/worker
+COPY scripts ./scripts
 
 # Generate Prisma client BEFORE building packages (Prisma 7 uses prisma.config.ts)
 # Set a dummy DATABASE_URL for build time only (actual URL comes from runtime env vars)
 ARG DATABASE_URL_BUILD=postgresql://dummy:dummy@localhost:5432/dummy
 RUN cd /app/packages/data && DATABASE_URL=$DATABASE_URL_BUILD /app/node_modules/.bin/prisma generate
 
-# Build shared packages (now that Prisma client is generated)
-RUN pnpm --filter @corely/config build \
- && pnpm --filter @corely/contracts build \
- && pnpm --filter @corely/domain build \
- && pnpm --filter @corely/kernel build \
- && pnpm --filter @corely/email-templates build \
- && pnpm --filter @corely/data build
-
-# Environment variables are set by docker-compose or .env files
-# NODE_ENV, DATABASE_URL, REDIS_URL, LOG_LEVEL, etc.
-
-# Build Worker service
-RUN pnpm --filter @corely/worker build
+# Build worker service and its workspace deps
+RUN pnpm --filter @corely/worker... build \
+ && node scripts/check-service-deps-built.mjs @corely/worker
 
 # Environment variables are set by docker-compose or .env files
 CMD ["pnpm", "--filter", "@corely/worker", "start"]

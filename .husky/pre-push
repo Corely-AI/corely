@@ -51,13 +51,24 @@ fi
 
 echo "✅ Typecheck passed."
 
-echo "Running targeted build to ensure code compiles..."
-pnpm -r --filter @corely/contracts --filter @corely/domain --filter @corely/data --filter @corely/api --filter @corely/worker build
+echo "Running API build + dependency guard..."
+pnpm build:api
 
 if [ $? -ne 0 ]; then
-  echo "❌ Build failed. Fix errors and try again."
+  echo "❌ API build failed. Fix errors and try again."
   echo "   To skip: HUSKY=0 git push"
   exit 1
 fi
 
-echo "✅ Build succeeded."
+echo "✅ API build succeeded."
+
+echo "Running Worker build + dependency guard..."
+pnpm build:worker
+
+if [ $? -ne 0 ]; then
+  echo "❌ Worker build failed. Fix errors and try again."
+  echo "   To skip: HUSKY=0 git push"
+  exit 1
+fi
+
+echo "✅ Worker build succeeded."
