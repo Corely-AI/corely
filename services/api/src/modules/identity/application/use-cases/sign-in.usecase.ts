@@ -38,12 +38,12 @@ export interface SignInInput {
 export interface SignInOutput {
   userId: string;
   email: string;
-  tenantId: string;
+  tenantId: string | null;
   accessToken: string;
   refreshToken: string;
   memberships?: Array<{
-    tenantId: string;
-    tenantName: string;
+    tenantId: string | null;
+    tenantName: string | null;
     roleId: string;
   }>;
 }

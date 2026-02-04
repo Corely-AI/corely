@@ -9,7 +9,7 @@ import { UserLoggedOutEvent } from "../../domain/events/identity.events";
 
 export interface SignOutInput {
   userId: string;
-  tenantId: string;
+  tenantId: string | null;
   refreshTokenHash?: string; // Optional: revoke specific token
 }
 

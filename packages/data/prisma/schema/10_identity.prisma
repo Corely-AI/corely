@@ -168,15 +168,15 @@ model RolePermissionGrant {
 model RefreshToken {
   id         String   @id @default(cuid())
   userId     String
-  tenantId   String
+  tenantId   String?
   tokenHash  String
   revokedAt  DateTime?
   expiresAt  DateTime @db.Timestamptz(6)
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
 
   // Relations
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([tenantId])

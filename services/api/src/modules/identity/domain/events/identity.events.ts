@@ -36,7 +36,7 @@ export class TenantCreatedEvent extends DomainEvent {
 export class UserLoggedInEvent extends DomainEvent {
   constructor(
     public readonly userId: string,
-    public readonly tenantId: string,
+    public readonly tenantId: string | null,
     public readonly email: string
   ) {
     super("identity.user.logged_in", tenantId, userId);
@@ -46,7 +46,7 @@ export class UserLoggedInEvent extends DomainEvent {
 export class MembershipCreatedEvent extends DomainEvent {
   constructor(
     public readonly membershipId: string,
-    public readonly tenantId: string,
+    public readonly tenantId: string | null,
     public readonly userId: string,
     public readonly roleId: string
   ) {
@@ -57,7 +57,7 @@ export class MembershipCreatedEvent extends DomainEvent {
 export class RefreshTokenIssuedEvent extends DomainEvent {
   constructor(
     public readonly userId: string,
-    public readonly tenantId: string
+    public readonly tenantId: string | null
   ) {
     super("identity.refresh_token.issued", tenantId, userId);
   }
@@ -66,7 +66,7 @@ export class RefreshTokenIssuedEvent extends DomainEvent {
 export class UserLoggedOutEvent extends DomainEvent {
   constructor(
     public readonly userId: string,
-    public readonly tenantId: string
+    public readonly tenantId: string | null
   ) {
     super("identity.user.logged_out", tenantId, userId);
   }
@@ -75,8 +75,8 @@ export class UserLoggedOutEvent extends DomainEvent {
 export class TenantSwitchedEvent extends DomainEvent {
   constructor(
     public readonly userId: string,
-    public readonly fromTenantId: string,
-    public readonly toTenantId: string
+    public readonly fromTenantId: string | null,
+    public readonly toTenantId: string | null
   ) {
     super("identity.tenant.switched", toTenantId, userId);
   }
