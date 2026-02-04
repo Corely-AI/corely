@@ -63,6 +63,7 @@ import { CreateTenantUseCase } from "./application/use-cases/create-tenant.useca
 import { ListTenantUsersUseCase } from "./application/use-cases/list-tenant-users.usecase";
 import { CreateTenantUserUseCase } from "./application/use-cases/create-tenant-user.usecase";
 import { UpdateTenantUserRoleUseCase } from "./application/use-cases/update-tenant-user-role.usecase";
+import { GetTenantUseCase } from "./application/use-cases/get-tenant.usecase";
 import { RequestPasswordResetUseCase } from "./application/use-cases/request-password-reset.usecase";
 import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-password-reset.usecase";
 
@@ -177,6 +178,7 @@ import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-pas
     ListTenantUsersUseCase,
     CreateTenantUserUseCase,
     UpdateTenantUserRoleUseCase,
+    GetTenantUseCase,
 
     // Permission catalog
     PermissionCatalogRegistry,

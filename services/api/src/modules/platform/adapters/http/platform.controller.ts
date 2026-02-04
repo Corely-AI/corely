@@ -41,9 +41,17 @@ export class PlatformController {
 
   @Get()
   @RequirePermission("platform.apps.manage")
-  async listTenantApps(@CurrentTenantId() tenantId: string): Promise<AppCatalogItem[]> {
+  async listTenantApps(@CurrentTenantId() tenantId: string | null): Promise<AppCatalogItem[]> {
     // Get all apps from registry
     const allApps = this.appRegistry.list();
+
+    // If no tenant context, return all apps as disabled
+    if (!tenantId) {
+      return allApps.map((app) => ({
+        ...app,
+        enabled: false,
+      }));
+    }
 
     // Get tenant install states
     const installs = await this.appInstallRepo.listByTenant(tenantId);

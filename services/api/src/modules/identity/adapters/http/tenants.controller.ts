@@ -16,6 +16,7 @@ import {
 import { ListTenantUsersUseCase } from "../../application/use-cases/list-tenant-users.usecase";
 import { CreateTenantUserUseCase } from "../../application/use-cases/create-tenant-user.usecase";
 import { UpdateTenantUserRoleUseCase } from "../../application/use-cases/update-tenant-user-role.usecase";
+import { GetTenantUseCase } from "../../application/use-cases/get-tenant.usecase";
 
 @Controller("platform/tenants")
 @UseGuards(AuthGuard, RbacGuard)
@@ -28,7 +29,9 @@ export class TenantsController {
     @Inject(CreateTenantUserUseCase)
     private readonly createTenantUserUseCase: CreateTenantUserUseCase,
     @Inject(UpdateTenantUserRoleUseCase)
-    private readonly updateTenantUserRoleUseCase: UpdateTenantUserRoleUseCase
+    private readonly updateTenantUserRoleUseCase: UpdateTenantUserRoleUseCase,
+    @Inject(GetTenantUseCase)
+    private readonly getTenantUseCase: GetTenantUseCase
   ) {}
 
   @Get()
@@ -36,6 +39,13 @@ export class TenantsController {
   async list(@Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     return await this.listTenantsUseCase.execute({ actorUserId: ctx.userId ?? "unknown" }, ctx);
+  }
+
+  @Get(":tenantId")
+  @RequirePermission("platform.tenants.read")
+  async get(@Param("tenantId") tenantId: string, @Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    return await this.getTenantUseCase.execute({ tenantId }, ctx);
   }
 
   @Post()
