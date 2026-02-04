@@ -6,6 +6,7 @@ import type {
   RolePermissionsResponse,
   UpdateRolePermissionsRequest,
   PermissionCatalogResponse,
+  EffectivePermissionsResponse,
 } from "@corely/contracts";
 
 export const identityApi = {
@@ -33,6 +34,10 @@ export const identityApi = {
       "/identity/permissions/catalog"
     );
     return response.catalog;
+  },
+
+  async getEffectivePermissions(): Promise<EffectivePermissionsResponse> {
+    return apiClient.get<EffectivePermissionsResponse>("/identity/permissions/effective");
   },
 
   async getRolePermissions(roleId: string): Promise<RolePermissionsResponse> {

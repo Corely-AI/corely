@@ -7,7 +7,7 @@ export interface RoleRepositoryPort {
    */
   create(data: {
     id: string;
-    tenantId: string;
+    tenantId: string | null;
     name: string;
     description?: string | null;
     isSystem?: boolean;
@@ -23,6 +23,18 @@ export interface RoleRepositoryPort {
   ): Promise<{
     id: string;
     tenantId: string;
+    name: string;
+    description: string | null;
+    isSystem: boolean;
+    systemKey: string | null;
+  } | null>;
+
+  /**
+   * Find host role by ID (tenantId = null)
+   */
+  findHostRoleById(id: string): Promise<{
+    id: string;
+    tenantId: string | null;
     name: string;
     description: string | null;
     isSystem: boolean;

@@ -1,5 +1,5 @@
 export type UseCaseContext = {
-  tenantId?: string;
+  tenantId?: string | null;
   workspaceId?: string | null;
   userId?: string;
   correlationId?: string;

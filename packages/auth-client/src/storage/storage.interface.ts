@@ -26,7 +26,7 @@ export interface TokenStorage {
   /**
    * Store active workspace ID
    */
-  setActiveWorkspaceId(workspaceId: string): Promise<void>;
+  setActiveWorkspaceId(workspaceId: string | null): Promise<void>;
 
   /**
    * Retrieve active workspace ID

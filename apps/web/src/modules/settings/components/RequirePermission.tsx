@@ -1,8 +1,12 @@
 import React from "react";
 import NotFound from "@/shared/components/NotFound";
-import { hasPermission, useActiveRoleId, useIsSuperAdmin } from "@/shared/lib/permissions";
+import {
+  hasPermission,
+  isHostScopedPlatformPermission,
+  useEffectivePermissions,
+  useIsHostScope,
+} from "@/shared/lib/permissions";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
-import { useRolePermissions } from "../hooks/useRolePermissions";
 
 interface RequirePermissionProps {
   permission: string;
@@ -12,20 +16,29 @@ interface RequirePermissionProps {
 export const RequirePermission: React.FC<RequirePermissionProps> = ({ permission, children }) => {
   const { hasCapability, isLoading: isConfigLoading } = useWorkspaceConfig();
   const rbacEnabled = hasCapability("workspace.rbac");
-  const isSuperAdmin = useIsSuperAdmin();
-  const { roleId } = useActiveRoleId();
-  const { data, isLoading } = useRolePermissions(rbacEnabled ? roleId : undefined);
+  const isHostScope = useIsHostScope();
+  const { data, isLoading } = useEffectivePermissions();
+  const isPlatformPermission = isHostScopedPlatformPermission(permission);
+
+  if (isPlatformPermission) {
+    if (!isHostScope) {
+      return <NotFound />;
+    }
+    if (isLoading) {
+      return null;
+    }
+    if (!hasPermission(data?.permissions, permission)) {
+      return <NotFound />;
+    }
+    return <>{children}</>;
+  }
+
+  if (isHostScope) {
+    return <NotFound />;
+  }
 
   if (isConfigLoading) {
     return null;
-  }
-
-  if (isSuperAdmin) {
-    return <>{children}</>;
-  }
-
-  if (data?.role?.systemKey === "OWNER") {
-    return <>{children}</>;
   }
 
   if (!rbacEnabled) {
@@ -36,11 +49,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({ permission
     return null;
   }
 
-  if (!roleId) {
-    return <NotFound />;
-  }
-
-  if (!hasPermission(data?.grants, permission)) {
+  if (!hasPermission(data?.permissions, permission)) {
     return <NotFound />;
   }
 

@@ -40,8 +40,12 @@ export class SecureStorageAdapter implements TokenStorage {
     return await this.SecureStore.getItemAsync(this.REFRESH_TOKEN_KEY);
   }
 
-  async setActiveWorkspaceId(workspaceId: string): Promise<void> {
-    await this.SecureStore.setItemAsync(this.WORKSPACE_ID_KEY, workspaceId);
+  async setActiveWorkspaceId(workspaceId: string | null): Promise<void> {
+    if (workspaceId) {
+      await this.SecureStore.setItemAsync(this.WORKSPACE_ID_KEY, workspaceId);
+    } else {
+      await this.SecureStore.deleteItemAsync(this.WORKSPACE_ID_KEY);
+    }
   }
 
   async getActiveWorkspaceId(): Promise<string | null> {

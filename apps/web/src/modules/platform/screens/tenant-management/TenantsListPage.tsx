@@ -7,9 +7,11 @@ import { Alert, AlertDescription } from "@corely/ui";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useTenants } from "../../hooks/useTenants";
 import type { TenantDto } from "@corely/contracts";
+import { useCanManageTenants } from "@/shared/lib/permissions";
 
 export function TenantsListPage() {
   const { data: tenants = [], isLoading, error } = useTenants();
+  const { can: canManageTenants } = useCanManageTenants();
 
   const sortedTenants = useMemo(
     () => [...tenants].sort((a, b) => a.name.localeCompare(b.name)),
@@ -40,6 +42,11 @@ export function TenantsListPage() {
           <h1 className="text-h1 text-foreground">Tenants</h1>
           <p className="text-sm text-muted-foreground">Manage tenant entitlements and settings.</p>
         </div>
+        {canManageTenants ? (
+          <Button asChild variant="accent">
+            <Link to="/settings/tenants/new">Add tenant</Link>
+          </Button>
+        ) : null}
       </div>
 
       <Card>

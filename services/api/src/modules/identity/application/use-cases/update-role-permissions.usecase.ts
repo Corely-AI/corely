@@ -44,13 +44,12 @@ export class UpdateRolePermissionsUseCase {
         command.tenantId,
         command.actorUserId
       );
-      const hostMembership = await this.membershipRepo.findHostMembership(command.actorUserId);
       const actorRoleId = actorMembership?.getRoleId();
       const actorRole = actorRoleId
         ? await this.roleRepo.findById(command.tenantId, actorRoleId)
         : null;
       const actorIsOwner = actorRole?.systemKey === "OWNER";
-      if (!actorIsOwner && !hostMembership) {
+      if (!actorIsOwner) {
         throw new ValidationError("System roles cannot be edited");
       }
     }

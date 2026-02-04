@@ -35,9 +35,13 @@ export class LocalStorageAdapter implements TokenStorage {
     return null;
   }
 
-  async setActiveWorkspaceId(workspaceId: string): Promise<void> {
+  async setActiveWorkspaceId(workspaceId: string | null): Promise<void> {
     if (typeof window !== "undefined") {
-      localStorage.setItem(this.WORKSPACE_ID_KEY, workspaceId);
+      if (workspaceId) {
+        localStorage.setItem(this.WORKSPACE_ID_KEY, workspaceId);
+      } else {
+        localStorage.removeItem(this.WORKSPACE_ID_KEY);
+      }
     }
   }
 

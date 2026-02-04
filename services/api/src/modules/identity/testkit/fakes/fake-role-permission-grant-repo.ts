@@ -2,8 +2,12 @@ import type { RolePermissionEffect } from "@corely/contracts";
 import type { RolePermissionGrantRepositoryPort } from "../../application/ports/role-permission-grant-repository.port";
 
 export class FakeRolePermissionGrantRepository implements RolePermissionGrantRepositoryPort {
-  grants: Array<{ tenantId: string; roleId: string; key: string; effect: RolePermissionEffect }> =
-    [];
+  grants: Array<{
+    tenantId: string | null;
+    roleId: string;
+    key: string;
+    effect: RolePermissionEffect;
+  }> = [];
 
   async listByRoleIdsAndTenant(
     tenantId: string,
@@ -15,7 +19,12 @@ export class FakeRolePermissionGrantRepository implements RolePermissionGrantRep
     }
 
     return this.grants
-      .filter((grant) => grant.tenantId === tenantId && uniqueRoles.includes(grant.roleId))
+      .filter(
+        (grant) =>
+          grant.tenantId === tenantId &&
+          typeof grant.tenantId === "string" &&
+          uniqueRoles.includes(grant.roleId)
+      )
       .map((grant) => ({ key: grant.key, effect: grant.effect }));
   }
 

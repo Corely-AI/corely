@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type { ListTenantsOutput, TenantDto } from "@corely/contracts";
+import { tenantsQueryKeys } from "./tenants.queryKeys";
 
 export function useTenants() {
   return useQuery<TenantDto[], Error>({
-    queryKey: ["platform", "tenants"],
+    queryKey: tenantsQueryKeys.list(),
     queryFn: async () => {
       const response = await apiClient.get<ListTenantsOutput | { tenants: TenantDto[] }>(
         "/platform/tenants"

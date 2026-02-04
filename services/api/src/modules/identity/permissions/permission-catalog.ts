@@ -9,6 +9,7 @@ import { partyPermissions } from "../../party/party.permissions";
 import { crmPermissions } from "../../crm/crm.permissions";
 import { formsPermissions } from "../../forms/forms.permissions";
 import { portfolioPermissions } from "../../portfolio/portfolio.permissions";
+import { platformPermissions } from "../../platform/platform.permissions";
 import { AppRegistry } from "../../platform/infrastructure/registries/app-registry";
 
 const PERMISSION_KEY_REGEX = /^[a-z][a-z0-9]*(?:[.:][a-z0-9]+)*$/;
@@ -16,6 +17,7 @@ const PERMISSION_KEY_REGEX = /^[a-z][a-z0-9]*(?:[.:][a-z0-9]+)*$/;
 export const buildPermissionCatalog = (): PermissionGroup[] => {
   const base: PermissionGroup[] = [
     ...identityPermissions,
+    ...platformPermissions,
     ...salesPermissions,
     ...inventoryPermissions,
     ...partyPermissions,
