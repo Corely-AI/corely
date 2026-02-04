@@ -14,6 +14,10 @@ pnpm --filter @corely/landing dev
 pnpm --filter @corely/landing build
 ```
 
+## Vercel routing note
+
+This app is a SPA (Vite + React Router). The `apps/landing/vercel.json` file rewrites all routes to `index.html` so deep-link refreshes (e.g., `/pricing`) do not 404 on Vercel.
+
 ## SEO and FAQ updates
 
 - Per-route metadata lives in the `Seo` component usage inside each page module.
