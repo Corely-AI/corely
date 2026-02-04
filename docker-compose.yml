@@ -66,7 +66,7 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       LOG_LEVEL: debug
     ports:
-      - "${API_PORT:-3000}:3000"
+      - "${PORT:-3000}:3000"
     volumes:
       - ./services/api/src:/app/services/api/src
       - ./packages/data/src:/app/packages/data/src

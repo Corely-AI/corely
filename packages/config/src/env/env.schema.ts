@@ -31,7 +31,7 @@ export const envSchema = z.object({
   // ============================================================================
   // PORTS
   // ============================================================================
-  API_PORT: z.coerce.number().int().positive().default(3000),
+  PORT: z.coerce.number().int().positive().default(3000),
   WEB_PORT: z.coerce.number().int().positive().default(8080),
   MOCK_PORT: z.coerce.number().int().positive().default(4000),
   WORKER_PORT: z.coerce.number().int().positive().default(3001),

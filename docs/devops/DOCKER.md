@@ -170,7 +170,7 @@ VITE_API_BASE_URL=http://localhost:4000
 
 # Ports
 WEB_PORT=8080
-API_PORT=3000
+PORT=3000
 ```
 
 ### Important: Vite Environment Variables
@@ -249,7 +249,7 @@ kill -9 <PID>
 
 ```env
 WEB_PORT=5174
-API_PORT=3001
+PORT=3001
 ```
 
 Then update frontend API URL if needed.

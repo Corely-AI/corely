@@ -483,7 +483,7 @@ JWT_REFRESH_EXPIRES_IN=30d
 DATABASE_URL=postgresql://user:pass@localhost/db
 
 # API
-API_PORT=3000
+PORT=3000
 ```
 
 ## Testing Workflows

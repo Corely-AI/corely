@@ -291,7 +291,7 @@ import { PrismaInvoiceRepositoryAdapter } from "../infrastructure/adapters/prism
 
 The following type errors existed **before** the naming refactor and are **not related** to the file renames:
 
-1. **packages/config**: Type incompatibility in env.module.ts (API_PORT number vs string)
+1. **packages/config**: Type incompatibility in env.module.ts (PORT number vs string)
 2. **packages/kernel**: Transaction context signature mismatch in base-usecase.test.ts
 3. **packages/testkit**: Missing `.js` extensions for ECMAScript imports
 4. **packages/data**: `prisma` export not available from `@corely/data` (needs index.ts update)

@@ -118,7 +118,7 @@ spec:
                 secretKeyRef:
                   name: database-credentials
                   key: url
-            - name: API_PORT
+            - name: PORT
               value: "8080"
             # ... other env vars
 ```
@@ -137,7 +137,7 @@ export class MyService {
 
   someMethod() {
     const dbUrl = this.env.DATABASE_URL;
-    const port = this.env.API_PORT; // number, already parsed
+    const port = this.env.PORT; // number, already parsed
     const isProd = this.env.isProd(); // boolean helper
 
     // Type-safe access to all config
@@ -322,7 +322,7 @@ If validation fails, you'll see:
 ```
 Environment validation failed:
   - DATABASE_URL: Required
-  - API_PORT: Expected number, received string
+  - PORT: Expected number, received string
 
 Please check your environment variables or .env files.
 ```

@@ -17,7 +17,7 @@ async function bootstrap() {
   if (driver === "cloudtasks") {
     const app = await NestFactory.create(WorkerModule);
     const env = app.get(EnvService);
-    const port = Number(process.env.PORT ?? env.WORKER_PORT);
+    const port = Number(process.env.WORKER_PORT ?? env.WORKER_PORT ?? process.env.PORT ?? 3001);
     await app.listen(port);
     logger.log(`[worker] listening on ${port}`);
   } else {

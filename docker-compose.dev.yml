@@ -71,7 +71,7 @@ services:
       NODE_OPTIONS: --enable-source-maps
       RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_dev}
     ports:
-      - "${API_PORT:-3000}:3000"
+      - "${PORT:-3000}:3000"
     volumes:
       - ./services/api/src:/app/services/api/src
       - ./packages/data/src:/app/packages/data/src
