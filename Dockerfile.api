@@ -47,7 +47,7 @@ RUN pnpm --filter @corely/config build \
 # Build API service
 RUN pnpm --filter @corely/api build
 
-EXPOSE 3000
+EXPOSE 8080
 
 # Environment variables are set by docker-compose or .env files
 # NODE_ENV, DATABASE_URL, REDIS_URL, LOG_LEVEL, etc.
