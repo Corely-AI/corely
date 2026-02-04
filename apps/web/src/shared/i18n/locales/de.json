@@ -18,6 +18,7 @@
     "next": "Weiter",
     "confirm": "Bestätigen",
     "close": "Schließen",
+    "logout": "Abmelden",
     "viewAll": "Alle anzeigen",
     "comingSoon": "Demnächst verfügbar",
     "noResults": "Keine Ergebnisse gefunden",
@@ -73,8 +74,12 @@
     "salesQuotes": "Angebote",
     "salesOrders": "Aufträge",
     "salesInvoices": "Verkaufsrechnungen",
-    "salesCopilot": "Sales Copilot",
+    "salesCopilot": "Vertriebs-Copilot",
     "salesSettings": "Verkaufseinstellungen",
+    "purchaseOrders": "Bestellaufträge",
+    "vendorBills": "Lieferantenrechnungen",
+    "purchasingSettings": "Einkaufseinstellungen",
+    "purchasingCopilot": "Einkaufs-Copilot",
     "settings": "Einstellungen",
     "projects": "Projekte",
     "accounting": "Buchhaltung",
@@ -98,6 +103,7 @@
     "members": "Teamverwaltung",
     "roles": "Rollen & Rechte",
     "paymentMethods": "Zahlungsmethoden",
+    "taxSettings": "Steuereinstellungen",
     "issues": "Probleme"
   },
   "featureFlags": {
@@ -118,7 +124,7 @@
         "enabled": "Portfolio"
       },
       "issues": {
-        "enabled": "Issues"
+        "enabled": "Probleme"
       },
       "cms": {
         "enabled": "CMS"
@@ -136,7 +142,7 @@
         "enabled": "Steuern"
       },
       "cash-management": {
-        "enabled": "Cash Management"
+        "enabled": "Kassenbuch"
       },
       "sales": {
         "enabled": "Vertrieb"
@@ -774,7 +780,7 @@
     "project": {
       "backToWorks": "Zurück zu Projekte",
       "links": "Projekt-Links",
-      "liveDemo": "Live Demo",
+      "liveDemo": "Live-Demo",
       "sourceCode": "Quellcode",
       "techStack": "Technologien"
     },

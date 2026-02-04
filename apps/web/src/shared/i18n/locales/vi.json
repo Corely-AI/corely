@@ -18,6 +18,7 @@
     "next": "Tiếp",
     "confirm": "Xác nhận",
     "close": "Đóng",
+    "logout": "Đăng xuất",
     "viewAll": "Xem tất cả",
     "comingSoon": "Sắp ra mắt",
     "noResults": "Không tìm thấy kết quả",
@@ -75,6 +76,10 @@
     "salesInvoices": "Hóa đơn bán hàng",
     "salesCopilot": "Trợ lý bán hàng",
     "salesSettings": "Cài đặt bán hàng",
+    "purchaseOrders": "Đơn mua hàng",
+    "vendorBills": "Hóa đơn nhà cung cấp",
+    "purchasingSettings": "Cài đặt mua hàng",
+    "purchasingCopilot": "Trợ lý mua hàng",
     "settings": "Cài đặt",
     "projects": "Dự án",
     "accounting": "Kế toán",
@@ -97,6 +102,8 @@
     "members": "Quản lý thành viên",
     "roles": "Vai trò & Quyền",
     "paymentMethods": "Phương thức thanh toán",
+    "taxSettings": "Cài đặt thuế",
+    "cashManagement": "Quản lý tiền mặt",
     "issues": "Vấn đề"
   },
   "featureFlags": {
@@ -244,6 +251,7 @@
     },
     "errors": {
       "microphoneDenied": "Đã từ chối quyền truy cập micro",
+      "cameraDenied": "Đã từ chối quyền truy cập camera",
       "loadFailed": "Không thể tải chi tiết vấn đề"
     }
   },
@@ -290,6 +298,13 @@
       "save": "Lưu thông tin cố vấn"
     }
   },
+  "cashManagement": {
+    "title": "Quản lý tiền mặt",
+    "registers": "Quầy thu",
+    "newRegister": "Quầy thu mới",
+    "addEntry": "Thêm bút toán",
+    "dailyClose": "Chốt quỹ cuối ngày"
+  },
   "dashboard": {
     "title": "Tổng quan",
     "welcome": "Chào mừng trở lại",
@@ -333,7 +348,7 @@
     "date": "Ngày",
     "amount": "Số tiền",
     "category": "Danh mục",
-    "vat": "VAT",
+    "vat": "Thuế GTGT",
     "project": "Dự án",
     "receipt": "Biên lai",
     "notes": "Ghi chú",
@@ -370,7 +385,7 @@
     "quantity": "Số lượng",
     "rate": "Đơn giá",
     "subtotal": "Tổng phụ",
-    "vatAmount": "VAT",
+    "vatAmount": "Thuế GTGT",
     "total": "Tổng cộng",
     "totalAmountNet": "Tổng tiền (Chưa thuế)",
     "totalAmountGross": "Tổng tiền (Bao gồm thuế)",
@@ -484,7 +499,9 @@
   "dueDate": {
     "today": "đến hạn hôm nay",
     "inDays": "còn {{count}} ngày",
-    "overdue": "quá hạn {{count}} ngày"
+    "inDays_one": "còn 1 ngày",
+    "overdue": "quá hạn {{count}} ngày",
+    "overdue_one": "quá hạn 1 ngày"
   },
   "errors": {
     "loadMenuFailed": "Không thể tải menu"
@@ -739,6 +756,44 @@
       "row": "Dòng {{index}}",
       "remove": "Xóa",
       "add": "Thêm dòng"
+    }
+  },
+  "portfolioPublic": {
+    "nav": {
+      "works": "Dự án",
+      "clients": "Khách hàng",
+      "services": "Dịch vụ",
+      "team": "Đội ngũ",
+      "blog": "Blog"
+    },
+    "home": {
+      "welcome": "Chào mừng đến với",
+      "about": "Giới thiệu",
+      "featuredProjects": "Dự án nổi bật",
+      "viewAll": "Xem tất cả",
+      "trustedBy": "Được tin dùng bởi"
+    },
+    "works": {
+      "title": "Dự án",
+      "subtitle": "Một tuyển chọn các dự án gần đây của tôi."
+    },
+    "project": {
+      "backToWorks": "Quay lại Dự án",
+      "links": "Liên kết dự án",
+      "liveDemo": "Demo trực tiếp",
+      "sourceCode": "Mã nguồn",
+      "techStack": "Công nghệ sử dụng"
+    },
+    "common": {
+      "contact": "Liên hệ",
+      "contactMe": "Liên hệ với tôi",
+      "viewDetails": "Xem chi tiết"
+    },
+    "errors": {
+      "notFound": "Không tìm thấy hồ sơ năng lực",
+      "notFoundDesc": "Hồ sơ bạn đang tìm không tồn tại hoặc chưa được công bố.",
+      "error": "Đã xảy ra lỗi",
+      "errorDesc": "Chúng tôi gặp lỗi khi tải hồ sơ này."
     }
   }
 }
