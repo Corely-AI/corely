@@ -65,7 +65,7 @@ jobs:
           service: corely-api
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
-          flags: --port=8080 --allow-unauthenticated
+          flags: --port=3000 --allow-unauthenticated
           env_vars: |
             NODE_ENV=production
             WORKFLOW_QUEUE_DRIVER=memory

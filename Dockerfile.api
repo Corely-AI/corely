@@ -18,6 +18,7 @@ COPY packages/kernel/package.json ./packages/kernel/
 COPY packages/core/package.json ./packages/core/
 COPY packages/prompts/package.json ./packages/prompts/
 COPY packages/config/package.json ./packages/config/
+COPY packages/email-templates/package.json ./packages/email-templates/
 COPY packages/tooling/tsconfig/package.json ./packages/tooling/tsconfig/
 
 # Install all workspace deps (includes dev deps needed for tsx watch)
@@ -29,25 +30,18 @@ COPY tsconfig.base.json tsconfig.node.json ./
 COPY packages/tooling/tsconfig/*.json ./packages/tooling/tsconfig/
 COPY packages ./packages
 COPY services/api ./services/api
+COPY scripts ./scripts
 
 # Generate Prisma client BEFORE building packages (Prisma 7 uses prisma.config.ts)
 # Set a dummy DATABASE_URL for build time only (actual URL comes from runtime env vars)
 ARG DATABASE_URL_BUILD=postgresql://dummy:dummy@localhost:5432/dummy
 RUN cd /app/packages/data && DATABASE_URL=$DATABASE_URL_BUILD /app/node_modules/.bin/prisma generate
 
-# Build shared packages (now that Prisma client is generated)
-RUN pnpm --filter @corely/config build \
- && pnpm --filter @corely/prompts build \
- && pnpm --filter @corely/contracts build \
- && pnpm --filter @corely/domain build \
- && pnpm --filter @corely/kernel build \
- && pnpm --filter @corely/core build \
- && pnpm --filter @corely/data build
+# Build API service and its workspace deps
+RUN pnpm --filter @corely/api... build \
+ && node scripts/check-service-deps-built.mjs @corely/api
 
-# Build API service
-RUN pnpm --filter @corely/api build
-
-EXPOSE 8080
+EXPOSE 3000
 
 # Environment variables are set by docker-compose or .env files
 # NODE_ENV, DATABASE_URL, REDIS_URL, LOG_LEVEL, etc.
@@ -55,4 +49,3 @@ EXPOSE 8080
 # Run from workspace root so node_modules resolution works
 WORKDIR /app
 CMD ["node", "services/api/dist/main.js"]
-
