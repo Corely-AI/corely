@@ -16,6 +16,7 @@ import {
 } from "../policies/platform-permissions.policy";
 import type { UseCaseContext } from "@corely/kernel";
 import { toTenantUserDto } from "../mappers/tenant-user.mapper";
+import { TenantRoleSeederService } from "../services/tenant-role-seeder.service";
 
 export interface ListTenantUsersQuery {
   tenantId: string;
@@ -31,7 +32,8 @@ export class ListTenantUsersUseCase {
     @Inject(ROLE_REPOSITORY_TOKEN)
     private readonly roleRepo: RoleRepositoryPort,
     @Inject(ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN)
-    private readonly grantRepo: RolePermissionGrantRepositoryPort
+    private readonly grantRepo: RolePermissionGrantRepositoryPort,
+    private readonly roleSeeder: TenantRoleSeederService
   ) {}
 
   async execute(query: ListTenantUsersQuery, ctx: UseCaseContext): Promise<ListTenantUsersOutput> {
@@ -40,7 +42,14 @@ export class ListTenantUsersUseCase {
     });
 
     const memberships = await this.membershipRepo.findByTenantId(query.tenantId);
-    const roles = await this.roleRepo.listByTenant(query.tenantId);
+    let roles = await this.roleRepo.listByTenant(query.tenantId);
+
+    // Lazy seed roles if none exist
+    if (roles.length === 0) {
+      await this.roleSeeder.seed(query.tenantId, ctx.userId ?? "system");
+      roles = await this.roleRepo.listByTenant(query.tenantId);
+    }
+
     const roleById = new Map(roles.map((role) => [role.id, role]));
 
     const users = await Promise.all(

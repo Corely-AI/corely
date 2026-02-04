@@ -10,6 +10,7 @@ import {
   TenantCreatedEvent,
   MembershipCreatedEvent,
 } from "../../domain/events/identity.events";
+import { TenantRoleSeederService } from "../services/tenant-role-seeder.service";
 import { type UserRepositoryPort, USER_REPOSITORY_TOKEN } from "../ports/user-repository.port";
 import {
   type TenantRepositoryPort,
@@ -88,7 +89,8 @@ export class SignUpUseCase {
     @Inject(AUDIT_PORT_TOKEN) private readonly audit: AuditPort,
     @Inject(IDEMPOTENCY_STORAGE_PORT_TOKEN) private readonly idempotency: IdempotencyStoragePort,
     @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
-    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
+    private readonly roleSeeder: TenantRoleSeederService
   ) {}
 
   async execute(input: SignUpInput): Promise<SignUpOutput> {
@@ -122,8 +124,7 @@ export class SignUpUseCase {
     const user = User.create(userId, email, passwordHash, input.userName || null);
     await this.userRepo.create(user);
 
-    const defaultRoles = await this.ensureDefaultRoles(tenantId);
-    await this.seedDefaultRoleGrants(tenantId, userId, defaultRoles);
+    const defaultRoles = await this.roleSeeder.seed(tenantId, userId);
     const ownerRole = defaultRoles.OWNER;
     const membershipId = this.idGenerator.newId();
     const membership = Membership.create(membershipId, tenantId, userId, ownerRole);
@@ -199,58 +200,6 @@ export class SignUpUseCase {
       .replace(/\\s+/g, "-")
       .replace(/-+/g, "-")
       .substring(0, 50);
-  }
-
-  private async ensureDefaultRoles(tenantId: string): Promise<Record<DefaultRoleKey, string>> {
-    const roles = [
-      { key: "OWNER" as const, name: "Owner" },
-      { key: "ADMIN" as const, name: "Admin" },
-      { key: "ACCOUNTANT" as const, name: "Accountant" },
-      { key: "STAFF" as const, name: "Staff" },
-      { key: "READ_ONLY" as const, name: "Read-only" },
-    ];
-
-    const results: Record<DefaultRoleKey, string> = {
-      OWNER: "",
-      ADMIN: "",
-      ACCOUNTANT: "",
-      STAFF: "",
-      READ_ONLY: "",
-    };
-
-    for (const role of roles) {
-      const existing = await this.roleRepo.findBySystemKey(tenantId, role.key);
-      if (existing) {
-        results[role.key] = existing.id;
-        continue;
-      }
-      const id = this.idGenerator.newId();
-      await this.roleRepo.create({
-        id,
-        tenantId,
-        name: role.name,
-        systemKey: role.key,
-        isSystem: true,
-      });
-      results[role.key] = id;
-    }
-
-    return results;
-  }
-
-  private async seedDefaultRoleGrants(
-    tenantId: string,
-    actorUserId: string,
-    roles: Record<DefaultRoleKey, string>
-  ) {
-    const catalog = this.catalogPort.getCatalog();
-    const grants = buildDefaultRoleGrants(catalog);
-
-    await this.grantRepo.replaceAll(tenantId, roles.OWNER, grants.OWNER, actorUserId);
-    await this.grantRepo.replaceAll(tenantId, roles.ADMIN, grants.ADMIN, actorUserId);
-    await this.grantRepo.replaceAll(tenantId, roles.ACCOUNTANT, grants.ACCOUNTANT, actorUserId);
-    await this.grantRepo.replaceAll(tenantId, roles.STAFF, grants.STAFF, actorUserId);
-    await this.grantRepo.replaceAll(tenantId, roles.READ_ONLY, grants.READ_ONLY, actorUserId);
   }
 
   private async emitOutboxEvents(

@@ -66,6 +66,7 @@ import { UpdateTenantUserRoleUseCase } from "./application/use-cases/update-tena
 import { GetTenantUseCase } from "./application/use-cases/get-tenant.usecase";
 import { RequestPasswordResetUseCase } from "./application/use-cases/request-password-reset.usecase";
 import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-password-reset.usecase";
+import { TenantRoleSeederService } from "./application/services/tenant-role-seeder.service";
 
 @Module({
   imports: [DataModule, KernelModule, forwardRef(() => PlatformModule)],
@@ -179,6 +180,7 @@ import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-pas
     CreateTenantUserUseCase,
     UpdateTenantUserRoleUseCase,
     GetTenantUseCase,
+    TenantRoleSeederService,
 
     // Permission catalog
     PermissionCatalogRegistry,
@@ -202,6 +204,7 @@ import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-pas
     SwitchTenantUseCase,
     AuthGuard,
     RbacGuard,
+    TenantRoleSeederService,
   ],
 })
 export class IdentityModule {}

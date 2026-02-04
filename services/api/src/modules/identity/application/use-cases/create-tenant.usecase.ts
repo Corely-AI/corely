@@ -27,6 +27,7 @@ import {
   assertPlatformPermission,
   PLATFORM_PERMISSION_KEYS,
 } from "../policies/platform-permissions.policy";
+import { TenantRoleSeederService } from "../services/tenant-role-seeder.service";
 
 export type CreateTenantCommand = CreateTenantInput;
 
@@ -45,7 +46,8 @@ export class CreateTenantUseCase {
     private readonly idempotency: IdempotencyStoragePort,
     @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
-    @Inject(EXT_KV_PORT) private readonly extKv: ExtKvPort
+    @Inject(EXT_KV_PORT) private readonly extKv: ExtKvPort,
+    private readonly roleSeeder: TenantRoleSeederService
   ) {}
 
   async execute(input: CreateTenantCommand, ctx: UseCaseContext): Promise<CreateTenantResponse> {
@@ -84,6 +86,9 @@ export class CreateTenantUseCase {
     }
 
     await this.tenantRepo.create(tenant);
+
+    // Seed default roles
+    await this.roleSeeder.seed(tenant.getId(), ctx.userId ?? "system");
 
     const notes = input.notes?.trim();
     if (notes) {
