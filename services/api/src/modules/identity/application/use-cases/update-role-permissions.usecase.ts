@@ -12,6 +12,7 @@ import { ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN } from "../ports/role-permission
 import type { AuditPort } from "../ports/audit.port";
 import { AUDIT_PORT_TOKEN } from "../ports/audit.port";
 import type { RequestContext } from "../../../../shared/context/request-context";
+import { PLATFORM_HOST_PERMISSION_KEYS } from "../policies/platform-permissions.policy";
 
 export interface UpdateRolePermissionsCommand {
   tenantId: string;
@@ -65,6 +66,9 @@ export class UpdateRolePermissionsUseCase {
     for (const grant of command.grants) {
       if (!validKeys.has(grant.key)) {
         throw new ValidationError(`Unknown permission key: ${grant.key}`);
+      }
+      if (command.tenantId !== null && PLATFORM_HOST_PERMISSION_KEYS.has(grant.key)) {
+        throw new ValidationError(`Platform permission not allowed in tenant roles: ${grant.key}`);
       }
       if (unique.has(grant.key)) {
         throw new ValidationError(`Duplicate permission key: ${grant.key}`);

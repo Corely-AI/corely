@@ -1,6 +1,6 @@
 model OutboxEvent {
   id          String   @id @default(cuid())
-  tenantId    String
+  tenantId    String?
   eventType   String
   payloadJson String
   status      OutboxStatus @default(PENDING)
@@ -16,7 +16,7 @@ model OutboxEvent {
 
 model DomainEvent {
   id        String   @id @default(cuid())
-  tenantId  String
+  tenantId  String?
   eventType String
   payload   String
   createdAt DateTime @default(now())
@@ -27,7 +27,7 @@ model DomainEvent {
 
 model AuditLog {
   id        String   @id @default(cuid())
-  tenantId  String
+  tenantId  String?
   action    String
   actorUserId String?
   entity    String

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth-provider";
 import { Button } from "@corely/ui";
@@ -14,6 +14,7 @@ export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { signin, error: authError } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,6 +22,7 @@ export const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [tenantId, setTenantId] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [forceHostLogin, setForceHostLogin] = useState(false);
 
   // Load remembered credentials on mount
   useEffect(() => {
@@ -45,23 +47,42 @@ export const LoginPage: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const tenantParam = searchParams.get("tenant");
+    if (!tenantParam) {
+      return;
+    }
+    if (tenantParam === "null" || tenantParam === "host") {
+      setTenantId("");
+      setForceHostLogin(true);
+      return;
+    }
+    setTenantId(tenantParam);
+    setForceHostLogin(false);
+  }, [searchParams]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
+      const normalizedTenantId = forceHostLogin ? null : tenantId || undefined;
       await signin({
         email,
         password,
-        tenantId: tenantId || undefined,
+        tenantId: normalizedTenantId,
       });
 
       // Persist credentials if requested
       if (rememberMe) {
         localStorage.setItem(
           "corely-remember-login",
-          JSON.stringify({ email, password, tenantId: tenantId || undefined })
+          JSON.stringify({
+            email,
+            password,
+            tenantId: normalizedTenantId ?? undefined,
+          })
         );
       } else {
         localStorage.removeItem("corely-remember-login");

@@ -7,6 +7,7 @@ import { PERMISSION_CATALOG_PORT } from "../ports/permission-catalog.port";
 import type { RolePermissionGrantRepositoryPort } from "../ports/role-permission-grant-repository.port";
 import { ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN } from "../ports/role-permission-grant-repository.port";
 import { NotFoundError } from "../../../../shared/errors/domain-errors";
+import { PLATFORM_HOST_PERMISSION_KEYS } from "../policies/platform-permissions.policy";
 
 export interface GetRolePermissionsQuery {
   tenantId: string;
@@ -36,6 +37,9 @@ export class GetRolePermissionsUseCase {
     const states: RolePermissionState[] = [];
     for (const group of catalog) {
       for (const permission of group.permissions) {
+        if (query.tenantId !== null && PLATFORM_HOST_PERMISSION_KEYS.has(permission.key)) {
+          continue;
+        }
         const effect = grantMap.get(permission.key);
         states.push({
           key: permission.key,
@@ -53,7 +57,17 @@ export class GetRolePermissionsUseCase {
         isSystem: role.isSystem,
         systemKey: role.systemKey ?? null,
       },
-      catalog,
+      catalog:
+        query.tenantId !== null
+          ? catalog
+              .map((group) => ({
+                ...group,
+                permissions: group.permissions.filter(
+                  (permission) => !PLATFORM_HOST_PERMISSION_KEYS.has(permission.key)
+                ),
+              }))
+              .filter((group) => group.permissions.length > 0)
+          : catalog,
       grants: states,
     };
   }

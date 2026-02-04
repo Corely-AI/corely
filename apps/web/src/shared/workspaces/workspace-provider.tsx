@@ -10,6 +10,7 @@ interface WorkspaceContextValue {
   activeWorkspace: WorkspaceDto | null;
   activeWorkspaceId: string | null;
   isLoading: boolean;
+  isHostScope: boolean;
   setWorkspace: (workspaceId: string) => void;
   refresh: () => Promise<void>;
 }
@@ -115,6 +116,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     activeWorkspace,
     activeWorkspaceId: activeId,
     isLoading: isFetching,
+    isHostScope,
     setWorkspace,
     refresh: async () => {
       await refetch();
