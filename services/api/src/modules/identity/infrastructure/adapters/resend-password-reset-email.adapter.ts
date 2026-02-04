@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import { Resend, type CreateEmailOptions } from "resend";
 import {
   renderEmail,
   PasswordResetEmail,
@@ -28,28 +28,17 @@ export class ResendPasswordResetEmailAdapter implements PasswordResetEmailPort {
     const subject = buildPasswordResetEmailSubject(props);
     const { html, text } = await renderEmail(PasswordResetEmail(props));
 
-    const emailOptions: {
-      from: string;
-      to: string[];
-      subject: string;
-      html?: string;
-      text?: string;
-      replyTo?: string;
-      headers?: Record<string, string>;
-    } = {
+    const emailOptions: CreateEmailOptions = {
       from: this.fromAddress,
       to: [request.to],
       subject,
       html,
       text,
+      ...(this.replyTo ? { replyTo: this.replyTo } : {}),
+      ...(request.correlationId
+        ? { headers: { "X-Correlation-ID": request.correlationId } }
+        : {}),
     };
-
-    if (this.replyTo) {
-      emailOptions.replyTo = this.replyTo;
-    }
-    if (request.correlationId) {
-      emailOptions.headers = { "X-Correlation-ID": request.correlationId };
-    }
 
     const sendOptions: { idempotencyKey: string } | undefined = request.idempotencyKey
       ? { idempotencyKey: request.idempotencyKey }
