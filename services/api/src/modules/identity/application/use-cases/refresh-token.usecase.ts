@@ -12,6 +12,7 @@ import { AUDIT_PORT_TOKEN } from "../ports/audit.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
 import { CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import { createHash, randomUUID } from "crypto";
+import { UnauthorizedError } from "@corely/domain";
 
 export interface RefreshTokenInput {
   refreshToken: string;
@@ -47,18 +48,18 @@ export class RefreshTokenUseCase {
     const storedToken = await this.refreshTokenRepo.findValidByHash(tokenHash);
 
     if (!storedToken || storedToken.revokedAt) {
-      throw new Error("Invalid or revoked refresh token");
+      throw new UnauthorizedError("Invalid or revoked refresh token", "Auth:InvalidRefreshToken");
     }
 
     // 3. Check expiration
     if (storedToken.expiresAt < this.clock.now()) {
-      throw new Error("Refresh token has expired");
+      throw new UnauthorizedError("Refresh token has expired", "Auth:RefreshTokenExpired");
     }
 
     // 4. Get user info
     const user = await this.userRepo.findById(storedToken.userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new UnauthorizedError("User not found for refresh token", "Auth:RefreshUserNotFound");
     }
 
     // 5. Generate new tokens
@@ -68,7 +69,10 @@ export class RefreshTokenUseCase {
     );
 
     if (!membership) {
-      throw new Error("Membership not found for tenant while refreshing tokens");
+      throw new UnauthorizedError(
+        "Membership not found for tenant while refreshing tokens",
+        "Auth:RefreshMembershipNotFound"
+      );
     }
 
     const accessToken = this.tokenService.generateAccessToken({
