@@ -719,6 +719,7 @@
     "signin": {
       "title": "Đăng nhập vào tài khoản của bạn",
       "rememberMe": "Ghi nhớ tôi",
+      "forgotPassword": "Quên mật khẩu?",
       "cta": "Đăng nhập",
       "signingIn": "Đang đăng nhập...",
       "noAccount": "Chưa có tài khoản?"
@@ -728,6 +729,24 @@
       "cta": "Đăng ký",
       "creating": "Đang tạo tài khoản...",
       "hasAccount": "Đã có tài khoản?"
+    },
+    "forgot": {
+      "title": "Đặt lại mật khẩu",
+      "subtitle": "Nhập email và chúng tôi sẽ gửi liên kết đặt lại mật khẩu.",
+      "cta": "Gửi liên kết đặt lại",
+      "sending": "Đang gửi liên kết...",
+      "successMessage": "Nếu có tài khoản với {{email}}, chúng tôi đã gửi liên kết đặt lại mật khẩu.",
+      "backToLogin": "Quay lại đăng nhập"
+    },
+    "reset": {
+      "title": "Đặt mật khẩu mới",
+      "cta": "Cập nhật mật khẩu",
+      "updating": "Đang cập nhật mật khẩu...",
+      "successToast": "Đã cập nhật mật khẩu",
+      "missingTokenTitle": "Thiếu mã đặt lại",
+      "missingTokenMessage": "Liên kết đặt lại mật khẩu không hợp lệ hoặc chưa đầy đủ.",
+      "requestNewLink": "Yêu cầu liên kết mới",
+      "confirmLabel": "Xác nhận mật khẩu"
     },
     "fields": {
       "email": "Địa chỉ email",
@@ -744,6 +763,10 @@
     "errors": {
       "loginFailed": "Email hoặc mật khẩu không hợp lệ",
       "passwordLength": "Mật khẩu phải có ít nhất 6 ký tự",
+      "passwordMismatch": "Mật khẩu không khớp",
+      "missingResetToken": "Thiếu mã đặt lại",
+      "requestFailed": "Không thể gửi liên kết đặt lại",
+      "resetFailed": "Không thể đặt lại mật khẩu",
       "signupFailed": "Không thể tạo tài khoản",
       "networkError": "Lỗi kết nối mạng. Vui lòng kiểm tra lại máy chủ."
     }

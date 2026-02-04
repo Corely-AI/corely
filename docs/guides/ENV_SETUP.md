@@ -22,7 +22,7 @@ docker compose -f docker-compose.dev.yml --env-file .env.dev up -d
 
 The dev environment will be available at:
 
-- Web: http://localhost:5173
+- Web: http://localhost:8080
 - API: http://localhost:3000
 - API Docs: http://localhost:3000/docs
 - Postgres: localhost:5432
@@ -48,7 +48,7 @@ pnpm e2e
 
 The e2e environment uses different ports to avoid conflicts:
 
-- Web: http://localhost:5173
+- Web: http://localhost:8080
 - API: http://localhost:3000
 - Postgres: localhost:5433 (database: `corely_e2e`)
 - Redis: localhost:6380

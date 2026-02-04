@@ -457,7 +457,7 @@ redis:
 Update `playwright.config.ts`:
 
 ```typescript
-const baseURL = "http://localhost:5173"; // Web app port
+const baseURL = "http://localhost:8080"; // Web app port
 ```
 
 ---
