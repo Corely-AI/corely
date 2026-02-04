@@ -1300,6 +1300,9 @@ importers:
       '@corely/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@corely/email-templates':
+        specifier: workspace:*
+        version: link:../../packages/email-templates
       '@corely/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
