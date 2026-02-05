@@ -113,6 +113,9 @@ export async function generateMetadata({
     if (resolvedError?.kind === "not-found") {
       return resolveMetadataFallback({ canonical, title: "Page not found" });
     }
+    if (resolvedError?.kind === "unavailable") {
+      return resolveMetadataFallback({ canonical, title: "Website unavailable" });
+    }
     return resolveMetadataFallback({ canonical, title: "Website" });
   }
 }
@@ -169,6 +172,11 @@ export default async function WorkspaceRootPage({
     const resolvedError = resolveWebsiteError(error);
     if (resolvedError?.kind === "not-found") {
       return <WebsiteNotFound message={resolvedError.message} />;
+    }
+    if (resolvedError?.kind === "unavailable") {
+      return (
+        <WebsiteNotFound message={resolvedError.message ?? "Website is temporarily unavailable."} />
+      );
     }
     throw error;
   }

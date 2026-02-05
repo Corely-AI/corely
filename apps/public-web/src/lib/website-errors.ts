@@ -1,9 +1,10 @@
 import { HttpError } from "@corely/api-client";
 
 export type WebsiteErrorState = {
-  kind: "not-found";
+  kind: "not-found" | "unavailable";
   message?: string;
   code?: string;
+  status?: number | null;
 };
 
 export const resolveWebsiteError = (error: unknown): WebsiteErrorState | null => {
@@ -11,14 +12,29 @@ export const resolveWebsiteError = (error: unknown): WebsiteErrorState | null =>
     return null;
   }
 
-  if (error.status !== 404) {
-    return null;
+  const body = error.body as
+    | { code?: string; detail?: string; error?: string; message?: string }
+    | undefined;
+  const code = body?.code ?? body?.error;
+  const message = body?.detail ?? body?.message;
+
+  if (error.status === 404) {
+    return {
+      kind: "not-found",
+      message,
+      code,
+      status: error.status,
+    };
   }
 
-  const body = error.body as { code?: string; detail?: string } | undefined;
-  return {
-    kind: "not-found",
-    message: body?.detail,
-    code: body?.code,
-  };
+  if (error.status && error.status >= 500) {
+    return {
+      kind: "unavailable",
+      message,
+      code,
+      status: error.status,
+    };
+  }
+
+  return null;
 };

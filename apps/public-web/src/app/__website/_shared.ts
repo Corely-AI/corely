@@ -117,6 +117,9 @@ export async function getWebsitePageMetadata(input: {
     if (resolvedError?.kind === "not-found") {
       return resolveMetadataFallback({ canonical, title: "Page not found" });
     }
+    if (resolvedError?.kind === "unavailable") {
+      return resolveMetadataFallback({ canonical, title: "Website unavailable" });
+    }
     return resolveMetadataFallback({ canonical, title: "Website" });
   }
 }
@@ -157,6 +160,13 @@ export async function getWebsitePageData(input: {
       return {
         kind: "not-found" as const,
         message: resolvedError.message,
+        canonicalPath: resolved.canonicalPath,
+      };
+    }
+    if (resolvedError?.kind === "unavailable") {
+      return {
+        kind: "unavailable" as const,
+        message: resolvedError.message ?? "Website is temporarily unavailable.",
         canonicalPath: resolved.canonicalPath,
       };
     }

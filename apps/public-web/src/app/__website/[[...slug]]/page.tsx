@@ -55,6 +55,9 @@ export default async function WebsitePublicPage({
   if (result.kind === "not-found") {
     return <WebsiteNotFound message={result.message} />;
   }
+  if (result.kind === "unavailable") {
+    return <WebsiteNotFound message={result.message ?? "Website is temporarily unavailable."} />;
+  }
 
   return <WebsitePublicPageScreen page={result.page} host={ctx.host} previewMode={previewMode} />;
 }

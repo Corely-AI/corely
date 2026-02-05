@@ -64,4 +64,20 @@ describe("getWebsitePageData", () => {
       expect(result.message).toBe("Page not found");
     }
   });
+
+  it("returns unavailable when resolve returns 500", async () => {
+    mockResolveWebsitePage.mockRejectedValue(
+      new HttpError("Internal Server Error", 500, { message: "Upstream failure" })
+    );
+
+    const result = await getWebsitePageData({
+      ctx: { host: "example.com", protocol: "https" },
+      pathname: "/about",
+    });
+
+    expect(result.kind).toBe("unavailable");
+    if (result.kind === "unavailable") {
+      expect(result.message).toBe("Upstream failure");
+    }
+  });
 });
