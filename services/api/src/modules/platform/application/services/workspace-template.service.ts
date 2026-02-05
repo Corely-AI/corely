@@ -231,7 +231,6 @@ export class WorkspaceTemplateService {
         order: 1,
         sectionOrder: [
           "dashboard",
-          "rentals",
           "invoices",
           "expenses",
           "clients",
@@ -422,7 +421,6 @@ export class WorkspaceTemplateService {
       "parties", // clients
       "crm",
       "tax",
-      "rentals",
       "portfolio",
       "ai-copilot",
     ];

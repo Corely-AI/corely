@@ -50,6 +50,7 @@ model Workspace {
   onboardingCompletedAt DateTime?                 @db.Timestamptz(6)
   createdAt             DateTime                  @default(now()) @db.Timestamptz(6)
   updatedAt             DateTime                  @updatedAt @db.Timestamptz(6)
+  deletedAt             DateTime?                 @db.Timestamptz(6)
 
   // JSON fields for workspace-specific settings
   invoiceSettings Json? // WorkspaceInvoiceSettings: { prefix?, nextNumber?, defaultPaymentTermsDays? }

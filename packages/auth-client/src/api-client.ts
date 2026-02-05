@@ -145,8 +145,16 @@ export class ApiClient {
     return this.request<T>(endpoint, requestInit, opts);
   }
 
-  async delete<T>(endpoint: string, opts?: { correlationId?: string }): Promise<T> {
-    return this.request<T>(endpoint, { method: "DELETE" }, opts);
+  async delete<T>(
+    endpoint: string,
+    body?: unknown,
+    opts?: { idempotencyKey?: string; correlationId?: string }
+  ): Promise<T> {
+    const requestInit: RequestInit = { method: "DELETE" };
+    if (body !== undefined) {
+      requestInit.body = body as BodyInit | null;
+    }
+    return this.request<T>(endpoint, requestInit, opts);
   }
 
   async getBlob(endpoint: string, opts?: { correlationId?: string }): Promise<Blob> {
