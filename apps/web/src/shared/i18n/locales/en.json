@@ -72,7 +72,8 @@
       "finance": "Finance",
       "settings": "Settings",
       "platform": "Platform",
-      "tax": "Tax"
+      "tax": "Tax",
+      "other": "Other"
     },
     "customers": "Customers",
     "salesQuotes": "Sales Quotes",
@@ -111,6 +112,7 @@
     "issues": "Issues",
     "crmDeals": "Deals",
     "crmActivities": "Activities",
+    "website": "Website",
     "platform": "Platform"
   },
   "featureFlags": {
@@ -162,6 +164,9 @@
       },
       "rentals": {
         "enabled": "Rentals"
+      },
+      "website": {
+        "enabled": "Website"
       }
     }
   },
