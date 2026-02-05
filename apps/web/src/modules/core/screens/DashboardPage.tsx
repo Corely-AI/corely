@@ -199,7 +199,7 @@ export default function DashboardPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 {`${dashboard.revenueMoMPercent >= 0 ? "+" : ""}${Math.round(
                   dashboard.revenueMoMPercent
-                )}% from last month`}
+                )}% ${t("dashboard.fromLastMonth")}`}
               </p>
             )}
           </CardContent>
@@ -219,7 +219,7 @@ export default function DashboardPage() {
               {formatMoney(dashboard.outstandingInvoicesCents, locale)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {dashboard.outstandingInvoicesCount} invoices pending
+              {dashboard.outstandingInvoicesCount} {t("dashboard.invoicesPending")}
             </p>
           </CardContent>
         </Card>
@@ -238,7 +238,7 @@ export default function DashboardPage() {
               {formatMoney(dashboard.expensesThisMonthCents, locale)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {dashboard.recentExpenses.length} expenses this month
+              {dashboard.recentExpenses.length} {t("dashboard.expensesCount")}
             </p>
           </CardContent>
         </Card>
@@ -258,7 +258,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-foreground">{t("dashboard.addExpense")}</div>
-                    <div className="text-sm text-muted-foreground">Upload receipt with AI</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t("dashboard.uploadReceipt")}
+                    </div>
                   </div>
                   <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
                 </CardContent>
@@ -276,7 +278,9 @@ export default function DashboardPage() {
                 <div className="flex-1">
                   <div className="font-medium text-foreground">{t("dashboard.createInvoice")}</div>
                   <div className="text-sm text-muted-foreground">
-                    {hasCapability("ai.copilot") ? "Generate with AI" : "Create new"}
+                    {hasCapability("ai.copilot")
+                      ? t("dashboard.generateWithAi")
+                      : t("dashboard.createNew")}
                   </div>
                 </div>
                 <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-success transition-colors" />
@@ -293,7 +297,7 @@ export default function DashboardPage() {
                     <ShoppingCart className="h-6 w-6 text-warning" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-foreground">Create Quote</div>
+                    <div className="font-medium text-foreground">{t("dashboard.createQuote")}</div>
                     <div className="text-sm text-muted-foreground">
                       For {terminology.partyLabel.toLowerCase()}
                     </div>
@@ -314,7 +318,9 @@ export default function DashboardPage() {
                       <div className="font-medium text-foreground">
                         {t("dashboard.openAssistant")}
                       </div>
-                      <div className="text-sm text-muted-foreground">Ask anything</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("dashboard.askAnything")}
+                      </div>
                     </div>
                     <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </CardContent>
@@ -332,8 +338,10 @@ export default function DashboardPage() {
                     <Users className="h-6 w-6 text-info" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-foreground">Manage Team</div>
-                    <div className="text-sm text-muted-foreground">Invite members</div>
+                    <div className="font-medium text-foreground">{t("dashboard.manageTeam")}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t("dashboard.inviteMembers")}
+                    </div>
                   </div>
                   <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-info transition-colors" />
                 </CardContent>
@@ -356,7 +364,9 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               {dashboard.recentInvoices.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No invoices yet</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("dashboard.noInvoices")}
+                </p>
               ) : (
                 dashboard.recentInvoices.map((invoice) => {
                   const customer = customers.find((c) => c.id === invoice.customerPartyId);
@@ -406,7 +416,9 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               {dashboard.recentExpenses.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No expenses yet</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("dashboard.noExpenses")}
+                </p>
               ) : (
                 dashboard.recentExpenses.map((expense) => (
                   <Link

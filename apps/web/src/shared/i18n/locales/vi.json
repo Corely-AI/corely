@@ -321,7 +321,19 @@
     "recentActivity": "Hoạt động gần đây",
     "addExpense": "Thêm chi phí",
     "createInvoice": "Tạo hóa đơn",
-    "openAssistant": "Mở trợ lý"
+    "createQuote": "Tạo báo giá",
+    "openAssistant": "Mở trợ lý",
+    "fromLastMonth": "so với tháng trước",
+    "invoicesPending": "hóa đơn đang chờ",
+    "expensesCount": "chi phí trong tháng này",
+    "uploadReceipt": "Tải biên lai với AI",
+    "generateWithAi": "Tạo bằng AI",
+    "createNew": "Tạo mới",
+    "askAnything": "Hỏi bất cứ điều gì",
+    "manageTeam": "Quản lý nhóm",
+    "inviteMembers": "Mời thành viên",
+    "noInvoices": "Chưa có hóa đơn nào",
+    "noExpenses": "Chưa có chi phí nào"
   },
   "assistant": {
     "title": "Trợ lý",
@@ -827,6 +839,17 @@
   },
   "crm": {
     "deals": {
+      "title": "Cơ hội",
+      "new": "Cơ hội mới",
+      "emptyTitle": "Không tìm thấy cơ hội nào",
+      "emptyDescription": "Bắt đầu theo dõi quy trình bán hàng của bạn bằng cách tạo cơ hội đầu tiên.",
+      "noAmount": "Không có giá trị",
+      "stage": "Giai đoạn",
+      "status": {
+        "open": "Mở",
+        "won": "Thắng",
+        "lost": "Thua"
+      },
       "newTitle": "Cơ hội mới",
       "newSubtitle": "Tạo một cơ hội bán hàng mới để theo dõi trong quy trình của bạn.",
       "create": "Tạo cơ hội",
@@ -838,7 +861,6 @@
       "customerPlaceholder": "Tìm hoặc chọn khách hàng",
       "customersLoading": "Đang tải khách hàng...",
       "customersHint": "Chỉ những khách hàng có quan hệ tích cực mới có thể liên kết với cơ hội.",
-      "stage": "Giai đoạn quy trình",
       "stagePlaceholder": "Chọn một giai đoạn",
       "expectedCloseLabel": "Ngày dự kiến đóng",
       "selectDate": "Chọn một ngày",

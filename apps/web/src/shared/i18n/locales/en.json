@@ -42,7 +42,8 @@
     "notes": "Notes",
     "open": "Open",
     "closed": "Closed",
-    "tags": "Tags"
+    "tags": "Tags",
+    "for": "For"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -321,7 +322,19 @@
     "recentActivity": "Recent activity",
     "addExpense": "Add expense",
     "createInvoice": "Create invoice",
-    "openAssistant": "Open assistant"
+    "createQuote": "Create Quote",
+    "openAssistant": "Open assistant",
+    "fromLastMonth": "from last month",
+    "invoicesPending": "invoices pending",
+    "expensesCount": "expenses this month",
+    "uploadReceipt": "Upload receipt with AI",
+    "generateWithAi": "Generate with AI",
+    "createNew": "Create new",
+    "askAnything": "Ask anything",
+    "manageTeam": "Manage Team",
+    "inviteMembers": "Invite members",
+    "noInvoices": "No invoices yet",
+    "noExpenses": "No expenses yet"
   },
   "assistant": {
     "title": "Assistant",
@@ -827,6 +840,17 @@
   },
   "crm": {
     "deals": {
+      "title": "Deals",
+      "new": "New Deal",
+      "emptyTitle": "No deals found",
+      "emptyDescription": "Start tracking your sales pipeline by creating your first deal.",
+      "noAmount": "No amount",
+      "stage": "Stage",
+      "status": {
+        "open": "Open",
+        "won": "Won",
+        "lost": "Lost"
+      },
       "newTitle": "New Deal",
       "newSubtitle": "Create a new sales opportunity to track in your pipeline.",
       "create": "Create Deal",
@@ -838,7 +862,6 @@
       "customerPlaceholder": "Search or select a customer",
       "customersLoading": "Loading customers...",
       "customersHint": "Only customers with an active relationship can be linked to deals.",
-      "stage": "Pipeline Stage",
       "stagePlaceholder": "Select a stage",
       "expectedCloseLabel": "Expected Close Date",
       "selectDate": "Select a date",
