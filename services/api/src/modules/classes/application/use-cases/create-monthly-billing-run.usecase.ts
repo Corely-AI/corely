@@ -13,7 +13,10 @@ import { assertCanClasses } from "../../policies/assert-can-classes";
 import { aggregateBillingPreview } from "../../domain/rules/billing.rules";
 import { getMonthRangeUtc, normalizeBillingMonth } from "../helpers/billing-period";
 import type { ClassMonthlyBillingRunEntity } from "../../domain/entities/classes.entities";
-import { MONTHLY_INVOICES_GENERATED_EVENT } from "../../domain/events/monthly-invoices-generated.event";
+import {
+  CLASSES_INVOICE_READY_TO_SEND_EVENT,
+  MONTHLY_INVOICES_GENERATED_EVENT,
+} from "../../domain/events/monthly-invoices-generated.event";
 
 @RequireTenant()
 export class CreateMonthlyBillingRunUseCase {
@@ -130,10 +133,14 @@ export class CreateMonthlyBillingRunUseCase {
         });
 
         if (input.sendInvoices) {
-          const sendResult = await this.invoices.send({ invoiceId }, ctx);
-          if (isErr(sendResult)) {
-            throw sendResult.error;
-          }
+          await this.outbox.enqueue({
+            tenantId,
+            eventType: CLASSES_INVOICE_READY_TO_SEND_EVENT,
+            payload: {
+              tenantId,
+              invoiceId,
+            },
+          });
         }
       }
 
