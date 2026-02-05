@@ -191,8 +191,8 @@ export default function SessionsPage() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <CrudRowActions
-                            items={[
-                              { label: "Open", href: `/sessions/${session.id}` },
+                            primaryAction={{ label: "Open", href: `/sessions/${session.id}` }}
+                            secondaryActions={[
                               {
                                 label: "Mark done",
                                 icon: <CheckCircle2 className="h-4 w-4" />,
@@ -200,6 +200,7 @@ export default function SessionsPage() {
                               },
                               {
                                 label: "Cancel",
+                                destructive: true,
                                 icon: <XCircle className="h-4 w-4" />,
                                 onClick: () =>
                                   setConfirmStatus({ id: session.id, status: "CANCELLED" }),
@@ -239,7 +240,7 @@ export default function SessionsPage() {
         }}
         title="Update session status?"
         description={`Set session to ${confirmStatus?.status === "DONE" ? "Done" : "Cancelled"}?`}
-        confirmText="Confirm"
+        confirmLabel="Confirm"
       />
     </>
   );

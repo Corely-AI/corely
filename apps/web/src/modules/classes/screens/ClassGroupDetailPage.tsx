@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
 import { formatDate, formatDateTime, formatMoney } from "@/shared/lib/formatters";
-import { CrudRowActions, invalidateResourceQueries } from "@/shared/crud";
+import { CrudRowActions } from "@/shared/crud";
 import { classGroupKeys, classEnrollmentKeys, classSessionKeys } from "../queries";
 
 export default function ClassGroupDetailPage() {
@@ -260,12 +260,10 @@ export default function ClassGroupDetailPage() {
                     </td>
                     <td className="px-3 py-2 text-right">
                       <CrudRowActions
-                        items={[
-                          {
-                            label: "Deactivate",
-                            onClick: () => deactivateEnrollment.mutate(enrollment.id),
-                          },
-                        ]}
+                        primaryAction={{
+                          label: "Deactivate",
+                          onClick: () => deactivateEnrollment.mutate(enrollment.id),
+                        }}
                       />
                     </td>
                   </tr>
@@ -346,7 +344,7 @@ export default function ClassGroupDetailPage() {
                     <td className="px-3 py-2 text-sm text-muted-foreground">{session.status}</td>
                     <td className="px-3 py-2 text-right">
                       <CrudRowActions
-                        items={[{ label: "Open", href: `/sessions/${session.id}` }]}
+                        primaryAction={{ label: "Open", href: `/sessions/${session.id}` }}
                       />
                     </td>
                   </tr>

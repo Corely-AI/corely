@@ -193,8 +193,8 @@ export default function ClassGroupsListPage() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <CrudRowActions
-                            items={[
-                              { label: "Open", href: `/class-groups/${group.id}` },
+                            primaryAction={{ label: "Open", href: `/class-groups/${group.id}` }}
+                            secondaryActions={[
                               {
                                 label: "Edit",
                                 href: `/class-groups/${group.id}/edit`,
@@ -202,6 +202,7 @@ export default function ClassGroupsListPage() {
                               },
                               {
                                 label: "Archive",
+                                destructive: true,
                                 icon: <Archive className="h-4 w-4" />,
                                 onClick: () => setArchiveTarget(group.id),
                               },
@@ -240,7 +241,7 @@ export default function ClassGroupsListPage() {
         }}
         title="Archive class group?"
         description="This will archive the class group but keep its sessions and attendance."
-        confirmText="Archive"
+        confirmLabel="Archive"
       />
     </>
   );
