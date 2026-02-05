@@ -16,9 +16,11 @@ describe("Website page + domain use cases", () => {
       id: "site-1",
       tenantId: "tenant-1",
       name: "Site",
+      slug: "site",
       defaultLocale: "en-US",
       brandingJson: null,
       themeJson: null,
+      isDefault: true,
       createdAt: nowIso,
       updatedAt: nowIso,
     };
@@ -53,6 +55,13 @@ describe("Website page + domain use cases", () => {
       async findById() {
         return site;
       },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        return site;
+      },
+      async setDefault() {},
       async list() {
         return { items: [], total: 0 };
       },
@@ -151,13 +160,33 @@ describe("Website page + domain use cases", () => {
           id: "site-1",
           tenantId: "tenant-1",
           name: "Site",
+          slug: "site",
           defaultLocale: "en-US",
           brandingJson: null,
           themeJson: null,
+          isDefault: true,
           createdAt: nowIso,
           updatedAt: nowIso,
         };
       },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        return {
+          id: "site-1",
+          tenantId: "tenant-1",
+          name: "Site",
+          slug: "site",
+          defaultLocale: "en-US",
+          brandingJson: null,
+          themeJson: null,
+          isDefault: true,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+      },
+      async setDefault() {},
       async list() {
         return { items: [], total: 0 };
       },

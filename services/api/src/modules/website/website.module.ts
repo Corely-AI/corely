@@ -40,6 +40,7 @@ import { UpsertWebsiteMenuUseCase } from "./application/use-cases/upsert-menu.us
 import { ListWebsiteMenusUseCase } from "./application/use-cases/list-menus.usecase";
 import { ResolveWebsitePublicPageUseCase } from "./application/use-cases/resolve-public-page.usecase";
 import { GenerateWebsitePageFromPromptUseCase } from "./application/use-cases/generate-page-from-prompt.usecase";
+import { WebsiteSlugExistsUseCase } from "./application/use-cases/slug-exists.usecase";
 import { PrismaWebsiteSiteRepository } from "./infrastructure/prisma/prisma-website-site-repository.adapter";
 import { PrismaWebsiteDomainRepository } from "./infrastructure/prisma/prisma-website-domain-repository.adapter";
 import { PrismaWebsitePageRepository } from "./infrastructure/prisma/prisma-website-page-repository.adapter";
@@ -70,6 +71,7 @@ import {
 import { CMS_READ_PORT, type CmsReadPort } from "./application/ports/cms-read.port";
 import { CMS_WRITE_PORT, type CmsWritePort } from "./application/ports/cms-write.port";
 import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/ports/website-ai.port";
+import { PublicWorkspaceResolver } from "@/shared/public";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PromptModule, CmsModule],
@@ -82,6 +84,7 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
     WebsiteAiController,
   ],
   providers: [
+    PublicWorkspaceResolver,
     PrismaWebsiteSiteRepository,
     { provide: WEBSITE_SITE_REPO_PORT, useExisting: PrismaWebsiteSiteRepository },
     PrismaWebsiteDomainRepository,
@@ -301,7 +304,8 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
         pageRepo: WebsitePageRepositoryPort,
         snapshotRepo: WebsiteSnapshotRepositoryPort,
         menuRepo: WebsiteMenuRepositoryPort,
-        cmsRead: CmsReadPort
+        cmsRead: CmsReadPort,
+        publicWorkspaceResolver: PublicWorkspaceResolver
       ) =>
         new ResolveWebsitePublicPageUseCase({
           logger: new NestLoggerAdapter(),
@@ -311,6 +315,7 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
           snapshotRepo,
           menuRepo,
           cmsRead,
+          publicWorkspaceResolver,
         }),
       inject: [
         WEBSITE_DOMAIN_REPO_PORT,
@@ -319,7 +324,21 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
         WEBSITE_SNAPSHOT_REPO_PORT,
         WEBSITE_MENU_REPO_PORT,
         CMS_READ_PORT,
+        PublicWorkspaceResolver,
       ],
+    },
+    {
+      provide: WebsiteSlugExistsUseCase,
+      useFactory: (
+        siteRepo: WebsiteSiteRepositoryPort,
+        publicWorkspaceResolver: PublicWorkspaceResolver
+      ) =>
+        new WebsiteSlugExistsUseCase({
+          logger: new NestLoggerAdapter(),
+          siteRepo,
+          publicWorkspaceResolver,
+        }),
+      inject: [WEBSITE_SITE_REPO_PORT, PublicWorkspaceResolver],
     },
     {
       provide: GenerateWebsitePageFromPromptUseCase,
@@ -371,7 +390,8 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
         upsertMenu: UpsertWebsiteMenuUseCase,
         listMenus: ListWebsiteMenusUseCase,
         resolvePublicPage: ResolveWebsitePublicPageUseCase,
-        generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase
+        generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase,
+        slugExists: WebsiteSlugExistsUseCase
       ) =>
         new WebsiteApplication(
           createSite,
@@ -390,7 +410,8 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
           upsertMenu,
           listMenus,
           resolvePublicPage,
-          generatePageFromPrompt
+          generatePageFromPrompt,
+          slugExists
         ),
       inject: [
         CreateWebsiteSiteUseCase,
@@ -410,6 +431,7 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
         ListWebsiteMenusUseCase,
         ResolveWebsitePublicPageUseCase,
         GenerateWebsitePageFromPromptUseCase,
+        WebsiteSlugExistsUseCase,
       ],
     },
   ],

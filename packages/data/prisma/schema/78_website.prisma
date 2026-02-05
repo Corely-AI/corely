@@ -2,9 +2,11 @@ model WebsiteSite {
   id            String   @id @default(cuid())
   tenantId      String
   name          String
+  slug          String
   defaultLocale String
   brandingJson  Json?
   themeJson     Json?
+  isDefault     Boolean  @default(false)
   createdAt     DateTime @default(now()) @db.Timestamptz(6)
   updatedAt     DateTime @updatedAt @db.Timestamptz(6)
 
@@ -13,7 +15,9 @@ model WebsiteSite {
   menus     WebsiteMenu[]
   snapshots WebsitePageSnapshot[]
 
+  @@unique([tenantId, slug])
   @@index([tenantId])
+  @@index([tenantId, isDefault])
   @@schema("content")
 }
 

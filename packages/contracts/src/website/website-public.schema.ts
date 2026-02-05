@@ -25,3 +25,15 @@ export const ResolveWebsitePublicOutputSchema = z.object({
   snapshotVersion: z.number().int().nonnegative().optional().nullable(),
 });
 export type ResolveWebsitePublicOutput = z.infer<typeof ResolveWebsitePublicOutputSchema>;
+
+export const WebsiteSlugExistsInputSchema = z.object({
+  workspaceSlug: z.string().min(1),
+  websiteSlug: z.string().min(1),
+});
+export type WebsiteSlugExistsInput = z.infer<typeof WebsiteSlugExistsInputSchema>;
+
+export const WebsiteSlugExistsOutputSchema = z.object({
+  exists: z.boolean(),
+  isDefault: z.boolean().optional(),
+});
+export type WebsiteSlugExistsOutput = z.infer<typeof WebsiteSlugExistsOutputSchema>;

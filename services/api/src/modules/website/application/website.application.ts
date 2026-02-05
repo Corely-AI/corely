@@ -15,6 +15,7 @@ import type { UpsertWebsiteMenuUseCase } from "./use-cases/upsert-menu.usecase";
 import type { ListWebsiteMenusUseCase } from "./use-cases/list-menus.usecase";
 import type { ResolveWebsitePublicPageUseCase } from "./use-cases/resolve-public-page.usecase";
 import type { GenerateWebsitePageFromPromptUseCase } from "./use-cases/generate-page-from-prompt.usecase";
+import type { WebsiteSlugExistsUseCase } from "./use-cases/slug-exists.usecase";
 
 export class WebsiteApplication {
   constructor(
@@ -34,6 +35,7 @@ export class WebsiteApplication {
     public readonly upsertMenu: UpsertWebsiteMenuUseCase,
     public readonly listMenus: ListWebsiteMenusUseCase,
     public readonly resolvePublicPage: ResolveWebsitePublicPageUseCase,
-    public readonly generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase
+    public readonly generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase,
+    public readonly slugExists: WebsiteSlugExistsUseCase
   ) {}
 }

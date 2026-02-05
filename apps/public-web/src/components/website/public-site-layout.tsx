@@ -33,7 +33,26 @@ const resolveMenu = (menus: WebsiteMenuPublic[], name: string): WebsiteMenuPubli
 const isExternalLink = (href: string): boolean =>
   href.startsWith("http://") || href.startsWith("https://");
 
-const MenuLink = ({ item }: { item: WebsiteMenuItem }) => {
+const normalizeBasePath = (basePath?: string): string | null => {
+  if (!basePath) {
+    return null;
+  }
+  return basePath.endsWith("/") ? basePath.slice(0, -1) : basePath;
+};
+
+const resolveInternalHref = (href: string, basePath?: string) => {
+  const normalized = href.startsWith("/") ? href : `/${href}`;
+  const normalizedBase = normalizeBasePath(basePath);
+  if (!normalizedBase) {
+    return href;
+  }
+  if (normalized === "/") {
+    return normalizedBase;
+  }
+  return `${normalizedBase}${normalized}`;
+};
+
+const MenuLink = ({ item, basePath }: { item: WebsiteMenuItem; basePath?: string }) => {
   if (isExternalLink(item.href)) {
     return (
       <a
@@ -48,7 +67,7 @@ const MenuLink = ({ item }: { item: WebsiteMenuItem }) => {
   }
   return (
     <Link
-      href={item.href}
+      href={resolveInternalHref(item.href, basePath)}
       className="text-sm font-medium text-muted-foreground transition hover:text-foreground"
     >
       {item.label}
@@ -60,11 +79,13 @@ export const PublicSiteLayout = ({
   menus,
   host,
   previewMode,
+  basePath,
   children,
 }: {
   menus: WebsiteMenuPublic[];
   host?: string | null;
   previewMode?: boolean;
+  basePath?: string;
   children: React.ReactNode;
 }) => {
   const headerMenu = resolveMenu(menus, "header");
@@ -73,17 +94,18 @@ export const PublicSiteLayout = ({
   const footerItems = normalizeMenuItems(footerMenu?.itemsJson);
   const resolvedHost = host ?? (typeof window !== "undefined" ? window.location.host : null);
   const brandLabel = resolvedHost?.split(":")[0] ?? "Website";
+  const homeHref = resolveInternalHref("/", basePath);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-40">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
+          <Link href={homeHref} className="text-lg font-semibold tracking-tight">
             {brandLabel}
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             {headerItems.map((item) => (
-              <MenuLink key={`${item.href}-${item.label}`} item={item} />
+              <MenuLink key={`${item.href}-${item.label}`} item={item} basePath={basePath} />
             ))}
           </nav>
           {previewMode ? (
@@ -101,7 +123,7 @@ export const PublicSiteLayout = ({
           <div className="text-sm text-muted-foreground">{brandLabel}</div>
           <div className="flex flex-wrap gap-4">
             {footerItems.map((item) => (
-              <MenuLink key={`${item.href}-${item.label}`} item={item} />
+              <MenuLink key={`${item.href}-${item.label}`} item={item} basePath={basePath} />
             ))}
           </div>
         </div>

@@ -170,14 +170,35 @@ describe("Website use cases", () => {
           id: "site-1",
           tenantId: "tenant-1",
           name: "Site",
+          slug: "site",
           defaultLocale: "en-US",
           brandingJson: null,
           themeJson: null,
+          isDefault: true,
           createdAt: nowIso,
           updatedAt: nowIso,
         };
         return site;
       },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        const site: WebsiteSite = {
+          id: "site-1",
+          tenantId: "tenant-1",
+          name: "Site",
+          slug: "site",
+          defaultLocale: "en-US",
+          brandingJson: null,
+          themeJson: null,
+          isDefault: true,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+        return site;
+      },
+      async setDefault() {},
       async list() {
         return { items: [], total: 0 };
       },
@@ -273,6 +294,11 @@ describe("Website use cases", () => {
       snapshotRepo,
       menuRepo,
       cmsRead,
+      publicWorkspaceResolver: {
+        resolveFromRequest: async () => {
+          throw new Error("not used");
+        },
+      } as any,
     });
 
     const result = await useCase.execute({ host: "example.com", path: "/", mode: "live" }, {});
@@ -312,14 +338,35 @@ describe("Website use cases", () => {
           id: "site-1",
           tenantId: "tenant-1",
           name: "Site",
+          slug: "site",
           defaultLocale: "en-US",
           brandingJson: null,
           themeJson: null,
+          isDefault: true,
           createdAt: nowIso,
           updatedAt: nowIso,
         };
         return site;
       },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        const site: WebsiteSite = {
+          id: "site-1",
+          tenantId: "tenant-1",
+          name: "Site",
+          slug: "site",
+          defaultLocale: "en-US",
+          brandingJson: null,
+          themeJson: null,
+          isDefault: true,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+        return site;
+      },
+      async setDefault() {},
       async list() {
         return { items: [], total: 0 };
       },

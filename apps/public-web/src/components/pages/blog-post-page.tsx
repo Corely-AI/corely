@@ -61,7 +61,7 @@ export function BlogPostContent({
 
       <div className="pt-6 border-t border-border/60 flex justify-between items-center">
         <Button asChild variant="outline">
-          <Link href={buildWorkspacePath("/blog", workspaceSlug)}>Back to blog</Link>
+          <Link href={buildWorkspacePath("/cms", workspaceSlug)}>Back to CMS</Link>
         </Button>
       </div>
     </article>

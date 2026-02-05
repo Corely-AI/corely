@@ -11,6 +11,7 @@ import { PrismaWebsiteDomainRepository } from "../infrastructure/prisma/prisma-w
 import { PrismaWebsiteSiteRepository } from "../infrastructure/prisma/prisma-website-site-repository.adapter";
 import { PrismaWebsiteMenuRepository } from "../infrastructure/prisma/prisma-website-menu-repository.adapter";
 import type { CmsReadPort } from "../application/ports/cms-read.port";
+import { PublicWorkspaceResolver } from "@/shared/public";
 
 vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
@@ -45,7 +46,9 @@ describe("Website integration (Postgres)", () => {
         id: "site-1",
         tenantId: tenant.id,
         name: "Main Site",
+        slug: "main-site",
         defaultLocale: "en-US",
+        isDefault: true,
       },
     });
 
@@ -117,7 +120,9 @@ describe("Website integration (Postgres)", () => {
         id: "site-2",
         tenantId: tenant.id,
         name: "Resolve Site",
+        slug: "resolve-site",
         defaultLocale: "en-US",
+        isDefault: true,
       },
     });
 
@@ -196,6 +201,7 @@ describe("Website integration (Postgres)", () => {
       snapshotRepo: new PrismaWebsiteSnapshotRepository(prisma),
       menuRepo: new PrismaWebsiteMenuRepository(prisma),
       cmsRead,
+      publicWorkspaceResolver: new PublicWorkspaceResolver(prisma),
     });
 
     const result = await useCase.execute({ host: "example.com", path: "/home", mode: "live" }, {});
@@ -216,7 +222,9 @@ describe("Website integration (Postgres)", () => {
         id: "site-3",
         tenantId: tenant.id,
         name: "Unpublish Site",
+        slug: "unpublish-site",
         defaultLocale: "en-US",
+        isDefault: true,
       },
     });
 

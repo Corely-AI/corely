@@ -134,8 +134,12 @@ export default function WebsitePageEditorPage() {
   });
 
   const canSave = useMemo(
-    () => path.trim().length > 0 && locale.trim().length > 0 && template.trim().length > 0,
-    [path, locale, template]
+    () =>
+      path.trim().length > 0 &&
+      locale.trim().length > 0 &&
+      template.trim().length > 0 &&
+      cmsEntryId.trim().length > 0,
+    [path, locale, template, cmsEntryId]
   );
 
   return (

@@ -1,3 +1,5 @@
+import { RESERVED_PUBLIC_PREFIXES } from "@corely/public-urls";
+
 const LOCALE_PATTERN = /^([a-z]{2})(?:-([a-zA-Z]{2}))?$/;
 
 export const WEBSITE_ROUTE_PREFIX = "/__website";
@@ -101,6 +103,11 @@ export const shouldRewriteToWebsite = (input: {
     return false;
   }
   if (isWebsiteInternalPath(input.pathname)) {
+    return false;
+  }
+  const normalized = normalizeWebsitePath(input.pathname);
+  const firstSegment = normalized.split("/").filter(Boolean)[0];
+  if (firstSegment && RESERVED_PUBLIC_PREFIXES.includes(firstSegment as any)) {
     return false;
   }
   return true;

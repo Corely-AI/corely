@@ -10,13 +10,21 @@ export const WebsiteSeoSchema = z.object({
 });
 export type WebsiteSeo = z.infer<typeof WebsiteSeoSchema>;
 
+export const WebsiteSlugSchema = z
+  .string()
+  .min(1)
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be kebab-case");
+export type WebsiteSlug = z.infer<typeof WebsiteSlugSchema>;
+
 export const WebsiteSiteSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
   name: z.string(),
+  slug: WebsiteSlugSchema,
   defaultLocale: z.string(),
   brandingJson: z.unknown().optional().nullable(),
   themeJson: z.unknown().optional().nullable(),
+  isDefault: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

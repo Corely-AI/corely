@@ -8,9 +8,11 @@ const mapSite = (row: any): WebsiteSite => ({
   id: row.id,
   tenantId: row.tenantId,
   name: row.name,
+  slug: row.slug,
   defaultLocale: row.defaultLocale,
   brandingJson: row.brandingJson ?? null,
   themeJson: row.themeJson ?? null,
+  isDefault: Boolean(row.isDefault),
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
 });
@@ -26,9 +28,11 @@ export class PrismaWebsiteSiteRepository implements WebsiteSiteRepositoryPort {
         id: site.id,
         tenantId: site.tenantId,
         name: site.name,
+        slug: site.slug,
         defaultLocale: site.defaultLocale,
         brandingJson: site.brandingJson as any,
         themeJson: site.themeJson as any,
+        isDefault: site.isDefault,
       },
     });
     return mapSite(row);
@@ -40,9 +44,11 @@ export class PrismaWebsiteSiteRepository implements WebsiteSiteRepositoryPort {
       where: { id: site.id },
       data: {
         name: site.name,
+        slug: site.slug,
         defaultLocale: site.defaultLocale,
         brandingJson: site.brandingJson as any,
         themeJson: site.themeJson as any,
+        isDefault: site.isDefault,
       },
     });
     return mapSite(row);
@@ -56,6 +62,42 @@ export class PrismaWebsiteSiteRepository implements WebsiteSiteRepositoryPort {
     const client = getPrismaClient(this.prisma, tx as any);
     const row = await client.websiteSite.findFirst({ where: { id: siteId, tenantId } });
     return row ? mapSite(row) : null;
+  }
+
+  async findBySlug(
+    tenantId: string,
+    slug: string,
+    tx?: TransactionContext
+  ): Promise<WebsiteSite | null> {
+    const client = getPrismaClient(this.prisma, tx as any);
+    const row = await client.websiteSite.findFirst({ where: { tenantId, slug } });
+    return row ? mapSite(row) : null;
+  }
+
+  async findDefaultByTenant(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<WebsiteSite | null> {
+    const client = getPrismaClient(this.prisma, tx as any);
+    const row = await client.websiteSite.findFirst({
+      where: { tenantId, isDefault: true },
+    });
+    if (row) {
+      return mapSite(row);
+    }
+    const fallback = await client.websiteSite.findFirst({
+      where: { tenantId },
+      orderBy: [{ updatedAt: "desc" }],
+    });
+    return fallback ? mapSite(fallback) : null;
+  }
+
+  async setDefault(tenantId: string, siteId: string, tx?: TransactionContext): Promise<void> {
+    const client = getPrismaClient(this.prisma, tx as any);
+    await client.$transaction([
+      client.websiteSite.updateMany({ where: { tenantId }, data: { isDefault: false } }),
+      client.websiteSite.update({ where: { id: siteId }, data: { isDefault: true } }),
+    ]);
   }
 
   async list(

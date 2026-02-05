@@ -13,6 +13,7 @@ import {
   PublicPortfolioProjectOutputSchema,
   ResolveWebsitePublicInputSchema,
   ResolveWebsitePublicOutputSchema,
+  WebsiteSlugExistsOutputSchema,
 } from "@corely/contracts";
 import { withQuery } from "./urls";
 import { buildPublicFileUrl, resolvePublicApiBaseUrl } from "./public-api-base";
@@ -127,7 +128,7 @@ export const publicApi = {
     workspaceSlug?: string | null;
   }) {
     const url = buildUrl(
-      "/public/blog",
+      "/public/cms/posts",
       { q: input.q, page: input.page, pageSize: input.pageSize },
       input.workspaceSlug
     );
@@ -136,7 +137,7 @@ export const publicApi = {
   },
 
   async getBlogPost(slug: string, workspaceSlug?: string | null) {
-    const url = buildUrl(`/public/blog/${slug}`, undefined, workspaceSlug);
+    const url = buildUrl(`/public/cms/posts/${slug}`, undefined, workspaceSlug);
     const data = await request({ url });
     return GetPublicCmsPostOutputSchema.parse(data);
   },
@@ -170,5 +171,14 @@ export const publicApi = {
     });
     const data = await request({ url });
     return ResolveWebsitePublicOutputSchema.parse(data);
+  },
+
+  async websiteSlugExists(input: { workspaceSlug: string; websiteSlug: string }) {
+    const url = buildUrl("/public/website/slug-exists", {
+      workspaceSlug: input.workspaceSlug,
+      websiteSlug: input.websiteSlug,
+    });
+    const data = await request({ url });
+    return WebsiteSlugExistsOutputSchema.parse(data);
   },
 };

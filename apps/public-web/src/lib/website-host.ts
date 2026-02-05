@@ -1,8 +1,12 @@
 import { resolvePublicApiBaseUrl } from "./public-api-base";
 import { normalizeWebsitePath } from "./website-routing";
+import { resolveWorkspaceSlugFromHost } from "./tenant";
 
 export const isWebsiteHost = async (input: { host: string | null }): Promise<boolean> => {
   if (!input.host) {
+    return false;
+  }
+  if (resolveWorkspaceSlugFromHost(input.host)) {
     return false;
   }
 

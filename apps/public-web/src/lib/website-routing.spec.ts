@@ -35,7 +35,9 @@ describe("website-routing", () => {
 
   it("determines rewrite eligibility based on host mode", () => {
     expect(shouldRewriteToWebsite({ pathname: "/rentals", isWebsiteHost: false })).toBe(false);
-    expect(shouldRewriteToWebsite({ pathname: "/rentals", isWebsiteHost: true })).toBe(true);
+    expect(shouldRewriteToWebsite({ pathname: "/rentals", isWebsiteHost: true })).toBe(false);
+    expect(shouldRewriteToWebsite({ pathname: "/pricing", isWebsiteHost: true })).toBe(true);
+    expect(shouldRewriteToWebsite({ pathname: "/cms", isWebsiteHost: true })).toBe(false);
     expect(shouldRewriteToWebsite({ pathname: "/__website/foo", isWebsiteHost: true })).toBe(false);
   });
 

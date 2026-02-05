@@ -158,4 +158,17 @@ export default defineWorkspace([
       ],
     },
   },
+  {
+    extends: "./packages/public-urls/vitest.config.ts",
+    root: "./packages/public-urls",
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.int.test.ts",
+        "**/e2e/**",
+        "**/apps/e2e/**",
+      ],
+    },
+  },
 ]);

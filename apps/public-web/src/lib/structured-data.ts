@@ -31,7 +31,7 @@ export const buildWebsiteSchema = (baseUrl: string) => ({
   url: baseUrl,
   potentialAction: {
     "@type": "SearchAction",
-    target: `${baseUrl}/blog?q={search_term_string}`,
+    target: `${baseUrl}/cms?q={search_term_string}`,
     "query-input": "required name=search_term_string",
   },
 });

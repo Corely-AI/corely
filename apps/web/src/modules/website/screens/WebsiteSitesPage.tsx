@@ -1,17 +1,21 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Plus, Globe } from "lucide-react";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import { ExternalLink, Globe, Plus } from "lucide-react";
 import { Button, Card, CardContent, Input } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, useCrudUrlState } from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
 import { websiteApi } from "@/lib/website-api";
-import { websiteSiteListKey } from "../queries";
+import { websiteDomainKeys, websiteSiteListKey } from "../queries";
+import type { WebsiteDomain } from "@corely/contracts";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { getPublicWebsiteUrl } from "@/shared/lib/public-urls";
 
 export default function WebsiteSitesPage() {
   const navigate = useNavigate();
   const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
+  const { activeWorkspace } = useWorkspace();
 
   const queryKey = useMemo(
     () =>
@@ -36,6 +40,31 @@ export default function WebsiteSitesPage() {
   });
 
   const sites = data?.items ?? [];
+  const domainQueries = useQueries({
+    queries: sites.map((site) => ({
+      queryKey: websiteDomainKeys.list(site.id),
+      queryFn: () => websiteApi.listDomains(site.id),
+    })),
+  });
+
+  const domainsBySiteId = useMemo(() => {
+    const map = new Map<string, WebsiteDomain[]>();
+    domainQueries.forEach((query, index) => {
+      const site = sites[index];
+      if (!site) {
+        return;
+      }
+      map.set(site.id, query.data?.items ?? []);
+    });
+    return map;
+  }, [domainQueries, sites]);
+
+  const getPublicUrl = (hostname?: string | null) =>
+    getPublicWebsiteUrl({
+      hostname,
+      workspaceSlug: activeWorkspace?.slug ?? null,
+      path: "/",
+    });
 
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
@@ -112,12 +141,22 @@ export default function WebsiteSitesPage() {
                           {formatDate(site.updatedAt, "en-US")}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <CrudRowActions
-                            primaryAction={{
-                              label: "Manage pages",
-                              href: `/website/sites/${site.id}/pages`,
-                            }}
-                            secondaryActions={[
+                          {(() => {
+                            const domains = domainsBySiteId.get(site.id) ?? [];
+                            const primaryDomain =
+                              domains.find((domain) => domain.isPrimary) ?? domains[0];
+                            const publicUrl = getPublicUrl(primaryDomain?.hostname);
+                            const secondaryActions = [
+                              ...(publicUrl
+                                ? [
+                                    {
+                                      label: "Public view",
+                                      onClick: () =>
+                                        window.open(publicUrl, "_blank", "noopener,noreferrer"),
+                                      icon: <ExternalLink className="h-4 w-4" />,
+                                    },
+                                  ]
+                                : []),
                               {
                                 label: "Domains",
                                 href: `/website/sites/${site.id}/domains`,
@@ -130,8 +169,18 @@ export default function WebsiteSitesPage() {
                                 label: "Edit site",
                                 href: `/website/sites/${site.id}/edit`,
                               },
-                            ]}
-                          />
+                            ];
+
+                            return (
+                              <CrudRowActions
+                                primaryAction={{
+                                  label: "Manage pages",
+                                  href: `/website/sites/${site.id}/pages`,
+                                }}
+                                secondaryActions={secondaryActions}
+                              />
+                            );
+                          })()}
                         </td>
                       </tr>
                     ))}

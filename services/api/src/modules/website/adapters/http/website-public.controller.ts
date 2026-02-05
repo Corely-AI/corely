@@ -3,6 +3,8 @@ import type { Request } from "express";
 import {
   ResolveWebsitePublicInputSchema,
   ResolveWebsitePublicOutputSchema,
+  WebsiteSlugExistsInputSchema,
+  WebsiteSlugExistsOutputSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "@/shared/http/usecase-mappers";
 import { WebsiteApplication } from "../../application/website.application";
@@ -24,5 +26,17 @@ export class WebsitePublicController {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.resolvePublicPage.execute(input, ctx);
     return ResolveWebsitePublicOutputSchema.parse(mapResultToHttp(result));
+  }
+
+  @Get("slug-exists")
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
+  async slugExists(@Query() query: Record<string, unknown>, @Req() req: Request) {
+    const input = WebsiteSlugExistsInputSchema.parse({
+      workspaceSlug: query.workspaceSlug,
+      websiteSlug: query.websiteSlug,
+    });
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.slugExists.execute(input, ctx);
+    return WebsiteSlugExistsOutputSchema.parse(mapResultToHttp(result));
   }
 }

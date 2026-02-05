@@ -1,4 +1,7 @@
 import { ValidationError } from "@corely/kernel";
+import { RESERVED_PUBLIC_PREFIXES } from "@corely/public-urls";
+
+const WEBSITE_SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const normalizeHostname = (raw: string): string => {
   const trimmed = raw.trim().toLowerCase();
@@ -79,6 +82,20 @@ export const normalizeLocale = (raw: string): string => {
   const language = match[1]!.toLowerCase();
   const region = match[2] ? match[2]!.toUpperCase() : undefined;
   return region ? `${language}-${region}` : language;
+};
+
+export const normalizeWebsiteSlug = (raw: string): string => {
+  const trimmed = raw.trim().toLowerCase();
+  if (!trimmed) {
+    throw new ValidationError("slug is required", undefined, "Website:InvalidSlug");
+  }
+  if (!WEBSITE_SLUG_REGEX.test(trimmed)) {
+    throw new ValidationError("slug must be kebab-case", undefined, "Website:InvalidSlug");
+  }
+  if (RESERVED_PUBLIC_PREFIXES.includes(trimmed as (typeof RESERVED_PUBLIC_PREFIXES)[number])) {
+    throw new ValidationError(`slug is reserved: ${trimmed}`, undefined, "Website:ReservedSlug");
+  }
+  return trimmed;
 };
 
 export const buildSeo = (input: {

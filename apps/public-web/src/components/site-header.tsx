@@ -13,7 +13,7 @@ export function SiteHeader({
   const homePath = resolveWorkspacePath({ host, workspaceSlug, path: "/" });
   const portfolioPath = resolveWorkspacePath({ host, workspaceSlug, path: "/portfolio" });
   const rentalsPath = resolveWorkspacePath({ host, workspaceSlug, path: "/rentals" });
-  const blogPath = resolveWorkspacePath({ host, workspaceSlug, path: "/blog" });
+  const cmsPath = resolveWorkspacePath({ host, workspaceSlug, path: "/cms" });
 
   return (
     <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-40">
@@ -38,10 +38,10 @@ export function SiteHeader({
             Rentals
           </Link>
           <Link
-            href={blogPath}
+            href={cmsPath}
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            Blog
+            CMS
           </Link>
         </nav>
         <Button asChild size="sm" variant="accent">

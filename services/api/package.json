@@ -15,6 +15,7 @@
     "@corely/domain": "workspace:*",
     "@corely/email-templates": "workspace:*",
     "@corely/kernel": "workspace:*",
+    "@corely/public-urls": "workspace:*",
     "@corely/prompts": "workspace:*",
     "@google-cloud/speech": "^6.6.1",
     "@google-cloud/storage": "^7.14.0",

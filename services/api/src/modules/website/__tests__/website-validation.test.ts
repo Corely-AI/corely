@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { normalizeHostname, normalizePath, normalizeLocale } from "../domain/website.validators";
+import {
+  normalizeHostname,
+  normalizePath,
+  normalizeLocale,
+  normalizeWebsiteSlug,
+} from "../domain/website.validators";
 import { WebsitePageBlueprintSchema } from "@corely/contracts";
 
 describe("website validators", () => {
@@ -23,6 +28,14 @@ describe("website validators", () => {
 
   it("normalizes locales", () => {
     expect(normalizeLocale("en-us")).toBe("en-US");
+  });
+
+  it("normalizes website slugs", () => {
+    expect(normalizeWebsiteSlug("My-Site")).toBe("my-site");
+  });
+
+  it("rejects reserved website slugs", () => {
+    expect(() => normalizeWebsiteSlug("rentals")).toThrow();
   });
 });
 

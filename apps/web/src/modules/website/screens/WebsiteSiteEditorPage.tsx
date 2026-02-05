@@ -2,11 +2,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save } from "lucide-react";
-import { Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
-import { websiteApi } from "@/lib/website-api";
-import { websiteSiteKeys } from "../queries";
-import { invalidateResourceQueries } from "@/shared/crud";
+import { Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { toast } from "sonner";
+import { websiteApi } from "@/lib/website-api";
+import { invalidateResourceQueries } from "@/shared/crud";
+import { websiteSiteKeys } from "../queries";
+import { WebsiteBrandingThemeEditor } from "../components/website-branding-theme-editor";
+import { getJsonFieldState } from "../components/website-branding-theme-utils";
 
 const parseJsonInput = (value: string) => {
   const trimmed = value.trim();
@@ -34,6 +36,9 @@ export default function WebsiteSiteEditorPage() {
   const [defaultLocale, setDefaultLocale] = useState("en-US");
   const [brandingJson, setBrandingJson] = useState("");
   const [themeJson, setThemeJson] = useState("");
+
+  const brandingState = useMemo(() => getJsonFieldState(brandingJson), [brandingJson]);
+  const themeState = useMemo(() => getJsonFieldState(themeJson), [themeJson]);
 
   useEffect(() => {
     if (!site) {
@@ -70,9 +75,21 @@ export default function WebsiteSiteEditorPage() {
   });
 
   const canSave = useMemo(
-    () => name.trim().length > 0 && defaultLocale.trim().length > 0,
-    [name, defaultLocale]
+    () =>
+      name.trim().length > 0 &&
+      defaultLocale.trim().length > 0 &&
+      !brandingState.error &&
+      !themeState.error,
+    [name, defaultLocale, brandingState.error, themeState.error]
   );
+
+  const handleSave = () => {
+    if (brandingState.error || themeState.error) {
+      toast.error("Fix invalid JSON before saving.");
+      return;
+    }
+    void mutation.mutate();
+  };
 
   return (
     <div className="space-y-6">
@@ -87,11 +104,7 @@ export default function WebsiteSiteEditorPage() {
             <div className="text-sm text-muted-foreground">Define core website settings</div>
           </div>
         </div>
-        <Button
-          variant="accent"
-          disabled={!canSave || mutation.isPending}
-          onClick={() => void mutation.mutate()}
-        >
+        <Button variant="accent" disabled={!canSave || mutation.isPending} onClick={handleSave}>
           <Save className="h-4 w-4" />
           Save
         </Button>
@@ -99,35 +112,28 @@ export default function WebsiteSiteEditorPage() {
 
       <Card>
         <CardContent className="p-6 space-y-5">
-          <div className="space-y-2">
-            <Label>Site name</Label>
-            <Input value={name} onChange={(event) => setName(event.target.value)} />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Site name</Label>
+              <Input value={name} onChange={(event) => setName(event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Default locale</Label>
+              <Input
+                value={defaultLocale}
+                onChange={(event) => setDefaultLocale(event.target.value)}
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>Default locale</Label>
-            <Input
-              value={defaultLocale}
-              onChange={(event) => setDefaultLocale(event.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Branding JSON (optional)</Label>
-            <Textarea
-              value={brandingJson}
-              onChange={(event) => setBrandingJson(event.target.value)}
-              rows={4}
-              placeholder='{"logo": "..."}'
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Theme JSON (optional)</Label>
-            <Textarea
-              value={themeJson}
-              onChange={(event) => setThemeJson(event.target.value)}
-              rows={4}
-              placeholder='{"colors": {"primary": "#000"}}'
-            />
-          </div>
+
+          <WebsiteBrandingThemeEditor
+            brandingJson={brandingJson}
+            brandingState={brandingState}
+            themeJson={themeJson}
+            themeState={themeState}
+            onBrandingChange={setBrandingJson}
+            onThemeChange={setThemeJson}
+          />
         </CardContent>
       </Card>
     </div>
