@@ -55,9 +55,9 @@ const resolveSeoFallback = (
   return { title, description: description ?? null };
 };
 
-const buildWorkspaceHost = (workspaceSlug: string, host: string | null) => {
+const buildWorkspaceHost = (workspaceSlug: string, host: string | null): string => {
   const hostSlug = host ? resolveWorkspaceSlugFromHost(host) : null;
-  if (hostSlug) {
+  if (hostSlug && host) {
     return host;
   }
   return `${workspaceSlug}.${siteConfig.rootDomain}`;

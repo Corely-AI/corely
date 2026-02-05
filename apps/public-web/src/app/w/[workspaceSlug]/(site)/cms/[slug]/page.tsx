@@ -32,7 +32,13 @@ export default async function WorkspaceCmsPostPage({
     <>
       <JsonLd data={result.blogSchema} />
       <JsonLd data={result.faqSchema} />
-      <BlogPostContent post={result.post} summary={result.summary} workspaceSlug={workspaceSlug} />
+      <BlogPostContent
+        post={result.post}
+        summary={result.summary}
+        bullets={result.bullets}
+        faqs={result.faqs}
+        workspaceSlug={workspaceSlug}
+      />
     </>
   );
 }

@@ -24,7 +24,12 @@ export default async function CmsPostPage({ params }: { params: Promise<{ slug: 
     <>
       <JsonLd data={result.blogSchema} />
       <JsonLd data={result.faqSchema} />
-      <BlogPostContent post={result.post} summary={result.summary} />
+      <BlogPostContent
+        post={result.post}
+        summary={result.summary}
+        bullets={result.bullets}
+        faqs={result.faqs}
+      />
     </>
   );
 }
