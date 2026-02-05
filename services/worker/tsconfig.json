@@ -11,6 +11,8 @@
       "@shared/*": ["../api/src/shared/*"],
       "@corely/data": ["../../packages/data/src/index.ts"],
       "@corely/data/*": ["../../packages/data/src/*"],
+      "@corely/core": ["../../packages/core/src/index.ts"],
+      "@corely/core/*": ["../../packages/core/src/*"],
       "@corely/public-urls": ["../../packages/public-urls/src/index.ts"],
       "@corely/testkit": ["../../packages/testkit/src/index.ts"],
       "@corely/testkit/*": ["../../packages/testkit/src/*"]
