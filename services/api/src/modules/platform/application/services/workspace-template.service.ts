@@ -102,7 +102,7 @@ export class WorkspaceTemplateService {
   private getFreelancerCapabilities(): WorkspaceCapabilities {
     return {
       // Multi-user: Limited for freelancers
-      "workspace.multiUser": false,
+      "workspace.multiUser": true,
       "workspace.rbac": false,
       approvals: false,
 

@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
-import { type IUseCase, UseCaseContext } from "@corely/kernel";
+import { UseCaseContext } from "@corely/kernel";
 import {
   TENANT_REPOSITORY_TOKEN,
   type TenantRepositoryPort,
@@ -18,7 +18,7 @@ export interface GetTenantOutput {
 }
 
 @Injectable()
-export class GetTenantUseCase implements IUseCase<GetTenantInput, GetTenantOutput> {
+export class GetTenantUseCase {
   constructor(
     @Inject(TENANT_REPOSITORY_TOKEN)
     private readonly tenantRepo: TenantRepositoryPort

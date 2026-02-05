@@ -22,7 +22,7 @@ export type ListTenantUsersOutput = z.infer<typeof ListTenantUsersOutputSchema>;
 export const CreateTenantUserInputSchema = z.object({
   email: z.string().email(),
   name: z.string().optional().nullable(),
-  password: z.string().min(8),
+  password: z.string().min(6),
   roleId: z.string().min(1),
   idempotencyKey: z.string().optional(),
 });

@@ -325,7 +325,7 @@ export default function DashboardPage() {
 
           {/* Conditional: Team management for multi-user companies */}
           {hasCapability("workspace.multiUser") && (
-            <Link to="/settings/team">
+            <Link to="/settings/members">
               <Card variant="interactive" className="group">
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center group-hover:bg-info/20 transition-colors">

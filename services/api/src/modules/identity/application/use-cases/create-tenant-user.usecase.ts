@@ -185,8 +185,8 @@ export class CreateTenantUserUseCase {
     if (!input.email || !input.email.includes("@")) {
       errors.push({ message: "Valid email is required", members: ["email"] });
     }
-    if (!input.password || input.password.length < 8) {
-      errors.push({ message: "Password must be at least 8 characters", members: ["password"] });
+    if (!input.password || input.password.length < 6) {
+      errors.push({ message: "Password must be at least 6 characters", members: ["password"] });
     }
     if (!input.roleId) {
       errors.push({ message: "Role is required", members: ["roleId"] });
