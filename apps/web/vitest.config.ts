@@ -7,6 +7,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
       "@corely/api-client": path.resolve(__dirname, "../../packages/api-client/src"),
       "@corely/auth-client": path.resolve(__dirname, "../../packages/auth-client/src"),
+      "@corely/public-urls": path.resolve(__dirname, "../../packages/public-urls/src"),
       "@corely/ui": path.resolve(__dirname, "../../packages/ui/src"),
     },
   },
