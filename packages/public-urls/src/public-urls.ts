@@ -169,10 +169,10 @@ export const buildPublicUrl = (input: BuildPublicUrlInput): string => {
   const origin = resolveOrigin({
     workspaceSlug,
     env,
-    originOverride: input.originOverride,
-    publicWebBaseUrl: input.publicWebBaseUrl,
-    publicRootDomain: input.publicRootDomain,
     usePathWorkspace,
+    ...(input.originOverride ? { originOverride: input.originOverride } : {}),
+    ...(input.publicWebBaseUrl ? { publicWebBaseUrl: input.publicWebBaseUrl } : {}),
+    ...(input.publicRootDomain ? { publicRootDomain: input.publicRootDomain } : {}),
   });
 
   if (!origin) {
