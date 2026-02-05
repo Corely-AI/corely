@@ -20,7 +20,9 @@ export default function SettingsPage() {
   const { activeWorkspaceId } = useWorkspace();
 
   const activeTenant = useMemo(() => {
-    if (!user) {return null;}
+    if (!user) {
+      return null;
+    }
     if (user.activeTenantId) {
       return (
         user.memberships.find((membership) => membership.tenantId === user.activeTenantId) ??
