@@ -10,6 +10,8 @@
       "@corely/data/*": ["../data/src/*"],
       "@corely/contracts": ["../contracts/src/index.ts"],
       "@corely/contracts/*": ["../contracts/src/*"],
+      "@corely/public-urls": ["../public-urls/src/index.ts"],
+      "@corely/public-urls/*": ["../public-urls/src/*"],
       "@/*": ["../../services/api/src/*"],
       "@shared/*": ["../../services/api/src/shared/*"]
     }
