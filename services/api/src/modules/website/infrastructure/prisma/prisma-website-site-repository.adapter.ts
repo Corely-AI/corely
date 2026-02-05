@@ -94,7 +94,13 @@ export class PrismaWebsiteSiteRepository implements WebsiteSiteRepositoryPort {
 
   async setDefault(tenantId: string, siteId: string, tx?: TransactionContext): Promise<void> {
     const client = getPrismaClient(this.prisma, tx as any);
-    await client.$transaction([
+    if (tx) {
+      await client.websiteSite.updateMany({ where: { tenantId }, data: { isDefault: false } });
+      await client.websiteSite.update({ where: { id: siteId }, data: { isDefault: true } });
+      return;
+    }
+
+    await this.prisma.$transaction([
       client.websiteSite.updateMany({ where: { tenantId }, data: { isDefault: false } }),
       client.websiteSite.update({ where: { id: siteId }, data: { isDefault: true } }),
     ]);
