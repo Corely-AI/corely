@@ -11,4 +11,10 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+node scripts/check-staged-line-limit.mjs
+
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
 echo "✅ lint-staged passed."
