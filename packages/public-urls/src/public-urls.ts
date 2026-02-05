@@ -156,7 +156,7 @@ const resolveOrigin = (input: {
 
 const buildPath = (parts: string[]) => {
   const joined = parts
-    .map((part) => part.trim())
+    .map((part) => part.trim().replace(/^\/+|\/+$/g, ""))
     .filter(Boolean)
     .join("/");
   return `/${joined}`.replace(/\/+$/, "");
