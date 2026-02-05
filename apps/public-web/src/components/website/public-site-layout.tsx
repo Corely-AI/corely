@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import type { WebsiteMenuPublic } from "@corely/contracts";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type WebsiteMenuItem = {
   label: string;
@@ -108,11 +109,14 @@ export const PublicSiteLayout = ({
               <MenuLink key={`${item.href}-${item.label}`} item={item} basePath={basePath} />
             ))}
           </nav>
-          {previewMode ? (
-            <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent">
-              Preview mode
-            </span>
-          ) : null}
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            {previewMode ? (
+              <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-accent">
+                Preview mode
+              </span>
+            ) : null}
+          </div>
         </div>
       </header>
 

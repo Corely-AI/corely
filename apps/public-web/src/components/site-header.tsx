@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Badge, Button, Logo } from "@/components/ui";
 import { resolveWorkspacePath } from "@/lib/urls";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteHeader({
   workspaceSlug,
@@ -44,9 +45,12 @@ export function SiteHeader({
             CMS
           </Link>
         </nav>
-        <Button asChild size="sm" variant="accent">
-          <Link href={portfolioPath}>Explore</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Button asChild size="sm" variant="accent">
+            <Link href={portfolioPath}>Explore</Link>
+          </Button>
+        </div>
       </div>
     </header>
   );

@@ -15,6 +15,7 @@ export type ResolveWebsitePublicInput = z.infer<typeof ResolveWebsitePublicInput
 
 export const ResolveWebsitePublicOutputSchema = z.object({
   siteId: z.string(),
+  siteSlug: z.string(),
   pageId: z.string(),
   path: z.string(),
   locale: z.string(),

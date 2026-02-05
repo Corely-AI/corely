@@ -23,9 +23,29 @@ export const metadata: Metadata = {
   },
 };
 
+const themeScript = `
+(() => {
+  try {
+    const stored = localStorage.getItem("corely-theme");
+    const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const theme = stored === "light" || stored === "dark" ? stored : (systemDark ? "dark" : "light");
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    root.style.colorScheme = theme;
+  } catch {}
+})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="min-h-screen bg-background text-foreground">{children}</body>
     </html>
   );

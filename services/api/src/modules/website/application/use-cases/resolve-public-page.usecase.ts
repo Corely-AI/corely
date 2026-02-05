@@ -142,6 +142,7 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
 
       return ok({
         siteId: site.id,
+        siteSlug: site.slug,
         pageId: page.id,
         path: page.path,
         locale,
@@ -174,6 +175,7 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
 
     return ok({
       siteId: site.id,
+      siteSlug: site.slug,
       pageId: page.id,
       path: page.path,
       locale,

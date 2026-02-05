@@ -19,6 +19,7 @@ describe("getWebsitePageData", () => {
   it("returns resolved page data when resolve succeeds", async () => {
     mockResolveWebsitePage.mockResolvedValue({
       siteId: "site-1",
+      siteSlug: "site",
       pageId: "page-1",
       path: "/about",
       locale: "en-US",

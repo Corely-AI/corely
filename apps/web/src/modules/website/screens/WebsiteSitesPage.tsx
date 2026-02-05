@@ -2,13 +2,13 @@ import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { ExternalLink, Globe, Plus } from "lucide-react";
-import { Button, Card, CardContent, Input } from "@corely/ui";
+import { Badge, Button, Card, CardContent, Input } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, useCrudUrlState } from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
 import { websiteApi } from "@/lib/website-api";
 import { websiteDomainKeys, websiteSiteListKey } from "../queries";
-import type { WebsiteDomain } from "@corely/contracts";
+import type { WebsiteDomain, WebsiteSite } from "@corely/contracts";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getPublicWebsiteUrl } from "@/shared/lib/public-urls";
 
@@ -59,12 +59,26 @@ export default function WebsiteSitesPage() {
     return map;
   }, [domainQueries, sites]);
 
-  const getPublicUrl = (hostname?: string | null) =>
-    getPublicWebsiteUrl({
+  const getPublicUrl = (site: WebsiteSite, hostname?: string | null) => {
+    const slug = site.slug?.trim();
+    const slugLower = slug?.toLowerCase();
+    const hasValidSlug = Boolean(slug) && slugLower !== "undefined" && slugLower !== "null";
+    if (!hasValidSlug) {
+      console.warn("[WebsiteSitesPage] Invalid site slug", {
+        siteId: site.id,
+        siteName: site.name,
+        siteSlug: site.slug,
+        workspaceSlug: activeWorkspace?.slug ?? null,
+      });
+    }
+    return getPublicWebsiteUrl({
       hostname,
       workspaceSlug: activeWorkspace?.slug ?? null,
+      websiteSlug: hasValidSlug ? slug : null,
+      isDefault: site.isDefault,
       path: "/",
     });
+  };
 
   const toolbar = (
     <div className="flex flex-wrap items-center gap-3">
@@ -133,7 +147,21 @@ export default function WebsiteSitesPage() {
                         key={site.id}
                         className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                       >
-                        <td className="px-4 py-3 text-sm font-medium">{site.name}</td>
+                        <td className="px-4 py-3 text-sm font-medium">
+                          <div className="flex items-center gap-2">
+                            <span>{site.name}</span>
+                            {site.isDefault ? <Badge variant="success">Default</Badge> : null}
+                            {(() => {
+                              const slug = site.slug?.trim();
+                              const slugLower = slug?.toLowerCase();
+                              const hasValidSlug =
+                                Boolean(slug) && slugLower !== "undefined" && slugLower !== "null";
+                              return hasValidSlug ? null : (
+                                <Badge variant="warning">Missing slug</Badge>
+                              );
+                            })()}
+                          </div>
+                        </td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
                           {site.defaultLocale}
                         </td>
@@ -145,7 +173,7 @@ export default function WebsiteSitesPage() {
                             const domains = domainsBySiteId.get(site.id) ?? [];
                             const primaryDomain =
                               domains.find((domain) => domain.isPrimary) ?? domains[0];
-                            const publicUrl = getPublicUrl(primaryDomain?.hostname);
+                            const publicUrl = getPublicUrl(site, primaryDomain?.hostname);
                             const secondaryActions = [
                               ...(publicUrl
                                 ? [

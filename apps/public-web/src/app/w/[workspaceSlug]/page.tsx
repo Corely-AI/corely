@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
+import { redirect } from "next/navigation";
 import type { ResolveWebsitePublicOutput } from "@corely/contracts";
 import { getRequestContext } from "@/lib/request-context";
 import { resolveWorkspaceSlugFromHost } from "@/lib/tenant";
@@ -14,11 +15,8 @@ import { extractCmsPayloadMeta, extractTextPayload } from "@/lib/website-payload
 import { resolveCanonicalUrl } from "@/lib/urls";
 import { WebsitePublicPageScreen } from "@/components/pages/website-public-page";
 import { WebsiteNotFound } from "@/components/website/website-not-found";
-import { JsonLd } from "@/components/seo/json-ld";
-import { HomePageContent } from "@/components/pages/home-page";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { getHomeMetadata, getHomePageData } from "@/app/(site)/_home-shared";
+import { siteConfig } from "@/lib/site";
+import { getHomeMetadata } from "@/app/(site)/_home-shared";
 import { WEBSITE_REVALIDATE } from "@/app/__website/_shared";
 
 export const revalidate = WEBSITE_REVALIDATE;
@@ -65,6 +63,26 @@ const buildResolveRequest = (input: { host: string | null; acceptLanguage?: stri
     path,
     locale: urlLocale ?? headerLocale ?? undefined,
   };
+};
+
+const buildWorkspaceHost = (workspaceSlug: string, host: string | null): string => {
+  const hostSlug = host ? resolveWorkspaceSlugFromHost(host) : null;
+  if (hostSlug && host) {
+    return host;
+  }
+  return `${workspaceSlug}.${siteConfig.rootDomain}`;
+};
+
+const buildPreviewQuery = (params?: { preview?: string; token?: string }) => {
+  const searchParams = new URLSearchParams();
+  if (params?.preview) {
+    searchParams.set("preview", params.preview);
+  }
+  if (params?.token) {
+    searchParams.set("token", params.token);
+  }
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
 };
 
 export async function generateMetadata({
@@ -138,22 +156,33 @@ export default async function WorkspaceRootPage({
 
   const isWorkspaceHost = Boolean(resolveWorkspaceSlugFromHost(ctx.host));
   if (!isWorkspaceHost) {
-    const { organizationSchema, websiteSchema } = await getHomePageData({
-      ctx,
-      workspaceSlug,
-    });
+    const resolved = buildResolveRequest({ host: ctx.host, acceptLanguage: ctx.acceptLanguage });
+    const fallbackHost = buildWorkspaceHost(workspaceSlug, ctx.host);
 
-    return (
-      <div className="min-h-screen bg-background">
-        <SiteHeader workspaceSlug={workspaceSlug} host={ctx.host} />
-        <main className="mx-auto w-full max-w-6xl px-6 py-10">
-          <JsonLd data={organizationSchema} />
-          <JsonLd data={websiteSchema} />
-          <HomePageContent workspaceSlug={workspaceSlug} />
-        </main>
-        <SiteFooter workspaceSlug={workspaceSlug} host={ctx.host} />
-      </div>
-    );
+    try {
+      const output = await publicApi.resolveWebsitePage({
+        host: fallbackHost,
+        path: resolved.path,
+        locale: resolved.locale,
+        mode: previewMode ? "preview" : "live",
+        token: resolvedSearchParams?.token ?? undefined,
+      });
+
+      redirect(`/w/${workspaceSlug}/${output.siteSlug}${buildPreviewQuery(resolvedSearchParams)}`);
+    } catch (error) {
+      const resolvedError = resolveWebsiteError(error);
+      if (resolvedError?.kind === "not-found") {
+        return <WebsiteNotFound message={resolvedError.message} />;
+      }
+      if (resolvedError?.kind === "unavailable") {
+        return (
+          <WebsiteNotFound
+            message={resolvedError.message ?? "Website is temporarily unavailable."}
+          />
+        );
+      }
+      throw error;
+    }
   }
 
   const resolved = buildResolveRequest({ host: ctx.host, acceptLanguage: ctx.acceptLanguage });
