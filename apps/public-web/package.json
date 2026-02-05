@@ -8,6 +8,7 @@
   "dependencies": {
     "@corely/api-client": "workspace:*",
     "@corely/contracts": "workspace:*",
+    "@corely/public-urls": "workspace:*",
     "@corely/ui": "workspace:*",
     "lucide-react": "^0.462.0",
     "next": "catalog:",

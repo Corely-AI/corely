@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -9,11 +9,41 @@ import { getDb } from "@/shared/mock/mockDb";
 import { Moon, Sun, Monitor, Globe } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/lib/auth-provider";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useThemeStore();
   const db = getDb();
+  const { user } = useAuth();
+  const { activeWorkspaceId } = useWorkspace();
+
+  const activeTenant = useMemo(() => {
+    if (!user) {
+      return null;
+    }
+    if (user.activeTenantId) {
+      return (
+        user.memberships.find((membership) => membership.tenantId === user.activeTenantId) ??
+        user.memberships[0] ??
+        null
+      );
+    }
+
+    if (activeWorkspaceId) {
+      return (
+        user.memberships.find((membership) => membership.workspaceId === activeWorkspaceId) ??
+        user.memberships[0] ??
+        null
+      );
+    }
+
+    return user.memberships[0] ?? null;
+  }, [user, activeWorkspaceId]);
+
+  const tenantIdValue = user?.activeTenantId ?? activeTenant?.tenantId ?? "";
+  const tenantNameValue = activeTenant?.tenantName ?? "";
 
   const changeLanguage = (lang: string) => {
     void i18n.changeLanguage(lang);
@@ -37,6 +67,34 @@ export default function SettingsPage() {
             <div>
               <Label>{t("settings.email")}</Label>
               <Input defaultValue={db.user.email} />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Tenant</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Tenant ID</Label>
+              <Input
+                value={tenantIdValue}
+                placeholder="Not available"
+                readOnly
+                className="bg-muted/40"
+              />
+            </div>
+            <div>
+              <Label>Tenant name</Label>
+              <Input
+                value={tenantNameValue}
+                placeholder="Not available"
+                readOnly
+                className="bg-muted/40"
+              />
             </div>
           </div>
         </CardContent>

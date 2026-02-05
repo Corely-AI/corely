@@ -235,6 +235,8 @@ export class WorkspaceTemplateService {
           "expenses",
           "clients",
           "portfolio",
+          "website",
+          "cms",
           "crm",
           "assistant",
         ],
@@ -371,7 +373,7 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.core",
         defaultLabel: "Core",
         order: 1,
-        sectionOrder: ["dashboard", "portfolio", "issues", "assistant"],
+        sectionOrder: ["dashboard", "portfolio", "website", "cms", "issues", "assistant"],
       },
       {
         id: "sales",
@@ -422,6 +424,8 @@ export class WorkspaceTemplateService {
       "crm",
       "tax",
       "portfolio",
+      "website",
+      "cms",
       "ai-copilot",
     ];
   }
@@ -438,6 +442,8 @@ export class WorkspaceTemplateService {
       "tax",
       "rentals",
       "portfolio",
+      "website",
+      "cms",
       "issues",
       "ai-copilot",
     ];

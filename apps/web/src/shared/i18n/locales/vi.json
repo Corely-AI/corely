@@ -71,7 +71,8 @@
       "finance": "Tài chính",
       "settings": "Cài đặt",
       "platform": "Nền tảng",
-      "tax": "Thuế"
+      "tax": "Thuế",
+      "other": "Khác"
     },
     "customers": "Khách hàng",
     "salesQuotes": "Báo giá",
@@ -110,6 +111,7 @@
     "issues": "Vấn đề",
     "crmDeals": "Cơ hội",
     "crmActivities": "Hoạt động",
+    "website": "Trang web",
     "platform": "Nền tảng"
   },
   "featureFlags": {
@@ -161,6 +163,9 @@
       },
       "rentals": {
         "enabled": "Cho thuê"
+      },
+      "website": {
+        "enabled": "Trang web"
       }
     }
   },

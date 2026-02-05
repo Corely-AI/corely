@@ -8,11 +8,11 @@
     "emitDecoratorMetadata": true,
     "noEmit": false,
     "outDir": "./dist",
-    "rootDir": "./src",
     "baseUrl": "./",
     "paths": {
       "@shared/*": ["src/shared/*"],
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@corely/public-urls": ["../../packages/public-urls/src/index.ts"]
     },
     "skipLibCheck": true,
     "esModuleInterop": true

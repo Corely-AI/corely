@@ -8,7 +8,8 @@
     "incremental": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@corely/public-urls": ["../../packages/public-urls/src"]
     },
     "allowJs": true,
     "exactOptionalPropertyTypes": false,

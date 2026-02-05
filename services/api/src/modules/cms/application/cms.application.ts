@@ -14,6 +14,8 @@ import type { ModerateCmsCommentUseCase } from "./use-cases/moderate-cms-comment
 import type { SignUpCmsReaderUseCase } from "./use-cases/sign-up-cms-reader.usecase";
 import type { SignInCmsReaderUseCase } from "./use-cases/sign-in-cms-reader.usecase";
 import type { GenerateCmsDraftUseCase } from "./use-cases/generate-cms-draft.usecase";
+import type { GetCmsEntryForWebsiteRenderUseCase } from "./use-cases/get-cms-entry-for-website-render.usecase";
+import type { CreateCmsEntryFromBlueprintUseCase } from "./use-cases/create-cms-entry-from-blueprint.usecase";
 
 export class CmsApplication {
   constructor(
@@ -32,6 +34,8 @@ export class CmsApplication {
     public readonly moderateComment: ModerateCmsCommentUseCase,
     public readonly signUpReader: SignUpCmsReaderUseCase,
     public readonly signInReader: SignInCmsReaderUseCase,
-    public readonly generateDraft: GenerateCmsDraftUseCase
+    public readonly generateDraft: GenerateCmsDraftUseCase,
+    public readonly getEntryForWebsiteRender: GetCmsEntryForWebsiteRenderUseCase,
+    public readonly createEntryFromBlueprint: CreateCmsEntryFromBlueprintUseCase
   ) {}
 }

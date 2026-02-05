@@ -10,6 +10,7 @@ import {
   Input,
   Logo,
 } from "@/components/ui";
+import { ThemeToggle } from "@/components/theme-toggle";
 import type { RentalProperty, RentalCategory } from "@corely/contracts";
 import { buildPublicFileUrl } from "@/lib/public-api";
 import { siteConfig } from "@/lib/site";
@@ -45,7 +46,8 @@ export function RentalsListContent({
             </div>
             <span className="text-lg font-bold tracking-tight text-foreground">Stays</span>
           </Link>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link
               href={`${siteConfig.appUrl}/auth/login`}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"

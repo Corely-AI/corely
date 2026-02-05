@@ -15,7 +15,7 @@ export function BlogListContent({
   return (
     <div className="space-y-10">
       <header className="space-y-2">
-        <Badge variant="secondary">Blog</Badge>
+        <Badge variant="secondary">CMS</Badge>
         <h1 className="text-h1">Latest posts</h1>
         <p className="text-body text-muted-foreground">
           Stories, updates, and guides from this workspace.
@@ -34,7 +34,7 @@ export function BlogListContent({
           {posts.map((post) => (
             <Link
               key={post.id}
-              href={buildWorkspacePath(`/blog/${post.slug}`, workspaceSlug)}
+              href={buildWorkspacePath(`/cms/${post.slug}`, workspaceSlug)}
               className="group"
             >
               <Card className="card-elevated h-full transition-all duration-300 group-hover:-translate-y-1">
