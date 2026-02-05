@@ -13,7 +13,7 @@
     "paths": {
       "@shared/*": ["src/shared/*"],
       "@/*": ["src/*"],
-      "@corely/public-urls": ["../../packages/public-urls/src"]
+      "@corely/public-urls": ["../../packages/public-urls/dist/index.d.mts"]
     },
     "skipLibCheck": true,
     "esModuleInterop": true
