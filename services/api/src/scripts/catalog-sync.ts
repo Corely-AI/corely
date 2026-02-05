@@ -176,8 +176,15 @@ async function syncCatalog() {
   }
 }
 
-// Run if executed directly
-if (require.main === module) {
+import { fileURLToPath } from "url";
+
+// Run if executed directly (ESM-compatible)
+const isMain =
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) ===
+    (process.argv[1].startsWith("file:") ? fileURLToPath(process.argv[1]) : process.argv[1]);
+
+if (isMain) {
   void syncCatalog();
 }
 

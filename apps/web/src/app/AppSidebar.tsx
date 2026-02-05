@@ -20,7 +20,7 @@ import { getIconByName } from "@/shared/utils/iconMapping";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { WorkspaceTypeBadge } from "@/shared/workspaces/WorkspaceTypeBadge";
 import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
-import { useIsSuperAdmin } from "@/shared/lib/permissions";
+import { useCanReadTenants } from "@/shared/lib/permissions";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -33,7 +33,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
   const { theme, setTheme } = useThemeStore();
   const { user, logout } = useAuth();
   const { activeWorkspace } = useWorkspace();
-  const isSuperAdmin = useIsSuperAdmin();
+  const { can: canReadTenants } = useCanReadTenants();
   const {
     isLoading: isConfigLoading,
     error: configError,
@@ -123,7 +123,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
           <div className="px-3 py-4 text-sm text-muted-foreground">
             {t("errors.loadMenuFailed")}
           </div>
-        ) : navigationGroups.length > 0 || isSuperAdmin ? (
+        ) : navigationGroups.length > 0 || canReadTenants ? (
           /* Server-driven navigation */
           <>
             {navigationGroups.map((group) => {
@@ -163,7 +163,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
               );
             })}
 
-            {isSuperAdmin && (
+            {canReadTenants && (
               <div className="space-y-1">
                 {!collapsed && (
                   <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

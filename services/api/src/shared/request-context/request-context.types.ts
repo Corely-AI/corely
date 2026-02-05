@@ -14,7 +14,7 @@ export type ContextSource =
 export interface RequestPrincipal {
   userId: string;
   email?: string;
-  tenantId?: string;
+  tenantId?: string | null;
   workspaceId?: string | null;
   roleIds?: string[];
 }
@@ -24,7 +24,7 @@ export interface RequestContext {
   correlationId?: string;
   userId?: string;
   workspaceId?: string | null;
-  tenantId?: string;
+  tenantId?: string | null;
   roles?: string[];
   scopes?: string[];
   metadata?: Record<string, unknown>;
@@ -39,7 +39,7 @@ export interface RequestContext {
 export type ContextAwareRequest = Request & {
   context?: RequestContext;
   user?: RequestPrincipal;
-  tenantId?: string;
+  tenantId?: string | null;
   workspaceId?: string | null;
   roleIds?: string[];
   traceId?: string;

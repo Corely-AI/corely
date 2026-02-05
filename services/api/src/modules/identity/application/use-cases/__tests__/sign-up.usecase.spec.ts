@@ -16,6 +16,7 @@ import { FakeClock } from "@shared/testkit/fakes/fake-clock";
 import { buildSignUpInput } from "../../../testkit/builders/build-signup-input";
 import { ValidationError } from "@shared/errors/domain-errors";
 import type { PermissionCatalogPort } from "../../ports/permission-catalog.port";
+import { FakeTenantRoleSeeder } from "../../../testkit/fakes/fake-tenant-role-seeder";
 
 let useCase: SignUpUseCase;
 let userRepo: FakeUserRepository;
@@ -28,6 +29,7 @@ let outbox: MockOutbox;
 let audit: MockAudit;
 let idempotency: MockIdempotencyStoragePort;
 let catalogPort: PermissionCatalogPort;
+let roleSeeder: FakeTenantRoleSeeder;
 
 const setup = () => {
   userRepo = new FakeUserRepository();
@@ -39,6 +41,7 @@ const setup = () => {
   outbox = new MockOutbox();
   audit = new MockAudit();
   idempotency = new MockIdempotencyStoragePort();
+  roleSeeder = new FakeTenantRoleSeeder();
   catalogPort = {
     getCatalog: () => [
       {
@@ -69,7 +72,8 @@ const setup = () => {
     audit,
     idempotency,
     new FakeIdGenerator("id"),
-    new FakeClock(new Date("2023-01-01T00:00:00.000Z"))
+    new FakeClock(new Date("2023-01-01T00:00:00.000Z")),
+    roleSeeder
   );
 };
 

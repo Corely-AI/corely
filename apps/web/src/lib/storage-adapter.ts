@@ -35,7 +35,7 @@ export class WebStorageAdapter implements TokenStorage {
     return null;
   }
 
-  async setActiveWorkspaceId(workspaceId: string): Promise<void> {
+  async setActiveWorkspaceId(workspaceId: string | null): Promise<void> {
     setActiveWorkspaceId(workspaceId);
   }
 

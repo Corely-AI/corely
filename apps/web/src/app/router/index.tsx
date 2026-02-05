@@ -55,7 +55,6 @@ import {
 } from "../../modules/inventory";
 import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
-import { RequireSuperAdmin } from "../../modules/settings/components/RequireSuperAdmin";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import {
   CmsPostsPage,
@@ -100,6 +99,7 @@ import {
   MenuCustomizerPage,
 } from "../../modules/platform";
 import { TenantsListPage } from "../../modules/platform/screens/tenant-management/TenantsListPage";
+import CreateTenantPage from "../../modules/platform/screens/tenant-management/CreateTenantPage";
 import { TenantEntitlementsPage } from "../../modules/platform/screens/tenant-management/TenantEntitlementsPage";
 import NotFound from "../../shared/components/NotFound";
 import { LoginPage } from "../../routes/auth/login";
@@ -644,21 +644,25 @@ export const Router = () => (
           <Route
             path="/settings/tenants"
             element={
-              <RequireSuperAdmin>
-                <RequirePermission permission="platform.tenants.manage">
-                  <TenantsListPage />
-                </RequirePermission>
-              </RequireSuperAdmin>
+              <RequirePermission permission="platform.tenants.read">
+                <TenantsListPage />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/settings/tenants/new"
+            element={
+              <RequirePermission permission="platform.tenants.write">
+                <CreateTenantPage />
+              </RequirePermission>
             }
           />
           <Route
             path="/settings/tenants/:tenantId"
             element={
-              <RequireSuperAdmin>
-                <RequirePermission permission="platform.tenants.manage">
-                  <TenantEntitlementsPage />
-                </RequirePermission>
-              </RequireSuperAdmin>
+              <RequirePermission permission="platform.tenants.write">
+                <TenantEntitlementsPage />
+              </RequirePermission>
             }
           />
         </Route>

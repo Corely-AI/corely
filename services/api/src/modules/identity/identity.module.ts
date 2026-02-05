@@ -54,12 +54,19 @@ import { CreateRoleUseCase } from "./application/use-cases/create-role.usecase";
 import { UpdateRoleUseCase } from "./application/use-cases/update-role.usecase";
 import { DeleteRoleUseCase } from "./application/use-cases/delete-role.usecase";
 import { GetPermissionCatalogUseCase } from "./application/use-cases/get-permission-catalog.usecase";
+import { GetEffectivePermissionsUseCase } from "./application/use-cases/get-effective-permissions.usecase";
 import { GetRolePermissionsUseCase } from "./application/use-cases/get-role-permissions.usecase";
 import { UpdateRolePermissionsUseCase } from "./application/use-cases/update-role-permissions.usecase";
 import { SyncRolePermissionsFromManifestsUseCase } from "./application/use-cases/sync-role-permissions-from-manifests.usecase";
 import { ListTenantsUseCase } from "./application/use-cases/list-tenants.usecase";
+import { CreateTenantUseCase } from "./application/use-cases/create-tenant.usecase";
+import { ListTenantUsersUseCase } from "./application/use-cases/list-tenant-users.usecase";
+import { CreateTenantUserUseCase } from "./application/use-cases/create-tenant-user.usecase";
+import { UpdateTenantUserRoleUseCase } from "./application/use-cases/update-tenant-user-role.usecase";
+import { GetTenantUseCase } from "./application/use-cases/get-tenant.usecase";
 import { RequestPasswordResetUseCase } from "./application/use-cases/request-password-reset.usecase";
 import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-password-reset.usecase";
+import { TenantRoleSeederService } from "./application/services/tenant-role-seeder.service";
 
 @Module({
   imports: [DataModule, KernelModule, forwardRef(() => PlatformModule)],
@@ -163,10 +170,17 @@ import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-pas
     UpdateRoleUseCase,
     DeleteRoleUseCase,
     GetPermissionCatalogUseCase,
+    GetEffectivePermissionsUseCase,
     GetRolePermissionsUseCase,
     UpdateRolePermissionsUseCase,
     SyncRolePermissionsFromManifestsUseCase,
     ListTenantsUseCase,
+    CreateTenantUseCase,
+    ListTenantUsersUseCase,
+    CreateTenantUserUseCase,
+    UpdateTenantUserRoleUseCase,
+    GetTenantUseCase,
+    TenantRoleSeederService,
 
     // Permission catalog
     PermissionCatalogRegistry,
@@ -190,6 +204,7 @@ import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-pas
     SwitchTenantUseCase,
     AuthGuard,
     RbacGuard,
+    TenantRoleSeederService,
   ],
 })
 export class IdentityModule {}

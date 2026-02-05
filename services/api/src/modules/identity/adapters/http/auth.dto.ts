@@ -13,7 +13,7 @@ export class SignUpDto {
 export class SignInDto {
   email: string;
   password: string;
-  tenantId?: string;
+  tenantId?: string | null;
   idempotencyKey?: string;
 }
 
@@ -22,7 +22,7 @@ export class RefreshTokenDto {
 }
 
 export class SwitchTenantDto {
-  tenantId: string;
+  tenantId: string | null;
 }
 
 export class SignOutDto {
@@ -47,10 +47,10 @@ export class SignUpResponseDto extends AuthTokensResponseDto {
 export class SignInResponseDto extends AuthTokensResponseDto {
   userId: string;
   email: string;
-  tenantId: string;
+  tenantId: string | null;
   memberships?: Array<{
-    tenantId: string;
-    tenantName: string;
+    tenantId: string | null;
+    tenantName: string | null;
     roleId: string;
   }>;
 }
@@ -59,10 +59,10 @@ export class CurrentUserResponseDto {
   userId: string;
   email: string;
   name: string | null;
-  activeTenantId: string;
+  activeTenantId: string | null;
   memberships: Array<{
-    tenantId: string;
-    tenantName: string;
+    tenantId: string | null;
+    tenantName: string | null;
     roleId: string;
   }>;
 }
@@ -70,7 +70,7 @@ export class CurrentUserResponseDto {
 export class SwitchTenantResponseDto {
   accessToken: string;
   refreshToken: string;
-  tenantId: string;
+  tenantId: string | null;
 }
 
 export class MessageResponseDto {

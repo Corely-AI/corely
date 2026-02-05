@@ -92,7 +92,8 @@ export class SignInUseCase {
       throw new ForbiddenError("User has no memberships");
     }
 
-    const selectedTenantId = input.tenantId ?? memberships[0].getTenantId();
+    const selectedTenantId =
+      input.tenantId === undefined ? memberships[0].getTenantId() : input.tenantId;
     if (!memberships.some((m) => m.getTenantId() === selectedTenantId)) {
       throw new ForbiddenError("User is not a member of the specified tenant");
     }

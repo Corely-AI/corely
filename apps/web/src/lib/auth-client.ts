@@ -48,19 +48,16 @@ class WebAuthClient {
 
   async signup(data: Parameters<AuthClient["signup"]>[0]) {
     const result = await this.client.signup(data);
-    const workspaceId = result.workspaceId ?? result.tenantId;
-    if (workspaceId) {
-      setActiveWorkspaceId(workspaceId);
-    }
+    const workspaceId = result.workspaceId ?? result.tenantId ?? null;
+    setActiveWorkspaceId(workspaceId);
     return result;
   }
 
   async signin(data: Parameters<AuthClient["signin"]>[0]) {
     const result = await this.client.signin(data);
-    const workspaceId = result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId;
-    if (workspaceId) {
-      setActiveWorkspaceId(workspaceId);
-    }
+    const workspaceId =
+      result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId ?? null;
+    setActiveWorkspaceId(workspaceId);
     return result;
   }
 
@@ -77,9 +74,9 @@ class WebAuthClient {
     setActiveWorkspaceId(null);
   }
 
-  async switchTenant(tenantId: string) {
+  async switchTenant(tenantId: string | null) {
     const result = await this.client.switchTenant(tenantId);
-    setActiveWorkspaceId(result.workspaceId ?? result.tenantId ?? tenantId);
+    setActiveWorkspaceId(result.workspaceId ?? result.tenantId ?? tenantId ?? null);
     return result;
   }
 }

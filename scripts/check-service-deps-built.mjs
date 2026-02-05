@@ -12,9 +12,7 @@ const workspaceRoot = process.cwd();
 
 const listDirs = async (base) => {
   const entries = await fs.readdir(base, { withFileTypes: true }).catch(() => []);
-  return entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => path.join(base, entry.name));
+  return entries.filter((entry) => entry.isDirectory()).map((entry) => path.join(base, entry.name));
 };
 
 const collectWorkspacePackages = async () => {
@@ -98,7 +96,11 @@ const buildTypeCandidates = (typesPath) => {
   if (!typesPath.endsWith(".d.ts")) {
     return [typesPath];
   }
-  return [typesPath, typesPath.replace(/\.d\.ts$/, ".d.mts"), typesPath.replace(/\.d\.ts$/, ".d.cts")];
+  return [
+    typesPath,
+    typesPath.replace(/\.d\.ts$/, ".d.mts"),
+    typesPath.replace(/\.d\.ts$/, ".d.cts"),
+  ];
 };
 
 const fileExists = async (absPath) => {
@@ -122,7 +124,7 @@ const run = async () => {
   const dependencies = {
     ...(service.pkg.dependencies ?? {}),
     ...(service.pkg.optionalDependencies ?? {}),
-    ...(service.pkg.peerDependencies ?? {})
+    ...(service.pkg.peerDependencies ?? {}),
   };
 
   const workspaceDeps = Object.entries(dependencies)
@@ -149,7 +151,11 @@ const run = async () => {
     }
 
     const expectedFiles = collectExpectedFiles(dep.pkg);
-    if (expectedFiles.required.length === 0 && expectedFiles.optional.length === 0 && expectedFiles.types.length === 0) {
+    if (
+      expectedFiles.required.length === 0 &&
+      expectedFiles.optional.length === 0 &&
+      expectedFiles.types.length === 0
+    ) {
       skippedPackages.push(depName);
       continue;
     }
@@ -174,7 +180,9 @@ const run = async () => {
         candidates.map((candidate) => fileExists(path.join(dep.dir, candidate)))
       );
       if (!found.some(Boolean)) {
-        typesMissing.add(`${depName}: ${path.relative(workspaceRoot, path.join(dep.dir, relPath))}`);
+        typesMissing.add(
+          `${depName}: ${path.relative(workspaceRoot, path.join(dep.dir, relPath))}`
+        );
       }
     }
   }
@@ -191,7 +199,9 @@ const run = async () => {
   }
 
   if (skippedPackages.length > 0) {
-    console.warn(`[deps-check] Skipped ${skippedPackages.length} packages with no declared outputs.`);
+    console.warn(
+      `[deps-check] Skipped ${skippedPackages.length} packages with no declared outputs.`
+    );
   }
 
   if (optionalMissing.size > 0) {

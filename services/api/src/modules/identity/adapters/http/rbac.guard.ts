@@ -25,6 +25,10 @@ import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,
 } from "../../../workspaces/application/ports/workspace-repository.port";
+import {
+  hasPlatformPermission,
+  isPlatformHostPermissionKey,
+} from "../../application/policies/platform-permissions.policy";
 
 export const REQUIRE_PERMISSION = "require_permission";
 
@@ -63,9 +67,32 @@ export class RbacGuard implements CanActivate {
     const userId = ctx?.userId ?? request.user?.userId;
     const tenantId = ctx?.tenantId ?? request.tenantId;
     const workspaceId = (ctx?.workspaceId as string | null | undefined) ?? null;
+    const roleIds = ctx?.roles ?? request.roleIds ?? [];
 
     if (!userId) {
       throw new ForbiddenException("User not authenticated");
+    }
+
+    if (isPlatformHostPermissionKey(requiredPermission)) {
+      if (tenantId !== null) {
+        throw new ForbiddenException("Host scope required for platform permissions");
+      }
+
+      const allowed = await hasPlatformPermission(
+        { userId, tenantId: null, roles: roleIds },
+        requiredPermission,
+        { grantRepo: this.grantRepo }
+      );
+
+      if (!allowed) {
+        throw new ForbiddenException(`User does not have permission: ${requiredPermission}`);
+      }
+
+      return true;
+    }
+
+    if (!tenantId) {
+      throw new ForbiddenException("Tenant context required");
     }
 
     // If workspace has RBAC disabled, allow access (capability gate handles visibility)
@@ -83,13 +110,7 @@ export class RbacGuard implements CanActivate {
       }
     }
 
-    // 1. Fetch Host Membership (Super Admin)
-    const hostMembership = await this.membershipRepo.findHostMembership(userId);
-    if (hostMembership) {
-      return true;
-    }
-
-    const roleIds: string[] = [];
+    const tenantRoleIds: string[] = [];
 
     // 2. Fetch Tenant Membership
     if (tenantId) {
@@ -100,19 +121,19 @@ export class RbacGuard implements CanActivate {
         if (role?.systemKey === "OWNER") {
           return true;
         }
-        roleIds.push(roleId);
+        tenantRoleIds.push(roleId);
       }
     }
 
-    if (roleIds.length === 0) {
+    if (tenantRoleIds.length === 0) {
       if (tenantId) {
         throw new ForbiddenException("User is not a member of this tenant");
       }
       throw new ForbiddenException("Access denied");
     }
 
-    // 3. Resolve permissions from all roles (Host + Tenant)
-    const grants = await this.grantRepo.listByRoleIds(roleIds);
+    // 3. Resolve permissions from tenant role grants
+    const grants = await this.grantRepo.listByRoleIdsAndTenant(tenantId, tenantRoleIds);
     const grantSet = computeEffectivePermissionSet(grants);
     const canAccess = hasPermission(grantSet, requiredPermission);
 

@@ -19,6 +19,20 @@ export class PrismaAuditRepository implements AuditPort {
     userAgent?: string;
     metadataJson?: string;
   }): Promise<void> {
+    const details: Record<string, unknown> = {};
+    if (data.actorUserId) {
+      details.actorUserId = data.actorUserId;
+    }
+    if (data.ip) {
+      details.ip = data.ip;
+    }
+    if (data.userAgent) {
+      details.userAgent = data.userAgent;
+    }
+    if (data.metadataJson) {
+      details.metadata = data.metadataJson;
+    }
+
     const createData: any = {
       action: data.action,
       // Map target fields to the required Prisma columns
@@ -29,18 +43,8 @@ export class PrismaAuditRepository implements AuditPort {
     if (data.tenantId) {
       createData.tenantId = data.tenantId;
     }
-    // The auditLog model does not have actorUserId; stash it in metadata if provided
-    if (data.actorUserId) {
-      createData.details = JSON.stringify({ actorUserId: data.actorUserId });
-    }
-    if (data.ip) {
-      createData.ip = data.ip;
-    }
-    if (data.userAgent) {
-      createData.userAgent = data.userAgent;
-    }
-    if (data.metadataJson) {
-      createData.metadataJson = data.metadataJson;
+    if (Object.keys(details).length > 0) {
+      createData.details = JSON.stringify(details);
     }
 
     await this.prisma.auditLog.create({ data: createData });

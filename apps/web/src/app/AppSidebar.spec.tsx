@@ -70,6 +70,10 @@ vi.mock("@/shared/utils/iconMapping", () => ({
   getIconByName: () => () => <span data-testid="icon" />,
 }));
 
+vi.mock("@/shared/lib/permissions", () => ({
+  useCanReadTenants: () => ({ can: false, isLoading: false, error: null }),
+}));
+
 describe("AppSidebar", () => {
   it("hides tax payments when payments are disabled", () => {
     render(
