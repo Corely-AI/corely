@@ -6,6 +6,7 @@ import { WorkflowsModule } from "./modules/workflows/workflows.module";
 
 import { AccountingWorkerModule } from "./modules/accounting/accounting-worker.module";
 import { TaxWorkerModule } from "./modules/tax/tax-worker.module";
+import { ClassesWorkerModule } from "./modules/classes/classes-worker.module";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TaxWorkerModule } from "./modules/tax/tax-worker.module";
     WorkflowsModule,
     AccountingWorkerModule,
     TaxWorkerModule,
+    ClassesWorkerModule,
   ],
 })
 export class WorkerModule {}

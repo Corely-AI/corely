@@ -37,6 +37,31 @@ export const envSchema = z.object({
   WORKER_PORT: z.coerce.number().int().positive().default(3001),
 
   // ============================================================================
+  // WORKER
+  // ============================================================================
+  WORKER_API_BASE_URL: z.string().url().optional(),
+  WORKER_API_SERVICE_TOKEN: z.string().optional(),
+  CLASSES_BILLING_RUN_ENABLED: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) {
+          return true;
+        }
+        if (["false", "0", "no", "n"].includes(normalized)) {
+          return false;
+        }
+      }
+      return value;
+    }, z.boolean())
+    .default(true),
+  CLASSES_BILLING_RUN_TIME: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default("02:00"),
+  CLASSES_BILLING_RUN_TIMEZONE: z.string().default("Europe/Berlin"),
+
+  // ============================================================================
   // AI PROVIDERS
   // ============================================================================
   AI_MODEL_PROVIDER: z.enum(["openai", "anthropic"]).default("openai"),
@@ -116,6 +141,7 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
   "LANGFUSE_SECRET_KEY",
   "OTEL_EXPORTER_OTLP_HEADERS",
   "WORKFLOW_QUEUE_SECRET",
+  "WORKER_API_SERVICE_TOKEN",
 ]);
 
 /**

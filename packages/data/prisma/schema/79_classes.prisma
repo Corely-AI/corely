@@ -1,0 +1,153 @@
+enum ClassGroupStatus {
+  ACTIVE
+  ARCHIVED
+  @@schema("crm")
+}
+
+enum ClassSessionStatus {
+  PLANNED
+  DONE
+  CANCELLED
+  @@schema("crm")
+}
+
+enum ClassAttendanceStatus {
+  PRESENT
+  ABSENT
+  MAKEUP
+  EXCUSED
+  @@schema("crm")
+}
+
+enum ClassBillingRunStatus {
+  DRAFT
+  INVOICES_CREATED
+  LOCKED
+  FAILED
+  @@schema("crm")
+}
+
+model ClassGroup {
+  id                     String           @id @default(cuid())
+  tenantId               String
+  workspaceId            String
+  name                   String
+  subject                String
+  level                  String
+  defaultPricePerSession Int
+  currency               String           @default("EUR") @db.VarChar(3)
+  schedulePattern        Json?            @db.JsonB
+  status                 ClassGroupStatus @default(ACTIVE)
+  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
+
+  sessions               ClassSession[]
+  enrollments            ClassEnrollment[]
+
+  @@index([tenantId, workspaceId])
+  @@index([tenantId, status])
+  @@schema("crm")
+}
+
+model ClassSession {
+  id           String             @id @default(cuid())
+  tenantId     String
+  workspaceId  String
+  classGroupId String
+  startsAt     DateTime           @db.Timestamptz(6)
+  endsAt       DateTime?          @db.Timestamptz(6)
+  topic        String?
+  notes        String?
+  status       ClassSessionStatus @default(PLANNED)
+  createdAt    DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime           @updatedAt @db.Timestamptz(6)
+
+  classGroup   ClassGroup         @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  attendance   ClassAttendance[]
+
+  @@unique([tenantId, classGroupId, startsAt], name: "tenantId_classGroupId_startsAt")
+  @@index([tenantId, workspaceId, startsAt])
+  @@index([tenantId, classGroupId])
+  @@schema("crm")
+}
+
+model ClassEnrollment {
+  id                     String   @id @default(cuid())
+  tenantId               String
+  workspaceId            String
+  classGroupId           String
+  clientId               String
+  startDate              DateTime? @db.Date
+  endDate                DateTime? @db.Date
+  isActive               Boolean   @default(true)
+  priceOverridePerSession Int?
+  createdAt              DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime  @updatedAt @db.Timestamptz(6)
+
+  classGroup             ClassGroup      @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  attendance             ClassAttendance[]
+
+  @@unique([tenantId, classGroupId, clientId], name: "tenantId_classGroupId_clientId")
+  @@index([tenantId, classGroupId])
+  @@index([tenantId, isActive])
+  @@schema("crm")
+}
+
+model ClassAttendance {
+  id           String                @id @default(cuid())
+  tenantId     String
+  workspaceId  String
+  sessionId    String
+  enrollmentId String
+  status       ClassAttendanceStatus
+  billable     Boolean               @default(true)
+  note         String?
+  createdAt    DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime              @updatedAt @db.Timestamptz(6)
+
+  session      ClassSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  enrollment   ClassEnrollment       @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sessionId, enrollmentId], name: "tenantId_sessionId_enrollmentId")
+  @@index([tenantId, sessionId])
+  @@index([tenantId, enrollmentId])
+  @@schema("crm")
+}
+
+model ClassMonthlyBillingRun {
+  id              String               @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  month           String               @db.VarChar(7)
+  status          ClassBillingRunStatus @default(DRAFT)
+  runId           String
+  generatedAt     DateTime?            @db.Timestamptz(6)
+  createdByUserId String
+  createdAt       DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime             @updatedAt @db.Timestamptz(6)
+
+  invoices        ClassBillingInvoiceLink[]
+
+  @@unique([tenantId, month], name: "tenantId_month")
+  @@index([tenantId, status])
+  @@schema("crm")
+}
+
+model ClassBillingInvoiceLink {
+  id             String   @id @default(cuid())
+  tenantId       String
+  workspaceId    String
+  billingRunId   String
+  clientId       String
+  invoiceId      String
+  idempotencyKey String
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  billingRun     ClassMonthlyBillingRun @relation(fields: [billingRunId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, billingRunId, clientId], name: "tenantId_billingRunId_clientId")
+  @@unique([tenantId, idempotencyKey], name: "tenantId_idempotencyKey")
+  @@index([tenantId, billingRunId])
+  @@index([tenantId, clientId])
+  @@schema("crm")
+}

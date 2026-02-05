@@ -1,0 +1,248 @@
+import { apiClient } from "./api-client";
+import type {
+  CreateClassGroupInput,
+  UpdateClassGroupInput,
+  ListClassGroupsInput,
+  ListClassGroupsOutput,
+  GetClassGroupOutput,
+  CreateClassSessionInput,
+  UpdateClassSessionInput,
+  ListClassSessionsInput,
+  ListClassSessionsOutput,
+  GetClassSessionOutput,
+  CreateRecurringSessionsInput,
+  CreateRecurringSessionsOutput,
+  ListEnrollmentsInput,
+  ListEnrollmentsOutput,
+  UpsertEnrollmentInput,
+  UpdateEnrollmentInput,
+  BulkUpsertAttendanceInput,
+  GetSessionAttendanceOutput,
+  BillingPreviewOutput,
+  CreateBillingRunInput,
+  CreateBillingRunOutput,
+  ClassEnrollment,
+  ClassMonthlyBillingRun,
+} from "@corely/contracts";
+
+export class ClassesApi {
+  async listClassGroups(params?: ListClassGroupsInput): Promise<ListClassGroupsOutput> {
+    const query = new URLSearchParams();
+    if (params?.q) {
+      query.append("q", params.q);
+    }
+    if (params?.page) {
+      query.append("page", String(params.page));
+    }
+    if (params?.pageSize) {
+      query.append("pageSize", String(params.pageSize));
+    }
+    if (params?.sort) {
+      query.append("sort", Array.isArray(params.sort) ? params.sort[0] : params.sort);
+    }
+    if (params?.status) {
+      query.append("status", params.status);
+    }
+    if (params?.subject) {
+      query.append("subject", params.subject);
+    }
+    if (params?.level) {
+      query.append("level", params.level);
+    }
+    if (params?.filters) {
+      query.append("filters", JSON.stringify(params.filters));
+    }
+    const endpoint = query.toString()
+      ? `/classes/class-groups?${query.toString()}`
+      : "/classes/class-groups";
+    return apiClient.get<ListClassGroupsOutput>(endpoint, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getClassGroup(id: string): Promise<GetClassGroupOutput> {
+    return apiClient.get<GetClassGroupOutput>(`/classes/class-groups/${id}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createClassGroup(input: CreateClassGroupInput): Promise<GetClassGroupOutput> {
+    return apiClient.post<GetClassGroupOutput>("/classes/class-groups", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updateClassGroup(id: string, input: UpdateClassGroupInput): Promise<GetClassGroupOutput> {
+    return apiClient.patch<GetClassGroupOutput>(`/classes/class-groups/${id}`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async listSessions(params?: ListClassSessionsInput): Promise<ListClassSessionsOutput> {
+    const query = new URLSearchParams();
+    if (params?.q) {
+      query.append("q", params.q);
+    }
+    if (params?.page) {
+      query.append("page", String(params.page));
+    }
+    if (params?.pageSize) {
+      query.append("pageSize", String(params.pageSize));
+    }
+    if (params?.sort) {
+      query.append("sort", Array.isArray(params.sort) ? params.sort[0] : params.sort);
+    }
+    if (params?.classGroupId) {
+      query.append("classGroupId", params.classGroupId);
+    }
+    if (params?.status) {
+      query.append("status", params.status);
+    }
+    if (params?.dateFrom) {
+      query.append("dateFrom", params.dateFrom);
+    }
+    if (params?.dateTo) {
+      query.append("dateTo", params.dateTo);
+    }
+    if (params?.filters) {
+      query.append("filters", JSON.stringify(params.filters));
+    }
+    const endpoint = query.toString()
+      ? `/classes/sessions?${query.toString()}`
+      : "/classes/sessions";
+    return apiClient.get<ListClassSessionsOutput>(endpoint, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getSession(id: string): Promise<GetClassSessionOutput> {
+    return apiClient.get<GetClassSessionOutput>(`/classes/sessions/${id}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createSession(input: CreateClassSessionInput): Promise<GetClassSessionOutput> {
+    return apiClient.post<GetClassSessionOutput>("/classes/sessions", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createRecurringSessions(
+    input: CreateRecurringSessionsInput
+  ): Promise<CreateRecurringSessionsOutput> {
+    return apiClient.post<CreateRecurringSessionsOutput>("/classes/sessions/recurring", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updateSession(id: string, input: UpdateClassSessionInput): Promise<GetClassSessionOutput> {
+    return apiClient.patch<GetClassSessionOutput>(`/classes/sessions/${id}`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async listEnrollments(params?: ListEnrollmentsInput): Promise<ListEnrollmentsOutput> {
+    const query = new URLSearchParams();
+    if (params?.q) {
+      query.append("q", params.q);
+    }
+    if (params?.page) {
+      query.append("page", String(params.page));
+    }
+    if (params?.pageSize) {
+      query.append("pageSize", String(params.pageSize));
+    }
+    if (params?.sort) {
+      query.append("sort", Array.isArray(params.sort) ? params.sort[0] : params.sort);
+    }
+    if (params?.classGroupId) {
+      query.append("classGroupId", params.classGroupId);
+    }
+    if (params?.clientId) {
+      query.append("clientId", params.clientId);
+    }
+    if (typeof params?.isActive === "boolean") {
+      query.append("isActive", String(params.isActive));
+    }
+    if (params?.filters) {
+      query.append("filters", JSON.stringify(params.filters));
+    }
+    const endpoint = query.toString()
+      ? `/classes/enrollments?${query.toString()}`
+      : "/classes/enrollments";
+    return apiClient.get<ListEnrollmentsOutput>(endpoint, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async upsertEnrollment(input: UpsertEnrollmentInput): Promise<{ enrollment: ClassEnrollment }> {
+    return apiClient.post<{ enrollment: ClassEnrollment }>("/classes/enrollments", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updateEnrollment(
+    id: string,
+    input: UpdateEnrollmentInput
+  ): Promise<{ enrollment: ClassEnrollment }> {
+    return apiClient.patch<{ enrollment: ClassEnrollment }>(`/classes/enrollments/${id}`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getSessionAttendance(sessionId: string): Promise<GetSessionAttendanceOutput> {
+    return apiClient.get<GetSessionAttendanceOutput>(`/classes/sessions/${sessionId}/attendance`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async upsertAttendance(
+    sessionId: string,
+    input: BulkUpsertAttendanceInput
+  ): Promise<GetSessionAttendanceOutput> {
+    return apiClient.put<GetSessionAttendanceOutput>(
+      `/classes/sessions/${sessionId}/attendance`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async getBillingPreview(month: string): Promise<BillingPreviewOutput> {
+    return apiClient.get<BillingPreviewOutput>(
+      `/classes/billing/preview?month=${encodeURIComponent(month)}`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async createBillingRun(input: CreateBillingRunInput): Promise<CreateBillingRunOutput> {
+    return apiClient.post<CreateBillingRunOutput>("/classes/billing/runs", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async lockBillingRun(id: string): Promise<{ billingRun: ClassMonthlyBillingRun }> {
+    return apiClient.post<{ billingRun: ClassMonthlyBillingRun }>(
+      `/classes/billing/runs/${id}/lock`,
+      {},
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+}
+
+export const classesApi = new ClassesApi();

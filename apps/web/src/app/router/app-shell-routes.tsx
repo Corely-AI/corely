@@ -9,6 +9,14 @@ import { CustomersPage, NewCustomerPage, EditCustomerPage } from "../../modules/
 import { FormsPage, NewFormPage, FormDetailPage } from "../../modules/forms";
 import { IssuesListPage, IssueDetailPage, NewIssuePage } from "../../modules/issues";
 import {
+  ClassGroupsListPage,
+  ClassGroupEditorPage,
+  ClassGroupDetailPage,
+  SessionsPage,
+  SessionDetailPage,
+  ClassesBillingPage,
+} from "../../modules/classes";
+import {
   DealsPage,
   NewDealPage,
   DealDetailPage,
@@ -138,6 +146,13 @@ export const appShellRoutes = (
       <Route path="/forms/new" element={<NewFormPage />} />
       <Route path="/forms/:id" element={<FormDetailPage />} />
       <Route path="/issues" element={<IssuesListPage />} />
+      <Route path="/class-groups" element={<ClassGroupsListPage />} />
+      <Route path="/class-groups/new" element={<ClassGroupEditorPage />} />
+      <Route path="/class-groups/:id" element={<ClassGroupDetailPage />} />
+      <Route path="/class-groups/:id/edit" element={<ClassGroupEditorPage />} />
+      <Route path="/sessions" element={<SessionsPage />} />
+      <Route path="/sessions/:id" element={<SessionDetailPage />} />
+      <Route path="/billing" element={<ClassesBillingPage />} />
       <Route path="/issues/new" element={<NewIssuePage />} />
       <Route path="/issues/:id" element={<IssueDetailPage />} />
       <Route path="/expenses" element={<ExpensesPage />} />

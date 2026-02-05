@@ -15,6 +15,7 @@ export * from "./cms";
 export * from "./website";
 export * from "./sales";
 export * from "./rentals";
+export * from "./classes";
 export {
   RecordPaymentInputSchema as SalesRecordPaymentInputSchema,
   RecordPaymentOutputSchema as SalesRecordPaymentOutputSchema,

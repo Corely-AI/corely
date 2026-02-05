@@ -1,0 +1,47 @@
+import type { AppManifest } from "@corely/contracts";
+
+export const classesAppManifest: AppManifest = {
+  appId: "classes",
+  name: "Classes",
+  tier: 2,
+  version: "1.0.0",
+  description: "Manage tutoring class groups, sessions, attendance, and billing",
+  dependencies: ["invoices", "crm"],
+  capabilities: [],
+  permissions: ["classes.read", "classes.write", "classes.billing"],
+  menu: [
+    {
+      id: "classes-groups",
+      scope: "web",
+      section: "crm",
+      labelKey: "nav.classes",
+      defaultLabel: "Classes",
+      route: "/class-groups",
+      icon: "Users",
+      order: 40,
+      requiresPermissions: ["classes.read"],
+    },
+    {
+      id: "classes-sessions",
+      scope: "web",
+      section: "crm",
+      labelKey: "nav.classSessions",
+      defaultLabel: "Sessions",
+      route: "/sessions",
+      icon: "Calendar",
+      order: 41,
+      requiresPermissions: ["classes.read"],
+    },
+    {
+      id: "classes-billing",
+      scope: "web",
+      section: "crm",
+      labelKey: "nav.classBilling",
+      defaultLabel: "Class billing",
+      route: "/billing",
+      icon: "CreditCard",
+      order: 42,
+      requiresPermissions: ["classes.billing"],
+    },
+  ],
+};
