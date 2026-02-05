@@ -16,6 +16,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   declare salesOrderLine: any;
   declare salesQuote: any;
   declare salesQuoteLine: any;
+  // Extension + workflow models can be missing in some generated clients.
+  declare extKv: any;
+  declare extEntityAttr: any;
+  declare extEntityLink: any;
+  declare idempotencyKey: any;
+  declare outboxEvent: any;
+  declare workflowDefinition: any;
+  declare workflowEvent: any;
+  declare workflowInstance: any;
+  declare task: any;
 
   private pool: Pool | null;
   private readonly skipConnect: boolean;

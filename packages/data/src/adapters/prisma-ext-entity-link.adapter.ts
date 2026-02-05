@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import type { ExtEntityLink as PrismaExtEntityLinkRecord } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
   ExtEntityLinkPort,
@@ -82,7 +83,7 @@ export class PrismaExtEntityLinkAdapter implements ExtEntityLinkPort {
       },
     });
 
-    return records.map((r) => this.toDomain(r));
+    return records.map((record: PrismaExtEntityLinkRecord) => this.toDomain(record));
   }
 
   private toDomain(record: any): EntityLink {

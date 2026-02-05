@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import type { ExtEntityAttr as PrismaExtEntityAttrRecord } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
   ExtEntityAttrPort,
@@ -101,7 +102,7 @@ export class PrismaExtEntityAttrAdapter implements ExtEntityAttrPort {
       },
     });
 
-    return records.map((r) => this.toDomain(r));
+    return records.map((record: PrismaExtEntityAttrRecord) => this.toDomain(record));
   }
 
   private toDomain(record: any): EntityAttr {

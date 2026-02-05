@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import type { OutboxEvent as PrismaOutboxEvent } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { getPrismaClient } from "../uow/prisma-unit-of-work.adapter";
 import type { TransactionContext } from "@corely/kernel";
@@ -54,7 +55,7 @@ export class OutboxRepository {
       take: limit,
     });
 
-    return events.map((event) => ({
+    return events.map((event: PrismaOutboxEvent) => ({
       ...event,
       payload: safeParsePayload(event.payloadJson ?? "{}"),
     }));
