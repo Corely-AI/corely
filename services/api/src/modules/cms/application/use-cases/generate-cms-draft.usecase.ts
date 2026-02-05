@@ -42,7 +42,10 @@ const outputSchema = z.object({
   slugSuggestion: z.string(),
   metaTitle: z.string(),
   metaDescription: z.string(),
-  contentJson: z.unknown(),
+  contentJson: z.object({
+    type: z.literal("doc"),
+    content: z.array(z.unknown()),
+  }),
 });
 
 export class GenerateCmsDraftUseCase extends BaseUseCase<
