@@ -91,9 +91,7 @@ const main = () => {
   }
 
   if (oversized.length > 0) {
-    console.error(
-      `❌ Commit blocked: source files must be ${MAX_LINES} lines or fewer.`
-    );
+    console.error(`❌ Commit blocked: source files must be ${MAX_LINES} lines or fewer.`);
     for (const { file, lineCount } of oversized) {
       console.error(`- ${file} (${lineCount} lines)`);
     }
