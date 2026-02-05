@@ -100,7 +100,7 @@ export class CreateMonthlyBillingRunUseCase {
               qty: line.sessions,
               unitPriceCents: line.priceCents,
             })),
-            sourceType: "classes.billing",
+            sourceType: "manual",
             sourceId: run.id,
             idempotencyKey: invoiceKey,
           },

@@ -45,9 +45,7 @@ export class BulkUpsertAttendanceUseCase {
     const monthKey = getMonthKeyForInstant(session.startsAt);
     const locked = await this.repo.isMonthLocked(tenantId, workspaceId, monthKey);
     if (locked) {
-      throw new ForbiddenError("Month is locked for attendance changes", {
-        code: "Classes:MonthLocked",
-      });
+      throw new ForbiddenError("Month is locked for attendance changes", "Classes:MonthLocked");
     }
 
     if (input.idempotencyKey) {

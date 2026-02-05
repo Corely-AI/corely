@@ -14,6 +14,6 @@ export const assertCanClasses = (ctx: UseCaseContext, permission: string) => {
     if (permissions.includes("*") || permissions.includes(permission)) {
       return;
     }
-    throw new ForbiddenError("Missing permission", { permission });
+    throw new ForbiddenError("Missing permission", "Classes:PermissionDenied");
   }
 };

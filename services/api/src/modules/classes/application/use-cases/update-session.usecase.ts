@@ -32,9 +32,7 @@ export class UpdateSessionUseCase {
     const monthKey = getMonthKeyForInstant(effectiveStart);
     const locked = await this.repo.isMonthLocked(tenantId, workspaceId, monthKey);
     if (locked) {
-      throw new ForbiddenError("Month is locked for billing adjustments", {
-        code: "Classes:MonthLocked",
-      });
+      throw new ForbiddenError("Month is locked for billing adjustments", "Classes:MonthLocked");
     }
 
     const updated = await this.repo.updateSession(tenantId, workspaceId, input.sessionId, {

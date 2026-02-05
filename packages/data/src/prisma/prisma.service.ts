@@ -17,6 +17,14 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   declare salesQuote: any;
   declare salesQuoteLine: any;
 
+  // Type-only aliases for optional classes models.
+  declare classGroup: any;
+  declare classSession: any;
+  declare classEnrollment: any;
+  declare classAttendance: any;
+  declare classMonthlyBillingRun: any;
+  declare classBillingInvoiceLink: any;
+
   private pool: Pool | null;
   private readonly skipConnect: boolean;
 

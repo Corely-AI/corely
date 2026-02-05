@@ -27,13 +27,18 @@ export class UpdateClassGroupUseCase {
       throw new NotFoundError("Class group not found", { code: "Classes:ClassGroupNotFound" });
     }
 
+    const schedulePattern =
+      input.schedulePattern === undefined
+        ? undefined
+        : (input.schedulePattern as Record<string, unknown> | null);
+
     const updated = await this.repo.updateClassGroup(tenantId, workspaceId, input.classGroupId, {
       name: input.name ?? undefined,
       subject: input.subject ?? undefined,
       level: input.level ?? undefined,
       defaultPricePerSession: input.defaultPricePerSession ?? undefined,
       currency: input.currency ?? undefined,
-      schedulePattern: input.schedulePattern ?? undefined,
+      schedulePattern,
       status: input.status ?? undefined,
       updatedAt: this.clock.now(),
     });
