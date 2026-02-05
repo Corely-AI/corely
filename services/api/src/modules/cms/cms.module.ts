@@ -35,6 +35,8 @@ import { ModerateCmsCommentUseCase } from "./application/use-cases/moderate-cms-
 import { SignUpCmsReaderUseCase } from "./application/use-cases/sign-up-cms-reader.usecase";
 import { SignInCmsReaderUseCase } from "./application/use-cases/sign-in-cms-reader.usecase";
 import { GenerateCmsDraftUseCase } from "./application/use-cases/generate-cms-draft.usecase";
+import { GetCmsEntryForWebsiteRenderUseCase } from "./application/use-cases/get-cms-entry-for-website-render.usecase";
+import { CreateCmsEntryFromBlueprintUseCase } from "./application/use-cases/create-cms-entry-from-blueprint.usecase";
 import { PrismaAgentRunRepository } from "../ai-copilot/infrastructure/adapters/prisma-agent-run-repository.adapter";
 import { PrismaToolExecutionRepository } from "../ai-copilot/infrastructure/adapters/prisma-tool-execution-repository.adapter";
 import { PromptRegistry } from "@corely/prompts";
@@ -275,6 +277,32 @@ import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
       ],
     },
     {
+      provide: GetCmsEntryForWebsiteRenderUseCase,
+      useFactory: (postRepo: PrismaCmsPostRepository) =>
+        new GetCmsEntryForWebsiteRenderUseCase({
+          logger: new NestLoggerAdapter(),
+          postRepo,
+        }),
+      inject: [PrismaCmsPostRepository],
+    },
+    {
+      provide: CreateCmsEntryFromBlueprintUseCase,
+      useFactory: (
+        postRepo: PrismaCmsPostRepository,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort,
+        renderer: CmsContentRenderer
+      ) =>
+        new CreateCmsEntryFromBlueprintUseCase({
+          logger: new NestLoggerAdapter(),
+          postRepo,
+          idGenerator,
+          clock,
+          contentRenderer: renderer,
+        }),
+      inject: [PrismaCmsPostRepository, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN, CmsContentRenderer],
+    },
+    {
       provide: CmsApplication,
       useFactory: (
         createPost: CreateCmsPostUseCase,
@@ -292,7 +320,9 @@ import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
         moderateComment: ModerateCmsCommentUseCase,
         signUpReader: SignUpCmsReaderUseCase,
         signInReader: SignInCmsReaderUseCase,
-        generateDraft: GenerateCmsDraftUseCase
+        generateDraft: GenerateCmsDraftUseCase,
+        getEntryForWebsiteRender: GetCmsEntryForWebsiteRenderUseCase,
+        createEntryFromBlueprint: CreateCmsEntryFromBlueprintUseCase
       ) =>
         new CmsApplication(
           createPost,
@@ -310,7 +340,9 @@ import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
           moderateComment,
           signUpReader,
           signInReader,
-          generateDraft
+          generateDraft,
+          getEntryForWebsiteRender,
+          createEntryFromBlueprint
         ),
       inject: [
         CreateCmsPostUseCase,
@@ -329,6 +361,8 @@ import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
         SignUpCmsReaderUseCase,
         SignInCmsReaderUseCase,
         GenerateCmsDraftUseCase,
+        GetCmsEntryForWebsiteRenderUseCase,
+        CreateCmsEntryFromBlueprintUseCase,
       ],
     },
   ],

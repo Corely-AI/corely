@@ -1,0 +1,106 @@
+model WebsiteSite {
+  id            String   @id @default(cuid())
+  tenantId      String
+  name          String
+  defaultLocale String
+  brandingJson  Json?
+  themeJson     Json?
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+
+  domains   WebsiteDomain[]
+  pages     WebsitePage[]
+  menus     WebsiteMenu[]
+  snapshots WebsitePageSnapshot[]
+
+  @@index([tenantId])
+  @@schema("content")
+}
+
+model WebsiteDomain {
+  id        String   @id @default(cuid())
+  tenantId  String
+  siteId    String
+  hostname  String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  site WebsiteSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, hostname])
+  @@index([tenantId])
+  @@index([tenantId, siteId])
+  @@schema("content")
+}
+
+model WebsitePage {
+  id             String            @id @default(cuid())
+  tenantId       String
+  siteId         String
+  path           String
+  locale         String
+  template       String
+  status         WebsitePageStatus @default(DRAFT)
+  cmsEntryId     String
+  seoTitle       String?
+  seoDescription String?
+  seoImageFileId String?
+  publishedAt    DateTime? @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
+
+  site      WebsiteSite           @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  snapshots WebsitePageSnapshot[]
+
+  @@unique([tenantId, siteId, path, locale])
+  @@index([tenantId])
+  @@index([tenantId, siteId])
+  @@index([tenantId, siteId, status])
+  @@schema("content")
+}
+
+model WebsiteMenu {
+  id        String   @id @default(cuid())
+  tenantId  String
+  siteId    String
+  name      String
+  locale    String
+  itemsJson Json
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  site WebsiteSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, siteId, name, locale])
+  @@index([tenantId])
+  @@index([tenantId, siteId])
+  @@schema("content")
+}
+
+model WebsitePageSnapshot {
+  id          String   @id @default(cuid())
+  tenantId    String
+  siteId      String
+  pageId      String
+  path        String
+  locale      String
+  version     Int
+  payloadJson Json
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  page WebsitePage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  site WebsiteSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, pageId, version])
+  @@index([tenantId])
+  @@index([tenantId, siteId])
+  @@index([pageId, version])
+  @@schema("content")
+}
+
+enum WebsitePageStatus {
+  DRAFT
+  PUBLISHED
+  @@schema("content")
+}

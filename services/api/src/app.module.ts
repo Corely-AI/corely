@@ -31,6 +31,7 @@ import { RentalsModule } from "./modules/rentals";
 import { PortfolioModule } from "./modules/portfolio";
 import { IssuesModule } from "./modules/issues";
 import { AiRichTextModule } from "./modules/ai-richtext";
+import { WebsiteModule } from "./modules/website";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -69,6 +70,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     ApprovalsModule,
     EngagementModule,
     CmsModule,
+    WebsiteModule,
     FormsModule,
     RentalsModule,
     PortfolioModule,

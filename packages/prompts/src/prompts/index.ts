@@ -5,6 +5,7 @@ import { crmPrompts } from "./crm";
 import { approvalPrompts } from "./approvals";
 import { workflowPrompts } from "./workflows";
 import { cmsPrompts } from "./cms";
+import { websitePrompts } from "./website";
 
 export const promptDefinitions = [
   ...copilotPrompts,
@@ -14,4 +15,5 @@ export const promptDefinitions = [
   ...approvalPrompts,
   ...workflowPrompts,
   ...cmsPrompts,
+  ...websitePrompts,
 ];

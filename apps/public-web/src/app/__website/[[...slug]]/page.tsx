@@ -1,0 +1,60 @@
+import { unstable_noStore as noStore } from "next/cache";
+import { getRequestContext } from "@/lib/request-context";
+import { buildWebsitePathFromSegments, isPreviewMode } from "@/lib/website-routing";
+import { getWebsitePageData, getWebsitePageMetadata, WEBSITE_REVALIDATE } from "../_shared";
+import { WebsitePublicPageScreen } from "@/components/pages/website-public-page";
+import { WebsiteNotFound } from "@/components/website/website-not-found";
+
+export const revalidate = WEBSITE_REVALIDATE;
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug?: string[] }>;
+  searchParams?: Promise<{ preview?: string; token?: string }>;
+}) {
+  const ctx = await getRequestContext();
+  const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const previewMode = isPreviewMode(resolvedSearchParams?.preview);
+  const pathname = buildWebsitePathFromSegments(slug);
+
+  return getWebsitePageMetadata({
+    ctx,
+    pathname,
+    preview: previewMode,
+    token: resolvedSearchParams?.token ?? null,
+  });
+}
+
+export default async function WebsitePublicPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug?: string[] }>;
+  searchParams?: Promise<{ preview?: string; token?: string }>;
+}) {
+  const ctx = await getRequestContext();
+  const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const previewMode = isPreviewMode(resolvedSearchParams?.preview);
+
+  if (previewMode) {
+    noStore();
+  }
+
+  const pathname = buildWebsitePathFromSegments(slug);
+  const result = await getWebsitePageData({
+    ctx,
+    pathname,
+    preview: previewMode,
+    token: resolvedSearchParams?.token ?? null,
+  });
+
+  if (result.kind === "not-found") {
+    return <WebsiteNotFound message={result.message} />;
+  }
+
+  return <WebsitePublicPageScreen page={result.page} host={ctx.host} previewMode={previewMode} />;
+}

@@ -1,5 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { resolveWorkspaceSlugFromHost } from "@/lib/tenant";
+import {
+  buildWebsiteRewritePath,
+  isWebsiteInternalPath,
+  shouldRewriteToWebsite,
+} from "@/lib/website-routing";
+import { isWebsiteHost } from "@/lib/website-host";
 
 const PUBLIC_FILE = /\.[^/]+$/;
 
@@ -33,7 +39,7 @@ const stripWorkspacePrefix = (pathname: string) => {
   return match[1] ?? "/";
 };
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (shouldSkip(pathname)) {
     return NextResponse.next();
@@ -42,6 +48,16 @@ export function middleware(request: NextRequest) {
   const forwarded = request.headers.get("x-forwarded-host");
   const rawHost = forwarded ?? request.headers.get("host") ?? "";
   const host = rawHost.split(",")[0]?.trim() ?? rawHost;
+
+  if (!isWebsiteInternalPath(pathname)) {
+    const websiteHost = await isWebsiteHost({ host });
+    if (shouldRewriteToWebsite({ pathname, isWebsiteHost: websiteHost })) {
+      const url = request.nextUrl.clone();
+      url.pathname = buildWebsiteRewritePath(pathname);
+      return NextResponse.rewrite(url);
+    }
+  }
+
   const hostSlug = resolveWorkspaceSlugFromHost(host);
 
   if (hostSlug) {

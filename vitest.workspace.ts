@@ -106,6 +106,19 @@ export default defineWorkspace([
     },
   },
   {
+    extends: "./apps/public-web/vitest.config.ts",
+    root: "./apps/public-web",
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.int.test.ts",
+        "**/e2e/**",
+        "**/apps/e2e/**",
+      ],
+    },
+  },
+  {
     extends: "./packages/offline-core/vitest.config.ts",
     root: "./packages/offline-core",
     test: {

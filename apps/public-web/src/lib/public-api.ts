@@ -11,16 +11,13 @@ import {
   PublicPortfolioShowcasesOutputSchema,
   PublicPortfolioProjectsOutputSchema,
   PublicPortfolioProjectOutputSchema,
+  ResolveWebsitePublicInputSchema,
+  ResolveWebsitePublicOutputSchema,
 } from "@corely/contracts";
 import { withQuery } from "./urls";
+import { buildPublicFileUrl, resolvePublicApiBaseUrl } from "./public-api-base";
 
-export const resolvePublicApiBaseUrl = () =>
-  process.env.PUBLIC_API_BASE_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "http://localhost:3000";
-
-export const buildPublicFileUrl = (fileId: string) =>
-  `${resolvePublicApiBaseUrl().replace(/\/$/, "")}/public/documents/files/${fileId}`;
+export { buildPublicFileUrl, resolvePublicApiBaseUrl };
 
 const buildUrl = (
   path: string,
@@ -148,5 +145,30 @@ export const publicApi = {
     const url = buildUrl(`/public/pages/${slug}`, undefined, workspaceSlug);
     const data = await request({ url });
     return GetPublicCmsPostOutputSchema.parse(data);
+  },
+
+  async resolveWebsitePage(input: {
+    host: string;
+    path: string;
+    locale?: string;
+    mode?: "live" | "preview";
+    token?: string;
+  }) {
+    const parsed = ResolveWebsitePublicInputSchema.parse({
+      host: input.host,
+      path: input.path,
+      locale: input.locale,
+      mode: input.mode,
+      token: input.token,
+    });
+    const url = buildUrl("/public/website/resolve", {
+      host: parsed.host,
+      path: parsed.path,
+      locale: parsed.locale,
+      mode: parsed.mode,
+      token: parsed.token,
+    });
+    const data = await request({ url });
+    return ResolveWebsitePublicOutputSchema.parse(data);
   },
 };
