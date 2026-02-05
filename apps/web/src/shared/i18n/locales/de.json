@@ -39,7 +39,10 @@
     "name": "Name",
     "email": "E-Mail",
     "phone": "Telefon",
-    "notes": "Notizen"
+    "notes": "Notizen",
+    "open": "Offen",
+    "closed": "Geschlossen",
+    "tags": "Tags"
   },
   "nav": {
     "dashboard": "Übersicht",
@@ -104,7 +107,10 @@
     "roles": "Rollen & Rechte",
     "paymentMethods": "Zahlungsmethoden",
     "taxSettings": "Steuereinstellungen",
-    "issues": "Probleme"
+    "issues": "Probleme",
+    "crmDeals": "Deals",
+    "crmActivities": "Aktivitäten",
+    "platform": "Plattform"
   },
   "featureFlags": {
     "app": {
@@ -794,6 +800,56 @@
       "notFoundDesc": "Das gesuchte Portfolio existiert nicht oder wurde noch nicht veröffentlicht.",
       "error": "Etwas ist schief gelaufen",
       "errorDesc": "Beim Laden dieses Portfolios ist ein Fehler aufgetreten."
+    }
+  },
+  "crm": {
+    "deals": {
+      "newTitle": "Neuer Deal",
+      "newSubtitle": "Erstellen Sie eine neue Verkaufschance für Ihre Pipeline.",
+      "create": "Deal erstellen",
+      "created": "Deal erfolgreich erstellt",
+      "createFailed": "Fehler beim Erstellen des Deals",
+      "titleLabel": "Deal Titel",
+      "titlePlaceholder": "z.B. Website-Redesign für Acme Corp",
+      "customer": "Kunde",
+      "customerPlaceholder": "Kunde suchen oder auswählen",
+      "customersLoading": "Kunden werden geladen...",
+      "customersHint": "Nur Kunden mit einer aktiven Beziehung können mit Deals verknüpft werden.",
+      "stage": "Pipeline-Phase",
+      "stagePlaceholder": "Phase auswählen",
+      "expectedCloseLabel": "Erwartetes Abschlussdatum",
+      "selectDate": "Datum auswählen",
+      "amount": "Wert des Deals",
+      "amountPlaceholder": "0,00",
+      "currency": "Währung",
+      "currencyPlaceholder": "Währung auswählen",
+      "probabilityLabel": "Wahrscheinlichkeit (%)",
+      "probabilityPlaceholder": "z.B. 50",
+      "notesPlaceholder": "Interne Notizen oder Kontext zu diesem Deal hinzufügen...",
+      "tagsPlaceholder": "z.B. dringend, hoher Wert (kommagetrennt)",
+      "pipelineTitle": "Pipeline Status",
+      "pipelineDescription": "Dieser Deal wird in den folgenden Pipeline-Phasen verfolgt.",
+      "tipsTitle": "Deal Tipps",
+      "tipsSubtitle": "Best Practices für CRM",
+      "tipsOne": "Halten Sie Deal-Titel aussagekräftig und prägnant.",
+      "tipsTwo": "Aktualisieren Sie die Wahrscheinlichkeit, wenn der Deal Phasen durchläuft.",
+      "tipsThree": "Setzen Sie ein realistisches Abschlussdatum für bessere Prognosen.",
+      "stages": {
+        "lead": "Lead",
+        "qualified": "Qualifiziert",
+        "proposal": "Angebot",
+        "negotiation": "Verhandlung",
+        "won": "Gewonnen",
+        "lost": "Verloren"
+      },
+      "validation": {
+        "titleRequired": "Deal-Titel ist erforderlich",
+        "customerRequired": "Bitte wählen Sie einen Kunden aus",
+        "stageRequired": "Phasenauswahl ist erforderlich",
+        "amountNumber": "Betrag muss eine gültige Zahl sein",
+        "currencyRequired": "Währung ist erforderlich",
+        "probabilityRange": "Wahrscheinlichkeit muss zwischen 0 und 100 liegen"
+      }
     }
   }
 }

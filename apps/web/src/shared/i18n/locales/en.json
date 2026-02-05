@@ -39,7 +39,10 @@
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
-    "notes": "Notes"
+    "notes": "Notes",
+    "open": "Open",
+    "closed": "Closed",
+    "tags": "Tags"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -104,7 +107,10 @@
     "paymentMethods": "Payment Methods",
     "taxSettings": "Tax Settings",
     "cashManagement": "Cash Management",
-    "issues": "Issues"
+    "issues": "Issues",
+    "crmDeals": "Deals",
+    "crmActivities": "Activities",
+    "platform": "Platform"
   },
   "featureFlags": {
     "app": {
@@ -817,6 +823,56 @@
       "notFoundDesc": "The portfolio you are looking for does not exist or has not been published yet.",
       "error": "Something went wrong",
       "errorDesc": "We encountered an error loading this portfolio."
+    }
+  },
+  "crm": {
+    "deals": {
+      "newTitle": "New Deal",
+      "newSubtitle": "Create a new sales opportunity to track in your pipeline.",
+      "create": "Create Deal",
+      "created": "Deal created successfully",
+      "createFailed": "Failed to create deal",
+      "titleLabel": "Deal Title",
+      "titlePlaceholder": "e.g. Website Redesign for Acme Corp",
+      "customer": "Customer",
+      "customerPlaceholder": "Search or select a customer",
+      "customersLoading": "Loading customers...",
+      "customersHint": "Only customers with an active relationship can be linked to deals.",
+      "stage": "Pipeline Stage",
+      "stagePlaceholder": "Select a stage",
+      "expectedCloseLabel": "Expected Close Date",
+      "selectDate": "Select a date",
+      "amount": "Deal Value",
+      "amountPlaceholder": "0.00",
+      "currency": "Currency",
+      "currencyPlaceholder": "Select currency",
+      "probabilityLabel": "Probability (%)",
+      "probabilityPlaceholder": "e.g. 50",
+      "notesPlaceholder": "Add any internal notes or context about this deal...",
+      "tagsPlaceholder": "e.g. urgent, high-value (comma separated)",
+      "pipelineTitle": "Pipeline Status",
+      "pipelineDescription": "This deal will be tracked in the following pipeline stages.",
+      "tipsTitle": "Deal Tips",
+      "tipsSubtitle": "Best practices for CRM",
+      "tipsOne": "Keep your deal titles descriptive yet concise.",
+      "tipsTwo": "Update the probability as the deal progresses through stages.",
+      "tipsThree": "Set a realistic expected close date for better forecasting.",
+      "stages": {
+        "lead": "Lead",
+        "qualified": "Qualified",
+        "proposal": "Proposal",
+        "negotiation": "Negotiation",
+        "won": "Won",
+        "lost": "Lost"
+      },
+      "validation": {
+        "titleRequired": "Deal title is required",
+        "customerRequired": "Please select a customer",
+        "stageRequired": "Stage selection is required",
+        "amountNumber": "Amount must be a valid number",
+        "currencyRequired": "Currency is required",
+        "probabilityRange": "Probability must be between 0 and 100"
+      }
     }
   }
 }

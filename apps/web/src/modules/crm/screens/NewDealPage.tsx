@@ -240,7 +240,7 @@ export default function NewDealPage() {
                         <SelectContent>
                           {DEFAULT_PIPELINE_STAGES.map((stage) => (
                             <SelectItem key={stage.id} value={stage.id}>
-                              {stage.name}
+                              {t(`crm.deals.stages.${stage.id}`, { defaultValue: stage.name })}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -399,7 +399,9 @@ export default function NewDealPage() {
                 {DEFAULT_PIPELINE_STAGES.map((stage) => (
                   <div key={stage.id} className="flex items-center justify-between text-sm">
                     <div>
-                      <div className="font-medium">{stage.name}</div>
+                      <div className="font-medium">
+                        {t(`crm.deals.stages.${stage.id}`, { defaultValue: stage.name })}
+                      </div>
                       <div className="text-muted-foreground">{stage.id}</div>
                     </div>
                     <Badge variant={stage.isClosedStage ? "outline" : "secondary"}>

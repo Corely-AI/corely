@@ -39,7 +39,10 @@
     "name": "Tên",
     "email": "Email",
     "phone": "Số điện thoại",
-    "notes": "Ghi chú"
+    "notes": "Ghi chú",
+    "open": "Đang mở",
+    "closed": "Đã đóng",
+    "tags": "Thẻ"
   },
   "nav": {
     "dashboard": "Tổng quan",
@@ -104,7 +107,10 @@
     "paymentMethods": "Phương thức thanh toán",
     "taxSettings": "Cài đặt thuế",
     "cashManagement": "Quản lý tiền mặt",
-    "issues": "Vấn đề"
+    "issues": "Vấn đề",
+    "crmDeals": "Cơ hội",
+    "crmActivities": "Hoạt động",
+    "platform": "Nền tảng"
   },
   "featureFlags": {
     "app": {
@@ -817,6 +823,56 @@
       "notFoundDesc": "Hồ sơ bạn đang tìm không tồn tại hoặc chưa được công bố.",
       "error": "Đã xảy ra lỗi",
       "errorDesc": "Chúng tôi gặp lỗi khi tải hồ sơ này."
+    }
+  },
+  "crm": {
+    "deals": {
+      "newTitle": "Cơ hội mới",
+      "newSubtitle": "Tạo một cơ hội bán hàng mới để theo dõi trong quy trình của bạn.",
+      "create": "Tạo cơ hội",
+      "created": "Đã tạo cơ hội thành công",
+      "createFailed": "Không thể tạo cơ hội",
+      "titleLabel": "Tiêu đề cơ hội",
+      "titlePlaceholder": "ví dụ: Thiết kế Website cho Acme Corp",
+      "customer": "Khách hàng",
+      "customerPlaceholder": "Tìm hoặc chọn khách hàng",
+      "customersLoading": "Đang tải khách hàng...",
+      "customersHint": "Chỉ những khách hàng có quan hệ tích cực mới có thể liên kết với cơ hội.",
+      "stage": "Giai đoạn quy trình",
+      "stagePlaceholder": "Chọn một giai đoạn",
+      "expectedCloseLabel": "Ngày dự kiến đóng",
+      "selectDate": "Chọn một ngày",
+      "amount": "Giá trị cơ hội",
+      "amountPlaceholder": "0.00",
+      "currency": "Tiền tệ",
+      "currencyPlaceholder": "Chọn tiền tệ",
+      "probabilityLabel": "Xác suất (%)",
+      "probabilityPlaceholder": "ví dụ: 50",
+      "notesPlaceholder": "Thêm các ghi chú nội bộ hoặc bối cảnh về cơ hội này...",
+      "tagsPlaceholder": "ví dụ: khẩn cấp, giá trị cao (phân cách bằng dấu phẩy)",
+      "pipelineTitle": "Trạng thái quy trình",
+      "pipelineDescription": "Cơ hội này sẽ được theo dõi qua các giai đoạn quy trình sau.",
+      "tipsTitle": "Mẹo cơ hội",
+      "tipsSubtitle": "Cách thực hiện tốt nhất cho CRM",
+      "tipsOne": "Giữ tiêu đề cơ hội mô tả nhưng súc tích.",
+      "tipsTwo": "Cập nhật xác suất khi cơ hội tiến triển qua các giai đoạn.",
+      "tipsThree": "Đặt ngày đóng dự kiến thực tế để dự báo tốt hơn.",
+      "stages": {
+        "lead": "Tiềm năng",
+        "qualified": "Đủ điều kiện",
+        "proposal": "Báo giá",
+        "negotiation": "Thương lượng",
+        "won": "Thắng",
+        "lost": "Thua"
+      },
+      "validation": {
+        "titleRequired": "Tiêu đề cơ hội là bắt buộc",
+        "customerRequired": "Vui lòng chọn khách hàng",
+        "stageRequired": "Cần chọn giai đoạn",
+        "amountNumber": "Số tiền phải là một con số hợp lệ",
+        "currencyRequired": "Tiền tệ là bắt buộc",
+        "probabilityRange": "Xác suất phải nằm trong khoảng từ 0 đến 100"
+      }
     }
   }
 }
