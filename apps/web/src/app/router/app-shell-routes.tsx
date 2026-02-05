@@ -93,9 +93,9 @@ import { CopilotPage } from "../../routes/copilot";
 import { RequireCapability } from "../../shared/workspaces/RequireCapability";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
 import { RequireAuth } from "./require-auth";
-import { AppSettingsRoutes } from "./app-settings-routes";
+import { appSettingsRoutes } from "./app-settings-routes";
 
-export const AppShellRoutes = () => (
+export const appShellRoutes = (
   <Route element={<RequireAuth />}>
     <Route element={<AppShell />}>
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
@@ -451,7 +451,7 @@ export const AppShellRoutes = () => (
       <Route path="/tax/payments" element={<TaxPaymentsPage />} />
       <Route path="/tax/documents" element={<TaxDocumentsPage />} />
       <Route path="/tax/settings" element={<TaxSettingsPage />} />
-      <AppSettingsRoutes />
+      {appSettingsRoutes}
     </Route>
   </Route>
 );

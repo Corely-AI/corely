@@ -22,7 +22,7 @@ export class ListWebsiteMenusUseCase extends BaseUseCase<
   { siteId: string },
   ListWebsiteMenusOutput
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

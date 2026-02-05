@@ -31,7 +31,7 @@ export class AddWebsiteDomainUseCase extends BaseUseCase<
   { siteId: string; input: AddWebsiteDomainInput },
   WebsiteDomain
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

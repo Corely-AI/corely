@@ -330,7 +330,7 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
         cmsWrite: CmsWritePort,
         idGenerator: IdGeneratorPort,
         clock: ClockPort,
-        idempotency: IdempotencyStoragePort
+        idempotencyStore: IdempotencyStoragePort
       ) =>
         new GenerateWebsitePageFromPromptUseCase({
           logger: new NestLoggerAdapter(),
@@ -340,7 +340,7 @@ import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/port
           cmsWrite,
           idGenerator,
           clock,
-          idempotency,
+          idempotencyStore,
         }),
       inject: [
         WEBSITE_AI_PORT,

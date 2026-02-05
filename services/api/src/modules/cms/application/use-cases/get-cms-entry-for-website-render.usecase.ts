@@ -37,7 +37,7 @@ export class GetCmsEntryForWebsiteRenderUseCase extends BaseUseCase<
   GetCmsEntryForWebsiteRenderInput,
   CmsEntryRenderPayload
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

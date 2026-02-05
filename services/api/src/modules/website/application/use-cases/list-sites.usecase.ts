@@ -23,7 +23,7 @@ export class ListWebsiteSitesUseCase extends BaseUseCase<
   ListWebsiteSitesInput,
   ListWebsiteSitesOutput
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

@@ -37,7 +37,7 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
   ResolveWebsitePublicInput,
   ResolveWebsitePublicOutput
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

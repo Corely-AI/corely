@@ -23,7 +23,7 @@ export class RemoveWebsiteDomainUseCase extends BaseUseCase<
   { domainId: string; siteId: string },
   { removed: WebsiteDomain }
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

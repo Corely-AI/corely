@@ -41,7 +41,7 @@ export class CreateCmsEntryFromBlueprintUseCase extends BaseUseCase<
   CreateCmsEntryFromBlueprintInput,
   CreateCmsEntryFromBlueprintOutput
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

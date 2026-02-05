@@ -16,7 +16,7 @@ import { TaxSettingsPage } from "../../modules/tax";
 import { RequireCapability } from "../../shared/workspaces/RequireCapability";
 import { WorkspaceMembersPage, WorkspaceSettingsPage } from "../../modules/workspaces";
 
-export const AppSettingsRoutes = () => (
+export const appSettingsRoutes = (
   <>
     {/* Legacy Redirects */}
     <Route path="/taxes" element={<Navigate to="/tax" replace />} />

@@ -36,7 +36,7 @@ export class PublishWebsitePageUseCase extends BaseUseCase<
   { pageId: string },
   PublishWebsitePageOutput
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

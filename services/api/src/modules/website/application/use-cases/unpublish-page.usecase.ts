@@ -29,7 +29,7 @@ export class UnpublishWebsitePageUseCase extends BaseUseCase<
   { pageId: string },
   UnpublishWebsitePageOutput
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

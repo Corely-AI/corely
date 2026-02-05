@@ -20,7 +20,7 @@ type Deps = {
 
 @RequireTenant()
 export class GetWebsitePageUseCase extends BaseUseCase<{ pageId: string }, GetWebsitePageOutput> {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

@@ -20,7 +20,7 @@ import {
   PublicShowcaseTeam,
   PublicShowcaseBlog,
 } from "../../modules/portfolio";
-import { AppShellRoutes } from "./app-shell-routes";
+import { appShellRoutes } from "./app-shell-routes";
 
 export const Router = () => (
   <BrowserRouter
@@ -106,7 +106,7 @@ export const Router = () => (
         <Route path="/stay/:slug" element={<PublicRentalDetailScreen />} />
       </Route>
 
-      <AppShellRoutes />
+      {appShellRoutes}
 
       <Route path="*" element={<NotFound />} />
     </Routes>

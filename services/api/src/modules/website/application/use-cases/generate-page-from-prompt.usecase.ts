@@ -35,7 +35,7 @@ type Deps = {
   cmsWrite: CmsWritePort;
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
-  idempotency: IdempotencyStoragePort;
+  idempotencyStore: IdempotencyStoragePort;
 };
 
 @RequireTenant()
@@ -43,7 +43,7 @@ export class GenerateWebsitePageFromPromptUseCase extends BaseUseCase<
   GenerateWebsitePageInput,
   GenerateWebsitePageOutput
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 
@@ -84,7 +84,7 @@ export class GenerateWebsitePageFromPromptUseCase extends BaseUseCase<
 
     const idempotencyKey = input.idempotencyKey ?? "";
     if (idempotencyKey) {
-      const cached = await this.deps.idempotency.get(ACTION_KEY, ctx.tenantId, idempotencyKey);
+      const cached = await this.deps.idempotencyStore.get(ACTION_KEY, ctx.tenantId, idempotencyKey);
       if (cached?.body) {
         return ok(cached.body as GenerateWebsitePageOutput);
       }
@@ -160,7 +160,7 @@ export class GenerateWebsitePageFromPromptUseCase extends BaseUseCase<
     };
 
     if (idempotencyKey) {
-      await this.deps.idempotency.store(ACTION_KEY, ctx.tenantId, idempotencyKey, {
+      await this.deps.idempotencyStore.store(ACTION_KEY, ctx.tenantId, idempotencyKey, {
         body: output,
       });
     }

@@ -27,7 +27,7 @@ export class UpdateWebsitePageUseCase extends BaseUseCase<
   { pageId: string; input: UpdateWebsitePageInput },
   WebsitePage
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

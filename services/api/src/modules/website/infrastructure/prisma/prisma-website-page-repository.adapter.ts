@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import type { TransactionContext } from "@corely/kernel";
 import { PrismaService, getPrismaClient } from "@corely/data";
+import type { Prisma } from "@prisma/client";
 import type { WebsitePage, WebsitePageStatus } from "@corely/contracts";
 import type { WebsitePageRepositoryPort } from "../../application/ports/page-repository.port";
 
@@ -123,17 +124,18 @@ export class PrismaWebsitePageRepository implements WebsitePageRepositoryPort {
   }
 }
 
-const resolveSort = (sort?: string | string[]) => {
+const resolveSort = (sort?: string | string[]): Prisma.WebsitePageOrderByWithRelationInput[] => {
+  const fallback: Prisma.WebsitePageOrderByWithRelationInput[] = [{ updatedAt: "desc" }];
   if (!sort) {
-    return [{ updatedAt: "desc" }];
+    return fallback;
   }
   const value = Array.isArray(sort) ? sort[0] : sort;
   if (!value) {
-    return [{ updatedAt: "desc" }];
+    return fallback;
   }
   const [field, dir] = value.split(":");
-  const direction = dir === "asc" ? "asc" : "desc";
-  const map: Record<string, string> = {
+  const direction: Prisma.SortOrder = dir === "asc" ? "asc" : "desc";
+  const map: Record<string, keyof Prisma.WebsitePageOrderByWithRelationInput> = {
     path: "path",
     template: "template",
     status: "status",
@@ -142,5 +144,5 @@ const resolveSort = (sort?: string | string[]) => {
     publishedAt: "publishedAt",
   };
   const mapped = map[field] ?? "updatedAt";
-  return [{ [mapped]: direction }];
+  return [{ [mapped]: direction } as Prisma.WebsitePageOrderByWithRelationInput];
 };
