@@ -73,6 +73,7 @@ model Workspace {
   @@index([legalEntityId])
   @@index([tenantId, createdAt])
   @@index([tenantId, onboardingStatus])
+  @@index([deletedAt])
   @@schema("platform")
 }
 

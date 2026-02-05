@@ -338,8 +338,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Removing a workspace will delete its data. This action will be restricted to owners in a
-            future update.
+            Removing a workspace will delete its data. This action is restricted to owners.
           </p>
           <AlertDialog>
             <AlertDialogTrigger asChild>

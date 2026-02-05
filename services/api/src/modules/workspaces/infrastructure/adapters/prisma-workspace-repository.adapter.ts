@@ -165,7 +165,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     input: UpdateWorkspaceInput
   ): Promise<Workspace> {
     const workspace = await this.prisma.workspace.update({
-      where: { id },
+      where: { id, tenantId, deletedAt: null } as any,
       data: {
         name: input.name,
         slug: input.slug,
@@ -238,7 +238,11 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
         workspaceId,
         userId,
         status: "ACTIVE",
-      },
+        workspace: {
+          tenantId,
+          deletedAt: null,
+        },
+      } as any,
     });
 
     return count > 0;

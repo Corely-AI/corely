@@ -37,6 +37,7 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     DeleteWorkspaceDomainUseCase,
     SetPrimaryWorkspaceDomainUseCase,
     ListWorkspaceMembersUseCase,
+    DeleteWorkspaceUseCase,
   ],
   exports: [
     // Expose repository + token so external modules (e.g., TestHarness) can inject it
@@ -51,6 +52,7 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     DeleteWorkspaceDomainUseCase,
     SetPrimaryWorkspaceDomainUseCase,
     ListWorkspaceMembersUseCase,
+    DeleteWorkspaceUseCase,
   ],
 })
 export class WorkspacesModule {}
