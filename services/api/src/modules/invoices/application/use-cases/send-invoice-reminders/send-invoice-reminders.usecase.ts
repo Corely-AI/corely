@@ -173,7 +173,7 @@ export class SendInvoiceRemindersUseCase extends BaseUseCase<
       sent += 1;
     }
 
-    this.reminderDeps.logger.log(
+    this.reminderDeps.logger.info(
       `Invoice reminders processed=${candidates.length} sent=${sent} skipped=${skipped}`
     );
     return ok({ processed: candidates.length, sent, skipped });
