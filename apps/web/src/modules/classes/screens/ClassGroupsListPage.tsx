@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Plus, Edit } from "lucide-react";
 import { Badge, Button, Card, CardContent } from "@corely/ui";
@@ -16,14 +17,18 @@ import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import { classesApi } from "@/lib/classes-api";
 import { classGroupListKey } from "../queries";
 
-const STATUS_OPTIONS = [
-  { label: "Active", value: "ACTIVE" },
-  { label: "Archived", value: "ARCHIVED" },
-];
-
 export default function ClassGroupsListPage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t("classes.groups.statusOptions.active"), value: "ACTIVE" },
+      { label: t("classes.groups.statusOptions.archived"), value: "ARCHIVED" },
+    ],
+    [t]
+  );
 
   const [state, setUrlState] = useListUrlState(
     {
@@ -35,11 +40,16 @@ export default function ClassGroupsListPage() {
 
   const filterFields = useMemo<FilterFieldDef[]>(
     () => [
-      { key: "status", label: "Status", type: "select", options: STATUS_OPTIONS },
-      { key: "subject", label: "Subject", type: "text" },
-      { key: "level", label: "Level", type: "text" },
+      {
+        key: "status",
+        label: t("classes.groups.status"),
+        type: "select",
+        options: STATUS_OPTIONS,
+      },
+      { key: "subject", label: t("classes.groups.subject"), type: "text" },
+      { key: "level", label: t("classes.groups.level"), type: "text" },
     ],
-    []
+    [t, STATUS_OPTIONS]
   );
 
   const filters = useMemo(() => {
@@ -72,17 +82,22 @@ export default function ClassGroupsListPage() {
   const items = data?.items ?? [];
 
   const primaryAction = (
-    <Button variant="accent" onClick={() => navigate("/class-groups/new")}>
-      <Plus className="h-4 w-4" />
-      New Class Group
-    </Button>
+    <>
+      <Button asChild variant="outline">
+        <Link to="/settings/classes">Classes settings</Link>
+      </Button>
+      <Button variant="accent" onClick={() => navigate("/class-groups/new")}>
+        <Plus className="h-4 w-4" />
+        {t("classes.groups.new")}
+      </Button>
+    </>
   );
 
   return (
     <>
       <CrudListPageLayout
-        title="Class Groups"
-        subtitle="Organize your tutoring groups and pricing"
+        title={t("classes.groups.title")}
+        subtitle={t("classes.groups.subtitle")}
         primaryAction={primaryAction}
         toolbar={
           <ListToolbar
@@ -91,16 +106,16 @@ export default function ClassGroupsListPage() {
             sort={state.sort}
             onSortChange={(value) => setUrlState({ sort: value })}
             sortOptions={[
-              { label: "Updated (Newest)", value: "updatedAt:desc" },
-              { label: "Updated (Oldest)", value: "updatedAt:asc" },
-              { label: "Name (A-Z)", value: "name:asc" },
+              { label: t("classes.groups.sortOptions.newest"), value: "updatedAt:desc" },
+              { label: t("classes.groups.sortOptions.oldest"), value: "updatedAt:asc" },
+              { label: t("classes.groups.sortOptions.name"), value: "name:asc" },
             ]}
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={state.filters?.length}
           >
             {isError ? (
               <div className="text-sm text-destructive">
-                {(error as Error)?.message || "Failed to load class groups"}
+                {(error as Error)?.message || t("classes.groups.loadFailed")}
               </div>
             ) : null}
           </ListToolbar>
@@ -119,11 +134,11 @@ export default function ClassGroupsListPage() {
         }
       >
         {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground">Loading class groups...</div>
+          <div className="p-8 text-center text-muted-foreground">{t("classes.groups.loading")}</div>
         ) : items.length === 0 ? (
           <EmptyState
-            title="No class groups yet"
-            description="Create your first group to start scheduling sessions."
+            title={t("classes.groups.emptyTitle")}
+            description={t("classes.groups.emptyDescription")}
             action={primaryAction}
           />
         ) : (
@@ -132,22 +147,22 @@ export default function ClassGroupsListPage() {
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Name
+                    {t("classes.groups.name")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Subject
+                    {t("classes.groups.subject")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Level
+                    {t("classes.groups.level")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Price / session
+                    {t("classes.groups.pricePerSession")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Status
+                    {t("classes.groups.status")}
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Updated
+                    {t("classes.groups.updated")}
                   </th>
                   <th />
                 </tr>
@@ -166,18 +181,23 @@ export default function ClassGroupsListPage() {
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <Badge variant={group.status === "ACTIVE" ? "success" : "secondary"}>
-                        {group.status === "ACTIVE" ? "Active" : "Archived"}
+                        {group.status === "ACTIVE"
+                          ? t("classes.groups.statusOptions.active")
+                          : t("classes.groups.statusOptions.archived")}
                       </Badge>
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {formatDate(group.updatedAt, "en-US")}
+                      {formatDate(group.updatedAt, i18n.language)}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <CrudRowActions
-                        primaryAction={{ label: "Open", href: `/class-groups/${group.id}` }}
+                        primaryAction={{
+                          label: t("classes.groups.open"),
+                          href: `/class-groups/${group.id}`,
+                        }}
                         secondaryActions={[
                           {
-                            label: "Edit",
+                            label: t("classes.groups.edit"),
                             href: `/class-groups/${group.id}/edit`,
                             icon: <Edit className="h-4 w-4" />,
                           },
