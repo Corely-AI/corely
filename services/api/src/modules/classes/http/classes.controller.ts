@@ -17,6 +17,7 @@ import {
   CreateClassGroupInputSchema,
   CreateClassSessionInputSchema,
   CreateRecurringSessionsInputSchema,
+  GenerateClassGroupSessionsInputSchema,
   GetClassGroupOutputSchema,
   GetClassSessionOutputSchema,
   ListClassGroupsInputSchema,
@@ -28,6 +29,7 @@ import {
   UpdateEnrollmentInputSchema,
   BillingPreviewOutputSchema,
   CreateRecurringSessionsOutputSchema,
+  GenerateClassGroupSessionsOutputSchema,
   GetClassesBillingSettingsOutputSchema,
   UpdateClassesBillingSettingsInputSchema,
   UpdateClassesBillingSettingsOutputSchema,
@@ -41,6 +43,7 @@ import { ListClassGroupsUseCase } from "../application/use-cases/list-class-grou
 import { GetClassGroupUseCase } from "../application/use-cases/get-class-group.usecase";
 import { CreateSessionUseCase } from "../application/use-cases/create-session.usecase";
 import { CreateRecurringSessionsUseCase } from "../application/use-cases/create-recurring-sessions.usecase";
+import { GenerateScheduledSessionsUseCase } from "../application/use-cases/generate-scheduled-sessions.usecase";
 import { UpdateSessionUseCase } from "../application/use-cases/update-session.usecase";
 import { ListSessionsUseCase } from "../application/use-cases/list-sessions.usecase";
 import { GetSessionUseCase } from "../application/use-cases/get-session.usecase";
@@ -73,6 +76,7 @@ export class ClassesController {
     private readonly getClassGroupUseCase: GetClassGroupUseCase,
     private readonly createSessionUseCase: CreateSessionUseCase,
     private readonly createRecurringSessionsUseCase: CreateRecurringSessionsUseCase,
+    private readonly generateScheduledSessionsUseCase: GenerateScheduledSessionsUseCase,
     private readonly updateSessionUseCase: UpdateSessionUseCase,
     private readonly listSessionsUseCase: ListSessionsUseCase,
     private readonly getSessionUseCase: GetSessionUseCase,
@@ -187,6 +191,22 @@ export class ClassesController {
       ctx
     );
     return CreateRecurringSessionsOutputSchema.parse({ items: created.map(toClassSessionDto) });
+  }
+
+  @Post("class-groups/:id/sessions/generate")
+  @RequirePermission("classes.write")
+  async generateScheduledSessions(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = GenerateClassGroupSessionsInputSchema.parse(body ?? {});
+    const ctx = buildUseCaseContext(req);
+    const created = await this.generateScheduledSessionsUseCase.execute(
+      { ...input, classGroupId: id },
+      ctx
+    );
+    return GenerateClassGroupSessionsOutputSchema.parse({ items: created.map(toClassSessionDto) });
   }
 
   @Get("sessions/:id")

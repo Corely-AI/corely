@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarPlus, Users, Edit2 } from "lucide-react";
+import { CalendarPlus, Users, Edit2, RotateCw } from "lucide-react";
 import {
   Button,
   Card,
@@ -60,6 +60,7 @@ export default function ClassGroupDetailPage() {
   const sessions = sessionData?.items ?? [];
   const students = studentsData?.customers ?? [];
   const customers = customersData?.customers ?? [];
+  const hasRecurringSchedule = Boolean(group?.schedulePattern);
 
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [selectedPayerId, setSelectedPayerId] = useState("");
@@ -153,6 +154,22 @@ export default function ClassGroupDetailPage() {
       });
     },
     onError: (err: any) => toast.error(err?.message || "Failed to add session"),
+  });
+
+  const generateSessionsForMonth = useMutation({
+    mutationFn: async () => classesApi.generateClassGroupSessions(groupId),
+    onSuccess: async (data) => {
+      const count = data.items.length;
+      toast.success(
+        count > 0
+          ? `Generated ${count} session${count === 1 ? "" : "s"} for this month.`
+          : "Sessions are already up to date."
+      );
+      await queryClient.invalidateQueries({
+        queryKey: classSessionKeys.list({ classGroupId: groupId }),
+      });
+    },
+    onError: (err: any) => toast.error(err?.message || "Failed to generate sessions"),
   });
 
   const rosterOptions = useMemo(
@@ -396,14 +413,27 @@ export default function ClassGroupDetailPage() {
               <Label>Topic</Label>
               <Input value={sessionTopic} onChange={(e) => setSessionTopic(e.target.value)} />
             </div>
-            <Button
-              variant="accent"
-              className="w-full"
-              onClick={() => createSession.mutate()}
-              disabled={createSession.isPending}
-            >
-              Add session
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="accent"
+                className="w-full"
+                onClick={() => createSession.mutate()}
+                disabled={createSession.isPending}
+              >
+                Add session
+              </Button>
+              {hasRecurringSchedule ? (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => generateSessionsForMonth.mutate()}
+                  disabled={generateSessionsForMonth.isPending}
+                >
+                  <RotateCw className="h-4 w-4" />
+                  Generate current month
+                </Button>
+              ) : null}
+            </div>
           </div>
 
           <div className="overflow-x-auto rounded-md border border-border">

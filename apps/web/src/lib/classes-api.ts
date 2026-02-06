@@ -12,6 +12,8 @@ import type {
   GetClassSessionOutput,
   CreateRecurringSessionsInput,
   CreateRecurringSessionsOutput,
+  GenerateClassGroupSessionsInput,
+  GenerateClassGroupSessionsOutput,
   ListEnrollmentsInput,
   ListEnrollmentsOutput,
   UpsertEnrollmentInput,
@@ -137,6 +139,20 @@ export class ClassesApi {
       idempotencyKey: apiClient.generateIdempotencyKey(),
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  async generateClassGroupSessions(
+    classGroupId: string,
+    input?: GenerateClassGroupSessionsInput
+  ): Promise<GenerateClassGroupSessionsOutput> {
+    return apiClient.post<GenerateClassGroupSessionsOutput>(
+      `/classes/class-groups/${classGroupId}/sessions/generate`,
+      input ?? {},
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
   }
 
   async updateSession(id: string, input: UpdateClassSessionInput): Promise<GetClassSessionOutput> {

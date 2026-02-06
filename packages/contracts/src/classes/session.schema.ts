@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ListQuerySchema, createListResponseSchema } from "../common/list.contract";
 import { localDateSchema, utcInstantSchema } from "../shared/local-date.schema";
 import { ClassSessionSchema, ClassSessionStatusSchema } from "./classes.types";
+import { BillingMonthSchema } from "./billing.schema";
 
 export const CreateClassSessionInputSchema = z.object({
   classGroupId: z.string(),
@@ -44,6 +45,16 @@ export const CreateRecurringSessionsOutputSchema = z.object({
   items: z.array(ClassSessionSchema),
 });
 export type CreateRecurringSessionsOutput = z.infer<typeof CreateRecurringSessionsOutputSchema>;
+
+export const GenerateClassGroupSessionsInputSchema = z.object({
+  month: BillingMonthSchema.optional(),
+});
+export type GenerateClassGroupSessionsInput = z.infer<typeof GenerateClassGroupSessionsInputSchema>;
+
+export const GenerateClassGroupSessionsOutputSchema = CreateRecurringSessionsOutputSchema;
+export type GenerateClassGroupSessionsOutput = z.infer<
+  typeof GenerateClassGroupSessionsOutputSchema
+>;
 
 export const ListClassSessionsInputSchema = ListQuerySchema.extend({
   classGroupId: z.string().optional(),

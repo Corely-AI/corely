@@ -9,6 +9,8 @@
     "paths": {
       "@/*": ["../api/src/*"],
       "@shared/*": ["../api/src/shared/*"],
+      "@corely/contracts": ["../../packages/contracts/src/index.ts"],
+      "@corely/contracts/*": ["../../packages/contracts/src/*"],
       "@corely/data": ["../../packages/data/src/index.ts"],
       "@corely/data/*": ["../../packages/data/src/*"],
       "@corely/core": ["../../packages/core/src/index.ts"],

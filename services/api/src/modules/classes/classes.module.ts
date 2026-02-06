@@ -34,6 +34,7 @@ import { ListClassGroupsUseCase } from "./application/use-cases/list-class-group
 import { GetClassGroupUseCase } from "./application/use-cases/get-class-group.usecase";
 import { CreateSessionUseCase } from "./application/use-cases/create-session.usecase";
 import { CreateRecurringSessionsUseCase } from "./application/use-cases/create-recurring-sessions.usecase";
+import { GenerateScheduledSessionsUseCase } from "./application/use-cases/generate-scheduled-sessions.usecase";
 import { UpdateSessionUseCase } from "./application/use-cases/update-session.usecase";
 import { ListSessionsUseCase } from "./application/use-cases/list-sessions.usecase";
 import { GetSessionUseCase } from "./application/use-cases/get-session.usecase";
@@ -133,6 +134,23 @@ import { UpdateClassesBillingSettingsUseCase } from "./application/use-cases/upd
         CLASSES_SETTINGS_REPOSITORY_PORT,
         AUDIT_PORT,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: GenerateScheduledSessionsUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        settingsRepo: ClassesSettingsRepositoryPort,
+        audit,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new GenerateScheduledSessionsUseCase(repo, settingsRepo, audit, idGenerator, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        CLASSES_SETTINGS_REPOSITORY_PORT,
+        AUDIT_PORT,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
       ],
