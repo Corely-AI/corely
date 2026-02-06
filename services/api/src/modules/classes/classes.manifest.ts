@@ -13,7 +13,7 @@ export const classesAppManifest: AppManifest = {
     {
       id: "classes-groups",
       scope: "web",
-      section: "crm",
+      section: "education",
       labelKey: "nav.classes",
       defaultLabel: "Classes",
       route: "/class-groups",
@@ -24,7 +24,7 @@ export const classesAppManifest: AppManifest = {
     {
       id: "classes-sessions",
       scope: "web",
-      section: "crm",
+      section: "education",
       labelKey: "nav.classSessions",
       defaultLabel: "Sessions",
       route: "/sessions",
@@ -35,7 +35,7 @@ export const classesAppManifest: AppManifest = {
     {
       id: "classes-billing",
       scope: "web",
-      section: "crm",
+      section: "education",
       labelKey: "nav.classBilling",
       defaultLabel: "Class billing",
       route: "/billing",

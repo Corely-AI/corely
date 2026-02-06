@@ -242,6 +242,13 @@ export class WorkspaceTemplateService {
         ],
       },
       {
+        id: "education",
+        labelKey: "nav.groups.education",
+        defaultLabel: "Education",
+        order: 6,
+        sectionOrder: ["education"],
+      },
+      {
         id: "settings",
         labelKey: "nav.groups.settings",
         defaultLabel: "Settings",
@@ -404,6 +411,13 @@ export class WorkspaceTemplateService {
         sectionOrder: ["accounting", "reports"],
       },
       {
+        id: "education",
+        labelKey: "nav.groups.education",
+        defaultLabel: "Education",
+        order: 6,
+        sectionOrder: ["education"],
+      },
+      {
         id: "settings",
         labelKey: "nav.groups.settings",
         defaultLabel: "Settings",
@@ -427,6 +441,7 @@ export class WorkspaceTemplateService {
       "website",
       "cms",
       "ai-copilot",
+      "classes",
     ];
   }
 
@@ -446,6 +461,7 @@ export class WorkspaceTemplateService {
       "cms",
       "issues",
       "ai-copilot",
+      "classes",
     ];
   }
 }
