@@ -112,6 +112,9 @@
     "issues": "Issues",
     "crmDeals": "Deals",
     "crmActivities": "Activities",
+    "classes": "Classes",
+    "classSessions": "Sessions",
+    "classBilling": "Class Billing",
     "website": "Website",
     "platform": "Platform"
   },
