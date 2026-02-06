@@ -45,6 +45,13 @@
     "tags": "Tags",
     "for": "For"
   },
+  "list": {
+    "searchPlaceholder": "Search...",
+    "sort": "Sort",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "noResults": "No items found."
+  },
   "nav": {
     "dashboard": "Dashboard",
     "portfolio": "Portfolio",
@@ -904,6 +911,39 @@
         "amountNumber": "Amount must be a valid number",
         "currencyRequired": "Currency is required",
         "probabilityRange": "Probability must be between 0 and 100"
+      }
+    }
+  },
+  "classes": {
+    "sessions": {
+      "title": "Sessions",
+      "subtitle": "Track planned and completed sessions",
+      "new": "New session",
+      "loading": "Loading sessions...",
+      "empty": "No sessions found.",
+      "starts": "Starts",
+      "topic": "Topic",
+      "status": "Status",
+      "open": "Open",
+      "markDone": "Mark done",
+      "cancel": "Cancel",
+      "updated": "Session updated",
+      "updateFailed": "Failed to update session",
+      "loadFailed": "Failed to load sessions",
+      "confirmTitle": "Update session status?",
+      "confirmDescription": "Set session to {{status}}?",
+      "filterClassGroup": "Class group",
+      "filterStatus": "Status",
+      "filterDateFrom": "Date from",
+      "filterDateTo": "Date to",
+      "statusOptions": {
+        "planned": "Planned",
+        "done": "Done",
+        "cancelled": "Cancelled"
+      },
+      "sortOptions": {
+        "newest": "Start (Newest)",
+        "oldest": "Start (Oldest)"
       }
     }
   }

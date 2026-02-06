@@ -42,7 +42,15 @@
     "notes": "Ghi chú",
     "open": "Đang mở",
     "closed": "Đã đóng",
-    "tags": "Thẻ"
+    "tags": "Thẻ",
+    "for": "Cho"
+  },
+  "list": {
+    "searchPlaceholder": "Tìm kiếm...",
+    "sort": "Sắp xếp",
+    "filters": "Bộ lọc",
+    "clearAll": "Xóa tất cả",
+    "noResults": "Không tìm thấy mục nào."
   },
   "nav": {
     "dashboard": "Tổng quan",
@@ -903,6 +911,39 @@
         "amountNumber": "Số tiền phải là một con số hợp lệ",
         "currencyRequired": "Tiền tệ là bắt buộc",
         "probabilityRange": "Xác suất phải nằm trong khoảng từ 0 đến 100"
+      }
+    }
+  },
+  "classes": {
+    "sessions": {
+      "title": "Buổi học",
+      "subtitle": "Theo dõi các buổi học đã lên lịch và đã hoàn thành",
+      "new": "Buổi học mới",
+      "loading": "Đang tải các buổi học...",
+      "empty": "Không tìm thấy buổi học nào.",
+      "starts": "Bắt đầu",
+      "topic": "Chủ đề",
+      "status": "Trạng thái",
+      "open": "Mở",
+      "markDone": "Đánh dấu hoàn thành",
+      "cancel": "Hủy",
+      "updated": "Đã cập nhật buổi học",
+      "updateFailed": "Cập nhật buổi học thất bại",
+      "loadFailed": "Tải buổi học thất bại",
+      "confirmTitle": "Cập nhật trạng thái buổi học?",
+      "confirmDescription": "Đặt buổi học thành {{status}}?",
+      "filterClassGroup": "Nhóm lớp",
+      "filterStatus": "Trạng thái",
+      "filterDateFrom": "Từ ngày",
+      "filterDateTo": "Đến ngày",
+      "statusOptions": {
+        "planned": "Đã lên lịch",
+        "done": "Đã xong",
+        "cancelled": "Đã hủy"
+      },
+      "sortOptions": {
+        "newest": "Bắt đầu (Mới nhất)",
+        "oldest": "Bắt đầu (Cũ nhất)"
       }
     }
   }

@@ -82,7 +82,7 @@ export const ClassMonthlyBillingRunSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
   workspaceId: z.string(),
-  month: z.string().regex(/^\\d{4}-\\d{2}$/),
+  month: z.string().regex(/^\d{4}-\d{2}$/),
   status: ClassBillingRunStatusSchema,
   runId: z.string(),
   generatedAt: utcInstantSchema.optional().nullable(),

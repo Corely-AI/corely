@@ -1,11 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { Plus, Archive, Edit } from "lucide-react";
-import { toast } from "sonner";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { Plus, Edit } from "lucide-react";
 import { Badge, Button, Card, CardContent } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
-import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
+import { CrudListPageLayout, CrudRowActions } from "@/shared/crud";
 import {
   ActiveFilterChips,
   FilterPanel,
@@ -15,7 +14,7 @@ import {
 } from "@/shared/list-kit";
 import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import { classesApi } from "@/lib/classes-api";
-import { classGroupListKey, classGroupKeys } from "../queries";
+import { classGroupListKey } from "../queries";
 
 const STATUS_OPTIONS = [
   { label: "Active", value: "ACTIVE" },
@@ -24,8 +23,6 @@ const STATUS_OPTIONS = [
 
 export default function ClassGroupsListPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const [archiveTarget, setArchiveTarget] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const [state, setUrlState] = useListUrlState(
@@ -73,20 +70,6 @@ export default function ClassGroupsListPage() {
   });
 
   const items = data?.items ?? [];
-  const pageInfo = data?.pageInfo;
-
-  const archiveMutation = useMutation({
-    mutationFn: async (id: string) =>
-      classesApi.updateClassGroup(id, {
-        status: "ARCHIVED",
-      }),
-    onSuccess: async () => {
-      toast.success("Class group archived");
-      setArchiveTarget(null);
-      await queryClient.invalidateQueries({ queryKey: classGroupKeys.list(undefined) });
-    },
-    onError: () => toast.error("Failed to archive class group"),
-  });
 
   const primaryAction = (
     <Button variant="accent" onClick={() => navigate("/class-groups/new")}>
@@ -200,12 +183,6 @@ export default function ClassGroupsListPage() {
                                 href: `/class-groups/${group.id}/edit`,
                                 icon: <Edit className="h-4 w-4" />,
                               },
-                              {
-                                label: "Archive",
-                                destructive: true,
-                                icon: <Archive className="h-4 w-4" />,
-                                onClick: () => setArchiveTarget(group.id),
-                              },
                             ]}
                           />
                         </td>
@@ -225,23 +202,6 @@ export default function ClassGroupsListPage() {
         fields={filterFields}
         filters={state.filters ?? []}
         onApply={(filters) => setUrlState({ filters, page: 1 })}
-      />
-
-      <ConfirmDeleteDialog
-        open={Boolean(archiveTarget)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setArchiveTarget(null);
-          }
-        }}
-        onConfirm={() => {
-          if (archiveTarget) {
-            archiveMutation.mutate(archiveTarget);
-          }
-        }}
-        title="Archive class group?"
-        description="This will archive the class group but keep its sessions and attendance."
-        confirmLabel="Archive"
       />
     </>
   );

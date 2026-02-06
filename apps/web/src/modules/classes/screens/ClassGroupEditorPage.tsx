@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save } from "lucide-react";
@@ -18,14 +18,10 @@ import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { invalidateResourceQueries } from "@/shared/crud";
 import { classGroupKeys } from "../queries";
-
-const parseJsonInput = (value: string) => {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return null;
-  }
-  return JSON.parse(trimmed);
-};
+import {
+  ClassGroupScheduleBuilder,
+  type ScheduleBuilderOutput,
+} from "../components/class-group-schedule-builder";
 
 export default function ClassGroupEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,7 +42,11 @@ export default function ClassGroupEditorPage() {
   const [level, setLevel] = useState("");
   const [currency, setCurrency] = useState("EUR");
   const [price, setPrice] = useState("");
-  const [schedulePattern, setSchedulePattern] = useState("");
+  const [scheduleOutput, setScheduleOutput] = useState<ScheduleBuilderOutput>({
+    enabled: false,
+    error: "",
+    schedulePattern: null,
+  });
 
   useEffect(() => {
     if (!group) {
@@ -57,31 +57,19 @@ export default function ClassGroupEditorPage() {
     setLevel(group.level);
     setCurrency(group.currency);
     setPrice((group.defaultPricePerSession / 100).toFixed(2));
-    setSchedulePattern(group.schedulePattern ? JSON.stringify(group.schedulePattern, null, 2) : "");
   }, [group]);
-
-  const scheduleError = useMemo(() => {
-    if (!schedulePattern.trim()) {
-      return "";
-    }
-    try {
-      JSON.parse(schedulePattern);
-      return "";
-    } catch {
-      return "Invalid JSON";
-    }
-  }, [schedulePattern]);
 
   const mutation = useMutation({
     mutationFn: async () => {
       const priceValue = Number(price);
+      const schedulePatternPayload = scheduleOutput.enabled ? scheduleOutput.schedulePattern : null;
       const payload = {
         name: name.trim(),
         subject: subject.trim(),
         level: level.trim(),
         currency,
         defaultPricePerSession: Number.isFinite(priceValue) ? Math.round(priceValue * 100) : 0,
-        schedulePattern: parseJsonInput(schedulePattern),
+        schedulePattern: schedulePatternPayload,
       };
 
       if (isEdit && id) {
@@ -101,7 +89,7 @@ export default function ClassGroupEditorPage() {
     name.trim().length > 0 &&
     subject.trim().length > 0 &&
     level.trim().length > 0 &&
-    !scheduleError;
+    !scheduleOutput.error;
 
   const handleSave = () => {
     if (!canSave) {
@@ -172,21 +160,10 @@ export default function ClassGroupEditorPage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Schedule pattern (optional JSON)</Label>
-            <Input
-              value={schedulePattern}
-              onChange={(e) => setSchedulePattern(e.target.value)}
-              placeholder='{"weekday":[1,3],"time":"16:00"}'
-            />
-            {scheduleError ? (
-              <p className="text-sm text-destructive">{scheduleError}</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Store a recurring schedule pattern for planning. Optional.
-              </p>
-            )}
-          </div>
+          <ClassGroupScheduleBuilder
+            initialPattern={group?.schedulePattern ?? null}
+            onChange={setScheduleOutput}
+          />
         </CardContent>
       </Card>
     </div>

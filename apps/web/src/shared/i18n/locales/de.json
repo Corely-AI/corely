@@ -45,6 +45,13 @@
     "tags": "Tags",
     "for": "Für"
   },
+  "list": {
+    "searchPlaceholder": "Suchen...",
+    "sort": "Sortieren",
+    "filters": "Filter",
+    "clearAll": "Alle löschen",
+    "noResults": "Keine Einträge gefunden."
+  },
   "nav": {
     "dashboard": "Übersicht",
     "portfolio": "Portfolio",
@@ -882,6 +889,39 @@
         "amountNumber": "Betrag muss eine gültige Zahl sein",
         "currencyRequired": "Währung ist erforderlich",
         "probabilityRange": "Wahrscheinlichkeit muss zwischen 0 und 100 liegen"
+      }
+    }
+  },
+  "classes": {
+    "sessions": {
+      "title": "Termine",
+      "subtitle": "Geplante und abgeschlossene Termine verfolgen",
+      "new": "Neuer Termin",
+      "loading": "Termine werden geladen...",
+      "empty": "Keine Termine gefunden.",
+      "starts": "Beginn",
+      "topic": "Thema",
+      "status": "Status",
+      "open": "Öffnen",
+      "markDone": "Als erledigt markieren",
+      "cancel": "Abbrechen",
+      "updated": "Termin aktualisiert",
+      "updateFailed": "Fehler beim Aktualisieren des Termins",
+      "loadFailed": "Fehler beim Laden der Termine",
+      "confirmTitle": "Status aktualisieren?",
+      "confirmDescription": "Termin auf {{status}} setzen?",
+      "filterClassGroup": "Klassengruppe",
+      "filterStatus": "Status",
+      "filterDateFrom": "Datum von",
+      "filterDateTo": "Datum bis",
+      "statusOptions": {
+        "planned": "Geplant",
+        "done": "Erledigt",
+        "cancelled": "Abgesagt"
+      },
+      "sortOptions": {
+        "newest": "Beginn (Neueste)",
+        "oldest": "Beginn (Älteste)"
       }
     }
   }

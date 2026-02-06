@@ -1,17 +1,9 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { CheckCircle2, XCircle, CalendarDays } from "lucide-react";
-import {
-  Button,
-  Card,
-  CardContent,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@corely/ui";
+import { Button, Card, CardContent } from "@corely/ui";
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
@@ -25,13 +17,8 @@ import {
 import { formatDateTime } from "@/shared/lib/formatters";
 import { classGroupKeys, classSessionKeys } from "../queries";
 
-const STATUS_OPTIONS = [
-  { label: "Planned", value: "PLANNED" },
-  { label: "Done", value: "DONE" },
-  { label: "Cancelled", value: "CANCELLED" },
-];
-
 export default function SessionsPage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [confirmStatus, setConfirmStatus] = useState<{
@@ -55,14 +42,33 @@ export default function SessionsPage() {
     [groupsData]
   );
 
+  const STATUS_OPTIONS = useMemo(
+    () => [
+      { label: t("classes.sessions.statusOptions.planned"), value: "PLANNED" },
+      { label: t("classes.sessions.statusOptions.done"), value: "DONE" },
+      { label: t("classes.sessions.statusOptions.cancelled"), value: "CANCELLED" },
+    ],
+    [t]
+  );
+
   const filterFields = useMemo<FilterFieldDef[]>(
     () => [
-      { key: "classGroupId", label: "Class group", type: "select", options: groupOptions },
-      { key: "status", label: "Status", type: "select", options: STATUS_OPTIONS },
-      { key: "dateFrom", label: "Date from", type: "date" },
-      { key: "dateTo", label: "Date to", type: "date" },
+      {
+        key: "classGroupId",
+        label: t("classes.sessions.filterClassGroup"),
+        type: "select",
+        options: groupOptions,
+      },
+      {
+        key: "status",
+        label: t("classes.sessions.filterStatus"),
+        type: "select",
+        options: STATUS_OPTIONS,
+      },
+      { key: "dateFrom", label: t("classes.sessions.filterDateFrom"), type: "date" },
+      { key: "dateTo", label: t("classes.sessions.filterDateTo"), type: "date" },
     ],
-    [groupOptions]
+    [groupOptions, STATUS_OPTIONS, t]
   );
 
   const filters = useMemo(() => {
@@ -103,22 +109,22 @@ export default function SessionsPage() {
     mutationFn: async (payload: { id: string; status: "DONE" | "CANCELLED" }) =>
       classesApi.updateSession(payload.id, { status: payload.status }),
     onSuccess: async () => {
-      toast.success("Session updated");
+      toast.success(t("classes.sessions.updated"));
       setConfirmStatus(null);
       await queryClient.invalidateQueries({ queryKey: classSessionKeys.list(undefined) });
     },
-    onError: () => toast.error("Failed to update session"),
+    onError: () => toast.error(t("classes.sessions.updateFailed")),
   });
 
   return (
     <>
       <CrudListPageLayout
-        title="Sessions"
-        subtitle="Track planned and completed sessions"
+        title={t("classes.sessions.title")}
+        subtitle={t("classes.sessions.subtitle")}
         primaryAction={
           <Button variant="accent" onClick={() => navigate("/sessions")}>
             <CalendarDays className="h-4 w-4" />
-            New session
+            {t("classes.sessions.new")}
           </Button>
         }
         toolbar={
@@ -128,15 +134,15 @@ export default function SessionsPage() {
             sort={state.sort}
             onSortChange={(value) => setUrlState({ sort: value })}
             sortOptions={[
-              { label: "Start (Newest)", value: "startsAt:desc" },
-              { label: "Start (Oldest)", value: "startsAt:asc" },
+              { label: t("classes.sessions.sortOptions.newest"), value: "startsAt:desc" },
+              { label: t("classes.sessions.sortOptions.oldest"), value: "startsAt:asc" },
             ]}
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={state.filters?.length}
           >
             {isError ? (
               <div className="text-sm text-destructive">
-                {(error as Error)?.message || "Failed to load sessions"}
+                {(error as Error)?.message || t("classes.sessions.loadFailed")}
               </div>
             ) : null}
           </ListToolbar>
@@ -157,22 +163,26 @@ export default function SessionsPage() {
         <Card>
           <CardContent className="p-0">
             {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">Loading sessions...</div>
+              <div className="p-8 text-center text-muted-foreground">
+                {t("classes.sessions.loading")}
+              </div>
             ) : sessions.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">No sessions found.</div>
+              <div className="p-8 text-center text-muted-foreground">
+                {t("classes.sessions.empty")}
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Starts
+                        {t("classes.sessions.starts")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Topic
+                        {t("classes.sessions.topic")}
                       </th>
                       <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
+                        {t("classes.sessions.status")}
                       </th>
                       <th />
                     </tr>
@@ -181,25 +191,28 @@ export default function SessionsPage() {
                     {sessions.map((session) => (
                       <tr key={session.id} className="border-b border-border last:border-0">
                         <td className="px-4 py-3 text-sm">
-                          {formatDateTime(session.startsAt, "de-DE")}
+                          {formatDateTime(session.startsAt, i18n.language)}
                         </td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
                           {session.topic || "—"}
                         </td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {session.status}
+                          {t(`classes.sessions.statusOptions.${session.status.toLowerCase()}`)}
                         </td>
                         <td className="px-4 py-3 text-right">
                           <CrudRowActions
-                            primaryAction={{ label: "Open", href: `/sessions/${session.id}` }}
+                            primaryAction={{
+                              label: t("classes.sessions.open"),
+                              href: `/sessions/${session.id}`,
+                            }}
                             secondaryActions={[
                               {
-                                label: "Mark done",
+                                label: t("classes.sessions.markDone"),
                                 icon: <CheckCircle2 className="h-4 w-4" />,
                                 onClick: () => setConfirmStatus({ id: session.id, status: "DONE" }),
                               },
                               {
-                                label: "Cancel",
+                                label: t("classes.sessions.cancel"),
                                 destructive: true,
                                 icon: <XCircle className="h-4 w-4" />,
                                 onClick: () =>
@@ -228,6 +241,7 @@ export default function SessionsPage() {
 
       <ConfirmDeleteDialog
         open={Boolean(confirmStatus)}
+        trigger={null}
         onOpenChange={(open) => {
           if (!open) {
             setConfirmStatus(null);
@@ -238,9 +252,13 @@ export default function SessionsPage() {
             updateStatus.mutate(confirmStatus);
           }
         }}
-        title="Update session status?"
-        description={`Set session to ${confirmStatus?.status === "DONE" ? "Done" : "Cancelled"}?`}
-        confirmLabel="Confirm"
+        title={t("classes.sessions.confirmTitle")}
+        description={t("classes.sessions.confirmDescription", {
+          status: t(
+            `classes.sessions.statusOptions.${(confirmStatus?.status ?? "").toLowerCase()}`
+          ),
+        })}
+        confirmLabel={t("common.confirm")}
       />
     </>
   );

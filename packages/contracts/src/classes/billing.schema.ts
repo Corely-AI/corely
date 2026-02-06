@@ -2,7 +2,7 @@ import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
 import { ClassMonthlyBillingRunSchema } from "./classes.types";
 
-export const BillingMonthSchema = z.string().regex(/^\\d{4}-\\d{2}$/);
+export const BillingMonthSchema = z.string().regex(/^\d{4}-\d{2}$/);
 
 export const BillingPreviewLineSchema = z.object({
   classGroupId: z.string(),
