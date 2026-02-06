@@ -30,7 +30,7 @@ export class ListCustomersUseCase extends BaseUseCase<ListCustomersInput, ListCu
     const pageSize = input.pageSize ?? 20;
     const { items, nextCursor } = await this.useCaseDeps.partyRepo.listCustomers(
       ctx.tenantId,
-      { includeArchived: input.includeArchived },
+      { includeArchived: input.includeArchived, role: input.role },
       { pageSize, cursor: input.cursor }
     );
 

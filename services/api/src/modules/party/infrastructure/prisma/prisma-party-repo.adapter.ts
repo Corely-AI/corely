@@ -109,13 +109,15 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
         },
       });
 
-      await tx.partyRole.create({
-        data: {
-          tenantId: party.tenantId,
-          partyId: party.id,
-          role: "CUSTOMER",
-        },
-      });
+      if (party.roles.length) {
+        await tx.partyRole.createMany({
+          data: party.roles.map((role) => ({
+            tenantId: party.tenantId,
+            partyId: party.id,
+            role,
+          })),
+        });
+      }
 
       if (party.contactPoints.length) {
         await tx.contactPoint.createMany({
@@ -166,21 +168,23 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
         },
       });
 
-      await tx.partyRole.upsert({
-        where: {
-          tenantId_partyId_role: {
+      for (const role of party.roles) {
+        await tx.partyRole.upsert({
+          where: {
+            tenantId_partyId_role: {
+              tenantId,
+              partyId: party.id,
+              role,
+            },
+          },
+          update: {},
+          create: {
             tenantId,
             partyId: party.id,
-            role: "CUSTOMER",
+            role,
           },
-        },
-        update: {},
-        create: {
-          tenantId,
-          partyId: party.id,
-          role: "CUSTOMER",
-        },
-      });
+        });
+      }
 
       const contactTypes = party.contactPoints.map((cp) => cp.type);
       for (const contact of party.contactPoints) {
@@ -255,9 +259,14 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
     });
   }
 
-  async findCustomerById(tenantId: string, partyId: string): Promise<PartyAggregate | null> {
+  async findCustomerById(
+    tenantId: string,
+    partyId: string,
+    role?: PartyRoleType
+  ): Promise<PartyAggregate | null> {
+    const requestedRole = role ?? "CUSTOMER";
     const row = (await this.prisma.party.findFirst({
-      where: { id: partyId, tenantId, roles: { some: { role: "CUSTOMER" as const } } },
+      where: { id: partyId, tenantId, roles: { some: { role: requestedRole } } },
       include: { contactPoints: true, addresses: true, roles: true },
     })) as PartyWithRelations | null;
     if (!row) {
@@ -266,10 +275,37 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
     return toAggregate(row);
   }
 
+  async findPartyById(tenantId: string, partyId: string): Promise<PartyAggregate | null> {
+    const row = (await this.prisma.party.findFirst({
+      where: { id: partyId, tenantId },
+      include: { contactPoints: true, addresses: true, roles: true },
+    })) as PartyWithRelations | null;
+    return row ? toAggregate(row) : null;
+  }
+
+  async ensurePartyRole(tenantId: string, partyId: string, role: PartyRoleType): Promise<void> {
+    await this.prisma.partyRole.upsert({
+      where: {
+        tenantId_partyId_role: {
+          tenantId,
+          partyId,
+          role,
+        },
+      },
+      update: {},
+      create: {
+        tenantId,
+        partyId,
+        role,
+      },
+    });
+  }
+
   async listCustomers(tenantId: string, filters: ListCustomersFilters, pagination: Pagination) {
+    const role = filters.role ?? "CUSTOMER";
     const where = {
       tenantId,
-      roles: { some: { role: "CUSTOMER" as const } },
+      roles: { some: { role } },
       archivedAt: filters.includeArchived ? undefined : null,
     };
 
@@ -287,10 +323,16 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
     return { items, nextCursor };
   }
 
-  async searchCustomers(tenantId: string, q: string | undefined, pagination: Pagination) {
+  async searchCustomers(
+    tenantId: string,
+    q: string | undefined,
+    role: PartyRoleType | undefined,
+    pagination: Pagination
+  ) {
+    const requestedRole = role ?? "CUSTOMER";
     const where = {
       tenantId,
-      roles: { some: { role: "CUSTOMER" as const } },
+      roles: { some: { role: requestedRole } },
       archivedAt: null,
       ...(q && q.trim()
         ? {

@@ -26,11 +26,15 @@ export class UpsertEnrollmentUseCase {
     assertCanClasses(ctx, "classes.write");
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
-    if (!input.classGroupId || !input.clientId) {
-      throw new ValidationFailedError("classGroupId and clientId are required", [
-        { message: "classGroupId is required", members: ["classGroupId"] },
-        { message: "clientId is required", members: ["clientId"] },
-      ]);
+    if (!input.classGroupId || !input.studentClientId || !input.payerClientId) {
+      throw new ValidationFailedError(
+        "classGroupId, studentClientId, and payerClientId are required",
+        [
+          { message: "classGroupId is required", members: ["classGroupId"] },
+          { message: "studentClientId is required", members: ["studentClientId"] },
+          { message: "payerClientId is required", members: ["payerClientId"] },
+        ]
+      );
     }
 
     const group = await this.repo.findClassGroupById(tenantId, workspaceId, input.classGroupId);
@@ -51,7 +55,8 @@ export class UpsertEnrollmentUseCase {
       tenantId,
       workspaceId,
       classGroupId: input.classGroupId,
-      clientId: input.clientId,
+      studentClientId: input.studentClientId,
+      payerClientId: input.payerClientId,
       startDate: input.startDate ? new Date(input.startDate) : null,
       endDate: input.endDate ? new Date(input.endDate) : null,
       isActive: input.isActive ?? true,
@@ -64,7 +69,7 @@ export class UpsertEnrollmentUseCase {
       tenantId,
       workspaceId,
       input.classGroupId,
-      input.clientId,
+      input.studentClientId,
       enrollment
     );
 
@@ -74,7 +79,11 @@ export class UpsertEnrollmentUseCase {
       action: "classes.enrollment.upserted",
       entityType: "ClassEnrollment",
       entityId: saved.id,
-      metadata: { clientId: saved.clientId, classGroupId: saved.classGroupId },
+      metadata: {
+        studentClientId: saved.studentClientId,
+        payerClientId: saved.payerClientId,
+        classGroupId: saved.classGroupId,
+      },
     });
 
     if (input.idempotencyKey) {

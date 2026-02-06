@@ -5,7 +5,8 @@ import { ClassEnrollmentSchema } from "./classes.types";
 
 export const UpsertEnrollmentInputSchema = z.object({
   classGroupId: z.string(),
-  clientId: z.string(),
+  studentClientId: z.string(),
+  payerClientId: z.string(),
   startDate: localDateSchema.optional().nullable(),
   endDate: localDateSchema.optional().nullable(),
   isActive: z.boolean().optional(),
@@ -15,6 +16,7 @@ export const UpsertEnrollmentInputSchema = z.object({
 export type UpsertEnrollmentInput = z.infer<typeof UpsertEnrollmentInputSchema>;
 
 export const UpdateEnrollmentInputSchema = z.object({
+  payerClientId: z.string().optional(),
   startDate: localDateSchema.optional().nullable(),
   endDate: localDateSchema.optional().nullable(),
   isActive: z.boolean().optional(),
@@ -24,7 +26,8 @@ export type UpdateEnrollmentInput = z.infer<typeof UpdateEnrollmentInputSchema>;
 
 export const ListEnrollmentsInputSchema = ListQuerySchema.extend({
   classGroupId: z.string().optional(),
-  clientId: z.string().optional(),
+  studentClientId: z.string().optional(),
+  payerClientId: z.string().optional(),
   isActive: z.boolean().optional(),
 });
 export type ListEnrollmentsInput = z.infer<typeof ListEnrollmentsInputSchema>;

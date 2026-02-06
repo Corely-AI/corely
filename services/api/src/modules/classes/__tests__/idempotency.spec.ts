@@ -80,21 +80,21 @@ class FakeRepo implements ClassesRepositoryPort {
   async listBillableAttendanceForMonth() {
     return [
       {
-        clientId: "client-a",
+        payerClientId: "client-a",
         classGroupId: "group-1",
         classGroupName: "Math",
         priceCents: 2000,
         currency: "EUR",
       },
       {
-        clientId: "client-a",
+        payerClientId: "client-a",
         classGroupId: "group-1",
         classGroupName: "Math",
         priceCents: 2000,
         currency: "EUR",
       },
       {
-        clientId: "client-b",
+        payerClientId: "client-b",
         classGroupId: "group-2",
         classGroupName: "Science",
         priceCents: 1500,

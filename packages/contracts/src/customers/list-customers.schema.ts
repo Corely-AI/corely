@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { CustomerDtoSchema } from "./customer.types";
+import { PartyRoleTypeSchema } from "../crm/party.types";
 
 export const ListCustomersInputSchema = z.object({
   cursor: z.string().optional(),
   pageSize: z.number().int().positive().max(200).optional(),
   includeArchived: z.boolean().optional(),
+  role: PartyRoleTypeSchema.optional(),
 });
 
 export const ListCustomersOutputSchema = z.object({

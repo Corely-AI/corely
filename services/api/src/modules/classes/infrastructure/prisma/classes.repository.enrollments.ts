@@ -12,18 +12,19 @@ export const upsertEnrollment = async (
   tenantId: string,
   workspaceId: string,
   classGroupId: string,
-  clientId: string,
+  studentClientId: string,
   data: ClassEnrollmentEntity
 ): Promise<ClassEnrollmentEntity> => {
   const row = await prisma.classEnrollment.upsert({
     where: {
-      tenantId_classGroupId_clientId: {
+      tenantId_classGroupId_studentClientId: {
         tenantId,
         classGroupId,
-        clientId,
+        studentClientId,
       },
     },
     update: {
+      payerClientId: data.payerClientId,
       startDate: data.startDate ?? undefined,
       endDate: data.endDate ?? undefined,
       isActive: data.isActive,
@@ -35,7 +36,8 @@ export const upsertEnrollment = async (
       tenantId,
       workspaceId,
       classGroupId,
-      clientId,
+      studentClientId,
+      payerClientId: data.payerClientId,
       startDate: data.startDate ?? undefined,
       endDate: data.endDate ?? undefined,
       isActive: data.isActive,
@@ -56,6 +58,7 @@ export const updateEnrollment = async (
   const row = await prisma.classEnrollment.update({
     where: { id: enrollmentId, tenantId },
     data: {
+      payerClientId: updates.payerClientId,
       startDate: updates.startDate ?? undefined,
       endDate: updates.endDate ?? undefined,
       isActive: updates.isActive,
@@ -89,14 +92,20 @@ export const listEnrollments = async (
   if (filters.classGroupId) {
     where.classGroupId = filters.classGroupId;
   }
-  if (filters.clientId) {
-    where.clientId = filters.clientId;
+  if (filters.studentClientId) {
+    where.studentClientId = filters.studentClientId;
+  }
+  if (filters.payerClientId) {
+    where.payerClientId = filters.payerClientId;
   }
   if (typeof filters.isActive === "boolean") {
     where.isActive = filters.isActive;
   }
   if (filters.q) {
-    where.OR = [{ clientId: { contains: filters.q, mode: "insensitive" } }];
+    where.OR = [
+      { studentClientId: { contains: filters.q, mode: "insensitive" } },
+      { payerClientId: { contains: filters.q, mode: "insensitive" } },
+    ];
   }
 
   const [items, total] = await prisma.$transaction([

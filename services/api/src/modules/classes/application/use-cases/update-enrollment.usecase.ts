@@ -31,6 +31,7 @@ export class UpdateEnrollmentUseCase {
     }
 
     const updated = await this.repo.updateEnrollment(tenantId, workspaceId, input.enrollmentId, {
+      payerClientId: input.payerClientId,
       startDate: input.startDate
         ? new Date(input.startDate)
         : input.startDate === null
@@ -49,7 +50,7 @@ export class UpdateEnrollmentUseCase {
       action: "classes.enrollment.updated",
       entityType: "ClassEnrollment",
       entityId: updated.id,
-      metadata: { isActive: updated.isActive },
+      metadata: { isActive: updated.isActive, payerClientId: updated.payerClientId },
     });
 
     return updated;

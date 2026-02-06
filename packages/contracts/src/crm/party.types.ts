@@ -1,7 +1,14 @@
 import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
 
-export const PartyRoleTypeSchema = z.enum(["CUSTOMER", "SUPPLIER", "EMPLOYEE", "CONTACT"]);
+export const PartyRoleTypeSchema = z.enum([
+  "CUSTOMER",
+  "SUPPLIER",
+  "EMPLOYEE",
+  "CONTACT",
+  "STUDENT",
+  "GUARDIAN",
+]);
 export type PartyRoleType = z.infer<typeof PartyRoleTypeSchema>;
 
 export const ContactPointTypeSchema = z.enum(["EMAIL", "PHONE"]);

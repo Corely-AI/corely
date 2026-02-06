@@ -14,7 +14,7 @@ export class GetMonthlyBillingPreviewUseCase {
   ) {}
 
   async execute(
-    input: { month: string; classGroupId?: string; clientId?: string },
+    input: { month: string; classGroupId?: string; payerClientId?: string },
     ctx: UseCaseContext
   ) {
     assertCanClasses(ctx, "classes.billing");
@@ -26,7 +26,7 @@ export class GetMonthlyBillingPreviewUseCase {
       monthStart: startUtc,
       monthEnd: endUtc,
       classGroupId: input.classGroupId,
-      clientId: input.clientId,
+      payerClientId: input.payerClientId,
     });
 
     const items = aggregateBillingPreview(rows);

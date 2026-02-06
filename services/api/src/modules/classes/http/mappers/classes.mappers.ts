@@ -49,7 +49,8 @@ export const toEnrollmentDto = (entity: ClassEnrollmentEntity): ClassEnrollment 
   tenantId: entity.tenantId,
   workspaceId: entity.workspaceId,
   classGroupId: entity.classGroupId,
-  clientId: entity.clientId,
+  studentClientId: entity.studentClientId,
+  payerClientId: entity.payerClientId,
   startDate: entity.startDate ? entity.startDate.toISOString().slice(0, 10) : null,
   endDate: entity.endDate ? entity.endDate.toISOString().slice(0, 10) : null,
   isActive: entity.isActive,
@@ -92,7 +93,7 @@ export const toBillingPreviewOutput = (input: {
   month: input.month,
   generatedAt: input.generatedAt.toISOString(),
   items: input.items.map((item) => ({
-    clientId: item.clientId,
+    payerClientId: item.payerClientId,
     totalSessions: item.totalSessions,
     totalAmountCents: item.totalAmountCents,
     currency: item.currency,

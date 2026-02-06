@@ -35,7 +35,8 @@ export type SessionListFilters = {
 export type EnrollmentListFilters = {
   q?: string;
   classGroupId?: string;
-  clientId?: string;
+  studentClientId?: string;
+  payerClientId?: string;
   isActive?: boolean;
   sort?: string | string[];
   filters?: unknown;
@@ -45,7 +46,7 @@ export type BillingPreviewFilters = {
   monthStart: Date;
   monthEnd: Date;
   classGroupId?: string;
-  clientId?: string;
+  payerClientId?: string;
 };
 
 export interface ClassesRepositoryPort {
@@ -92,7 +93,7 @@ export interface ClassesRepositoryPort {
     tenantId: string,
     workspaceId: string,
     classGroupId: string,
-    clientId: string,
+    studentClientId: string,
     data: ClassEnrollmentEntity
   ): Promise<ClassEnrollmentEntity>;
   updateEnrollment(

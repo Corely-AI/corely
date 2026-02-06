@@ -22,7 +22,8 @@ export class ListEnrollmentsUseCase {
       {
         q: input.q,
         classGroupId: input.classGroupId,
-        clientId: input.clientId,
+        studentClientId: input.studentClientId,
+        payerClientId: input.payerClientId,
         isActive: input.isActive,
         sort: input.sort,
         filters: input.filters,

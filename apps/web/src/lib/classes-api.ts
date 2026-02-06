@@ -163,8 +163,11 @@ export class ClassesApi {
     if (params?.classGroupId) {
       query.append("classGroupId", params.classGroupId);
     }
-    if (params?.clientId) {
-      query.append("clientId", params.clientId);
+    if (params?.studentClientId) {
+      query.append("studentClientId", params.studentClientId);
+    }
+    if (params?.payerClientId) {
+      query.append("payerClientId", params.payerClientId);
     }
     if (typeof params?.isActive === "boolean") {
       query.append("isActive", String(params.isActive));

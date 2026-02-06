@@ -23,7 +23,7 @@ Base path: `/classes`
 
 ### Enrollments
 
-- `GET /classes/enrollments` list (filters: `classGroupId`, `clientId`, `isActive`)
+- `GET /classes/enrollments` list (filters: `classGroupId`, `studentClientId`, `payerClientId`, `isActive`)
 - `POST /classes/enrollments` upsert (idempotent)
 - `PATCH /classes/enrollments/:id` update
 
@@ -79,4 +79,4 @@ The module accepts `Idempotency-Key` or `X-Idempotency-Key` headers on all write
 - `PUT /classes/sessions/:id/attendance`: `classes.attendance.bulk-upsert`
 - `POST /classes/billing/runs`: `classes.billing.run.create`
   - Default key if none supplied: `tenantId:YYYY-MM`
-  - Per-invoice idempotency: `tenantId:YYYY-MM:clientId` (stored in `ClassBillingInvoiceLink`)
+  - Per-invoice idempotency: `tenantId:YYYY-MM:payerClientId` (stored in `ClassBillingInvoiceLink`)

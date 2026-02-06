@@ -5,6 +5,12 @@ import type {
   UpdateCustomerInput,
   UpdateCustomerOutput,
   CustomerDto,
+  LinkGuardianInput,
+  LinkGuardianOutput,
+  SetPrimaryPayerInput,
+  SetPrimaryPayerOutput,
+  ListStudentGuardiansOutput,
+  PartyRoleType,
 } from "@corely/contracts";
 
 export const customersApi = {
@@ -17,13 +23,19 @@ export const customersApi = {
     return response as CustomerDto;
   },
 
-  async updateCustomer(id: string, patch: UpdateCustomerInput["patch"]): Promise<CustomerDto> {
-    const response = await apiClient.patch<UpdateCustomerOutput>(`/customers/${id}`, patch);
+  async updateCustomer(
+    id: string,
+    patch: UpdateCustomerInput["patch"],
+    role?: PartyRoleType
+  ): Promise<CustomerDto> {
+    const query = role ? `?role=${encodeURIComponent(role)}` : "";
+    const response = await apiClient.patch<UpdateCustomerOutput>(`/customers/${id}${query}`, patch);
     return response.customer;
   },
 
-  async getCustomer(id: string): Promise<CustomerDto | null> {
-    const response = await apiClient.get<unknown>(`/customers/${id}`);
+  async getCustomer(id: string, role?: PartyRoleType): Promise<CustomerDto | null> {
+    const query = role ? `?role=${encodeURIComponent(role)}` : "";
+    const response = await apiClient.get<unknown>(`/customers/${id}${query}`);
     if (!response) {
       return null;
     }
@@ -44,6 +56,7 @@ export const customersApi = {
     cursor?: string;
     pageSize?: number;
     includeArchived?: boolean;
+    role?: PartyRoleType;
   }): Promise<{ customers: CustomerDto[]; nextCursor?: string }> {
     const queryParams = new URLSearchParams();
     if (params?.cursor) {
@@ -54,6 +67,9 @@ export const customersApi = {
     }
     if (params?.includeArchived !== undefined) {
       queryParams.append("includeArchived", params.includeArchived.toString());
+    }
+    if (params?.role) {
+      queryParams.append("role", params.role);
     }
     const queryString = queryParams.toString();
     const endpoint = queryString ? `/customers?${queryString}` : "/customers";
@@ -76,13 +92,44 @@ export const customersApi = {
     return response as { customers: CustomerDto[]; nextCursor?: string };
   },
 
-  async archiveCustomer(id: string): Promise<CustomerDto> {
-    const response = await apiClient.post<{ customer: CustomerDto }>(`/customers/${id}/archive`);
+  async archiveCustomer(id: string, role?: PartyRoleType): Promise<CustomerDto> {
+    const query = role ? `?role=${encodeURIComponent(role)}` : "";
+    const response = await apiClient.post<{ customer: CustomerDto }>(
+      `/customers/${id}/archive${query}`
+    );
     return response.customer;
   },
 
-  async unarchiveCustomer(id: string): Promise<CustomerDto> {
-    const response = await apiClient.post<{ customer: CustomerDto }>(`/customers/${id}/unarchive`);
+  async unarchiveCustomer(id: string, role?: PartyRoleType): Promise<CustomerDto> {
+    const query = role ? `?role=${encodeURIComponent(role)}` : "";
+    const response = await apiClient.post<{ customer: CustomerDto }>(
+      `/customers/${id}/unarchive${query}`
+    );
     return response.customer;
+  },
+
+  async listStudentGuardians(studentId: string): Promise<ListStudentGuardiansOutput> {
+    return apiClient.get<ListStudentGuardiansOutput>(`/customers/${studentId}/guardians`);
+  },
+
+  async linkGuardian(studentId: string, input: LinkGuardianInput): Promise<LinkGuardianOutput> {
+    return apiClient.post<LinkGuardianOutput>(`/customers/${studentId}/guardians`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+    });
+  },
+
+  async unlinkGuardian(studentId: string, guardianClientId: string): Promise<LinkGuardianOutput> {
+    return apiClient.delete<LinkGuardianOutput>(
+      `/customers/${studentId}/guardians/${guardianClientId}`
+    );
+  },
+
+  async setPrimaryPayer(
+    studentId: string,
+    input: SetPrimaryPayerInput
+  ): Promise<SetPrimaryPayerOutput> {
+    return apiClient.post<SetPrimaryPayerOutput>(`/customers/${studentId}/primary-payer`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+    });
   },
 };

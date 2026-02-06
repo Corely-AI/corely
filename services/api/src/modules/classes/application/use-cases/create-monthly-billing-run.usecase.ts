@@ -83,7 +83,7 @@ export class CreateMonthlyBillingRunUseCase {
     const invoiceIds: string[] = [];
     if (input.createInvoices) {
       for (const item of previewItems) {
-        const invoiceKey = `${tenantId}:${month}:${item.clientId}`;
+        const invoiceKey = `${tenantId}:${month}:${item.payerClientId}`;
         const existingLink = await this.repo.findBillingInvoiceLinkByIdempotency(
           tenantId,
           workspaceId,
@@ -96,7 +96,7 @@ export class CreateMonthlyBillingRunUseCase {
 
         const result = await this.invoices.createDraft(
           {
-            customerPartyId: item.clientId,
+            customerPartyId: item.payerClientId,
             currency: item.currency,
             lineItems: item.lines.map((line) => ({
               description: `${line.classGroupName} (${line.sessions} sessions)`,
@@ -126,7 +126,7 @@ export class CreateMonthlyBillingRunUseCase {
           tenantId,
           workspaceId,
           billingRunId: run.id,
-          clientId: item.clientId,
+          payerClientId: item.payerClientId,
           invoiceId,
           idempotencyKey: invoiceKey,
           createdAt: this.clock.now(),

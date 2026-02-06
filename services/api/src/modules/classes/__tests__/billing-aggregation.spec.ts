@@ -10,31 +10,31 @@ describe("classes billing aggregation", () => {
     expect(resolveBillableForStatus("EXCUSED")).toBe(false);
   });
 
-  it("aggregates per client and class group with price overrides", () => {
+  it("aggregates per payer and class group with price overrides", () => {
     const rows = [
       {
-        clientId: "client-a",
+        payerClientId: "client-a",
         classGroupId: "group-1",
         classGroupName: "Math A",
         priceCents: 2000,
         currency: "EUR",
       },
       {
-        clientId: "client-a",
+        payerClientId: "client-a",
         classGroupId: "group-1",
         classGroupName: "Math A",
         priceCents: 2000,
         currency: "EUR",
       },
       {
-        clientId: "client-a",
+        payerClientId: "client-a",
         classGroupId: "group-2",
         classGroupName: "Physics",
         priceCents: 2500,
         currency: "EUR",
       },
       {
-        clientId: "client-b",
+        payerClientId: "client-b",
         classGroupId: "group-1",
         classGroupName: "Math A",
         priceCents: 1500,
@@ -43,8 +43,8 @@ describe("classes billing aggregation", () => {
     ];
 
     const result = aggregateBillingPreview(rows);
-    const clientA = result.find((item) => item.clientId === "client-a");
-    const clientB = result.find((item) => item.clientId === "client-b");
+    const clientA = result.find((item) => item.payerClientId === "client-a");
+    const clientB = result.find((item) => item.payerClientId === "client-b");
 
     expect(clientA?.totalSessions).toBe(3);
     expect(clientA?.totalAmountCents).toBe(2000 * 2 + 2500);

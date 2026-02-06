@@ -27,13 +27,13 @@ export const listBillableAttendanceForMonth = async (
         ...(filters.classGroupId ? { classGroupId: filters.classGroupId } : {}),
       },
       enrollment: {
-        ...(filters.clientId ? { clientId: filters.clientId } : {}),
+        ...(filters.payerClientId ? { payerClientId: filters.payerClientId } : {}),
       },
     },
     select: {
       enrollment: {
         select: {
-          clientId: true,
+          payerClientId: true,
           priceOverridePerSession: true,
           classGroup: {
             select: {
@@ -49,7 +49,7 @@ export const listBillableAttendanceForMonth = async (
   });
 
   return rows.map((row) => ({
-    clientId: row.enrollment.clientId,
+    payerClientId: row.enrollment.payerClientId,
     classGroupId: row.enrollment.classGroup.id,
     classGroupName: row.enrollment.classGroup.name,
     priceCents:
@@ -154,7 +154,7 @@ export const createBillingInvoiceLink = async (
       tenantId: link.tenantId,
       workspaceId: link.workspaceId,
       billingRunId: link.billingRunId,
-      clientId: link.clientId,
+      payerClientId: link.payerClientId,
       invoiceId: link.invoiceId,
       idempotencyKey: link.idempotencyKey,
       createdAt: link.createdAt,

@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { CustomerDtoSchema } from "./customer.types";
+import { PartyRoleTypeSchema } from "../crm/party.types";
 
 export const ArchiveCustomerInputSchema = z.object({
   id: z.string(),
+  role: PartyRoleTypeSchema.optional(),
 });
 
 export const ArchiveCustomerOutputSchema = z.object({

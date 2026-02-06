@@ -76,7 +76,8 @@ model ClassEnrollment {
   tenantId               String
   workspaceId            String
   classGroupId           String
-  clientId               String
+  studentClientId        String
+  payerClientId          String
   startDate              DateTime? @db.Date
   endDate                DateTime? @db.Date
   isActive               Boolean   @default(true)
@@ -87,8 +88,9 @@ model ClassEnrollment {
   classGroup             ClassGroup      @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
   attendance             ClassAttendance[]
 
-  @@unique([tenantId, classGroupId, clientId], name: "tenantId_classGroupId_clientId")
+  @@unique([tenantId, classGroupId, studentClientId], name: "tenantId_classGroupId_studentClientId")
   @@index([tenantId, classGroupId])
+  @@index([tenantId, payerClientId])
   @@index([tenantId, isActive])
   @@schema("crm")
 }
@@ -138,16 +140,16 @@ model ClassBillingInvoiceLink {
   tenantId       String
   workspaceId    String
   billingRunId   String
-  clientId       String
+  payerClientId  String
   invoiceId      String
   idempotencyKey String
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
   billingRun     ClassMonthlyBillingRun @relation(fields: [billingRunId], references: [id], onDelete: Cascade)
 
-  @@unique([tenantId, billingRunId, clientId], name: "tenantId_billingRunId_clientId")
+  @@unique([tenantId, billingRunId, payerClientId], name: "tenantId_billingRunId_payerClientId")
   @@unique([tenantId, idempotencyKey], name: "tenantId_idempotencyKey")
   @@index([tenantId, billingRunId])
-  @@index([tenantId, clientId])
+  @@index([tenantId, payerClientId])
   @@schema("crm")
 }

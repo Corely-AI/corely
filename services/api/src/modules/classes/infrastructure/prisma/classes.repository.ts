@@ -121,10 +121,17 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     tenantId: string,
     workspaceId: string,
     classGroupId: string,
-    clientId: string,
+    studentClientId: string,
     data: ClassEnrollmentEntity
   ): Promise<ClassEnrollmentEntity> {
-    return upsertEnrollment(this.prisma, tenantId, workspaceId, classGroupId, clientId, data);
+    return upsertEnrollment(
+      this.prisma,
+      tenantId,
+      workspaceId,
+      classGroupId,
+      studentClientId,
+      data
+    );
   }
 
   async updateEnrollment(

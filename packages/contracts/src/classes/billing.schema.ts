@@ -13,7 +13,7 @@ export const BillingPreviewLineSchema = z.object({
 export type BillingPreviewLine = z.infer<typeof BillingPreviewLineSchema>;
 
 export const BillingPreviewItemSchema = z.object({
-  clientId: z.string(),
+  payerClientId: z.string(),
   totalSessions: z.number().int().nonnegative(),
   totalAmountCents: z.number().int().nonnegative(),
   currency: z.string().min(3).max(3),

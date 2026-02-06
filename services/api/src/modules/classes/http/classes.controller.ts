@@ -207,7 +207,9 @@ export class ClassesController {
     const input = ListEnrollmentsInputSchema.parse({
       ...listQuery,
       classGroupId: typeof query.classGroupId === "string" ? query.classGroupId : undefined,
-      clientId: typeof query.clientId === "string" ? query.clientId : undefined,
+      studentClientId:
+        typeof query.studentClientId === "string" ? query.studentClientId : undefined,
+      payerClientId: typeof query.payerClientId === "string" ? query.payerClientId : undefined,
       isActive:
         typeof query.isActive === "string"
           ? query.isActive === "true" || query.isActive === "1"
@@ -276,10 +278,10 @@ export class ClassesController {
   async previewBilling(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const month = typeof query.month === "string" ? query.month : "";
     const classGroupId = typeof query.classGroupId === "string" ? query.classGroupId : undefined;
-    const clientId = typeof query.clientId === "string" ? query.clientId : undefined;
+    const payerClientId = typeof query.payerClientId === "string" ? query.payerClientId : undefined;
     const ctx = buildUseCaseContext(req);
     const preview = await this.getMonthlyBillingPreviewUseCase.execute(
-      { month, classGroupId, clientId },
+      { month, classGroupId, payerClientId },
       ctx
     );
     return BillingPreviewOutputSchema.parse(toBillingPreviewOutput(preview));

@@ -20,5 +20,16 @@ export const partyAppManifest: AppManifest = {
       icon: "UsersRound",
       order: 30,
     },
+    {
+      id: "students",
+      scope: "web",
+      section: "education",
+      labelKey: "nav.students",
+      defaultLabel: "Students",
+      route: "/students",
+      icon: "User",
+      order: 35,
+      requiresPermissions: ["party.customers.read"],
+    },
   ],
 };

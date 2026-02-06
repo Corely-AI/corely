@@ -45,38 +45,69 @@ export default function ClassGroupDetailPage() {
     enabled: Boolean(groupId),
   });
 
+  const { data: studentsData } = useQuery({
+    queryKey: ["students", "options"],
+    queryFn: () => customersApi.listCustomers({ pageSize: 100, role: "STUDENT" }),
+  });
+
   const { data: customersData } = useQuery({
     queryKey: ["customers", "options"],
-    queryFn: () => customersApi.listCustomers({ pageSize: 50 }),
+    queryFn: () => customersApi.listCustomers({ pageSize: 100 }),
   });
 
   const group = groupData?.classGroup;
   const enrollments = enrollmentData?.items ?? [];
   const sessions = sessionData?.items ?? [];
+  const students = studentsData?.customers ?? [];
   const customers = customersData?.customers ?? [];
 
-  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [selectedPayerId, setSelectedPayerId] = useState("");
   const [overridePrice, setOverridePrice] = useState("");
   const [sessionStart, setSessionStart] = useState("");
   const [sessionDuration, setSessionDuration] = useState("60");
   const [sessionTopic, setSessionTopic] = useState("");
 
+  const { data: guardiansData } = useQuery({
+    queryKey: ["students", selectedStudentId, "guardians"],
+    queryFn: () => customersApi.listStudentGuardians(selectedStudentId),
+    enabled: Boolean(selectedStudentId),
+  });
+
+  const guardians = guardiansData?.guardians ?? [];
+  const primaryPayerId = guardians.find((guardian) => guardian.isPrimaryPayer)?.guardian.id ?? "";
+
+  React.useEffect(() => {
+    if (!selectedStudentId) {
+      setSelectedPayerId("");
+      return;
+    }
+    if (primaryPayerId) {
+      setSelectedPayerId(primaryPayerId);
+    }
+  }, [primaryPayerId, selectedStudentId]);
+
   const addEnrollment = useMutation({
     mutationFn: async () => {
-      if (!selectedClientId) {
+      if (!selectedStudentId) {
         throw new Error("Select a student");
+      }
+      if (!selectedPayerId) {
+        throw new Error("Select a payer");
       }
       const override = overridePrice ? Math.round(Number(overridePrice) * 100) : undefined;
       return classesApi.upsertEnrollment({
         classGroupId: groupId,
-        clientId: selectedClientId,
+        studentClientId: selectedStudentId,
+        payerClientId: selectedPayerId,
         priceOverridePerSession: override,
         isActive: true,
       });
     },
     onSuccess: async () => {
       toast.success("Student enrolled");
-      setSelectedClientId("");
+      setSelectedStudentId("");
+      setSelectedPayerId("");
       setOverridePrice("");
       await queryClient.invalidateQueries({
         queryKey: classEnrollmentKeys.list({ classGroupId: groupId }),
@@ -126,12 +157,40 @@ export default function ClassGroupDetailPage() {
 
   const rosterOptions = useMemo(
     () =>
-      customers.map((customer) => ({
+      students.map((student) => ({
+        value: student.id,
+        label: student.displayName || student.id,
+      })),
+    [students]
+  );
+
+  const payerOptions = useMemo(() => {
+    const options = [
+      ...guardians.map((guardian) => ({
+        value: guardian.guardian.id,
+        label: guardian.guardian.displayName || guardian.guardian.id,
+      })),
+      ...customers.map((customer) => ({
         value: customer.id,
         label: customer.displayName || customer.id,
       })),
-    [customers]
-  );
+    ];
+    const unique = new Map<string, { value: string; label: string }>();
+    options.forEach((option) => {
+      if (!unique.has(option.value)) {
+        unique.set(option.value, option);
+      }
+    });
+    return Array.from(unique.values());
+  }, [customers, guardians]);
+
+  const nameByClient = useMemo(() => {
+    const map = new Map<string, string>();
+    [...students, ...customers].forEach((customer) => {
+      map.set(customer.id, customer.displayName || customer.id);
+    });
+    return map;
+  }, [customers, students]);
 
   if (isGroupLoading) {
     return <div className="text-muted-foreground">Loading class group...</div>;
@@ -191,10 +250,10 @@ export default function ClassGroupDetailPage() {
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Users className="h-4 w-4" /> Roster
           </div>
-          <div className="grid gap-3 md:grid-cols-[1fr_160px_120px] items-end">
+          <div className="grid gap-3 md:grid-cols-[1fr_1fr_160px_120px] items-end">
             <div className="space-y-2">
               <Label>Student</Label>
-              <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+              <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
@@ -206,6 +265,26 @@ export default function ClassGroupDetailPage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Payer</Label>
+              <Select value={selectedPayerId} onValueChange={setSelectedPayerId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payer" />
+                </SelectTrigger>
+                <SelectContent>
+                  {payerOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!primaryPayerId && selectedStudentId ? (
+                <div className="text-xs text-muted-foreground">
+                  No primary payer set for this student.
+                </div>
+              ) : null}
             </div>
             <div className="space-y-2">
               <Label>Override price</Label>
@@ -221,7 +300,7 @@ export default function ClassGroupDetailPage() {
             <Button
               variant="accent"
               onClick={() => addEnrollment.mutate()}
-              disabled={!selectedClientId || addEnrollment.isPending}
+              disabled={!selectedStudentId || !selectedPayerId || addEnrollment.isPending}
             >
               Enroll
             </Button>
@@ -233,6 +312,9 @@ export default function ClassGroupDetailPage() {
                 <tr className="border-b border-border bg-muted/50">
                   <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
                     Student
+                  </th>
+                  <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
+                    Payer
                   </th>
                   <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
                     Status
@@ -247,8 +329,10 @@ export default function ClassGroupDetailPage() {
                 {enrollments.map((enrollment) => (
                   <tr key={enrollment.id} className="border-b border-border last:border-0">
                     <td className="px-3 py-2 text-sm">
-                      {customers.find((c) => c.id === enrollment.clientId)?.displayName ||
-                        enrollment.clientId}
+                      {nameByClient.get(enrollment.studentClientId) ?? enrollment.studentClientId}
+                    </td>
+                    <td className="px-3 py-2 text-sm text-muted-foreground">
+                      {nameByClient.get(enrollment.payerClientId) ?? enrollment.payerClientId}
                     </td>
                     <td className="px-3 py-2 text-sm text-muted-foreground">
                       {enrollment.isActive ? "Active" : "Inactive"}
@@ -270,7 +354,7 @@ export default function ClassGroupDetailPage() {
                 ))}
                 {enrollments.length === 0 ? (
                   <tr>
-                    <td className="px-3 py-4 text-sm text-muted-foreground" colSpan={4}>
+                    <td className="px-3 py-4 text-sm text-muted-foreground" colSpan={5}>
                       No students enrolled yet.
                     </td>
                   </tr>

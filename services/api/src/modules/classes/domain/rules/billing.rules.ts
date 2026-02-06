@@ -1,7 +1,7 @@
 import type { BillingPreviewItem, BillingPreviewLine } from "../entities/classes.entities";
 
 export type AttendanceBillingRow = {
-  clientId: string;
+  payerClientId: string;
   classGroupId: string;
   classGroupName: string;
   priceCents: number;
@@ -13,9 +13,9 @@ export const aggregateBillingPreview = (rows: AttendanceBillingRow[]): BillingPr
 
   for (const row of rows) {
     const existingClient =
-      byClient.get(row.clientId) ??
+      byClient.get(row.payerClientId) ??
       ({
-        clientId: row.clientId,
+        payerClientId: row.payerClientId,
         totalSessions: 0,
         totalAmountCents: 0,
         currency: row.currency,
@@ -44,7 +44,7 @@ export const aggregateBillingPreview = (rows: AttendanceBillingRow[]): BillingPr
       0
     );
 
-    byClient.set(row.clientId, existingClient);
+    byClient.set(row.payerClientId, existingClient);
   }
 
   return Array.from(byClient.values());

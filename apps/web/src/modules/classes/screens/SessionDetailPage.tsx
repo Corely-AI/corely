@@ -207,7 +207,7 @@ export default function SessionDetailPage() {
                 {rows.map((row, index) => {
                   const enrollment = enrollments.find((e) => e.id === row.enrollmentId);
                   const studentName = enrollment
-                    ? (nameByClient.get(enrollment.clientId) ?? enrollment.clientId)
+                    ? (nameByClient.get(enrollment.studentClientId) ?? enrollment.studentClientId)
                     : row.enrollmentId;
                   return (
                     <tr key={row.enrollmentId} className="border-b border-border last:border-0">

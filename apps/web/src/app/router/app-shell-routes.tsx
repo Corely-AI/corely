@@ -5,7 +5,14 @@ import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
 import { ExpensesPage, NewExpensePage, ExpenseDetailPage } from "../../modules/expenses";
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
-import { CustomersPage, NewCustomerPage, EditCustomerPage } from "../../modules/customers";
+import {
+  CustomersPage,
+  NewCustomerPage,
+  EditCustomerPage,
+  StudentsPage,
+  NewStudentPage,
+  StudentDetailPage,
+} from "../../modules/customers";
 import { FormsPage, NewFormPage, FormDetailPage } from "../../modules/forms";
 import { IssuesListPage, IssueDetailPage, NewIssuePage } from "../../modules/issues";
 import {
@@ -279,6 +286,10 @@ export const appShellRoutes = (
       <Route path="/customers/new" element={<NewCustomerPage />} />
       <Route path="/customers/:id" element={<EditCustomerPage />} />
       <Route path="/customers/:id/edit" element={<EditCustomerPage />} />
+      <Route path="/students" element={<StudentsPage />} />
+      <Route path="/students/new" element={<NewStudentPage />} />
+      <Route path="/students/:id" element={<StudentDetailPage />} />
+      <Route path="/students/:id/edit" element={<StudentDetailPage />} />
       <Route path="/crm/deals" element={<DealsPage />} />
       <Route path="/crm/deals/new" element={<NewDealPage />} />
       <Route path="/crm/deals/:id" element={<DealDetailPage />} />

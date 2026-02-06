@@ -37,7 +37,8 @@ export type ClassEnrollmentEntity = {
   tenantId: string;
   workspaceId: string;
   classGroupId: string;
-  clientId: string;
+  studentClientId: string;
+  payerClientId: string;
   startDate?: Date | null;
   endDate?: Date | null;
   isActive: boolean;
@@ -77,7 +78,7 @@ export type ClassBillingInvoiceLinkEntity = {
   tenantId: string;
   workspaceId: string;
   billingRunId: string;
-  clientId: string;
+  payerClientId: string;
   invoiceId: string;
   idempotencyKey: string;
   createdAt: Date;
@@ -93,7 +94,7 @@ export type BillingPreviewLine = {
 };
 
 export type BillingPreviewItem = {
-  clientId: string;
+  payerClientId: string;
   totalSessions: number;
   totalAmountCents: number;
   currency: string;

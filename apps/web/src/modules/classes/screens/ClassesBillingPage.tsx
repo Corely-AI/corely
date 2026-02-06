@@ -121,10 +121,10 @@ export default function ClassesBillingPage() {
           ) : preview?.items?.length ? (
             <div className="space-y-4">
               {preview.items.map((item) => (
-                <div key={item.clientId} className="rounded-md border border-border p-4">
+                <div key={item.payerClientId} className="rounded-md border border-border p-4">
                   <div className="flex items-center justify-between">
                     <div className="text-sm font-semibold">
-                      {nameByClient.get(item.clientId) ?? item.clientId}
+                      {nameByClient.get(item.payerClientId) ?? item.payerClientId}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {item.totalSessions} sessions •{" "}
