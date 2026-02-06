@@ -70,7 +70,10 @@ class FakeRepo implements ClassesRepositoryPort {
     sessionId: string,
     updates: Partial<ClassSessionEntity>
   ): Promise<ClassSessionEntity> {
-    this.session = { ...this.session, ...updates, updatedAt: new Date() };
+    const definedUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => typeof value !== "undefined")
+    ) as Partial<ClassSessionEntity>;
+    this.session = { ...this.session, ...definedUpdates, updatedAt: new Date() };
     return this.session;
   }
   async findSessionById() {

@@ -74,7 +74,7 @@ class FakeRepo implements ClassesRepositoryPort {
     throw new Error("not implemented");
   }
   async listAttendanceBySession() {
-    throw new Error("not implemented");
+    return [];
   }
   async bulkUpsertAttendance() {
     throw new Error("should not be called");
