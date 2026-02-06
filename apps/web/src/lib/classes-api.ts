@@ -25,6 +25,9 @@ import type {
   CreateBillingRunOutput,
   ClassEnrollment,
   ClassMonthlyBillingRun,
+  GetClassesBillingSettingsOutput,
+  UpdateClassesBillingSettingsInput,
+  UpdateClassesBillingSettingsOutput,
 } from "@corely/contracts";
 
 export class ClassesApi {
@@ -261,6 +264,21 @@ export class ClassesApi {
         correlationId: apiClient.generateCorrelationId(),
       }
     );
+  }
+
+  async getSettings(): Promise<GetClassesBillingSettingsOutput> {
+    return apiClient.get<GetClassesBillingSettingsOutput>("/classes/settings", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updateSettings(
+    input: UpdateClassesBillingSettingsInput
+  ): Promise<UpdateClassesBillingSettingsOutput> {
+    return apiClient.patch<UpdateClassesBillingSettingsOutput>("/classes/settings", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
   }
 }
 

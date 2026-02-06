@@ -4,3 +4,4 @@ export { default as ClassGroupDetailPage } from "./screens/ClassGroupDetailPage"
 export { default as SessionsPage } from "./screens/SessionsPage";
 export { default as SessionDetailPage } from "./screens/SessionDetailPage";
 export { default as ClassesBillingPage } from "./screens/ClassesBillingPage";
+export { default as ClassesSettingsPage } from "./screens/ClassesSettingsPage";

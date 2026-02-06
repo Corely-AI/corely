@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, RefreshCcw } from "lucide-react";
-import { Button, Card, CardContent, Input } from "@corely/ui";
+import { Badge, Button, Card, CardContent, Input } from "@corely/ui";
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
@@ -114,6 +114,31 @@ export default function ClassesBillingPage() {
           </div>
         ) : null}
 
+        {preview && (
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3 bg-muted/30 rounded-lg border border-border text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground font-medium">Billing Strategy:</span>
+              <Badge variant="outline" className="bg-background/50">
+                {preview.billingMonthStrategy === "PREPAID_CURRENT_MONTH" ? "Prepaid" : "Arrears"}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground font-medium">Billing Basis:</span>
+              <Badge variant="outline" className="bg-background/50">
+                {preview.billingBasis === "SCHEDULED_SESSIONS"
+                  ? "Scheduled Sessions"
+                  : "Attended Sessions"}
+              </Badge>
+            </div>
+            {preview.billingBasis === "ATTENDED_SESSIONS" && (
+              <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium ml-auto">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                Only sessions marked as "DONE" with attendance are billable
+              </div>
+            )}
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
             <RefreshCcw className="h-8 w-8 animate-spin opacity-20" />
@@ -194,8 +219,14 @@ export default function ClassesBillingPage() {
           <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-border rounded-xl">
             <FileText className="h-10 w-10 text-muted-foreground opacity-20 mb-3" />
             <h3 className="text-lg font-medium text-foreground">No billable sessions</h3>
-            <p className="text-sm text-muted-foreground max-w-xs mt-1">
+            <p className="text-sm text-muted-foreground max-w-sm mt-1">
               There are no confirmed sessions for the selected month that haven't been billed yet.
+              {preview?.billingBasis === "ATTENDED_SESSIONS" && (
+                <span className="block mt-4 p-3 bg-amber-50 dark:bg-amber-900/10 rounded-md border border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-200 text-xs font-medium">
+                  Tip: In "Attended Sessions" mode, you must mark sessions as DONE and record
+                  attendance before they can be billed.
+                </span>
+              )}
             </p>
           </div>
         )}

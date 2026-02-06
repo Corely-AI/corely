@@ -15,6 +15,7 @@ import { TenantEntitlementsPage } from "../../modules/platform/screens/tenant-ma
 import { TaxSettingsPage } from "../../modules/tax";
 import { RequireCapability } from "../../shared/workspaces/RequireCapability";
 import { WorkspaceMembersPage, WorkspaceSettingsPage } from "../../modules/workspaces";
+import { ClassesSettingsPage } from "../../modules/classes";
 
 export const appSettingsRoutes = (
   <>
@@ -27,6 +28,7 @@ export const appSettingsRoutes = (
     <Route path="/settings" element={<SettingsPage />} />
     <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
     <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
+    <Route path="/settings/classes" element={<ClassesSettingsPage />} />
     <Route
       path="/settings/members"
       element={
