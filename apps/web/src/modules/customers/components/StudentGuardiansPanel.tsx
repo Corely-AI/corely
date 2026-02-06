@@ -1,4 +1,6 @@
 import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShieldCheck, UserMinus } from "lucide-react";
 import {
@@ -12,6 +14,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Input,
   Label,
   Select,
   SelectContent,
@@ -22,6 +25,12 @@ import {
 import { customersApi } from "@/lib/customers-api";
 import { ConfirmDeleteDialog } from "@/shared/crud";
 import { withWorkspace } from "@/shared/workspaces/workspace-query-keys";
+import {
+  customerFormSchema,
+  getDefaultCustomerFormValues,
+  toCreateCustomerInput,
+  type CustomerFormData,
+} from "../schemas/customer-form.schema";
 
 type StudentGuardiansPanelProps = {
   studentId: string;
@@ -32,10 +41,13 @@ const guardiansKey = (studentId: string) => withWorkspace(["students", studentId
 export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPanelProps) {
   const queryClient = useQueryClient();
   const [linkOpen, setLinkOpen] = React.useState(false);
+  const [createOpen, setCreateOpen] = React.useState(false);
   const [selectedGuardianId, setSelectedGuardianId] = React.useState("");
   const [isPrimaryPayer, setIsPrimaryPayer] = React.useState(false);
   const [isPrimaryContact, setIsPrimaryContact] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
+
+  const customersOptionsKey = withWorkspace(["customers", "options"]);
 
   const { data: guardiansData, isLoading: guardiansLoading } = useQuery({
     queryKey: guardiansKey(studentId),
@@ -44,9 +56,20 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
   });
 
   const { data: customersData } = useQuery({
-    queryKey: withWorkspace(["customers", "options"]),
+    queryKey: customersOptionsKey,
     queryFn: () => customersApi.listCustomers({ pageSize: 200 }),
   });
+
+  const createGuardianForm = useForm<CustomerFormData>({
+    resolver: zodResolver(customerFormSchema),
+    defaultValues: getDefaultCustomerFormValues(),
+  });
+
+  React.useEffect(() => {
+    if (!createOpen) {
+      createGuardianForm.reset(getDefaultCustomerFormValues());
+    }
+  }, [createOpen, createGuardianForm]);
 
   const guardians = guardiansData?.guardians ?? [];
   const linkedGuardianIds = new Set(guardians.map((item) => item.guardian.id));
@@ -77,6 +100,25 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
       setIsPrimaryPayer(false);
       setIsPrimaryContact(false);
       await invalidateGuardians();
+    },
+  });
+
+  const createGuardianMutation = useMutation({
+    mutationFn: async (data: CustomerFormData) => {
+      const input = {
+        ...toCreateCustomerInput(data),
+        role: "GUARDIAN" as const,
+      };
+      return customersApi.createCustomer(input);
+    },
+    onSuccess: async (guardian) => {
+      if (!guardian?.id) {
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: customersOptionsKey });
+      setSelectedGuardianId(guardian.id);
+      setCreateOpen(false);
+      setLinkOpen(true);
     },
   });
 
@@ -190,7 +232,22 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Guardian</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Guardian</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto px-2"
+                    onClick={() => {
+                      setLinkOpen(false);
+                      setCreateOpen(true);
+                    }}
+                  >
+                    <Plus className="h-3 w-3" />
+                    Add new
+                  </Button>
+                </div>
                 <Select value={selectedGuardianId} onValueChange={setSelectedGuardianId}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select guardian" />
@@ -238,6 +295,85 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                 {linkGuardian.isPending ? "Linking..." : "Link guardian"}
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={createOpen}
+          onOpenChange={(open) => {
+            setCreateOpen(open);
+            if (!open) {
+              setLinkOpen(true);
+            }
+          }}
+        >
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add guardian</DialogTitle>
+            </DialogHeader>
+            <form
+              onSubmit={createGuardianForm.handleSubmit((data) =>
+                createGuardianMutation.mutate(data)
+              )}
+              className="space-y-4"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="guardian-displayName">
+                  Full name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="guardian-displayName"
+                  {...createGuardianForm.register("displayName")}
+                  placeholder="Guardian name"
+                />
+                {createGuardianForm.formState.errors.displayName && (
+                  <p className="text-sm text-destructive">
+                    {createGuardianForm.formState.errors.displayName.message}
+                  </p>
+                )}
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="guardian-email">Email</Label>
+                  <Input
+                    id="guardian-email"
+                    type="email"
+                    {...createGuardianForm.register("email")}
+                    placeholder="name@example.com"
+                  />
+                  {createGuardianForm.formState.errors.email && (
+                    <p className="text-sm text-destructive">
+                      {createGuardianForm.formState.errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guardian-phone">Phone</Label>
+                  <Input
+                    id="guardian-phone"
+                    type="tel"
+                    {...createGuardianForm.register("phone")}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setCreateOpen(false);
+                    setLinkOpen(true);
+                  }}
+                  disabled={createGuardianMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="accent" disabled={createGuardianMutation.isPending}>
+                  {createGuardianMutation.isPending ? "Creating..." : "Create guardian"}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </CardContent>

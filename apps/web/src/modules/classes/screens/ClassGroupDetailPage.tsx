@@ -201,11 +201,11 @@ export default function ClassGroupDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 lg:p-8 animate-fade-in">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="text-xl font-semibold">{group.name}</div>
-          <div className="text-sm text-muted-foreground">
+          <h1 className="text-h1 text-foreground">{group.name}</h1>
+          <div className="text-sm text-muted-foreground mt-1">
             {group.subject} • {group.level}
           </div>
         </div>
@@ -250,7 +250,7 @@ export default function ClassGroupDetailPage() {
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Users className="h-4 w-4" /> Roster
           </div>
-          <div className="grid gap-3 md:grid-cols-[1fr_1fr_160px_120px] items-end">
+          <div className="grid gap-4 md:grid-cols-[1fr_1fr_160px_120px] items-end">
             <div className="space-y-2">
               <Label>Student</Label>
               <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
@@ -280,11 +280,6 @@ export default function ClassGroupDetailPage() {
                   ))}
                 </SelectContent>
               </Select>
-              {!primaryPayerId && selectedStudentId ? (
-                <div className="text-xs text-muted-foreground">
-                  No primary payer set for this student.
-                </div>
-              ) : null}
             </div>
             <div className="space-y-2">
               <Label>Override price</Label>
@@ -299,6 +294,7 @@ export default function ClassGroupDetailPage() {
             </div>
             <Button
               variant="accent"
+              className="w-full"
               onClick={() => addEnrollment.mutate()}
               disabled={!selectedStudentId || !selectedPayerId || addEnrollment.isPending}
             >
@@ -306,20 +302,26 @@ export default function ClassGroupDetailPage() {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
+          {!primaryPayerId && selectedStudentId ? (
+            <div className="text-xs text-muted-foreground mt-[-0.5rem]">
+              No primary payer set for this student.
+            </div>
+          ) : null}
+
+          <div className="overflow-x-auto rounded-md border border-border">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
                     Student
                   </th>
-                  <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
                     Payer
                   </th>
-                  <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
                     Status
                   </th>
-                  <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
                     Price override
                   </th>
                   <th />
@@ -327,22 +329,25 @@ export default function ClassGroupDetailPage() {
               </thead>
               <tbody>
                 {enrollments.map((enrollment) => (
-                  <tr key={enrollment.id} className="border-b border-border last:border-0">
-                    <td className="px-3 py-2 text-sm">
+                  <tr
+                    key={enrollment.id}
+                    className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium">
                       {nameByClient.get(enrollment.studentClientId) ?? enrollment.studentClientId}
                     </td>
-                    <td className="px-3 py-2 text-sm text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {nameByClient.get(enrollment.payerClientId) ?? enrollment.payerClientId}
                     </td>
-                    <td className="px-3 py-2 text-sm text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {enrollment.isActive ? "Active" : "Inactive"}
                     </td>
-                    <td className="px-3 py-2 text-sm text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {enrollment.priceOverridePerSession
                         ? formatMoney(enrollment.priceOverridePerSession, undefined, group.currency)
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-4 py-3 text-right">
                       <CrudRowActions
                         primaryAction={{
                           label: "Deactivate",
@@ -354,7 +359,7 @@ export default function ClassGroupDetailPage() {
                 ))}
                 {enrollments.length === 0 ? (
                   <tr>
-                    <td className="px-3 py-4 text-sm text-muted-foreground" colSpan={5}>
+                    <td className="px-4 py-8 text-sm text-center text-muted-foreground" colSpan={5}>
                       No students enrolled yet.
                     </td>
                   </tr>
@@ -368,7 +373,7 @@ export default function ClassGroupDetailPage() {
       <Card>
         <CardContent className="p-6 space-y-4">
           <div className="text-sm font-semibold">Sessions</div>
-          <div className="grid gap-3 md:grid-cols-[1fr_120px_160px_120px] items-end">
+          <div className="grid gap-4 md:grid-cols-[1fr_120px_160px_120px] items-end">
             <div className="space-y-2">
               <Label>Start time</Label>
               <Input
@@ -393,6 +398,7 @@ export default function ClassGroupDetailPage() {
             </div>
             <Button
               variant="accent"
+              className="w-full"
               onClick={() => createSession.mutate()}
               disabled={createSession.isPending}
             >
@@ -400,17 +406,17 @@ export default function ClassGroupDetailPage() {
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-md border border-border">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
                     Starts
                   </th>
-                  <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
                     Topic
                   </th>
-                  <th className="text-left text-sm font-medium text-muted-foreground px-3 py-2">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
                     Status
                   </th>
                   <th />
@@ -418,15 +424,18 @@ export default function ClassGroupDetailPage() {
               </thead>
               <tbody>
                 {sessions.map((session) => (
-                  <tr key={session.id} className="border-b border-border last:border-0">
-                    <td className="px-3 py-2 text-sm">
+                  <tr
+                    key={session.id}
+                    className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium">
                       {formatDateTime(session.startsAt, "de-DE")}
                     </td>
-                    <td className="px-3 py-2 text-sm text-muted-foreground">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
                       {session.topic || "—"}
                     </td>
-                    <td className="px-3 py-2 text-sm text-muted-foreground">{session.status}</td>
-                    <td className="px-3 py-2 text-right">
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{session.status}</td>
+                    <td className="px-4 py-3 text-right">
                       <CrudRowActions
                         primaryAction={{ label: "Open", href: `/sessions/${session.id}` }}
                       />
@@ -435,7 +444,7 @@ export default function ClassGroupDetailPage() {
                 ))}
                 {sessions.length === 0 ? (
                   <tr>
-                    <td className="px-3 py-4 text-sm text-muted-foreground" colSpan={4}>
+                    <td className="px-4 py-8 text-sm text-center text-muted-foreground" colSpan={4}>
                       No sessions scheduled yet.
                     </td>
                   </tr>
