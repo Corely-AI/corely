@@ -1,4 +1,5 @@
 import type { PrismaService } from "@corely/data";
+import type { Prisma } from "@prisma/client";
 import type { ClassGroupEntity } from "../../domain/entities/classes.entities";
 import type {
   ClassGroupListFilters,
@@ -6,6 +7,13 @@ import type {
 } from "../../application/ports/classes-repository.port";
 import { toClassGroup } from "./prisma.mappers";
 import { parseSort } from "./classes.repository.utils";
+
+const toJsonValue = (value?: Record<string, unknown> | null): Prisma.InputJsonValue | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  return value as Prisma.InputJsonValue;
+};
 
 export const createClassGroup = async (
   prisma: PrismaService,
@@ -21,7 +29,7 @@ export const createClassGroup = async (
       level: group.level,
       defaultPricePerSession: group.defaultPricePerSession,
       currency: group.currency,
-      schedulePattern: group.schedulePattern ?? undefined,
+      schedulePattern: toJsonValue(group.schedulePattern),
       status: group.status,
       createdAt: group.createdAt,
       updatedAt: group.updatedAt,
@@ -44,7 +52,7 @@ export const updateClassGroup = async (
       level: updates.level,
       defaultPricePerSession: updates.defaultPricePerSession,
       currency: updates.currency,
-      schedulePattern: updates.schedulePattern ?? undefined,
+      schedulePattern: toJsonValue(updates.schedulePattern),
       status: updates.status,
       updatedAt: updates.updatedAt,
     },
