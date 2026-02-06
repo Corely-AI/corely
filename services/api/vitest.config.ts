@@ -60,6 +60,7 @@ export default defineConfig({
       "@corely/config": path.resolve(__dirname, "../..", "packages/config/src"),
       "@corely/contracts": path.resolve(__dirname, "../..", "packages/contracts/src"),
       "@corely/core": path.resolve(__dirname, "../..", "packages/core/src"),
+      "@corely/domain": path.resolve(__dirname, "../..", "packages/domain/src"),
       "@corely/kernel": path.resolve(__dirname, "../..", "packages/kernel/src"),
       "@corely/public-urls": path.resolve(__dirname, "../..", "packages/public-urls/src"),
       "@corely/testkit": path.resolve(__dirname, "../..", "packages/testkit/src"),
