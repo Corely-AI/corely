@@ -9,7 +9,7 @@ import { GcsObjectStorageAdapter } from "@/modules/documents/infrastructure/stor
 import { PrismaTaxReportRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-report-repo.adapter";
 import { PrismaVatPeriodQueryAdapter } from "@/modules/tax/infrastructure/prisma/prisma-vat-period-query.adapter";
 import { PrismaTaxProfileRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-profile-repo.adapter";
-import { PrismaWorkspaceRepositoryAdapter } from "@/modules/workspaces/infrastructure/prisma/prisma-workspace-repository.adapter";
+import { PrismaWorkspaceRepositoryAdapter } from "@/modules/workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
 
 @Module({
   imports: [DataModule],

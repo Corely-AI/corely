@@ -12,15 +12,15 @@ export type InvoicePdfModel = {
   totals: { subtotal: string; vatRate?: string; vatAmount?: string; total: string };
   notes?: string;
   paymentSnapshot?: {
-    type: string;
-    label: string;
+    type?: string;
+    label?: string;
     accountHolderName?: string;
     iban?: string;
     bic?: string;
     bankName?: string;
     instructions?: string;
     payUrl?: string;
-    referenceText: string;
+    referenceText?: string;
   };
 };
 
