@@ -11,8 +11,8 @@ import {
 } from "@corely/kernel";
 import type { SetPrimaryPayerInput, SetPrimaryPayerOutput } from "@corely/contracts";
 import type { ExtEntityLinkPort } from "@corely/data";
-import type { AuditPort } from "../../../../shared/ports/audit.port";
-import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
+import type { AuditPort } from "../../../../../shared/ports/audit.port";
+import type { IdempotencyStoragePort } from "../../../../../shared/ports/idempotency-storage.port";
 import { toCustomerDto } from "../../mappers/customer-dto.mapper";
 import type { PartyRepoPort } from "../../ports/party-repository.port";
 import {
