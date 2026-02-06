@@ -946,6 +946,33 @@
         "newest": "Start (Newest)",
         "oldest": "Start (Oldest)"
       }
+    },
+    "billing": {
+      "title": "Class Billing",
+      "subtitle": "Preview tuition and create invoices for the selected month.",
+      "createInvoices": "Create invoices for month",
+      "billingMonth": "Billing Month",
+      "refresh": "Refresh",
+      "invoicesCreated": "Created {{count}} invoices",
+      "summaryCreated": "Created {{count}} invoices for {{month}}",
+      "loading": "Loading billing preview...",
+      "loadFailed": "Failed to load preview",
+      "strategy": "Billing Strategy:",
+      "basis": "Billing Basis:",
+      "prepaid": "Prepaid",
+      "arrears": "Arrears",
+      "scheduledBasis": "Scheduled Sessions",
+      "attendedBasis": "Attended Sessions",
+      "arrearsTip": "Only sessions marked as \"DONE\" with attendance are billable",
+      "payerId": "Payer ID:",
+      "sessionsTotal": "sessions total",
+      "classGroup": "Class Group",
+      "sessions": "Sessions",
+      "pricePerSession": "Price / Session",
+      "subtotal": "Subtotal",
+      "emptyTitle": "No billable sessions",
+      "emptyDescription": "There are no confirmed sessions for the selected month that haven't been billed yet.",
+      "attendedSessionsTip": "Tip: In \"Attended Sessions\" mode, you must mark sessions as DONE and record attendance before they can be billed."
     }
   }
 }

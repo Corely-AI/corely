@@ -924,6 +924,33 @@
         "newest": "Beginn (Neueste)",
         "oldest": "Beginn (Älteste)"
       }
+    },
+    "billing": {
+      "title": "Klassenabrechnung",
+      "subtitle": "Vorschau der Kursgebühren und Erstellung von Rechnungen für den ausgewählten Monat.",
+      "createInvoices": "Rechnungen für Monat erstellen",
+      "billingMonth": "Abrechnungsmonat",
+      "refresh": "Aktualisieren",
+      "invoicesCreated": "{{count}} Rechnungen erstellt",
+      "summaryCreated": "{{count}} Rechnungen für {{month}} erstellt",
+      "loading": "Abrechnungsvorschau wird geladen...",
+      "loadFailed": "Fehler beim Laden der Vorschau",
+      "strategy": "Abrechnungsstrategie:",
+      "basis": "Abrechnungsbasis:",
+      "prepaid": "Vorauszahlung",
+      "arrears": "Nachzahlung",
+      "scheduledBasis": "Geplante Termine",
+      "attendedBasis": "Teilgenommene Termine",
+      "arrearsTip": "Nur als \"ERLEDIGT\" markierte Termine mit Anwesenheit sind abrechenbar",
+      "payerId": "Zahlungs-ID:",
+      "sessionsTotal": "Termine insgesamt",
+      "classGroup": "Klassengruppe",
+      "sessions": "Termine",
+      "pricePerSession": "Preis / Termin",
+      "subtotal": "Zwischensumme",
+      "emptyTitle": "Keine abrechenbaren Termine",
+      "emptyDescription": "Es gibt keine bestätigten Termine für den ausgewählten Monat, die noch nicht abgerechnet wurden.",
+      "attendedSessionsTip": "Tipp: Im Modus \"Teilgenommene Termine\" müssen Sie Termine als ERLEDIGT markieren und die Anwesenheit erfassen, bevor sie abgerechnet werden können."
     }
   }
 }
