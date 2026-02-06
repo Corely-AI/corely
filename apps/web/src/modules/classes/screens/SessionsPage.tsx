@@ -178,89 +178,85 @@ export default function SessionsPage() {
           ) : undefined
         }
       >
-        <Card>
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">
-                {t("classes.sessions.loading")}
-              </div>
-            ) : sessions.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                {t("classes.sessions.empty")}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        {t("classes.sessions.starts")}
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        {t("classes.sessions.topic")}
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        {t("classes.sessions.status")}
-                      </th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sessions.map((session) => {
-                      const isBillingLocked =
-                        session.billingMonthStatus === "INVOICES_CREATED" ||
-                        session.billingMonthStatus === "LOCKED";
-                      const lockTooltip = isBillingLocked
-                        ? "This month is locked because billing was created."
-                        : undefined;
+        {isLoading ? (
+          <div className="p-8 text-center text-muted-foreground">
+            {t("classes.sessions.loading")}
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="p-8 text-center text-muted-foreground">{t("classes.sessions.empty")}</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    {t("classes.sessions.starts")}
+                  </th>
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    {t("classes.sessions.topic")}
+                  </th>
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    {t("classes.sessions.status")}
+                  </th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {sessions.map((session) => {
+                  const isBillingLocked =
+                    session.billingMonthStatus === "INVOICES_CREATED" ||
+                    session.billingMonthStatus === "LOCKED";
+                  const lockTooltip = isBillingLocked
+                    ? "This month is locked because billing was created."
+                    : undefined;
 
-                      return (
-                        <tr key={session.id} className="border-b border-border last:border-0">
-                          <td className="px-4 py-3 text-sm">
-                            {formatDateTime(session.startsAt, i18n.language)}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">
-                            {session.topic || "—"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">
-                            {t(`classes.sessions.statusOptions.${session.status.toLowerCase()}`)}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <CrudRowActions
-                              primaryAction={{
-                                label: t("classes.sessions.open"),
-                                href: `/sessions/${session.id}`,
-                              }}
-                              secondaryActions={[
-                                {
-                                  label: t("classes.sessions.markDone"),
-                                  icon: <CheckCircle2 className="h-4 w-4" />,
-                                  disabled: isBillingLocked,
-                                  tooltip: lockTooltip,
-                                  onClick: () =>
-                                    setConfirmStatus({ id: session.id, status: "DONE" }),
-                                },
-                                {
-                                  label: t("classes.sessions.cancel"),
-                                  destructive: true,
-                                  icon: <XCircle className="h-4 w-4" />,
-                                  disabled: isBillingLocked,
-                                  tooltip: lockTooltip,
-                                  onClick: () =>
-                                    setConfirmStatus({ id: session.id, status: "CANCELLED" }),
-                                },
-                              ]}
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  return (
+                    <tr
+                      key={session.id}
+                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-sm font-medium">
+                        {formatDateTime(session.startsAt, i18n.language)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {session.topic || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {t(`classes.sessions.statusOptions.${session.status.toLowerCase()}`)}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <CrudRowActions
+                          primaryAction={{
+                            label: t("classes.sessions.open"),
+                            href: `/sessions/${session.id}`,
+                          }}
+                          secondaryActions={[
+                            {
+                              label: t("classes.sessions.markDone"),
+                              icon: <CheckCircle2 className="h-4 w-4" />,
+                              disabled: isBillingLocked,
+                              tooltip: lockTooltip,
+                              onClick: () => setConfirmStatus({ id: session.id, status: "DONE" }),
+                            },
+                            {
+                              label: t("classes.sessions.cancel"),
+                              destructive: true,
+                              icon: <XCircle className="h-4 w-4" />,
+                              disabled: isBillingLocked,
+                              tooltip: lockTooltip,
+                              onClick: () =>
+                                setConfirmStatus({ id: session.id, status: "CANCELLED" }),
+                            },
+                          ]}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </CrudListPageLayout>
 
       <FilterPanel

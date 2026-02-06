@@ -118,82 +118,78 @@ export default function ClassGroupsListPage() {
           ) : undefined
         }
       >
-        <Card>
-          <CardContent className="p-0">
-            {isLoading ? (
-              <div className="p-8 text-center text-muted-foreground">Loading class groups...</div>
-            ) : items.length === 0 ? (
-              <EmptyState
-                title="No class groups yet"
-                description="Create your first group to start scheduling sessions."
-                action={primaryAction}
-              />
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Name
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Subject
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Level
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Price / session
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Status
-                      </th>
-                      <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                        Updated
-                      </th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((group) => (
-                      <tr
-                        key={group.id}
-                        className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-                      >
-                        <td className="px-4 py-3 text-sm font-medium">{group.name}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{group.subject}</td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">{group.level}</td>
-                        <td className="px-4 py-3 text-sm">
-                          {formatMoney(group.defaultPricePerSession, undefined, group.currency)}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <Badge variant={group.status === "ACTIVE" ? "success" : "secondary"}>
-                            {group.status === "ACTIVE" ? "Active" : "Archived"}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {formatDate(group.updatedAt, "en-US")}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <CrudRowActions
-                            primaryAction={{ label: "Open", href: `/class-groups/${group.id}` }}
-                            secondaryActions={[
-                              {
-                                label: "Edit",
-                                href: `/class-groups/${group.id}/edit`,
-                                icon: <Edit className="h-4 w-4" />,
-                              },
-                            ]}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {isLoading ? (
+          <div className="p-8 text-center text-muted-foreground">Loading class groups...</div>
+        ) : items.length === 0 ? (
+          <EmptyState
+            title="No class groups yet"
+            description="Create your first group to start scheduling sessions."
+            action={primaryAction}
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    Name
+                  </th>
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    Subject
+                  </th>
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    Level
+                  </th>
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    Price / session
+                  </th>
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    Status
+                  </th>
+                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                    Updated
+                  </th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((group) => (
+                  <tr
+                    key={group.id}
+                    className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium">{group.name}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{group.subject}</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">{group.level}</td>
+                    <td className="px-4 py-3 text-sm">
+                      {formatMoney(group.defaultPricePerSession, undefined, group.currency)}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <Badge variant={group.status === "ACTIVE" ? "success" : "secondary"}>
+                        {group.status === "ACTIVE" ? "Active" : "Archived"}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">
+                      {formatDate(group.updatedAt, "en-US")}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <CrudRowActions
+                        primaryAction={{ label: "Open", href: `/class-groups/${group.id}` }}
+                        secondaryActions={[
+                          {
+                            label: "Edit",
+                            href: `/class-groups/${group.id}/edit`,
+                            icon: <Edit className="h-4 w-4" />,
+                          },
+                        ]}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </CrudListPageLayout>
 
       <FilterPanel

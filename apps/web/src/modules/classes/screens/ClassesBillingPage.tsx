@@ -82,14 +82,18 @@ export default function ClassesBillingPage() {
         </Button>
       }
       toolbar={
-        <>
-          <div className="text-sm font-medium">Month</div>
-          <Input
-            type="month"
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
-            className="w-42"
-          />
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+              Billing Month
+            </span>
+            <Input
+              type="month"
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+              className="w-[180px]"
+            />
+          </div>
           <Button
             variant="ghost"
             onClick={() =>
@@ -99,87 +103,103 @@ export default function ClassesBillingPage() {
             <RefreshCcw className="h-4 w-4" />
             Refresh
           </Button>
-        </>
+        </div>
       }
     >
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          {resultSummary ? (
-            <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-sm">
-              {resultSummary}
-            </div>
-          ) : null}
+      <div className="p-6 space-y-6">
+        {resultSummary ? (
+          <div className="rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-sm text-success flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            {resultSummary}
+          </div>
+        ) : null}
 
-          {isLoading ? (
-            <div className="text-sm text-muted-foreground">Loading preview...</div>
-          ) : isError ? (
-            <div className="text-sm text-destructive">
-              {(error as Error)?.message || "Failed to load preview"}
-            </div>
-          ) : preview?.items?.length ? (
-            <div className="space-y-4">
-              {preview.items.map((item) => (
-                <div key={item.payerClientId} className="rounded-md border border-border p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-semibold">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-3">
+            <RefreshCcw className="h-8 w-8 animate-spin opacity-20" />
+            <p className="text-sm">Loading billing preview...</p>
+          </div>
+        ) : isError ? (
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {(error as Error)?.message || "Failed to load preview"}
+          </div>
+        ) : preview?.items?.length ? (
+          <div className="grid gap-6 lg:grid-cols-1">
+            {preview.items.map((item) => (
+              <div
+                key={item.payerClientId}
+                className="rounded-lg border border-border bg-card overflow-hidden shadow-sm"
+              >
+                <div className="bg-muted/30 px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <div className="text-sm font-bold text-foreground">
                       {nameByClient.get(item.payerClientId) ?? item.payerClientId}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {item.totalSessions} sessions •{" "}
-                      {formatMoney(item.totalAmountCents, undefined, item.currency)}
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      Payer ID: {item.payerClientId}
                     </div>
                   </div>
-                  <div className="mt-3 overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-border bg-muted/50">
-                          <th className="text-left text-xs font-medium text-muted-foreground px-2 py-2">
-                            Class group
-                          </th>
-                          <th className="text-left text-xs font-medium text-muted-foreground px-2 py-2">
-                            Sessions
-                          </th>
-                          <th className="text-left text-xs font-medium text-muted-foreground px-2 py-2">
-                            Price
-                          </th>
-                          <th className="text-left text-xs font-medium text-muted-foreground px-2 py-2">
-                            Amount
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {item.lines.map((line) => (
-                          <tr
-                            key={line.classGroupId}
-                            className="border-b border-border last:border-0"
-                          >
-                            <td className="px-2 py-2 text-sm">
-                              {nameByGroup.get(line.classGroupId) ?? line.classGroupId}
-                            </td>
-                            <td className="px-2 py-2 text-sm text-muted-foreground">
-                              {line.sessions}
-                            </td>
-                            <td className="px-2 py-2 text-sm text-muted-foreground">
-                              {formatMoney(line.priceCents, undefined, item.currency)}
-                            </td>
-                            <td className="px-2 py-2 text-sm font-medium">
-                              {formatMoney(line.amountCents, undefined, item.currency)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="flex flex-col items-end">
+                    <div className="text-sm font-bold text-foreground">
+                      {formatMoney(item.totalAmountCents, undefined, item.currency)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {item.totalSessions} sessions total
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-sm text-muted-foreground">
-              No billable attendance for this month.
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border bg-muted/10">
+                        <th className="text-left text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                          Class Group
+                        </th>
+                        <th className="text-center text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                          Sessions
+                        </th>
+                        <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                          Price / Session
+                        </th>
+                        <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                          Subtotal
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border/50">
+                      {item.lines.map((line) => (
+                        <tr key={line.classGroupId} className="hover:bg-muted/20 transition-colors">
+                          <td className="px-4 py-3 text-sm font-medium">
+                            {nameByGroup.get(line.classGroupId) ?? line.classGroupId}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-center text-muted-foreground italic">
+                            {line.sessions}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-muted-foreground">
+                            {formatMoney(line.priceCents, undefined, item.currency)}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right font-semibold">
+                            {formatMoney(line.amountCents, undefined, item.currency)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-border rounded-xl">
+            <FileText className="h-10 w-10 text-muted-foreground opacity-20 mb-3" />
+            <h3 className="text-lg font-medium text-foreground">No billable sessions</h3>
+            <p className="text-sm text-muted-foreground max-w-xs mt-1">
+              There are no confirmed sessions for the selected month that haven't been billed yet.
+            </p>
+          </div>
+        )}
+      </div>
     </CrudListPageLayout>
   );
 }

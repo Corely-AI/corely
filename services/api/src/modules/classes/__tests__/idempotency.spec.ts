@@ -8,6 +8,7 @@ import type { OutboxPort } from "../application/ports/outbox.port";
 import type { IdempotencyStoragePort } from "../application/ports/idempotency.port";
 import type { IdGeneratorPort } from "../application/ports/id-generator.port";
 import type { ClockPort } from "../application/ports/clock.port";
+import type { ClassesSettingsRepositoryPort } from "../application/ports/classes-settings-repository.port";
 
 const buildCtx = (): UseCaseContext => ({
   tenantId: "tenant-1",
@@ -43,6 +44,9 @@ class FakeRepo implements ClassesRepositoryPort {
   }
   async listClassGroups() {
     throw new Error("not implemented");
+  }
+  async listClassGroupsWithSchedulePattern() {
+    return [];
   }
   async createSession() {
     throw new Error("not implemented");
@@ -102,6 +106,9 @@ class FakeRepo implements ClassesRepositoryPort {
       },
     ];
   }
+  async listBillableScheduledForMonth() {
+    return [];
+  }
   async findBillingRunByMonth(tenantId: string, workspaceId: string, month: string) {
     return this.runs.get(`${tenantId}:${workspaceId}:${month}`) ?? null;
   }
@@ -147,6 +154,20 @@ class FakeRepo implements ClassesRepositoryPort {
   }
   async isMonthLocked() {
     return false;
+  }
+}
+
+class FakeSettingsRepo implements ClassesSettingsRepositoryPort {
+  async getSettings() {
+    return {
+      billingMonthStrategy: "ARREARS_PREVIOUS_MONTH",
+      billingBasis: "ATTENDED_SESSIONS",
+      bankAccount: null,
+      paymentReferenceTemplate: null,
+    };
+  }
+  async updateSettings() {
+    throw new Error("not implemented");
   }
 }
 
@@ -196,9 +217,11 @@ describe("classes billing idempotency", () => {
     const idempotency = new FakeIdempotency();
     const idGen = new FakeIdGen();
     const clock = new FakeClock();
+    const settingsRepo = new FakeSettingsRepo();
 
     const useCase = new CreateMonthlyBillingRunUseCase(
       repo,
+      settingsRepo,
       invoices,
       audit,
       outbox,

@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
 import type { Request } from "express";
 import { RunInvoiceRemindersInputSchema, RunInvoiceRemindersOutputSchema } from "@corely/contracts";
-import { ServiceTokenGuard } from "../../../shared/http/service-token.guard";
+import { ServiceTokenGuard } from "../../../../shared/http/service-token.guard";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
 import { SendInvoiceRemindersUseCase } from "../../application/use-cases/send-invoice-reminders/send-invoice-reminders.usecase";
 

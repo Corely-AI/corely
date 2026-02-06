@@ -6,6 +6,7 @@ import type { IdGeneratorPort } from "../application/ports/id-generator.port";
 import type { ClockPort } from "../application/ports/clock.port";
 import type { AuditPort } from "../application/ports/audit.port";
 import { ForbiddenError } from "@corely/domain";
+import type { ClassesSettingsRepositoryPort } from "../application/ports/classes-settings-repository.port";
 
 const ctx = {
   tenantId: "tenant-1",
@@ -29,6 +30,9 @@ class FakeRepo implements ClassesRepositoryPort {
   }
   async listClassGroups() {
     throw new Error("not implemented");
+  }
+  async listClassGroupsWithSchedulePattern() {
+    return [];
   }
   async createSession() {
     throw new Error("not implemented");
@@ -78,6 +82,9 @@ class FakeRepo implements ClassesRepositoryPort {
   async listBillableAttendanceForMonth() {
     throw new Error("not implemented");
   }
+  async listBillableScheduledForMonth() {
+    throw new Error("not implemented");
+  }
   async findBillingRunByMonth() {
     throw new Error("not implemented");
   }
@@ -122,6 +129,20 @@ class FakeIdGen implements IdGeneratorPort {
   }
 }
 
+class FakeSettingsRepo implements ClassesSettingsRepositoryPort {
+  async getSettings() {
+    return {
+      billingMonthStrategy: "ARREARS_PREVIOUS_MONTH",
+      billingBasis: "ATTENDED_SESSIONS",
+      bankAccount: null,
+      paymentReferenceTemplate: null,
+    };
+  }
+  async updateSettings() {
+    throw new Error("not implemented");
+  }
+}
+
 class FakeClock implements ClockPort {
   now(): Date {
     return new Date("2024-01-16T00:00:00.000Z");
@@ -138,6 +159,7 @@ describe("classes billing lock", () => {
   it("blocks attendance edits when month is locked", async () => {
     const useCase = new BulkUpsertAttendanceUseCase(
       new FakeRepo(),
+      new FakeSettingsRepo(),
       new FakeAudit(),
       new FakeIdempotency(),
       new FakeIdGen(),

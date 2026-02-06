@@ -6,6 +6,7 @@ import type {
   ClassMonthlyBillingRunEntity,
   ClassSessionEntity,
 } from "../domain/entities/classes.entities";
+import type { ClassesSettingsRepositoryPort } from "../application/ports/classes-settings-repository.port";
 
 const ctx = {
   tenantId: "tenant-1",
@@ -54,6 +55,9 @@ class FakeRepo implements ClassesRepositoryPort {
   async listClassGroups() {
     throw new Error("not implemented");
   }
+  async listClassGroupsWithSchedulePattern() {
+    return [];
+  }
   async createSession() {
     throw new Error("not implemented");
   }
@@ -96,6 +100,9 @@ class FakeRepo implements ClassesRepositoryPort {
   async listBillableAttendanceForMonth() {
     throw new Error("not implemented");
   }
+  async listBillableScheduledForMonth() {
+    throw new Error("not implemented");
+  }
   async findBillingRunByMonth() {
     return this.billingRun;
   }
@@ -131,6 +138,20 @@ class FakeAudit {
   }
 }
 
+class FakeSettingsRepo implements ClassesSettingsRepositoryPort {
+  async getSettings() {
+    return {
+      billingMonthStrategy: "ARREARS_PREVIOUS_MONTH",
+      billingBasis: "ATTENDED_SESSIONS",
+      bankAccount: null,
+      paymentReferenceTemplate: null,
+    };
+  }
+  async updateSettings() {
+    throw new Error("not implemented");
+  }
+}
+
 class FakeClock {
   now(): Date {
     return new Date("2024-01-21T00:00:00.000Z");
@@ -140,7 +161,12 @@ class FakeClock {
 describe("UpdateSessionUseCase month lock rules", () => {
   it("blocks status changes when month is locked", async () => {
     const repo = new FakeRepo();
-    const useCase = new UpdateSessionUseCase(repo, new FakeAudit() as any, new FakeClock() as any);
+    const useCase = new UpdateSessionUseCase(
+      repo,
+      new FakeSettingsRepo(),
+      new FakeAudit() as any,
+      new FakeClock() as any
+    );
 
     await expect(
       useCase.execute({ sessionId: "session-1", status: "DONE" }, ctx as any)
@@ -149,7 +175,12 @@ describe("UpdateSessionUseCase month lock rules", () => {
 
   it("allows non-billing edits when month is locked", async () => {
     const repo = new FakeRepo();
-    const useCase = new UpdateSessionUseCase(repo, new FakeAudit() as any, new FakeClock() as any);
+    const useCase = new UpdateSessionUseCase(
+      repo,
+      new FakeSettingsRepo(),
+      new FakeAudit() as any,
+      new FakeClock() as any
+    );
 
     const result = await useCase.execute(
       { sessionId: "session-1", notes: "Updated note" },

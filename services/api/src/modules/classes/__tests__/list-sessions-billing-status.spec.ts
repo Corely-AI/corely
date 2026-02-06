@@ -27,6 +27,9 @@ class FakeRepo implements ClassesRepositoryPort {
   async listClassGroups() {
     throw new Error("not implemented");
   }
+  async listClassGroupsWithSchedulePattern() {
+    return [];
+  }
   async createSession() {
     throw new Error("not implemented");
   }
@@ -91,6 +94,9 @@ class FakeRepo implements ClassesRepositoryPort {
     throw new Error("not implemented");
   }
   async listBillableAttendanceForMonth() {
+    throw new Error("not implemented");
+  }
+  async listBillableScheduledForMonth() {
     throw new Error("not implemented");
   }
   async findBillingRunByMonth() {
