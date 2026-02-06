@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { SendInvoiceRemindersUseCase } from "./send-invoice-reminders.usecase";
 import { InvoiceAggregate } from "../../../domain/invoice.aggregate";
-import { FixedClock, NoopLogger, ok } from "@corely/kernel";
+import { FixedClock, NoopLogger, ok, isErr } from "@corely/kernel";
 import type { InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import type { InvoiceReminderStatePort } from "../../ports/invoice-reminder-state.port";
 import type { InvoiceReminderSettingsPort } from "../../ports/invoice-reminder-settings.port";
@@ -136,7 +136,7 @@ describe("SendInvoiceRemindersUseCase", () => {
       { tenantId: "tenant-1", workspaceId: "tenant-1", userId: "system" }
     );
 
-    expect(result.isOk()).toBe(true);
+    expect(isErr(result)).toBe(false);
     expect(reminderState.sent).toHaveLength(1);
     expect(audit.entries).toHaveLength(1);
   });
@@ -158,7 +158,7 @@ describe("SendInvoiceRemindersUseCase", () => {
       { tenantId: "tenant-1", workspaceId: "tenant-1", userId: "system" }
     );
 
-    expect(result.isOk()).toBe(true);
+    expect(isErr(result)).toBe(false);
     expect(reminderState.stopped).toHaveLength(1);
   });
 });
