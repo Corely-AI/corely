@@ -163,7 +163,7 @@ export default function ClassesBillingPage() {
           )}
           <Button
             variant="accent"
-            onClick={() => createRun.mutate()}
+            onClick={() => createRun.mutate({})}
             disabled={createRun.isPending || !month}
           >
             <FileText className="h-4 w-4" />
