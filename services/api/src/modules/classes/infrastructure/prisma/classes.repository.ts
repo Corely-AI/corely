@@ -21,6 +21,7 @@ import {
   createClassGroup,
   findClassGroupById,
   listClassGroups,
+  listClassGroupsWithSchedulePattern,
   updateClassGroup,
 } from "./classes.repository.class-groups";
 import {
@@ -43,9 +44,11 @@ import {
   findBillingInvoiceLinkByIdempotency,
   findBillingRunById,
   findBillingRunByMonth,
+  listBillingRunsByMonths,
   isMonthLocked,
   listBillingInvoiceLinks,
   listBillableAttendanceForMonth,
+  listBillableScheduledForMonth,
   updateBillingRun,
 } from "./classes.repository.billing";
 
@@ -81,6 +84,13 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     pagination: ListPagination
   ): Promise<{ items: ClassGroupEntity[]; total: number }> {
     return listClassGroups(this.prisma, tenantId, workspaceId, filters, pagination);
+  }
+
+  async listClassGroupsWithSchedulePattern(
+    tenantId: string,
+    workspaceId: string
+  ): Promise<ClassGroupEntity[]> {
+    return listClassGroupsWithSchedulePattern(this.prisma, tenantId, workspaceId);
   }
 
   async createSession(session: ClassSessionEntity): Promise<ClassSessionEntity> {
@@ -185,12 +195,28 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     return listBillableAttendanceForMonth(this.prisma, tenantId, workspaceId, filters);
   }
 
+  async listBillableScheduledForMonth(
+    tenantId: string,
+    workspaceId: string,
+    filters: BillingPreviewFilters
+  ): Promise<AttendanceBillingRow[]> {
+    return listBillableScheduledForMonth(this.prisma, tenantId, workspaceId, filters);
+  }
+
   async findBillingRunByMonth(
     tenantId: string,
     workspaceId: string,
     month: string
   ): Promise<ClassMonthlyBillingRunEntity | null> {
     return findBillingRunByMonth(this.prisma, tenantId, workspaceId, month);
+  }
+
+  async listBillingRunsByMonths(
+    tenantId: string,
+    workspaceId: string,
+    months: string[]
+  ): Promise<ClassMonthlyBillingRunEntity[]> {
+    return listBillingRunsByMonths(this.prisma, tenantId, workspaceId, months);
   }
 
   async findBillingRunById(

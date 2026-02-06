@@ -60,6 +60,25 @@ export const envSchema = z.object({
     .regex(/^\d{2}:\d{2}$/)
     .default("02:00"),
   CLASSES_BILLING_RUN_TIMEZONE: z.string().default("Europe/Berlin"),
+  INVOICE_REMINDER_RUN_ENABLED: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) {
+          return true;
+        }
+        if (["false", "0", "no", "n"].includes(normalized)) {
+          return false;
+        }
+      }
+      return value;
+    }, z.boolean())
+    .default(true),
+  INVOICE_REMINDER_RUN_TIME: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .default("08:00"),
+  INVOICE_REMINDER_RUN_TIMEZONE: z.string().default("Europe/Berlin"),
 
   // ============================================================================
   // AI PROVIDERS

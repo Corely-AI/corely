@@ -2,6 +2,12 @@ export type ClassGroupStatus = "ACTIVE" | "ARCHIVED";
 export type ClassSessionStatus = "PLANNED" | "DONE" | "CANCELLED";
 export type ClassAttendanceStatus = "PRESENT" | "ABSENT" | "MAKEUP" | "EXCUSED";
 export type ClassBillingRunStatus = "DRAFT" | "INVOICES_CREATED" | "LOCKED" | "FAILED";
+export type ClassBillingMonthStrategy = "PREPAID_CURRENT_MONTH" | "ARREARS_PREVIOUS_MONTH";
+export type ClassBillingBasis = "SCHEDULED_SESSIONS" | "ATTENDED_SESSIONS";
+export type ClassesBillingSettings = {
+  billingMonthStrategy: ClassBillingMonthStrategy;
+  billingBasis: ClassBillingBasis;
+};
 
 export type ClassGroupEntity = {
   id: string;
@@ -65,6 +71,9 @@ export type ClassMonthlyBillingRunEntity = {
   tenantId: string;
   workspaceId: string;
   month: string;
+  billingMonthStrategy: ClassBillingMonthStrategy;
+  billingBasis: ClassBillingBasis;
+  billingSnapshot?: Record<string, unknown> | null;
   status: ClassBillingRunStatus;
   runId: string;
   generatedAt?: Date | null;

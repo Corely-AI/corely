@@ -5,6 +5,10 @@ import { buildPageInfo } from "../../../../shared/http/pagination";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
 import { assertCanClasses } from "../../policies/assert-can-classes";
+import {
+  attachBillingStatusToSessions,
+  type SessionWithBillingStatus,
+} from "../helpers/session-billing-status";
 
 export type ListSessionsQuery = ListClassSessionsInput & {
   page: number;
@@ -15,7 +19,10 @@ export type ListSessionsQuery = ListClassSessionsInput & {
 export class ListSessionsUseCase {
   constructor(private readonly repo: ClassesRepositoryPort) {}
 
-  async execute(input: ListSessionsQuery, ctx: UseCaseContext) {
+  async execute(
+    input: ListSessionsQuery,
+    ctx: UseCaseContext
+  ): Promise<{ items: SessionWithBillingStatus[]; pageInfo: ReturnType<typeof buildPageInfo> }> {
     assertCanClasses(ctx, "classes.read");
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
@@ -34,8 +41,15 @@ export class ListSessionsUseCase {
       { page: input.page, pageSize: input.pageSize }
     );
 
+    const itemsWithStatus = await attachBillingStatusToSessions(
+      this.repo,
+      tenantId,
+      workspaceId,
+      items
+    );
+
     return {
-      items,
+      items: itemsWithStatus,
       pageInfo: buildPageInfo(total, input.page, input.pageSize),
     };
   }

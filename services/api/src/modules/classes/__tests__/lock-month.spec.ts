@@ -81,6 +81,9 @@ class FakeRepo implements ClassesRepositoryPort {
   async findBillingRunByMonth() {
     throw new Error("not implemented");
   }
+  async listBillingRunsByMonths() {
+    return [];
+  }
   async findBillingRunById() {
     throw new Error("not implemented");
   }

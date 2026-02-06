@@ -1,4 +1,4 @@
-import { NotFoundError, ValidationFailedError } from "@corely/domain";
+import { ForbiddenError, NotFoundError, ValidationFailedError } from "@corely/domain";
 import {
   RequireTenant,
   type UseCaseContext,
@@ -13,9 +13,17 @@ import type { IdempotencyStoragePort } from "../ports/idempotency.port";
 import type { IdGeneratorPort } from "../ports/id-generator.port";
 import type { ClockPort } from "../ports/clock.port";
 import type { AuditPort } from "../ports/audit.port";
+import type { ClassesSettingsRepositoryPort } from "../ports/classes-settings-repository.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
 import { assertCanClasses } from "../../policies/assert-can-classes";
 import type { ClassSessionEntity } from "../../domain/entities/classes.entities";
+import {
+  attachBillingStatusToSessions,
+  type SessionWithBillingStatus,
+} from "../helpers/session-billing-status";
+import { DEFAULT_PREPAID_SETTINGS, normalizeBillingSettings } from "../helpers/billing-settings";
+import { getMonthKeyForInstant } from "../helpers/billing-period";
+import { monthLockedDetail } from "../helpers/billing-locks";
 
 @RequireTenant()
 export class CreateRecurringSessionsUseCase {
@@ -23,6 +31,7 @@ export class CreateRecurringSessionsUseCase {
 
   constructor(
     private readonly repo: ClassesRepositoryPort,
+    private readonly settingsRepo: ClassesSettingsRepositoryPort,
     private readonly audit: AuditPort,
     private readonly idempotency: IdempotencyStoragePort,
     private readonly idGenerator: IdGeneratorPort,
@@ -32,7 +41,7 @@ export class CreateRecurringSessionsUseCase {
   async execute(
     input: CreateRecurringSessionsInput,
     ctx: UseCaseContext
-  ): Promise<ClassSessionEntity[]> {
+  ): Promise<SessionWithBillingStatus[]> {
     assertCanClasses(ctx, "classes.write");
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
@@ -50,7 +59,8 @@ export class CreateRecurringSessionsUseCase {
     if (input.idempotencyKey) {
       const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
       if (cached?.body) {
-        return this.fromJson(cached.body);
+        const cachedSessions = this.fromJson(cached.body);
+        return attachBillingStatusToSessions(this.repo, tenantId, workspaceId, cachedSessions);
       }
     }
 
@@ -83,6 +93,25 @@ export class CreateRecurringSessionsUseCase {
       current = addDays(current, 1, tz as any);
     }
 
+    const settings = normalizeBillingSettings(
+      (await this.settingsRepo.getSettings(tenantId, workspaceId)) ?? DEFAULT_PREPAID_SETTINGS
+    );
+
+    if (settings.billingBasis === "SCHEDULED_SESSIONS") {
+      const monthsToCheck = new Set(
+        sessions.map((session) => getMonthKeyForInstant(session.startsAt))
+      );
+      for (const month of monthsToCheck) {
+        const locked = await this.repo.isMonthLocked(tenantId, workspaceId, month);
+        if (locked) {
+          throw new ForbiddenError(
+            monthLockedDetail(settings.billingMonthStrategy),
+            "Classes:MonthLocked"
+          );
+        }
+      }
+    }
+
     const created: ClassSessionEntity[] = [];
     for (const session of sessions) {
       const saved = await this.repo.upsertSession(session);
@@ -104,7 +133,7 @@ export class CreateRecurringSessionsUseCase {
       });
     }
 
-    return created;
+    return attachBillingStatusToSessions(this.repo, tenantId, workspaceId, created);
   }
 
   private getWeekday(localDate: string, tz: string): number {

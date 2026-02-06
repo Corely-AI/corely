@@ -1,4 +1,5 @@
 import type {
+  ClassBillingMonthStatus,
   ClassAttendance,
   ClassEnrollment,
   ClassGroup,
@@ -30,7 +31,9 @@ export const toClassGroupDto = (entity: ClassGroupEntity): ClassGroup => ({
   updatedAt: entity.updatedAt.toISOString(),
 });
 
-export const toClassSessionDto = (entity: ClassSessionEntity): ClassSession => ({
+export const toClassSessionDto = (
+  entity: ClassSessionEntity & { billingMonthStatus: ClassBillingMonthStatus }
+): ClassSession => ({
   id: entity.id,
   tenantId: entity.tenantId,
   workspaceId: entity.workspaceId,
@@ -40,6 +43,7 @@ export const toClassSessionDto = (entity: ClassSessionEntity): ClassSession => (
   topic: entity.topic ?? null,
   notes: entity.notes ?? null,
   status: entity.status,
+  billingMonthStatus: entity.billingMonthStatus,
   createdAt: entity.createdAt.toISOString(),
   updatedAt: entity.updatedAt.toISOString(),
 });
@@ -77,6 +81,9 @@ export const toBillingRunDto = (entity: ClassMonthlyBillingRunEntity): ClassMont
   tenantId: entity.tenantId,
   workspaceId: entity.workspaceId,
   month: entity.month,
+  billingMonthStrategy: entity.billingMonthStrategy,
+  billingBasis: entity.billingBasis,
+  billingSnapshot: entity.billingSnapshot ?? null,
   status: entity.status,
   runId: entity.runId,
   generatedAt: entity.generatedAt ? entity.generatedAt.toISOString() : null,
@@ -87,10 +94,14 @@ export const toBillingRunDto = (entity: ClassMonthlyBillingRunEntity): ClassMont
 
 export const toBillingPreviewOutput = (input: {
   month: string;
+  billingMonthStrategy: string;
+  billingBasis: string;
   items: BillingPreviewItem[];
   generatedAt: Date;
 }): BillingPreviewOutput => ({
   month: input.month,
+  billingMonthStrategy: input.billingMonthStrategy as any,
+  billingBasis: input.billingBasis as any,
   generatedAt: input.generatedAt.toISOString(),
   items: input.items.map((item) => ({
     payerClientId: item.payerClientId,

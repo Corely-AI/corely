@@ -68,6 +68,10 @@ export interface ClassesRepositoryPort {
     filters: ClassGroupListFilters,
     pagination: ListPagination
   ): Promise<{ items: ClassGroupEntity[]; total: number }>;
+  listClassGroupsWithSchedulePattern(
+    tenantId: string,
+    workspaceId: string
+  ): Promise<ClassGroupEntity[]>;
 
   createSession(session: ClassSessionEntity): Promise<ClassSessionEntity>;
   upsertSession(session: ClassSessionEntity): Promise<ClassSessionEntity>;
@@ -131,12 +135,22 @@ export interface ClassesRepositoryPort {
     workspaceId: string,
     filters: BillingPreviewFilters
   ): Promise<AttendanceBillingRow[]>;
+  listBillableScheduledForMonth(
+    tenantId: string,
+    workspaceId: string,
+    filters: BillingPreviewFilters
+  ): Promise<AttendanceBillingRow[]>;
 
   findBillingRunByMonth(
     tenantId: string,
     workspaceId: string,
     month: string
   ): Promise<ClassMonthlyBillingRunEntity | null>;
+  listBillingRunsByMonths(
+    tenantId: string,
+    workspaceId: string,
+    months: string[]
+  ): Promise<ClassMonthlyBillingRunEntity[]>;
   findBillingRunById(
     tenantId: string,
     workspaceId: string,

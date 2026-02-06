@@ -6,11 +6,14 @@ import type { IdempotencyStoragePort } from "../ports/idempotency.port";
 import type { IdGeneratorPort } from "../ports/id-generator.port";
 import type { ClockPort } from "../ports/clock.port";
 import type { AuditPort } from "../ports/audit.port";
+import type { ClassesSettingsRepositoryPort } from "../ports/classes-settings-repository.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
 import { assertCanClasses } from "../../policies/assert-can-classes";
 import { resolveBillableForStatus } from "../../domain/rules/attendance.rules";
 import { getMonthKeyForInstant } from "../helpers/billing-period";
 import type { ClassAttendanceEntity } from "../../domain/entities/classes.entities";
+import { DEFAULT_PREPAID_SETTINGS, normalizeBillingSettings } from "../helpers/billing-settings";
+import { monthLockedDetail } from "../helpers/billing-locks";
 
 @RequireTenant()
 export class BulkUpsertAttendanceUseCase {
@@ -18,6 +21,7 @@ export class BulkUpsertAttendanceUseCase {
 
   constructor(
     private readonly repo: ClassesRepositoryPort,
+    private readonly settingsRepo: ClassesSettingsRepositoryPort,
     private readonly audit: AuditPort,
     private readonly idempotency: IdempotencyStoragePort,
     private readonly idGenerator: IdGeneratorPort,
@@ -42,10 +46,36 @@ export class BulkUpsertAttendanceUseCase {
       throw new NotFoundError("Session not found", { code: "Classes:SessionNotFound" });
     }
 
-    const monthKey = getMonthKeyForInstant(session.startsAt);
-    const locked = await this.repo.isMonthLocked(tenantId, workspaceId, monthKey);
-    if (locked) {
-      throw new ForbiddenError("Month is locked for attendance changes", "Classes:MonthLocked");
+    const settings = normalizeBillingSettings(
+      (await this.settingsRepo.getSettings(tenantId, workspaceId)) ?? DEFAULT_PREPAID_SETTINGS
+    );
+    if (settings.billingBasis === "ATTENDED_SESSIONS") {
+      const monthKey = getMonthKeyForInstant(session.startsAt);
+      const locked = await this.repo.isMonthLocked(tenantId, workspaceId, monthKey);
+      if (locked) {
+        const existing = await this.repo.listAttendanceBySession(
+          tenantId,
+          workspaceId,
+          input.sessionId
+        );
+        const existingByEnrollment = new Map(existing.map((item) => [item.enrollmentId, item]));
+
+        const hasBillingImpact = input.items.some((item) => {
+          const current = existingByEnrollment.get(item.enrollmentId);
+          const nextBillable = resolveBillableForStatus(item.status, item.billable);
+          if (!current) {
+            return true;
+          }
+          return current.status !== item.status || current.billable !== nextBillable;
+        });
+
+        if (hasBillingImpact) {
+          throw new ForbiddenError(
+            monthLockedDetail(settings.billingMonthStrategy),
+            "Classes:MonthLocked"
+          );
+        }
+      }
     }
 
     if (input.idempotencyKey) {

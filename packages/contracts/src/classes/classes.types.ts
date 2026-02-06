@@ -18,6 +18,24 @@ export const ClassBillingRunStatusSchema = z.enum([
 ]);
 export type ClassBillingRunStatus = z.infer<typeof ClassBillingRunStatusSchema>;
 
+export const ClassBillingMonthStrategySchema = z.enum([
+  "PREPAID_CURRENT_MONTH",
+  "ARREARS_PREVIOUS_MONTH",
+]);
+export type ClassBillingMonthStrategy = z.infer<typeof ClassBillingMonthStrategySchema>;
+
+export const ClassBillingBasisSchema = z.enum(["SCHEDULED_SESSIONS", "ATTENDED_SESSIONS"]);
+export type ClassBillingBasis = z.infer<typeof ClassBillingBasisSchema>;
+
+export const ClassBillingMonthStatusSchema = z.enum([
+  "OPEN",
+  "DRAFT",
+  "INVOICES_CREATED",
+  "LOCKED",
+  "FAILED",
+]);
+export type ClassBillingMonthStatus = z.infer<typeof ClassBillingMonthStatusSchema>;
+
 export const ClassGroupSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
@@ -44,6 +62,7 @@ export const ClassSessionSchema = z.object({
   topic: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   status: ClassSessionStatusSchema,
+  billingMonthStatus: ClassBillingMonthStatusSchema,
   createdAt: utcInstantSchema,
   updatedAt: utcInstantSchema,
 });
@@ -84,6 +103,9 @@ export const ClassMonthlyBillingRunSchema = z.object({
   tenantId: z.string(),
   workspaceId: z.string(),
   month: z.string().regex(/^\d{4}-\d{2}$/),
+  billingMonthStrategy: ClassBillingMonthStrategySchema,
+  billingBasis: ClassBillingBasisSchema,
+  billingSnapshot: z.unknown().optional().nullable(),
   status: ClassBillingRunStatusSchema,
   runId: z.string(),
   generatedAt: utcInstantSchema.optional().nullable(),

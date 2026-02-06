@@ -28,6 +28,9 @@ import {
   UpdateEnrollmentInputSchema,
   BillingPreviewOutputSchema,
   CreateRecurringSessionsOutputSchema,
+  GetClassesBillingSettingsOutputSchema,
+  UpdateClassesBillingSettingsInputSchema,
+  UpdateClassesBillingSettingsOutputSchema,
 } from "@corely/contracts";
 import { parseListQuery } from "../../../shared/http/pagination";
 import { buildUseCaseContext, resolveIdempotencyKey } from "../../../shared/http/usecase-mappers";
@@ -49,6 +52,8 @@ import { GetSessionAttendanceUseCase } from "../application/use-cases/get-sessio
 import { GetMonthlyBillingPreviewUseCase } from "../application/use-cases/get-monthly-billing-preview.usecase";
 import { CreateMonthlyBillingRunUseCase } from "../application/use-cases/create-monthly-billing-run.usecase";
 import { LockMonthUseCase } from "../application/use-cases/lock-month.usecase";
+import { GetClassesBillingSettingsUseCase } from "../application/use-cases/get-classes-billing-settings.usecase";
+import { UpdateClassesBillingSettingsUseCase } from "../application/use-cases/update-classes-billing-settings.usecase";
 import {
   toAttendanceDto,
   toBillingPreviewOutput,
@@ -78,7 +83,9 @@ export class ClassesController {
     private readonly getSessionAttendanceUseCase: GetSessionAttendanceUseCase,
     private readonly getMonthlyBillingPreviewUseCase: GetMonthlyBillingPreviewUseCase,
     private readonly createMonthlyBillingRunUseCase: CreateMonthlyBillingRunUseCase,
-    private readonly lockMonthUseCase: LockMonthUseCase
+    private readonly lockMonthUseCase: LockMonthUseCase,
+    private readonly getClassesBillingSettingsUseCase: GetClassesBillingSettingsUseCase,
+    private readonly updateClassesBillingSettingsUseCase: UpdateClassesBillingSettingsUseCase
   ) {}
 
   // Class Groups
@@ -270,6 +277,24 @@ export class ClassesController {
       ctx
     );
     return { items: items.map(toAttendanceDto) };
+  }
+
+  // Settings
+  @Get("settings")
+  @RequirePermission("classes.billing")
+  async getSettings(@Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    const result = await this.getClassesBillingSettingsUseCase.execute(ctx);
+    return GetClassesBillingSettingsOutputSchema.parse(result);
+  }
+
+  @Patch("settings")
+  @RequirePermission("classes.billing")
+  async updateSettings(@Body() body: unknown, @Req() req: Request) {
+    const input = UpdateClassesBillingSettingsInputSchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    const result = await this.updateClassesBillingSettingsUseCase.execute(input, ctx);
+    return UpdateClassesBillingSettingsOutputSchema.parse(result);
   }
 
   // Billing

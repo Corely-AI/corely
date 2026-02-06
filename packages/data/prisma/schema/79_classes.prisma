@@ -27,6 +27,18 @@ enum ClassBillingRunStatus {
   @@schema("crm")
 }
 
+enum ClassBillingMonthStrategy {
+  PREPAID_CURRENT_MONTH
+  ARREARS_PREVIOUS_MONTH
+  @@schema("crm")
+}
+
+enum ClassBillingBasis {
+  SCHEDULED_SESSIONS
+  ATTENDED_SESSIONS
+  @@schema("crm")
+}
+
 model ClassGroup {
   id                     String           @id @default(cuid())
   tenantId               String
@@ -117,16 +129,19 @@ model ClassAttendance {
 }
 
 model ClassMonthlyBillingRun {
-  id              String               @id @default(cuid())
-  tenantId        String
-  workspaceId     String
-  month           String               @db.VarChar(7)
-  status          ClassBillingRunStatus @default(DRAFT)
-  runId           String
-  generatedAt     DateTime?            @db.Timestamptz(6)
-  createdByUserId String
-  createdAt       DateTime             @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime             @updatedAt @db.Timestamptz(6)
+  id                   String                     @id @default(cuid())
+  tenantId             String
+  workspaceId          String
+  month                String                     @db.VarChar(7)
+  billingMonthStrategy ClassBillingMonthStrategy  @default(ARREARS_PREVIOUS_MONTH)
+  billingBasis         ClassBillingBasis          @default(ATTENDED_SESSIONS)
+  billingSnapshot      Json?                      @db.JsonB
+  status               ClassBillingRunStatus      @default(DRAFT)
+  runId                String
+  generatedAt          DateTime?                  @db.Timestamptz(6)
+  createdByUserId      String
+  createdAt            DateTime                   @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime                   @updatedAt @db.Timestamptz(6)
 
   invoices        ClassBillingInvoiceLink[]
 

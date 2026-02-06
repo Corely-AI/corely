@@ -12,6 +12,7 @@ import { ClassesController } from "./http/classes.controller";
 import { ClassesInternalController } from "./http/classes-internal.controller";
 import { PrismaClassesRepository } from "./infrastructure/prisma/classes.repository";
 import { InvoicesWriteAdapter } from "./infrastructure/adapters/invoices-write.adapter";
+import { ExtKvClassesSettingsRepository } from "./infrastructure/adapters/ext-kv-classes-settings.repository";
 import { InvoicesModule } from "../invoices/invoices.module";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
@@ -19,6 +20,10 @@ import {
   CLASSES_REPOSITORY_PORT,
   type ClassesRepositoryPort,
 } from "./application/ports/classes-repository.port";
+import {
+  CLASSES_SETTINGS_REPOSITORY_PORT,
+  type ClassesSettingsRepositoryPort,
+} from "./application/ports/classes-settings-repository.port";
 import {
   INVOICES_WRITE_PORT,
   type InvoicesWritePort,
@@ -40,6 +45,8 @@ import { GetSessionAttendanceUseCase } from "./application/use-cases/get-session
 import { GetMonthlyBillingPreviewUseCase } from "./application/use-cases/get-monthly-billing-preview.usecase";
 import { CreateMonthlyBillingRunUseCase } from "./application/use-cases/create-monthly-billing-run.usecase";
 import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
+import { GetClassesBillingSettingsUseCase } from "./application/use-cases/get-classes-billing-settings.usecase";
+import { UpdateClassesBillingSettingsUseCase } from "./application/use-cases/update-classes-billing-settings.usecase";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule, InvoicesModule],
@@ -47,6 +54,8 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
   providers: [
     PrismaClassesRepository,
     { provide: CLASSES_REPOSITORY_PORT, useExisting: PrismaClassesRepository },
+    ExtKvClassesSettingsRepository,
+    { provide: CLASSES_SETTINGS_REPOSITORY_PORT, useExisting: ExtKvClassesSettingsRepository },
     InvoicesWriteAdapter,
     { provide: INVOICES_WRITE_PORT, useExisting: InvoicesWriteAdapter },
     {
@@ -86,13 +95,15 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
       provide: CreateSessionUseCase,
       useFactory: (
         repo: ClassesRepositoryPort,
+        settingsRepo: ClassesSettingsRepositoryPort,
         audit,
         idempotency: IdempotencyStoragePort,
         idGenerator: IdGeneratorPort,
         clock: ClockPort
-      ) => new CreateSessionUseCase(repo, audit, idempotency, idGenerator, clock),
+      ) => new CreateSessionUseCase(repo, settingsRepo, audit, idempotency, idGenerator, clock),
       inject: [
         CLASSES_REPOSITORY_PORT,
+        CLASSES_SETTINGS_REPOSITORY_PORT,
         AUDIT_PORT,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
@@ -103,13 +114,23 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
       provide: CreateRecurringSessionsUseCase,
       useFactory: (
         repo: ClassesRepositoryPort,
+        settingsRepo: ClassesSettingsRepositoryPort,
         audit,
         idempotency: IdempotencyStoragePort,
         idGenerator: IdGeneratorPort,
         clock: ClockPort
-      ) => new CreateRecurringSessionsUseCase(repo, audit, idempotency, idGenerator, clock),
+      ) =>
+        new CreateRecurringSessionsUseCase(
+          repo,
+          settingsRepo,
+          audit,
+          idempotency,
+          idGenerator,
+          clock
+        ),
       inject: [
         CLASSES_REPOSITORY_PORT,
+        CLASSES_SETTINGS_REPOSITORY_PORT,
         AUDIT_PORT,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
@@ -118,9 +139,18 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
     },
     {
       provide: UpdateSessionUseCase,
-      useFactory: (repo: ClassesRepositoryPort, audit, clock: ClockPort) =>
-        new UpdateSessionUseCase(repo, audit, clock),
-      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, CLOCK_PORT_TOKEN],
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        settingsRepo: ClassesSettingsRepositoryPort,
+        audit,
+        clock: ClockPort
+      ) => new UpdateSessionUseCase(repo, settingsRepo, audit, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        CLASSES_SETTINGS_REPOSITORY_PORT,
+        AUDIT_PORT,
+        CLOCK_PORT_TOKEN,
+      ],
     },
     {
       provide: ListSessionsUseCase,
@@ -164,13 +194,16 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
       provide: BulkUpsertAttendanceUseCase,
       useFactory: (
         repo: ClassesRepositoryPort,
+        settingsRepo: ClassesSettingsRepositoryPort,
         audit,
         idempotency: IdempotencyStoragePort,
         idGenerator: IdGeneratorPort,
         clock: ClockPort
-      ) => new BulkUpsertAttendanceUseCase(repo, audit, idempotency, idGenerator, clock),
+      ) =>
+        new BulkUpsertAttendanceUseCase(repo, settingsRepo, audit, idempotency, idGenerator, clock),
       inject: [
         CLASSES_REPOSITORY_PORT,
+        CLASSES_SETTINGS_REPOSITORY_PORT,
         AUDIT_PORT,
         IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
@@ -179,19 +212,24 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
     },
     {
       provide: GetSessionAttendanceUseCase,
-      useFactory: (repo: ClassesRepositoryPort) => new GetSessionAttendanceUseCase(repo),
-      inject: [CLASSES_REPOSITORY_PORT],
+      useFactory: (repo: ClassesRepositoryPort, settingsRepo: ClassesSettingsRepositoryPort) =>
+        new GetSessionAttendanceUseCase(repo, settingsRepo),
+      inject: [CLASSES_REPOSITORY_PORT, CLASSES_SETTINGS_REPOSITORY_PORT],
     },
     {
       provide: GetMonthlyBillingPreviewUseCase,
-      useFactory: (repo: ClassesRepositoryPort, clock: ClockPort) =>
-        new GetMonthlyBillingPreviewUseCase(repo, clock),
-      inject: [CLASSES_REPOSITORY_PORT, CLOCK_PORT_TOKEN],
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        settingsRepo: ClassesSettingsRepositoryPort,
+        clock: ClockPort
+      ) => new GetMonthlyBillingPreviewUseCase(repo, settingsRepo, clock),
+      inject: [CLASSES_REPOSITORY_PORT, CLASSES_SETTINGS_REPOSITORY_PORT, CLOCK_PORT_TOKEN],
     },
     {
       provide: CreateMonthlyBillingRunUseCase,
       useFactory: (
         repo: ClassesRepositoryPort,
+        settingsRepo: ClassesSettingsRepositoryPort,
         invoices: InvoicesWritePort,
         audit,
         outbox,
@@ -201,6 +239,7 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
       ) =>
         new CreateMonthlyBillingRunUseCase(
           repo,
+          settingsRepo,
           invoices,
           audit,
           outbox,
@@ -210,6 +249,7 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
         ),
       inject: [
         CLASSES_REPOSITORY_PORT,
+        CLASSES_SETTINGS_REPOSITORY_PORT,
         INVOICES_WRITE_PORT,
         AUDIT_PORT,
         OUTBOX_PORT,
@@ -217,6 +257,18 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
       ],
+    },
+    {
+      provide: GetClassesBillingSettingsUseCase,
+      useFactory: (settingsRepo: ClassesSettingsRepositoryPort) =>
+        new GetClassesBillingSettingsUseCase(settingsRepo),
+      inject: [CLASSES_SETTINGS_REPOSITORY_PORT],
+    },
+    {
+      provide: UpdateClassesBillingSettingsUseCase,
+      useFactory: (settingsRepo: ClassesSettingsRepositoryPort) =>
+        new UpdateClassesBillingSettingsUseCase(settingsRepo),
+      inject: [CLASSES_SETTINGS_REPOSITORY_PORT],
     },
     {
       provide: LockMonthUseCase,

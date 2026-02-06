@@ -1,15 +1,18 @@
 import { RequireTenant, type UseCaseContext } from "@corely/kernel";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
 import type { ClockPort } from "../ports/clock.port";
+import type { ClassesSettingsRepositoryPort } from "../ports/classes-settings-repository.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
 import { assertCanClasses } from "../../policies/assert-can-classes";
 import { aggregateBillingPreview } from "../../domain/rules/billing.rules";
 import { getMonthRangeUtc } from "../helpers/billing-period";
+import { normalizeBillingSettings, DEFAULT_PREPAID_SETTINGS } from "../helpers/billing-settings";
 
 @RequireTenant()
 export class GetMonthlyBillingPreviewUseCase {
   constructor(
     private readonly repo: ClassesRepositoryPort,
+    private readonly settingsRepo: ClassesSettingsRepositoryPort,
     private readonly clock: ClockPort
   ) {}
 
@@ -22,17 +25,31 @@ export class GetMonthlyBillingPreviewUseCase {
 
     const { startUtc, endUtc, month } = getMonthRangeUtc(input.month);
 
-    const rows = await this.repo.listBillableAttendanceForMonth(tenantId, workspaceId, {
-      monthStart: startUtc,
-      monthEnd: endUtc,
-      classGroupId: input.classGroupId,
-      payerClientId: input.payerClientId,
-    });
+    const settings = normalizeBillingSettings(
+      (await this.settingsRepo.getSettings(tenantId, workspaceId)) ?? DEFAULT_PREPAID_SETTINGS
+    );
+
+    const rows =
+      settings.billingBasis === "SCHEDULED_SESSIONS"
+        ? await this.repo.listBillableScheduledForMonth(tenantId, workspaceId, {
+            monthStart: startUtc,
+            monthEnd: endUtc,
+            classGroupId: input.classGroupId,
+            payerClientId: input.payerClientId,
+          })
+        : await this.repo.listBillableAttendanceForMonth(tenantId, workspaceId, {
+            monthStart: startUtc,
+            monthEnd: endUtc,
+            classGroupId: input.classGroupId,
+            payerClientId: input.payerClientId,
+          });
 
     const items = aggregateBillingPreview(rows);
 
     return {
       month,
+      billingMonthStrategy: settings.billingMonthStrategy,
+      billingBasis: settings.billingBasis,
       items,
       generatedAt: this.clock.now(),
     };

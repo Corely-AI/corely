@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tansta
 import { CheckCircle2, XCircle, CalendarDays } from "lucide-react";
 import { Button, Card, CardContent } from "@corely/ui";
 import { toast } from "sonner";
+import { ApiError, normalizeError } from "@corely/api-client";
 import { classesApi } from "@/lib/classes-api";
 import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
 import {
@@ -113,7 +114,24 @@ export default function SessionsPage() {
       setConfirmStatus(null);
       await queryClient.invalidateQueries({ queryKey: classSessionKeys.list(undefined) });
     },
-    onError: () => toast.error(t("classes.sessions.updateFailed")),
+    onError: (error) => {
+      const apiError = error instanceof ApiError ? error : normalizeError(error);
+      if (apiError.code === "Classes:MonthLocked") {
+        toast.error("Month is locked", {
+          description:
+            apiError.detail ||
+            "This month has already been billed. Reopen the month or create an adjustment.",
+        });
+        console.warn("Classes:MonthLocked", {
+          code: apiError.code,
+          status: apiError.status,
+        });
+        return;
+      }
+
+      toast.error(apiError.detail || t("classes.sessions.updateFailed"));
+      console.warn("Sessions update failed", { code: apiError.code, status: apiError.status });
+    },
   });
 
   return (
@@ -188,41 +206,55 @@ export default function SessionsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sessions.map((session) => (
-                      <tr key={session.id} className="border-b border-border last:border-0">
-                        <td className="px-4 py-3 text-sm">
-                          {formatDateTime(session.startsAt, i18n.language)}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {session.topic || "—"}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-muted-foreground">
-                          {t(`classes.sessions.statusOptions.${session.status.toLowerCase()}`)}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <CrudRowActions
-                            primaryAction={{
-                              label: t("classes.sessions.open"),
-                              href: `/sessions/${session.id}`,
-                            }}
-                            secondaryActions={[
-                              {
-                                label: t("classes.sessions.markDone"),
-                                icon: <CheckCircle2 className="h-4 w-4" />,
-                                onClick: () => setConfirmStatus({ id: session.id, status: "DONE" }),
-                              },
-                              {
-                                label: t("classes.sessions.cancel"),
-                                destructive: true,
-                                icon: <XCircle className="h-4 w-4" />,
-                                onClick: () =>
-                                  setConfirmStatus({ id: session.id, status: "CANCELLED" }),
-                              },
-                            ]}
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                    {sessions.map((session) => {
+                      const isBillingLocked =
+                        session.billingMonthStatus === "INVOICES_CREATED" ||
+                        session.billingMonthStatus === "LOCKED";
+                      const lockTooltip = isBillingLocked
+                        ? "This month is locked because billing was created."
+                        : undefined;
+
+                      return (
+                        <tr key={session.id} className="border-b border-border last:border-0">
+                          <td className="px-4 py-3 text-sm">
+                            {formatDateTime(session.startsAt, i18n.language)}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground">
+                            {session.topic || "—"}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-muted-foreground">
+                            {t(`classes.sessions.statusOptions.${session.status.toLowerCase()}`)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <CrudRowActions
+                              primaryAction={{
+                                label: t("classes.sessions.open"),
+                                href: `/sessions/${session.id}`,
+                              }}
+                              secondaryActions={[
+                                {
+                                  label: t("classes.sessions.markDone"),
+                                  icon: <CheckCircle2 className="h-4 w-4" />,
+                                  disabled: isBillingLocked,
+                                  tooltip: lockTooltip,
+                                  onClick: () =>
+                                    setConfirmStatus({ id: session.id, status: "DONE" }),
+                                },
+                                {
+                                  label: t("classes.sessions.cancel"),
+                                  destructive: true,
+                                  icon: <XCircle className="h-4 w-4" />,
+                                  disabled: isBillingLocked,
+                                  tooltip: lockTooltip,
+                                  onClick: () =>
+                                    setConfirmStatus({ id: session.id, status: "CANCELLED" }),
+                                },
+                              ]}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

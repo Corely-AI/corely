@@ -3,11 +3,22 @@ import { RequireTenant, type UseCaseContext } from "@corely/kernel";
 import type { UpdateClassSessionInput } from "@corely/contracts";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
 import type { ClockPort } from "../ports/clock.port";
+import type { ClassesSettingsRepositoryPort } from "../ports/classes-settings-repository.port";
 import type { AuditPort } from "../ports/audit.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
 import { assertCanClasses } from "../../policies/assert-can-classes";
 import { getMonthKeyForInstant } from "../helpers/billing-period";
 import type { ClassSessionEntity } from "../../domain/entities/classes.entities";
+import {
+  attachBillingStatusToSession,
+  type SessionWithBillingStatus,
+} from "../helpers/session-billing-status";
+import { DEFAULT_PREPAID_SETTINGS, normalizeBillingSettings } from "../helpers/billing-settings";
+import {
+  isDoneStatus,
+  isScheduledStatusIncluded,
+  monthLockedDetail,
+} from "../helpers/billing-locks";
 
 type UpdateSessionParams = UpdateClassSessionInput & { sessionId: string };
 
@@ -15,11 +26,15 @@ type UpdateSessionParams = UpdateClassSessionInput & { sessionId: string };
 export class UpdateSessionUseCase {
   constructor(
     private readonly repo: ClassesRepositoryPort,
+    private readonly settingsRepo: ClassesSettingsRepositoryPort,
     private readonly audit: AuditPort,
     private readonly clock: ClockPort
   ) {}
 
-  async execute(input: UpdateSessionParams, ctx: UseCaseContext): Promise<ClassSessionEntity> {
+  async execute(
+    input: UpdateSessionParams,
+    ctx: UseCaseContext
+  ): Promise<SessionWithBillingStatus> {
     assertCanClasses(ctx, "classes.write");
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
@@ -28,15 +43,40 @@ export class UpdateSessionUseCase {
       throw new NotFoundError("Session not found", { code: "Classes:SessionNotFound" });
     }
 
-    const effectiveStart = input.startsAt ? new Date(input.startsAt) : existing.startsAt;
-    const monthKey = getMonthKeyForInstant(effectiveStart);
-    const locked = await this.repo.isMonthLocked(tenantId, workspaceId, monthKey);
-    if (locked) {
-      throw new ForbiddenError("Month is locked for billing adjustments", "Classes:MonthLocked");
+    const settings = normalizeBillingSettings(
+      (await this.settingsRepo.getSettings(tenantId, workspaceId)) ?? DEFAULT_PREPAID_SETTINGS
+    );
+
+    const nextStartsAt = input.startsAt ? new Date(input.startsAt) : existing.startsAt;
+    const existingMonth = getMonthKeyForInstant(existing.startsAt);
+    const nextMonth = getMonthKeyForInstant(nextStartsAt);
+    const statusChanged = typeof input.status !== "undefined" && input.status !== existing.status;
+    const monthChanged = Boolean(input.startsAt) && nextMonth !== existingMonth;
+
+    const nextStatus = input.status ?? existing.status;
+    const statusImpacting =
+      settings.billingBasis === "SCHEDULED_SESSIONS"
+        ? statusChanged &&
+          isScheduledStatusIncluded(existing.status) !== isScheduledStatusIncluded(nextStatus)
+        : statusChanged && isDoneStatus(existing.status) !== isDoneStatus(nextStatus);
+
+    const billingImpactingChange = statusImpacting || monthChanged;
+
+    if (billingImpactingChange) {
+      const monthsToCheck = new Set([existingMonth, nextMonth]);
+      for (const month of monthsToCheck) {
+        const locked = await this.repo.isMonthLocked(tenantId, workspaceId, month);
+        if (locked) {
+          throw new ForbiddenError(
+            monthLockedDetail(settings.billingMonthStrategy),
+            "Classes:MonthLocked"
+          );
+        }
+      }
     }
 
     const updated = await this.repo.updateSession(tenantId, workspaceId, input.sessionId, {
-      startsAt: input.startsAt ? new Date(input.startsAt) : undefined,
+      startsAt: input.startsAt ? nextStartsAt : undefined,
       endsAt: input.endsAt ? new Date(input.endsAt) : input.endsAt === null ? null : undefined,
       topic: input.topic ?? undefined,
       notes: input.notes ?? undefined,
@@ -53,6 +93,6 @@ export class UpdateSessionUseCase {
       metadata: { status: updated.status },
     });
 
-    return updated;
+    return attachBillingStatusToSession(this.repo, tenantId, workspaceId, updated);
   }
 }

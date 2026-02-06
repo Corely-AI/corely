@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
 import {
   Button,
   Card,
@@ -34,6 +34,7 @@ const defaultBillable = (status: AttendanceDraft["status"]) =>
 
 export default function SessionDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const sessionId = id ?? "";
   const queryClient = useQueryClient();
 
@@ -138,20 +139,33 @@ export default function SessionDetailPage() {
   };
 
   if (isSessionLoading || isAttendanceLoading) {
-    return <div className="text-muted-foreground">Loading session...</div>;
+    return (
+      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+        <div className="text-muted-foreground">Loading session...</div>
+      </div>
+    );
   }
 
   if (!session) {
-    return <div className="text-muted-foreground">Session not found.</div>;
+    return (
+      <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+        <div className="text-muted-foreground">Session not found.</div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="text-lg font-semibold">Session detail</div>
-          <div className="text-sm text-muted-foreground">
-            {formatDateTime(session.startsAt, "de-DE")} • {session.status}
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/sessions")}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-h1 text-foreground">Session</h1>
+            <div className="text-sm text-muted-foreground">
+              {formatDateTime(session.startsAt, "de-DE")} • {session.status}
+            </div>
           </div>
         </div>
         <Button

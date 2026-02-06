@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
-import { ClassMonthlyBillingRunSchema } from "./classes.types";
+import {
+  ClassBillingBasisSchema,
+  ClassBillingMonthStrategySchema,
+  ClassMonthlyBillingRunSchema,
+} from "./classes.types";
 
 export const BillingMonthSchema = z.string().regex(/^\d{4}-\d{2}$/);
 
@@ -23,6 +27,8 @@ export type BillingPreviewItem = z.infer<typeof BillingPreviewItemSchema>;
 
 export const BillingPreviewOutputSchema = z.object({
   month: BillingMonthSchema,
+  billingMonthStrategy: ClassBillingMonthStrategySchema,
+  billingBasis: ClassBillingBasisSchema,
   items: z.array(BillingPreviewItemSchema),
   generatedAt: utcInstantSchema,
 });

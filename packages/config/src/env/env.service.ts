@@ -105,6 +105,18 @@ export class EnvService {
     return this.config.CLASSES_BILLING_RUN_TIMEZONE;
   }
 
+  get INVOICE_REMINDER_RUN_ENABLED(): boolean {
+    return this.config.INVOICE_REMINDER_RUN_ENABLED;
+  }
+
+  get INVOICE_REMINDER_RUN_TIME(): string {
+    return this.config.INVOICE_REMINDER_RUN_TIME;
+  }
+
+  get INVOICE_REMINDER_RUN_TIMEZONE(): string {
+    return this.config.INVOICE_REMINDER_RUN_TIMEZONE;
+  }
+
   // ============================================================================
   // AI PROVIDERS
   // ============================================================================

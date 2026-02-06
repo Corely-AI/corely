@@ -8,15 +8,23 @@ import type { OutboxPort } from "../ports/outbox.port";
 import type { IdempotencyStoragePort } from "../ports/idempotency.port";
 import type { IdGeneratorPort } from "../ports/id-generator.port";
 import type { ClockPort } from "../ports/clock.port";
+import type { ClassesSettingsRepositoryPort } from "../ports/classes-settings-repository.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
 import { assertCanClasses } from "../../policies/assert-can-classes";
 import { aggregateBillingPreview } from "../../domain/rules/billing.rules";
-import { getMonthRangeUtc, normalizeBillingMonth } from "../helpers/billing-period";
+import {
+  BILLING_TIMEZONE,
+  getMonthRangeUtc,
+  normalizeBillingMonth,
+} from "../helpers/billing-period";
 import type { ClassMonthlyBillingRunEntity } from "../../domain/entities/classes.entities";
+import type { ClassesBillingSettings } from "../../domain/entities/classes.entities";
 import {
   CLASSES_INVOICE_READY_TO_SEND_EVENT,
   MONTHLY_INVOICES_GENERATED_EVENT,
 } from "../../domain/events/monthly-invoices-generated.event";
+import { DEFAULT_PREPAID_SETTINGS, normalizeBillingSettings } from "../helpers/billing-settings";
+import { generateScheduledSessionStartsForMonth } from "../helpers/schedule-generator";
 
 @RequireTenant()
 export class CreateMonthlyBillingRunUseCase {
@@ -24,6 +32,7 @@ export class CreateMonthlyBillingRunUseCase {
 
   constructor(
     private readonly repo: ClassesRepositoryPort,
+    private readonly settingsRepo: ClassesSettingsRepositoryPort,
     private readonly invoices: InvoicesWritePort,
     private readonly audit: AuditPort,
     private readonly outbox: OutboxPort,
@@ -50,6 +59,13 @@ export class CreateMonthlyBillingRunUseCase {
     }
 
     const existing = await this.repo.findBillingRunByMonth(tenantId, workspaceId, month);
+    const settings = await this.resolveSettings(tenantId, workspaceId);
+    const effectiveSettings = existing
+      ? {
+          billingMonthStrategy: existing.billingMonthStrategy ?? settings.billingMonthStrategy,
+          billingBasis: existing.billingBasis ?? settings.billingBasis,
+        }
+      : settings;
     let run: ClassMonthlyBillingRunEntity;
     if (existing) {
       run = existing;
@@ -60,6 +76,9 @@ export class CreateMonthlyBillingRunUseCase {
         tenantId,
         workspaceId,
         month,
+        billingMonthStrategy: effectiveSettings.billingMonthStrategy,
+        billingBasis: effectiveSettings.billingBasis,
+        billingSnapshot: null,
         status: "DRAFT",
         runId: this.idGenerator.newId(),
         generatedAt: null,
@@ -73,11 +92,21 @@ export class CreateMonthlyBillingRunUseCase {
       throw new ConflictError("Billing month is locked", { code: "Classes:BillingLocked" });
     }
 
+    if (effectiveSettings.billingBasis === "SCHEDULED_SESSIONS" && run.status === "DRAFT") {
+      await this.ensureScheduledSessionsForMonth(tenantId, workspaceId, month);
+    }
+
     const { startUtc, endUtc } = getMonthRangeUtc(month);
-    const rows = await this.repo.listBillableAttendanceForMonth(tenantId, workspaceId, {
-      monthStart: startUtc,
-      monthEnd: endUtc,
-    });
+    const rows =
+      effectiveSettings.billingBasis === "SCHEDULED_SESSIONS"
+        ? await this.repo.listBillableScheduledForMonth(tenantId, workspaceId, {
+            monthStart: startUtc,
+            monthEnd: endUtc,
+          })
+        : await this.repo.listBillableAttendanceForMonth(tenantId, workspaceId, {
+            monthStart: startUtc,
+            monthEnd: endUtc,
+          });
     const previewItems = aggregateBillingPreview(rows).filter((item) => item.totalAmountCents > 0);
 
     const invoiceIds: string[] = [];
@@ -99,7 +128,9 @@ export class CreateMonthlyBillingRunUseCase {
             customerPartyId: item.payerClientId,
             currency: item.currency,
             lineItems: item.lines.map((line) => ({
-              description: `${line.classGroupName} (${line.sessions} sessions)`,
+              description: `${line.classGroupName} (${line.sessions} ${
+                effectiveSettings.billingBasis === "SCHEDULED_SESSIONS" ? "scheduled" : "attended"
+              } sessions)`,
               qty: line.sessions,
               unitPriceCents: line.priceCents,
             })),
@@ -145,6 +176,14 @@ export class CreateMonthlyBillingRunUseCase {
       }
 
       run = await this.repo.updateBillingRun(tenantId, workspaceId, run.id, {
+        billingMonthStrategy: effectiveSettings.billingMonthStrategy,
+        billingBasis: effectiveSettings.billingBasis,
+        billingSnapshot: {
+          billMonth: month,
+          strategy: effectiveSettings.billingMonthStrategy,
+          basis: effectiveSettings.billingBasis,
+          items: previewItems,
+        },
         status: "INVOICES_CREATED",
         generatedAt: this.clock.now(),
         updatedAt: this.clock.now(),
@@ -157,7 +196,12 @@ export class CreateMonthlyBillingRunUseCase {
       action: "classes.billing.run.created",
       entityType: "ClassMonthlyBillingRun",
       entityId: run.id,
-      metadata: { month, invoiceCount: invoiceIds.length },
+      metadata: {
+        month,
+        invoiceCount: invoiceIds.length,
+        billingMonthStrategy: effectiveSettings.billingMonthStrategy,
+        billingBasis: effectiveSettings.billingBasis,
+      },
     });
 
     if (input.createInvoices) {
@@ -178,7 +222,11 @@ export class CreateMonthlyBillingRunUseCase {
         action: "classes.billing.invoices.created",
         entityType: "ClassMonthlyBillingRun",
         entityId: run.id,
-        metadata: { invoiceCount: invoiceIds.length },
+        metadata: {
+          invoiceCount: invoiceIds.length,
+          billingMonthStrategy: effectiveSettings.billingMonthStrategy,
+          billingBasis: effectiveSettings.billingBasis,
+        },
       });
     }
 
@@ -194,6 +242,52 @@ export class CreateMonthlyBillingRunUseCase {
     }
 
     return output;
+  }
+
+  private async resolveSettings(
+    tenantId: string,
+    workspaceId: string
+  ): Promise<ClassesBillingSettings> {
+    return normalizeBillingSettings(
+      (await this.settingsRepo.getSettings(tenantId, workspaceId)) ?? DEFAULT_PREPAID_SETTINGS
+    );
+  }
+
+  private async ensureScheduledSessionsForMonth(
+    tenantId: string,
+    workspaceId: string,
+    month: string
+  ) {
+    const groups = await this.repo.listClassGroupsWithSchedulePattern(tenantId, workspaceId);
+    if (groups.length === 0) {
+      return;
+    }
+
+    const now = this.clock.now();
+
+    for (const group of groups) {
+      const startsAtList = generateScheduledSessionStartsForMonth({
+        schedulePattern: group.schedulePattern ?? null,
+        month,
+        timezone: BILLING_TIMEZONE,
+      });
+
+      for (const startsAt of startsAtList) {
+        await this.repo.upsertSession({
+          id: this.idGenerator.newId(),
+          tenantId,
+          workspaceId,
+          classGroupId: group.id,
+          startsAt,
+          endsAt: null,
+          topic: null,
+          notes: null,
+          status: "PLANNED",
+          createdAt: now,
+          updatedAt: now,
+        });
+      }
+    }
   }
 
   private toJson(run: ClassMonthlyBillingRunEntity) {

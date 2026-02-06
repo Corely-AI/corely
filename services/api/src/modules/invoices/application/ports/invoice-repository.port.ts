@@ -23,6 +23,14 @@ export type ListInvoicesResult = {
   total: number;
 };
 
+export type InvoiceReminderCandidate = {
+  id: string;
+  number: string | null;
+  billToEmail: string | null;
+  sentAt: Date | null;
+  status: InvoiceStatus;
+};
+
 export interface InvoiceRepoPort {
   findById(workspaceId: string, invoiceId: string): Promise<InvoiceAggregate | null>;
   list(
@@ -30,6 +38,10 @@ export interface InvoiceRepoPort {
     filters: ListInvoicesFilters,
     pagination: ListInvoicesPagination
   ): Promise<ListInvoicesResult>;
+  listReminderCandidates(
+    workspaceId: string,
+    sentBefore: Date
+  ): Promise<InvoiceReminderCandidate[]>;
   save(workspaceId: string, invoice: InvoiceAggregate): Promise<void>;
   create(workspaceId: string, invoice: InvoiceAggregate): Promise<void>;
   isInvoiceNumberTaken(workspaceId: string, number: string): Promise<boolean>;

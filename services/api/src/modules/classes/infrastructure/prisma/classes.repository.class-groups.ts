@@ -114,3 +114,19 @@ export const listClassGroups = async (
 
   return { items: items.map(toClassGroup), total };
 };
+
+export const listClassGroupsWithSchedulePattern = async (
+  prisma: PrismaService,
+  tenantId: string,
+  workspaceId: string
+): Promise<ClassGroupEntity[]> => {
+  const rows = await prisma.classGroup.findMany({
+    where: {
+      tenantId,
+      workspaceId,
+      status: "ACTIVE",
+      schedulePattern: { not: null },
+    },
+  });
+  return rows.map(toClassGroup);
+};

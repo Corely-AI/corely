@@ -105,6 +105,11 @@ class FakeRepo implements ClassesRepositoryPort {
   async findBillingRunByMonth(tenantId: string, workspaceId: string, month: string) {
     return this.runs.get(`${tenantId}:${workspaceId}:${month}`) ?? null;
   }
+  async listBillingRunsByMonths(tenantId: string, workspaceId: string, months: string[]) {
+    return months
+      .map((month) => this.runs.get(`${tenantId}:${workspaceId}:${month}`))
+      .filter(Boolean);
+  }
   async findBillingRunById() {
     throw new Error("not implemented");
   }

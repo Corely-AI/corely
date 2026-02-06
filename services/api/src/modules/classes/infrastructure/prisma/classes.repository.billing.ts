@@ -6,6 +6,8 @@ import type {
 import type { BillingPreviewFilters } from "../../application/ports/classes-repository.port";
 import type { AttendanceBillingRow } from "../../domain/rules/billing.rules";
 import { toBillingInvoiceLink, toBillingRun } from "./prisma.mappers";
+import { formatInTimeZone } from "date-fns-tz";
+import { BILLING_TIMEZONE } from "../../application/helpers/billing-period";
 
 export const listBillableAttendanceForMonth = async (
   prisma: PrismaService,
@@ -58,6 +60,103 @@ export const listBillableAttendanceForMonth = async (
   }));
 };
 
+export const listBillableScheduledForMonth = async (
+  prisma: PrismaService,
+  tenantId: string,
+  workspaceId: string,
+  filters: BillingPreviewFilters
+): Promise<AttendanceBillingRow[]> => {
+  const sessions = await prisma.classSession.findMany({
+    where: {
+      tenantId,
+      workspaceId,
+      status: { in: ["PLANNED", "DONE"] },
+      startsAt: {
+        gte: filters.monthStart,
+        lte: filters.monthEnd,
+      },
+      ...(filters.classGroupId ? { classGroupId: filters.classGroupId } : {}),
+    },
+    select: {
+      startsAt: true,
+      classGroupId: true,
+      classGroup: {
+        select: {
+          id: true,
+          name: true,
+          defaultPricePerSession: true,
+          currency: true,
+        },
+      },
+    },
+  });
+
+  if (sessions.length === 0) {
+    return [];
+  }
+
+  const classGroupIds = Array.from(new Set(sessions.map((session) => session.classGroupId)));
+
+  const enrollments = await prisma.classEnrollment.findMany({
+    where: {
+      tenantId,
+      workspaceId,
+      classGroupId: { in: classGroupIds },
+      isActive: true,
+      ...(filters.payerClientId ? { payerClientId: filters.payerClientId } : {}),
+    },
+    select: {
+      classGroupId: true,
+      payerClientId: true,
+      priceOverridePerSession: true,
+      startDate: true,
+      endDate: true,
+    },
+  });
+
+  const enrollmentsByGroup = new Map<string, typeof enrollments>();
+  for (const enrollment of enrollments) {
+    const bucket = enrollmentsByGroup.get(enrollment.classGroupId);
+    if (bucket) {
+      bucket.push(enrollment);
+    } else {
+      enrollmentsByGroup.set(enrollment.classGroupId, [enrollment]);
+    }
+  }
+
+  const rows: AttendanceBillingRow[] = [];
+  for (const session of sessions) {
+    const sessionDate = formatInTimeZone(session.startsAt, BILLING_TIMEZONE, "yyyy-MM-dd");
+    const groupEnrollments = enrollmentsByGroup.get(session.classGroupId) ?? [];
+
+    for (const enrollment of groupEnrollments) {
+      const startDate = enrollment.startDate
+        ? formatInTimeZone(enrollment.startDate, BILLING_TIMEZONE, "yyyy-MM-dd")
+        : null;
+      const endDate = enrollment.endDate
+        ? formatInTimeZone(enrollment.endDate, BILLING_TIMEZONE, "yyyy-MM-dd")
+        : null;
+
+      if (startDate && startDate > sessionDate) {
+        continue;
+      }
+      if (endDate && endDate < sessionDate) {
+        continue;
+      }
+
+      rows.push({
+        payerClientId: enrollment.payerClientId,
+        classGroupId: session.classGroup.id,
+        classGroupName: session.classGroup.name,
+        priceCents: enrollment.priceOverridePerSession ?? session.classGroup.defaultPricePerSession,
+        currency: session.classGroup.currency,
+      });
+    }
+  }
+
+  return rows;
+};
+
 export const findBillingRunByMonth = async (
   prisma: PrismaService,
   tenantId: string,
@@ -68,6 +167,21 @@ export const findBillingRunByMonth = async (
     where: { tenantId, workspaceId, month },
   });
   return row ? toBillingRun(row) : null;
+};
+
+export const listBillingRunsByMonths = async (
+  prisma: PrismaService,
+  tenantId: string,
+  workspaceId: string,
+  months: string[]
+): Promise<ClassMonthlyBillingRunEntity[]> => {
+  if (months.length === 0) {
+    return [];
+  }
+  const rows = await prisma.classMonthlyBillingRun.findMany({
+    where: { tenantId, workspaceId, month: { in: months } },
+  });
+  return rows.map(toBillingRun);
 };
 
 export const findBillingRunById = async (
@@ -92,6 +206,9 @@ export const createBillingRun = async (
       tenantId: run.tenantId,
       workspaceId: run.workspaceId,
       month: run.month,
+      billingMonthStrategy: run.billingMonthStrategy,
+      billingBasis: run.billingBasis,
+      billingSnapshot: run.billingSnapshot ?? undefined,
       status: run.status,
       runId: run.runId,
       generatedAt: run.generatedAt ?? undefined,
@@ -112,6 +229,9 @@ export const updateBillingRun = async (
   const row = await prisma.classMonthlyBillingRun.update({
     where: { id: billingRunId, tenantId },
     data: {
+      billingMonthStrategy: updates.billingMonthStrategy ?? undefined,
+      billingBasis: updates.billingBasis ?? undefined,
+      billingSnapshot: updates.billingSnapshot ?? undefined,
       status: updates.status,
       generatedAt: updates.generatedAt ?? undefined,
       updatedAt: updates.updatedAt,

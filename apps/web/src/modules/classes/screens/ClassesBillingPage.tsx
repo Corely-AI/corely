@@ -5,6 +5,7 @@ import { Button, Card, CardContent, Input } from "@corely/ui";
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
+import { CrudListPageLayout } from "@/shared/crud";
 import { classBillingKeys } from "../queries";
 import { formatMoney } from "@/shared/lib/formatters";
 
@@ -67,14 +68,10 @@ export default function ClassesBillingPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <div className="text-xl font-semibold">Class Billing</div>
-          <div className="text-sm text-muted-foreground">
-            Preview tuition and create invoices for the selected month.
-          </div>
-        </div>
+    <CrudListPageLayout
+      title="Class Billing"
+      subtitle="Preview tuition and create invoices for the selected month."
+      primaryAction={
         <Button
           variant="accent"
           onClick={() => createRun.mutate()}
@@ -83,29 +80,30 @@ export default function ClassesBillingPage() {
           <FileText className="h-4 w-4" />
           Create invoices for month
         </Button>
-      </div>
-
+      }
+      toolbar={
+        <>
+          <div className="text-sm font-medium">Month</div>
+          <Input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="w-42"
+          />
+          <Button
+            variant="ghost"
+            onClick={() =>
+              queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) })
+            }
+          >
+            <RefreshCcw className="h-4 w-4" />
+            Refresh
+          </Button>
+        </>
+      }
+    >
       <Card>
         <CardContent className="p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="text-sm font-medium">Month</div>
-            <Input
-              type="month"
-              value={month}
-              onChange={(e) => setMonth(e.target.value)}
-              className="w-40"
-            />
-            <Button
-              variant="ghost"
-              onClick={() =>
-                queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) })
-              }
-            >
-              <RefreshCcw className="h-4 w-4" />
-              Refresh
-            </Button>
-          </div>
-
           {resultSummary ? (
             <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-sm">
               {resultSummary}
@@ -182,6 +180,6 @@ export default function ClassesBillingPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </CrudListPageLayout>
   );
 }

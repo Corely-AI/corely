@@ -5,6 +5,7 @@ import type { OutboxPort } from "@corely/kernel";
 import { chromium } from "playwright";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { InvoicesHttpController } from "./adapters/http/invoices.controller";
+import { InvoicesInternalController } from "./adapters/http/invoices-internal.controller";
 import { ResendWebhookController } from "./adapters/webhooks/resend-webhook.controller";
 import { PrismaInvoiceEmailDeliveryRepoAdapter } from "./infrastructure/prisma/prisma-invoice-email-delivery-repo.adapter";
 import { InvoicesApplication } from "./application/invoices.application";
@@ -38,6 +39,7 @@ import { GetInvoiceByIdUseCase } from "./application/use-cases/get-invoice-by-id
 import { ListInvoicesUseCase } from "./application/use-cases/list-invoices/list-invoices.usecase";
 import { RecordPaymentUseCase } from "./application/use-cases/record-payment/record-payment.usecase";
 import { SendInvoiceUseCase } from "./application/use-cases/send-invoice/send-invoice.usecase";
+import { SendInvoiceRemindersUseCase } from "./application/use-cases/send-invoice-reminders/send-invoice-reminders.usecase";
 import { UpdateInvoiceUseCase } from "./application/use-cases/update-invoice/update-invoice.usecase";
 import { DownloadInvoicePdfUseCase } from "./application/use-cases/download-invoice-pdf/download-invoice-pdf.usecase";
 import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoice-repository.adapter";
@@ -49,7 +51,7 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule, TaxModule],
-  controllers: [InvoicesHttpController, ResendWebhookController],
+  controllers: [InvoicesHttpController, InvoicesInternalController, ResendWebhookController],
   providers: [
     PrismaInvoiceRepoAdapter,
     PrismaTenantTimeZoneAdapter,
@@ -234,6 +236,17 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
         OUTBOX_PORT,
         ID_GENERATOR_TOKEN,
       ],
+    },
+    {
+      provide: SendInvoiceRemindersUseCase,
+      useFactory: (repo: PrismaInvoiceRepoAdapter, sendInvoice: SendInvoiceUseCase, clock: any) =>
+        new SendInvoiceRemindersUseCase({
+          logger: new NestLoggerAdapter(),
+          invoiceRepo: repo,
+          sendInvoice,
+          clock,
+        }),
+      inject: [PrismaInvoiceRepoAdapter, SendInvoiceUseCase, CLOCK_PORT_TOKEN],
     },
     {
       provide: RecordPaymentUseCase,

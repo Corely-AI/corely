@@ -10,3 +10,4 @@ export * from "./get-invoice.schema";
 export * from "./list-invoices.schema";
 export * from "./download-invoice-pdf.schema";
 export * from "./invoice-capabilities.schema";
+export * from "./reminders.schema";
