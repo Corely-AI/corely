@@ -1,4 +1,5 @@
 import type { PrismaService } from "@corely/data";
+import type { Prisma } from "@prisma/client";
 import type {
   ClassBillingInvoiceLinkEntity,
   ClassMonthlyBillingRunEntity,
@@ -8,6 +9,13 @@ import type { AttendanceBillingRow } from "../../domain/rules/billing.rules";
 import { toBillingInvoiceLink, toBillingRun } from "./prisma.mappers";
 import { formatInTimeZone } from "date-fns-tz";
 import { BILLING_TIMEZONE } from "../../application/helpers/billing-period";
+
+const toJsonValue = (value?: Record<string, unknown> | null): Prisma.InputJsonValue | undefined => {
+  if (!value) {
+    return undefined;
+  }
+  return value as Prisma.InputJsonValue;
+};
 
 export const listBillableAttendanceForMonth = async (
   prisma: PrismaService,
@@ -208,7 +216,7 @@ export const createBillingRun = async (
       month: run.month,
       billingMonthStrategy: run.billingMonthStrategy,
       billingBasis: run.billingBasis,
-      billingSnapshot: run.billingSnapshot ?? undefined,
+      billingSnapshot: toJsonValue(run.billingSnapshot),
       status: run.status,
       runId: run.runId,
       generatedAt: run.generatedAt ?? undefined,
@@ -231,7 +239,7 @@ export const updateBillingRun = async (
     data: {
       billingMonthStrategy: updates.billingMonthStrategy ?? undefined,
       billingBasis: updates.billingBasis ?? undefined,
-      billingSnapshot: updates.billingSnapshot ?? undefined,
+      billingSnapshot: toJsonValue(updates.billingSnapshot),
       status: updates.status,
       generatedAt: updates.generatedAt ?? undefined,
       updatedAt: updates.updatedAt,

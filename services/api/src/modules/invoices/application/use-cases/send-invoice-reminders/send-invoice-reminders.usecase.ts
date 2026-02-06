@@ -27,8 +27,8 @@ export class SendInvoiceRemindersUseCase extends BaseUseCase<
   RunInvoiceRemindersInput,
   RunInvoiceRemindersOutput
 > {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly reminderDeps: Deps) {
+    super({ logger: reminderDeps.logger });
   }
 
   protected async handle(
@@ -40,9 +40,12 @@ export class SendInvoiceRemindersUseCase extends BaseUseCase<
     }
 
     const daysOverdue = input.daysOverdue ?? 7;
-    const cutoff = new Date(this.deps.clock.now().getTime() - daysOverdue * 86_400_000);
+    const cutoff = new Date(this.reminderDeps.clock.now().getTime() - daysOverdue * 86_400_000);
 
-    const candidates = await this.deps.invoiceRepo.listReminderCandidates(ctx.workspaceId, cutoff);
+    const candidates = await this.reminderDeps.invoiceRepo.listReminderCandidates(
+      ctx.workspaceId,
+      cutoff
+    );
 
     let sent = 0;
     let skipped = 0;
@@ -57,7 +60,7 @@ export class SendInvoiceRemindersUseCase extends BaseUseCase<
         ? `Friendly reminder: Invoice ${invoice.number} is still outstanding.`
         : "Friendly reminder: Your invoice is still outstanding.";
 
-      const result = await this.deps.sendInvoice.execute(
+      const result = await this.reminderDeps.sendInvoice.execute(
         {
           invoiceId: invoice.id,
           to: invoice.billToEmail,
@@ -69,7 +72,9 @@ export class SendInvoiceRemindersUseCase extends BaseUseCase<
       );
 
       if (isErr(result)) {
-        this.deps.logger.warn(`Invoice reminder failed for ${invoice.id}: ${result.error.message}`);
+        this.reminderDeps.logger.warn(
+          `Invoice reminder failed for ${invoice.id}: ${result.error.message}`
+        );
         continue;
       }
 
