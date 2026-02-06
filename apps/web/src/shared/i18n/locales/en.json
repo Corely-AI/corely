@@ -937,6 +937,9 @@
       "filterStatus": "Status",
       "filterDateFrom": "Date from",
       "filterDateTo": "Date to",
+      "monthLocked": "Month is locked",
+      "monthLockedDescription": "This month has already been billed. Reopen the month or create an adjustment.",
+      "billingLockedTooltip": "This month is locked because billing was created.",
       "statusOptions": {
         "planned": "Planned",
         "done": "Done",
@@ -945,6 +948,58 @@
       "sortOptions": {
         "newest": "Start (Newest)",
         "oldest": "Start (Oldest)"
+      }
+    },
+    "groups": {
+      "title": "Class Groups",
+      "subtitle": "Organize your tutoring groups and pricing",
+      "new": "New Class Group",
+      "loading": "Loading class groups...",
+      "loadFailed": "Failed to load class groups",
+      "emptyTitle": "No class groups yet",
+      "emptyDescription": "Create your first group to start scheduling sessions.",
+      "name": "Name",
+      "subject": "Subject",
+      "level": "Level",
+      "pricePerSession": "Price / session",
+      "status": "Status",
+      "updated": "Updated",
+      "open": "Open",
+      "edit": "Edit",
+      "statusOptions": {
+        "active": "Active",
+        "archived": "Archived"
+      },
+      "sortOptions": {
+        "newest": "Updated (Newest)",
+        "oldest": "Updated (Oldest)",
+        "name": "Name (A-Z)"
+      }
+    },
+    "students": {
+      "title": "Students",
+      "subtitle": "Manage student records and guardians",
+      "add": "Add student",
+      "loading": "Loading students...",
+      "loadFailed": "Failed to load students.",
+      "emptyTitle": "No students yet",
+      "emptyDescription": "Create your first student to start tracking guardians and enrollments.",
+      "record": "Student",
+      "email": "Email",
+      "phone": "Phone",
+      "primaryPayer": "Primary payer",
+      "status": "Status",
+      "updated": "Updated",
+      "open": "Open",
+      "edit": "Edit",
+      "archive": "Archive",
+      "archived": "Student archived",
+      "archiveFailed": "Failed to archive student",
+      "archiveConfirmTitle": "Archive student",
+      "archiveConfirmDescription": "This will archive the student. You can unarchive them later.",
+      "statusOptions": {
+        "active": "Active",
+        "archived": "Archived"
       }
     },
     "billing": {
@@ -973,6 +1028,58 @@
       "emptyTitle": "No billable sessions",
       "emptyDescription": "There are no confirmed sessions for the selected month that haven't been billed yet.",
       "attendedSessionsTip": "Tip: In \"Attended Sessions\" mode, you must mark sessions as DONE and record attendance before they can be billed."
+    },
+    "settings": {
+      "title": "Classes Settings",
+      "description": "Configure how class invoices are generated for this workspace.",
+      "billingStrategy": "Billing Strategy",
+      "monthStrategy": "Billing month strategy",
+      "billingBasis": "Billing basis",
+      "save": "Save settings",
+      "updated": "Classes settings updated",
+      "updateFailed": "Failed to update classes settings",
+      "placeholderStrategy": "Select billing strategy",
+      "placeholderBasis": "Select billing basis",
+      "strategies": {
+        "prepaid": {
+          "label": "Invoice for current month (prepaid)",
+          "description": "Invoices are generated at the start of the month for scheduled sessions."
+        },
+        "arrears": {
+          "label": "Invoice for previous month (arrears)",
+          "description": "Invoices are generated at the start of the month for attended sessions."
+        }
+      },
+      "bases": {
+        "scheduled": {
+          "label": "Scheduled sessions",
+          "description": "Counts planned/done sessions in the billing month."
+        },
+        "attended": {
+          "label": "Attended sessions",
+          "description": "Counts billable attendance on done sessions."
+        }
+      }
+    }
+  },
+  "purchasing": {
+    "settings": {
+      "title": "Purchasing Settings",
+      "save": "Save Settings",
+      "defaultCurrency": "Default Currency",
+      "defaultPaymentTerms": "Default Payment Terms",
+      "poNumberPrefix": "PO Number Prefix",
+      "defaultApAccount": "Default Accounts Payable Account",
+      "defaultExpenseAccount": "Default Expense Account",
+      "defaultBankAccount": "Default Bank Account",
+      "autoPostBill": "Auto-post on Bill Post",
+      "autoPostBillHelp": "Automatically create accounting entries when a vendor bill is posted",
+      "autoPostPayment": "Auto-post on Payment",
+      "autoPostPaymentHelp": "Automatically create accounting entries when a payment is recorded",
+      "duplicateDetection": "Duplicate Bill Detection",
+      "duplicateDetectionHelp": "Warn when a bill with the same vendor and reference already exists",
+      "approvalRequired": "Approval Required for Bills",
+      "approvalRequiredHelp": "Vendor bills must be approved before they can be posted"
     }
   }
 }

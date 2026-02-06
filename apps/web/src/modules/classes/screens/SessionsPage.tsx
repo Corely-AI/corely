@@ -117,10 +117,8 @@ export default function SessionsPage() {
     onError: (error) => {
       const apiError = error instanceof ApiError ? error : normalizeError(error);
       if (apiError.code === "Classes:MonthLocked") {
-        toast.error("Month is locked", {
-          description:
-            apiError.detail ||
-            "This month has already been billed. Reopen the month or create an adjustment.",
+        toast.error(t("classes.sessions.monthLocked"), {
+          description: apiError.detail || t("classes.sessions.monthLockedDescription"),
         });
         console.warn("Classes:MonthLocked", {
           code: apiError.code,
@@ -207,7 +205,7 @@ export default function SessionsPage() {
                     session.billingMonthStatus === "INVOICES_CREATED" ||
                     session.billingMonthStatus === "LOCKED";
                   const lockTooltip = isBillingLocked
-                    ? "This month is locked because billing was created."
+                    ? t("classes.sessions.billingLockedTooltip")
                     : undefined;
 
                   return (

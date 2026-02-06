@@ -937,6 +937,9 @@
       "filterStatus": "Trạng thái",
       "filterDateFrom": "Từ ngày",
       "filterDateTo": "Đến ngày",
+      "monthLocked": "Tháng đã bị khóa",
+      "monthLockedDescription": "Tháng này đã được quyết toán. Vui lòng mở lại tháng hoặc tạo điều chỉnh.",
+      "billingLockedTooltip": "Tháng này đã bị khóa vì hóa đơn đã được tạo.",
       "statusOptions": {
         "planned": "Đã lên lịch",
         "done": "Đã xong",
@@ -946,6 +949,137 @@
         "newest": "Bắt đầu (Mới nhất)",
         "oldest": "Bắt đầu (Cũ nhất)"
       }
+    },
+    "groups": {
+      "title": "Nhóm lớp",
+      "subtitle": "Tổ chức các nhóm lớp và học phí",
+      "new": "Nhóm lớp mới",
+      "loading": "Đang tải các nhóm lớp...",
+      "loadFailed": "Không thể tải các nhóm lớp",
+      "emptyTitle": "Chưa có nhóm lớp nào",
+      "emptyDescription": "Tạo nhóm lớp đầu tiên để bắt đầu lên lịch các buổi học.",
+      "name": "Tên",
+      "subject": "Môn học",
+      "level": "Trình độ",
+      "pricePerSession": "Giá / buổi",
+      "status": "Trạng thái",
+      "updated": "Cập nhật",
+      "open": "Mở",
+      "edit": "Sửa",
+      "statusOptions": {
+        "active": "Đang hoạt động",
+        "archived": "Đã lưu trữ"
+      },
+      "sortOptions": {
+        "newest": "Cập nhật (Mới nhất)",
+        "oldest": "Cập nhật (Cũ nhất)",
+        "name": "Tên (A-Z)"
+      }
+    },
+    "students": {
+      "title": "Học sinh",
+      "subtitle": "Quản lý hồ sơ học sinh và người giám hộ",
+      "add": "Thêm học sinh",
+      "loading": "Đang tải danh sách học sinh...",
+      "loadFailed": "Không thể tải danh sách học sinh.",
+      "emptyTitle": "Chưa có học sinh nào",
+      "emptyDescription": "Tạo học sinh đầu tiên để bắt đầu theo dõi người giám hộ và việc nhập học.",
+      "record": "Học sinh",
+      "email": "Email",
+      "phone": "Điện thoại",
+      "primaryPayer": "Người thanh toán chính",
+      "status": "Trạng thái",
+      "updated": "Cập nhật",
+      "open": "Mở",
+      "edit": "Sửa",
+      "archive": "Lưu trữ",
+      "archived": "Đã lưu trữ học sinh",
+      "archiveFailed": "Không thể lưu trữ học sinh",
+      "archiveConfirmTitle": "Lưu trữ học sinh",
+      "archiveConfirmDescription": "Hành động này sẽ lưu trữ học sinh. Bạn có thể khôi phục sau.",
+      "statusOptions": {
+        "active": "Đang hoạt động",
+        "archived": "Đã lưu trữ"
+      }
+    },
+    "billing": {
+      "title": "Quyết toán học phí",
+      "subtitle": "Xem trước và tạo hóa đơn học phí cho tháng đã chọn.",
+      "createInvoices": "Tạo hóa đơn cho tháng",
+      "billingMonth": "Tháng quyết toán",
+      "refresh": "Tải lại",
+      "invoicesCreated": "Đã tạo {{count}} hóa đơn",
+      "summaryCreated": "Đã tạo {{count}} hóa đơn cho tháng {{month}}",
+      "loading": "Đang tải xem trước quyết toán...",
+      "loadFailed": "Không thể tải xem trước",
+      "strategy": "Chiến lược thanh toán:",
+      "basis": "Căn cứ thanh toán:",
+      "prepaid": "Trả trước",
+      "arrears": "Trả sau",
+      "scheduledBasis": "Buổi học đã lên lịch",
+      "attendedBasis": "Buổi học đã tham gia",
+      "arrearsTip": "Chỉ các buổi học được đánh dấu \"ĐÃ XONG\" và có điểm danh mới được tính học phí",
+      "payerId": "ID người trả:",
+      "sessionsTotal": "tổng số buổi",
+      "classGroup": "Nhóm lớp",
+      "sessions": "Số buổi",
+      "pricePerSession": "Giá / Buổi",
+      "subtotal": "Tạm tính",
+      "emptyTitle": "Không có buổi học nào cần quyết toán",
+      "emptyDescription": "Không có buổi học nào đã xác nhận trong tháng được chọn mà chưa được xuất hóa đơn.",
+      "attendedSessionsTip": "Mẹo: Ở chế độ \"Trả sau\", bạn phải đánh dấu buổi học ĐÃ XONG và thực hiện điểm danh trước khi có thể quyết toán học phí."
+    },
+    "settings": {
+      "title": "Cài đặt Nhóm lớp",
+      "description": "Cấu hình cách tạo hóa đơn lớp học cho workspace này.",
+      "billingStrategy": "Chiến lược thanh toán",
+      "monthStrategy": "Chiến lược tháng thanh toán",
+      "billingBasis": "Căn cứ thanh toán",
+      "save": "Lưu cài đặt",
+      "updated": "Đã cập nhật cài đặt nhóm lớp",
+      "updateFailed": "Cập nhật cài đặt nhóm lớp thất bại",
+      "placeholderStrategy": "Chọn chiến lược thanh toán",
+      "placeholderBasis": "Chọn căn cứ thanh toán",
+      "strategies": {
+        "prepaid": {
+          "label": "Hóa đơn cho tháng hiện tại (trả trước)",
+          "description": "Hóa đơn được tạo vào đầu tháng cho các buổi học đã lên lịch."
+        },
+        "arrears": {
+          "label": "Hóa đơn cho tháng trước (trả sau)",
+          "description": "Hóa đơn được tạo vào đầu tháng cho các buổi học đã tham gia."
+        }
+      },
+      "bases": {
+        "scheduled": {
+          "label": "Buổi học đã lên lịch",
+          "description": "Tính các buổi học đã lên lịch/đã xong trong tháng thanh toán."
+        },
+        "attended": {
+          "label": "Buổi học đã tham gia",
+          "description": "Tính điểm danh có thể tính phí trên các buổi học đã hoàn thành."
+        }
+      }
+    }
+  },
+  "purchasing": {
+    "settings": {
+      "title": "Cài đặt mua hàng",
+      "save": "Lưu cài đặt",
+      "defaultCurrency": "Tiền tệ mặc định",
+      "defaultPaymentTerms": "Điều khoản thanh toán mặc định",
+      "poNumberPrefix": "Tiền tố số PO",
+      "defaultApAccount": "Tài khoản phải trả mặc định",
+      "defaultExpenseAccount": "Tài khoản chi phí mặc định",
+      "defaultBankAccount": "Tài khoản ngân hàng mặc định",
+      "autoPostBill": "Tự động ghi sổ khi đăng hóa đơn",
+      "autoPostBillHelp": "Tự động tạo bút toán kế toán khi hóa đơn nhà cung cấp được đăng",
+      "autoPostPayment": "Tự động ghi sổ khi thanh toán",
+      "autoPostPaymentHelp": "Tự động tạo bút toán kế toán khi thanh toán được ghi lại",
+      "duplicateDetection": "Phát hiện hóa đơn trùng lặp",
+      "duplicateDetectionHelp": "Cảnh báo khi hóa đơn từ cùng nhà cung cấp và số tham chiếu đã tồn tại",
+      "approvalRequired": "Yêu cầu phê duyệt hóa đơn",
+      "approvalRequiredHelp": "Hóa đơn nhà cung cấp phải được phê duyệt trước khi có thể đăng"
     }
   }
 }

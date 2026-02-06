@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mail, Phone, Plus, Trash2, Users } from "lucide-react";
 import { Card, CardContent, Badge, Button } from "@corely/ui";
@@ -10,6 +11,7 @@ import { withWorkspace } from "@/shared/workspaces/workspace-query-keys";
 import { toast } from "sonner";
 
 export default function StudentsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -46,36 +48,40 @@ export default function StudentsPage() {
   const archiveStudent = useMutation({
     mutationFn: (id: string) => customersApi.archiveCustomer(id, "STUDENT"),
     onSuccess: async () => {
-      toast.success("Student archived");
+      toast.success(t("classes.students.archived"));
       await queryClient.invalidateQueries({ queryKey: studentsListKey });
     },
-    onError: () => toast.error("Failed to archive student"),
+    onError: () => toast.error(t("classes.students.archiveFailed")),
   });
 
   const primaryAction = (
     <Button variant="accent" onClick={() => navigate("/students/new")}>
       <Plus className="h-4 w-4" />
-      Add student
+      {t("classes.students.add")}
     </Button>
   );
 
   return (
     <CrudListPageLayout
-      title="Students"
-      subtitle="Manage student records and guardians"
+      title={t("classes.students.title")}
+      subtitle={t("classes.students.subtitle")}
       primaryAction={primaryAction}
     >
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <div className="p-8 text-center text-muted-foreground">Loading students...</div>
+            <div className="p-8 text-center text-muted-foreground">
+              {t("classes.students.loading")}
+            </div>
           ) : isError ? (
-            <div className="p-8 text-center text-destructive">Failed to load students.</div>
+            <div className="p-8 text-center text-destructive">
+              {t("classes.students.loadFailed")}
+            </div>
           ) : students.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="No students yet"
-              description="Create your first student to start tracking guardians and enrollments."
+              title={t("classes.students.emptyTitle")}
+              description={t("classes.students.emptyDescription")}
               action={primaryAction}
             />
           ) : (
@@ -84,22 +90,22 @@ export default function StudentsPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Student
+                      {t("classes.students.record")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Email
+                      {t("classes.students.email")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Phone
+                      {t("classes.students.phone")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Primary payer
+                      {t("classes.students.primaryPayer")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Status
+                      {t("classes.students.status")}
                     </th>
                     <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                      Updated
+                      {t("classes.students.updated")}
                     </th>
                     <th />
                   </tr>
@@ -152,9 +158,13 @@ export default function StudentsPage() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {student.archivedAt ? (
-                          <Badge variant="outline">Archived</Badge>
+                          <Badge variant="outline">
+                            {t("classes.students.statusOptions.archived")}
+                          </Badge>
                         ) : (
-                          <Badge variant="secondary">Active</Badge>
+                          <Badge variant="secondary">
+                            {t("classes.students.statusOptions.active")}
+                          </Badge>
                         )}
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
@@ -163,16 +173,16 @@ export default function StudentsPage() {
                       <td className="px-4 py-3 text-right">
                         <CrudRowActions
                           primaryAction={{
-                            label: "Open",
+                            label: t("classes.students.open"),
                             href: `/students/${student.id}`,
                           }}
                           secondaryActions={[
                             {
-                              label: "Edit",
+                              label: t("classes.students.edit"),
                               href: `/students/${student.id}`,
                             },
                             {
-                              label: "Archive",
+                              label: t("classes.students.archive"),
                               destructive: true,
                               icon: <Trash2 className="h-4 w-4" />,
                               onClick: () => setDeleteTarget(student.id),
@@ -196,8 +206,8 @@ export default function StudentsPage() {
           }
         }}
         trigger={null}
-        title="Archive student"
-        description="This will archive the student. You can unarchive them later."
+        title={t("classes.students.archiveConfirmTitle")}
+        description={t("classes.students.archiveConfirmDescription")}
         isLoading={archiveStudent.isPending}
         onConfirm={() => {
           if (!deleteTarget) {
