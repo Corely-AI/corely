@@ -64,7 +64,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                       <Input
                         data-testid={`invoice-line-description-${index}`}
                         {...register(`lineItems.${index}.description` as const)}
-                        placeholder="Description"
+                        placeholder={t("invoices.description")}
                         className="border-0 focus-visible:ring-0 px-0"
                         aria-invalid={Boolean(lineItemError)}
                       />

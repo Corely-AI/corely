@@ -45,12 +45,29 @@ export class GetMonthlyBillingPreviewUseCase {
           });
 
     const items = aggregateBillingPreview(rows);
+    const existingRun = await this.repo.findBillingRunByMonth(tenantId, workspaceId, month);
+    const invoiceLinks = existingRun
+      ? await this.repo.listBillingInvoiceLinks(tenantId, workspaceId, existingRun.id)
+      : [];
+
+    const invoicesSentAt =
+      typeof existingRun?.billingSnapshot === "object" &&
+      existingRun?.billingSnapshot &&
+      "sentAt" in existingRun.billingSnapshot
+        ? ((existingRun.billingSnapshot as { sentAt?: string }).sentAt ?? null)
+        : null;
 
     return {
       month,
       billingMonthStrategy: settings.billingMonthStrategy,
       billingBasis: settings.billingBasis,
+      billingRunStatus: existingRun?.status ?? null,
       items,
+      invoiceLinks: invoiceLinks.map((link) => ({
+        payerClientId: link.payerClientId,
+        invoiceId: link.invoiceId,
+      })),
+      invoicesSentAt,
       generatedAt: this.clock.now(),
     };
   }

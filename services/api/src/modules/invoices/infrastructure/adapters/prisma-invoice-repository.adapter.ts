@@ -198,7 +198,11 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     pagination: { page?: number; pageSize: number; cursor?: string }
   ): Promise<ListInvoicesResult> {
     const { page = 1, pageSize, cursor } = pagination;
-    const where: any = { tenantId: workspaceId };
+    const softDeleteReasons = ["Soft delete", "Bulk delete", "Regenerated class billing run"];
+    const where: any = {
+      tenantId: workspaceId,
+      NOT: [{ status: "CANCELED", notes: { in: softDeleteReasons } }],
+    };
 
     // Standard filters
     if (filters.status) {

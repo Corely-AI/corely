@@ -7,19 +7,9 @@ import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
-import { Input } from "@corely/ui";
-import { Label } from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
 import { invoicesApi } from "@/lib/invoices-api";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@corely/ui";
 import {
   invoiceFormSchema,
   toCreateInvoiceInput,
@@ -30,6 +20,7 @@ import type { UpdateInvoiceInput } from "@corely/contracts";
 import { InvoiceFooter } from "../components/InvoiceFooter";
 import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
 import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
+import { InvoicePaymentDialog } from "../components/InvoicePaymentDialog";
 import { invoiceQueryKeys } from "../queries";
 import { generateInvoiceNumber } from "../utils/invoice-generators";
 
@@ -219,10 +210,10 @@ export default function InvoiceDetailPage() {
       try {
         if (to === "ISSUED") {
           await invoicesApi.finalizeInvoice(id);
-          toast.success("Invoice issued");
+          toast.success(t("invoices.issued"));
         } else if (to === "CANCELED") {
           await invoicesApi.cancelInvoice(id, input?.reason);
-          toast.success("Invoice canceled");
+          toast.success(t("invoices.canceled"));
         }
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
@@ -252,7 +243,7 @@ export default function InvoiceDetailPage() {
         switch (actionKey) {
           case "issue":
             await invoicesApi.finalizeInvoice(id);
-            toast.success("Invoice issued");
+            toast.success(t("invoices.issued"));
             break;
           case "download_pdf":
             downloadPdf.mutate(id);
@@ -317,7 +308,7 @@ export default function InvoiceDetailPage() {
       await updateInvoice.mutateAsync(updateInput);
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
-      toast.success("Invoice updated successfully");
+      toast.success(t("invoices.updated"));
       navigate("/invoices");
     } catch {
       // errors handled by mutation
@@ -346,7 +337,7 @@ export default function InvoiceDetailPage() {
         setPaymentNote("");
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
-        toast.success("Payment recorded");
+        toast.success(t("common.success"));
       })
       .catch((err) => {
         console.error("Record payment failed", err);
@@ -436,62 +427,21 @@ export default function InvoiceDetailPage() {
           isSending={isProcessing}
         />
 
-        <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t("invoices.payments.recordTitle")}</DialogTitle>
-              <DialogDescription>{t("invoices.payments.recordDescription")}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="payment-amount">{t("common.amount")}</Label>
-                <Input
-                  id="payment-amount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t("invoices.payments.dueAmount", {
-                    amount: formatMoney(
-                      invoice.totals?.dueCents ?? 0,
-                      i18n.t("common.locale"),
-                      invoice.currency
-                    ),
-                  })}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="payment-date">{t("common.date")}</Label>
-                <Input
-                  id="payment-date"
-                  type="date"
-                  value={paymentDate}
-                  onChange={(e) => setPaymentDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="payment-note">{t("common.noteOptional")}</Label>
-                <Input
-                  id="payment-note"
-                  value={paymentNote}
-                  onChange={(e) => setPaymentNote(e.target.value)}
-                  placeholder={t("invoices.payments.notePlaceholder")}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>
-                {t("common.cancel")}
-              </Button>
-              <Button onClick={recordPayment} disabled={isProcessing}>
-                {isProcessing ? t("common.saving") : t("invoices.payments.save")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <InvoicePaymentDialog
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          paymentAmount={paymentAmount}
+          paymentDate={paymentDate}
+          paymentNote={paymentNote}
+          onPaymentAmountChange={setPaymentAmount}
+          onPaymentDateChange={setPaymentDate}
+          onPaymentNoteChange={setPaymentNote}
+          onSave={recordPayment}
+          isProcessing={isProcessing}
+          dueCents={invoice.totals?.dueCents ?? 0}
+          locale={i18n.t("common.locale")}
+          currency={invoice.currency}
+        />
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
           <Card>

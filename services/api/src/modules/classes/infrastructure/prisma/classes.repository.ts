@@ -50,6 +50,7 @@ import {
   listBillableAttendanceForMonth,
   listBillableScheduledForMonth,
   updateBillingRun,
+  deleteBillingInvoiceLinks,
 } from "./classes.repository.billing";
 
 @Injectable()
@@ -260,6 +261,14 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     link: ClassBillingInvoiceLinkEntity
   ): Promise<ClassBillingInvoiceLinkEntity> {
     return createBillingInvoiceLink(this.prisma, link);
+  }
+
+  async deleteBillingInvoiceLinks(
+    tenantId: string,
+    workspaceId: string,
+    billingRunId: string
+  ): Promise<void> {
+    return deleteBillingInvoiceLinks(this.prisma, tenantId, workspaceId, billingRunId);
   }
 
   async isMonthLocked(tenantId: string, workspaceId: string, month: string): Promise<boolean> {

@@ -176,6 +176,11 @@ export interface ClassesRepositoryPort {
   createBillingInvoiceLink(
     link: ClassBillingInvoiceLinkEntity
   ): Promise<ClassBillingInvoiceLinkEntity>;
+  deleteBillingInvoiceLinks(
+    tenantId: string,
+    workspaceId: string,
+    billingRunId: string
+  ): Promise<void>;
   isMonthLocked(tenantId: string, workspaceId: string, month: string): Promise<boolean>;
 }
 

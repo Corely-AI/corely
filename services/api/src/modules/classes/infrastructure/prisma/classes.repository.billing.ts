@@ -23,7 +23,7 @@ export const listBillableAttendanceForMonth = async (
   workspaceId: string,
   filters: BillingPreviewFilters
 ): Promise<AttendanceBillingRow[]> => {
-  const rows = await prisma.classAttendance.findMany({
+  const rows = (await prisma.classAttendance.findMany({
     where: {
       tenantId,
       workspaceId,
@@ -37,9 +37,9 @@ export const listBillableAttendanceForMonth = async (
         ...(filters.classGroupId ? { classGroupId: filters.classGroupId } : {}),
       },
       enrollment: {
-        ...(filters.payerClientId ? { payerClientId: filters.payerClientId } : {}),
+        payerClientId: filters.payerClientId ?? undefined,
       },
-    },
+    } as any,
     select: {
       enrollment: {
         select: {
@@ -56,9 +56,9 @@ export const listBillableAttendanceForMonth = async (
         },
       },
     },
-  });
+  })) as any[];
 
-  return rows.map((row) => ({
+  return rows.map((row: any) => ({
     payerClientId: row.enrollment.payerClientId,
     classGroupId: row.enrollment.classGroup.id,
     classGroupName: row.enrollment.classGroup.name,
@@ -105,7 +105,7 @@ export const listBillableScheduledForMonth = async (
 
   const classGroupIds = Array.from(new Set(sessions.map((session) => session.classGroupId)));
 
-  const enrollments = await prisma.classEnrollment.findMany({
+  const enrollments = (await prisma.classEnrollment.findMany({
     where: {
       tenantId,
       workspaceId,
@@ -119,8 +119,8 @@ export const listBillableScheduledForMonth = async (
       priceOverridePerSession: true,
       startDate: true,
       endDate: true,
-    },
-  });
+    } as any,
+  })) as any[];
 
   const enrollmentsByGroup = new Map<string, typeof enrollments>();
   for (const enrollment of enrollments) {
@@ -153,10 +153,11 @@ export const listBillableScheduledForMonth = async (
       }
 
       rows.push({
-        payerClientId: enrollment.payerClientId,
+        payerClientId: (enrollment as any).payerClientId,
         classGroupId: session.classGroup.id,
         classGroupName: session.classGroup.name,
-        priceCents: enrollment.priceOverridePerSession ?? session.classGroup.defaultPricePerSession,
+        priceCents:
+          (enrollment as any).priceOverridePerSession ?? session.classGroup.defaultPricePerSession,
         currency: session.classGroup.currency,
       });
     }
@@ -223,7 +224,7 @@ export const createBillingRun = async (
       createdByUserId: run.createdByUserId,
       createdAt: run.createdAt,
       updatedAt: run.updatedAt,
-    },
+    } as any,
   });
   return toBillingRun(row);
 };
@@ -243,7 +244,7 @@ export const updateBillingRun = async (
       status: updates.status,
       generatedAt: updates.generatedAt ?? undefined,
       updatedAt: updates.updatedAt,
-    },
+    } as any,
   });
   return toBillingRun(row);
 };
@@ -286,9 +287,20 @@ export const createBillingInvoiceLink = async (
       invoiceId: link.invoiceId,
       idempotencyKey: link.idempotencyKey,
       createdAt: link.createdAt,
-    },
+    } as any,
   });
   return toBillingInvoiceLink(row);
+};
+
+export const deleteBillingInvoiceLinks = async (
+  prisma: PrismaService,
+  tenantId: string,
+  workspaceId: string,
+  billingRunId: string
+): Promise<void> => {
+  await prisma.classBillingInvoiceLink.deleteMany({
+    where: { tenantId, workspaceId, billingRunId },
+  });
 };
 
 export const isMonthLocked = async (

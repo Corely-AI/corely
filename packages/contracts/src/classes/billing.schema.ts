@@ -3,6 +3,7 @@ import { utcInstantSchema } from "../shared/local-date.schema";
 import {
   ClassBillingBasisSchema,
   ClassBillingMonthStrategySchema,
+  ClassBillingRunStatusSchema,
   ClassMonthlyBillingRunSchema,
 } from "./classes.types";
 
@@ -25,11 +26,20 @@ export const BillingPreviewItemSchema = z.object({
 });
 export type BillingPreviewItem = z.infer<typeof BillingPreviewItemSchema>;
 
+export const BillingPreviewInvoiceLinkSchema = z.object({
+  payerClientId: z.string(),
+  invoiceId: z.string(),
+});
+export type BillingPreviewInvoiceLink = z.infer<typeof BillingPreviewInvoiceLinkSchema>;
+
 export const BillingPreviewOutputSchema = z.object({
   month: BillingMonthSchema,
   billingMonthStrategy: ClassBillingMonthStrategySchema,
   billingBasis: ClassBillingBasisSchema,
+  billingRunStatus: ClassBillingRunStatusSchema.optional().nullable(),
   items: z.array(BillingPreviewItemSchema),
+  invoiceLinks: z.array(BillingPreviewInvoiceLinkSchema).optional(),
+  invoicesSentAt: utcInstantSchema.optional().nullable(),
   generatedAt: utcInstantSchema,
 });
 export type BillingPreviewOutput = z.infer<typeof BillingPreviewOutputSchema>;
@@ -39,6 +49,7 @@ export const CreateBillingRunInputSchema = z.object({
   createInvoices: z.boolean().default(true),
   sendInvoices: z.boolean().default(false),
   idempotencyKey: z.string().optional(),
+  force: z.boolean().optional(),
 });
 export type CreateBillingRunInput = z.infer<typeof CreateBillingRunInputSchema>;
 

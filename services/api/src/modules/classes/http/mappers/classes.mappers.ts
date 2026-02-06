@@ -96,13 +96,22 @@ export const toBillingPreviewOutput = (input: {
   month: string;
   billingMonthStrategy: string;
   billingBasis: string;
+  billingRunStatus: string | null;
   items: BillingPreviewItem[];
+  invoiceLinks?: { payerClientId: string; invoiceId: string }[];
+  invoicesSentAt?: string | null;
   generatedAt: Date;
 }): BillingPreviewOutput => ({
   month: input.month,
   billingMonthStrategy: input.billingMonthStrategy as any,
   billingBasis: input.billingBasis as any,
+  billingRunStatus: input.billingRunStatus as any,
   generatedAt: input.generatedAt.toISOString(),
+  invoiceLinks: input.invoiceLinks?.map((link) => ({
+    payerClientId: link.payerClientId,
+    invoiceId: link.invoiceId,
+  })),
+  invoicesSentAt: input.invoicesSentAt ?? null,
   items: input.items.map((item) => ({
     payerClientId: item.payerClientId,
     totalSessions: item.totalSessions,

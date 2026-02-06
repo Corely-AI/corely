@@ -48,27 +48,67 @@ export class CreateMonthlyBillingRunUseCase {
     const month = normalizeBillingMonth(input.month);
     const idempotencyKey = input.idempotencyKey ?? `${tenantId}:${month}`;
 
-    if (idempotencyKey) {
+    if (idempotencyKey && !input.force) {
       const cached = await this.idempotency.get(this.actionKey, tenantId, idempotencyKey);
       if (cached?.body) {
-        return {
-          billingRun: this.fromJson(cached.body.billingRun),
-          invoiceIds: cached.body.invoiceIds ?? [],
-        };
+        const invoiceIds = cached.body.invoiceIds ?? [];
+        const status = cached.body.billingRun?.status;
+        // Only return cached result if invoices were created or the run is locked/finalized
+        // This allows retrying empty runs (e.g. after changing settings)
+        if (invoiceIds.length > 0 || status === "LOCKED") {
+          return {
+            billingRun: this.fromJson(cached.body.billingRun),
+            invoiceIds,
+          };
+        }
       }
     }
 
     const existing = await this.repo.findBillingRunByMonth(tenantId, workspaceId, month);
     const settings = await this.resolveSettings(tenantId, workspaceId);
-    const effectiveSettings = existing
-      ? {
+
+    let effectiveSettings = settings;
+    let run: ClassMonthlyBillingRunEntity;
+    let existingLinks: Awaited<ReturnType<ClassesRepositoryPort["listBillingInvoiceLinks"]>> = [];
+
+    if (existing) {
+      // If a run exists but hasn't created any invoices, we allow it to sync with current global settings.
+      // This handles cases where settings were changed after a placeholder run was created.
+      existingLinks = await this.repo.listBillingInvoiceLinks(tenantId, workspaceId, existing.id);
+      if (existingLinks.length === 0 && existing.status !== "LOCKED") {
+        effectiveSettings = settings;
+        // If it was previously marked as INVOICES_CREATED but had 0 invoices,
+        // we reset it to DRAFT to allow session generation etc.
+        if (existing.status === "INVOICES_CREATED") {
+          existing.status = "DRAFT";
+        }
+      } else {
+        effectiveSettings = {
           billingMonthStrategy: existing.billingMonthStrategy ?? settings.billingMonthStrategy,
           billingBasis: existing.billingBasis ?? settings.billingBasis,
-        }
-      : settings;
-    let run: ClassMonthlyBillingRunEntity;
-    if (existing) {
+        };
+      }
       run = existing;
+      if (input.force && run.status !== "LOCKED") {
+        if (existingLinks.length > 0) {
+          for (const link of existingLinks) {
+            const cancelResult = await this.invoices.cancel(
+              {
+                invoiceId: link.invoiceId,
+                reason: "Regenerated class billing run",
+              },
+              ctx
+            );
+            if (isErr(cancelResult)) {
+              throw cancelResult.error;
+            }
+          }
+        }
+        await this.repo.deleteBillingInvoiceLinks(tenantId, workspaceId, run.id);
+        // Reset status to DRAFT so it behaves like a fresh run
+        run.status = "DRAFT";
+        run.billingSnapshot = null;
+      }
     } else {
       const now = this.clock.now();
       run = await this.repo.createBillingRun({
@@ -150,6 +190,14 @@ export class CreateMonthlyBillingRunUseCase {
         }
 
         const invoiceId = result.value.invoice.id;
+        const finalizeResult = await this.invoices.finalize({ invoiceId }, ctx);
+        if (isErr(finalizeResult)) {
+          await this.repo.updateBillingRun(tenantId, workspaceId, run.id, {
+            status: "FAILED",
+            updatedAt: this.clock.now(),
+          });
+          throw finalizeResult.error;
+        }
         invoiceIds.push(invoiceId);
 
         await this.repo.createBillingInvoiceLink({
@@ -162,17 +210,6 @@ export class CreateMonthlyBillingRunUseCase {
           idempotencyKey: invoiceKey,
           createdAt: this.clock.now(),
         });
-
-        if (input.sendInvoices) {
-          await this.outbox.enqueue({
-            tenantId,
-            eventType: CLASSES_INVOICE_READY_TO_SEND_EVENT,
-            payload: {
-              tenantId,
-              invoiceId,
-            },
-          });
-        }
       }
 
       run = await this.repo.updateBillingRun(tenantId, workspaceId, run.id, {
@@ -188,6 +225,37 @@ export class CreateMonthlyBillingRunUseCase {
         generatedAt: this.clock.now(),
         updatedAt: this.clock.now(),
       });
+    }
+
+    if (input.sendInvoices) {
+      const invoiceIdsToSend = input.createInvoices
+        ? invoiceIds
+        : existingLinks.map((link) => link.invoiceId);
+      const uniqueInvoiceIds = Array.from(new Set(invoiceIdsToSend));
+      if (uniqueInvoiceIds.length > 0) {
+        for (const invoiceId of uniqueInvoiceIds) {
+          await this.outbox.enqueue({
+            tenantId,
+            eventType: CLASSES_INVOICE_READY_TO_SEND_EVENT,
+            payload: {
+              tenantId,
+              invoiceId,
+            },
+          });
+        }
+
+        const sentAt = this.clock.now();
+        run = await this.repo.updateBillingRun(tenantId, workspaceId, run.id, {
+          billingSnapshot: {
+            ...(typeof run.billingSnapshot === "object" && run.billingSnapshot
+              ? run.billingSnapshot
+              : {}),
+            sentAt: sentAt.toISOString(),
+            sentInvoiceCount: uniqueInvoiceIds.length,
+          },
+          updatedAt: sentAt,
+        });
+      }
     }
 
     await this.audit.log({

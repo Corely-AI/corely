@@ -74,7 +74,7 @@ export default function InvoicesPage() {
     const fields: FilterFieldDef[] = [
       {
         key: "status",
-        label: t("invoices.status"),
+        label: t("invoices.statusLabel"),
         type: "select",
         options: ["DRAFT", "ISSUED", "PAID", "OVERDUE", "CANCELLED"].map((s) => ({
           label: t(`invoices.statuses.${s.toLowerCase()}`),
@@ -284,7 +284,7 @@ export default function InvoicesPage() {
                     {t("invoices.date")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    {t("invoices.status")}
+                    {t("invoices.statusLabel")}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
                     {t("invoices.amount")}

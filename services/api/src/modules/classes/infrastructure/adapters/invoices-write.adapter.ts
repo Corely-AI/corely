@@ -3,6 +3,10 @@ import type { UseCaseContext, Result, UseCaseError } from "@corely/kernel";
 import type {
   CreateInvoiceInput,
   CreateInvoiceOutput,
+  CancelInvoiceInput,
+  CancelInvoiceOutput,
+  FinalizeInvoiceInput,
+  FinalizeInvoiceOutput,
   SendInvoiceInput,
   SendInvoiceOutput,
 } from "@corely/contracts";
@@ -21,6 +25,20 @@ export class InvoicesWriteAdapter implements InvoicesWritePort {
     ctx: UseCaseContext
   ): Promise<Result<CreateInvoiceOutput, UseCaseError>> {
     return this.invoiceCommands.createDraft(input, ctx);
+  }
+
+  cancel(
+    input: CancelInvoiceInput,
+    ctx: UseCaseContext
+  ): Promise<Result<CancelInvoiceOutput, UseCaseError>> {
+    return this.invoiceCommands.cancel(input, ctx);
+  }
+
+  finalize(
+    input: FinalizeInvoiceInput,
+    ctx: UseCaseContext
+  ): Promise<Result<FinalizeInvoiceOutput, UseCaseError>> {
+    return this.invoiceCommands.finalize(input, ctx);
   }
 
   send(

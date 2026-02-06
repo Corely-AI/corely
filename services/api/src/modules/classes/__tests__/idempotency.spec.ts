@@ -177,6 +177,12 @@ class FakeInvoices implements InvoicesWritePort {
     this.createCalls += 1;
     return ok({ invoice: { id: `inv-${this.createCalls}` } } as any);
   }
+  async cancel() {
+    return ok({} as any);
+  }
+  async finalize() {
+    return ok({} as any);
+  }
   async send() {
     return ok({} as any);
   }

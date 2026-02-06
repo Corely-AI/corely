@@ -1,8 +1,27 @@
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, RefreshCcw } from "lucide-react";
-import { Badge, Button, Card, CardContent, Input } from "@corely/ui";
+import { FileText, Mail, RefreshCcw } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Input,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@corely/ui";
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
@@ -17,6 +36,8 @@ export default function ClassesBillingPage() {
   const queryClient = useQueryClient();
   const [month, setMonth] = useState(toMonthValue(new Date()));
   const [resultSummary, setResultSummary] = useState<string | null>(null);
+  const [sendPromptOpen, setSendPromptOpen] = useState(false);
+  const [createdCount, setCreatedCount] = useState(0);
 
   const {
     data: preview,
@@ -54,15 +75,26 @@ export default function ClassesBillingPage() {
     return map;
   }, [groupsData]);
 
+  const invoiceByPayer = useMemo(() => {
+    const map = new Map<string, string>();
+    (preview?.invoiceLinks ?? []).forEach((link) => {
+      map.set(link.payerClientId, link.invoiceId);
+    });
+    return map;
+  }, [preview?.invoiceLinks]);
+
   const createRun = useMutation({
-    mutationFn: async () =>
+    mutationFn: async (args?: { force?: boolean }) =>
       classesApi.createBillingRun({
         month,
         createInvoices: true,
         sendInvoices: false,
+        force: args?.force,
       }),
     onSuccess: async (data) => {
       toast.success(t("classes.billing.invoicesCreated", { count: data.invoiceIds.length }));
+      setCreatedCount(data.invoiceIds.length);
+      setSendPromptOpen(true);
       setResultSummary(
         t("classes.billing.summaryCreated", { count: data.invoiceIds.length, month })
       );
@@ -71,19 +103,73 @@ export default function ClassesBillingPage() {
     onError: (err: any) => toast.error(err?.message || t("classes.billing.loadFailed")),
   });
 
+  const sendInvoices = useMutation({
+    mutationFn: async () =>
+      classesApi.createBillingRun({
+        month,
+        createInvoices: false,
+        sendInvoices: true,
+      }),
+    onSuccess: () => {
+      toast.success(t("classes.billing.invoicesSent"));
+      setSendPromptOpen(false);
+      void queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) });
+    },
+    onError: (err: any) => toast.error(err?.message || t("classes.billing.sendFailed")),
+  });
+
+  const invoicesAlreadySent = Boolean(preview?.invoicesSentAt);
+
   return (
     <CrudListPageLayout
       title={t("classes.billing.title")}
       subtitle={t("classes.billing.subtitle")}
       primaryAction={
-        <Button
-          variant="accent"
-          onClick={() => createRun.mutate()}
-          disabled={createRun.isPending || !month}
-        >
-          <FileText className="h-4 w-4" />
-          {t("classes.billing.createInvoices")}
-        </Button>
+        <div className="flex items-center gap-2">
+          {preview?.billingRunStatus === "INVOICES_CREATED" && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="outline"
+                      onClick={() => sendInvoices.mutate()}
+                      disabled={sendInvoices.isPending || !month || invoicesAlreadySent}
+                    >
+                      <Mail className="h-4 w-4" />
+                      {t("classes.billing.sendInvoices")}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {invoicesAlreadySent ? (
+                  <TooltipContent>{t("classes.billing.alreadySent")}</TooltipContent>
+                ) : null}
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {preview?.billingRunStatus === "INVOICES_CREATED" && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (window.confirm(t("classes.billing.regenerateConfirm"))) {
+                  createRun.mutate({ force: true });
+                }
+              }}
+              disabled={createRun.isPending || !month}
+            >
+              <RefreshCcw className="h-4 w-4" />
+              {t("classes.billing.regenerate")}
+            </Button>
+          )}
+          <Button
+            variant="accent"
+            onClick={() => createRun.mutate()}
+            disabled={createRun.isPending || !month}
+          >
+            <FileText className="h-4 w-4" />
+            {t("classes.billing.createInvoices")}
+          </Button>
+        </div>
       }
       toolbar={
         <div className="flex flex-wrap items-center gap-4">
@@ -110,6 +196,26 @@ export default function ClassesBillingPage() {
         </div>
       }
     >
+      <AlertDialog open={sendPromptOpen} onOpenChange={setSendPromptOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("classes.billing.sendDialogTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("classes.billing.sendDialogDescription", { count: createdCount })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("classes.billing.sendDialogNo")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => sendInvoices.mutate()}
+              disabled={sendInvoices.isPending || invoicesAlreadySent}
+            >
+              {t("classes.billing.sendDialogYes")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="p-6 space-y-6">
         {resultSummary ? (
           <div className="rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-sm text-success flex items-center gap-2">
@@ -174,13 +280,22 @@ export default function ClassesBillingPage() {
                       {t("classes.billing.payerId")} {item.payerClientId}
                     </div>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <div className="text-sm font-bold text-foreground">
-                      {formatMoney(item.totalAmountCents, undefined, item.currency)}
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end">
+                      <div className="text-sm font-bold text-foreground">
+                        {formatMoney(item.totalAmountCents, undefined, item.currency)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {item.totalSessions} {t("classes.billing.sessionsTotal")}
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {item.totalSessions} {t("classes.billing.sessionsTotal")}
-                    </div>
+                    {invoiceByPayer.get(item.payerClientId) ? (
+                      <Button asChild variant="outline" size="sm">
+                        <Link to={`/invoices/${invoiceByPayer.get(item.payerClientId)}`}>
+                          {t("classes.billing.viewInvoice")}
+                        </Link>
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
 
