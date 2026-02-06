@@ -67,13 +67,23 @@ export class CustomizationService {
       ]);
     }
 
+    const now = this.clock.now();
     const definition = await this.createDefinition.execute({
-      ...input,
-      entityType: input.entityType,
       tenantId,
       id: this.idGen.newId(),
-      createdAt: this.clock.now(),
-      updatedAt: this.clock.now(),
+      entityType: input.entityType,
+      key: input.key,
+      label: input.label,
+      type: input.type,
+      required: input.required,
+      description: input.description,
+      defaultValue: input.defaultValue,
+      options: input.options,
+      validation: input.validation,
+      isIndexed: input.isIndexed ?? false,
+      isActive: input.isActive,
+      createdAt: now,
+      updatedAt: now,
     });
 
     await this.audit.log({
