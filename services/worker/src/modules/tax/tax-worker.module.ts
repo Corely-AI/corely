@@ -9,7 +9,7 @@ import { GcsObjectStorageAdapter } from "@/modules/documents/infrastructure/stor
 import { PrismaTaxReportRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-report-repo.adapter";
 import { PrismaVatPeriodQueryAdapter } from "@/modules/tax/infrastructure/prisma/prisma-vat-period-query.adapter";
 import { PrismaTaxProfileRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-profile-repo.adapter";
-import { PrismaWorkspaceRepositoryAdapter } from "@/modules/workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
+import { PrismaWorkspaceRepository } from "@/modules/workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
 
 @Module({
   imports: [DataModule],
@@ -19,7 +19,7 @@ import { PrismaWorkspaceRepositoryAdapter } from "@/modules/workspaces/infrastru
     PrismaTaxReportRepoAdapter,
     PrismaVatPeriodQueryAdapter,
     PrismaTaxProfileRepoAdapter,
-    PrismaWorkspaceRepositoryAdapter,
+    PrismaWorkspaceRepository,
     TaxPdfRenderer,
     {
       provide: GcsObjectStorageAdapter,
@@ -40,7 +40,7 @@ import { PrismaWorkspaceRepositoryAdapter } from "@/modules/workspaces/infrastru
         taxProfileRepo: PrismaTaxProfileRepoAdapter,
         pdfRenderer: TaxPdfRenderer,
         storage: GcsObjectStorageAdapter,
-        workspaceRepo: PrismaWorkspaceRepositoryAdapter
+        workspaceRepo: PrismaWorkspaceRepository
       ) =>
         new TaxReportPdfRequestedHandler(
           reportRepo,
@@ -56,7 +56,7 @@ import { PrismaWorkspaceRepositoryAdapter } from "@/modules/workspaces/infrastru
         PrismaTaxProfileRepoAdapter,
         TaxPdfRenderer,
         GcsObjectStorageAdapter,
-        PrismaWorkspaceRepositoryAdapter,
+        PrismaWorkspaceRepository,
       ],
     },
   ],
