@@ -150,7 +150,13 @@ export default function InvoicesPage() {
   const downloadPdf = useMutation({
     mutationFn: (invoiceId: string) => invoicesApi.downloadInvoicePdf(invoiceId),
     onSuccess: (data) => {
-      window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+      if (data.status === "READY" && data.downloadUrl) {
+        window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+      toast.info("PDF is being prepared", {
+        description: "We started generating the PDF. Please try again in a moment.",
+      });
     },
     onError: (error) => {
       console.error("Download PDF failed", error);

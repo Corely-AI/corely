@@ -9,8 +9,6 @@ import { PrismaFileRepoAdapter } from "./infrastructure/prisma/prisma-file-repo.
 import { PrismaDocumentLinkAdapter } from "./infrastructure/prisma/prisma-document-link.adapter";
 import { GcsObjectStorageAdapter } from "./infrastructure/storage/gcs/gcs-object-storage.adapter";
 import { createGcsClient } from "./infrastructure/storage/gcs/gcs.client";
-import { PdfLibRendererAdapter } from "./infrastructure/pdf/pdf-lib/pdf-lib-renderer.adapter";
-import { NullInvoicePdfModelAdapter } from "./infrastructure/invoices/null-invoice-pdf-model.adapter";
 import { ID_GENERATOR_TOKEN, type IdGeneratorPort } from "../../shared/ports/id-generator.port";
 import { CLOCK_PORT_TOKEN, type ClockPort } from "../../shared/ports/clock.port";
 import { OUTBOX_PORT } from "@corely/kernel";
@@ -19,13 +17,8 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
 import { IdentityModule } from "../identity";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 
-import {
-  INVOICE_PDF_MODEL_PORT,
-  InvoicePdfModelPort,
-} from "../invoices/application/ports/invoice-pdf-model.port";
 import { CompleteUploadUseCase } from "./application/use-cases/complete-upload/complete-upload.usecase";
 import { CreateUploadIntentUseCase } from "./application/use-cases/create-upload-intent/create-upload-intent.usecase";
-import { GenerateInvoicePdfWorker } from "./application/use-cases/generate-invoice-pdf-worker/generate-invoice-pdf.worker";
 import { GetDownloadUrlUseCase } from "./application/use-cases/get-download-url/get-download-url.usecase";
 import { GetDocumentUseCase } from "./application/use-cases/get-document/get-document.usecase";
 import { GetPublicFileUrlUseCase } from "./application/use-cases/get-public-file-url/get-public-file-url.usecase";
@@ -43,7 +36,6 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
     PrismaDocumentLinkAdapter,
-    PdfLibRendererAdapter,
     {
       provide: GcsObjectStorageAdapter,
       useFactory: (env: EnvService) => {
@@ -55,7 +47,6 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
       },
       inject: [EnvService],
     },
-    { provide: INVOICE_PDF_MODEL_PORT, useClass: NullInvoicePdfModelAdapter },
     {
       provide: CreateUploadIntentUseCase,
       useFactory: (
@@ -268,31 +259,6 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
       inject: [PrismaDocumentRepoAdapter, PrismaFileRepoAdapter, GcsObjectStorageAdapter],
     },
     {
-      provide: GenerateInvoicePdfWorker,
-      useFactory: (
-        documentRepo: PrismaDocumentRepoAdapter,
-        fileRepo: PrismaFileRepoAdapter,
-        storage: GcsObjectStorageAdapter,
-        pdfRenderer: PdfLibRendererAdapter,
-        invoiceModel: InvoicePdfModelPort
-      ) =>
-        new GenerateInvoicePdfWorker({
-          logger: new NestLoggerAdapter(),
-          documentRepo,
-          fileRepo,
-          objectStorage: storage,
-          pdfRenderer,
-          invoicePdfModel: invoiceModel,
-        }),
-      inject: [
-        PrismaDocumentRepoAdapter,
-        PrismaFileRepoAdapter,
-        GcsObjectStorageAdapter,
-        PdfLibRendererAdapter,
-        INVOICE_PDF_MODEL_PORT,
-      ],
-    },
-    {
       provide: DocumentsApplication,
       useFactory: (
         createUploadIntent: CreateUploadIntentUseCase,
@@ -305,8 +271,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         requestInvoicePdf: RequestInvoicePdfUseCase,
         unlinkDocument: UnlinkDocumentUseCase,
         uploadFile: UploadFileUseCase,
-        proxyDownload: ProxyDownloadUseCase,
-        generateInvoicePdfWorker: GenerateInvoicePdfWorker
+        proxyDownload: ProxyDownloadUseCase
       ) =>
         new DocumentsApplication(
           createUploadIntent,
@@ -319,8 +284,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
           requestInvoicePdf,
           unlinkDocument,
           uploadFile,
-          proxyDownload,
-          generateInvoicePdfWorker
+          proxyDownload
         ),
       inject: [
         CreateUploadIntentUseCase,
@@ -334,10 +298,9 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         UnlinkDocumentUseCase,
         UploadFileUseCase,
         ProxyDownloadUseCase,
-        GenerateInvoicePdfWorker,
       ],
     },
   ],
-  exports: [DocumentsApplication, GenerateInvoicePdfWorker, GcsObjectStorageAdapter],
+  exports: [DocumentsApplication, GcsObjectStorageAdapter],
 })
 export class DocumentsModule {}

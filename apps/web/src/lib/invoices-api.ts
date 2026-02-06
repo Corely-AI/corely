@@ -156,14 +156,14 @@ export class InvoicesApi {
    * Download invoice PDF
    * Returns a signed URL that expires after a short period
    */
-  async downloadInvoicePdf(id: string): Promise<{ downloadUrl: string; expiresAt: string }> {
-    const result = await apiClient.get<{ downloadUrl: string; expiresAt: string }>(
-      `/invoices/${id}/pdf`,
-      {
-        correlationId: apiClient.generateCorrelationId(),
-      }
-    );
-    return result;
+  async downloadInvoicePdf(id: string) {
+    return apiClient.get<{
+      status: "PENDING" | "READY";
+      downloadUrl?: string;
+      expiresAt?: string;
+    }>(`/invoices/${id}/pdf`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
   }
 
   /**

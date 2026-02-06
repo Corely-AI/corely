@@ -65,7 +65,7 @@ import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-peri
 import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
 import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
-import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
+import { RequestTaxReportPdfUseCase } from "./application/use-cases/request-tax-report-pdf.use-case";
 import { GetTaxReportUseCase } from "./application/use-cases/get-tax-report.use-case";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-case";
@@ -116,7 +116,7 @@ export class TaxController {
     private readonly markVatPeriodSubmittedUseCase: MarkVatPeriodSubmittedUseCase,
     private readonly markVatPeriodNilUseCase: MarkVatPeriodNilUseCase,
     private readonly archiveVatPeriodUseCase: ArchiveVatPeriodUseCase,
-    private readonly generateTaxReportPdfUseCase: GenerateTaxReportPdfUseCase,
+    private readonly requestTaxReportPdfUseCase: RequestTaxReportPdfUseCase,
     private readonly vatPeriodResolver: VatPeriodResolver,
     private readonly getTaxCenterUseCase: GetTaxCenterUseCase,
     private readonly getTaxCapabilitiesUseCase: GetTaxCapabilitiesUseCase,
@@ -333,13 +333,13 @@ export class TaxController {
   @Get("reports/vat/quarterly/:key/pdf-url")
   async getVatPeriodPdfUrl(@Param("key") key: string, @Req() req: Request) {
     const ctx = this.buildContext(req);
-    return this.unwrap(await this.generateTaxReportPdfUseCase.execute({ periodKey: key }, ctx));
+    return this.unwrap(await this.requestTaxReportPdfUseCase.execute({ periodKey: key }, ctx));
   }
 
   @Get("reports/:id/pdf-url")
   async getReportPdfUrl(@Param("id") id: string, @Req() req: Request) {
     const ctx = this.buildContext(req);
-    return this.unwrap(await this.generateTaxReportPdfUseCase.execute({ reportId: id }, ctx));
+    return this.unwrap(await this.requestTaxReportPdfUseCase.execute({ reportId: id }, ctx));
   }
 
   // ============================================================================

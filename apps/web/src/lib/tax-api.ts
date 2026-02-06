@@ -291,13 +291,21 @@ export class TaxApi {
   }
 
   async getVatPeriodPdfUrl(key: string) {
-    return apiClient.get<{ downloadUrl: string }>(`/tax/reports/vat/quarterly/${key}/pdf-url`, {
+    return apiClient.get<{
+      status: "PENDING" | "READY";
+      downloadUrl?: string;
+      expiresAt?: string;
+    }>(`/tax/reports/vat/quarterly/${key}/pdf-url`, {
       correlationId: apiClient.generateCorrelationId(),
     });
   }
 
   async getReportPdfUrl(id: string) {
-    return apiClient.get<{ downloadUrl: string }>(`/tax/reports/${id}/pdf-url`, {
+    return apiClient.get<{
+      status: "PENDING" | "READY";
+      downloadUrl?: string;
+      expiresAt?: string;
+    }>(`/tax/reports/${id}/pdf-url`, {
       correlationId: apiClient.generateCorrelationId(),
     });
   }

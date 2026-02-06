@@ -106,15 +106,24 @@ function ReportGroup({
   const navigate = useNavigate();
 
   const handleDownload = (id: string) => {
-    const promise = taxApi.getReportPdfUrl(id).then((res) => {
-      window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
-    });
-
-    toast.promise(promise, {
-      loading: "Generating PDF...",
-      success: "Download started",
-      error: "Failed to download PDF",
-    });
+    const promise = taxApi.getReportPdfUrl(id);
+    toast.promise(
+      promise.then((res) => {
+        if (res.status === "READY" && res.downloadUrl) {
+          window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
+          return;
+        }
+        throw new Error("PENDING");
+      }),
+      {
+        loading: "Generating PDF...",
+        success: "Download started",
+        error: (err) =>
+          err?.message === "PENDING"
+            ? "PDF is being prepared. Try again shortly."
+            : "Failed to download PDF",
+      }
+    );
   };
 
   return (

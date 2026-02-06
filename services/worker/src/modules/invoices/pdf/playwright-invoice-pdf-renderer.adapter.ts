@@ -3,7 +3,7 @@ import type { Browser } from "playwright";
 import type {
   InvoicePdfRendererPort,
   InvoicePdfModel,
-} from "../../application/ports/invoice-pdf-renderer.port";
+} from "@/modules/invoices/application/ports/invoice-pdf-renderer.port";
 
 @Injectable()
 export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPort {
@@ -41,7 +41,9 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
       return Buffer.from(pdfBuffer);
     } catch (error) {
       this.logger.error(`Failed to generate PDF for invoice ${invoiceId}`, error);
-      throw new Error(`PDF generation failed: ${error.message}`);
+      throw new Error(
+        `PDF generation failed: ${error instanceof Error ? error.message : "unknown error"}`
+      );
     } finally {
       await page.close();
     }
@@ -198,125 +200,73 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
         </div>
         <div>
           <div class="date-item">
-            <div class="date-label">Invoice date</div>
+            <div class="date-label">Invoice no.</div>
+            <div class="date-value">${this.escapeHtml(model.invoiceNumber)}</div>
+          </div>
+          <div class="date-item">
+            <div class="date-label">Issue date</div>
             <div class="date-value">${this.escapeHtml(model.issueDate)}</div>
           </div>
           ${
-            model.serviceDate
-              ? `
-          <div class="date-item">
-            <div class="date-label">Service date</div>
-            <div class="date-value">${this.escapeHtml(model.serviceDate)}</div>
-          </div>
-          `
-              : ""
-          }
-          <div class="date-item">
-            <div class="date-label">Invoice number</div>
-            <div class="date-value">${this.escapeHtml(model.invoiceNumber)}</div>
-          </div>
-          ${
             model.dueDate
-              ? `
-          <div class="date-item">
-            <div class="date-label">Due date</div>
-            <div class="date-value">${this.escapeHtml(model.dueDate)}</div>
-          </div>
-          `
+              ? `<div class="date-item">
+                  <div class="date-label">Due date</div>
+                  <div class="date-value">${this.escapeHtml(model.dueDate)}</div>
+                </div>`
               : ""
           }
         </div>
       </div>
     </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th style="text-align: right;">Quantity</th>
-          <th style="text-align: right;">Unit Price</th>
-          <th style="text-align: right;">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemsHtml}
-      </tbody>
-    </table>
+    <div class="section">
+      <div class="section-title">Details</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th style="text-align: right;">Qty</th>
+            <th style="text-align: right;">Unit price</th>
+            <th style="text-align: right;">Line total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>
+    </div>
 
     <div class="totals">
       <div class="total-row">
-        <span>Total amount (Net)</span>
+        <span>Subtotal</span>
         <span>${this.escapeHtml(model.totals.subtotal)}</span>
       </div>
-      ${
-        model.totals.vatAmount
-          ? `
-      <div class="total-row">
-        <span>VAT ${this.escapeHtml(model.totals.vatRate || "")}</span>
-        <span>${this.escapeHtml(model.totals.vatAmount)}</span>
-      </div>
-      `
-          : ""
-      }
       <div class="total-row grand">
-        <span>Total amount (Gross)</span>
+        <span>Total (${this.escapeHtml(model.currency)})</span>
         <span>${this.escapeHtml(model.totals.total)}</span>
       </div>
     </div>
 
     ${
-      model.paymentSnapshot
-        ? `
-    <div class="section">
-      <div class="section-title">Payment Details</div>
-      <div style="font-size: 10pt; line-height: 1.6;">
-        ${
-          model.paymentSnapshot.type === "BANK_TRANSFER"
-            ? `
-          <div><strong>Bank Transfer</strong></div>
-          ${model.paymentSnapshot.accountHolderName ? `<div>${this.escapeHtml(model.paymentSnapshot.accountHolderName)}</div>` : ""}
-          ${model.paymentSnapshot.iban ? `<div>IBAN: ${this.escapeHtml(model.paymentSnapshot.iban)}</div>` : ""}
-          ${model.paymentSnapshot.bic ? `<div>BIC: ${this.escapeHtml(model.paymentSnapshot.bic)}</div>` : ""}
-          ${model.paymentSnapshot.bankName ? `<div>Bank: ${this.escapeHtml(model.paymentSnapshot.bankName)}</div>` : ""}
-          <div style="margin-top: 8px;">Reference: <strong>${this.escapeHtml(model.paymentSnapshot.referenceText)}</strong></div>
-        `
-            : `
-          <div><strong>${this.escapeHtml(model.paymentSnapshot.label)}</strong></div>
-          ${model.paymentSnapshot.instructions ? `<div>${this.escapeHtml(model.paymentSnapshot.instructions)}</div>` : ""}
-          ${model.paymentSnapshot.payUrl ? `<div>URL: ${this.escapeHtml(model.paymentSnapshot.payUrl)}</div>` : ""}
-          ${model.paymentSnapshot.referenceText ? `<div style="margin-top: 8px;">Reference: <strong>${this.escapeHtml(model.paymentSnapshot.referenceText)}</strong></div>` : ""}
-        `
-        }
-      </div>
-    </div>
-    `
-        : ""
-    }
-
-    ${
       model.notes
-        ? `
-    <div class="section">
-      <div class="section-title">Notes</div>
-      <div>${this.escapeHtml(model.notes)}</div>
-    </div>
-    `
+        ? `<div class="section">
+            <div class="section-title">Notes</div>
+            <div>${this.escapeHtml(model.notes)}</div>
+          </div>`
         : ""
     }
   </div>
 </body>
 </html>
-    `.trim();
+`;
   }
 
-  private escapeHtml(text: string): string {
-    const map: Record<string, string> = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;",
-    };
-    return text.replace(/[&<>"']/g, (m) => map[m]);
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 }

@@ -111,6 +111,27 @@ model InvoiceEmailDelivery {
   @@schema("billing")
 }
 
+model InvoiceReminderState {
+  id             String    @id @default(cuid())
+  tenantId       String
+  workspaceId    String
+  invoiceId      String
+  remindersSent  Int       @default(0)
+  nextReminderAt DateTime? @db.Timestamptz(6)
+  lastReminderAt DateTime? @db.Timestamptz(6)
+  lockedAt       DateTime? @db.Timestamptz(6)
+  lockedBy       String?
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, invoiceId])
+  @@index([tenantId, workspaceId, nextReminderAt])
+  @@index([tenantId, lockedAt])
+  @@schema("billing")
+}
+
 enum DeliveryStatus {
   QUEUED
   SENT

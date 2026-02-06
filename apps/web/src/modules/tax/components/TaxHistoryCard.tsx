@@ -252,17 +252,24 @@ export function TaxHistoryCard() {
                         size="sm"
                         className="w-fit"
                         onClick={() => {
-                          const promise = taxApi
-                            .getVatPeriodPdfUrl(selectedPeriod.periodKey)
-                            .then((res) => {
-                              window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
-                            });
-
-                          toast.promise(promise, {
-                            loading: "Generating PDF...",
-                            success: "Download started",
-                            error: "Failed to download PDF",
-                          });
+                          const promise = taxApi.getVatPeriodPdfUrl(selectedPeriod.periodKey);
+                          toast.promise(
+                            promise.then((res) => {
+                              if (res.status === "READY" && res.downloadUrl) {
+                                window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
+                                return;
+                              }
+                              throw new Error("PENDING");
+                            }),
+                            {
+                              loading: "Generating PDF...",
+                              success: "Download started",
+                              error: (err) =>
+                                err?.message === "PENDING"
+                                  ? "PDF is being prepared. Try again shortly."
+                                  : "Failed to download PDF",
+                            }
+                          );
                         }}
                       >
                         <Download className="mr-2 h-4 w-4" />

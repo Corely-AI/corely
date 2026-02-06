@@ -1,9 +1,9 @@
-import { type LoggerPort } from "@corely/kernel";
-import { type DocumentRepoPort } from "../../ports/document-repository.port";
-import { type FileRepoPort } from "../../ports/file-repository.port";
-import { type ObjectStoragePort } from "../../ports/object-storage.port";
-import { type PdfRendererPort } from "../../ports/pdf-renderer.port";
-import { type InvoicePdfModelPort } from "../../../../invoices/application/ports/invoice-pdf-model.port";
+import { Logger } from "@nestjs/common";
+import type { DocumentRepoPort } from "@/modules/documents/application/ports/document-repository.port";
+import type { FileRepoPort } from "@/modules/documents/application/ports/file-repository.port";
+import type { ObjectStoragePort } from "@/modules/documents/application/ports/object-storage.port";
+import type { InvoicePdfModelPort } from "@/modules/invoices/application/ports/invoice-pdf-model.port";
+import type { InvoicePdfRendererPort } from "@/modules/invoices/application/ports/invoice-pdf-renderer.port";
 
 type EventPayload = {
   tenantId: string;
@@ -13,15 +13,16 @@ type EventPayload = {
 };
 
 type Deps = {
-  logger: LoggerPort;
   documentRepo: DocumentRepoPort;
   fileRepo: FileRepoPort;
   objectStorage: ObjectStoragePort;
-  pdfRenderer: PdfRendererPort;
   invoicePdfModel: InvoicePdfModelPort;
+  pdfRenderer: InvoicePdfRendererPort;
 };
 
 export class GenerateInvoicePdfWorker {
+  private readonly logger = new Logger(GenerateInvoicePdfWorker.name);
+
   constructor(private readonly deps: Deps) {}
 
   async handle(event: EventPayload) {
@@ -30,7 +31,7 @@ export class GenerateInvoicePdfWorker {
     const file = await this.deps.fileRepo.findById(tenantId, fileId);
 
     if (!document || !file || file.documentId !== document.id) {
-      this.deps.logger.error("generate_invoice_pdf.missing_document_or_file", {
+      this.logger.error("generate_invoice_pdf.missing_document_or_file", {
         documentId,
         fileId,
         tenantId,
@@ -44,7 +45,7 @@ export class GenerateInvoicePdfWorker {
         throw new Error("Invoice model not found");
       }
 
-      const pdfBytes = await this.deps.pdfRenderer.renderInvoicePdf({
+      const pdfBytes = await this.deps.pdfRenderer.renderInvoiceToPdf({
         tenantId,
         invoiceId,
         model,
@@ -66,14 +67,18 @@ export class GenerateInvoicePdfWorker {
       await this.deps.fileRepo.save(file);
       await this.deps.documentRepo.save(document);
     } catch (error) {
-      this.deps.logger.error("generate_invoice_pdf.failed", {
+      this.logger.error("generate_invoice_pdf.failed", {
         tenantId,
         invoiceId,
         documentId,
         error,
       });
-      document.markFailed((error as Error).message, new Date());
+      document.markFailed(
+        error instanceof Error ? error.message : "PDF generation failed",
+        new Date()
+      );
       await this.deps.documentRepo.save(document);
+      throw error;
     }
   }
 }

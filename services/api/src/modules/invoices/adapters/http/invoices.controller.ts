@@ -17,8 +17,7 @@ import { PartyApplication } from "../../../party/application/party.application";
 import {
   CancelInvoiceInputSchema,
   CreateInvoiceInputSchema,
-  DownloadInvoicePdfInputSchema,
-  type DownloadInvoicePdfInput,
+  RequestInvoicePdfInputSchema,
   FinalizeInvoiceInputSchema,
   GetInvoiceByIdInputSchema,
   ListInvoicesInputSchema,
@@ -31,6 +30,7 @@ import { buildUseCaseContext, mapResultToHttp } from "./mappers";
 
 import { AuthGuard } from "../../../identity";
 import { ModuleRef } from "@nestjs/core";
+import { DocumentsApplication } from "../../../documents/application/documents.application";
 
 @Controller("invoices")
 @UseGuards(AuthGuard)
@@ -38,6 +38,9 @@ export class InvoicesHttpController {
   constructor(
     @Inject(InvoicesApplication) @Optional() private readonly app: InvoicesApplication | null,
     @Inject(PartyApplication) @Optional() private readonly partyApp: PartyApplication | null,
+    @Inject(DocumentsApplication)
+    @Optional()
+    private readonly documentsApp: DocumentsApplication | null,
     @Optional() private readonly moduleRef?: ModuleRef
   ) {}
 
@@ -105,18 +108,22 @@ export class InvoicesHttpController {
 
   @Get(":invoiceId/pdf")
   async downloadPdf(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
-    const input: DownloadInvoicePdfInput = { invoiceId };
-    DownloadInvoicePdfInputSchema.parse(input);
+    const input = RequestInvoicePdfInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
-    const result = await this.app!.downloadInvoicePdf.execute(input, ctx);
+    const docsApp =
+      this.documentsApp ?? this.moduleRef?.get(DocumentsApplication, { strict: false });
+    if (!docsApp) {
+      throw new Error("DocumentsApplication not available");
+    }
+    const result = await docsApp.requestInvoicePdf.execute(input, ctx);
     const payload = mapResultToHttp(result);
-    const downloadUrl = payload.downloadUrl.startsWith("/")
-      ? `${req.protocol}://${req.get("host")}${payload.downloadUrl}`
-      : payload.downloadUrl;
-    return {
-      downloadUrl,
-      expiresAt: payload.expiresAt,
-    };
+    if (payload.downloadUrl?.startsWith("/")) {
+      return {
+        ...payload,
+        downloadUrl: `${req.protocol}://${req.get("host")}${payload.downloadUrl}`,
+      };
+    }
+    return payload;
   }
 
   @Get(":invoiceId")

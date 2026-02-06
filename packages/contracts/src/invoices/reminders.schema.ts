@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const RunInvoiceRemindersInputSchema = z.object({
-  daysOverdue: z.number().int().positive().optional(),
+  limit: z.number().int().positive().optional(),
 });
 export type RunInvoiceRemindersInput = z.infer<typeof RunInvoiceRemindersInputSchema>;
 

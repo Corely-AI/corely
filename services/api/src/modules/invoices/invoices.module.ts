@@ -1,13 +1,14 @@
-import { Module, Logger, InternalServerErrorException } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
-import { OUTBOX_PORT } from "@corely/kernel";
-import type { OutboxPort } from "@corely/kernel";
-import { chromium } from "playwright";
+import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
+import type { OutboxPort, AuditPort } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { InvoicesHttpController } from "./adapters/http/invoices.controller";
 import { InvoicesInternalController } from "./adapters/http/invoices-internal.controller";
 import { ResendWebhookController } from "./adapters/webhooks/resend-webhook.controller";
 import { PrismaInvoiceEmailDeliveryRepoAdapter } from "./infrastructure/prisma/prisma-invoice-email-delivery-repo.adapter";
+import { PrismaInvoiceReminderStateAdapter } from "./infrastructure/adapters/prisma-invoice-reminder-state.adapter";
+import { PrismaInvoiceReminderSettingsAdapter } from "./infrastructure/adapters/prisma-invoice-reminder-settings.adapter";
 import { InvoicesApplication } from "./application/invoices.application";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 import {
@@ -19,8 +20,6 @@ import { PAYMENT_METHOD_QUERY_PORT } from "./application/ports/payment-method-qu
 import { PrismaPaymentMethodQueryAdapter } from "./infrastructure/adapters/prisma-payment-method-query.adapter";
 import { LEGAL_ENTITY_QUERY_PORT } from "./application/ports/legal-entity-query.port";
 import { PrismaLegalEntityQueryAdapter } from "./infrastructure/adapters/legal-entity-query.adapter";
-import { INVOICE_PDF_MODEL_PORT } from "./application/ports/invoice-pdf-model.port";
-import { INVOICE_PDF_RENDERER_PORT } from "./application/ports/invoice-pdf-renderer.port";
 import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
 import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
 import { InvoiceNumberingAdapter } from "./infrastructure/prisma/prisma-numbering.adapter";
@@ -41,13 +40,17 @@ import { RecordPaymentUseCase } from "./application/use-cases/record-payment/rec
 import { SendInvoiceUseCase } from "./application/use-cases/send-invoice/send-invoice.usecase";
 import { SendInvoiceRemindersUseCase } from "./application/use-cases/send-invoice-reminders/send-invoice-reminders.usecase";
 import { UpdateInvoiceUseCase } from "./application/use-cases/update-invoice/update-invoice.usecase";
-import { DownloadInvoicePdfUseCase } from "./application/use-cases/download-invoice-pdf/download-invoice-pdf.usecase";
 import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoice-repository.adapter";
-import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoice-pdf-model.adapter";
-import { PlaywrightInvoicePdfRendererAdapter } from "./infrastructure/pdf/playwright-invoice-pdf-renderer.adapter";
-import { GcsObjectStorageAdapter } from "../documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
 import { INVOICE_COMMANDS } from "./application/ports/invoice-commands.port";
 import { InvoiceCommandService } from "./application/services/invoice-command.service";
+import {
+  INVOICE_REMINDER_STATE_PORT,
+  type InvoiceReminderStatePort,
+} from "./application/ports/invoice-reminder-state.port";
+import {
+  INVOICE_REMINDER_SETTINGS_PORT,
+  type InvoiceReminderSettingsPort,
+} from "./application/ports/invoice-reminder-settings.port";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule, TaxModule],
@@ -63,67 +66,11 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
       inject: [CLOCK_PORT_TOKEN, TENANT_TIMEZONE_PORT],
     },
     { provide: INVOICE_NUMBERING_PORT, useClass: InvoiceNumberingAdapter },
-    { provide: INVOICE_PDF_MODEL_PORT, useClass: PrismaInvoicePdfModelAdapter },
-    {
-      provide: "PLAYWRIGHT_BROWSER",
-      useFactory: async () => {
-        // Skip browser launch in test or production (Docker image lacks browser binaries)
-        if (
-          process.env.NODE_ENV === "test" ||
-          process.env.NODE_ENV === "production" ||
-          process.env.CORELY_TEST === "true"
-        ) {
-          const logger = new Logger("PlaywrightBrowser");
-          if (process.env.NODE_ENV === "production") {
-            logger.warn(
-              "Playwright browser disabled in production. PDF generation will be unavailable."
-            );
-          }
-          return {
-            async newPage() {
-              if (process.env.NODE_ENV === "production") {
-                throw new InternalServerErrorException(
-                  "PDF generation is unavailable in production. Use a dedicated PDF service."
-                );
-              }
-              return {
-                async setContent() {},
-                async pdf() {
-                  return Buffer.from("");
-                },
-                async close() {},
-              };
-            },
-          };
-        }
-
-        try {
-          return await chromium.launch({ headless: true });
-        } catch (error) {
-          const logger = new Logger("PlaywrightBrowser");
-          logger.error(
-            "Failed to launch Playwright browser. PDF generation will be unavailable.",
-            error instanceof Error ? error.stack : error
-          );
-
-          // Return a safe fallback to prevent app crash
-          return {
-            newPage: async () => {
-              throw new InternalServerErrorException(
-                "PDF generation is unavailable because the browser failed to launch on startup."
-              );
-            },
-            close: async () => {},
-          } as any;
-        }
-      },
-    },
-    {
-      provide: INVOICE_PDF_RENDERER_PORT,
-      useFactory: (browser: any) => new PlaywrightInvoicePdfRendererAdapter(browser),
-      inject: ["PLAYWRIGHT_BROWSER"],
-    },
     PrismaInvoiceEmailDeliveryRepoAdapter,
+    PrismaInvoiceReminderStateAdapter,
+    PrismaInvoiceReminderSettingsAdapter,
+    { provide: INVOICE_REMINDER_STATE_PORT, useExisting: PrismaInvoiceReminderStateAdapter },
+    { provide: INVOICE_REMINDER_SETTINGS_PORT, useExisting: PrismaInvoiceReminderSettingsAdapter },
     PrismaPaymentMethodQueryAdapter,
     { provide: PAYMENT_METHOD_QUERY_PORT, useExisting: PrismaPaymentMethodQueryAdapter },
     PrismaLegalEntityQueryAdapter,
@@ -221,7 +168,12 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
         repo: PrismaInvoiceRepoAdapter,
         deliveryRepo: PrismaInvoiceEmailDeliveryRepoAdapter,
         outbox: OutboxPort,
-        idGen: any
+        idGen: any,
+        clock: any,
+        reminderState: InvoiceReminderStatePort,
+        reminderSettings: InvoiceReminderSettingsPort,
+        audit: AuditPort,
+        tenantTimeZone: any
       ) =>
         new SendInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -229,24 +181,57 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
           deliveryRepo,
           outbox,
           idGenerator: idGen,
+          clock,
+          reminderState,
+          reminderSettings,
+          audit,
+          tenantTimeZone,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
         PrismaInvoiceEmailDeliveryRepoAdapter,
         OUTBOX_PORT,
         ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        INVOICE_REMINDER_STATE_PORT,
+        INVOICE_REMINDER_SETTINGS_PORT,
+        AUDIT_PORT,
+        TENANT_TIMEZONE_PORT,
       ],
     },
     {
       provide: SendInvoiceRemindersUseCase,
-      useFactory: (repo: PrismaInvoiceRepoAdapter, sendInvoice: SendInvoiceUseCase, clock: any) =>
+      useFactory: (
+        repo: PrismaInvoiceRepoAdapter,
+        sendInvoice: SendInvoiceUseCase,
+        clock: any,
+        reminderState: InvoiceReminderStatePort,
+        reminderSettings: InvoiceReminderSettingsPort,
+        idGen: any,
+        audit: AuditPort,
+        tenantTimeZone: any
+      ) =>
         new SendInvoiceRemindersUseCase({
           logger: new NestLoggerAdapter(),
           invoiceRepo: repo,
           sendInvoice,
           clock,
+          reminderState,
+          reminderSettings,
+          idGenerator: idGen,
+          audit,
+          tenantTimeZone,
         }),
-      inject: [PrismaInvoiceRepoAdapter, SendInvoiceUseCase, CLOCK_PORT_TOKEN],
+      inject: [
+        PrismaInvoiceRepoAdapter,
+        SendInvoiceUseCase,
+        CLOCK_PORT_TOKEN,
+        INVOICE_REMINDER_STATE_PORT,
+        INVOICE_REMINDER_SETTINGS_PORT,
+        ID_GENERATOR_TOKEN,
+        AUDIT_PORT,
+        TENANT_TIMEZONE_PORT,
+      ],
     },
     {
       provide: RecordPaymentUseCase,
@@ -286,22 +271,6 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
       inject: [PrismaInvoiceRepoAdapter, TimeService],
     },
     {
-      provide: DownloadInvoicePdfUseCase,
-      useFactory: (
-        repo: PrismaInvoiceRepoAdapter,
-        pdfModel: any,
-        renderer: any,
-        storage: GcsObjectStorageAdapter
-      ) =>
-        new DownloadInvoicePdfUseCase(repo, pdfModel, renderer, storage, new NestLoggerAdapter()),
-      inject: [
-        PrismaInvoiceRepoAdapter,
-        INVOICE_PDF_MODEL_PORT,
-        INVOICE_PDF_RENDERER_PORT,
-        GcsObjectStorageAdapter,
-      ],
-    },
-    {
       provide: InvoicesApplication,
       useFactory: (
         createInvoice: CreateInvoiceUseCase,
@@ -311,8 +280,7 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
         recordPayment: RecordPaymentUseCase,
         cancelInvoice: CancelInvoiceUseCase,
         getInvoice: GetInvoiceByIdUseCase,
-        listInvoices: ListInvoicesUseCase,
-        downloadPdf: DownloadInvoicePdfUseCase
+        listInvoices: ListInvoicesUseCase
       ) =>
         new InvoicesApplication(
           createInvoice,
@@ -322,8 +290,7 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
           recordPayment,
           cancelInvoice,
           getInvoice,
-          listInvoices,
-          downloadPdf
+          listInvoices
         ),
       inject: [
         CreateInvoiceUseCase,
@@ -334,7 +301,6 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
         CancelInvoiceUseCase,
         GetInvoiceByIdUseCase,
         ListInvoicesUseCase,
-        DownloadInvoicePdfUseCase,
       ],
     },
     {

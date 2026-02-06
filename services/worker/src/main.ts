@@ -2,6 +2,8 @@ import "reflect-metadata";
 import { EnvService, loadEnv } from "@corely/config";
 import { NestFactory } from "@nestjs/core";
 import { WorkerModule } from "./worker.module";
+import { InvoiceReminderSweeperModule } from "./commands/invoice-reminder-sweeper.module";
+import { InvoiceReminderRunnerService } from "./modules/invoices/invoice-reminder-runner.service";
 import { CONTRACTS_HELLO } from "@corely/contracts";
 import { setupTracing, shutdownTracing } from "./observability/setup-tracing";
 import { Logger } from "@nestjs/common";
@@ -12,6 +14,16 @@ loadEnv();
 async function bootstrap() {
   const logger = new Logger("WorkerBootstrap");
   await setupTracing("corely-worker");
+
+  const command = process.argv[2];
+  if (command === "invoice-reminder-sweeper") {
+    const app = await NestFactory.createApplicationContext(InvoiceReminderSweeperModule);
+    const runner = app.get(InvoiceReminderRunnerService);
+    await runner.runOnce();
+    await app.close();
+    logger.log("[worker] invoice reminder sweeper completed");
+    return;
+  }
 
   const driver = process.env.WORKFLOW_QUEUE_DRIVER;
   if (driver === "cloudtasks") {
