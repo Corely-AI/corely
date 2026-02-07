@@ -56,6 +56,7 @@ import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
   providers: [
     // Infrastructure - Logging
     NestLoggerAdapter,
+    { provide: "LoggerPort", useExisting: NestLoggerAdapter },
 
     // Infrastructure - Repositories
     PrismaAccountingSettingsRepository,
