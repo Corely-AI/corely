@@ -37,4 +37,5 @@ export interface PartyRepoPort {
     role: PartyRoleType | undefined,
     pagination: Pagination
   ): Promise<ListCustomersResult>;
+  findPartyByEmail(tenantId: string, email: string): Promise<PartyAggregate | null>;
 }

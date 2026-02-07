@@ -94,6 +94,9 @@ enum DocumentLinkEntityType {
   EXPENSE
   AGENT_RUN
   MESSAGE
+  CLASS_GROUP
+  CLASS_SESSION
+  PARTY
   OTHER
   @@schema("platform")
 }

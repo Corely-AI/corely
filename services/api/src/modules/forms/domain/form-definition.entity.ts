@@ -29,6 +29,8 @@ export interface FormField {
   updatedAt: Date;
 }
 
+export type FormPostSubmitAction = "NONE" | "CREATE_TUTORING_LEAD";
+
 export interface FormDefinition {
   id: string;
   tenantId: string;
@@ -37,6 +39,7 @@ export interface FormDefinition {
   status: FormStatus;
   publicId: string | null;
   publicTokenHash: string | null;
+  postSubmitAction: FormPostSubmitAction;
   publishedAt: Date | null;
   archivedAt: Date | null;
   createdAt: Date;

@@ -1,18 +1,25 @@
+enum FormPostSubmitAction {
+  NONE
+  CREATE_TUTORING_LEAD
+  @@schema("platform")
+}
+
 model FormDefinition {
-  id              String     @id @default(cuid())
+  id              String               @id @default(cuid())
   tenantId        String
   name            String
   description     String?
-  status          FormStatus @default(DRAFT)
-  publicId        String?    @unique
+  status          FormStatus           @default(DRAFT)
+  publicId        String?              @unique
   publicTokenHash String?
-  publishedAt     DateTime?  @db.Timestamptz(6)
-  archivedAt      DateTime?  @db.Timestamptz(6)
-  createdAt       DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime   @updatedAt @db.Timestamptz(6)
+  postSubmitAction FormPostSubmitAction @default(NONE)
+  publishedAt     DateTime?            @db.Timestamptz(6)
+  archivedAt      DateTime?            @db.Timestamptz(6)
+  createdAt       DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime             @updatedAt @db.Timestamptz(6)
 
-  fields       FormField[]
-  submissions  FormSubmission[]
+  fields      FormField[]
+  submissions FormSubmission[]
 
   @@unique([tenantId, name])
   @@index([tenantId])

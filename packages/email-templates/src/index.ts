@@ -8,3 +8,6 @@ export type { InvoiceEmailProps } from "./invoices/index";
 // Re-export password reset module
 export { PasswordResetEmail, buildPasswordResetEmailSubject } from "./password-reset/index";
 export type { PasswordResetEmailProps } from "./password-reset/index";
+
+// Re-export leads module
+export { LeadConfirmationEmail, buildLeadConfirmationEmailSubject } from "./leads/index";

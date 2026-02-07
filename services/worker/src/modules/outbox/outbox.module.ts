@@ -15,9 +15,17 @@ import { IssueTranscriptionRequestedHandler } from "../issues/issue-transcriptio
 import { InvoicesWorkerModule } from "../invoices/invoices-worker.module";
 import { TaxWorkerModule } from "../tax/tax-worker.module";
 import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-requested.handler";
+import { FormsEventHandler } from "../forms/forms-event.handler";
+import { FormsWorkerModule } from "../forms/forms-worker.module";
 
 @Module({
-  imports: [AccountingWorkerModule, IssuesWorkerModule, InvoicesWorkerModule, TaxWorkerModule],
+  imports: [
+    AccountingWorkerModule,
+    IssuesWorkerModule,
+    InvoicesWorkerModule,
+    TaxWorkerModule,
+    FormsWorkerModule,
+  ],
   providers: [
     {
       provide: EMAIL_SENDER_PORT,
@@ -49,7 +57,8 @@ import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-req
         invoicePdfHandler: InvoicePdfRenderRequestedHandler,
         cashEntryHandler: CashEntryCreatedHandler,
         issueTranscriptionHandler: IssueTranscriptionRequestedHandler,
-        taxReportPdfHandler: TaxReportPdfRequestedHandler
+        taxReportPdfHandler: TaxReportPdfRequestedHandler,
+        formsHandler: FormsEventHandler
       ) => {
         return new OutboxPollerService(repo, [
           invoiceHandler,
@@ -57,6 +66,7 @@ import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-req
           cashEntryHandler,
           issueTranscriptionHandler,
           taxReportPdfHandler,
+          formsHandler,
         ]);
       },
       inject: [
@@ -66,6 +76,7 @@ import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-req
         CashEntryCreatedHandler,
         IssueTranscriptionRequestedHandler,
         TaxReportPdfRequestedHandler,
+        FormsEventHandler,
       ],
     },
   ],

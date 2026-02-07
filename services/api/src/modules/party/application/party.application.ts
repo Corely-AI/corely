@@ -9,6 +9,7 @@ import type { GetStudentGuardiansUseCase } from "./use-cases/student-guardians/g
 import type { LinkGuardianToStudentUseCase } from "./use-cases/student-guardians/link-guardian-to-student.usecase";
 import type { SetPrimaryPayerUseCase } from "./use-cases/student-guardians/set-primary-payer.usecase";
 import type { UnlinkGuardianUseCase } from "./use-cases/student-guardians/unlink-guardian.usecase";
+import type { UpdatePartyLifecycleStatusUseCase } from "./use-cases/update-party-lifecycle-status.usecase";
 
 export class PartyApplication {
   constructor(
@@ -22,6 +23,7 @@ export class PartyApplication {
     public readonly getStudentGuardians: GetStudentGuardiansUseCase,
     public readonly linkGuardianToStudent: LinkGuardianToStudentUseCase,
     public readonly unlinkGuardian: UnlinkGuardianUseCase,
-    public readonly setPrimaryPayer: SetPrimaryPayerUseCase
+    public readonly setPrimaryPayer: SetPrimaryPayerUseCase,
+    public readonly updateLifecycleStatus: UpdatePartyLifecycleStatusUseCase
   ) {}
 }
