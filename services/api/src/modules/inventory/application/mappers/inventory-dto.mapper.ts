@@ -1,6 +1,7 @@
 import type {
   InventoryDocumentDto,
   InventoryDocumentLineDto,
+  InventoryLotDto,
   LocationDto,
   ProductDto,
   ReorderPolicyDto,
@@ -18,6 +19,7 @@ import type {
   StockReservation,
 } from "../../domain/inventory.types";
 import type { InventoryLocation } from "../ports/location-repository.port";
+import type { InventoryLot } from "../ports/inventory-lot-repository.port";
 import type { InventoryProduct } from "../ports/product-repository.port";
 import type { ReorderPolicy } from "../ports/reorder-policy-repository.port";
 import type { InventoryWarehouse } from "../ports/warehouse-repository.port";
@@ -168,4 +170,26 @@ export const toStockLevelDto = (params: {
   onHandQty: params.onHandQty,
   reservedQty: params.reservedQty,
   availableQty: params.availableQty,
+});
+
+export const toInventoryLotDto = (lot: InventoryLot): InventoryLotDto => ({
+  id: lot.id,
+  tenantId: lot.tenantId,
+  productId: lot.productId,
+  lotNumber: lot.lotNumber,
+  mfgDate: toLocalDateString(lot.mfgDate),
+  expiryDate: toLocalDateString(lot.expiryDate),
+  receivedDate: lot.receivedDate as string,
+  shipmentId: lot.shipmentId ?? null,
+  supplierPartyId: lot.supplierPartyId ?? null,
+  unitCostCents: lot.unitCostCents ?? null,
+  qtyReceived: lot.qtyReceived,
+  qtyOnHand: lot.qtyOnHand,
+  qtyReserved: lot.qtyReserved,
+  status: lot.status,
+  notes: lot.notes ?? null,
+  metadataJson: lot.metadataJson ?? null,
+  createdAt: lot.createdAt.toISOString(),
+  updatedAt: lot.updatedAt.toISOString(),
+  archivedAt: lot.archivedAt ? lot.archivedAt.toISOString() : null,
 });

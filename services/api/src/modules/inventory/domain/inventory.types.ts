@@ -6,6 +6,7 @@ export type InventoryDocumentType = "RECEIPT" | "DELIVERY" | "TRANSFER" | "ADJUS
 export type InventoryDocumentStatus = "DRAFT" | "CONFIRMED" | "POSTED" | "CANCELED";
 export type StockMoveReason = "RECEIPT" | "SHIPMENT" | "TRANSFER" | "ADJUSTMENT";
 export type ReservationStatus = "ACTIVE" | "RELEASED" | "FULFILLED";
+export type InventoryLotStatus = "AVAILABLE" | "QUARANTINE" | "BLOCKED" | "DISPOSED";
 export type NegativeStockPolicy = "DISALLOW" | "ALLOW";
 export type ReservationPolicy = "FULL_ONLY";
 
