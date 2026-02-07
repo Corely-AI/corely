@@ -44,18 +44,28 @@ export function pickFEFO(
   // Sort lots by expiry date (earliest first)
   // Lots without expiry date are considered last
   const sortedLots = [...availableLots].sort((a, b) => {
-    if (!a.expiryDate && !b.expiryDate) {return 0;}
-    if (!a.expiryDate) {return 1;} // a goes last
-    if (!b.expiryDate) {return -1;} // b goes last
+    if (!a.expiryDate && !b.expiryDate) {
+      return 0;
+    }
+    if (!a.expiryDate) {
+      return 1;
+    } // a goes last
+    if (!b.expiryDate) {
+      return -1;
+    } // b goes last
     return a.expiryDate.localeCompare(b.expiryDate);
   });
 
   // Allocate from lots in expiry order
   for (const lot of sortedLots) {
-    if (remainingQty <= 0) {break;}
+    if (remainingQty <= 0) {
+      break;
+    }
 
     const availableInLot = lot.qtyOnHand - lot.qtyReserved;
-    if (availableInLot <= 0) {continue;} // Skip lots with no available quantity
+    if (availableInLot <= 0) {
+      continue;
+    } // Skip lots with no available quantity
 
     const quantityToPick = Math.min(remainingQty, availableInLot);
 
