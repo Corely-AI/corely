@@ -97,7 +97,7 @@ export class GenerateExciseReportUseCase extends BaseUseCase<
           });
         }
       } catch (error) {
-        this.logger.warn("Failed to parse tax breakdown", {
+        this.deps.logger.warn("Failed to parse tax breakdown", {
           snapshotId: snapshot.id,
           error,
         });

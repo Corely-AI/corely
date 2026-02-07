@@ -136,7 +136,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
       } else {
         productMap.set(lot.productId, {
           productId: lot.productId,
-          productName: lot.product?.name || "Unknown",
+          productName: (lot as any).product?.name || "Unknown",
           quantity: lot.qtyOnHand,
           valueCents,
         });
