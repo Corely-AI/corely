@@ -18,6 +18,8 @@ import type {
   SubmitShipmentOutput,
   ReceiveShipmentInput,
   ReceiveShipmentOutput,
+  AllocateLandedCostsInput,
+  AllocateLandedCostsOutput,
 } from "@corely/contracts";
 import { CreateShipmentUseCase } from "../../application/use-cases/create-shipment.usecase";
 import { UpdateShipmentUseCase } from "../../application/use-cases/update-shipment.usecase";
@@ -25,6 +27,7 @@ import { ListShipmentsUseCase } from "../../application/use-cases/list-shipments
 import { GetShipmentUseCase } from "../../application/use-cases/get-shipment.usecase";
 import { SubmitShipmentUseCase } from "../../application/use-cases/submit-shipment.usecase";
 import { ReceiveShipmentUseCase } from "../../application/use-cases/receive-shipment.usecase";
+import { AllocateLandedCostsUseCase } from "../../application/use-cases/allocate-landed-costs.usecase";
 
 @Controller("import/shipments")
 @UseGuards(AuthGuard, RbacGuard, WorkspaceCapabilityGuard)
@@ -36,7 +39,8 @@ export class ImportShipmentController {
     private readonly listShipments: ListShipmentsUseCase,
     private readonly getShipment: GetShipmentUseCase,
     private readonly submitShipment: SubmitShipmentUseCase,
-    private readonly receiveShipment: ReceiveShipmentUseCase
+    private readonly receiveShipment: ReceiveShipmentUseCase,
+    private readonly allocateLandedCosts: AllocateLandedCostsUseCase
   ) {}
 
   @Post()
@@ -113,6 +117,20 @@ export class ImportShipmentController {
     @Context() ctx: UseCaseContext
   ): Promise<ReceiveShipmentOutput> {
     const result = await this.receiveShipment.execute({ ...input, shipmentId }, ctx);
+    if (!result.ok) {
+      throw result.error;
+    }
+    return result.value;
+  }
+
+  @Post(":id/allocate-costs")
+  @Permission("import.shipments.manage")
+  async allocateCosts(
+    @Param("id") shipmentId: string,
+    @Body() input: Omit<AllocateLandedCostsInput, "shipmentId">,
+    @Context() ctx: UseCaseContext
+  ): Promise<AllocateLandedCostsOutput> {
+    const result = await this.allocateLandedCosts.execute({ ...input, shipmentId }, ctx);
     if (!result.ok) {
       throw result.error;
     }

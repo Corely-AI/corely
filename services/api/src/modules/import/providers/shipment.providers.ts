@@ -5,6 +5,7 @@ import { ListShipmentsUseCase } from "../application/use-cases/list-shipments.us
 import { GetShipmentUseCase } from "../application/use-cases/get-shipment.usecase";
 import { SubmitShipmentUseCase } from "../application/use-cases/submit-shipment.usecase";
 import { ReceiveShipmentUseCase } from "../application/use-cases/receive-shipment.usecase";
+import { AllocateLandedCostsUseCase } from "../application/use-cases/allocate-landed-costs.usecase";
 import { IMPORT_SHIPMENT_REPOSITORY } from "../application/ports/import-shipment-repository.port";
 import { LOGGER, ID_GENERATOR, CLOCK, AUDIT } from "@corely/kernel/symbols";
 
@@ -65,6 +66,18 @@ export const importShipmentUseCaseProviders: Provider[] = [
     provide: ReceiveShipmentUseCase,
     useFactory: (logger, repo, clock, audit) => {
       return new ReceiveShipmentUseCase({
+        logger,
+        repo,
+        clock,
+        audit,
+      });
+    },
+    inject: [LOGGER, IMPORT_SHIPMENT_REPOSITORY, CLOCK, AUDIT],
+  },
+  {
+    provide: AllocateLandedCostsUseCase,
+    useFactory: (logger, repo, clock, audit) => {
+      return new AllocateLandedCostsUseCase({
         logger,
         repo,
         clock,

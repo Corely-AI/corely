@@ -10,6 +10,8 @@ import type {
   SubmitShipmentOutput,
   ReceiveShipmentInput,
   ReceiveShipmentOutput,
+  AllocateLandedCostsInput,
+  AllocateLandedCostsOutput,
   ImportShipmentDto,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
@@ -109,6 +111,21 @@ export class ImportShipmentsApi {
       idempotencyKey: apiClient.generateIdempotencyKey(),
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  async allocateLandedCosts(
+    shipmentId: string,
+    input: Omit<AllocateLandedCostsInput, "shipmentId">
+  ): Promise<ImportShipmentDto> {
+    const result = await apiClient.post<AllocateLandedCostsOutput>(
+      `/import/shipments/${shipmentId}/allocate-costs`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+    return result.shipment;
   }
 }
 
