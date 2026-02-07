@@ -1,7 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import type { LoggerPort } from "@corely/kernel";
 import { CreateJournalEntryUseCase } from "../use-cases/create-journal-entry.usecase";
-import type { LedgerAccountRepositoryPort } from "../../domain/ports/ledger-account-repository.port";
+import type { LedgerAccountRepoPort } from "../ports/accounting-repository.port";
 import type { UseCaseContext } from "@corely/kernel";
 
 /**
@@ -19,7 +19,7 @@ export class CogsPostingService {
   constructor(
     @Inject("LoggerPort") private readonly logger: LoggerPort,
     private readonly createJournalEntry: CreateJournalEntryUseCase,
-    private readonly accountRepo: LedgerAccountRepositoryPort
+    private readonly accountRepo: LedgerAccountRepoPort
   ) {}
 
   /**
@@ -123,9 +123,9 @@ export class CogsPostingService {
       if (!result.ok) {
         this.logger.error("Failed to create COGS journal entry", {
           invoiceId: params.invoiceId,
-          error: result.error,
+          error: (result as any).error,
         });
-        return { journalEntryId: null, error: result.error.message };
+        return { journalEntryId: null, error: (result as any).error.message };
       }
 
       this.logger.info("COGS journal entry created successfully", {

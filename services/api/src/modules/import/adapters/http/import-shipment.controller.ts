@@ -75,7 +75,7 @@ export class ImportShipmentController {
     const ctx = buildUseCaseContext(req);
     const result = await this.createShipment.execute(input, ctx);
     if (!result.ok) {
-      throw result.error;
+      throw (result as any).error;
     }
     return result.value;
   }
@@ -90,7 +90,7 @@ export class ImportShipmentController {
     const ctx = buildUseCaseContext(req);
     const result = await this.updateShipment.execute({ ...input, shipmentId }, ctx);
     if (!result.ok) {
-      throw result.error;
+      throw (result as any).error;
     }
     return result.value;
   }
@@ -105,7 +105,7 @@ export class ImportShipmentController {
     const ctx = buildUseCaseContext(req);
     const result = await this.listShipments.execute(query, ctx);
     if (!result.ok) {
-      throw result.error;
+      throw (result as any).error;
     }
     return result.value;
   }
@@ -116,7 +116,7 @@ export class ImportShipmentController {
     const ctx = buildUseCaseContext(req);
     const result = await this.getShipment.execute({ shipmentId }, ctx);
     if (!result.ok) {
-      throw result.error;
+      throw (result as any).error;
     }
     return result.value;
   }
@@ -130,7 +130,7 @@ export class ImportShipmentController {
     const ctx = buildUseCaseContext(req);
     const result = await this.submitShipment.execute({ shipmentId }, ctx);
     if (!result.ok) {
-      throw result.error;
+      throw (result as any).error;
     }
     return result.value;
   }
@@ -145,7 +145,7 @@ export class ImportShipmentController {
     const ctx = buildUseCaseContext(req);
     const result = await this.receiveShipment.execute({ ...input, shipmentId }, ctx);
     if (!result.ok) {
-      throw result.error;
+      throw (result as any).error;
     }
     return result.value;
   }
@@ -160,7 +160,7 @@ export class ImportShipmentController {
     const ctx = buildUseCaseContext(req);
     const result = await this.allocateLandedCosts.execute({ ...input, shipmentId }, ctx);
     if (!result.ok) {
-      throw result.error;
+      throw (result as any).error;
     }
     return result.value;
   }
