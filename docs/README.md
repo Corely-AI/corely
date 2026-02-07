@@ -77,6 +77,7 @@ Specific feature implementation details.
 - [Students Module](./features/STUDENTS.md)
 - [Payment Methods](./features/PAYMENT_METHODS_IMPLEMENTATION.md)
 - [Tax Snapshot](./features/TAX_SNAPSHOT_IMPLEMENTATION.md)
+- [Catalog Module](./features/catalog.md)
 
 ### 📚 Guides
 

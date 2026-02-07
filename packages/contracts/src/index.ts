@@ -57,6 +57,7 @@ export * from "./purchasing";
 export * from "./purchasing-ai";
 export * from "./inventory";
 export * from "./inventory-ai";
+export * from "./catalog";
 export * from "./portfolio";
 export * from "./issues";
 // POS exports (aliased to avoid clashing with Sales PaymentMethod)

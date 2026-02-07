@@ -13,6 +13,7 @@ export const WorkspaceCapabilitiesSchema = z.object({
   "purchasing.purchaseOrders": z.boolean(),
   "purchasing.supplierPortal": z.boolean(),
   "inventory.basic": z.boolean(),
+  "catalog.basic": z.boolean(),
   "inventory.warehouses": z.boolean(),
   "inventory.serialTracking": z.boolean(),
   "finance.costCenters": z.boolean(),

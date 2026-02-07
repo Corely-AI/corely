@@ -118,6 +118,7 @@ export class WorkspaceTemplateService {
 
       // Inventory: Basic tracking only
       "inventory.basic": false,
+      "catalog.basic": false,
       "inventory.warehouses": false,
       "inventory.serialTracking": false,
 
@@ -281,6 +282,7 @@ export class WorkspaceTemplateService {
 
       // Inventory: Full support
       "inventory.basic": true,
+      "catalog.basic": true,
       "inventory.warehouses": false, // Can be enabled separately
       "inventory.serialTracking": false, // Can be enabled separately
 
