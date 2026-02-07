@@ -17,6 +17,7 @@ export type CrudAction = {
   icon?: React.ReactNode;
   disabled?: boolean;
   destructive?: boolean;
+  tooltip?: string;
   "data-testid"?: string;
 };
 
@@ -39,6 +40,7 @@ export const CrudRowActions: React.FC<CrudRowActionsProps> = ({
           size="sm"
           asChild
           disabled={action.disabled}
+          title={action.tooltip}
           data-testid={action["data-testid"]}
         >
           <Link to={action.href}>{action.label}</Link>
@@ -51,6 +53,7 @@ export const CrudRowActions: React.FC<CrudRowActionsProps> = ({
         size="sm"
         onClick={action.onClick}
         disabled={action.disabled}
+        title={action.tooltip}
         data-testid={action["data-testid"]}
       >
         {action.label}
@@ -75,6 +78,7 @@ export const CrudRowActions: React.FC<CrudRowActionsProps> = ({
                 className={cn(action.destructive && "text-destructive")}
                 onClick={action.onClick}
                 disabled={action.disabled}
+                title={action.tooltip}
                 {...(action["data-testid"] ? { "data-testid": action["data-testid"] } : {})}
                 asChild={Boolean(action.href)}
               >

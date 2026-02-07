@@ -50,7 +50,11 @@ export class UpdateCustomerUseCase extends BaseUseCase<UpdateCustomerInput, Upda
       return err(new ValidationError("tenantId is required"));
     }
 
-    const existing = await this.useCaseDeps.partyRepo.findCustomerById(ctx.tenantId, input.id);
+    const existing = await this.useCaseDeps.partyRepo.findCustomerById(
+      ctx.tenantId,
+      input.id,
+      input.role
+    );
     if (!existing) {
       return err(new NotFoundError("Customer not found"));
     }

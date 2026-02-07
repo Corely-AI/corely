@@ -6,3 +6,4 @@ export * from "./list-customers.schema";
 export * from "./search-customers.schema";
 export * from "./archive-customer.schema";
 export * from "./unarchive-customer.schema";
+export * from "./student-guardians.schema";

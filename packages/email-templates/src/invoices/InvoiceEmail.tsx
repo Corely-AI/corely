@@ -23,6 +23,7 @@ export function InvoiceEmail({
   customerName,
   customMessage,
   lines,
+  paymentDetails,
   viewInvoiceUrl,
 }: InvoiceEmailProps) {
   const previewText = `Invoice ${invoiceNumber} from ${companyName}`;
@@ -99,6 +100,28 @@ export function InvoiceEmail({
             </Row>
           </Section>
 
+          {paymentDetails &&
+          (paymentDetails.iban ||
+            paymentDetails.referenceText ||
+            paymentDetails.accountHolderName ||
+            paymentDetails.bic ||
+            paymentDetails.bankName) ? (
+            <Section style={paymentSection}>
+              <Text style={sectionTitle}>Payment Details</Text>
+              {paymentDetails.accountHolderName ? (
+                <Text style={text}>Account holder: {paymentDetails.accountHolderName}</Text>
+              ) : null}
+              {paymentDetails.iban ? <Text style={text}>IBAN: {paymentDetails.iban}</Text> : null}
+              {paymentDetails.bic ? <Text style={text}>BIC: {paymentDetails.bic}</Text> : null}
+              {paymentDetails.bankName ? (
+                <Text style={text}>Bank: {paymentDetails.bankName}</Text>
+              ) : null}
+              {paymentDetails.referenceText ? (
+                <Text style={text}>Reference: {paymentDetails.referenceText}</Text>
+              ) : null}
+            </Section>
+          ) : null}
+
           {viewInvoiceUrl && (
             <Section style={buttonSection}>
               <Link href={viewInvoiceUrl} style={button}>
@@ -171,6 +194,17 @@ const invoiceSection = {
 
 const lineItemsSection = {
   padding: "24px 40px",
+};
+
+const paymentSection = {
+  padding: "16px 40px 0",
+};
+
+const sectionTitle: CSSProperties = {
+  color: "#111827",
+  fontSize: "14px",
+  fontWeight: "600",
+  margin: "0 0 8px 0",
 };
 
 const tableHeader = {

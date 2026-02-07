@@ -1,8 +1,9 @@
-import {
-  type PartyRepoPort,
-  type ListCustomersFilters,
-  type Pagination,
+import type {
+  PartyRepoPort,
+  ListCustomersFilters,
+  Pagination,
 } from "../application/ports/party-repository.port";
+import type { PartyRoleType } from "@corely/contracts";
 import { type PartyAggregate } from "../domain/party.aggregate";
 
 export class InMemoryPartyRepo implements PartyRepoPort {
@@ -26,8 +27,31 @@ export class InMemoryPartyRepo implements PartyRepoPort {
     this.customers[index] = party;
   }
 
-  async findCustomerById(tenantId: string, partyId: string): Promise<PartyAggregate | null> {
+  async findCustomerById(
+    tenantId: string,
+    partyId: string,
+    role?: PartyRoleType
+  ): Promise<PartyAggregate | null> {
+    const requestedRole = role ?? "CUSTOMER";
+    return (
+      this.customers.find(
+        (c) => c.id === partyId && c.tenantId === tenantId && c.roles.includes(requestedRole)
+      ) ?? null
+    );
+  }
+
+  async findPartyById(tenantId: string, partyId: string): Promise<PartyAggregate | null> {
     return this.customers.find((c) => c.id === partyId && c.tenantId === tenantId) ?? null;
+  }
+
+  async ensurePartyRole(tenantId: string, partyId: string, role: PartyRoleType): Promise<void> {
+    const existing = this.customers.find((c) => c.id === partyId && c.tenantId === tenantId);
+    if (!existing) {
+      throw new Error("Party not found");
+    }
+    if (!existing.roles.includes(role)) {
+      existing.roles.push(role);
+    }
   }
 
   async listCustomers(tenantId: string, filters: ListCustomersFilters, pagination: Pagination) {
@@ -35,6 +59,8 @@ export class InMemoryPartyRepo implements PartyRepoPort {
       ? this.customers.findIndex((c) => c.id === pagination.cursor) + 1
       : 0;
     let items = this.customers.filter((c) => c.tenantId === tenantId);
+    const role = filters.role ?? "CUSTOMER";
+    items = items.filter((c) => c.roles.includes(role));
     if (!filters.includeArchived) {
       items = items.filter((c) => !c.archivedAt);
     }
@@ -44,11 +70,19 @@ export class InMemoryPartyRepo implements PartyRepoPort {
     return { items: slice, nextCursor };
   }
 
-  async searchCustomers(tenantId: string, q: string | undefined, pagination: Pagination) {
+  async searchCustomers(
+    tenantId: string,
+    q: string | undefined,
+    role: PartyRoleType | undefined,
+    pagination: Pagination
+  ) {
     const startIndex = pagination.cursor
       ? this.customers.findIndex((c) => c.id === pagination.cursor) + 1
       : 0;
-    let items = this.customers.filter((c) => c.tenantId === tenantId && !c.archivedAt);
+    const requestedRole = role ?? "CUSTOMER";
+    let items = this.customers.filter(
+      (c) => c.tenantId === tenantId && !c.archivedAt && c.roles.includes(requestedRole)
+    );
 
     // Only filter by search terms if q is provided
     if (q && q.trim()) {

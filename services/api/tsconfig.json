@@ -12,6 +12,12 @@
     "paths": {
       "@shared/*": ["src/shared/*"],
       "@/*": ["src/*"],
+      "@corely/contracts": ["../../packages/contracts/src/index.ts"],
+      "@corely/contracts/*": ["../../packages/contracts/src/*"],
+      "@corely/data": ["../../packages/data/src/index.ts"],
+      "@corely/data/*": ["../../packages/data/src/*"],
+      "@corely/core": ["../../packages/core/src/index.ts"],
+      "@corely/core/*": ["../../packages/core/src/*"],
       "@corely/public-urls": ["../../packages/public-urls/src/index.ts"]
     },
     "skipLibCheck": true,

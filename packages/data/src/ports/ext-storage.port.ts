@@ -131,6 +131,17 @@ export interface EntityLinkCreateInput {
   metadata?: unknown; // Optional JSONB metadata
 }
 
+export interface EntityLinkUpdateInput {
+  tenantId: string;
+  moduleId: string;
+  fromEntityType: string;
+  fromEntityId: string;
+  toEntityType: string;
+  toEntityId: string;
+  linkType: string;
+  metadata?: unknown; // Optional JSONB metadata
+}
+
 export interface EntityLinkDeleteInput {
   tenantId: string;
   moduleId: string;
@@ -166,6 +177,7 @@ export interface EntityLink {
 
 export interface ExtEntityLinkPort {
   create(input: EntityLinkCreateInput): Promise<EntityLink>;
+  update(input: EntityLinkUpdateInput): Promise<EntityLink>;
   delete(input: EntityLinkDeleteInput): Promise<void>;
   list(input: EntityLinkListInput): Promise<EntityLink[]>;
 }

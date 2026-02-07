@@ -3,6 +3,7 @@ import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { TaxController } from "./tax.controller";
+import { TaxFilingsController } from "./tax-filings.controller";
 
 // Use cases
 import { GetTaxProfileUseCase } from "./application/use-cases/get-tax-profile.use-case";
@@ -23,7 +24,7 @@ import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-peri
 import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
 import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
-import { GenerateTaxReportPdfUseCase } from "./application/use-cases/generate-tax-report-pdf.use-case";
+import { RequestTaxReportPdfUseCase } from "./application/use-cases/request-tax-report-pdf.use-case";
 import { GenerateTaxReportsUseCase } from "./application/services/generate-tax-reports.use-case";
 import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-case";
 import { GetTaxCapabilitiesUseCase } from "./application/use-cases/get-tax-capabilities.use-case";
@@ -52,7 +53,6 @@ import { PersonalTaxStrategy } from "./application/services/personal-tax-strateg
 import { CompanyTaxStrategy } from "./application/services/company-tax-strategy";
 import { TaxCapabilitiesService } from "./application/services/tax-capabilities.service";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
-import { TaxPdfRenderer } from "./infrastructure/pdf/tax-pdf-renderer";
 
 // Reporting
 import { ReportRegistry } from "./domain/reporting/report-registry";
@@ -89,7 +89,7 @@ import { DocumentsModule } from "../documents/documents.module";
 
 @Module({
   imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
-  controllers: [TaxController],
+  controllers: [TaxController, TaxFilingsController],
   providers: [
     // Use cases
     GetTaxProfileUseCase,
@@ -110,8 +110,7 @@ import { DocumentsModule } from "../documents/documents.module";
     MarkVatPeriodSubmittedUseCase,
     MarkVatPeriodNilUseCase,
     ArchiveVatPeriodUseCase,
-    GenerateTaxReportPdfUseCase,
-    GenerateTaxReportPdfUseCase,
+    RequestTaxReportPdfUseCase,
     GenerateTaxReportsUseCase,
     GetTaxCenterUseCase,
     GetTaxCapabilitiesUseCase,
@@ -140,7 +139,6 @@ import { DocumentsModule } from "../documents/documents.module";
     CompanyTaxStrategy,
     TaxCapabilitiesService,
     VatPeriodResolver,
-    TaxPdfRenderer,
 
     // Reporting Registry
     ReportRegistry,

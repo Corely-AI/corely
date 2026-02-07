@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import {
+  InvoiceReminderCandidate,
   InvoiceRepoPort,
   ListInvoicesFilters,
   ListInvoicesResult,
@@ -197,7 +198,11 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     pagination: { page?: number; pageSize: number; cursor?: string }
   ): Promise<ListInvoicesResult> {
     const { page = 1, pageSize, cursor } = pagination;
-    const where: any = { tenantId: workspaceId };
+    const softDeleteReasons = ["Soft delete", "Bulk delete", "Regenerated class billing run"];
+    const where: any = {
+      tenantId: workspaceId,
+      NOT: [{ status: "CANCELED", notes: { in: softDeleteReasons } }],
+    };
 
     // Standard filters
     if (filters.status) {
@@ -317,6 +322,34 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
 
     const nextCursor = items.length === pageSize ? items[items.length - 1].id : null;
     return { items, nextCursor, total };
+  }
+
+  async listReminderCandidates(
+    workspaceId: string,
+    sentBefore: Date
+  ): Promise<InvoiceReminderCandidate[]> {
+    const rows = await this.prisma.invoice.findMany({
+      where: {
+        tenantId: workspaceId,
+        status: "SENT",
+        sentAt: { lte: sentBefore },
+      },
+      select: {
+        id: true,
+        number: true,
+        billToEmail: true,
+        sentAt: true,
+        status: true,
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      number: row.number ?? null,
+      billToEmail: row.billToEmail ?? null,
+      sentAt: row.sentAt ?? null,
+      status: row.status as any,
+    }));
   }
 
   async isInvoiceNumberTaken(workspaceId: string, number: string): Promise<boolean> {

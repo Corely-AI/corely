@@ -73,6 +73,8 @@ Specific feature implementation details.
 - [CMS Module](./features/CMS.md)
 - [Website Module](./features/website.md)
 - [Issues Module](./features/issues.md)
+- [Classes Module](./features/CLASSES.md)
+- [Students Module](./features/STUDENTS.md)
 - [Payment Methods](./features/PAYMENT_METHODS_IMPLEMENTATION.md)
 - [Tax Snapshot](./features/TAX_SNAPSHOT_IMPLEMENTATION.md)
 

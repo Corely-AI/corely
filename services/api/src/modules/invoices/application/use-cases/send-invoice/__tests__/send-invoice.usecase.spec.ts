@@ -4,13 +4,61 @@ import { FakeInvoiceRepository } from "../../../../testkit/fakes/fake-invoice-re
 import { FakeInvoiceEmailDeliveryRepository } from "../../../../testkit/fakes/fake-invoice-email-delivery-repo";
 import { FakeOutbox } from "../../../../testkit/fakes/fake-outbox";
 import { InvoiceAggregate } from "../../../../domain/invoice.aggregate";
-import { FakeIdGenerator, NoopLogger, unwrap, isErr } from "@corely/kernel";
+import { FakeIdGenerator, FixedClock, NoopLogger, unwrap, isErr } from "@corely/kernel";
+import type { InvoiceReminderSettingsPort } from "../../../ports/invoice-reminder-settings.port";
+import type { InvoiceReminderStatePort } from "../../../ports/invoice-reminder-state.port";
+import type { AuditPort } from "@/shared/ports/audit.port";
+import type { TenantTimeZonePort } from "@corely/kernel";
+
+class FakeReminderSettings implements InvoiceReminderSettingsPort {
+  async getPolicy(_tenantId: string, _workspaceId: string) {
+    return { startAfterDays: 0, maxReminders: 0, sendOnlyOnWeekdays: false };
+  }
+}
+
+class FakeReminderState implements InvoiceReminderStatePort {
+  async findByInvoice(_tenantId: string, _invoiceId: string) {
+    return null;
+  }
+  async upsertInitialState(input: any) {
+    return input as any;
+  }
+  async claimDueReminders(_tenantId: string, _workspaceId: string, _now: Date, _options: any) {
+    return [];
+  }
+  async releaseLock(_tenantId: string, _reminderId: string, _lockId: string) {
+    return;
+  }
+  async markReminderSent(_params: any) {
+    return;
+  }
+  async markStopped(_params: any) {
+    return;
+  }
+}
+
+class FakeAudit implements AuditPort {
+  async log(_entry: any) {
+    return;
+  }
+}
+
+class FakeTenantTimeZone implements TenantTimeZonePort {
+  async getTenantTimeZone(_tenantId: string) {
+    return "UTC";
+  }
+}
 
 describe("SendInvoiceUseCase", () => {
   let invoiceRepo: FakeInvoiceRepository;
   let deliveryRepo: FakeInvoiceEmailDeliveryRepository;
   let outbox: FakeOutbox;
   let idGenerator: FakeIdGenerator;
+  let clock: FixedClock;
+  let reminderSettings: FakeReminderSettings;
+  let reminderState: FakeReminderState;
+  let audit: FakeAudit;
+  let tenantTimeZone: FakeTenantTimeZone;
   let useCase: SendInvoiceUseCase;
 
   beforeEach(() => {
@@ -18,6 +66,11 @@ describe("SendInvoiceUseCase", () => {
     deliveryRepo = new FakeInvoiceEmailDeliveryRepository();
     outbox = new FakeOutbox();
     idGenerator = new FakeIdGenerator(["delivery-1", "delivery-2", "delivery-3"]);
+    clock = new FixedClock(new Date("2026-02-06T10:00:00.000Z"));
+    reminderSettings = new FakeReminderSettings();
+    reminderState = new FakeReminderState();
+    audit = new FakeAudit();
+    tenantTimeZone = new FakeTenantTimeZone();
 
     useCase = new SendInvoiceUseCase({
       logger: new NoopLogger(),
@@ -25,6 +78,11 @@ describe("SendInvoiceUseCase", () => {
       deliveryRepo,
       outbox,
       idGenerator,
+      clock,
+      reminderSettings,
+      reminderState,
+      audit,
+      tenantTimeZone,
     });
   });
 

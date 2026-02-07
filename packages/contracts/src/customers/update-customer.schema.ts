@@ -1,8 +1,10 @@
 import { z } from "zod";
 import { CustomerDtoSchema, CustomerBillingAddressSchema } from "./customer.types";
+import { PartyRoleTypeSchema } from "../crm/party.types";
 
 export const UpdateCustomerInputSchema = z.object({
   id: z.string(),
+  role: PartyRoleTypeSchema.optional(),
   patch: z.object({
     displayName: z.string().min(1).optional(),
     email: z.string().email().optional().nullable(),

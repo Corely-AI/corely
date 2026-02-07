@@ -1,6 +1,5 @@
 import type { CompleteUploadUseCase } from "./use-cases/complete-upload/complete-upload.usecase";
 import type { CreateUploadIntentUseCase } from "./use-cases/create-upload-intent/create-upload-intent.usecase";
-import type { GenerateInvoicePdfWorker } from "./use-cases/generate-invoice-pdf-worker/generate-invoice-pdf.worker";
 import type { GetDownloadUrlUseCase } from "./use-cases/get-download-url/get-download-url.usecase";
 import type { GetDocumentUseCase } from "./use-cases/get-document/get-document.usecase";
 import type { GetPublicFileUrlUseCase } from "./use-cases/get-public-file-url/get-public-file-url.usecase";
@@ -23,7 +22,6 @@ export class DocumentsApplication {
     public readonly requestInvoicePdf: RequestInvoicePdfUseCase,
     public readonly unlinkDocument: UnlinkDocumentUseCase,
     public readonly uploadFile: UploadFileUseCase,
-    public readonly proxyDownload: ProxyDownloadUseCase,
-    public readonly generateInvoicePdfWorker: GenerateInvoicePdfWorker
+    public readonly proxyDownload: ProxyDownloadUseCase
   ) {}
 }

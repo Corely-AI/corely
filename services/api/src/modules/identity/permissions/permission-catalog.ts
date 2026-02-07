@@ -10,6 +10,7 @@ import { crmPermissions } from "../../crm/crm.permissions";
 import { formsPermissions } from "../../forms/forms.permissions";
 import { portfolioPermissions } from "../../portfolio/portfolio.permissions";
 import { platformPermissions } from "../../platform/platform.permissions";
+import { classesPermissions } from "../../classes/policies/classes.permissions";
 import { AppRegistry } from "../../platform/infrastructure/registries/app-registry";
 
 const PERMISSION_KEY_REGEX = /^[a-z][a-z0-9]*(?:[.:][a-z0-9]+)*$/;
@@ -24,6 +25,7 @@ export const buildPermissionCatalog = (): PermissionGroup[] => {
     ...crmPermissions,
     ...formsPermissions,
     ...portfolioPermissions,
+    ...classesPermissions,
   ];
 
   return mergeManifestPermissions(base, buildManifestPermissionGroups());

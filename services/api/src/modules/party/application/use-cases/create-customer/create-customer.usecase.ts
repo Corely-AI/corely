@@ -52,10 +52,16 @@ export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, Crea
       ? (CustomerBillingAddressSchema.parse(input.billingAddress) as Address)
       : null;
 
-    const party = PartyAggregate.createCustomer({
+    const roles: PartyAggregate["roles"] = ["CUSTOMER"];
+    if (input.role && !roles.includes(input.role)) {
+      roles.push(input.role);
+    }
+
+    const party = PartyAggregate.createParty({
       id: this.useCaseDeps.idGenerator.newId(),
       tenantId: ctx.tenantId,
       displayName: input.displayName,
+      roles,
       email: input.email ?? null,
       phone: input.phone ?? null,
       billingAddress,

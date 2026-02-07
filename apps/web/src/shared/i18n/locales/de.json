@@ -43,7 +43,37 @@
     "open": "Offen",
     "closed": "Geschlossen",
     "tags": "Tags",
-    "for": "Für"
+    "for": "Für",
+    "draft": "Entwurf",
+    "createdAt": "Erstellt am {{date}}",
+    "empty": "Leer",
+    "amount": "Betrag",
+    "date": "Datum",
+    "noteOptional": "Notiz (Optional)",
+    "saveChanges": "Änderungen speichern",
+    "saving": "Wird gespeichert...",
+    "subject": "Betreff",
+    "message": "Nachricht",
+    "attachments": "Anhänge",
+    "changeStatus": "Status ändern",
+    "current": "Aktuell",
+    "action": "Aktion",
+    "statusAuditTrail": "Verlauf der Statusänderungen wird aufgezeichnet.",
+    "confirmAction": "Aktion bestätigen",
+    "confirmMessage": "Sind Sie sicher, dass Sie fortfahren möchten?",
+    "reason": "Grund",
+    "reasonPlaceholder": "Grund eingeben...",
+    "badge": "Badge",
+    "moreActions": "Weitere Aktionen",
+    "dangerZone": "Gefahrenzone",
+    "goBack": "Zurück"
+  },
+  "list": {
+    "searchPlaceholder": "Suchen...",
+    "sort": "Sortieren",
+    "filters": "Filter",
+    "clearAll": "Alle löschen",
+    "noResults": "Keine Einträge gefunden."
   },
   "nav": {
     "dashboard": "Übersicht",
@@ -73,9 +103,11 @@
       "settings": "Einstellungen",
       "platform": "Plattform",
       "tax": "Steuern",
+      "education": "Bildung",
       "other": "Sonstiges"
     },
     "customers": "Kunden",
+    "students": "Schüler",
     "salesQuotes": "Angebote",
     "salesOrders": "Aufträge",
     "salesInvoices": "Verkaufsrechnungen",
@@ -112,6 +144,9 @@
     "issues": "Probleme",
     "crmDeals": "Deals",
     "crmActivities": "Aktivitäten",
+    "classes": "Klassen",
+    "classSessions": "Sitzungen",
+    "classBilling": "Klassenabrechnung",
     "website": "Website",
     "platform": "Plattform"
   },
@@ -403,7 +438,7 @@
     "serviceDate": "Leistungsdatum",
     "dueDate": "Fällig am",
     "amount": "Betrag",
-    "status": "Status",
+    "statusLabel": "Status",
     "items": "Positionen",
     "description": "Beschreibung",
     "quantity": "Menge",
@@ -439,7 +474,49 @@
       "selectCustomer": "Kunde auswählen",
       "addItems": "Positionen hinzufügen",
       "review": "Prüfen & erstellen"
-    }
+    },
+    "notFound": "Rechnung nicht gefunden",
+    "backToList": "Zurück zur Liste",
+    "notFoundDescription": "Die gesuchte Rechnung existiert nicht oder wurde gelöscht.",
+    "titleWithNumber": "Rechnung {{number}}",
+    "issued": "Rechnung ausgestellt",
+    "canceled": "Rechnung storniert",
+    "updated": "Rechnung erfolgreich aktualisiert",
+    "payments": {
+      "recordTitle": "Zahlung erfassen",
+      "recordDescription": "Geben Sie die Zahlungsdetails für diese Rechnung ein.",
+      "dueAmount": "Fälliger Betrag: {{amount}}",
+      "notePlaceholder": "Zahlung beschreiben (z.B. Banküberweisung, Barzahlung, ...)",
+      "save": "Zahlung erfassen",
+      "recordFailed": "Zahlung konnte nicht erfasst werden",
+      "saveFailed": "Zahlung konnte nicht gespeichert werden"
+    },
+    "errors": {
+      "downloadFailed": "PDF konnte nicht heruntergeladen werden",
+      "updateFailed": "Rechnung konnte nicht aktualisiert werden"
+    },
+    "email": {
+      "title": "Rechnung senden",
+      "subtitle": "Senden Sie diese Rechnung per E-Mail an Ihren Kunden.",
+      "to": "Empfänger",
+      "toPlaceholder": "kunde@beispiel.de",
+      "subject": "Rechnung {{number}} von {{brand}}",
+      "sendCopy": "Kopie an mich senden",
+      "savedForFuture": "Diese E-Mail wird für das Profil von {{name}} gespeichert.",
+      "messagePlaceholder": "Fügen Sie eine persönliche Notiz hinzu...",
+      "attachmentsHint": "Die PDF-Rechnung wird automatisch angehängt.",
+      "attachmentName": "Rechnung-{{number}}.pdf",
+      "attachmentFallback": "Rechnung.pdf",
+      "sendTest": "Test-E-Mail senden",
+      "send": "E-Mail senden",
+      "sending": "Wird gesendet...",
+      "sent": "Rechnungs-E-Mail gesendet",
+      "sendFailed": "Rechnungs-E-Mail konnte nicht gesendet werden"
+    },
+    "status": {
+      "updateFailed": "Status konnte nicht aktualisiert werden"
+    },
+    "loading": "Rechnung wird geladen..."
   },
   "customers": {
     "title": "Kunden",
@@ -879,6 +956,184 @@
         "currencyRequired": "Währung ist erforderlich",
         "probabilityRange": "Wahrscheinlichkeit muss zwischen 0 und 100 liegen"
       }
+    }
+  },
+  "classes": {
+    "sessions": {
+      "title": "Termine",
+      "subtitle": "Geplante und abgeschlossene Termine verfolgen",
+      "new": "Neuer Termin",
+      "loading": "Termine werden geladen...",
+      "empty": "Keine Termine gefunden.",
+      "starts": "Beginn",
+      "topic": "Thema",
+      "status": "Status",
+      "open": "Öffnen",
+      "markDone": "Als erledigt markieren",
+      "cancel": "Abbrechen",
+      "updated": "Termin aktualisiert",
+      "updateFailed": "Fehler beim Aktualisieren des Termins",
+      "loadFailed": "Fehler beim Laden der Termine",
+      "confirmTitle": "Status aktualisieren?",
+      "confirmDescription": "Termin auf {{status}} setzen?",
+      "filterClassGroup": "Klassengruppe",
+      "filterStatus": "Status",
+      "filterDateFrom": "Datum von",
+      "filterDateTo": "Datum bis",
+      "monthLocked": "Monat ist gesperrt",
+      "monthLockedDescription": "Dieser Monat wurde bereits abgerechnet. Öffnen Sie den Monat erneut oder erstellen Sie eine Korrektur.",
+      "billingLockedTooltip": "Dieser Monat ist gesperrt, da eine Abrechnung erstellt wurde.",
+      "statusOptions": {
+        "planned": "Geplant",
+        "done": "Erledigt",
+        "cancelled": "Abgesagt"
+      },
+      "sortOptions": {
+        "newest": "Beginn (Neueste)",
+        "oldest": "Beginn (Älteste)"
+      }
+    },
+    "groups": {
+      "title": "Klassengruppen",
+      "subtitle": "Organisieren Sie Ihre Nachhilfegruppen und Preise",
+      "new": "Neue Klassengruppe",
+      "loading": "Klassengruppen werden geladen...",
+      "loadFailed": "Klassengruppen konnten nicht geladen werden",
+      "emptyTitle": "Noch keine Klassengruppen",
+      "emptyDescription": "Erstellen Sie Ihre erste Gruppe, um Termine zu planen.",
+      "name": "Name",
+      "subject": "Fach",
+      "level": "Niveau",
+      "pricePerSession": "Preis / Termin",
+      "status": "Status",
+      "updated": "Aktualisiert",
+      "open": "Öffnen",
+      "edit": "Bearbeiten",
+      "statusOptions": {
+        "active": "Aktiv",
+        "archived": "Archiviert"
+      },
+      "sortOptions": {
+        "newest": "Aktualisiert (Neueste)",
+        "oldest": "Aktualisiert (Älteste)",
+        "name": "Name (A-Z)"
+      }
+    },
+    "students": {
+      "title": "Studenten",
+      "subtitle": "Studentenakten und Erziehungsberechtigte verwalten",
+      "add": "Student hinzufügen",
+      "loading": "Studenten werden geladen...",
+      "loadFailed": "Fehler beim Laden der Studenten.",
+      "emptyTitle": "Noch keine Studenten",
+      "emptyDescription": "Erstellen Sie Ihren ersten Studenten, um Erziehungsberechtigte und Anmeldungen zu verfolgen.",
+      "record": "Student",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "primaryPayer": "Hauptzahler",
+      "status": "Status",
+      "updated": "Aktualisiert",
+      "open": "Öffnen",
+      "edit": "Bearbeiten",
+      "archive": "Archivieren",
+      "archived": "Student archiviert",
+      "archiveFailed": "Fehler beim Archivieren des Studenten",
+      "archiveConfirmTitle": "Student archivieren",
+      "archiveConfirmDescription": "Dadurch wird der Student archiviert. Sie können ihn später wieder aus dem Archiv holen.",
+      "statusOptions": {
+        "active": "Aktiv",
+        "archived": "Archiviert"
+      }
+    },
+    "billing": {
+      "title": "Klassenabrechnung",
+      "subtitle": "Vorschau der Kursgebühren und Erstellung von Rechnungen für den ausgewählten Monat.",
+      "createInvoices": "Rechnungen für Monat erstellen",
+      "billingMonth": "Abrechnungsmonat",
+      "refresh": "Aktualisieren",
+      "invoicesCreated": "{{count}} Rechnungen erstellt",
+      "sendInvoices": "Rechnungen senden",
+      "invoicesSent": "Rechnungen zum Senden vorgemerkt",
+      "sendFailed": "Senden der Rechnungen fehlgeschlagen",
+      "alreadySent": "Bereits gesendet",
+      "sendDialogTitle": "Rechnungen erstellt",
+      "sendDialogDescription": "{{count}} Rechnungen erstellt. Möchten Sie diese jetzt senden?",
+      "sendDialogYes": "Ja, senden",
+      "sendDialogNo": "Nein",
+      "summaryCreated": "{{count}} Rechnungen für {{month}} erstellt",
+      "loading": "Abrechnungsvorschau wird geladen...",
+      "loadFailed": "Fehler beim Laden der Vorschau",
+      "strategy": "Abrechnungsstrategie:",
+      "basis": "Abrechnungsbasis:",
+      "prepaid": "Vorauszahlung",
+      "arrears": "Nachzahlung",
+      "scheduledBasis": "Geplante Termine",
+      "attendedBasis": "Teilgenommene Termine",
+      "arrearsTip": "Nur als \"ERLEDIGT\" markierte Termine mit Anwesenheit sind abrechenbar",
+      "payerId": "Zahlungs-ID:",
+      "sessionsTotal": "Termine insgesamt",
+      "classGroup": "Klassengruppe",
+      "sessions": "Termine",
+      "pricePerSession": "Preis / Termin",
+      "subtotal": "Zwischensumme",
+      "viewInvoice": "Rechnung anzeigen",
+      "emptyTitle": "Keine abrechenbaren Termine",
+      "emptyDescription": "Es gibt keine bestätigten Termine für den ausgewählten Monat, die noch nicht abgerechnet wurden.",
+      "attendedSessionsTip": "Tipp: Im Modus \"Teilgenommene Termine\" müssen Sie Termine als ERLEDIGT markieren und die Anwesenheit erfassen, bevor sie abgerechnet werden können.",
+      "regenerate": "Invoices neu generieren",
+      "regenerateConfirm": "Sind Sie sicher, dass Sie die Invoices neu generieren möchten? Dadurch werden bestehende Entwurfs-Invoices für diesen Monat gelöst."
+    },
+    "settings": {
+      "title": "Klasseneinstellungen",
+      "description": "Konfigurieren Sie, wie Klassenhồ sơ-Rechnungen für diesen Workspace erstellt werden.",
+      "billingStrategy": "Abrechnungsstrategie",
+      "monthStrategy": "Monatsabrechnungsstrategie",
+      "billingBasis": "Abrechnungsbasis",
+      "save": "Einstellungen speichern",
+      "updated": "Klasseneinstellungen aktualisiert",
+      "updateFailed": "Fehler beim Aktualisieren der Klasseneinstellungen",
+      "placeholderStrategy": "Abrechnungsstrategie wählen",
+      "placeholderBasis": "Abrechnungsbasis wählen",
+      "strategies": {
+        "prepaid": {
+          "label": "Rechnung für aktuellen Monat (Vorauszahlung)",
+          "description": "Rechnungen werden zu Beginn des Monats für geplante Termine erstellt."
+        },
+        "arrears": {
+          "label": "Rechnung für den Vormonat (Nachzahlung)",
+          "description": "Rechnungen werden zu Beginn des Monats für teilgenommene Termine erstellt."
+        }
+      },
+      "bases": {
+        "scheduled": {
+          "label": "Geplante Termine",
+          "description": "Zählt geplante/erledigte Termine im Abrechnungsmonat."
+        },
+        "attended": {
+          "label": "Teilgenommene Termine",
+          "description": "Zählt abrechenbare Anwesenheit bei erledigten Terminen."
+        }
+      }
+    }
+  },
+  "purchasing": {
+    "settings": {
+      "title": "Einkaufseinstellungen",
+      "save": "Einstellungen speichern",
+      "defaultCurrency": "Standardwährung",
+      "defaultPaymentTerms": "Standard-Zahlungsbedingungen",
+      "poNumberPrefix": "Bestellnummer-Präfix",
+      "defaultApAccount": "Standard-Kreditorenkonto",
+      "defaultExpenseAccount": "Standard-Aufwandskonto",
+      "defaultBankAccount": "Standard-Bankkonto",
+      "autoPostBill": "Auto-Buchung bei Rechnungsbuchung",
+      "autoPostBillHelp": "Automatisch Buchungssätze erstellen, wenn eine Lieferantenrechnung gebucht wird",
+      "autoPostPayment": "Auto-Buchung bei Zahlung",
+      "autoPostPaymentHelp": "Automatisch Buchungssätze erstellen, wenn eine Zahlung erfasst wird",
+      "duplicateDetection": "Dublettenerkennung für Rechnungen",
+      "duplicateDetectionHelp": "Warnen, wenn eine Rechnung mit demselben Lieferanten und Referenz bereits existiert",
+      "approvalRequired": "Genehmigung für Rechnungen erforderlich",
+      "approvalRequiredHelp": "Lieferantenrechnungen müssen genehmigt werden, bevor sie gebucht werden können"
     }
   }
 }

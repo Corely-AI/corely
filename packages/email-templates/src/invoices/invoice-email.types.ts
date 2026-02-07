@@ -12,6 +12,13 @@ export type InvoiceEmailProps = {
     unitPrice: string;
     amount: string;
   }>;
+  paymentDetails?: {
+    accountHolderName?: string | undefined;
+    iban?: string | undefined;
+    bic?: string | undefined;
+    bankName?: string | undefined;
+    referenceText?: string | undefined;
+  };
   viewInvoiceUrl?: string | undefined;
   locale?: string | undefined;
 };

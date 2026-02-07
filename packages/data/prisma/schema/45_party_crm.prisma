@@ -3,6 +3,8 @@ enum PartyRoleType {
   SUPPLIER
   EMPLOYEE
   CONTACT
+  STUDENT
+  GUARDIAN
   @@schema("crm")
 }
 

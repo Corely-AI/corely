@@ -82,6 +82,42 @@ export class EnvService {
   }
 
   // ============================================================================
+  // WORKER
+  // ============================================================================
+
+  get WORKER_API_BASE_URL(): string | undefined {
+    return this.config.WORKER_API_BASE_URL;
+  }
+
+  get WORKER_API_SERVICE_TOKEN(): string | undefined {
+    return this.config.WORKER_API_SERVICE_TOKEN;
+  }
+
+  get CLASSES_BILLING_RUN_ENABLED(): boolean {
+    return this.config.CLASSES_BILLING_RUN_ENABLED;
+  }
+
+  get CLASSES_BILLING_RUN_TIME(): string {
+    return this.config.CLASSES_BILLING_RUN_TIME;
+  }
+
+  get CLASSES_BILLING_RUN_TIMEZONE(): string {
+    return this.config.CLASSES_BILLING_RUN_TIMEZONE;
+  }
+
+  get INVOICE_REMINDER_RUN_ENABLED(): boolean {
+    return this.config.INVOICE_REMINDER_RUN_ENABLED;
+  }
+
+  get INVOICE_REMINDER_RUN_TIME(): string {
+    return this.config.INVOICE_REMINDER_RUN_TIME;
+  }
+
+  get INVOICE_REMINDER_RUN_TIMEZONE(): string {
+    return this.config.INVOICE_REMINDER_RUN_TIMEZONE;
+  }
+
+  // ============================================================================
   // AI PROVIDERS
   // ============================================================================
 

@@ -147,6 +147,25 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Module Settings</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="font-medium text-foreground">Classes</div>
+              <div className="text-sm text-muted-foreground">
+                Configure billing strategy for class invoices.
+              </div>
+            </div>
+            <Button asChild variant="outline">
+              <Link to="/settings/classes">Open</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
