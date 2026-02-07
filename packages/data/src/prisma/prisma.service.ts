@@ -11,21 +11,8 @@ const { PrismaClient } = prismaPkg;
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  // Type-only aliases for optional sales models not present in some schemas.
-  declare salesOrder: any;
-  declare salesOrderLine: any;
-  declare salesQuote: any;
-  declare salesQuoteLine: any;
-  declare invoiceReminderState: any;
-  declare catalogItem: any;
-  declare catalogVariant: any;
-  declare catalogVariantBarcode: any;
-  declare catalogUom: any;
-  declare catalogTaxProfile: any;
-  declare catalogCategory: any;
-  declare catalogItemCategory: any;
-  declare catalogPriceList: any;
-  declare catalogPrice: any;
+  // Note: Model types are inherited from PrismaClient and don't need redeclaration.
+  // If specific models are optional in some schemas, TypeScript will handle them via the base class.
 
   private pool: Pool | null;
   private readonly skipConnect: boolean;
