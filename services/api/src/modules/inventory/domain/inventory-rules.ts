@@ -24,10 +24,10 @@ export const validateLotTrackingRequirements = (
 ): void => {
   // If catalog item requires lot tracking, lotNumber is mandatory
   if (catalogItem.requiresLotTracking && !line.lotNumber) {
-    throw new ValidationError(
-      `Lot number is required for product: ${catalogItem.name}`,
-      { productId: catalogItem.id, catalogCode: catalogItem.code }
-    );
+    throw new ValidationError(`Lot number is required for product: ${catalogItem.name}`, {
+      productId: catalogItem.id,
+      catalogCode: catalogItem.code,
+    });
   }
 
   // If catalog item requires expiry date, either expiryDate or mfgDate must be provided

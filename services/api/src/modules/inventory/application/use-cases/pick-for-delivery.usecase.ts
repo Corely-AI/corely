@@ -21,14 +21,17 @@ type Deps = {
 };
 
 @RequireTenant()
-export class PickForDeliveryUseCase extends BaseUseCase<PickForDeliveryInput, PickForDeliveryOutput> {
+export class PickForDeliveryUseCase extends BaseUseCase<
+  PickForDeliveryInput,
+  PickForDeliveryOutput
+> {
   constructor(private readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 
   protected async handle(
     input: PickForDeliveryInput,
-    ctx: UseCaseContext,
+    ctx: UseCaseContext
   ): Promise<Result<PickForDeliveryOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
 

@@ -22,7 +22,7 @@ export class ShipmentCostService {
    */
   async getShipmentProductCosts(
     tenantId: string,
-    shipmentId: string,
+    shipmentId: string
   ): Promise<Map<string, number | null>> {
     const shipment = await this.shipmentRepo.findById(tenantId, shipmentId);
     if (!shipment) {
@@ -42,7 +42,7 @@ export class ShipmentCostService {
    */
   async getShipmentCostMappings(
     tenantId: string,
-    shipmentId: string,
+    shipmentId: string
   ): Promise<ProductCostMapping[]> {
     const shipment = await this.shipmentRepo.findById(tenantId, shipmentId);
     if (!shipment) {

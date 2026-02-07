@@ -65,7 +65,8 @@ export function allocateLandedCosts(input: LandedCostAllocationInput): LandedCos
       allocatedOtherCents;
 
     // Calculate unit landed cost
-    const unitLandedCostCents = line.orderedQty > 0 ? Math.round(lineTotalLandedCostCents / line.orderedQty) : 0;
+    const unitLandedCostCents =
+      line.orderedQty > 0 ? Math.round(lineTotalLandedCostCents / line.orderedQty) : 0;
 
     return {
       ...line,
@@ -87,7 +88,7 @@ export function allocateLandedCosts(input: LandedCostAllocationInput): LandedCos
       line.allocatedDutyCents +
       line.allocatedTaxCents +
       line.allocatedOtherCents,
-    0,
+    0
   );
 
   return {
@@ -102,7 +103,7 @@ export function allocateLandedCosts(input: LandedCostAllocationInput): LandedCos
  */
 function calculateAllocationRatios(
   lines: ImportShipmentLineProps[],
-  method: AllocationMethod,
+  method: AllocationMethod
 ): number[] {
   const lineCount = lines.length;
 

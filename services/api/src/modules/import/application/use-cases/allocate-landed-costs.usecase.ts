@@ -15,7 +15,10 @@ import {
 import type { AllocateLandedCostsInput, AllocateLandedCostsOutput } from "@corely/contracts";
 import type { ImportShipmentRepositoryPort } from "../ports/import-shipment-repository.port";
 import { toImportShipmentDto } from "../mappers/import-shipment-dto.mapper";
-import { allocateLandedCosts, validateShipmentForAllocation } from "../../domain/landed-cost-allocator";
+import {
+  allocateLandedCosts,
+  validateShipmentForAllocation,
+} from "../../domain/landed-cost-allocator";
 
 type Deps = {
   logger: LoggerPort;
@@ -35,7 +38,7 @@ export class AllocateLandedCostsUseCase extends BaseUseCase<
 
   protected async handle(
     input: AllocateLandedCostsInput,
-    ctx: UseCaseContext,
+    ctx: UseCaseContext
   ): Promise<Result<AllocateLandedCostsOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
     if (!ctx.userId) {
@@ -54,7 +57,7 @@ export class AllocateLandedCostsUseCase extends BaseUseCase<
       return err(
         new ValidationError("Shipment not ready for landed cost allocation", {
           errors: validation.errors,
-        }),
+        })
       );
     }
 

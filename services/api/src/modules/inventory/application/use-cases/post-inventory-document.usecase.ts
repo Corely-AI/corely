@@ -18,10 +18,7 @@ import { getIdempotentResult, storeIdempotentResult } from "./idempotency";
 import { resolvePostingDate, requireLocation } from "./inventory-document.helpers";
 import type { DocumentDeps } from "./inventory-document.deps";
 import { createInventoryLot } from "../../domain/inventory-lot.entity";
-import {
-  validateLotTrackingRequirements,
-  resolveExpiryDate,
-} from "../../domain/inventory-rules";
+import { validateLotTrackingRequirements, resolveExpiryDate } from "../../domain/inventory-rules";
 
 @RequireTenant()
 export class PostInventoryDocumentUseCase extends BaseUseCase<
