@@ -109,6 +109,7 @@ import { RequireCapability } from "../../shared/workspaces/RequireCapability";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
 import { RequireAuth } from "./require-auth";
 import { appSettingsRoutes } from "./app-settings-routes";
+import { catalogRoutes } from "./catalog-routes";
 
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
@@ -469,6 +470,7 @@ export const appShellRoutes = (
           </RequireCapability>
         }
       />
+      {catalogRoutes}
       <Route path="/copilot" element={<CopilotPage />} />
       <Route path="/tax" element={<TaxCenterPage />} />
       <Route path="/tax/filings" element={<FilingsListPage />} />

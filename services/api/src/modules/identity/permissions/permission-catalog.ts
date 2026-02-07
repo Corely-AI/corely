@@ -11,6 +11,7 @@ import { formsPermissions } from "../../forms/forms.permissions";
 import { portfolioPermissions } from "../../portfolio/portfolio.permissions";
 import { platformPermissions } from "../../platform/platform.permissions";
 import { classesPermissions } from "../../classes/policies/classes.permissions";
+import { catalogPermissions } from "../../catalog/catalog.permissions";
 import { AppRegistry } from "../../platform/infrastructure/registries/app-registry";
 
 const PERMISSION_KEY_REGEX = /^[a-z][a-z0-9]*(?:[.:][a-z0-9]+)*$/;
@@ -26,6 +27,7 @@ export const buildPermissionCatalog = (): PermissionGroup[] => {
     ...formsPermissions,
     ...portfolioPermissions,
     ...classesPermissions,
+    ...catalogPermissions,
   ];
 
   return mergeManifestPermissions(base, buildManifestPermissionGroups());
