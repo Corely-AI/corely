@@ -39,3 +39,4 @@ export * from "./create-lot.schema";
 export * from "./list-lots.schema";
 export * from "./get-lot.schema";
 export * from "./get-expiry-summary.schema";
+export * from "./pick-for-delivery.schema";
