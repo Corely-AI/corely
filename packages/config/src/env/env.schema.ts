@@ -168,8 +168,21 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
  * Throws a detailed error if validation fails.
  */
 export function validateEnv(env: NodeJS.ProcessEnv = process.env): Env {
+  // Preprocess env to trim surrounding quotes (common issue with shell exports)
+  const cleanedEnv = Object.entries(env).reduce<Record<string, string | undefined>>(
+    (acc, [key, value]) => {
+      if (typeof value === "string") {
+        acc[key] = value.replace(/^["'](.+)["']$/, "$1");
+      } else {
+        acc[key] = value;
+      }
+      return acc;
+    },
+    {}
+  );
+
   try {
-    return envSchema.parse(env);
+    return envSchema.parse(cleanedEnv);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingOrInvalid = error.errors.map((err) => {
