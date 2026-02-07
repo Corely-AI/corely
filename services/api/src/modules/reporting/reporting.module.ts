@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
+import { IdentityModule } from "../identity";
 import { ReportingController } from "./adapters/http/reporting.controller";
 import { REPORTING_QUERY_PORT } from "./application/ports/reporting-query.port";
 import { GetDashboardReportUseCase } from "./application/use-cases/get-dashboard-report.usecase";
@@ -9,7 +10,7 @@ import { PrismaReportingQueryAdapter } from "./infrastructure/prisma/prisma-repo
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 
 @Module({
-  imports: [DataModule, KernelModule],
+  imports: [DataModule, KernelModule, IdentityModule],
   controllers: [ReportingController],
   providers: [
     NestLoggerAdapter,

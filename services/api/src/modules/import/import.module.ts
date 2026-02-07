@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
 import { KernelModule } from "../../shared/kernel/kernel.module";
+import { IdentityModule } from "../identity";
+import { PlatformModule } from "../platform";
 import { ImportShipmentController } from "./adapters/http/import-shipment.controller";
 import { importRepositoryProviders } from "./providers/repository.providers";
 import { importShipmentUseCaseProviders } from "./providers/shipment.providers";
@@ -8,7 +10,7 @@ import { PrismaAuditAdapter } from "../../shared/infrastructure/persistence/pris
 import { AUDIT_PORT_TOKEN } from "../../shared/ports/audit.port";
 
 @Module({
-  imports: [KernelModule],
+  imports: [KernelModule, IdentityModule, PlatformModule],
   controllers: [ImportShipmentController],
   providers: [
     NestLoggerAdapter,

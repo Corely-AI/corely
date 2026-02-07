@@ -82,5 +82,6 @@ const makeUseCase = (UseCaseClass: any) => ({
     makeUseCase(UpsertCatalogPriceUseCase),
     makeUseCase(ListCatalogPricesUseCase),
   ],
+  exports: [CATALOG_REPOSITORY],
 })
 export class CatalogModule {}

@@ -45,6 +45,7 @@ import { SubmitTaxFilingUseCase } from "./application/use-cases/submit-tax-filin
 import { MarkTaxFilingPaidUseCase } from "./application/use-cases/mark-tax-filing-paid.use-case";
 import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filing.use-case";
 import { GenerateExciseReportUseCase } from "./application/use-cases/generate-excise-report.usecase";
+import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -92,6 +93,8 @@ import { DocumentsModule } from "../documents/documents.module";
   imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
   controllers: [TaxController, TaxFilingsController],
   providers: [
+    NestLoggerAdapter,
+
     // Use cases
     GetTaxProfileUseCase,
     UpsertTaxProfileUseCase,
@@ -131,7 +134,12 @@ import { DocumentsModule } from "../documents/documents.module";
     SubmitTaxFilingUseCase,
     MarkTaxFilingPaidUseCase,
     DeleteTaxFilingUseCase,
-    GenerateExciseReportUseCase,
+    {
+      provide: GenerateExciseReportUseCase,
+      useFactory: (logger, snapshotRepo, reportRepo) =>
+        new GenerateExciseReportUseCase({ logger, snapshotRepo, reportRepo }),
+      inject: [NestLoggerAdapter, TaxSnapshotRepoPort, TaxReportRepoPort],
+    },
 
     // Services
     TaxEngineService,
