@@ -39,6 +39,7 @@ export class CreateFormUseCase {
       status: "DRAFT",
       publicId: null,
       publicTokenHash: null,
+      postSubmitAction: "NONE",
       publishedAt: null,
       archivedAt: null,
       createdAt: now,

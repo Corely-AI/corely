@@ -101,4 +101,8 @@ export class InMemoryPartyRepo implements PartyRepoPort {
       slice.length === (pagination.pageSize ?? 20) ? (slice.at(-1)?.id ?? null) : null;
     return { items: slice, nextCursor };
   }
+
+  async findPartyByEmail(tenantId: string, email: string): Promise<PartyAggregate | null> {
+    return this.customers.find((c) => c.tenantId === tenantId && c.primaryEmail === email) ?? null;
+  }
 }
