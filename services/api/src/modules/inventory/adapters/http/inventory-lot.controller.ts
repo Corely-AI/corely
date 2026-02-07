@@ -1,5 +1,16 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
 import type { Request } from "express";
+import { CsvExportInterceptor } from "../../../shared/infrastructure/csv";
 import {
   CreateLotInputSchema,
   GetLotInputSchema,
@@ -37,6 +48,7 @@ export class InventoryLotController {
 
   @Get("lots")
   @RequirePermission("inventory.lots.read")
+  @UseInterceptors(CsvExportInterceptor)
   async listLotsEndpoint(@Query() query: any, @Req() req: Request) {
     const input = ListLotsInputSchema.parse({
       productId: query.productId,

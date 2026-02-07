@@ -1,5 +1,16 @@
-import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
 import { AuthGuard } from "../../../auth/guards/auth.guard";
+import { CsvExportInterceptor } from "../../../shared/infrastructure/csv";
 import { RbacGuard } from "../../../auth/guards/rbac.guard";
 import { Permission } from "../../../auth/decorators/permission.decorator";
 import { WorkspaceCapabilityGuard } from "../../../workspaces/guards/workspace-capability.guard";
@@ -72,6 +83,7 @@ export class ImportShipmentController {
 
   @Get()
   @Permission("import.shipments.read")
+  @UseInterceptors(CsvExportInterceptor)
   async list(
     @Query() query: ListShipmentsInput,
     @Context() ctx: UseCaseContext
