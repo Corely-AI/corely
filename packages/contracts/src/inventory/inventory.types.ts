@@ -76,6 +76,9 @@ export const InventoryDocumentLineDtoSchema = z.object({
   toLocationId: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   reservedQuantity: z.number().nonnegative().optional(),
+  lotNumber: z.string().nullable().optional(),
+  mfgDate: localDateSchema.nullable().optional(),
+  expiryDate: localDateSchema.nullable().optional(),
 });
 export type InventoryDocumentLineDto = z.infer<typeof InventoryDocumentLineDtoSchema>;
 

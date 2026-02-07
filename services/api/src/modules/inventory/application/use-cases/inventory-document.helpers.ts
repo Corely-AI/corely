@@ -22,6 +22,9 @@ export const buildLineItems = (params: {
     fromLocationId?: string;
     toLocationId?: string;
     notes?: string;
+    lotNumber?: string;
+    mfgDate?: string;
+    expiryDate?: string;
   }>;
 }): InventoryDocumentLine[] =>
   params.lineItems.map((item) => ({
@@ -33,6 +36,9 @@ export const buildLineItems = (params: {
     toLocationId: item.toLocationId ?? null,
     notes: item.notes ?? null,
     reservedQuantity: null,
+    lotNumber: item.lotNumber ?? null,
+    mfgDate: optionalLocalDate(item.mfgDate),
+    expiryDate: optionalLocalDate(item.expiryDate),
   }));
 
 const requireValue = <T>(value: T | null | undefined, label: string): NonNullable<T> => {

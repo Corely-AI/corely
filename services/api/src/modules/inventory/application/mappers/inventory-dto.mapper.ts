@@ -73,6 +73,9 @@ const toDocumentLineDto = (line: InventoryDocumentLine): InventoryDocumentLineDt
   toLocationId: line.toLocationId ?? null,
   notes: line.notes ?? null,
   reservedQuantity: line.reservedQuantity ?? undefined,
+  lotNumber: line.lotNumber ?? null,
+  mfgDate: toLocalDateString(line.mfgDate),
+  expiryDate: toLocalDateString(line.expiryDate),
 });
 
 export const toInventoryDocumentDto = (doc: InventoryDocumentAggregate): InventoryDocumentDto => ({

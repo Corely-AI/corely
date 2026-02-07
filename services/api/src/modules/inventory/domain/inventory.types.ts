@@ -19,6 +19,9 @@ export type InventoryDocumentLine = {
   toLocationId?: string | null;
   notes?: string | null;
   reservedQuantity?: number | null;
+  lotNumber?: string | null;
+  mfgDate?: LocalDate | null;
+  expiryDate?: LocalDate | null;
 };
 
 export type InventoryDocumentProps = {
@@ -67,6 +70,7 @@ export type StockMove = {
   documentId: string;
   lineId: string;
   reasonCode: StockMoveReason;
+  lotId?: string | null;
   createdAt: Date;
   createdByUserId?: string | null;
 };
