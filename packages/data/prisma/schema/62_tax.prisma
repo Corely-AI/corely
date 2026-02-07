@@ -246,6 +246,7 @@ enum TaxReportType {
   BALANCE_SHEET
   TRADE_TAX
   FIXED_ASSETS
+  EXCISE_MONTHLY
   @@schema("billing")
 }
 
@@ -255,6 +256,7 @@ enum TaxReportGroup {
   COMPLIANCE
   PAYROLL
   FINANCIAL_STATEMENT
+  EXCISE
   @@schema("billing")
 }
 

@@ -60,6 +60,7 @@ export const TaxReportTypeSchema = z.enum([
   "BALANCE_SHEET",
   "TRADE_TAX",
   "FIXED_ASSETS",
+  "EXCISE_MONTHLY",
 ]);
 export type TaxReportType = z.infer<typeof TaxReportTypeSchema>;
 
@@ -69,6 +70,7 @@ export const TaxReportGroupSchema = z.enum([
   "COMPLIANCE",
   "PAYROLL",
   "FINANCIAL_STATEMENT",
+  "EXCISE",
 ]);
 export type TaxReportGroup = z.infer<typeof TaxReportGroupSchema>;
 
