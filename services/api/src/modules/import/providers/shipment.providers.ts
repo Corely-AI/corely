@@ -7,7 +7,10 @@ import { SubmitShipmentUseCase } from "../application/use-cases/submit-shipment.
 import { ReceiveShipmentUseCase } from "../application/use-cases/receive-shipment.usecase";
 import { AllocateLandedCostsUseCase } from "../application/use-cases/allocate-landed-costs.usecase";
 import { IMPORT_SHIPMENT_REPOSITORY } from "../application/ports/import-shipment-repository.port";
-import { LOGGER, ID_GENERATOR, CLOCK, AUDIT } from "@corely/kernel/symbols";
+import { NestLoggerAdapter } from "../../../shared/adapters/logger/nest-logger.adapter";
+import { ID_GENERATOR_TOKEN } from "../../../shared/ports/id-generator.port";
+import { CLOCK_PORT_TOKEN } from "../../../shared/ports/clock.port";
+import { AUDIT_PORT_TOKEN } from "../../../shared/ports/audit.port";
 
 export const importShipmentUseCaseProviders: Provider[] = [
   {
@@ -21,7 +24,13 @@ export const importShipmentUseCaseProviders: Provider[] = [
         audit,
       });
     },
-    inject: [LOGGER, IMPORT_SHIPMENT_REPOSITORY, ID_GENERATOR, CLOCK, AUDIT],
+    inject: [
+      NestLoggerAdapter,
+      IMPORT_SHIPMENT_REPOSITORY,
+      ID_GENERATOR_TOKEN,
+      CLOCK_PORT_TOKEN,
+      AUDIT_PORT_TOKEN,
+    ],
   },
   {
     provide: UpdateShipmentUseCase,
@@ -34,21 +43,27 @@ export const importShipmentUseCaseProviders: Provider[] = [
         audit,
       });
     },
-    inject: [LOGGER, IMPORT_SHIPMENT_REPOSITORY, ID_GENERATOR, CLOCK, AUDIT],
+    inject: [
+      NestLoggerAdapter,
+      IMPORT_SHIPMENT_REPOSITORY,
+      ID_GENERATOR_TOKEN,
+      CLOCK_PORT_TOKEN,
+      AUDIT_PORT_TOKEN,
+    ],
   },
   {
     provide: ListShipmentsUseCase,
     useFactory: (logger, repo) => {
       return new ListShipmentsUseCase({ logger, repo });
     },
-    inject: [LOGGER, IMPORT_SHIPMENT_REPOSITORY],
+    inject: [NestLoggerAdapter, IMPORT_SHIPMENT_REPOSITORY],
   },
   {
     provide: GetShipmentUseCase,
     useFactory: (logger, repo) => {
       return new GetShipmentUseCase({ logger, repo });
     },
-    inject: [LOGGER, IMPORT_SHIPMENT_REPOSITORY],
+    inject: [NestLoggerAdapter, IMPORT_SHIPMENT_REPOSITORY],
   },
   {
     provide: SubmitShipmentUseCase,
@@ -60,7 +75,7 @@ export const importShipmentUseCaseProviders: Provider[] = [
         audit,
       });
     },
-    inject: [LOGGER, IMPORT_SHIPMENT_REPOSITORY, CLOCK, AUDIT],
+    inject: [NestLoggerAdapter, IMPORT_SHIPMENT_REPOSITORY, CLOCK_PORT_TOKEN, AUDIT_PORT_TOKEN],
   },
   {
     provide: ReceiveShipmentUseCase,
@@ -72,7 +87,7 @@ export const importShipmentUseCaseProviders: Provider[] = [
         audit,
       });
     },
-    inject: [LOGGER, IMPORT_SHIPMENT_REPOSITORY, CLOCK, AUDIT],
+    inject: [NestLoggerAdapter, IMPORT_SHIPMENT_REPOSITORY, CLOCK_PORT_TOKEN, AUDIT_PORT_TOKEN],
   },
   {
     provide: AllocateLandedCostsUseCase,
@@ -84,6 +99,6 @@ export const importShipmentUseCaseProviders: Provider[] = [
         audit,
       });
     },
-    inject: [LOGGER, IMPORT_SHIPMENT_REPOSITORY, CLOCK, AUDIT],
+    inject: [NestLoggerAdapter, IMPORT_SHIPMENT_REPOSITORY, CLOCK_PORT_TOKEN, AUDIT_PORT_TOKEN],
   },
 ];

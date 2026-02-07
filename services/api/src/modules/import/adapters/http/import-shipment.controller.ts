@@ -6,17 +6,18 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import { AuthGuard } from "../../../auth/guards/auth.guard";
+import type { Request } from "express";
+import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { CsvExportInterceptor } from "../../../shared/infrastructure/csv";
-import { RbacGuard } from "../../../auth/guards/rbac.guard";
-import { Permission } from "../../../auth/decorators/permission.decorator";
-import { WorkspaceCapabilityGuard } from "../../../workspaces/guards/workspace-capability.guard";
-import { RequireCapability } from "../../../workspaces/decorators/require-capability.decorator";
-import { Context } from "../../../shared/decorators/context.decorator";
-import type { UseCaseContext } from "@corely/kernel";
+import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import {
+  WorkspaceCapabilityGuard,
+  RequireWorkspaceCapability,
+} from "../../../platform/guards/workspace-capability.guard";
 import type {
   CreateShipmentInput,
   CreateShipmentOutput,
@@ -33,6 +34,17 @@ import type {
   AllocateLandedCostsOutput,
 } from "@corely/contracts";
 import { CreateShipmentUseCase } from "../../application/use-cases/create-shipment.usecase";
+
+// Helper to build use case context from request
+function buildUseCaseContext(req: Request) {
+  return {
+    tenantId: (req as any).tenantId || (req as any).context?.tenantId,
+    userId: (req as any).userId || (req as any).context?.userId,
+    workspaceId: (req as any).workspaceId || (req as any).context?.workspaceId,
+    correlationId: (req as any).correlationId,
+    requestId: (req as any).requestId,
+  };
+}
 import { UpdateShipmentUseCase } from "../../application/use-cases/update-shipment.usecase";
 import { ListShipmentsUseCase } from "../../application/use-cases/list-shipments.usecase";
 import { GetShipmentUseCase } from "../../application/use-cases/get-shipment.usecase";
@@ -42,7 +54,7 @@ import { AllocateLandedCostsUseCase } from "../../application/use-cases/allocate
 
 @Controller("import/shipments")
 @UseGuards(AuthGuard, RbacGuard, WorkspaceCapabilityGuard)
-@RequireCapability("import.basic")
+@RequireWorkspaceCapability("import.basic")
 export class ImportShipmentController {
   constructor(
     private readonly createShipment: CreateShipmentUseCase,
@@ -55,11 +67,12 @@ export class ImportShipmentController {
   ) {}
 
   @Post()
-  @Permission("import.shipments.manage")
+  @RequirePermission("import.shipments.manage")
   async create(
     @Body() input: CreateShipmentInput,
-    @Context() ctx: UseCaseContext
+    @Req() req: Request
   ): Promise<CreateShipmentOutput> {
+    const ctx = buildUseCaseContext(req);
     const result = await this.createShipment.execute(input, ctx);
     if (!result.ok) {
       throw result.error;
@@ -68,12 +81,13 @@ export class ImportShipmentController {
   }
 
   @Put(":id")
-  @Permission("import.shipments.manage")
+  @RequirePermission("import.shipments.manage")
   async update(
     @Param("id") shipmentId: string,
     @Body() input: Omit<UpdateShipmentInput, "shipmentId">,
-    @Context() ctx: UseCaseContext
+    @Req() req: Request
   ): Promise<UpdateShipmentOutput> {
+    const ctx = buildUseCaseContext(req);
     const result = await this.updateShipment.execute({ ...input, shipmentId }, ctx);
     if (!result.ok) {
       throw result.error;
@@ -82,12 +96,13 @@ export class ImportShipmentController {
   }
 
   @Get()
-  @Permission("import.shipments.read")
+  @RequirePermission("import.shipments.read")
   @UseInterceptors(CsvExportInterceptor)
   async list(
     @Query() query: ListShipmentsInput,
-    @Context() ctx: UseCaseContext
+    @Req() req: Request
   ): Promise<ListShipmentsOutput> {
+    const ctx = buildUseCaseContext(req);
     const result = await this.listShipments.execute(query, ctx);
     if (!result.ok) {
       throw result.error;
@@ -96,11 +111,9 @@ export class ImportShipmentController {
   }
 
   @Get(":id")
-  @Permission("import.shipments.read")
-  async getById(
-    @Param("id") shipmentId: string,
-    @Context() ctx: UseCaseContext
-  ): Promise<GetShipmentOutput> {
+  @RequirePermission("import.shipments.read")
+  async getById(@Param("id") shipmentId: string, @Req() req: Request): Promise<GetShipmentOutput> {
+    const ctx = buildUseCaseContext(req);
     const result = await this.getShipment.execute({ shipmentId }, ctx);
     if (!result.ok) {
       throw result.error;
@@ -109,11 +122,12 @@ export class ImportShipmentController {
   }
 
   @Post(":id/submit")
-  @Permission("import.shipments.manage")
+  @RequirePermission("import.shipments.manage")
   async submit(
     @Param("id") shipmentId: string,
-    @Context() ctx: UseCaseContext
+    @Req() req: Request
   ): Promise<SubmitShipmentOutput> {
+    const ctx = buildUseCaseContext(req);
     const result = await this.submitShipment.execute({ shipmentId }, ctx);
     if (!result.ok) {
       throw result.error;
@@ -122,12 +136,13 @@ export class ImportShipmentController {
   }
 
   @Post(":id/receive")
-  @Permission("import.shipments.manage")
+  @RequirePermission("import.shipments.manage")
   async receive(
     @Param("id") shipmentId: string,
     @Body() input: Omit<ReceiveShipmentInput, "shipmentId">,
-    @Context() ctx: UseCaseContext
+    @Req() req: Request
   ): Promise<ReceiveShipmentOutput> {
+    const ctx = buildUseCaseContext(req);
     const result = await this.receiveShipment.execute({ ...input, shipmentId }, ctx);
     if (!result.ok) {
       throw result.error;
@@ -136,12 +151,13 @@ export class ImportShipmentController {
   }
 
   @Post(":id/allocate-costs")
-  @Permission("import.shipments.manage")
+  @RequirePermission("import.shipments.manage")
   async allocateCosts(
     @Param("id") shipmentId: string,
     @Body() input: Omit<AllocateLandedCostsInput, "shipmentId">,
-    @Context() ctx: UseCaseContext
+    @Req() req: Request
   ): Promise<AllocateLandedCostsOutput> {
+    const ctx = buildUseCaseContext(req);
     const result = await this.allocateLandedCosts.execute({ ...input, shipmentId }, ctx);
     if (!result.ok) {
       throw result.error;
