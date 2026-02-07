@@ -3,6 +3,7 @@ import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { TaxController } from "./tax.controller";
+import { TaxFilingsController } from "./tax-filings.controller";
 
 // Use cases
 import { GetTaxProfileUseCase } from "./application/use-cases/get-tax-profile.use-case";
@@ -88,7 +89,7 @@ import { DocumentsModule } from "../documents/documents.module";
 
 @Module({
   imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
-  controllers: [TaxController],
+  controllers: [TaxController, TaxFilingsController],
   providers: [
     // Use cases
     GetTaxProfileUseCase,

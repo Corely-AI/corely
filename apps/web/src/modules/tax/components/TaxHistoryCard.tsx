@@ -1,21 +1,39 @@
 import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { taxApi } from "@/lib/tax-api";
-import { Card, CardHeader, CardTitle, CardContent } from "@corely/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
-import { Button } from "@corely/ui";
-import { Badge } from "@corely/ui";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
-import { Loader2, Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
-import { Alert, AlertDescription, AlertTitle } from "@corely/ui";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@corely/ui";
-import { Input } from "@corely/ui";
-import { Textarea } from "@corely/ui";
 import { toast } from "sonner";
-
-const FINAL_STATUSES = ["SUBMITTED", "PAID", "NIL", "ARCHIVED"] as const;
+import { PeriodList } from "./tax-history-card/period-list";
+import { ArchiveDialog, NilDialog, SubmittedDialog } from "./tax-history-card/dialogs";
+import {
+  FINAL_STATUSES,
+  formatDateRange,
+  formatIsoDate,
+  formatPeriodLabel,
+  statusVariant,
+} from "./tax-history-card/utils";
 
 export function TaxHistoryCard() {
   const [year, setYear] = React.useState<string>(new Date().getUTCFullYear().toString());
@@ -31,7 +49,7 @@ export function TaxHistoryCard() {
     queryFn: () => taxApi.listVatPeriodsByYear(Number(year)),
   });
 
-  const periods = data?.periods || [];
+  const periods = data?.periods ?? [];
   const now = new Date();
 
   const overduePeriods = React.useMemo(
@@ -58,15 +76,12 @@ export function TaxHistoryCard() {
     return [...overduePeriods, ...remaining];
   }, [overduePeriods, periods]);
 
-  const currentPeriod = React.useMemo(
-    () =>
-      periods.find((period) => {
-        const start = new Date(period.periodStart);
-        const end = new Date(period.periodEnd);
-        return now >= start && now < end;
-      }) ?? null,
-    [periods, now]
-  );
+  const currentPeriod =
+    periods.find((period) => {
+      const start = new Date(period.periodStart);
+      const end = new Date(period.periodEnd);
+      return now >= start && now < end;
+    }) ?? null;
 
   React.useEffect(() => {
     if (!orderedPeriods.length) {
@@ -125,10 +140,10 @@ export function TaxHistoryCard() {
   });
 
   const upcomingPeriods = orderedPeriods.filter(
-    (period) => !FINAL_STATUSES.includes(period.status as (typeof FINAL_STATUSES)[number])
+    (period) => !FINAL_STATUSES.includes(period.status)
   );
   const submittedPeriods = orderedPeriods.filter((period) =>
-    FINAL_STATUSES.includes(period.status as (typeof FINAL_STATUSES)[number])
+    FINAL_STATUSES.includes(period.status)
   );
 
   return (
@@ -230,9 +245,7 @@ export function TaxHistoryCard() {
                   </Badge>
                 </div>
 
-                {FINAL_STATUSES.includes(
-                  selectedPeriod.status as (typeof FINAL_STATUSES)[number]
-                ) ? (
+                {FINAL_STATUSES.includes(selectedPeriod.status) ? (
                   <div className="grid gap-2 text-sm text-muted-foreground">
                     {selectedPeriod.submissionDate && (
                       <div>Submitted on {formatIsoDate(selectedPeriod.submissionDate)}</div>
@@ -337,262 +350,4 @@ export function TaxHistoryCard() {
       />
     </Card>
   );
-}
-
-function PeriodList({
-  periods,
-  selectedKey,
-  onSelect,
-}: {
-  periods: any[];
-  selectedKey: string | null;
-  onSelect: (key: string) => void;
-}) {
-  if (periods.length === 0) {
-    return <p className="text-sm text-muted-foreground">No periods found.</p>;
-  }
-
-  return (
-    <div className="space-y-3">
-      {periods.map((period) => (
-        <div
-          key={period.periodKey}
-          onClick={() => onSelect(period.periodKey)}
-          className={`flex items-center justify-between rounded-lg border p-3 transition-colors ${
-            selectedKey === period.periodKey
-              ? "border-primary/70 bg-primary/5"
-              : "hover:bg-muted/50"
-          }`}
-        >
-          <div>
-            <div className="font-medium text-primary">{formatPeriodLabel(period)}</div>
-            <div className="text-sm text-muted-foreground">
-              {formatDateRange(period.periodStart, period.periodEnd)}
-            </div>
-          </div>
-          <div className="text-right space-y-1">
-            <div className="font-semibold">{formatMoney(period.taxDueCents, "EUR")}</div>
-            <Badge variant={statusVariant(period.status)}>{period.status}</Badge>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SubmittedDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  isLoading,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (payload: { submissionDate?: string; reference?: string; notes?: string }) => void;
-  isLoading: boolean;
-}) {
-  const [submissionDate, setSubmissionDate] = React.useState(
-    formatIsoDate(new Date().toISOString())
-  );
-  const [reference, setReference] = React.useState("");
-  const [notes, setNotes] = React.useState("");
-
-  React.useEffect(() => {
-    if (open) {
-      setSubmissionDate(formatIsoDate(new Date().toISOString()));
-      setReference("");
-      setNotes("");
-    }
-  }, [open]);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Mark period as submitted</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Submission date</div>
-            <Input
-              type="date"
-              value={submissionDate}
-              onChange={(e) => setSubmissionDate(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Reference (optional)</div>
-            <Input value={reference} onChange={(e) => setReference(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Notes (optional)</div>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() =>
-              onSubmit({
-                submissionDate: submissionDate ? new Date(submissionDate).toISOString() : undefined,
-                reference: reference.trim() || undefined,
-                notes: notes.trim() || undefined,
-              })
-            }
-            disabled={isLoading}
-          >
-            Submit period
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function NilDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  isLoading,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (payload: { submissionDate?: string; notes?: string }) => void;
-  isLoading: boolean;
-}) {
-  const [submissionDate, setSubmissionDate] = React.useState(
-    formatIsoDate(new Date().toISOString())
-  );
-  const [notes, setNotes] = React.useState("");
-
-  React.useEffect(() => {
-    if (open) {
-      setSubmissionDate(formatIsoDate(new Date().toISOString()));
-      setNotes("");
-    }
-  }, [open]);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Mark period as nil</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Submission date</div>
-            <Input
-              type="date"
-              value={submissionDate}
-              onChange={(e) => setSubmissionDate(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Notes (optional)</div>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() =>
-              onSubmit({
-                submissionDate: submissionDate ? new Date(submissionDate).toISOString() : undefined,
-                notes: notes.trim() || undefined,
-              })
-            }
-            disabled={isLoading}
-          >
-            Mark nil
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ArchiveDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  isLoading,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (payload: { reason: string; notes?: string }) => void;
-  isLoading: boolean;
-}) {
-  const [reason, setReason] = React.useState("");
-  const [notes, setNotes] = React.useState("");
-
-  React.useEffect(() => {
-    if (open) {
-      setReason("");
-      setNotes("");
-    }
-  }, [open]);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Archive period</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Reason</div>
-            <Input value={reason} onChange={(e) => setReason(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <div className="text-sm font-medium">Notes (optional)</div>
-            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() => onSubmit({ reason: reason.trim(), notes: notes.trim() || undefined })}
-            disabled={!reason.trim() || isLoading}
-          >
-            Archive period
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function formatPeriodLabel(period: any) {
-  const start = new Date(period.periodStart);
-  const quarter = Math.floor(start.getUTCMonth() / 3) + 1;
-  return `Q${quarter} ${start.getUTCFullYear()}`;
-}
-
-function formatDateRange(start: string, end: string) {
-  return `${formatIsoDate(start)} to ${formatIsoDate(end)}`;
-}
-
-function formatIsoDate(value: string) {
-  return new Date(value).toISOString().split("T")[0];
-}
-
-function statusVariant(status: string) {
-  switch (status) {
-    case "OVERDUE":
-      return "overdue";
-    case "SUBMITTED":
-    case "PAID":
-      return "success";
-    case "NIL":
-    case "ARCHIVED":
-      return "muted";
-    default:
-      return "outline";
-  }
 }
