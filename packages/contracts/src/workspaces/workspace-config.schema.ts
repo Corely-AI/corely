@@ -16,6 +16,7 @@ export const WorkspaceCapabilitiesSchema = z.object({
   "catalog.basic": z.boolean(),
   "inventory.warehouses": z.boolean(),
   "inventory.serialTracking": z.boolean(),
+  "import.basic": z.boolean(),
   "finance.costCenters": z.boolean(),
   "finance.budgeting": z.boolean(),
   "finance.multiCurrency": z.boolean(),

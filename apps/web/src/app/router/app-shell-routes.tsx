@@ -71,6 +71,7 @@ import {
   LotDetailPage,
   ExpiryDashboardPage,
 } from "../../modules/inventory";
+import { ShipmentsPage, ShipmentDetailPage } from "../../modules/import";
 import { CmsPostsPage, CmsPostEditorPage, CmsCommentsPage } from "../../modules/cms";
 import {
   WebsiteSitesPage,
@@ -494,6 +495,22 @@ export const appShellRoutes = (
         element={
           <RequireCapability capability="inventory.basic">
             <ExpiryDashboardPage />
+          </RequireCapability>
+        }
+      />
+      <Route
+        path="/import/shipments"
+        element={
+          <RequireCapability capability="import.basic">
+            <ShipmentsPage />
+          </RequireCapability>
+        }
+      />
+      <Route
+        path="/import/shipments/:id"
+        element={
+          <RequireCapability capability="import.basic">
+            <ShipmentDetailPage />
           </RequireCapability>
         }
       />

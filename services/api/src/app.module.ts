@@ -20,6 +20,7 @@ import { SalesModule } from "./modules/sales";
 import { PaymentMethodsModule } from "./modules/payment-methods/payment-methods.module";
 import { PurchasingModule } from "./modules/purchasing";
 import { InventoryModule } from "./modules/inventory";
+import { ImportModule } from "./modules/import";
 import { CatalogModule } from "./modules/catalog";
 import { ApprovalsModule } from "./modules/approvals";
 import { EngagementModule } from "./modules/engagement/engagement.module";
@@ -70,6 +71,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     PurchasingModule,
     CatalogModule,
     InventoryModule,
+    ImportModule,
     ApprovalsModule,
     EngagementModule,
     CmsModule,
