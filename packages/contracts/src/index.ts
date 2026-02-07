@@ -10,6 +10,7 @@ export * from "./expenses";
 export * from "./forms";
 export * from "./tax";
 export * from "./accounting";
+export * from "./reporting";
 export * from "./crm";
 export * from "./cms";
 export * from "./website";
