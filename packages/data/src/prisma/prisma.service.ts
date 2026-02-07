@@ -11,28 +11,16 @@ const { PrismaClient } = prismaPkg;
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  // Type-only aliases for optional models not present in some schemas.
-  // Using getters to match PrismaClient accessor pattern.
-  get salesOrder(): any {
-    return (this as any).salesOrder;
-  }
-  get salesOrderLine(): any {
-    return (this as any).salesOrderLine;
-  }
-  get salesQuote(): any {
-    return (this as any).salesQuote;
-  }
-  get salesQuoteLine(): any {
-    return (this as any).salesQuoteLine;
-  }
-
   private pool: Pool | null;
   private readonly skipConnect: boolean;
 
   constructor() {
+    console.log(
+      "---------------------------------------------------------------------------------------"
+    );
     const skipConnect = process.env.SKIP_PRISMA_CONNECT === "true";
     if (skipConnect) {
-      super();
+      super({});
       this.skipConnect = true;
       this.pool = null;
       return;
@@ -44,10 +32,21 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
 
     const pool = new Pool({ connectionString: url });
+    console.log(
+      "---------------------------------------------------------------------------------------"
+    );
     const adapter = new PrismaPg(pool);
-
+    console.log(
+      "---------------------------------------------------------------------------------------"
+    );
     super({ adapter });
+    console.log(
+      "4---------------------------------------------------------------------------------------"
+    );
     this.pool = pool;
+    console.log(
+      "5---------------------------------------------------------------------------------------"
+    );
     this.skipConnect = false;
   }
 

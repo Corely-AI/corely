@@ -15,8 +15,11 @@ COPY packages/data/package.json ./packages/data/
 COPY packages/domain/package.json ./packages/domain/
 COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/kernel/package.json ./packages/kernel/
+COPY packages/core/package.json ./packages/core/
+COPY packages/prompts/package.json ./packages/prompts/
 COPY packages/email-templates/package.json ./packages/email-templates/
 COPY packages/config/package.json ./packages/config/
+COPY packages/testkit/package.json ./packages/testkit/
 COPY packages/tooling/tsconfig/package.json ./packages/tooling/tsconfig/
 
 # Install all workspace deps (includes dev deps needed for tsx watch)
@@ -37,7 +40,7 @@ RUN cd /app/packages/data && DATABASE_URL=$DATABASE_URL_BUILD /app/node_modules/
 
 # Build worker service and its workspace deps
 RUN pnpm --filter @corely/worker... build \
- && node scripts/check-service-deps-built.mjs @corely/worker
+    && node scripts/check-service-deps-built.mjs @corely/worker
 
 # Environment variables are set by docker-compose or .env files
 CMD ["pnpm", "--filter", "@corely/worker", "start"]

@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { ImportShipmentController } from "./adapters/http/import-shipment.controller";
 import { importRepositoryProviders } from "./providers/repository.providers";
@@ -12,7 +11,6 @@ import { AUDIT_PORT_TOKEN } from "../../shared/ports/audit.port";
   imports: [KernelModule],
   controllers: [ImportShipmentController],
   providers: [
-    PrismaClient,
     NestLoggerAdapter,
     PrismaAuditAdapter,
     { provide: AUDIT_PORT_TOKEN, useExisting: PrismaAuditAdapter },
