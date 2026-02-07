@@ -44,7 +44,8 @@ model Invoice {
 
   lines     InvoiceLine[]
   payments  InvoicePayment[]
-  
+  reminderState InvoiceReminderState?
+
   legalEntity     LegalEntity?   @relation(fields: [legalEntityId], references: [id])
   paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
 
@@ -115,7 +116,7 @@ model InvoiceReminderState {
   id             String    @id @default(cuid())
   tenantId       String
   workspaceId    String
-  invoiceId      String
+  invoiceId      String    @unique
   remindersSent  Int       @default(0)
   nextReminderAt DateTime? @db.Timestamptz(6)
   lastReminderAt DateTime? @db.Timestamptz(6)

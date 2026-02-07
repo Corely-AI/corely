@@ -24,6 +24,9 @@ export type StockMoveReason = z.infer<typeof StockMoveReasonSchema>;
 export const ReservationStatusSchema = z.enum(["ACTIVE", "RELEASED", "FULFILLED"]);
 export type ReservationStatus = z.infer<typeof ReservationStatusSchema>;
 
+export const InventoryLotStatusSchema = z.enum(["AVAILABLE", "QUARANTINE", "BLOCKED", "DISPOSED"]);
+export type InventoryLotStatus = z.infer<typeof InventoryLotStatusSchema>;
+
 export const ProductDtoSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
@@ -73,6 +76,9 @@ export const InventoryDocumentLineDtoSchema = z.object({
   toLocationId: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   reservedQuantity: z.number().nonnegative().optional(),
+  lotNumber: z.string().nullable().optional(),
+  mfgDate: localDateSchema.nullable().optional(),
+  expiryDate: localDateSchema.nullable().optional(),
 });
 export type InventoryDocumentLineDto = z.infer<typeof InventoryDocumentLineDtoSchema>;
 
@@ -163,3 +169,26 @@ export const ReorderSuggestionDtoSchema = z.object({
   preferredSupplierPartyId: z.string().nullable().optional(),
 });
 export type ReorderSuggestionDto = z.infer<typeof ReorderSuggestionDtoSchema>;
+
+export const InventoryLotDtoSchema = z.object({
+  id: z.string(),
+  tenantId: z.string(),
+  productId: z.string(),
+  lotNumber: z.string(),
+  mfgDate: localDateSchema.nullable().optional(),
+  expiryDate: localDateSchema.nullable().optional(),
+  receivedDate: localDateSchema,
+  shipmentId: z.string().nullable().optional(),
+  supplierPartyId: z.string().nullable().optional(),
+  unitCostCents: z.number().int().nonnegative().nullable().optional(),
+  qtyReceived: z.number().nonnegative(),
+  qtyOnHand: z.number().nonnegative(),
+  qtyReserved: z.number().nonnegative(),
+  status: InventoryLotStatusSchema,
+  notes: z.string().nullable().optional(),
+  metadataJson: z.record(z.any()).nullable().optional(),
+  createdAt: utcInstantSchema,
+  updatedAt: utcInstantSchema,
+  archivedAt: utcInstantSchema.nullable().optional(),
+});
+export type InventoryLotDto = z.infer<typeof InventoryLotDtoSchema>;

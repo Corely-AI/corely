@@ -17,6 +17,8 @@ import { toInventoryDocumentDto } from "../mappers/inventory-dto.mapper";
 import { getIdempotentResult, storeIdempotentResult } from "./idempotency";
 import { resolvePostingDate, requireLocation } from "./inventory-document.helpers";
 import type { DocumentDeps } from "./inventory-document.deps";
+import { createInventoryLot } from "../../domain/inventory-lot.entity";
+import { validateLotTrackingRequirements, resolveExpiryDate } from "../../domain/inventory-rules";
 
 @RequireTenant()
 export class PostInventoryDocumentUseCase extends BaseUseCase<
@@ -67,6 +69,112 @@ export class PostInventoryDocumentUseCase extends BaseUseCase<
 
     const postingLocalDate = parseLocalDate(postingDate);
     const moves: StockMove[] = [];
+
+    // For receipts, we need to validate lot tracking requirements and create lots
+    const lotMap = new Map<string, string>(); // lineId -> lotId mapping
+
+    if (document.documentType === "RECEIPT") {
+      // Fetch catalog items for all products in this document
+      const productIds = [...new Set(document.lines.map((line) => line.productId))];
+      const catalogItems = new Map<string, any>();
+
+      for (const productId of productIds) {
+        // Find product to get catalog item reference
+        const product = await this.documentDeps.productRepo.findById(tenantId, productId);
+        if (!product) {
+          return err(new NotFoundError(`Product not found: ${productId}`));
+        }
+
+        // Get catalog item if product is linked to catalog
+        // Assuming products have a catalogItemId or similar field
+        // For now, we'll fetch by matching product SKU to catalog code
+        try {
+          const catalogItem = await this.documentDeps.catalogRepo.findItemByCode(
+            { tenantId, workspaceId: ctx.workspaceId || tenantId },
+            product.sku
+          );
+          if (catalogItem) {
+            catalogItems.set(productId, catalogItem);
+          }
+        } catch (error) {
+          // Catalog item not found - product may not be in catalog, continue without lot tracking
+          this.documentDeps.logger.warn(`Catalog item not found for product ${productId}`);
+        }
+      }
+
+      // Validate and create lots for each line
+      for (const line of document.lines) {
+        const catalogItem = catalogItems.get(line.productId);
+
+        if (catalogItem) {
+          // Validate lot tracking requirements
+          try {
+            validateLotTrackingRequirements(catalogItem, line);
+          } catch (error) {
+            return err(error as ValidationError);
+          }
+
+          // Create lot if lot tracking is enabled
+          if (catalogItem.requiresLotTracking && line.lotNumber) {
+            // Check for duplicate lot number
+            const existingLot = await this.documentDeps.lotRepo.findByLotNumber(
+              tenantId,
+              line.productId,
+              line.lotNumber
+            );
+
+            if (existingLot) {
+              return err(
+                new ValidationError(
+                  `Lot number ${line.lotNumber} already exists for this product`,
+                  { productId: line.productId, lotNumber: line.lotNumber }
+                )
+              );
+            }
+
+            // Resolve expiry date
+            const expiryDate = resolveExpiryDate(
+              line.mfgDate ?? null,
+              line.expiryDate ?? null,
+              catalogItem.shelfLifeDays
+            );
+
+            // Create the lot
+            const now = this.documentDeps.clock.now();
+            const lot = createInventoryLot({
+              id: this.documentDeps.idGenerator.newId(),
+              tenantId,
+              productId: line.productId,
+              lotNumber: line.lotNumber,
+              mfgDate: line.mfgDate ? parseLocalDate(line.mfgDate) : null,
+              expiryDate: expiryDate ? parseLocalDate(expiryDate) : null,
+              receivedDate: postingLocalDate,
+              shipmentId: document.sourceType === "SHIPMENT" ? document.sourceId : null,
+              supplierPartyId: document.partyId ?? null,
+              unitCostCents: line.unitCostCents ?? null,
+              qtyReceived: line.quantity,
+              status: "AVAILABLE",
+              notes: line.notes ?? null,
+              metadataJson: null,
+              createdAt: now,
+              updatedAt: now,
+            });
+
+            await this.documentDeps.lotRepo.create(tenantId, lot);
+            lotMap.set(line.id, lot.id);
+
+            await this.documentDeps.audit.log({
+              tenantId,
+              userId: ctx.userId,
+              action: "inventory.lot.created",
+              entityType: "InventoryLot",
+              entityId: lot.id,
+              metadata: { documentId: document.id, lineId: line.id },
+            });
+          }
+        }
+      }
+    }
 
     if (
       (document.documentType === "DELIVERY" || document.documentType === "TRANSFER") &&
@@ -139,6 +247,7 @@ export class PostInventoryDocumentUseCase extends BaseUseCase<
           documentId: document.id,
           lineId: line.id,
           reasonCode: "RECEIPT",
+          lotId: lotMap.get(line.id) ?? null,
           createdAt: this.documentDeps.clock.now(),
           createdByUserId: ctx.userId,
         });
@@ -157,6 +266,7 @@ export class PostInventoryDocumentUseCase extends BaseUseCase<
           documentId: document.id,
           lineId: line.id,
           reasonCode: "SHIPMENT",
+          lotId: null,
           createdAt: this.documentDeps.clock.now(),
           createdByUserId: ctx.userId,
         });
@@ -176,6 +286,7 @@ export class PostInventoryDocumentUseCase extends BaseUseCase<
           documentId: document.id,
           lineId: line.id,
           reasonCode: "TRANSFER",
+          lotId: null,
           createdAt: this.documentDeps.clock.now(),
           createdByUserId: ctx.userId,
         });
@@ -190,6 +301,7 @@ export class PostInventoryDocumentUseCase extends BaseUseCase<
           documentId: document.id,
           lineId: line.id,
           reasonCode: "TRANSFER",
+          lotId: null,
           createdAt: this.documentDeps.clock.now(),
           createdByUserId: ctx.userId,
         });
@@ -208,6 +320,7 @@ export class PostInventoryDocumentUseCase extends BaseUseCase<
             documentId: document.id,
             lineId: line.id,
             reasonCode: "ADJUSTMENT",
+            lotId: null,
             createdAt: this.documentDeps.clock.now(),
             createdByUserId: ctx.userId,
           });
@@ -223,6 +336,7 @@ export class PostInventoryDocumentUseCase extends BaseUseCase<
             documentId: document.id,
             lineId: line.id,
             reasonCode: "ADJUSTMENT",
+            lotId: null,
             createdAt: this.documentDeps.clock.now(),
             createdByUserId: ctx.userId,
           });

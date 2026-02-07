@@ -24,6 +24,7 @@ export * from "./mark-vat-period-submitted.schema";
 export * from "./mark-vat-period-nil.schema";
 export * from "./archive-vat-period.schema";
 export * from "./request-tax-report-pdf.schema";
+export * from "./generate-excise-report.schema";
 
 // New schemas
 export * from "./get-tax-center.schema";

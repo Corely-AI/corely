@@ -4,6 +4,7 @@ import { ProductsController } from "./adapters/http/products.controller";
 import { WarehousesController } from "./adapters/http/warehouses.controller";
 import { InventoryDocumentsController } from "./adapters/http/inventory-documents.controller";
 import { StockController } from "./adapters/http/stock.controller";
+import { InventoryLotController } from "./adapters/http/inventory-lot.controller";
 import { InventoryApplication } from "./application/inventory.application";
 import { ProductsApplication } from "./application/products.application";
 import { WarehousesApplication } from "./application/warehouses.application";
@@ -21,6 +22,7 @@ import { locationProviders } from "./providers/location.providers";
 import { documentProviders } from "./providers/document.providers";
 import { stockProviders } from "./providers/stock.providers";
 import { reorderProviders } from "./providers/reorder.providers";
+import { lotProviders } from "./providers/lot.providers";
 import { applicationProviders } from "./providers/application.providers";
 
 @Module({
@@ -30,6 +32,7 @@ import { applicationProviders } from "./providers/application.providers";
     WarehousesController,
     InventoryDocumentsController,
     StockController,
+    InventoryLotController,
   ],
   providers: [
     ...repositoryProviders,
@@ -39,6 +42,7 @@ import { applicationProviders } from "./providers/application.providers";
     ...documentProviders,
     ...stockProviders,
     ...reorderProviders,
+    ...lotProviders,
     ...applicationProviders,
   ],
   exports: [

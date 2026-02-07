@@ -44,6 +44,7 @@ import { RecalculateTaxFilingUseCase } from "./application/use-cases/recalculate
 import { SubmitTaxFilingUseCase } from "./application/use-cases/submit-tax-filing.use-case";
 import { MarkTaxFilingPaidUseCase } from "./application/use-cases/mark-tax-filing-paid.use-case";
 import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filing.use-case";
+import { GenerateExciseReportUseCase } from "./application/use-cases/generate-excise-report.usecase";
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
@@ -130,6 +131,7 @@ import { DocumentsModule } from "../documents/documents.module";
     SubmitTaxFilingUseCase,
     MarkTaxFilingPaidUseCase,
     DeleteTaxFilingUseCase,
+    GenerateExciseReportUseCase,
 
     // Services
     TaxEngineService,

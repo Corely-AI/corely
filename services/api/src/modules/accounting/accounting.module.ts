@@ -41,6 +41,7 @@ import { GetBalanceSheetUseCase } from "./application/use-cases/get-balance-shee
 
 // Application Service
 import { AccountingApplication } from "./application/accounting.application";
+import { CogsPostingService } from "./application/services/cogs-posting.service";
 
 // Controllers
 import { AccountingController } from "./adapters/http/accounting.controller";
@@ -481,7 +482,10 @@ import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
         UpdateAccountingSettingsUseCase,
       ],
     },
+
+    // COGS Posting Service
+    CogsPostingService,
   ],
-  exports: [AccountingApplication],
+  exports: [AccountingApplication, CogsPostingService],
 })
 export class AccountingModule {}

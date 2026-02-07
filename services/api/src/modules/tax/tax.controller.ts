@@ -15,6 +15,7 @@ import {
   ArchiveVatPeriodInputSchema,
   CalculateTaxInputSchema,
   CreateTaxCodeInputSchema,
+  GenerateExciseReportInputSchema,
   ListTaxReportsInputSchema,
   ListVatPeriodsInputSchema,
   LockTaxSnapshotInputSchema,
@@ -24,6 +25,7 @@ import {
   UpsertTaxProfileInputSchema,
   type CalculateTaxOutput,
   type CreateTaxCodeOutput,
+  type GenerateExciseReportOutput,
   type GetTaxConsultantOutput,
   type GetTaxProfileOutput,
   type GetTaxSummaryOutput,
@@ -57,6 +59,7 @@ import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-
 import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period-nil.use-case";
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
 import { RequestTaxReportPdfUseCase } from "./application/use-cases/request-tax-report-pdf.use-case";
+import { GenerateExciseReportUseCase } from "./application/use-cases/generate-excise-report.usecase";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 @Controller("tax")
@@ -83,6 +86,7 @@ export class TaxController {
     private readonly markVatPeriodNilUseCase: MarkVatPeriodNilUseCase,
     private readonly archiveVatPeriodUseCase: ArchiveVatPeriodUseCase,
     private readonly requestTaxReportPdfUseCase: RequestTaxReportPdfUseCase,
+    private readonly generateExciseReportUseCase: GenerateExciseReportUseCase,
     private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
@@ -188,6 +192,16 @@ export class TaxController {
   async markSubmitted(@Param("id") id: string, @Req() req: Request) {
     const ctx = buildTaxUseCaseContext(req);
     return unwrap(await this.markTaxReportSubmittedUseCase.execute(id, ctx));
+  }
+
+  @Post("excise-reports/generate")
+  async generateExciseReport(
+    @Body() body: unknown,
+    @Req() req: Request
+  ): Promise<GenerateExciseReportOutput> {
+    const ctx = buildTaxUseCaseContext(req);
+    const input = GenerateExciseReportInputSchema.parse(body);
+    return unwrap(await this.generateExciseReportUseCase.execute(input, ctx));
   }
 
   @Get("periods")
