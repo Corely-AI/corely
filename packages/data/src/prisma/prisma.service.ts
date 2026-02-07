@@ -11,8 +11,20 @@ const { PrismaClient } = prismaPkg;
  */
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  // Note: Model types are inherited from PrismaClient and don't need redeclaration.
-  // If specific models are optional in some schemas, TypeScript will handle them via the base class.
+  // Type-only aliases for optional models not present in some schemas.
+  // Using getters to match PrismaClient accessor pattern.
+  get salesOrder(): any {
+    return (this as any).salesOrder;
+  }
+  get salesOrderLine(): any {
+    return (this as any).salesOrderLine;
+  }
+  get salesQuote(): any {
+    return (this as any).salesQuote;
+  }
+  get salesQuoteLine(): any {
+    return (this as any).salesQuoteLine;
+  }
 
   private pool: Pool | null;
   private readonly skipConnect: boolean;

@@ -30,7 +30,7 @@ type Deps = {
 @RequireTenant()
 @Injectable()
 export class GetMonthlyPackUseCase extends BaseUseCase<GetMonthlyPackInput, GetMonthlyPackOutput> {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

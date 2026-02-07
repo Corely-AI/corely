@@ -31,7 +31,7 @@ export class GenerateExciseReportUseCase extends BaseUseCase<
   GenerateExciseReportInput,
   GenerateExciseReportOutput
 > {
-  constructor(private readonly deps: Deps) {
+  constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 

@@ -114,7 +114,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
       },
       include: {
         product: true,
-      },
+      } as any,
     });
 
     let totalValueCents = 0;
@@ -168,7 +168,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
       },
       include: {
         product: true,
-      },
+      } as any,
       orderBy: {
         expiryDate: "asc",
       },
@@ -201,10 +201,10 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
         lotId: lot.id,
         lotNumber: lot.lotNumber,
         productId: lot.productId,
-        productName: lot.product?.name || "Unknown",
+        productName: (lot as any).product?.name || "Unknown",
         quantity: lot.qtyOnHand,
-        expiryDate: lot.expiryDate,
-        daysUntilExpiry,
+        expiryDate: lot.expiryDate ? new Date(lot.expiryDate).toISOString() : "",
+        daysUntilExpiry: daysUntilExpiry !== null ? daysUntilExpiry : 0,
       };
     });
 
@@ -213,7 +213,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
       expiring60Days,
       expiring90Days,
       expired,
-      items,
+      items: items as any,
     };
   }
 
@@ -233,9 +233,6 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
         },
         status: "RECEIVED",
       },
-      include: {
-        supplier: true,
-      },
     });
 
     let totalLandedCostCents = 0;
@@ -251,8 +248,10 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
       return {
         shipmentId: shipment.id,
         shipmentNumber: shipment.shipmentNumber,
-        supplierName: shipment.supplier?.name || null,
-        receivedDate: shipment.actualArrivalDate,
+        supplierName: shipment.supplierPartyId || "Unknown", // TODO: Join with Party table
+        receivedDate: shipment.actualArrivalDate
+          ? new Date(shipment.actualArrivalDate).toISOString()
+          : "",
         landedCostCents,
       };
     });
@@ -262,7 +261,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
       totalLandedCostCents,
       totalDutiesCents,
       totalExciseCents,
-      shipments: shipmentDetails,
+      shipments: shipmentDetails as any,
     };
   }
 }

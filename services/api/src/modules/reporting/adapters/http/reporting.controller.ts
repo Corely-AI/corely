@@ -44,7 +44,7 @@ export class ReportingController {
     const result = await this.getMonthlyPack.execute(input, ctx);
 
     if (!result.ok) {
-      throw result.error;
+      throw (result as any).error;
     }
 
     return result.value;
