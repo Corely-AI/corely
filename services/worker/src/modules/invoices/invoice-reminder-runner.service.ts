@@ -117,7 +117,9 @@ export class InvoiceReminderRunnerService implements Runner {
     tenantId: string,
     policy?: { shardIndex: number; shardCount: number }
   ): boolean {
-    if (!policy) {return true;}
+    if (!policy) {
+      return true;
+    }
     // Simple consistent hashing
     const hash = crypto.createHash("md5").update(tenantId).digest("hex");
     // Use first 8 chars (32 bits)

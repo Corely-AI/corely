@@ -131,12 +131,18 @@ export class UpdateSessionUseCase {
     // 2. Filter by date validity
     const sessionDate = session.startsAt;
     const validEnrollments = enrollments.filter((e) => {
-      if (e.startDate && e.startDate > sessionDate) {return false;}
-      if (e.endDate && e.endDate < sessionDate) {return false;}
+      if (e.startDate && e.startDate > sessionDate) {
+        return false;
+      }
+      if (e.endDate && e.endDate < sessionDate) {
+        return false;
+      }
       return true;
     });
 
-    if (validEnrollments.length === 0) {return;}
+    if (validEnrollments.length === 0) {
+      return;
+    }
 
     // 3. Get existing attendance to avoid overwrite
     const existingAttendance = await this.repo.listAttendanceBySession(
@@ -151,7 +157,9 @@ export class UpdateSessionUseCase {
     const now = this.clock.now();
 
     for (const enrollment of validEnrollments) {
-      if (existingEnrollmentIds.has(enrollment.id)) {continue;}
+      if (existingEnrollmentIds.has(enrollment.id)) {
+        continue;
+      }
 
       newAttendance.push({
         id: this.idGenerator.newId(),
