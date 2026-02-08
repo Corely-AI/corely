@@ -301,6 +301,11 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
       ],
     },
   ],
-  exports: [DocumentsApplication, GcsObjectStorageAdapter],
+  exports: [
+    DocumentsApplication,
+    GcsObjectStorageAdapter,
+    ListLinkedDocumentsUseCase,
+    GetDownloadUrlUseCase,
+  ],
 })
 export class DocumentsModule {}

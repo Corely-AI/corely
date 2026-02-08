@@ -2,7 +2,9 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, ShieldCheck, UserMinus } from "lucide-react";
+import { Plus, ShieldCheck, UserMinus, Mail } from "lucide-react";
+import { toast } from "sonner";
+import { request } from "@corely/api-client";
 import {
   Badge,
   Button,
@@ -137,6 +139,17 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
     },
   });
 
+  const inviteMutation = useMutation({
+    mutationFn: (data: any) =>
+      request({
+        url: "/api/portal/invitations",
+        method: "POST",
+        body: data,
+      }),
+    onSuccess: () => toast.success("Invitation sent to portal"),
+    onError: (err: any) => toast.error("Failed to send invitation: " + err.message),
+  });
+
   return (
     <Card>
       <CardContent className="p-6 space-y-4">
@@ -191,6 +204,22 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                   >
                     <ShieldCheck className="h-4 w-4" />
                     Set primary payer
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      inviteMutation.mutate({
+                        email: entry.guardian.email || "",
+                        partyId: entry.guardian.id,
+                        role: "GUARDIAN",
+                      })
+                    }
+                    disabled={!entry.guardian.email || inviteMutation.isPending}
+                    title={!entry.guardian.email ? "Email required for invitation" : ""}
+                  >
+                    <Mail className="h-4 w-4" />
+                    Invite
                   </Button>
                   <Button
                     variant="ghost"

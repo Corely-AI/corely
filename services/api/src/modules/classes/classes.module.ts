@@ -325,6 +325,6 @@ import { GetTeacherDashboardUnpaidInvoicesUseCase } from "./application/use-case
       inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, CLOCK_PORT_TOKEN],
     },
   ],
-  exports: [CreateMonthlyBillingRunUseCase],
+  exports: [CreateMonthlyBillingRunUseCase, CLASSES_REPOSITORY_PORT, PrismaClassesRepository],
 })
 export class ClassesModule {}

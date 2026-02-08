@@ -13,6 +13,9 @@ export const DocumentLinkEntityTypeSchema = z.enum([
   "EXPENSE",
   "AGENT_RUN",
   "MESSAGE",
+  "CLASS_GROUP",
+  "CLASS_SESSION",
+  "PARTY",
   "OTHER",
 ]);
 export type DocumentLinkEntityType = z.infer<typeof DocumentLinkEntityTypeSchema>;

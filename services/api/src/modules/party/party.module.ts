@@ -254,6 +254,6 @@ import { PrismaPartyQueryAdapter } from "./infrastructure/prisma/prisma-party-qu
       ],
     },
   ],
-  exports: [PartyApplication, CUSTOMER_QUERY_PORT, PARTY_QUERY_PORT],
+  exports: [PartyApplication, CUSTOMER_QUERY_PORT, PARTY_QUERY_PORT, PrismaPartyRepoAdapter],
 })
 export class PartyModule {}

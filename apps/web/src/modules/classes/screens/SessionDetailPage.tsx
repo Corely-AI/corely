@@ -19,6 +19,7 @@ import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
 import { classEnrollmentKeys, classSessionKeys, classAttendanceKeys } from "../queries";
 import { formatDateTime } from "@/shared/lib/formatters";
+import { MaterialsSection } from "../../portal/components/MaterialsSection";
 
 const ATTENDANCE_STATUSES = ["PRESENT", "ABSENT", "MAKEUP", "EXCUSED"] as const;
 
@@ -277,6 +278,8 @@ export default function SessionDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      <MaterialsSection entityId={sessionId} entityType="CLASS_SESSION" />
     </div>
   );
 }
