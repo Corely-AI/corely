@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "@corely/data";
 import {
   TEACHER_DASHBOARD_QUERY,
@@ -145,6 +146,70 @@ export class PrismaTeacherDashboardQuery implements TeacherDashboardQueryPort {
       },
     });
 
+    // Students Missing Payer: Active enrollments where studentClientId === payerClientId (self-payer, which typically indicates missing payer)
+    // Prisma doesn't support comparing two fields directly, so we use $queryRaw
+    // Build the query with proper SQL construction
+    const studentsMissingPayerList = await this.prisma.$queryRaw<
+      Array<{ id: string; studentClientId: string; classGroupId: string; payerClientId: string }>
+    >(
+      classGroupId
+        ? Prisma.sql`
+            SELECT e.id, e."studentClientId", e."classGroupId", e."payerClientId"
+            FROM crm."ClassEnrollment" e
+            WHERE e."tenantId" = ${tenantId}
+              AND e."workspaceId" = ${workspaceId}
+              AND e."isActive" = true
+              AND e."studentClientId" = e."payerClientId"
+              AND e."classGroupId" = ${classGroupId}
+            LIMIT 10
+          `
+        : Prisma.sql`
+            SELECT e.id, e."studentClientId", e."classGroupId", e."payerClientId"
+            FROM crm."ClassEnrollment" e
+            WHERE e."tenantId" = ${tenantId}
+              AND e."workspaceId" = ${workspaceId}
+              AND e."isActive" = true
+              AND e."studentClientId" = e."payerClientId"
+            LIMIT 10
+          `
+    );
+
+    const studentsMissingPayerCount = studentsMissingPayerList.length;
+
+    // Fetch class group names for these enrollments
+    const classGroupIds = [...new Set(studentsMissingPayerList.map((s) => s.classGroupId))];
+    const classGroupsMap = await this.prisma.classGroup
+      .findMany({
+        where: { id: { in: classGroupIds } },
+        select: { id: true, name: true },
+      })
+      .then((groups) => new Map(groups.map((g) => [g.id, g.name])));
+
+    // Unpaid Invoices: Issued/Sent invoices with due amount > 0
+    // We need to compute totals on-the-fly or rely on a separate totals table if it exists
+    // For simplicity, let's get invoices in ISSUED or SENT status
+    const unpaidInvoicesCount = await this.prisma.invoice.count({
+      where: {
+        tenantId,
+        status: { in: ["ISSUED", "SENT"] },
+        dueDate: { lte: now }, // Overdue or due today
+      },
+    });
+
+    const unpaidInvoicesList = await this.prisma.invoice.findMany({
+      where: {
+        tenantId,
+        status: { in: ["ISSUED", "SENT"] },
+        dueDate: { lte: now },
+      },
+      orderBy: { dueDate: "asc" }, // Most overdue first
+      take: 10,
+      include: {
+        lines: { select: { qty: true, unitPriceCents: true } },
+        payments: { select: { amountCents: true } },
+      },
+    });
+
     return {
       range: {
         dateFrom: new Date(dateFrom).toISOString(),
@@ -155,6 +220,8 @@ export class PrismaTeacherDashboardQuery implements TeacherDashboardQueryPort {
         weekSessions: weekCount,
         missingAttendance: missingAttendanceCount,
         unfinishedPastSessions: unfinishedPastSessionsCount,
+        studentsMissingPayer: studentsMissingPayerCount,
+        unpaidInvoices: unpaidInvoicesCount,
       },
       upcomingSessions: upcomingSessions.map((s) => ({
         id: s.id,
@@ -184,6 +251,30 @@ export class PrismaTeacherDashboardQuery implements TeacherDashboardQueryPort {
           status: s.status as ClassSessionStatus,
           topic: s.topic,
         })),
+        studentsMissingPayer: studentsMissingPayerList.map((e) => ({
+          id: e.id,
+          clientId: e.studentClientId,
+          classGroupId: e.classGroupId,
+          classGroupName: classGroupsMap.get(e.classGroupId) || e.classGroupId,
+          studentName: e.studentClientId, // TODO: Fetch actual student name from Client/Party
+        })),
+        unpaidInvoices: unpaidInvoicesList.map((inv) => {
+          const totalCents = inv.lines.reduce(
+            (sum, line) => sum + line.qty * line.unitPriceCents,
+            0
+          );
+          const paidCents = inv.payments.reduce((sum, p) => sum + p.amountCents, 0);
+          const dueCents = totalCents - paidCents;
+          return {
+            id: inv.id,
+            number: inv.number,
+            customerName: inv.billToName || inv.customerPartyId, // TODO: Fetch actual customer name
+            amountDueCents: dueCents,
+            currency: inv.currency,
+            dueDate: inv.dueDate?.toISOString() ?? null,
+            issuedAt: inv.issuedAt?.toISOString() ?? null,
+          };
+        }),
       },
     };
   }

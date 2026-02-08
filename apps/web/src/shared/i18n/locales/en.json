@@ -78,7 +78,9 @@
   },
   "actions": {
     "takeAttendance": "Take Attendance",
-    "markDone": "Mark Done"
+    "markDone": "Mark Done",
+    "assignPayer": "Assign Payer",
+    "viewInvoice": "View"
   },
   "list": {
     "searchPlaceholder": "Search...",
@@ -366,28 +368,6 @@
     "dailyClose": "Daily Close"
   },
   "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Welcome back",
-    "revenueThisMonth": "Revenue this month",
-    "outstandingInvoices": "Outstanding invoices",
-    "expensesThisMonth": "Expenses this month",
-    "quickActions": "Quick actions",
-    "recentActivity": "Recent activity",
-    "addExpense": "Add expense",
-    "createInvoice": "Create invoice",
-    "createQuote": "Create Quote",
-    "openAssistant": "Open assistant",
-    "fromLastMonth": "from last month",
-    "invoicesPending": "invoices pending",
-    "expensesCount": "expenses this month",
-    "uploadReceipt": "Upload receipt with AI",
-    "generateWithAi": "Generate with AI",
-    "createNew": "Create new",
-    "askAnything": "Ask anything",
-    "manageTeam": "Manage Team",
-    "inviteMembers": "Invite members",
-    "noInvoices": "No invoices yet",
-    "noExpenses": "No expenses yet",
     "teacher": {
       "welcome": "Teacher Dashboard",
       "subtitle": "Your classes and tasks for today",
@@ -395,14 +375,17 @@
       "sessionsToday": "Sessions Today",
       "sessionsThisWeek": "Sessions This Week",
       "missingAttendance": "Missing Attendance",
-      "actionRequired": "Action Required",
-      "unfinished": "Unfinished",
+      "actionRequired": "Action required",
+      "unfinished": "Unfinished Sessions",
+      "studentsMissingPayer": "Students Missing Payer",
+      "unpaidInvoices": "Unpaid Invoices",
+      "overdue": "Overdue",
       "upcomingSessions": "Upcoming Sessions",
-      "noUpcoming": "No upcoming sessions found.",
+      "noUpcoming": "No upcoming sessions in this range",
       "needsAttention": "Needs Attention",
-      "unfinishedSessions": "Unfinished Past Sessions",
-      "allCaughtUp": "You're all caught up!",
-      "noActions": "No urgent actions for sessions in the past."
+      "unfinishedSessions": "Unfinished Sessions",
+      "allCaughtUp": "All caught up!",
+      "noActions": "No pending actions require your attention."
     }
   },
   "assistant": {

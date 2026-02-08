@@ -2,13 +2,23 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { Calendar, AlertCircle, CheckCircle, Clock, Users, Filter, Settings } from "lucide-react";
+import {
+  Calendar,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Users,
+  Settings,
+  UserX,
+  DollarSign,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "@corely/ui";
 import { formatRelativeTime } from "@/shared/lib/formatters";
 import { CardSkeleton } from "@/shared/components/Skeleton";
 import { teacherDashboardApi } from "@/lib/teacher-dashboard-api";
 import { classesApi } from "@/lib/classes-api";
 import { startOfDay, endOfDay, addDays } from "date-fns";
+import { NeedsAttentionPanel } from "../components/NeedsAttentionPanel";
 
 export default function TeacherDashboardPage() {
   const { t } = useTranslation();
@@ -139,7 +149,7 @@ export default function TeacherDashboardPage() {
       </div>
 
       {/* Summary Tiles */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Today's Sessions */}
         <Link
           to={`/sessions?dateFrom=${startOfDay(new Date()).toISOString()}&dateTo=${endOfDay(new Date()).toISOString()}`}
@@ -225,6 +235,48 @@ export default function TeacherDashboardPage() {
             </CardContent>
           </Card>
         </Link>
+
+        {/* Students Missing Payer */}
+        <Link to="/classes/enrollments?missingPayer=true">
+          <Card variant="interactive" className="h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t("dashboard.teacher.studentsMissingPayer", "Students w/o Payer")}
+              </CardTitle>
+              <UserX className="h-4 w-4 text-warning" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {counts.studentsMissingPayer}
+              </div>
+              {counts.studentsMissingPayer > 0 && (
+                <p className="text-xs text-warning mt-1 font-medium">
+                  {t("dashboard.teacher.actionRequired", "Action required")}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* Unpaid Invoices */}
+        <Link to="/invoices?status=ISSUED,SENT&overdue=true">
+          <Card variant="interactive" className="h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {t("dashboard.teacher.unpaidInvoices", "Unpaid Invoices")}
+              </CardTitle>
+              <DollarSign className="h-4 w-4 text-destructive" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{counts.unpaidInvoices}</div>
+              {counts.unpaidInvoices > 0 && (
+                <p className="text-xs text-destructive mt-1 font-medium">
+                  {t("dashboard.teacher.overdue", "Overdue")}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Main Content */}
@@ -281,101 +333,7 @@ export default function TeacherDashboardPage() {
         </Card>
 
         {/* Needs Attention List */}
-        <Card variant="default" className="h-full border-warning/20">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">
-              {t("dashboard.teacher.needsAttention", "Needs Attention")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Missing Attendance Section */}
-              {attendanceMode === "MANUAL" &&
-                needsAttention.missingAttendanceSessions.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
-                      {t("dashboard.teacher.missingAttendance", "Missing Attendance")}
-                    </h4>
-                    <div className="space-y-2">
-                      {needsAttention.missingAttendanceSessions.map((session) => (
-                        <Link
-                          key={session.id}
-                          to={`/sessions/${session.id}`}
-                          className="flex items-center justify-between py-2 px-3 rounded-lg bg-warning/5 hover:bg-warning/10 border border-warning/10 transition-colors"
-                        >
-                          <div className="flex items-center gap-3">
-                            <AlertCircle className="h-4 w-4 text-warning" />
-                            <div>
-                              <div className="text-sm font-medium text-foreground">
-                                {session.classGroupName}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                {formatRelativeTime(session.startsAt)}
-                              </div>
-                            </div>
-                          </div>
-                          <Button size="sm" variant="ghost" className="h-7 text-xs">
-                            {t("actions.takeAttendance", "Take Attendance")}
-                          </Button>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-              {/* Unfinished Section */}
-              {needsAttention.unfinishedPastSessions.length > 0 && (
-                <div>
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider mt-4">
-                    {t("dashboard.teacher.unfinishedSessions", "Unfinished Sessions")}
-                  </h4>
-                  <div className="space-y-2">
-                    {needsAttention.unfinishedPastSessions.map((session) => (
-                      <Link
-                        key={session.id}
-                        to={`/sessions/${session.id}`}
-                        className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <div className="text-sm font-medium text-foreground">
-                              {session.classGroupName}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {formatRelativeTime(session.startsAt)}
-                            </div>
-                          </div>
-                        </div>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs">
-                          {t("actions.markDone", "Mark Done")}
-                        </Button>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {needsAttention.missingAttendanceSessions.length === 0 &&
-                needsAttention.unfinishedPastSessions.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center mb-3">
-                      <CheckCircle className="h-6 w-6 text-success" />
-                    </div>
-                    <p className="text-sm font-medium text-foreground">
-                      {t("dashboard.teacher.allCaughtUp", "All caught up!")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t(
-                        "dashboard.teacher.noActions",
-                        "No pending actions require your attention."
-                      )}
-                    </p>
-                  </div>
-                )}
-            </div>
-          </CardContent>
-        </Card>
+        <NeedsAttentionPanel needsAttention={needsAttention} attendanceMode={attendanceMode} />
       </div>
     </div>
   );
