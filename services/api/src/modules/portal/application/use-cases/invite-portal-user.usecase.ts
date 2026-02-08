@@ -95,7 +95,14 @@ export class InvitePortalUserUseCase {
         systemKey: input.role,
         isSystem: true,
       });
-      role = { id: roleId, systemKey: input.role };
+      role = {
+        id: roleId,
+        tenantId,
+        name: roleName,
+        systemKey: input.role,
+        isSystem: true,
+        description: "",
+      };
     }
 
     const existingMembership = await this.useCaseDeps.membershipRepo.findByTenantAndUser(
