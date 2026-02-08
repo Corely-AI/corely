@@ -35,6 +35,7 @@ import { IssuesModule } from "./modules/issues";
 import { AiRichTextModule } from "./modules/ai-richtext";
 import { WebsiteModule } from "./modules/website";
 import { ClassesModule } from "./modules/classes";
+import { PortalModule } from "./modules/portal/portal.module";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -79,6 +80,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     FormsModule,
     RentalsModule,
     ClassesModule,
+    PortalModule,
     PortfolioModule,
     IssuesModule,
     WorkflowModule,

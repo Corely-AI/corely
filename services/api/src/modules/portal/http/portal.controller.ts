@@ -50,6 +50,7 @@ export class PortalController {
   async inviteUser(@Body() body: any, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.inviteUser.execute(body, ctx);
-    return mapResultToHttp(result);
+    mapResultToHttp(result);
+    return { ok: true };
   }
 }
