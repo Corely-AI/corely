@@ -5,6 +5,7 @@ import { JobLockService } from "../infrastructure/job-lock.service";
 import { OutboxPollerService } from "../modules/outbox/outbox-poller.service";
 import { InvoiceReminderRunnerService } from "../modules/invoices/invoice-reminder-runner.service";
 import { RunnerReport } from "./runner.interface";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 
 describe("TickOrchestrator", () => {
   let orchestrator: TickOrchestrator;
@@ -18,18 +19,18 @@ describe("TickOrchestrator", () => {
   };
 
   const mockLockService = {
-    tryAcquireTickLock: jest.fn(),
-    releaseTickLock: jest.fn(),
+    tryAcquireTickLock: vi.fn(),
+    releaseTickLock: vi.fn(),
   };
 
   const mockOutboxRunner = {
     name: "outbox",
-    run: jest.fn(),
+    run: vi.fn(),
   };
 
   const mockInvoiceRunner = {
     name: "invoiceReminders",
-    run: jest.fn(),
+    run: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -48,7 +49,7 @@ describe("TickOrchestrator", () => {
     outboxRunner = module.get<OutboxPollerService>(OutboxPollerService);
     invoiceRunner = module.get<InvoiceReminderRunnerService>(InvoiceReminderRunnerService);
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it("should run configured runners if lock acquired", async () => {
