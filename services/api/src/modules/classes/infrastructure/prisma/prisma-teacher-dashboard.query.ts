@@ -185,30 +185,34 @@ export class PrismaTeacherDashboardQuery implements TeacherDashboardQueryPort {
       })
       .then((groups) => new Map(groups.map((g) => [g.id, g.name])));
 
-    // Unpaid Invoices: Issued/Sent invoices with due amount > 0
-    // We need to compute totals on-the-fly or rely on a separate totals table if it exists
-    // For simplicity, let's get invoices in ISSUED or SENT status
-    const unpaidInvoicesCount = await this.prisma.invoice.count({
+    // Unpaid Invoices: All ISSUED/SENT invoices with unpaid balance
+    // Fetch all invoices in these statuses and filter by actual amount due
+    const allIssuedInvoices = await this.prisma.invoice.findMany({
       where: {
         tenantId,
         status: { in: ["ISSUED", "SENT"] },
-        dueDate: { lte: now }, // Overdue or due today
       },
-    });
-
-    const unpaidInvoicesList = await this.prisma.invoice.findMany({
-      where: {
-        tenantId,
-        status: { in: ["ISSUED", "SENT"] },
-        dueDate: { lte: now },
-      },
-      orderBy: { dueDate: "asc" }, // Most overdue first
-      take: 10,
+      orderBy: { dueDate: "asc" },
       include: {
         lines: { select: { qty: true, unitPriceCents: true } },
         payments: { select: { amountCents: true } },
       },
     });
+
+    // Filter to only invoices with unpaid balance and take first 10
+    const unpaidInvoicesList = allIssuedInvoices
+      .filter((inv) => {
+        const totalCents = inv.lines.reduce((sum, line) => sum + line.qty * line.unitPriceCents, 0);
+        const paidCents = inv.payments.reduce((sum, p) => sum + p.amountCents, 0);
+        return totalCents - paidCents > 0;
+      })
+      .slice(0, 10);
+
+    const unpaidInvoicesCount = allIssuedInvoices.filter((inv) => {
+      const totalCents = inv.lines.reduce((sum, line) => sum + line.qty * line.unitPriceCents, 0);
+      const paidCents = inv.payments.reduce((sum, p) => sum + p.amountCents, 0);
+      return totalCents - paidCents > 0;
+    }).length;
 
     return {
       range: {
