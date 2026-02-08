@@ -20,8 +20,8 @@ type Deps = {
 
 @RequireTenant()
 export class GetLotUseCase extends BaseUseCase<GetLotInput, GetLotOutput> {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly lotDeps: Deps) {
+    super({ logger: lotDeps.logger });
   }
 
   protected async handle(
@@ -30,7 +30,7 @@ export class GetLotUseCase extends BaseUseCase<GetLotInput, GetLotOutput> {
   ): Promise<Result<GetLotOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
 
-    const lot = await this.deps.repo.findById(tenantId, input.id);
+    const lot = await this.lotDeps.repo.findById(tenantId, input.id);
     if (!lot) {
       return err(new NotFoundError("Lot not found", { lotId: input.id }));
     }

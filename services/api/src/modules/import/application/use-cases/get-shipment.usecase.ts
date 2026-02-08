@@ -20,8 +20,8 @@ type Deps = {
 
 @RequireTenant()
 export class GetShipmentUseCase extends BaseUseCase<GetShipmentInput, GetShipmentOutput> {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly shipmentDeps: Deps) {
+    super({ logger: shipmentDeps.logger });
   }
 
   protected async handle(
@@ -30,7 +30,7 @@ export class GetShipmentUseCase extends BaseUseCase<GetShipmentInput, GetShipmen
   ): Promise<Result<GetShipmentOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
 
-    const shipment = await this.deps.repo.findById(tenantId, input.shipmentId);
+    const shipment = await this.shipmentDeps.repo.findById(tenantId, input.shipmentId);
     if (!shipment) {
       return err(new NotFoundError("Import shipment not found", { shipmentId: input.shipmentId }));
     }

@@ -14,6 +14,7 @@ export interface AccountingSettingsRepoPort {
 export interface LedgerAccountRepoPort {
   findById(tenantId: string, accountId: string): Promise<LedgerAccountAggregate | null>;
   findByCode(tenantId: string, code: string): Promise<LedgerAccountAggregate | null>;
+  findBySystemKey(tenantId: string, systemKey: string): Promise<LedgerAccountAggregate | null>;
   list(
     tenantId: string,
     filters: {

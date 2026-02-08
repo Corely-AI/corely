@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": false,
     "exactOptionalPropertyTypes": false,
+    "skipLibCheck": true,
     "paths": {
       "@corely/testkit": ["./src/index.ts"],
       "@corely/testkit/*": ["./src/*"],

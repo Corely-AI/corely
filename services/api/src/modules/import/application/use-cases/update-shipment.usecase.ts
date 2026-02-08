@@ -28,8 +28,8 @@ type Deps = {
 
 @RequireTenant()
 export class UpdateShipmentUseCase extends BaseUseCase<UpdateShipmentInput, UpdateShipmentOutput> {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly shipmentDeps: Deps) {
+    super({ logger: shipmentDeps.logger });
   }
 
   protected async handle(
@@ -42,7 +42,7 @@ export class UpdateShipmentUseCase extends BaseUseCase<UpdateShipmentInput, Upda
     }
     const userId = ctx.userId;
 
-    const existing = await this.deps.repo.findById(tenantId, input.shipmentId);
+    const existing = await this.shipmentDeps.repo.findById(tenantId, input.shipmentId);
     if (!existing) {
       return err(new NotFoundError("Import shipment not found", { shipmentId: input.shipmentId }));
     }
@@ -56,14 +56,14 @@ export class UpdateShipmentUseCase extends BaseUseCase<UpdateShipmentInput, Upda
       );
     }
 
-    const now = this.deps.clock.now();
+    const now = this.shipmentDeps.clock.now();
 
     // Update lines if provided
     let lines = existing.lines;
     if (input.lines) {
       lines = input.lines.map((lineInput) =>
         createImportShipmentLine({
-          id: this.deps.idGenerator.newId(),
+          id: this.shipmentDeps.idGenerator.newId(),
           shipmentId: existing.id,
           productId: lineInput.productId,
           hsCode: lineInput.hsCode ?? null,
@@ -136,9 +136,9 @@ export class UpdateShipmentUseCase extends BaseUseCase<UpdateShipmentInput, Upda
       updatedAt: now,
     };
 
-    await this.deps.repo.update(tenantId, updated);
+    await this.shipmentDeps.repo.update(tenantId, updated);
 
-    await this.deps.audit.log({
+    await this.shipmentDeps.audit.log({
       tenantId,
       userId,
       action: "import.shipment.updated",

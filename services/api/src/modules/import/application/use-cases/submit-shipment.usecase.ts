@@ -25,8 +25,8 @@ type Deps = {
 
 @RequireTenant()
 export class SubmitShipmentUseCase extends BaseUseCase<SubmitShipmentInput, SubmitShipmentOutput> {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly shipmentDeps: Deps) {
+    super({ logger: shipmentDeps.logger });
   }
 
   protected async handle(
@@ -39,7 +39,7 @@ export class SubmitShipmentUseCase extends BaseUseCase<SubmitShipmentInput, Subm
     }
     const userId = ctx.userId;
 
-    const shipment = await this.deps.repo.findById(tenantId, input.shipmentId);
+    const shipment = await this.shipmentDeps.repo.findById(tenantId, input.shipmentId);
     if (!shipment) {
       return err(new NotFoundError("Import shipment not found", { shipmentId: input.shipmentId }));
     }
@@ -58,7 +58,7 @@ export class SubmitShipmentUseCase extends BaseUseCase<SubmitShipmentInput, Subm
       return err(new ValidationError("Shipment must have at least one line"));
     }
 
-    const now = this.deps.clock.now();
+    const now = this.shipmentDeps.clock.now();
     const updated = {
       ...shipment,
       status: "SUBMITTED" as const,
@@ -66,9 +66,9 @@ export class SubmitShipmentUseCase extends BaseUseCase<SubmitShipmentInput, Subm
       updatedAt: now,
     };
 
-    await this.deps.repo.update(tenantId, updated);
+    await this.shipmentDeps.repo.update(tenantId, updated);
 
-    await this.deps.audit.log({
+    await this.shipmentDeps.audit.log({
       tenantId,
       userId,
       action: "import.shipment.submitted",

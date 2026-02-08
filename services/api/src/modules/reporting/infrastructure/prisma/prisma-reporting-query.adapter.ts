@@ -107,14 +107,14 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
   ): Promise<InventoryBalance> {
     // Query inventory lots for current balance
     // For MVP: simplified query
-    const lots = await this.prisma.inventoryLot.findMany({
+    const lots = await (this.prisma.inventoryLot.findMany as any)({
       where: {
         tenantId,
         qtyOnHand: { gt: 0 },
       },
       include: {
         product: true,
-      } as any,
+      },
     });
 
     let totalValueCents = 0;
@@ -160,7 +160,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
     const in90Days = new Date(now);
     in90Days.setDate(in90Days.getDate() + 90);
 
-    const lots = await this.prisma.inventoryLot.findMany({
+    const lots = await (this.prisma.inventoryLot.findMany as any)({
       where: {
         tenantId,
         expiryDate: { not: null },
@@ -168,7 +168,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
       },
       include: {
         product: true,
-      } as any,
+      },
       orderBy: {
         expiryDate: "asc",
       },

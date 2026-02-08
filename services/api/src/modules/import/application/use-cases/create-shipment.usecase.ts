@@ -30,8 +30,8 @@ type Deps = {
 
 @RequireTenant()
 export class CreateShipmentUseCase extends BaseUseCase<CreateShipmentInput, CreateShipmentOutput> {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly shipmentDeps: Deps) {
+    super({ logger: shipmentDeps.logger });
   }
 
   protected async handle(
@@ -49,11 +49,11 @@ export class CreateShipmentUseCase extends BaseUseCase<CreateShipmentInput, Crea
       return err(new ValidationError("At least one line is required"));
     }
 
-    const now = this.deps.clock.now();
-    const shipmentId = this.deps.idGenerator.newId();
+    const now = this.shipmentDeps.clock.now();
+    const shipmentId = this.shipmentDeps.idGenerator.newId();
 
     // Generate shipment number
-    const shipmentNumber = await this.deps.repo.getNextShipmentNumber(tenantId);
+    const shipmentNumber = await this.shipmentDeps.repo.getNextShipmentNumber(tenantId);
 
     // Calculate total FOB value from lines
     const fobValueCents =
@@ -77,7 +77,7 @@ export class CreateShipmentUseCase extends BaseUseCase<CreateShipmentInput, Crea
     // Create lines
     const lines = input.lines.map((lineInput) =>
       createImportShipmentLine({
-        id: this.deps.idGenerator.newId(),
+        id: this.shipmentDeps.idGenerator.newId(),
         shipmentId,
         productId: lineInput.productId,
         hsCode: lineInput.hsCode ?? null,
@@ -133,9 +133,9 @@ export class CreateShipmentUseCase extends BaseUseCase<CreateShipmentInput, Crea
       updatedByUserId: userId,
     });
 
-    await this.deps.repo.create(tenantId, shipment);
+    await this.shipmentDeps.repo.create(tenantId, shipment);
 
-    await this.deps.audit.log({
+    await this.shipmentDeps.audit.log({
       tenantId,
       userId,
       action: "import.shipment.created",

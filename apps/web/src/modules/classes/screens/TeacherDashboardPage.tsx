@@ -344,7 +344,14 @@ export default function TeacherDashboardPage() {
         </Card>
 
         {/* Needs Attention List */}
-        <NeedsAttentionPanel needsAttention={needsAttention} attendanceMode={attendanceMode} />
+        <NeedsAttentionPanel
+          needsAttention={{
+            missingAttendanceSessions: needsAttention.missingAttendanceSessions ?? [],
+            unfinishedPastSessions: needsAttention.unfinishedPastSessions ?? [],
+            studentsMissingPayer: needsAttention.studentsMissingPayer ?? [],
+          }}
+          attendanceMode={attendanceMode}
+        />
       </div>
     </div>
   );

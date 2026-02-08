@@ -31,8 +31,8 @@ type Deps = {
 
 @RequireTenant()
 export class CreateLotUseCase extends BaseUseCase<CreateLotInput, CreateLotOutput> {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly lotDeps: Deps) {
+    super({ logger: lotDeps.logger });
   }
 
   protected async handle(
@@ -46,7 +46,7 @@ export class CreateLotUseCase extends BaseUseCase<CreateLotInput, CreateLotOutpu
     const userId = ctx.userId;
 
     // Check for duplicate lot number
-    const existing = await this.deps.repo.findByLotNumber(
+    const existing = await this.lotDeps.repo.findByLotNumber(
       tenantId,
       input.productId,
       input.lotNumber
@@ -60,9 +60,9 @@ export class CreateLotUseCase extends BaseUseCase<CreateLotInput, CreateLotOutpu
       );
     }
 
-    const now = this.deps.clock.now();
+    const now = this.lotDeps.clock.now();
     const lot = createInventoryLot({
-      id: this.deps.idGenerator.newId(),
+      id: this.lotDeps.idGenerator.newId(),
       tenantId,
       productId: input.productId,
       lotNumber: input.lotNumber,
@@ -80,9 +80,9 @@ export class CreateLotUseCase extends BaseUseCase<CreateLotInput, CreateLotOutpu
       updatedAt: now,
     });
 
-    await this.deps.repo.create(tenantId, lot);
+    await this.lotDeps.repo.create(tenantId, lot);
 
-    await this.deps.audit.log({
+    await this.lotDeps.audit.log({
       tenantId,
       userId,
       action: "inventory.lot.created",
