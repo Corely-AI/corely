@@ -104,7 +104,7 @@ export class PrismaTeacherDashboardQuery implements TeacherDashboardQueryPort {
       where: {
         ...whereBase,
         startsAt: {
-          gte: new Date(dateFrom),
+          gte: new Date(dateFrom) < now ? now : new Date(dateFrom),
           lte: new Date(dateTo),
         },
         status: { not: "CANCELLED" },
