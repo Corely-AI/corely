@@ -132,9 +132,21 @@ export function createImportShipment(
 }
 
 export function createImportShipmentLine(
-  props: Omit<ImportShipmentLineProps, "id" | "receivedQty"> & {
+  props: Omit<
+    ImportShipmentLineProps,
+    | "id"
+    | "receivedQty"
+    | "lineFobCostCents"
+    | "allocatedFreightCents"
+    | "allocatedInsuranceCents"
+    | "allocatedDutyCents"
+    | "allocatedTaxCents"
+    | "allocatedOtherCents"
+    | "unitLandedCostCents"
+  > & {
     id?: string;
     receivedQty?: number;
+    lineFobCostCents?: number | null;
   }
 ): ImportShipmentLineProps {
   return {
