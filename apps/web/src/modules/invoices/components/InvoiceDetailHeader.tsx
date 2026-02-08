@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
+import { DetailScreenHeader } from "@/shared/components/DetailScreenHeader";
 import { Button } from "@corely/ui";
 
 interface InvoiceDetailHeaderProps {
@@ -69,7 +69,7 @@ export function InvoiceDetailHeader({
   }
 
   return (
-    <RecordCommandBar
+    <DetailScreenHeader
       title={t("invoices.titleWithNumber", {
         number: invoice.number ?? t("common.draft"),
       })}

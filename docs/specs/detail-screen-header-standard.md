@@ -81,7 +81,7 @@
 
 ### 2.1 Component Name
 
-**`RecordCommandBar`** (alternatively: `RecordHeaderActions`)
+**`DetailScreenHeader`** (alternatively: `DetailScreenHeaderActions`)
 
 ### 2.2 Purpose
 
@@ -625,7 +625,7 @@ export type InvoiceCapabilities = z.infer<typeof InvoiceCapabilitiesSchema>;
 
 1. **Remove**: Status dropdown (`<Select>` lines 308-324)
 2. **Remove**: Duplicate status badge (line 392)
-3. **Add**: `<RecordCommandBar>` component with capabilities prop
+3. **Add**: `<DetailScreenHeader>` component with capabilities prop
 4. **Add**: Derived badges (OVERDUE, PARTIALLY_PAID)
 5. **Change**: Move "Record Payment" to primary action slot
 6. **Add**: Overflow menu with grouped actions
@@ -634,7 +634,7 @@ export type InvoiceCapabilities = z.infer<typeof InvoiceCapabilitiesSchema>;
 ### 6.4 New Component Usage
 
 ```tsx
-<RecordCommandBar
+<DetailScreenHeader
   title={`Invoice ${invoice.number ?? "Draft"}`}
   subtitle={`Created ${formatDate(invoice.createdAt)}`}
   capabilities={invoice.capabilities}
@@ -704,14 +704,14 @@ export type InvoiceCapabilities = z.infer<typeof InvoiceCapabilitiesSchema>;
 
 ### Phase 2: UI Components (Frontend)
 
-- [ ] Create `RecordCommandBar` component in `apps/web/src/shared/components/`
+- [ ] Create `DetailScreenHeader` component in `apps/web/src/shared/components/`
 - [ ] Create `StatusChip` with transitions popover
 - [ ] Create `OverflowMenu` with grouped actions
 - [ ] Add confirmation dialog pattern
 
 ### Phase 3: Invoice Screen Integration
 
-- [ ] Refactor `InvoiceDetailPage.tsx` to use `RecordCommandBar`
+- [ ] Refactor `InvoiceDetailPage.tsx` to use `DetailScreenHeader`
 - [ ] Remove duplicate status controls
 - [ ] Integrate capabilities from API response
 - [ ] Update tests
