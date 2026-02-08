@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import type { PrismaService } from "@corely/data";
+import { PrismaService } from "@corely/data";
 import { WorkspaceInvoiceSettingsSchema } from "@corely/contracts";
 import type { InvoiceReminderSettingsPort } from "../../application/ports/invoice-reminder-settings.port";
 import { normalizeReminderPolicy } from "../../application/helpers/reminder-policy";

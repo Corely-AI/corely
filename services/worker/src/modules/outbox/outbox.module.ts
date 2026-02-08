@@ -1,11 +1,10 @@
 import { Module } from "@nestjs/common";
-import { EnvService } from "@corely/config";
 import { OutboxRepository } from "@corely/data";
 import { InvoiceEmailRequestedHandler } from "../invoices/invoice-email-requested.handler";
 import { InvoicePdfRenderRequestedHandler } from "../invoices/handlers/invoice-pdf-render-requested.handler";
 import { PrismaInvoiceEmailRepository } from "../invoices/infrastructure/prisma-invoice-email-repository.adapter";
-import { EMAIL_SENDER_PORT, EmailSenderPort } from "../notifications/ports/email-sender.port";
-import { ResendEmailSenderAdapter } from "../notifications/infrastructure/resend/resend-email-sender.adapter";
+import { EMAIL_SENDER_PORT, type EmailSenderPort } from "../notifications/ports/email-sender.port";
+import { NotificationsModule } from "../notifications/notifications.module";
 import { OutboxPollerService } from "./outbox-poller.service";
 
 import { CashEntryCreatedHandler } from "../accounting/handlers/cash-entry-created.handler";
@@ -15,25 +14,23 @@ import { IssueTranscriptionRequestedHandler } from "../issues/issue-transcriptio
 import { InvoicesWorkerModule } from "../invoices/invoices-worker.module";
 import { TaxWorkerModule } from "../tax/tax-worker.module";
 import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-requested.handler";
+import { FormsEventHandler } from "../forms/forms-event.handler";
+import { FormsWorkerModule } from "../forms/forms-worker.module";
+
+import { EnvService } from "@corely/config";
+
+// ... imports
 
 @Module({
-  imports: [AccountingWorkerModule, IssuesWorkerModule, InvoicesWorkerModule, TaxWorkerModule],
+  imports: [
+    AccountingWorkerModule,
+    IssuesWorkerModule,
+    InvoicesWorkerModule,
+    TaxWorkerModule,
+    FormsWorkerModule,
+    NotificationsModule,
+  ],
   providers: [
-    {
-      provide: EMAIL_SENDER_PORT,
-      useFactory: (env: EnvService) => {
-        const provider = env.EMAIL_PROVIDER;
-        if (provider !== "resend") {
-          throw new Error(`Unsupported email provider: ${provider}`);
-        }
-        return new ResendEmailSenderAdapter(
-          env.RESEND_API_KEY,
-          env.RESEND_FROM,
-          env.RESEND_REPLY_TO
-        );
-      },
-      inject: [EnvService],
-    },
     {
       provide: InvoiceEmailRequestedHandler,
       useFactory: (sender: EmailSenderPort, repo: PrismaInvoiceEmailRepository) =>
@@ -45,29 +42,35 @@ import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-req
       provide: OutboxPollerService,
       useFactory: (
         repo: OutboxRepository,
+        env: EnvService,
         invoiceHandler: InvoiceEmailRequestedHandler,
         invoicePdfHandler: InvoicePdfRenderRequestedHandler,
         cashEntryHandler: CashEntryCreatedHandler,
         issueTranscriptionHandler: IssueTranscriptionRequestedHandler,
-        taxReportPdfHandler: TaxReportPdfRequestedHandler
+        taxReportPdfHandler: TaxReportPdfRequestedHandler,
+        formsHandler: FormsEventHandler
       ) => {
-        return new OutboxPollerService(repo, [
+        return new OutboxPollerService(repo, env, [
           invoiceHandler,
           invoicePdfHandler,
           cashEntryHandler,
           issueTranscriptionHandler,
           taxReportPdfHandler,
+          formsHandler,
         ]);
       },
       inject: [
         OutboxRepository,
+        EnvService,
         InvoiceEmailRequestedHandler,
         InvoicePdfRenderRequestedHandler,
         CashEntryCreatedHandler,
         IssueTranscriptionRequestedHandler,
         TaxReportPdfRequestedHandler,
+        FormsEventHandler,
       ],
     },
   ],
+  exports: [OutboxPollerService],
 })
 export class OutboxModule {}

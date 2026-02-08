@@ -8,6 +8,10 @@ import { AccountingWorkerModule } from "./modules/accounting/accounting-worker.m
 import { TaxWorkerModule } from "./modules/tax/tax-worker.module";
 import { ClassesWorkerModule } from "./modules/classes/classes-worker.module";
 import { InvoicesWorkerModule } from "./modules/invoices/invoices-worker.module";
+import { FormsWorkerModule } from "./modules/forms/forms-worker.module";
+
+import { TickOrchestrator } from "./application/tick-orchestrator.service";
+import { JobLockService } from "./infrastructure/job-lock.service";
 
 @Module({
   imports: [
@@ -20,6 +24,8 @@ import { InvoicesWorkerModule } from "./modules/invoices/invoices-worker.module"
     TaxWorkerModule,
     ClassesWorkerModule,
     InvoicesWorkerModule,
+    FormsWorkerModule,
   ],
+  providers: [TickOrchestrator, JobLockService],
 })
 export class WorkerModule {}

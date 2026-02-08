@@ -1,6 +1,7 @@
 {
   "common": {
-    "appName": "Bizflow",
+    "active": "Aktiv",
+    "appName": "Corely One ERP",
     "tagline": "Ihr Geschäft, von Anfang bis Ende.",
     "loading": "Wird geladen...",
     "select": "Auswählen",
@@ -22,6 +23,7 @@
     "viewAll": "Alle anzeigen",
     "comingSoon": "Demnächst verfügbar",
     "noResults": "Keine Ergebnisse gefunden",
+    "noTopic": "Kein Thema",
     "error": "Etwas ist schief gelaufen",
     "success": "Erfolgreich",
     "currency": "EUR",
@@ -66,7 +68,17 @@
     "badge": "Badge",
     "moreActions": "Weitere Aktionen",
     "dangerZone": "Gefahrenzone",
-    "goBack": "Zurück"
+    "goBack": "Zurück",
+    "phoneShort": "Tel",
+    "emailShort": "Email",
+    "website": "Webseite",
+    "bank": "Bank",
+    "iban": "IBAN",
+    "default": "Standard"
+  },
+  "actions": {
+    "takeAttendance": "Anwesenheit erfassen",
+    "markDone": "Als erledigt markieren"
   },
   "list": {
     "searchPlaceholder": "Suchen...",
@@ -374,7 +386,23 @@
     "manageTeam": "Team verwalten",
     "inviteMembers": "Mitglieder einladen",
     "noInvoices": "Noch keine Rechnungen",
-    "noExpenses": "Noch keine Ausgaben"
+    "noExpenses": "Noch keine Ausgaben",
+    "teacher": {
+      "welcome": "Lehrer-Dashboard",
+      "subtitle": "Ihre Klassen und Aufgaben für heute",
+      "allClasses": "Alle Klassen",
+      "sessionsToday": "Heutige Sitzungen",
+      "sessionsThisWeek": "Sitzungen diese Woche",
+      "missingAttendance": "Fehlende Anwesenheit",
+      "actionRequired": "Aktion erforderlich",
+      "unfinished": "Unvollendet",
+      "upcomingSessions": "Anstehende Sitzungen",
+      "noUpcoming": "Keine anstehenden Sitzungen gefunden.",
+      "needsAttention": "Beachtung erforderlich",
+      "unfinishedSessions": "Unvollendete vergangene Sitzungen",
+      "allCaughtUp": "Sie sind auf dem Laufenden!",
+      "noActions": "Keine dringenden Aktionen für Sitzungen in der Vergangenheit."
+    }
   },
   "assistant": {
     "title": "Assistent",
@@ -450,7 +478,16 @@
     "totalAmountGross": "Gesamtbetrag (Brutto)",
     "paymentTerms": "Zahlungsziel",
     "notes": "Notizen",
+    "notesPlaceholder": "Interne Notizen, nicht für den Kunden sichtbar...",
+    "terms": "Zahlungsbedingungen",
+    "termsPlaceholder": "z.B. Bitte innerhalb von 14 Tagen bezahlen...",
     "addLine": "Position hinzufügen",
+    "units": {
+      "h": "Std",
+      "day": "Tag",
+      "piece": "Stk",
+      "service": "Service"
+    },
     "generate": "Generieren",
     "creating": "Wird erstellt...",
     "saving": "Wird gespeichert...",
@@ -461,14 +498,39 @@
       "issued": "Ausgestellt",
       "sent": "Gesendet",
       "paid": "Bezahlt",
-      "overdue": "Überfällig"
+      "overdue": "Überfällig",
+      "canceled": "Storniert"
+    },
+    "badges": {
+      "OVERDUE": "Überfällig",
+      "PARTIALLY_PAID": "Teilweise bezahlt",
+      "SENT_DELIVERY": "Gesendet"
+    },
+    "transitions": {
+      "ISSUED": "Rechnung ausstellen",
+      "SENT": "An Kunden senden",
+      "CANCELED": "Rechnung stornieren"
     },
     "actions": {
       "issue": "Rechnung ausstellen",
-      "markPaid": "Als bezahlt markieren",
-      "sendReminder": "Erinnerung senden",
-      "download": "PDF herunterladen",
-      "preview": "Vorschau"
+      "send": "Senden",
+      "record_payment": "Zahlung erfassen",
+      "download_pdf": "PDF herunterladen",
+      "send_reminder": "Erinnerung senden",
+      "duplicate": "Duplizieren",
+      "export": "Exportieren",
+      "view_audit": "Audit-Log anzeigen",
+      "cancel": "Rechnung stornieren"
+    },
+    "pdf": {
+      "pendingTitle": "PDF wird vorbereitet",
+      "pendingDescription": "Die PDF-Erstellung wurde gestartet. Bitte versuchen Sie es in einem Moment erneut."
+    },
+    "notifications": {
+      "canceled": "Rechnung storniert",
+      "duplicateSoon": "Duplizieren-Funktion kommt demnächst",
+      "exportSoon": "Export-Funktion kommt demnächst",
+      "reminderSoon": "Erinnerung-Funktion kommt demnächst"
     },
     "wizard": {
       "selectCustomer": "Kunde auswählen",
@@ -493,7 +555,25 @@
     },
     "errors": {
       "downloadFailed": "PDF konnte nicht heruntergeladen werden",
-      "updateFailed": "Rechnung konnte nicht aktualisiert werden"
+      "updateFailed": "Rechnung konnte nicht aktualisiert werden",
+      "invalidAmount": "Ungültiger Betrag",
+      "actionFailed": "Aktion fehlgeschlagen"
+    },
+    "footer": {
+      "taxDetails": "Steuerdetails",
+      "vatIdLabel": "USt-IdNr.",
+      "taxNumberLabel": "Steuernummer",
+      "addTaxDetails": "Steuerdetails hinzufügen",
+      "paymentMethod": "Zahlungsmethode",
+      "addPaymentMethod": "Zahlungsmethode hinzufügen",
+      "contactDetails": "Kontaktdaten",
+      "addContactDetails": "Kontaktdaten hinzufügen",
+      "taxDetailsDescription": "Ihre geschäftlichen Steuerinformationen, die auf der Rechnung angezeigt werden.",
+      "contactDetailsDescription": "Ihre geschäftlichen Kontaktinformationen, die in der Fußzeile angezeigt werden.",
+      "selectPaymentMethod": "Zahlungsmethode auswählen",
+      "selectPaymentMethodTitle": "Wählen Sie Ihre Zahlungsmethode",
+      "addNewPaymentMethod": "Neue Zahlungsmethode hinzufügen",
+      "selectedBankAccount": "Ausgewähltes Bankkonto"
     },
     "email": {
       "title": "Rechnung senden",

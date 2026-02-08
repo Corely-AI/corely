@@ -133,6 +133,9 @@ class FakeRepo implements ClassesRepositoryPort {
   async isMonthLocked() {
     return true;
   }
+  async deleteBillingInvoiceLinks() {
+    throw new Error("not implemented");
+  }
 }
 
 class FakeAudit {
@@ -168,7 +171,8 @@ describe("UpdateSessionUseCase month lock rules", () => {
       repo,
       new FakeSettingsRepo(),
       new FakeAudit() as any,
-      new FakeClock() as any
+      new FakeClock() as any,
+      { newId: () => "id-1" }
     );
 
     await expect(
@@ -182,7 +186,8 @@ describe("UpdateSessionUseCase month lock rules", () => {
       repo,
       new FakeSettingsRepo(),
       new FakeAudit() as any,
-      new FakeClock() as any
+      new FakeClock() as any,
+      { newId: () => "id-1" }
     );
 
     const result = await useCase.execute(

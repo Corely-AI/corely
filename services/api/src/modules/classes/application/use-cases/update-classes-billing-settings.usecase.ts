@@ -30,10 +30,12 @@ export class UpdateClassesBillingSettingsUseCase {
     const nextBasis =
       input.billingBasis ??
       (input.billingMonthStrategy ? defaultBasisForStrategy(nextStrategy) : current.billingBasis);
+    const nextAttendanceMode = input.attendanceMode ?? current.attendanceMode;
 
     const next: ClassesBillingSettings = {
       billingMonthStrategy: nextStrategy,
       billingBasis: nextBasis,
+      attendanceMode: nextAttendanceMode,
     };
 
     validateBillingSettings(next);

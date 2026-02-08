@@ -1,5 +1,5 @@
 import React from "react";
-import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
+import { DetailScreenHeader } from "@/shared/components/DetailScreenHeader";
 import { formatDate } from "@/shared/lib/formatters";
 import type { TaxFilingDetail, TaxFilingStatus, TaxFilingType } from "@corely/contracts";
 
@@ -97,7 +97,7 @@ export function FilingDetailHeader({
   ];
 
   return (
-    <RecordCommandBar
+    <DetailScreenHeader
       title={`${TYPE_LABELS[filing.type]} — ${filing.periodLabel}`}
       subtitle={`Due ${formatDate(filing.dueDate, "en-US")}`}
       capabilities={{

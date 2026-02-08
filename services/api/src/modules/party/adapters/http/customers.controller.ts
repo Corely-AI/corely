@@ -22,6 +22,7 @@ import {
   SetPrimaryPayerInputSchema,
   UnarchiveCustomerInputSchema,
   UpdateCustomerInputSchema,
+  UpdateLifecycleStatusInputSchema,
 } from "@corely/contracts";
 import { PartyApplication } from "../../application/party.application";
 import {
@@ -31,11 +32,16 @@ import {
 } from "../../../../shared/http/usecase-mappers";
 import { AuthGuard } from "../../../identity";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { PARTY_QUERY_PORT, type PartyQueryPort } from "../../application/ports/party-query.port";
+import { Inject } from "@nestjs/common";
 
 @Controller("customers")
 @UseGuards(AuthGuard, RbacGuard)
 export class CustomersHttpController {
-  constructor(private readonly app: PartyApplication) {}
+  constructor(
+    private readonly app: PartyApplication,
+    @Inject(PARTY_QUERY_PORT) private readonly partyQuery: PartyQueryPort
+  ) {}
 
   @Post()
   @RequirePermission("party.customers.manage")
@@ -196,5 +202,25 @@ export class CustomersHttpController {
       ctx
     );
     return mapResultToHttp(result);
+  }
+
+  @Post(":id/lifecycle-status")
+  @RequirePermission("party.customers.manage")
+  async updateLifecycleStatus(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
+    const parsed = UpdateLifecycleStatusInputSchema.parse({
+      ...(body as any),
+      partyId: id,
+    });
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.updateLifecycleStatus.execute(parsed as any, ctx);
+    return mapResultToHttp(result);
+  }
+
+  @Get(":id/lifecycle-history")
+  @RequirePermission("party.customers.read")
+  async getLifecycleHistory(@Param("id") id: string, @Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    const history = await this.partyQuery.getLifecycleHistory(ctx.tenantId, id);
+    return history;
   }
 }

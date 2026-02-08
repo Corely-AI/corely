@@ -1,7 +1,7 @@
 import { Module, Logger, InternalServerErrorException } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { DataModule } from "@corely/data";
-import { chromium } from "playwright";
+import { chromium, type Browser } from "playwright";
 import { InvoiceReminderRunnerService } from "./invoice-reminder-runner.service";
 import { InvoicePdfRenderRequestedHandler } from "./handlers/invoice-pdf-render-requested.handler";
 import { GenerateInvoicePdfWorker } from "./workers/generate-invoice-pdf.worker";
@@ -48,13 +48,13 @@ import { createGcsClient } from "@/modules/documents/infrastructure/storage/gcs/
               );
             },
             close: async () => {},
-          } as any;
+          } as unknown as Browser;
         }
       },
     },
     {
       provide: PlaywrightInvoicePdfRendererAdapter,
-      useFactory: (browser: any) => new PlaywrightInvoicePdfRendererAdapter(browser),
+      useFactory: (browser: Browser) => new PlaywrightInvoicePdfRendererAdapter(browser),
       inject: ["PLAYWRIGHT_BROWSER"],
     },
     {
@@ -88,6 +88,6 @@ import { createGcsClient } from "@/modules/documents/infrastructure/storage/gcs/
       inject: [GenerateInvoicePdfWorker],
     },
   ],
-  exports: [InvoicePdfRenderRequestedHandler],
+  exports: [InvoicePdfRenderRequestedHandler, InvoiceReminderRunnerService],
 })
 export class InvoicesWorkerModule {}

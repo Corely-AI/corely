@@ -1,6 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import type { LoggerPort } from "@corely/kernel";
 import { CreateJournalEntryUseCase } from "../use-cases/create-journal-entry.usecase";
+import { LEDGER_ACCOUNT_REPO_PORT } from "../ports/accounting-repository.port";
 import type { LedgerAccountRepoPort } from "../ports/accounting-repository.port";
 import type { UseCaseContext } from "@corely/kernel";
 
@@ -19,7 +20,7 @@ export class CogsPostingService {
   constructor(
     @Inject("LoggerPort") private readonly logger: LoggerPort,
     private readonly createJournalEntry: CreateJournalEntryUseCase,
-    private readonly accountRepo: LedgerAccountRepoPort
+    @Inject(LEDGER_ACCOUNT_REPO_PORT) private readonly accountRepo: LedgerAccountRepoPort
   ) {}
 
   /**

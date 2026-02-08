@@ -61,6 +61,16 @@ export class PrismaLedgerAccountRepository implements LedgerAccountRepoPort {
     return account ? ledgerAccountFromPrisma(account) : null;
   }
 
+  async findBySystemKey(
+    tenantId: string,
+    systemKey: string
+  ): Promise<LedgerAccountAggregate | null> {
+    const account = await this.prisma.ledgerAccount.findFirst({
+      where: { tenantId, systemAccountKey: systemKey },
+    });
+    return account ? ledgerAccountFromPrisma(account) : null;
+  }
+
   async list(
     tenantId: string,
     filters: {

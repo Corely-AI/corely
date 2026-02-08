@@ -29,8 +29,8 @@ export class ReceiveShipmentUseCase extends BaseUseCase<
   ReceiveShipmentInput,
   ReceiveShipmentOutput
 > {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly shipmentDeps: Deps) {
+    super({ logger: shipmentDeps.logger });
   }
 
   protected async handle(
@@ -43,7 +43,7 @@ export class ReceiveShipmentUseCase extends BaseUseCase<
     }
     const userId = ctx.userId;
 
-    const shipment = await this.deps.repo.findById(tenantId, input.shipmentId);
+    const shipment = await this.shipmentDeps.repo.findById(tenantId, input.shipmentId);
     if (!shipment) {
       return err(new NotFoundError("Import shipment not found", { shipmentId: input.shipmentId }));
     }
@@ -76,7 +76,7 @@ export class ReceiveShipmentUseCase extends BaseUseCase<
       receivedQty: receivedQtyMap.get(line.id) ?? line.receivedQty,
     }));
 
-    const now = this.deps.clock.now();
+    const now = this.shipmentDeps.clock.now();
     const receivedDateLocal = parseLocalDate(input.receivedDate);
 
     const updated = {
@@ -88,9 +88,9 @@ export class ReceiveShipmentUseCase extends BaseUseCase<
       updatedAt: now,
     };
 
-    await this.deps.repo.update(tenantId, updated);
+    await this.shipmentDeps.repo.update(tenantId, updated);
 
-    await this.deps.audit.log({
+    await this.shipmentDeps.audit.log({
       tenantId,
       userId,
       action: "import.shipment.received",

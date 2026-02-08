@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma, type PrismaClient } from "@prisma/client";
-import type { PrismaService } from "@corely/data";
+import { PrismaService } from "@corely/data";
 import type {
   ClaimReminderOptions,
   InvoiceReminderStatePort,

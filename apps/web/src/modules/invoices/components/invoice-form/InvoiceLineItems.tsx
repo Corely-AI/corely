@@ -94,7 +94,7 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                             <SelectContent>
                               {UNITS.map((unit) => (
                                 <SelectItem key={unit} value={unit}>
-                                  {unit}
+                                  {t(`invoices.units.${unit}`)}
                                 </SelectItem>
                               ))}
                             </SelectContent>

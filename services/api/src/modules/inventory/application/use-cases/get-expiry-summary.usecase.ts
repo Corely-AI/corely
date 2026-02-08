@@ -20,8 +20,8 @@ export class GetExpirySummaryUseCase extends BaseUseCase<
   GetExpirySummaryInput,
   GetExpirySummaryOutput
 > {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly summaryDeps: Deps) {
+    super({ logger: summaryDeps.logger });
   }
 
   protected async handle(
@@ -31,7 +31,7 @@ export class GetExpirySummaryUseCase extends BaseUseCase<
     const tenantId = ctx.tenantId!;
     const days = input.days ?? 30;
 
-    const result = await this.deps.repo.getExpirySummary(tenantId, days);
+    const result = await this.summaryDeps.repo.getExpirySummary(tenantId, days);
 
     return ok({
       expiringSoon: result.expiringSoon.map((item) => this.toExpiryItemDto(item)),

@@ -19,8 +19,8 @@ type Deps = {
 
 @RequireTenant()
 export class ListLotsUseCase extends BaseUseCase<ListLotsInput, ListLotsOutput> {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly lotDeps: Deps) {
+    super({ logger: lotDeps.logger });
   }
 
   protected async handle(
@@ -29,7 +29,7 @@ export class ListLotsUseCase extends BaseUseCase<ListLotsInput, ListLotsOutput> 
   ): Promise<Result<ListLotsOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
 
-    const result = await this.deps.repo.list(tenantId, {
+    const result = await this.lotDeps.repo.list(tenantId, {
       productId: input.productId,
       status: input.status,
       expiryBefore: input.expiryBefore ? parseLocalDate(input.expiryBefore) : undefined,

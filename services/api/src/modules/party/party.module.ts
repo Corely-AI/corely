@@ -1,8 +1,14 @@
 import { Module } from "@nestjs/common";
-import { DataModule, EXT_ENTITY_LINK_PORT, type ExtEntityLinkPort } from "@corely/data";
+import {
+  DataModule,
+  EXT_ENTITY_LINK_PORT,
+  type ExtEntityLinkPort,
+  PrismaService,
+} from "@corely/data";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
 import { CustomersHttpController } from "./adapters/http/customers.controller";
+import { PartyInternalController } from "./adapters/http/party-internal.controller";
 import { PrismaPartyRepoAdapter } from "./infrastructure/prisma/prisma-party-repo.adapter";
 import { PrismaCustomerQueryAdapter } from "./infrastructure/prisma/prisma-customer-query.adapter";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -27,14 +33,20 @@ import { GetStudentGuardiansUseCase } from "./application/use-cases/student-guar
 import { LinkGuardianToStudentUseCase } from "./application/use-cases/student-guardians/link-guardian-to-student.usecase";
 import { SetPrimaryPayerUseCase } from "./application/use-cases/student-guardians/set-primary-payer.usecase";
 import { UnlinkGuardianUseCase } from "./application/use-cases/student-guardians/unlink-guardian.usecase";
+import { CreateTutoringLeadUseCase } from "./application/use-cases/create-tutoring-lead.usecase";
+import { UpdatePartyLifecycleStatusUseCase } from "./application/use-cases/update-party-lifecycle-status.usecase";
+import { PARTY_QUERY_PORT } from "./application/ports/party-query.port";
+import { PrismaPartyQueryAdapter } from "./infrastructure/prisma/prisma-party-query.adapter";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule],
-  controllers: [CustomersHttpController],
+  controllers: [CustomersHttpController, PartyInternalController],
   providers: [
     PrismaPartyRepoAdapter,
     PrismaCustomerQueryAdapter,
+    PrismaPartyQueryAdapter,
     { provide: CUSTOMER_QUERY_PORT, useExisting: PrismaCustomerQueryAdapter },
+    { provide: PARTY_QUERY_PORT, useExisting: PrismaPartyQueryAdapter },
     {
       provide: CreateCustomerUseCase,
       useFactory: (repo: PrismaPartyRepoAdapter, idGen: any, clock: any) =>
@@ -173,7 +185,8 @@ import { UnlinkGuardianUseCase } from "./application/use-cases/student-guardians
         getStudentGuardians: GetStudentGuardiansUseCase,
         linkGuardianToStudent: LinkGuardianToStudentUseCase,
         unlinkGuardian: UnlinkGuardianUseCase,
-        setPrimaryPayer: SetPrimaryPayerUseCase
+        setPrimaryPayer: SetPrimaryPayerUseCase,
+        updateLifecycleStatus: UpdatePartyLifecycleStatusUseCase
       ) =>
         new PartyApplication(
           createCustomer,
@@ -186,7 +199,8 @@ import { UnlinkGuardianUseCase } from "./application/use-cases/student-guardians
           getStudentGuardians,
           linkGuardianToStudent,
           unlinkGuardian,
-          setPrimaryPayer
+          setPrimaryPayer,
+          updateLifecycleStatus
         ),
       inject: [
         CreateCustomerUseCase,
@@ -200,9 +214,46 @@ import { UnlinkGuardianUseCase } from "./application/use-cases/student-guardians
         LinkGuardianToStudentUseCase,
         UnlinkGuardianUseCase,
         SetPrimaryPayerUseCase,
+        UpdatePartyLifecycleStatusUseCase,
+      ],
+    },
+    {
+      provide: UpdatePartyLifecycleStatusUseCase,
+      useFactory: (repo: PrismaPartyRepoAdapter, audit: AuditPort, prisma: PrismaService) =>
+        new UpdatePartyLifecycleStatusUseCase({
+          logger: new NestLoggerAdapter(),
+          partyRepo: repo,
+          audit,
+          prisma,
+        }),
+      inject: [PrismaPartyRepoAdapter, AUDIT_PORT, PrismaService],
+    },
+    {
+      provide: CreateTutoringLeadUseCase,
+      useFactory: (
+        repo: PrismaPartyRepoAdapter,
+        idGen: any,
+        clock: any,
+        audit: AuditPort,
+        linkGuardianToStudent: LinkGuardianToStudentUseCase
+      ) =>
+        new CreateTutoringLeadUseCase({
+          logger: new NestLoggerAdapter(),
+          partyRepo: repo,
+          idGenerator: idGen,
+          clock,
+          audit,
+          linkGuardianToStudent,
+        }),
+      inject: [
+        PrismaPartyRepoAdapter,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        AUDIT_PORT,
+        LinkGuardianToStudentUseCase,
       ],
     },
   ],
-  exports: [PartyApplication, CUSTOMER_QUERY_PORT],
+  exports: [PartyApplication, CUSTOMER_QUERY_PORT, PARTY_QUERY_PORT],
 })
 export class PartyModule {}

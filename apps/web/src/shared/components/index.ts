@@ -5,5 +5,5 @@ export { Markdown } from "./Markdown";
 export { NavLink } from "./NavLink";
 export { default as NotFound } from "./NotFound";
 export { QuestionForm } from "./QuestionForm";
-export { RecordCommandBar } from "./RecordCommandBar";
+export { DetailScreenHeader } from "./DetailScreenHeader";
 export { Skeleton } from "./Skeleton";

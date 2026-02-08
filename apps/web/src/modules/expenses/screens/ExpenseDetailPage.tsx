@@ -11,7 +11,7 @@ import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import { Skeleton } from "@/shared/components/Skeleton";
 import { invalidateResourceQueries } from "@/shared/crud";
 import { toast } from "sonner";
-import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
+import { DetailScreenHeader } from "@/shared/components/DetailScreenHeader";
 
 export const ExpenseDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -100,7 +100,7 @@ export const ExpenseDetailPage = () => {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="mb-6">
         {capabilities ? (
-          <RecordCommandBar
+          <DetailScreenHeader
             title={expense.merchantName || "Expense"}
             subtitle={formatDate(expense.expenseDate || expense.createdAt, "en-US")}
             capabilities={capabilities}

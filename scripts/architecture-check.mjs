@@ -198,10 +198,45 @@ function checkPackageCycles() {
   }
 }
 
+/**
+ * Detects `import type` on classes that NestJS needs at runtime for DI.
+ * LLMs frequently generate `import type { PrismaService }` which erases
+ * at runtime and causes "dependency at index [N] is undefined" errors.
+ */
+function checkTypeOnlyInjectableImports() {
+  const apiSrc = path.join(repoRoot, "services", "api", "src");
+  const workerSrc = path.join(repoRoot, "services", "worker", "src");
+  const files = [...listFiles(apiSrc, [".ts"]), ...listFiles(workerSrc, [".ts"])];
+
+  // Classes that must be value-imported when used as constructor params in @Injectable()
+  const diClasses = ["PrismaService"];
+
+  for (const filePath of files) {
+    const rel = path.relative(repoRoot, filePath);
+    if (rel.includes("__tests__") || rel.includes(".test.") || rel.includes(".spec.")) continue;
+
+    const source = fs.readFileSync(filePath, "utf-8");
+    if (!source.includes("@Injectable()")) continue;
+
+    for (const cls of diClasses) {
+      const typeImportPattern = new RegExp(
+        `import\\s+type\\s*\\{[^}]*\\b${cls}\\b[^}]*\\}\\s*from`
+      );
+      if (typeImportPattern.test(source) && source.includes(`prisma: ${cls}`)) {
+        addViolation(
+          `'import type { ${cls} }' in @Injectable() class — NestJS needs a value import for DI`,
+          filePath
+        );
+      }
+    }
+  }
+}
+
 checkFrontendBoundaries();
 checkBackendModuleBoundaries();
 checkPrismaAccess();
 checkPackageCycles();
+checkTypeOnlyInjectableImports();
 
 if (violations.length > 0) {
   console.error("Architecture check failed:");

@@ -19,8 +19,8 @@ export type DocumentDeps = {
   moveRepo: StockMoveRepositoryPort;
   reservationRepo: StockReservationRepositoryPort;
   settingsRepo: InventorySettingsRepositoryPort;
-  lotRepo: InventoryLotRepositoryPort;
-  catalogRepo: CatalogRepositoryPort;
+  lotRepo?: InventoryLotRepositoryPort;
+  catalogRepo?: CatalogRepositoryPort;
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
   idempotency: IdempotencyStoragePort;

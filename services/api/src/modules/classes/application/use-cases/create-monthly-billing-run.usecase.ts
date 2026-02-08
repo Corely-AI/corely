@@ -86,6 +86,7 @@ export class CreateMonthlyBillingRunUseCase {
         effectiveSettings = {
           billingMonthStrategy: existing.billingMonthStrategy ?? settings.billingMonthStrategy,
           billingBasis: existing.billingBasis ?? settings.billingBasis,
+          attendanceMode: settings.attendanceMode,
         };
       }
       run = existing;

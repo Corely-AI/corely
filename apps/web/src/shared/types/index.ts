@@ -1,4 +1,4 @@
-// Core entity types for Bizflow
+// Core entity types for Corely One ERP
 
 export type Currency = "EUR" | "USD";
 export type VatRate = 0 | 7 | 19;

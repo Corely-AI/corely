@@ -24,9 +24,9 @@ class EchoUseCase extends BaseUseCase<string, string> {
 class TransactionUseCase extends BaseUseCase<string, string> {
   constructor(
     logger: NoopLogger,
-    private readonly uow: UnitOfWorkPort
+    private readonly testUow: UnitOfWorkPort
   ) {
-    super({ logger, uow });
+    super({ logger, uow: testUow });
   }
 
   protected async handle(input: string): Promise<Result<string, ValidationError>> {

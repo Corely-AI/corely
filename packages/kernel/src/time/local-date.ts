@@ -54,3 +54,11 @@ export function toIsoDateString(date: Date, tenantTz: TimeZoneId): LocalDate {
   assertTimeZoneId(tenantTz);
   return formatInTimeZone(date, tenantTz, "yyyy-MM-dd") as LocalDate;
 }
+
+/**
+ * Backward-compatible helper for mapping Date -> LocalDate in UTC.
+ * Prefer toIsoDateString() when a tenant timezone is available.
+ */
+export function formatLocalDate(date: Date): LocalDate {
+  return formatInTimeZone(date, "UTC", "yyyy-MM-dd") as LocalDate;
+}

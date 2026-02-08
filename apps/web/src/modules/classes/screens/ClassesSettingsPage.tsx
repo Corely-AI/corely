@@ -13,11 +13,17 @@ import {
   SelectValue,
   Button,
   Label,
+  RadioGroup,
+  RadioGroupItem,
 } from "@corely/ui";
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { classesQueryKeys } from "../queries/classes.queryKeys";
-import type { ClassBillingBasis, ClassBillingMonthStrategy } from "@corely/contracts";
+import type {
+  ClassBillingBasis,
+  ClassBillingMonthStrategy,
+  AttendanceMode,
+} from "@corely/contracts";
 
 export default function ClassesSettingsPage() {
   const { t } = useTranslation();
@@ -29,6 +35,7 @@ export default function ClassesSettingsPage() {
   const [billingMonthStrategy, setBillingMonthStrategy] =
     useState<ClassBillingMonthStrategy>("PREPAID_CURRENT_MONTH");
   const [billingBasis, setBillingBasis] = useState<ClassBillingBasis>("SCHEDULED_SESSIONS");
+  const [attendanceMode, setAttendanceMode] = useState<AttendanceMode>("MANUAL");
 
   const STRATEGY_OPTIONS = useMemo(
     () => [
@@ -68,6 +75,7 @@ export default function ClassesSettingsPage() {
     }
     setBillingMonthStrategy(data.settings.billingMonthStrategy);
     setBillingBasis(data.settings.billingBasis);
+    setAttendanceMode(data.settings.attendanceMode);
   }, [data]);
 
   const selectedStrategy = useMemo(
@@ -84,6 +92,7 @@ export default function ClassesSettingsPage() {
       classesApi.updateSettings({
         billingMonthStrategy,
         billingBasis,
+        attendanceMode,
       }),
     onSuccess: () => {
       toast.success(t("classes.settings.updated"));
@@ -99,6 +108,43 @@ export default function ClassesSettingsPage() {
         <h1 className="text-h1 text-foreground">{t("classes.settings.title")}</h1>
         <p className="text-muted-foreground">{t("classes.settings.description")}</p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("classes.settings.attendance.title")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Label>{t("classes.settings.attendance.mode")}</Label>
+            <RadioGroup
+              value={attendanceMode}
+              onValueChange={(val) => setAttendanceMode(val as AttendanceMode)}
+              className="space-y-4"
+            >
+              <div className="flex items-start space-x-3">
+                <RadioGroupItem value="MANUAL" id="mode-manual" className="mt-1" />
+                <Label htmlFor="mode-manual" className="font-normal cursor-pointer">
+                  <div className="font-medium">{t("classes.settings.attendance.manual.label")}</div>
+                  <div className="text-muted-foreground text-sm">
+                    {t("classes.settings.attendance.manual.description")}
+                  </div>
+                </Label>
+              </div>
+              <div className="flex items-start space-x-3">
+                <RadioGroupItem value="AUTO_FULL" id="mode-auto" className="mt-1" />
+                <Label htmlFor="mode-auto" className="font-normal cursor-pointer">
+                  <div className="font-medium">
+                    {t("classes.settings.attendance.autoFull.label")}
+                  </div>
+                  <div className="text-muted-foreground text-sm">
+                    {t("classes.settings.attendance.autoFull.description")}
+                  </div>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -156,14 +202,14 @@ export default function ClassesSettingsPage() {
               <p className="text-sm text-muted-foreground">{selectedBasis.description}</p>
             )}
           </div>
-
-          <div className="flex justify-end">
-            <Button onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending}>
-              {t("classes.settings.save")}
-            </Button>
-          </div>
         </CardContent>
       </Card>
+
+      <div className="flex justify-end">
+        <Button onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending}>
+          {t("classes.settings.save")}
+        </Button>
+      </div>
     </div>
   );
 }

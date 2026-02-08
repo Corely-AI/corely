@@ -7,6 +7,7 @@ import { Badge } from "@corely/ui";
 import { paymentMethodsApi } from "@/lib/payment-methods-api";
 import { cn } from "@/shared/lib/utils";
 import type { PaymentMethod } from "@corely/contracts";
+import { useTranslation } from "react-i18next";
 
 interface PaymentMethodSwitcherProps {
   legalEntityId: string;
@@ -19,6 +20,7 @@ export function PaymentMethodSwitcher({
   selectedId,
   onSelect,
 }: PaymentMethodSwitcherProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
@@ -54,24 +56,28 @@ export function PaymentMethodSwitcher({
           {selectedMethod ? (
             <div className="space-y-1.5 text-sm">
               <div className="flex gap-2">
-                <span className="text-muted-foreground min-w-[70px]">Bank:</span>
+                <span className="text-muted-foreground min-w-[70px]">{t("common.bank")}:</span>
                 <span className="text-foreground font-medium">{selectedMethod.label}</span>
               </div>
               <div className="flex gap-2">
-                <span className="text-muted-foreground min-w-[70px]">IBAN:</span>
+                <span className="text-muted-foreground min-w-[70px]">{t("common.iban")}:</span>
                 <span className="text-foreground">
-                  {selectedMethod.bankAccountId ? "Selected Bank Account" : "N/A"}
+                  {selectedMethod.bankAccountId ? t("invoices.footer.selectedBankAccount") : "N/A"}
                 </span>
               </div>
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground italic">Select payment method</div>
+            <div className="text-sm text-muted-foreground italic">
+              {t("invoices.footer.selectPaymentMethod")}
+            </div>
           )}
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">Select your payment method</DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
+            {t("invoices.footer.selectPaymentMethodTitle")}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="mt-4 space-y-3">
@@ -102,7 +108,7 @@ export function PaymentMethodSwitcher({
                     variant="secondary"
                     className="bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-50 text-[10px] h-5 px-1.5 uppercase font-bold tracking-tighter"
                   >
-                    Default
+                    {t("common.default")}
                   </Badge>
                 )}
                 <div className="flex items-center gap-1">
@@ -132,7 +138,7 @@ export function PaymentMethodSwitcher({
             }}
           >
             <Plus className="h-4 w-4" />
-            Add new payment method
+            {t("invoices.footer.addNewPaymentMethod")}
           </Button>
         </div>
       </DialogContent>

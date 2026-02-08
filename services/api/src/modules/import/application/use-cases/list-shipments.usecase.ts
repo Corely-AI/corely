@@ -18,8 +18,8 @@ type Deps = {
 
 @RequireTenant()
 export class ListShipmentsUseCase extends BaseUseCase<ListShipmentsInput, ListShipmentsOutput> {
-  constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+  constructor(private readonly shipmentDeps: Deps) {
+    super({ logger: shipmentDeps.logger });
   }
 
   protected async handle(
@@ -28,7 +28,7 @@ export class ListShipmentsUseCase extends BaseUseCase<ListShipmentsInput, ListSh
   ): Promise<Result<ListShipmentsOutput, UseCaseError>> {
     const tenantId = ctx.tenantId!;
 
-    const result = await this.deps.repo.list(tenantId, {
+    const result = await this.shipmentDeps.repo.list(tenantId, {
       supplierPartyId: input.supplierPartyId,
       status: input.status,
       shippingMode: input.shippingMode,

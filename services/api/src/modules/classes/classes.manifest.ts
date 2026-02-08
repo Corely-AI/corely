@@ -11,6 +11,17 @@ export const classesAppManifest: AppManifest = {
   permissions: ["classes.read", "classes.write", "classes.billing"],
   menu: [
     {
+      id: "teacher-dashboard",
+      scope: "web",
+      section: "education",
+      labelKey: "nav.teacherDashboard",
+      defaultLabel: "Teacher Dashboard",
+      route: "/dashboard/teacher",
+      icon: "LayoutDashboard",
+      order: 10,
+      requiresPermissions: ["classes.read"],
+    },
+    {
       id: "classes-groups",
       scope: "web",
       section: "education",

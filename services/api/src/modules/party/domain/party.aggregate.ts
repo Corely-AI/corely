@@ -2,6 +2,8 @@ import { type Address } from "./address";
 import { type ContactPoint, type ContactPointType } from "./contact-point";
 import { type PartyRoleType } from "./party-role";
 
+export type PartyLifecycleStatus = "LEAD" | "ACTIVE" | "PAUSED" | "ARCHIVED";
+
 type PartyProps = {
   id: string;
   tenantId: string;
@@ -11,6 +13,7 @@ type PartyProps = {
   vatId?: string | null;
   notes?: string | null;
   tags?: string[];
+  lifecycleStatus: PartyLifecycleStatus;
   archivedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +39,7 @@ export class PartyAggregate {
   vatId: string | null;
   notes: string | null;
   tags: string[];
+  lifecycleStatus: PartyLifecycleStatus;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -54,6 +58,7 @@ export class PartyAggregate {
     this.vatId = props.vatId ?? null;
     this.notes = props.notes ?? null;
     this.tags = props.tags ?? [];
+    this.lifecycleStatus = props.lifecycleStatus;
     this.archivedAt = props.archivedAt ?? null;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
@@ -71,6 +76,7 @@ export class PartyAggregate {
     vatId?: string | null;
     notes?: string | null;
     tags?: string[];
+    lifecycleStatus?: PartyLifecycleStatus;
     createdAt: Date;
     generateId: () => string;
   }) {
@@ -87,6 +93,7 @@ export class PartyAggregate {
       vatId: params.vatId ?? null,
       notes: params.notes ?? null,
       tags: params.tags ?? [],
+      lifecycleStatus: params.lifecycleStatus ?? "LEAD",
       archivedAt: null,
       createdAt: params.createdAt,
       updatedAt: params.createdAt,
