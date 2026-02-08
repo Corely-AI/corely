@@ -4,9 +4,11 @@ export type ClassAttendanceStatus = "PRESENT" | "ABSENT" | "MAKEUP" | "EXCUSED";
 export type ClassBillingRunStatus = "DRAFT" | "INVOICES_CREATED" | "LOCKED" | "FAILED";
 export type ClassBillingMonthStrategy = "PREPAID_CURRENT_MONTH" | "ARREARS_PREVIOUS_MONTH";
 export type ClassBillingBasis = "SCHEDULED_SESSIONS" | "ATTENDED_SESSIONS";
+export type AttendanceMode = "MANUAL" | "AUTO_FULL";
 export type ClassesBillingSettings = {
   billingMonthStrategy: ClassBillingMonthStrategy;
   billingBasis: ClassBillingBasis;
+  attendanceMode: AttendanceMode;
 };
 
 export type ClassGroupEntity = {

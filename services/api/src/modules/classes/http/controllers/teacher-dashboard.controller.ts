@@ -1,0 +1,26 @@
+import { Controller, Get, Query, UseGuards, Req } from "@nestjs/common";
+import {
+  TeacherDashboardSummaryQuerySchema,
+  type TeacherDashboardSummaryResponse,
+} from "@corely/contracts/classes";
+import { GetTeacherDashboardSummaryUseCase } from "../../application/use-cases/get-teacher-dashboard-summary.use-case";
+import { AuthGuard, RbacGuard, RequirePermission } from "../../../identity";
+import { buildUseCaseContext } from "../../../../shared/http/usecase-mappers";
+import type { Request } from "express";
+
+@Controller("classes/teacher/dashboard")
+@UseGuards(AuthGuard, RbacGuard)
+export class TeacherDashboardController {
+  constructor(private readonly getSummaryUseCase: GetTeacherDashboardSummaryUseCase) {}
+
+  @Get("summary")
+  @RequirePermission("classes.read")
+  async getSummary(
+    @Req() req: Request,
+    @Query() query: unknown
+  ): Promise<TeacherDashboardSummaryResponse> {
+    const input = TeacherDashboardSummaryQuerySchema.parse(query);
+    const ctx = buildUseCaseContext(req);
+    return this.getSummaryUseCase.execute(ctx, input);
+  }
+}

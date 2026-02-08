@@ -145,6 +145,7 @@
     "crmDeals": "Deals",
     "crmActivities": "Activities",
     "classes": "Classes",
+    "teacherDashboard": "Teacher Dashboard",
     "classSessions": "Sessions",
     "classBilling": "Class Billing",
     "website": "Website",
@@ -1124,6 +1125,19 @@
         "arrears": {
           "label": "Invoice for previous month (arrears)",
           "description": "Invoices are generated at the start of the month for attended sessions."
+        }
+      },
+      "attendance": {
+        "title": "Attendance",
+        "description": "Configure attendance behavior",
+        "mode": "Attendance Mode",
+        "manual": {
+          "label": "Manual Attendance",
+          "description": "Teachers must record attendance per session."
+        },
+        "autoFull": {
+          "label": "Auto-Full Attendance",
+          "description": "When a session is marked done, all enrolled students are marked present automatically. Teachers can still edit if needed."
         }
       },
       "bases": {

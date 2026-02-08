@@ -851,6 +851,10 @@ importers:
         version: 5.4.21(@types/node@22.19.3)(lightningcss@1.30.2)(terser@5.46.0)
 
   packages/api-client:
+    dependencies:
+      '@corely/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
       vitest:
         specifier: 'catalog:'

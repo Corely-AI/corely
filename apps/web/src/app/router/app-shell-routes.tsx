@@ -22,6 +22,7 @@ import {
   SessionsPage,
   SessionDetailPage,
   ClassesBillingPage,
+  TeacherDashboardPage,
 } from "../../modules/classes";
 import {
   DealsPage,
@@ -120,6 +121,7 @@ export const appShellRoutes = (
     <Route element={<AppShell />}>
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />
       <Route path="/assistant" element={<AssistantPage />} />
       <Route path="/cms/posts" element={<CmsPostsPage />} />
       <Route path="/cms/posts/new" element={<CmsPostEditorPage />} />

@@ -5,10 +5,14 @@ import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
 import type { ClockPort } from "../ports/clock.port";
 import type { ClassesSettingsRepositoryPort } from "../ports/classes-settings-repository.port";
 import type { AuditPort } from "../ports/audit.port";
+import type { IdGeneratorPort } from "../ports/id-generator.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
 import { assertCanClasses } from "../../policies/assert-can-classes";
 import { getMonthKeyForInstant } from "../helpers/billing-period";
-import type { ClassSessionEntity } from "../../domain/entities/classes.entities";
+import type {
+  ClassSessionEntity,
+  ClassAttendanceEntity,
+} from "../../domain/entities/classes.entities";
 import {
   attachBillingStatusToSession,
   type SessionWithBillingStatus,
@@ -28,7 +32,8 @@ export class UpdateSessionUseCase {
     private readonly repo: ClassesRepositoryPort,
     private readonly settingsRepo: ClassesSettingsRepositoryPort,
     private readonly audit: AuditPort,
-    private readonly clock: ClockPort
+    private readonly clock: ClockPort,
+    private readonly idGenerator: IdGeneratorPort
   ) {}
 
   async execute(
@@ -93,6 +98,86 @@ export class UpdateSessionUseCase {
       metadata: { status: updated.status },
     });
 
+    // Auto-fill attendance logic
+    if (
+      statusChanged &&
+      isDoneStatus(nextStatus) &&
+      !isDoneStatus(existing.status) &&
+      settings.attendanceMode === "AUTO_FULL"
+    ) {
+      await this.autoFillAttendance(tenantId, workspaceId, updated, ctx.userId ?? "system");
+    }
+
     return attachBillingStatusToSession(this.repo, tenantId, workspaceId, updated);
+  }
+
+  private async autoFillAttendance(
+    tenantId: string,
+    workspaceId: string,
+    session: ClassSessionEntity,
+    userId: string
+  ) {
+    // 1. Get active enrollments
+    const { items: enrollments } = await this.repo.listEnrollments(
+      tenantId,
+      workspaceId,
+      {
+        classGroupId: session.classGroupId,
+        isActive: true,
+      },
+      { page: 1, pageSize: 1000 }
+    );
+
+    // 2. Filter by date validity
+    const sessionDate = session.startsAt;
+    const validEnrollments = enrollments.filter((e) => {
+      if (e.startDate && e.startDate > sessionDate) {return false;}
+      if (e.endDate && e.endDate < sessionDate) {return false;}
+      return true;
+    });
+
+    if (validEnrollments.length === 0) {return;}
+
+    // 3. Get existing attendance to avoid overwrite
+    const existingAttendance = await this.repo.listAttendanceBySession(
+      tenantId,
+      workspaceId,
+      session.id
+    );
+    const existingEnrollmentIds = new Set(existingAttendance.map((a) => a.enrollmentId));
+
+    // 4. Create new attendance entities
+    const newAttendance: ClassAttendanceEntity[] = [];
+    const now = this.clock.now();
+
+    for (const enrollment of validEnrollments) {
+      if (existingEnrollmentIds.has(enrollment.id)) {continue;}
+
+      newAttendance.push({
+        id: this.idGenerator.newId(),
+        tenantId,
+        workspaceId,
+        sessionId: session.id,
+        enrollmentId: enrollment.id,
+        status: "PRESENT",
+        billable: true,
+        note: "Auto-filled",
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    if (newAttendance.length > 0) {
+      await this.repo.bulkUpsertAttendance(tenantId, workspaceId, session.id, newAttendance);
+
+      await this.audit.log({
+        tenantId,
+        userId,
+        action: "classes.attendance.autofilled",
+        entityType: "ClassSession",
+        entityId: session.id,
+        metadata: { count: newAttendance.length },
+      });
+    }
   }
 }

@@ -10,7 +10,11 @@ import {
 } from "@/shared/ports/idempotency-storage.port";
 import { ClassesController } from "./http/classes.controller";
 import { ClassesInternalController } from "./http/classes-internal.controller";
+import { TeacherDashboardController } from "./http/controllers/teacher-dashboard.controller";
+
 import { PrismaClassesRepository } from "./infrastructure/prisma/classes.repository";
+import { PrismaTeacherDashboardQuery } from "./infrastructure/prisma/prisma-teacher-dashboard.query";
+
 import { InvoicesWriteAdapter } from "./infrastructure/adapters/invoices-write.adapter";
 import { ExtKvClassesSettingsRepository } from "./infrastructure/adapters/ext-kv-classes-settings.repository";
 import { InvoicesModule } from "../invoices/invoices.module";
@@ -24,6 +28,10 @@ import {
   CLASSES_SETTINGS_REPOSITORY_PORT,
   type ClassesSettingsRepositoryPort,
 } from "./application/ports/classes-settings-repository.port";
+import {
+  TEACHER_DASHBOARD_QUERY,
+  type TeacherDashboardQueryPort,
+} from "./application/ports/teacher-dashboard-query.port";
 import {
   INVOICES_WRITE_PORT,
   type InvoicesWritePort,
@@ -48,16 +56,21 @@ import { CreateMonthlyBillingRunUseCase } from "./application/use-cases/create-m
 import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
 import { GetClassesBillingSettingsUseCase } from "./application/use-cases/get-classes-billing-settings.usecase";
 import { UpdateClassesBillingSettingsUseCase } from "./application/use-cases/update-classes-billing-settings.usecase";
+import { GetTeacherDashboardSummaryUseCase } from "./application/use-cases/get-teacher-dashboard-summary.use-case";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule, InvoicesModule],
-  controllers: [ClassesController, ClassesInternalController],
+  controllers: [ClassesController, ClassesInternalController, TeacherDashboardController],
+
   providers: [
     PrismaClassesRepository,
     { provide: CLASSES_REPOSITORY_PORT, useExisting: PrismaClassesRepository },
     ExtKvClassesSettingsRepository,
     { provide: CLASSES_SETTINGS_REPOSITORY_PORT, useExisting: ExtKvClassesSettingsRepository },
+    PrismaTeacherDashboardQuery,
+    { provide: TEACHER_DASHBOARD_QUERY, useExisting: PrismaTeacherDashboardQuery },
     InvoicesWriteAdapter,
+
     { provide: INVOICES_WRITE_PORT, useExisting: InvoicesWriteAdapter },
     {
       provide: CreateClassGroupUseCase,
@@ -161,13 +174,15 @@ import { UpdateClassesBillingSettingsUseCase } from "./application/use-cases/upd
         repo: ClassesRepositoryPort,
         settingsRepo: ClassesSettingsRepositoryPort,
         audit,
-        clock: ClockPort
-      ) => new UpdateSessionUseCase(repo, settingsRepo, audit, clock),
+        clock: ClockPort,
+        idGenerator: IdGeneratorPort
+      ) => new UpdateSessionUseCase(repo, settingsRepo, audit, clock, idGenerator),
       inject: [
         CLASSES_REPOSITORY_PORT,
         CLASSES_SETTINGS_REPOSITORY_PORT,
         AUDIT_PORT,
         CLOCK_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
       ],
     },
     {
@@ -288,6 +303,13 @@ import { UpdateClassesBillingSettingsUseCase } from "./application/use-cases/upd
         new UpdateClassesBillingSettingsUseCase(settingsRepo),
       inject: [CLASSES_SETTINGS_REPOSITORY_PORT],
     },
+    {
+      provide: GetTeacherDashboardSummaryUseCase,
+      useFactory: (query: TeacherDashboardQueryPort, settingsRepo: ClassesSettingsRepositoryPort) =>
+        new GetTeacherDashboardSummaryUseCase(query, settingsRepo),
+      inject: [TEACHER_DASHBOARD_QUERY, CLASSES_SETTINGS_REPOSITORY_PORT],
+    },
+
     {
       provide: LockMonthUseCase,
       useFactory: (repo: ClassesRepositoryPort, audit, clock: ClockPort) =>

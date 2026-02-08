@@ -6,3 +6,4 @@ export * from "./attendance.schema";
 export * from "./billing.schema";
 export * from "./classes-events.schema";
 export * from "./settings.schema";
+export * from "./teacher-dashboard.schema";
