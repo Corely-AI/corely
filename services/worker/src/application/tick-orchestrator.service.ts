@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, Inject, forwardRef } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { JobLockService } from "../infrastructure/job-lock.service";
 import { Runner, RunnerReport, TickContext } from "./runner.interface";
@@ -14,12 +14,23 @@ export class TickOrchestrator {
   constructor(
     private readonly env: EnvService,
     private readonly jobLockService: JobLockService,
+    @Inject(forwardRef(() => OutboxPollerService))
     private readonly outboxRunner: OutboxPollerService,
+    @Inject(forwardRef(() => InvoiceReminderRunnerService))
     private readonly invoiceRunner: InvoiceReminderRunnerService
   ) {
+    if (!this.logger) {
+      // Should be initialized by property initializer, but just in case
+      // this.logger = new Logger(TickOrchestrator.name);
+      // Property initializers run before constructor body but after constructor parameters are evaluated.
+    }
+    this.logger.log(
+      `TickOrchestrator constructor: outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}`
+    );
+
     // Register available runners
-    this.registerRunner(this.outboxRunner);
-    this.registerRunner(this.invoiceRunner);
+    if (this.outboxRunner) {this.registerRunner(this.outboxRunner);}
+    if (this.invoiceRunner) {this.registerRunner(this.invoiceRunner);}
   }
 
   private registerRunner(runner: Runner) {
