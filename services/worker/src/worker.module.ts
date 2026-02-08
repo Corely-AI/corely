@@ -10,6 +10,9 @@ import { ClassesWorkerModule } from "./modules/classes/classes-worker.module";
 import { InvoicesWorkerModule } from "./modules/invoices/invoices-worker.module";
 import { FormsWorkerModule } from "./modules/forms/forms-worker.module";
 
+import { TickOrchestrator } from "./application/tick-orchestrator.service";
+import { JobLockService } from "./infrastructure/job-lock.service";
+
 @Module({
   imports: [
     // Config must be first to validate env before other modules use it
@@ -23,5 +26,6 @@ import { FormsWorkerModule } from "./modules/forms/forms-worker.module";
     InvoicesWorkerModule,
     FormsWorkerModule,
   ],
+  providers: [TickOrchestrator, JobLockService],
 })
 export class WorkerModule {}

@@ -41,6 +41,15 @@ export const envSchema = z.object({
   // ============================================================================
   WORKER_API_BASE_URL: z.string().url().optional(),
   WORKER_API_SERVICE_TOKEN: z.string().optional(),
+
+  // Worker Tick Configuration
+  WORKER_TICK_RUNNERS: z.string().optional(),
+  WORKER_TICK_OVERALL_MAX_MS: z.coerce.number().int().positive().optional(),
+  WORKER_TICK_RUNNER_MAX_MS: z.coerce.number().int().positive().optional(),
+  WORKER_TICK_RUNNER_MAX_ITEMS: z.coerce.number().int().positive().optional(),
+  WORKER_TICK_SHARD_INDEX: z.coerce.number().int().min(0).optional(),
+  WORKER_TICK_SHARD_COUNT: z.coerce.number().int().positive().optional(),
+  WORKER_DISABLE_POLLING: z.string().optional(),
   CLASSES_BILLING_RUN_ENABLED: z
     .preprocess((value) => {
       if (typeof value === "string") {

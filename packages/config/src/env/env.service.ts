@@ -93,6 +93,34 @@ export class EnvService {
     return this.config.WORKER_API_SERVICE_TOKEN;
   }
 
+  get WORKER_TICK_RUNNERS(): string | undefined {
+    return this.config.WORKER_TICK_RUNNERS;
+  }
+
+  get WORKER_TICK_OVERALL_MAX_MS(): number | undefined {
+    return this.config.WORKER_TICK_OVERALL_MAX_MS;
+  }
+
+  get WORKER_TICK_RUNNER_MAX_MS(): number | undefined {
+    return this.config.WORKER_TICK_RUNNER_MAX_MS;
+  }
+
+  get WORKER_TICK_RUNNER_MAX_ITEMS(): number | undefined {
+    return this.config.WORKER_TICK_RUNNER_MAX_ITEMS;
+  }
+
+  get WORKER_TICK_SHARD_INDEX(): number | undefined {
+    return this.config.WORKER_TICK_SHARD_INDEX;
+  }
+
+  get WORKER_TICK_SHARD_COUNT(): number | undefined {
+    return this.config.WORKER_TICK_SHARD_COUNT;
+  }
+
+  get WORKER_DISABLE_POLLING(): string | undefined {
+    return this.config.WORKER_DISABLE_POLLING;
+  }
+
   get CLASSES_BILLING_RUN_ENABLED(): boolean {
     return this.config.CLASSES_BILLING_RUN_ENABLED;
   }

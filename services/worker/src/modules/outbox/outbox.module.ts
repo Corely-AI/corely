@@ -17,6 +17,10 @@ import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-req
 import { FormsEventHandler } from "../forms/forms-event.handler";
 import { FormsWorkerModule } from "../forms/forms-worker.module";
 
+import { EnvService } from "@corely/config";
+
+// ... imports
+
 @Module({
   imports: [
     AccountingWorkerModule,
@@ -38,6 +42,7 @@ import { FormsWorkerModule } from "../forms/forms-worker.module";
       provide: OutboxPollerService,
       useFactory: (
         repo: OutboxRepository,
+        env: EnvService,
         invoiceHandler: InvoiceEmailRequestedHandler,
         invoicePdfHandler: InvoicePdfRenderRequestedHandler,
         cashEntryHandler: CashEntryCreatedHandler,
@@ -45,7 +50,7 @@ import { FormsWorkerModule } from "../forms/forms-worker.module";
         taxReportPdfHandler: TaxReportPdfRequestedHandler,
         formsHandler: FormsEventHandler
       ) => {
-        return new OutboxPollerService(repo, [
+        return new OutboxPollerService(repo, env, [
           invoiceHandler,
           invoicePdfHandler,
           cashEntryHandler,
@@ -56,6 +61,7 @@ import { FormsWorkerModule } from "../forms/forms-worker.module";
       },
       inject: [
         OutboxRepository,
+        EnvService,
         InvoiceEmailRequestedHandler,
         InvoicePdfRenderRequestedHandler,
         CashEntryCreatedHandler,
@@ -65,5 +71,6 @@ import { FormsWorkerModule } from "../forms/forms-worker.module";
       ],
     },
   ],
+  exports: [OutboxPollerService],
 })
 export class OutboxModule {}

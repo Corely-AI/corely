@@ -7,6 +7,7 @@ import { InvoiceReminderRunnerService } from "./modules/invoices/invoice-reminde
 import { CONTRACTS_HELLO } from "@corely/contracts";
 import { setupTracing, shutdownTracing } from "./observability/setup-tracing";
 import { Logger } from "@nestjs/common";
+import { TickOrchestrator } from "./application/tick-orchestrator.service";
 
 // Load env files before anything else
 loadEnv();
@@ -16,6 +17,22 @@ async function bootstrap() {
   await setupTracing("corely-worker");
 
   const command = process.argv[2];
+
+  if (command === "tick") {
+    const app = await NestFactory.createApplicationContext(WorkerModule);
+    try {
+      const orchestrator = app.get(TickOrchestrator);
+      await orchestrator.runTick();
+    } catch (err) {
+      logger.error(err instanceof Error ? (err.stack ?? err.message) : String(err));
+      throw err;
+    } finally {
+      await app.close();
+    }
+    logger.log("[worker] tick completed");
+    return;
+  }
+
   if (command === "invoice-reminder-sweeper") {
     const app = await NestFactory.createApplicationContext(InvoiceReminderSweeperModule);
     const runner = app.get(InvoiceReminderRunnerService);
