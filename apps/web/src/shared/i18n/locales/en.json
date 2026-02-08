@@ -68,7 +68,13 @@
     "badge": "Badge",
     "moreActions": "More actions",
     "dangerZone": "Danger zone",
-    "goBack": "Go back"
+    "goBack": "Go back",
+    "phoneShort": "Phone",
+    "emailShort": "Email",
+    "website": "Website",
+    "bank": "Bank",
+    "iban": "IBAN",
+    "default": "Default"
   },
   "actions": {
     "takeAttendance": "Take Attendance",
@@ -473,7 +479,16 @@
     "totalAmountGross": "Total amount (Gross)",
     "paymentTerms": "Payment terms",
     "notes": "Notes",
+    "notesPlaceholder": "Internal notes, not visible to customer...",
+    "terms": "Payment Terms",
+    "termsPlaceholder": "e.g. Please pay within 14 days...",
     "addLine": "Add a line",
+    "units": {
+      "h": "h",
+      "day": "Day",
+      "piece": "Piece",
+      "service": "Service"
+    },
     "generate": "Generate",
     "creating": "Creating...",
     "saving": "Saving...",
@@ -484,14 +499,39 @@
       "issued": "Issued",
       "sent": "Sent",
       "paid": "Paid",
-      "overdue": "Overdue"
+      "overdue": "Overdue",
+      "canceled": "Canceled"
+    },
+    "badges": {
+      "OVERDUE": "Overdue",
+      "PARTIALLY_PAID": "Partially Paid",
+      "SENT_DELIVERY": "Sent"
+    },
+    "transitions": {
+      "ISSUED": "Issue Invoice",
+      "SENT": "Send to Customer",
+      "CANCELED": "Cancel Invoice"
     },
     "actions": {
       "issue": "Issue invoice",
-      "markPaid": "Mark as paid",
-      "sendReminder": "Send reminder",
-      "download": "Download PDF",
-      "preview": "Preview"
+      "send": "Send",
+      "record_payment": "Record Payment",
+      "download_pdf": "Download PDF",
+      "send_reminder": "Send reminder",
+      "duplicate": "Duplicate",
+      "export": "Export",
+      "view_audit": "View Audit Trail",
+      "cancel": "Cancel Invoice"
+    },
+    "pdf": {
+      "pendingTitle": "PDF is being prepared",
+      "pendingDescription": "We started generating the PDF. Please try again in a moment."
+    },
+    "notifications": {
+      "canceled": "Invoice canceled",
+      "duplicateSoon": "Duplicate feature coming soon",
+      "exportSoon": "Export feature coming soon",
+      "reminderSoon": "Reminder feature coming soon"
     },
     "wizard": {
       "selectCustomer": "Select customer",
@@ -516,7 +556,25 @@
     },
     "errors": {
       "downloadFailed": "Failed to download PDF",
-      "updateFailed": "Failed to update invoice"
+      "updateFailed": "Failed to update invoice",
+      "invalidAmount": "Invalid amount",
+      "actionFailed": "Action failed"
+    },
+    "footer": {
+      "taxDetails": "Tax Details",
+      "vatIdLabel": "VAT ID",
+      "taxNumberLabel": "Tax Number",
+      "addTaxDetails": "Add Tax Details",
+      "paymentMethod": "Payment Method",
+      "addPaymentMethod": "Add Payment Method",
+      "contactDetails": "Contact Details",
+      "addContactDetails": "Add Contact Details",
+      "taxDetailsDescription": "Your business tax information shown on the invoice.",
+      "contactDetailsDescription": "Your business contact information shown on the footer.",
+      "selectPaymentMethod": "Select payment method",
+      "selectPaymentMethodTitle": "Select your payment method",
+      "addNewPaymentMethod": "Add new payment method",
+      "selectedBankAccount": "Selected Bank Account"
     },
     "email": {
       "title": "Send Invoice",

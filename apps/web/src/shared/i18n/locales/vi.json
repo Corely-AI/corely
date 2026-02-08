@@ -68,7 +68,13 @@
     "badge": "Huy hiệu",
     "moreActions": "Thêm thao tác",
     "dangerZone": "Khu vực nguy hiểm",
-    "goBack": "Quay lại"
+    "goBack": "Quay lại",
+    "phoneShort": "SĐT",
+    "emailShort": "Email",
+    "website": "Website",
+    "bank": "Ngân hàng",
+    "iban": "IBAN",
+    "default": "Mặc định"
   },
   "actions": {
     "takeAttendance": "Điểm danh",
@@ -472,7 +478,16 @@
     "totalAmountGross": "Tổng tiền (Bao gồm thuế)",
     "paymentTerms": "Điều khoản thanh toán",
     "notes": "Ghi chú",
+    "notesPlaceholder": "Ghi chú nội bộ, không hiển thị cho khách hàng...",
+    "terms": "Điều khoản thanh toán",
+    "termsPlaceholder": "Ví dụ: Vui lòng thanh toán trong vòng 14 ngày...",
     "addLine": "Thêm dòng",
+    "units": {
+      "h": "giờ",
+      "day": "ngày",
+      "piece": "cái",
+      "service": "dịch vụ"
+    },
     "generate": "Tạo",
     "creating": "Đang tạo...",
     "saving": "Đang lưu...",
@@ -483,14 +498,39 @@
       "issued": "Đã phát hành",
       "sent": "Đã gửi",
       "paid": "Đã thanh toán",
-      "overdue": "Quá hạn"
+      "overdue": "Quá hạn",
+      "canceled": "Đã hủy"
+    },
+    "badges": {
+      "OVERDUE": "Quá hạn",
+      "PARTIALLY_PAID": "Thanh toán một phần",
+      "SENT_DELIVERY": "Đã gửi"
+    },
+    "transitions": {
+      "ISSUED": "Phát hành hóa đơn",
+      "SENT": "Gửi cho khách hàng",
+      "CANCELED": "Hủy hóa đơn"
     },
     "actions": {
       "issue": "Phát hành hóa đơn",
-      "markPaid": "Đánh dấu đã thanh toán",
-      "sendReminder": "Gửi nhắc nhở",
-      "download": "Tải PDF",
-      "preview": "Xem trước"
+      "send": "Gửi hóa đơn",
+      "record_payment": "Ghi nhận thanh toán",
+      "download_pdf": "Tải PDF",
+      "send_reminder": "Gửi nhắc nhở",
+      "duplicate": "Sao chép",
+      "export": "Xuất dữ liệu",
+      "view_audit": "Xem lịch sử thay đổi",
+      "cancel": "Hủy hóa đơn"
+    },
+    "pdf": {
+      "pendingTitle": "Đang chuẩn bị bản PDF",
+      "pendingDescription": "Chúng tôi đang khởi tạo bản PDF. Vui lòng thử lại sau giây lát."
+    },
+    "notifications": {
+      "canceled": "Hóa đơn đã bị hủy",
+      "duplicateSoon": "Tính năng sao chép sắp ra mắt",
+      "exportSoon": "Tính năng xuất dữ liệu sắp ra mắt",
+      "reminderSoon": "Tính năng nhắc nhở sắp ra mắt"
     },
     "wizard": {
       "selectCustomer": "Chọn khách hàng",
@@ -515,7 +555,25 @@
     },
     "errors": {
       "downloadFailed": "Không thể tải xuống PDF",
-      "updateFailed": "Không thể cập nhật hóa đơn"
+      "updateFailed": "Không thể cập nhật hóa đơn",
+      "invalidAmount": "Số tiền không hợp lệ",
+      "actionFailed": "Thao tác thất bại"
+    },
+    "footer": {
+      "taxDetails": "Chi tiết thuế",
+      "vatIdLabel": "Mã số thuế (VAT)",
+      "taxNumberLabel": "Mã số thuế",
+      "addTaxDetails": "Thêm chi tiết thuế",
+      "paymentMethod": "Phương thức thanh toán",
+      "addPaymentMethod": "Thêm phương thức thanh toán",
+      "contactDetails": "Thông tin liên hệ",
+      "addContactDetails": "Thêm thông tin liên hệ",
+      "taxDetailsDescription": "Thông tin thuế của doanh nghiệp hiển thị trên hóa đơn.",
+      "contactDetailsDescription": "Thông tin liên hệ của doanh nghiệp hiển thị ở chân trang.",
+      "selectPaymentMethod": "Chọn phương thức thanh toán",
+      "selectPaymentMethodTitle": "Chọn phương thức thanh toán của bạn",
+      "addNewPaymentMethod": "Thêm phương thức thanh toán mới",
+      "selectedBankAccount": "Tài khoản ngân hàng đã chọn"
     },
     "email": {
       "title": "Gửi hóa đơn",

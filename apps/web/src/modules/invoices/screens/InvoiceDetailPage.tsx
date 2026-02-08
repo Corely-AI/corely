@@ -18,9 +18,9 @@ import {
 } from "../schemas/invoice-form.schema";
 import type { UpdateInvoiceInput } from "@corely/contracts";
 import { InvoiceFooter } from "../components/InvoiceFooter";
-import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
 import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
 import { InvoicePaymentDialog } from "../components/InvoicePaymentDialog";
+import { InvoiceDetailHeader } from "../components/InvoiceDetailHeader";
 import { invoiceQueryKeys } from "../queries";
 import { generateInvoiceNumber } from "../utils/invoice-generators";
 
@@ -147,11 +147,8 @@ export default function InvoiceDetailPage() {
         window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
         return;
       }
-      toast.info(t("invoices.pdf.pendingTitle", "PDF is being prepared"), {
-        description: t(
-          "invoices.pdf.pendingDescription",
-          "We started generating the PDF. Please try again in a moment."
-        ),
+      toast.info(t("invoices.pdf.pendingTitle"), {
+        description: t("invoices.pdf.pendingDescription"),
       });
     },
     onError: (error) => {
@@ -262,26 +259,26 @@ export default function InvoiceDetailPage() {
             return;
           case "cancel":
             await invoicesApi.cancelInvoice(id);
-            toast.success("Invoice canceled");
+            toast.success(t("invoices.notifications.canceled"));
             break;
           case "duplicate":
-            toast.info("Duplicate feature coming soon");
+            toast.info(t("invoices.notifications.duplicateSoon"));
             return;
           case "export":
-            toast.info("Export feature coming soon");
+            toast.info(t("invoices.notifications.exportSoon"));
             return;
           case "view_audit":
             navigate(`/audit?entity=invoice&id=${id}`);
             return;
           case "send_reminder":
-            toast.info("Reminder feature coming soon");
+            toast.info(t("invoices.notifications.reminderSoon"));
             return;
         }
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       } catch (err) {
         console.error("Action failed", err);
-        toast.error("Action failed");
+        toast.error(t("invoices.errors.actionFailed"));
       } finally {
         setIsProcessing(false);
       }
@@ -330,7 +327,7 @@ export default function InvoiceDetailPage() {
     }
     const amountCents = Math.round(parseFloat(paymentAmount || "0") * 100);
     if (!amountCents || Number.isNaN(amountCents)) {
-      toast.error("Invalid amount");
+      toast.error(t("invoices.errors.invalidAmount"));
       return;
     }
     setIsProcessing(true);
@@ -390,43 +387,13 @@ export default function InvoiceDetailPage() {
   return (
     <FormProvider {...methods}>
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        {capabilities && (
-          <RecordCommandBar
-            title={t("invoices.titleWithNumber", {
-              number: invoice.number ?? t("common.draft"),
-            })}
-            subtitle={t("common.createdAt", {
-              date: invoice.createdAt
-                ? new Date(invoice.createdAt).toLocaleDateString(i18n.language)
-                : t("common.empty"),
-            })}
-            capabilities={capabilities}
-            onBack={() => navigate("/invoices")}
-            onTransition={handleTransition}
-            onAction={handleAction}
-            isLoading={isProcessing}
-          />
-        )}
-
-        {!capabilities && (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/invoices")}>
-              <span className="text-lg">←</span>
-            </Button>
-            <div>
-              <h1 className="text-h1 text-foreground">
-                {t("invoices.titleWithNumber", { number: invoice.number ?? t("common.draft") })}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {t("common.createdAt", {
-                  date: invoice.createdAt
-                    ? new Date(invoice.createdAt).toLocaleDateString(i18n.language)
-                    : t("common.empty"),
-                })}
-              </p>
-            </div>
-          </div>
-        )}
+        <InvoiceDetailHeader
+          invoice={invoice}
+          capabilities={capabilities}
+          isProcessing={isProcessing}
+          onTransition={handleTransition}
+          onAction={handleAction}
+        />
 
         <SendInvoiceDialog
           open={sendDialogOpen}
