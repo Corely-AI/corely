@@ -9,6 +9,8 @@ import { PasswordHasherPort } from "../../../identity/application/ports/password
 import { RoleRepositoryPort } from "../../../identity/application/ports/role-repository.port";
 import { MembershipRepositoryPort } from "../../../identity/application/ports/membership-repository.port";
 import { Membership } from "../../../identity/domain/entities/membership.entity";
+import type { PortalEmailPort } from "../ports/portal-email.port";
+import { PrismaService } from "@corely/data";
 
 export interface InvitePortalUserInput {
   email: string;
@@ -28,6 +30,8 @@ export class InvitePortalUserUseCase {
       membershipRepo: MembershipRepositoryPort;
       idGenerator: IdGeneratorPort;
       passwordHasher: PasswordHasherPort;
+      emailSender: PortalEmailPort;
+      prisma: PrismaService;
     }
   ) {}
 
@@ -79,10 +83,26 @@ export class InvitePortalUserUseCase {
     }
 
     // 3. Ensure membership in tenant with correct role
-    // Find role by system key
-    const role = await this.useCaseDeps.roleRepo.findBySystemKey(tenantId, input.role);
+    // Find or create role by system key
+    let role = await this.useCaseDeps.roleRepo.findBySystemKey(tenantId, input.role);
     if (!role) {
-      return err(new UseCaseError(`Role ${input.role} not found in tenant`, "INTERNAL_ERROR"));
+      const roleName = input.role === "GUARDIAN" ? "Guardian" : "Student";
+      const roleId = this.useCaseDeps.idGenerator.newId();
+      await this.useCaseDeps.roleRepo.create({
+        id: roleId,
+        tenantId,
+        name: roleName,
+        systemKey: input.role,
+        isSystem: true,
+      });
+      role = {
+        id: roleId,
+        tenantId,
+        name: roleName,
+        systemKey: input.role,
+        isSystem: true,
+        description: "",
+      };
     }
 
     const existingMembership = await this.useCaseDeps.membershipRepo.findByTenantAndUser(
@@ -101,8 +121,41 @@ export class InvitePortalUserUseCase {
       await this.useCaseDeps.membershipRepo.create(membership);
     }
 
+    // 4. Send invite email with workspace-scoped portal URL
+    try {
+      const portalUrl = await this.buildPortalUrl(ctx.workspaceId ?? null);
+      await this.useCaseDeps.emailSender.sendInvite({
+        to: email.getValue(),
+        portalUrl,
+        studentName: party.displayName,
+      });
+    } catch (emailErr) {
+      this.useCaseDeps.logger.warn(`Failed to send portal invite email: ${emailErr}`);
+    }
+
     this.useCaseDeps.logger.info(`Invited user ${email.getValue()} to portal. New: ${isNewUser}`);
 
     return ok(undefined);
+  }
+
+  private async buildPortalUrl(workspaceId: string | null): Promise<string> {
+    let slug: string | null = null;
+    if (workspaceId) {
+      const workspace = await this.useCaseDeps.prisma.workspace.findUnique({
+        where: { id: workspaceId },
+        select: { slug: true },
+      });
+      slug = workspace?.slug ?? null;
+    }
+
+    const isProduction = process.env.NODE_ENV === "production";
+    if (isProduction) {
+      const portalDomain = process.env.PORTAL_DOMAIN || "portal.corely.one";
+      return slug ? `https://${slug}.${portalDomain}` : `https://${portalDomain}`;
+    }
+
+    // Local dev: use /w/:slug path (same convention as public-web)
+    const portalBase = process.env.PORTAL_URL || "http://localhost:8083";
+    return slug ? `${portalBase}/w/${slug}` : portalBase;
   }
 }

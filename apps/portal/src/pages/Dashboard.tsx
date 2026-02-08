@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/auth";
-import { request } from "@corely/api-client";
+import { portalRequest } from "../stores/workspace";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Skeleton } from "@corely/ui";
 import {
   BookOpen,
@@ -10,30 +10,31 @@ import {
   User as UserIcon,
   Calendar,
   ExternalLink,
+  ChevronDown,
 } from "lucide-react";
 
 export const PortalDashboard = () => {
-  const { user, accessToken, tenantId, logout } = useAuthStore();
+  const { user, accessToken, logout } = useAuthStore();
   const [profile, setProfile] = useState<any>(null);
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const me: any = await request({
-          url: "/api/portal/me",
+        const me: any = await portalRequest({
+          url: "/portal/me",
           accessToken,
-          tenantId,
         });
         setProfile(me);
 
         if (me.students?.length > 0) {
-          const studentId = me.students[0].id; // Default to first student
-          const mats: any = await request({
-            url: `/api/portal/students/${studentId}/materials`,
+          const studentId = me.students[0].id;
+          setSelectedStudentId(studentId);
+          const mats: any = await portalRequest({
+            url: `/portal/students/${studentId}/materials`,
             accessToken,
-            tenantId,
           });
           setMaterials(mats);
         } else {
@@ -46,17 +47,16 @@ export const PortalDashboard = () => {
       }
     };
 
-    if (accessToken && tenantId) {
+    if (accessToken) {
       void fetchData();
     }
-  }, [accessToken, tenantId]);
+  }, [accessToken]);
 
   const handleDownload = async (docId: string, studentId: string) => {
     try {
-      const res: any = await request({
-        url: `/api/portal/materials/${docId}/download-url?studentId=${studentId}`,
+      const res: any = await portalRequest({
+        url: `/portal/materials/${docId}/download-url?studentId=${studentId}`,
         accessToken,
-        tenantId,
       });
       window.open(res.downloadUrl, "_blank");
     } catch (err) {
@@ -86,7 +86,9 @@ export const PortalDashboard = () => {
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <UserIcon className="w-4 h-4 text-teal-400" />
-              <span className="text-sm font-semibold hidden xs:inline-block">{user?.name}</span>
+              <span className="text-sm font-semibold hidden xs:inline-block">
+                {user?.displayName}
+              </span>
             </div>
             <Button
               variant="ghost"
@@ -113,37 +115,57 @@ export const PortalDashboard = () => {
                     👋
                   </div>
                   <div className="mt-4">
-                    <h2 className="text-2xl font-black tracking-tight">{user?.name}</h2>
+                    <h2 className="text-2xl font-black tracking-tight">{user?.displayName}</h2>
                     <p className="text-slate-400 text-sm font-medium">{user?.email}</p>
                   </div>
                 </div>
 
                 <div className="space-y-3 pt-6 px-4 border-t border-white/5">
                   <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                    Linked Students
+                    {user?.role === "GUARDIAN" ? "Select Student" : "Linked Students"}
                   </h3>
                   <div className="space-y-2">
                     {loading ? (
                       <Skeleton className="h-14 w-full rounded-2xl bg-white/5" />
                     ) : profile?.students?.length > 0 ? (
                       profile.students.map((s: any) => (
-                        <div
+                        <button
                           key={s.id}
-                          className="group relative flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-teal-500/30 hover:bg-white/10 transition-all duration-300"
+                          onClick={async () => {
+                            setSelectedStudentId(s.id);
+                            try {
+                              const mats: any = await portalRequest({
+                                url: `/portal/students/${s.id}/materials`,
+                                accessToken,
+                              });
+                              setMaterials(mats?.items ?? mats ?? []);
+                            } catch {
+                              /* ignore */
+                            }
+                          }}
+                          className={`group relative flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 w-full text-left ${
+                            selectedStudentId === s.id
+                              ? "bg-teal-500/10 border-teal-500/30"
+                              : "bg-white/5 border-white/5 hover:border-teal-500/30 hover:bg-white/10"
+                          }`}
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform">
                               <UserIcon className="w-5 h-5" />
                             </div>
-                            <span className="text-sm font-bold">{s.displayName}</span>
+                            <span className="text-sm font-bold">{s.displayName ?? s.name}</span>
                           </div>
                           <Badge
                             variant="outline"
-                            className="text-[9px] font-black border-teal-500/30 text-teal-400 group-hover:bg-teal-400 group-hover:text-slate-900 transition-all"
+                            className={`text-[9px] font-black transition-all ${
+                              selectedStudentId === s.id
+                                ? "bg-teal-400 text-slate-900 border-teal-400"
+                                : "border-teal-500/30 text-teal-400 group-hover:bg-teal-400 group-hover:text-slate-900"
+                            }`}
                           >
-                            STUDENT
+                            {selectedStudentId === s.id ? "VIEWING" : "STUDENT"}
                           </Badge>
-                        </div>
+                        </button>
                       ))
                     ) : (
                       <p className="text-xs text-slate-500 italic py-2">No students linked</p>

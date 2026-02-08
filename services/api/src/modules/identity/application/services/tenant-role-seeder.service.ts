@@ -31,6 +31,8 @@ export class TenantRoleSeederService {
       { key: "ACCOUNTANT" as const, name: "Accountant" },
       { key: "STAFF" as const, name: "Staff" },
       { key: "READ_ONLY" as const, name: "Read-only" },
+      { key: "GUARDIAN" as const, name: "Guardian" },
+      { key: "STUDENT" as const, name: "Student" },
     ];
 
     const roleIds: Record<DefaultRoleKey, string> = {
@@ -39,6 +41,8 @@ export class TenantRoleSeederService {
       ACCOUNTANT: "",
       STAFF: "",
       READ_ONLY: "",
+      GUARDIAN: "",
+      STUDENT: "",
     };
 
     // 1. Ensure roles exist

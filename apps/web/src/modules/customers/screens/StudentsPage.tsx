@@ -2,18 +2,21 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mail, Phone, Plus, Trash2, Users } from "lucide-react";
+import { ExternalLink, Mail, Phone, Plus, Trash2, Users } from "lucide-react";
 import { Card, CardContent, Badge, Button } from "@corely/ui";
 import { customersApi } from "@/lib/customers-api";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
 import { withWorkspace } from "@/shared/workspaces/workspace-query-keys";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { getPortalUrl } from "@/shared/lib/portal-url";
 import { toast } from "sonner";
 
 export default function StudentsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const studentsListKey = withWorkspace(["students", "list"]);
@@ -54,11 +57,23 @@ export default function StudentsPage() {
     onError: () => toast.error(t("classes.students.archiveFailed")),
   });
 
+  const portalUrl = getPortalUrl(activeWorkspace?.slug);
+
   const primaryAction = (
-    <Button variant="accent" onClick={() => navigate("/students/new")}>
-      <Plus className="h-4 w-4" />
-      {t("classes.students.add")}
-    </Button>
+    <div className="flex gap-2">
+      {portalUrl && (
+        <Button variant="outline" asChild>
+          <a href={portalUrl} target="_blank" rel="noopener noreferrer">
+            <ExternalLink className="h-4 w-4" />
+            Student Portal
+          </a>
+        </Button>
+      )}
+      <Button variant="accent" onClick={() => navigate("/students/new")}>
+        <Plus className="h-4 w-4" />
+        {t("classes.students.add")}
+      </Button>
+    </div>
   );
 
   return (

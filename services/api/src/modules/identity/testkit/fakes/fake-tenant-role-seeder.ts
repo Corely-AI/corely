@@ -12,6 +12,8 @@ export class FakeTenantRoleSeeder {
       ACCOUNTANT: "role-accountant",
       STAFF: "role-staff",
       READ_ONLY: "role-readonly",
+      GUARDIAN: "role-guardian",
+      STUDENT: "role-student",
     };
   }
 }

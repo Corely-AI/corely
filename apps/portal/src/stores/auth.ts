@@ -1,13 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { portalRequest } from "./workspace";
+
+interface PortalUser {
+  userId: string;
+  email: string;
+  displayName: string;
+  role: "GUARDIAN" | "STUDENT";
+}
 
 interface AuthState {
   isAuthenticated: boolean;
   accessToken: string | null;
-  user: any | null;
-  tenantId: string | null;
-  login: (token: string, user: any, tenantId: string) => void;
-  logout: () => void;
+  user: PortalUser | null;
+  login: (token: string, user: PortalUser) => void;
+  logout: () => Promise<void>;
+  setAccessToken: (token: string) => void;
+  refreshSession: () => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -16,24 +25,61 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       accessToken: null,
       user: null,
-      tenantId: null,
-      login: (token, user, tenantId) =>
+
+      login: (token, user) =>
         set({
           isAuthenticated: true,
           accessToken: token,
           user,
-          tenantId,
         }),
-      logout: () =>
+
+      logout: async () => {
+        try {
+          await portalRequest({
+            url: "/portal/auth/logout",
+            method: "POST",
+            body: {},
+          });
+        } catch {
+          // Best effort logout
+        }
         set({
           isAuthenticated: false,
           accessToken: null,
           user: null,
-          tenantId: null,
-        }),
+        });
+      },
+
+      setAccessToken: (token) => set({ accessToken: token }),
+
+      refreshSession: async () => {
+        try {
+          const res: any = await portalRequest({
+            url: "/portal/auth/refresh",
+            method: "POST",
+            body: {},
+          });
+          if (res.accessToken) {
+            set({ accessToken: res.accessToken, isAuthenticated: true });
+            return true;
+          }
+        } catch {
+          set({
+            isAuthenticated: false,
+            accessToken: null,
+            user: null,
+          });
+        }
+        return false;
+      },
     }),
     {
       name: "portal-auth",
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
+        user: state.user,
+        // accessToken intentionally NOT persisted - refreshed via HttpOnly cookie
+      }),
     }
   )
 );

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShieldCheck, UserMinus, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { request } from "@corely/api-client";
+import { apiClient } from "@/lib/api-client";
 import {
   Badge,
   Button,
@@ -140,12 +140,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
   });
 
   const inviteMutation = useMutation({
-    mutationFn: (data: any) =>
-      request({
-        url: "/api/portal/invitations",
-        method: "POST",
-        body: data,
-      }),
+    mutationFn: (data: any) => apiClient.post("/portal/invitations", data),
     onSuccess: () => toast.success("Invitation sent to portal"),
     onError: (err: any) => toast.error("Failed to send invitation: " + err.message),
   });

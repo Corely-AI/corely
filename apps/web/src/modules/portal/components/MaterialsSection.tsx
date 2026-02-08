@@ -14,7 +14,19 @@ import {
   DialogFooter,
 } from "@corely/ui";
 import { toast } from "sonner";
-import { request } from "@corely/api-client";
+import { apiClient } from "@/lib/api-client";
+
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Strip the data:...;base64, prefix
+      resolve(result.split(",")[1] ?? result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
 interface MaterialsSectionProps {
   entityId: string;
@@ -30,10 +42,12 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
 
   const { data: materials, isLoading } = useQuery({
     queryKey: ["materials", entityType, entityId],
-    queryFn: () =>
-      request<any[]>({
-        url: `/api/documents/by-entity?entityType=${entityType}&entityId=${entityId}`,
-      }),
+    queryFn: async () => {
+      const res: any = await apiClient.get(
+        `/documents/by-entity?entityType=${entityType}&entityId=${entityId}`
+      );
+      return Array.isArray(res) ? res : (res?.items ?? []);
+    },
     enabled: Boolean(entityId),
   });
 
@@ -45,25 +59,23 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
 
     setUploading(true);
     try {
-      // 1. Upload document
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.set("displayName", displayName);
+      // 1. Convert file to base64
+      const base64 = await fileToBase64(file);
 
-      const doc: any = await request({
-        url: "/api/documents",
-        method: "POST",
-        body: formData,
+      // 2. Upload via base64 endpoint
+      const result: any = await apiClient.post("/documents/upload-base64", {
+        filename: displayName || file.name,
+        contentType: file.type || "application/octet-stream",
+        base64,
+        purpose: "portal-material",
       });
 
-      // 2. Link to entity
-      await request({
-        url: `/api/documents/${doc.id}/link`,
-        method: "POST",
-        body: {
-          entityId,
-          entityType,
-        },
+      const documentId = result.document?.id ?? result.id;
+
+      // 3. Link to entity
+      await apiClient.post(`/documents/${documentId}/link`, {
+        entityId,
+        entityType,
       });
 
       toast.success("Material added successfully");
@@ -80,11 +92,7 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
 
   const unlinkMutation = useMutation({
     mutationFn: (documentId: string) =>
-      request({
-        url: `/api/documents/${documentId}/unlink`,
-        method: "POST",
-        body: { entityId, entityType },
-      }),
+      apiClient.post(`/documents/${documentId}/unlink`, { entityId, entityType }),
     onSuccess: () => {
       toast.success("Material unlinked");
       void queryClient.invalidateQueries({ queryKey: ["materials", entityType, entityId] });

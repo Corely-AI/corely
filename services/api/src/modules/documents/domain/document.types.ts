@@ -9,4 +9,6 @@ export type DocumentLinkEntityType =
   | "AGENT_RUN"
   | "MESSAGE"
   | "PARTY"
+  | "CLASS_GROUP"
+  | "CLASS_SESSION"
   | "OTHER";

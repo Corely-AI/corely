@@ -2,9 +2,11 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, Button } from "@corely/ui";
+import { toast } from "sonner";
+import { apiClient } from "@/lib/api-client";
 import { customersApi } from "@/lib/customers-api";
 import {
   customerFormSchema,
@@ -52,6 +54,17 @@ export default function StudentDetailPage() {
     },
   });
 
+  const inviteToPortalMutation = useMutation({
+    mutationFn: () =>
+      apiClient.post("/portal/invitations", {
+        email: student?.email,
+        partyId: student?.id,
+        role: "STUDENT",
+      }),
+    onSuccess: () => toast.success("Student invited to portal"),
+    onError: (err: any) => toast.error("Failed to invite: " + (err?.message ?? "Unknown error")),
+  });
+
   const onSubmit = (data: CustomerFormData) => {
     updateStudentMutation.mutate(data);
   };
@@ -82,6 +95,17 @@ export default function StudentDetailPage() {
           <h1 className="text-h1 text-foreground">Student</h1>
         </div>
         <div className="flex gap-2">
+          {student?.email && (
+            <Button
+              variant="outline"
+              onClick={() => inviteToPortalMutation.mutate()}
+              disabled={inviteToPortalMutation.isPending}
+              title="Invite this student to the portal via email"
+            >
+              <Mail className="h-4 w-4" />
+              {inviteToPortalMutation.isPending ? "Inviting..." : "Invite to Portal"}
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={() => navigate("/students")}
@@ -109,7 +133,7 @@ export default function StudentDetailPage() {
 
       <StudentGuardiansPanel studentId={studentId} />
 
-      <MaterialsSection entityId={student.partyId || ""} entityType="PARTY" />
+      <MaterialsSection entityId={studentId} entityType="PARTY" />
     </div>
   );
 }

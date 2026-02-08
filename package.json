@@ -19,6 +19,7 @@
     "typecheck": "pnpm -r typecheck",
     "dev:web": "node scripts/build-deps-if-stale.mjs @corely/web && pnpm --filter @corely/web dev",
     "dev:public": "node scripts/build-deps-if-stale.mjs @corely/public-web && pnpm --filter @corely/public-web dev",
+    "dev:portal": "node scripts/build-deps-if-stale.mjs @corely/portal && pnpm --filter @corely/portal dev",
     "build:web": "pnpm build:packages && pnpm --filter @corely/web build",
     "dev:api": "node scripts/build-deps-if-stale.mjs @corely/api && pnpm --filter @corely/api dev:esbuild",
     "dev:api:debug": "node scripts/build-deps-if-stale.mjs @corely/api && pnpm --filter @corely/api dev:debug",

@@ -78,9 +78,12 @@ export class DocumentsController {
     @Body() body: unknown,
     @Req() req: Request
   ) {
-    const input = UnlinkDocumentInputSchema.parse({ ...(body as object), documentId });
+    const input = UnlinkDocumentInputSchema.parse({
+      ...(body as object),
+      documentId,
+    });
     const ctx = buildUseCaseContext(req);
-    const result = await this.app.unlinkDocument.execute(input, ctx);
+    const result = await this.app.unlinkDocument.execute(input as any, ctx);
     return mapResultToHttp(result);
   }
 
@@ -88,7 +91,7 @@ export class DocumentsController {
   async listByEntity(@Req() req: Request) {
     const input = ListLinkedDocumentsInputSchema.parse(req.query);
     const ctx = buildUseCaseContext(req);
-    const result = await this.app.listLinkedDocuments.execute(input, ctx);
+    const result = await this.app.listLinkedDocuments.execute(input as any, ctx);
     return mapResultToHttp(result);
   }
 

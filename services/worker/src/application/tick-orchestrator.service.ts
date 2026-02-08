@@ -29,8 +29,12 @@ export class TickOrchestrator {
     );
 
     // Register available runners
-    if (this.outboxRunner) {this.registerRunner(this.outboxRunner);}
-    if (this.invoiceRunner) {this.registerRunner(this.invoiceRunner);}
+    if (this.outboxRunner) {
+      this.registerRunner(this.outboxRunner);
+    }
+    if (this.invoiceRunner) {
+      this.registerRunner(this.invoiceRunner);
+    }
   }
 
   private registerRunner(runner: Runner) {

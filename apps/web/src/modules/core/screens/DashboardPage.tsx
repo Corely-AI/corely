@@ -12,6 +12,7 @@ import {
   Sparkles,
   Users,
   ShoppingCart,
+  GraduationCap,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -22,13 +23,17 @@ import { invoicesApi } from "@/lib/invoices-api";
 import { customersApi } from "@/lib/customers-api";
 import { expensesApi } from "@/lib/expenses-api";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
+import { getPortalUrl } from "@/shared/lib/portal-url";
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
 
   const { config, hasCapability } = useWorkspaceConfig();
+  const { activeWorkspace } = useWorkspace();
+  const portalUrl = getPortalUrl(activeWorkspace?.slug);
   const terminology = config?.terminology ?? {
     partyLabel: "Client",
     partyLabelPlural: "Clients",
@@ -347,6 +352,24 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </Link>
+          )}
+
+          {/* Student & Guardian Portal */}
+          {portalUrl && (
+            <a href={portalUrl} target="_blank" rel="noopener noreferrer">
+              <Card variant="interactive" className="group">
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
+                    <GraduationCap className="h-6 w-6 text-emerald-500" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">Student Portal</div>
+                    <div className="text-sm text-muted-foreground">View as student or guardian</div>
+                  </div>
+                  <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
+                </CardContent>
+              </Card>
+            </a>
           )}
         </div>
       </div>
