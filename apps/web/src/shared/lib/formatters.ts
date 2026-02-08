@@ -80,8 +80,17 @@ export function formatRelativeTime(isoDate: string, locale?: string): string {
   if (diffDays === 1) {
     return i18n.t("time.yesterday");
   }
-  if (diffDays < 7) {
+  if (diffDays > 0 && diffDays < 7) {
     return i18n.t("time.daysAgo", { count: diffDays });
+  }
+  if (diffDays < 0) {
+    const futureDays = Math.abs(diffDays);
+    if (futureDays === 1) {
+      return i18n.t("time.tomorrow");
+    }
+    if (futureDays < 7) {
+      return i18n.t("time.inDays", { count: futureDays });
+    }
   }
 
   return formatDate(isoDate, resolvedLocale);

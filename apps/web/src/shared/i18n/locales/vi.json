@@ -1,5 +1,6 @@
 {
   "common": {
+    "active": "Hoạt động",
     "appName": "Bizflow",
     "tagline": "Quản lý doanh nghiệp của bạn, toàn diện.",
     "loading": "Đang tải...",
@@ -22,6 +23,7 @@
     "viewAll": "Xem tất cả",
     "comingSoon": "Sắp ra mắt",
     "noResults": "Không tìm thấy kết quả",
+    "noTopic": "Không có chủ đề",
     "error": "Đã xảy ra lỗi",
     "success": "Thành công",
     "currency": "VND",
@@ -67,6 +69,10 @@
     "moreActions": "Thêm thao tác",
     "dangerZone": "Khu vực nguy hiểm",
     "goBack": "Quay lại"
+  },
+  "actions": {
+    "takeAttendance": "Điểm danh",
+    "markDone": "Đánh dấu hoàn tất"
   },
   "list": {
     "searchPlaceholder": "Tìm kiếm...",
@@ -374,7 +380,23 @@
     "manageTeam": "Quản lý nhóm",
     "inviteMembers": "Mời thành viên",
     "noInvoices": "Chưa có hóa đơn nào",
-    "noExpenses": "Chưa có chi phí nào"
+    "noExpenses": "Chưa có chi phí nào",
+    "teacher": {
+      "welcome": "Bảng điều khiển giáo viên",
+      "subtitle": "Các lớp học và nhiệm vụ của bạn hôm nay",
+      "allClasses": "Tất cả lớp học",
+      "sessionsToday": "Buổi học hôm nay",
+      "sessionsThisWeek": "Buổi học tuần này",
+      "missingAttendance": "Điểm danh còn thiếu",
+      "actionRequired": "Cần xử lý",
+      "unfinished": "Chưa xong",
+      "upcomingSessions": "Buổi học sắp tới",
+      "noUpcoming": "Không tìm thấy buổi học sắp tới.",
+      "needsAttention": "Cần chú ý",
+      "unfinishedSessions": "Buổi học quá khứ chưa xong",
+      "allCaughtUp": "Bạn đã hoàn thành tất cả!",
+      "noActions": "Không có hành động khẩn cấp cho các buổi học trong quá khứ."
+    }
   },
   "assistant": {
     "title": "Trợ lý",

@@ -201,10 +201,10 @@ export default function TeacherDashboardPage() {
               <CheckCircle className="h-4 w-4 text-muted-foreground/50" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg font-medium text-muted-foreground">Auto-Full</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t("classes.settings.attendance.autoFull.label", "Auto-Full Attendance")} active
-              </p>
+              <div className="text-lg font-medium text-muted-foreground">
+                {t("classes.settings.attendance.autoFull.label", "Auto-Full")}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{t("common.active", "Active")}</p>
             </CardContent>
           </Card>
         )}

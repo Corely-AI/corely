@@ -1,5 +1,6 @@
 {
   "common": {
+    "active": "Aktiv",
     "appName": "Bizflow",
     "tagline": "Ihr Geschäft, von Anfang bis Ende.",
     "loading": "Wird geladen...",
@@ -22,6 +23,7 @@
     "viewAll": "Alle anzeigen",
     "comingSoon": "Demnächst verfügbar",
     "noResults": "Keine Ergebnisse gefunden",
+    "noTopic": "Kein Thema",
     "error": "Etwas ist schief gelaufen",
     "success": "Erfolgreich",
     "currency": "EUR",
@@ -67,6 +69,10 @@
     "moreActions": "Weitere Aktionen",
     "dangerZone": "Gefahrenzone",
     "goBack": "Zurück"
+  },
+  "actions": {
+    "takeAttendance": "Anwesenheit erfassen",
+    "markDone": "Als erledigt markieren"
   },
   "list": {
     "searchPlaceholder": "Suchen...",
@@ -374,7 +380,23 @@
     "manageTeam": "Team verwalten",
     "inviteMembers": "Mitglieder einladen",
     "noInvoices": "Noch keine Rechnungen",
-    "noExpenses": "Noch keine Ausgaben"
+    "noExpenses": "Noch keine Ausgaben",
+    "teacher": {
+      "welcome": "Lehrer-Dashboard",
+      "subtitle": "Ihre Klassen und Aufgaben für heute",
+      "allClasses": "Alle Klassen",
+      "sessionsToday": "Heutige Sitzungen",
+      "sessionsThisWeek": "Sitzungen diese Woche",
+      "missingAttendance": "Fehlende Anwesenheit",
+      "actionRequired": "Aktion erforderlich",
+      "unfinished": "Unvollendet",
+      "upcomingSessions": "Anstehende Sitzungen",
+      "noUpcoming": "Keine anstehenden Sitzungen gefunden.",
+      "needsAttention": "Beachtung erforderlich",
+      "unfinishedSessions": "Unvollendete vergangene Sitzungen",
+      "allCaughtUp": "Sie sind auf dem Laufenden!",
+      "noActions": "Keine dringenden Aktionen für Sitzungen in der Vergangenheit."
+    }
   },
   "assistant": {
     "title": "Assistent",
