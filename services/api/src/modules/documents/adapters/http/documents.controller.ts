@@ -6,6 +6,8 @@ import {
   CreateUploadIntentInputSchema,
   GetDownloadUrlInputSchema,
   LinkDocumentInputSchema,
+  ListLinkedDocumentsInputSchema,
+  UnlinkDocumentInputSchema,
   UploadFileBase64InputSchema,
 } from "@corely/contracts";
 import { DocumentsApplication } from "../../application/documents.application";
@@ -67,6 +69,26 @@ export class DocumentsController {
     const input = LinkDocumentInputSchema.parse({ ...(body as object), documentId });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.linkDocument.execute(input, ctx);
+    return mapResultToHttp(result);
+  }
+
+  @Post(":documentId/unlink")
+  async unlinkDocument(
+    @Param("documentId") documentId: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = UnlinkDocumentInputSchema.parse({ ...(body as object), documentId });
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.unlinkDocument.execute(input, ctx);
+    return mapResultToHttp(result);
+  }
+
+  @Get("by-entity")
+  async listByEntity(@Req() req: Request) {
+    const input = ListLinkedDocumentsInputSchema.parse(req.query);
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.listLinkedDocuments.execute(input, ctx);
     return mapResultToHttp(result);
   }
 

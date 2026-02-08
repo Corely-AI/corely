@@ -205,6 +205,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     AuthGuard,
     RbacGuard,
     TenantRoleSeederService,
+    PrismaUserRepository,
   ],
 })
 export class IdentityModule {}

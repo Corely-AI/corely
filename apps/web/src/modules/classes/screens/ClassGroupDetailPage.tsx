@@ -20,6 +20,7 @@ import { customersApi } from "@/lib/customers-api";
 import { formatDate, formatDateTime, formatMoney } from "@/shared/lib/formatters";
 import { CrudRowActions } from "@/shared/crud";
 import { classGroupKeys, classEnrollmentKeys, classSessionKeys } from "../queries";
+import { MaterialsSection } from "../../portal/components/MaterialsSection";
 
 export default function ClassGroupDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -484,6 +485,8 @@ export default function ClassGroupDetailPage() {
           </div>
         </CardContent>
       </Card>
+
+      <MaterialsSection entityId={groupId} entityType="CLASS_GROUP" />
     </div>
   );
 }

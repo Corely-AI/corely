@@ -1,6 +1,13 @@
 import type { PermissionGroup, RolePermissionEffect } from "@corely/contracts";
 
-export type DefaultRoleKey = "OWNER" | "ADMIN" | "ACCOUNTANT" | "STAFF" | "READ_ONLY";
+export type DefaultRoleKey =
+  | "OWNER"
+  | "ADMIN"
+  | "ACCOUNTANT"
+  | "STAFF"
+  | "READ_ONLY"
+  | "GUARDIAN"
+  | "STUDENT";
 
 export const buildDefaultRoleGrants = (
   catalog: PermissionGroup[]
@@ -31,5 +38,11 @@ export const buildDefaultRoleGrants = (
     ACCOUNTANT: accountantKeys.map((key) => ({ key, effect: "ALLOW" })),
     STAFF: staffKeys.map((key) => ({ key, effect: "ALLOW" })),
     READ_ONLY: readOnlyKeys.map((key) => ({ key, effect: "ALLOW" })),
+    GUARDIAN: uniqueKeys
+      .filter((key) => key.startsWith("portal."))
+      .map((key) => ({ key, effect: "ALLOW" })),
+    STUDENT: uniqueKeys
+      .filter((key) => key.startsWith("portal."))
+      .map((key) => ({ key, effect: "ALLOW" })),
   };
 };

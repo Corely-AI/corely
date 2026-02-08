@@ -16,6 +16,7 @@ import {
 import CustomerFormFields from "../components/CustomerFormFields";
 import StudentGuardiansPanel from "../components/StudentGuardiansPanel";
 import { withWorkspace } from "@/shared/workspaces/workspace-query-keys";
+import { MaterialsSection } from "../../portal/components/MaterialsSection";
 
 export default function StudentDetailPage() {
   const navigate = useNavigate();
@@ -107,6 +108,8 @@ export default function StudentDetailPage() {
       </form>
 
       <StudentGuardiansPanel studentId={studentId} />
+
+      <MaterialsSection entityId={student.partyId || ""} entityType="PARTY" />
     </div>
   );
 }
