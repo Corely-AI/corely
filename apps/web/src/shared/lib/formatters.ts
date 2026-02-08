@@ -1,4 +1,4 @@
-// Formatting utilities for Bizflow
+// Formatting utilities for Corely One ERP
 import i18n from "../i18n";
 
 function resolveLocale(locale?: string): string {

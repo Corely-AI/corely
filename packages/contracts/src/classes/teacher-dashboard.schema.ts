@@ -10,6 +10,13 @@ export const TeacherDashboardSummaryQuerySchema = z.object({
 });
 export type TeacherDashboardSummaryQuery = z.infer<typeof TeacherDashboardSummaryQuerySchema>;
 
+export const TeacherDashboardUnpaidInvoicesQuerySchema = z.object({
+  classGroupId: z.string().optional(),
+});
+export type TeacherDashboardUnpaidInvoicesQuery = z.infer<
+  typeof TeacherDashboardUnpaidInvoicesQuerySchema
+>;
+
 export const TeacherDashboardSessionSchema = z.object({
   id: z.string(),
   classGroupId: z.string(),
@@ -53,14 +60,19 @@ export const TeacherDashboardSummaryResponseSchema = z.object({
     missingAttendance: z.number().int().nonnegative(),
     unfinishedPastSessions: z.number().int().nonnegative(),
     studentsMissingPayer: z.number().int().nonnegative(),
-    unpaidInvoices: z.number().int().nonnegative(),
   }),
   upcomingSessions: z.array(TeacherDashboardSessionSchema),
   needsAttention: z.object({
     missingAttendanceSessions: z.array(TeacherDashboardSessionSchema),
     unfinishedPastSessions: z.array(TeacherDashboardSessionSchema),
     studentsMissingPayer: z.array(TeacherDashboardStudentSchema),
-    unpaidInvoices: z.array(TeacherDashboardInvoiceSchema),
   }),
 });
 export type TeacherDashboardSummaryResponse = z.infer<typeof TeacherDashboardSummaryResponseSchema>;
+
+export const TeacherDashboardUnpaidInvoicesResponseSchema = z.object({
+  count: z.number().int().nonnegative(),
+});
+export type TeacherDashboardUnpaidInvoicesResponse = z.infer<
+  typeof TeacherDashboardUnpaidInvoicesResponseSchema
+>;

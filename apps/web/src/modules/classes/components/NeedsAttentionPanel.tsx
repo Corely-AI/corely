@@ -4,18 +4,13 @@ import { useTranslation } from "react-i18next";
 import { AlertCircle, Clock, UserX, DollarSign, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@corely/ui";
 import { formatRelativeTime } from "@/shared/lib/formatters";
-import type {
-  TeacherDashboardSession,
-  TeacherDashboardStudent,
-  TeacherDashboardInvoice,
-} from "@corely/contracts/classes";
+import type { TeacherDashboardSession, TeacherDashboardStudent } from "@corely/contracts";
 
 interface NeedsAttentionPanelProps {
   needsAttention: {
     missingAttendanceSessions: TeacherDashboardSession[];
     unfinishedPastSessions: TeacherDashboardSession[];
     studentsMissingPayer: TeacherDashboardStudent[];
-    unpaidInvoices: TeacherDashboardInvoice[];
   };
   attendanceMode: string;
 }
@@ -26,8 +21,7 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
   const hasNoAlerts =
     needsAttention.missingAttendanceSessions.length === 0 &&
     needsAttention.unfinishedPastSessions.length === 0 &&
-    needsAttention.studentsMissingPayer.length === 0 &&
-    needsAttention.unpaidInvoices.length === 0;
+    needsAttention.studentsMissingPayer.length === 0;
 
   return (
     <Card variant="default" className="h-full border-warning/20">
@@ -128,40 +122,6 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
                     </div>
                     <Button size="sm" variant="ghost" className="h-7 text-xs">
                       {t("actions.assignPayer", "Assign Payer")}
-                    </Button>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Unpaid Invoices Section */}
-          {needsAttention.unpaidInvoices.length > 0 && (
-            <div>
-              <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider mt-4">
-                {t("dashboard.teacher.unpaidInvoices", "Unpaid Invoices")}
-              </h4>
-              <div className="space-y-2">
-                {needsAttention.unpaidInvoices.map((invoice) => (
-                  <Link
-                    key={invoice.id}
-                    to={`/invoices/${invoice.id}`}
-                    className="flex items-center justify-between py-2 px-3 rounded-lg bg-destructive/5 hover:bg-destructive/10 border border-destructive/10 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <DollarSign className="h-4 w-4 text-destructive" />
-                      <div>
-                        <div className="text-sm font-medium text-foreground">
-                          {invoice.number || t("common.draft", "Draft")}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {invoice.customerName} • {(invoice.amountDueCents / 100).toFixed(2)}{" "}
-                          {invoice.currency}
-                        </div>
-                      </div>
-                    </div>
-                    <Button size="sm" variant="ghost" className="h-7 text-xs">
-                      {t("actions.viewInvoice", "View")}
                     </Button>
                   </Link>
                 ))}

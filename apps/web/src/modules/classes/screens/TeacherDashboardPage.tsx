@@ -53,6 +53,17 @@ export default function TeacherDashboardPage() {
     queryFn: () => teacherDashboardApi.getSummary(query),
   });
 
+  const unpaidInvoicesQuery = {
+    classGroupId: query.classGroupId,
+  };
+
+  const { data: unpaidInvoicesData } = useQuery({
+    queryKey: ["teacher-dashboard", "unpaid-invoices", unpaidInvoicesQuery],
+    queryFn: () => teacherDashboardApi.getUnpaidInvoices(unpaidInvoicesQuery),
+  });
+
+  const unpaidInvoicesCount = unpaidInvoicesData?.count ?? 0;
+
   const handleRangeChange = (range: "today" | "week") => {
     const now = new Date();
     if (range === "today") {
@@ -268,8 +279,8 @@ export default function TeacherDashboardPage() {
               <DollarSign className="h-4 w-4 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">{counts.unpaidInvoices}</div>
-              {counts.unpaidInvoices > 0 && (
+              <div className="text-2xl font-bold text-foreground">{unpaidInvoicesCount}</div>
+              {unpaidInvoicesCount > 0 && (
                 <p className="text-xs text-destructive mt-1 font-medium">
                   {t("dashboard.teacher.overdue", "Overdue")}
                 </p>

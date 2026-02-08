@@ -4,7 +4,7 @@ import en from "./locales/en.json";
 import de from "./locales/de.json";
 import vi from "./locales/vi.json";
 
-const savedLanguage = localStorage.getItem("bizflow-language") || "en";
+const savedLanguage = localStorage.getItem("Corely One ERP-language") || "en";
 
 void i18n.use(initReactI18next).init({
   resources: {

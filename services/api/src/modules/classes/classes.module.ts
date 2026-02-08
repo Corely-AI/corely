@@ -57,6 +57,7 @@ import { LockMonthUseCase } from "./application/use-cases/lock-month.usecase";
 import { GetClassesBillingSettingsUseCase } from "./application/use-cases/get-classes-billing-settings.usecase";
 import { UpdateClassesBillingSettingsUseCase } from "./application/use-cases/update-classes-billing-settings.usecase";
 import { GetTeacherDashboardSummaryUseCase } from "./application/use-cases/get-teacher-dashboard-summary.use-case";
+import { GetTeacherDashboardUnpaidInvoicesUseCase } from "./application/use-cases/get-teacher-dashboard-unpaid-invoices.use-case";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule, InvoicesModule],
@@ -64,6 +65,7 @@ import { GetTeacherDashboardSummaryUseCase } from "./application/use-cases/get-t
 
   providers: [
     PrismaClassesRepository,
+
     { provide: CLASSES_REPOSITORY_PORT, useExisting: PrismaClassesRepository },
     ExtKvClassesSettingsRepository,
     { provide: CLASSES_SETTINGS_REPOSITORY_PORT, useExisting: ExtKvClassesSettingsRepository },
@@ -308,6 +310,12 @@ import { GetTeacherDashboardSummaryUseCase } from "./application/use-cases/get-t
       useFactory: (query: TeacherDashboardQueryPort, settingsRepo: ClassesSettingsRepositoryPort) =>
         new GetTeacherDashboardSummaryUseCase(query, settingsRepo),
       inject: [TEACHER_DASHBOARD_QUERY, CLASSES_SETTINGS_REPOSITORY_PORT],
+    },
+    {
+      provide: GetTeacherDashboardUnpaidInvoicesUseCase,
+      useFactory: (query: TeacherDashboardQueryPort) =>
+        new GetTeacherDashboardUnpaidInvoicesUseCase(query),
+      inject: [TEACHER_DASHBOARD_QUERY],
     },
 
     {

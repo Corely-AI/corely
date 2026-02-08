@@ -47,7 +47,7 @@ export default function SettingsPage() {
 
   const changeLanguage = (lang: string) => {
     void i18n.changeLanguage(lang);
-    localStorage.setItem("bizflow-language", lang);
+    localStorage.setItem("Corely One ERP-language", lang);
   };
 
   return (
