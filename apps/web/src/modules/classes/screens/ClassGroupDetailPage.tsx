@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarPlus, Users, Edit2, RotateCw } from "lucide-react";
+import { CalendarPlus, Users, Edit2 } from "lucide-react";
 import {
   Button,
   Card,
@@ -17,10 +17,10 @@ import {
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
-import { formatDate, formatDateTime, formatMoney } from "@/shared/lib/formatters";
-import { CrudRowActions } from "@/shared/crud";
+import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import { classGroupKeys, classEnrollmentKeys, classSessionKeys } from "../queries";
 import { MaterialsSection } from "../../portal/components/MaterialsSection";
+import { SessionsPanel } from "../components/SessionsPanel";
 
 export default function ClassGroupDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -40,9 +40,12 @@ export default function ClassGroupDetailPage() {
     enabled: Boolean(groupId),
   });
 
+  const [sessionsPage, setSessionsPage] = useState(1);
+
   const { data: sessionData } = useQuery({
-    queryKey: classSessionKeys.list({ classGroupId: groupId }),
-    queryFn: () => classesApi.listSessions({ classGroupId: groupId, page: 1, pageSize: 20 }),
+    queryKey: classSessionKeys.list({ classGroupId: groupId, page: sessionsPage }),
+    queryFn: () =>
+      classesApi.listSessions({ classGroupId: groupId, page: sessionsPage, pageSize: 10 }),
     enabled: Boolean(groupId),
   });
 
@@ -388,103 +391,23 @@ export default function ClassGroupDetailPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="text-sm font-semibold">Sessions</div>
-          <div className="grid gap-4 md:grid-cols-[1fr_120px_160px_120px] items-end">
-            <div className="space-y-2">
-              <Label>Start time</Label>
-              <Input
-                type="datetime-local"
-                value={sessionStart}
-                onChange={(e) => setSessionStart(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Duration (min)</Label>
-              <Input
-                type="number"
-                min="15"
-                step="15"
-                value={sessionDuration}
-                onChange={(e) => setSessionDuration(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Topic</Label>
-              <Input value={sessionTopic} onChange={(e) => setSessionTopic(e.target.value)} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button
-                variant="accent"
-                className="w-full"
-                onClick={() => createSession.mutate()}
-                disabled={createSession.isPending}
-              >
-                Add session
-              </Button>
-              {hasRecurringSchedule ? (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => generateSessionsForMonth.mutate()}
-                  disabled={generateSessionsForMonth.isPending}
-                >
-                  <RotateCw className="h-4 w-4" />
-                  Generate current month
-                </Button>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="overflow-x-auto rounded-md border border-border">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Starts
-                  </th>
-                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Topic
-                  </th>
-                  <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
-                    Status
-                  </th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {sessions.map((session) => (
-                  <tr
-                    key={session.id}
-                    className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-sm font-medium">
-                      {formatDateTime(session.startsAt, "de-DE")}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {session.topic || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">{session.status}</td>
-                    <td className="px-4 py-3 text-right">
-                      <CrudRowActions
-                        primaryAction={{ label: "Open", href: `/sessions/${session.id}` }}
-                      />
-                    </td>
-                  </tr>
-                ))}
-                {sessions.length === 0 ? (
-                  <tr>
-                    <td className="px-4 py-8 text-sm text-center text-muted-foreground" colSpan={4}>
-                      No sessions scheduled yet.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+      <SessionsPanel
+        groupId={groupId}
+        sessionData={sessionData}
+        sessionsPage={sessionsPage}
+        onSessionsPageChange={setSessionsPage}
+        sessionStart={sessionStart}
+        sessionDuration={sessionDuration}
+        sessionTopic={sessionTopic}
+        hasRecurringSchedule={hasRecurringSchedule}
+        onSessionStartChange={setSessionStart}
+        onSessionDurationChange={setSessionDuration}
+        onSessionTopicChange={setSessionTopic}
+        onAddSession={() => createSession.mutate()}
+        onGenerateSessions={() => generateSessionsForMonth.mutate()}
+        createSessionPending={createSession.isPending}
+        generateSessionsPending={generateSessionsForMonth.isPending}
+      />
 
       <MaterialsSection entityId={groupId} entityType="CLASS_GROUP" />
     </div>
