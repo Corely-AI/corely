@@ -13,6 +13,7 @@ import { WorkflowInstanceRepository } from "./adapters/prisma-workflow-instance-
 import { WorkflowTaskRepository } from "./adapters/prisma-workflow-task-repository.adapter";
 import { WorkflowEventRepository } from "./adapters/prisma-workflow-event-repository.adapter";
 import { DomainEventRepository } from "./adapters/prisma-domain-event-repository.adapter";
+import { PrismaClassesRepository } from "./adapters/prisma-classes-repository.adapter";
 import { PrismaExtKvAdapter } from "./adapters/prisma-ext-kv.adapter";
 import { PrismaExtEntityAttrAdapter } from "./adapters/prisma-ext-entity-attr.adapter";
 import { PrismaExtEntityLinkAdapter } from "./adapters/prisma-ext-entity-link.adapter";
@@ -68,6 +69,7 @@ import { EXT_KV_PORT, EXT_ENTITY_ATTR_PORT, EXT_ENTITY_LINK_PORT } from "./ports
     WorkflowTaskRepository,
     WorkflowEventRepository,
     DomainEventRepository,
+    PrismaClassesRepository,
   ],
   exports: [
     // Prisma client (for rare cases where direct access is needed)
@@ -99,6 +101,7 @@ import { EXT_KV_PORT, EXT_ENTITY_ATTR_PORT, EXT_ENTITY_LINK_PORT } from "./ports
     WorkflowTaskRepository,
     WorkflowEventRepository,
     DomainEventRepository,
+    PrismaClassesRepository,
   ],
 })
 export class DataModule {}

@@ -8,7 +8,7 @@ import { mapToInvoiceEmailProps } from "./invoice-email-props.mapper";
 import { EMAIL_SENDER_PORT } from "../notifications/ports/email-sender.port";
 import type { EmailSenderPort } from "../notifications/ports/email-sender.port";
 
-type InvoiceEmailRequestedPayload = {
+export type InvoiceEmailRequestedPayload = {
   deliveryId: string;
   invoiceId: string;
   to: string;

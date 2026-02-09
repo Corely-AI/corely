@@ -16,6 +16,8 @@ import { TaxWorkerModule } from "../tax/tax-worker.module";
 import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-requested.handler";
 import { FormsEventHandler } from "../forms/forms-event.handler";
 import { FormsWorkerModule } from "../forms/forms-worker.module";
+import { ClassesInvoiceReadyToSendHandler } from "../classes/handlers/classes-invoice-ready-to-send.handler";
+import { ClassesWorkerModule } from "../classes/classes-worker.module";
 
 import { EnvService } from "@corely/config";
 
@@ -28,9 +30,11 @@ import { EnvService } from "@corely/config";
     InvoicesWorkerModule,
     TaxWorkerModule,
     FormsWorkerModule,
+    ClassesWorkerModule,
     NotificationsModule,
   ],
   providers: [
+    ClassesInvoiceReadyToSendHandler,
     {
       provide: InvoiceEmailRequestedHandler,
       useFactory: (sender: EmailSenderPort, repo: PrismaInvoiceEmailRepository) =>
@@ -48,7 +52,8 @@ import { EnvService } from "@corely/config";
         cashEntryHandler: CashEntryCreatedHandler,
         issueTranscriptionHandler: IssueTranscriptionRequestedHandler,
         taxReportPdfHandler: TaxReportPdfRequestedHandler,
-        formsHandler: FormsEventHandler
+        formsHandler: FormsEventHandler,
+        classesHandler: ClassesInvoiceReadyToSendHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           invoiceHandler,
@@ -57,6 +62,7 @@ import { EnvService } from "@corely/config";
           issueTranscriptionHandler,
           taxReportPdfHandler,
           formsHandler,
+          classesHandler,
         ]);
       },
       inject: [
@@ -68,6 +74,7 @@ import { EnvService } from "@corely/config";
         IssueTranscriptionRequestedHandler,
         TaxReportPdfRequestedHandler,
         FormsEventHandler,
+        ClassesInvoiceReadyToSendHandler,
       ],
     },
   ],

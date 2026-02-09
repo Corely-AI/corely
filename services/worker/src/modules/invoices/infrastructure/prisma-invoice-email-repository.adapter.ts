@@ -21,6 +21,40 @@ export class PrismaInvoiceEmailRepository {
     });
   }
 
+  async createDelivery(
+    data: {
+      tenantId: string;
+      invoiceId: string;
+      to: string;
+      idempotencyKey: string;
+      provider?: string;
+    },
+    tx?: any
+  ) {
+    const client = tx ?? this.prisma;
+    return client.invoiceEmailDelivery.create({
+      data: {
+        tenantId: data.tenantId,
+        invoiceId: data.invoiceId,
+        to: data.to,
+        idempotencyKey: data.idempotencyKey,
+        provider: data.provider ?? "resend",
+        status: "QUEUED",
+      },
+    });
+  }
+
+  async findDeliveryByIdempotency(tenantId: string, idempotencyKey: string) {
+    return this.prisma.invoiceEmailDelivery.findUnique({
+      where: {
+        tenantId_idempotencyKey: {
+          tenantId,
+          idempotencyKey,
+        },
+      },
+    });
+  }
+
   async markDeliverySent(params: {
     deliveryId: string;
     provider: string;
