@@ -1,5 +1,4 @@
-import { Injectable } from "@nestjs/common";
-import { Resend } from "resend";
+import { ResendEmailSenderAdapter } from "@corely/email";
 import {
   InvoiceEmailSenderPort,
   SendInvoiceEmailRequest,
@@ -8,9 +7,7 @@ import {
 
 @Injectable()
 export class ResendInvoiceEmailSenderAdapter implements InvoiceEmailSenderPort {
-  private resend: Resend;
-  private fromAddress: string;
-  private replyTo?: string;
+  private readonly delegate: ResendEmailSenderAdapter;
 
   constructor() {
     const apiKey = process.env.RESEND_API_KEY;
@@ -18,60 +15,37 @@ export class ResendInvoiceEmailSenderAdapter implements InvoiceEmailSenderPort {
       throw new Error("RESEND_API_KEY environment variable is required");
     }
 
-    this.resend = new Resend(apiKey);
-    this.fromAddress = process.env.RESEND_FROM ?? "Qansa Billing <billing@example.com>";
-    this.replyTo = process.env.RESEND_REPLY_TO;
+    this.delegate = new ResendEmailSenderAdapter({
+      apiKey,
+      fromAddress: process.env.RESEND_FROM ?? "Qansa Billing <billing@example.com>",
+      replyTo: process.env.RESEND_REPLY_TO,
+    });
   }
 
   async sendInvoiceEmail(req: SendInvoiceEmailRequest): Promise<SendInvoiceEmailResponse> {
-    const emailOptions: any = {
-      from: this.fromAddress,
+    const response = await this.delegate.sendEmail({
+      tenantId: req.tenantId,
       to: req.to,
+      cc: req.cc,
+      bcc: req.bcc,
       subject: req.subject,
       html: req.html,
       text: req.text,
-    };
-
-    if (req.cc) {
-      emailOptions.cc = req.cc;
-    }
-
-    if (req.bcc) {
-      emailOptions.bcc = req.bcc;
-    }
-
-    if (req.attachments) {
-      emailOptions.attachments = req.attachments.map((att) => ({
+      attachments: req.attachments?.map((att) => ({
         filename: att.filename,
         path: att.path,
-      }));
-    }
-
-    if (this.replyTo) {
-      emailOptions.replyTo = this.replyTo;
-    }
-
-    if (req.correlationId) {
-      emailOptions.headers = {
-        "X-Correlation-ID": req.correlationId,
-      };
-    }
-
-    const { data, error } = await this.resend.emails.send(emailOptions, {
+      })),
+      headers: req.correlationId
+        ? {
+            "X-Correlation-ID": req.correlationId,
+          }
+        : undefined,
       idempotencyKey: req.idempotencyKey,
     });
 
-    if (error) {
-      throw new Error(`Resend API error: ${error.message}`);
-    }
-
-    if (!data?.id) {
-      throw new Error("Resend API did not return an email ID");
-    }
-
     return {
       provider: "resend",
-      providerMessageId: data.id,
+      providerMessageId: response.providerMessageId,
     };
   }
 }

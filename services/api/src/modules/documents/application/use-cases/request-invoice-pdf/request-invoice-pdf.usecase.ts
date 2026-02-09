@@ -16,8 +16,8 @@ import { type RequestInvoicePdfInput, type RequestInvoicePdfOutput } from "@core
 import { type DocumentRepoPort } from "../../ports/document-repository.port";
 import { type FileRepoPort } from "../../ports/file-repository.port";
 import { type DocumentLinkRepoPort } from "../../ports/document-link.port";
-import { type ObjectStoragePort } from "../../ports/object-storage.port";
-import { type OutboxPort } from "../../ports/outbox.port";
+import { type ObjectStoragePort } from "@corely/kernel";
+import { type OutboxPort } from "@corely/kernel";
 import { DocumentAggregate } from "../../../domain/document.aggregate";
 import { FileEntity } from "../../../domain/file.entity";
 import { type FileKind } from "../../../domain/document.types";

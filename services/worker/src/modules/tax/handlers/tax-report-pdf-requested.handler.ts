@@ -7,7 +7,7 @@ import type {
 } from "@/modules/tax/domain/ports";
 import { type TaxPdfRenderer } from "../pdf/tax-pdf-renderer";
 import type { WorkspaceRepositoryPort } from "@/modules/workspaces/application/ports/workspace-repository.port";
-import type { ObjectStoragePort } from "@/modules/documents/application/ports/object-storage.port";
+import type { ObjectStoragePort } from "@corely/kernel";
 import type { VatAccountingMethod } from "@corely/contracts";
 
 type Payload = {

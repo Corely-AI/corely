@@ -4,7 +4,7 @@ import type { CreateBillingRunInput } from "@corely/contracts";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
 import type { InvoicesWritePort } from "../ports/invoices-write.port";
 import type { AuditPort } from "../ports/audit.port";
-import type { OutboxPort } from "../ports/outbox.port";
+import type { OutboxPort } from "@corely/kernel";
 import type { IdempotencyStoragePort } from "../ports/idempotency.port";
 import type { IdGeneratorPort } from "../ports/id-generator.port";
 import type { ClockPort } from "../ports/clock.port";

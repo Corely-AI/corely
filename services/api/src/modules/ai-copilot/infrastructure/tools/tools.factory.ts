@@ -3,7 +3,7 @@ import { SpanStatusCode } from "@opentelemetry/api";
 import type { DomainToolPort } from "../../application/ports/domain-tool.port";
 import type { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution-repository.port";
 import type { AuditPort } from "../../application/ports/audit.port";
-import type { OutboxPort } from "../../application/ports/outbox.port";
+import type { OutboxPort } from "@corely/kernel";
 import { type ObservabilityPort, type ObservabilitySpanRef, type JsonValue } from "@corely/kernel";
 
 export function buildAiTools(

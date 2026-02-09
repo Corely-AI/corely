@@ -12,7 +12,7 @@ import { ROLE_REPOSITORY_TOKEN } from "../application/ports/role-repository.port
 import { REFRESH_TOKEN_REPOSITORY_TOKEN } from "../application/ports/refresh-token-repository.port";
 import { PASSWORD_HASHER_TOKEN } from "../application/ports/password-hasher.port";
 import { TOKEN_SERVICE_TOKEN } from "../application/ports/token-service.port";
-import { OUTBOX_PORT } from "../application/ports/outbox.port";
+import { OUTBOX_PORT } from "@corely/kernel";
 import { AUDIT_PORT_TOKEN } from "../application/ports/audit.port";
 import { IDEMPOTENCY_STORAGE_PORT_TOKEN } from "../../../shared/ports/idempotency-storage.port";
 import { ID_GENERATOR_TOKEN } from "../../../shared/ports/id-generator.port";

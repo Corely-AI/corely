@@ -20,3 +20,7 @@ export const UNIT_OF_WORK = "kernel/unit-of-work";
 
 // Time services
 export const TENANT_TIMEZONE_PORT = "api/tenant-timezone-port";
+
+// Infrastructure
+export const EMAIL_SENDER_PORT = "kernel/email-sender-port";
+export const OBJECT_STORAGE_PORT = "kernel/object-storage-port";

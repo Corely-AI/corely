@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InvoiceEmailRequestedHandler } from "./invoice-email-requested.handler";
-import { type EmailSenderPort } from "../notifications/ports/email-sender.port";
+import { type EmailSenderPort } from "@corely/kernel";
 
 class FakeEmailSender implements EmailSenderPort {
   calls: any[] = [];

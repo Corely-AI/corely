@@ -12,13 +12,18 @@ import { FormsWorkerModule } from "./modules/forms/forms-worker.module";
 
 import { TickOrchestrator } from "./application/tick-orchestrator.service";
 import { JobLockService } from "./infrastructure/job-lock.service";
+import { InternalWorkerController } from "./application/internal-worker.controller";
+
+import { StorageModule } from "./modules/storage/storage.module";
 
 @Module({
+  controllers: [InternalWorkerController],
   imports: [
     // Config must be first to validate env before other modules use it
     EnvModule.forRoot(),
     DataModule,
     OutboxModule,
+    StorageModule,
     WorkflowsModule,
     AccountingWorkerModule,
     TaxWorkerModule,

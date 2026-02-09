@@ -6,9 +6,11 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
 import { InvoicesHttpController } from "./adapters/http/invoices.controller";
 import { InvoicesInternalController } from "./adapters/http/invoices-internal.controller";
 import { ResendWebhookController } from "./adapters/webhooks/resend-webhook.controller";
-import { PrismaInvoiceEmailDeliveryRepoAdapter } from "./infrastructure/prisma/prisma-invoice-email-delivery-repo.adapter";
-import { PrismaInvoiceReminderStateAdapter } from "./infrastructure/adapters/prisma-invoice-reminder-state.adapter";
-import { PrismaInvoiceReminderSettingsAdapter } from "./infrastructure/adapters/prisma-invoice-reminder-settings.adapter";
+import {
+  PrismaInvoiceEmailDeliveryAdapter,
+  PrismaInvoiceReminderStateAdapter,
+  PrismaInvoiceReminderSettingsAdapter,
+} from "@corely/data";
 import { InvoicesApplication } from "./application/invoices.application";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 import {
@@ -66,7 +68,7 @@ import {
       inject: [CLOCK_PORT_TOKEN, TENANT_TIMEZONE_PORT],
     },
     { provide: INVOICE_NUMBERING_PORT, useClass: InvoiceNumberingAdapter },
-    PrismaInvoiceEmailDeliveryRepoAdapter,
+    PrismaInvoiceEmailDeliveryAdapter,
     PrismaInvoiceReminderStateAdapter,
     PrismaInvoiceReminderSettingsAdapter,
     { provide: INVOICE_REMINDER_STATE_PORT, useExisting: PrismaInvoiceReminderStateAdapter },
@@ -166,7 +168,7 @@ import {
       provide: SendInvoiceUseCase,
       useFactory: (
         repo: PrismaInvoiceRepoAdapter,
-        deliveryRepo: PrismaInvoiceEmailDeliveryRepoAdapter,
+        deliveryRepo: PrismaInvoiceEmailDeliveryAdapter,
         outbox: OutboxPort,
         idGen: any,
         clock: any,
@@ -189,7 +191,7 @@ import {
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
-        PrismaInvoiceEmailDeliveryRepoAdapter,
+        PrismaInvoiceEmailDeliveryAdapter,
         OUTBOX_PORT,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,

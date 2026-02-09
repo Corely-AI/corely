@@ -1,4 +1,4 @@
-import { Module, Logger, InternalServerErrorException } from "@nestjs/common";
+import { Module, Logger, InternalServerErrorException, Inject } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { DataModule } from "@corely/data";
 import { chromium, type Browser } from "playwright";
@@ -6,11 +6,17 @@ import { InvoiceReminderRunnerService } from "./invoice-reminder-runner.service"
 import { InvoicePdfRenderRequestedHandler } from "./handlers/invoice-pdf-render-requested.handler";
 import { GenerateInvoicePdfWorker } from "./workers/generate-invoice-pdf.worker";
 import { PlaywrightInvoicePdfRendererAdapter } from "./pdf/playwright-invoice-pdf-renderer.adapter";
-import { PrismaInvoicePdfModelAdapter } from "@/modules/invoices/infrastructure/pdf/prisma-invoice-pdf-model.adapter";
-import { PrismaDocumentRepoAdapter } from "@/modules/documents/infrastructure/prisma/prisma-document-repo.adapter";
-import { PrismaFileRepoAdapter } from "@/modules/documents/infrastructure/prisma/prisma-file-repo.adapter";
-import { GcsObjectStorageAdapter } from "@/modules/documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
-import { createGcsClient } from "@/modules/documents/infrastructure/storage/gcs/gcs.client";
+import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoice-pdf-model.adapter";
+import { OBJECT_STORAGE_PORT, type ObjectStoragePort } from "@corely/kernel";
+import {
+  PrismaDocumentRepoAdapter,
+  PrismaFileRepoAdapter,
+  PrismaDocumentLinkAdapter,
+} from "@corely/data";
+import { InvoicePdfService } from "./application/invoice-pdf.service";
+import { type InvoicePdfModelPort } from "./application/ports/invoice-pdf-model.port";
+import { type InvoicePdfRendererPort } from "./application/ports/invoice-pdf-renderer.port";
+import { INVOICE_PDF_MODEL_PORT, INVOICE_PDF_RENDERER_PORT } from "./tokens";
 
 @Module({
   imports: [DataModule],
@@ -18,18 +24,9 @@ import { createGcsClient } from "@/modules/documents/infrastructure/storage/gcs/
     InvoiceReminderRunnerService,
     PrismaDocumentRepoAdapter,
     PrismaFileRepoAdapter,
+    PrismaDocumentLinkAdapter,
     PrismaInvoicePdfModelAdapter,
-    {
-      provide: GcsObjectStorageAdapter,
-      useFactory: (env: EnvService) => {
-        const client = createGcsClient({
-          projectId: env.GOOGLE_CLOUD_PROJECT,
-          keyFilename: env.GOOGLE_APPLICATION_CREDENTIALS,
-        });
-        return new GcsObjectStorageAdapter(client, env.STORAGE_BUCKET);
-      },
-      inject: [EnvService],
-    },
+    { provide: INVOICE_PDF_MODEL_PORT, useExisting: PrismaInvoicePdfModelAdapter },
     {
       provide: "PLAYWRIGHT_BROWSER",
       useFactory: async () => {
@@ -57,30 +54,9 @@ import { createGcsClient } from "@/modules/documents/infrastructure/storage/gcs/
       useFactory: (browser: Browser) => new PlaywrightInvoicePdfRendererAdapter(browser),
       inject: ["PLAYWRIGHT_BROWSER"],
     },
-    {
-      provide: GenerateInvoicePdfWorker,
-      useFactory: (
-        documentRepo: PrismaDocumentRepoAdapter,
-        fileRepo: PrismaFileRepoAdapter,
-        storage: GcsObjectStorageAdapter,
-        invoiceModel: PrismaInvoicePdfModelAdapter,
-        pdfRenderer: PlaywrightInvoicePdfRendererAdapter
-      ) =>
-        new GenerateInvoicePdfWorker({
-          documentRepo,
-          fileRepo,
-          objectStorage: storage,
-          invoicePdfModel: invoiceModel,
-          pdfRenderer,
-        }),
-      inject: [
-        PrismaDocumentRepoAdapter,
-        PrismaFileRepoAdapter,
-        GcsObjectStorageAdapter,
-        PrismaInvoicePdfModelAdapter,
-        PlaywrightInvoicePdfRendererAdapter,
-      ],
-    },
+    { provide: INVOICE_PDF_RENDERER_PORT, useExisting: PlaywrightInvoicePdfRendererAdapter },
+    InvoicePdfService,
+    GenerateInvoicePdfWorker,
     {
       provide: InvoicePdfRenderRequestedHandler,
       useFactory: (worker: GenerateInvoicePdfWorker) =>
@@ -88,6 +64,6 @@ import { createGcsClient } from "@/modules/documents/infrastructure/storage/gcs/
       inject: [GenerateInvoicePdfWorker],
     },
   ],
-  exports: [InvoicePdfRenderRequestedHandler, InvoiceReminderRunnerService],
+  exports: [InvoicePdfRenderRequestedHandler, InvoiceReminderRunnerService, InvoicePdfService],
 })
 export class InvoicesWorkerModule {}

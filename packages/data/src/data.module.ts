@@ -17,6 +17,9 @@ import { PrismaClassesRepository } from "./adapters/prisma-classes-repository.ad
 import { PrismaExtKvAdapter } from "./adapters/prisma-ext-kv.adapter";
 import { PrismaExtEntityAttrAdapter } from "./adapters/prisma-ext-entity-attr.adapter";
 import { PrismaExtEntityLinkAdapter } from "./adapters/prisma-ext-entity-link.adapter";
+import { PrismaDocumentRepoAdapter } from "./adapters/prisma-document-repository.adapter";
+import { PrismaFileRepoAdapter } from "./adapters/prisma-file-repository.adapter";
+import { PrismaDocumentLinkAdapter } from "./adapters/prisma-document-link.adapter";
 import { EXT_KV_PORT, EXT_ENTITY_ATTR_PORT, EXT_ENTITY_LINK_PORT } from "./ports/ext-storage.port";
 
 /**
@@ -70,6 +73,9 @@ import { EXT_KV_PORT, EXT_ENTITY_ATTR_PORT, EXT_ENTITY_LINK_PORT } from "./ports
     WorkflowEventRepository,
     DomainEventRepository,
     PrismaClassesRepository,
+    PrismaDocumentRepoAdapter,
+    PrismaFileRepoAdapter,
+    PrismaDocumentLinkAdapter,
   ],
   exports: [
     // Prisma client (for rare cases where direct access is needed)
@@ -102,6 +108,9 @@ import { EXT_KV_PORT, EXT_ENTITY_ATTR_PORT, EXT_ENTITY_LINK_PORT } from "./ports
     WorkflowEventRepository,
     DomainEventRepository,
     PrismaClassesRepository,
+    PrismaDocumentRepoAdapter,
+    PrismaFileRepoAdapter,
+    PrismaDocumentLinkAdapter,
   ],
 })
 export class DataModule {}

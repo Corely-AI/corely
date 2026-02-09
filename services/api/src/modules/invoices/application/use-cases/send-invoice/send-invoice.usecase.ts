@@ -16,13 +16,17 @@ import {
 } from "@corely/kernel";
 import { type SendInvoiceInput, type SendInvoiceOutput } from "@corely/contracts";
 import { type InvoiceRepoPort } from "../../ports/invoice-repository.port";
-import { type InvoiceEmailDeliveryRepoPort } from "../../ports/invoice-email-delivery-repository.port";
-import { type OutboxPort } from "../../ports/outbox.port";
+import {
+  type OutboxPort,
+  type TenantTimeZonePort,
+  type InvoiceEmailDeliveryRepoPort,
+  type InvoiceReminderStatePort,
+  type InvoiceReminderSettingsPort,
+  INVOICE_REMINDER_STATE_PORT,
+  INVOICE_REMINDER_SETTINGS_PORT,
+} from "@corely/kernel";
 import { createHash } from "crypto";
-import { type InvoiceReminderStatePort } from "../../ports/invoice-reminder-state.port";
-import { type InvoiceReminderSettingsPort } from "../../ports/invoice-reminder-settings.port";
 import { computeNextReminderAt } from "../../helpers/reminder-schedule";
-import type { TenantTimeZonePort } from "@corely/kernel";
 import type { AuditPort } from "@/shared/ports/audit.port";
 
 type Deps = {

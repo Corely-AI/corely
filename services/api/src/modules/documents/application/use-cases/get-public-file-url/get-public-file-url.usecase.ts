@@ -11,7 +11,7 @@ import {
 } from "@corely/kernel";
 import { type GetPublicFileUrlInput, type GetPublicFileUrlOutput } from "@corely/contracts";
 import { type FileRepoPort } from "../../ports/file-repository.port";
-import { type ObjectStoragePort } from "../../ports/object-storage.port";
+import { type ObjectStoragePort } from "@corely/kernel";
 
 type Deps = {
   logger: LoggerPort;

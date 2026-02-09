@@ -10,7 +10,7 @@ import {
 import { type GetDownloadUrlInput } from "@corely/contracts";
 import { type DocumentRepoPort } from "../../ports/document-repository.port";
 import { type FileRepoPort } from "../../ports/file-repository.port";
-import { type ObjectStoragePort } from "../../ports/object-storage.port";
+import { type ObjectStoragePort } from "@corely/kernel";
 
 type Deps = {
   documentRepo: DocumentRepoPort;

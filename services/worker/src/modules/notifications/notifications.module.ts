@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { EnvService } from "@corely/config";
-import { EMAIL_SENDER_PORT } from "./ports/email-sender.port";
-import { ResendEmailSenderAdapter } from "./infrastructure/resend/resend-email-sender.adapter";
+import { EMAIL_SENDER_PORT } from "@corely/kernel";
+import { ResendEmailSenderAdapter } from "@corely/email";
 
 @Module({
   providers: [
@@ -12,11 +12,11 @@ import { ResendEmailSenderAdapter } from "./infrastructure/resend/resend-email-s
         if (provider !== "resend") {
           throw new Error(`Unsupported email provider: ${provider}`);
         }
-        return new ResendEmailSenderAdapter(
-          env.RESEND_API_KEY,
-          env.RESEND_FROM,
-          env.RESEND_REPLY_TO
-        );
+        return new ResendEmailSenderAdapter({
+          apiKey: env.RESEND_API_KEY,
+          fromAddress: env.RESEND_FROM,
+          replyTo: env.RESEND_REPLY_TO,
+        });
       },
       inject: [EnvService],
     },

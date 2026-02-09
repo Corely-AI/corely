@@ -16,8 +16,7 @@ import {
 import type { RunInvoiceRemindersInput, RunInvoiceRemindersOutput } from "@corely/contracts";
 import type { InvoiceRepoPort } from "../../ports/invoice-repository.port";
 import type { SendInvoiceUseCase } from "../send-invoice/send-invoice.usecase";
-import type { InvoiceReminderStatePort } from "../../ports/invoice-reminder-state.port";
-import type { InvoiceReminderSettingsPort } from "../../ports/invoice-reminder-settings.port";
+import type { InvoiceReminderStatePort, InvoiceReminderSettingsPort } from "@corely/kernel";
 import { computeNextReminderAt } from "../../helpers/reminder-schedule";
 import type { AuditPort } from "@/shared/ports/audit.port";
 

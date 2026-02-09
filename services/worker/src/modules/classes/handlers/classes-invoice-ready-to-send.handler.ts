@@ -3,8 +3,13 @@ import { EventHandler, OutboxEvent } from "../../outbox/event-handler.interface"
 import { OutboxRepository, PrismaClassesRepository } from "@corely/data";
 import { ClassesInvoiceReadyToSendEventSchema, EVENT_NAMES } from "@corely/contracts";
 import { InvoiceEmailRequestedPayload } from "../../invoices/invoice-email-requested.handler";
-import { PrismaInvoiceEmailRepository } from "../../invoices/infrastructure/prisma-invoice-email-repository.adapter";
-import { UNIT_OF_WORK, UnitOfWorkPort } from "@corely/kernel";
+import { PrismaInvoiceEmailDeliveryAdapter } from "@corely/data";
+import {
+  UNIT_OF_WORK,
+  type UnitOfWorkPort,
+  ID_GENERATOR_TOKEN,
+  type IdGeneratorPort,
+} from "@corely/kernel";
 
 @Injectable()
 export class ClassesInvoiceReadyToSendHandler implements EventHandler {
@@ -13,9 +18,10 @@ export class ClassesInvoiceReadyToSendHandler implements EventHandler {
 
   constructor(
     private readonly repo: PrismaClassesRepository,
-    private readonly emails: PrismaInvoiceEmailRepository,
+    private readonly deliveryRepo: PrismaInvoiceEmailDeliveryAdapter,
     private readonly outbox: OutboxRepository,
-    @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWorkPort
+    @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWorkPort,
+    @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort
   ) {}
 
   async handle(event: OutboxEvent): Promise<void> {
@@ -41,7 +47,7 @@ export class ClassesInvoiceReadyToSendHandler implements EventHandler {
     const idempotencyKey = event.id;
 
     // Fast-path: Check if delivery already exists (avoids extra work)
-    const existing = await this.emails.findDeliveryByIdempotency(tenantId, idempotencyKey);
+    const existing = await this.deliveryRepo.findByIdempotencyKey(tenantId, idempotencyKey);
     if (existing) {
       this.logger.log(`Delivery already exists for event ${event.id}. Skipping.`);
       return;
@@ -64,16 +70,15 @@ export class ClassesInvoiceReadyToSendHandler implements EventHandler {
       await this.uow.withinTransaction(async (tx) => {
         // 2. Create Delivery Record (QUEUED) inside transaction
         // This acts as our atomic idempotency guarantee.
-        const delivery = await this.emails.createDelivery(
-          {
-            tenantId,
-            invoiceId,
-            to: invoice.customerEmail!,
-            idempotencyKey,
-            provider: "resend",
-          },
-          tx
-        );
+        const delivery = await this.deliveryRepo.create({
+          id: this.idGenerator.newId(),
+          tenantId,
+          invoiceId,
+          to: invoice.customerEmail!,
+          idempotencyKey,
+          provider: "resend",
+          status: "QUEUED",
+        });
 
         // 3. Enqueue Email Request inside transaction
         // Either both happen, or neither, ensuring no orphan delivery records.

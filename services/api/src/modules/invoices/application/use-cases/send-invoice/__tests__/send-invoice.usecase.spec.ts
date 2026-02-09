@@ -5,10 +5,18 @@ import { FakeInvoiceEmailDeliveryRepository } from "../../../../testkit/fakes/fa
 import { FakeOutbox } from "../../../../testkit/fakes/fake-outbox";
 import { InvoiceAggregate } from "../../../../domain/invoice.aggregate";
 import { FakeIdGenerator, FixedClock, NoopLogger, unwrap, isErr } from "@corely/kernel";
-import type { InvoiceReminderSettingsPort } from "../../../ports/invoice-reminder-settings.port";
-import type { InvoiceReminderStatePort } from "../../../ports/invoice-reminder-state.port";
-import type { AuditPort } from "@/shared/ports/audit.port";
+import type {
+  InvoiceEmailDelivery,
+  InvoiceEmailDeliveryStatus,
+  InvoiceEmailDeliveryRepoPort,
+  OutboxPort,
+  IdGeneratorPort,
+  ClockPort,
+  InvoiceReminderStatePort,
+  InvoiceReminderSettingsPort,
+} from "@corely/kernel";
 import type { TenantTimeZonePort } from "@corely/kernel";
+import type { AuditPort } from "../../../../../../shared/ports/audit.port";
 
 class FakeReminderSettings implements InvoiceReminderSettingsPort {
   async getPolicy(_tenantId: string, _workspaceId: string) {
