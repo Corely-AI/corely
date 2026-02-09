@@ -1,6 +1,5 @@
 import type { EnvService } from "@corely/config";
 import { getInMemoryQueue, type QueuePort } from "@corely/kernel";
-import { BullmqQueueAdapter } from "./bullmq-queue.adapter";
 import { CloudTasksQueueAdapter } from "./cloud-tasks-queue.adapter";
 
 export function createWorkflowQueueAdapter<T>(
@@ -8,11 +7,7 @@ export function createWorkflowQueueAdapter<T>(
   env: EnvService,
   queueRoute: string
 ): QueuePort<T> {
-  const driver = env.WORKFLOW_QUEUE_DRIVER ?? (env.isProd() || env.REDIS_URL ? "bullmq" : "memory");
-
-  if (driver === "memory") {
-    return getInMemoryQueue<T>(name);
-  }
+  const driver = env.WORKFLOW_QUEUE_DRIVER ?? "memory";
 
   if (driver === "cloudtasks") {
     if (!env.GOOGLE_CLOUD_PROJECT) {
@@ -39,9 +34,5 @@ export function createWorkflowQueueAdapter<T>(
     });
   }
 
-  if (!env.REDIS_URL) {
-    throw new Error("REDIS_URL is required when WORKFLOW_QUEUE_DRIVER=bullmq");
-  }
-
-  return new BullmqQueueAdapter<T>(name, env.REDIS_URL);
+  return getInMemoryQueue<T>(name);
 }

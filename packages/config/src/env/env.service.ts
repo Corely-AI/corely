@@ -37,7 +37,7 @@ export class EnvService {
     return this.config.REDIS_URL;
   }
 
-  get WORKFLOW_QUEUE_DRIVER(): "bullmq" | "memory" | "cloudtasks" | undefined {
+  get WORKFLOW_QUEUE_DRIVER(): "memory" | "cloudtasks" | undefined {
     return this.config.WORKFLOW_QUEUE_DRIVER;
   }
 

@@ -1,10 +1,16 @@
 import { Module } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
 import { OutboxRepository } from "@corely/data";
 import { InvoiceEmailRequestedHandler } from "../invoices/invoice-email-requested.handler";
 import { InvoicePdfRenderRequestedHandler } from "../invoices/handlers/invoice-pdf-render-requested.handler";
 import { PrismaInvoiceEmailRepository } from "../invoices/infrastructure/prisma-invoice-email-repository.adapter";
 import { PrismaInvoiceEmailDeliveryAdapter } from "@corely/data";
-import { EMAIL_SENDER_PORT, type EmailSenderPort } from "@corely/kernel";
+import {
+  EMAIL_SENDER_PORT,
+  ID_GENERATOR_TOKEN,
+  type EmailSenderPort,
+  type IdGeneratorPort,
+} from "@corely/kernel";
 import { NotificationsModule } from "../notifications/notifications.module";
 import { OutboxPollerService } from "./outbox-poller.service";
 
@@ -35,6 +41,12 @@ import { EnvService } from "@corely/config";
     NotificationsModule,
   ],
   providers: [
+    {
+      provide: ID_GENERATOR_TOKEN,
+      useFactory: (): IdGeneratorPort => ({
+        newId: () => randomUUID(),
+      }),
+    },
     ClassesInvoiceReadyToSendHandler,
     {
       provide: InvoiceEmailRequestedHandler,
