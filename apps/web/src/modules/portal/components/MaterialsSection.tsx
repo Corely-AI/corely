@@ -28,6 +28,63 @@ const fileToBase64 = (file: File): Promise<string> =>
     reader.readAsDataURL(file);
   });
 
+const getFileExtension = (contentType: string, title?: string): string => {
+  const typeMap: Record<string, string> = {
+    "application/pdf": "PDF",
+    "application/msword": "DOC",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "DOCX",
+    "application/vnd.ms-excel": "XLS",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "XLSX",
+    "application/vnd.ms-powerpoint": "PPT",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": "PPTX",
+    "image/jpeg": "JPEG",
+    "image/jpg": "JPG",
+    "image/png": "PNG",
+    "image/gif": "GIF",
+    "image/webp": "WEBP",
+    "text/plain": "TXT",
+    "text/csv": "CSV",
+    "application/zip": "ZIP",
+    "application/x-zip-compressed": "ZIP",
+  };
+
+  if (typeMap[contentType]) {
+    return typeMap[contentType];
+  }
+
+  if (title) {
+    const ext = title.split(".").pop()?.toUpperCase();
+    if (ext && ext.length <= 4) {
+      return ext;
+    }
+  }
+
+  return "FILE";
+};
+
+const getContentTypeFromFilename = (filename: string): string => {
+  const ext = filename.split(".").pop()?.toLowerCase();
+  const mimeMap: Record<string, string> = {
+    pdf: "application/pdf",
+    doc: "application/msword",
+    docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    xls: "application/vnd.ms-excel",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ppt: "application/vnd.ms-powerpoint",
+    pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    webp: "image/webp",
+    txt: "text/plain",
+    csv: "text/csv",
+    zip: "application/zip",
+  };
+
+  return ext && mimeMap[ext] ? mimeMap[ext] : "application/octet-stream";
+};
+
 interface MaterialsSectionProps {
   entityId: string;
   entityType: "PARTY" | "CLASS_GROUP" | "CLASS_SESSION";
@@ -63,9 +120,10 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
       const base64 = await fileToBase64(file);
 
       // 2. Upload via base64 endpoint
+      const contentType = file.type || getContentTypeFromFilename(file.name);
       const result: any = await apiClient.post("/documents/upload-base64", {
         filename: displayName || file.name,
-        contentType: file.type || "application/octet-stream",
+        contentType,
         base64,
         purpose: "portal-material",
       });
@@ -123,7 +181,9 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
                 <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
                   Added
                 </th>
-                <th />
+                <th className="text-left text-sm font-medium text-muted-foreground px-4 py-3">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -139,26 +199,55 @@ export const MaterialsSection = ({ entityId, entityType }: MaterialsSectionProps
                     key={m.id}
                     className="border-b border-border hover:bg-muted/30 transition-colors"
                   >
-                    <td className="px-4 py-3 text-sm font-medium">{m.displayName}</td>
+                    <td className="px-4 py-3 text-sm font-medium">
+                      {m.title || m.displayName || "Untitled"}
+                    </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {m.contentType || "unknown"}
+                      {m.contentType ? getFileExtension(m.contentType, m.title) : "FILE"}
                     </td>
                     <td className="px-4 py-3 text-sm text-muted-foreground">
                       {new Date(m.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          if (confirm("Unlink this material?")) {
-                            unlinkMutation.mutate(m.id);
-                          }
-                        }}
-                        disabled={unlinkMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              const fileId = m.files?.[0]?.id;
+                              if (!fileId) {
+                                toast.error("No file available");
+                                return;
+                              }
+                              const result: any = await apiClient.get(
+                                `/documents/${m.id}/files/${fileId}/download-url`
+                              );
+                              if (result.url) {
+                                window.open(result.url, "_blank");
+                              } else {
+                                toast.error("No download URL in response");
+                              }
+                            } catch (err: any) {
+                              toast.error("Failed to get download link");
+                            }
+                          }}
+                        >
+                          Download
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            if (confirm("Unlink this material?")) {
+                              unlinkMutation.mutate(m.id);
+                            }
+                          }}
+                          disabled={unlinkMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))

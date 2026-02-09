@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuthStore } from "../stores/auth";
+import { useTranslation } from "react-i18next";
 import { Button, Input, Card, CardHeader, CardTitle, CardContent, CardFooter } from "@corely/ui";
 import { LogIn, Loader2, ArrowLeft, Mail } from "lucide-react";
 import { portalRequest } from "../stores/workspace";
@@ -7,6 +8,7 @@ import { portalRequest } from "../stores/workspace";
 const RESEND_COOLDOWN = 60;
 
 export const LoginPage = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -49,7 +51,7 @@ export const LoginPage = () => {
       setStep("code");
       setResendCountdown(RESEND_COOLDOWN);
     } catch (err: any) {
-      setError(err.message || "Failed to send code");
+      setError(err.message || t("portal.login.errors.send_failed"));
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,7 @@ export const LoginPage = () => {
       // We receive the access token + user info in the response body.
       login(response.accessToken, response.user);
     } catch (err: any) {
-      const message = err?.body?.message || err.message || "Invalid or expired code";
+      const message = err?.body?.message || err.message || t("portal.login.errors.verify_failed");
       setError(message);
     } finally {
       setLoading(false);
@@ -128,12 +130,12 @@ export const LoginPage = () => {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
-            Student & Guardian Portal
+            {t("portal.login.title")}
           </CardTitle>
           <p className="text-slate-400 text-sm">
             {step === "email"
-              ? "Enter your email to receive a login code"
-              : `Enter the 6-digit code sent to ${email}`}
+              ? t("portal.login.email_prompt")
+              : t("portal.login.code_sent", { email })}
           </p>
         </CardHeader>
 
@@ -146,10 +148,12 @@ export const LoginPage = () => {
                 </div>
               )}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Email</label>
+                <label className="text-sm font-medium text-slate-300">
+                  {t("portal.login.email_label")}
+                </label>
                 <Input
                   type="email"
-                  placeholder="name@example.com"
+                  placeholder={t("portal.login.email_placeholder")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-slate-800/50 border-slate-700 text-slate-200 focus:border-teal-500/50 transition-colors"
@@ -164,7 +168,11 @@ export const LoginPage = () => {
                 className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-white font-semibold py-6 shadow-lg shadow-teal-500/20 transition-all active:scale-95"
                 disabled={loading}
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Send Login Code"}
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  t("portal.login.send_code")
+                )}
               </Button>
             </CardFooter>
           </form>
@@ -177,12 +185,14 @@ export const LoginPage = () => {
                 </div>
               )}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-300">Login Code</label>
+                <label className="text-sm font-medium text-slate-300">
+                  {t("portal.login.code_label")}
+                </label>
                 <Input
                   ref={codeInputRef}
                   type="text"
                   inputMode="numeric"
-                  placeholder="000000"
+                  placeholder={t("portal.login.code_placeholder")}
                   value={code}
                   onChange={handleCodeChange}
                   onPaste={handlePaste}
@@ -203,7 +213,7 @@ export const LoginPage = () => {
                   }}
                   className="text-slate-400 hover:text-teal-400 transition-colors flex items-center gap-1"
                 >
-                  <ArrowLeft className="w-3 h-3" /> Change email
+                  <ArrowLeft className="w-3 h-3" /> {t("portal.login.change_email")}
                 </button>
 
                 <button
@@ -216,7 +226,9 @@ export const LoginPage = () => {
                       : "text-teal-400 hover:text-teal-300"
                   }`}
                 >
-                  {resendCountdown > 0 ? `Resend in ${resendCountdown}s` : "Resend code"}
+                  {resendCountdown > 0
+                    ? t("portal.login.resend_in", { count: resendCountdown })
+                    : t("portal.login.resend_code")}
                 </button>
               </div>
             </CardContent>
@@ -226,7 +238,11 @@ export const LoginPage = () => {
                 className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-white font-semibold py-6 shadow-lg shadow-teal-500/20 transition-all active:scale-95"
                 disabled={loading || code.length !== 6}
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify & Sign In"}
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  t("portal.login.verify_sign_in")
+                )}
               </Button>
             </CardFooter>
           </form>

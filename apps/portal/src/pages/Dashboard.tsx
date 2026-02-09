@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/auth";
+import { useTranslation } from "react-i18next";
 import { portalRequest } from "../stores/workspace";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Skeleton } from "@corely/ui";
 import {
@@ -11,9 +12,11 @@ import {
   Calendar,
   ExternalLink,
   ChevronDown,
+  Languages,
 } from "lucide-react";
 
 export const PortalDashboard = () => {
+  const { t, i18n } = useTranslation();
   const { user, accessToken, logout } = useAuthStore();
   const [profile, setProfile] = useState<any>(null);
   const [materials, setMaterials] = useState<any[]>([]);
@@ -60,7 +63,11 @@ export const PortalDashboard = () => {
       });
       window.open(res.downloadUrl, "_blank");
     } catch (err) {
-      alert("Failed to get download URL");
+      alert(
+        t("portal.dashboard.materials.download_failed", {
+          defaultValue: "Failed to get download URL",
+        })
+      );
     }
   };
 
@@ -78,12 +85,32 @@ export const PortalDashboard = () => {
             <span className="font-bold text-xl tracking-tight hidden sm:inline-block">
               Kerniflow{" "}
               <span className="text-teal-400 font-medium text-sm ml-1 px-2 py-0.5 rounded-full bg-teal-400/10 border border-teal-400/20 uppercase tracking-widest">
-                Portal
+                {t("portal.title")}
               </span>
             </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-1 mr-2 px-2 py-1 rounded-xl bg-white/5 border border-white/10">
+              <button
+                onClick={() => {
+                  void i18n.changeLanguage("en");
+                  localStorage.setItem("Corely Portal-language", "en");
+                }}
+                className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "en" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => {
+                  void i18n.changeLanguage("vi");
+                  localStorage.setItem("Corely Portal-language", "vi");
+                }}
+                className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "vi" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
+              >
+                VI
+              </button>
+            </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <UserIcon className="w-4 h-4 text-teal-400" />
               <span className="text-sm font-semibold hidden xs:inline-block">
@@ -122,7 +149,9 @@ export const PortalDashboard = () => {
 
                 <div className="space-y-3 pt-6 px-4 border-t border-white/5">
                   <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
-                    {user?.role === "GUARDIAN" ? "Select Student" : "Linked Students"}
+                    {user?.role === "GUARDIAN"
+                      ? t("portal.dashboard.students.select")
+                      : t("portal.dashboard.students.linked")}
                   </h3>
                   <div className="space-y-2">
                     {loading ? (
@@ -163,12 +192,16 @@ export const PortalDashboard = () => {
                                 : "border-teal-500/30 text-teal-400 group-hover:bg-teal-400 group-hover:text-slate-900"
                             }`}
                           >
-                            {selectedStudentId === s.id ? "VIEWING" : "STUDENT"}
+                            {selectedStudentId === s.id
+                              ? t("portal.dashboard.students.viewing")
+                              : t("portal.dashboard.students.student")}
                           </Badge>
                         </button>
                       ))
                     ) : (
-                      <p className="text-xs text-slate-500 italic py-2">No students linked</p>
+                      <p className="text-xs text-slate-500 italic py-2">
+                        {t("portal.dashboard.students.none")}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -183,13 +216,13 @@ export const PortalDashboard = () => {
                 <Calendar className="w-8 h-8" />
               </div>
               <div className="relative">
-                <h3 className="text-xl font-black">Next Sessions</h3>
+                <h3 className="text-xl font-black">{t("portal.dashboard.sessions.title")}</h3>
                 <p className="text-slate-400 text-sm mt-2 leading-relaxed font-medium">
-                  View your upcoming class schedule and links to join online sessions.
+                  {t("portal.dashboard.sessions.subtitle")}
                 </p>
               </div>
               <Button className="w-full bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-100 rounded-2xl py-6 font-bold tracking-tight shadow-xl">
-                Open Schedule
+                {t("portal.dashboard.sessions.open")}
               </Button>
             </Card>
           </div>
@@ -199,14 +232,14 @@ export const PortalDashboard = () => {
             <div className="flex items-end justify-between px-2">
               <div className="space-y-1">
                 <h2 className="text-4xl font-black flex items-center gap-4 tracking-tighter">
-                  Materials
+                  {t("portal.dashboard.materials.title")}
                 </h2>
                 <p className="text-slate-400 font-medium">
-                  All documents shared with you and your students.
+                  {t("portal.dashboard.materials.subtitle")}
                 </p>
               </div>
               <Badge className="bg-teal-500/10 text-teal-400 border-teal-500/20 px-4 py-1.5 rounded-full font-black text-xs">
-                {materials.length} ITEMS
+                {t("portal.dashboard.materials.items", { count: materials.length })}
               </Badge>
             </div>
 
@@ -246,7 +279,10 @@ export const PortalDashboard = () => {
                           </h4>
                           <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
                             <Calendar className="w-3.5 h-3.5" />
-                            <span>Added {new Date(m.createdAt).toLocaleDateString()}</span>
+                            <span>
+                              {t("portal.dashboard.materials.added")}{" "}
+                              {new Date(m.createdAt).toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -256,7 +292,9 @@ export const PortalDashboard = () => {
                           <div
                             className={`w-2 h-2 rounded-full ${m.studentId ? "bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.6)]" : "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]"}`}
                           ></div>
-                          {m.studentId ? "PERSONAL" : "CLASS GROUP"}
+                          {m.studentId
+                            ? t("portal.dashboard.materials.personal")
+                            : t("portal.dashboard.materials.class_group")}
                         </div>
                         <Button
                           size="sm"
@@ -264,7 +302,7 @@ export const PortalDashboard = () => {
                           onClick={() => handleDownload(m.documentId, profile?.students[0].id)}
                         >
                           <Download className="w-4 h-4 mr-2" />
-                          Get File
+                          {t("portal.dashboard.materials.getFile")}
                         </Button>
                       </div>
                     </CardContent>
@@ -276,9 +314,11 @@ export const PortalDashboard = () => {
                     <BookOpen className="w-16 h-16" />
                   </div>
                   <div className="max-w-xs mx-auto space-y-2">
-                    <h3 className="text-2xl font-black tracking-tight">Nothing here yet</h3>
+                    <h3 className="text-2xl font-black tracking-tight">
+                      {t("portal.dashboard.materials.empty.title")}
+                    </h3>
                     <p className="text-slate-500 font-medium">
-                      Your learning materials will appear here once your teacher uploads them.
+                      {t("portal.dashboard.materials.empty.subtitle")}
                     </p>
                   </div>
                 </div>

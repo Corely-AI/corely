@@ -69,6 +69,7 @@ export class UploadFileUseCase extends BaseUseCase<UploadFileBase64Input, Upload
       id: documentId,
       tenantId: ctx.tenantId!,
       type: "UPLOAD",
+      title: input.filename,
       createdAt: now,
       file: {
         id: fileId,

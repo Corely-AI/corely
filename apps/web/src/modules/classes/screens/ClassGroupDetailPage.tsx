@@ -19,6 +19,7 @@ import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
 import { formatDate, formatMoney } from "@/shared/lib/formatters";
 import { classGroupKeys, classEnrollmentKeys, classSessionKeys } from "../queries";
+import { CrudRowActions } from "@/shared/crud";
 import { MaterialsSection } from "../../portal/components/MaterialsSection";
 import { SessionsPanel } from "../components/SessionsPanel";
 

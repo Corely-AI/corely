@@ -1,0 +1,63 @@
+{
+  "portal": {
+    "title": "Portal",
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome",
+      "students": {
+        "title": "Students",
+        "select": "Select Student",
+        "linked": "Linked Students",
+        "viewing": "VIEWING",
+        "student": "STUDENT",
+        "none": "No students linked"
+      },
+      "sessions": {
+        "title": "Next Sessions",
+        "subtitle": "View your upcoming class schedule and links to join online sessions.",
+        "open": "Open Schedule"
+      },
+      "materials": {
+        "title": "Materials",
+        "subtitle": "All documents shared with you and your students.",
+        "items_one": "{{count}} ITEM",
+        "items_other": "{{count}} ITEMS",
+        "items": "ITEMS",
+        "added": "Added",
+        "personal": "PERSONAL",
+        "class_group": "CLASS GROUP",
+        "getFile": "Get File",
+        "empty": {
+          "title": "Nothing here yet",
+          "subtitle": "Your learning materials will appear here once your teacher uploads them."
+        }
+      }
+    },
+    "login": {
+      "title": "Student & Guardian Portal",
+      "email_prompt": "Enter your email to receive a login code",
+      "code_sent": "Enter the 6-digit code sent to {{email}}",
+      "email_label": "Email",
+      "email_placeholder": "name@example.com",
+      "send_code": "Send Login Code",
+      "code_label": "Login Code",
+      "code_placeholder": "000000",
+      "change_email": "Change email",
+      "resend_code": "Resend code",
+      "resend_in": "Resend in {{count}}s",
+      "verify_sign_in": "Verify & Sign In",
+      "errors": {
+        "send_failed": "Failed to send code",
+        "verify_failed": "Invalid or expired code"
+      }
+    }
+  },
+  "common": {
+    "logout": "Logout",
+    "loading": "Loading...",
+    "languages": {
+      "en": "EN",
+      "vi": "VI"
+    }
+  }
+}
