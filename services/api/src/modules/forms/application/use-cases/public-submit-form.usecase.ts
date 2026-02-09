@@ -3,7 +3,7 @@ import { ForbiddenError, NotFoundError, ValidationFailedError } from "@corely/do
 import type { UseCaseContext } from "@corely/kernel";
 import type { PublicSubmitInput } from "@corely/contracts";
 import type { FormRepositoryPort } from "../ports/form-repository.port";
-import type { OutboxPort } from "../ports/outbox.port";
+import type { OutboxPort } from "@corely/kernel";
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
 import { validateSubmissionPayload } from "../../domain/form-validation";

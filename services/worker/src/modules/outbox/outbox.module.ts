@@ -3,7 +3,8 @@ import { OutboxRepository } from "@corely/data";
 import { InvoiceEmailRequestedHandler } from "../invoices/invoice-email-requested.handler";
 import { InvoicePdfRenderRequestedHandler } from "../invoices/handlers/invoice-pdf-render-requested.handler";
 import { PrismaInvoiceEmailRepository } from "../invoices/infrastructure/prisma-invoice-email-repository.adapter";
-import { EMAIL_SENDER_PORT, type EmailSenderPort } from "../notifications/ports/email-sender.port";
+import { PrismaInvoiceEmailDeliveryAdapter } from "@corely/data";
+import { EMAIL_SENDER_PORT, type EmailSenderPort } from "@corely/kernel";
 import { NotificationsModule } from "../notifications/notifications.module";
 import { OutboxPollerService } from "./outbox-poller.service";
 
@@ -37,9 +38,12 @@ import { EnvService } from "@corely/config";
     ClassesInvoiceReadyToSendHandler,
     {
       provide: InvoiceEmailRequestedHandler,
-      useFactory: (sender: EmailSenderPort, repo: PrismaInvoiceEmailRepository) =>
-        new InvoiceEmailRequestedHandler(sender, repo),
-      inject: [EMAIL_SENDER_PORT, PrismaInvoiceEmailRepository],
+      useFactory: (
+        sender: EmailSenderPort,
+        repo: PrismaInvoiceEmailRepository,
+        deliveryRepo: PrismaInvoiceEmailDeliveryAdapter
+      ) => new InvoiceEmailRequestedHandler(sender, repo, deliveryRepo),
+      inject: [EMAIL_SENDER_PORT, PrismaInvoiceEmailRepository, PrismaInvoiceEmailDeliveryAdapter],
     },
     PrismaInvoiceEmailRepository,
     {

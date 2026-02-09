@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InvoiceEmailRequestedHandler } from "./invoice-email-requested.handler";
-import { type EmailSenderPort } from "../notifications/ports/email-sender.port";
+import { type EmailSenderPort } from "@corely/kernel";
 
 class FakeEmailSender implements EmailSenderPort {
   calls: any[] = [];
@@ -31,23 +31,24 @@ const baseEvent = {
 };
 
 describe("InvoiceEmailRequestedHandler", () => {
-  const repo = {
-    findDelivery: vi.fn(),
+  const invoiceRepo = {
     findInvoiceWithLines: vi.fn(),
-    markDeliverySent: vi.fn(),
-    markDeliveryFailed: vi.fn(),
+  };
+  const deliveryRepo = {
+    findById: vi.fn(),
+    updateStatus: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    repo.findDelivery.mockResolvedValue({
+    deliveryRepo.findById.mockResolvedValue({
       id: "delivery-1",
       tenantId: "tenant-1",
       invoiceId: "inv-1",
       to: "customer@example.com",
       status: "QUEUED",
     });
-    repo.findInvoiceWithLines.mockResolvedValue({
+    invoiceRepo.findInvoiceWithLines.mockResolvedValue({
       id: "inv-1",
       tenantId: "tenant-1",
       number: "INV-001",
@@ -62,26 +63,31 @@ describe("InvoiceEmailRequestedHandler", () => {
 
   it("sends email via port and marks delivery sent", async () => {
     const sender = new FakeEmailSender();
-    const handler = new InvoiceEmailRequestedHandler(sender, repo as any);
+    const handler = new InvoiceEmailRequestedHandler(
+      sender,
+      invoiceRepo as any,
+      deliveryRepo as any
+    );
 
     await handler.handle(baseEvent as any);
 
     expect(sender.calls[0].to).toEqual(["customer@example.com"]);
-    expect(repo.markDeliverySent).toHaveBeenCalledWith({
-      deliveryId: "delivery-1",
-      provider: "resend",
+    expect(deliveryRepo.updateStatus).toHaveBeenCalledWith("tenant-1", "delivery-1", "SENT", {
       providerMessageId: "msg-123",
     });
   });
 
   it("marks delivery failed when provider errors", async () => {
     const sender = new FakeEmailSender(true);
-    const handler = new InvoiceEmailRequestedHandler(sender, repo as any);
+    const handler = new InvoiceEmailRequestedHandler(
+      sender,
+      invoiceRepo as any,
+      deliveryRepo as any
+    );
 
     await expect(handler.handle(baseEvent as any)).rejects.toThrow("send fail");
-    expect(repo.markDeliveryFailed).toHaveBeenCalledWith({
-      deliveryId: "delivery-1",
-      error: "send fail",
+    expect(deliveryRepo.updateStatus).toHaveBeenCalledWith("tenant-1", "delivery-1", "FAILED", {
+      lastError: "send fail",
     });
   });
 });

@@ -4,7 +4,7 @@ import { EnvService } from "@corely/config";
 import { EventHandler, OutboxEvent } from "../outbox/event-handler.interface";
 import { renderEmail } from "@corely/email-templates";
 import { LeadConfirmationEmail, buildLeadConfirmationEmailSubject } from "@corely/email-templates";
-import { EMAIL_SENDER_PORT, type EmailSenderPort } from "../notifications/ports/email-sender.port";
+import { EMAIL_SENDER_PORT, type EmailSenderPort } from "@corely/kernel";
 
 @Injectable()
 export class FormsEventHandler implements EventHandler {

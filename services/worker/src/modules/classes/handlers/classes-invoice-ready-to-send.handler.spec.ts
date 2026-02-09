@@ -1,23 +1,26 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { ClassesInvoiceReadyToSendHandler } from "./classes-invoice-ready-to-send.handler";
-import { OutboxRepository, PrismaClassesRepository } from "@corely/data";
-import { PrismaInvoiceEmailRepository } from "../../invoices/infrastructure/prisma-invoice-email-repository.adapter";
+import {
+  OutboxRepository,
+  PrismaClassesRepository,
+  PrismaInvoiceEmailDeliveryAdapter,
+} from "@corely/data";
 import { OutboxEvent } from "../../outbox/event-handler.interface";
-import { UNIT_OF_WORK } from "@corely/kernel";
+import { ID_GENERATOR_TOKEN, UNIT_OF_WORK } from "@corely/kernel";
 import { vi, describe, beforeEach, it, expect } from "vitest";
 
 describe("ClassesInvoiceReadyToSendHandler", () => {
   let handler: ClassesInvoiceReadyToSendHandler;
   let repo: PrismaClassesRepository;
-  let emails: PrismaInvoiceEmailRepository;
+  let deliveries: PrismaInvoiceEmailDeliveryAdapter;
   let outbox: OutboxRepository;
 
   const mockRepo = {
     findInvoiceForEmail: vi.fn(),
   };
-  const mockEmails = {
-    findDeliveryByIdempotency: vi.fn(),
-    createDelivery: vi.fn(),
+  const mockDeliveries = {
+    findByIdempotencyKey: vi.fn(),
+    create: vi.fn(),
   };
   const mockOutbox = {
     enqueue: vi.fn(),
@@ -25,21 +28,25 @@ describe("ClassesInvoiceReadyToSendHandler", () => {
   const mockUow = {
     withinTransaction: vi.fn((cb) => cb("mock-tx")),
   };
+  const mockIdGenerator = {
+    newId: vi.fn(() => "del-1"),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ClassesInvoiceReadyToSendHandler,
         { provide: PrismaClassesRepository, useValue: mockRepo },
-        { provide: PrismaInvoiceEmailRepository, useValue: mockEmails },
+        { provide: PrismaInvoiceEmailDeliveryAdapter, useValue: mockDeliveries },
         { provide: OutboxRepository, useValue: mockOutbox },
         { provide: UNIT_OF_WORK, useValue: mockUow },
+        { provide: ID_GENERATOR_TOKEN, useValue: mockIdGenerator },
       ],
     }).compile();
 
     handler = module.get<ClassesInvoiceReadyToSendHandler>(ClassesInvoiceReadyToSendHandler);
     repo = module.get<PrismaClassesRepository>(PrismaClassesRepository);
-    emails = module.get<PrismaInvoiceEmailRepository>(PrismaInvoiceEmailRepository);
+    deliveries = module.get<PrismaInvoiceEmailDeliveryAdapter>(PrismaInvoiceEmailDeliveryAdapter);
     outbox = module.get<OutboxRepository>(OutboxRepository);
 
     vi.clearAllMocks();
@@ -57,12 +64,12 @@ describe("ClassesInvoiceReadyToSendHandler", () => {
       payload: { tenantId: "tenant-1", invoiceId: "inv-1" },
     };
 
-    mockEmails.findDeliveryByIdempotency.mockResolvedValue(null);
+    mockDeliveries.findByIdempotencyKey.mockResolvedValue(null);
     mockRepo.findInvoiceForEmail.mockResolvedValue({
       customerEmail: "test@example.com",
       customerLocale: "en",
     });
-    mockEmails.createDelivery.mockResolvedValue({ id: "del-1" });
+    mockDeliveries.create.mockResolvedValue({ id: "del-1" });
 
     await handler.handle(event);
 
@@ -71,13 +78,12 @@ describe("ClassesInvoiceReadyToSendHandler", () => {
     expect(mockUow.withinTransaction).toHaveBeenCalled();
 
     // Verify delivery creation passed tx
-    expect(mockEmails.createDelivery).toHaveBeenCalledWith(
+    expect(mockDeliveries.create).toHaveBeenCalledWith(
       expect.objectContaining({
         invoiceId: "inv-1",
         to: "test@example.com",
         idempotencyKey: "evt-123",
-      }),
-      "mock-tx"
+      })
     );
 
     // Verify enqueue passed tx
@@ -101,12 +107,12 @@ describe("ClassesInvoiceReadyToSendHandler", () => {
       payload: { tenantId: "tenant-1", invoiceId: "inv-1" },
     };
 
-    mockEmails.findDeliveryByIdempotency.mockResolvedValue({ id: "del-existing" });
+    mockDeliveries.findByIdempotencyKey.mockResolvedValue({ id: "del-existing" });
 
     await handler.handle(event);
 
     expect(mockRepo.findInvoiceForEmail).not.toHaveBeenCalled();
-    expect(mockEmails.createDelivery).not.toHaveBeenCalled();
+    expect(mockDeliveries.create).not.toHaveBeenCalled();
     expect(outbox.enqueue).not.toHaveBeenCalled();
   });
 

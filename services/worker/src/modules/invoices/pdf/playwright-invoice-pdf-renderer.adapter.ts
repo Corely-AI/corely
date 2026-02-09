@@ -3,7 +3,7 @@ import type { Browser } from "playwright";
 import type {
   InvoicePdfRendererPort,
   InvoicePdfModel,
-} from "@/modules/invoices/application/ports/invoice-pdf-renderer.port";
+} from "../application/ports/invoice-pdf-renderer.port";
 
 @Injectable()
 export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPort {

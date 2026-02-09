@@ -1,9 +1,14 @@
-import { Logger } from "@nestjs/common";
-import type { DocumentRepoPort } from "@/modules/documents/application/ports/document-repository.port";
-import type { FileRepoPort } from "@/modules/documents/application/ports/file-repository.port";
-import type { ObjectStoragePort } from "@/modules/documents/application/ports/object-storage.port";
-import type { InvoicePdfModelPort } from "@/modules/invoices/application/ports/invoice-pdf-model.port";
-import type { InvoicePdfRendererPort } from "@/modules/invoices/application/ports/invoice-pdf-renderer.port";
+import { Injectable, Logger, Inject } from "@nestjs/common";
+import {
+  type ObjectStoragePort,
+  OBJECT_STORAGE_PORT,
+  type DocumentRepoPort,
+  type FileRepoPort,
+} from "@corely/kernel";
+import { PrismaDocumentRepoAdapter, PrismaFileRepoAdapter } from "@corely/data";
+import { type InvoicePdfModelPort } from "../application/ports/invoice-pdf-model.port";
+import { type InvoicePdfRendererPort } from "../application/ports/invoice-pdf-renderer.port";
+import { INVOICE_PDF_MODEL_PORT, INVOICE_PDF_RENDERER_PORT } from "../tokens";
 
 type EventPayload = {
   tenantId: string;
@@ -12,23 +17,22 @@ type EventPayload = {
   fileId: string;
 };
 
-type Deps = {
-  documentRepo: DocumentRepoPort;
-  fileRepo: FileRepoPort;
-  objectStorage: ObjectStoragePort;
-  invoicePdfModel: InvoicePdfModelPort;
-  pdfRenderer: InvoicePdfRendererPort;
-};
-
+@Injectable()
 export class GenerateInvoicePdfWorker {
   private readonly logger = new Logger(GenerateInvoicePdfWorker.name);
 
-  constructor(private readonly deps: Deps) {}
+  constructor(
+    private readonly documentRepo: PrismaDocumentRepoAdapter,
+    private readonly fileRepo: PrismaFileRepoAdapter,
+    @Inject(OBJECT_STORAGE_PORT) private readonly objectStorage: ObjectStoragePort,
+    @Inject(INVOICE_PDF_MODEL_PORT) private readonly invoicePdfModel: InvoicePdfModelPort,
+    @Inject(INVOICE_PDF_RENDERER_PORT) private readonly pdfRenderer: InvoicePdfRendererPort
+  ) {}
 
   async handle(event: EventPayload) {
     const { tenantId, invoiceId, documentId, fileId } = event;
-    const document = await this.deps.documentRepo.findById(tenantId, documentId);
-    const file = await this.deps.fileRepo.findById(tenantId, fileId);
+    const document = await this.documentRepo.findById(tenantId, documentId);
+    const file = await this.fileRepo.findById(tenantId, fileId);
 
     if (!document || !file || file.documentId !== document.id) {
       this.logger.error("generate_invoice_pdf.missing_document_or_file", {
@@ -40,18 +44,18 @@ export class GenerateInvoicePdfWorker {
     }
 
     try {
-      const model = await this.deps.invoicePdfModel.getInvoicePdfModel(tenantId, invoiceId);
+      const model = await this.invoicePdfModel.getInvoicePdfModel(tenantId, invoiceId);
       if (!model) {
         throw new Error("Invoice model not found");
       }
 
-      const pdfBytes = await this.deps.pdfRenderer.renderInvoiceToPdf({
+      const pdfBytes = await this.pdfRenderer.renderInvoiceToPdf({
         tenantId,
         invoiceId,
         model,
       });
 
-      const upload = await this.deps.objectStorage.putObject({
+      const upload = await this.objectStorage.putObject({
         tenantId,
         objectKey: file.objectKey,
         contentType: "application/pdf",
@@ -64,8 +68,8 @@ export class GenerateInvoicePdfWorker {
       });
       document.markReady(new Date());
 
-      await this.deps.fileRepo.save(file);
-      await this.deps.documentRepo.save(document);
+      await this.fileRepo.save(file);
+      await this.documentRepo.save(document);
     } catch (error) {
       this.logger.error("generate_invoice_pdf.failed", {
         tenantId,
@@ -77,7 +81,7 @@ export class GenerateInvoicePdfWorker {
         error instanceof Error ? error.message : "PDF generation failed",
         new Date()
       );
-      await this.deps.documentRepo.save(document);
+      await this.documentRepo.save(document);
       throw error;
     }
   }

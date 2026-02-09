@@ -3,8 +3,7 @@ import { EnvService } from "@corely/config";
 import { OutboxRepository } from "@corely/data";
 import { PrismaService } from "@corely/data";
 import { IssueTranscriptionRequestedHandler } from "./issue-transcription-requested.handler";
-import { createGcsClient } from "./infrastructure/gcs/gcs.client";
-import { GcsObjectStorageAdapter } from "./infrastructure/gcs/gcs-object-storage.adapter";
+import { OBJECT_STORAGE_PORT, type ObjectStoragePort } from "@corely/kernel";
 import { DocumentsPortAdapter } from "./infrastructure/documents/documents-port.adapter";
 import { GoogleSpeechToTextAdapter } from "./infrastructure/speech-to-text/google-speech-to-text.adapter";
 import { OpenAiSpeechToTextAdapter } from "./infrastructure/speech-to-text/openai-speech-to-text.adapter";
@@ -20,21 +19,10 @@ import {
 @Module({
   providers: [
     {
-      provide: GcsObjectStorageAdapter,
-      useFactory: (env: EnvService) => {
-        const client = createGcsClient({
-          projectId: env.GOOGLE_CLOUD_PROJECT,
-          keyFilename: env.GOOGLE_APPLICATION_CREDENTIALS,
-        });
-        return new GcsObjectStorageAdapter(client, env.STORAGE_BUCKET);
-      },
-      inject: [EnvService],
-    },
-    {
       provide: DOCUMENTS_PORT,
-      useFactory: (prisma: PrismaService, storage: GcsObjectStorageAdapter) =>
+      useFactory: (prisma: PrismaService, storage: ObjectStoragePort) =>
         new DocumentsPortAdapter(prisma, storage),
-      inject: [PrismaService, GcsObjectStorageAdapter],
+      inject: [PrismaService, OBJECT_STORAGE_PORT],
     },
     {
       provide: SPEECH_TO_TEXT_PORT,

@@ -8,7 +8,7 @@ import { PublicFormsController } from "./http/public-forms.controller";
 import { PrismaFormRepository } from "./infrastructure/adapters/prisma-form-repository.adapter";
 import { FORM_REPOSITORY } from "./application/ports/form-repository.port";
 import { PrismaOutboxAdapter } from "@corely/data";
-import { OUTBOX_PORT } from "./application/ports/outbox.port";
+import { OUTBOX_PORT } from "@corely/kernel";
 import { CreateFormUseCase } from "./application/use-cases/create-form.usecase";
 import { UpdateFormUseCase } from "./application/use-cases/update-form.usecase";
 import { DeleteFormUseCase } from "./application/use-cases/delete-form.usecase";

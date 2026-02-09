@@ -1,4 +1,4 @@
-import type { OutboxPort } from "../../application/ports/outbox.port";
+import type { OutboxPort } from "@corely/kernel";
 
 export type OutboxEvent = {
   tenantId: string;

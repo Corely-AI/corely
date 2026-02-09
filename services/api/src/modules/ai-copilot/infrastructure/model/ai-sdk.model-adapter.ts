@@ -8,7 +8,7 @@ import type { DomainToolPort } from "../../application/ports/domain-tool.port";
 import { buildAiTools } from "../tools/tools.factory";
 import type { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution-repository.port";
 import type { AuditPort } from "../../application/ports/audit.port";
-import type { OutboxPort } from "../../application/ports/outbox.port";
+import type { OutboxPort } from "@corely/kernel";
 import { buildCollectInputsTool } from "../tools/interactive-tools";
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
 import { CopilotDataPartSchemas } from "@corely/contracts";

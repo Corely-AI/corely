@@ -1,12 +1,13 @@
 import React from "react";
 import { Inject, Injectable } from "@nestjs/common";
 import { PrismaInvoiceEmailRepository } from "./infrastructure/prisma-invoice-email-repository.adapter";
+import { PrismaInvoiceEmailDeliveryAdapter } from "@corely/data";
 import { EventHandler, OutboxEvent } from "../outbox/event-handler.interface";
 import { renderEmail } from "@corely/email-templates";
 import { InvoiceEmail, buildInvoiceEmailSubject } from "@corely/email-templates/invoices";
 import { mapToInvoiceEmailProps } from "./invoice-email-props.mapper";
-import { EMAIL_SENDER_PORT } from "../notifications/ports/email-sender.port";
-import type { EmailSenderPort } from "../notifications/ports/email-sender.port";
+import { EMAIL_SENDER_PORT } from "@corely/kernel";
+import type { EmailSenderPort } from "@corely/kernel";
 
 export type InvoiceEmailRequestedPayload = {
   deliveryId: string;
@@ -26,7 +27,8 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
 
   constructor(
     @Inject(EMAIL_SENDER_PORT) private readonly emailSender: EmailSenderPort,
-    private readonly repo: PrismaInvoiceEmailRepository
+    private readonly repo: PrismaInvoiceEmailRepository,
+    private readonly deliveryRepo: PrismaInvoiceEmailDeliveryAdapter
   ) {}
 
   async handle(event: OutboxEvent): Promise<void> {
@@ -37,7 +39,7 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
     }
 
     // 1. Load delivery record
-    const delivery = await this.repo.findDelivery(payload.deliveryId);
+    const delivery = await this.deliveryRepo.findById(event.tenantId, payload.deliveryId);
 
     if (!delivery) {
       throw new Error(`Delivery record not found: ${payload.deliveryId}`);
@@ -94,17 +96,14 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
       const result = await this.emailSender.sendEmail(emailRequest);
 
       // 6. Update delivery record to SENT
-      await this.repo.markDeliverySent({
-        deliveryId: payload.deliveryId,
-        provider: result.provider,
+      await this.deliveryRepo.updateStatus(event.tenantId, payload.deliveryId, "SENT", {
         providerMessageId: result.providerMessageId,
       });
     } catch (error) {
       // Update delivery record to FAILED
       const errorMessage = error instanceof Error ? error.message : String(error);
-      await this.repo.markDeliveryFailed({
-        deliveryId: payload.deliveryId,
-        error: errorMessage,
+      await this.deliveryRepo.updateStatus(event.tenantId, payload.deliveryId, "FAILED", {
+        lastError: errorMessage,
       });
 
       throw error; // Re-throw to mark outbox event as failed

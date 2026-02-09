@@ -4,7 +4,7 @@ import { CreateMonthlyBillingRunUseCase } from "../application/use-cases/create-
 import type { ClassesRepositoryPort } from "../application/ports/classes-repository.port";
 import type { InvoicesWritePort } from "../application/ports/invoices-write.port";
 import type { AuditPort } from "../application/ports/audit.port";
-import type { OutboxPort } from "../application/ports/outbox.port";
+import type { OutboxPort } from "@corely/kernel";
 import type { IdempotencyStoragePort } from "../application/ports/idempotency.port";
 import type { IdGeneratorPort } from "../application/ports/id-generator.port";
 import type { ClockPort } from "../application/ports/clock.port";

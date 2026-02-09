@@ -1,8 +1,4 @@
-import {
-  type ObjectStoragePort,
-  type SignedDownload,
-  type SignedUpload,
-} from "../../application/ports/object-storage.port";
+import { type ObjectStoragePort, type SignedDownload, type SignedUpload } from "@corely/kernel";
 
 type StoredObject = { key: string; contentType: string; bytes: Buffer };
 

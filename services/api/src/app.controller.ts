@@ -1,6 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
 import { CONTRACTS_HELLO, mockReceipts } from "@corely/contracts";
-import { DOMAIN_HELLO, formatEUR, vatCents } from "@corely/domain";
 
 @Controller()
 export class AppController {
@@ -12,13 +11,17 @@ export class AppController {
   @Get("/demo")
   demo() {
     const r = mockReceipts[0];
+    const formatEUR = (cents: number, locale: string) =>
+      new Intl.NumberFormat(locale, { style: "currency", currency: "EUR" }).format(cents / 100);
+    const vatCents = (totalCents: number, vatRate: number) =>
+      Math.round(totalCents - totalCents / (1 + vatRate));
     return {
       contracts: CONTRACTS_HELLO,
-      domain: DOMAIN_HELLO,
+      domain: "Corely domain loaded",
       sample: {
-        merchant: r.merchant,
-        total: formatEUR(r.totalCents, "de-DE"),
-        vat: formatEUR(vatCents(r), "de-DE"),
+        merchant: r?.merchant ?? "N/A",
+        total: formatEUR(r?.totalCents ?? 0, "de-DE"),
+        vat: formatEUR(vatCents(r?.totalCents ?? 0, r?.vatRate ?? 0), "de-DE"),
       },
     };
   }
