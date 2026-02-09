@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { ResendEmailSenderAdapter } from "@corely/email";
 import {
   InvoiceEmailSenderPort,

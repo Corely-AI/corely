@@ -39,7 +39,7 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
     }
 
     // 1. Load delivery record
-    const delivery = await this.deliveryRepo.findById(payload.deliveryId);
+    const delivery = await this.deliveryRepo.findById(event.tenantId, payload.deliveryId);
 
     if (!delivery) {
       throw new Error(`Delivery record not found: ${payload.deliveryId}`);

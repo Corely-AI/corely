@@ -15,9 +15,6 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly skipConnect: boolean;
 
   constructor() {
-    console.log(
-      "---------------------------------------------------------------------------------------"
-    );
     const skipConnect = process.env.SKIP_PRISMA_CONNECT === "true";
     if (skipConnect) {
       super({});
@@ -32,21 +29,13 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
 
     const pool = new Pool({ connectionString: url });
-    console.log(
-      "---------------------------------------------------------------------------------------"
-    );
+
     const adapter = new PrismaPg(pool);
-    console.log(
-      "---------------------------------------------------------------------------------------"
-    );
+
     super({ adapter });
-    console.log(
-      "4---------------------------------------------------------------------------------------"
-    );
+
     this.pool = pool;
-    console.log(
-      "5---------------------------------------------------------------------------------------"
-    );
+
     this.skipConnect = false;
   }
 

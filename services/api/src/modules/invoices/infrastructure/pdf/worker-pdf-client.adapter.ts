@@ -17,8 +17,8 @@ export class WorkerPdfClientAdapter implements InvoicePdfRendererPort {
     model: InvoicePdfModel;
   }): Promise<Buffer> {
     const { tenantId, invoiceId } = args;
-    const workerUrl = this.env.INTERNAL_WORKER_URL;
-    const workerKey = this.env.INTERNAL_WORKER_KEY;
+    const workerUrl = this.env.WORKER_API_BASE_URL;
+    const workerKey = process.env.INTERNAL_WORKER_KEY;
 
     if (!workerUrl) {
       throw new Error("INTERNAL_WORKER_URL is not configured");
@@ -48,7 +48,7 @@ export class WorkerPdfClientAdapter implements InvoicePdfRendererPort {
     // If the port expects Buffer, I should probably download the file from the signedUrl or have the worker return the bytes.
     // However, Phase 4.2 says "return { objectKey... }".
 
-    const result = await response.json();
+    const result = (await response.json()) as { objectKey?: string; signedUrl?: string };
     this.logger.log(`Worker PDF generated: ${result.objectKey}`);
 
     // If the API really needs the Buffer, it has to fetch it.

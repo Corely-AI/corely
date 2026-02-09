@@ -59,9 +59,9 @@ export class GcsObjectStorageAdapter implements ObjectStoragePort {
     const [metadata] = await file.getMetadata();
     return {
       exists: true,
-      sizeBytes: metadata.size ? Number(metadata.size) : undefined,
-      contentType: metadata.contentType,
-      etag: metadata.etag,
+      ...(metadata.size ? { sizeBytes: Number(metadata.size) } : {}),
+      ...(metadata.contentType ? { contentType: metadata.contentType } : {}),
+      ...(metadata.etag ? { etag: metadata.etag } : {}),
     };
   }
 

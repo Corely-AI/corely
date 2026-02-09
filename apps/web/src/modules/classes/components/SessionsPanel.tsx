@@ -16,15 +16,15 @@ import { formatDateTime } from "@/shared/lib/formatters";
 import { CrudRowActions } from "@/shared/crud";
 
 interface Session {
-  id: string;
-  startsAt: string;
+  id?: string;
+  startsAt?: string;
   topic?: string | null;
-  status: string;
+  status?: string;
 }
 
 interface SessionData {
-  items: Session[];
-  total: number;
+  items?: Session[];
+  total?: number;
 }
 
 interface SessionsPanelProps {
@@ -62,6 +62,7 @@ export function SessionsPanel({
   generateSessionsPending,
 }: SessionsPanelProps) {
   const sessions = sessionData?.items ?? [];
+  const totalSessions = sessionData?.total ?? sessions.length;
 
   return (
     <Card>
@@ -130,21 +131,26 @@ export function SessionsPanel({
               </tr>
             </thead>
             <tbody>
-              {sessions.map((session) => (
+              {sessions.map((session, index) => (
                 <tr
-                  key={session.id}
+                  key={session.id ?? session.startsAt ?? `session-${index}`}
                   className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                 >
                   <td className="px-4 py-3 text-sm font-medium">
-                    {formatDateTime(session.startsAt, "de-DE")}
+                    {session.startsAt ? formatDateTime(session.startsAt, "de-DE") : "—"}
                   </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
                     {session.topic || "—"}
                   </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">{session.status}</td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {session.status ?? "—"}
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <CrudRowActions
-                      primaryAction={{ label: "Open", href: `/sessions/${session.id}` }}
+                      primaryAction={{
+                        label: "Open",
+                        href: session.id ? `/sessions/${session.id}` : undefined,
+                      }}
                     />
                   </td>
                 </tr>
@@ -160,11 +166,11 @@ export function SessionsPanel({
           </table>
         </div>
 
-        {sessionData && sessionData.total > 10 ? (
+        {sessionData && totalSessions > 10 ? (
           <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">
-              Showing {(sessionsPage - 1) * 10 + 1} to{" "}
-              {Math.min(sessionsPage * 10, sessionData.total)} of {sessionData.total} sessions
+              Showing {(sessionsPage - 1) * 10 + 1} to {Math.min(sessionsPage * 10, totalSessions)}{" "}
+              of {totalSessions} sessions
             </div>
             <Pagination>
               <PaginationContent>
@@ -180,11 +186,11 @@ export function SessionsPanel({
                   <PaginationNext
                     onClick={() =>
                       onSessionsPageChange(
-                        Math.min(sessionsPage + 1, Math.ceil(sessionData.total / 10))
+                        Math.min(sessionsPage + 1, Math.ceil(totalSessions / 10))
                       )
                     }
                     className={
-                      sessionsPage >= Math.ceil(sessionData.total / 10)
+                      sessionsPage >= Math.ceil(totalSessions / 10)
                         ? "pointer-events-none opacity-50"
                         : "cursor-pointer"
                     }

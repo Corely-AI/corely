@@ -14,7 +14,7 @@ export type ResendConfig = {
 export class ResendEmailSenderAdapter implements EmailSenderPort {
   private readonly resend: Resend;
   private readonly fromAddress: string;
-  private readonly replyTo?: string;
+  private readonly replyTo: string | undefined;
 
   constructor(config: ResendConfig) {
     if (!config.apiKey) {
@@ -47,17 +47,20 @@ export class ResendEmailSenderAdapter implements EmailSenderPort {
       emailOptions.headers = request.headers;
     }
     if (request.attachments?.length) {
-      emailOptions.attachments = request.attachments.map((att) => ({
-        filename: att.filename,
-        path: att.path,
-        content: att.content,
-        contentType: att.mimeType,
-      }));
+      emailOptions.attachments = request.attachments.map(
+        (att: NonNullable<SendEmailRequest["attachments"]>[number]) => ({
+          filename: att.filename,
+          path: att.path,
+          content: att.content,
+          contentType: att.mimeType,
+        })
+      );
     }
 
-    const { data, error } = await this.resend.emails.send(emailOptions, {
-      idempotencyKey: request.idempotencyKey,
-    });
+    const sendOptions = request.idempotencyKey
+      ? { idempotencyKey: request.idempotencyKey }
+      : undefined;
+    const { data, error } = await this.resend.emails.send(emailOptions, sendOptions);
 
     if (error) {
       throw new Error(`Resend API error: ${error.message}`);

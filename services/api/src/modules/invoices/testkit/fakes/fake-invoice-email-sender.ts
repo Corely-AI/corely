@@ -2,7 +2,7 @@ import {
   type InvoiceEmailSenderPort,
   type SendInvoiceEmailRequest,
   type SendInvoiceEmailResponse,
-} from "@corely/kernel";
+} from "../../application/ports/invoice-email-sender.port";
 
 export class FakeInvoiceEmailSender implements InvoiceEmailSenderPort {
   sentEmails: SendInvoiceEmailRequest[] = [];

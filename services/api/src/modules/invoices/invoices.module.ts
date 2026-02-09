@@ -48,11 +48,9 @@ import { InvoiceCommandService } from "./application/services/invoice-command.se
 import {
   INVOICE_REMINDER_STATE_PORT,
   type InvoiceReminderStatePort,
-} from "./application/ports/invoice-reminder-state.port";
-import {
   INVOICE_REMINDER_SETTINGS_PORT,
   type InvoiceReminderSettingsPort,
-} from "./application/ports/invoice-reminder-settings.port";
+} from "@corely/kernel";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule, TaxModule],

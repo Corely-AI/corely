@@ -1,13 +1,18 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { SendInvoiceRemindersUseCase } from "./send-invoice-reminders.usecase";
 import { InvoiceAggregate } from "../../../domain/invoice.aggregate";
-import { FixedClock, NoopLogger, ok, isErr } from "@corely/kernel";
+import {
+  FixedClock,
+  NoopLogger,
+  ok,
+  isErr,
+  type InvoiceReminderStatePort,
+  type InvoiceReminderSettingsPort,
+  type TenantTimeZonePort,
+} from "@corely/kernel";
 import type { InvoiceRepoPort } from "../../ports/invoice-repository.port";
-import type { InvoiceReminderStatePort } from "../../ports/invoice-reminder-state.port";
-import type { InvoiceReminderSettingsPort } from "../../ports/invoice-reminder-settings.port";
 import type { SendInvoiceUseCase } from "../send-invoice/send-invoice.usecase";
 import type { AuditPort } from "@/shared/ports/audit.port";
-import type { TenantTimeZonePort } from "@corely/kernel";
 
 class FakeReminderState implements InvoiceReminderStatePort {
   candidates: any[] = [];

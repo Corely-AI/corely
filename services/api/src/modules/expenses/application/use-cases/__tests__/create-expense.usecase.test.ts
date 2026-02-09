@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { CreateExpenseUseCase } from "../create-expense.usecase";
 import { FakeExpenseRepository } from "../../../testkit/fakes/fake-expense-repo";
 import { MockAuditPort } from "@shared/testkit/mocks/mock-audit-port";
-import { MockOutboxPort } from "@corely/kernel";
+import { MockOutboxPort } from "@shared/testkit/mocks/mock-outbox-port";
 import { MockIdempotencyStoragePort } from "@shared/testkit/mocks/mock-idempotency-port";
 import { FakeIdGenerator } from "@shared/testkit/fakes/fake-id-generator";
 import { FakeClock } from "@shared/testkit/fakes/fake-clock";

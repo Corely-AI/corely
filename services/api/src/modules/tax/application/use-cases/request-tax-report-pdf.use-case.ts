@@ -10,7 +10,7 @@ import {
 import type { RequestTaxReportPdfOutput } from "@corely/contracts";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 import { TaxReportRepoPort } from "../../domain/ports";
-import { GcsObjectStorageAdapter } from "../../../documents/infrastructure/storage/gcs/gcs-object-storage.adapter";
+import { GcsObjectStorageAdapter } from "@corely/storage";
 import { OUTBOX_PORT, type OutboxPort } from "@corely/kernel";
 
 export interface RequestTaxReportPdfInput {

@@ -2,7 +2,7 @@ import { Controller, Post, Req, Res, HttpStatus, type RawBodyRequest } from "@ne
 import { Request, type Response } from "express";
 import { Resend } from "resend";
 import { EnvService } from "@corely/config";
-import { PrismaInvoiceEmailDeliveryRepoAdapter } from "../../infrastructure/prisma/prisma-invoice-email-delivery-repo.adapter";
+import { PrismaInvoiceEmailDeliveryAdapter } from "@corely/data";
 
 type ResendWebhookEvent = {
   type: string;
@@ -22,7 +22,7 @@ export class ResendWebhookController {
   private webhookSecret: string;
 
   constructor(
-    private readonly deliveryRepo: PrismaInvoiceEmailDeliveryRepoAdapter,
+    private readonly deliveryRepo: PrismaInvoiceEmailDeliveryAdapter,
     private readonly envService: EnvService
   ) {
     const apiKey = process.env.RESEND_API_KEY;

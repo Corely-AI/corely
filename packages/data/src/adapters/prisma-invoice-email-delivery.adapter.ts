@@ -30,7 +30,9 @@ export class PrismaInvoiceEmailDeliveryAdapter implements InvoiceEmailDeliveryRe
       where: { id: deliveryId },
     });
     // Check tenantId if needed, though usually id is global
-    if (row && row.tenantId !== tenantId) {return null;}
+    if (row && row.tenantId !== tenantId) {
+      return null;
+    }
     return (row as InvoiceEmailDelivery) || null;
   }
 
@@ -82,13 +84,13 @@ export class PrismaInvoiceEmailDeliveryAdapter implements InvoiceEmailDeliveryRe
   async updateStatusByProviderMessageId(
     providerMessageId: string,
     status: InvoiceEmailDeliveryStatus,
-    lastError?: string | null
+    opts?: { lastError?: string | null }
   ): Promise<void> {
     await this.prisma.invoiceEmailDelivery.updateMany({
       where: { providerMessageId },
       data: {
         status,
-        lastError: lastError ?? null,
+        lastError: opts?.lastError ?? null,
       },
     });
   }

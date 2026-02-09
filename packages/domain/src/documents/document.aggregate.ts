@@ -78,9 +78,9 @@ export class DocumentAggregate {
             bucket: params.file.bucket,
             objectKey: params.file.objectKey,
             isPublic: params.file.isPublic ?? false,
-            contentType: params.file.contentType,
-            sizeBytes: params.file.sizeBytes,
-            sha256: params.file.sha256,
+            contentType: params.file.contentType ?? null,
+            sizeBytes: params.file.sizeBytes ?? null,
+            sha256: params.file.sha256 ?? null,
             createdAt: params.file.createdAt,
           }),
         ]
