@@ -3,8 +3,10 @@ import type { Request } from "express";
 import { PortalApplication } from "../application/portal.application";
 import { buildUseCaseContext, mapResultToHttp } from "../../../shared/http/usecase-mappers";
 import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
+import { PublicWorkspaceRoute } from "../../../shared/public";
 
 @Controller("portal")
+@PublicWorkspaceRoute()
 export class PortalController {
   constructor(private readonly app: PortalApplication) {}
 
