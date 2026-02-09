@@ -2,7 +2,7 @@
 import { Module, forwardRef } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { DataModule, PrismaOutboxAdapter } from "@corely/data";
-import { EnvService } from "@corely/config";
+import { EnvModule, EnvService } from "@corely/config";
 import { OUTBOX_PORT } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { PlatformModule } from "../platform";
@@ -69,7 +69,7 @@ import { ConfirmPasswordResetUseCase } from "./application/use-cases/confirm-pas
 import { TenantRoleSeederService } from "./application/services/tenant-role-seeder.service";
 
 @Module({
-  imports: [DataModule, KernelModule, forwardRef(() => PlatformModule)],
+  imports: [EnvModule.forRoot(), DataModule, KernelModule, forwardRef(() => PlatformModule)],
   controllers: [AuthController, RolesController, PermissionsController, TenantsController],
   providers: [
     // Repositories - NestJS will auto-inject Prisma adapters based on @Injectable()

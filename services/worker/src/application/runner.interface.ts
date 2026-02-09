@@ -25,5 +25,6 @@ export interface TickContext {
 
 export interface Runner {
   readonly name: string;
+  readonly singletonLockKey?: string;
   run(ctx: TickContext): Promise<RunnerReport>;
 }

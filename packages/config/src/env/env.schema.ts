@@ -53,6 +53,20 @@ export const envSchema = z.object({
   WORKER_TICK_LOOP_INTERVAL_MS: z.coerce.number().int().positive().default(10_000),
   WORKER_TICK_LOOP_MAX_JITTER_MS: z.coerce.number().int().min(0).default(2_000),
   WORKER_TICK_LOOP_ERROR_BACKOFF_MS: z.coerce.number().int().positive().default(30_000),
+  WORKER_IDLE_BACKOFF_MIN_MS: z.coerce.number().int().positive().default(1_000),
+  WORKER_IDLE_BACKOFF_MAX_MS: z.coerce.number().int().positive().default(30_000),
+  WORKER_IDLE_BACKOFF_JITTER_MS: z.coerce.number().int().min(0).default(500),
+  WORKER_BUSY_LOOP_DELAY_MS: z.coerce.number().int().min(0).default(250),
+  WORKER_SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  OUTBOX_BATCH_SIZE: z.coerce.number().int().positive().default(50),
+  OUTBOX_CONCURRENCY: z.coerce.number().int().positive().default(10),
+  PDF_RENDER_CONCURRENCY: z.coerce.number().int().positive().default(2),
+  OUTBOX_LEASE_DURATION_MS: z.coerce.number().int().positive().default(60_000),
+  OUTBOX_LEASE_HEARTBEAT_MS: z.coerce.number().int().positive().default(15_000),
+  OUTBOX_MAX_ATTEMPTS: z.coerce.number().int().positive().default(3),
+  OUTBOX_RETRY_BASE_MS: z.coerce.number().int().positive().default(5_000),
+  OUTBOX_RETRY_MAX_MS: z.coerce.number().int().positive().default(120_000),
+  OUTBOX_RETRY_JITTER_MS: z.coerce.number().int().min(0).default(500),
   CLASSES_BILLING_RUN_ENABLED: z
     .preprocess((value) => {
       if (typeof value === "string") {

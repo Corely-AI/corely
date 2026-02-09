@@ -49,6 +49,7 @@ Deployment, configuration, and infrastructure.
 
 - [Docker](./devops/DOCKER.md)
 - [Configuration](./devops/configuration.md)
+- [Worker Runtime Modes](./devops/worker-tick-job.md)
 - [Customization](./devops/customization.md)
 - [Licensing](./devops/licensing.md)
 

@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import { OutboxRepository } from "@corely/data";
+import { EnvService } from "@corely/config";
 import { InvoiceEmailRequestedHandler } from "../invoices/invoice-email-requested.handler";
 import { InvoicePdfRenderRequestedHandler } from "../invoices/handlers/invoice-pdf-render-requested.handler";
 import { PrismaInvoiceEmailRepository } from "../invoices/infrastructure/prisma-invoice-email-repository.adapter";
@@ -60,6 +61,7 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
       provide: OutboxPollerService,
       useFactory: (
         repo: OutboxRepository,
+        env: EnvService,
         invoiceHandler: InvoiceEmailRequestedHandler,
         invoicePdfHandler: InvoicePdfRenderRequestedHandler,
         cashEntryHandler: CashEntryCreatedHandler,
@@ -68,7 +70,7 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
         formsHandler: FormsEventHandler,
         classesHandler: ClassesInvoiceReadyToSendHandler
       ) => {
-        return new OutboxPollerService(repo, [
+        return new OutboxPollerService(repo, env, [
           invoiceHandler,
           invoicePdfHandler,
           cashEntryHandler,
@@ -80,6 +82,7 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
       },
       inject: [
         OutboxRepository,
+        EnvService,
         InvoiceEmailRequestedHandler,
         InvoicePdfRenderRequestedHandler,
         CashEntryCreatedHandler,

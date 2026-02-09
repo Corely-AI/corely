@@ -57,6 +57,8 @@ export default defineConfig({
       "@corely/kernel": path.resolve(__dirname, "../..", "packages/kernel/src"),
       "@corely/data": path.resolve(__dirname, "../..", "packages/data/src"),
       "@corely/public-urls": path.resolve(__dirname, "../..", "packages/public-urls/src"),
+      "@corely/storage": path.resolve(__dirname, "../..", "packages/storage/src"),
+      "@": path.resolve(__dirname, "../api/src"),
     },
   },
 });

@@ -6,11 +6,15 @@ model OutboxEvent {
   status      OutboxStatus @default(PENDING)
   attempts    Int      @default(0)
   availableAt DateTime @default(now())
+  lockedBy    String?
+  lockedUntil DateTime?
+  lastError   String?
   correlationId String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([tenantId, status, availableAt])
+  @@index([status, availableAt, lockedUntil, createdAt])
   @@schema("workflow")
 }
 
@@ -62,6 +66,7 @@ model IdempotencyKey {
 
 enum OutboxStatus {
   PENDING
+  PROCESSING
   SENT
   FAILED
   @@schema("workflow")

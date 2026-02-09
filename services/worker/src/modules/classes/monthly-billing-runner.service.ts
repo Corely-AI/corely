@@ -17,6 +17,7 @@ export class MonthlyBillingRunnerService implements Runner {
   private warnedInvalidTime = false;
   private readonly runWindowMinutes = 10;
   public readonly name = "classesBilling";
+  public readonly singletonLockKey = "worker:scheduler:classesBilling";
 
   constructor(
     private readonly env: EnvService,

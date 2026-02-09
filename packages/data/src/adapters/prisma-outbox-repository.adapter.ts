@@ -12,6 +12,33 @@ export interface OutboxEventData {
   availableAt?: Date;
 }
 
+export interface OutboxClaimOptions {
+  limit: number;
+  workerId: string;
+  leaseDurationMs: number;
+}
+
+export interface OutboxQueueStats {
+  duePendingCount: number;
+  oldestDuePendingAgeMs: number | null;
+}
+
+export interface OutboxMarkFailedOptions {
+  workerId: string;
+  error: string;
+  retryable?: boolean;
+  maxAttempts?: number;
+  retryBaseDelayMs?: number;
+  retryMaxDelayMs?: number;
+  retryJitterMs?: number;
+}
+
+export interface OutboxMarkFailedResult {
+  outcome: "retried" | "failed" | "skipped";
+  attempts?: number;
+  nextAvailableAt?: Date;
+}
+
 /**
  * OutboxRepository for worker polling use cases.
  * This is separate from OutboxPort which is used by application layer.
@@ -26,8 +53,10 @@ function safeParsePayload(payloadJson: string): unknown {
 
 @Injectable()
 export class OutboxRepository {
-  private readonly maxAttempts = 3;
-  private readonly baseDelayMs = 5000;
+  private readonly defaultMaxAttempts = 3;
+  private readonly defaultBaseDelayMs = 5000;
+  private readonly defaultMaxDelayMs = 120000;
+  private readonly defaultJitterMs = 250;
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -61,36 +90,170 @@ export class OutboxRepository {
     }));
   }
 
-  async markSent(id: string) {
-    return this.prisma.outboxEvent.update({
-      where: { id },
-      data: { status: "SENT" },
+  async claimPending(options: OutboxClaimOptions) {
+    const now = new Date();
+    const lockUntil = new Date(now.getTime() + Math.max(1, options.leaseDurationMs));
+
+    const claimed = await this.prisma.$transaction(async (tx) => {
+      return tx.$queryRaw<PrismaOutboxEvent[]>`
+        WITH candidates AS (
+          SELECT e."id"
+          FROM "workflow"."OutboxEvent" e
+          WHERE (
+            (
+              e."status" = 'PENDING'
+              AND e."availableAt" <= ${now}
+            )
+            OR (
+              e."status" = 'PROCESSING'
+              AND e."lockedUntil" IS NOT NULL
+              AND e."lockedUntil" < ${now}
+            )
+          )
+          ORDER BY e."availableAt" ASC, e."createdAt" ASC
+          LIMIT ${Math.max(1, options.limit)}
+          FOR UPDATE SKIP LOCKED
+        )
+        UPDATE "workflow"."OutboxEvent" e
+        SET
+          "status" = 'PROCESSING',
+          "lockedBy" = ${options.workerId},
+          "lockedUntil" = ${lockUntil},
+          "updatedAt" = ${now}
+        FROM candidates
+        WHERE e."id" = candidates."id"
+        RETURNING e.*
+      `;
+    });
+
+    return claimed.map((event) => ({
+      ...event,
+      payload: safeParsePayload(event.payloadJson ?? "{}"),
+    }));
+  }
+
+  async extendLease(eventId: string, workerId: string, leaseDurationMs: number): Promise<boolean> {
+    const now = new Date();
+    const lockedUntil = new Date(now.getTime() + Math.max(1, leaseDurationMs));
+    const updated = await this.prisma.outboxEvent.updateMany({
+      where: {
+        id: eventId,
+        status: "PROCESSING",
+        lockedBy: workerId,
+      },
+      data: { lockedUntil, updatedAt: now },
+    });
+    return updated.count > 0;
+  }
+
+  async markSent(id: string, workerId: string): Promise<boolean> {
+    const now = new Date();
+    const updated = await this.prisma.outboxEvent.updateMany({
+      where: {
+        id,
+        status: "PROCESSING",
+        lockedBy: workerId,
+      },
+      data: {
+        status: "SENT",
+        lockedBy: null,
+        lockedUntil: null,
+        lastError: null,
+        updatedAt: now,
+      },
+    });
+    return updated.count > 0;
+  }
+
+  async markFailed(id: string, options: OutboxMarkFailedOptions): Promise<OutboxMarkFailedResult> {
+    return this.prisma.$transaction(async (tx) => {
+      const current = await tx.outboxEvent.findUnique({
+        where: { id },
+        select: {
+          attempts: true,
+          status: true,
+          lockedBy: true,
+        },
+      });
+      if (!current) {
+        return { outcome: "skipped" as const };
+      }
+      if (current.status !== "PROCESSING" || current.lockedBy !== options.workerId) {
+        return { outcome: "skipped" as const };
+      }
+
+      const nextAttempts = current.attempts + 1;
+      const maxAttempts = options.maxAttempts ?? this.defaultMaxAttempts;
+      const retryable = options.retryable ?? true;
+      const now = new Date();
+      const exhausted = nextAttempts >= maxAttempts;
+      const shouldRetry = retryable && !exhausted;
+
+      if (!shouldRetry) {
+        await tx.outboxEvent.update({
+          where: { id },
+          data: {
+            status: "FAILED",
+            attempts: nextAttempts,
+            lastError: options.error.slice(0, 2000),
+            lockedBy: null,
+            lockedUntil: null,
+            updatedAt: now,
+          },
+        });
+        return { outcome: "failed" as const, attempts: nextAttempts };
+      }
+
+      const retryBaseDelayMs = options.retryBaseDelayMs ?? this.defaultBaseDelayMs;
+      const retryMaxDelayMs = options.retryMaxDelayMs ?? this.defaultMaxDelayMs;
+      const retryJitterMs = Math.max(0, options.retryJitterMs ?? this.defaultJitterMs);
+      const jitterMs = retryJitterMs > 0 ? Math.floor(Math.random() * (retryJitterMs + 1)) : 0;
+      const delayMs = Math.min(retryMaxDelayMs, retryBaseDelayMs * Math.pow(2, nextAttempts - 1));
+      const availableAt = new Date(now.getTime() + delayMs + jitterMs);
+
+      await tx.outboxEvent.update({
+        where: { id },
+        data: {
+          status: "PENDING",
+          attempts: nextAttempts,
+          availableAt,
+          lastError: options.error.slice(0, 2000),
+          lockedBy: null,
+          lockedUntil: null,
+          updatedAt: now,
+        },
+      });
+      return {
+        outcome: "retried" as const,
+        attempts: nextAttempts,
+        nextAvailableAt: availableAt,
+      };
     });
   }
 
-  async markFailed(id: string, _error: string) {
-    const updated = await this.prisma.outboxEvent.update({
-      where: { id },
-      data: {
-        attempts: { increment: 1 },
-      },
-    });
+  async getQueueStats(now: Date = new Date()): Promise<OutboxQueueStats> {
+    const [duePendingCount, oldest] = await Promise.all([
+      this.prisma.outboxEvent.count({
+        where: {
+          status: "PENDING",
+          availableAt: { lte: now },
+        },
+      }),
+      this.prisma.outboxEvent.findFirst({
+        where: {
+          status: "PENDING",
+          availableAt: { lte: now },
+        },
+        orderBy: { createdAt: "asc" },
+        select: { createdAt: true },
+      }),
+    ]);
 
-    if (updated.attempts >= this.maxAttempts) {
-      await this.prisma.outboxEvent.update({
-        where: { id },
-        data: { status: "FAILED" },
-      });
-      return;
-    }
-
-    const delayMs = this.baseDelayMs * Math.pow(2, updated.attempts - 1);
-    await this.prisma.outboxEvent.update({
-      where: { id },
-      data: {
-        status: "PENDING",
-        availableAt: new Date(Date.now() + delayMs),
-      },
-    });
+    return {
+      duePendingCount,
+      oldestDuePendingAgeMs: oldest
+        ? Math.max(0, now.getTime() - oldest.createdAt.getTime())
+        : null,
+    };
   }
 }

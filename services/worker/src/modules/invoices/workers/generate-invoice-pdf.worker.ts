@@ -43,6 +43,16 @@ export class GenerateInvoicePdfWorker {
       return;
     }
 
+    if (document.status === "READY" && file.contentType === "application/pdf" && !!file.sizeBytes) {
+      this.logger.log("generate_invoice_pdf.already_ready", {
+        tenantId,
+        invoiceId,
+        documentId,
+        fileId,
+      });
+      return;
+    }
+
     try {
       const model = await this.invoicePdfModel.getInvoicePdfModel(tenantId, invoiceId);
       if (!model) {

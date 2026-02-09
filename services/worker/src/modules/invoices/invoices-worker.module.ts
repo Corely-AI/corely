@@ -6,6 +6,7 @@ import { InvoiceReminderRunnerService } from "./invoice-reminder-runner.service"
 import { InvoicePdfRenderRequestedHandler } from "./handlers/invoice-pdf-render-requested.handler";
 import { GenerateInvoicePdfWorker } from "./workers/generate-invoice-pdf.worker";
 import { PlaywrightInvoicePdfRendererAdapter } from "./pdf/playwright-invoice-pdf-renderer.adapter";
+import { PlaywrightBrowserLifecycle } from "./pdf/playwright-browser.lifecycle";
 import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoice-pdf-model.adapter";
 import { OBJECT_STORAGE_PORT, type ObjectStoragePort } from "@corely/kernel";
 import {
@@ -54,6 +55,7 @@ import { INVOICE_PDF_MODEL_PORT, INVOICE_PDF_RENDERER_PORT } from "./tokens";
       useFactory: (browser: Browser) => new PlaywrightInvoicePdfRendererAdapter(browser),
       inject: ["PLAYWRIGHT_BROWSER"],
     },
+    PlaywrightBrowserLifecycle,
     { provide: INVOICE_PDF_RENDERER_PORT, useExisting: PlaywrightInvoicePdfRendererAdapter },
     InvoicePdfService,
     GenerateInvoicePdfWorker,

@@ -124,7 +124,7 @@ If you must manage schedules centrally in Cloud Scheduler, you can create a Sche
 
 ## Operational safety checklist
 
-- ✅ Job-level lock so multiple concurrent runs don’t collide
+- ✅ Scheduler runner advisory lock (`pg_try_advisory_xact_lock`) so only one replica executes reminders per tick
 - ✅ Row-level locking (or atomic updates) when claiming due reminder states
 - ✅ Idempotency key per (tenantId, invoiceId, reminderCount)
 - ✅ Stops automatically on PAID/CANCELED
