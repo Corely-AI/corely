@@ -52,6 +52,8 @@ export function getApiPrefix(): string {
 export function portalRequest<T = unknown>(
   opts: Omit<RequestOptions, "url"> & { url: string }
 ): Promise<T> {
-  const prefix = getApiPrefix();
-  return request<T>({ ...opts, url: `${prefix}${opts.url}` });
+  const slug = resolveWorkspaceSlug();
+  const separator = opts.url.includes("?") ? "&" : "?";
+  const urlWithWorkspace = slug ? `${opts.url}${separator}w=${slug}` : opts.url;
+  return request<T>({ ...opts, url: urlWithWorkspace });
 }

@@ -269,13 +269,13 @@ export const PortalDashboard = () => {
                             variant="secondary"
                             className="bg-white/5 text-slate-400 group-hover:bg-teal-400/10 group-hover:text-teal-400 border border-white/5 transition-all text-[10px] font-black"
                           >
-                            {m.linkedType.replace("_", " ")}
+                            {m.linkedTo?.replace("_", " ") || "UNKNOWN"}
                           </Badge>
                         </div>
 
                         <div className="space-y-1">
                           <h4 className="text-xl font-black text-slate-100 group-hover:text-teal-400 transition-colors truncate tracking-tight">
-                            {m.displayName}
+                            {m.title || "Untitled"}
                           </h4>
                           <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
                             <Calendar className="w-3.5 h-3.5" />
