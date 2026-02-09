@@ -4,6 +4,7 @@ import { JobLockService } from "../infrastructure/job-lock.service";
 import { Runner, RunnerReport, TickContext } from "./runner.interface";
 import { OutboxPollerService } from "../modules/outbox/outbox-poller.service";
 import { InvoiceReminderRunnerService } from "../modules/invoices/invoice-reminder-runner.service";
+import { MonthlyBillingRunnerService } from "../modules/classes/monthly-billing-runner.service";
 import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
@@ -17,15 +18,12 @@ export class TickOrchestrator {
     @Inject(forwardRef(() => OutboxPollerService))
     private readonly outboxRunner: OutboxPollerService,
     @Inject(forwardRef(() => InvoiceReminderRunnerService))
-    private readonly invoiceRunner: InvoiceReminderRunnerService
+    private readonly invoiceRunner: InvoiceReminderRunnerService,
+    @Inject(forwardRef(() => MonthlyBillingRunnerService))
+    private readonly classesBillingRunner: MonthlyBillingRunnerService
   ) {
-    if (!this.logger) {
-      // Should be initialized by property initializer, but just in case
-      // this.logger = new Logger(TickOrchestrator.name);
-      // Property initializers run before constructor body but after constructor parameters are evaluated.
-    }
     this.logger.log(
-      `TickOrchestrator constructor: outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}`
+      `TickOrchestrator constructor: outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}`
     );
 
     // Register available runners
@@ -34,6 +32,9 @@ export class TickOrchestrator {
     }
     if (this.invoiceRunner) {
       this.registerRunner(this.invoiceRunner);
+    }
+    if (this.classesBillingRunner) {
+      this.registerRunner(this.classesBillingRunner);
     }
   }
 
@@ -56,7 +57,9 @@ export class TickOrchestrator {
       const startedAt = new Date();
 
       // 2. Determine configuration
-      const enabledRunnerNames = (this.env.WORKER_TICK_RUNNERS || "outbox,invoiceReminders")
+      const enabledRunnerNames = (
+        this.env.WORKER_TICK_RUNNERS || "outbox,invoiceReminders,classesBilling"
+      )
         .split(",")
         .map((s) => s.trim());
       const overallMaxMs = Number(this.env.WORKER_TICK_OVERALL_MAX_MS || 480000); // 8 mins
@@ -130,5 +133,9 @@ export class TickOrchestrator {
       // 4. Release Lock
       await this.jobLockService.releaseTickLock();
     }
+  }
+
+  async runOnce(): Promise<void> {
+    await this.runTick();
   }
 }

@@ -5,5 +5,6 @@ import { MonthlyBillingRunnerService } from "./monthly-billing-runner.service";
 @Module({
   imports: [DataModule],
   providers: [MonthlyBillingRunnerService],
+  exports: [MonthlyBillingRunnerService],
 })
 export class ClassesWorkerModule {}

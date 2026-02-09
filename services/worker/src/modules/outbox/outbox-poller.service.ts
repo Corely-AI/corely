@@ -1,38 +1,22 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { OutboxRepository } from "@corely/data";
 import { EventHandler } from "./event-handler.interface";
-import { EnvService } from "@corely/config";
 import { Runner, RunnerReport, TickContext } from "../../application/runner.interface";
 
 @Injectable()
-export class OutboxPollerService implements OnModuleInit, OnModuleDestroy, Runner {
+export class OutboxPollerService implements Runner {
   private readonly logger = new Logger(OutboxPollerService.name);
-  private intervalId: NodeJS.Timeout | undefined;
   private handlers = new Map<string, EventHandler>();
 
   public readonly name = "outbox";
 
   constructor(
     private readonly outboxRepo: OutboxRepository,
-    private readonly env: EnvService,
     handlers: EventHandler[]
   ) {
     for (const handler of handlers) {
       this.handlers.set(handler.eventType, handler);
     }
-  }
-
-  onModuleInit() {
-    // Only start polling if not disabled
-    if (this.env.WORKER_DISABLE_POLLING !== "true") {
-      this.startPolling();
-    }
-  }
-
-  private startPolling() {
-    this.intervalId = setInterval(async () => {
-      await this.processBatch(10);
-    }, 5000);
   }
 
   async run(ctx: TickContext): Promise<RunnerReport> {
@@ -101,11 +85,5 @@ export class OutboxPollerService implements OnModuleInit, OnModuleDestroy, Runne
     }
 
     return { processed: events.length, errors: errorCount };
-  }
-
-  onModuleDestroy() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-    }
   }
 }

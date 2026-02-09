@@ -26,8 +26,6 @@ import { FormsWorkerModule } from "../forms/forms-worker.module";
 import { ClassesInvoiceReadyToSendHandler } from "../classes/handlers/classes-invoice-ready-to-send.handler";
 import { ClassesWorkerModule } from "../classes/classes-worker.module";
 
-import { EnvService } from "@corely/config";
-
 // ... imports
 
 @Module({
@@ -62,7 +60,6 @@ import { EnvService } from "@corely/config";
       provide: OutboxPollerService,
       useFactory: (
         repo: OutboxRepository,
-        env: EnvService,
         invoiceHandler: InvoiceEmailRequestedHandler,
         invoicePdfHandler: InvoicePdfRenderRequestedHandler,
         cashEntryHandler: CashEntryCreatedHandler,
@@ -71,7 +68,7 @@ import { EnvService } from "@corely/config";
         formsHandler: FormsEventHandler,
         classesHandler: ClassesInvoiceReadyToSendHandler
       ) => {
-        return new OutboxPollerService(repo, env, [
+        return new OutboxPollerService(repo, [
           invoiceHandler,
           invoicePdfHandler,
           cashEntryHandler,
@@ -83,7 +80,6 @@ import { EnvService } from "@corely/config";
       },
       inject: [
         OutboxRepository,
-        EnvService,
         InvoiceEmailRequestedHandler,
         InvoicePdfRenderRequestedHandler,
         CashEntryCreatedHandler,

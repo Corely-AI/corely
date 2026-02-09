@@ -121,6 +121,18 @@ export class EnvService {
     return this.config.WORKER_DISABLE_POLLING;
   }
 
+  get WORKER_TICK_LOOP_INTERVAL_MS(): number {
+    return this.config.WORKER_TICK_LOOP_INTERVAL_MS;
+  }
+
+  get WORKER_TICK_LOOP_MAX_JITTER_MS(): number {
+    return this.config.WORKER_TICK_LOOP_MAX_JITTER_MS;
+  }
+
+  get WORKER_TICK_LOOP_ERROR_BACKOFF_MS(): number {
+    return this.config.WORKER_TICK_LOOP_ERROR_BACKOFF_MS;
+  }
+
   get CLASSES_BILLING_RUN_ENABLED(): boolean {
     return this.config.CLASSES_BILLING_RUN_ENABLED;
   }

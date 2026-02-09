@@ -1,7 +1,8 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { PrismaService } from "@corely/data";
 import { formatInTimeZone } from "date-fns-tz";
+import { Runner, RunnerReport, TickContext } from "../../application/runner.interface";
 
 type RunSchedule = {
   runMonth: string;
@@ -9,50 +10,74 @@ type RunSchedule = {
 };
 
 @Injectable()
-export class MonthlyBillingRunnerService implements OnModuleInit, OnModuleDestroy {
+export class MonthlyBillingRunnerService implements Runner {
   private readonly logger = new Logger(MonthlyBillingRunnerService.name);
-  private intervalId: NodeJS.Timeout | undefined;
   private lastRunDate: string | undefined;
   private warnedMissingConfig = false;
   private warnedInvalidTime = false;
-  private readonly tickIntervalMs = 60_000;
   private readonly runWindowMinutes = 10;
+  public readonly name = "classesBilling";
 
   constructor(
     private readonly env: EnvService,
     private readonly prisma: PrismaService
   ) {}
 
-  onModuleInit() {
+  async run(ctx: TickContext): Promise<RunnerReport> {
+    const startedAt = Date.now();
+    let processedCount = 0;
+    let errorCount = 0;
+    let skippedCount = 0;
+
     if (!this.env.CLASSES_BILLING_RUN_ENABLED) {
       this.logger.log("Classes billing scheduler disabled.");
-      return;
+      return {
+        processedCount: 0,
+        updatedCount: 0,
+        skippedCount: 0,
+        errorCount: 0,
+        durationMs: Date.now() - startedAt,
+      };
     }
-    this.intervalId = setInterval(() => void this.tick(), this.tickIntervalMs);
-    void this.tick();
-  }
 
-  onModuleDestroy() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-    }
-  }
-
-  private async tick() {
     try {
       const schedule = this.resolveRunSchedule();
       if (!schedule) {
-        return;
+        return {
+          processedCount: 0,
+          updatedCount: 0,
+          skippedCount: 0,
+          errorCount: 0,
+          durationMs: Date.now() - startedAt,
+        };
       }
       if (this.lastRunDate === schedule.localDate) {
-        return;
+        return {
+          processedCount: 0,
+          updatedCount: 0,
+          skippedCount: 0,
+          errorCount: 0,
+          durationMs: Date.now() - startedAt,
+        };
       }
       this.lastRunDate = schedule.localDate;
 
-      await this.runForAllTenants(schedule.runMonth);
+      const result = await this.runForAllTenants(schedule.runMonth, ctx.budgets.perRunnerMaxItems);
+      processedCount = result.processedCount;
+      skippedCount = result.skippedCount;
+      errorCount = result.errorCount;
     } catch (error) {
+      errorCount++;
       this.logger.error(error instanceof Error ? (error.stack ?? error.message) : String(error));
     }
+
+    return {
+      processedCount,
+      updatedCount: processedCount,
+      skippedCount,
+      errorCount,
+      durationMs: Date.now() - startedAt,
+    };
   }
 
   private resolveRunSchedule(): RunSchedule | null {
@@ -117,23 +142,40 @@ export class MonthlyBillingRunnerService implements OnModuleInit, OnModuleDestro
     return `${String(prev.year).padStart(4, "0")}-${String(prev.month).padStart(2, "0")}`;
   }
 
-  private async runForAllTenants(month: string) {
+  private async runForAllTenants(
+    month: string,
+    maxTenants: number
+  ): Promise<{ processedCount: number; skippedCount: number; errorCount: number }> {
     const baseUrl = this.env.WORKER_API_BASE_URL;
     if (!baseUrl) {
-      return;
+      return { processedCount: 0, skippedCount: 0, errorCount: 0 };
     }
 
     const tenants = await this.prisma.tenant.findMany({
       where: { status: "ACTIVE" },
       select: { id: true },
+      take: Math.max(1, maxTenants),
     });
 
+    let processedCount = 0;
+    let errorCount = 0;
     for (const tenant of tenants) {
-      await this.runForTenant(baseUrl, tenant.id, month);
+      try {
+        const sent = await this.runForTenant(baseUrl, tenant.id, month);
+        if (sent) {
+          processedCount++;
+        } else {
+          errorCount++;
+        }
+      } catch {
+        errorCount++;
+      }
     }
+
+    return { processedCount, skippedCount: 0, errorCount };
   }
 
-  private async runForTenant(baseUrl: string, tenantId: string, month: string) {
+  private async runForTenant(baseUrl: string, tenantId: string, month: string): Promise<boolean> {
     const url = `${baseUrl.replace(/\/$/, "")}/internal/classes/billing/runs`;
     const idempotencyKey = `classes-billing:${tenantId}:${month}`;
     const headers: Record<string, string> = {
@@ -155,12 +197,13 @@ export class MonthlyBillingRunnerService implements OnModuleInit, OnModuleDestro
 
     if (response.ok) {
       this.logger.log(`Billing run triggered for ${tenantId} ${month}.`);
-      return;
+      return true;
     }
 
     const body = await response.text().catch(() => "");
     this.logger.warn(
       `Billing run failed for ${tenantId} ${month}: ${response.status} ${response.statusText} ${body}`
     );
+    return false;
   }
 }

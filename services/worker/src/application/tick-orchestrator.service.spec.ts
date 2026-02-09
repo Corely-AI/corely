@@ -4,17 +4,15 @@ import { EnvService } from "@corely/config";
 import { JobLockService } from "../infrastructure/job-lock.service";
 import { OutboxPollerService } from "../modules/outbox/outbox-poller.service";
 import { InvoiceReminderRunnerService } from "../modules/invoices/invoice-reminder-runner.service";
+import { MonthlyBillingRunnerService } from "../modules/classes/monthly-billing-runner.service";
 import { RunnerReport } from "./runner.interface";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 describe("TickOrchestrator", () => {
   let orchestrator: TickOrchestrator;
-  let jobLockService: JobLockService;
-  let outboxRunner: OutboxPollerService;
-  let invoiceRunner: InvoiceReminderRunnerService;
 
   const mockEnvService = {
-    WORKER_TICK_RUNNERS: "outbox,invoiceReminders", // Default
+    WORKER_TICK_RUNNERS: "outbox,invoiceReminders,classesBilling", // Default
     WORKER_TICK_OVERALL_MAX_MS: 1000,
   };
 
@@ -33,6 +31,11 @@ describe("TickOrchestrator", () => {
     run: vi.fn(),
   };
 
+  const mockClassesBillingRunner = {
+    name: "classesBilling",
+    run: vi.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -41,13 +44,11 @@ describe("TickOrchestrator", () => {
         { provide: JobLockService, useValue: mockLockService },
         { provide: OutboxPollerService, useValue: mockOutboxRunner },
         { provide: InvoiceReminderRunnerService, useValue: mockInvoiceRunner },
+        { provide: MonthlyBillingRunnerService, useValue: mockClassesBillingRunner },
       ],
     }).compile();
 
     orchestrator = module.get<TickOrchestrator>(TickOrchestrator);
-    jobLockService = module.get<JobLockService>(JobLockService);
-    outboxRunner = module.get<OutboxPollerService>(OutboxPollerService);
-    invoiceRunner = module.get<InvoiceReminderRunnerService>(InvoiceReminderRunnerService);
 
     vi.clearAllMocks();
   });
@@ -56,12 +57,14 @@ describe("TickOrchestrator", () => {
     mockLockService.tryAcquireTickLock.mockResolvedValue(true);
     mockOutboxRunner.run.mockResolvedValue({ processedCount: 1 } as RunnerReport);
     mockInvoiceRunner.run.mockResolvedValue({ processedCount: 2 } as RunnerReport);
+    mockClassesBillingRunner.run.mockResolvedValue({ processedCount: 3 } as RunnerReport);
 
     await orchestrator.runTick();
 
     expect(mockLockService.tryAcquireTickLock).toHaveBeenCalled();
     expect(mockOutboxRunner.run).toHaveBeenCalled();
     expect(mockInvoiceRunner.run).toHaveBeenCalled();
+    expect(mockClassesBillingRunner.run).toHaveBeenCalled();
     expect(mockLockService.releaseTickLock).toHaveBeenCalled();
   });
 
@@ -82,8 +85,9 @@ describe("TickOrchestrator", () => {
 
     expect(mockOutboxRunner.run).toHaveBeenCalled();
     expect(mockInvoiceRunner.run).not.toHaveBeenCalled();
+    expect(mockClassesBillingRunner.run).not.toHaveBeenCalled();
 
     // Reset
-    mockEnvService.WORKER_TICK_RUNNERS = "outbox,invoiceReminders";
+    mockEnvService.WORKER_TICK_RUNNERS = "outbox,invoiceReminders,classesBilling";
   });
 });

@@ -53,6 +53,8 @@ Rules:
 - Consume outbox events only.
 - Any DB access should be encapsulated in infrastructure adapters.
 - Deliveries are idempotent (handlers must guard against re-sends).
+- Tick is the single source of truth for scheduled work.
+- Background mode must repeatedly call tick; no duplicated scheduler logic outside tick runners.
 
 ## Outbox & Idempotency
 

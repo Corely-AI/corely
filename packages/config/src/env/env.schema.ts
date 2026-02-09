@@ -50,6 +50,9 @@ export const envSchema = z.object({
   WORKER_TICK_SHARD_INDEX: z.coerce.number().int().min(0).optional(),
   WORKER_TICK_SHARD_COUNT: z.coerce.number().int().positive().optional(),
   WORKER_DISABLE_POLLING: z.string().optional(),
+  WORKER_TICK_LOOP_INTERVAL_MS: z.coerce.number().int().positive().default(10_000),
+  WORKER_TICK_LOOP_MAX_JITTER_MS: z.coerce.number().int().min(0).default(2_000),
+  WORKER_TICK_LOOP_ERROR_BACKOFF_MS: z.coerce.number().int().positive().default(30_000),
   CLASSES_BILLING_RUN_ENABLED: z
     .preprocess((value) => {
       if (typeof value === "string") {
