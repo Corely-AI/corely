@@ -19,5 +19,13 @@ export default defineConfig(() => {
     },
   });
 
+  // Add explicit proxy for /portal endpoints
+  if (!baseConfig.server) baseConfig.server = {};
+  if (!baseConfig.server.proxy) baseConfig.server.proxy = {};
+  baseConfig.server.proxy["/portal"] = {
+    target: "http://localhost:3000",
+    changeOrigin: true,
+  };
+
   return baseConfig;
 });
