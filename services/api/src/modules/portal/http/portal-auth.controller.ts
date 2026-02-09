@@ -82,7 +82,7 @@ export class PortalAuthController {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: PORTAL_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000,
-        path: "/api/portal/auth",
+        path: "/portal/auth",
       });
 
       return {
@@ -120,14 +120,14 @@ export class PortalAuthController {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: PORTAL_REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000,
-        path: "/api/portal/auth",
+        path: "/portal/auth",
       });
 
       return { accessToken: result.accessToken };
     } catch (error: any) {
       if (error?.statusCode === 401) {
         // Clear stale cookie
-        res.clearCookie(REFRESH_COOKIE_NAME, { path: "/api/portal/auth" });
+        res.clearCookie(REFRESH_COOKIE_NAME, { path: "/portal/auth" });
         throw new BadRequestException("Session expired, please log in again");
       }
       throw error;
@@ -148,7 +148,7 @@ export class PortalAuthController {
     }
 
     // Clear cookie
-    res.clearCookie(REFRESH_COOKIE_NAME, { path: "/api/portal/auth" });
+    res.clearCookie(REFRESH_COOKIE_NAME, { path: "/portal/auth" });
 
     return { message: "Logged out" };
   }
