@@ -39,7 +39,7 @@ export const PortalDashboard = () => {
             url: `/portal/students/${studentId}/materials`,
             accessToken,
           });
-          setMaterials(mats);
+          setMaterials(mats?.items ?? mats ?? []);
         } else {
           setMaterials([]);
         }
@@ -61,7 +61,7 @@ export const PortalDashboard = () => {
         url: `/portal/materials/${docId}/download-url?studentId=${studentId}`,
         accessToken,
       });
-      window.open(res.downloadUrl, "_blank");
+      window.open(res.url, "_blank");
     } catch (err) {
       alert(
         t("portal.dashboard.materials.download_failed", {
@@ -299,7 +299,7 @@ export const PortalDashboard = () => {
                         <Button
                           size="sm"
                           className="h-10 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl font-black px-5 shadow-lg shadow-teal-500/20 active:scale-95 transition-all"
-                          onClick={() => handleDownload(m.documentId, profile?.students[0].id)}
+                          onClick={() => handleDownload(m.id, selectedStudentId!)}
                         >
                           <Download className="w-4 h-4 mr-2" />
                           {t("portal.dashboard.materials.getFile")}

@@ -181,3 +181,185 @@ export async function createCustomerParty(
 
   return party;
 }
+
+export async function createLegalEntity(
+  prisma: PrismaClient,
+  tenantId: string,
+  data: Partial<{
+    id: string;
+    kind: string;
+    legalName: string;
+    countryCode: string;
+    currency: string;
+  }> = {}
+) {
+  const id = data.id ?? nanoid();
+  return prisma.legalEntity.create({
+    data: {
+      id,
+      tenantId,
+      kind: data.kind ?? "COMPANY",
+      legalName: data.legalName ?? "Test Legal Entity",
+      countryCode: data.countryCode ?? "US",
+      currency: data.currency ?? "USD",
+    },
+  });
+}
+
+export async function createWorkspace(
+  prisma: PrismaClient,
+  tenantId: string,
+  data: Partial<{
+    id: string;
+    name: string;
+    slug: string;
+    publicEnabled: boolean;
+    legalEntityId: string;
+  }> = {}
+) {
+  const id = data.id ?? nanoid();
+  let legalEntityId = data.legalEntityId;
+
+  if (!legalEntityId) {
+    const le = await createLegalEntity(prisma, tenantId);
+    legalEntityId = le.id;
+  }
+
+  return prisma.workspace.create({
+    data: {
+      id,
+      tenantId,
+      name: data.name ?? `Workspace ${id}`,
+      slug: data.slug ?? `ws-${id}`,
+      publicEnabled: data.publicEnabled ?? true,
+      legalEntityId: legalEntityId!,
+    },
+  });
+}
+
+export async function createStudentParty(
+  prisma: PrismaClient,
+  tenantId: string,
+  data: Partial<{ id: string; displayName: string; email?: string }> = {}
+) {
+  const partyId = data.id ?? nanoid();
+  const party = await prisma.party.create({
+    data: {
+      id: partyId,
+      tenantId,
+      displayName: data.displayName ?? "Test Student",
+      lifecycleStatus: "ACTIVE", // PartyLifecycleStatus
+    },
+  });
+
+  await prisma.partyRole.create({
+    data: {
+      id: nanoid(),
+      tenantId,
+      partyId,
+      role: "STUDENT", // PartyRoleType
+    },
+  });
+
+  if (data.email) {
+    await prisma.contactPoint.create({
+      data: {
+        id: nanoid(),
+        tenantId,
+        partyId,
+        type: "EMAIL",
+        value: data.email,
+        isPrimary: true,
+      },
+    });
+  }
+
+  return party;
+}
+
+export async function createClassGroup(
+  prisma: PrismaClient,
+  tenantId: string,
+  workspaceId: string,
+  data: Partial<{
+    id: string;
+    name: string;
+    subject: string;
+    level: string;
+    status: "ACTIVE" | "ARCHIVED";
+  }> = {}
+) {
+  const id = data.id ?? nanoid();
+  return prisma.classGroup.create({
+    data: {
+      id,
+      tenantId,
+      workspaceId,
+      name: data.name ?? "Math 101",
+      subject: data.subject ?? "Math",
+      level: data.level ?? "Beginner",
+      status: data.status ?? "ACTIVE",
+      defaultPricePerSession: 100,
+      currency: "USD",
+    },
+  });
+}
+
+export async function createClassEnrollment(
+  prisma: PrismaClient,
+  tenantId: string,
+  workspaceId: string,
+  classGroupId: string,
+  studentId: string,
+  isActive: boolean = true
+) {
+  return prisma.classEnrollment.create({
+    data: {
+      id: nanoid(),
+      tenantId,
+      workspaceId,
+      classGroupId,
+      studentClientId: studentId,
+      payerClientId: studentId,
+      isActive,
+    },
+  });
+}
+
+export async function createDocumentWithLink(
+  prisma: PrismaClient,
+  tenantId: string,
+  data: {
+    title: string;
+    type: "UPLOAD" | "OTHER";
+    status: "READY" | "PENDING";
+    linkTo?: { entityType: "CLASS_GROUP" | "PARTY"; entityId: string };
+    authorId?: string; // removed from prisma create if not supported on model
+  }
+) {
+  const docId = nanoid();
+  const doc = await prisma.document.create({
+    data: {
+      id: docId,
+      tenantId,
+      title: data.title,
+      type: data.type,
+      status: data.status,
+      // authorId not supported on Document model?
+      // Previous analysis said NO.
+    },
+  });
+
+  if (data.linkTo) {
+    await prisma.documentLink.create({
+      data: {
+        id: nanoid(),
+        tenantId,
+        documentId: docId,
+        entityType: data.linkTo.entityType,
+        entityId: data.linkTo.entityId,
+      },
+    });
+  }
+  return doc;
+}

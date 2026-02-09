@@ -5,6 +5,9 @@ import { CreateWorkspaceUseCase } from "../workspaces/application/use-cases/crea
 import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/workspace-repository.port";
 import { WORKSPACE_REPOSITORY_PORT } from "../workspaces/application/ports/workspace-repository.port";
 import { buildPermissionCatalog } from "../identity/permissions/permission-catalog";
+import { TOKEN_SERVICE_TOKEN } from "../identity/application/ports/token-service.port";
+import type { TokenServicePort } from "../identity/application/ports/token-service.port";
+import { randomUUID, createHash } from "crypto";
 
 export interface SeedResult {
   tenantId: string;
@@ -25,8 +28,226 @@ export class TestHarnessService {
     private readonly prisma: PrismaService,
     private readonly createWorkspaceUseCase: CreateWorkspaceUseCase,
     @Inject(WORKSPACE_REPOSITORY_PORT)
-    private readonly workspaceRepo: WorkspaceRepositoryPort
+    private readonly workspaceRepo: WorkspaceRepositoryPort,
+    @Inject(TOKEN_SERVICE_TOKEN)
+    private readonly tokenService: TokenServicePort
   ) {}
+
+  async loginAsPortalUser(params: {
+    email: string;
+    tenantId: string;
+    workspaceId: string;
+  }): Promise<{ accessToken: string; refreshToken: string }> {
+    const emailNormalized = params.email.toLowerCase().trim();
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: emailNormalized,
+        memberships: { some: { tenantId: params.tenantId } },
+      },
+    });
+
+    if (!user) {
+      throw new Error(`User with email ${params.email} not found in tenant ${params.tenantId}`);
+    }
+
+    const membership = await this.prisma.membership.findFirst({
+      where: { tenantId: params.tenantId, userId: user.id },
+    });
+
+    const accessToken = this.tokenService.generateAccessToken({
+      userId: user.id,
+      email: emailNormalized,
+      tenantId: params.tenantId,
+      roleIds: membership ? [membership.roleId] : [],
+    });
+
+    const refreshToken = randomUUID();
+    const refreshTokenHash = createHash("sha256").update(refreshToken).digest("hex");
+    const sessionId = randomUUID();
+    const now = new Date();
+
+    await this.prisma.portalSession.create({
+      data: {
+        id: sessionId,
+        tenantId: params.tenantId,
+        workspaceId: params.workspaceId,
+        userId: user.id,
+        refreshTokenHash,
+        expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days
+      },
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  /**
+   * Seed complete portal test data for E2E testing
+   */
+  async seedPortalTestData(): Promise<{
+    tenantId: string;
+    workspaceId: string;
+    workspaceSlug: string;
+    studentUserId: string;
+    studentEmail: string;
+    documentTitle: string;
+    documentId: string;
+  }> {
+    const timestamp = Date.now();
+    const studentEmail = `portal-student-${timestamp}@test.com`;
+    const documentTitle = `E2E Test Material ${timestamp}`;
+    const workspaceSlug = `portal-ws-${timestamp}`;
+
+    // 1. Create Tenant
+    const tenant = await this.prisma.tenant.create({
+      data: {
+        name: `Portal E2E Tenant ${timestamp}`,
+        slug: `portal-e2e-${timestamp}`,
+        status: "ACTIVE",
+      },
+    });
+
+    // 2. Create Legal Entity and Workspace
+    const legalEntity = await this.prisma.legalEntity.create({
+      data: {
+        tenantId: tenant.id,
+        kind: "COMPANY",
+        legalName: "Portal Test Company",
+        countryCode: "US",
+        currency: "USD",
+      },
+    });
+
+    const workspace = await this.prisma.workspace.create({
+      data: {
+        tenantId: tenant.id,
+        name: "Portal Test Workspace",
+        slug: workspaceSlug,
+        publicEnabled: true,
+        legalEntityId: legalEntity.id,
+      },
+    });
+
+    // 3. Create Student User
+    const passwordHash = await bcrypt.hash("TestPassword123!", 10);
+    const user = await this.prisma.user.create({
+      data: {
+        email: studentEmail,
+        name: "E2E Test Student",
+        passwordHash,
+        status: "ACTIVE",
+      },
+    });
+
+    // 4. Create Party and PartyRole (STUDENT)
+    const party = await this.prisma.party.create({
+      data: {
+        tenantId: tenant.id,
+        displayName: "E2E Test Student",
+        lifecycleStatus: "ACTIVE",
+      },
+    });
+
+    await this.prisma.partyRole.create({
+      data: {
+        tenantId: tenant.id,
+        partyId: party.id,
+        role: "STUDENT",
+      },
+    });
+
+    // 5. Link User to Party
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { partyId: party.id },
+    });
+
+    // 6. Create Role and Membership
+    const role = await this.prisma.role.create({
+      data: {
+        tenantId: tenant.id,
+        name: "Portal User",
+        systemKey: "PORTAL_USER",
+        isSystem: true,
+      },
+    });
+
+    await this.prisma.membership.create({
+      data: {
+        tenantId: tenant.id,
+        userId: user.id,
+        roleId: role.id,
+      },
+    });
+
+    // 7. Create Class Group
+    const classGroup = await this.prisma.classGroup.create({
+      data: {
+        tenantId: tenant.id,
+        workspaceId: workspace.id,
+        name: "E2E Test Class",
+        subject: "Testing",
+        level: "Beginner",
+        status: "ACTIVE",
+        defaultPricePerSession: 100,
+        currency: "USD",
+      },
+    });
+
+    // 8. Create Class Enrollment
+    await this.prisma.classEnrollment.create({
+      data: {
+        tenantId: tenant.id,
+        workspaceId: workspace.id,
+        classGroupId: classGroup.id,
+        studentClientId: party.id,
+        payerClientId: party.id,
+        isActive: true,
+      },
+    });
+
+    // 9. Create Document, File, and Link to Class
+    const document = await this.prisma.document.create({
+      data: {
+        tenantId: tenant.id,
+        title: documentTitle,
+        type: "UPLOAD",
+        status: "READY",
+      },
+    });
+
+    await this.prisma.file.create({
+      data: {
+        tenantId: tenant.id,
+        documentId: document.id,
+        kind: "ORIGINAL",
+        storageProvider: "gcs",
+        bucket: "e2e-test-bucket",
+        objectKey: `e2e/${tenant.id}/${document.id}/test-material.pdf`,
+        contentType: "application/pdf",
+        sizeBytes: 1024,
+      },
+    });
+
+    await this.prisma.documentLink.create({
+      data: {
+        tenantId: tenant.id,
+        documentId: document.id,
+        entityType: "CLASS_GROUP",
+        entityId: classGroup.id,
+      },
+    });
+
+    return {
+      tenantId: tenant.id,
+      workspaceId: workspace.id,
+      workspaceSlug,
+      studentUserId: user.id,
+      studentEmail,
+      documentTitle,
+      documentId: document.id,
+    };
+  }
 
   /**
    * Create a test tenant with user, roles, permissions, and workspace

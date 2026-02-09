@@ -93,8 +93,8 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     ...(function () {
       // We need to access EnvService here, but it's not available yet
       // Fall back to process.env for now (this is the only allowed usage)
-      const isTest = process.env.NODE_ENV === "test";
-      return isTest ? [TestHarnessModule] : [];
+      const isNonProd = process.env.NODE_ENV !== "production";
+      return isNonProd ? [TestHarnessModule] : [];
     })(),
   ],
 })
