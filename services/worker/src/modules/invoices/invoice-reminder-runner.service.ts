@@ -96,23 +96,6 @@ export class InvoiceReminderRunnerService implements Runner {
     };
   }
 
-  // Keep for legacy compatibility if needed, or remove if unused.
-  // The main.ts sweeper command uses this.
-  async runOnce(): Promise<void> {
-    // Create a dummy context for legacy runOnce
-    const ctx: TickContext = {
-      runId: "legacy-run-once",
-      startedAt: new Date(),
-      budgets: {
-        overallMaxMs: 3600000,
-        perRunnerMaxMs: 3600000,
-        perRunnerMaxItems: 1000000,
-      },
-      logger: this.logger,
-    };
-    await this.run(ctx);
-  }
-
   private shouldProcess(
     tenantId: string,
     policy?: { shardIndex: number; shardCount: number }

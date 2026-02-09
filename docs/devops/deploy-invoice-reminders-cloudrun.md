@@ -1,12 +1,12 @@
-# Scheduled invoice reminders on Cloud Run (Option B)
+# Scheduled invoice reminders on Cloud Run (Tick mode)
 
-This document describes how to deploy the **invoice reminder sweeper** for Corely when your worker runtime is **Google Cloud Run**.
+This document describes how to run invoice reminders through the worker **tick** job when your worker runtime is **Google Cloud Run**.
 
-We use **Option B**: store reminder state in a dedicated table `InvoiceReminderState` and run a scheduled sweeper that sends reminder emails every **N days** (default **7**) after an invoice is **SENT**.
+Invoice reminder processing runs inside `node dist/main.js tick` via the `invoiceReminders` runner.
 
 ## Recommended deployment option
 
-Use a **Cloud Run Job** for the sweeper, executed on a schedule via **Cloud Scheduler trigger** (Cloud Run console “Triggers” tab). citeturn0search7turn0search8
+Use a **Cloud Run Job** for the worker tick, executed on a schedule via **Cloud Scheduler trigger** (Cloud Run console “Triggers” tab).
 
 ---
 
@@ -55,25 +55,25 @@ A single job run executes the use case:
 
 ### Create / update the Job (gcloud)
 
-> Adjust the command/args to match your repo (Node, Python, etc.). The key idea is: **run the sweeper once and exit**.
+> Adjust the command/args to match your repo (Node, Python, etc.). The key idea is: **run a single tick and exit**.
 
 Example pattern:
 
 ```bash
-gcloud run jobs create corely-invoice-reminder-sweeper \
+gcloud run jobs create corely-worker-tick \
   --project="$PROJECT_ID" \
   --region="$REGION" \
   --image="$IMAGE_URI" \
   --service-account="corely-worker@$PROJECT_ID.iam.gserviceaccount.com" \
   --command="node" \
-  --args="dist/main.js,invoice-reminder-sweeper" \
-  --set-env-vars="NODE_ENV=production"
+  --args="dist/main.js,tick" \
+  --set-env-vars="NODE_ENV=production,WORKER_TICK_RUNNERS=outbox,invoiceReminders"
 ```
 
 To update later:
 
 ```bash
-gcloud run jobs update corely-invoice-reminder-sweeper \
+gcloud run jobs update corely-worker-tick \
   --project="$PROJECT_ID" \
   --region="$REGION" \
   --image="$IMAGE_URI"
@@ -88,7 +88,7 @@ gcloud run jobs update corely-invoice-reminder-sweeper \
 ### Method A (recommended): Cloud Run console trigger
 
 1. Go to **Cloud Run → Jobs**
-2. Select `corely-invoice-reminder-sweeper`
+2. Select `corely-worker-tick`
 3. Open the **Triggers** tab
 4. Click **Add Scheduler Trigger**
 5. Set schedule:
@@ -97,11 +97,11 @@ gcloud run jobs update corely-invoice-reminder-sweeper \
      - Time zone: `Europe/Berlin`
 6. Save
 
-This uses Cloud Scheduler under the hood. citeturn0search7turn0search8
+This uses Cloud Scheduler under the hood.
 
 ### Method B: Cloud Scheduler directly (advanced)
 
-If you must manage schedules centrally in Cloud Scheduler, you can create a Scheduler job that triggers execution. Refer to Google’s guidance on authenticated HTTP targets and Cloud Run scheduling. citeturn0search5turn0search7
+If you must manage schedules centrally in Cloud Scheduler, you can create a Scheduler job that triggers execution.
 
 ---
 
@@ -143,10 +143,11 @@ If you must manage schedules centrally in Cloud Scheduler, you can create a Sche
 
 ---
 
-## Required env vars for the sweeper
+## Required env vars for reminders in tick
 
 - `WORKER_API_BASE_URL`: Base URL for the API service (used to call the internal reminders endpoint).
 - `WORKER_API_SERVICE_TOKEN`: Service token passed as `x-service-token` to authorize internal calls.
+- `WORKER_TICK_RUNNERS`: should include `invoiceReminders` (for example `outbox,invoiceReminders`).
 
 ---
 
