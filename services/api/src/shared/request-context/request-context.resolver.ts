@@ -48,7 +48,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const roleIds = Array.isArray(req.user?.roleIds) ? req.user?.roleIds : undefined;
 
   const publicContext: PublicWorkspaceContext | undefined = req.publicContext;
-  const usePublicContext = Boolean(publicContext) && !req.user?.userId;
+  const usePublicContext = Boolean(publicContext);
 
   // Workspace / tenant with precedence
   const routeWorkspaceId = (req.params as Record<string, string | undefined> | undefined)

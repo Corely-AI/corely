@@ -58,13 +58,18 @@ export class GetStudentMaterialsUseCase extends BaseUseCase<{ studentId: string 
     }
 
     // 2. Class docs
+    console.log(
+      `[GetStudentMaterials] Fetching enrollments for student ${input.studentId} in workspace ${ctx.workspaceId} (Tenant: ${ctx.tenantId})`
+    );
     const { items: enrollments } = await this.useCaseDeps.classesRepo.listEnrollments(
       ctx.tenantId,
       ctx.workspaceId,
       { studentClientId: input.studentId, isActive: true },
       { page: 1, pageSize: 100 }
     );
+    console.log(`[GetStudentMaterials] Found ${enrollments.length} enrollments`);
     const classGroupIds = [...new Set(enrollments.map((e) => e.classGroupId))];
+    console.log(`[GetStudentMaterials] Unique Class Groups: ${classGroupIds.join(", ")}`);
 
     for (const classGroupId of classGroupIds) {
       const classDocs = await this.useCaseDeps.listDocuments.execute(
@@ -72,7 +77,14 @@ export class GetStudentMaterialsUseCase extends BaseUseCase<{ studentId: string 
         ctx
       );
       if (isOk(classDocs)) {
+        console.log(
+          `[GetStudentMaterials] Found ${classDocs.value.items.length} docs for ClassGroup ${classGroupId}`
+        );
         results.push(...classDocs.value.items.map((d) => ({ ...d, linkedTo: "CLASS_GROUP" })));
+      } else {
+        console.log(
+          `[GetStudentMaterials] Failed to fetch docs for ClassGroup ${classGroupId}: ${classDocs.error}`
+        );
       }
     }
 
