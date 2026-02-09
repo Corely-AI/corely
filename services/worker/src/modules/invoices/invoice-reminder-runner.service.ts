@@ -10,6 +10,7 @@ export class InvoiceReminderRunnerService implements Runner {
   private warnedMissingConfig = false;
 
   public readonly name = "invoiceReminders";
+  public readonly singletonLockKey = "worker:scheduler:invoiceReminders";
 
   constructor(
     private readonly env: EnvService,

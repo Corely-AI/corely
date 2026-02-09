@@ -5,7 +5,7 @@ import { Logger, type INestApplication, type INestApplicationContext } from "@ne
 import { WorkerModule } from "./worker.module";
 import { CONTRACTS_HELLO } from "@corely/contracts";
 import { setupTracing, shutdownTracing } from "./observability/setup-tracing";
-import { TickOrchestrator } from "./application/tick-orchestrator.service";
+import { TickOrchestrator, type TickRunSummary } from "./application/tick-orchestrator.service";
 
 // Load env files before anything else
 loadEnv();
@@ -16,13 +16,39 @@ function modeFromArg(arg: string | undefined): "tick" | "background" {
   return arg === "tick" ? "tick" : "background";
 }
 
-function nextTickDelayMs(args: { elapsedMs: number; success: boolean; env: EnvService }): number {
-  const base = args.success
-    ? args.env.WORKER_TICK_LOOP_INTERVAL_MS
-    : args.env.WORKER_TICK_LOOP_ERROR_BACKOFF_MS;
-  const jitterMax = Math.max(0, args.env.WORKER_TICK_LOOP_MAX_JITTER_MS);
-  const jitterMs = jitterMax > 0 ? Math.floor(Math.random() * (jitterMax + 1)) : 0;
-  return Math.max(0, base - args.elapsedMs) + jitterMs;
+function randomJitter(maxMs: number): number {
+  const max = Math.max(0, maxMs);
+  return max > 0 ? Math.floor(Math.random() * (max + 1)) : 0;
+}
+
+function computeIdleBackoffMs(env: EnvService, idleStreak: number): number {
+  const minMs = Math.max(1, env.WORKER_IDLE_BACKOFF_MIN_MS);
+  const maxMs = Math.max(minMs, env.WORKER_IDLE_BACKOFF_MAX_MS);
+  const exponent = Math.max(0, idleStreak - 1);
+  return Math.min(maxMs, minMs * Math.pow(2, exponent));
+}
+
+function nextTickDelayMs(args: {
+  success: boolean;
+  hadWork: boolean;
+  idleStreak: number;
+  env: EnvService;
+}): number {
+  if (!args.success) {
+    return (
+      args.env.WORKER_TICK_LOOP_ERROR_BACKOFF_MS +
+      randomJitter(args.env.WORKER_TICK_LOOP_MAX_JITTER_MS)
+    );
+  }
+  if (args.hadWork) {
+    return (
+      args.env.WORKER_BUSY_LOOP_DELAY_MS + randomJitter(args.env.WORKER_IDLE_BACKOFF_JITTER_MS)
+    );
+  }
+  return (
+    computeIdleBackoffMs(args.env, args.idleStreak) +
+    randomJitter(args.env.WORKER_IDLE_BACKOFF_JITTER_MS)
+  );
 }
 
 async function sleepInterruptible(ms: number, shouldStop: () => boolean): Promise<void> {
@@ -78,8 +104,10 @@ async function runSingleTick(logger: Logger): Promise<void> {
   const { app, close } = await createWorkerApp(logger);
   try {
     const orchestrator = app.get(TickOrchestrator);
-    await orchestrator.runOnce();
-    logger.log("[worker] tick completed");
+    const summary = await orchestrator.runOnce();
+    logger.log(
+      `[worker] tick completed runId=${summary.runId} processed=${summary.totalProcessed} errors=${summary.totalErrors} durationMs=${summary.durationMs}`
+    );
   } finally {
     await close();
   }
@@ -89,7 +117,8 @@ async function runBackgroundLoop(logger: Logger): Promise<void> {
   const { app, env, close } = await createWorkerApp(logger);
   const orchestrator = app.get(TickOrchestrator);
   let shuttingDown = false;
-  let inFlightTick: Promise<void> | undefined;
+  let inFlightTick: Promise<TickRunSummary> | undefined;
+  let idleStreak = 0;
 
   const onSignal = (signal: NodeJS.Signals) => {
     if (shuttingDown) {
@@ -114,13 +143,20 @@ async function runBackgroundLoop(logger: Logger): Promise<void> {
         continue;
       }
 
-      const tickStartedAt = Date.now();
       let succeeded = true;
+      let hadWork = false;
       try {
         inFlightTick = orchestrator.runOnce();
-        await inFlightTick;
+        const summary = await inFlightTick;
+        hadWork = summary.totalProcessed > 0;
+        if (hadWork) {
+          idleStreak = 0;
+        } else {
+          idleStreak += 1;
+        }
       } catch (error) {
         succeeded = false;
+        idleStreak += 1;
         logger.error(error instanceof Error ? (error.stack ?? error.message) : String(error));
       } finally {
         inFlightTick = undefined;
@@ -131,18 +167,26 @@ async function runBackgroundLoop(logger: Logger): Promise<void> {
       }
 
       const delayMs = nextTickDelayMs({
-        elapsedMs: Date.now() - tickStartedAt,
         success: succeeded,
+        hadWork,
+        idleStreak,
         env,
       });
       logger.log(
-        `[worker] next tick in ${delayMs}ms (${succeeded ? "success" : "error-backoff"} mode)`
+        `[worker] next tick in ${delayMs}ms (${succeeded ? (hadWork ? "busy" : "idle") : "error-backoff"} mode)`
       );
       await sleepInterruptible(delayMs, () => shuttingDown);
     }
   } finally {
     if (inFlightTick) {
-      await inFlightTick;
+      const timeoutMs = Math.max(1_000, env.WORKER_SHUTDOWN_TIMEOUT_MS);
+      const timed = new Promise<"timeout">((resolve) =>
+        setTimeout(() => resolve("timeout"), timeoutMs)
+      );
+      const winner = await Promise.race([inFlightTick.then(() => "tick"), timed]);
+      if (winner === "timeout") {
+        logger.warn(`[worker] shutdown timeout reached (${timeoutMs}ms); closing app anyway`);
+      }
     }
     await close();
     for (const signal of SIGNALS) {

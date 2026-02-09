@@ -133,6 +133,62 @@ export class EnvService {
     return this.config.WORKER_TICK_LOOP_ERROR_BACKOFF_MS;
   }
 
+  get WORKER_IDLE_BACKOFF_MIN_MS(): number {
+    return this.config.WORKER_IDLE_BACKOFF_MIN_MS;
+  }
+
+  get WORKER_IDLE_BACKOFF_MAX_MS(): number {
+    return this.config.WORKER_IDLE_BACKOFF_MAX_MS;
+  }
+
+  get WORKER_IDLE_BACKOFF_JITTER_MS(): number {
+    return this.config.WORKER_IDLE_BACKOFF_JITTER_MS;
+  }
+
+  get WORKER_BUSY_LOOP_DELAY_MS(): number {
+    return this.config.WORKER_BUSY_LOOP_DELAY_MS;
+  }
+
+  get WORKER_SHUTDOWN_TIMEOUT_MS(): number {
+    return this.config.WORKER_SHUTDOWN_TIMEOUT_MS;
+  }
+
+  get OUTBOX_BATCH_SIZE(): number {
+    return this.config.OUTBOX_BATCH_SIZE;
+  }
+
+  get OUTBOX_CONCURRENCY(): number {
+    return this.config.OUTBOX_CONCURRENCY;
+  }
+
+  get PDF_RENDER_CONCURRENCY(): number {
+    return this.config.PDF_RENDER_CONCURRENCY;
+  }
+
+  get OUTBOX_LEASE_DURATION_MS(): number {
+    return this.config.OUTBOX_LEASE_DURATION_MS;
+  }
+
+  get OUTBOX_LEASE_HEARTBEAT_MS(): number {
+    return this.config.OUTBOX_LEASE_HEARTBEAT_MS;
+  }
+
+  get OUTBOX_MAX_ATTEMPTS(): number {
+    return this.config.OUTBOX_MAX_ATTEMPTS;
+  }
+
+  get OUTBOX_RETRY_BASE_MS(): number {
+    return this.config.OUTBOX_RETRY_BASE_MS;
+  }
+
+  get OUTBOX_RETRY_MAX_MS(): number {
+    return this.config.OUTBOX_RETRY_MAX_MS;
+  }
+
+  get OUTBOX_RETRY_JITTER_MS(): number {
+    return this.config.OUTBOX_RETRY_JITTER_MS;
+  }
+
   get CLASSES_BILLING_RUN_ENABLED(): boolean {
     return this.config.CLASSES_BILLING_RUN_ENABLED;
   }

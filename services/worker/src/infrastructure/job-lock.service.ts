@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
+import { createHash } from "node:crypto";
 
 @Injectable()
 export class JobLockService {
@@ -7,50 +8,58 @@ export class JobLockService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Acquires a global advisory lock for the tick process.
-   * Lock key is derived from a constant string "worker_tick".
-   * Returns true if lock was acquired, false otherwise.
-   */
-  async tryAcquireTickLock(): Promise<boolean> {
-    // Generate a consistent 64-bit integer hash from the string "worker_tick"
-    // Using a simple hash function or fixed ID
-    // PostgreSQL advisory locks use a 64-bit integer (bigint) key.
-    // Let's use a fixed ID for simplicity and consistency: 94563383845
-    const lockKey = 94563383845n;
-
+  async withAdvisoryXactLock<T>(
+    args: {
+      lockName: string;
+      runId: string;
+    },
+    callback: () => Promise<T>
+  ): Promise<{ acquired: boolean; value?: T }> {
+    const lockKey = this.hashLockKey(args.lockName);
     try {
-      const result = await this.prisma.$queryRaw<{ acquired: boolean }[]>`
-        SELECT pg_try_advisory_lock(${lockKey}) AS acquired
-      `;
+      return this.prisma.$transaction(async (tx) => {
+        const result = await tx.$queryRaw<{ acquired: boolean }[]>`
+          SELECT pg_try_advisory_xact_lock(${lockKey}) AS acquired
+        `;
+        const acquired = result[0]?.acquired ?? false;
+        if (!acquired) {
+          this.logger.log(
+            JSON.stringify({
+              msg: "scheduler.lock.skipped",
+              runId: args.runId,
+              lockName: args.lockName,
+            })
+          );
+          return { acquired: false };
+        }
 
-      const acquired = result[0]?.acquired ?? false;
-
-      if (acquired) {
-        this.logger.log("Acquired global tick lock.");
-      } else {
-        this.logger.warn("Failed to acquire global tick lock (already running?).");
-      }
-
-      return acquired;
+        this.logger.log(
+          JSON.stringify({
+            msg: "scheduler.lock.acquired",
+            runId: args.runId,
+            lockName: args.lockName,
+          })
+        );
+        const value = await callback();
+        return { acquired: true, value };
+      });
     } catch (error) {
-      this.logger.error("Error acquiring advisory lock", error);
-      return false;
+      this.logger.error(
+        JSON.stringify({
+          msg: "scheduler.lock.error",
+          runId: args.runId,
+          lockName: args.lockName,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      );
+      return { acquired: false };
     }
   }
 
-  /**
-   * Releases the global advisory lock.
-   * Note: In Cloud Run, the connection might drop, releasing the lock automatically once the session ends.
-   * However, explicit release is good practice.
-   */
-  async releaseTickLock(): Promise<void> {
-    const lockKey = 94563383845n;
-    try {
-      await this.prisma.$queryRaw`SELECT pg_advisory_unlock(${lockKey})`;
-      this.logger.log("Released global tick lock.");
-    } catch (error) {
-      this.logger.error("Error releasing advisory lock", error);
-    }
+  private hashLockKey(value: string): bigint {
+    const digest = createHash("sha256").update(value).digest();
+    const hex = digest.subarray(0, 8).toString("hex");
+    const raw = BigInt(`0x${hex}`);
+    return raw & 0x7fffffffffffffffn;
   }
 }

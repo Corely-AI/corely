@@ -17,8 +17,7 @@ describe("TickOrchestrator", () => {
   };
 
   const mockLockService = {
-    tryAcquireTickLock: vi.fn(),
-    releaseTickLock: vi.fn(),
+    withAdvisoryXactLock: vi.fn(),
   };
 
   const mockOutboxRunner = {
@@ -28,15 +27,24 @@ describe("TickOrchestrator", () => {
 
   const mockInvoiceRunner = {
     name: "invoiceReminders",
+    singletonLockKey: "worker:scheduler:invoiceReminders",
     run: vi.fn(),
   };
 
   const mockClassesBillingRunner = {
     name: "classesBilling",
+    singletonLockKey: "worker:scheduler:classesBilling",
     run: vi.fn(),
   };
 
   beforeEach(async () => {
+    mockLockService.withAdvisoryXactLock.mockImplementation(
+      async (_args: { lockName: string; runId: string }, callback: () => Promise<RunnerReport>) => {
+        const value = await callback();
+        return { acquired: true, value };
+      }
+    );
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TickOrchestrator,
@@ -54,34 +62,34 @@ describe("TickOrchestrator", () => {
   });
 
   it("should run configured runners if lock acquired", async () => {
-    mockLockService.tryAcquireTickLock.mockResolvedValue(true);
     mockOutboxRunner.run.mockResolvedValue({ processedCount: 1 } as RunnerReport);
     mockInvoiceRunner.run.mockResolvedValue({ processedCount: 2 } as RunnerReport);
     mockClassesBillingRunner.run.mockResolvedValue({ processedCount: 3 } as RunnerReport);
 
-    await orchestrator.runTick();
+    await orchestrator.runOnce();
 
-    expect(mockLockService.tryAcquireTickLock).toHaveBeenCalled();
     expect(mockOutboxRunner.run).toHaveBeenCalled();
     expect(mockInvoiceRunner.run).toHaveBeenCalled();
     expect(mockClassesBillingRunner.run).toHaveBeenCalled();
-    expect(mockLockService.releaseTickLock).toHaveBeenCalled();
+    expect(mockLockService.withAdvisoryXactLock).toHaveBeenCalledTimes(2);
   });
 
-  it("should exit immediately if lock not acquired", async () => {
-    mockLockService.tryAcquireTickLock.mockResolvedValue(false);
+  it("should skip singleton runners when lock is not acquired", async () => {
+    mockLockService.withAdvisoryXactLock
+      .mockResolvedValueOnce({ acquired: false })
+      .mockResolvedValueOnce({ acquired: false });
 
-    await orchestrator.runTick();
+    await orchestrator.runOnce();
 
-    expect(mockOutboxRunner.run).not.toHaveBeenCalled();
-    expect(mockLockService.releaseTickLock).not.toHaveBeenCalled(); // Should not release if not acquired
+    expect(mockOutboxRunner.run).toHaveBeenCalled();
+    expect(mockInvoiceRunner.run).not.toHaveBeenCalled();
+    expect(mockClassesBillingRunner.run).not.toHaveBeenCalled();
   });
 
   it("should respect WORKER_TICK_RUNNERS config", async () => {
     mockEnvService.WORKER_TICK_RUNNERS = "outbox";
-    mockLockService.tryAcquireTickLock.mockResolvedValue(true);
 
-    await orchestrator.runTick();
+    await orchestrator.runOnce();
 
     expect(mockOutboxRunner.run).toHaveBeenCalled();
     expect(mockInvoiceRunner.run).not.toHaveBeenCalled();
