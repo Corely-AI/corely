@@ -2,6 +2,7 @@
   "name": "@corely/worker",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "license": "AGPL-3.0-only",
   "dependencies": {
     "@corely/config": "workspace:*",

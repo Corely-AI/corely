@@ -19,6 +19,32 @@ import { type InvoicePdfModelPort } from "./application/ports/invoice-pdf-model.
 import { type InvoicePdfRendererPort } from "./application/ports/invoice-pdf-renderer.port";
 import { INVOICE_PDF_MODEL_PORT, INVOICE_PDF_RENDERER_PORT } from "./tokens";
 
+const DEFAULT_PLAYWRIGHT_LAUNCH_TIMEOUT_MS = 10_000;
+
+function resolveLaunchTimeoutMs(value: string | undefined): number {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_PLAYWRIGHT_LAUNCH_TIMEOUT_MS;
+}
+
+async function launchBrowserWithTimeout(timeoutMs: number): Promise<Browser> {
+  return await new Promise<Browser>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Playwright browser launch timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    chromium
+      .launch({ headless: true })
+      .then((browser) => {
+        clearTimeout(timer);
+        resolve(browser);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
+}
+
 @Module({
   imports: [DataModule],
   providers: [
@@ -30,25 +56,56 @@ import { INVOICE_PDF_MODEL_PORT, INVOICE_PDF_RENDERER_PORT } from "./tokens";
     { provide: INVOICE_PDF_MODEL_PORT, useExisting: PrismaInvoicePdfModelAdapter },
     {
       provide: "PLAYWRIGHT_BROWSER",
-      useFactory: async () => {
-        try {
-          return await chromium.launch({ headless: true });
-        } catch (error) {
-          const logger = new Logger("PlaywrightBrowser");
-          logger.error(
-            "Failed to launch Playwright browser. PDF generation will be unavailable.",
-            error instanceof Error ? error.stack : error
-          );
-          return {
-            newPage: async () => {
-              throw new InternalServerErrorException(
-                "PDF generation is unavailable because the browser failed to launch."
-              );
-            },
-            close: async () => {},
-          } as unknown as Browser;
-        }
+      useFactory: (env: EnvService) => {
+        const logger = new Logger("PlaywrightBrowser");
+        const launchTimeoutMs = resolveLaunchTimeoutMs(
+          process.env.PLAYWRIGHT_LAUNCH_TIMEOUT_MS ??
+            process.env.WORKER_PLAYWRIGHT_LAUNCH_TIMEOUT_MS
+        );
+        let browserPromise: Promise<Browser> | null = null;
+
+        const getBrowser = async (): Promise<Browser> => {
+          if (!browserPromise) {
+            logger.log(`Launching Playwright browser (timeout=${launchTimeoutMs}ms)`);
+            browserPromise = launchBrowserWithTimeout(launchTimeoutMs)
+              .then((browser) => {
+                logger.log("Playwright browser launched successfully");
+                return browser;
+              })
+              .catch((error) => {
+                logger.error(
+                  `Failed to launch Playwright browser within ${launchTimeoutMs}ms. PDF generation will be unavailable.`,
+                  error instanceof Error ? error.stack : error
+                );
+                browserPromise = null;
+                throw new InternalServerErrorException(
+                  "PDF generation is unavailable because the browser failed to launch."
+                );
+              });
+          }
+          return browserPromise;
+        };
+
+        const lazyBrowser = {
+          newPage: async () => {
+            const browser = await getBrowser();
+            return browser.newPage();
+          },
+          close: async () => {
+            if (!browserPromise) {
+              return;
+            }
+            const browser = await browserPromise.catch(() => null);
+            browserPromise = null;
+            if (browser) {
+              await browser.close();
+            }
+          },
+        };
+
+        return lazyBrowser as unknown as Browser;
       },
+      inject: [EnvService],
     },
     {
       provide: PlaywrightInvoicePdfRendererAdapter,

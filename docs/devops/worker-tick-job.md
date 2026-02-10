@@ -155,3 +155,22 @@ This allows horizontal outbox scaling while preventing duplicate periodic schedu
   - failure rate and retry churn,
   - per-tick processed count and duration.
 - Use `tick` mode for scheduled jobs, but do not rely on cron-only ticks for user-facing low-latency actions (PDF/email); background workers are recommended for near-real-time processing.
+
+## Invoice PDF wait endpoint
+
+- API route: `GET /invoices/:invoiceId/pdf?waitMs=<ms>`.
+- API remains async-safe: it does **not** render PDF in-process. It only:
+  - ensures `invoice.pdf.render.requested` is enqueued (idempotent),
+  - waits on document readiness state (`platform.Document` + `platform.File`),
+  - returns once READY/FAILED or wait budget expires.
+- Response behavior:
+  - `200`: `{ status: "READY", downloadUrl, ... }`
+  - `202`: `{ status: "PENDING", retryAfterMs }` with `Retry-After` header
+  - `422`: `{ error: "INVOICE_PDF_RENDER_FAILED", ... }`
+- Guardrails:
+  - default `waitMs=15000`, max `30000`
+  - poll backoff is capped (no tight DB loop)
+  - wait stops when client disconnects
+- Infra guidance:
+  - if upstream/proxy timeout is low, keep `waitMs` below timeout margin.
+  - recommended request timeout is at least 35s when allowing max `waitMs=30000`.

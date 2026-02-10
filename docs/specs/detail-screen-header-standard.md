@@ -46,14 +46,14 @@
 
 ### 1.3 Current Actions Available
 
-| Action             | Trigger                                | Availability                                | Notes                               |
-| ------------------ | -------------------------------------- | ------------------------------------------- | ----------------------------------- |
-| **Download PDF**   | `invoicesApi.downloadInvoicePdf()`     | status ≠ DRAFT                              | Opens signed URL in new tab         |
-| **Record payment** | Dialog → `invoicesApi.recordPayment()` | status ≠ PAID                               | Sets amount, date, optional note    |
-| **Finalize**       | `invoicesApi.finalizeInvoice()`        | Implicit via status dropdown (DRAFT→ISSUED) | Hidden in status change flow        |
-| **Send**           | `invoicesApi.sendInvoice()`            | Implicit via status dropdown (→SENT)        | Auto-finalizes if needed            |
-| **Cancel**         | `invoicesApi.cancelInvoice()`          | Via status dropdown (→CANCELED)             | Requires reason, currently optional |
-| **Update**         | `invoicesApi.updateInvoice()`          | Always (via form submit)                    | Header fields + line items          |
+| Action             | Trigger                                | Availability                                | Notes                                     |
+| ------------------ | -------------------------------------- | ------------------------------------------- | ----------------------------------------- |
+| **Download PDF**   | `invoicesApi.downloadInvoicePdf()`     | status ≠ DRAFT                              | Waits/retries until ready, then opens PDF |
+| **Record payment** | Dialog → `invoicesApi.recordPayment()` | status ≠ PAID                               | Sets amount, date, optional note          |
+| **Finalize**       | `invoicesApi.finalizeInvoice()`        | Implicit via status dropdown (DRAFT→ISSUED) | Hidden in status change flow              |
+| **Send**           | `invoicesApi.sendInvoice()`            | Implicit via status dropdown (→SENT)        | Auto-finalizes if needed                  |
+| **Cancel**         | `invoicesApi.cancelInvoice()`          | Via status dropdown (→CANCELED)             | Requires reason, currently optional       |
+| **Update**         | `invoicesApi.updateInvoice()`          | Always (via form submit)                    | Header fields + line items                |
 
 ### 1.4 Identified UX Problems
 
@@ -324,18 +324,18 @@ If in future, email delivery becomes asynchronous/unreliable, consider:
 
 ### 4.2 Action Definitions
 
-| Action               | Display Label              | Icon            | Trigger                                         | Returns                     | Idempotent?               |
-| -------------------- | -------------------------- | --------------- | ----------------------------------------------- | --------------------------- | ------------------------- |
-| **Issue Invoice**    | "Issue" or "Issue Invoice" | FileCheck       | POST `/invoices/{id}/finalize`                  | Updated invoice with number | Yes (via idempotency key) |
-| **Record Payment**   | "Record Payment"           | CreditCard      | Dialog → POST `/invoices/{id}/payments`         | Updated invoice             | No (each payment unique)  |
-| **Send Email**       | "Send" or "Send Email"     | Mail            | POST `/invoices/{id}/send`                      | Delivery status             | Yes                       |
-| **Send Reminder**    | "Send Reminder"            | Bell            | POST `/invoices/{id}/send` (with type=reminder) | Delivery status             | Yes                       |
-| **Download PDF**     | "Download PDF"             | Download        | GET `/invoices/{id}/pdf` → window.open          | Signed URL                  | N/A (read)                |
-| **Download Preview** | "Download Preview"         | Eye             | Same as PDF but for draft                       | Signed URL                  | N/A                       |
-| **Cancel**           | "Cancel Invoice"           | XCircle         | Dialog → POST `/invoices/{id}/cancel`           | Updated invoice             | Yes (idempotent)          |
-| **Duplicate**        | "Duplicate"                | Copy            | POST `/invoices` (with copy data)               | New draft invoice           | No                        |
-| **Export**           | "Export to CSV/Excel"      | FileSpreadsheet | Client-side or GET                              | File download               | N/A                       |
-| **View Audit**       | "View Audit Log"           | History         | Navigate to `/audit?entity=invoice&id={id}`     | N/A                         | N/A                       |
+| Action               | Display Label              | Icon            | Trigger                                               | Returns                     | Idempotent?               |
+| -------------------- | -------------------------- | --------------- | ----------------------------------------------------- | --------------------------- | ------------------------- |
+| **Issue Invoice**    | "Issue" or "Issue Invoice" | FileCheck       | POST `/invoices/{id}/finalize`                        | Updated invoice with number | Yes (via idempotency key) |
+| **Record Payment**   | "Record Payment"           | CreditCard      | Dialog → POST `/invoices/{id}/payments`               | Updated invoice             | No (each payment unique)  |
+| **Send Email**       | "Send" or "Send Email"     | Mail            | POST `/invoices/{id}/send`                            | Delivery status             | Yes                       |
+| **Send Reminder**    | "Send Reminder"            | Bell            | POST `/invoices/{id}/send` (with type=reminder)       | Delivery status             | Yes                       |
+| **Download PDF**     | "Download PDF"             | Download        | GET `/invoices/{id}/pdf?waitMs=15000` (repeat on 202) | Signed URL when READY       | Yes (safe repeated calls) |
+| **Download Preview** | "Download Preview"         | Eye             | Same as PDF but for draft                             | Signed URL                  | N/A                       |
+| **Cancel**           | "Cancel Invoice"           | XCircle         | Dialog → POST `/invoices/{id}/cancel`                 | Updated invoice             | Yes (idempotent)          |
+| **Duplicate**        | "Duplicate"                | Copy            | POST `/invoices` (with copy data)                     | New draft invoice           | No                        |
+| **Export**           | "Export to CSV/Excel"      | FileSpreadsheet | Client-side or GET                                    | File download               | N/A                       |
+| **View Audit**       | "View Audit Log"           | History         | Navigate to `/audit?entity=invoice&id={id}`           | N/A                         | N/A                       |
 
 ### 4.3 Action Gating
 
@@ -353,12 +353,12 @@ If in future, email delivery becomes asynchronous/unreliable, consider:
 
 #### Dependency Gating:
 
-| Action       | Dependencies                             | Override Behavior          |
-| ------------ | ---------------------------------------- | -------------------------- |
-| Issue        | ≥1 line item, customer set, bill-to name | Show validation errors     |
-| Send         | Email address on bill-to or customer     | Prompt to add email        |
-| Cancel       | If status = PAID: blocked                | No override available      |
-| Download PDF | PDF must be generated (may need to wait) | Show "Generating..." state |
+| Action       | Dependencies                             | Override Behavior                                  |
+| ------------ | ---------------------------------------- | -------------------------------------------------- |
+| Issue        | ≥1 line item, customer set, bill-to name | Show validation errors                             |
+| Send         | Email address on bill-to or customer     | Prompt to add email                                |
+| Cancel       | If status = PAID: blocked                | No override available                              |
+| Download PDF | PDF must be generated (worker async)     | Show generating state, poll until READY or timeout |
 
 #### Approval Gating (Future):
 

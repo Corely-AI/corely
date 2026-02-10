@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm, FormProvider } from "react-hook-form";
@@ -35,6 +35,12 @@ import { InvoiceTotals } from "../components/invoice-form/InvoiceTotals";
 import { InvoiceNotes } from "../components/invoice-form/InvoiceNotes";
 
 export default function InvoiceDetailPage() {
+  const PDF_WAIT_PER_REQUEST_MS = 15000;
+  const PDF_MAX_WAIT_TOTAL_MS = 90000;
+  const PDF_RETRY_AFTER_MIN_MS = 500;
+  const PDF_RETRY_AFTER_MAX_MS = 5000;
+  const PDF_DEBUG = import.meta.env.DEV;
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -62,6 +68,8 @@ export default function InvoiceDetailPage() {
     new Date().toISOString().slice(0, 10)
   );
   const [paymentNote, setPaymentNote] = useState<string>("");
+  const downloadAbortRef = useRef<AbortController | null>(null);
+  const downloadInFlightRef = useRef(false);
 
   const methods = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceFormSchema),
@@ -140,22 +148,158 @@ export default function InvoiceDetailPage() {
     setPaymentAmount(due > 0 ? (due / 100).toFixed(2) : "");
   }, [invoice, reset]);
 
-  const downloadPdf = useMutation({
-    mutationFn: (invoiceId: string) => invoicesApi.downloadInvoicePdf(invoiceId),
-    onSuccess: (data) => {
-      if (data.status === "READY" && data.downloadUrl) {
-        window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+  const waitWithAbort = useCallback(async (ms: number, signal: AbortSignal) => {
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => {
+        signal.removeEventListener("abort", onAbort);
+        resolve();
+      }, ms);
+
+      const onAbort = () => {
+        clearTimeout(timeout);
+        signal.removeEventListener("abort", onAbort);
+        resolve();
+      };
+
+      signal.addEventListener("abort", onAbort, { once: true });
+    });
+  }, []);
+
+  const logPdfDebug = useCallback(
+    (message: string, meta?: Record<string, unknown>) => {
+      if (!PDF_DEBUG) {
         return;
       }
-      toast.info(t("invoices.pdf.pendingTitle"), {
+      if (meta) {
+        console.debug(`[InvoicePDF] ${message}`, meta);
+      } else {
+        console.debug(`[InvoicePDF] ${message}`);
+      }
+    },
+    [PDF_DEBUG]
+  );
+
+  const downloadPdfWithWait = useCallback(
+    async (invoiceId: string) => {
+      if (downloadInFlightRef.current) {
+        const activeAbort = downloadAbortRef.current;
+        if (!activeAbort || activeAbort.signal.aborted) {
+          logPdfDebug("Detected stale in-flight lock, resetting", {
+            invoiceId,
+            hasAbortController: Boolean(activeAbort),
+            aborted: activeAbort?.signal.aborted ?? null,
+          });
+          downloadInFlightRef.current = false;
+          downloadAbortRef.current = null;
+        }
+      }
+
+      if (downloadInFlightRef.current) {
+        logPdfDebug("Skip duplicate click while download is in-flight", { invoiceId });
+        return;
+      }
+
+      downloadInFlightRef.current = true;
+      const abortController = new AbortController();
+      downloadAbortRef.current = abortController;
+      const loadingToastId = toast.loading(t("invoices.pdf.pendingTitle"), {
         description: t("invoices.pdf.pendingDescription"),
       });
+
+      try {
+        const startedAt = Date.now();
+        logPdfDebug("Download flow started", {
+          invoiceId,
+          maxWaitMs: PDF_MAX_WAIT_TOTAL_MS,
+          perRequestWaitMs: PDF_WAIT_PER_REQUEST_MS,
+        });
+
+        while (Date.now() - startedAt < PDF_MAX_WAIT_TOTAL_MS) {
+          const elapsedMs = Date.now() - startedAt;
+          const remainingMs = PDF_MAX_WAIT_TOTAL_MS - elapsedMs;
+          const waitMs = Math.min(PDF_WAIT_PER_REQUEST_MS, remainingMs);
+          logPdfDebug("Requesting invoice PDF", { invoiceId, elapsedMs, remainingMs, waitMs });
+
+          const response = await invoicesApi.downloadInvoicePdf(invoiceId, {
+            waitMs,
+            signal: abortController.signal,
+          });
+          logPdfDebug("Received invoice PDF response", {
+            invoiceId,
+            status: response.status,
+            retryAfterMs: response.retryAfterMs,
+            hasDownloadUrl: Boolean(response.downloadUrl),
+          });
+
+          if (response.status === "READY" && response.downloadUrl) {
+            logPdfDebug("PDF is ready, opening URL", {
+              invoiceId,
+              downloadUrl: response.downloadUrl,
+            });
+            const opened = window.open(response.downloadUrl, "_blank", "noopener,noreferrer");
+            if (!opened) {
+              logPdfDebug("Popup blocked, navigating current tab instead", { invoiceId });
+              window.location.assign(response.downloadUrl);
+            }
+            return;
+          }
+
+          const retryAfterMs = Math.max(
+            PDF_RETRY_AFTER_MIN_MS,
+            Math.min(PDF_RETRY_AFTER_MAX_MS, response.retryAfterMs ?? 1000)
+          );
+          logPdfDebug("PDF still pending, waiting before retry", {
+            invoiceId,
+            retryAfterMs,
+          });
+          await waitWithAbort(retryAfterMs, abortController.signal);
+        }
+
+        logPdfDebug("Download flow timed out", { invoiceId, maxWaitMs: PDF_MAX_WAIT_TOTAL_MS });
+        toast.info(t("invoices.pdf.stillGeneratingTitle"), {
+          description: t("invoices.pdf.stillGeneratingDescription"),
+        });
+      } catch (error) {
+        if (abortController.signal.aborted) {
+          logPdfDebug("Download flow aborted", { invoiceId });
+          return;
+        }
+        const details =
+          typeof error === "object" &&
+          error !== null &&
+          "body" in error &&
+          typeof (error as { body?: { message?: string } }).body?.message === "string"
+            ? (error as { body: { message: string } }).body.message
+            : undefined;
+        logPdfDebug("Download flow failed", {
+          invoiceId,
+          details,
+          error,
+        });
+        console.error("Download PDF failed", error);
+        toast.error(t("invoices.errors.downloadFailed"), {
+          description: details,
+        });
+      } finally {
+        toast.dismiss(loadingToastId);
+        if (downloadAbortRef.current === abortController) {
+          downloadAbortRef.current = null;
+        }
+        downloadInFlightRef.current = false;
+        logPdfDebug("Download flow finished", { invoiceId });
+      }
     },
-    onError: (error) => {
-      console.error("Download PDF failed", error);
-      toast.error(t("invoices.errors.downloadFailed"));
-    },
-  });
+    [logPdfDebug, t, waitWithAbort]
+  );
+
+  useEffect(() => {
+    return () => {
+      downloadAbortRef.current?.abort();
+      logPdfDebug("Aborted download flow on unmount");
+      downloadAbortRef.current = null;
+      downloadInFlightRef.current = false;
+    };
+  }, [logPdfDebug]);
 
   const updateInvoice = useMutation({
     mutationFn: async (payload: Omit<UpdateInvoiceInput, "invoiceId">) => {
@@ -243,6 +387,7 @@ export default function InvoiceDetailPage() {
         setSendDialogOpen(true);
         return;
       }
+      logPdfDebug("Invoice header action clicked", { actionKey, invoiceId: id });
 
       setIsProcessing(true);
       try {
@@ -252,7 +397,9 @@ export default function InvoiceDetailPage() {
             toast.success(t("invoices.issued"));
             break;
           case "download_pdf":
-            downloadPdf.mutate(id);
+          case "download-pdf":
+          case "downloadPdf":
+            await downloadPdfWithWait(id);
             return;
           case "record_payment":
             setPaymentDialogOpen(true);
@@ -283,7 +430,7 @@ export default function InvoiceDetailPage() {
         setIsProcessing(false);
       }
     },
-    [id, downloadPdf, navigate, queryClient]
+    [downloadPdfWithWait, id, navigate, queryClient, t]
   );
 
   const onFormSubmit = async (data: InvoiceFormData) => {

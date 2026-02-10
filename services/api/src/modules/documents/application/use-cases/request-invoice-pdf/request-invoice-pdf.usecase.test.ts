@@ -73,6 +73,21 @@ describe("RequestInvoicePdfUseCase", () => {
     expect(second.downloadUrl).toContain(file.objectKey);
   });
 
+  it("does not enqueue duplicate outbox events while PDF is still pending", async () => {
+    const first = unwrap(
+      await useCase.execute({ invoiceId: "inv-pending" }, { tenantId: "tenant-1" })
+    );
+    expect(first.status).toBe("PENDING");
+    expect(outbox.events).toHaveLength(1);
+
+    const second = unwrap(
+      await useCase.execute({ invoiceId: "inv-pending" }, { tenantId: "tenant-1" })
+    );
+
+    expect(second.status).toBe("PENDING");
+    expect(outbox.events).toHaveLength(1);
+  });
+
   it("forces regeneration when requested", async () => {
     const first = unwrap(await useCase.execute({ invoiceId: "inv-3" }, { tenantId: "tenant-1" }));
     const document = await documentRepo.findById("tenant-1", first.documentId);

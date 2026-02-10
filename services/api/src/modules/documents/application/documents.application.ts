@@ -3,6 +3,7 @@ import type { CreateUploadIntentUseCase } from "./use-cases/create-upload-intent
 import type { GetDownloadUrlUseCase } from "./use-cases/get-download-url/get-download-url.usecase";
 import type { GetDocumentUseCase } from "./use-cases/get-document/get-document.usecase";
 import type { GetPublicFileUrlUseCase } from "./use-cases/get-public-file-url/get-public-file-url.usecase";
+import type { GetInvoicePdfUseCase } from "./use-cases/get-invoice-pdf/get-invoice-pdf.usecase";
 import type { LinkDocumentUseCase } from "./use-cases/link-document/link-document.usecase";
 import type { ListLinkedDocumentsUseCase } from "./use-cases/list-linked-documents/list-linked-documents.usecase";
 import type { RequestInvoicePdfUseCase } from "./use-cases/request-invoice-pdf/request-invoice-pdf.usecase";
@@ -17,6 +18,7 @@ export class DocumentsApplication {
     public readonly getDownloadUrl: GetDownloadUrlUseCase,
     public readonly getDocument: GetDocumentUseCase,
     public readonly getPublicFileUrl: GetPublicFileUrlUseCase,
+    public readonly getInvoicePdf: GetInvoicePdfUseCase,
     public readonly linkDocument: LinkDocumentUseCase,
     public readonly listLinkedDocuments: ListLinkedDocumentsUseCase,
     public readonly requestInvoicePdf: RequestInvoicePdfUseCase,

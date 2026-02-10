@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Inject,
   Optional,
   Param,
@@ -9,9 +11,10 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UseGuards,
 } from "@nestjs/common";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 import { InvoicesApplication } from "../../application/invoices.application";
 import { PartyApplication } from "../../../party/application/party.application";
 import {
@@ -107,7 +110,12 @@ export class InvoicesHttpController {
   }
 
   @Get(":invoiceId/pdf")
-  async downloadPdf(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
+  async downloadPdf(
+    @Param("invoiceId") invoiceId: string,
+    @Query("waitMs") waitMsRaw: string | undefined,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
     const input = RequestInvoicePdfInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
     const docsApp =
@@ -115,8 +123,43 @@ export class InvoicesHttpController {
     if (!docsApp) {
       throw new Error("DocumentsApplication not available");
     }
-    const result = await docsApp.requestInvoicePdf.execute(input, ctx);
-    const payload = mapResultToHttp(result);
+
+    const waitMs = this.parseWaitMs(waitMsRaw);
+    const abortController = new AbortController();
+    const onClose = () => abortController.abort();
+    req.on("close", onClose);
+
+    const requestInput = {
+      invoiceId: input.invoiceId,
+      forceRegenerate: input.forceRegenerate,
+      waitMs,
+      abortSignal: abortController.signal,
+    };
+
+    const payload = await (async () => {
+      try {
+        const result = await docsApp.getInvoicePdf.execute(requestInput, ctx);
+        return mapResultToHttp(result);
+      } finally {
+        req.off("close", onClose);
+      }
+    })();
+    if (payload.status === "FAILED") {
+      throw new HttpException(
+        {
+          error: "INVOICE_PDF_RENDER_FAILED",
+          message: payload.errorMessage ?? "Invoice PDF rendering failed",
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
+
+    if (payload.status === "PENDING") {
+      const retryAfterMs = payload.retryAfterMs ?? 1000;
+      res.setHeader("Retry-After", String(Math.max(1, Math.ceil(retryAfterMs / 1000))));
+      res.status(HttpStatus.ACCEPTED);
+    }
+
     if (payload.downloadUrl?.startsWith("/")) {
       return {
         ...payload,
@@ -124,6 +167,19 @@ export class InvoicesHttpController {
       };
     }
     return payload;
+  }
+
+  private parseWaitMs(waitMsRaw: string | undefined): number | undefined {
+    if (waitMsRaw === undefined) {
+      return undefined;
+    }
+
+    const parsed = Number.parseInt(waitMsRaw, 10);
+    if (!Number.isFinite(parsed)) {
+      return undefined;
+    }
+
+    return Math.max(0, Math.min(30000, parsed));
   }
 
   @Get(":invoiceId")

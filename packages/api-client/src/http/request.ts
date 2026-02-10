@@ -32,6 +32,7 @@ export type RequestOptions = {
   retry?: Partial<RetryPolicyOptions>;
   parseJson?: boolean;
   streaming?: boolean;
+  signal?: AbortSignal;
 };
 
 type InternalInit = RequestInit & { url: string };
@@ -76,6 +77,9 @@ export async function request<T = unknown>(opts: RequestOptions): Promise<T> {
     method,
     headers,
   };
+  if (opts.signal) {
+    init.signal = opts.signal;
+  }
   if (body !== undefined) {
     init.body = body;
   }

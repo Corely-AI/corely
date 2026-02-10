@@ -104,6 +104,7 @@ services:
       LOG_LEVEL: debug
     volumes:
       - ./services/worker/src:/app/services/worker/src
+      - ./services/api/src:/app/services/api/src
       - ./packages/data/src:/app/packages/data/src
       - ./packages/contracts/src:/app/packages/contracts/src
       - ./packages/domain/src:/app/packages/domain/src

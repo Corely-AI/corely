@@ -20,6 +20,7 @@ import { CompleteUploadUseCase } from "./application/use-cases/complete-upload/c
 import { CreateUploadIntentUseCase } from "./application/use-cases/create-upload-intent/create-upload-intent.usecase";
 import { GetDownloadUrlUseCase } from "./application/use-cases/get-download-url/get-download-url.usecase";
 import { GetDocumentUseCase } from "./application/use-cases/get-document/get-document.usecase";
+import { GetInvoicePdfUseCase } from "./application/use-cases/get-invoice-pdf/get-invoice-pdf.usecase";
 import { GetPublicFileUrlUseCase } from "./application/use-cases/get-public-file-url/get-public-file-url.usecase";
 import { LinkDocumentUseCase } from "./application/use-cases/link-document/link-document.usecase";
 import { ListLinkedDocumentsUseCase } from "./application/use-cases/list-linked-documents/list-linked-documents.usecase";
@@ -206,6 +207,37 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
       ],
     },
     {
+      provide: GetInvoicePdfUseCase,
+      useFactory: (
+        requestInvoicePdf: RequestInvoicePdfUseCase,
+        documentRepo: PrismaDocumentRepoAdapter,
+        fileRepo: PrismaFileRepoAdapter,
+        storage: GcsObjectStorageAdapter,
+        env: EnvService
+      ) =>
+        new GetInvoicePdfUseCase({
+          logger: new NestLoggerAdapter(),
+          requestInvoicePdf,
+          documentRepo,
+          fileRepo,
+          objectStorage: storage,
+          downloadTtlSeconds: env.SIGNED_URL_DOWNLOAD_TTL_SECONDS,
+          defaultWaitMs: 15000,
+          maxWaitMs: 30000,
+          pollInitialMs: 250,
+          pollMaxMs: 1500,
+          pollJitterMs: 100,
+          pendingRetryAfterMs: 1000,
+        }),
+      inject: [
+        RequestInvoicePdfUseCase,
+        PrismaDocumentRepoAdapter,
+        PrismaFileRepoAdapter,
+        GcsObjectStorageAdapter,
+        EnvService,
+      ],
+    },
+    {
       provide: UnlinkDocumentUseCase,
       useFactory: (linkRepo: PrismaDocumentLinkAdapter) =>
         new UnlinkDocumentUseCase({
@@ -265,6 +297,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         getDownloadUrl: GetDownloadUrlUseCase,
         getDocument: GetDocumentUseCase,
         getPublicFileUrl: GetPublicFileUrlUseCase,
+        getInvoicePdf: GetInvoicePdfUseCase,
         linkDocument: LinkDocumentUseCase,
         listLinkedDocuments: ListLinkedDocumentsUseCase,
         requestInvoicePdf: RequestInvoicePdfUseCase,
@@ -278,6 +311,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
           getDownloadUrl,
           getDocument,
           getPublicFileUrl,
+          getInvoicePdf,
           linkDocument,
           listLinkedDocuments,
           requestInvoicePdf,
@@ -291,6 +325,7 @@ import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/pro
         GetDownloadUrlUseCase,
         GetDocumentUseCase,
         GetPublicFileUrlUseCase,
+        GetInvoicePdfUseCase,
         LinkDocumentUseCase,
         ListLinkedDocumentsUseCase,
         RequestInvoicePdfUseCase,

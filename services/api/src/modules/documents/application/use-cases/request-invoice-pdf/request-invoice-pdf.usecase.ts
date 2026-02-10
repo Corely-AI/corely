@@ -96,13 +96,22 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
       });
     }
 
+    if (document && !input.forceRegenerate && document.status === "PENDING" && file) {
+      return ok({
+        documentId: document.id,
+        status: "PENDING",
+        fileId: file.id,
+      });
+    }
+
     if (!document) {
       const now = this.useCaseDeps.clock.now();
       const documentId = this.useCaseDeps.idGenerator.newId();
       const fileId = this.useCaseDeps.idGenerator.newId();
       const rawPrefix = this.useCaseDeps.keyPrefix ?? process.env.STORAGE_KEY_PREFIX ?? "";
       const prefix = rawPrefix ? `${rawPrefix}/` : "";
-      const objectKey = `${prefix}tenant/${tenantId}/documents/${documentId}/files/${fileId}/invoice.pdf`;
+      // Use deterministic invoice-scoped object key so duplicate requests do not create duplicate objects.
+      const objectKey = `${prefix}tenant/${tenantId}/invoices/${input.invoiceId}/invoice.pdf`;
 
       document = DocumentAggregate.create({
         id: documentId,
@@ -134,7 +143,7 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
         const fileId = this.useCaseDeps.idGenerator.newId();
         const rawPrefix = this.useCaseDeps.keyPrefix ?? process.env.STORAGE_KEY_PREFIX ?? "";
         const prefix = rawPrefix ? `${rawPrefix}/` : "";
-        const objectKey = `${prefix}tenant/${tenantId}/documents/${document.id}/files/${fileId}/invoice.pdf`;
+        const objectKey = `${prefix}tenant/${tenantId}/invoices/${input.invoiceId}/invoice.pdf`;
         file = new FileEntity({
           id: fileId,
           tenantId,

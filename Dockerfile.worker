@@ -1,36 +1,39 @@
-# Simple single-stage image for the Worker.
-# Installs deps and rebuilds native modules in-place to avoid arch mismatches during e2e runs.
-FROM node:22-alpine
+# Worker image for both dev and runtime.
+# Uses Debian base so Playwright Chromium can be installed reliably in-container.
+FROM node:22-bookworm-slim
 
 RUN corepack enable pnpm
-RUN apk add --no-cache python3 make g++ openssl curl
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      python3 \
+      make \
+      g++ \
+      openssl \
+      curl \
+      ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 WORKDIR /app
 
 # Workspace manifests (keeps install cache-friendly)
 COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY patches ./patches/
-COPY services/worker/package.json ./services/worker/
-COPY packages/data/package.json ./packages/data/
-COPY packages/domain/package.json ./packages/domain/
-COPY packages/contracts/package.json ./packages/contracts/
-COPY packages/kernel/package.json ./packages/kernel/
-COPY packages/core/package.json ./packages/core/
-COPY packages/prompts/package.json ./packages/prompts/
-COPY packages/email-templates/package.json ./packages/email-templates/
-COPY packages/config/package.json ./packages/config/
-COPY packages/testkit/package.json ./packages/testkit/
-COPY packages/tooling/tsconfig/package.json ./packages/tooling/tsconfig/
+COPY services/worker ./services/worker
+COPY packages ./packages
 
 # Install all workspace deps (includes dev deps needed for tsx watch)
 # Using shamefully-hoist for Prisma 7 compatibility
 RUN pnpm install --frozen-lockfile --recursive
 
-# Copy source
+# Install Chromium in the container so worker PDF rendering works in dev/e2e/prod.
+RUN pnpm --filter @corely/worker exec playwright install --with-deps chromium
+
+# Copy remaining sources needed for build/runtime
 COPY tsconfig.base.json tsconfig.node.json ./
 COPY packages/tooling/tsconfig/*.json ./packages/tooling/tsconfig/
-COPY packages ./packages
-COPY services/worker ./services/worker
+COPY services/api/src ./services/api/src
 COPY scripts ./scripts
 
 # Generate Prisma client BEFORE building packages (Prisma 7 uses prisma.config.ts)

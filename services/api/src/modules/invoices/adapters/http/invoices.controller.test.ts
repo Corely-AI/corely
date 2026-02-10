@@ -3,6 +3,7 @@ import { InvoicesHttpController } from "./invoices.controller";
 import { InvoicesApplication } from "../../application/invoices.application";
 import { HttpException } from "@nestjs/common";
 import { NotFoundError, err, ok } from "@corely/kernel";
+import type { DocumentsApplication } from "../../../documents/application/documents.application";
 import { HEADER_TENANT_ID } from "@shared/request-context";
 
 const invoice = {
@@ -42,10 +43,12 @@ describe("InvoicesHttpController", () => {
   let controller: InvoicesHttpController;
   const getExecute = vi.fn();
   const updateExecute = vi.fn();
+  const getInvoicePdfExecute = vi.fn();
 
   beforeEach(() => {
     getExecute.mockResolvedValue(ok({ invoice }));
     updateExecute.mockResolvedValue(ok({ invoice }));
+    getInvoicePdfExecute.mockReset();
 
     const app = {
       getInvoiceById: { execute: getExecute },
@@ -60,7 +63,11 @@ describe("InvoicesHttpController", () => {
       },
     } as unknown as InvoicesApplication;
 
-    controller = new InvoicesHttpController(app);
+    const docsApp = {
+      getInvoicePdf: { execute: getInvoicePdfExecute },
+    } as unknown as DocumentsApplication;
+
+    controller = new InvoicesHttpController(app, null, docsApp);
   });
 
   it("returns invoice dto via get endpoint", async () => {
@@ -79,5 +86,90 @@ describe("InvoicesHttpController", () => {
     const req = { headers: { [HEADER_TENANT_ID]: "tenant-1" } } as any;
 
     await expect(controller.getInvoice("missing", req)).rejects.toBeInstanceOf(HttpException);
+  });
+
+  it("returns 202 + Retry-After for pending PDF generation", async () => {
+    getInvoicePdfExecute.mockResolvedValueOnce(
+      ok({
+        documentId: "doc-1",
+        fileId: "file-1",
+        status: "PENDING",
+        retryAfterMs: 1200,
+      })
+    );
+
+    const req = {
+      headers: { [HEADER_TENANT_ID]: "tenant-1" },
+      on: vi.fn(),
+      off: vi.fn(),
+      protocol: "http",
+      get: vi.fn().mockReturnValue("localhost:3000"),
+    } as any;
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      setHeader: vi.fn(),
+    } as any;
+
+    const result = await controller.downloadPdf("inv-1", "15000", req, res);
+
+    expect(result.status).toBe("PENDING");
+    expect(res.status).toHaveBeenCalledWith(202);
+    expect(res.setHeader).toHaveBeenCalledWith("Retry-After", "2");
+  });
+
+  it("returns READY payload for downloadable PDF", async () => {
+    getInvoicePdfExecute.mockResolvedValueOnce(
+      ok({
+        documentId: "doc-1",
+        fileId: "file-1",
+        status: "READY",
+        downloadUrl: "https://download.test/file.pdf",
+      })
+    );
+
+    const req = {
+      headers: { [HEADER_TENANT_ID]: "tenant-1" },
+      on: vi.fn(),
+      off: vi.fn(),
+      protocol: "http",
+      get: vi.fn().mockReturnValue("localhost:3000"),
+    } as any;
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      setHeader: vi.fn(),
+    } as any;
+
+    const result = await controller.downloadPdf("inv-1", "15000", req, res);
+
+    expect(result.status).toBe("READY");
+    expect(result.downloadUrl).toBe("https://download.test/file.pdf");
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  it("maps FAILED PDF status to HTTP 422", async () => {
+    getInvoicePdfExecute.mockResolvedValueOnce(
+      ok({
+        documentId: "doc-1",
+        fileId: "file-1",
+        status: "FAILED",
+        errorMessage: "Render error",
+      })
+    );
+
+    const req = {
+      headers: { [HEADER_TENANT_ID]: "tenant-1" },
+      on: vi.fn(),
+      off: vi.fn(),
+      protocol: "http",
+      get: vi.fn().mockReturnValue("localhost:3000"),
+    } as any;
+    const res = {
+      status: vi.fn().mockReturnThis(),
+      setHeader: vi.fn(),
+    } as any;
+
+    await expect(controller.downloadPdf("inv-1", "15000", req, res)).rejects.toBeInstanceOf(
+      HttpException
+    );
   });
 });

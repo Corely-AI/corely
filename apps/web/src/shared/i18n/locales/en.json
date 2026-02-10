@@ -508,7 +508,9 @@
     },
     "pdf": {
       "pendingTitle": "PDF is being prepared",
-      "pendingDescription": "We started generating the PDF. Please try again in a moment."
+      "pendingDescription": "We started generating the PDF. Please try again in a moment.",
+      "stillGeneratingTitle": "PDF is still generating",
+      "stillGeneratingDescription": "This can take longer under load. Please try again in a few seconds."
     },
     "notifications": {
       "canceled": "Invoice canceled",

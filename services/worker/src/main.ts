@@ -115,7 +115,9 @@ async function runSingleTick(logger: Logger): Promise<void> {
 
 async function runBackgroundLoop(logger: Logger): Promise<void> {
   const { app, env, close } = await createWorkerApp(logger);
+  logger.log("[worker] application context initialized");
   const orchestrator = app.get(TickOrchestrator);
+  logger.log("[worker] tick orchestrator resolved");
   let shuttingDown = false;
   let inFlightTick: Promise<TickRunSummary> | undefined;
   let idleStreak = 0;
@@ -178,6 +180,9 @@ async function runBackgroundLoop(logger: Logger): Promise<void> {
       await sleepInterruptible(delayMs, () => shuttingDown);
     }
   } finally {
+    logger.log(
+      `[worker] background loop exiting (shuttingDown=${shuttingDown}, inFlight=${Boolean(inFlightTick)})`
+    );
     if (inFlightTick) {
       const timeoutMs = Math.max(1_000, env.WORKER_SHUTDOWN_TIMEOUT_MS);
       const timed = new Promise<"timeout">((resolve) =>
@@ -208,7 +213,9 @@ async function bootstrap() {
     return;
   }
 
+  logger.log("[worker] entering background loop");
   await runBackgroundLoop(logger);
+  logger.log("[worker] background loop returned");
   await shutdownTracing();
 }
 

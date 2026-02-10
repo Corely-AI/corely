@@ -524,7 +524,9 @@
     },
     "pdf": {
       "pendingTitle": "Đang chuẩn bị bản PDF",
-      "pendingDescription": "Chúng tôi đang khởi tạo bản PDF. Vui lòng thử lại sau giây lát."
+      "pendingDescription": "Chúng tôi đang khởi tạo bản PDF. Vui lòng thử lại sau giây lát.",
+      "stillGeneratingTitle": "PDF vẫn đang được tạo",
+      "stillGeneratingDescription": "Khi hệ thống tải cao, quá trình có thể lâu hơn. Vui lòng thử lại sau vài giây."
     },
     "notifications": {
       "canceled": "Hóa đơn đã bị hủy",

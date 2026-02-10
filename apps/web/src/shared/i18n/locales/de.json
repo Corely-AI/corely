@@ -524,7 +524,9 @@
     },
     "pdf": {
       "pendingTitle": "PDF wird vorbereitet",
-      "pendingDescription": "Die PDF-Erstellung wurde gestartet. Bitte versuchen Sie es in einem Moment erneut."
+      "pendingDescription": "Die PDF-Erstellung wurde gestartet. Bitte versuchen Sie es in einem Moment erneut.",
+      "stillGeneratingTitle": "PDF wird noch erstellt",
+      "stillGeneratingDescription": "Unter Last kann dies etwas dauern. Bitte versuchen Sie es in ein paar Sekunden erneut."
     },
     "notifications": {
       "canceled": "Rechnung storniert",
