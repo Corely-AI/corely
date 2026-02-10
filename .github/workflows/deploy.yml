@@ -11,6 +11,7 @@ env:
   REGION: europe-west4 # Netherlands (better domain mapping support)
   GAR_LOCATION: europe-west4 # Netherlands
   REPOSITORY: corely-images # TODO: Create this Artifact Registry repository
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
   deploy:
@@ -18,6 +19,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      pull-requests: read
 
     steps:
       - name: Checkout code
@@ -39,17 +41,42 @@ jobs:
           username: _json_key
           password: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Build and Push API
-        uses: docker/build-push-action@v6
+      - name: Check PR labels for worker deploy
+        id: worker_label
+        uses: actions/github-script@v7
         with:
-          context: .
-          file: Dockerfile.api
-          push: true
-          tags: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          script: |
+            if (context.eventName !== "push") {
+              core.setOutput("enabled", "false");
+              return;
+            }
+
+            const { owner, repo } = context.repo;
+            const commitSha = context.sha;
+            const result = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner,
+              repo,
+              commit_sha: commitSha,
+            });
+
+            const hasWorkerLabel = result.data.some((pr) =>
+              (pr.labels || []).some((label) => label.name === "worker")
+            );
+
+            core.setOutput("enabled", hasWorkerLabel ? "true" : "false");
+
+      # - name: Build and Push API
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: .
+      #     file: Dockerfile.api
+      #     push: true
+      #     tags: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
 
       - name: Build and Push Worker
+        if: steps.worker_label.outputs.enabled == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -82,14 +109,6 @@ jobs:
 
           JOB_NAME="corely-api-migrate"
           IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}"
-          DATABASE_URL="$(gcloud run services describe corely-api \
-            --region "${{ env.REGION }}" \
-            --format='value(spec.template.spec.containers[0].env[?name=DATABASE_URL].value)')"
-
-          if [ -z "${DATABASE_URL}" ]; then
-            echo "DATABASE_URL is missing on Cloud Run service corely-api."
-            exit 1
-          fi
 
           if gcloud run jobs describe "$JOB_NAME" --region "${{ env.REGION }}" >/dev/null 2>&1; then
             gcloud run jobs update "$JOB_NAME" \
@@ -97,25 +116,27 @@ jobs:
               --image "$IMAGE" \
               --command "sh" \
               --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
-              --set-env-vars "NODE_ENV=production,DATABASE_URL=${DATABASE_URL}"
+              --set-env-vars "NODE_ENV=production,DATABASE_URL=${{ env.DATABASE_URL }}"
           else
             gcloud run jobs create "$JOB_NAME" \
               --region "${{ env.REGION }}" \
               --image "$IMAGE" \
               --command "sh" \
               --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
-              --set-env-vars "NODE_ENV=production,DATABASE_URL=${DATABASE_URL}"
+              --set-env-vars "NODE_ENV=production,DATABASE_URL=${{ env.DATABASE_URL }}"
           fi
 
           gcloud run jobs execute "$JOB_NAME" --region "${{ env.REGION }}" --wait
 
       - name: Deploy Worker to Cloud Run
+        if: steps.worker_label.outputs.enabled == 'true'
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: corely-worker
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
-          flags: --port=3000
+          flags: --port=8080
           env_vars: |
             NODE_ENV=production
+            DATABASE_URL=${{ env.DATABASE_URL }}
             WORKFLOW_QUEUE_DRIVER=memory
