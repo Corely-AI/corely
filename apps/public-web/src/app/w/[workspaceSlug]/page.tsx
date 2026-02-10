@@ -17,9 +17,8 @@ import { WebsitePublicPageScreen } from "@/components/pages/website-public-page"
 import { WebsiteNotFound } from "@/components/website/website-not-found";
 import { siteConfig } from "@/lib/site";
 import { getHomeMetadata } from "@/app/(site)/_home-shared";
-import { WEBSITE_REVALIDATE } from "@/app/__website/_shared";
 
-export const revalidate = WEBSITE_REVALIDATE;
+export const revalidate = 120;
 
 const resolveMetadataFallback = (input: {
   canonical: string;
