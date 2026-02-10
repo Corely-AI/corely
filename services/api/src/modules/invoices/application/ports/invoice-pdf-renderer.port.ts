@@ -11,6 +11,13 @@ export type InvoicePdfModel = {
   items: Array<{ description: string; qty: string; unitPrice: string; lineTotal: string }>;
   totals: { subtotal: string; vatRate?: string; vatAmount?: string; total: string };
   notes?: string;
+  issuerInfo?: {
+    taxId?: string;
+    vatId?: string;
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
   paymentSnapshot?: {
     type?: string;
     label?: string;

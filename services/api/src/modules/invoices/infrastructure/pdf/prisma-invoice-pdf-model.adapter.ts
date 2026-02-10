@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { InvoicePdfModelPort } from "../../application/ports/invoice-pdf-model.port";
-import { PaymentDetailsSnapshot } from "../../domain/invoice.types";
+import { IssuerSnapshot, PaymentDetailsSnapshot } from "../../domain/invoice.types";
 import type { Prisma } from "@prisma/client";
 
 type InvoiceWithLines = Prisma.InvoiceGetPayload<{
-  include: { lines: true };
+  include: { lines: true; legalEntity: true };
 }>;
 
 @Injectable()
@@ -28,6 +28,13 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     items: Array<{ description: string; qty: string; unitPrice: string; lineTotal: string }>;
     totals: { subtotal: string; vatRate?: string; vatAmount?: string; total: string };
     notes?: string;
+    issuerInfo?: {
+      taxId?: string;
+      vatId?: string;
+      phone?: string;
+      email?: string;
+      website?: string;
+    };
     paymentSnapshot?: {
       type?: string;
       bankName?: string;
@@ -42,7 +49,7 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
   } | null> {
     const invoice: InvoiceWithLines | null = await this.prisma.invoice.findFirst({
       where: { id: invoiceId, tenantId },
-      include: { lines: true },
+      include: { lines: true, legalEntity: true },
     });
 
     if (!invoice) {
@@ -53,13 +60,17 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
       return null;
     }
 
-    const workspace = await this.prisma.workspace.findFirst({
-      where: { tenantId },
-      include: { legalEntity: true },
-      orderBy: { createdAt: "asc" },
-    });
+    const issuerSnapshot = ((invoice as any).issuerSnapshot as IssuerSnapshot | null) ?? undefined;
+    let legalEntity = invoice.legalEntity;
 
-    const legalEntity = workspace?.legalEntity ?? null;
+    if (!legalEntity) {
+      const workspace = await this.prisma.workspace.findFirst({
+        where: { tenantId },
+        include: { legalEntity: true },
+        orderBy: { createdAt: "asc" },
+      });
+      legalEntity = workspace?.legalEntity ?? null;
+    }
 
     const buildAddress = (address?: {
       line1?: string | null;
@@ -82,9 +93,9 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
       return parts.filter(Boolean).join(", ");
     };
 
-    const billFromAddress = legalEntity?.address
-      ? buildAddress(legalEntity.address as any)
-      : undefined;
+    const billFromAddress =
+      buildAddress(issuerSnapshot?.address as any) ||
+      (legalEntity?.address ? buildAddress(legalEntity.address as any) : undefined);
 
     // Build bill-to address
     const addressParts: string[] = [];
@@ -165,7 +176,9 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     }));
 
     const paymentDetailsSnapshot =
-      ((invoice as any).paymentDetails as PaymentDetailsSnapshot) ?? undefined;
+      ((invoice as any).paymentSnapshot as PaymentDetailsSnapshot | null) ??
+      ((invoice as any).paymentDetails as PaymentDetailsSnapshot | null) ??
+      undefined;
     let paymentSnapshot = undefined;
 
     if (paymentDetailsSnapshot) {
@@ -180,7 +193,7 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
 
     return {
       invoiceNumber: invoice.number,
-      billFromName: legalEntity?.legalName,
+      billFromName: issuerSnapshot?.name ?? legalEntity?.legalName,
       billFromAddress,
       billToName: invoice.billToName || "Unknown",
       billToAddress,
@@ -196,6 +209,13 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
         total: formatCurrency(totalCents),
       },
       notes: invoice.notes || undefined,
+      issuerInfo: {
+        taxId: issuerSnapshot?.taxId ?? legalEntity?.taxId ?? undefined,
+        vatId: issuerSnapshot?.vatId ?? legalEntity?.vatId ?? undefined,
+        phone: issuerSnapshot?.contact?.phone ?? legalEntity?.phone ?? undefined,
+        email: issuerSnapshot?.contact?.email ?? legalEntity?.email ?? undefined,
+        website: issuerSnapshot?.contact?.website ?? legalEntity?.website ?? undefined,
+      },
       paymentSnapshot,
     };
   }

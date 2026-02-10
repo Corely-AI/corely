@@ -73,6 +73,54 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
     const billToLines = model.billToAddress
       ? model.billToAddress.split(", ").map((line) => this.escapeHtml(line))
       : [];
+    const payment = model.paymentSnapshot;
+
+    const taxLines = [
+      this.renderFooterLine("VAT ID", model.issuerInfo?.vatId),
+      this.renderFooterLine("Tax ID", model.issuerInfo?.taxId),
+    ].join("");
+
+    const paymentLines: string[] = [];
+    paymentLines.push(this.renderFooterLine("Method", payment?.label ?? payment?.type));
+    paymentLines.push(this.renderFooterLine("Account", payment?.accountHolderName));
+    paymentLines.push(this.renderFooterLine("IBAN", payment?.iban));
+    paymentLines.push(this.renderFooterLine("BIC", payment?.bic));
+    paymentLines.push(this.renderFooterLine("Bank", payment?.bankName));
+    paymentLines.push(this.renderFooterLine("Reference", payment?.referenceText));
+    paymentLines.push(this.renderFooterLine("Instructions", payment?.instructions));
+    paymentLines.push(this.renderFooterLinkLine("Pay link", payment?.payUrl));
+
+    const contactLines = [
+      this.renderFooterLine("Phone", model.issuerInfo?.phone),
+      this.renderFooterLine("Email", model.issuerInfo?.email),
+      this.renderFooterLine("Website", model.issuerInfo?.website),
+    ].join("");
+    const paymentContent = paymentLines.filter(Boolean).join("");
+
+    const taxSectionHtml = taxLines
+      ? `<div class="footer-block">
+          <div class="section-title">Tax details</div>
+          ${taxLines}
+        </div>`
+      : "";
+
+    const paymentSectionHtml = paymentContent
+      ? `<div class="footer-block">
+          <div class="section-title">Payment method</div>
+          ${paymentContent}
+        </div>`
+      : "";
+
+    const contactSectionHtml = contactLines
+      ? `<div class="footer-block">
+          <div class="section-title">Contact details</div>
+          ${contactLines}
+        </div>`
+      : "";
+
+    const footerHtml = [taxSectionHtml, paymentSectionHtml, contactSectionHtml]
+      .filter(Boolean)
+      .join("");
 
     return `
 <!DOCTYPE html>
@@ -97,6 +145,12 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
     }
     .container {
       padding: 20mm 15mm;
+      min-height: 257mm;
+      display: flex;
+      flex-direction: column;
+    }
+    .content {
+      flex: 1;
     }
     .company-line {
       font-size: 9.5pt;
@@ -183,82 +237,134 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
       margin-top: 8px;
       padding-top: 12px;
     }
+    .footer-grid {
+      margin-top: auto;
+      padding-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+    .footer-block {
+      padding: 0;
+    }
+    .footer-line {
+      display: grid;
+      grid-template-columns: 82px 1fr;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 9pt;
+      line-height: 1.45;
+    }
+    .footer-label {
+      color: #8a8a8a;
+      font-weight: 600;
+    }
+    .footer-value {
+      color: #2b2b2b;
+      word-break: break-word;
+    }
+    .footer-value.link {
+      color: #147f8a;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    ${billFromLine ? `<div class="company-line">${billFromLine}</div>` : ""}
+    <div class="content">
+      ${billFromLine ? `<div class="company-line">${billFromLine}</div>` : ""}
 
-    <div class="section">
-      <div class="dates">
-        <div>
-          <div class="section-title">Billed to</div>
-          <div class="bill-to">
-            <div><strong>${this.escapeHtml(model.billToName)}</strong></div>
-            ${billToLines.map((line) => `<div>${line}</div>`).join("")}
+      <div class="section">
+        <div class="dates">
+          <div>
+            <div class="section-title">Billed to</div>
+            <div class="bill-to">
+              <div><strong>${this.escapeHtml(model.billToName)}</strong></div>
+              ${billToLines.map((line) => `<div>${line}</div>`).join("")}
+            </div>
+          </div>
+          <div>
+            <div class="date-item">
+              <div class="date-label">Invoice no.</div>
+              <div class="date-value">${this.escapeHtml(model.invoiceNumber)}</div>
+            </div>
+            <div class="date-item">
+              <div class="date-label">Issue date</div>
+              <div class="date-value">${this.escapeHtml(model.issueDate)}</div>
+            </div>
+            ${
+              model.dueDate
+                ? `<div class="date-item">
+                    <div class="date-label">Due date</div>
+                    <div class="date-value">${this.escapeHtml(model.dueDate)}</div>
+                  </div>`
+                : ""
+            }
           </div>
         </div>
-        <div>
-          <div class="date-item">
-            <div class="date-label">Invoice no.</div>
-            <div class="date-value">${this.escapeHtml(model.invoiceNumber)}</div>
-          </div>
-          <div class="date-item">
-            <div class="date-label">Issue date</div>
-            <div class="date-value">${this.escapeHtml(model.issueDate)}</div>
-          </div>
-          ${
-            model.dueDate
-              ? `<div class="date-item">
-                  <div class="date-label">Due date</div>
-                  <div class="date-value">${this.escapeHtml(model.dueDate)}</div>
-                </div>`
-              : ""
-          }
+      </div>
+
+      <div class="section">
+        <div class="section-title">Details</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th style="text-align: right;">Qty</th>
+              <th style="text-align: right;">Unit price</th>
+              <th style="text-align: right;">Line total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="totals">
+        <div class="total-row">
+          <span>Subtotal</span>
+          <span>${this.escapeHtml(model.totals.subtotal)}</span>
+        </div>
+        <div class="total-row grand">
+          <span>Total (${this.escapeHtml(model.currency)})</span>
+          <span>${this.escapeHtml(model.totals.total)}</span>
         </div>
       </div>
-    </div>
 
-    <div class="section">
-      <div class="section-title">Details</div>
-      <table>
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th style="text-align: right;">Qty</th>
-            <th style="text-align: right;">Unit price</th>
-            <th style="text-align: right;">Line total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${itemsHtml}
-        </tbody>
-      </table>
+      ${
+        model.notes
+          ? `<div class="section">
+              <div class="section-title">Notes</div>
+              <div>${this.escapeHtml(model.notes)}</div>
+            </div>`
+          : ""
+      }
     </div>
-
-    <div class="totals">
-      <div class="total-row">
-        <span>Subtotal</span>
-        <span>${this.escapeHtml(model.totals.subtotal)}</span>
-      </div>
-      <div class="total-row grand">
-        <span>Total (${this.escapeHtml(model.currency)})</span>
-        <span>${this.escapeHtml(model.totals.total)}</span>
-      </div>
-    </div>
-
-    ${
-      model.notes
-        ? `<div class="section">
-            <div class="section-title">Notes</div>
-            <div>${this.escapeHtml(model.notes)}</div>
-          </div>`
-        : ""
-    }
+    ${footerHtml ? `<div class="footer-grid">${footerHtml}</div>` : ""}
   </div>
 </body>
 </html>
 `;
+  }
+
+  private renderFooterLine(label: string, value?: string): string {
+    if (!value) {
+      return "";
+    }
+
+    return `<div class="footer-line"><span class="footer-label">${this.escapeHtml(label)}:</span><span class="footer-value">${this.escapeHtml(value)}</span></div>`;
+  }
+
+  private renderFooterLinkLine(label: string, value?: string): string {
+    if (!value) {
+      return "";
+    }
+
+    const escapedLabel = this.escapeHtml(label);
+    const escapedValue = this.escapeHtml(value);
+
+    return `<div class="footer-line"><span class="footer-label">${escapedLabel}:</span><a class="footer-value link" href="${escapedValue}" target="_blank" rel="noreferrer">${escapedValue}</a></div>`;
   }
 
   private escapeHtml(value: string): string {
