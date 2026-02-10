@@ -15,10 +15,10 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 ## Runtime surfaces
 
 - **Web (`apps/web`, Vite + React):** Admin/backoffice UI. Uses TanStack Query with backoff from `@corely/api-client`, workspace + auth providers, and an offline provider backed by `@corely/offline-web` (IndexedDB cache + outbox; transport is still a placeholder).
-- **Public Web (`apps/public-web`, Vite + React):** Public-facing UI for portfolios, rentals, blog, and CMS pages. Uses `@corely/ui` for shared design-system components and the public API surface under `/public/*`.
+- **Public Web (`apps/public-web`, Next.js App Router):** Public-facing UI for portfolios, rentals, blog, and CMS pages. Uses the public API surface under `/public/*` and is deployed as a server-rendered app (no SPA rewrite required).
 - **POS (`apps/pos`, Expo + React Native):** Offline-first shell wired to `@corely/offline-core`, `@corely/offline-rn`, and `@corely/pos-core`.
 - **API (`services/api`, NestJS 11):** Modules for identity, accounting, sales, purchasing, inventory, approvals, engagements, workflows, AI copilot, etc. Global env validation via `@corely/config`, Prisma-powered `DataModule`, and trace-ID middleware.
-- **Worker (`services/worker`, NestJS 11):** Outbox poller (invoice email delivery via Resend) and workflow orchestrator/task runners using queue adapters defined in `@corely/contracts`.
+- **Worker (`services/worker`, NestJS 11):** Two modes: background loop (default) and one-off `tick`. Background repeatedly runs the same `TickOrchestrator` path to avoid mode drift. Tick orchestrates outbox + scheduled runners; workflow orchestrator/task runners use queue adapters defined in `@corely/contracts`.
 - **Mock server (`services/mock-server` dist):** Lightweight UI-first backend with latency/idempotency simulation.
 
 ---
@@ -45,7 +45,7 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 - **Composition:** `AppModule` imports modules for identity, party/CRM, workspaces, accounting, sales, purchasing, inventory, approvals, engagement, workflows, automation, reporting, documents, tax, platform, and AI copilot. `TraceIdMiddleware` applies to all routes.
 - **Data & transactions:** `@corely/data` exposes a global Prisma UnitOfWork plus outbox, audit, and idempotency adapters. Only repositories talk to Prisma.
 - **AI Copilot:** `ai-copilot` module streams chat via `StreamCopilotChatUseCase`, builds tool registries from invoices/party/sales/purchasing/inventory/approvals/engagement, and records tool executions to Prisma + outbox. Prompt registry comes from `@corely/prompts`; observability uses OTEL/Langfuse via `OtelObservabilityAdapter`.
-- **Workflows & automation:** Workflow orchestration lives in the worker (`WorkflowsModule`) with handlers for human/timer/http/email/ai/system tasks and queue adapters (BullMQ/Cloud Tasks selectable via env). Workflow specs and transitions reuse `packages/core`.
+- **Workflows & automation:** Workflow orchestration lives in the worker (`WorkflowsModule`) with handlers for human/timer/http/email/ai/system tasks and queue adapters (memory/Cloud Tasks selectable via env). Workflow specs and transitions reuse `packages/core`.
 - **Outbox & notifications:** Worker `OutboxModule` polls Prisma outbox and triggers handlers such as invoice email delivery via Resend (provider set by env).
 - **Error model:** RFC 7807 Problem Details responses; domain errors in `packages/domain/src/errors` (UserFriendly/Validation/Unauthorized/Forbidden/NotFound/Conflict/ExternalService/Unexpected). Stable codes follow `Module:Meaning`.
 - **Observability:** `services/api/src/shared/observability/setup-tracing.ts` wires OTLP exporters with optional Langfuse span processor. Sampling and masking are driven by `OBSERVABILITY_*` env vars.

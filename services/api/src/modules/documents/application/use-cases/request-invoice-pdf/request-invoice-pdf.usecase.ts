@@ -16,8 +16,8 @@ import { type RequestInvoicePdfInput, type RequestInvoicePdfOutput } from "@core
 import { type DocumentRepoPort } from "../../ports/document-repository.port";
 import { type FileRepoPort } from "../../ports/file-repository.port";
 import { type DocumentLinkRepoPort } from "../../ports/document-link.port";
-import { type ObjectStoragePort } from "../../ports/object-storage.port";
-import { type OutboxPort } from "../../ports/outbox.port";
+import { type ObjectStoragePort } from "@corely/kernel";
+import { type OutboxPort } from "@corely/kernel";
 import { DocumentAggregate } from "../../../domain/document.aggregate";
 import { FileEntity } from "../../../domain/file.entity";
 import { type FileKind } from "../../../domain/document.types";
@@ -57,7 +57,10 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
     input: RequestInvoicePdfInput,
     ctx: UseCaseContext
   ): Promise<Result<RequestInvoicePdfOutput, UseCaseError>> {
-    const tenantId = ctx.tenantId!;
+    const tenantId = ctx.workspaceId ?? ctx.tenantId;
+    if (!tenantId) {
+      return err(new ValidationError("workspaceId or tenantId is required"));
+    }
     const existing = await this.useCaseDeps.documentRepo.findByTypeAndEntityLink(
       tenantId,
       "INVOICE_PDF",
@@ -96,13 +99,22 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
       });
     }
 
+    if (document && !input.forceRegenerate && document.status === "PENDING" && file) {
+      return ok({
+        documentId: document.id,
+        status: "PENDING",
+        fileId: file.id,
+      });
+    }
+
     if (!document) {
       const now = this.useCaseDeps.clock.now();
       const documentId = this.useCaseDeps.idGenerator.newId();
       const fileId = this.useCaseDeps.idGenerator.newId();
       const rawPrefix = this.useCaseDeps.keyPrefix ?? process.env.STORAGE_KEY_PREFIX ?? "";
       const prefix = rawPrefix ? `${rawPrefix}/` : "";
-      const objectKey = `${prefix}tenant/${tenantId}/documents/${documentId}/files/${fileId}/invoice.pdf`;
+      // Use deterministic invoice-scoped object key so duplicate requests do not create duplicate objects.
+      const objectKey = `${prefix}tenant/${tenantId}/invoices/${input.invoiceId}/invoice.pdf`;
 
       document = DocumentAggregate.create({
         id: documentId,
@@ -134,7 +146,7 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
         const fileId = this.useCaseDeps.idGenerator.newId();
         const rawPrefix = this.useCaseDeps.keyPrefix ?? process.env.STORAGE_KEY_PREFIX ?? "";
         const prefix = rawPrefix ? `${rawPrefix}/` : "";
-        const objectKey = `${prefix}tenant/${tenantId}/documents/${document.id}/files/${fileId}/invoice.pdf`;
+        const objectKey = `${prefix}tenant/${tenantId}/invoices/${input.invoiceId}/invoice.pdf`;
         file = new FileEntity({
           id: fileId,
           tenantId,

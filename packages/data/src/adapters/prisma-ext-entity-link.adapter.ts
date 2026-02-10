@@ -1,8 +1,10 @@
 import { Injectable } from "@nestjs/common";
+import type { ExtEntityLink as PrismaExtEntityLinkRecord } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
   ExtEntityLinkPort,
   EntityLinkCreateInput,
+  EntityLinkUpdateInput,
   EntityLinkDeleteInput,
   EntityLinkListInput,
   EntityLink,
@@ -50,6 +52,36 @@ export class PrismaExtEntityLinkAdapter implements ExtEntityLinkPort {
     return this.toDomain(record);
   }
 
+  async update(input: EntityLinkUpdateInput): Promise<EntityLink> {
+    if (input.metadata) {
+      const metadataStr = JSON.stringify(input.metadata);
+      if (Buffer.byteLength(metadataStr, "utf8") > this.MAX_METADATA_SIZE) {
+        throw new Error(
+          `ExtEntityLink metadata exceeds maximum size of ${this.MAX_METADATA_SIZE} bytes`
+        );
+      }
+    }
+
+    const record = await this.prisma.extEntityLink.update({
+      where: {
+        tenantId_moduleId_fromEntityType_fromEntityId_toEntityType_toEntityId_linkType: {
+          tenantId: input.tenantId,
+          moduleId: input.moduleId,
+          fromEntityType: input.fromEntityType,
+          fromEntityId: input.fromEntityId,
+          toEntityType: input.toEntityType,
+          toEntityId: input.toEntityId,
+          linkType: input.linkType,
+        },
+      },
+      data: {
+        metadata: input.metadata as any,
+      },
+    });
+
+    return this.toDomain(record);
+  }
+
   async delete(input: EntityLinkDeleteInput): Promise<void> {
     await this.prisma.extEntityLink.delete({
       where: {
@@ -82,7 +114,7 @@ export class PrismaExtEntityLinkAdapter implements ExtEntityLinkPort {
       },
     });
 
-    return records.map((r) => this.toDomain(r));
+    return records.map((record: PrismaExtEntityLinkRecord) => this.toDomain(record));
   }
 
   private toDomain(record: any): EntityLink {

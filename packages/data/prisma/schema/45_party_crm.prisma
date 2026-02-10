@@ -3,6 +3,8 @@ enum PartyRoleType {
   SUPPLIER
   EMPLOYEE
   CONTACT
+  STUDENT
+  GUARDIAN
   @@schema("crm")
 }
 
@@ -40,23 +42,33 @@ enum ActivityStatus {
   @@schema("crm")
 }
 
+enum PartyLifecycleStatus {
+  LEAD
+  ACTIVE
+  PAUSED
+  ARCHIVED
+  @@schema("crm")
+}
+
 model Party {
-  id          String    @id @default(cuid())
-  tenantId    String
-  displayName String
-  vatId       String?
-  notes       String?
-  tags        String[]  @default([])
-  archivedAt  DateTime? @db.Timestamptz(6)
+  id              String               @id @default(cuid())
+  tenantId        String
+  displayName     String
+  vatId           String?
+  notes           String?
+  tags            String[]             @default([])
+  lifecycleStatus PartyLifecycleStatus @default(LEAD)
+  archivedAt      DateTime?            @db.Timestamptz(6)
   archivedByUserId String?
-  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+  createdAt       DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime             @updatedAt @db.Timestamptz(6)
 
   contactPoints ContactPoint[]
   addresses     Address[]
   roles         PartyRole[]
   deals         Deal[]
   activities    Activity[]
+  lifecycleHistory PartyLifecycleTransition[]
 
   @@index([tenantId, displayName])
   @@index([tenantId, archivedAt])
@@ -197,5 +209,21 @@ model PipelineConfig {
   stagesJson String
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  @@schema("crm")
+}
+
+model PartyLifecycleTransition {
+  id                   String               @id @default(cuid())
+  tenantId             String
+  partyId              String
+  fromStatus           PartyLifecycleStatus?
+  toStatus             PartyLifecycleStatus
+  reason               String?
+  changedByUserId      String?
+  changedAt            DateTime             @default(now()) @db.Timestamptz(6)
+
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, partyId, changedAt])
   @@schema("crm")
 }

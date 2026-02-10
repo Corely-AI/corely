@@ -3,7 +3,7 @@ import { type RoleRepositoryPort } from "../../application/ports/role-repository
 export class FakeRoleRepository implements RoleRepositoryPort {
   roles: Array<{
     id: string;
-    tenantId: string;
+    tenantId: string | null;
     name: string;
     description: string | null;
     isSystem: boolean;
@@ -12,7 +12,7 @@ export class FakeRoleRepository implements RoleRepositoryPort {
 
   async create(data: {
     id: string;
-    tenantId: string;
+    tenantId: string | null;
     name: string;
     description?: string | null;
     isSystem?: boolean;
@@ -31,13 +31,24 @@ export class FakeRoleRepository implements RoleRepositoryPort {
     id: string
   ): Promise<{
     id: string;
-    tenantId: string;
+    tenantId: string | null;
     name: string;
     description: string | null;
     isSystem: boolean;
     systemKey: string | null;
   } | null> {
     return this.roles.find((r) => r.tenantId === tenantId && r.id === id) ?? null;
+  }
+
+  async findHostRoleById(id: string): Promise<{
+    id: string;
+    tenantId: string | null;
+    name: string;
+    description: string | null;
+    isSystem: boolean;
+    systemKey: string | null;
+  } | null> {
+    return this.roles.find((r) => r.tenantId === null && r.id === id) ?? null;
   }
 
   async findBySystemKey(

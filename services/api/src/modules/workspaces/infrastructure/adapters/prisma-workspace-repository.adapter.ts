@@ -101,7 +101,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
 
   async getWorkspaceBySlug(slug: string): Promise<Workspace | null> {
     const workspace = await this.prisma.workspace.findFirst({
-      where: { slug },
+      where: { slug, deletedAt: null } as any,
     });
 
     return workspace ? this.mapWorkspaceFromPrisma(workspace) : null;
@@ -109,7 +109,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
 
   async getWorkspaceById(tenantId: string, id: string): Promise<Workspace | null> {
     const workspace = await this.prisma.workspace.findFirst({
-      where: { id, tenantId },
+      where: { id, tenantId, deletedAt: null } as any,
     });
 
     return workspace ? this.mapWorkspaceFromPrisma(workspace) : null;
@@ -117,7 +117,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
 
   async getWorkspaceByIdWithLegalEntity(tenantId: string, id: string): Promise<Workspace | null> {
     const workspace = await this.prisma.workspace.findFirst({
-      where: { id, tenantId },
+      where: { id, tenantId, deletedAt: null } as any,
       include: { legalEntity: true },
     });
 
@@ -126,8 +126,8 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     }
 
     const mapped = this.mapWorkspaceFromPrisma(workspace);
-    if (workspace.legalEntity) {
-      mapped.legalEntity = this.mapLegalEntityFromPrisma(workspace.legalEntity);
+    if ((workspace as any).legalEntity) {
+      mapped.legalEntity = this.mapLegalEntityFromPrisma((workspace as any).legalEntity);
     }
 
     return mapped;
@@ -144,12 +144,13 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
             status: "ACTIVE",
           },
         },
-      },
+        deletedAt: null,
+      } as any,
       include: { legalEntity: true },
       orderBy: { createdAt: "desc" },
     });
 
-    return workspaces.map((ws) => {
+    return workspaces.map((ws: any) => {
       const mapped = this.mapWorkspaceFromPrisma(ws);
       if (ws.legalEntity) {
         mapped.legalEntity = this.mapLegalEntityFromPrisma(ws.legalEntity);
@@ -164,7 +165,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     input: UpdateWorkspaceInput
   ): Promise<Workspace> {
     const workspace = await this.prisma.workspace.update({
-      where: { id },
+      where: { id, tenantId, deletedAt: null } as any,
       data: {
         name: input.name,
         slug: input.slug,
@@ -177,6 +178,16 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
     });
 
     return this.mapWorkspaceFromPrisma(workspace);
+  }
+
+  async softDeleteWorkspace(tenantId: string, id: string): Promise<void> {
+    await (this.prisma!.workspace as any).update({
+      where: { id, tenantId },
+      data: {
+        deletedAt: new Date(),
+        slug: null, // Free up the slug when deleted
+      },
+    });
   }
 
   // === Membership Operations ===
@@ -227,7 +238,11 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
         workspaceId,
         userId,
         status: "ACTIVE",
-      },
+        workspace: {
+          tenantId,
+          deletedAt: null,
+        },
+      } as any,
     });
 
     return count > 0;
@@ -331,6 +346,7 @@ export class PrismaWorkspaceRepository implements WorkspaceRepositoryPort {
       invoiceSettings: workspace.invoiceSettings || undefined,
       createdAt: workspace.createdAt,
       updatedAt: workspace.updatedAt,
+      deletedAt: workspace.deletedAt || undefined,
     };
   }
 

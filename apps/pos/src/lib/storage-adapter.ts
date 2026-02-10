@@ -26,8 +26,12 @@ export class NativeStorageAdapter implements TokenStorage {
     return await SecureStore.getItemAsync(this.REFRESH_TOKEN_KEY);
   }
 
-  async setActiveWorkspaceId(workspaceId: string): Promise<void> {
-    await SecureStore.setItemAsync(this.WORKSPACE_ID_KEY, workspaceId);
+  async setActiveWorkspaceId(workspaceId: string | null): Promise<void> {
+    if (workspaceId) {
+      await SecureStore.setItemAsync(this.WORKSPACE_ID_KEY, workspaceId);
+    } else {
+      await SecureStore.deleteItemAsync(this.WORKSPACE_ID_KEY);
+    }
   }
 
   async getActiveWorkspaceId(): Promise<string | null> {

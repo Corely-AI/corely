@@ -84,8 +84,8 @@
   /* Background layers - Deep ink/midnight */
   --background: 222 47% 6%;
   --background-subtle: 222 47% 8%;
-  --panel: 222 47% 9%;
-  --panel-hover: 222 47% 11%;
+  --panel: 222 44% 10%;
+  --panel-hover: 222 40% 12%;
 
   /* Text */
   --foreground: 210 40% 98%;
@@ -95,7 +95,7 @@
   /* Borders */
   --border: 217 33% 17%;
   --border-strong: 217 33% 25%;
-  --input: 217 33% 17%;
+  --input: 217 30% 22%;
   --ring: 199 89% 48%;
 
   /* Primary - Light for contrast */
@@ -226,11 +226,11 @@ body {
 
 /* Card styles */
 .card-elevated {
-  @apply bg-card rounded-2xl border border-border shadow-lg shadow-black/5;
+  @apply bg-card rounded-2xl border border-border shadow-lg shadow-foreground/5;
 }
 
 .card-interactive {
-  @apply card-elevated transition-all duration-200 hover:border-border-strong hover:shadow-xl hover:shadow-black/10;
+  @apply card-elevated transition-all duration-200 hover:border-border-strong hover:shadow-xl hover:shadow-foreground/10;
 }
 
 /* Status badges */

@@ -9,7 +9,7 @@ import { type ToolRegistryPort } from "../application/ports/tool-registry.port";
 import { type AgentRunRepositoryPort } from "../application/ports/agent-run-repository.port";
 import { type ToolExecutionRepositoryPort } from "../application/ports/tool-execution-repository.port";
 import { type AuditPort } from "../application/ports/audit.port";
-import { type OutboxPort } from "../application/ports/outbox.port";
+import { type OutboxPort } from "@corely/kernel";
 import { type CopilotIdempotencyPort } from "../application/ports/copilot-idempotency.port";
 import { type ClockPort } from "@corely/kernel/ports/clock.port";
 import { type ObservabilityPort, type ObservabilitySpanRef } from "@corely/kernel";

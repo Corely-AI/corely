@@ -54,6 +54,7 @@ export interface Workspace {
   invoiceSettings?: WorkspaceInvoiceSettings;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
 
   // Populated from relation
   legalEntity?: LegalEntity;

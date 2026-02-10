@@ -62,6 +62,32 @@ export class TestHarnessController {
   }
 
   /**
+   * Login as portal user (returns tokens)
+   */
+  @Post("portal/login")
+  @HttpCode(HttpStatus.OK)
+  async portalLogin(@Body() payload: { email: string; tenantId: string; workspaceId: string }) {
+    if (!payload.email || !payload.tenantId || !payload.workspaceId) {
+      throw new BadRequestException("Missing required fields: email, tenantId, workspaceId");
+    }
+
+    return this.testHarnessService.loginAsPortalUser({
+      email: payload.email,
+      tenantId: payload.tenantId,
+      workspaceId: payload.workspaceId,
+    });
+  }
+
+  /**
+   * Seed portal test data: creates tenant, workspace, student, class, enrollment, document
+   */
+  @Post("portal/seed")
+  @HttpCode(HttpStatus.OK)
+  async seedPortalData() {
+    return this.testHarnessService.seedPortalTestData();
+  }
+
+  /**
    * Health check endpoint
    */
   @Post("health")

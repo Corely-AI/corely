@@ -42,6 +42,13 @@ export const WorkspaceInvoiceSettingsSchema = z.object({
   prefix: z.string().optional(),
   nextNumber: z.number().int().positive().optional(),
   defaultPaymentTermsDays: z.number().int().nonnegative().optional(),
+  reminderPolicy: z
+    .object({
+      startAfterDays: z.number().int().nonnegative().default(7),
+      maxReminders: z.number().int().nonnegative().default(3),
+      sendOnlyOnWeekdays: z.boolean().default(true),
+    })
+    .optional(),
 });
 export type WorkspaceInvoiceSettings = z.infer<typeof WorkspaceInvoiceSettingsSchema>;
 

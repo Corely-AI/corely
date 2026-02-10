@@ -10,6 +10,9 @@ export const InventoryDocumentLineInputSchema = z.object({
   fromLocationId: z.string().optional(),
   toLocationId: z.string().optional(),
   notes: z.string().optional(),
+  lotNumber: z.string().optional(),
+  mfgDate: localDateSchema.optional(),
+  expiryDate: localDateSchema.optional(),
 });
 
 export const CreateInventoryDocumentInputSchema = z.object({

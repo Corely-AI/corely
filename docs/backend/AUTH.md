@@ -24,6 +24,16 @@ The Identity context owns all authentication, authorization, and user management
 - Each tenant has independent roles, permissions, and data
 - All API requests are tenant-scoped via `X-Tenant-Id` header or JWT token
 
+#### Platform / Host Scope
+
+- Host scope is represented by an **active** context with `tenantId === null`
+- Platform actions require **both** host scope and explicit platform permissions:
+  - `platform.tenants.read/write`
+  - `platform.roles.read/write`
+  - `platform.settings.read/write`
+- The role system key `SUPERADMIN` may exist, but it is **not** used for authorization. If needed, assign platform permissions to that role.
+- If context is missing or `tenantId` is not `null`, platform actions are denied by default.
+
 #### RBAC (Role-Based Access Control)
 
 - **Roles**: Tenant-specific roles (OWNER, ADMIN, MEMBER)
@@ -104,7 +114,7 @@ Authenticates a user.
 {
   "email": "user@example.com",
   "password": "MyPassword123",
-  "tenantId": "optional-tenant-id"
+  "tenantId": "optional-tenant-id-or-null"
 }
 ```
 
@@ -114,13 +124,13 @@ Authenticates a user.
 {
   "userId": "uuid",
   "email": "user@example.com",
-  "tenantId": "uuid",
+  "tenantId": "uuid-or-null",
   "accessToken": "eyJhbGc...",
   "refreshToken": "eyJhbGc...",
   "memberships": [
     {
-      "tenantId": "uuid",
-      "tenantName": "My Company",
+      "tenantId": "uuid-or-null",
+      "tenantName": "My Company or Platform Admin",
       "roleId": "uuid"
     }
   ]
@@ -175,11 +185,11 @@ Authorization: Bearer <access-token>
   "userId": "uuid",
   "email": "user@example.com",
   "name": "John Doe",
-  "activeTenantId": "uuid",
+  "activeTenantId": "uuid-or-null",
   "memberships": [
     {
-      "tenantId": "uuid",
-      "tenantName": "My Company",
+      "tenantId": "uuid-or-null",
+      "tenantName": "My Company or Platform Admin",
       "roleId": "uuid"
     }
   ]

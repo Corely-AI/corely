@@ -1,8 +1,8 @@
 import {
   type InvoiceEmailDeliveryRepoPort,
   type InvoiceEmailDelivery,
-  type DeliveryStatus,
-} from "../../application/ports/invoice-email-delivery-repository.port";
+  type InvoiceEmailDeliveryStatus,
+} from "@corely/kernel";
 
 export class FakeInvoiceEmailDeliveryRepository implements InvoiceEmailDeliveryRepoPort {
   deliveries: InvoiceEmailDelivery[] = [];
@@ -40,18 +40,17 @@ export class FakeInvoiceEmailDeliveryRepository implements InvoiceEmailDeliveryR
   async updateStatus(
     tenantId: string,
     deliveryId: string,
-    status: DeliveryStatus,
-    providerMessageId?: string,
-    lastError?: string
+    status: InvoiceEmailDeliveryStatus,
+    opts?: { providerMessageId?: string | null; lastError?: string | null }
   ): Promise<void> {
     const delivery = this.deliveries.find((d) => d.id === deliveryId && d.tenantId === tenantId);
     if (delivery) {
       delivery.status = status;
-      if (providerMessageId !== undefined) {
-        delivery.providerMessageId = providerMessageId;
+      if (opts?.providerMessageId !== undefined) {
+        delivery.providerMessageId = opts.providerMessageId;
       }
-      if (lastError !== undefined) {
-        delivery.lastError = lastError;
+      if (opts?.lastError !== undefined) {
+        delivery.lastError = opts.lastError;
       }
       delivery.updatedAt = new Date();
     }
@@ -59,14 +58,14 @@ export class FakeInvoiceEmailDeliveryRepository implements InvoiceEmailDeliveryR
 
   async updateStatusByProviderMessageId(
     providerMessageId: string,
-    status: DeliveryStatus,
-    lastError?: string
+    status: InvoiceEmailDeliveryStatus,
+    opts?: { lastError?: string | null }
   ): Promise<void> {
     const delivery = this.deliveries.find((d) => d.providerMessageId === providerMessageId);
     if (delivery) {
       delivery.status = status;
-      if (lastError !== undefined) {
-        delivery.lastError = lastError;
+      if (opts?.lastError !== undefined) {
+        delivery.lastError = opts.lastError;
       }
       delivery.updatedAt = new Date();
     }

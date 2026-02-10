@@ -1,0 +1,63 @@
+{
+  "portal": {
+    "title": "Cổng thông tin",
+    "dashboard": {
+      "title": "Bảng điều khiển",
+      "welcome": "Chào mừng",
+      "students": {
+        "title": "Học sinh",
+        "select": "Chọn học sinh",
+        "linked": "Học sinh liên kết",
+        "viewing": "ĐANG XEM",
+        "student": "HỌC SINH",
+        "none": "Chưa có học sinh nào được liên kết"
+      },
+      "sessions": {
+        "title": "Buổi học tiếp theo",
+        "subtitle": "Xem lịch học sắp tới và liên kết tham gia các buổi học trực tuyến.",
+        "open": "Mở lịch học"
+      },
+      "materials": {
+        "title": "Tài liệu",
+        "subtitle": "Tất cả tài liệu được chia sẻ với bạn và học sinh của bạn.",
+        "items_one": "{{count}} MỤC",
+        "items_other": "{{count}} MỤC",
+        "items": "MỤC",
+        "added": "Đã thêm",
+        "personal": "CÁ NHÂN",
+        "class_group": "NHÓM LỚP",
+        "getFile": "Tải tài liệu",
+        "empty": {
+          "title": "Chưa có gì ở đây",
+          "subtitle": "Tài liệu học tập của bạn sẽ xuất hiện ở đây sau khi giáo viên tải lên."
+        }
+      }
+    },
+    "login": {
+      "title": "Cổng thông tin Học sinh & Phụ huynh",
+      "email_prompt": "Nhập email của bạn để nhận mã đăng nhập",
+      "code_sent": "Nhập mã 6 chữ số đã được gửi đến {{email}}",
+      "email_label": "Email",
+      "email_placeholder": "ten@vidu.com",
+      "send_code": "Gửi mã đăng nhập",
+      "code_label": "Mã đăng nhập",
+      "code_placeholder": "000000",
+      "change_email": "Đổi email",
+      "resend_code": "Gửi lại mã",
+      "resend_in": "Gửi lại sau {{count}} giây",
+      "verify_sign_in": "Xác minh & Đăng nhập",
+      "errors": {
+        "send_failed": "Gửi mã thất bại",
+        "verify_failed": "Mã không hợp lệ hoặc đã hết hạn"
+      }
+    }
+  },
+  "common": {
+    "logout": "Đăng xuất",
+    "loading": "Đang tải...",
+    "languages": {
+      "en": "EN",
+      "vi": "VI"
+    }
+  }
+}

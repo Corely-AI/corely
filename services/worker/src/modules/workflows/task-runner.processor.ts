@@ -37,13 +37,13 @@ export class WorkflowTaskRunnerProcessor implements OnModuleInit, OnModuleDestro
   };
 
   constructor(
-    private readonly env: EnvService,
-    private readonly prisma: PrismaService,
-    private readonly tasks: WorkflowTaskRepository,
-    private readonly instances: WorkflowInstanceRepository,
-    private readonly events: WorkflowEventRepository,
-    private readonly metrics: WorkflowMetricsService,
-    private readonly registry: TaskHandlerRegistry,
+    @Inject(EnvService) private readonly env: EnvService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(WorkflowTaskRepository) private readonly tasks: WorkflowTaskRepository,
+    @Inject(WorkflowInstanceRepository) private readonly instances: WorkflowInstanceRepository,
+    @Inject(WorkflowEventRepository) private readonly events: WorkflowEventRepository,
+    @Inject(WorkflowMetricsService) private readonly metrics: WorkflowMetricsService,
+    @Inject(TaskHandlerRegistry) private readonly registry: TaskHandlerRegistry,
     @Inject(WORKFLOW_TASK_QUEUE_PORT)
     private readonly taskQueue: QueuePort<WorkflowTaskQueuePayload>,
     @Inject(WORKFLOW_ORCHESTRATOR_QUEUE_PORT)

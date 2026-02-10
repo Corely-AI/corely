@@ -34,6 +34,7 @@ export class SearchCustomersUseCase extends BaseUseCase<
     const { items, nextCursor } = await this.useCaseDeps.partyRepo.searchCustomers(
       ctx.tenantId,
       input.q,
+      input.role,
       { pageSize, cursor: input.cursor }
     );
 

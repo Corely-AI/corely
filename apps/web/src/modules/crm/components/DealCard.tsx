@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@corely/ui";
 import type { DealDto } from "@corely/contracts";
 import { DealStatusBadge } from "./DealStatusBadge";
@@ -9,13 +10,14 @@ interface DealCardProps {
 }
 
 export const DealCard: FC<DealCardProps> = ({ deal, onClick }) => {
+  const { t, i18n } = useTranslation();
   const amount =
     deal.amountCents !== null
-      ? new Intl.NumberFormat("en-US", {
+      ? new Intl.NumberFormat(i18n.language, {
           style: "currency",
           currency: deal.currency,
         }).format(deal.amountCents / 100)
-      : "No amount";
+      : t("crm.deals.noAmount");
 
   return (
     <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
@@ -25,7 +27,7 @@ export const DealCard: FC<DealCardProps> = ({ deal, onClick }) => {
           <DealStatusBadge status={deal.status} />
         </div>
         <CardDescription>
-          {amount} • Stage: {deal.stageId}
+          {amount} • {t("crm.deals.stage")}: {deal.stageId}
         </CardDescription>
       </CardHeader>
       {deal.notes && (

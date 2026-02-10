@@ -1,4 +1,5 @@
 import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@corely/ui";
 import type { DealStatus } from "@corely/contracts";
 
@@ -13,9 +14,10 @@ const statusColors: Record<DealStatus, string> = {
 };
 
 export const DealStatusBadge: FC<DealStatusBadgeProps> = ({ status }) => {
+  const { t } = useTranslation();
   return (
     <Badge variant="secondary" className={statusColors[status]}>
-      {status}
+      {t(`crm.deals.status.${status.toLowerCase()}`)}
     </Badge>
   );
 };

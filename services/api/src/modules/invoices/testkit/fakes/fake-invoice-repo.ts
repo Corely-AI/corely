@@ -95,6 +95,10 @@ export class FakeInvoiceRepository implements InvoiceRepoPort {
     return { items: slice, nextCursor, total };
   }
 
+  async listReminderCandidates() {
+    return [];
+  }
+
   async isInvoiceNumberTaken(tenantId: string, number: string): Promise<boolean> {
     return this.invoices.some((i) => i.tenantId === tenantId && i.number === number);
   }

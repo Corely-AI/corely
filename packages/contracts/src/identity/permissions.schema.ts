@@ -20,3 +20,15 @@ export const PermissionCatalogResponseSchema = z.object({
   catalog: z.array(PermissionGroupSchema),
 });
 export type PermissionCatalogResponse = z.infer<typeof PermissionCatalogResponseSchema>;
+
+export const EffectivePermissionSetSchema = z.object({
+  allowAll: z.boolean(),
+  allowed: z.array(z.string()),
+  denied: z.array(z.string()),
+});
+export type EffectivePermissionSet = z.infer<typeof EffectivePermissionSetSchema>;
+
+export const EffectivePermissionsResponseSchema = z.object({
+  permissions: EffectivePermissionSetSchema,
+});
+export type EffectivePermissionsResponse = z.infer<typeof EffectivePermissionsResponseSchema>;

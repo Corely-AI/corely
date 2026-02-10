@@ -55,6 +55,14 @@ enum ReservationPolicy {
   @@schema("commerce")
 }
 
+enum InventoryLotStatus {
+  AVAILABLE
+  QUARANTINE
+  BLOCKED
+  DISPOSED
+  @@schema("commerce")
+}
+
 model InventoryProduct {
   id                       String     @id @default(cuid())
   tenantId                 String
@@ -154,11 +162,16 @@ model InventoryDocumentLine {
   toLocationId    String?
   notes           String?
   reservedQuantity Int?
+  lotId           String?   // NEW: Link to InventoryLot
+  lotNumber       String?   // NEW: Denormalized for display
+  mfgDate         DateTime? @db.Date // NEW: Manufacturing date
+  expiryDate      DateTime? @db.Date // NEW: Expiry date
 
   document InventoryDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId])
   @@index([productId])
+  @@index([lotId])
   @@schema("commerce")
 }
 
@@ -173,12 +186,14 @@ model StockMove {
   documentId   String
   lineId       String
   reasonCode   StockMoveReason
+  lotId        String?          // NEW: Link to InventoryLot
   createdByUserId String?
   createdAt    DateTime         @default(now()) @db.Timestamptz(6)
 
   @@index([tenantId, productId])
   @@index([tenantId, locationId])
   @@index([tenantId, postingDate])
+  @@index([tenantId, lotId])
   @@schema("commerce")
 }
 
@@ -216,6 +231,37 @@ model ReorderPolicy {
 
   @@unique([tenantId, productId, warehouseId])
   @@index([tenantId, warehouseId])
+  @@schema("commerce")
+}
+
+model InventoryLot {
+  id                    String              @id @default(cuid())
+  tenantId              String
+  productId             String              // FK to CatalogItem or InventoryProduct
+  lotNumber             String
+  mfgDate               DateTime?           @db.Date
+  expiryDate            DateTime?           @db.Date
+  receivedDate          DateTime            @db.Date
+  shipmentId            String?             // FK to ImportShipment (will be added in PR3)
+  supplierPartyId       String?
+  unitCostCents         Int?                // Allocated landed cost per unit
+  qtyReceived           Int
+  qtyOnHand             Int
+  qtyReserved           Int                 @default(0)
+  status                InventoryLotStatus  @default(AVAILABLE)
+  notes                 String?
+  metadataJson          Json?               @db.JsonB
+  createdByUserId       String?
+  updatedByUserId       String?
+  createdAt             DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime            @updatedAt @db.Timestamptz(6)
+  archivedAt            DateTime?           @db.Timestamptz(6)
+
+  @@unique([tenantId, productId, lotNumber])
+  @@index([tenantId, productId, expiryDate])
+  @@index([tenantId, expiryDate])
+  @@index([tenantId, status])
+  @@index([tenantId, shipmentId])
   @@schema("commerce")
 }
 

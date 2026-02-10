@@ -1,63 +1,122 @@
 import { Module } from "@nestjs/common";
+import { randomUUID } from "node:crypto";
+import {
+  OutboxRepository,
+  PrismaDocumentRepoAdapter,
+  PrismaFileRepoAdapter,
+  PrismaInvoiceEmailDeliveryAdapter,
+} from "@corely/data";
 import { EnvService } from "@corely/config";
-import { OutboxRepository } from "@corely/data";
 import { InvoiceEmailRequestedHandler } from "../invoices/invoice-email-requested.handler";
+import { InvoicePdfRenderRequestedHandler } from "../invoices/handlers/invoice-pdf-render-requested.handler";
 import { PrismaInvoiceEmailRepository } from "../invoices/infrastructure/prisma-invoice-email-repository.adapter";
-import { EMAIL_SENDER_PORT, EmailSenderPort } from "../notifications/ports/email-sender.port";
-import { ResendEmailSenderAdapter } from "../notifications/infrastructure/resend/resend-email-sender.adapter";
+import {
+  EMAIL_SENDER_PORT,
+  ID_GENERATOR_TOKEN,
+  OBJECT_STORAGE_PORT,
+  type EmailSenderPort,
+  type IdGeneratorPort,
+  type ObjectStoragePort,
+} from "@corely/kernel";
+import { NotificationsModule } from "../notifications/notifications.module";
 import { OutboxPollerService } from "./outbox-poller.service";
 
 import { CashEntryCreatedHandler } from "../accounting/handlers/cash-entry-created.handler";
 import { AccountingWorkerModule } from "../accounting/accounting-worker.module";
 import { IssuesWorkerModule } from "../issues/issues-worker.module";
 import { IssueTranscriptionRequestedHandler } from "../issues/issue-transcription-requested.handler";
+import { InvoicesWorkerModule } from "../invoices/invoices-worker.module";
+import { TaxWorkerModule } from "../tax/tax-worker.module";
+import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-requested.handler";
+import { FormsEventHandler } from "../forms/forms-event.handler";
+import { FormsWorkerModule } from "../forms/forms-worker.module";
+import { ClassesInvoiceReadyToSendHandler } from "../classes/handlers/classes-invoice-ready-to-send.handler";
+import { ClassesWorkerModule } from "../classes/classes-worker.module";
+
+// ... imports
 
 @Module({
-  imports: [AccountingWorkerModule, IssuesWorkerModule],
+  imports: [
+    AccountingWorkerModule,
+    IssuesWorkerModule,
+    InvoicesWorkerModule,
+    TaxWorkerModule,
+    FormsWorkerModule,
+    ClassesWorkerModule,
+    NotificationsModule,
+  ],
   providers: [
     {
-      provide: EMAIL_SENDER_PORT,
-      useFactory: (env: EnvService) => {
-        const provider = env.EMAIL_PROVIDER;
-        if (provider !== "resend") {
-          throw new Error(`Unsupported email provider: ${provider}`);
-        }
-        return new ResendEmailSenderAdapter(
-          env.RESEND_API_KEY,
-          env.RESEND_FROM,
-          env.RESEND_REPLY_TO
-        );
-      },
-      inject: [EnvService],
+      provide: ID_GENERATOR_TOKEN,
+      useFactory: (): IdGeneratorPort => ({
+        newId: () => randomUUID(),
+      }),
     },
+    ClassesInvoiceReadyToSendHandler,
     {
       provide: InvoiceEmailRequestedHandler,
-      useFactory: (sender: EmailSenderPort, repo: PrismaInvoiceEmailRepository) =>
-        new InvoiceEmailRequestedHandler(sender, repo),
-      inject: [EMAIL_SENDER_PORT, PrismaInvoiceEmailRepository],
+      useFactory: (
+        sender: EmailSenderPort,
+        repo: PrismaInvoiceEmailRepository,
+        deliveryRepo: PrismaInvoiceEmailDeliveryAdapter,
+        documentRepo: PrismaDocumentRepoAdapter,
+        fileRepo: PrismaFileRepoAdapter,
+        objectStorage: ObjectStoragePort
+      ) =>
+        new InvoiceEmailRequestedHandler(
+          sender,
+          repo,
+          deliveryRepo,
+          documentRepo,
+          fileRepo,
+          objectStorage
+        ),
+      inject: [
+        EMAIL_SENDER_PORT,
+        PrismaInvoiceEmailRepository,
+        PrismaInvoiceEmailDeliveryAdapter,
+        PrismaDocumentRepoAdapter,
+        PrismaFileRepoAdapter,
+        OBJECT_STORAGE_PORT,
+      ],
     },
     PrismaInvoiceEmailRepository,
     {
       provide: OutboxPollerService,
       useFactory: (
         repo: OutboxRepository,
+        env: EnvService,
         invoiceHandler: InvoiceEmailRequestedHandler,
+        invoicePdfHandler: InvoicePdfRenderRequestedHandler,
         cashEntryHandler: CashEntryCreatedHandler,
-        issueTranscriptionHandler: IssueTranscriptionRequestedHandler
+        issueTranscriptionHandler: IssueTranscriptionRequestedHandler,
+        taxReportPdfHandler: TaxReportPdfRequestedHandler,
+        formsHandler: FormsEventHandler,
+        classesHandler: ClassesInvoiceReadyToSendHandler
       ) => {
-        return new OutboxPollerService(repo, [
+        return new OutboxPollerService(repo, env, [
           invoiceHandler,
+          invoicePdfHandler,
           cashEntryHandler,
           issueTranscriptionHandler,
+          taxReportPdfHandler,
+          formsHandler,
+          classesHandler,
         ]);
       },
       inject: [
         OutboxRepository,
+        EnvService,
         InvoiceEmailRequestedHandler,
+        InvoicePdfRenderRequestedHandler,
         CashEntryCreatedHandler,
         IssueTranscriptionRequestedHandler,
+        TaxReportPdfRequestedHandler,
+        FormsEventHandler,
+        ClassesInvoiceReadyToSendHandler,
       ],
     },
   ],
+  exports: [OutboxPollerService],
 })
 export class OutboxModule {}

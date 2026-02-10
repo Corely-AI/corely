@@ -4,6 +4,7 @@ import { ProductsController } from "./adapters/http/products.controller";
 import { WarehousesController } from "./adapters/http/warehouses.controller";
 import { InventoryDocumentsController } from "./adapters/http/inventory-documents.controller";
 import { StockController } from "./adapters/http/stock.controller";
+import { InventoryLotController } from "./adapters/http/inventory-lot.controller";
 import { InventoryApplication } from "./application/inventory.application";
 import { ProductsApplication } from "./application/products.application";
 import { WarehousesApplication } from "./application/warehouses.application";
@@ -13,6 +14,7 @@ import { StockApplication } from "./application/stock.application";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
+import { CatalogModule } from "../catalog/catalog.module";
 
 import { repositoryProviders } from "./providers/repository.providers";
 import { productProviders } from "./providers/product.providers";
@@ -21,15 +23,17 @@ import { locationProviders } from "./providers/location.providers";
 import { documentProviders } from "./providers/document.providers";
 import { stockProviders } from "./providers/stock.providers";
 import { reorderProviders } from "./providers/reorder.providers";
+import { lotProviders } from "./providers/lot.providers";
 import { applicationProviders } from "./providers/application.providers";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, PlatformModule],
+  imports: [DataModule, KernelModule, IdentityModule, PlatformModule, CatalogModule],
   controllers: [
     ProductsController,
     WarehousesController,
     InventoryDocumentsController,
     StockController,
+    InventoryLotController,
   ],
   providers: [
     ...repositoryProviders,
@@ -39,6 +43,7 @@ import { applicationProviders } from "./providers/application.providers";
     ...documentProviders,
     ...stockProviders,
     ...reorderProviders,
+    ...lotProviders,
     ...applicationProviders,
   ],
   exports: [

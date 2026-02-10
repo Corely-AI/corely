@@ -43,3 +43,64 @@ export function getPublicCmsUrl(postSlug: string, workspaceSlug?: string): strin
 
   return `/p/${postSlug}`;
 }
+
+/**
+ * Generate a public URL for a website page.
+ * When a custom domain is provided, use it directly.
+ * When no domain is provided, fall back to path-based routing:
+ * - Default site root: /w/:workspaceSlug
+ * - Other pages/sites: /w/:workspaceSlug/:websiteSlug
+ */
+export function getPublicWebsiteUrl(input: {
+  hostname?: string | null;
+  workspaceSlug?: string | null;
+  websiteSlug?: string | null;
+  isDefault?: boolean;
+  path?: string;
+}): string | null {
+  const normalizedPath = input.path?.startsWith("/") ? input.path : `/${input.path ?? ""}`;
+  const normalizedSlug = input.websiteSlug?.trim() ?? "";
+  const slugLower = normalizedSlug.toLowerCase();
+  const hasValidSlug = Boolean(normalizedSlug) && slugLower !== "undefined" && slugLower !== "null";
+
+  if (input.hostname) {
+    const origin = input.hostname.startsWith("http") ? input.hostname : `https://${input.hostname}`;
+    return new URL(normalizedPath === "/" ? "/" : normalizedPath, origin).toString();
+  }
+
+  if (!input.workspaceSlug && !input.hostname) {
+    return null;
+  }
+
+  const publicWebBaseUrl =
+    import.meta.env.VITE_PUBLIC_WEB_BASE_URL ||
+    (import.meta.env.DEV ? "http://localhost:8082" : "https://my.corely.one");
+  const baseUrl = new URL(publicWebBaseUrl);
+  const rootDomain = import.meta.env.VITE_PUBLIC_ROOT_DOMAIN || baseUrl.hostname;
+  const canUseSubdomain =
+    import.meta.env.PROD && Boolean(input.workspaceSlug) && baseUrl.hostname === rootDomain;
+
+  const origin = canUseSubdomain
+    ? `${baseUrl.protocol}//${input.workspaceSlug}.${rootDomain}`
+    : baseUrl.origin;
+  const pathSuffix = normalizedPath === "/" ? "" : normalizedPath;
+
+  if (!canUseSubdomain) {
+    if (input.isDefault && normalizedPath === "/") {
+      return new URL(`/w/${input.workspaceSlug}`, origin).toString();
+    }
+    if (!hasValidSlug) {
+      return null;
+    }
+    return new URL(`/w/${input.workspaceSlug}/${normalizedSlug}${pathSuffix}`, origin).toString();
+  }
+
+  if (input.isDefault) {
+    return new URL(normalizedPath, origin).toString();
+  }
+
+  if (!hasValidSlug) {
+    return null;
+  }
+  return new URL(`/${normalizedSlug}${pathSuffix}`, origin).toString();
+}

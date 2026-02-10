@@ -44,24 +44,27 @@ export class ApiClient {
       correlationId?: string;
       skipTokenRefresh?: boolean;
       parseJson?: boolean;
+      signal?: AbortSignal;
     }
   ): Promise<T> {
     const accessToken = this.authClient.getAccessToken();
     const workspaceId = await this.storage.getActiveWorkspaceId();
     const parseJson = opts?.parseJson ?? true;
+    const requestOptions = {
+      url: `${this.apiUrl}${endpoint}`,
+      method: options.method ?? "GET",
+      headers: options.headers,
+      body: options.body as BodyInit | null | undefined,
+      accessToken,
+      workspaceId: workspaceId ?? null,
+      idempotencyKey: opts?.idempotencyKey,
+      correlationId: opts?.correlationId,
+      parseJson,
+      ...(opts?.signal ? { signal: opts.signal } : {}),
+    };
 
     try {
-      return await request<T>({
-        url: `${this.apiUrl}${endpoint}`,
-        method: options.method ?? "GET",
-        headers: options.headers,
-        body: options.body as BodyInit | null | undefined,
-        accessToken,
-        workspaceId: workspaceId ?? null,
-        idempotencyKey: opts?.idempotencyKey,
-        correlationId: opts?.correlationId,
-        parseJson,
-      });
+      return await request<T>(requestOptions);
     } catch (error) {
       // If we get a 401 and haven't already tried refreshing, attempt token refresh
       if (
@@ -145,8 +148,16 @@ export class ApiClient {
     return this.request<T>(endpoint, requestInit, opts);
   }
 
-  async delete<T>(endpoint: string, opts?: { correlationId?: string }): Promise<T> {
-    return this.request<T>(endpoint, { method: "DELETE" }, opts);
+  async delete<T>(
+    endpoint: string,
+    body?: unknown,
+    opts?: { idempotencyKey?: string; correlationId?: string }
+  ): Promise<T> {
+    const requestInit: RequestInit = { method: "DELETE" };
+    if (body !== undefined) {
+      requestInit.body = body as BodyInit | null;
+    }
+    return this.request<T>(endpoint, requestInit, opts);
   }
 
   async getBlob(endpoint: string, opts?: { correlationId?: string }): Promise<Blob> {

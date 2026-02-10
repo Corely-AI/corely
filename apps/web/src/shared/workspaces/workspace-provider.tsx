@@ -10,6 +10,7 @@ interface WorkspaceContextValue {
   activeWorkspace: WorkspaceDto | null;
   activeWorkspaceId: string | null;
   isLoading: boolean;
+  isHostScope: boolean;
   setWorkspace: (workspaceId: string) => void;
   refresh: () => Promise<void>;
 }
@@ -18,8 +19,9 @@ const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(undefi
 
 export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(getActiveWorkspaceId());
+  const isHostScope = user?.activeTenantId === null;
 
   console.debug("[WorkspaceProvider] init", {
     isAuthenticated,
@@ -61,7 +63,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
       isFetching,
     });
 
-    if (!activeId && workspaces.length > 0) {
+    if (!activeId && workspaces.length > 0 && !isHostScope) {
       console.debug("[WorkspaceProvider] setting default workspace", {
         id: workspaces[0].id,
         name: workspaces[0].name,
@@ -70,11 +72,11 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
       setActiveWorkspaceId(defaultId);
       setActiveId(defaultId);
     }
-  }, [activeId, workspaces]);
+  }, [activeId, workspaces, isHostScope]);
 
   // If stored activeId does not exist in fetched workspaces, fall back to first
   useEffect(() => {
-    if (activeId && workspaces.length > 0) {
+    if (activeId && workspaces.length > 0 && !isHostScope) {
       const exists = workspaces.some((w) => w.id === activeId);
       if (!exists) {
         const fallbackId = workspaces[0].id;
@@ -86,7 +88,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
         setActiveId(fallbackId);
       }
     }
-  }, [activeId, workspaces]);
+  }, [activeId, workspaces, isHostScope]);
 
   const activeWorkspace = useMemo(
     () => workspaces.find((w) => w.id === activeId) ?? null,
@@ -114,6 +116,7 @@ export const WorkspaceProvider = ({ children }: { children: React.ReactNode }) =
     activeWorkspace,
     activeWorkspaceId: activeId,
     isLoading: isFetching,
+    isHostScope,
     setWorkspace,
     refresh: async () => {
       await refetch();

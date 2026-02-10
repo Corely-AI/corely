@@ -1,4 +1,5 @@
 import { createMachine, initialTransition, transition as xstateTransition } from "xstate";
+import type { EventObject } from "xstate";
 import type {
   WorkflowActionSpec,
   WorkflowEventInput,
@@ -179,7 +180,7 @@ export function applyWorkflowEvents(
   const actions: WorkflowActionSpec[] = [];
 
   for (const event of events) {
-    const [next] = xstateTransition(machine, current, event) as any[];
+    const [next] = xstateTransition(machine, current, event as EventObject) as any[];
     const transitionData = machine.getTransitionData(current, event) as Array<{
       actions?: any[];
     }>;

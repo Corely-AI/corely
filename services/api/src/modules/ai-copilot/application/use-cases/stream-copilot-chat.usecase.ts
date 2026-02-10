@@ -11,7 +11,7 @@ import { type ToolExecutionRepositoryPort } from "../ports/tool-execution-reposi
 import { type ToolRegistryPort } from "../ports/tool-registry.port";
 import { type LanguageModelPort } from "../ports/language-model.port";
 import { type AuditPort } from "../ports/audit.port";
-import { type OutboxPort } from "../ports/outbox.port";
+import { type OutboxPort } from "@corely/kernel";
 import { type CopilotIdempotencyPort } from "../ports/copilot-idempotency.port";
 import { type ClockPort } from "@corely/kernel/ports/clock.port";
 import {

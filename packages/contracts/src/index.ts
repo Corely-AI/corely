@@ -10,10 +10,13 @@ export * from "./expenses";
 export * from "./forms";
 export * from "./tax";
 export * from "./accounting";
+export * from "./reporting";
 export * from "./crm";
 export * from "./cms";
+export * from "./website";
 export * from "./sales";
 export * from "./rentals";
+export * from "./classes";
 export {
   RecordPaymentInputSchema as SalesRecordPaymentInputSchema,
   RecordPaymentOutputSchema as SalesRecordPaymentOutputSchema,
@@ -55,6 +58,8 @@ export * from "./purchasing";
 export * from "./purchasing-ai";
 export * from "./inventory";
 export * from "./inventory-ai";
+export * from "./import";
+export * from "./catalog";
 export * from "./portfolio";
 export * from "./issues";
 // POS exports (aliased to avoid clashing with Sales PaymentMethod)
@@ -143,10 +148,27 @@ export const TenantDtoSchema = z.object({
 });
 export type TenantDto = z.infer<typeof TenantDtoSchema>;
 
+export const TenantStatusSchema = z.enum(["ACTIVE", "SUSPENDED", "ARCHIVED"]);
+export type TenantStatus = z.infer<typeof TenantStatusSchema>;
+
 export const ListTenantsOutputSchema = z.object({
   tenants: z.array(TenantDtoSchema),
 });
 export type ListTenantsOutput = z.infer<typeof ListTenantsOutputSchema>;
+
+export const CreateTenantInputSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  status: TenantStatusSchema.optional(),
+  notes: z.string().max(2000).optional().nullable(),
+  idempotencyKey: z.string().optional(),
+});
+export type CreateTenantInput = z.infer<typeof CreateTenantInputSchema>;
+
+export const CreateTenantResponseSchema = z.object({
+  tenant: TenantDtoSchema,
+});
+export type CreateTenantResponse = z.infer<typeof CreateTenantResponseSchema>;
 
 export const MembershipDtoSchema = z.object({
   id: z.string(),
@@ -158,7 +180,7 @@ export type MembershipDto = z.infer<typeof MembershipDtoSchema>;
 
 export const SignupInputSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(6),
   tenantName: z.string().min(1),
   idempotencyKey: z.string(),
 });

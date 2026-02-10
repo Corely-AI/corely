@@ -6,7 +6,6 @@ import type { ListInvoicesUseCase } from "./use-cases/list-invoices/list-invoice
 import type { RecordPaymentUseCase } from "./use-cases/record-payment/record-payment.usecase";
 import type { SendInvoiceUseCase } from "./use-cases/send-invoice/send-invoice.usecase";
 import type { UpdateInvoiceUseCase } from "./use-cases/update-invoice/update-invoice.usecase";
-import type { DownloadInvoicePdfUseCase } from "./use-cases/download-invoice-pdf/download-invoice-pdf.usecase";
 
 export class InvoicesApplication {
   constructor(
@@ -17,7 +16,6 @@ export class InvoicesApplication {
     public readonly recordPayment: RecordPaymentUseCase,
     public readonly cancelInvoice: CancelInvoiceUseCase,
     public readonly getInvoiceById: GetInvoiceByIdUseCase,
-    public readonly listInvoices: ListInvoicesUseCase,
-    public readonly downloadInvoicePdf: DownloadInvoicePdfUseCase
+    public readonly listInvoices: ListInvoicesUseCase
   ) {}
 }

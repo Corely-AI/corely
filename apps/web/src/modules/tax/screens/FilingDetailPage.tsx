@@ -73,7 +73,11 @@ export const FilingDetailPage = () => {
     if (actionKey === "exportPdf") {
       try {
         const result = await taxApi.getReportPdfUrl(id);
-        window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
+        if (result.status === "READY" && result.downloadUrl) {
+          window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
+        } else {
+          toast.info("PDF is being prepared. Try again shortly.");
+        }
       } catch (error) {
         console.error(error);
         toast.error("Failed to export PDF");

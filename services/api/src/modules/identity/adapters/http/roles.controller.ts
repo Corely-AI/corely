@@ -38,6 +38,7 @@ import {
 } from "../../application/ports/role-repository.port";
 import { buildRequestContext } from "../../../../shared/context/request-context";
 import { mapErrorToHttp, ValidationError } from "../../../../shared/errors/domain-errors";
+import { PLATFORM_HOST_PERMISSION_KEYS } from "../../application/policies/platform-permissions.policy";
 
 @Controller("identity/roles")
 @UseGuards(AuthGuard, RbacGuard, WorkspaceCapabilityGuard)
@@ -208,10 +209,12 @@ export class RolesController {
       }
       const catalog = this.catalogPort.getCatalog();
       const grants = catalog.flatMap((group) =>
-        group.permissions.map((permission) => ({
-          key: String(permission.key),
-          effect: "ALLOW" as const,
-        }))
+        group.permissions
+          .filter((permission) => !PLATFORM_HOST_PERMISSION_KEYS.has(permission.key))
+          .map((permission) => ({
+            key: String(permission.key),
+            effect: "ALLOW" as const,
+          }))
       ) as Array<{ key: string; effect: "ALLOW" | "DENY" }>;
       await this.updateRolePermissionsUseCase.execute({
         tenantId,

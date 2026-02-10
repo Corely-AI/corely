@@ -1,6 +1,7 @@
 {
   "common": {
-    "appName": "Bizflow",
+    "active": "Active",
+    "appName": "Corely One ERP",
     "tagline": "Run your business, end-to-end.",
     "loading": "Loading...",
     "select": "Select",
@@ -22,6 +23,7 @@
     "viewAll": "View all",
     "comingSoon": "Coming soon",
     "noResults": "No results found",
+    "noTopic": "No topic",
     "error": "Something went wrong",
     "success": "Success",
     "currency": "EUR",
@@ -39,7 +41,53 @@
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
-    "notes": "Notes"
+    "notes": "Notes",
+    "open": "Open",
+    "closed": "Closed",
+    "tags": "Tags",
+    "for": "For",
+    "draft": "Draft",
+    "createdAt": "Created {{date}}",
+    "empty": "Empty",
+    "amount": "Amount",
+    "date": "Date",
+    "noteOptional": "Note (Optional)",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "subject": "Subject",
+    "message": "Message",
+    "attachments": "Attachments",
+    "changeStatus": "Change status",
+    "current": "Current",
+    "action": "Action",
+    "statusAuditTrail": "History of status changes is recorded.",
+    "confirmAction": "Confirm action",
+    "confirmMessage": "Are you sure you want to proceed?",
+    "reason": "Reason",
+    "reasonPlaceholder": "Enter reason...",
+    "badge": "Badge",
+    "moreActions": "More actions",
+    "dangerZone": "Danger zone",
+    "goBack": "Go back",
+    "phoneShort": "Phone",
+    "emailShort": "Email",
+    "website": "Website",
+    "bank": "Bank",
+    "iban": "IBAN",
+    "default": "Default"
+  },
+  "actions": {
+    "takeAttendance": "Take Attendance",
+    "markDone": "Mark Done",
+    "assignPayer": "Assign Payer",
+    "viewInvoice": "View"
+  },
+  "list": {
+    "searchPlaceholder": "Search...",
+    "sort": "Sort",
+    "filters": "Filters",
+    "clearAll": "Clear all",
+    "noResults": "No items found."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -68,9 +116,12 @@
       "finance": "Finance",
       "settings": "Settings",
       "platform": "Platform",
-      "tax": "Tax"
+      "tax": "Tax",
+      "education": "Education",
+      "other": "Other"
     },
     "customers": "Customers",
+    "students": "Students",
     "salesQuotes": "Sales Quotes",
     "salesOrders": "Sales Orders",
     "salesInvoices": "Sales Invoices",
@@ -104,7 +155,15 @@
     "paymentMethods": "Payment Methods",
     "taxSettings": "Tax Settings",
     "cashManagement": "Cash Management",
-    "issues": "Issues"
+    "issues": "Issues",
+    "crmDeals": "Deals",
+    "crmActivities": "Activities",
+    "classes": "Classes",
+    "teacherDashboard": "Teacher Dashboard",
+    "classSessions": "Sessions",
+    "classBilling": "Class Billing",
+    "website": "Website",
+    "platform": "Platform"
   },
   "featureFlags": {
     "app": {
@@ -155,6 +214,9 @@
       },
       "rentals": {
         "enabled": "Rentals"
+      },
+      "website": {
+        "enabled": "Website"
       }
     }
   },
@@ -306,16 +368,25 @@
     "dailyClose": "Daily Close"
   },
   "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Welcome back",
-    "revenueThisMonth": "Revenue this month",
-    "outstandingInvoices": "Outstanding invoices",
-    "expensesThisMonth": "Expenses this month",
-    "quickActions": "Quick actions",
-    "recentActivity": "Recent activity",
-    "addExpense": "Add expense",
-    "createInvoice": "Create invoice",
-    "openAssistant": "Open assistant"
+    "teacher": {
+      "welcome": "Teacher Dashboard",
+      "subtitle": "Your classes and tasks for today",
+      "allClasses": "All Classes",
+      "sessionsToday": "Sessions Today",
+      "sessionsThisWeek": "Sessions This Week",
+      "missingAttendance": "Missing Attendance",
+      "actionRequired": "Action required",
+      "unfinished": "Unfinished Sessions",
+      "studentsMissingPayer": "Students Missing Payer",
+      "unpaidInvoices": "Unpaid Invoices",
+      "overdue": "Overdue",
+      "upcomingSessions": "Upcoming Sessions",
+      "noUpcoming": "No upcoming sessions in this range",
+      "needsAttention": "Needs Attention",
+      "unfinishedSessions": "Unfinished Sessions",
+      "allCaughtUp": "All caught up!",
+      "noActions": "No pending actions require your attention."
+    }
   },
   "assistant": {
     "title": "Assistant",
@@ -379,7 +450,7 @@
     "serviceDate": "Service date",
     "dueDate": "Due date",
     "amount": "Amount",
-    "status": "Status",
+    "statusLabel": "Status",
     "items": "Items",
     "description": "Description",
     "quantity": "Quantity",
@@ -391,7 +462,16 @@
     "totalAmountGross": "Total amount (Gross)",
     "paymentTerms": "Payment terms",
     "notes": "Notes",
+    "notesPlaceholder": "Internal notes, not visible to customer...",
+    "terms": "Payment Terms",
+    "termsPlaceholder": "e.g. Please pay within 14 days...",
     "addLine": "Add a line",
+    "units": {
+      "h": "h",
+      "day": "Day",
+      "piece": "Piece",
+      "service": "Service"
+    },
     "generate": "Generate",
     "creating": "Creating...",
     "saving": "Saving...",
@@ -402,20 +482,108 @@
       "issued": "Issued",
       "sent": "Sent",
       "paid": "Paid",
-      "overdue": "Overdue"
+      "overdue": "Overdue",
+      "canceled": "Canceled"
+    },
+    "badges": {
+      "OVERDUE": "Overdue",
+      "PARTIALLY_PAID": "Partially Paid",
+      "SENT_DELIVERY": "Sent"
+    },
+    "transitions": {
+      "ISSUED": "Issue Invoice",
+      "SENT": "Send to Customer",
+      "CANCELED": "Cancel Invoice"
     },
     "actions": {
       "issue": "Issue invoice",
-      "markPaid": "Mark as paid",
-      "sendReminder": "Send reminder",
-      "download": "Download PDF",
-      "preview": "Preview"
+      "send": "Send",
+      "resend": "Resend",
+      "record_payment": "Record Payment",
+      "download_pdf": "Download PDF",
+      "send_reminder": "Send reminder",
+      "duplicate": "Duplicate",
+      "export": "Export",
+      "view_audit": "View Audit Trail",
+      "cancel": "Cancel Invoice"
+    },
+    "pdf": {
+      "pendingTitle": "PDF is being prepared",
+      "pendingDescription": "We started generating the PDF. Please try again in a moment.",
+      "stillGeneratingTitle": "PDF is still generating",
+      "stillGeneratingDescription": "This can take longer under load. Please try again in a few seconds."
+    },
+    "notifications": {
+      "canceled": "Invoice canceled",
+      "duplicateSoon": "Duplicate feature coming soon",
+      "exportSoon": "Export feature coming soon",
+      "reminderSoon": "Reminder feature coming soon"
     },
     "wizard": {
       "selectCustomer": "Select customer",
       "addItems": "Add line items",
       "review": "Review & create"
-    }
+    },
+    "notFound": "Invoice not found",
+    "backToList": "Back to list",
+    "notFoundDescription": "The invoice you are looking for does not exist or has been deleted.",
+    "titleWithNumber": "Invoice {{number}}",
+    "issued": "Invoice issued",
+    "canceled": "Invoice canceled",
+    "updated": "Invoice updated successfully",
+    "payments": {
+      "recordTitle": "Record Payment",
+      "recordDescription": "Enter the payment details for this invoice.",
+      "dueAmount": "Due amount: {{amount}}",
+      "notePlaceholder": "Describe the payment (e.g. Bank transfer, Cash, ...)",
+      "save": "Record Payment",
+      "recordFailed": "Failed to record payment",
+      "saveFailed": "Failed to save payment"
+    },
+    "errors": {
+      "downloadFailed": "Failed to download PDF",
+      "updateFailed": "Failed to update invoice",
+      "invalidAmount": "Invalid amount",
+      "actionFailed": "Action failed"
+    },
+    "footer": {
+      "taxDetails": "Tax Details",
+      "vatIdLabel": "VAT ID",
+      "taxNumberLabel": "Tax Number",
+      "addTaxDetails": "Add Tax Details",
+      "paymentMethod": "Payment Method",
+      "addPaymentMethod": "Add Payment Method",
+      "contactDetails": "Contact Details",
+      "addContactDetails": "Add Contact Details",
+      "taxDetailsDescription": "Your business tax information shown on the invoice.",
+      "contactDetailsDescription": "Your business contact information shown on the footer.",
+      "selectPaymentMethod": "Select payment method",
+      "selectPaymentMethodTitle": "Select your payment method",
+      "addNewPaymentMethod": "Add new payment method",
+      "selectedBankAccount": "Selected Bank Account"
+    },
+    "email": {
+      "title": "Send Invoice",
+      "subtitle": "Send this invoice to your customer via email.",
+      "to": "Recipient",
+      "toPlaceholder": "customer@example.com",
+      "subject": "Invoice {{number}} from {{brand}}",
+      "sendCopy": "Send me a copy",
+      "savedForFuture": "This email will be saved for {{name}}'s profile.",
+      "messagePlaceholder": "Add a personal note...",
+      "attachmentsHint": "The PDF invoice will be automatically attached.",
+      "attachmentName": "Invoice-{{number}}.pdf",
+      "attachmentFallback": "Invoice.pdf",
+      "sendTest": "Send test email",
+      "send": "Send Email",
+      "sending": "Sending...",
+      "sent": "Invoice email sent",
+      "sendFailed": "Failed to send invoice email"
+    },
+    "status": {
+      "updateFailed": "Failed to update status"
+    },
+    "loading": "Loading invoice..."
   },
   "customers": {
     "title": "Customers",
@@ -494,7 +662,9 @@
     "thisMonth": "This month",
     "lastMonth": "Last month",
     "thisYear": "This year",
-    "daysAgo": "{{count}} days ago"
+    "daysAgo": "{{count}} days ago",
+    "tomorrow": "Tomorrow",
+    "inDays": "in {{count}} days"
   },
   "dueDate": {
     "today": "due today",
@@ -817,6 +987,257 @@
       "notFoundDesc": "The portfolio you are looking for does not exist or has not been published yet.",
       "error": "Something went wrong",
       "errorDesc": "We encountered an error loading this portfolio."
+    }
+  },
+  "crm": {
+    "deals": {
+      "title": "Deals",
+      "new": "New Deal",
+      "emptyTitle": "No deals found",
+      "emptyDescription": "Start tracking your sales pipeline by creating your first deal.",
+      "noAmount": "No amount",
+      "stage": "Stage",
+      "status": {
+        "open": "Open",
+        "won": "Won",
+        "lost": "Lost"
+      },
+      "newTitle": "New Deal",
+      "newSubtitle": "Create a new sales opportunity to track in your pipeline.",
+      "create": "Create Deal",
+      "created": "Deal created successfully",
+      "createFailed": "Failed to create deal",
+      "titleLabel": "Deal Title",
+      "titlePlaceholder": "e.g. Website Redesign for Acme Corp",
+      "customer": "Customer",
+      "customerPlaceholder": "Search or select a customer",
+      "customersLoading": "Loading customers...",
+      "customersHint": "Only customers with an active relationship can be linked to deals.",
+      "stagePlaceholder": "Select a stage",
+      "expectedCloseLabel": "Expected Close Date",
+      "selectDate": "Select a date",
+      "amount": "Deal Value",
+      "amountPlaceholder": "0.00",
+      "currency": "Currency",
+      "currencyPlaceholder": "Select currency",
+      "probabilityLabel": "Probability (%)",
+      "probabilityPlaceholder": "e.g. 50",
+      "notesPlaceholder": "Add any internal notes or context about this deal...",
+      "tagsPlaceholder": "e.g. urgent, high-value (comma separated)",
+      "pipelineTitle": "Pipeline Status",
+      "pipelineDescription": "This deal will be tracked in the following pipeline stages.",
+      "tipsTitle": "Deal Tips",
+      "tipsSubtitle": "Best practices for CRM",
+      "tipsOne": "Keep your deal titles descriptive yet concise.",
+      "tipsTwo": "Update the probability as the deal progresses through stages.",
+      "tipsThree": "Set a realistic expected close date for better forecasting.",
+      "stages": {
+        "lead": "Lead",
+        "qualified": "Qualified",
+        "proposal": "Proposal",
+        "negotiation": "Negotiation",
+        "won": "Won",
+        "lost": "Lost"
+      },
+      "validation": {
+        "titleRequired": "Deal title is required",
+        "customerRequired": "Please select a customer",
+        "stageRequired": "Stage selection is required",
+        "amountNumber": "Amount must be a valid number",
+        "currencyRequired": "Currency is required",
+        "probabilityRange": "Probability must be between 0 and 100"
+      }
+    }
+  },
+  "classes": {
+    "sessions": {
+      "title": "Sessions",
+      "subtitle": "Track planned and completed sessions",
+      "new": "New session",
+      "loading": "Loading sessions...",
+      "empty": "No sessions found.",
+      "starts": "Starts",
+      "topic": "Topic",
+      "status": "Status",
+      "open": "Open",
+      "markDone": "Mark done",
+      "cancel": "Cancel",
+      "updated": "Session updated",
+      "updateFailed": "Failed to update session",
+      "loadFailed": "Failed to load sessions",
+      "confirmTitle": "Update session status?",
+      "confirmDescription": "Set session to {{status}}?",
+      "filterClassGroup": "Class group",
+      "filterStatus": "Status",
+      "filterDateFrom": "Date from",
+      "filterDateTo": "Date to",
+      "monthLocked": "Month is locked",
+      "monthLockedDescription": "This month has already been billed. Reopen the month or create an adjustment.",
+      "billingLockedTooltip": "This month is locked because billing was created.",
+      "statusOptions": {
+        "planned": "Planned",
+        "done": "Done",
+        "cancelled": "Cancelled"
+      },
+      "sortOptions": {
+        "newest": "Start (Newest)",
+        "oldest": "Start (Oldest)"
+      }
+    },
+    "groups": {
+      "title": "Class Groups",
+      "subtitle": "Organize your tutoring groups and pricing",
+      "new": "New Class Group",
+      "loading": "Loading class groups...",
+      "loadFailed": "Failed to load class groups",
+      "emptyTitle": "No class groups yet",
+      "emptyDescription": "Create your first group to start scheduling sessions.",
+      "name": "Name",
+      "subject": "Subject",
+      "level": "Level",
+      "pricePerSession": "Price / session",
+      "status": "Status",
+      "updated": "Updated",
+      "open": "Open",
+      "edit": "Edit",
+      "statusOptions": {
+        "active": "Active",
+        "archived": "Archived"
+      },
+      "sortOptions": {
+        "newest": "Updated (Newest)",
+        "oldest": "Updated (Oldest)",
+        "name": "Name (A-Z)"
+      }
+    },
+    "students": {
+      "title": "Students",
+      "subtitle": "Manage student records and guardians",
+      "add": "Add student",
+      "loading": "Loading students...",
+      "loadFailed": "Failed to load students.",
+      "emptyTitle": "No students yet",
+      "emptyDescription": "Create your first student to start tracking guardians and enrollments.",
+      "record": "Student",
+      "email": "Email",
+      "phone": "Phone",
+      "primaryPayer": "Primary payer",
+      "status": "Status",
+      "updated": "Updated",
+      "open": "Open",
+      "edit": "Edit",
+      "archive": "Archive",
+      "archived": "Student archived",
+      "archiveFailed": "Failed to archive student",
+      "archiveConfirmTitle": "Archive student",
+      "archiveConfirmDescription": "This will archive the student. You can unarchive them later.",
+      "statusOptions": {
+        "active": "Active",
+        "archived": "Archived"
+      }
+    },
+    "billing": {
+      "title": "Class Billing",
+      "subtitle": "Preview tuition and create invoices for the selected month.",
+      "createInvoices": "Create invoices for month",
+      "billingMonth": "Billing Month",
+      "refresh": "Refresh",
+      "invoicesCreated": "Created {{count}} invoices",
+      "sendInvoices": "Send invoices",
+      "invoicesSent": "Invoices queued for sending",
+      "sendFailed": "Failed to send invoices",
+      "alreadySent": "Already sent",
+      "sendDialogTitle": "Invoices created",
+      "sendDialogDescription": "Created {{count}} invoices. Do you want to send them now?",
+      "sendDialogYes": "Yes, send",
+      "sendDialogNo": "No",
+      "summaryCreated": "Created {{count}} invoices for {{month}}",
+      "loading": "Loading billing preview...",
+      "loadFailed": "Failed to load preview",
+      "strategy": "Billing Strategy:",
+      "basis": "Billing Basis:",
+      "prepaid": "Prepaid",
+      "arrears": "Arrears",
+      "scheduledBasis": "Scheduled Sessions",
+      "attendedBasis": "Attended Sessions",
+      "arrearsTip": "Only sessions marked as \"DONE\" with attendance are billable",
+      "payerId": "Payer ID:",
+      "sessionsTotal": "sessions total",
+      "classGroup": "Class Group",
+      "sessions": "Sessions",
+      "pricePerSession": "Price / Session",
+      "subtotal": "Subtotal",
+      "viewInvoice": "View invoice",
+      "emptyTitle": "No billable sessions",
+      "emptyDescription": "There are no confirmed sessions for the selected month that haven't been billed yet.",
+      "attendedSessionsTip": "Tip: In \"Attended Sessions\" mode, you must mark sessions as DONE and record attendance before they can be billed.",
+      "regenerate": "Regenerate invoices",
+      "regenerateConfirm": "Are you sure you want to regenerate invoices? This will detach existing draft invoices for this month."
+    },
+    "settings": {
+      "title": "Classes Settings",
+      "description": "Configure how class invoices are generated for this workspace.",
+      "billingStrategy": "Billing Strategy",
+      "monthStrategy": "Billing month strategy",
+      "billingBasis": "Billing basis",
+      "save": "Save settings",
+      "updated": "Classes settings updated",
+      "updateFailed": "Failed to update classes settings",
+      "placeholderStrategy": "Select billing strategy",
+      "placeholderBasis": "Select billing basis",
+      "strategies": {
+        "prepaid": {
+          "label": "Invoice for current month (prepaid)",
+          "description": "Invoices are generated at the start of the month for scheduled sessions."
+        },
+        "arrears": {
+          "label": "Invoice for previous month (arrears)",
+          "description": "Invoices are generated at the start of the month for attended sessions."
+        }
+      },
+      "attendance": {
+        "title": "Attendance",
+        "description": "Configure attendance behavior",
+        "mode": "Attendance Mode",
+        "manual": {
+          "label": "Manual Attendance",
+          "description": "Teachers must record attendance per session."
+        },
+        "autoFull": {
+          "label": "Auto-Full Attendance",
+          "description": "When a session is marked done, all enrolled students are marked present automatically. Teachers can still edit if needed."
+        }
+      },
+      "bases": {
+        "scheduled": {
+          "label": "Scheduled sessions",
+          "description": "Counts planned/done sessions in the billing month."
+        },
+        "attended": {
+          "label": "Attended sessions",
+          "description": "Counts billable attendance on done sessions."
+        }
+      }
+    }
+  },
+  "purchasing": {
+    "settings": {
+      "title": "Purchasing Settings",
+      "save": "Save Settings",
+      "defaultCurrency": "Default Currency",
+      "defaultPaymentTerms": "Default Payment Terms",
+      "poNumberPrefix": "PO Number Prefix",
+      "defaultApAccount": "Default Accounts Payable Account",
+      "defaultExpenseAccount": "Default Expense Account",
+      "defaultBankAccount": "Default Bank Account",
+      "autoPostBill": "Auto-post on Bill Post",
+      "autoPostBillHelp": "Automatically create accounting entries when a vendor bill is posted",
+      "autoPostPayment": "Auto-post on Payment",
+      "autoPostPaymentHelp": "Automatically create accounting entries when a payment is recorded",
+      "duplicateDetection": "Duplicate Bill Detection",
+      "duplicateDetectionHelp": "Warn when a bill with the same vendor and reference already exists",
+      "approvalRequired": "Approval Required for Bills",
+      "approvalRequiredHelp": "Vendor bills must be approved before they can be posted"
     }
   }
 }

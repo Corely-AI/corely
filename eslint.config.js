@@ -74,6 +74,26 @@ export default tseslint.config(
       ],
     },
   },
+  // Ban direct PrismaClient value imports in services — use PrismaService from @corely/data
+  {
+    files: ["services/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@prisma/client",
+              importNames: ["PrismaClient"],
+              message:
+                "Use PrismaService from @corely/data instead. Registering PrismaClient directly as a NestJS provider causes initialization errors.",
+              allowTypeImports: true,
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Allow ee-loader files to import from EE packages
   {
     files: ["**/ee-loader.ts", "**/ee-loader.tsx"],

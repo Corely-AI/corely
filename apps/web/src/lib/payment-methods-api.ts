@@ -12,10 +12,19 @@ import type {
 
 export class PaymentMethodsApi {
   // Bank Accounts
-  async listBankAccounts(legalEntityId: string): Promise<ListBankAccountsOutput> {
-    return apiClient.get<ListBankAccountsOutput>(
-      `/payment-methods/bank-accounts?legalEntityId=${legalEntityId}`
-    );
+  async listBankAccounts(
+    legalEntityId: string,
+    options?: { includeSensitive?: boolean }
+  ): Promise<ListBankAccountsOutput> {
+    const params = new URLSearchParams({
+      legalEntityId,
+    });
+
+    if (options?.includeSensitive) {
+      params.set("includeSensitive", "true");
+    }
+
+    return apiClient.get<ListBankAccountsOutput>(`/payment-methods/bank-accounts?${params}`);
   }
 
   async createBankAccount(

@@ -11,6 +11,17 @@ import { useToast } from "@corely/ui";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { Badge } from "@corely/ui";
 import { Switch } from "@corely/ui";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@corely/ui";
 
 export const WorkspaceSettingsPage: React.FC = () => {
   const { activeWorkspace, activeWorkspaceId, refresh } = useWorkspace();
@@ -31,6 +42,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -112,6 +124,30 @@ export const WorkspaceSettingsPage: React.FC = () => {
       });
     } finally {
       setIsUpgrading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!activeWorkspaceId) {
+      return;
+    }
+    setIsDeleting(true);
+    try {
+      await workspacesApi.deleteWorkspace(activeWorkspaceId);
+      toast({
+        title: "Workspace deleted",
+        description: "The workspace has been removed.",
+      });
+      // Redirect to onboarding or another workspace
+      navigate("/onboarding");
+    } catch (error) {
+      toast({
+        title: "Deletion failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -302,12 +338,33 @@ export const WorkspaceSettingsPage: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Removing a workspace will delete its data. This action will be restricted to owners in a
-            future update.
+            Removing a workspace will delete its data. This action is restricted to owners.
           </p>
-          <Button variant="destructive" disabled>
-            Delete workspace (coming soon)
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={isDeleting}>
+                {isDeleting ? "Deleting..." : "Delete workspace"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the workspace &quot;
+                  {activeWorkspace?.name}&quot; and remove all its data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Delete Workspace
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardContent>
       </Card>
     </div>

@@ -3,6 +3,7 @@ import { ForbiddenError, NotFoundError, ValidationFailedError } from "@corely/do
 import type { UseCaseContext } from "@corely/kernel";
 import type { PublicSubmitInput } from "@corely/contracts";
 import type { FormRepositoryPort } from "../ports/form-repository.port";
+import type { OutboxPort } from "@corely/kernel";
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
 import { validateSubmissionPayload } from "../../domain/form-validation";
@@ -12,7 +13,8 @@ export class PublicSubmitFormUseCase {
   constructor(
     private readonly repo: FormRepositoryPort,
     private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: ClockPort
+    private readonly clock: ClockPort,
+    private readonly outbox: OutboxPort
   ) {}
 
   async execute(publicId: string, input: PublicSubmitInput, ctx: UseCaseContext) {
@@ -40,8 +42,9 @@ export class PublicSubmitFormUseCase {
     validateSubmissionPayload(fields, input.payload);
 
     const now = this.clock.now();
+    const submissionId = this.idGenerator.newId();
     const submission: FormSubmission = {
-      id: this.idGenerator.newId(),
+      id: submissionId,
       tenantId: form.tenantId,
       formId: form.id,
       source: "PUBLIC",
@@ -51,6 +54,22 @@ export class PublicSubmitFormUseCase {
       createdByUserId: null,
     };
 
-    return this.repo.createSubmission(submission);
+    const created = await this.repo.createSubmission(submission);
+
+    if (form.postSubmitAction !== "NONE") {
+      await this.outbox.enqueue({
+        tenantId: form.tenantId,
+        eventType: "Forms.PublicFormSubmitted",
+        payload: {
+          submissionId: created.id,
+          formId: form.id,
+          postSubmitAction: form.postSubmitAction,
+          payload: created.payloadJson,
+        },
+        correlationId: created.id,
+      });
+    }
+
+    return created;
   }
 }

@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
+  HttpStatus,
   Inject,
   Optional,
   Param,
@@ -9,16 +11,16 @@ import {
   Post,
   Query,
   Req,
+  Res,
   UseGuards,
 } from "@nestjs/common";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 import { InvoicesApplication } from "../../application/invoices.application";
 import { PartyApplication } from "../../../party/application/party.application";
 import {
   CancelInvoiceInputSchema,
   CreateInvoiceInputSchema,
-  DownloadInvoicePdfInputSchema,
-  type DownloadInvoicePdfInput,
+  RequestInvoicePdfInputSchema,
   FinalizeInvoiceInputSchema,
   GetInvoiceByIdInputSchema,
   ListInvoicesInputSchema,
@@ -31,6 +33,9 @@ import { buildUseCaseContext, mapResultToHttp } from "./mappers";
 
 import { AuthGuard } from "../../../identity";
 import { ModuleRef } from "@nestjs/core";
+import { DocumentsApplication } from "../../../documents/application/documents.application";
+
+const SEND_INVOICE_PDF_WAIT_MS = 90_000;
 
 @Controller("invoices")
 @UseGuards(AuthGuard)
@@ -38,6 +43,9 @@ export class InvoicesHttpController {
   constructor(
     @Inject(InvoicesApplication) @Optional() private readonly app: InvoicesApplication | null,
     @Inject(PartyApplication) @Optional() private readonly partyApp: PartyApplication | null,
+    @Inject(DocumentsApplication)
+    @Optional()
+    private readonly documentsApp: DocumentsApplication | null,
     @Optional() private readonly moduleRef?: ModuleRef
   ) {}
 
@@ -79,6 +87,45 @@ export class InvoicesHttpController {
   async send(@Param("invoiceId") invoiceId: string, @Body() body: unknown, @Req() req: Request) {
     const input = SendInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
+
+    if (input.attachPdf) {
+      const docsApp =
+        this.documentsApp ?? this.moduleRef?.get(DocumentsApplication, { strict: false });
+      if (!docsApp) {
+        throw new Error("DocumentsApplication not available");
+      }
+
+      const pdfResult = mapResultToHttp(
+        await docsApp.getInvoicePdf.execute(
+          {
+            invoiceId,
+            waitMs: SEND_INVOICE_PDF_WAIT_MS,
+          },
+          ctx
+        )
+      );
+
+      if (pdfResult.status === "FAILED") {
+        throw new HttpException(
+          {
+            error: "INVOICE_PDF_RENDER_FAILED",
+            message: pdfResult.errorMessage ?? "Invoice PDF rendering failed",
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY
+        );
+      }
+
+      if (pdfResult.status !== "READY") {
+        throw new HttpException(
+          {
+            error: "INVOICE_PDF_NOT_READY",
+            message: "Invoice PDF is still being generated. Please try again shortly.",
+          },
+          HttpStatus.CONFLICT
+        );
+      }
+    }
+
     const result = await this.app.sendInvoice.execute(input, ctx);
     return mapResultToHttp(result);
   }
@@ -104,19 +151,102 @@ export class InvoicesHttpController {
   }
 
   @Get(":invoiceId/pdf")
-  async downloadPdf(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
-    const input: DownloadInvoicePdfInput = { invoiceId };
-    DownloadInvoicePdfInputSchema.parse(input);
+  async downloadPdf(
+    @Param("invoiceId") invoiceId: string,
+    @Query("waitMs") waitMsRaw: string | undefined,
+    @Query("forceRegenerate") forceRegenerateRaw: string | undefined,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const input = RequestInvoicePdfInputSchema.parse({
+      invoiceId,
+      forceRegenerate: this.parseBooleanFlag(forceRegenerateRaw),
+    });
     const ctx = buildUseCaseContext(req);
-    const result = await this.app!.downloadInvoicePdf.execute(input, ctx);
-    const payload = mapResultToHttp(result);
-    const downloadUrl = payload.downloadUrl.startsWith("/")
-      ? `${req.protocol}://${req.get("host")}${payload.downloadUrl}`
-      : payload.downloadUrl;
-    return {
-      downloadUrl,
-      expiresAt: payload.expiresAt,
+    const app = this.app ?? this.moduleRef?.get(InvoicesApplication, { strict: false });
+    if (!app) {
+      throw new Error("InvoicesApplication not available");
+    }
+
+    // Ensure invoice is accessible in current workspace context before invoking PDF pipeline.
+    mapResultToHttp(await app.getInvoiceById.execute({ invoiceId: input.invoiceId }, ctx));
+
+    const docsApp =
+      this.documentsApp ?? this.moduleRef?.get(DocumentsApplication, { strict: false });
+    if (!docsApp) {
+      throw new Error("DocumentsApplication not available");
+    }
+
+    const waitMs = this.parseWaitMs(waitMsRaw);
+    const abortController = new AbortController();
+    const onClose = () => abortController.abort();
+    req.on("close", onClose);
+
+    const requestInput = {
+      invoiceId: input.invoiceId,
+      forceRegenerate: input.forceRegenerate,
+      waitMs,
+      abortSignal: abortController.signal,
     };
+
+    const payload = await (async () => {
+      try {
+        const result = await docsApp.getInvoicePdf.execute(requestInput, ctx);
+        return mapResultToHttp(result);
+      } finally {
+        req.off("close", onClose);
+      }
+    })();
+    if (payload.status === "FAILED") {
+      throw new HttpException(
+        {
+          error: "INVOICE_PDF_RENDER_FAILED",
+          message: payload.errorMessage ?? "Invoice PDF rendering failed",
+        },
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
+
+    if (payload.status === "PENDING") {
+      const retryAfterMs = payload.retryAfterMs ?? 1000;
+      res.setHeader("Retry-After", String(Math.max(1, Math.ceil(retryAfterMs / 1000))));
+      res.status(HttpStatus.ACCEPTED);
+    }
+
+    if (payload.downloadUrl?.startsWith("/")) {
+      return {
+        ...payload,
+        downloadUrl: `${req.protocol}://${req.get("host")}${payload.downloadUrl}`,
+      };
+    }
+    return payload;
+  }
+
+  private parseWaitMs(waitMsRaw: string | undefined): number | undefined {
+    if (waitMsRaw === undefined) {
+      return undefined;
+    }
+
+    const parsed = Number.parseInt(waitMsRaw, 10);
+    if (!Number.isFinite(parsed)) {
+      return undefined;
+    }
+
+    return Math.max(0, Math.min(30000, parsed));
+  }
+
+  private parseBooleanFlag(raw: string | undefined): boolean | undefined {
+    if (raw === undefined) {
+      return undefined;
+    }
+    const normalized = raw.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0") {
+      return false;
+    }
+    return undefined;
   }
 
   @Get(":invoiceId")

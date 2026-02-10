@@ -48,7 +48,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const roleIds = Array.isArray(req.user?.roleIds) ? req.user?.roleIds : undefined;
 
   const publicContext: PublicWorkspaceContext | undefined = req.publicContext;
-  const usePublicContext = Boolean(publicContext) && !req.user?.userId;
+  const usePublicContext = Boolean(publicContext);
 
   // Workspace / tenant with precedence
   const routeWorkspaceId = (req.params as Record<string, string | undefined> | undefined)
@@ -80,13 +80,15 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
     req.user?.workspaceId ??
     null;
 
+  const userTenantId = req.user?.tenantId;
+  const resolvedUserTenantId =
+    userTenantId === null || typeof userTenantId === "string" ? userTenantId : undefined;
+
   const tenantId =
     (usePublicContext ? publicContext?.tenantId : undefined) ??
-    req.user?.tenantId ??
-    headerTenantId ??
-    queryTenantId ??
-    plainQueryTenantId ??
-    undefined;
+    (resolvedUserTenantId !== undefined
+      ? resolvedUserTenantId
+      : (headerTenantId ?? queryTenantId ?? plainQueryTenantId ?? undefined));
 
   const finalUserId = userId;
   const userSource: RequestContext["sources"][keyof RequestContext["sources"]] | undefined = userId
@@ -117,13 +119,14 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
       requestId: headerRequestId ? "header" : traceId ? "route" : "generated",
       correlationId: correlationHeader ? "header" : "inferred",
       userId: userSource,
-      tenantId: tenantId
-        ? usePublicContext
-          ? "public"
-          : tenantId === req.user?.tenantId
-            ? "user"
-            : "header"
-        : undefined,
+      tenantId:
+        tenantId !== undefined
+          ? usePublicContext
+            ? "public"
+            : tenantId === req.user?.tenantId
+              ? "user"
+              : "header"
+          : undefined,
       workspaceId: workspaceId
         ? usePublicContext
           ? "public"

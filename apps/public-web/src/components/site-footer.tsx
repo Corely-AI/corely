@@ -11,7 +11,7 @@ export function SiteFooter({
 }) {
   const portfolioPath = resolveWorkspacePath({ host, workspaceSlug, path: "/portfolio" });
   const rentalsPath = resolveWorkspacePath({ host, workspaceSlug, path: "/rentals" });
-  const blogPath = resolveWorkspacePath({ host, workspaceSlug, path: "/blog" });
+  const cmsPath = resolveWorkspacePath({ host, workspaceSlug, path: "/cms" });
 
   return (
     <footer className="border-t border-border/60 bg-background">
@@ -24,8 +24,8 @@ export function SiteFooter({
           <Link href={rentalsPath} className="transition-colors hover:text-foreground">
             Rentals
           </Link>
-          <Link href={blogPath} className="transition-colors hover:text-foreground">
-            Blog
+          <Link href={cmsPath} className="transition-colors hover:text-foreground">
+            CMS
           </Link>
         </div>
       </div>

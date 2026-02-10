@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
 import { TenantAppsTab } from "./TenantAppsTab";
 import { TenantFeaturesTab } from "./TenantFeaturesTab";
+import { TenantUsersTab } from "./TenantUsersTab";
 import {
   platformEntitlementsApi,
   type TenantEntitlementsResponse,
@@ -60,6 +61,7 @@ export function TenantEntitlementsPage() {
         <TabsList>
           <TabsTrigger value="apps">Apps</TabsTrigger>
           <TabsTrigger value="features">Features</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
         </TabsList>
 
         <TabsContent value="apps" className="pt-4">
@@ -77,6 +79,10 @@ export function TenantEntitlementsPage() {
             features={entitlements.features}
             onRefresh={loadData}
           />
+        </TabsContent>
+
+        <TabsContent value="users" className="pt-4">
+          <TenantUsersTab tenantId={tenantId} />
         </TabsContent>
       </Tabs>
     </div>

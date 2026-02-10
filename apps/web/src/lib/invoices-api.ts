@@ -6,6 +6,7 @@
 import type {
   CreateInvoiceInput,
   CreateInvoiceOutput,
+  RequestInvoicePdfOutput,
   InvoiceDto,
   InvoiceCapabilities,
   RecordPaymentInput,
@@ -15,6 +16,10 @@ import type {
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 import { buildListQuery } from "./api-query-utils";
+
+export type InvoicePdfResponse = RequestInvoicePdfOutput & {
+  retryAfterMs?: number;
+};
 
 export class InvoicesApi {
   /**
@@ -154,16 +159,28 @@ export class InvoicesApi {
 
   /**
    * Download invoice PDF
-   * Returns a signed URL that expires after a short period
+   * Optionally waits for the worker to finish rendering.
    */
-  async downloadInvoicePdf(id: string): Promise<{ downloadUrl: string; expiresAt: string }> {
-    const result = await apiClient.get<{ downloadUrl: string; expiresAt: string }>(
-      `/invoices/${id}/pdf`,
+  async downloadInvoicePdf(
+    id: string,
+    options?: { waitMs?: number; signal?: AbortSignal; forceRegenerate?: boolean }
+  ): Promise<InvoicePdfResponse> {
+    const params = new URLSearchParams();
+    if (typeof options?.waitMs === "number") {
+      params.set("waitMs", String(Math.floor(options.waitMs)));
+    }
+    if (options?.forceRegenerate) {
+      params.set("forceRegenerate", "true");
+    }
+    const query = params.size > 0 ? `?${params.toString()}` : "";
+
+    return apiClient.request<InvoicePdfResponse>(
+      `/invoices/${id}/pdf${query}`,
+      { method: "GET", signal: options?.signal },
       {
         correlationId: apiClient.generateCorrelationId(),
       }
     );
-    return result;
   }
 
   /**

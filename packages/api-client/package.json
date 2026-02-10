@@ -11,7 +11,9 @@
   "scripts": {
     "test": "vitest"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@corely/contracts": "workspace:*"
+  },
   "devDependencies": {
     "vitest": "catalog:"
   },

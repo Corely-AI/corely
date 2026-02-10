@@ -13,6 +13,7 @@ import { AddWorkspaceDomainUseCase } from "./application/use-cases/add-workspace
 import { DeleteWorkspaceDomainUseCase } from "./application/use-cases/delete-workspace-domain.usecase";
 import { SetPrimaryWorkspaceDomainUseCase } from "./application/use-cases/set-primary-workspace-domain.usecase";
 import { ListWorkspaceMembersUseCase } from "./application/use-cases/list-workspace-members.usecase";
+import { DeleteWorkspaceUseCase } from "./application/use-cases/delete-workspace.usecase";
 import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 
@@ -36,6 +37,7 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     DeleteWorkspaceDomainUseCase,
     SetPrimaryWorkspaceDomainUseCase,
     ListWorkspaceMembersUseCase,
+    DeleteWorkspaceUseCase,
   ],
   exports: [
     // Expose repository + token so external modules (e.g., TestHarness) can inject it
@@ -50,6 +52,7 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
     DeleteWorkspaceDomainUseCase,
     SetPrimaryWorkspaceDomainUseCase,
     ListWorkspaceMembersUseCase,
+    DeleteWorkspaceUseCase,
   ],
 })
 export class WorkspacesModule {}

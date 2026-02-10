@@ -11,7 +11,7 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
 
   async create(data: {
     id: string;
-    tenantId: string;
+    tenantId: string | null;
     name: string;
     description?: string | null;
     isSystem?: boolean;
@@ -42,6 +42,27 @@ export class PrismaRoleRepository implements RoleRepositoryPort {
   } | null> {
     return await this.prisma.role.findFirst({
       where: { tenantId, id },
+      select: {
+        id: true,
+        tenantId: true,
+        name: true,
+        description: true,
+        isSystem: true,
+        systemKey: true,
+      },
+    });
+  }
+
+  async findHostRoleById(id: string): Promise<{
+    id: string;
+    tenantId: string | null;
+    name: string;
+    description: string | null;
+    isSystem: boolean;
+    systemKey: string | null;
+  } | null> {
+    return await this.prisma.role.findFirst({
+      where: { tenantId: null, id },
       select: {
         id: true,
         tenantId: true,

@@ -134,6 +134,7 @@ The system is composed of vertical slice modules, each owning its domain logic, 
 apps/
   e2e/                        # End-to-end suites
   pos/                        # Offline-first POS shell
+  public-web/                 # Next.js public site (portfolios, rentals, CMS)
   web/                        # Vite-based admin UI
 
 services/
@@ -187,6 +188,7 @@ scripts/
 ```bash
 pnpm dev:mock
 pnpm dev:web
+pnpm dev:public
 ```
 
 Mock server routes live under `services/mock-server/src/routes`; latency, pagination, and idempotency middleware keep the experience close to the real API.
@@ -197,6 +199,7 @@ Mock server routes live under `services/mock-server/src/routes`; latency, pagina
 pnpm dev:api
 pnpm dev:worker
 pnpm dev:web
+pnpm dev:public
 ```
 
 Ensure Postgres/Redis are reachable (use `docker compose -f docker-compose.dev.yml up` if needed). When you want everything wired together, `pnpm dev` builds packages then starts all services.

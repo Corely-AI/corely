@@ -20,6 +20,8 @@ import { SalesModule } from "./modules/sales";
 import { PaymentMethodsModule } from "./modules/payment-methods/payment-methods.module";
 import { PurchasingModule } from "./modules/purchasing";
 import { InventoryModule } from "./modules/inventory";
+import { ImportModule } from "./modules/import";
+import { CatalogModule } from "./modules/catalog";
 import { ApprovalsModule } from "./modules/approvals";
 import { EngagementModule } from "./modules/engagement/engagement.module";
 import { PlatformModule } from "./modules/platform";
@@ -31,6 +33,9 @@ import { RentalsModule } from "./modules/rentals";
 import { PortfolioModule } from "./modules/portfolio";
 import { IssuesModule } from "./modules/issues";
 import { AiRichTextModule } from "./modules/ai-richtext";
+import { WebsiteModule } from "./modules/website";
+import { ClassesModule } from "./modules/classes";
+import { PortalModule } from "./modules/portal/portal.module";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -65,12 +70,17 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     SalesModule,
     PaymentMethodsModule,
     PurchasingModule,
+    CatalogModule,
     InventoryModule,
+    ImportModule,
     ApprovalsModule,
     EngagementModule,
     CmsModule,
+    WebsiteModule,
     FormsModule,
     RentalsModule,
+    ClassesModule,
+    PortalModule,
     PortfolioModule,
     IssuesModule,
     WorkflowModule,
@@ -83,8 +93,8 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     ...(function () {
       // We need to access EnvService here, but it's not available yet
       // Fall back to process.env for now (this is the only allowed usage)
-      const isTest = process.env.NODE_ENV === "test";
-      return isTest ? [TestHarnessModule] : [];
+      const isNonProd = process.env.NODE_ENV !== "production";
+      return isNonProd ? [TestHarnessModule] : [];
     })(),
   ],
 })

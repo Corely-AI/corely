@@ -106,6 +106,19 @@ export default defineWorkspace([
     },
   },
   {
+    extends: "./apps/public-web/vitest.config.ts",
+    root: "./apps/public-web",
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.int.test.ts",
+        "**/e2e/**",
+        "**/apps/e2e/**",
+      ],
+    },
+  },
+  {
     extends: "./packages/offline-core/vitest.config.ts",
     root: "./packages/offline-core",
     test: {
@@ -135,6 +148,19 @@ export default defineWorkspace([
   {
     extends: "./packages/api-client/vitest.config.ts",
     root: "./packages/api-client",
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.int.test.ts",
+        "**/e2e/**",
+        "**/apps/e2e/**",
+      ],
+    },
+  },
+  {
+    extends: "./packages/public-urls/vitest.config.ts",
+    root: "./packages/public-urls",
     test: {
       exclude: [
         "**/node_modules/**",

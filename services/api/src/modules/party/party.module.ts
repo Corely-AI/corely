@@ -1,13 +1,24 @@
 import { Module } from "@nestjs/common";
-import { DataModule } from "@corely/data";
+import {
+  DataModule,
+  EXT_ENTITY_LINK_PORT,
+  type ExtEntityLinkPort,
+  PrismaService,
+} from "@corely/data";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
 import { CustomersHttpController } from "./adapters/http/customers.controller";
+import { PartyInternalController } from "./adapters/http/party-internal.controller";
 import { PrismaPartyRepoAdapter } from "./infrastructure/prisma/prisma-party-repo.adapter";
 import { PrismaCustomerQueryAdapter } from "./infrastructure/prisma/prisma-customer-query.adapter";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
 import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
+import { AUDIT_PORT, type AuditPort } from "../../shared/ports/audit.port";
+import {
+  IDEMPOTENCY_STORAGE_PORT_TOKEN,
+  type IdempotencyStoragePort,
+} from "../../shared/ports/idempotency-storage.port";
 import { PartyApplication } from "./application/party.application";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 import { CUSTOMER_QUERY_PORT } from "./application/ports/customer-query.port";
@@ -18,14 +29,24 @@ import { ListCustomersUseCase } from "./application/use-cases/list-customers/lis
 import { SearchCustomersUseCase } from "./application/use-cases/search-customers/search-customers.usecase";
 import { UnarchiveCustomerUseCase } from "./application/use-cases/unarchive-customer/unarchive-customer.usecase";
 import { UpdateCustomerUseCase } from "./application/use-cases/update-customer/update-customer.usecase";
+import { GetStudentGuardiansUseCase } from "./application/use-cases/student-guardians/get-student-guardians.usecase";
+import { LinkGuardianToStudentUseCase } from "./application/use-cases/student-guardians/link-guardian-to-student.usecase";
+import { SetPrimaryPayerUseCase } from "./application/use-cases/student-guardians/set-primary-payer.usecase";
+import { UnlinkGuardianUseCase } from "./application/use-cases/student-guardians/unlink-guardian.usecase";
+import { CreateTutoringLeadUseCase } from "./application/use-cases/create-tutoring-lead.usecase";
+import { UpdatePartyLifecycleStatusUseCase } from "./application/use-cases/update-party-lifecycle-status.usecase";
+import { PARTY_QUERY_PORT } from "./application/ports/party-query.port";
+import { PrismaPartyQueryAdapter } from "./infrastructure/prisma/prisma-party-query.adapter";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule],
-  controllers: [CustomersHttpController],
+  controllers: [CustomersHttpController, PartyInternalController],
   providers: [
     PrismaPartyRepoAdapter,
     PrismaCustomerQueryAdapter,
+    PrismaPartyQueryAdapter,
     { provide: CUSTOMER_QUERY_PORT, useExisting: PrismaCustomerQueryAdapter },
+    { provide: PARTY_QUERY_PORT, useExisting: PrismaPartyQueryAdapter },
     {
       provide: CreateCustomerUseCase,
       useFactory: (repo: PrismaPartyRepoAdapter, idGen: any, clock: any) =>
@@ -87,6 +108,71 @@ import { UpdateCustomerUseCase } from "./application/use-cases/update-customer/u
       inject: [PrismaPartyRepoAdapter],
     },
     {
+      provide: GetStudentGuardiansUseCase,
+      useFactory: (repo: PrismaPartyRepoAdapter, entityLink: ExtEntityLinkPort) =>
+        new GetStudentGuardiansUseCase({
+          logger: new NestLoggerAdapter(),
+          partyRepo: repo,
+          entityLink,
+        }),
+      inject: [PrismaPartyRepoAdapter, EXT_ENTITY_LINK_PORT],
+    },
+    {
+      provide: LinkGuardianToStudentUseCase,
+      useFactory: (
+        repo: PrismaPartyRepoAdapter,
+        entityLink: ExtEntityLinkPort,
+        idempotency: IdempotencyStoragePort,
+        audit: AuditPort
+      ) =>
+        new LinkGuardianToStudentUseCase({
+          logger: new NestLoggerAdapter(),
+          partyRepo: repo,
+          entityLink,
+          idempotency,
+          audit,
+        }),
+      inject: [
+        PrismaPartyRepoAdapter,
+        EXT_ENTITY_LINK_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        AUDIT_PORT,
+      ],
+    },
+    {
+      provide: UnlinkGuardianUseCase,
+      useFactory: (repo: PrismaPartyRepoAdapter, entityLink: ExtEntityLinkPort, audit: AuditPort) =>
+        new UnlinkGuardianUseCase({
+          logger: new NestLoggerAdapter(),
+          partyRepo: repo,
+          entityLink,
+          audit,
+        }),
+      inject: [PrismaPartyRepoAdapter, EXT_ENTITY_LINK_PORT, AUDIT_PORT],
+    },
+    {
+      provide: SetPrimaryPayerUseCase,
+      useFactory: (
+        repo: PrismaPartyRepoAdapter,
+        entityLink: ExtEntityLinkPort,
+        idempotency: IdempotencyStoragePort,
+        audit: AuditPort
+      ) =>
+        new SetPrimaryPayerUseCase({
+          logger: new NestLoggerAdapter(),
+          partyRepo: repo,
+          entityLink,
+          idempotency,
+          audit,
+        }),
+      inject: [
+        PrismaPartyRepoAdapter,
+        EXT_ENTITY_LINK_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        AUDIT_PORT,
+      ],
+    },
+    {
       provide: PartyApplication,
       useFactory: (
         createCustomer: CreateCustomerUseCase,
@@ -95,7 +181,12 @@ import { UpdateCustomerUseCase } from "./application/use-cases/update-customer/u
         unarchiveCustomer: UnarchiveCustomerUseCase,
         getCustomerById: GetCustomerByIdUseCase,
         listCustomers: ListCustomersUseCase,
-        searchCustomers: SearchCustomersUseCase
+        searchCustomers: SearchCustomersUseCase,
+        getStudentGuardians: GetStudentGuardiansUseCase,
+        linkGuardianToStudent: LinkGuardianToStudentUseCase,
+        unlinkGuardian: UnlinkGuardianUseCase,
+        setPrimaryPayer: SetPrimaryPayerUseCase,
+        updateLifecycleStatus: UpdatePartyLifecycleStatusUseCase
       ) =>
         new PartyApplication(
           createCustomer,
@@ -104,7 +195,12 @@ import { UpdateCustomerUseCase } from "./application/use-cases/update-customer/u
           unarchiveCustomer,
           getCustomerById,
           listCustomers,
-          searchCustomers
+          searchCustomers,
+          getStudentGuardians,
+          linkGuardianToStudent,
+          unlinkGuardian,
+          setPrimaryPayer,
+          updateLifecycleStatus
         ),
       inject: [
         CreateCustomerUseCase,
@@ -114,9 +210,50 @@ import { UpdateCustomerUseCase } from "./application/use-cases/update-customer/u
         GetCustomerByIdUseCase,
         ListCustomersUseCase,
         SearchCustomersUseCase,
+        GetStudentGuardiansUseCase,
+        LinkGuardianToStudentUseCase,
+        UnlinkGuardianUseCase,
+        SetPrimaryPayerUseCase,
+        UpdatePartyLifecycleStatusUseCase,
+      ],
+    },
+    {
+      provide: UpdatePartyLifecycleStatusUseCase,
+      useFactory: (repo: PrismaPartyRepoAdapter, audit: AuditPort, prisma: PrismaService) =>
+        new UpdatePartyLifecycleStatusUseCase({
+          logger: new NestLoggerAdapter(),
+          partyRepo: repo,
+          audit,
+          prisma,
+        }),
+      inject: [PrismaPartyRepoAdapter, AUDIT_PORT, PrismaService],
+    },
+    {
+      provide: CreateTutoringLeadUseCase,
+      useFactory: (
+        repo: PrismaPartyRepoAdapter,
+        idGen: any,
+        clock: any,
+        audit: AuditPort,
+        linkGuardianToStudent: LinkGuardianToStudentUseCase
+      ) =>
+        new CreateTutoringLeadUseCase({
+          logger: new NestLoggerAdapter(),
+          partyRepo: repo,
+          idGenerator: idGen,
+          clock,
+          audit,
+          linkGuardianToStudent,
+        }),
+      inject: [
+        PrismaPartyRepoAdapter,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        AUDIT_PORT,
+        LinkGuardianToStudentUseCase,
       ],
     },
   ],
-  exports: [PartyApplication, CUSTOMER_QUERY_PORT],
+  exports: [PartyApplication, CUSTOMER_QUERY_PORT, PARTY_QUERY_PORT, PrismaPartyRepoAdapter],
 })
 export class PartyModule {}

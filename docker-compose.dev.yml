@@ -27,25 +27,6 @@ services:
     networks:
       - corely_dev
 
-  redis:
-    image: redis:7-alpine
-    container_name: corely_dev_redis
-    restart: unless-stopped
-    env_file:
-      - .env.dev
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    volumes:
-      - redis_dev_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 5s
-    networks:
-      - corely_dev
-
   api:
     build:
       context: .
@@ -61,12 +42,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       DATABASE_URL: ${DATABASE_URL:-postgresql://corely:corely@postgres:5432/corely?schema=public}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       NODE_OPTIONS: --enable-source-maps
       RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_dev}
@@ -93,23 +71,22 @@ services:
       context: .
       dockerfile: Dockerfile.worker
     container_name: corely_dev_worker
+    command: ["pnpm", "--filter", "@corely/worker", "dev"]
     env_file:
       - .env.dev
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       DATABASE_URL: ${DATABASE_URL:-postgresql://corely:corely@postgres:5432/corely?schema=public}
-      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       LOG_LEVEL: ${LOG_LEVEL:-debug}
       NODE_OPTIONS: --enable-source-maps
       RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_dev}
     volumes:
       - ./services/worker/src:/app/services/worker/src
+      - ./services/api/src:/app/services/api/src
       - ./packages/data/src:/app/packages/data/src
       - ./packages/data/prisma:/app/packages/data/prisma
       - ./packages/contracts/src:/app/packages/contracts/src
@@ -147,7 +124,6 @@ services:
 
 volumes:
   postgres_dev_data:
-  redis_dev_data:
 
 networks:
   corely_dev:

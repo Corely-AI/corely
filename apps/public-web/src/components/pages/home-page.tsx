@@ -14,9 +14,9 @@ const sections = [
     href: "/rentals",
   },
   {
-    title: "Blog",
+    title: "CMS",
     description: "Published CMS posts and product updates.",
-    href: "/blog",
+    href: "/cms",
   },
 ];
 

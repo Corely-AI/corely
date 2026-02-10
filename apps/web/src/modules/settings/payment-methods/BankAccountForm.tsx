@@ -7,6 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { useCreateBankAccount } from "./hooks/useBankAccounts";
+import type { BankAccountDto } from "@corely/contracts";
 
 const BankAccountFormSchema = z.object({
   label: z.string().min(1, "Label is required").max(255),
@@ -22,7 +23,7 @@ type BankAccountFormData = z.infer<typeof BankAccountFormSchema>;
 
 interface BankAccountFormProps {
   legalEntityId: string;
-  onSuccess?: () => void;
+  onSuccess?: (bankAccount: BankAccountDto) => void;
 }
 
 const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "SEK", "NOK"];
@@ -59,9 +60,9 @@ export function BankAccountForm({ legalEntityId, onSuccess }: BankAccountFormPro
     createMutation.mutate(
       { ...data, legalEntityId },
       {
-        onSuccess: () => {
+        onSuccess: (bankAccount) => {
           form.reset();
-          onSuccess?.();
+          onSuccess?.(bankAccount);
         },
       }
     );

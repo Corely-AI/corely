@@ -5,7 +5,7 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 export const RequireAuth: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  const { workspaces, isLoading: workspaceLoading } = useWorkspace();
+  const { workspaces, isLoading: workspaceLoading, isHostScope } = useWorkspace();
   const location = useLocation();
 
   if (isLoading || workspaceLoading) {
@@ -17,7 +17,7 @@ export const RequireAuth: React.FC = () => {
   }
 
   const isOnboardingRoute = location.pathname.startsWith("/onboarding");
-  if (!isOnboardingRoute && workspaces.length === 0) {
+  if (!isOnboardingRoute && workspaces.length === 0 && !isHostScope) {
     return <Navigate to="/onboarding" state={{ from: location }} replace />;
   }
 

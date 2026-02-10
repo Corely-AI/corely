@@ -44,7 +44,8 @@ model Invoice {
 
   lines     InvoiceLine[]
   payments  InvoicePayment[]
-  
+  reminderState InvoiceReminderState?
+
   legalEntity     LegalEntity?   @relation(fields: [legalEntityId], references: [id])
   paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
 
@@ -108,6 +109,27 @@ model InvoiceEmailDelivery {
   @@unique([tenantId, idempotencyKey])
   @@index([tenantId, invoiceId])
   @@index([providerMessageId])
+  @@schema("billing")
+}
+
+model InvoiceReminderState {
+  id             String    @id @default(cuid())
+  tenantId       String
+  workspaceId    String
+  invoiceId      String    @unique
+  remindersSent  Int       @default(0)
+  nextReminderAt DateTime? @db.Timestamptz(6)
+  lastReminderAt DateTime? @db.Timestamptz(6)
+  lockedAt       DateTime? @db.Timestamptz(6)
+  lockedBy       String?
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, invoiceId])
+  @@index([tenantId, workspaceId, nextReminderAt])
+  @@index([tenantId, lockedAt])
   @@schema("billing")
 }
 

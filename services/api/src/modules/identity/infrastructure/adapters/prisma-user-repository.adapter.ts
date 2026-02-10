@@ -22,6 +22,7 @@ export class PrismaUserRepository implements UserRepositoryPort {
         name: user.getName(),
         passwordHash: user.getPasswordHash(),
         status: user.getStatus(),
+        partyId: user.getPartyId(),
         createdAt: user.getCreatedAt(),
       },
     });
@@ -75,6 +76,7 @@ export class PrismaUserRepository implements UserRepositoryPort {
         name: user.getName(),
         passwordHash: user.getPasswordHash(),
         status: user.getStatus(),
+        partyId: user.getPartyId(),
         updatedAt: new Date(),
       },
     });

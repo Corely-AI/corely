@@ -14,7 +14,7 @@ import {
 import { type CompleteUploadInput, type CompleteUploadOutput } from "@corely/contracts";
 import { type DocumentRepoPort } from "../../ports/document-repository.port";
 import { type FileRepoPort } from "../../ports/file-repository.port";
-import { type ObjectStoragePort } from "../../ports/object-storage.port";
+import { type ObjectStoragePort } from "@corely/kernel";
 import { toDocumentDto, toFileDto } from "../../mappers/document.mapper";
 
 type Deps = {

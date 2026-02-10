@@ -8,7 +8,7 @@ describe("WorkspaceTemplateService", () => {
     const capabilities = service.getDefaultCapabilities("PERSONAL");
     const navigation = service.getNavigationGroupsStructure("PERSONAL");
 
-    expect(capabilities["workspace.multiUser"]).toBe(false);
+    expect(capabilities["workspace.multiUser"]).toBe(true);
     expect(capabilities["sales.quotes"]).toBe(false);
     expect(capabilities["ai.copilot"]).toBe(true);
     expect(navigation.length).toBeGreaterThan(0);

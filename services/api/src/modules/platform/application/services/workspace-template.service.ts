@@ -102,7 +102,7 @@ export class WorkspaceTemplateService {
   private getFreelancerCapabilities(): WorkspaceCapabilities {
     return {
       // Multi-user: Limited for freelancers
-      "workspace.multiUser": false,
+      "workspace.multiUser": true,
       "workspace.rbac": false,
       approvals: false,
 
@@ -118,6 +118,7 @@ export class WorkspaceTemplateService {
 
       // Inventory: Basic tracking only
       "inventory.basic": false,
+      "catalog.basic": false,
       "inventory.warehouses": false,
       "inventory.serialTracking": false,
 
@@ -231,14 +232,22 @@ export class WorkspaceTemplateService {
         order: 1,
         sectionOrder: [
           "dashboard",
-          "rentals",
           "invoices",
           "expenses",
           "clients",
           "portfolio",
+          "website",
+          "cms",
           "crm",
           "assistant",
         ],
+      },
+      {
+        id: "education",
+        labelKey: "nav.groups.education",
+        defaultLabel: "Education",
+        order: 6,
+        sectionOrder: ["education"],
       },
       {
         id: "settings",
@@ -273,6 +282,7 @@ export class WorkspaceTemplateService {
 
       // Inventory: Full support
       "inventory.basic": true,
+      "catalog.basic": true,
       "inventory.warehouses": false, // Can be enabled separately
       "inventory.serialTracking": false, // Can be enabled separately
 
@@ -372,7 +382,7 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.core",
         defaultLabel: "Core",
         order: 1,
-        sectionOrder: ["dashboard", "portfolio", "issues", "assistant"],
+        sectionOrder: ["dashboard", "portfolio", "website", "cms", "issues", "assistant"],
       },
       {
         id: "sales",
@@ -403,6 +413,13 @@ export class WorkspaceTemplateService {
         sectionOrder: ["accounting", "reports"],
       },
       {
+        id: "education",
+        labelKey: "nav.groups.education",
+        defaultLabel: "Education",
+        order: 6,
+        sectionOrder: ["education"],
+      },
+      {
         id: "settings",
         labelKey: "nav.groups.settings",
         defaultLabel: "Settings",
@@ -422,9 +439,11 @@ export class WorkspaceTemplateService {
       "parties", // clients
       "crm",
       "tax",
-      "rentals",
       "portfolio",
+      "website",
+      "cms",
       "ai-copilot",
+      "classes",
     ];
   }
 
@@ -440,8 +459,11 @@ export class WorkspaceTemplateService {
       "tax",
       "rentals",
       "portfolio",
+      "website",
+      "cms",
       "issues",
       "ai-copilot",
+      "classes",
     ];
   }
 }

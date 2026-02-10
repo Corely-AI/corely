@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm, FormProvider } from "react-hook-form";
@@ -7,19 +7,10 @@ import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
-import { Input } from "@corely/ui";
-import { Label } from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
 import { invoicesApi } from "@/lib/invoices-api";
+import { paymentMethodsApi } from "@/lib/payment-methods-api";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@corely/ui";
 import {
   invoiceFormSchema,
   toCreateInvoiceInput,
@@ -28,8 +19,9 @@ import {
 } from "../schemas/invoice-form.schema";
 import type { UpdateInvoiceInput } from "@corely/contracts";
 import { InvoiceFooter } from "../components/InvoiceFooter";
-import { RecordCommandBar } from "@/shared/components/RecordCommandBar";
 import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
+import { InvoicePaymentDialog } from "../components/InvoicePaymentDialog";
+import { InvoiceDetailHeader } from "../components/InvoiceDetailHeader";
 import { invoiceQueryKeys } from "../queries";
 import { generateInvoiceNumber } from "../utils/invoice-generators";
 
@@ -42,12 +34,20 @@ import { InvoiceMetadata } from "../components/invoice-form/InvoiceMetadata";
 import { InvoiceLineItems } from "../components/invoice-form/InvoiceLineItems";
 import { InvoiceTotals } from "../components/invoice-form/InvoiceTotals";
 import { InvoiceNotes } from "../components/invoice-form/InvoiceNotes";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 export default function InvoiceDetailPage() {
+  const PDF_WAIT_PER_REQUEST_MS = 15000;
+  const PDF_MAX_WAIT_TOTAL_MS = 90000;
+  const PDF_RETRY_AFTER_MIN_MS = 500;
+  const PDF_RETRY_AFTER_MAX_MS = 5000;
+  const PDF_DEBUG = import.meta.env.DEV;
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
+  const { activeWorkspace } = useWorkspace();
   const locale = i18n.t("common.locale");
 
   const {
@@ -71,13 +71,15 @@ export default function InvoiceDetailPage() {
     new Date().toISOString().slice(0, 10)
   );
   const [paymentNote, setPaymentNote] = useState<string>("");
+  const downloadAbortRef = useRef<AbortController | null>(null);
+  const downloadInFlightRef = useRef(false);
 
   const methods = useForm<InvoiceFormData>({
     resolver: zodResolver(invoiceFormSchema),
     defaultValues: getDefaultInvoiceFormValues(),
   });
 
-  const { handleSubmit, reset, watch, setValue } = methods;
+  const { handleSubmit, reset, watch, setValue, getValues } = methods;
 
   // Prepare additional customer options from invoice data
   const additionalCustomerOptions = useMemo<CustomerOption[]>(() => {
@@ -149,16 +151,205 @@ export default function InvoiceDetailPage() {
     setPaymentAmount(due > 0 ? (due / 100).toFixed(2) : "");
   }, [invoice, reset]);
 
-  const downloadPdf = useMutation({
-    mutationFn: (invoiceId: string) => invoicesApi.downloadInvoicePdf(invoiceId),
-    onSuccess: (data) => {
-      window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+  const waitWithAbort = useCallback(async (ms: number, signal: AbortSignal) => {
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => {
+        signal.removeEventListener("abort", onAbort);
+        resolve();
+      }, ms);
+
+      const onAbort = () => {
+        clearTimeout(timeout);
+        signal.removeEventListener("abort", onAbort);
+        resolve();
+      };
+
+      signal.addEventListener("abort", onAbort, { once: true });
+    });
+  }, []);
+
+  const logPdfDebug = useCallback(
+    (message: string, meta?: Record<string, unknown>) => {
+      if (!PDF_DEBUG) {
+        return;
+      }
+      if (meta) {
+        console.debug(`[InvoicePDF] ${message}`, meta);
+      } else {
+        console.debug(`[InvoicePDF] ${message}`);
+      }
     },
-    onError: (error) => {
-      console.error("Download PDF failed", error);
-      toast.error(t("invoices.errors.downloadFailed"));
+    [PDF_DEBUG]
+  );
+
+  const ensureInvoicePdfDefaults = useCallback(async () => {
+    if (!id || !invoice || invoice.status !== "DRAFT") {
+      return;
+    }
+
+    const legalEntityId = invoice.legalEntityId ?? activeWorkspace?.legalEntityId;
+
+    let paymentMethodId = getValues("paymentMethodId") ?? invoice.paymentMethodId ?? undefined;
+    if (!paymentMethodId && legalEntityId) {
+      const paymentMethods = await paymentMethodsApi.listPaymentMethods(legalEntityId);
+      const selected =
+        paymentMethods.paymentMethods.find((method) => method.isDefaultForInvoicing) ??
+        paymentMethods.paymentMethods[0];
+      paymentMethodId = selected?.id;
+      if (paymentMethodId) {
+        setValue("paymentMethodId", paymentMethodId, { shouldDirty: true });
+      }
+    }
+
+    const headerPatch: UpdateInvoiceInput["headerPatch"] = {};
+    if (legalEntityId) {
+      headerPatch.legalEntityId = legalEntityId;
+    }
+    if (paymentMethodId) {
+      headerPatch.paymentMethodId = paymentMethodId;
+    }
+
+    if (Object.keys(headerPatch).length === 0) {
+      return;
+    }
+
+    logPdfDebug("Applying invoice PDF defaults before generation", {
+      invoiceId: id,
+      legalEntityId: headerPatch.legalEntityId,
+      paymentMethodId: headerPatch.paymentMethodId,
+    });
+
+    await invoicesApi.updateInvoice(id, { headerPatch });
+    await queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id) });
+  }, [activeWorkspace?.legalEntityId, getValues, id, invoice, logPdfDebug, queryClient, setValue]);
+
+  const downloadPdfWithWait = useCallback(
+    async (invoiceId: string, options?: { forceRegenerate?: boolean }) => {
+      if (downloadInFlightRef.current) {
+        const activeAbort = downloadAbortRef.current;
+        if (!activeAbort || activeAbort.signal.aborted) {
+          logPdfDebug("Detected stale in-flight lock, resetting", {
+            invoiceId,
+            hasAbortController: Boolean(activeAbort),
+            aborted: activeAbort?.signal.aborted ?? null,
+          });
+          downloadInFlightRef.current = false;
+          downloadAbortRef.current = null;
+        }
+      }
+
+      if (downloadInFlightRef.current) {
+        logPdfDebug("Skip duplicate click while download is in-flight", { invoiceId });
+        return;
+      }
+
+      downloadInFlightRef.current = true;
+      const abortController = new AbortController();
+      downloadAbortRef.current = abortController;
+      const loadingToastId = toast.loading(t("invoices.pdf.pendingTitle"), {
+        description: t("invoices.pdf.pendingDescription"),
+      });
+
+      try {
+        const startedAt = Date.now();
+        let forceRegenerate = options?.forceRegenerate === true;
+        logPdfDebug("Download flow started", {
+          invoiceId,
+          maxWaitMs: PDF_MAX_WAIT_TOTAL_MS,
+          perRequestWaitMs: PDF_WAIT_PER_REQUEST_MS,
+          forceRegenerate,
+        });
+
+        while (Date.now() - startedAt < PDF_MAX_WAIT_TOTAL_MS) {
+          const elapsedMs = Date.now() - startedAt;
+          const remainingMs = PDF_MAX_WAIT_TOTAL_MS - elapsedMs;
+          const waitMs = Math.min(PDF_WAIT_PER_REQUEST_MS, remainingMs);
+          logPdfDebug("Requesting invoice PDF", { invoiceId, elapsedMs, remainingMs, waitMs });
+
+          const response = await invoicesApi.downloadInvoicePdf(invoiceId, {
+            waitMs,
+            signal: abortController.signal,
+            forceRegenerate,
+          });
+          forceRegenerate = false;
+          logPdfDebug("Received invoice PDF response", {
+            invoiceId,
+            status: response.status,
+            retryAfterMs: response.retryAfterMs,
+            hasDownloadUrl: Boolean(response.downloadUrl),
+          });
+
+          if (response.status === "READY" && response.downloadUrl) {
+            logPdfDebug("PDF is ready, opening URL", {
+              invoiceId,
+              downloadUrl: response.downloadUrl,
+            });
+            const opened = window.open(response.downloadUrl, "_blank", "noopener,noreferrer");
+            if (!opened) {
+              logPdfDebug("Popup likely blocked while opening PDF", { invoiceId });
+              toast.error(t("invoices.errors.downloadFailed"), {
+                description: "Please allow pop-ups for this site and try again.",
+              });
+            }
+            return;
+          }
+
+          const retryAfterMs = Math.max(
+            PDF_RETRY_AFTER_MIN_MS,
+            Math.min(PDF_RETRY_AFTER_MAX_MS, response.retryAfterMs ?? 1000)
+          );
+          logPdfDebug("PDF still pending, waiting before retry", {
+            invoiceId,
+            retryAfterMs,
+          });
+          await waitWithAbort(retryAfterMs, abortController.signal);
+        }
+
+        logPdfDebug("Download flow timed out", { invoiceId, maxWaitMs: PDF_MAX_WAIT_TOTAL_MS });
+        toast.info(t("invoices.pdf.stillGeneratingTitle"), {
+          description: t("invoices.pdf.stillGeneratingDescription"),
+        });
+      } catch (error) {
+        if (abortController.signal.aborted) {
+          logPdfDebug("Download flow aborted", { invoiceId });
+          return;
+        }
+        const details =
+          typeof error === "object" &&
+          error !== null &&
+          "body" in error &&
+          typeof (error as { body?: { message?: string } }).body?.message === "string"
+            ? (error as { body: { message: string } }).body.message
+            : undefined;
+        logPdfDebug("Download flow failed", {
+          invoiceId,
+          details,
+          error,
+        });
+        console.error("Download PDF failed", error);
+        toast.error(t("invoices.errors.downloadFailed"), {
+          description: details,
+        });
+      } finally {
+        toast.dismiss(loadingToastId);
+        if (downloadAbortRef.current === abortController) {
+          downloadAbortRef.current = null;
+        }
+        downloadInFlightRef.current = false;
+        logPdfDebug("Download flow finished", { invoiceId });
+      }
     },
-  });
+    [logPdfDebug, t, waitWithAbort]
+  );
+
+  useEffect(() => {
+    return () => {
+      downloadAbortRef.current?.abort();
+      logPdfDebug("Aborted download flow on unmount");
+      downloadAbortRef.current = null;
+      downloadInFlightRef.current = false;
+    };
+  }, [logPdfDebug]);
 
   const updateInvoice = useMutation({
     mutationFn: async (payload: Omit<UpdateInvoiceInput, "invoiceId">) => {
@@ -191,6 +382,7 @@ export default function InvoiceDetailPage() {
         to: data.to,
         subject: data.subject,
         message: data.message,
+        attachPdf: true,
       });
       toast.success(t("invoices.email.sent"));
       setSendDialogOpen(false);
@@ -219,10 +411,10 @@ export default function InvoiceDetailPage() {
       try {
         if (to === "ISSUED") {
           await invoicesApi.finalizeInvoice(id);
-          toast.success("Invoice issued");
+          toast.success(t("invoices.issued"));
         } else if (to === "CANCELED") {
           await invoicesApi.cancelInvoice(id, input?.reason);
-          toast.success("Invoice canceled");
+          toast.success(t("invoices.canceled"));
         }
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
@@ -242,51 +434,61 @@ export default function InvoiceDetailPage() {
         return;
       }
 
-      if (actionKey === "send") {
+      if (actionKey === "send" || actionKey === "resend") {
         setSendDialogOpen(true);
         return;
       }
+      logPdfDebug("Invoice header action clicked", { actionKey, invoiceId: id });
 
       setIsProcessing(true);
       try {
         switch (actionKey) {
           case "issue":
             await invoicesApi.finalizeInvoice(id);
-            toast.success("Invoice issued");
+            toast.success(t("invoices.issued"));
             break;
           case "download_pdf":
-            downloadPdf.mutate(id);
+          case "download-pdf":
+          case "downloadPdf":
+            await ensureInvoicePdfDefaults();
+            if (invoice?.status === "DRAFT") {
+              await invoicesApi.finalizeInvoice(id);
+              toast.success(t("invoices.issued"));
+              await queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id) });
+              await queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
+            }
+            await downloadPdfWithWait(id, { forceRegenerate: true });
             return;
           case "record_payment":
             setPaymentDialogOpen(true);
             return;
           case "cancel":
             await invoicesApi.cancelInvoice(id);
-            toast.success("Invoice canceled");
+            toast.success(t("invoices.notifications.canceled"));
             break;
           case "duplicate":
-            toast.info("Duplicate feature coming soon");
+            toast.info(t("invoices.notifications.duplicateSoon"));
             return;
           case "export":
-            toast.info("Export feature coming soon");
+            toast.info(t("invoices.notifications.exportSoon"));
             return;
           case "view_audit":
             navigate(`/audit?entity=invoice&id=${id}`);
             return;
           case "send_reminder":
-            toast.info("Reminder feature coming soon");
+            toast.info(t("invoices.notifications.reminderSoon"));
             return;
         }
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
       } catch (err) {
         console.error("Action failed", err);
-        toast.error("Action failed");
+        toast.error(t("invoices.errors.actionFailed"));
       } finally {
         setIsProcessing(false);
       }
     },
-    [id, downloadPdf, navigate, queryClient]
+    [downloadPdfWithWait, ensureInvoicePdfDefaults, id, invoice?.status, navigate, queryClient, t]
   );
 
   const onFormSubmit = async (data: InvoiceFormData) => {
@@ -317,7 +519,7 @@ export default function InvoiceDetailPage() {
       await updateInvoice.mutateAsync(updateInput);
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
       void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
-      toast.success("Invoice updated successfully");
+      toast.success(t("invoices.updated"));
       navigate("/invoices");
     } catch {
       // errors handled by mutation
@@ -330,7 +532,7 @@ export default function InvoiceDetailPage() {
     }
     const amountCents = Math.round(parseFloat(paymentAmount || "0") * 100);
     if (!amountCents || Number.isNaN(amountCents)) {
-      toast.error("Invalid amount");
+      toast.error(t("invoices.errors.invalidAmount"));
       return;
     }
     setIsProcessing(true);
@@ -346,7 +548,7 @@ export default function InvoiceDetailPage() {
         setPaymentNote("");
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
         void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
-        toast.success("Payment recorded");
+        toast.success(t("common.success"));
       })
       .catch((err) => {
         console.error("Record payment failed", err);
@@ -390,43 +592,13 @@ export default function InvoiceDetailPage() {
   return (
     <FormProvider {...methods}>
       <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-        {capabilities && (
-          <RecordCommandBar
-            title={t("invoices.titleWithNumber", {
-              number: invoice.number ?? t("common.draft"),
-            })}
-            subtitle={t("common.createdAt", {
-              date: invoice.createdAt
-                ? new Date(invoice.createdAt).toLocaleDateString(i18n.language)
-                : t("common.empty"),
-            })}
-            capabilities={capabilities}
-            onBack={() => navigate("/invoices")}
-            onTransition={handleTransition}
-            onAction={handleAction}
-            isLoading={isProcessing}
-          />
-        )}
-
-        {!capabilities && (
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/invoices")}>
-              <span className="text-lg">←</span>
-            </Button>
-            <div>
-              <h1 className="text-h1 text-foreground">
-                {t("invoices.titleWithNumber", { number: invoice.number ?? t("common.draft") })}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {t("common.createdAt", {
-                  date: invoice.createdAt
-                    ? new Date(invoice.createdAt).toLocaleDateString(i18n.language)
-                    : t("common.empty"),
-                })}
-              </p>
-            </div>
-          </div>
-        )}
+        <InvoiceDetailHeader
+          invoice={invoice}
+          capabilities={capabilities}
+          isProcessing={isProcessing}
+          onTransition={handleTransition}
+          onAction={handleAction}
+        />
 
         <SendInvoiceDialog
           open={sendDialogOpen}
@@ -436,62 +608,21 @@ export default function InvoiceDetailPage() {
           isSending={isProcessing}
         />
 
-        <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t("invoices.payments.recordTitle")}</DialogTitle>
-              <DialogDescription>{t("invoices.payments.recordDescription")}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="payment-amount">{t("common.amount")}</Label>
-                <Input
-                  id="payment-amount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t("invoices.payments.dueAmount", {
-                    amount: formatMoney(
-                      invoice.totals?.dueCents ?? 0,
-                      i18n.t("common.locale"),
-                      invoice.currency
-                    ),
-                  })}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="payment-date">{t("common.date")}</Label>
-                <Input
-                  id="payment-date"
-                  type="date"
-                  value={paymentDate}
-                  onChange={(e) => setPaymentDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="payment-note">{t("common.noteOptional")}</Label>
-                <Input
-                  id="payment-note"
-                  value={paymentNote}
-                  onChange={(e) => setPaymentNote(e.target.value)}
-                  placeholder={t("invoices.payments.notePlaceholder")}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>
-                {t("common.cancel")}
-              </Button>
-              <Button onClick={recordPayment} disabled={isProcessing}>
-                {isProcessing ? t("common.saving") : t("invoices.payments.save")}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <InvoicePaymentDialog
+          open={paymentDialogOpen}
+          onOpenChange={setPaymentDialogOpen}
+          paymentAmount={paymentAmount}
+          paymentDate={paymentDate}
+          paymentNote={paymentNote}
+          onPaymentAmountChange={setPaymentAmount}
+          onPaymentDateChange={setPaymentDate}
+          onPaymentNoteChange={setPaymentNote}
+          onSave={recordPayment}
+          isProcessing={isProcessing}
+          dueCents={invoice.totals?.dueCents ?? 0}
+          locale={i18n.t("common.locale")}
+          currency={invoice.currency}
+        />
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
           <Card>
@@ -516,6 +647,7 @@ export default function InvoiceDetailPage() {
 
               {/* Footer */}
               <InvoiceFooter
+                legalEntityId={invoice.legalEntityId}
                 paymentMethodId={watch("paymentMethodId")}
                 onPaymentMethodSelect={(id) => setValue("paymentMethodId", id)}
               />

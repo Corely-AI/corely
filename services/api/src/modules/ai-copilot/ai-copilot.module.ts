@@ -15,8 +15,8 @@ import { PrismaCopilotIdempotencyAdapter } from "./infrastructure/idempotency/pr
 import { TenantGuard } from "./adapters/http/guards/tenant.guard";
 import { COPILOT_TOOLS } from "./application/ports/tool-registry.port";
 import { AuditPort } from "./application/ports/audit.port";
-import { OUTBOX_PORT } from "./application/ports/outbox.port";
-import type { OutboxPort } from "./application/ports/outbox.port";
+import { OUTBOX_PORT } from "@corely/kernel";
+import type { OutboxPort } from "@corely/kernel";
 import { ClockPort } from "@corely/kernel/ports/clock.port";
 import { IdentityModule } from "../identity/identity.module";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";

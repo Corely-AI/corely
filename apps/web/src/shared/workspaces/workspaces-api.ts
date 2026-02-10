@@ -13,6 +13,8 @@ import type {
   UpgradeWorkspaceOutput,
   WorkspaceConfig,
   WorkspaceOnboardingStatusResponse,
+  DeleteWorkspaceInput,
+  DeleteWorkspaceOutput,
 } from "@corely/contracts";
 import { apiClient } from "@/lib/api-client";
 
@@ -35,6 +37,16 @@ class WorkspacesApi {
     input: UpdateWorkspaceInput
   ): Promise<UpdateWorkspaceOutput> {
     return apiClient.patch<UpdateWorkspaceOutput>(
+      `/workspaces/${workspaceId}`,
+      input,
+      this.withIdempotencyAndCorrelation()
+    );
+  }
+  async deleteWorkspace(
+    workspaceId: string,
+    input: DeleteWorkspaceInput = {}
+  ): Promise<DeleteWorkspaceOutput> {
+    return apiClient.delete<DeleteWorkspaceOutput>(
       `/workspaces/${workspaceId}`,
       input,
       this.withIdempotencyAndCorrelation()

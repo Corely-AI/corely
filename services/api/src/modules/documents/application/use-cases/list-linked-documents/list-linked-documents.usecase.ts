@@ -49,6 +49,9 @@ export class ListLinkedDocumentsUseCase extends BaseUseCase<
       entityType: input.entityType,
       entityId: input.entityId,
     });
+    console.log(
+      `[ListLinkedDocuments] Found ${ids.length} links for ${input.entityType} ${input.entityId} in tenant ${ctx.tenantId}`
+    );
     if (ids.length === 0) {
       return ok({ items: [] });
     }

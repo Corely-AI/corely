@@ -34,7 +34,7 @@ export const useThemeStore = create<ThemeState>()(
       },
     }),
     {
-      name: "bizflow-theme",
+      name: "Corely One ERP-theme",
       onRehydrateStorage: () => (state) => {
         if (state) {
           const resolved = state.theme === "system" ? getSystemTheme() : state.theme;
@@ -51,7 +51,7 @@ export const useThemeStore = create<ThemeState>()(
 
 // Initialize theme on load
 if (typeof window !== "undefined") {
-  const stored = localStorage.getItem("bizflow-theme");
+  const stored = localStorage.getItem("Corely One ERP-theme");
   if (stored) {
     try {
       const { state } = JSON.parse(stored);

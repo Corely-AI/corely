@@ -11,7 +11,7 @@ export interface SignUpData {
 export interface SignInData {
   email: string;
   password: string;
-  tenantId?: string;
+  tenantId?: string | null;
   workspaceId?: string;
 }
 
@@ -20,7 +20,7 @@ export interface AuthResponse {
   refreshToken: string;
   userId: string;
   email: string;
-  tenantId?: string;
+  tenantId?: string | null;
   tenantName?: string;
   workspaceId?: string;
 }
@@ -29,11 +29,11 @@ export interface CurrentUserResponse {
   userId: string;
   email: string;
   name: string | null;
-  activeTenantId?: string;
+  activeTenantId?: string | null;
   activeWorkspaceId?: string;
   memberships: Array<{
-    tenantId?: string;
-    tenantName?: string;
+    tenantId?: string | null;
+    tenantName?: string | null;
     workspaceId?: string;
     workspaceName?: string;
     roleId: string;
@@ -110,10 +110,8 @@ export class AuthClient {
         idempotencyKey: createIdempotencyKey(),
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
-      const workspaceId = result.workspaceId ?? result.tenantId;
-      if (workspaceId) {
-        await this.storage.setActiveWorkspaceId(workspaceId);
-      }
+      const workspaceId = result.workspaceId ?? result.tenantId ?? null;
+      await this.storage.setActiveWorkspaceId(workspaceId);
 
       return result;
     } catch (error) {
@@ -134,10 +132,8 @@ export class AuthClient {
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
       const workspaceId =
-        result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId;
-      if (workspaceId) {
-        await this.storage.setActiveWorkspaceId(workspaceId);
-      }
+        result.workspaceId ?? result.tenantId ?? data.workspaceId ?? data.tenantId ?? null;
+      await this.storage.setActiveWorkspaceId(workspaceId);
 
       return result;
     } catch (error) {
@@ -214,7 +210,7 @@ export class AuthClient {
   /**
    * Switch tenant
    */
-  async switchTenant(tenantId: string): Promise<AuthResponse> {
+  async switchTenant(tenantId: string | null): Promise<AuthResponse> {
     if (!this.accessToken) {
       throw new Error("No access token");
     }
@@ -227,7 +223,9 @@ export class AuthClient {
         body: { tenantId },
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
-      await this.storage.setActiveWorkspaceId(result.workspaceId ?? result.tenantId ?? tenantId);
+      await this.storage.setActiveWorkspaceId(
+        result.workspaceId ?? result.tenantId ?? tenantId ?? null
+      );
 
       return result;
     } catch (error) {

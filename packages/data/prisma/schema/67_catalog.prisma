@@ -1,0 +1,213 @@
+enum CatalogItemStatus {
+  ACTIVE
+  ARCHIVED
+  @@schema("commerce")
+}
+
+enum CatalogItemType {
+  PRODUCT
+  SERVICE
+  @@schema("commerce")
+}
+
+enum CatalogVariantStatus {
+  ACTIVE
+  ARCHIVED
+  @@schema("commerce")
+}
+
+enum CatalogTaxExciseType {
+  PERCENT
+  AMOUNT
+  @@schema("commerce")
+}
+
+enum CatalogPriceListStatus {
+  ACTIVE
+  ARCHIVED
+  @@schema("commerce")
+}
+
+model CatalogUom {
+  id          String   @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  code        String
+  name        String
+  baseCode    String?
+  factor      Decimal? @db.Decimal(19, 6)
+  rounding    Int?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  items CatalogItem[]
+
+  @@unique([tenantId, workspaceId, code])
+  @@index([tenantId, workspaceId, name])
+  @@schema("commerce")
+}
+
+model CatalogTaxProfile {
+  id                 String               @id @default(cuid())
+  tenantId           String
+  workspaceId        String
+  name               String
+  vatRateBps         Int                  @default(0)
+  isExciseApplicable Boolean              @default(false)
+  exciseType         CatalogTaxExciseType?
+  exciseValue        Decimal?             @db.Decimal(19, 6)
+  effectiveFrom      DateTime?            @db.Timestamptz(6)
+  effectiveTo        DateTime?            @db.Timestamptz(6)
+  createdAt          DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime             @updatedAt @db.Timestamptz(6)
+  archivedAt         DateTime?            @db.Timestamptz(6)
+
+  items CatalogItem[]
+
+  @@unique([tenantId, workspaceId, name])
+  @@index([tenantId, workspaceId, archivedAt])
+  @@schema("commerce")
+}
+
+model CatalogCategory {
+  id          String    @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  name        String
+  parentId    String?
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+  archivedAt  DateTime? @db.Timestamptz(6)
+
+  parent   CatalogCategory?   @relation("CatalogCategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children CatalogCategory[]  @relation("CatalogCategoryHierarchy")
+  items    CatalogItemCategory[]
+
+  @@unique([tenantId, workspaceId, name])
+  @@index([tenantId, workspaceId, parentId])
+  @@schema("commerce")
+}
+
+model CatalogItem {
+  id                 String            @id @default(cuid())
+  tenantId           String
+  workspaceId        String
+  code               String
+  name               String
+  description        String?
+  status             CatalogItemStatus @default(ACTIVE)
+  type               CatalogItemType
+  defaultUomId       String
+  taxProfileId       String?
+  shelfLifeDays      Int?
+  requiresLotTracking Boolean          @default(false)
+  requiresExpiryDate Boolean           @default(false)
+  hsCode             String?
+  metadata           Json?
+  createdAt          DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime          @updatedAt @db.Timestamptz(6)
+  archivedAt         DateTime?         @db.Timestamptz(6)
+
+  defaultUom  CatalogUom         @relation(fields: [defaultUomId], references: [id], onDelete: Restrict)
+  taxProfile  CatalogTaxProfile? @relation(fields: [taxProfileId], references: [id], onDelete: SetNull)
+  variants    CatalogVariant[]
+  categories  CatalogItemCategory[]
+  prices      CatalogPrice[]
+
+  @@unique([tenantId, workspaceId, code])
+  @@index([tenantId, workspaceId, status, type])
+  @@index([tenantId, workspaceId, name])
+  @@index([tenantId, workspaceId, archivedAt])
+  @@schema("commerce")
+}
+
+model CatalogItemCategory {
+  itemId     String
+  categoryId String
+
+  item     CatalogItem     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  category CatalogCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, categoryId])
+  @@schema("commerce")
+}
+
+model CatalogVariant {
+  id          String               @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  itemId      String
+  sku         String
+  name        String?
+  attributes  Json?
+  status      CatalogVariantStatus @default(ACTIVE)
+  createdAt   DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime             @updatedAt @db.Timestamptz(6)
+  archivedAt  DateTime?            @db.Timestamptz(6)
+
+  item     CatalogItem            @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  barcodes CatalogVariantBarcode[]
+  prices   CatalogPrice[]
+
+  @@unique([tenantId, workspaceId, sku])
+  @@index([tenantId, workspaceId, itemId])
+  @@index([tenantId, workspaceId, archivedAt])
+  @@schema("commerce")
+}
+
+model CatalogVariantBarcode {
+  id          String   @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  variantId   String
+  barcode     String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  variant CatalogVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, workspaceId, barcode])
+  @@index([tenantId, workspaceId, variantId])
+  @@schema("commerce")
+}
+
+model CatalogPriceList {
+  id          String                 @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  name        String
+  currency    String                 @db.VarChar(3)
+  status      CatalogPriceListStatus @default(ACTIVE)
+  createdAt   DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime               @updatedAt @db.Timestamptz(6)
+  archivedAt  DateTime?              @db.Timestamptz(6)
+
+  prices CatalogPrice[]
+
+  @@unique([tenantId, workspaceId, name])
+  @@index([tenantId, workspaceId, status])
+  @@schema("commerce")
+}
+
+model CatalogPrice {
+  id          String    @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  priceListId String
+  itemId      String?
+  variantId   String?
+  amount      Decimal   @db.Decimal(19, 4)
+  taxIncluded Boolean   @default(false)
+  effectiveFrom DateTime? @db.Timestamptz(6)
+  effectiveTo   DateTime? @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(6)
+
+  priceList CatalogPriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
+  item      CatalogItem?     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  variant   CatalogVariant?  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId, priceListId])
+  @@index([tenantId, workspaceId, itemId])
+  @@index([tenantId, workspaceId, variantId])
+  @@schema("commerce")
+}

@@ -23,7 +23,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@corely/contracts": "workspace:*",
     "@corely/domain": "workspace:*",
+    "@corely/kernel": "workspace:*",
     "@prisma/adapter-pg": "catalog:",
     "@prisma/client": "catalog:",
     "pg": "catalog:"

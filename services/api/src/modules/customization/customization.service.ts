@@ -4,6 +4,7 @@ import {
   ListCustomFieldDefinitions,
   UpdateCustomFieldDefinition,
   UpsertEntityLayout,
+  ValidationFailedError,
 } from "@corely/domain";
 import type { CustomFieldDefinitionRepository, EntityLayoutRepository } from "@corely/data";
 import type { AuditPort } from "../../shared/ports/audit.port";
@@ -60,12 +61,29 @@ export class CustomizationService {
       }
     }
 
+    if (!input.entityType) {
+      throw new ValidationFailedError("entityType is required", [
+        { message: "entityType is required", members: ["entityType"] },
+      ]);
+    }
+
+    const now = this.clock.now();
     const definition = await this.createDefinition.execute({
-      ...input,
       tenantId,
       id: this.idGen.newId(),
-      createdAt: this.clock.now(),
-      updatedAt: this.clock.now(),
+      entityType: input.entityType,
+      key: input.key,
+      label: input.label,
+      type: input.type,
+      required: input.required,
+      description: input.description,
+      defaultValue: input.defaultValue,
+      options: input.options,
+      validation: input.validation,
+      isIndexed: input.isIndexed ?? false,
+      isActive: input.isActive,
+      createdAt: now,
+      updatedAt: now,
     });
 
     await this.audit.log({

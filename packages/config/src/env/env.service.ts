@@ -37,7 +37,7 @@ export class EnvService {
     return this.config.REDIS_URL;
   }
 
-  get WORKFLOW_QUEUE_DRIVER(): "bullmq" | "memory" | "cloudtasks" | undefined {
+  get WORKFLOW_QUEUE_DRIVER(): "memory" | "cloudtasks" | undefined {
     return this.config.WORKFLOW_QUEUE_DRIVER;
   }
 
@@ -79,6 +79,138 @@ export class EnvService {
 
   get WORKER_PORT(): number {
     return this.config.WORKER_PORT;
+  }
+
+  // ============================================================================
+  // WORKER
+  // ============================================================================
+
+  get API_BASE_URL(): string | undefined {
+    return this.config.API_BASE_URL;
+  }
+
+  get WORKER_API_SERVICE_TOKEN(): string | undefined {
+    return this.config.WORKER_API_SERVICE_TOKEN;
+  }
+
+  get WORKER_TICK_RUNNERS(): string | undefined {
+    return this.config.WORKER_TICK_RUNNERS;
+  }
+
+  get WORKER_TICK_OVERALL_MAX_MS(): number | undefined {
+    return this.config.WORKER_TICK_OVERALL_MAX_MS;
+  }
+
+  get WORKER_TICK_RUNNER_MAX_MS(): number | undefined {
+    return this.config.WORKER_TICK_RUNNER_MAX_MS;
+  }
+
+  get WORKER_TICK_RUNNER_MAX_ITEMS(): number | undefined {
+    return this.config.WORKER_TICK_RUNNER_MAX_ITEMS;
+  }
+
+  get WORKER_TICK_SHARD_INDEX(): number | undefined {
+    return this.config.WORKER_TICK_SHARD_INDEX;
+  }
+
+  get WORKER_TICK_SHARD_COUNT(): number | undefined {
+    return this.config.WORKER_TICK_SHARD_COUNT;
+  }
+
+  get WORKER_DISABLE_POLLING(): string | undefined {
+    return this.config.WORKER_DISABLE_POLLING;
+  }
+
+  get WORKER_TICK_LOOP_INTERVAL_MS(): number {
+    return this.config.WORKER_TICK_LOOP_INTERVAL_MS;
+  }
+
+  get WORKER_TICK_LOOP_MAX_JITTER_MS(): number {
+    return this.config.WORKER_TICK_LOOP_MAX_JITTER_MS;
+  }
+
+  get WORKER_TICK_LOOP_ERROR_BACKOFF_MS(): number {
+    return this.config.WORKER_TICK_LOOP_ERROR_BACKOFF_MS;
+  }
+
+  get WORKER_IDLE_BACKOFF_MIN_MS(): number {
+    return this.config.WORKER_IDLE_BACKOFF_MIN_MS;
+  }
+
+  get WORKER_IDLE_BACKOFF_MAX_MS(): number {
+    return this.config.WORKER_IDLE_BACKOFF_MAX_MS;
+  }
+
+  get WORKER_IDLE_BACKOFF_JITTER_MS(): number {
+    return this.config.WORKER_IDLE_BACKOFF_JITTER_MS;
+  }
+
+  get WORKER_BUSY_LOOP_DELAY_MS(): number {
+    return this.config.WORKER_BUSY_LOOP_DELAY_MS;
+  }
+
+  get WORKER_SHUTDOWN_TIMEOUT_MS(): number {
+    return this.config.WORKER_SHUTDOWN_TIMEOUT_MS;
+  }
+
+  get OUTBOX_BATCH_SIZE(): number {
+    return this.config.OUTBOX_BATCH_SIZE;
+  }
+
+  get OUTBOX_CONCURRENCY(): number {
+    return this.config.OUTBOX_CONCURRENCY;
+  }
+
+  get PDF_RENDER_CONCURRENCY(): number {
+    return this.config.PDF_RENDER_CONCURRENCY;
+  }
+
+  get OUTBOX_LEASE_DURATION_MS(): number {
+    return this.config.OUTBOX_LEASE_DURATION_MS;
+  }
+
+  get OUTBOX_LEASE_HEARTBEAT_MS(): number {
+    return this.config.OUTBOX_LEASE_HEARTBEAT_MS;
+  }
+
+  get OUTBOX_MAX_ATTEMPTS(): number {
+    return this.config.OUTBOX_MAX_ATTEMPTS;
+  }
+
+  get OUTBOX_RETRY_BASE_MS(): number {
+    return this.config.OUTBOX_RETRY_BASE_MS;
+  }
+
+  get OUTBOX_RETRY_MAX_MS(): number {
+    return this.config.OUTBOX_RETRY_MAX_MS;
+  }
+
+  get OUTBOX_RETRY_JITTER_MS(): number {
+    return this.config.OUTBOX_RETRY_JITTER_MS;
+  }
+
+  get CLASSES_BILLING_RUN_ENABLED(): boolean {
+    return this.config.CLASSES_BILLING_RUN_ENABLED;
+  }
+
+  get CLASSES_BILLING_RUN_TIME(): string {
+    return this.config.CLASSES_BILLING_RUN_TIME;
+  }
+
+  get CLASSES_BILLING_RUN_TIMEZONE(): string {
+    return this.config.CLASSES_BILLING_RUN_TIMEZONE;
+  }
+
+  get INVOICE_REMINDER_RUN_ENABLED(): boolean {
+    return this.config.INVOICE_REMINDER_RUN_ENABLED;
+  }
+
+  get INVOICE_REMINDER_RUN_TIME(): string {
+    return this.config.INVOICE_REMINDER_RUN_TIME;
+  }
+
+  get INVOICE_REMINDER_RUN_TIMEZONE(): string {
+    return this.config.INVOICE_REMINDER_RUN_TIMEZONE;
   }
 
   // ============================================================================

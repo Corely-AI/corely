@@ -74,7 +74,7 @@ export default function InvoicesPage() {
     const fields: FilterFieldDef[] = [
       {
         key: "status",
-        label: t("invoices.status"),
+        label: t("invoices.statusLabel"),
         type: "select",
         options: ["DRAFT", "ISSUED", "PAID", "OVERDUE", "CANCELLED"].map((s) => ({
           label: t(`invoices.statuses.${s.toLowerCase()}`),
@@ -148,9 +148,24 @@ export default function InvoicesPage() {
   });
 
   const downloadPdf = useMutation({
-    mutationFn: (invoiceId: string) => invoicesApi.downloadInvoicePdf(invoiceId),
-    onSuccess: (data) => {
-      window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+    mutationFn: async ({ invoiceId, status }: { invoiceId: string; status: string }) => {
+      if (status === "DRAFT") {
+        await invoicesApi.finalizeInvoice(invoiceId);
+      }
+      return invoicesApi.downloadInvoicePdf(invoiceId, { forceRegenerate: true });
+    },
+    onSuccess: (data, variables) => {
+      if (variables.status === "DRAFT") {
+        void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
+        toast.success(t("invoices.issued"));
+      }
+      if (data.status === "READY" && data.downloadUrl) {
+        window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+      toast.info("PDF is being prepared", {
+        description: "We started generating the PDF. Please try again in a moment.",
+      });
     },
     onError: (error) => {
       console.error("Download PDF failed", error);
@@ -284,7 +299,7 @@ export default function InvoicesPage() {
                     {t("invoices.date")}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    {t("invoices.status")}
+                    {t("invoices.statusLabel")}
                   </th>
                   <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
                     {t("invoices.amount")}
@@ -358,7 +373,11 @@ export default function InvoicesPage() {
                               },
                               {
                                 label: "Download PDF",
-                                onClick: () => downloadPdf.mutate(invoice.id),
+                                onClick: () =>
+                                  downloadPdf.mutate({
+                                    invoiceId: invoice.id,
+                                    status: invoice.status,
+                                  }),
                                 icon: <Download className="h-4 w-4" />,
                                 disabled: downloadPdf.isPending,
                               },

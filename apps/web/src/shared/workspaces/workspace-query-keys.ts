@@ -78,6 +78,7 @@ export const workspaceQueryKeys = {
   // Core business entities
   invoices: createWorkspaceQueryKeys("invoices"),
   customers: createWorkspaceQueryKeys("customers"),
+  students: createWorkspaceQueryKeys("students"),
   expenses: createWorkspaceQueryKeys("expenses"),
   receipts: createWorkspaceQueryKeys("receipts"),
 

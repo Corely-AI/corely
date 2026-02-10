@@ -42,6 +42,7 @@ model User {
   status       String   @default("ACTIVE") // ACTIVE, INACTIVE, DELETED
   createdAt    DateTime @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+  partyId      String?
 
   // Relations
   memberships         Membership[]
@@ -52,6 +53,7 @@ model User {
 
   @@index([email])
   @@index([createdAt])
+  @@index([partyId])
   @@schema("identity")
 }
 
@@ -198,6 +200,48 @@ model PasswordResetToken {
 
   @@index([userId, createdAt])
   @@index([tokenHash])
+  @@schema("identity")
+}
+
+// === PORTAL OTP ===
+
+model PortalOtpCode {
+  id              String    @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  emailNormalized String
+  codeHash        String
+  expiresAt       DateTime  @db.Timestamptz(6)
+  consumedAt      DateTime? @db.Timestamptz(6)
+  attemptCount    Int       @default(0)
+  maxAttempts     Int       @default(5)
+  lastSentAt      DateTime  @default(now()) @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId, workspaceId, emailNormalized])
+  @@index([tenantId, workspaceId, emailNormalized, expiresAt])
+  @@index([expiresAt])
+  @@schema("identity")
+}
+
+model PortalSession {
+  id               String    @id @default(cuid())
+  tenantId         String
+  workspaceId      String
+  userId           String
+  refreshTokenHash String
+  expiresAt        DateTime  @db.Timestamptz(6)
+  revokedAt        DateTime? @db.Timestamptz(6)
+  lastUsedAt       DateTime? @db.Timestamptz(6)
+  userAgent        String?
+  ip               String?
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId, workspaceId, userId])
+  @@index([refreshTokenHash])
+  @@index([expiresAt])
   @@schema("identity")
 }
 

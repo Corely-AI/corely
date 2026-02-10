@@ -10,7 +10,7 @@ export const buildUseCaseContext = (req: ContextAwareRequest) => {
   const ctx = toUseCaseContext(req);
 
   // Tenant is required for most use cases; log once if absent
-  if (!ctx.tenantId) {
+  if (ctx.tenantId === undefined) {
     logger.warn("Missing tenantId on request", {
       hasAuthHeader: Boolean(req.headers["authorization"]),
       hasTenantHeader: Boolean(req.headers[HEADER_TENANT_ID]),

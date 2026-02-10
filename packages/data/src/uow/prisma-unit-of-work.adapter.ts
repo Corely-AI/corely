@@ -29,12 +29,9 @@ export type PrismaTransactionClient = Prisma.TransactionClient;
 /**
  * Helper to extract Prisma client from transaction context or use default.
  */
-export function getPrismaClient(
-  prisma: PrismaService,
-  tx?: TransactionContext
-): PrismaService | PrismaTransactionClient {
+export function getPrismaClient(prisma: PrismaService, tx?: TransactionContext): PrismaService {
   if (tx) {
-    return tx as unknown as PrismaTransactionClient;
+    return tx as unknown as PrismaService;
   }
   return prisma;
 }

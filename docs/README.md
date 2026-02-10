@@ -49,6 +49,7 @@ Deployment, configuration, and infrastructure.
 
 - [Docker](./devops/DOCKER.md)
 - [Configuration](./devops/configuration.md)
+- [Worker Runtime Modes](./devops/worker-tick-job.md)
 - [Customization](./devops/customization.md)
 - [Licensing](./devops/licensing.md)
 
@@ -71,9 +72,14 @@ Specific feature implementation details.
 - [CRM Implementation Summary](./features/CRM_IMPLEMENTATION_SUMMARY.md)
 - [Implementation Progress](./features/IMPLEMENTATION_PROGRESS.md)
 - [CMS Module](./features/CMS.md)
+- [Website Module](./features/website.md)
 - [Issues Module](./features/issues.md)
+- [Classes Module](./features/CLASSES.md)
+- [Students Module](./features/STUDENTS.md)
 - [Payment Methods](./features/PAYMENT_METHODS_IMPLEMENTATION.md)
+- [Invoice PDF Download](./features/invoice-pdf-download.md)
 - [Tax Snapshot](./features/TAX_SNAPSHOT_IMPLEMENTATION.md)
+- [Catalog Module](./features/catalog.md)
 
 ### 📚 Guides
 

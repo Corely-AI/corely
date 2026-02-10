@@ -53,7 +53,7 @@ describe("InvoiceEmail Template", () => {
     it("should include customer name in HTML", async () => {
       const result = await renderEmail(<InvoiceEmail {...mockProps} />);
 
-      expect(result.html).toContain("John Doe");
+      expect(result.html).toContain("The invoice is attached to this email");
     });
 
     it("should include total amount in HTML", async () => {
@@ -62,13 +62,13 @@ describe("InvoiceEmail Template", () => {
       expect(result.html).toContain("$1,250.00");
     });
 
-    it("should include all line items in HTML", async () => {
+    it("should include invoice details block in HTML", async () => {
       const result = await renderEmail(<InvoiceEmail {...mockProps} />);
 
-      expect(result.html).toContain("Consulting Services");
-      expect(result.html).toContain("Design Work");
-      expect(result.html).toContain("$1,000.00");
-      expect(result.html).toContain("$250.00");
+      expect(result.html).toContain("Invoice details");
+      expect(result.html).toContain("Due date");
+      expect(result.html).toContain("Total amount");
+      expect(result.html).toContain("Pay to");
     });
 
     it("should include custom message when provided", async () => {
@@ -106,7 +106,6 @@ describe("InvoiceEmail Template", () => {
 
       expect(result.text).toContain("INV-001");
       expect(result.text).toContain("Acme Corp");
-      expect(result.text).toContain("John Doe");
       expect(result.text).toContain("$1,250.00");
     });
   });
@@ -115,7 +114,7 @@ describe("InvoiceEmail Template", () => {
     it("should build correct subject line", () => {
       const subject = buildInvoiceEmailSubject(mockProps);
 
-      expect(subject).toBe("Invoice INV-001 from Acme Corp");
+      expect(subject).toBe("Acme Corp sent you an invoice INV-001");
     });
 
     it("should handle different invoice numbers", () => {
@@ -126,7 +125,7 @@ describe("InvoiceEmail Template", () => {
 
       const subject = buildInvoiceEmailSubject(props);
 
-      expect(subject).toBe("Invoice DRAFT from Acme Corp");
+      expect(subject).toBe("Acme Corp sent you an invoice DRAFT");
     });
 
     it("should handle different company names", () => {
@@ -137,7 +136,7 @@ describe("InvoiceEmail Template", () => {
 
       const subject = buildInvoiceEmailSubject(props);
 
-      expect(subject).toBe("Invoice INV-001 from Tech Solutions Inc");
+      expect(subject).toBe("Tech Solutions Inc sent you an invoice INV-001");
     });
   });
 
@@ -186,7 +185,7 @@ describe("InvoiceEmail Template", () => {
 
       const result = await renderEmail(<InvoiceEmail {...propsSingleLine} />);
 
-      expect(result.html).toContain("Service");
+      expect(result.html).toContain("Invoice details");
     });
   });
 });

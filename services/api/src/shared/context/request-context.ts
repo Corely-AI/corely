@@ -3,7 +3,7 @@ import { HEADER_REQUEST_ID, HEADER_TENANT_ID } from "../request-context";
 
 export type RequestContext = {
   requestId: string;
-  tenantId?: string;
+  tenantId?: string | null;
   actorUserId?: string;
 };
 

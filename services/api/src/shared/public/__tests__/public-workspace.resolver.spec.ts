@@ -61,13 +61,13 @@ describe("PublicWorkspaceResolver", () => {
   });
 
   it("resolves by subdomain", async () => {
-    process.env.PUBLIC_WORKSPACE_BASE_DOMAIN = "corely.one";
+    process.env.PUBLIC_WORKSPACE_BASE_DOMAIN = "my.corely.one";
     const workspace = buildWorkspace({ slug: "acme" });
     prisma.workspaceDomain.findUnique.mockResolvedValue(null);
     prisma.workspace.findFirst.mockResolvedValue(workspace);
 
     const result = await resolver.resolveFromRequest({
-      host: "acme.corely.one",
+      host: "acme.my.corely.one",
       path: "/public/cms/posts",
       query: {},
     });
@@ -82,7 +82,7 @@ describe("PublicWorkspaceResolver", () => {
     prisma.workspace.findFirst.mockResolvedValue(workspace);
 
     const result = await resolver.resolveFromRequest({
-      host: "corely.one",
+      host: "my.corely.one",
       path: "/w/acme/rental/properties",
       query: {},
     });
@@ -130,7 +130,7 @@ describe("PublicWorkspaceResolver", () => {
       .mockResolvedValueOnce(pathWorkspace);
 
     const result = await resolver.resolveFromRequest({
-      host: "beta.corely.one",
+      host: "beta.my.corely.one",
       path: "/w/acme/rental",
       query: {},
     });
@@ -146,7 +146,7 @@ describe("PublicWorkspaceResolver", () => {
 
     await expect(
       resolver.resolveFromRequest({
-        host: "unknown.corely.one",
+        host: "unknown.my.corely.one",
         path: "/public/rentals",
         query: {},
       })
@@ -160,7 +160,7 @@ describe("PublicWorkspaceResolver", () => {
 
     await expect(
       resolver.resolveFromRequest({
-        host: "acme.corely.one",
+        host: "acme.my.corely.one",
         path: "/public/rentals",
         query: {},
       })

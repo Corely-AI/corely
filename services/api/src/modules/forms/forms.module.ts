@@ -7,6 +7,8 @@ import { FormsController } from "./http/forms.controller";
 import { PublicFormsController } from "./http/public-forms.controller";
 import { PrismaFormRepository } from "./infrastructure/adapters/prisma-form-repository.adapter";
 import { FORM_REPOSITORY } from "./application/ports/form-repository.port";
+import { PrismaOutboxAdapter } from "@corely/data";
+import { OUTBOX_PORT } from "@corely/kernel";
 import { CreateFormUseCase } from "./application/use-cases/create-form.usecase";
 import { UpdateFormUseCase } from "./application/use-cases/update-form.usecase";
 import { DeleteFormUseCase } from "./application/use-cases/delete-form.usecase";
@@ -32,6 +34,8 @@ import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
   providers: [
     PrismaFormRepository,
     { provide: FORM_REPOSITORY, useExisting: PrismaFormRepository },
+    PrismaOutboxAdapter,
+    { provide: OUTBOX_PORT, useExisting: PrismaOutboxAdapter },
     {
       provide: CreateFormUseCase,
       useFactory: (repo, idGen, clock) => new CreateFormUseCase(repo, idGen, clock),
@@ -109,8 +113,9 @@ import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
     },
     {
       provide: PublicSubmitFormUseCase,
-      useFactory: (repo, idGen, clock) => new PublicSubmitFormUseCase(repo, idGen, clock),
-      inject: [FORM_REPOSITORY, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+      useFactory: (repo, idGen, clock, outbox) =>
+        new PublicSubmitFormUseCase(repo, idGen, clock, outbox),
+      inject: [FORM_REPOSITORY, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN, OUTBOX_PORT],
     },
   ],
   exports: [CreateFormUseCase],

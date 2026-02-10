@@ -220,10 +220,10 @@ export class AuthController {
   @ApiBearerAuth()
   async logout(
     @CurrentUserId() userId: string,
-    @CurrentTenantId() tenantId: string,
+    @CurrentTenantId() tenantId: string | null,
     @Body() input: SignOutDto
   ): Promise<MessageResponseDto> {
-    if (!userId || !tenantId) {
+    if (!userId || tenantId === undefined) {
       throw new BadRequestException("User or tenant not found");
     }
 
@@ -246,7 +246,7 @@ export class AuthController {
   @ApiBearerAuth()
   async getMe(
     @CurrentUserId() userId: string,
-    @CurrentTenantId() tenantId: string
+    @CurrentTenantId() tenantId: string | null
   ): Promise<CurrentUserResponseDto> {
     if (!userId) {
       throw new BadRequestException("User not found");
@@ -263,7 +263,7 @@ export class AuthController {
         const tId = membership.getTenantId();
         if (!tId) {
           return {
-            tenantId: "host",
+            tenantId: null,
             tenantName: "Platform Admin",
             roleId: membership.getRoleId(),
           };
@@ -281,7 +281,7 @@ export class AuthController {
       userId,
       email: user.getEmail().getValue(),
       name: user.getName(),
-      activeTenantId: tenantId,
+      activeTenantId: tenantId ?? null,
       memberships: membershipDtos,
     };
   }
@@ -294,10 +294,10 @@ export class AuthController {
   @ApiBearerAuth()
   async switchTenant(
     @CurrentUserId() userId: string,
-    @CurrentTenantId() fromTenantId: string,
+    @CurrentTenantId() fromTenantId: string | null,
     @Body() input: SwitchTenantDto
   ): Promise<SwitchTenantResponseDto> {
-    if (!userId || !fromTenantId || !input.tenantId) {
+    if (!userId || fromTenantId === undefined || input.tenantId === undefined) {
       throw new BadRequestException("Missing required fields");
     }
 

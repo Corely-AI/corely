@@ -21,6 +21,8 @@ import {
   UpdateWorkspaceInputSchema,
   UpgradeWorkspaceInputSchema,
   SetPrimaryWorkspaceDomainInputSchema,
+  DeleteWorkspaceInputSchema,
+  DeleteWorkspaceOutputSchema,
   type CreateWorkspaceInput,
   type UpdateWorkspaceInput,
   type UpgradeWorkspaceInput,
@@ -34,6 +36,7 @@ import { AddWorkspaceDomainUseCase } from "../../application/use-cases/add-works
 import { DeleteWorkspaceDomainUseCase } from "../../application/use-cases/delete-workspace-domain.usecase";
 import { SetPrimaryWorkspaceDomainUseCase } from "../../application/use-cases/set-primary-workspace-domain.usecase";
 import { ListWorkspaceMembersUseCase } from "../../application/use-cases/list-workspace-members.usecase";
+import { DeleteWorkspaceUseCase } from "../../application/use-cases/delete-workspace.usecase";
 import { IdempotencyInterceptor } from "../../../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { toUseCaseContext } from "../../../../shared/request-context";
@@ -81,7 +84,9 @@ export class WorkspacesController {
     @Inject(SetPrimaryWorkspaceDomainUseCase)
     private readonly setPrimaryWorkspaceDomain: SetPrimaryWorkspaceDomainUseCase,
     @Inject(ListWorkspaceMembersUseCase)
-    private readonly listWorkspaceMembers: ListWorkspaceMembersUseCase
+    private readonly listWorkspaceMembers: ListWorkspaceMembersUseCase,
+    @Inject(DeleteWorkspaceUseCase)
+    private readonly deleteWorkspace: DeleteWorkspaceUseCase
   ) {}
 
   @Post()
@@ -214,5 +219,24 @@ export class WorkspacesController {
       workspaceId,
       domainId,
     });
+  }
+
+  @Delete(":workspaceId")
+  async delete(
+    @Param("workspaceId") workspaceId: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = DeleteWorkspaceInputSchema.parse(body ?? {});
+    const auth = extractAuthUser(req, body);
+
+    const result = await this.deleteWorkspace.execute({
+      ...input,
+      tenantId: auth.tenantId,
+      userId: auth.id,
+      workspaceId,
+    });
+
+    return DeleteWorkspaceOutputSchema.parse(result);
   }
 }

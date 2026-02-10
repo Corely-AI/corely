@@ -11,7 +11,12 @@ import { toPrismaDate, fromPrismaDate } from "./date-mappers";
 
 @Injectable()
 export class PrismaQuoteRepositoryAdapter implements QuoteRepositoryPort {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
+
+  // Cast to any to work around missing Prisma types (WIP: Sales module)
+  private get prisma(): any {
+    return this.prismaService;
+  }
 
   async save(tenantId: string, quote: QuoteAggregate): Promise<void> {
     if (tenantId !== quote.tenantId) {

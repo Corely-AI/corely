@@ -12,6 +12,7 @@ import {
   Sparkles,
   Users,
   ShoppingCart,
+  GraduationCap,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -22,13 +23,17 @@ import { invoicesApi } from "@/lib/invoices-api";
 import { customersApi } from "@/lib/customers-api";
 import { expensesApi } from "@/lib/expenses-api";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
+import { getPortalUrl } from "@/shared/lib/portal-url";
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language === "de" ? "de-DE" : "en-DE";
 
   const { config, hasCapability } = useWorkspaceConfig();
+  const { activeWorkspace } = useWorkspace();
+  const portalUrl = getPortalUrl(activeWorkspace?.slug);
   const terminology = config?.terminology ?? {
     partyLabel: "Client",
     partyLabelPlural: "Clients",
@@ -199,7 +204,7 @@ export default function DashboardPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 {`${dashboard.revenueMoMPercent >= 0 ? "+" : ""}${Math.round(
                   dashboard.revenueMoMPercent
-                )}% from last month`}
+                )}% ${t("dashboard.fromLastMonth")}`}
               </p>
             )}
           </CardContent>
@@ -219,7 +224,7 @@ export default function DashboardPage() {
               {formatMoney(dashboard.outstandingInvoicesCents, locale)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {dashboard.outstandingInvoicesCount} invoices pending
+              {dashboard.outstandingInvoicesCount} {t("dashboard.invoicesPending")}
             </p>
           </CardContent>
         </Card>
@@ -238,7 +243,7 @@ export default function DashboardPage() {
               {formatMoney(dashboard.expensesThisMonthCents, locale)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {dashboard.recentExpenses.length} expenses this month
+              {dashboard.recentExpenses.length} {t("dashboard.expensesCount")}
             </p>
           </CardContent>
         </Card>
@@ -258,7 +263,9 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex-1">
                     <div className="font-medium text-foreground">{t("dashboard.addExpense")}</div>
-                    <div className="text-sm text-muted-foreground">Upload receipt with AI</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t("dashboard.uploadReceipt")}
+                    </div>
                   </div>
                   <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-accent transition-colors" />
                 </CardContent>
@@ -276,7 +283,9 @@ export default function DashboardPage() {
                 <div className="flex-1">
                   <div className="font-medium text-foreground">{t("dashboard.createInvoice")}</div>
                   <div className="text-sm text-muted-foreground">
-                    {hasCapability("ai.copilot") ? "Generate with AI" : "Create new"}
+                    {hasCapability("ai.copilot")
+                      ? t("dashboard.generateWithAi")
+                      : t("dashboard.createNew")}
                   </div>
                 </div>
                 <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-success transition-colors" />
@@ -293,7 +302,7 @@ export default function DashboardPage() {
                     <ShoppingCart className="h-6 w-6 text-warning" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-foreground">Create Quote</div>
+                    <div className="font-medium text-foreground">{t("dashboard.createQuote")}</div>
                     <div className="text-sm text-muted-foreground">
                       For {terminology.partyLabel.toLowerCase()}
                     </div>
@@ -314,7 +323,9 @@ export default function DashboardPage() {
                       <div className="font-medium text-foreground">
                         {t("dashboard.openAssistant")}
                       </div>
-                      <div className="text-sm text-muted-foreground">Ask anything</div>
+                      <div className="text-sm text-muted-foreground">
+                        {t("dashboard.askAnything")}
+                      </div>
                     </div>
                     <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </CardContent>
@@ -325,20 +336,40 @@ export default function DashboardPage() {
 
           {/* Conditional: Team management for multi-user companies */}
           {hasCapability("workspace.multiUser") && (
-            <Link to="/settings/team">
+            <Link to="/settings/members">
               <Card variant="interactive" className="group">
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="h-12 w-12 rounded-xl bg-info/10 flex items-center justify-center group-hover:bg-info/20 transition-colors">
                     <Users className="h-6 w-6 text-info" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-foreground">Manage Team</div>
-                    <div className="text-sm text-muted-foreground">Invite members</div>
+                    <div className="font-medium text-foreground">{t("dashboard.manageTeam")}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t("dashboard.inviteMembers")}
+                    </div>
                   </div>
                   <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-info transition-colors" />
                 </CardContent>
               </Card>
             </Link>
+          )}
+
+          {/* Student & Guardian Portal */}
+          {portalUrl && (
+            <a href={portalUrl} target="_blank" rel="noopener noreferrer">
+              <Card variant="interactive" className="group">
+                <CardContent className="p-6 flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
+                    <GraduationCap className="h-6 w-6 text-emerald-500" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">Student Portal</div>
+                    <div className="text-sm text-muted-foreground">View as student or guardian</div>
+                  </div>
+                  <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-emerald-500 transition-colors" />
+                </CardContent>
+              </Card>
+            </a>
           )}
         </div>
       </div>
@@ -356,7 +387,9 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               {dashboard.recentInvoices.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No invoices yet</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("dashboard.noInvoices")}
+                </p>
               ) : (
                 dashboard.recentInvoices.map((invoice) => {
                   const customer = customers.find((c) => c.id === invoice.customerPartyId);
@@ -406,7 +439,9 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               {dashboard.recentExpenses.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">No expenses yet</p>
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  {t("dashboard.noExpenses")}
+                </p>
               ) : (
                 dashboard.recentExpenses.map((expense) => (
                   <Link

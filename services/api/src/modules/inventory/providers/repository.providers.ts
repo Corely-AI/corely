@@ -8,6 +8,7 @@ import { PrismaStockMoveRepository } from "../infrastructure/adapters/prisma-sto
 import { PrismaStockReservationRepository } from "../infrastructure/adapters/prisma-stock-reservation-repository.adapter";
 import { PrismaReorderPolicyRepository } from "../infrastructure/adapters/prisma-reorder-policy-repository.adapter";
 import { PrismaInventorySettingsRepository } from "../infrastructure/adapters/prisma-settings-repository.adapter";
+import { PrismaInventoryLotRepository } from "../infrastructure/adapters/prisma-inventory-lot-repository.adapter";
 
 import { PRODUCT_REPO } from "../application/ports/product-repository.port";
 import { WAREHOUSE_REPO } from "../application/ports/warehouse-repository.port";
@@ -17,6 +18,7 @@ import { STOCK_MOVE_REPO } from "../application/ports/stock-move-repository.port
 import { STOCK_RESERVATION_REPO } from "../application/ports/stock-reservation-repository.port";
 import { REORDER_POLICY_REPO } from "../application/ports/reorder-policy-repository.port";
 import { INVENTORY_SETTINGS_REPO } from "../application/ports/settings-repository.port";
+import { INVENTORY_LOT_REPO } from "../application/ports/inventory-lot-repository.port";
 
 export const repositoryProviders: Provider[] = [
   PrismaProductRepository,
@@ -27,6 +29,7 @@ export const repositoryProviders: Provider[] = [
   PrismaStockReservationRepository,
   PrismaReorderPolicyRepository,
   PrismaInventorySettingsRepository,
+  PrismaInventoryLotRepository,
   { provide: PRODUCT_REPO, useExisting: PrismaProductRepository },
   { provide: WAREHOUSE_REPO, useExisting: PrismaWarehouseRepository },
   { provide: LOCATION_REPO, useExisting: PrismaLocationRepository },
@@ -35,4 +38,5 @@ export const repositoryProviders: Provider[] = [
   { provide: STOCK_RESERVATION_REPO, useExisting: PrismaStockReservationRepository },
   { provide: REORDER_POLICY_REPO, useExisting: PrismaReorderPolicyRepository },
   { provide: INVENTORY_SETTINGS_REPO, useExisting: PrismaInventorySettingsRepository },
+  { provide: INVENTORY_LOT_REPO, useExisting: PrismaInventoryLotRepository },
 ];

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { InvoiceEmailRequestedHandler } from "./invoice-email-requested.handler";
-import { type EmailSenderPort } from "../notifications/ports/email-sender.port";
+import { type EmailSenderPort } from "@corely/kernel";
 
 class FakeEmailSender implements EmailSenderPort {
   calls: any[] = [];
@@ -31,23 +31,35 @@ const baseEvent = {
 };
 
 describe("InvoiceEmailRequestedHandler", () => {
-  const repo = {
-    findDelivery: vi.fn(),
+  const invoiceRepo = {
     findInvoiceWithLines: vi.fn(),
-    markDeliverySent: vi.fn(),
-    markDeliveryFailed: vi.fn(),
+  };
+  const documentRepo = {
+    findByTypeAndEntityLink: vi.fn(),
+  };
+  const fileRepo = {
+    findByDocumentAndKind: vi.fn(),
+    findByDocument: vi.fn(),
+  };
+  const objectStorage = {
+    headObject: vi.fn(),
+    createSignedDownloadUrl: vi.fn(),
+  };
+  const deliveryRepo = {
+    findById: vi.fn(),
+    updateStatus: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    repo.findDelivery.mockResolvedValue({
+    deliveryRepo.findById.mockResolvedValue({
       id: "delivery-1",
       tenantId: "tenant-1",
       invoiceId: "inv-1",
       to: "customer@example.com",
       status: "QUEUED",
     });
-    repo.findInvoiceWithLines.mockResolvedValue({
+    invoiceRepo.findInvoiceWithLines.mockResolvedValue({
       id: "inv-1",
       tenantId: "tenant-1",
       number: "INV-001",
@@ -58,30 +70,84 @@ describe("InvoiceEmailRequestedHandler", () => {
         { id: "line-1", invoiceId: "inv-1", description: "Work", qty: 1, unitPriceCents: 1000 },
       ],
     });
+    documentRepo.findByTypeAndEntityLink.mockResolvedValue({
+      id: "doc-1",
+      status: "READY",
+    });
+    fileRepo.findByDocumentAndKind.mockResolvedValue({
+      id: "file-1",
+      kind: "GENERATED",
+      objectKey: "tenant/tenant-1/invoices/inv-1/invoice.pdf",
+    });
+    fileRepo.findByDocument.mockResolvedValue([]);
+    objectStorage.headObject.mockResolvedValue({ exists: true });
+    objectStorage.createSignedDownloadUrl.mockResolvedValue({
+      url: "https://storage.example.com/invoice.pdf",
+      expiresAt: new Date("2026-02-10T00:00:00.000Z"),
+    });
   });
 
   it("sends email via port and marks delivery sent", async () => {
     const sender = new FakeEmailSender();
-    const handler = new InvoiceEmailRequestedHandler(sender, repo as any);
+    const handler = new InvoiceEmailRequestedHandler(
+      sender,
+      invoiceRepo as any,
+      deliveryRepo as any,
+      documentRepo as any,
+      fileRepo as any,
+      objectStorage as any
+    );
 
     await handler.handle(baseEvent as any);
 
     expect(sender.calls[0].to).toEqual(["customer@example.com"]);
-    expect(repo.markDeliverySent).toHaveBeenCalledWith({
-      deliveryId: "delivery-1",
-      provider: "resend",
+    expect(deliveryRepo.updateStatus).toHaveBeenCalledWith("tenant-1", "delivery-1", "SENT", {
       providerMessageId: "msg-123",
     });
   });
 
   it("marks delivery failed when provider errors", async () => {
     const sender = new FakeEmailSender(true);
-    const handler = new InvoiceEmailRequestedHandler(sender, repo as any);
+    const handler = new InvoiceEmailRequestedHandler(
+      sender,
+      invoiceRepo as any,
+      deliveryRepo as any,
+      documentRepo as any,
+      fileRepo as any,
+      objectStorage as any
+    );
 
     await expect(handler.handle(baseEvent as any)).rejects.toThrow("send fail");
-    expect(repo.markDeliveryFailed).toHaveBeenCalledWith({
-      deliveryId: "delivery-1",
-      error: "send fail",
+    expect(deliveryRepo.updateStatus).toHaveBeenCalledWith("tenant-1", "delivery-1", "FAILED", {
+      lastError: "send fail",
     });
+  });
+
+  it("attaches invoice PDF when attachPdf is true", async () => {
+    const sender = new FakeEmailSender();
+    const handler = new InvoiceEmailRequestedHandler(
+      sender,
+      invoiceRepo as any,
+      deliveryRepo as any,
+      documentRepo as any,
+      fileRepo as any,
+      objectStorage as any
+    );
+
+    await handler.handle({
+      ...baseEvent,
+      payload: {
+        ...baseEvent.payload,
+        attachPdf: true,
+      },
+    } as any);
+
+    expect(sender.calls[0].attachments).toEqual([
+      {
+        filename: "Invoice-INV-001.pdf",
+        path: "https://storage.example.com/invoice.pdf",
+        mimeType: "application/pdf",
+      },
+    ]);
   });
 });

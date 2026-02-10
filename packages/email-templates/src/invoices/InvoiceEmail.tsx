@@ -3,7 +3,6 @@ import {
   Body,
   Container,
   Head,
-  Heading,
   Html,
   Link,
   Preview,
@@ -19,13 +18,18 @@ export function InvoiceEmail({
   companyName,
   dueDate,
   totalAmount,
-  currency,
-  customerName,
   customMessage,
-  lines,
+  paymentDetails,
   viewInvoiceUrl,
 }: InvoiceEmailProps) {
-  const previewText = `Invoice ${invoiceNumber} from ${companyName}`;
+  const previewText = `${companyName} sent you an invoice ${invoiceNumber}`;
+  const payToLines = [
+    paymentDetails?.bankName,
+    paymentDetails?.accountHolderName,
+    paymentDetails?.iban,
+    paymentDetails?.bic,
+    paymentDetails?.referenceText ? `Reference: ${paymentDetails.referenceText}` : undefined,
+  ].filter((line): line is string => Boolean(line && line.trim().length > 0));
 
   return (
     <Html>
@@ -33,233 +37,167 @@ export function InvoiceEmail({
       <Preview>{previewText}</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>Invoice {invoiceNumber}</Heading>
+          <Section style={brandSection}>
+            <Text style={brandText}>Corely.one</Text>
+          </Section>
 
-          <Text style={text}>Hi {customerName},</Text>
+          <Section style={card}>
+            <Text style={heroTitle}>
+              {companyName} sent you an invoice ({invoiceNumber})
+            </Text>
 
-          {customMessage && <Text style={text}>{customMessage}</Text>}
+            {customMessage ? <Text style={customMessageText}>{customMessage}</Text> : null}
 
-          <Text style={text}>Here's your invoice from {companyName}.</Text>
+            <Text style={detailsTitle}>Invoice details</Text>
 
-          <Section style={invoiceSection}>
-            <Row>
-              <Column>
-                <Text style={label}>Invoice Number</Text>
-                <Text style={value}>{invoiceNumber}</Text>
-              </Column>
-              <Column>
-                <Text style={label}>Due Date</Text>
+            <Row style={detailsRow}>
+              <Column style={detailsColumn}>
+                <Text style={label}>Due date</Text>
                 <Text style={value}>{dueDate}</Text>
               </Column>
+              <Column style={detailsColumn}>
+                <Text style={label}>Total amount</Text>
+                <Text style={value}>{totalAmount}</Text>
+              </Column>
             </Row>
+
+            <Row style={detailsRow}>
+              <Column style={detailsColumn}>
+                <Text style={label}>Pay to</Text>
+                {payToLines.length > 0 ? (
+                  payToLines.map((line) => (
+                    <Text key={line} style={value}>
+                      {line}
+                    </Text>
+                  ))
+                ) : (
+                  <Text style={value}>See attached invoice PDF</Text>
+                )}
+              </Column>
+              <Column style={detailsColumn}>
+                <Text style={label}>Invoice</Text>
+                <Text style={value}>The invoice is attached to this email</Text>
+              </Column>
+            </Row>
+
+            {viewInvoiceUrl ? (
+              <Section style={buttonSection}>
+                <Link href={viewInvoiceUrl} style={button}>
+                  View Invoice
+                </Link>
+              </Section>
+            ) : null}
           </Section>
 
-          <Section style={lineItemsSection}>
-            <Row style={tableHeader}>
-              <Column style={descriptionColumn}>
-                <Text style={tableHeaderText}>Description</Text>
-              </Column>
-              <Column style={qtyColumn}>
-                <Text style={tableHeaderText}>Qty</Text>
-              </Column>
-              <Column style={priceColumn}>
-                <Text style={tableHeaderText}>Price</Text>
-              </Column>
-              <Column style={amountColumn}>
-                <Text style={tableHeaderText}>Amount</Text>
-              </Column>
-            </Row>
-
-            {lines.map((line: InvoiceEmailProps["lines"][0], index: number) => (
-              <Row key={index} style={tableRow}>
-                <Column style={descriptionColumn}>
-                  <Text style={tableCell}>{line.description}</Text>
-                </Column>
-                <Column style={qtyColumn}>
-                  <Text style={tableCell}>{line.quantity}</Text>
-                </Column>
-                <Column style={priceColumn}>
-                  <Text style={tableCell}>{line.unitPrice}</Text>
-                </Column>
-                <Column style={amountColumn}>
-                  <Text style={tableCell}>{line.amount}</Text>
-                </Column>
-              </Row>
-            ))}
-
-            <Row style={totalRow}>
-              <Column style={descriptionColumn} colSpan={3}>
-                <Text style={totalLabel}>Total</Text>
-              </Column>
-              <Column style={amountColumn}>
-                <Text style={totalAmountStyle}>
-                  {currency} {totalAmount}
-                </Text>
-              </Column>
-            </Row>
-          </Section>
-
-          {viewInvoiceUrl && (
-            <Section style={buttonSection}>
-              <Link href={viewInvoiceUrl} style={button}>
-                View Invoice
-              </Link>
-            </Section>
-          )}
-
-          <Text style={footer}>
-            Thanks,
-            <br />
-            {companyName}
-          </Text>
+          <Text style={footerText}>Sent via Corely.one</Text>
         </Container>
       </Body>
     </Html>
   );
 }
 
-const main = {
-  backgroundColor: "#f6f9fc",
+const main: CSSProperties = {
+  backgroundColor: "#efefef",
   fontFamily:
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  padding: "16px 0 48px",
 };
 
-const container = {
-  backgroundColor: "#ffffff",
+const container: CSSProperties = {
+  maxWidth: "680px",
   margin: "0 auto",
-  padding: "20px 0 48px",
-  marginBottom: "64px",
-  maxWidth: "600px",
 };
 
-const h1 = {
-  color: "#333",
-  fontSize: "24px",
-  fontWeight: "bold",
-  margin: "40px 0",
-  padding: "0 40px",
+const brandSection: CSSProperties = {
+  textAlign: "center",
+  padding: "18px 0 24px",
 };
 
-const text = {
-  color: "#333",
-  fontSize: "16px",
+const brandText: CSSProperties = {
+  margin: "0",
+  fontSize: "34px",
+  lineHeight: "38px",
+  fontWeight: "700",
+  color: "#0f2546",
+  letterSpacing: "-0.4px",
+};
+
+const card: CSSProperties = {
+  backgroundColor: "#dbe6e3",
+  padding: "52px 56px 46px",
+};
+
+const heroTitle: CSSProperties = {
+  margin: "0",
+  fontSize: "56px",
+  lineHeight: "60px",
+  fontWeight: "700",
+  color: "#143b66",
+  letterSpacing: "-1px",
+};
+
+const customMessageText: CSSProperties = {
+  margin: "22px 0 0",
+  fontSize: "17px",
   lineHeight: "26px",
-  margin: "16px 0",
-  padding: "0 40px",
+  color: "#1f354f",
+};
+
+const detailsTitle: CSSProperties = {
+  margin: "46px 0 18px",
+  fontSize: "52px",
+  lineHeight: "56px",
+  fontWeight: "700",
+  color: "#143b66",
+  letterSpacing: "-0.8px",
+};
+
+const detailsRow: CSSProperties = {
+  marginTop: "22px",
+};
+
+const detailsColumn: CSSProperties = {
+  width: "50%",
+  paddingRight: "18px",
+  verticalAlign: "top",
 };
 
 const label: CSSProperties = {
-  color: "#6b7280",
-  fontSize: "12px",
-  fontWeight: "500",
-  textTransform: "uppercase",
-  margin: "0",
-};
-
-const value = {
-  color: "#333",
-  fontSize: "16px",
-  fontWeight: "600",
-  margin: "4px 0 0 0",
-};
-
-const invoiceSection = {
-  padding: "24px 40px",
-  borderTop: "1px solid #e5e7eb",
-  borderBottom: "1px solid #e5e7eb",
-};
-
-const lineItemsSection = {
-  padding: "24px 40px",
-};
-
-const tableHeader = {
-  borderBottom: "2px solid #e5e7eb",
-  paddingBottom: "8px",
-  marginBottom: "8px",
-};
-
-const tableHeaderText: CSSProperties = {
-  color: "#6b7280",
-  fontSize: "12px",
-  fontWeight: "600",
-  textTransform: "uppercase",
-  margin: "0",
-};
-
-const tableRow = {
-  borderBottom: "1px solid #f3f4f6",
-  padding: "12px 0",
-};
-
-const tableCell = {
-  color: "#333",
-  fontSize: "14px",
-  margin: "0",
-};
-
-const descriptionColumn = {
-  width: "40%",
-};
-
-const qtyColumn: CSSProperties = {
-  width: "15%",
-  textAlign: "center",
-};
-
-const priceColumn: CSSProperties = {
-  width: "20%",
-  textAlign: "right",
-};
-
-const amountColumn: CSSProperties = {
-  width: "25%",
-  textAlign: "right",
-};
-
-const totalRow = {
-  borderTop: "2px solid #e5e7eb",
-  paddingTop: "16px",
-  marginTop: "8px",
-};
-
-const totalLabel: CSSProperties = {
-  color: "#333",
-  fontSize: "16px",
-  fontWeight: "600",
-  textAlign: "right",
-  margin: "0",
-};
-
-const totalAmountStyle: CSSProperties = {
-  color: "#333",
-  fontSize: "18px",
+  margin: "0 0 6px",
+  fontSize: "34px",
+  lineHeight: "38px",
   fontWeight: "700",
-  textAlign: "right",
+  color: "#143b66",
+  letterSpacing: "-0.5px",
+};
+
+const value: CSSProperties = {
   margin: "0",
+  fontSize: "26px",
+  lineHeight: "34px",
+  color: "#616f7c",
 };
 
 const buttonSection: CSSProperties = {
-  padding: "24px 40px",
+  marginTop: "30px",
   textAlign: "center",
 };
 
 const button: CSSProperties = {
-  backgroundColor: "#5469d4",
-  borderRadius: "4px",
-  color: "#fff",
+  backgroundColor: "#143b66",
+  borderRadius: "8px",
+  color: "#ffffff",
   fontSize: "16px",
   fontWeight: "600",
   textDecoration: "none",
-  textAlign: "center",
   display: "inline-block",
-  padding: "12px 32px",
+  padding: "12px 28px",
 };
 
-const footer = {
+const footerText: CSSProperties = {
+  margin: "16px 0 0",
+  textAlign: "center",
   color: "#6b7280",
-  fontSize: "14px",
-  lineHeight: "24px",
-  margin: "32px 0 0 0",
-  padding: "0 40px",
+  fontSize: "13px",
+  lineHeight: "20px",
 };

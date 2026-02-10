@@ -51,9 +51,14 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "@corely/contracts": path.resolve(__dirname, "../..", "packages/contracts/src"),
+      "@corely/core": path.resolve(__dirname, "../..", "packages/core/src"),
       "@corely/testkit": path.resolve(__dirname, "../..", "packages/testkit/src"),
       "@corely/kernel": path.resolve(__dirname, "../..", "packages/kernel/src"),
       "@corely/data": path.resolve(__dirname, "../..", "packages/data/src"),
+      "@corely/public-urls": path.resolve(__dirname, "../..", "packages/public-urls/src"),
+      "@corely/storage": path.resolve(__dirname, "../..", "packages/storage/src"),
+      "@": path.resolve(__dirname, "../api/src"),
     },
   },
 });

@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import type { ExtKv as PrismaExtKvRecord } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import type {
   ExtKvPort,
@@ -96,7 +97,7 @@ export class PrismaExtKvAdapter implements ExtKvPort {
       },
     });
 
-    return records.map((r) => this.toDomain(r));
+    return records.map((record: PrismaExtKvRecord) => this.toDomain(record));
   }
 
   private toDomain(record: any): KvEntry {

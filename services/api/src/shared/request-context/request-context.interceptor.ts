@@ -25,7 +25,7 @@ export class RequestContextInterceptor implements NestInterceptor {
       context.getClass(),
     ]);
 
-    if (isPublicRoute && !req.user?.userId && !req.publicContext) {
+    if (isPublicRoute && !req.publicContext) {
       return new Observable((subscriber) => {
         this.publicWorkspaceResolver
           .resolve(req)

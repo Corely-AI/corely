@@ -1,4 +1,4 @@
-# Bizflow Demo Script
+# Corely One ERP Demo Script
 
 ## 3-5 Minute Walkthrough
 

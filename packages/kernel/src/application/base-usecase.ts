@@ -21,10 +21,10 @@ export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> i
   O,
   E
 > {
-  protected readonly deps: InitializedDeps;
+  private readonly _baseDeps: InitializedDeps;
 
   protected constructor(deps: BaseDeps) {
-    this.deps = {
+    this._baseDeps = {
       ...deps,
       logger: deps.logger || {
         debug: () => {},
@@ -33,6 +33,18 @@ export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> i
         error: () => {},
       },
     } as InitializedDeps;
+  }
+
+  protected get logger(): LoggerPort {
+    return this._baseDeps.logger;
+  }
+
+  protected get uow(): UnitOfWorkPort | undefined {
+    return this._baseDeps.uow;
+  }
+
+  protected get idempotency(): IdempotencyPort | undefined {
+    return this._baseDeps.idempotency;
   }
 
   protected validate?(input: I): I;
@@ -68,7 +80,7 @@ export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> i
           error instanceof ValidationError
             ? error
             : new ValidationError("Validation failed", error);
-        this.deps.logger.warn(`${useCaseName}.validation_failed`, {
+        this._baseDeps.logger.warn(`${useCaseName}.validation_failed`, {
           ...baseMeta,
           error: this.toLoggableError(error),
         });
@@ -78,18 +90,18 @@ export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> i
 
     let runner = () => this.handle(validatedInput, ctx);
 
-    if (this.deps.uow) {
+    if (this._baseDeps.uow) {
       const originalRunner = runner;
-      runner = () => this.deps.uow!.withinTransaction(() => originalRunner());
+      runner = () => this._baseDeps.uow!.withinTransaction(() => originalRunner());
     }
 
     const idempotencyKey = this.resolveIdempotencyKey(validatedInput, ctx);
-    if (idempotencyKey && this.deps.idempotency) {
+    if (idempotencyKey && this._baseDeps.idempotency) {
       const originalRunner = runner;
-      runner = () => this.deps.idempotency!.run(idempotencyKey, () => originalRunner());
+      runner = () => this._baseDeps.idempotency!.run(idempotencyKey, () => originalRunner());
     }
 
-    this.deps.logger.debug(`${useCaseName}.start`, {
+    this._baseDeps.logger.debug(`${useCaseName}.start`, {
       ...baseMeta,
       idempotencyKey,
     });
@@ -99,9 +111,9 @@ export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> i
       const durationMs = Date.now() - startedAt;
 
       if (isOk(result)) {
-        this.deps.logger.info(`${useCaseName}.success`, { ...baseMeta, durationMs });
+        this._baseDeps.logger.info(`${useCaseName}.success`, { ...baseMeta, durationMs });
       } else {
-        this.deps.logger.warn(`${useCaseName}.failed`, {
+        this._baseDeps.logger.warn(`${useCaseName}.failed`, {
           ...baseMeta,
           durationMs,
           error: this.toLoggableError(result.error),
@@ -111,7 +123,7 @@ export abstract class BaseUseCase<I, O, E extends UseCaseError = UseCaseError> i
       return result;
     } catch (error) {
       const durationMs = Date.now() - startedAt;
-      this.deps.logger.error(`${useCaseName}.unhandled`, {
+      this._baseDeps.logger.error(`${useCaseName}.unhandled`, {
         ...baseMeta,
         durationMs,
         error: this.toLoggableError(error),
