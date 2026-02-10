@@ -36,6 +36,8 @@ import { rentalsPublicKeys } from "../queries";
 import { cn } from "@/shared/lib/utils";
 import { usePublicWorkspace } from "@/shared/public-workspace";
 
+const normalizePhoneForTel = (value: string) => value.replace(/[^+\d]/g, "");
+
 export default function PublicRentalDetailScreen() {
   const { slug } = useParams<{ slug: string }>();
   const { workspaceSlug } = usePublicWorkspace();
@@ -92,6 +94,11 @@ export default function PublicRentalDetailScreen() {
     enabled: checkAvailabilityEnabled,
   });
 
+  const { data: publicSettings } = useQuery({
+    queryKey: rentalsPublicKeys.settings(workspaceSlug),
+    queryFn: () => rentalsApi.getPublicSettings(),
+  });
+
   const allImages = useMemo(() => {
     if (!property) {
       return [];
@@ -99,6 +106,36 @@ export default function PublicRentalDetailScreen() {
     const list = [...property.images].sort((a, b) => a.sortOrder - b.sortOrder);
     return list;
   }, [property]);
+
+  const hostContactAction = useMemo(() => {
+    const settings = publicSettings?.settings;
+    if (!settings) {
+      return null;
+    }
+
+    if (settings.hostContactMethod === "EMAIL" && settings.hostContactEmail) {
+      return {
+        href: `mailto:${settings.hostContactEmail}`,
+        label: "Email Host",
+        value: settings.hostContactEmail,
+        valueLabel: "Email",
+      };
+    }
+
+    if (settings.hostContactMethod === "PHONE" && settings.hostContactPhone) {
+      const tel = normalizePhoneForTel(settings.hostContactPhone);
+      if (tel) {
+        return {
+          href: `tel:${tel}`,
+          label: "Call Host",
+          value: settings.hostContactPhone,
+          valueLabel: "Phone",
+        };
+      }
+    }
+
+    return null;
+  }, [publicSettings]);
 
   useEffect(() => {
     if (api && isGalleryOpen) {
@@ -484,7 +521,7 @@ export default function PublicRentalDetailScreen() {
                       {!isCheckingAvailability && availability && (
                         <p className="text-xs opacity-90 leading-snug">
                           {availability.isAvailable
-                            ? "You can proceed to request a booking with the owner."
+                            ? "Your dates are open. Contact the host directly to confirm."
                             : "This property is blocked for some of the selected dates. Please try another range."}
                         </p>
                       )}
@@ -492,22 +529,44 @@ export default function PublicRentalDetailScreen() {
                   </div>
                 )}
 
-                <Button
-                  className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-accent/20 transition-all hover:shadow-accent/30 active:scale-[0.98]"
-                  variant="accent"
-                  disabled={!availability?.isAvailable || isCheckingAvailability}
-                >
-                  Request Booking
-                </Button>
+                {hostContactAction ? (
+                  <Button
+                    asChild
+                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-accent/20 transition-all hover:shadow-accent/30 active:scale-[0.98]"
+                    variant="accent"
+                  >
+                    <a href={hostContactAction.href}>{hostContactAction.label}</a>
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-accent/20"
+                    variant="accent"
+                    disabled
+                  >
+                    Contact Host Unavailable
+                  </Button>
+                )}
 
-                <p className="text-center text-xs text-muted-foreground">
-                  You won't be charged yet
-                </p>
+                {hostContactAction ? (
+                  <p className="text-center text-xs text-muted-foreground">
+                    {hostContactAction.valueLabel}:{" "}
+                    <a
+                      href={hostContactAction.href}
+                      className="font-medium text-foreground hover:text-accent transition-colors"
+                    >
+                      {hostContactAction.value}
+                    </a>
+                  </p>
+                ) : (
+                  <p className="text-center text-xs text-muted-foreground">
+                    Contact is handled directly with the property host.
+                  </p>
+                )}
               </CardContent>
               <CardFooter className="bg-muted/30 p-4 border-t border-border">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Info className="h-3.5 w-3.5 shrink-0" />
-                  <p>Booking is managed directly by the property owner through Corely Platform.</p>
+                  <p>Communication is managed directly between guest and property host.</p>
                 </div>
               </CardFooter>
             </Card>
@@ -526,9 +585,15 @@ export default function PublicRentalDetailScreen() {
             <Button asChild variant="ghost" size="sm">
               <a href="#">Report listing</a>
             </Button>
-            <Button asChild variant="accent" size="sm">
-              <a href="#">Contact Host</a>
-            </Button>
+            {hostContactAction ? (
+              <Button asChild variant="accent" size="sm">
+                <a href={hostContactAction.href}>{hostContactAction.label}</a>
+              </Button>
+            ) : (
+              <Button variant="accent" size="sm" disabled>
+                Contact Host
+              </Button>
+            )}
           </div>
         </div>
       </footer>

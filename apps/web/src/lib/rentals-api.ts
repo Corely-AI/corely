@@ -7,6 +7,9 @@ import type {
   CheckAvailabilityInput,
   CheckAvailabilityOutput,
   RentalCategory,
+  GetRentalContactSettingsOutput,
+  UpdateRentalContactSettingsInput,
+  UpdateRentalContactSettingsOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 import { resolveCmsApiBaseUrl, buildPublicFileUrl } from "./cms-api";
@@ -148,6 +151,21 @@ export class RentalsApi {
     });
   }
 
+  async getSettings(): Promise<GetRentalContactSettingsOutput> {
+    return apiClient.get<GetRentalContactSettingsOutput>("/rentals/settings", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updateSettings(
+    input: UpdateRentalContactSettingsInput
+  ): Promise<UpdateRentalContactSettingsOutput> {
+    return apiClient.patch<UpdateRentalContactSettingsOutput>("/rentals/settings", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
   async createCategory(input: { name: string; slug: string }): Promise<RentalCategory> {
     return apiClient.post<RentalCategory>("/rentals/categories", input, {
       idempotencyKey: apiClient.generateIdempotencyKey(),
@@ -171,6 +189,12 @@ export class RentalsApi {
   // Categories (Public)
   async listPublicCategories(): Promise<RentalCategory[]> {
     return requestPublic<RentalCategory[]>("/public/rentals/categories", {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getPublicSettings(): Promise<GetRentalContactSettingsOutput> {
+    return requestPublic<GetRentalContactSettingsOutput>("/public/rentals/settings", {
       correlationId: apiClient.generateCorrelationId(),
     });
   }

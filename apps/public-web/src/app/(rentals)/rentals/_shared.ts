@@ -165,9 +165,12 @@ export async function getRentalDetailPageData(input: {
   slug: string;
 }) {
   const { host, protocol } = input.ctx;
-  const propertyResult = await publicApi
-    .getRentalProperty(input.slug, input.workspaceSlug ?? null)
-    .catch((error) => ({ error }));
+  const [propertyResult, settingsResult] = await Promise.all([
+    publicApi
+      .getRentalProperty(input.slug, input.workspaceSlug ?? null)
+      .catch((error) => ({ error })),
+    publicApi.getRentalSettings(input.workspaceSlug ?? null).catch((error) => ({ error })),
+  ]);
 
   if ("error" in propertyResult) {
     const resolved = resolvePublicError(propertyResult.error);
@@ -181,6 +184,7 @@ export async function getRentalDetailPageData(input: {
   }
 
   const property = propertyResult;
+  const contactSettings = "error" in settingsResult ? null : settingsResult.settings;
 
   const canonical = resolveCanonicalUrl({
     host,
@@ -215,12 +219,12 @@ export async function getRentalDetailPageData(input: {
   ]);
   const faqs = [
     {
-      question: "How do I request a booking?",
-      answer: "Choose your dates and submit a booking request to the host via Corely.",
+      question: "How do I contact the host?",
+      answer: "Choose your dates, then use the Call Host or Email Host button on this listing.",
     },
     {
       question: "Is my payment captured immediately?",
-      answer: "No. You can request a booking without being charged right away.",
+      answer: "No. Contact is handled directly with the host before any payment flow.",
     },
   ];
 
@@ -258,6 +262,7 @@ export async function getRentalDetailPageData(input: {
   return {
     kind: "ok" as const,
     property,
+    contactSettings,
     summary,
     bullets,
     faqs,
