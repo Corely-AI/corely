@@ -39,7 +39,7 @@ export const envSchema = z.object({
   // ============================================================================
   // WORKER
   // ============================================================================
-  WORKER_API_BASE_URL: z.string().url().optional(),
+  API_BASE_URL: z.string().url().optional(),
   WORKER_API_SERVICE_TOKEN: z.string().optional(),
 
   // Worker Tick Configuration

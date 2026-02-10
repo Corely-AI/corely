@@ -82,10 +82,10 @@ export class MonthlyBillingRunnerService implements Runner {
   }
 
   private resolveRunSchedule(): RunSchedule | null {
-    const baseUrl = this.env.WORKER_API_BASE_URL;
+    const baseUrl = this.env.API_BASE_URL;
     if (!baseUrl) {
       if (!this.warnedMissingConfig) {
-        this.logger.warn("WORKER_API_BASE_URL not set; skipping classes billing runs.");
+        this.logger.warn("API_BASE_URL not set; skipping classes billing runs.");
         this.warnedMissingConfig = true;
       }
       return null;
@@ -147,7 +147,7 @@ export class MonthlyBillingRunnerService implements Runner {
     month: string,
     maxTenants: number
   ): Promise<{ processedCount: number; skippedCount: number; errorCount: number }> {
-    const baseUrl = this.env.WORKER_API_BASE_URL;
+    const baseUrl = this.env.API_BASE_URL;
     if (!baseUrl) {
       return { processedCount: 0, skippedCount: 0, errorCount: 0 };
     }

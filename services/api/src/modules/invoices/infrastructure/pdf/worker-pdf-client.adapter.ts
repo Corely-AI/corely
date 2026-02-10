@@ -17,7 +17,7 @@ export class WorkerPdfClientAdapter implements InvoicePdfRendererPort {
     model: InvoicePdfModel;
   }): Promise<Buffer> {
     const { tenantId, invoiceId } = args;
-    const workerUrl = this.env.WORKER_API_BASE_URL;
+    const workerUrl = this.env.API_BASE_URL;
     const workerKey = process.env.INTERNAL_WORKER_KEY;
 
     if (!workerUrl) {
