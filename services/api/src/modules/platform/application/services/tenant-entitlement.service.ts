@@ -1,5 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { ForbiddenError } from "@corely/kernel";
+import { ForbiddenError, TENANT_ENTITLEMENTS_READ_PORT_TOKEN } from "@corely/kernel";
+import type { TenantEntitlementsReadPort } from "@corely/kernel";
 import { TenantEntitlement } from "../../domain/entitlement.aggregate";
 import { APP_REGISTRY_TOKEN, type AppRegistryPort } from "../ports/app-registry.port";
 import {
@@ -17,7 +18,9 @@ export class TenantEntitlementService {
     @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
     private readonly appInstallRepo: TenantAppInstallRepositoryPort,
     @Inject(APP_REGISTRY_TOKEN)
-    private readonly appRegistry: AppRegistryPort
+    private readonly appRegistry: AppRegistryPort,
+    @Inject(TENANT_ENTITLEMENTS_READ_PORT_TOKEN)
+    private readonly entitlementsReadPort: TenantEntitlementsReadPort
   ) {}
 
   /**
@@ -25,7 +28,14 @@ export class TenantEntitlementService {
    */
   async getTenantEntitlement(tenantId: string): Promise<TenantEntitlement> {
     const installs = await this.appInstallRepo.listEnabledByTenant(tenantId);
-    const enabledAppIds = installs.map((i) => i.appId);
+
+    // Fetch effective enablement from platform-entitlements (includes overrides)
+    const enablementMap = await this.entitlementsReadPort.getAppEnablementMap(tenantId);
+
+    // Filter installs: Must be installed AND enabled in configuration
+    const enabledAppIds = installs
+      .map((i) => i.appId)
+      .filter((appId) => enablementMap[appId] === true);
 
     return TenantEntitlement.fromEnabledApps(tenantId, enabledAppIds, this.appRegistry);
   }

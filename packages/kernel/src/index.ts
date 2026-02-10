@@ -25,6 +25,7 @@ export * from "./ports/invoice-email-delivery.port";
 export * from "./ports/invoice-reminder.port";
 export * from "./ports/document-link.port";
 export * from "./ports/unit-of-work.port";
+export * from "./ports/tenant-entitlements-read.port";
 export * from "./soft-delete";
 export * from "./testing/fake-id-generator";
 export * from "./testing/fixed-clock";
