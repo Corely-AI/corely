@@ -40,9 +40,7 @@ const apiAliasPlugin = {
     }));
 
     build.onResolve({ filter: /^@shared\// }, (args) => ({
-      path: resolveFile(
-        path.resolve(apiSrcDir, "shared", args.path.slice("@shared/".length))
-      ),
+      path: resolveFile(path.resolve(apiSrcDir, "shared", args.path.slice("@shared/".length))),
     }));
   },
 };
