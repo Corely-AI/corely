@@ -7,6 +7,9 @@ export type RentalStatus = z.infer<typeof RentalStatusSchema>;
 export const AvailabilityStatusSchema = z.enum(["AVAILABLE", "BLOCKED"]);
 export type AvailabilityStatus = z.infer<typeof AvailabilityStatusSchema>;
 
+export const RentalHostContactMethodSchema = z.enum(["EMAIL", "PHONE"]);
+export type RentalHostContactMethod = z.infer<typeof RentalHostContactMethodSchema>;
+
 export const RentalPropertyImageSchema = z.object({
   id: z.string(),
   fileId: z.string(),

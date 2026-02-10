@@ -22,6 +22,11 @@ export const rentalsPublicKeys = {
     workspaceSlug ?? "unknown",
     "categories",
   ],
+  settings: (workspaceSlug?: string | null) => [
+    "rentals/public",
+    workspaceSlug ?? "unknown",
+    "settings",
+  ],
   availability: (
     workspaceSlug: string | null | undefined,
     slug: string,
@@ -29,4 +34,5 @@ export const rentalsPublicKeys = {
     to: string
   ) => ["rentals/public/availability", workspaceSlug ?? "unknown", slug, from, to],
   adminList: (params?: ListRentalPropertiesInput) => ["rentals/admin/properties", params ?? {}],
+  adminSettings: () => ["rentals/admin/settings"],
 };

@@ -25,10 +25,21 @@ import { ListCategoriesUseCase } from "./application/use-cases/list-categories.u
 import { DeleteCategoryUseCase } from "./application/use-cases/delete-category.usecase";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 import { RentalsCategoryController } from "./adapters/http/rentals-category.controller";
+import { RentalsSettingsController } from "./adapters/http/rentals-settings.controller";
+import { ExtKvRentalSettingsRepository } from "./infrastructure/adapters/ext-kv-rental-settings.repository";
+import { RENTAL_SETTINGS_REPOSITORY_PORT } from "./application/ports/settings-repository.port";
+import { GetRentalSettingsUseCase } from "./application/use-cases/get-rental-settings.usecase";
+import { UpdateRentalSettingsUseCase } from "./application/use-cases/update-rental-settings.usecase";
+import { GetPublicRentalSettingsUseCase } from "./application/use-cases/get-public-rental-settings.usecase";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule],
-  controllers: [RentalsPropertyController, RentalsCategoryController, PublicRentalsController],
+  controllers: [
+    RentalsPropertyController,
+    RentalsCategoryController,
+    RentalsSettingsController,
+    PublicRentalsController,
+  ],
   providers: [
     PrismaPropertyRepoAdapter,
     { provide: PROPERTY_REPO_PORT, useExisting: PrismaPropertyRepoAdapter },
@@ -36,6 +47,8 @@ import { RentalsCategoryController } from "./adapters/http/rentals-category.cont
     { provide: CATEGORY_REPO_PORT, useExisting: PrismaCategoryRepoAdapter },
     PrismaAvailabilityRepoAdapter,
     { provide: AVAILABILITY_REPO_PORT, useExisting: PrismaAvailabilityRepoAdapter },
+    ExtKvRentalSettingsRepository,
+    { provide: RENTAL_SETTINGS_REPOSITORY_PORT, useExisting: ExtKvRentalSettingsRepository },
     {
       provide: CreatePropertyUseCase,
       useFactory: (repo: PrismaPropertyRepoAdapter) =>
@@ -122,6 +135,27 @@ import { RentalsCategoryController } from "./adapters/http/rentals-category.cont
       inject: [CATEGORY_REPO_PORT],
     },
     {
+      provide: GetRentalSettingsUseCase,
+      useFactory: (settingsRepo: ExtKvRentalSettingsRepository) =>
+        new GetRentalSettingsUseCase({ settingsRepo, logger: new NestLoggerAdapter() } as any),
+      inject: [RENTAL_SETTINGS_REPOSITORY_PORT],
+    },
+    {
+      provide: UpdateRentalSettingsUseCase,
+      useFactory: (settingsRepo: ExtKvRentalSettingsRepository) =>
+        new UpdateRentalSettingsUseCase({ settingsRepo, logger: new NestLoggerAdapter() } as any),
+      inject: [RENTAL_SETTINGS_REPOSITORY_PORT],
+    },
+    {
+      provide: GetPublicRentalSettingsUseCase,
+      useFactory: (settingsRepo: ExtKvRentalSettingsRepository) =>
+        new GetPublicRentalSettingsUseCase({
+          settingsRepo,
+          logger: new NestLoggerAdapter(),
+        } as any),
+      inject: [RENTAL_SETTINGS_REPOSITORY_PORT],
+    },
+    {
       provide: RentalsApplication,
       useFactory: (
         createProperty: CreatePropertyUseCase,
@@ -135,7 +169,10 @@ import { RentalsCategoryController } from "./adapters/http/rentals-category.cont
         createCategory: CreateCategoryUseCase,
         updateCategory: UpdateCategoryUseCase,
         listCategories: ListCategoriesUseCase,
-        deleteCategory: DeleteCategoryUseCase
+        deleteCategory: DeleteCategoryUseCase,
+        getSettings: GetRentalSettingsUseCase,
+        updateSettings: UpdateRentalSettingsUseCase,
+        getPublicSettings: GetPublicRentalSettingsUseCase
       ) =>
         new RentalsApplication(
           createProperty,
@@ -149,7 +186,10 @@ import { RentalsCategoryController } from "./adapters/http/rentals-category.cont
           createCategory,
           updateCategory,
           listCategories,
-          deleteCategory
+          deleteCategory,
+          getSettings,
+          updateSettings,
+          getPublicSettings
         ),
       inject: [
         CreatePropertyUseCase,
@@ -164,6 +204,9 @@ import { RentalsCategoryController } from "./adapters/http/rentals-category.cont
         UpdateCategoryUseCase,
         ListCategoriesUseCase,
         DeleteCategoryUseCase,
+        GetRentalSettingsUseCase,
+        UpdateRentalSettingsUseCase,
+        GetPublicRentalSettingsUseCase,
       ],
     },
   ],

@@ -1,18 +1,22 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Home, Tags } from "lucide-react";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
+import { Label } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { EmptyState } from "@/shared/components/EmptyState";
 import { CrudListPageLayout, CrudRowActions, useCrudUrlState } from "@/shared/crud";
 import { formatDate } from "@/shared/lib/formatters";
 import { rentalsApi } from "@/lib/rentals-api";
-import { rentalPropertyKeys } from "../queries";
+import { rentalPropertyKeys, rentalsPublicKeys } from "../queries";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { getPublicRentalUrl } from "@/shared/lib/public-urls";
+import { toast } from "sonner";
+import type { RentalHostContactMethod } from "@corely/contracts";
 
 const statusOptions = [
   { label: "All statuses", value: "" },
@@ -34,8 +38,12 @@ const statusVariant = (status: string) => {
 
 export default function RentalPropertiesPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [listState, setListState] = useCrudUrlState({ pageSize: 10 });
   const { activeWorkspace } = useWorkspace();
+  const [hostContactMethod, setHostContactMethod] = useState<RentalHostContactMethod | null>(null);
+  const [hostContactEmail, setHostContactEmail] = useState("");
+  const [hostContactPhone, setHostContactPhone] = useState("");
 
   const filters = useMemo(() => listState.filters ?? {}, [listState.filters]);
   const statusFilter = typeof filters.status === "string" ? filters.status : "";
@@ -52,6 +60,53 @@ export default function RentalPropertiesPage() {
         status: statusFilter ? (statusFilter as any) : undefined,
         q: listState.q,
       }),
+  });
+
+  const { data: settingsResult, isLoading: isLoadingSettings } = useQuery({
+    queryKey: rentalsPublicKeys.adminSettings(),
+    queryFn: () => rentalsApi.getSettings(),
+  });
+
+  useEffect(() => {
+    if (!settingsResult) {
+      return;
+    }
+    setHostContactMethod(settingsResult.settings.hostContactMethod);
+    setHostContactEmail(settingsResult.settings.hostContactEmail ?? "");
+    setHostContactPhone(settingsResult.settings.hostContactPhone ?? "");
+  }, [settingsResult]);
+
+  const saveSettingsMutation = useMutation({
+    mutationFn: async () => {
+      const normalizedEmail = hostContactEmail.trim();
+      const normalizedPhone = hostContactPhone.trim();
+
+      if (hostContactMethod === "EMAIL" && !normalizedEmail) {
+        throw new Error("Email is required when method is Email.");
+      }
+      if (hostContactMethod === "PHONE" && !normalizedPhone) {
+        throw new Error("Phone is required when method is Phone.");
+      }
+
+      return rentalsApi.updateSettings({
+        hostContactMethod,
+        hostContactEmail: hostContactMethod === "EMAIL" ? normalizedEmail : null,
+        hostContactPhone: hostContactMethod === "PHONE" ? normalizedPhone : null,
+      });
+    },
+    onSuccess: async (updated) => {
+      setHostContactMethod(updated.settings.hostContactMethod);
+      setHostContactEmail(updated.settings.hostContactEmail ?? "");
+      setHostContactPhone(updated.settings.hostContactPhone ?? "");
+      await queryClient.invalidateQueries({ queryKey: rentalsPublicKeys.adminSettings() });
+      await queryClient.invalidateQueries({
+        queryKey: rentalsPublicKeys.settings(activeWorkspace?.slug),
+      });
+      toast.success("Global rental contact updated");
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : "Failed to update rental contact");
+    },
   });
 
   const toolbar = (
@@ -112,6 +167,78 @@ export default function RentalPropertiesPage() {
       primaryAction={primaryAction}
       toolbar={toolbar}
     >
+      <Card>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold">Global Host Contact</h2>
+              <p className="text-sm text-muted-foreground">
+                This contact is used for all public rental detail pages.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => saveSettingsMutation.mutate()}
+              disabled={saveSettingsMutation.isPending || isLoadingSettings}
+            >
+              Save Contact
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Contact Method</Label>
+              <Select
+                value={hostContactMethod ?? "NONE"}
+                onValueChange={(value) =>
+                  setHostContactMethod(value === "NONE" ? null : (value as RentalHostContactMethod))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose contact method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NONE">Not configured</SelectItem>
+                  <SelectItem value="PHONE">Phone call</SelectItem>
+                  <SelectItem value="EMAIL">Email</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              {hostContactMethod === "EMAIL" ? (
+                <>
+                  <Label htmlFor="global-host-email">Host Email</Label>
+                  <Input
+                    id="global-host-email"
+                    type="email"
+                    value={hostContactEmail}
+                    onChange={(event) => setHostContactEmail(event.target.value)}
+                    placeholder="host@example.com"
+                  />
+                </>
+              ) : hostContactMethod === "PHONE" ? (
+                <>
+                  <Label htmlFor="global-host-phone">Host Phone</Label>
+                  <Input
+                    id="global-host-phone"
+                    value={hostContactPhone}
+                    onChange={(event) => setHostContactPhone(event.target.value)}
+                    placeholder="+1 555 123 4567"
+                  />
+                </>
+              ) : (
+                <>
+                  <Label>Host Contact Value</Label>
+                  <div className="h-10 rounded-md border border-dashed px-3 text-sm text-muted-foreground flex items-center">
+                    Select a method to provide host contact details.
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardContent className="p-0">
           {isLoading ? (

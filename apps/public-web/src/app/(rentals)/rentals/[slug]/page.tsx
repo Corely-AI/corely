@@ -20,7 +20,8 @@ export default async function RentalDetailPage({ params }: { params: Promise<{ s
   if (result.kind === "disabled") {
     return <PublicDisabledState message={result.message} />;
   }
-  const { property, summary, bullets, faqs, basePath, breadcrumb, schema } = result;
+  const { property, contactSettings, summary, bullets, faqs, basePath, breadcrumb, schema } =
+    result;
 
   return (
     <>
@@ -29,6 +30,7 @@ export default async function RentalDetailPage({ params }: { params: Promise<{ s
       <JsonLd data={buildFaqSchema(faqs)} />
       <RentalDetailClient
         property={property}
+        contactSettings={contactSettings}
         basePath={basePath}
         summary={summary}
         bullets={bullets}

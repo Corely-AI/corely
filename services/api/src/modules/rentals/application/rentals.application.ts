@@ -10,6 +10,9 @@ import { type CreateCategoryUseCase } from "./use-cases/create-category.usecase"
 import { type UpdateCategoryUseCase } from "./use-cases/update-category.usecase";
 import { type ListCategoriesUseCase } from "./use-cases/list-categories.usecase";
 import { type DeleteCategoryUseCase } from "./use-cases/delete-category.usecase";
+import { type GetRentalSettingsUseCase } from "./use-cases/get-rental-settings.usecase";
+import { type UpdateRentalSettingsUseCase } from "./use-cases/update-rental-settings.usecase";
+import { type GetPublicRentalSettingsUseCase } from "./use-cases/get-public-rental-settings.usecase";
 
 export class RentalsApplication {
   constructor(
@@ -24,6 +27,9 @@ export class RentalsApplication {
     public readonly createCategory: CreateCategoryUseCase,
     public readonly updateCategory: UpdateCategoryUseCase,
     public readonly listCategories: ListCategoriesUseCase,
-    public readonly deleteCategory: DeleteCategoryUseCase
+    public readonly deleteCategory: DeleteCategoryUseCase,
+    public readonly getSettings: GetRentalSettingsUseCase,
+    public readonly updateSettings: UpdateRentalSettingsUseCase,
+    public readonly getPublicSettings: GetPublicRentalSettingsUseCase
   ) {}
 }

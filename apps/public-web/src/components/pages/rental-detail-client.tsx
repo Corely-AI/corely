@@ -35,7 +35,7 @@ import {
   cn,
   type CarouselApi,
 } from "@/components/ui";
-import type { RentalProperty } from "@corely/contracts";
+import type { RentalContactSettings, RentalProperty } from "@corely/contracts";
 import { buildPublicFileUrl, publicApi } from "@/lib/public-api";
 import { AnswerBlock } from "@/components/sections/answer-block";
 import { FaqBlock, type FaqItem } from "@/components/sections/faq-block";
@@ -75,8 +75,40 @@ const isPastDay = (date: Date) => {
 
 const isBeforeDay = (date: Date, compare: Date) => date.getTime() < compare.getTime();
 
+const normalizePhoneForTel = (value: string) => value.replace(/[^+\d]/g, "");
+
+const resolveHostContactAction = (settings: RentalContactSettings | null | undefined) => {
+  if (!settings) {
+    return null;
+  }
+
+  if (settings.hostContactMethod === "EMAIL" && settings.hostContactEmail) {
+    return {
+      href: `mailto:${settings.hostContactEmail}`,
+      label: "Email Host",
+      value: settings.hostContactEmail,
+      valueLabel: "Email",
+    };
+  }
+
+  if (settings.hostContactMethod === "PHONE" && settings.hostContactPhone) {
+    const tel = normalizePhoneForTel(settings.hostContactPhone);
+    if (tel) {
+      return {
+        href: `tel:${tel}`,
+        label: "Call Host",
+        value: settings.hostContactPhone,
+        valueLabel: "Phone",
+      };
+    }
+  }
+
+  return null;
+};
+
 export function RentalDetailClient({
   property,
+  contactSettings,
   workspaceSlug,
   basePath,
   summary,
@@ -84,6 +116,7 @@ export function RentalDetailClient({
   faqs,
 }: {
   property: RentalProperty;
+  contactSettings?: RentalContactSettings | null;
   workspaceSlug?: string | null;
   basePath: string;
   summary: string;
@@ -169,6 +202,7 @@ export function RentalDetailClient({
   const offers = property.offers?.length
     ? property.offers
     : ["Wifi", "Kitchen", "Free parking on premises", "Air conditioning"];
+  const hostContactAction = resolveHostContactAction(contactSettings);
 
   useEffect(() => {
     if (api && isGalleryOpen) {
@@ -569,7 +603,7 @@ export function RentalDetailClient({
                       {!isCheckingResult && availabilityResult && (
                         <p className="text-xs opacity-90 leading-snug">
                           {availabilityResult.isAvailable
-                            ? "You can proceed to request a booking with the owner."
+                            ? "Your dates are open. Contact the host directly to confirm."
                             : "This property is blocked for some of the selected dates. Please try another range."}
                         </p>
                       )}
@@ -577,22 +611,44 @@ export function RentalDetailClient({
                   </div>
                 )}
 
-                <Button
-                  className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-accent/20 transition-all hover:shadow-accent/30 active:scale-[0.98]"
-                  variant="accent"
-                  disabled={!availabilityResult?.isAvailable || isCheckingResult}
-                >
-                  Request Booking
-                </Button>
+                {hostContactAction ? (
+                  <Button
+                    asChild
+                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-accent/20 transition-all hover:shadow-accent/30 active:scale-[0.98]"
+                    variant="accent"
+                  >
+                    <a href={hostContactAction.href}>{hostContactAction.label}</a>
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full h-14 rounded-xl text-lg font-bold shadow-lg shadow-accent/20"
+                    variant="accent"
+                    disabled
+                  >
+                    Contact Host Unavailable
+                  </Button>
+                )}
 
-                <p className="text-center text-xs text-muted-foreground">
-                  You won't be charged yet
-                </p>
+                {hostContactAction ? (
+                  <p className="text-center text-xs text-muted-foreground">
+                    {hostContactAction.valueLabel}:{" "}
+                    <a
+                      href={hostContactAction.href}
+                      className="font-medium text-foreground hover:text-accent transition-colors"
+                    >
+                      {hostContactAction.value}
+                    </a>
+                  </p>
+                ) : (
+                  <p className="text-center text-xs text-muted-foreground">
+                    Contact is handled directly with the property host.
+                  </p>
+                )}
               </CardContent>
               <CardFooter className="bg-muted/30 p-4 border-t border-border">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Info className="h-3.5 w-3.5 shrink-0" />
-                  <p>Booking is managed directly by the property owner through Corely Platform.</p>
+                  <p>Communication is managed directly between guest and property host.</p>
                 </div>
               </CardFooter>
             </Card>
@@ -610,9 +666,15 @@ export function RentalDetailClient({
             <Button asChild variant="ghost" size="sm">
               <a href="#">Report listing</a>
             </Button>
-            <Button asChild variant="accent" size="sm">
-              <a href="#">Contact Host</a>
-            </Button>
+            {hostContactAction ? (
+              <Button asChild variant="accent" size="sm">
+                <a href={hostContactAction.href}>{hostContactAction.label}</a>
+              </Button>
+            ) : (
+              <Button variant="accent" size="sm" disabled>
+                Contact Host
+              </Button>
+            )}
           </div>
         </div>
       </footer>
