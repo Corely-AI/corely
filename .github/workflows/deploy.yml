@@ -49,15 +49,15 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # - name: Build and Push Worker
-      #   uses: docker/build-push-action@v6
-      #   with:
-      #     context: .
-      #     file: Dockerfile.worker
-      #     push: true
-      #     tags: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
+      - name: Build and Push Worker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.worker
+          push: true
+          tags: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Deploy API to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
@@ -75,43 +75,47 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
 
-      # - name: Run DB migrations (Cloud Run job)
-      #   shell: bash
-      #   run: |
-      #     set -euo pipefail
+      - name: Run DB migrations (Cloud Run job)
+        shell: bash
+        run: |
+          set -euo pipefail
 
-      #     JOB_NAME="corely-api-migrate"
-      #     IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}"
+          JOB_NAME="corely-api-migrate"
+          IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}"
+          DATABASE_URL="$(gcloud run services describe corely-api \
+            --region "${{ env.REGION }}" \
+            --format='value(spec.template.spec.containers[0].env[?name=DATABASE_URL].value)')"
 
-      #     if gcloud run jobs describe "$JOB_NAME" --region "${{ env.REGION }}" >/dev/null 2>&1; then
-      #       gcloud run jobs update "$JOB_NAME" \
-      #         --region "${{ env.REGION }}" \
-      #         --image "$IMAGE" \
-      #         --command "sh" \
-      #         --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
-      #         --set-env-vars "NODE_ENV=production" \
-      #         --set-secrets "DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest"
-      #     else
-      #       gcloud run jobs create "$JOB_NAME" \
-      #         --region "${{ env.REGION }}" \
-      #         --image "$IMAGE" \
-      #         --command "sh" \
-      #         --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
-      #         --set-env-vars "NODE_ENV=production" \
-      #         --set-secrets "DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest"
-      #     fi
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "DATABASE_URL is missing on Cloud Run service corely-api."
+            exit 1
+          fi
 
-      #     gcloud run jobs execute "$JOB_NAME" --region "${{ env.REGION }}" --wait
+          if gcloud run jobs describe "$JOB_NAME" --region "${{ env.REGION }}" >/dev/null 2>&1; then
+            gcloud run jobs update "$JOB_NAME" \
+              --region "${{ env.REGION }}" \
+              --image "$IMAGE" \
+              --command "sh" \
+              --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
+              --set-env-vars "NODE_ENV=production,DATABASE_URL=${DATABASE_URL}"
+          else
+            gcloud run jobs create "$JOB_NAME" \
+              --region "${{ env.REGION }}" \
+              --image "$IMAGE" \
+              --command "sh" \
+              --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
+              --set-env-vars "NODE_ENV=production,DATABASE_URL=${DATABASE_URL}"
+          fi
 
-      # - name: Deploy Worker to Cloud Run
-      #   uses: google-github-actions/deploy-cloudrun@v2
-      #   with:
-      #     service: corely-worker
-      #     region: ${{ env.REGION }}
-      #     image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
-      #     flags: --port=3000
-      #     env_vars: |
-      #       NODE_ENV=production
-      #       WORKFLOW_QUEUE_DRIVER=cloudtasks
-      #     # secrets: |
-      #     #   DATABASE_URL=projects/${{ env.PROJECT_ID }}/secrets/DATABASE_URL:latest
+          gcloud run jobs execute "$JOB_NAME" --region "${{ env.REGION }}" --wait
+
+      - name: Deploy Worker to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: corely-worker
+          region: ${{ env.REGION }}
+          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
+          flags: --port=3000
+          env_vars: |
+            NODE_ENV=production
+            WORKFLOW_QUEUE_DRIVER=memory
