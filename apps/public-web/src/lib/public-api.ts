@@ -1,6 +1,7 @@
 import { request } from "@corely/api-client";
 import {
   CheckAvailabilityOutputSchema,
+  GetRentalContactSettingsOutputSchema,
   GetPublicCmsPostOutputSchema,
   ListPublicCmsPostsOutputSchema,
   GetPublicRentalPropertyOutputSchema,
@@ -119,6 +120,12 @@ export const publicApi = {
     );
     const data = await request({ url });
     return CheckAvailabilityOutputSchema.parse(data);
+  },
+
+  async getRentalSettings(workspaceSlug?: string | null) {
+    const url = buildUrl("/public/rentals/settings", undefined, workspaceSlug);
+    const data = await request({ url });
+    return GetRentalContactSettingsOutputSchema.parse(data);
   },
 
   async listBlogPosts(input: {

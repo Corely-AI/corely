@@ -3,6 +3,7 @@ import type { Request } from "express";
 import {
   CheckAvailabilityInputSchema,
   CheckAvailabilityOutputSchema,
+  GetRentalContactSettingsOutputSchema,
   GetPublicRentalPropertyOutputSchema,
   ListPublicRentalPropertiesInputSchema,
   ListPublicRentalPropertiesOutputSchema,
@@ -57,5 +58,13 @@ export class PublicRentalsController {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listCategories.execute(undefined, ctx);
     return ListRentalCategoriesOutputSchema.parse(mapResultToHttp(result));
+  }
+
+  @Get("settings")
+  @Header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=120")
+  async getSettings(@Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.getPublicSettings.execute(undefined, ctx);
+    return GetRentalContactSettingsOutputSchema.parse(mapResultToHttp(result));
   }
 }
