@@ -1432,7 +1432,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/storage
       '@google-cloud/speech':
-        specifier: ^6.6.1
+        specifier: ^6.7.1
         version: 6.7.1
       '@google-cloud/storage':
         specifier: ^7.14.0
