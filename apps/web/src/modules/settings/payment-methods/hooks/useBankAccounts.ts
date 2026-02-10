@@ -4,14 +4,22 @@ import type { CreateBankAccountInput, UpdateBankAccountInput } from "@corely/con
 import { paymentMethodsApi } from "@/lib/payment-methods-api";
 
 export const bankAccountQueryKeys = {
-  list: (legalEntityId: string) => ["bank-accounts", legalEntityId] as const,
+  list: (legalEntityId: string, includeSensitive = false) =>
+    ["bank-accounts", legalEntityId, includeSensitive] as const,
   detail: (id: string) => ["bank-account", id] as const,
 };
 
-export function useBankAccounts(legalEntityId: string) {
+export function useBankAccounts(
+  legalEntityId: string,
+  options?: {
+    includeSensitive?: boolean;
+  }
+) {
+  const includeSensitive = options?.includeSensitive ?? false;
+
   return useQuery({
-    queryKey: bankAccountQueryKeys.list(legalEntityId),
-    queryFn: () => paymentMethodsApi.listBankAccounts(legalEntityId),
+    queryKey: bankAccountQueryKeys.list(legalEntityId, includeSensitive),
+    queryFn: () => paymentMethodsApi.listBankAccounts(legalEntityId, { includeSensitive }),
     staleTime: 30 * 1000,
   });
 }
@@ -27,7 +35,7 @@ export function useCreateBankAccount() {
     onSuccess: (_, { legalEntityId }) => {
       toast.success("Bank account created");
       void queryClient.invalidateQueries({
-        queryKey: bankAccountQueryKeys.list(legalEntityId),
+        queryKey: ["bank-accounts", legalEntityId],
       });
     },
     onError: (error: Error) => {
@@ -54,7 +62,7 @@ export function useUpdateBankAccount() {
     onSuccess: (_, { legalEntityId, id }) => {
       toast.success("Bank account updated");
       void queryClient.invalidateQueries({
-        queryKey: bankAccountQueryKeys.list(legalEntityId),
+        queryKey: ["bank-accounts", legalEntityId],
       });
       void queryClient.invalidateQueries({
         queryKey: bankAccountQueryKeys.detail(id),
@@ -76,7 +84,7 @@ export function useSetBankAccountDefault() {
     onSuccess: (_, { legalEntityId }) => {
       toast.success("Bank account set as default");
       void queryClient.invalidateQueries({
-        queryKey: bankAccountQueryKeys.list(legalEntityId),
+        queryKey: ["bank-accounts", legalEntityId],
       });
     },
     onError: (error: Error) => {
@@ -95,7 +103,7 @@ export function useDeactivateBankAccount() {
     onSuccess: (_, { legalEntityId }) => {
       toast.success("Bank account deactivated");
       void queryClient.invalidateQueries({
-        queryKey: bankAccountQueryKeys.list(legalEntityId),
+        queryKey: ["bank-accounts", legalEntityId],
       });
     },
     onError: (error: Error) => {

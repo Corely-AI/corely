@@ -3,6 +3,7 @@ import {
   type LoggerPort,
   RequireTenant,
   ValidationError,
+  err,
   isErr,
   ok,
   type ObjectStoragePort,
@@ -63,7 +64,10 @@ export class GetInvoicePdfUseCase extends BaseUseCase<GetInvoicePdfInput, GetInv
     input: GetInvoicePdfInput,
     ctx: UseCaseContext
   ): Promise<Result<GetInvoicePdfOutput, UseCaseError>> {
-    const tenantId = ctx.tenantId!;
+    const tenantId = ctx.workspaceId ?? ctx.tenantId;
+    if (!tenantId) {
+      return err(new ValidationError("workspaceId or tenantId is required"));
+    }
     const waitMs = this.resolveWaitMs(input.waitMs);
 
     const requestResult = await this.deps.requestInvoicePdf.execute(

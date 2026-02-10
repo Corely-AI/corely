@@ -1,25 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Body,
-  Param,
-  UseGuards,
-  Inject,
-  Optional,
-} from "@nestjs/common";
+import { Controller, Get, Post, Patch, Body, Param, UseGuards, Inject } from "@nestjs/common";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { resolveRequestContext } from "@/shared/request-context/request-context.resolver";
 import type { Request } from "express";
 import { Req } from "@nestjs/common";
 import { CreateBankAccountInputSchema, UpdateBankAccountInputSchema } from "@corely/contracts";
-import type {
-  CreateBankAccountInput,
-  UpdateBankAccountInput,
-  ListBankAccountsOutput,
-  BankAccount,
-} from "@corely/contracts";
+import type { ListBankAccountsOutput, BankAccount } from "@corely/contracts";
 import { BANK_ACCOUNT_REPOSITORY_PORT } from "../../application/ports/bank-account-repository.port";
 import type { BankAccountRepositoryPort } from "../../application/ports/bank-account-repository.port";
 import { ValidationError } from "@corely/kernel";
@@ -45,6 +30,12 @@ export class BankAccountsController {
     }
 
     const bankAccounts = await this.bankAccountRepo.listByLegalEntity(ctx.tenantId, legalEntityId);
+    const includeSensitive = String(req.query.includeSensitive ?? "").toLowerCase() === "true";
+
+    if (includeSensitive) {
+      return { bankAccounts } as ListBankAccountsOutput;
+    }
+
     return {
       bankAccounts: bankAccounts.map((acc) => ({
         ...acc,

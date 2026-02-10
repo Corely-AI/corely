@@ -118,6 +118,14 @@ export class InvoicesHttpController {
   ) {
     const input = RequestInvoicePdfInputSchema.parse({ invoiceId });
     const ctx = buildUseCaseContext(req);
+    const app = this.app ?? this.moduleRef?.get(InvoicesApplication, { strict: false });
+    if (!app) {
+      throw new Error("InvoicesApplication not available");
+    }
+
+    // Ensure invoice is accessible in current workspace context before invoking PDF pipeline.
+    mapResultToHttp(await app.getInvoiceById.execute({ invoiceId: input.invoiceId }, ctx));
+
     const docsApp =
       this.documentsApp ?? this.moduleRef?.get(DocumentsApplication, { strict: false });
     if (!docsApp) {

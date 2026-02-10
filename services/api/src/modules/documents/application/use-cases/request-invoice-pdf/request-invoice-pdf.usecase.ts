@@ -57,7 +57,10 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
     input: RequestInvoicePdfInput,
     ctx: UseCaseContext
   ): Promise<Result<RequestInvoicePdfOutput, UseCaseError>> {
-    const tenantId = ctx.tenantId!;
+    const tenantId = ctx.workspaceId ?? ctx.tenantId;
+    if (!tenantId) {
+      return err(new ValidationError("workspaceId or tenantId is required"));
+    }
     const existing = await this.useCaseDeps.documentRepo.findByTypeAndEntityLink(
       tenantId,
       "INVOICE_PDF",

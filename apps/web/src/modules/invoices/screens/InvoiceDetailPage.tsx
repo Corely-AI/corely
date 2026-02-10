@@ -238,8 +238,10 @@ export default function InvoiceDetailPage() {
             });
             const opened = window.open(response.downloadUrl, "_blank", "noopener,noreferrer");
             if (!opened) {
-              logPdfDebug("Popup blocked, navigating current tab instead", { invoiceId });
-              window.location.assign(response.downloadUrl);
+              logPdfDebug("Popup likely blocked while opening PDF", { invoiceId });
+              toast.error(t("invoices.errors.downloadFailed"), {
+                description: "Please allow pop-ups for this site and try again.",
+              });
             }
             return;
           }
@@ -589,6 +591,7 @@ export default function InvoiceDetailPage() {
 
               {/* Footer */}
               <InvoiceFooter
+                legalEntityId={invoice.legalEntityId}
                 paymentMethodId={watch("paymentMethodId")}
                 onPaymentMethodSelect={(id) => setValue("paymentMethodId", id)}
               />

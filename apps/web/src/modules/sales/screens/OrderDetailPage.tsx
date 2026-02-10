@@ -82,7 +82,14 @@ export default function OrderDetailPage() {
     mutationFn: () => salesApi.createInvoiceFromOrder(orderId ?? ""),
     onSuccess: (data) => {
       toast.success("Invoice created");
-      navigate(`/sales/invoices/${data.invoice.id}`);
+      const opened = window.open(
+        `/sales/invoices/${data.invoice.id}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+      if (!opened) {
+        toast.error("Unable to open invoice in a new tab. Please allow pop-ups.");
+      }
     },
     onError: () => toast.error("Failed to create invoice"),
   });
