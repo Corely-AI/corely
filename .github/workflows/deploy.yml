@@ -65,15 +65,15 @@ jobs:
 
             core.setOutput("enabled", hasWorkerLabel ? "true" : "false");
 
-      - name: Build and Push API
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.api
-          push: true
-          tags: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      # - name: Build and Push API
+      #   uses: docker/build-push-action@v6
+      #   with:
+      #     context: .
+      #     file: Dockerfile.api
+      #     push: true
+      #     tags: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
 
       - name: Build and Push Worker
         if: steps.worker_label.outputs.enabled == 'true'
@@ -86,47 +86,47 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Deploy API to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: corely-api
-          region: ${{ env.REGION }}
-          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
-          flags: --port=3000 --allow-unauthenticated
-          env_vars: |
-            NODE_ENV=production
-            WORKFLOW_QUEUE_DRIVER=memory
+      # - name: Deploy API to Cloud Run
+      #   uses: google-github-actions/deploy-cloudrun@v2
+      #   with:
+      #     service: corely-api
+      #     region: ${{ env.REGION }}
+      #     image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
+      #     flags: --port=3000 --allow-unauthenticated
+      #     env_vars: |
+      #       NODE_ENV=production
+      #       WORKFLOW_QUEUE_DRIVER=memory
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
 
-      - name: Run DB migrations (Cloud Run job)
-        shell: bash
-        run: |
-          set -euo pipefail
+      # - name: Run DB migrations (Cloud Run job)
+      #   shell: bash
+      #   run: |
+      #     set -euo pipefail
 
-          JOB_NAME="corely-api-migrate"
-          IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}"
+      #     JOB_NAME="corely-api-migrate"
+      #     IMAGE="${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}"
 
-          if gcloud run jobs describe "$JOB_NAME" --region "${{ env.REGION }}" >/dev/null 2>&1; then
-            gcloud run jobs update "$JOB_NAME" \
-              --region "${{ env.REGION }}" \
-              --image "$IMAGE" \
-              --command "sh" \
-              --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
-              --set-env-vars "NODE_ENV=production,DATABASE_URL=${{ env.DATABASE_URL }}"
-          else
-            gcloud run jobs create "$JOB_NAME" \
-              --region "${{ env.REGION }}" \
-              --image "$IMAGE" \
-              --command "sh" \
-              --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
-              --set-env-vars "NODE_ENV=production,DATABASE_URL=${{ env.DATABASE_URL }}"
-          fi
+      #     if gcloud run jobs describe "$JOB_NAME" --region "${{ env.REGION }}" >/dev/null 2>&1; then
+      #       gcloud run jobs update "$JOB_NAME" \
+      #         --region "${{ env.REGION }}" \
+      #         --image "$IMAGE" \
+      #         --command "sh" \
+      #         --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
+      #         --set-env-vars "NODE_ENV=production,DATABASE_URL=${{ env.DATABASE_URL }}"
+      #     else
+      #       gcloud run jobs create "$JOB_NAME" \
+      #         --region "${{ env.REGION }}" \
+      #         --image "$IMAGE" \
+      #         --command "sh" \
+      #         --args "-c,cd /app && pnpm --filter @corely/data exec prisma migrate deploy" \
+      #         --set-env-vars "NODE_ENV=production,DATABASE_URL=${{ env.DATABASE_URL }}"
+      #     fi
 
-          gcloud run jobs execute "$JOB_NAME" --region "${{ env.REGION }}" --wait
+      #     gcloud run jobs execute "$JOB_NAME" --region "${{ env.REGION }}" --wait
 
       - name: Deploy Worker to Cloud Run
         if: steps.worker_label.outputs.enabled == 'true'
