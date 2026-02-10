@@ -113,10 +113,14 @@ export class InvoicesHttpController {
   async downloadPdf(
     @Param("invoiceId") invoiceId: string,
     @Query("waitMs") waitMsRaw: string | undefined,
+    @Query("forceRegenerate") forceRegenerateRaw: string | undefined,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ) {
-    const input = RequestInvoicePdfInputSchema.parse({ invoiceId });
+    const input = RequestInvoicePdfInputSchema.parse({
+      invoiceId,
+      forceRegenerate: this.parseBooleanFlag(forceRegenerateRaw),
+    });
     const ctx = buildUseCaseContext(req);
     const app = this.app ?? this.moduleRef?.get(InvoicesApplication, { strict: false });
     if (!app) {
@@ -188,6 +192,20 @@ export class InvoicesHttpController {
     }
 
     return Math.max(0, Math.min(30000, parsed));
+  }
+
+  private parseBooleanFlag(raw: string | undefined): boolean | undefined {
+    if (raw === undefined) {
+      return undefined;
+    }
+    const normalized = raw.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0") {
+      return false;
+    }
+    return undefined;
   }
 
   @Get(":invoiceId")

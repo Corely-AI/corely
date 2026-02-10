@@ -9,6 +9,7 @@ import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { formatMoney } from "@/shared/lib/formatters";
 import { invoicesApi } from "@/lib/invoices-api";
+import { paymentMethodsApi } from "@/lib/payment-methods-api";
 import { toast } from "sonner";
 import {
   invoiceFormSchema,
@@ -33,6 +34,7 @@ import { InvoiceMetadata } from "../components/invoice-form/InvoiceMetadata";
 import { InvoiceLineItems } from "../components/invoice-form/InvoiceLineItems";
 import { InvoiceTotals } from "../components/invoice-form/InvoiceTotals";
 import { InvoiceNotes } from "../components/invoice-form/InvoiceNotes";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 
 export default function InvoiceDetailPage() {
   const PDF_WAIT_PER_REQUEST_MS = 15000;
@@ -45,6 +47,7 @@ export default function InvoiceDetailPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
+  const { activeWorkspace } = useWorkspace();
   const locale = i18n.t("common.locale");
 
   const {
@@ -76,7 +79,7 @@ export default function InvoiceDetailPage() {
     defaultValues: getDefaultInvoiceFormValues(),
   });
 
-  const { handleSubmit, reset, watch, setValue } = methods;
+  const { handleSubmit, reset, watch, setValue, getValues } = methods;
 
   // Prepare additional customer options from invoice data
   const additionalCustomerOptions = useMemo<CustomerOption[]>(() => {
@@ -179,8 +182,49 @@ export default function InvoiceDetailPage() {
     [PDF_DEBUG]
   );
 
+  const ensureInvoicePdfDefaults = useCallback(async () => {
+    if (!id || !invoice || invoice.status !== "DRAFT") {
+      return;
+    }
+
+    const legalEntityId = invoice.legalEntityId ?? activeWorkspace?.legalEntityId;
+
+    let paymentMethodId = getValues("paymentMethodId") ?? invoice.paymentMethodId ?? undefined;
+    if (!paymentMethodId && legalEntityId) {
+      const paymentMethods = await paymentMethodsApi.listPaymentMethods(legalEntityId);
+      const selected =
+        paymentMethods.paymentMethods.find((method) => method.isDefaultForInvoicing) ??
+        paymentMethods.paymentMethods[0];
+      paymentMethodId = selected?.id;
+      if (paymentMethodId) {
+        setValue("paymentMethodId", paymentMethodId, { shouldDirty: true });
+      }
+    }
+
+    const headerPatch: UpdateInvoiceInput["headerPatch"] = {};
+    if (legalEntityId) {
+      headerPatch.legalEntityId = legalEntityId;
+    }
+    if (paymentMethodId) {
+      headerPatch.paymentMethodId = paymentMethodId;
+    }
+
+    if (Object.keys(headerPatch).length === 0) {
+      return;
+    }
+
+    logPdfDebug("Applying invoice PDF defaults before generation", {
+      invoiceId: id,
+      legalEntityId: headerPatch.legalEntityId,
+      paymentMethodId: headerPatch.paymentMethodId,
+    });
+
+    await invoicesApi.updateInvoice(id, { headerPatch });
+    await queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id) });
+  }, [activeWorkspace?.legalEntityId, getValues, id, invoice, logPdfDebug, queryClient, setValue]);
+
   const downloadPdfWithWait = useCallback(
-    async (invoiceId: string) => {
+    async (invoiceId: string, options?: { forceRegenerate?: boolean }) => {
       if (downloadInFlightRef.current) {
         const activeAbort = downloadAbortRef.current;
         if (!activeAbort || activeAbort.signal.aborted) {
@@ -208,10 +252,12 @@ export default function InvoiceDetailPage() {
 
       try {
         const startedAt = Date.now();
+        let forceRegenerate = options?.forceRegenerate === true;
         logPdfDebug("Download flow started", {
           invoiceId,
           maxWaitMs: PDF_MAX_WAIT_TOTAL_MS,
           perRequestWaitMs: PDF_WAIT_PER_REQUEST_MS,
+          forceRegenerate,
         });
 
         while (Date.now() - startedAt < PDF_MAX_WAIT_TOTAL_MS) {
@@ -223,7 +269,9 @@ export default function InvoiceDetailPage() {
           const response = await invoicesApi.downloadInvoicePdf(invoiceId, {
             waitMs,
             signal: abortController.signal,
+            forceRegenerate,
           });
+          forceRegenerate = false;
           logPdfDebug("Received invoice PDF response", {
             invoiceId,
             status: response.status,
@@ -401,7 +449,14 @@ export default function InvoiceDetailPage() {
           case "download_pdf":
           case "download-pdf":
           case "downloadPdf":
-            await downloadPdfWithWait(id);
+            await ensureInvoicePdfDefaults();
+            if (invoice?.status === "DRAFT") {
+              await invoicesApi.finalizeInvoice(id);
+              toast.success(t("invoices.issued"));
+              await queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id) });
+              await queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
+            }
+            await downloadPdfWithWait(id, { forceRegenerate: true });
             return;
           case "record_payment":
             setPaymentDialogOpen(true);
@@ -432,7 +487,7 @@ export default function InvoiceDetailPage() {
         setIsProcessing(false);
       }
     },
-    [downloadPdfWithWait, id, navigate, queryClient, t]
+    [downloadPdfWithWait, ensureInvoicePdfDefaults, id, invoice?.status, navigate, queryClient, t]
   );
 
   const onFormSubmit = async (data: InvoiceFormData) => {

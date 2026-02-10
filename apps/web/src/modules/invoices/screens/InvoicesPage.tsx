@@ -148,8 +148,17 @@ export default function InvoicesPage() {
   });
 
   const downloadPdf = useMutation({
-    mutationFn: (invoiceId: string) => invoicesApi.downloadInvoicePdf(invoiceId),
-    onSuccess: (data) => {
+    mutationFn: async ({ invoiceId, status }: { invoiceId: string; status: string }) => {
+      if (status === "DRAFT") {
+        await invoicesApi.finalizeInvoice(invoiceId);
+      }
+      return invoicesApi.downloadInvoicePdf(invoiceId, { forceRegenerate: true });
+    },
+    onSuccess: (data, variables) => {
+      if (variables.status === "DRAFT") {
+        void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.list() });
+        toast.success(t("invoices.issued"));
+      }
       if (data.status === "READY" && data.downloadUrl) {
         window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
         return;
@@ -364,7 +373,11 @@ export default function InvoicesPage() {
                               },
                               {
                                 label: "Download PDF",
-                                onClick: () => downloadPdf.mutate(invoice.id),
+                                onClick: () =>
+                                  downloadPdf.mutate({
+                                    invoiceId: invoice.id,
+                                    status: invoice.status,
+                                  }),
                                 icon: <Download className="h-4 w-4" />,
                                 disabled: downloadPdf.isPending,
                               },
