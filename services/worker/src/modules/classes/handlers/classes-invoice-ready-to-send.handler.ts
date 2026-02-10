@@ -17,9 +17,10 @@ export class ClassesInvoiceReadyToSendHandler implements EventHandler {
   private readonly logger = new Logger(ClassesInvoiceReadyToSendHandler.name);
 
   constructor(
-    private readonly repo: PrismaClassesRepository,
+    @Inject(PrismaClassesRepository) private readonly repo: PrismaClassesRepository,
+    @Inject(PrismaInvoiceEmailDeliveryAdapter)
     private readonly deliveryRepo: PrismaInvoiceEmailDeliveryAdapter,
-    private readonly outbox: OutboxRepository,
+    @Inject(OutboxRepository) private readonly outbox: OutboxRepository,
     @Inject(UNIT_OF_WORK) private readonly uow: UnitOfWorkPort,
     @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort
   ) {}

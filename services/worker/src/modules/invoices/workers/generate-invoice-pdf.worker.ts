@@ -22,8 +22,8 @@ export class GenerateInvoicePdfWorker {
   private readonly logger = new Logger(GenerateInvoicePdfWorker.name);
 
   constructor(
-    private readonly documentRepo: PrismaDocumentRepoAdapter,
-    private readonly fileRepo: PrismaFileRepoAdapter,
+    @Inject(PrismaDocumentRepoAdapter) private readonly documentRepo: PrismaDocumentRepoAdapter,
+    @Inject(PrismaFileRepoAdapter) private readonly fileRepo: PrismaFileRepoAdapter,
     @Inject(OBJECT_STORAGE_PORT) private readonly objectStorage: ObjectStoragePort,
     @Inject(INVOICE_PDF_MODEL_PORT) private readonly invoicePdfModel: InvoicePdfModelPort,
     @Inject(INVOICE_PDF_RENDERER_PORT) private readonly pdfRenderer: InvoicePdfRendererPort

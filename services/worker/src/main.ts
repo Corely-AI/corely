@@ -77,39 +77,87 @@ async function createWorkerApp(logger: Logger): Promise<{
   env: EnvService;
   close: () => Promise<void>;
 }> {
-  const driver = process.env.WORKFLOW_QUEUE_DRIVER;
-  if (driver === "cloudtasks") {
-    const app = await NestFactory.create(WorkerModule);
+  const t0 = Date.now();
+  const timeoutRaw = Number(process.env.WORKER_BOOTSTRAP_TIMEOUT_MS ?? "60000");
+  const timeoutMs = Number.isFinite(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : 60000;
+
+  logger.log(`[bootstrap] Creating worker app context (timeout=${timeoutMs}ms)...`);
+
+  let timeoutHandle: NodeJS.Timeout | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutHandle = setTimeout(() => {
+      reject(new Error(`Worker app creation timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  // Heartbeat so we can see the process is alive during long init
+  const heartbeat = setInterval(() => {
+    logger.warn(`[bootstrap] Still waiting for NestJS init... (${Date.now() - t0}ms elapsed)`);
+  }, 5_000);
+
+  try {
+    const driver = process.env.WORKFLOW_QUEUE_DRIVER;
+    if (driver === "cloudtasks") {
+      logger.log("[bootstrap] Initializing Nest application (cloudtasks driver)...");
+      const app = await Promise.race([NestFactory.create(WorkerModule), timeoutPromise]);
+      logger.log(`[bootstrap] NestFactory.create completed in ${Date.now() - t0}ms`);
+      const env = app.get(EnvService);
+      const port = Number(process.env.WORKER_PORT ?? env.WORKER_PORT ?? process.env.PORT ?? 3001);
+      logger.log(`[bootstrap] Starting HTTP listener on port ${port}...`);
+      await Promise.race([app.listen(port), timeoutPromise]);
+      logger.log(`[bootstrap] Listening on ${port} (total ${Date.now() - t0}ms)`);
+      return {
+        app,
+        env,
+        close: async () => app.close(),
+      };
+    }
+
+    logger.log("[bootstrap] Initializing Nest application context (default driver)...");
+    const app = await Promise.race([
+      NestFactory.createApplicationContext(WorkerModule),
+      timeoutPromise,
+    ]);
+    const elapsed = Date.now() - t0;
+    logger.log(`[bootstrap] App context initialized successfully in ${elapsed}ms`);
     const env = app.get(EnvService);
-    const port = Number(process.env.WORKER_PORT ?? env.WORKER_PORT ?? process.env.PORT ?? 3001);
-    await app.listen(port);
-    logger.log(`[worker] listening on ${port}`);
     return {
       app,
       env,
       close: async () => app.close(),
     };
+  } finally {
+    clearInterval(heartbeat);
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
   }
-
-  const app = await NestFactory.createApplicationContext(WorkerModule);
-  const env = app.get(EnvService);
-  return {
-    app,
-    env,
-    close: async () => app.close(),
-  };
 }
 
 async function runSingleTick(logger: Logger): Promise<void> {
+  const t0 = Date.now();
+  logger.log("[tick] Starting single tick run...");
   const { app, close } = await createWorkerApp(logger);
+  logger.log(`[tick] App created in ${Date.now() - t0}ms, resolving TickOrchestrator...`);
   try {
     const orchestrator = app.get(TickOrchestrator);
+    logger.log("[tick] TickOrchestrator resolved, executing runOnce()...");
+    const tickStart = Date.now();
     const summary = await orchestrator.runOnce();
     logger.log(
-      `[worker] tick completed runId=${summary.runId} processed=${summary.totalProcessed} errors=${summary.totalErrors} durationMs=${summary.durationMs}`
+      `[tick] runOnce() completed in ${Date.now() - tickStart}ms — runId=${summary.runId} processed=${summary.totalProcessed} errors=${summary.totalErrors} durationMs=${summary.durationMs}`
     );
+    if (Object.keys(summary.runnerResults).length > 0) {
+      for (const [name, report] of Object.entries(summary.runnerResults)) {
+        logger.log(
+          `[tick]   runner=${name} processed=${report.processedCount} updated=${report.updatedCount} skipped=${report.skippedCount} errors=${report.errorCount} durationMs=${report.durationMs}`
+        );
+      }
+    }
   } finally {
+    logger.log("[tick] Closing app context...");
     await close();
+    logger.log(`[tick] Single tick run finished (total ${Date.now() - t0}ms)`);
   }
 }
 
@@ -201,45 +249,30 @@ async function runBackgroundLoop(logger: Logger): Promise<void> {
 }
 
 async function bootstrap() {
+  const t0 = Date.now();
   const logger = new Logger("WorkerBootstrap");
+  logger.log("[bootstrap] Starting worker bootstrap...");
+  logger.log("[bootstrap] Setting up tracing...");
   await setupTracing("corely-worker");
+  logger.log(`[bootstrap] Tracing ready in ${Date.now() - t0}ms`);
 
   const mode = modeFromArg(process.argv[2]);
-  logger.log(`[worker] mode=${mode}`);
+  logger.log(`[bootstrap] mode=${mode}, pid=${process.pid}, node=${process.version}`);
 
   if (mode === "tick") {
     await runSingleTick(logger);
     await shutdownTracing();
+    logger.log(`[bootstrap] Tick mode finished (total ${Date.now() - t0}ms)`);
     return;
   }
 
-  logger.log("[worker] entering background loop");
+  logger.log("[bootstrap] Entering background loop...");
   await runBackgroundLoop(logger);
-  logger.log("[worker] background loop returned");
+  logger.log(`[bootstrap] Background loop returned (total ${Date.now() - t0}ms)`);
   await shutdownTracing();
 }
 
-async function bootstrapWithTimeout(): Promise<void> {
-  const timeoutRaw = Number(process.env.WORKER_BOOTSTRAP_TIMEOUT_MS ?? "30000");
-  const timeoutMs = Number.isFinite(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : 30000;
-
-  let timeoutHandle: NodeJS.Timeout | undefined;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutHandle = setTimeout(() => {
-      reject(new Error(`Worker bootstrap timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-  });
-
-  try {
-    await Promise.race([bootstrap(), timeoutPromise]);
-  } finally {
-    if (timeoutHandle) {
-      clearTimeout(timeoutHandle);
-    }
-  }
-}
-
-bootstrapWithTimeout().catch(async (err) => {
+bootstrap().catch(async (err) => {
   const logger = new Logger("WorkerBootstrap");
   logger.error(err instanceof Error ? (err.stack ?? err.message) : String(err));
   await shutdownTracing();

@@ -16,9 +16,9 @@ export class InvoicePdfService {
   constructor(
     @Inject(INVOICE_PDF_MODEL_PORT) private readonly pdfModel: InvoicePdfModelPort,
     @Inject(INVOICE_PDF_RENDERER_PORT) private readonly pdfRenderer: InvoicePdfRendererPort,
-    private readonly documentRepo: PrismaDocumentRepoAdapter,
-    private readonly fileRepo: PrismaFileRepoAdapter,
-    private readonly docLinkRepo: PrismaDocumentLinkAdapter,
+    @Inject(PrismaDocumentRepoAdapter) private readonly documentRepo: PrismaDocumentRepoAdapter,
+    @Inject(PrismaFileRepoAdapter) private readonly fileRepo: PrismaFileRepoAdapter,
+    @Inject(PrismaDocumentLinkAdapter) private readonly docLinkRepo: PrismaDocumentLinkAdapter,
     @Inject(OBJECT_STORAGE_PORT) private readonly storage: ObjectStoragePort
   ) {}
 

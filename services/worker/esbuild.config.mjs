@@ -2,6 +2,7 @@ import { build, context } from "esbuild";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { decoratorPlugin } from "./esbuild-decorator-plugin.mjs";
 
 const isWatch = process.argv.includes("--watch");
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -57,7 +58,7 @@ const config = {
   packages: "external",
   tsconfig: "tsconfig.json",
   logLevel: "info",
-  plugins: [apiAliasPlugin],
+  plugins: [decoratorPlugin, apiAliasPlugin],
 };
 
 if (isWatch) {

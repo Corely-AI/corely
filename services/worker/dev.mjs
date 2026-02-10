@@ -3,6 +3,7 @@ import { context } from "esbuild";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { decoratorPlugin } from "./esbuild-decorator-plugin.mjs";
 
 let nodeProcess = null;
 let restarting = false;
@@ -157,6 +158,7 @@ const buildContext = await context({
   tsconfig: "tsconfig.json",
   logLevel: "info",
   plugins: [
+    decoratorPlugin,
     {
       name: "api-alias",
       setup(build) {

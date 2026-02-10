@@ -26,13 +26,14 @@ export class WorkflowOrchestratorProcessor implements OnModuleInit, OnModuleDest
   private readonly logger = new Logger(WorkflowOrchestratorProcessor.name);
 
   constructor(
-    private readonly env: EnvService,
-    private readonly prisma: PrismaService,
+    @Inject(EnvService) private readonly env: EnvService,
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(WorkflowDefinitionRepository)
     private readonly definitions: WorkflowDefinitionRepository,
-    private readonly instances: WorkflowInstanceRepository,
-    private readonly tasks: WorkflowTaskRepository,
-    private readonly events: WorkflowEventRepository,
-    private readonly metrics: WorkflowMetricsService,
+    @Inject(WorkflowInstanceRepository) private readonly instances: WorkflowInstanceRepository,
+    @Inject(WorkflowTaskRepository) private readonly tasks: WorkflowTaskRepository,
+    @Inject(WorkflowEventRepository) private readonly events: WorkflowEventRepository,
+    @Inject(WorkflowMetricsService) private readonly metrics: WorkflowMetricsService,
     @Inject(WORKFLOW_ORCHESTRATOR_QUEUE_PORT)
     private readonly orchestratorQueue: QueuePort<WorkflowOrchestratorQueuePayload>,
     @Inject(WORKFLOW_TASK_QUEUE_PORT)

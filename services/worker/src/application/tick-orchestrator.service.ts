@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, Optional } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { JobLockService } from "../infrastructure/job-lock.service";
 import { Runner, RunnerReport, TickContext } from "./runner.interface";
@@ -24,30 +24,38 @@ export class TickOrchestrator {
   private inFlightRun?: Promise<TickRunSummary>;
 
   constructor(
-    private readonly env: EnvService,
-    private readonly jobLockService: JobLockService,
-    private readonly outboxRunner: OutboxPollerService,
+    @Inject(EnvService) private readonly env: EnvService,
+    @Inject(JobLockService) private readonly jobLockService: JobLockService,
+    @Optional() @Inject(OutboxPollerService) private readonly outboxRunner: OutboxPollerService,
+    @Optional()
+    @Inject(InvoiceReminderRunnerService)
     private readonly invoiceRunner: InvoiceReminderRunnerService,
+    @Optional()
+    @Inject(MonthlyBillingRunnerService)
     private readonly classesBillingRunner: MonthlyBillingRunnerService
   ) {
     this.logger.log(
-      `TickOrchestrator constructor: outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}`
+      `[init] TickOrchestrator created — outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}`
     );
 
     // Register available runners
-    if (this.outboxRunner) {
-      this.registerRunner(this.outboxRunner);
+    const candidates = [this.outboxRunner, this.invoiceRunner, this.classesBillingRunner];
+    for (const runner of candidates) {
+      if (runner) {
+        this.registerRunner(runner);
+      }
     }
-    if (this.invoiceRunner) {
-      this.registerRunner(this.invoiceRunner);
-    }
-    if (this.classesBillingRunner) {
-      this.registerRunner(this.classesBillingRunner);
-    }
+
+    this.logger.log(
+      `[init] Registered ${this.runners.size} runners: [${Array.from(this.runners.keys()).join(", ")}]`
+    );
   }
 
   private registerRunner(runner: Runner) {
     this.runners.set(runner.name, runner);
+    this.logger.log(
+      `[init] Registered runner "${runner.name}" (lock=${runner.singletonLockKey ?? "none"})`
+    );
   }
 
   private async runTick(): Promise<TickRunSummary> {
@@ -83,27 +91,25 @@ export class TickOrchestrator {
         shardIndex: Number(this.env.WORKER_TICK_SHARD_INDEX),
         shardCount: Number(this.env.WORKER_TICK_SHARD_COUNT),
       };
+      this.logger.log(
+        `[tick:${runId}] Sharding enabled: index=${ctx.tenantIterationPolicy.shardIndex} count=${ctx.tenantIterationPolicy.shardCount}`
+      );
     }
 
+    const registeredNames = Array.from(this.runners.keys());
     this.logger.log(
-      JSON.stringify({
-        msg: "tick.start",
-        runId,
-        runners: enabledRunnerNames,
-        overallMaxMs,
-      })
+      `[tick:${runId}] === TICK START === enabled=[${enabledRunnerNames.join(",")}] registered=[${registeredNames.join(",")}] budgets={overall=${overallMaxMs}ms, perRunner=${perRunnerMaxMs}ms, maxItems=${perRunnerMaxItems}}`
     );
 
     const results: Record<string, RunnerReport> = {};
 
-    for (const name of enabledRunnerNames) {
-      if (Date.now() - startedAt.getTime() > overallMaxMs) {
+    for (let i = 0; i < enabledRunnerNames.length; i++) {
+      const name = enabledRunnerNames[i];
+      const elapsedMs = Date.now() - startedAt.getTime();
+
+      if (elapsedMs > overallMaxMs) {
         this.logger.warn(
-          JSON.stringify({
-            msg: "tick.budget.exceeded",
-            runId,
-            runner: name,
-          })
+          `[tick:${runId}] Overall budget exceeded (${elapsedMs}ms > ${overallMaxMs}ms), skipping remaining runners: [${enabledRunnerNames.slice(i).join(",")}]`
         );
         break;
       }
@@ -111,75 +117,72 @@ export class TickOrchestrator {
       const runner = this.runners.get(name);
       if (!runner) {
         this.logger.warn(
-          JSON.stringify({
-            msg: "tick.runner.not_found",
-            runId,
-            runner: name,
-          })
+          `[tick:${runId}] Runner "${name}" not found in registry (available: [${registeredNames.join(",")}])`
         );
         continue;
       }
 
+      const runnerStart = Date.now();
       try {
         this.logger.log(
-          JSON.stringify({
-            msg: "tick.runner.start",
-            runId,
-            runner: name,
-          })
+          `[tick:${runId}] Runner "${name}" starting (${i + 1}/${enabledRunnerNames.length}, elapsed=${elapsedMs}ms, lock=${runner.singletonLockKey ?? "none"})...`
         );
 
         let report: RunnerReport | undefined;
         if (runner.singletonLockKey) {
+          this.logger.log(
+            `[tick:${runId}] Runner "${name}" acquiring advisory lock "${runner.singletonLockKey}"...`
+          );
           const locked = await this.jobLockService.withAdvisoryXactLock(
             { lockName: runner.singletonLockKey, runId },
             async () => runner.run(ctx)
           );
           if (!locked.acquired) {
+            this.logger.log(
+              `[tick:${runId}] Runner "${name}" lock not acquired (another instance holds it), skipped`
+            );
             report = {
               processedCount: 0,
               updatedCount: 0,
               skippedCount: 1,
               errorCount: 0,
-              durationMs: 0,
+              durationMs: Date.now() - runnerStart,
             };
           } else {
+            this.logger.log(`[tick:${runId}] Runner "${name}" lock acquired, execution completed`);
             report = locked.value;
           }
         } else {
           report = await runner.run(ctx);
         }
 
+        const runnerDurationMs = Date.now() - runnerStart;
         results[name] = report ?? {
           processedCount: 0,
           updatedCount: 0,
           skippedCount: 0,
           errorCount: 1,
-          durationMs: 0,
+          durationMs: runnerDurationMs,
         };
         this.logger.log(
-          JSON.stringify({
-            msg: "tick.runner.end",
-            runId,
-            runner: name,
-            report: results[name],
-          })
+          `[tick:${runId}] Runner "${name}" finished in ${runnerDurationMs}ms — processed=${results[name].processedCount} updated=${results[name].updatedCount} skipped=${results[name].skippedCount} errors=${results[name].errorCount}`
         );
       } catch (err) {
+        const runnerDurationMs = Date.now() - runnerStart;
+        const errMsg = err instanceof Error ? err.message : String(err);
+        const errStack = err instanceof Error ? err.stack : undefined;
         this.logger.error(
-          JSON.stringify({
-            msg: "tick.runner.failed",
-            runId,
-            runner: name,
-            error: err instanceof Error ? err.message : String(err),
-          })
+          `[tick:${runId}] Runner "${name}" FAILED after ${runnerDurationMs}ms — ${errMsg}`
         );
+        if (errStack) {
+          this.logger.error(`[tick:${runId}] Stack: ${errStack}`);
+        }
         results[name] = {
           processedCount: 0,
           updatedCount: 0,
           skippedCount: 0,
           errorCount: 1,
-          durationMs: 0,
+          durationMs: runnerDurationMs,
         };
       }
     }
@@ -188,17 +191,16 @@ export class TickOrchestrator {
     const durationMs = finishedAt.getTime() - startedAt.getTime();
     const totalProcessed = Object.values(results).reduce((sum, r) => sum + r.processedCount, 0);
     const totalErrors = Object.values(results).reduce((sum, r) => sum + r.errorCount, 0);
+    const runnersExecuted = Object.keys(results).length;
 
     this.logger.log(
-      JSON.stringify({
-        msg: "tick.end",
-        runId,
-        durationMs,
-        totalProcessed,
-        totalErrors,
-        results,
-      })
+      `[tick:${runId}] === TICK END === durationMs=${durationMs} runnersExecuted=${runnersExecuted}/${enabledRunnerNames.length} totalProcessed=${totalProcessed} totalErrors=${totalErrors}`
     );
+    for (const [name, report] of Object.entries(results)) {
+      this.logger.log(
+        `[tick:${runId}]   ${name}: processed=${report.processedCount} updated=${report.updatedCount} skipped=${report.skippedCount} errors=${report.errorCount} duration=${report.durationMs}ms`
+      );
+    }
 
     return {
       runId,
@@ -213,10 +215,11 @@ export class TickOrchestrator {
 
   async runOnce(): Promise<TickRunSummary> {
     if (this.inFlightRun) {
-      this.logger.warn("tick overlap prevented: tick already in flight");
+      this.logger.warn("[runOnce] Tick overlap prevented — waiting for in-flight tick to complete");
       return this.inFlightRun;
     }
 
+    this.logger.log("[runOnce] Starting new tick...");
     const runPromise = this.runTick();
     this.inFlightRun = runPromise;
     try {
@@ -225,6 +228,7 @@ export class TickOrchestrator {
       if (this.inFlightRun === runPromise) {
         this.inFlightRun = undefined;
       }
+      this.logger.log("[runOnce] Tick promise settled, slot cleared");
     }
   }
 }

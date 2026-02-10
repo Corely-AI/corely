@@ -12,7 +12,7 @@ export class FormsEventHandler implements EventHandler {
   private readonly logger = new Logger(FormsEventHandler.name);
 
   constructor(
-    private readonly env: EnvService,
+    @Inject(EnvService) private readonly env: EnvService,
     @Inject(EMAIL_SENDER_PORT) private readonly emailSender: EmailSenderPort
   ) {}
 
