@@ -27,10 +27,10 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
       const pdfBuffer = await page.pdf({
         format: "A4",
         margin: {
-          top: "20mm",
-          right: "15mm",
-          bottom: "20mm",
-          left: "15mm",
+          top: "0mm",
+          right: "0mm",
+          bottom: "0mm",
+          left: "0mm",
         },
         printBackground: true,
       });
@@ -145,7 +145,7 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
     }
     .container {
       padding: 20mm 15mm;
-      min-height: 257mm;
+      min-height: 297mm;
       display: flex;
       flex-direction: column;
     }
