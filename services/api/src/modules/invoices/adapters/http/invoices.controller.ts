@@ -35,6 +35,8 @@ import { AuthGuard } from "../../../identity";
 import { ModuleRef } from "@nestjs/core";
 import { DocumentsApplication } from "../../../documents/application/documents.application";
 
+const SEND_INVOICE_PDF_WAIT_MS = 90_000;
+
 @Controller("invoices")
 @UseGuards(AuthGuard)
 export class InvoicesHttpController {
@@ -85,6 +87,45 @@ export class InvoicesHttpController {
   async send(@Param("invoiceId") invoiceId: string, @Body() body: unknown, @Req() req: Request) {
     const input = SendInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
+
+    if (input.attachPdf) {
+      const docsApp =
+        this.documentsApp ?? this.moduleRef?.get(DocumentsApplication, { strict: false });
+      if (!docsApp) {
+        throw new Error("DocumentsApplication not available");
+      }
+
+      const pdfResult = mapResultToHttp(
+        await docsApp.getInvoicePdf.execute(
+          {
+            invoiceId,
+            waitMs: SEND_INVOICE_PDF_WAIT_MS,
+          },
+          ctx
+        )
+      );
+
+      if (pdfResult.status === "FAILED") {
+        throw new HttpException(
+          {
+            error: "INVOICE_PDF_RENDER_FAILED",
+            message: pdfResult.errorMessage ?? "Invoice PDF rendering failed",
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY
+        );
+      }
+
+      if (pdfResult.status !== "READY") {
+        throw new HttpException(
+          {
+            error: "INVOICE_PDF_NOT_READY",
+            message: "Invoice PDF is still being generated. Please try again shortly.",
+          },
+          HttpStatus.CONFLICT
+        );
+      }
+    }
+
     const result = await this.app.sendInvoice.execute(input, ctx);
     return mapResultToHttp(result);
   }

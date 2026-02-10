@@ -382,6 +382,7 @@ export default function InvoiceDetailPage() {
         to: data.to,
         subject: data.subject,
         message: data.message,
+        attachPdf: true,
       });
       toast.success(t("invoices.email.sent"));
       setSendDialogOpen(false);
@@ -433,7 +434,7 @@ export default function InvoiceDetailPage() {
         return;
       }
 
-      if (actionKey === "send") {
+      if (actionKey === "send" || actionKey === "resend") {
         setSendDialogOpen(true);
         return;
       }

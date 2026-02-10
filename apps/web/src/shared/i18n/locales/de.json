@@ -514,6 +514,7 @@
     "actions": {
       "issue": "Rechnung ausstellen",
       "send": "Senden",
+      "resend": "Erneut senden",
       "record_payment": "Zahlung erfassen",
       "download_pdf": "PDF herunterladen",
       "send_reminder": "Erinnerung senden",

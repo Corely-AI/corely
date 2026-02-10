@@ -17,11 +17,21 @@ type InvoiceLineLike = {
   unitPriceCents: number;
 };
 
+type PaymentDetailsLike = {
+  accountHolderName?: string | null;
+  iban?: string | null;
+  bic?: string | null;
+  bankName?: string | null;
+  referenceText?: string | null;
+};
+
 type InvoiceLike = BillToFields & {
   number?: string | null;
   currency: string;
   dueDate?: Date | null;
   lines: InvoiceLineLike[];
+  paymentSnapshot?: unknown;
+  paymentDetails?: unknown;
 };
 
 type MapperInput = {
@@ -61,6 +71,9 @@ export function mapToInvoiceEmailProps(input: MapperInput): InvoiceEmailProps {
     }).format(date);
   };
 
+  const paymentSnapshot =
+    toPaymentDetails(invoice.paymentSnapshot) ?? toPaymentDetails(invoice.paymentDetails);
+
   return {
     invoiceNumber: invoice.number ?? "DRAFT",
     companyName,
@@ -75,7 +88,43 @@ export function mapToInvoiceEmailProps(input: MapperInput): InvoiceEmailProps {
       unitPrice: formatAmount(line.unitPriceCents),
       amount: formatAmount(line.qty * line.unitPriceCents),
     })),
+    paymentDetails: paymentSnapshot
+      ? {
+          accountHolderName: paymentSnapshot.accountHolderName ?? undefined,
+          iban: paymentSnapshot.iban ?? undefined,
+          bic: paymentSnapshot.bic ?? undefined,
+          bankName: paymentSnapshot.bankName ?? undefined,
+          referenceText: paymentSnapshot.referenceText ?? undefined,
+        }
+      : undefined,
     viewInvoiceUrl,
     locale,
+  };
+}
+
+function toPaymentDetails(value: unknown): PaymentDetailsLike | undefined {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  const accountHolderName =
+    typeof record.accountHolderName === "string" ? record.accountHolderName : undefined;
+  const iban = typeof record.iban === "string" ? record.iban : undefined;
+  const bic = typeof record.bic === "string" ? record.bic : undefined;
+  const bankName = typeof record.bankName === "string" ? record.bankName : undefined;
+  const referenceText = typeof record.referenceText === "string" ? record.referenceText : undefined;
+
+  if (!accountHolderName && !iban && !bic && !bankName && !referenceText) {
+    return undefined;
+  }
+
+  return {
+    accountHolderName,
+    iban,
+    bic,
+    bankName,
+    referenceText,
   };
 }

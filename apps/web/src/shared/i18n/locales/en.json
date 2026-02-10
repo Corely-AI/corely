@@ -498,6 +498,7 @@
     "actions": {
       "issue": "Issue invoice",
       "send": "Send",
+      "resend": "Resend",
       "record_payment": "Record Payment",
       "download_pdf": "Download PDF",
       "send_reminder": "Send reminder",
