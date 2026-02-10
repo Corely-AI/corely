@@ -219,9 +219,29 @@ async function bootstrap() {
   await shutdownTracing();
 }
 
-bootstrap().catch((err) => {
+async function bootstrapWithTimeout(): Promise<void> {
+  const timeoutRaw = Number(process.env.WORKER_BOOTSTRAP_TIMEOUT_MS ?? "30000");
+  const timeoutMs = Number.isFinite(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : 30000;
+
+  let timeoutHandle: NodeJS.Timeout | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutHandle = setTimeout(() => {
+      reject(new Error(`Worker bootstrap timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    await Promise.race([bootstrap(), timeoutPromise]);
+  } finally {
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+  }
+}
+
+bootstrapWithTimeout().catch(async (err) => {
   const logger = new Logger("WorkerBootstrap");
   logger.error(err instanceof Error ? (err.stack ?? err.message) : String(err));
-  void shutdownTracing();
+  await shutdownTracing();
   process.exitCode = 1;
 });

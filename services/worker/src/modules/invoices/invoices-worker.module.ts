@@ -9,11 +9,6 @@ import { PlaywrightInvoicePdfRendererAdapter } from "./pdf/playwright-invoice-pd
 import { PlaywrightBrowserLifecycle } from "./pdf/playwright-browser.lifecycle";
 import { PrismaInvoicePdfModelAdapter } from "./infrastructure/pdf/prisma-invoice-pdf-model.adapter";
 import { OBJECT_STORAGE_PORT, type ObjectStoragePort } from "@corely/kernel";
-import {
-  PrismaDocumentRepoAdapter,
-  PrismaFileRepoAdapter,
-  PrismaDocumentLinkAdapter,
-} from "@corely/data";
 import { InvoicePdfService } from "./application/invoice-pdf.service";
 import { type InvoicePdfModelPort } from "./application/ports/invoice-pdf-model.port";
 import { type InvoicePdfRendererPort } from "./application/ports/invoice-pdf-renderer.port";
@@ -49,9 +44,6 @@ async function launchBrowserWithTimeout(timeoutMs: number): Promise<Browser> {
   imports: [DataModule],
   providers: [
     InvoiceReminderRunnerService,
-    PrismaDocumentRepoAdapter,
-    PrismaFileRepoAdapter,
-    PrismaDocumentLinkAdapter,
     PrismaInvoicePdfModelAdapter,
     { provide: INVOICE_PDF_MODEL_PORT, useExisting: PrismaInvoicePdfModelAdapter },
     {

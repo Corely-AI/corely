@@ -1,4 +1,4 @@
-import { Injectable, Logger, Inject, forwardRef } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { JobLockService } from "../infrastructure/job-lock.service";
 import { Runner, RunnerReport, TickContext } from "./runner.interface";
@@ -26,11 +26,8 @@ export class TickOrchestrator {
   constructor(
     private readonly env: EnvService,
     private readonly jobLockService: JobLockService,
-    @Inject(forwardRef(() => OutboxPollerService))
     private readonly outboxRunner: OutboxPollerService,
-    @Inject(forwardRef(() => InvoiceReminderRunnerService))
     private readonly invoiceRunner: InvoiceReminderRunnerService,
-    @Inject(forwardRef(() => MonthlyBillingRunnerService))
     private readonly classesBillingRunner: MonthlyBillingRunnerService
   ) {
     this.logger.log(
