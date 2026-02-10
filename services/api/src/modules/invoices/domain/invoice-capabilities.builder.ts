@@ -346,6 +346,17 @@ export class InvoiceCapabilitiesBuilder {
           dangerous: false,
         });
 
+        // Secondary: Resend Email
+        actions.push({
+          key: "resend",
+          label: "Resend",
+          icon: "Mail",
+          placement: "secondary",
+          enabled: true,
+          dangerous: false,
+          endpoint: { method: "POST", path: `/invoices/${id}/send` },
+        });
+
         // Secondary: Download PDF
         actions.push({
           key: "download_pdf",

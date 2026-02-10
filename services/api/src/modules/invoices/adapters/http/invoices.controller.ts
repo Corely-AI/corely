@@ -35,6 +35,8 @@ import { AuthGuard } from "../../../identity";
 import { ModuleRef } from "@nestjs/core";
 import { DocumentsApplication } from "../../../documents/application/documents.application";
 
+const SEND_INVOICE_PDF_WAIT_MS = 90_000;
+
 @Controller("invoices")
 @UseGuards(AuthGuard)
 export class InvoicesHttpController {
@@ -85,6 +87,45 @@ export class InvoicesHttpController {
   async send(@Param("invoiceId") invoiceId: string, @Body() body: unknown, @Req() req: Request) {
     const input = SendInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
+
+    if (input.attachPdf) {
+      const docsApp =
+        this.documentsApp ?? this.moduleRef?.get(DocumentsApplication, { strict: false });
+      if (!docsApp) {
+        throw new Error("DocumentsApplication not available");
+      }
+
+      const pdfResult = mapResultToHttp(
+        await docsApp.getInvoicePdf.execute(
+          {
+            invoiceId,
+            waitMs: SEND_INVOICE_PDF_WAIT_MS,
+          },
+          ctx
+        )
+      );
+
+      if (pdfResult.status === "FAILED") {
+        throw new HttpException(
+          {
+            error: "INVOICE_PDF_RENDER_FAILED",
+            message: pdfResult.errorMessage ?? "Invoice PDF rendering failed",
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY
+        );
+      }
+
+      if (pdfResult.status !== "READY") {
+        throw new HttpException(
+          {
+            error: "INVOICE_PDF_NOT_READY",
+            message: "Invoice PDF is still being generated. Please try again shortly.",
+          },
+          HttpStatus.CONFLICT
+        );
+      }
+    }
+
     const result = await this.app.sendInvoice.execute(input, ctx);
     return mapResultToHttp(result);
   }
@@ -113,11 +154,23 @@ export class InvoicesHttpController {
   async downloadPdf(
     @Param("invoiceId") invoiceId: string,
     @Query("waitMs") waitMsRaw: string | undefined,
+    @Query("forceRegenerate") forceRegenerateRaw: string | undefined,
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ) {
-    const input = RequestInvoicePdfInputSchema.parse({ invoiceId });
+    const input = RequestInvoicePdfInputSchema.parse({
+      invoiceId,
+      forceRegenerate: this.parseBooleanFlag(forceRegenerateRaw),
+    });
     const ctx = buildUseCaseContext(req);
+    const app = this.app ?? this.moduleRef?.get(InvoicesApplication, { strict: false });
+    if (!app) {
+      throw new Error("InvoicesApplication not available");
+    }
+
+    // Ensure invoice is accessible in current workspace context before invoking PDF pipeline.
+    mapResultToHttp(await app.getInvoiceById.execute({ invoiceId: input.invoiceId }, ctx));
+
     const docsApp =
       this.documentsApp ?? this.moduleRef?.get(DocumentsApplication, { strict: false });
     if (!docsApp) {
@@ -180,6 +233,20 @@ export class InvoicesHttpController {
     }
 
     return Math.max(0, Math.min(30000, parsed));
+  }
+
+  private parseBooleanFlag(raw: string | undefined): boolean | undefined {
+    if (raw === undefined) {
+      return undefined;
+    }
+    const normalized = raw.trim().toLowerCase();
+    if (normalized === "true" || normalized === "1") {
+      return true;
+    }
+    if (normalized === "false" || normalized === "0") {
+      return false;
+    }
+    return undefined;
   }
 
   @Get(":invoiceId")

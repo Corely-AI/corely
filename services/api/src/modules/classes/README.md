@@ -62,7 +62,7 @@ The worker scheduler triggers billing runs via an internal endpoint secured by `
 
 Worker config (env):
 
-- `WORKER_API_BASE_URL`
+- `API_BASE_URL`
 - `WORKER_API_SERVICE_TOKEN`
 - `CLASSES_BILLING_RUN_ENABLED`
 - `CLASSES_BILLING_RUN_TIME` (default `02:00`)

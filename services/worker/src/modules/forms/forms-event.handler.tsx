@@ -23,9 +23,9 @@ export class FormsEventHandler implements EventHandler {
     if (postSubmitAction === "CREATE_TUTORING_LEAD") {
       this.logger.log(`Processing lead intake for submission ${submissionId}`);
 
-      const baseUrl = this.env.WORKER_API_BASE_URL;
+      const baseUrl = this.env.API_BASE_URL;
       if (!baseUrl) {
-        this.logger.warn("WORKER_API_BASE_URL not set; skipping lead intake.");
+        this.logger.warn("API_BASE_URL not set; skipping lead intake.");
         return;
       }
 

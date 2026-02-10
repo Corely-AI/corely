@@ -29,10 +29,10 @@ export class InvoiceReminderRunnerService implements Runner {
     let errorCount = 0;
     let skippedCount = 0;
 
-    const baseUrl = this.env.WORKER_API_BASE_URL;
+    const baseUrl = this.env.API_BASE_URL;
     if (!baseUrl) {
       if (!this.warnedMissingConfig) {
-        this.logger.warn("WORKER_API_BASE_URL not set; skipping invoice reminders.");
+        this.logger.warn("API_BASE_URL not set; skipping invoice reminders.");
         this.warnedMissingConfig = true;
       }
       return {

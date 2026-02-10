@@ -13,6 +13,7 @@ export class PrismaInvoiceEmailRepository {
       },
       include: {
         lines: true,
+        legalEntity: true,
       },
     });
   }

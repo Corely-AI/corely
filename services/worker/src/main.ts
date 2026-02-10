@@ -97,12 +97,13 @@ async function createWorkerApp(logger: Logger): Promise<{
 
   try {
     const driver = process.env.WORKFLOW_QUEUE_DRIVER;
-    if (driver === "cloudtasks") {
-      logger.log("[bootstrap] Initializing Nest application (cloudtasks driver)...");
+    const shouldListenHttp = driver === "cloudtasks" || Boolean(process.env.K_SERVICE);
+    if (shouldListenHttp) {
+      logger.log("[bootstrap] Initializing Nest application with HTTP listener...");
       const app = await Promise.race([NestFactory.create(WorkerModule), timeoutPromise]);
       logger.log(`[bootstrap] NestFactory.create completed in ${Date.now() - t0}ms`);
       const env = app.get(EnvService);
-      const port = Number(process.env.WORKER_PORT ?? env.WORKER_PORT ?? process.env.PORT ?? 3001);
+      const port = Number(process.env.PORT ?? process.env.WORKER_PORT ?? env.WORKER_PORT ?? 3001);
       logger.log(`[bootstrap] Starting HTTP listener on port ${port}...`);
       await Promise.race([app.listen(port), timeoutPromise]);
       logger.log(`[bootstrap] Listening on ${port} (total ${Date.now() - t0}ms)`);

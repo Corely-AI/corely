@@ -85,8 +85,8 @@ export class EnvService {
   // WORKER
   // ============================================================================
 
-  get WORKER_API_BASE_URL(): string | undefined {
-    return this.config.WORKER_API_BASE_URL;
+  get API_BASE_URL(): string | undefined {
+    return this.config.API_BASE_URL;
   }
 
   get WORKER_API_SERVICE_TOKEN(): string | undefined {

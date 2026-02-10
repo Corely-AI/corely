@@ -1,11 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { InvoicePdfModelPort } from "../../application/ports/invoice-pdf-model.port";
-import { PaymentDetailsSnapshot } from "../../domain/invoice.types";
+import { IssuerSnapshot, PaymentDetailsSnapshot } from "../../domain/invoice.types";
 import type { Prisma } from "@prisma/client";
 
 type InvoiceWithLines = Prisma.InvoiceGetPayload<{
-  include: { lines: true };
+  include: { lines: true; legalEntity: true };
+}>;
+
+type PaymentMethodWithBankAccount = Prisma.PaymentMethodGetPayload<{
+  include: { bankAccount: true };
 }>;
 
 @Injectable()
@@ -28,6 +32,13 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     items: Array<{ description: string; qty: string; unitPrice: string; lineTotal: string }>;
     totals: { subtotal: string; vatRate?: string; vatAmount?: string; total: string };
     notes?: string;
+    issuerInfo?: {
+      taxId?: string;
+      vatId?: string;
+      phone?: string;
+      email?: string;
+      website?: string;
+    };
     paymentSnapshot?: {
       type?: string;
       bankName?: string;
@@ -40,10 +51,28 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
       payUrl?: string;
     };
   } | null> {
-    const invoice: InvoiceWithLines | null = await this.prisma.invoice.findFirst({
-      where: { id: invoiceId, tenantId },
-      include: { lines: true },
+    const workspace = await this.prisma.workspace.findFirst({
+      where: {
+        OR: [{ id: tenantId }, { tenantId }],
+      },
+      include: { legalEntity: true },
+      orderBy: { createdAt: "asc" },
     });
+    const workspaceId = workspace?.id ?? tenantId;
+    const platformTenantId = workspace?.tenantId ?? tenantId;
+
+    let invoice: InvoiceWithLines | null = await this.prisma.invoice.findFirst({
+      where: { id: invoiceId, tenantId: workspaceId },
+      include: { lines: true, legalEntity: true },
+    });
+
+    // Backward compatibility for callers still passing platform tenant id instead of workspace id.
+    if (!invoice && workspaceId !== tenantId) {
+      invoice = await this.prisma.invoice.findFirst({
+        where: { id: invoiceId, tenantId },
+        include: { lines: true, legalEntity: true },
+      });
+    }
 
     if (!invoice) {
       return null;
@@ -53,13 +82,12 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
       return null;
     }
 
-    const workspace = await this.prisma.workspace.findFirst({
-      where: { tenantId },
-      include: { legalEntity: true },
-      orderBy: { createdAt: "asc" },
-    });
+    const issuerSnapshot = ((invoice as any).issuerSnapshot as IssuerSnapshot | null) ?? undefined;
+    let legalEntity = invoice.legalEntity;
 
-    const legalEntity = workspace?.legalEntity ?? null;
+    if (!legalEntity) {
+      legalEntity = workspace?.legalEntity ?? null;
+    }
 
     const buildAddress = (address?: {
       line1?: string | null;
@@ -82,9 +110,9 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
       return parts.filter(Boolean).join(", ");
     };
 
-    const billFromAddress = legalEntity?.address
-      ? buildAddress(legalEntity.address as any)
-      : undefined;
+    const billFromAddress =
+      buildAddress(issuerSnapshot?.address as any) ||
+      (legalEntity?.address ? buildAddress(legalEntity.address as any) : undefined);
 
     // Build bill-to address
     const addressParts: string[] = [];
@@ -117,7 +145,7 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     const serviceDate = issueDate ? `${issueDate} - ${issueDate}` : undefined;
 
     const taxProfile = await this.prisma.taxProfile.findFirst({
-      where: { tenantId },
+      where: { tenantId: platformTenantId },
       orderBy: { effectiveFrom: "desc" },
     });
 
@@ -125,7 +153,7 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     if (taxProfile?.vatEnabled && taxProfile.regime !== "SMALL_BUSINESS") {
       const rate = await this.prisma.taxRate.findFirst({
         where: {
-          tenantId,
+          tenantId: platformTenantId,
           effectiveFrom: { lte: issueDateValue },
           taxCode: { kind: "STANDARD", isActive: true },
         },
@@ -165,8 +193,22 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     }));
 
     const paymentDetailsSnapshot =
-      ((invoice as any).paymentDetails as PaymentDetailsSnapshot) ?? undefined;
-    let paymentSnapshot = undefined;
+      ((invoice as any).paymentSnapshot as PaymentDetailsSnapshot | null) ??
+      ((invoice as any).paymentDetails as PaymentDetailsSnapshot | null) ??
+      undefined;
+    let paymentSnapshot:
+      | {
+          type?: string;
+          bankName?: string;
+          accountHolderName?: string;
+          iban?: string;
+          bic?: string;
+          label?: string;
+          instructions?: string;
+          referenceText?: string;
+          payUrl?: string;
+        }
+      | undefined;
 
     if (paymentDetailsSnapshot) {
       const referenceTemplate = paymentDetailsSnapshot.referenceTemplate || "INV-{invoiceNumber}";
@@ -178,9 +220,39 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
       };
     }
 
+    if (!paymentSnapshot) {
+      let paymentMethod: PaymentMethodWithBankAccount | null = null;
+
+      if (invoice.paymentMethodId) {
+        paymentMethod = await this.prisma.paymentMethod.findFirst({
+          where: { id: invoice.paymentMethodId, isActive: true },
+          include: { bankAccount: true },
+        });
+      }
+
+      if (!paymentMethod) {
+        const fallbackLegalEntityId = invoice.legalEntityId ?? workspace?.legalEntityId;
+        if (fallbackLegalEntityId) {
+          paymentMethod = await this.prisma.paymentMethod.findFirst({
+            where: {
+              tenantId: platformTenantId,
+              legalEntityId: fallbackLegalEntityId,
+              isActive: true,
+            },
+            include: { bankAccount: true },
+            orderBy: [{ isDefaultForInvoicing: "desc" }, { updatedAt: "desc" }],
+          });
+        }
+      }
+
+      if (paymentMethod) {
+        paymentSnapshot = this.toPaymentSnapshot(paymentMethod, invoice.number);
+      }
+    }
+
     return {
       invoiceNumber: invoice.number,
-      billFromName: legalEntity?.legalName,
+      billFromName: issuerSnapshot?.name ?? legalEntity?.legalName,
       billFromAddress,
       billToName: invoice.billToName || "Unknown",
       billToAddress,
@@ -196,7 +268,32 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
         total: formatCurrency(totalCents),
       },
       notes: invoice.notes || undefined,
+      issuerInfo: {
+        taxId: issuerSnapshot?.taxId ?? legalEntity?.taxId ?? undefined,
+        vatId: issuerSnapshot?.vatId ?? legalEntity?.vatId ?? undefined,
+        phone: issuerSnapshot?.contact?.phone ?? legalEntity?.phone ?? undefined,
+        email: issuerSnapshot?.contact?.email ?? legalEntity?.email ?? undefined,
+        website: issuerSnapshot?.contact?.website ?? legalEntity?.website ?? undefined,
+      },
       paymentSnapshot,
+    };
+  }
+
+  private toPaymentSnapshot(paymentMethod: PaymentMethodWithBankAccount, invoiceNumber: string) {
+    const referenceTemplate = paymentMethod.referenceTemplate || "INV-{invoiceNumber}";
+    const referenceText = referenceTemplate.replace("{invoiceNumber}", invoiceNumber);
+    const bankAccount = paymentMethod.bankAccount;
+
+    return {
+      type: paymentMethod.type,
+      label: paymentMethod.label,
+      instructions: paymentMethod.instructions ?? undefined,
+      payUrl: paymentMethod.payUrl ?? undefined,
+      referenceText,
+      accountHolderName: bankAccount?.accountHolderName ?? undefined,
+      iban: bankAccount?.iban ?? undefined,
+      bic: bankAccount?.bic ?? undefined,
+      bankName: bankAccount?.bankName ?? undefined,
     };
   }
 }

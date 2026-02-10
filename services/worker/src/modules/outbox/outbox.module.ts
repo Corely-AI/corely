@@ -1,16 +1,22 @@
 import { Module } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
-import { OutboxRepository } from "@corely/data";
+import {
+  OutboxRepository,
+  PrismaDocumentRepoAdapter,
+  PrismaFileRepoAdapter,
+  PrismaInvoiceEmailDeliveryAdapter,
+} from "@corely/data";
 import { EnvService } from "@corely/config";
 import { InvoiceEmailRequestedHandler } from "../invoices/invoice-email-requested.handler";
 import { InvoicePdfRenderRequestedHandler } from "../invoices/handlers/invoice-pdf-render-requested.handler";
 import { PrismaInvoiceEmailRepository } from "../invoices/infrastructure/prisma-invoice-email-repository.adapter";
-import { PrismaInvoiceEmailDeliveryAdapter } from "@corely/data";
 import {
   EMAIL_SENDER_PORT,
   ID_GENERATOR_TOKEN,
+  OBJECT_STORAGE_PORT,
   type EmailSenderPort,
   type IdGeneratorPort,
+  type ObjectStoragePort,
 } from "@corely/kernel";
 import { NotificationsModule } from "../notifications/notifications.module";
 import { OutboxPollerService } from "./outbox-poller.service";
@@ -52,9 +58,27 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
       useFactory: (
         sender: EmailSenderPort,
         repo: PrismaInvoiceEmailRepository,
-        deliveryRepo: PrismaInvoiceEmailDeliveryAdapter
-      ) => new InvoiceEmailRequestedHandler(sender, repo, deliveryRepo),
-      inject: [EMAIL_SENDER_PORT, PrismaInvoiceEmailRepository, PrismaInvoiceEmailDeliveryAdapter],
+        deliveryRepo: PrismaInvoiceEmailDeliveryAdapter,
+        documentRepo: PrismaDocumentRepoAdapter,
+        fileRepo: PrismaFileRepoAdapter,
+        objectStorage: ObjectStoragePort
+      ) =>
+        new InvoiceEmailRequestedHandler(
+          sender,
+          repo,
+          deliveryRepo,
+          documentRepo,
+          fileRepo,
+          objectStorage
+        ),
+      inject: [
+        EMAIL_SENDER_PORT,
+        PrismaInvoiceEmailRepository,
+        PrismaInvoiceEmailDeliveryAdapter,
+        PrismaDocumentRepoAdapter,
+        PrismaFileRepoAdapter,
+        OBJECT_STORAGE_PORT,
+      ],
     },
     PrismaInvoiceEmailRepository,
     {

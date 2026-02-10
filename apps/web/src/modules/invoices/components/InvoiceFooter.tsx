@@ -7,16 +7,23 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 interface InvoiceFooterProps {
+  legalEntityId?: string | null;
   paymentMethodId?: string;
   onPaymentMethodSelect: (id: string) => void;
 }
 
-export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: InvoiceFooterProps) {
+export function InvoiceFooter({
+  legalEntityId,
+  paymentMethodId,
+  onPaymentMethodSelect,
+}: InvoiceFooterProps) {
   const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const navigate = useNavigate();
   const [taxDialogOpen, setTaxDialogOpen] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const resolvedLegalEntityId =
+    legalEntityId ?? activeWorkspace?.legalEntityId ?? activeWorkspace?.id;
 
   return (
     <>
@@ -76,10 +83,10 @@ export function InvoiceFooter({ paymentMethodId, onPaymentMethodSelect }: Invoic
             <Label className="text-xs text-muted-foreground uppercase tracking-wider">
               {t("invoices.footer.paymentMethod")}
             </Label>
-            {activeWorkspace?.legalEntityId ? (
+            {resolvedLegalEntityId ? (
               <div className="flex-1 min-h-[80px]">
                 <PaymentMethodSwitcher
-                  legalEntityId={activeWorkspace.legalEntityId}
+                  legalEntityId={resolvedLegalEntityId}
                   selectedId={paymentMethodId}
                   onSelect={onPaymentMethodSelect}
                 />

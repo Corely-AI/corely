@@ -514,6 +514,7 @@
     "actions": {
       "issue": "Phát hành hóa đơn",
       "send": "Gửi hóa đơn",
+      "resend": "Gửi lại",
       "record_payment": "Ghi nhận thanh toán",
       "download_pdf": "Tải PDF",
       "send_reminder": "Gửi nhắc nhở",

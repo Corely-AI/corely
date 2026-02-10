@@ -139,4 +139,31 @@ describe("GetInvoicePdfUseCase", () => {
     expect(result.status).toBe("FAILED");
     expect(result.errorMessage).toContain("Playwright crashed");
   });
+
+  it("uses workspaceId context when tenantId differs", async () => {
+    const workspaceCtx = { tenantId: "identity-tenant", workspaceId: "workspace-1" };
+    const first = unwrap(
+      await requestUseCase.execute({ invoiceId: "inv-workspace-ready" }, workspaceCtx)
+    );
+    const document = await documentRepo.findById("workspace-1", first.documentId);
+    const file = await fileRepo.findById("workspace-1", first.fileId!);
+
+    if (!document || !file) {
+      throw new Error("test setup failed");
+    }
+
+    document.markReady(new Date());
+    storage.objects.set(file.objectKey, {
+      key: file.objectKey,
+      contentType: "application/pdf",
+      bytes: Buffer.from("pdf"),
+    });
+
+    const result = unwrap(
+      await waitUseCase.execute({ invoiceId: "inv-workspace-ready", waitMs: 200 }, workspaceCtx)
+    );
+
+    expect(result.status).toBe("READY");
+    expect(result.downloadUrl).toContain(file.objectKey);
+  });
 });

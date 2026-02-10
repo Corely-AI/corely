@@ -7,7 +7,7 @@ export const SendInvoiceInputSchema = z.object({
   bcc: z.array(z.string().email()).optional(),
   subject: z.string().optional(),
   message: z.string().optional(),
-  attachPdf: z.boolean().default(false),
+  attachPdf: z.boolean().default(true),
   idempotencyKey: z.string().optional(),
   locale: z.string().optional(),
 });

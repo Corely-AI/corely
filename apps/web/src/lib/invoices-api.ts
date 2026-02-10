@@ -163,10 +163,16 @@ export class InvoicesApi {
    */
   async downloadInvoicePdf(
     id: string,
-    options?: { waitMs?: number; signal?: AbortSignal }
+    options?: { waitMs?: number; signal?: AbortSignal; forceRegenerate?: boolean }
   ): Promise<InvoicePdfResponse> {
-    const waitMs = options?.waitMs;
-    const query = typeof waitMs === "number" ? `?waitMs=${Math.floor(waitMs)}` : "";
+    const params = new URLSearchParams();
+    if (typeof options?.waitMs === "number") {
+      params.set("waitMs", String(Math.floor(options.waitMs)));
+    }
+    if (options?.forceRegenerate) {
+      params.set("forceRegenerate", "true");
+    }
+    const query = params.size > 0 ? `?${params.toString()}` : "";
 
     return apiClient.request<InvoicePdfResponse>(
       `/invoices/${id}/pdf${query}`,
