@@ -1,7 +1,7 @@
 import { Module, OnModuleInit, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
-import { IdentityModule } from "../identity";
+import { IdentityModule } from "../identity/identity.module";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
 
 // Infrastructure
@@ -49,8 +49,16 @@ import { TENANT_TEMPLATE_INSTALL_REPOSITORY_TOKEN } from "./application/ports/te
 import { TENANT_MENU_OVERRIDE_REPOSITORY_TOKEN } from "./application/ports/tenant-menu-override-repository.port";
 import { SEEDED_RECORD_META_REPOSITORY_TOKEN } from "./application/ports/seeded-record-meta-repository.port";
 
+import { PlatformEntitlementsModule } from "../platform-entitlements/platform-entitlements.module";
+
 @Module({
-  imports: [DataModule, KernelModule, forwardRef(() => IdentityModule), WorkspacesModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    forwardRef(() => IdentityModule),
+    WorkspacesModule,
+    forwardRef(() => PlatformEntitlementsModule),
+  ],
   controllers: [PlatformController, MenuController, TemplateController, WorkspaceConfigController],
   providers: [
     // Infrastructure - Registries

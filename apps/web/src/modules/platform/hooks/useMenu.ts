@@ -91,6 +91,7 @@ export function useMenu(scope: "web" | "pos" = "web") {
  */
 export function useUpdateMenuOverrides() {
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
 
   return useMutation({
     mutationFn: async ({
@@ -104,6 +105,11 @@ export function useUpdateMenuOverrides() {
     },
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: ["menu", variables.scope] });
+      if (activeWorkspace?.id) {
+        void queryClient.invalidateQueries({
+          queryKey: ["workspace-config", activeWorkspace.id],
+        });
+      }
     },
   });
 }
@@ -113,6 +119,7 @@ export function useUpdateMenuOverrides() {
  */
 export function useResetMenuOverrides() {
   const queryClient = useQueryClient();
+  const { activeWorkspace } = useWorkspace();
 
   return useMutation({
     mutationFn: async (scope: "web" | "pos") => {
@@ -120,6 +127,11 @@ export function useResetMenuOverrides() {
     },
     onSuccess: (_data, scope) => {
       void queryClient.invalidateQueries({ queryKey: ["menu", scope] });
+      if (activeWorkspace?.id) {
+        void queryClient.invalidateQueries({
+          queryKey: ["workspace-config", activeWorkspace.id],
+        });
+      }
     },
   });
 }

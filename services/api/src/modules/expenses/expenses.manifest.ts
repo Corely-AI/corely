@@ -9,6 +9,10 @@ export const expensesAppManifest: AppManifest = {
   dependencies: [],
   capabilities: [],
   permissions: ["expenses.read", "expenses.write"],
+  entitlement: {
+    enabledFeatureKey: "app.expenses.enabled",
+    defaultEnabled: true,
+  },
   menu: [
     {
       id: "expenses",

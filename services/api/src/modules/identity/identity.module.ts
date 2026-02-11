@@ -5,7 +5,7 @@ import { DataModule, PrismaOutboxAdapter } from "@corely/data";
 import { EnvModule, EnvService } from "@corely/config";
 import { OUTBOX_PORT } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
-import { PlatformModule } from "../platform";
+import { PlatformModule } from "../platform/platform.module";
 
 // Controllers
 import { AuthController } from "./adapters/http/auth.controller";

@@ -73,6 +73,7 @@
   },
   "author": "Ha Doan <ha@oneway8x.com>",
   "dependencies": {
+    "@google-cloud/speech": "^7.2.1",
     "@types/pg": "catalog:",
     "pg": "catalog:"
   }
