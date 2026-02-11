@@ -1,11 +1,11 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { getRequestContext } from "@/lib/request-context";
 import { buildWebsitePathFromSegments, isPreviewMode } from "@/lib/website-routing";
-import { getWebsitePageData, getWebsitePageMetadata, WEBSITE_REVALIDATE } from "../_shared";
+import { getWebsitePageData, getWebsitePageMetadata } from "../_shared";
 import { WebsitePublicPageScreen } from "@/components/pages/website-public-page";
 import { WebsiteNotFound } from "@/components/website/website-not-found";
 
-export const revalidate = WEBSITE_REVALIDATE;
+export const revalidate = 120;
 
 export async function generateMetadata({
   params,
