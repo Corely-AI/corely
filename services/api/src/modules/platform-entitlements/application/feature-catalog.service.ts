@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
+import { Inject, Injectable, OnApplicationBootstrap, OnModuleInit } from "@nestjs/common";
 import {
   APP_REGISTRY_TOKEN,
   type AppRegistryPort,
@@ -7,7 +7,7 @@ import { FeatureDefinition, AppEntitlementDefinition } from "../domain/entitleme
 import { AppManifest } from "@corely/contracts";
 
 @Injectable()
-export class FeatureCatalogService implements OnModuleInit {
+export class FeatureCatalogService implements OnModuleInit, OnApplicationBootstrap {
   private _features: Map<string, FeatureDefinition> = new Map();
   private _appEntitlements: Map<string, AppEntitlementDefinition> = new Map();
   private _appFeatures: Map<string, string[]> = new Map(); // appId -> feature keys
@@ -18,6 +18,12 @@ export class FeatureCatalogService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
+    this.compileCatalog();
+  }
+
+  onApplicationBootstrap() {
+    // PlatformModule loads manifests in its onModuleInit; recompile once more
+    // after bootstrap so entitlement catalog sees the fully loaded registry.
     this.compileCatalog();
   }
 

@@ -6,6 +6,10 @@
 - `PUT /menu/overrides?scope=web|pos` - updates tenant-level overrides. The request body must match `UpdateMenuOverridesInputSchema` (which includes the `overrides` payload defined in `MenuOverridesSchema`). Invalid payloads or scopes result in `400 Bad Request`.
 - `DELETE /menu/overrides?scope=web|pos` - resets overrides for the tenant and scope. Scope is validated via `GetMenuQuerySchema`.
 
+## Reference
+
+- App-level menu inventory and freelancer defaults: `docs/platform/apps-menu-matrix.md`
+
 ## Authorization notes
 
 - The controller relies on the Identity module to provide `roleIds` in the JWT payload (via the updated `AuthGuard`/`TokenService`). These role IDs are used to batch-fetch grants through `RolePermissionGrantRepositoryPort`.

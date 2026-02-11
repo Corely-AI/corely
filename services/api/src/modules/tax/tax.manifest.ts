@@ -9,6 +9,10 @@ export const taxAppManifest: AppManifest = {
   dependencies: [],
   capabilities: [],
   permissions: [],
+  entitlement: {
+    enabledFeatureKey: "app.tax.enabled",
+    defaultEnabled: true,
+  },
   menu: [
     {
       id: "tax-center",

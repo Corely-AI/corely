@@ -19,6 +19,10 @@ export const invoicesAppManifest: AppManifest = {
     "invoices.send",
     "invoices.finalize",
   ],
+  entitlement: {
+    enabledFeatureKey: "app.invoices.enabled",
+    defaultEnabled: true,
+  },
   menu: [
     {
       id: "invoices",
