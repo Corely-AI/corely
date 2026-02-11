@@ -1,7 +1,7 @@
 import { Module, OnModuleInit, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
-import { IdentityModule } from "../identity";
+import { IdentityModule } from "../identity/identity.module";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
 
 // Infrastructure

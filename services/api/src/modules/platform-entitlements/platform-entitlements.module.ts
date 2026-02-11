@@ -1,7 +1,7 @@
 import { Module, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { TENANT_ENTITLEMENTS_READ_PORT_TOKEN } from "@corely/kernel";
-import { IdentityModule } from "../identity";
+import { IdentityModule } from "../identity/identity.module";
 import { PlatformModule } from "../platform/platform.module";
 import { FeatureCatalogService } from "./application/feature-catalog.service";
 import { TenantEntitlementsService } from "./application/tenant-entitlements.service";
@@ -10,7 +10,7 @@ import { PlatformEntitlementGuard } from "./http/entitlement.guard";
 import { TenantEntitlementsReadAdapter } from "./adapters/tenant-entitlements-read.adapter";
 
 @Module({
-  imports: [DataModule, forwardRef(() => PlatformModule), IdentityModule],
+  imports: [DataModule, forwardRef(() => PlatformModule), forwardRef(() => IdentityModule)],
   controllers: [TenantEntitlementsController],
   providers: [
     FeatureCatalogService,
