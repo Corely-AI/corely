@@ -10,6 +10,7 @@ export {
   RequireWorkspaceCapability,
 } from "./guards/workspace-capability.guard";
 export { TenantEntitlementService } from "./application/services/tenant-entitlement.service";
+export { MenuBuilderService } from "./application/services/menu-builder.service";
 export { MenuComposerService } from "./application/services/menu-composer.service";
 export { WorkspaceTemplateService } from "./application/services/workspace-template.service";
 export { platformPermissions } from "./platform.permissions";

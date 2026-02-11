@@ -17,6 +17,7 @@ import { PrismaSeededRecordMetaRepositoryAdapter } from "./infrastructure/adapte
 // Application Services
 import { TenantEntitlementService } from "./application/services/tenant-entitlement.service";
 import { MenuComposerService } from "./application/services/menu-composer.service";
+import { MenuBuilderService } from "./application/services/menu-builder.service";
 import { DependencyResolverService } from "./application/services/dependency-resolver.service";
 import { WorkspaceTemplateService } from "./application/services/workspace-template.service";
 
@@ -103,6 +104,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
 
     // Application Services
     TenantEntitlementService,
+    MenuBuilderService,
     MenuComposerService,
     DependencyResolverService,
     WorkspaceTemplateService,
@@ -123,6 +125,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
   ],
   exports: [
     TenantEntitlementService,
+    MenuBuilderService,
     MenuComposerService,
     EntitlementGuard,
     WorkspaceCapabilityGuard,

@@ -22,6 +22,11 @@ const TEST_MENU_DASHBOARD_ID = "dashboard";
 const TEST_MENU_EXPENSES_ID = "expenses";
 const TEST_MENU_TAX_OVERVIEW_ID = "tax-center";
 
+interface MenuGroupResponse {
+  appId: string;
+  items: Array<{ id: string }>;
+}
+
 describe("Menu app entitlements integration", () => {
   let moduleRef: TestingModule;
   let app: INestApplication;
@@ -115,9 +120,15 @@ describe("Menu app entitlements integration", () => {
 
     expect(response.status).toBe(200);
     const ids = new Set<string>(response.body.items.map((item: { id: string }) => item.id));
+    const groupIds = new Set<string>(
+      response.body.groups.map((group: MenuGroupResponse) => group.appId)
+    );
     expect(ids.has(TEST_MENU_DASHBOARD_ID)).toBe(true);
     expect(ids.has(TEST_MENU_EXPENSES_ID)).toBe(true);
     expect(ids.has(TEST_MENU_TAX_OVERVIEW_ID)).toBe(true);
+    expect(groupIds.has(TEST_APP_CORE_ID)).toBe(true);
+    expect(groupIds.has(TEST_APP_EXPENSES_ID)).toBe(true);
+    expect(groupIds.has(TEST_APP_TAX_ID)).toBe(true);
   });
 
   it("removes menu items when an app is disabled and restores them after re-enable", async () => {
@@ -129,9 +140,13 @@ describe("Menu app entitlements integration", () => {
       .set("x-tenant-id", tenantId);
     expect(disabled.status).toBe(200);
     const disabledIds = new Set<string>(disabled.body.items.map((item: { id: string }) => item.id));
+    const disabledGroupIds = new Set<string>(
+      disabled.body.groups.map((group: MenuGroupResponse) => group.appId)
+    );
     expect(disabledIds.has(TEST_MENU_TAX_OVERVIEW_ID)).toBe(false);
     expect(disabledIds.has(TEST_MENU_EXPENSES_ID)).toBe(true);
     expect(disabledIds.has(TEST_MENU_DASHBOARD_ID)).toBe(true);
+    expect(disabledGroupIds.has(TEST_APP_TAX_ID)).toBe(false);
 
     await entitlementsService.updateAppEnablement(tenantId, TEST_APP_TAX_ID, true, userId, false);
 
@@ -146,5 +161,11 @@ describe("Menu app entitlements integration", () => {
     expect(reenabledIds.has(TEST_MENU_TAX_OVERVIEW_ID)).toBe(true);
     expect(reenabledIds.has(TEST_MENU_EXPENSES_ID)).toBe(true);
     expect(reenabledIds.has(TEST_MENU_DASHBOARD_ID)).toBe(true);
+
+    const taxGroup = reenabled.body.groups.find(
+      (group: MenuGroupResponse) => group.appId === "tax"
+    );
+    expect(taxGroup).toBeDefined();
+    expect(taxGroup!.items[taxGroup!.items.length - 1].id).toBe("tax-settings");
   });
 });

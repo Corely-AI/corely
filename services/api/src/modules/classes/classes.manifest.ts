@@ -22,6 +22,18 @@ export const classesAppManifest: AppManifest = {
       requiresPermissions: ["classes.read"],
     },
     {
+      id: "students",
+      scope: "web",
+      section: "education",
+      labelKey: "nav.students",
+      defaultLabel: "Students",
+      route: "/students",
+      icon: "User",
+      order: 35,
+      requiresPermissions: ["party.customers.read"],
+      requiresApps: ["parties"],
+    },
+    {
       id: "classes-groups",
       scope: "web",
       section: "education",

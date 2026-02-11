@@ -2,7 +2,7 @@
 
 ## Endpoints
 
-- `GET /menu?scope=web|pos` - returns the composed menu tree for the current tenant and user. The controller validates `scope` via `GetMenuQuerySchema`, resolves `roleIds` from the JWT (through `AuthGuard` + `@CurrentRoleIds`), fetches grants through `IdentityModule`’s `ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN`, and forwards the computed permissions to `ComposeMenuUseCase`.
+- `GET /menu?scope=web|pos` - returns the composed menu for the current tenant and user. The controller validates `scope` via `GetMenuQuerySchema`, resolves `roleIds` from the JWT (through `AuthGuard` + `@CurrentRoleIds`), fetches grants through `IdentityModule`’s `ROLE_PERMISSION_GRANT_REPOSITORY_TOKEN`, and forwards the computed permissions to `ComposeMenuUseCase`.
 - `PUT /menu/overrides?scope=web|pos` - updates tenant-level overrides. The request body must match `UpdateMenuOverridesInputSchema` (which includes the `overrides` payload defined in `MenuOverridesSchema`). Invalid payloads or scopes result in `400 Bad Request`.
 - `DELETE /menu/overrides?scope=web|pos` - resets overrides for the tenant and scope. Scope is validated via `GetMenuQuerySchema`.
 
@@ -27,3 +27,40 @@ The menu is dynamically composed based on:
 5. **Overrides**: Tenant-specific menu overrides (renames, reordering, hiding).
 
 See `TenantEntitlementService` and `MenuComposerService` for implementation details.
+
+## Staff Web Grouping (Option A)
+
+For `scope=web`, the API now returns an app-grouped tree in addition to the flat item list:
+
+- Top-level groups are app-based (`group.appId = AppManifest.appId`).
+- Group labels use app manifest names.
+- Groups are shown only when the app is enabled **and** has at least one visible staff web menu item.
+- Apps like `portal` (`menu: []`) do not appear in staff web navigation.
+
+Response shape:
+
+```json
+{
+  "scope": "web",
+  "items": [...],
+  "groups": [
+    {
+      "appId": "invoices",
+      "defaultLabel": "Invoices",
+      "icon": "FileText",
+      "items": [...]
+    }
+  ],
+  "computedAt": "2026-02-11T00:00:00.000Z"
+}
+```
+
+Ordering rules:
+
+- Groups: `AppManifest.tier` ascending, then app name, then `appId`.
+- Items in group: non-settings first, then `order` ascending, then label/id tie-break.
+- Settings-last detection:
+  - route starts with `/settings` or contains `/settings/`
+  - or route ends with `/settings`
+  - or item id ends with `-settings`
+  - or section is `settings`

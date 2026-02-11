@@ -7,6 +7,36 @@ Source of truth:
 - `services/api/src/modules/*/*.manifest.ts`
 - `services/api/src/modules/platform/application/services/workspace-template.service.ts`
 
+## Staff Web Grouping Rules
+
+The staff web menu is grouped by app (not by section buckets):
+
+- Top-level group key: `appId` from `AppManifest.appId`
+- Group label: app name from manifest
+- Group appears only if:
+  - app is effectively enabled (template defaults + tenant overrides + entitlements), and
+  - at least one menu item is visible for `scope=web` after permission/capability checks
+
+Apps with no staff web items (for example `portal`) are excluded.
+
+### Ordering
+
+- Group order: `tier` ascending, then app name.
+- Item order inside each app:
+  - non-settings items first
+  - then `order` ascending
+  - then `defaultLabel`/`labelKey` as stable tie-breaks
+
+### Settings-last detection
+
+An item is treated as settings when one of the following is true:
+
+- `route` starts with `/settings`
+- `route` contains `/settings/`
+- `route` ends with `/settings`
+- `id` ends with `-settings`
+- `section === "settings"`
+
 ## App -> Menu Items
 
 | App ID            | App Name            | Menu Items (`id -> route`)                                                                                                                                                                                            |
@@ -14,14 +44,14 @@ Source of truth:
 | `ai-copilot`      | AI Assistant        | `assistant -> /assistant`                                                                                                                                                                                             |
 | `cash-management` | Cash Management     | `cash-management -> /cash-registers`                                                                                                                                                                                  |
 | `catalog`         | Catalog             | `catalog-items -> /catalog/items`                                                                                                                                                                                     |
-| `classes`         | Classes             | `teacher-dashboard -> /dashboard/teacher`; `classes-groups -> /class-groups`; `classes-sessions -> /sessions`; `classes-billing -> /billing`                                                                          |
+| `classes`         | Classes             | `teacher-dashboard -> /dashboard/teacher`; `students -> /students`; `classes-groups -> /class-groups`; `classes-sessions -> /sessions`; `classes-billing -> /billing`                                                 |
 | `cms`             | CMS                 | `cms-posts -> /cms/posts`; `cms-comments -> /cms/comments`                                                                                                                                                            |
 | `crm`             | CRM                 | `crm-deals -> /crm/deals`; `crm-activities -> /crm/activities`                                                                                                                                                        |
 | `core`            | Core                | `dashboard -> /dashboard`                                                                                                                                                                                             |
 | `expenses`        | Expenses            | `expenses -> /expenses`                                                                                                                                                                                               |
 | `invoices`        | Invoices            | `invoices -> /invoices`                                                                                                                                                                                               |
 | `issues`          | Issues              | `issues -> /issues`                                                                                                                                                                                                   |
-| `parties`         | Clients & Customers | `clients -> /customers`; `students -> /students`                                                                                                                                                                      |
+| `parties`         | Clients & Customers | `clients -> /customers`                                                                                                                                                                                               |
 | `platform`        | Platform            | `platform-settings -> /settings/platform`                                                                                                                                                                             |
 | `portal`          | Portal              | No staff web menu items (`menu: []`)                                                                                                                                                                                  |
 | `portfolio`       | Portfolio           | `portfolio-showcases -> /portfolio/showcases`                                                                                                                                                                         |
