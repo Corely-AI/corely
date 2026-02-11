@@ -57,7 +57,7 @@ Response shape:
 
 Ordering rules:
 
-- Groups: `AppManifest.tier` ascending, then app name, then `appId`.
+- Groups: `AppManifest.tier` ascending, then app name, then `appId`, with `workspaces` pinned last.
 - Items in group: non-settings first, then `order` ascending, then label/id tie-break.
 - Settings-last detection:
   - route starts with `/settings` or contains `/settings/`

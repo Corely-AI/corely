@@ -179,4 +179,36 @@ describe("MenuBuilderService", () => {
       "sales-settings",
     ]);
   });
+
+  it("orders workspaces group last", async () => {
+    manifests["core"] = {
+      ...createManifest("core", [createMenuItem({ id: "dashboard", route: "/dashboard" })]),
+      name: "Core",
+      tier: 0,
+    };
+    manifests["workspaces"] = {
+      ...createManifest("workspaces", [
+        createMenuItem({ id: "workspace-settings", route: "/settings/workspace" }),
+      ]),
+      name: "Workspaces",
+      tier: 0,
+    };
+    manifests["expenses"] = {
+      ...createManifest("expenses", [createMenuItem({ id: "expenses", route: "/expenses" })]),
+      name: "Expenses",
+      tier: 1,
+    };
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["core", "workspaces", "expenses"]), new Set())
+    );
+
+    const result = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(),
+      scope: "web",
+    });
+
+    expect(result.groups.map((group) => group.appId)).toEqual(["core", "expenses", "workspaces"]);
+  });
 });

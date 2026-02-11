@@ -21,7 +21,7 @@ Apps with no staff web items (for example `portal`) are excluded.
 
 ### Ordering
 
-- Group order: `tier` ascending, then app name.
+- Group order: `tier` ascending, then app name, with `workspaces` pinned last.
 - Item order inside each app:
   - non-settings items first
   - then `order` ascending

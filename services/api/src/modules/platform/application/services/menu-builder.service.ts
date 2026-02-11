@@ -37,6 +37,8 @@ interface ResolvedMenuItem {
   sortLabel: string;
 }
 
+const LAST_GROUP_APP_IDS = new Set<string>(["workspaces"]);
+
 /**
  * Menu Builder Service
  * Builds app-grouped and flat menu outputs from app manifests.
@@ -253,6 +255,12 @@ export class MenuBuilderService {
     nameB: string,
     appIdB: string
   ) {
+    const aPinnedLast = LAST_GROUP_APP_IDS.has(appIdA);
+    const bPinnedLast = LAST_GROUP_APP_IDS.has(appIdB);
+    if (aPinnedLast !== bPinnedLast) {
+      return aPinnedLast ? 1 : -1;
+    }
+
     if (tierA !== tierB) {
       return tierA - tierB;
     }
