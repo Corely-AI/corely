@@ -6,12 +6,22 @@ import { Alert, AlertDescription } from "@corely/ui";
 import { Loader2, Power, PowerOff, AlertCircle, CheckCircle2, Package } from "lucide-react";
 import { usePlatformApps, useEnableApp, useDisableApp } from "../hooks/usePlatformApps";
 import type { AppWithStatus } from "../hooks/usePlatformApps";
+import { getAppManagementPolicy } from "./apps-management-policy";
+
+interface AppMutationError {
+  response?: {
+    data?: {
+      code?: string;
+    };
+  };
+}
 
 export function AppsManagementPage() {
   const { data: apps, isLoading, error } = usePlatformApps();
   const enableApp = useEnableApp();
   const disableApp = useDisableApp();
   const [selectedApp, setSelectedApp] = useState<string | null>(null);
+  const [autoEnabledApps, setAutoEnabledApps] = useState<Set<string>>(new Set());
 
   const handleEnableApp = async (appId: string) => {
     setSelectedApp(appId);
@@ -23,12 +33,18 @@ export function AppsManagementPage() {
   };
 
   const handleDisableApp = async (appId: string) => {
+    const policy = getAppManagementPolicy(appId);
+    if (policy.hideDisableAction) {
+      return;
+    }
+
     setSelectedApp(appId);
     try {
       await disableApp.mutateAsync({ appId });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle dependent apps error
-      if (error.response?.data?.code === "Platform:HasDependents") {
+      const code = (error as AppMutationError).response?.data?.code;
+      if (code === "Platform:HasDependents") {
         if (
           confirm(
             `Cannot disable "${appId}" because other apps depend on it. Force disable all dependent apps?`
@@ -41,6 +57,45 @@ export function AppsManagementPage() {
       setSelectedApp(null);
     }
   };
+
+  const requiredAppsToEnable = React.useMemo(
+    () =>
+      (apps ?? [])
+        .filter((app) => {
+          const policy = getAppManagementPolicy(app.appId);
+          return policy.forceEnabled && !app.enabled && !autoEnabledApps.has(app.appId);
+        })
+        .map((app) => app.appId),
+    [apps, autoEnabledApps]
+  );
+
+  React.useEffect(() => {
+    if (requiredAppsToEnable.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const run = async () => {
+      for (const appId of requiredAppsToEnable) {
+        if (cancelled) {
+          return;
+        }
+        setAutoEnabledApps((prev) => new Set(prev).add(appId));
+        try {
+          await enableApp.mutateAsync(appId);
+        } catch {
+          // keep UI usable; user can retry from the Enable button if needed
+        }
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [requiredAppsToEnable, enableApp]);
 
   if (isLoading) {
     return (
@@ -59,7 +114,12 @@ export function AppsManagementPage() {
     );
   }
 
-  const groupedApps = (apps ?? []).reduce(
+  const appsWithPolicy = (apps ?? []).map((app) => ({
+    ...app,
+    policy: getAppManagementPolicy(app.appId),
+  }));
+
+  const groupedApps = appsWithPolicy.reduce(
     (acc, app) => {
       const tier = app.tier;
       if (!acc[tier]) {
@@ -68,7 +128,10 @@ export function AppsManagementPage() {
       acc[tier].push(app);
       return acc;
     },
-    {} as Record<number, AppWithStatus[]>
+    {} as Record<
+      number,
+      Array<AppWithStatus & { policy: ReturnType<typeof getAppManagementPolicy> }>
+    >
   );
 
   const tierNames: Record<number, string> = {
@@ -83,15 +146,15 @@ export function AppsManagementPage() {
       <div>
         <h1 className="text-h1 text-foreground">Apps Management</h1>
         <p className="text-muted-foreground mt-2">
-          Enable or disable apps to customize your workspace features.
+          Enable apps to customize your workspace features. Core platform apps stay enabled.
         </p>
       </div>
 
       <Alert>
         <Package className="h-4 w-4" />
         <AlertDescription>
-          Apps are functional modules that can be independently enabled or disabled. Enabling an app
-          will automatically enable its dependencies.
+          Enabling an app will automatically enable its dependencies. Required apps like Core and
+          Workspaces cannot be disabled.
         </AlertDescription>
       </Alert>
 
@@ -115,7 +178,7 @@ export function AppsManagementPage() {
                         {app.enabled ? (
                           <Badge variant="default" className="ml-2">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Enabled
+                            {app.policy.forceEnabled ? "Always Enabled" : "Enabled"}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="ml-2">
@@ -167,25 +230,31 @@ export function AppsManagementPage() {
 
                       <div className="pt-2">
                         {app.enabled ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full"
-                            onClick={() => handleDisableApp(app.appId)}
-                            disabled={selectedApp === app.appId || disableApp.isPending}
-                          >
-                            {selectedApp === app.appId ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Disabling...
-                              </>
-                            ) : (
-                              <>
-                                <PowerOff className="h-4 w-4 mr-2" />
-                                Disable App
-                              </>
-                            )}
-                          </Button>
+                          app.policy.hideDisableAction ? (
+                            <div className="text-xs text-muted-foreground text-center py-2 border rounded-md">
+                              {app.policy.reason ?? "This app is required and cannot be disabled."}
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full"
+                              onClick={() => handleDisableApp(app.appId)}
+                              disabled={selectedApp === app.appId || disableApp.isPending}
+                            >
+                              {selectedApp === app.appId ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Disabling...
+                                </>
+                              ) : (
+                                <>
+                                  <PowerOff className="h-4 w-4 mr-2" />
+                                  Disable App
+                                </>
+                              )}
+                            </Button>
+                          )
                         ) : (
                           <Button
                             variant="default"

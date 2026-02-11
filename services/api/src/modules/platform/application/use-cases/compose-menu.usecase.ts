@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
-import type { MenuItem } from "@corely/contracts";
+import type { MenuGroup, MenuItem } from "@corely/contracts";
 import { MenuComposerService } from "../services/menu-composer.service";
 import { WorkspaceTemplateService } from "../services/workspace-template.service";
 import {
@@ -24,6 +24,7 @@ export interface ComposeMenuInput {
 export interface ComposeMenuOutput {
   scope: string;
   items: MenuItem[];
+  groups: MenuGroup[];
   computedAt: string;
   // Workspace metadata for server-driven UI
   workspace?: {
@@ -72,7 +73,7 @@ export class ComposeMenuUseCase {
         .map(([key]) => key)
     );
 
-    const items = await this.menuComposer.composeMenu({
+    const menu = await this.menuComposer.composeMenuTree({
       tenantId: input.tenantId,
       userId: input.userId,
       permissions: new Set(input.permissions),
@@ -104,7 +105,8 @@ export class ComposeMenuUseCase {
 
     return {
       scope: input.scope,
-      items,
+      items: menu.items,
+      groups: menu.groups,
       computedAt: new Date().toISOString(),
       workspace: workspaceMetadata,
     };

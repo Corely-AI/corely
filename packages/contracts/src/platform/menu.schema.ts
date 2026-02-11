@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { MenuContributionSchema } from "./app-manifest.schema";
 
 /**
  * Menu Scope
@@ -38,6 +37,28 @@ export const MenuSectionSchema = z.object({
 });
 
 export type MenuSection = z.infer<typeof MenuSectionSchema>;
+
+/**
+ * Menu Group - App-level grouped menu items
+ */
+export const MenuGroupSchema = z.object({
+  appId: z.string(),
+  labelKey: z.string().optional(),
+  defaultLabel: z.string(),
+  icon: z.string().optional(),
+  items: z.array(MenuItemSchema),
+});
+
+export type MenuGroup = z.infer<typeof MenuGroupSchema>;
+
+/**
+ * Menu Tree - App-grouped menu structure
+ */
+export const MenuTreeSchema = z.object({
+  groups: z.array(MenuGroupSchema),
+});
+
+export type MenuTree = z.infer<typeof MenuTreeSchema>;
 
 /**
  * Composed Menu - Complete menu tree

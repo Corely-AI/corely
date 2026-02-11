@@ -9,6 +9,10 @@ export const platformAppManifest: AppManifest = {
   dependencies: [],
   capabilities: ["platform.manage"],
   permissions: ["platform.apps.manage"],
+  entitlement: {
+    enabledFeatureKey: "app.platform.enabled",
+    defaultEnabled: true,
+  },
   menu: [
     {
       id: "platform-settings",
