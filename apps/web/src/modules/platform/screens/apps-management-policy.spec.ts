@@ -14,6 +14,12 @@ describe("getAppManagementPolicy", () => {
     expect(policy.hideDisableAction).toBe(true);
   });
 
+  it("marks platform as force-enabled and non-disableable", () => {
+    const policy = getAppManagementPolicy("platform");
+    expect(policy.forceEnabled).toBe(true);
+    expect(policy.hideDisableAction).toBe(true);
+  });
+
   it("returns default mutable policy for regular apps", () => {
     const policy = getAppManagementPolicy("expenses");
     expect(policy.forceEnabled).toBe(false);

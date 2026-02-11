@@ -11,6 +11,11 @@ const FORCE_ENABLED_APP_POLICIES: Readonly<Record<string, Omit<AppManagementPoli
     hideDisableAction: true,
     reason: "Required platform app",
   },
+  platform: {
+    forceEnabled: true,
+    hideDisableAction: true,
+    reason: "Host management app is always enabled",
+  },
   workspaces: {
     forceEnabled: true,
     hideDisableAction: true,

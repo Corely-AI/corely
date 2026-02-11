@@ -137,6 +137,29 @@ describe("MenuBuilderService", () => {
     expect(result.items).toEqual([]);
   });
 
+  it("hides platform menu for normal users without host platform permission", async () => {
+    manifests["platform"] = createManifest("platform", [
+      createMenuItem({
+        id: "platform-settings",
+        route: "/settings/platform",
+        requiresPermissions: ["platform.apps.manage"],
+      }),
+    ]);
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["platform"]), new Set())
+    );
+
+    const result = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(),
+      scope: "web",
+    });
+
+    expect(result.groups).toEqual([]);
+    expect(result.items).toEqual([]);
+  });
+
   it("sorts settings items last within each app group", async () => {
     manifests["sales"] = createManifest("sales", [
       createMenuItem({
