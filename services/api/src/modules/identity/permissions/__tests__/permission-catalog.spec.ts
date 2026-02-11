@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { validatePermissionCatalog } from "../permission-catalog";
+import { buildPermissionCatalog, validatePermissionCatalog } from "../permission-catalog";
 import { ValidationError } from "../../../../shared/errors/domain-errors";
 
 describe("Permission catalog validation", () => {
@@ -16,5 +16,14 @@ describe("Permission catalog validation", () => {
     ];
 
     expect(() => validatePermissionCatalog(catalog)).toThrow(ValidationError);
+  });
+
+  it("includes tenant app permissions in catalog", () => {
+    const catalog = buildPermissionCatalog();
+    const keys = new Set(
+      catalog.flatMap((group) => group.permissions.map((permission) => permission.key))
+    );
+    expect(keys.has("tenant.apps.read")).toBe(true);
+    expect(keys.has("tenant.apps.manage")).toBe(true);
   });
 });

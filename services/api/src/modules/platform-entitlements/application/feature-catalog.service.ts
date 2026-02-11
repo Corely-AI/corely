@@ -68,7 +68,7 @@ export class FeatureCatalogService implements OnModuleInit, OnApplicationBootstr
 
     const enabledKey = appAny.entitlement?.enabledFeatureKey ?? `app.${app.appId}.enabled`;
     const defaultEnabled =
-      appAny.entitlement?.defaultEnabled ?? ["core", "platform"].includes(app.appId);
+      appAny.entitlement?.defaultEnabled ?? ["core", "platform", "workspaces"].includes(app.appId);
 
     // Register the enablement feature
     const enablementFeature: FeatureDefinition = {

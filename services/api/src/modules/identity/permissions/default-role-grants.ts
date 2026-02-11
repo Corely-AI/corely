@@ -1,4 +1,5 @@
 import type { PermissionGroup, RolePermissionEffect } from "@corely/contracts";
+import { PLATFORM_HOST_PERMISSION_KEYS } from "../application/policies/platform-permissions.policy";
 
 export type DefaultRoleKey =
   | "OWNER"
@@ -15,9 +16,10 @@ export const buildDefaultRoleGrants = (
   const allKeys = catalog.flatMap((group) => group.permissions.map((permission) => permission.key));
 
   const uniqueKeys = Array.from(new Set(allKeys));
-  const readKeys = uniqueKeys.filter((key) => key.endsWith(".read"));
+  const tenantAssignableKeys = uniqueKeys.filter((key) => !PLATFORM_HOST_PERMISSION_KEYS.has(key));
+  const readKeys = tenantAssignableKeys.filter((key) => key.endsWith(".read"));
 
-  const accountantKeys = uniqueKeys.filter(
+  const accountantKeys = tenantAssignableKeys.filter(
     (key) =>
       key.startsWith("sales.invoices.") ||
       key.startsWith("sales.payments.") ||
@@ -26,22 +28,22 @@ export const buildDefaultRoleGrants = (
       key.startsWith("purchasing.")
   );
 
-  const staffKeys = uniqueKeys.filter(
+  const staffKeys = tenantAssignableKeys.filter(
     (key) => key.endsWith(".read") && !key.startsWith("settings.")
   );
 
   const readOnlyKeys = readKeys.filter((key) => !key.startsWith("settings."));
 
   return {
-    OWNER: uniqueKeys.map((key) => ({ key, effect: "ALLOW" })),
-    ADMIN: uniqueKeys.map((key) => ({ key, effect: "ALLOW" })),
+    OWNER: tenantAssignableKeys.map((key) => ({ key, effect: "ALLOW" })),
+    ADMIN: tenantAssignableKeys.map((key) => ({ key, effect: "ALLOW" })),
     ACCOUNTANT: accountantKeys.map((key) => ({ key, effect: "ALLOW" })),
     STAFF: staffKeys.map((key) => ({ key, effect: "ALLOW" })),
     READ_ONLY: readOnlyKeys.map((key) => ({ key, effect: "ALLOW" })),
-    GUARDIAN: uniqueKeys
+    GUARDIAN: tenantAssignableKeys
       .filter((key) => key.startsWith("portal."))
       .map((key) => ({ key, effect: "ALLOW" })),
-    STUDENT: uniqueKeys
+    STUDENT: tenantAssignableKeys
       .filter((key) => key.startsWith("portal."))
       .map((key) => ({ key, effect: "ALLOW" })),
   };

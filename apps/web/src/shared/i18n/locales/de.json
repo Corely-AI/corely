@@ -160,7 +160,8 @@
     "classSessions": "Sitzungen",
     "classBilling": "Klassenabrechnung",
     "website": "Website",
-    "platform": "Plattform"
+    "platform": "Plattform",
+    "apps": "Apps"
   },
   "featureFlags": {
     "app": {

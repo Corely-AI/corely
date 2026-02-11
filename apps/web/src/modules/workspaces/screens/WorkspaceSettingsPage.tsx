@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
@@ -9,6 +9,7 @@ import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import { workspacesApi } from "@/shared/workspaces/workspaces-api";
 import { useToast } from "@corely/ui";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
+import { useAuth } from "@/lib/auth-provider";
 import { Badge } from "@corely/ui";
 import { Switch } from "@corely/ui";
 import {
@@ -26,6 +27,7 @@ import {
 export const WorkspaceSettingsPage: React.FC = () => {
   const { activeWorkspace, activeWorkspaceId, refresh } = useWorkspace();
   const { config, refresh: refreshConfig } = useWorkspaceConfig();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [form, setForm] = useState({
@@ -43,6 +45,29 @@ export const WorkspaceSettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const activeTenant = useMemo(() => {
+    if (!user) {
+      return null;
+    }
+    if (user.activeTenantId) {
+      return (
+        user.memberships.find((membership) => membership.tenantId === user.activeTenantId) ??
+        user.memberships[0] ??
+        null
+      );
+    }
+    if (activeWorkspaceId) {
+      return (
+        user.memberships.find((membership) => membership.workspaceId === activeWorkspaceId) ??
+        user.memberships[0] ??
+        null
+      );
+    }
+    return user.memberships[0] ?? null;
+  }, [user, activeWorkspaceId]);
+
+  const tenantNameValue = activeTenant?.tenantName ?? "";
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -170,39 +195,50 @@ export const WorkspaceSettingsPage: React.FC = () => {
         <CardHeader>
           <CardTitle>Profile</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+        <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Name</Label>
+            <Label>Tenant name</Label>
             <Input
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              value={tenantNameValue}
+              placeholder="Not available"
+              readOnly
+              className="bg-muted/40"
             />
           </div>
-          <div className="space-y-2">
-            <Label>Legal name</Label>
-            <Input
-              value={form.legalName}
-              onChange={(e) => setForm((f) => ({ ...f, legalName: e.target.value }))}
-              placeholder="Registered name for invoices"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Currency</Label>
-            <Input
-              value={form.currency}
-              onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value.toUpperCase() }))}
-              placeholder="EUR"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Country code</Label>
-            <Input
-              value={form.countryCode}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, countryCode: e.target.value.toUpperCase() }))
-              }
-              placeholder="DE"
-            />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label>Name</Label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Legal name</Label>
+              <Input
+                value={form.legalName}
+                onChange={(e) => setForm((f) => ({ ...f, legalName: e.target.value }))}
+                placeholder="Registered name for invoices"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Currency</Label>
+              <Input
+                value={form.currency}
+                onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value.toUpperCase() }))}
+                placeholder="EUR"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Country code</Label>
+              <Input
+                value={form.countryCode}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, countryCode: e.target.value.toUpperCase() }))
+                }
+                placeholder="DE"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

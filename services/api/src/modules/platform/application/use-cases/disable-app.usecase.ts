@@ -7,6 +7,7 @@ import {
   type TenantAppInstallRepositoryPort,
 } from "../ports/tenant-app-install-repository.port";
 import { DependencyResolverService } from "../services/dependency-resolver.service";
+import { isSystemAppId } from "../../system-apps";
 
 export interface DisableAppInput {
   tenantId: string;
@@ -33,6 +34,12 @@ export class DisableAppUseCase {
   ) {}
 
   async execute(input: DisableAppInput): Promise<DisableAppOutput> {
+    if (isSystemAppId(input.appId)) {
+      throw new ValidationError(`System app "${input.appId}" cannot be disabled`, {
+        code: "SYSTEM_APP_LOCKED",
+      });
+    }
+
     // 1. Validate app exists
     const manifest = this.appRegistry.get(input.appId);
     if (!manifest) {

@@ -19,6 +19,16 @@ The staff web menu is grouped by app (not by section buckets):
 
 Apps with no staff web items (for example `portal`) are excluded.
 
+### System Apps (Always Enabled)
+
+The following apps are system-critical and always treated as enabled:
+
+- `core`
+- `platform`
+- `workspaces`
+
+Host policy and tenant settings cannot disable them.
+
 ### Ordering
 
 - Group order: `tier` ascending, then app name, with `workspaces` pinned last.
@@ -39,28 +49,28 @@ An item is treated as settings when one of the following is true:
 
 ## App -> Menu Items
 
-| App ID            | App Name            | Menu Items (`id -> route`)                                                                                                                                                                                            |
-| ----------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ai-copilot`      | AI Assistant        | `assistant -> /assistant`                                                                                                                                                                                             |
-| `cash-management` | Cash Management     | `cash-management -> /cash-registers`                                                                                                                                                                                  |
-| `catalog`         | Catalog             | `catalog-items -> /catalog/items`                                                                                                                                                                                     |
-| `classes`         | Classes             | `teacher-dashboard -> /dashboard/teacher`; `students -> /students`; `classes-groups -> /class-groups`; `classes-sessions -> /sessions`; `classes-billing -> /billing`                                                 |
-| `cms`             | CMS                 | `cms-posts -> /cms/posts`; `cms-comments -> /cms/comments`                                                                                                                                                            |
-| `crm`             | CRM                 | `crm-deals -> /crm/deals`; `crm-activities -> /crm/activities`                                                                                                                                                        |
-| `core`            | Core                | `dashboard -> /dashboard`                                                                                                                                                                                             |
-| `expenses`        | Expenses            | `expenses -> /expenses`                                                                                                                                                                                               |
-| `invoices`        | Invoices            | `invoices -> /invoices`                                                                                                                                                                                               |
-| `issues`          | Issues              | `issues -> /issues`                                                                                                                                                                                                   |
-| `parties`         | Clients & Customers | `clients -> /customers`                                                                                                                                                                                               |
-| `platform`        | Platform            | `platform-settings -> /settings/platform`                                                                                                                                                                             |
-| `portal`          | Portal              | No staff web menu items (`menu: []`)                                                                                                                                                                                  |
-| `portfolio`       | Portfolio           | `portfolio-showcases -> /portfolio/showcases`                                                                                                                                                                         |
-| `purchasing`      | Purchasing          | `purchase-orders -> /purchasing/purchase-orders`; `purchasing-settings -> /purchasing/settings`                                                                                                                       |
-| `rentals`         | Vacation Rentals    | `rental-properties -> /rentals/properties`                                                                                                                                                                            |
-| `sales`           | Sales               | `quotes -> /sales/quotes`; `projects -> /projects`; `sales-settings -> /sales/settings`                                                                                                                               |
-| `tax`             | Tax                 | `tax-center -> /tax`; `tax-filings -> /tax/filings`; `tax-payments -> /tax/payments`; `tax-documents -> /tax/documents`; `tax-settings -> /tax/settings`                                                              |
-| `website`         | Website             | `website-sites -> /website/sites`                                                                                                                                                                                     |
-| `workspaces`      | Workspaces          | `workspace-settings -> /settings/workspace`; `payment-methods-settings -> /settings/payment-methods`; `profile-settings -> /settings`; `workspace-members -> /settings/members`; `workspace-roles -> /settings/roles` |
+| App ID            | App Name            | Menu Items (`id -> route`)                                                                                                                                                                                                                                      |
+| ----------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ai-copilot`      | AI Assistant        | `assistant -> /assistant`                                                                                                                                                                                                                                       |
+| `cash-management` | Cash Management     | `cash-management -> /cash-registers`                                                                                                                                                                                                                            |
+| `catalog`         | Catalog             | `catalog-items -> /catalog/items`                                                                                                                                                                                                                               |
+| `classes`         | Classes             | `teacher-dashboard -> /dashboard/teacher`; `students -> /students`; `classes-groups -> /class-groups`; `classes-sessions -> /sessions`; `classes-billing -> /billing`                                                                                           |
+| `cms`             | CMS                 | `cms-posts -> /cms/posts`; `cms-comments -> /cms/comments`                                                                                                                                                                                                      |
+| `crm`             | CRM                 | `crm-deals -> /crm/deals`; `crm-activities -> /crm/activities`                                                                                                                                                                                                  |
+| `core`            | Core                | `dashboard -> /dashboard`                                                                                                                                                                                                                                       |
+| `expenses`        | Expenses            | `expenses -> /expenses`                                                                                                                                                                                                                                         |
+| `invoices`        | Invoices            | `invoices -> /invoices`                                                                                                                                                                                                                                         |
+| `issues`          | Issues              | `issues -> /issues`                                                                                                                                                                                                                                             |
+| `parties`         | Clients & Customers | `clients -> /customers`                                                                                                                                                                                                                                         |
+| `platform`        | Platform            | `platform-settings -> /settings/platform`                                                                                                                                                                                                                       |
+| `portal`          | Portal              | No staff web menu items (`menu: []`)                                                                                                                                                                                                                            |
+| `portfolio`       | Portfolio           | `portfolio-showcases -> /portfolio/showcases`                                                                                                                                                                                                                   |
+| `purchasing`      | Purchasing          | `purchase-orders -> /purchasing/purchase-orders`; `purchasing-settings -> /purchasing/settings`                                                                                                                                                                 |
+| `rentals`         | Vacation Rentals    | `rental-properties -> /rentals/properties`                                                                                                                                                                                                                      |
+| `sales`           | Sales               | `quotes -> /sales/quotes`; `projects -> /projects`; `sales-settings -> /sales/settings`                                                                                                                                                                         |
+| `tax`             | Tax                 | `tax-center -> /tax`; `tax-filings -> /tax/filings`; `tax-payments -> /tax/payments`; `tax-documents -> /tax/documents`; `tax-settings -> /tax/settings`                                                                                                        |
+| `website`         | Website             | `website-sites -> /website/sites`                                                                                                                                                                                                                               |
+| `workspaces`      | Workspaces          | `workspace-settings -> /settings/workspace`; `payment-methods-settings -> /settings/payment-methods`; `profile-settings -> /settings`; `tenant-apps-settings -> /settings/apps`; `workspace-members -> /settings/members`; `workspace-roles -> /settings/roles` |
 
 ## Freelancer Mode Defaults
 
@@ -93,4 +103,8 @@ To ensure freelancer defaults include finance menus, these app manifests explici
 Notes:
 
 - Existing tenants can still override these defaults via `platform.TenantFeatureOverride`.
-- If a tenant has `app.<id>.enabled = false`, that override wins and related menu items are hidden.
+- Effective visibility now resolves from layered state:
+  - plan/default entitlement (`app.<id>.enabled`)
+  - host policy (`app.<id>.host.allowed`, `app.<id>.host.forced`)
+  - tenant setting (`app.<id>.tenant.enabled`)
+  - install state (`platform.TenantAppInstall`)

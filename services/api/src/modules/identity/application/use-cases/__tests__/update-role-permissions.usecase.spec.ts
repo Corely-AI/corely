@@ -23,6 +23,28 @@ beforeEach(async () => {
   catalogPort = {
     getCatalog: () => [
       {
+        id: "platform",
+        label: "Platform",
+        permissions: [
+          {
+            key: "platform.apps.manage",
+            group: "platform",
+            label: "Manage apps (host)",
+          },
+        ],
+      },
+      {
+        id: "tenant",
+        label: "Tenant",
+        permissions: [
+          {
+            key: "tenant.apps.manage",
+            group: "tenant",
+            label: "Manage apps (tenant)",
+          },
+        ],
+      },
+      {
         id: "sales",
         label: "Sales",
         permissions: [
@@ -63,5 +85,27 @@ describe("UpdateRolePermissionsUseCase", () => {
         grants: [{ key: "unknown.permission", effect: "ALLOW" }],
       })
     ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it("blocks host-only platform permissions in tenant roles", async () => {
+    await expect(
+      useCase.execute({
+        tenantId,
+        actorUserId: "user-1",
+        roleId,
+        grants: [{ key: "platform.apps.manage", effect: "ALLOW" }],
+      })
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it("allows tenant app management permissions in tenant roles", async () => {
+    await expect(
+      useCase.execute({
+        tenantId,
+        actorUserId: "user-1",
+        roleId,
+        grants: [{ key: "tenant.apps.manage", effect: "ALLOW" }],
+      })
+    ).resolves.toBeUndefined();
   });
 });

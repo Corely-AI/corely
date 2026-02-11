@@ -30,6 +30,8 @@ export class GetRolePermissionsUseCase {
       throw new NotFoundError("Role not found");
     }
 
+    const isTenantScope = query.tenantId !== null;
+    const isOwnerRole = isTenantScope && role.systemKey === "OWNER";
     const catalog = this.catalogPort.getCatalog();
     const grants = await this.grantRepo.listByRoleIdsAndTenant(query.tenantId, [query.roleId]);
     const grantMap = new Map(grants.map((grant) => [grant.key, grant.effect]));
@@ -37,14 +39,15 @@ export class GetRolePermissionsUseCase {
     const states: RolePermissionState[] = [];
     for (const group of catalog) {
       for (const permission of group.permissions) {
-        if (query.tenantId !== null && PLATFORM_HOST_PERMISSION_KEYS.has(permission.key)) {
+        if (isTenantScope && PLATFORM_HOST_PERMISSION_KEYS.has(permission.key)) {
           continue;
         }
+        const ownerEffect = isOwnerRole ? ("ALLOW" as const) : undefined;
         const effect = grantMap.get(permission.key);
         states.push({
           key: permission.key,
-          granted: effect === "ALLOW",
-          effect,
+          granted: ownerEffect === "ALLOW" || effect === "ALLOW",
+          effect: ownerEffect ?? effect,
         });
       }
     }
@@ -57,17 +60,16 @@ export class GetRolePermissionsUseCase {
         isSystem: role.isSystem,
         systemKey: role.systemKey ?? null,
       },
-      catalog:
-        query.tenantId !== null
-          ? catalog
-              .map((group) => ({
-                ...group,
-                permissions: group.permissions.filter(
-                  (permission) => !PLATFORM_HOST_PERMISSION_KEYS.has(permission.key)
-                ),
-              }))
-              .filter((group) => group.permissions.length > 0)
-          : catalog,
+      catalog: isTenantScope
+        ? catalog
+            .map((group) => ({
+              ...group,
+              permissions: group.permissions.filter(
+                (permission) => !PLATFORM_HOST_PERMISSION_KEYS.has(permission.key)
+              ),
+            }))
+            .filter((group) => group.permissions.length > 0)
+        : catalog,
       grants: states,
     };
   }

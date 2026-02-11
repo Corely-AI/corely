@@ -3,10 +3,6 @@ import { ForbiddenError, TENANT_ENTITLEMENTS_READ_PORT_TOKEN } from "@corely/ker
 import type { TenantEntitlementsReadPort } from "@corely/kernel";
 import { TenantEntitlement } from "../../domain/entitlement.aggregate";
 import { APP_REGISTRY_TOKEN, type AppRegistryPort } from "../ports/app-registry.port";
-import {
-  TENANT_APP_INSTALL_REPOSITORY_TOKEN,
-  type TenantAppInstallRepositoryPort,
-} from "../ports/tenant-app-install-repository.port";
 
 /**
  * Tenant Entitlement Service
@@ -15,8 +11,6 @@ import {
 @Injectable()
 export class TenantEntitlementService {
   constructor(
-    @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
-    private readonly appInstallRepo: TenantAppInstallRepositoryPort,
     @Inject(APP_REGISTRY_TOKEN)
     private readonly appRegistry: AppRegistryPort,
     @Inject(TENANT_ENTITLEMENTS_READ_PORT_TOKEN)
@@ -27,15 +21,13 @@ export class TenantEntitlementService {
    * Get tenant entitlement (enabled apps + capabilities)
    */
   async getTenantEntitlement(tenantId: string): Promise<TenantEntitlement> {
-    const installs = await this.appInstallRepo.listEnabledByTenant(tenantId);
-
-    // Fetch effective enablement from platform-entitlements (includes overrides)
+    // Fetch effective enablement from platform-entitlements.
+    // This already applies install state, host policy, tenant setting, and system app invariants.
     const enablementMap = await this.entitlementsReadPort.getAppEnablementMap(tenantId);
 
-    // Filter installs: Must be installed AND enabled in configuration
-    const enabledAppIds = installs
-      .map((i) => i.appId)
-      .filter((appId) => enablementMap[appId] === true);
+    const enabledAppIds = Object.entries(enablementMap)
+      .filter(([, enabled]) => enabled)
+      .map(([appId]) => appId);
 
     return TenantEntitlement.fromEnabledApps(tenantId, enabledAppIds, this.appRegistry);
   }

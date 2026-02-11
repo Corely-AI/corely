@@ -149,19 +149,24 @@ export const validatePermissionCatalog = (catalog: PermissionGroup[]): void => {
 
 @Injectable()
 export class PermissionCatalogRegistry implements PermissionCatalogPort, OnModuleInit {
-  private readonly catalog: PermissionGroup[];
+  private catalog: PermissionGroup[] = [];
 
   constructor() {
-    const built = buildPermissionCatalog();
-    validatePermissionCatalog(built);
-    this.catalog = normalizeCatalog(built);
+    this.catalog = this.rebuildCatalog();
   }
 
   onModuleInit() {
-    // Validation runs in constructor; this hook keeps intent explicit.
+    this.catalog = this.rebuildCatalog();
   }
 
   getCatalog(): PermissionGroup[] {
+    this.catalog = this.rebuildCatalog();
     return this.catalog;
+  }
+
+  private rebuildCatalog(): PermissionGroup[] {
+    const built = buildPermissionCatalog();
+    validatePermissionCatalog(built);
+    return normalizeCatalog(built);
   }
 }

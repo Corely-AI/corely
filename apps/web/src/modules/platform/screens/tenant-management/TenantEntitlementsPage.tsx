@@ -8,38 +8,31 @@ import {
   platformEntitlementsApi,
   type TenantEntitlementsResponse,
 } from "@/lib/platform-entitlements-api";
-import { apiClient } from "@/lib/api-client";
-import { type AppCatalogItem } from "@corely/contracts";
 import { Loader2 } from "lucide-react";
 
 export function TenantEntitlementsPage() {
   const { tenantId } = useParams<{ tenantId: string }>();
   const [entitlements, setEntitlements] = useState<TenantEntitlementsResponse | null>(null);
-  const [catalog, setCatalog] = useState<AppCatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadData = async () => {
+  const loadData = React.useCallback(async () => {
     if (!tenantId) {
       return;
     }
     setLoading(true);
     try {
-      const [entData, catData] = await Promise.all([
-        platformEntitlementsApi.getEntitlements(tenantId),
-        apiClient.get<AppCatalogItem[]>("/platform/apps"),
-      ]);
+      const entData = await platformEntitlementsApi.getEntitlements(tenantId);
       setEntitlements(entData);
-      setCatalog(catData);
     } catch (err) {
       console.error("Failed to load entitlements", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId]);
 
   useEffect(() => {
     void loadData();
-  }, [tenantId]);
+  }, [loadData]);
 
   if (loading) {
     return (
@@ -65,12 +58,7 @@ export function TenantEntitlementsPage() {
         </TabsList>
 
         <TabsContent value="apps" className="pt-4">
-          <TenantAppsTab
-            tenantId={tenantId}
-            catalog={catalog}
-            entitlements={entitlements.apps}
-            onRefresh={loadData}
-          />
+          <TenantAppsTab tenantId={tenantId} onRefresh={loadData} />
         </TabsContent>
 
         <TabsContent value="features" className="pt-4">

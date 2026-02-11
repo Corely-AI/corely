@@ -1,254 +1,144 @@
-import React, { useState } from "react";
-import { type AppCatalogItem } from "@corely/contracts"; // Assuming available
-import {
-  type ResolvedAppEntitlement,
-  platformEntitlementsApi,
-} from "@/lib/platform-entitlements-api";
+import React from "react";
+import type { EffectiveAppState } from "@corely/contracts";
+import { platformEntitlementsApi } from "@/lib/platform-entitlements-api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
-import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
+import { Button } from "@corely/ui";
 import { Loader2 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@corely/ui";
-import { getAppManagementPolicy } from "../apps-management-policy";
-
-interface AppMutationError {
-  status?: number;
-  response?: {
-    status?: number;
-  };
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 
 interface TenantAppsTabProps {
   tenantId: string;
-  catalog: AppCatalogItem[];
-  entitlements: ResolvedAppEntitlement[];
   onRefresh: () => void;
 }
 
-export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: TenantAppsTabProps) {
-  const [loadingAppId, setLoadingAppId] = useState<string | null>(null);
-  const [confirmDisable, setConfirmDisable] = useState<{
-    appId: string;
-    dependents: string[];
-  } | null>(null);
-  const [autoEnabledApps, setAutoEnabledApps] = useState<Set<string>>(new Set());
+export function TenantAppsTab({ tenantId, onRefresh }: TenantAppsTabProps) {
+  const [apps, setApps] = React.useState<EffectiveAppState[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [savingAppId, setSavingAppId] = React.useState<string | null>(null);
 
-  // Merge catalog with entitlement status
-  const apps = catalog.map((cat) => {
-    const ent = entitlements.find((e) => e.appId === cat.appId);
-    return {
-      ...cat,
-      enabled: ent?.enabled ?? false,
-      source: ent?.source,
-      effectiveDependencies: ent?.dependencies || cat.dependencies,
-      policy: getAppManagementPolicy(cat.appId),
-    };
-  });
-
-  const requiredAppsToEnable = React.useMemo(
-    () =>
-      apps
-        .filter((app) => app.policy.forceEnabled && !app.enabled && !autoEnabledApps.has(app.appId))
-        .map((app) => app.appId),
-    [apps, autoEnabledApps]
-  );
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await platformEntitlementsApi.getEffectiveApps(tenantId);
+      setApps(response.apps);
+    } finally {
+      setLoading(false);
+    }
+  }, [tenantId]);
 
   React.useEffect(() => {
-    if (requiredAppsToEnable.length === 0) {
-      return;
-    }
+    void load();
+  }, [load]);
 
-    let cancelled = false;
-
-    const run = async () => {
-      for (const appId of requiredAppsToEnable) {
-        if (cancelled) {
-          return;
-        }
-        setAutoEnabledApps((prev) => new Set(prev).add(appId));
-        try {
-          await platformEntitlementsApi.updateAppEnablement(tenantId, appId, true);
-          onRefresh();
-        } catch {
-          // keep the page usable; host can retry enable manually
-        }
-      }
-    };
-
-    void run();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [requiredAppsToEnable, tenantId, onRefresh]);
-
-  const handleToggle = async (appId: string, currentEnabled: boolean) => {
-    const policy = getAppManagementPolicy(appId);
-    if (currentEnabled && policy.hideDisableAction) {
-      return;
-    }
-
-    if (currentEnabled) {
-      // API will throw 409 if dependents exist, then we prompt Force.
-      // Or we can pre-check in UI? Prompt says "If disabling app with dependents: show modal...".
-      // Let's try to disable, if error 409, show modal.
-      setLoadingAppId(appId);
-      try {
-        await platformEntitlementsApi.updateAppEnablement(tenantId, appId, false, false);
-        onRefresh();
-      } catch (err: unknown) {
-        // Assuming error response contains dependents?
-        // We'll simulate checking response or just ask user if it fails.
-        // Prompt B5 says "return 409 Conflict with list of dependent appIds".
-        // API Client throws. I need to catch.
-        // For now, if generic error, I just show alert. If 409, show cascading confirmation.
-        const error = err as AppMutationError;
-        if (error.status === 409 || error.response?.status === 409) {
-          // Parse dependents from error body if possible, otherwise generic message
-          setConfirmDisable({ appId, dependents: [] }); // We assume dependencies exist
-        } else {
-          alert("Failed to disable app");
-        }
-      } finally {
-        setLoadingAppId(null);
-      }
-    } else {
-      // Enable
-      setLoadingAppId(appId);
-      try {
-        // Prompt says "show modal: This app requires X, Y. Enable them too?".
-        // API D2 says "Confirm -> call PATCH enabled=true and let backend apply deps".
-        // I will just enable and assuming backend handles it safely or I can check deps locally.
-        await platformEntitlementsApi.updateAppEnablement(tenantId, appId, true);
-        onRefresh();
-      } catch {
-        alert("Failed to enable app");
-      } finally {
-        setLoadingAppId(null);
-      }
-    }
-  };
-
-  const handleConfirmDisable = async () => {
-    if (!confirmDisable) {
-      return;
-    }
-    setLoadingAppId(confirmDisable.appId);
+  const updatePolicy = async (
+    app: EffectiveAppState,
+    input: { allowed?: boolean; forced?: "none" | "on" | "off" }
+  ) => {
+    setSavingAppId(app.appId);
     try {
-      await platformEntitlementsApi.updateAppEnablement(
-        tenantId,
-        confirmDisable.appId,
-        false,
-        true
-      ); // Cascade=true
+      await platformEntitlementsApi.updateAppPolicy(tenantId, app.appId, input);
+      await load();
       onRefresh();
-    } catch {
-      alert("Failed into force disable");
     } finally {
-      setLoadingAppId(null);
-      setConfirmDisable(null);
+      setSavingAppId(null);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {apps.map((app) => (
-          <Card key={app.appId} className={app.enabled ? "border-primary" : ""}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg">{app.name}</CardTitle>
-                  <CardDescription className="mt-1">v{app.version}</CardDescription>
-                </div>
-                {app.enabled ? (
-                  <Badge variant="default" className="ml-2">
-                    {app.policy.forceEnabled ? "Always Enabled" : "Enabled"}
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="ml-2">
-                    Disabled
-                  </Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {app.description && (
-                <p className="text-sm text-muted-foreground">{app.description}</p>
-              )}
-
-              {app.source && app.enabled && (
-                <div className="text-xs text-muted-foreground">
-                  Source: <span className="font-medium">{app.source}</span>
-                </div>
-              )}
-
-              {app.enabled ? (
-                app.policy.hideDisableAction ? (
-                  <div className="text-xs text-muted-foreground text-center py-2 border rounded-md">
-                    {app.policy.reason ?? "This app is required and cannot be disabled."}
+        {apps.map((app) => {
+          const locked = app.isSystem;
+          const blockers = app.blockers.length > 0 ? app.blockers.join(", ") : null;
+          return (
+            <Card key={app.appId} className={app.effective.visible ? "border-primary" : ""}>
+              <CardHeader>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg">{app.name}</CardTitle>
+                    <CardDescription className="mt-1">{app.appId}</CardDescription>
                   </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => handleToggle(app.appId, true)}
-                    disabled={loadingAppId !== null}
-                  >
-                    {loadingAppId === app.appId ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>Disable App</>
-                    )}
-                  </Button>
-                )
-              ) : (
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => handleToggle(app.appId, false)}
-                  disabled={loadingAppId !== null}
-                >
-                  {loadingAppId === app.appId ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>Enable App</>
-                  )}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  <div className="flex flex-col items-end gap-1">
+                    {app.isSystem && <Badge variant="secondary">System</Badge>}
+                    <Badge variant={app.effective.visible ? "default" : "outline"}>
+                      {app.effective.visible ? "Visible" : "Hidden"}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
 
-      <AlertDialog
-        open={!!confirmDisable}
-        onOpenChange={(open) => !open && setConfirmDisable(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Disable App & Dependents?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This app has dependents. Disabling it will also disable them.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDisable}>Disable All</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              <CardContent className="space-y-4">
+                <div className="text-xs text-muted-foreground">
+                  Plan entitlement:{" "}
+                  <span className="font-medium">
+                    {app.planEntitlement.enabled ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+
+                <div className="text-xs text-muted-foreground">
+                  Tenant setting:{" "}
+                  <span className="font-medium">
+                    {app.tenantSetting.enabled ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+
+                {blockers && (
+                  <div className="text-xs text-muted-foreground">Blockers: {blockers}</div>
+                )}
+
+                <div className="space-y-2 pt-2 border-t">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Host allow</span>
+                    <Button
+                      size="sm"
+                      variant={app.hostPolicy.allowed ? "outline" : "default"}
+                      disabled={locked || savingAppId !== null}
+                      onClick={() => updatePolicy(app, { allowed: !app.hostPolicy.allowed })}
+                    >
+                      {savingAppId === app.appId ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : app.hostPolicy.allowed ? (
+                        "Allow"
+                      ) : (
+                        "Deny"
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground">Host force</span>
+                    <Select
+                      value={app.hostPolicy.forced}
+                      onValueChange={(value: "none" | "on" | "off") =>
+                        void updatePolicy(app, { forced: value })
+                      }
+                      disabled={locked || savingAppId !== null}
+                    >
+                      <SelectTrigger className="w-32 h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="on">Force on</SelectItem>
+                        <SelectItem value="off">Force off</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

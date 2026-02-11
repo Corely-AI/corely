@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TenantEntitlementsReadAdapter } from "../tenant-entitlements-read.adapter";
 import { TenantEntitlementsService } from "../../application/tenant-entitlements.service";
-import { TenantEntitlements } from "../../domain/entitlement.types";
+import type { EffectiveAppsResponse } from "@corely/contracts";
 
 describe("TenantEntitlementsReadAdapter", () => {
   let adapter: TenantEntitlementsReadAdapter;
@@ -9,23 +9,44 @@ describe("TenantEntitlementsReadAdapter", () => {
 
   beforeEach(() => {
     mockService = {
-      getEntitlements: vi.fn(),
+      getEffectiveApps: vi.fn(),
     } as any;
     adapter = new TenantEntitlementsReadAdapter(mockService);
   });
 
   it("should map entitlement result to boolean map", async () => {
     const tenantId = "tenant-1";
-    const entitlements: TenantEntitlements = {
+    const entitlements: EffectiveAppsResponse = {
       apps: [
-        { appId: "app-A", enabled: true, source: "default", dependencies: [] },
-        { appId: "app-B", enabled: false, source: "tenantOverride", dependencies: [] },
+        {
+          appId: "app-A",
+          name: "App A",
+          tier: 1,
+          isSystem: false,
+          install: { installed: true, enabled: true },
+          planEntitlement: { enabled: true, source: "default" },
+          hostPolicy: { allowed: true, forced: "none" },
+          tenantSetting: { enabled: true, isEditable: true },
+          effective: { visible: true },
+          blockers: [],
+        },
+        {
+          appId: "app-B",
+          name: "App B",
+          tier: 1,
+          isSystem: false,
+          install: { installed: true, enabled: true },
+          planEntitlement: { enabled: true, source: "override" },
+          hostPolicy: { allowed: true, forced: "none" },
+          tenantSetting: { enabled: false, isEditable: true },
+          effective: { visible: false },
+          blockers: ["TENANT_DISABLED"],
+        },
       ],
-      features: [],
       generatedAt: new Date().toISOString(),
     };
 
-    (mockService.getEntitlements as any).mockResolvedValue(entitlements);
+    (mockService.getEffectiveApps as any).mockResolvedValue(entitlements);
 
     const result = await adapter.getAppEnablementMap(tenantId);
 
@@ -37,13 +58,25 @@ describe("TenantEntitlementsReadAdapter", () => {
 
   it("should check specific app enablement", async () => {
     const tenantId = "tenant-1";
-    const entitlements: TenantEntitlements = {
-      apps: [{ appId: "app-A", enabled: true, source: "default", dependencies: [] }],
-      features: [],
+    const entitlements: EffectiveAppsResponse = {
+      apps: [
+        {
+          appId: "app-A",
+          name: "App A",
+          tier: 1,
+          isSystem: false,
+          install: { installed: true, enabled: true },
+          planEntitlement: { enabled: true, source: "default" },
+          hostPolicy: { allowed: true, forced: "none" },
+          tenantSetting: { enabled: true, isEditable: true },
+          effective: { visible: true },
+          blockers: [],
+        },
+      ],
       generatedAt: new Date().toISOString(),
     };
 
-    (mockService.getEntitlements as any).mockResolvedValue(entitlements);
+    (mockService.getEffectiveApps as any).mockResolvedValue(entitlements);
 
     const isEnabledA = await adapter.isAppEnabled(tenantId, "app-A");
     const isEnabledB = await adapter.isAppEnabled(tenantId, "app-B"); // Not found

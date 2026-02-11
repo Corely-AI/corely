@@ -163,7 +163,8 @@
     "classSessions": "Sessions",
     "classBilling": "Class Billing",
     "website": "Website",
-    "platform": "Platform"
+    "platform": "Platform",
+    "apps": "Apps"
   },
   "featureFlags": {
     "app": {

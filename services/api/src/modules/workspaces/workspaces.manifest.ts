@@ -42,6 +42,17 @@ export const workspacesAppManifest: AppManifest = {
       order: 95,
     },
     {
+      id: "tenant-apps-settings",
+      scope: "web",
+      section: "workspace",
+      labelKey: "nav.apps",
+      defaultLabel: "Apps",
+      route: "/settings/apps",
+      icon: "Blocks",
+      order: 94,
+      requiresPermissions: ["tenant.apps.read"],
+    },
+    {
       id: "workspace-members",
       scope: "web",
       section: "team",

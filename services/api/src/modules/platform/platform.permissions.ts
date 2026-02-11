@@ -123,4 +123,26 @@ export const platformPermissions: PermissionGroup[] = [
       },
     ],
   },
+  {
+    id: "tenant",
+    label: "Tenant Management",
+    permissions: [
+      {
+        key: "tenant.apps.read",
+        group: "tenant",
+        label: "View Apps",
+        description: "View apps and effective status for your tenant",
+        danger: false,
+        side: "TENANT",
+      },
+      {
+        key: "tenant.apps.manage",
+        group: "tenant",
+        label: "Manage Apps",
+        description: "Enable and disable apps for your tenant",
+        danger: true,
+        side: "TENANT",
+      },
+    ],
+  },
 ];

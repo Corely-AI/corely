@@ -7,6 +7,7 @@ import { Loader2, Power, PowerOff, AlertCircle, CheckCircle2, Package } from "lu
 import { usePlatformApps, useEnableApp, useDisableApp } from "../hooks/usePlatformApps";
 import type { AppWithStatus } from "../hooks/usePlatformApps";
 import { getAppManagementPolicy } from "./apps-management-policy";
+import { Link } from "react-router-dom";
 
 interface AppMutationError {
   response?: {
@@ -146,15 +147,20 @@ export function AppsManagementPage() {
       <div>
         <h1 className="text-h1 text-foreground">Apps Management</h1>
         <p className="text-muted-foreground mt-2">
-          Enable apps to customize your workspace features. Core platform apps stay enabled.
+          Manage install state at platform level. Tenant availability is controlled from each
+          tenant's Apps tab.
         </p>
       </div>
 
       <Alert>
         <Package className="h-4 w-4" />
         <AlertDescription>
-          Enabling an app will automatically enable its dependencies. Required apps like Core and
-          Workspaces cannot be disabled.
+          This page is not the primary tenant availability control. Use{" "}
+          <Link to="/settings/tenants" className="underline">
+            Tenant Management
+          </Link>{" "}
+          for effective visibility and blockers. Enabling an app here automatically enables its
+          dependencies.
         </AlertDescription>
       </Alert>
 

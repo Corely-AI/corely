@@ -6,6 +6,7 @@ import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import {
   PlatformPage,
   AppsManagementPage,
+  TenantAppsSettingsPage,
   TemplatesPage,
   MenuCustomizerPage,
 } from "../../modules/platform";
@@ -28,6 +29,14 @@ export const appSettingsRoutes = (
     <Route path="/settings" element={<SettingsPage />} />
     <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
     <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
+    <Route
+      path="/settings/apps"
+      element={
+        <RequirePermission permission="tenant.apps.read">
+          <TenantAppsSettingsPage />
+        </RequirePermission>
+      }
+    />
     <Route path="/settings/classes" element={<ClassesSettingsPage />} />
     <Route
       path="/settings/members"

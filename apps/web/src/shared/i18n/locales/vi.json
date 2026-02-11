@@ -160,7 +160,8 @@
     "classSessions": "Buổi học",
     "classBilling": "Thanh toán lớp học",
     "website": "Trang web",
-    "platform": "Nền tảng"
+    "platform": "Nền tảng",
+    "apps": "Ứng dụng"
   },
   "featureFlags": {
     "app": {

@@ -46,3 +46,41 @@ export interface TenantEntitlements {
   features: ResolvedFeatureValue[];
   generatedAt: string;
 }
+
+export type AppPolicyForced = "none" | "on" | "off";
+
+export type AppVisibilityBlocker =
+  | "PLATFORM_APP_DISABLED"
+  | "NOT_INSTALLED"
+  | "INSTALL_DISABLED"
+  | "PLAN_NOT_ENTITLED"
+  | "HOST_DENIED"
+  | "HOST_FORCED_OFF"
+  | "TENANT_DISABLED";
+
+export interface EffectiveAppState {
+  appId: string;
+  name: string;
+  tier: number;
+  isSystem: boolean;
+  install: {
+    installed: boolean;
+    enabled: boolean;
+  };
+  planEntitlement: {
+    enabled: boolean;
+    source: "plan" | "default" | "override";
+  };
+  hostPolicy: {
+    allowed: boolean;
+    forced: AppPolicyForced;
+  };
+  tenantSetting: {
+    enabled: boolean;
+    isEditable: boolean;
+  };
+  effective: {
+    visible: boolean;
+  };
+  blockers: AppVisibilityBlocker[];
+}

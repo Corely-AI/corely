@@ -20,13 +20,27 @@
 
 The menu is dynamically composed based on:
 
-1. **Installed Apps**: Apps installed in the tenant.
-2. **Entitlements**: Gated by `TenantFeatureOverride` (host-side toggles). If an app is disabled by the host, it is hidden from the menu even if installed.
-3. **Permissions**: User's RBAC permissions.
-4. **Capabilities**: Workspace capabilities (e.g. `workspace.multiUser`).
-5. **Overrides**: Tenant-specific menu overrides (renames, reordering, hiding).
+1. **Effective app visibility resolver** (single source of truth):
+   - install state (`TenantAppInstall`)
+   - plan/default entitlement (`app.<id>.enabled`)
+   - host policy (`app.<id>.host.allowed`, `app.<id>.host.forced`)
+   - tenant setting (`app.<id>.tenant.enabled`)
+2. **Permissions**: User's RBAC permissions.
+3. **Capabilities**: Workspace capabilities (e.g. `workspace.multiUser`).
+4. **Overrides**: Tenant-specific menu overrides (renames, reordering, hiding).
 
-See `TenantEntitlementService` and `MenuComposerService` for implementation details.
+System apps (`core`, `platform`, `workspaces`) are always treated as enabled/visible and cannot be
+disabled by host policy, tenant setting, plan override, or install state.
+
+See `TenantEntitlementService`, `TenantEntitlementsService`, and `MenuComposerService` for
+implementation details.
+
+## Effective Apps Endpoints
+
+- Host read model: `GET /platform/tenants/:tenantId/apps/effective`
+- Host policy mutation: `PATCH /platform/tenants/:tenantId/apps/:appId/policy`
+- Tenant self read model: `GET /platform/apps/effective`
+- Tenant self mutation: `PATCH /platform/apps/:appId/setting`
 
 ## Staff Web Grouping (Option A)
 

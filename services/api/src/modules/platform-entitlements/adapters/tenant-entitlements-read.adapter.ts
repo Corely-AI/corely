@@ -7,12 +7,10 @@ export class TenantEntitlementsReadAdapter implements TenantEntitlementsReadPort
   constructor(private readonly service: TenantEntitlementsService) {}
 
   async getAppEnablementMap(tenantId: string): Promise<Record<string, boolean>> {
-    const entitlements = await this.service.getEntitlements(tenantId);
-
-    // Convert ResolvedAppEntitlement[] to Record<string, boolean>
-    return entitlements.apps.reduce(
+    const effective = await this.service.getEffectiveApps(tenantId);
+    return effective.apps.reduce(
       (acc, app) => {
-        acc[app.appId] = app.enabled;
+        acc[app.appId] = app.effective.visible;
         return acc;
       },
       {} as Record<string, boolean>
@@ -20,8 +18,8 @@ export class TenantEntitlementsReadAdapter implements TenantEntitlementsReadPort
   }
 
   async isAppEnabled(tenantId: string, appId: string): Promise<boolean> {
-    const entitlements = await this.service.getEntitlements(tenantId);
-    const app = entitlements.apps.find((a) => a.appId === appId);
-    return app?.enabled ?? false;
+    const effective = await this.service.getEffectiveApps(tenantId);
+    const app = effective.apps.find((entry) => entry.appId === appId);
+    return app?.effective.visible ?? false;
   }
 }

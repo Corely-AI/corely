@@ -2,11 +2,14 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   Body,
   UseGuards,
   HttpCode,
   HttpStatus,
+  BadRequestException,
+  ConflictException,
 } from "@nestjs/common";
 import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
@@ -26,6 +29,9 @@ import {
 } from "../../application/ports/app-registry.port";
 import { Inject } from "@nestjs/common";
 import type { AppCatalogItem } from "@corely/contracts";
+import { UpdateTenantAppSettingInputSchema } from "@corely/contracts";
+import { TenantEntitlementsService } from "../../../platform-entitlements/application/tenant-entitlements.service";
+import { isSystemAppId } from "../../system-apps";
 
 @Controller("platform/apps")
 @UseGuards(AuthGuard, RbacGuard)
@@ -33,6 +39,7 @@ export class PlatformController {
   constructor(
     private readonly enableAppUseCase: EnableAppUseCase,
     private readonly disableAppUseCase: DisableAppUseCase,
+    private readonly tenantEntitlementsService: TenantEntitlementsService,
     @Inject(TENANT_APP_INSTALL_REPOSITORY_TOKEN)
     private readonly appInstallRepo: TenantAppInstallRepositoryPort,
     @Inject(APP_REGISTRY_TOKEN)
@@ -49,7 +56,7 @@ export class PlatformController {
     if (!tenantId) {
       return allApps.map((app) => ({
         ...app,
-        enabled: false,
+        enabled: isSystemAppId(app.appId),
       }));
     }
 
@@ -67,7 +74,7 @@ export class PlatformController {
         version: app.version,
         description: app.description,
         dependencies: app.dependencies,
-        enabled: install?.enabled ?? false,
+        enabled: isSystemAppId(app.appId) ? true : (install?.enabled ?? false),
       };
     });
   }
@@ -96,11 +103,51 @@ export class PlatformController {
     @CurrentTenantId() tenantId: string,
     @CurrentUserId() userId: string
   ) {
+    if (isSystemAppId(appId)) {
+      throw new ConflictException({
+        code: "SYSTEM_APP_LOCKED",
+        message: `System app "${appId}" is always enabled and cannot be disabled`,
+      });
+    }
     return await this.disableAppUseCase.execute({
       tenantId,
       appId,
       actorUserId: userId,
       force: body.force,
     });
+  }
+
+  @Get("effective")
+  @RequirePermission("tenant.apps.read")
+  async listEffectiveAppsForTenant(@CurrentTenantId() tenantId: string | null) {
+    if (!tenantId) {
+      throw new BadRequestException("Tenant scope required");
+    }
+    return await this.tenantEntitlementsService.getEffectiveApps(tenantId);
+  }
+
+  @Patch(":appId/setting")
+  @RequirePermission("tenant.apps.manage")
+  @HttpCode(HttpStatus.OK)
+  async updateTenantAppSetting(
+    @Param("appId") appId: string,
+    @Body() body: unknown,
+    @CurrentTenantId() tenantId: string | null,
+    @CurrentUserId() userId: string
+  ) {
+    if (!tenantId) {
+      throw new BadRequestException("Tenant scope required");
+    }
+    const parsed = UpdateTenantAppSettingInputSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(parsed.error.message);
+    }
+    await this.tenantEntitlementsService.updateTenantAppSetting(
+      tenantId,
+      appId,
+      parsed.data,
+      userId
+    );
+    return { success: true };
   }
 }
