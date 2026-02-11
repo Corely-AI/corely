@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from "@nestjs/common";
 import type { Request } from "express";
 import {
@@ -17,6 +18,7 @@ import {
   SubmitDailyCloseSchema,
   UpdateCashRegisterSchema,
 } from "@corely/contracts";
+import { z } from "zod";
 import { buildUseCaseContext } from "../../../../shared/http/usecase-mappers";
 import { CreateRegisterUseCase } from "../../application/use-cases/create-register.usecase";
 import { AddEntryUseCase } from "../../application/use-cases/add-entry.usecase";
@@ -28,8 +30,10 @@ import {
 } from "../../application/ports/cash-repository.port";
 import { Inject } from "@nestjs/common";
 import { type Result } from "@corely/kernel";
+import { AuthGuard } from "@/modules/identity";
 
 @Controller()
+@UseGuards(AuthGuard)
 export class CashManagementController {
   constructor(
     private readonly createRegisterUC: CreateRegisterUseCase,
@@ -43,7 +47,9 @@ export class CashManagementController {
 
   @Post("cash-registers")
   async createRegister(@Body() body: unknown, @Req() req: Request) {
-    const input = CreateCashRegisterSchema.parse(body);
+    const input = CreateCashRegisterSchema.extend({
+      tenantId: z.string().optional(),
+    }).parse(body);
     const ctx = buildUseCaseContext(req);
     const tenantId = ctx.tenantId;
     const workspaceId = ctx.workspaceId;
@@ -104,7 +110,10 @@ export class CashManagementController {
 
   @Post("cash-registers/:id/entries")
   async createEntry(@Param("id") registerId: string, @Body() body: unknown, @Req() req: Request) {
-    const rawInput = CreateCashEntrySchema.parse(body);
+    const rawInput = CreateCashEntrySchema.extend({
+      tenantId: z.string().optional(),
+      registerId: z.string().optional(),
+    }).parse(body);
     if (rawInput.registerId && rawInput.registerId !== registerId) {
       throw new BadRequestException("Register ID mismatch");
     }
@@ -146,7 +155,10 @@ export class CashManagementController {
 
   @Post("cash-entries/:id/reverse")
   async reverseEntry(@Param("id") entryId: string, @Body() body: unknown, @Req() req: Request) {
-    const rawInput = ReverseCashEntrySchema.parse(body);
+    const rawInput = ReverseCashEntrySchema.extend({
+      tenantId: z.string().optional(),
+      originalEntryId: z.string().optional(),
+    }).parse(body);
     if (rawInput.originalEntryId && rawInput.originalEntryId !== entryId) {
       throw new BadRequestException("Entry ID mismatch");
     }
@@ -172,7 +184,10 @@ export class CashManagementController {
 
   @Post("cash-registers/:id/daily-close")
   async dailyClose(@Param("id") registerId: string, @Body() body: unknown, @Req() req: Request) {
-    const rawInput = SubmitDailyCloseSchema.parse(body);
+    const rawInput = SubmitDailyCloseSchema.extend({
+      tenantId: z.string().optional(),
+      registerId: z.string().optional(),
+    }).parse(body);
     if (rawInput.registerId && rawInput.registerId !== registerId) {
       throw new BadRequestException("Register ID mismatch");
     }

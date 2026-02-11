@@ -50,6 +50,8 @@
     "createdAt": "Erstellt am {{date}}",
     "empty": "Leer",
     "amount": "Betrag",
+    "type": "Typ",
+    "description": "Beschreibung",
     "date": "Datum",
     "noteOptional": "Notiz (Optional)",
     "saveChanges": "Änderungen speichern",
@@ -363,6 +365,54 @@
     "newRegister": "Neue Kasse",
     "addEntry": "Eintrag hinzufügen",
     "dailyClose": "Tagesabschluss"
+  },
+  "cash": {
+    "title": "Kassenmanagement",
+    "subtitle": "Kassen, Buchungen und Tagesabschluss verwalten",
+    "registers": {
+      "add": "Kasse hinzufügen",
+      "addTitle": "Kasse erstellen",
+      "namePlaceholder": "Kassenname",
+      "noLocation": "Kein Standort",
+      "currentBalance": "Aktueller Saldo",
+      "empty": "Noch keine Kassen vorhanden",
+      "created": "Kasse erstellt",
+      "createFailed": "Kasse konnte nicht erstellt werden"
+    },
+    "detail": {
+      "cashIn": "Geldeingang",
+      "cashOut": "Geldausgang",
+      "dailyCloses": "Tagesabschlüsse",
+      "updatedBalance": "Aktualisierter Saldo",
+      "noEntriesFound": "Keine Buchungen gefunden",
+      "noDailyCloses": "Noch keine Tagesabschlüsse",
+      "addCashIn": "Geldeingang hinzufügen",
+      "addCashOut": "Geldausgang hinzufügen",
+      "reasonPlaceholder": "Grund für die Buchung...",
+      "confirmIn": "Eingang bestätigen",
+      "confirmOut": "Ausgang bestätigen",
+      "entryAdded": "Buchung hinzugefügt",
+      "entryAddFailed": "Buchung konnte nicht hinzugefügt werden",
+      "invalidAmount": "Ungültiger Betrag"
+    },
+    "dailyClose": {
+      "title": "Tagesabschluss",
+      "reconcile": "Abstimmen: {{register}}",
+      "businessDate": "Geschäftsdatum",
+      "expectedBalance": "Erwarteter Saldo",
+      "countedBalance": "Gezählter Saldo",
+      "countedCash": "Gezähltes Bargeld ({{currency}})",
+      "difference": "Differenz",
+      "perfectMatch": "Perfekte Übereinstimmung",
+      "discrepancyDetected": "Abweichung erkannt",
+      "differenceEntryNote": "Ein Differenz-Eintrag wird automatisch erstellt",
+      "notesPlaceholder": "Notizen zum Abschluss...",
+      "submitClose": "Abschluss senden",
+      "submitting": "Wird gesendet...",
+      "submitted": "Tagesabschluss übermittelt",
+      "submitFailed": "Abschluss fehlgeschlagen",
+      "enterCountedAmount": "Bitte gezählten Betrag eingeben"
+    }
   },
   "dashboard": {
     "title": "Übersicht",

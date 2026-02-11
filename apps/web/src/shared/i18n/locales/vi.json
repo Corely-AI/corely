@@ -50,6 +50,8 @@
     "createdAt": "Đã tạo {{date}}",
     "empty": "Trống",
     "amount": "Số tiền",
+    "type": "Loại",
+    "description": "Mô tả",
     "date": "Ngày",
     "noteOptional": "Ghi chú (Tùy chọn)",
     "saveChanges": "Lưu thay đổi",
@@ -363,6 +365,54 @@
     "newRegister": "Quầy thu mới",
     "addEntry": "Thêm bút toán",
     "dailyClose": "Chốt quỹ cuối ngày"
+  },
+  "cash": {
+    "title": "Quản lý quỹ tiền mặt",
+    "subtitle": "Theo dõi quầy thu, bút toán và chốt quỹ cuối ngày",
+    "registers": {
+      "add": "Thêm quầy thu",
+      "addTitle": "Tạo quầy thu",
+      "namePlaceholder": "Tên quầy thu",
+      "noLocation": "Chưa có địa điểm",
+      "currentBalance": "Số dư hiện tại",
+      "empty": "Chưa có quầy thu nào",
+      "created": "Đã tạo quầy thu",
+      "createFailed": "Không thể tạo quầy thu"
+    },
+    "detail": {
+      "cashIn": "Thu tiền",
+      "cashOut": "Chi tiền",
+      "dailyCloses": "Chốt quỹ ngày",
+      "updatedBalance": "Số dư cập nhật",
+      "noEntriesFound": "Không tìm thấy bút toán",
+      "noDailyCloses": "Chưa có dữ liệu chốt quỹ ngày",
+      "addCashIn": "Thêm thu tiền",
+      "addCashOut": "Thêm chi tiền",
+      "reasonPlaceholder": "Lý do cho bút toán...",
+      "confirmIn": "Xác nhận thu",
+      "confirmOut": "Xác nhận chi",
+      "entryAdded": "Đã thêm bút toán",
+      "entryAddFailed": "Không thể thêm bút toán",
+      "invalidAmount": "Số tiền không hợp lệ"
+    },
+    "dailyClose": {
+      "title": "Chốt quỹ cuối ngày",
+      "reconcile": "Đối soát: {{register}}",
+      "businessDate": "Ngày kinh doanh",
+      "expectedBalance": "Số dư dự kiến",
+      "countedBalance": "Số dư kiểm đếm",
+      "countedCash": "Tiền mặt kiểm đếm ({{currency}})",
+      "difference": "Chênh lệch",
+      "perfectMatch": "Khớp hoàn toàn",
+      "discrepancyDetected": "Phát hiện chênh lệch",
+      "differenceEntryNote": "Bút toán chênh lệch sẽ được tạo tự động",
+      "notesPlaceholder": "Ghi chú cho lần chốt quỹ này...",
+      "submitClose": "Gửi chốt quỹ",
+      "submitting": "Đang gửi...",
+      "submitted": "Đã gửi chốt quỹ",
+      "submitFailed": "Chốt quỹ thất bại",
+      "enterCountedAmount": "Vui lòng nhập số tiền kiểm đếm"
+    }
   },
   "dashboard": {
     "title": "Tổng quan",

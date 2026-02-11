@@ -10,6 +10,20 @@ import {
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
+type CreateCashRegisterInput = Omit<CreateCashRegister, "tenantId"> & { tenantId?: string };
+type CreateCashEntryInput = Omit<CreateCashEntry, "tenantId" | "registerId"> & {
+  tenantId?: string;
+  registerId?: string;
+};
+type ReverseCashEntryInput = Omit<ReverseCashEntry, "tenantId" | "originalEntryId"> & {
+  tenantId?: string;
+  originalEntryId?: string;
+};
+type SubmitDailyCloseInput = Omit<SubmitDailyClose, "tenantId" | "registerId"> & {
+  tenantId?: string;
+  registerId?: string;
+};
+
 export class CashManagementApi {
   // --- REGISTERS ---
 
@@ -25,7 +39,7 @@ export class CashManagementApi {
     });
   }
 
-  async createRegister(input: CreateCashRegister): Promise<{ register: CashRegister }> {
+  async createRegister(input: CreateCashRegisterInput): Promise<{ register: CashRegister }> {
     return apiClient.post<{ register: CashRegister }>("/cash-registers", input, {
       idempotencyKey: apiClient.generateIdempotencyKey(),
       correlationId: apiClient.generateCorrelationId(),
@@ -58,7 +72,10 @@ export class CashManagementApi {
     );
   }
 
-  async createEntry(registerId: string, input: CreateCashEntry): Promise<{ entry: CashEntry }> {
+  async createEntry(
+    registerId: string,
+    input: CreateCashEntryInput
+  ): Promise<{ entry: CashEntry }> {
     // Ensuring registerId in input matches
     const payload = { ...input, registerId };
     return apiClient.post<{ entry: CashEntry }>(`/cash-registers/${registerId}/entries`, payload, {
@@ -67,7 +84,7 @@ export class CashManagementApi {
     });
   }
 
-  async reverseEntry(entryId: string, input: ReverseCashEntry): Promise<{ entry: CashEntry }> {
+  async reverseEntry(entryId: string, input: ReverseCashEntryInput): Promise<{ entry: CashEntry }> {
     const payload = { ...input, originalEntryId: entryId };
     return apiClient.post<{ entry: CashEntry }>(`/cash-entries/${entryId}/reverse`, payload, {
       idempotencyKey: apiClient.generateIdempotencyKey(),
@@ -97,7 +114,7 @@ export class CashManagementApi {
 
   async submitDailyClose(
     registerId: string,
-    input: SubmitDailyClose
+    input: SubmitDailyCloseInput
   ): Promise<{ close: CashDayClose }> {
     const payload = { ...input, registerId };
     return apiClient.post<{ close: CashDayClose }>(
