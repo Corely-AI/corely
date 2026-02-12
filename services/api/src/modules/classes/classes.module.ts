@@ -331,6 +331,14 @@ import { GetTeacherDashboardUnpaidInvoicesUseCase } from "./application/use-case
     PrismaClassesRepository,
     GetTeacherDashboardSummaryUseCase,
     GetTeacherDashboardUnpaidInvoicesUseCase,
+    ListClassGroupsUseCase,
+    ListSessionsUseCase,
+    GetSessionUseCase,
+    GetSessionAttendanceUseCase,
+    ListEnrollmentsUseCase,
+    GetClassGroupUseCase,
+    UpdateSessionUseCase,
+    BulkUpsertAttendanceUseCase,
   ],
 })
 export class ClassesModule {}

@@ -20,7 +20,18 @@ This document explains how the Corely Copilot works end-to-end: streaming protoc
   - Idempotency: In-memory adapter (replaceable with persistent store)
   - Tools: Registry + AI SDK tool factory
 - **Controller**: `adapters/http/copilot.controller.ts`
-- **Guards**: Auth guard + `TenantGuard` requiring `X-Tenant-Id`; `X-Idempotency-Key` required.
+- **Guards**: Auth guard + `TenantGuard`; `X-Idempotency-Key` required.
+
+### Tenant vs Workspace Context
+
+- Copilot run persistence is scoped by the active workspace context.
+- Tool availability and execution security are scoped by tenant entitlements.
+- The controller resolves and passes both:
+  - `tenantId` (runtime/run scope): `ctx.workspaceId ?? ctx.tenantId`
+  - `toolTenantId` (tool/entitlement scope): `ctx.tenantId ?? tenantId`
+  - `workspaceId` (active workspace): `ctx.workspaceId ?? tenantId`
+- `StreamCopilotChatUseCase` uses `toolTenantId` for `ToolRegistry.listForTenant(...)`.
+- `AiSdkModelAdapter` uses `toolTenantId` when building AI tools and prompt context.
 
 ### Data Model (Prisma)
 
@@ -33,7 +44,7 @@ Defined in `packages/data/prisma/schema/80_ai.prisma`:
 ### Streaming Endpoint
 
 - `POST /copilot/chat`
-- Headers: `Authorization`, `X-Tenant-Id`, `X-Idempotency-Key`
+- Headers: `Authorization`, `X-Workspace-Id`, `X-Idempotency-Key`
 - Body: `{ id?, messages: UIMessage[], requestData: { tenantId, locale?, activeModule?, modelHint? } }`
 - Uses `streamText` with AI SDK tools, pipes the UI message stream to the Express response via `pipeUIMessageStreamToResponse`.
 - Idempotency: duplicate `X-Idempotency-Key` yields 409 response.
@@ -48,6 +59,10 @@ Defined in `packages/data/prisma/schema/80_ai.prisma`:
 ## Tool System
 
 - **Port**: `DomainToolPort` (`name`, `description`, `inputSchema` (zod), `kind`: server | client-confirm | client-auto, optional `execute` for server tools).
+- **Shared helpers**: `infrastructure/tools/tool-utils.ts`
+  - `buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })`
+  - `validationError(issues)`
+  - Tool adapters should reuse these helpers instead of local context/error builders.
 - **Registry**: `ToolRegistry` reads DI token `COPILOT_TOOLS` (multi-provider). Other modules can add tools without coupling.
 - **AI SDK tools**: built via `tools.factory.ts`, wrapping `DomainToolPort` into AI SDK `tool(...)` definitions.
 - **Execution logging**: creates `ToolExecution` rows (pending -> completed/failed), writes AuditLog, emits OutboxEvent (`copilot.tool.completed`).
@@ -65,7 +80,13 @@ Defined in `packages/data/prisma/schema/80_ai.prisma`:
 }
 ```
 
-3. For server tools, implement `execute({ tenantId, userId, input })` calling your domain use-case/ports (not Prisma directly). Ensure it is tenant-scoped and idempotent.
+3. For server tools, implement `execute({ tenantId, workspaceId, userId, input, toolCallId, runId })` and:
+   - validate via contracts schema (`safeParse`),
+   - return `validationError(...)` on invalid input,
+   - call use-cases with `buildToolCtx(...)` (not Prisma directly).
+     Ensure scope handling is explicit:
+   - tenant scope for entitlements/security,
+   - workspace scope for data where applicable.
 4. For confirmation tools, omit `execute` and set `kind: "client-confirm"`; the UI will render a card and send tool output via `addToolResult`.
 5. If the tool mutates state, ensure your use-case writes AuditLog and (if applicable) OutboxEvent.
 
@@ -73,7 +94,7 @@ Defined in `packages/data/prisma/schema/80_ai.prisma`:
 
 - **Screen**: `apps/web/src/routes/copilot.tsx`
 - **Hook**: `useChat` with `DefaultChatTransport` (AI SDK 5). Set headers/body via `prepareHeaders`/`prepareBody` (do not use static `body`/`headers` props).
-- **Headers**: include `Authorization`, `X-Tenant-Id`, `X-Idempotency-Key` (generate per send).
+- **Headers**: include `Authorization`, `X-Workspace-Id`, `X-Idempotency-Key` (generate per send).
 - **Body**: include `messages` and `requestData` (tenantId, locale, modelHint, etc.).
 - **Rendering**: render `message.parts` (text, tool-call, tool-result, data). The provided `MessageBubble` and `ConfirmCard` components show a basic chat with tool confirmation.
 - **Client-confirm tools**: use `addToolResult({ toolCallId, toolName, result })` to continue the stream.
@@ -89,7 +110,7 @@ Defined in `packages/data/prisma/schema/80_ai.prisma`:
 
 ## Reliability & Governance
 
-- Auth + Tenant guard enforced on `/copilot/chat`.
+- Auth + `TenantGuard` enforced on `/copilot/chat` (active workspace comes from request context / `X-Workspace-Id`).
 - Idempotency required via `X-Idempotency-Key`.
 - Tool executions are tenant-scoped, logged (AuditLog), and OutboxEvent emitted.
 - Domain/application layers stay framework-free; adapters handle Nest/Prisma specifics.

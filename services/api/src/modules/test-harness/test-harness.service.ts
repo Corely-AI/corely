@@ -345,6 +345,26 @@ export class TestHarnessService {
           },
         });
 
+        // 6. Enable classes app for seeded tenant so assistant E2E can access classes tools.
+        await tx.tenantFeatureOverride.upsert({
+          where: {
+            tenantId_featureKey: {
+              tenantId: tenant.id,
+              featureKey: "app.classes.enabled",
+            },
+          },
+          create: {
+            tenantId: tenant.id,
+            featureKey: "app.classes.enabled",
+            valueJson: JSON.stringify(true),
+            updatedBy: user.id,
+          },
+          update: {
+            valueJson: JSON.stringify(true),
+            updatedBy: user.id,
+          },
+        });
+
         return {
           tenantId: tenant.id,
           tenantName: tenant.name,

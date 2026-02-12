@@ -76,6 +76,7 @@ describe("invoice tools", () => {
     const [getInvoiceTool] = buildInvoiceTools(app);
     const result = await getInvoiceTool.execute?.({
       tenantId: "tenant-1",
+      workspaceId: "workspace-1",
       userId: "user-1",
       input: { invoiceId: "inv-1" },
       toolCallId: "tool-1",
@@ -84,7 +85,11 @@ describe("invoice tools", () => {
     expect(result).toEqual({ ok: true, invoice });
     expect(getExecute).toHaveBeenCalledWith(
       { invoiceId: "inv-1" },
-      expect.objectContaining({ tenantId: "tenant-1", correlationId: "tool-1" })
+      expect.objectContaining({
+        tenantId: "tenant-1",
+        workspaceId: "workspace-1",
+        correlationId: "tool-1",
+      })
     );
   });
 

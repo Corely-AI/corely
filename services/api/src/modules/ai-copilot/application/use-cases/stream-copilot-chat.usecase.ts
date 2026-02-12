@@ -14,23 +14,19 @@ import { type AuditPort } from "../ports/audit.port";
 import { type OutboxPort } from "@corely/kernel";
 import { type CopilotIdempotencyPort } from "../ports/copilot-idempotency.port";
 import { type ClockPort } from "@corely/kernel/ports/clock.port";
-import {
-  type JsonValue,
-  type NormalizedMessageSnapshot,
-  type ObservabilityPort,
-} from "@corely/kernel";
+import { type ObservabilityPort } from "@corely/kernel";
 import { type CopilotContextBuilder } from "../services/copilot-context.builder";
 import { type CopilotTaskStateTracker } from "../services/copilot-task-state.service";
 import { type WorkspaceKind } from "@corely/prompts";
+import {
+  extractAssistantText,
+  extractLatestUserInput,
+  isUniqueConstraintError,
+  normalizeMessages,
+  toolNameFromType,
+} from "./stream-copilot-chat.utils";
 
 const ACTION_KEY = "copilot.chat";
-const isUniqueConstraintError = (error: unknown): boolean =>
-  Boolean(
-    error &&
-    typeof error === "object" &&
-    "code" in (error as Record<string, unknown>) &&
-    (error as { code?: string }).code === "P2002"
-  );
 
 export class StreamCopilotChatUseCase {
   constructor(
@@ -146,10 +142,10 @@ export class StreamCopilotChatUseCase {
       turnClosed = true;
     };
 
-    const normalizedMessages = this.normalizeMessages(incomingMessages);
+    const normalizedMessages = normalizeMessages(incomingMessages);
     this.observability.recordTurnInput(turnSpan, {
       history: normalizedMessages,
-      userInput: this.extractLatestUserInput(normalizedMessages),
+      userInput: extractLatestUserInput(normalizedMessages),
       toolsRequested: tools.map((tool) => tool.name),
     });
 
@@ -234,7 +230,7 @@ export class StreamCopilotChatUseCase {
             });
 
             this.observability.recordTurnOutput(turnSpan, {
-              text: this.extractAssistantText(responseMessage),
+              text: extractAssistantText(responseMessage),
               partsSummary: `parts:${responseMessage.parts?.length ?? 0}`,
             });
           } catch (error) {
@@ -263,6 +259,7 @@ export class StreamCopilotChatUseCase {
               tools,
               runId,
               tenantId,
+              toolTenantId: params.toolTenantId,
               workspaceId: params.workspaceId,
               userId,
               workspaceKind: params.workspaceKind,
@@ -405,7 +402,7 @@ export class StreamCopilotChatUseCase {
       if (!toolCallId) {
         continue;
       }
-      const toolName = (part as any).toolName ?? this.toolNameFromType(String(part.type));
+      const toolName = (part as any).toolName ?? toolNameFromType(String(part.type));
       const state = (part as any).state as string | undefined;
 
       if (state === "approval-requested") {
@@ -456,57 +453,5 @@ export class StreamCopilotChatUseCase {
         }
       }
     }
-  }
-
-  private toolNameFromType(type: string): string | undefined {
-    if (type.startsWith("tool-")) {
-      return type.replace("tool-", "");
-    }
-    return undefined;
-  }
-
-  private normalizeMessages(messages: CopilotUIMessage[]): NormalizedMessageSnapshot[] {
-    return messages.map((msg) => {
-      const parts =
-        msg.parts?.map((part) => {
-          if (part.type === "text") {
-            return { type: "text", text: (part as any).text } as const;
-          }
-          if (String(part.type).startsWith("tool-")) {
-            return {
-              type: "tool-call",
-              toolCallId: (part as any).toolCallId,
-              toolName: (part as any).toolName,
-              input: (part as any).input as JsonValue,
-            } as const;
-          }
-          if (String(part.type).startsWith("data-")) {
-            return {
-              type: "data",
-              text: typeof (part as any).data === "string" ? (part as any).data : undefined,
-            } as const;
-          }
-          return { type: "text", text: "" } as const;
-        }) ?? [];
-
-      return {
-        role: msg.role as NormalizedMessageSnapshot["role"],
-        parts: parts.length ? parts : undefined,
-      };
-    });
-  }
-
-  private extractLatestUserInput(messages: NormalizedMessageSnapshot[]): string | undefined {
-    for (let index = messages.length - 1; index >= 0; index -= 1) {
-      const message = messages[index];
-      if (message.role !== "user") {
-        continue;
-      }
-      const textPart = message.parts?.find((part) => part.type === "text" && part.text);
-      if (textPart && textPart.text) {
-        return textPart.text;
-      }
-    }
-    return undefined;
   }
 }

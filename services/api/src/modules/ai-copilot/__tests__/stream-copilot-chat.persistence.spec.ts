@@ -139,8 +139,9 @@ describe("StreamCopilotChatUseCase persistence", () => {
       complete: vi.fn(async () => undefined),
     };
 
+    const listForTenant = vi.fn(async () => []);
     const toolRegistry: ToolRegistryPort = {
-      listForTenant: () => [],
+      listForTenant,
     };
 
     const audit: AuditPort = {
@@ -197,13 +198,14 @@ describe("StreamCopilotChatUseCase persistence", () => {
 
     await useCase.execute({
       message: toolResultMessage,
-      tenantId: "tenant-1",
+      tenantId: "workspace-1",
       userId: "user-1",
       idempotencyKey: "idem-1",
       runId: "run-1",
       response: {} as any,
       requestId: "request-1",
       workspaceId: "workspace-1",
+      toolTenantId: "tenant-1",
       workspaceKind: "COMPANY",
       environment: "test",
     });
@@ -219,9 +221,12 @@ describe("StreamCopilotChatUseCase persistence", () => {
     expect(hasOriginalUserText).toBe(true);
     expect(languageModel.streamChat).toHaveBeenCalledWith(
       expect.objectContaining({
+        tenantId: "workspace-1",
+        toolTenantId: "tenant-1",
         workspaceId: "workspace-1",
       })
     );
+    expect(listForTenant).toHaveBeenCalledWith("tenant-1");
 
     const savedToolResult = saveCalls.some((call) =>
       call.messages.some((message) =>

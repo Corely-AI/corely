@@ -47,17 +47,19 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     tools: DomainToolPort[];
     runId: string;
     tenantId: string;
+    toolTenantId?: string;
     workspaceId?: string;
     userId: string;
     workspaceKind?: WorkspaceKind;
     environment?: string;
     observability: ObservabilitySpanRef;
   }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }> {
+    const toolTenantId = params.toolTenantId ?? params.tenantId;
     const aiTools = buildAiTools(params.tools, {
       toolExecutions: this.toolExecutions,
       audit: this.audit,
       outbox: this.outbox,
-      tenantId: params.tenantId,
+      tenantId: toolTenantId,
       workspaceId: params.workspaceId,
       runId: params.runId,
       userId: params.userId,
@@ -72,7 +74,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
 
     const promptContext = buildPromptContext({
       env: this.env,
-      tenantId: params.tenantId,
+      tenantId: toolTenantId,
       workspaceKind: params.workspaceKind,
       environmentOverride: params.environment,
     });
@@ -93,7 +95,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       promptHash: systemPrompt.promptHash,
       modelId,
       provider,
-      tenantId: params.tenantId,
+      tenantId: toolTenantId,
       userId: params.userId,
       runId: params.runId,
       purpose: "copilot.system",
@@ -110,7 +112,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       promptHash: collectInputsDescription.promptHash,
       modelId,
       provider,
-      tenantId: params.tenantId,
+      tenantId: toolTenantId,
       userId: params.userId,
       runId: params.runId,
       purpose: "copilot.tool.collect_inputs",

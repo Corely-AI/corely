@@ -10,6 +10,7 @@ export interface LanguageModelPort {
     tools: DomainToolPort[];
     runId: string;
     tenantId: string;
+    toolTenantId?: string;
     workspaceId?: string;
     userId: string;
     workspaceKind?: WorkspaceKind;

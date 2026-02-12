@@ -1,11 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
 import { buildClassesTools } from "./classes.tools";
+import type { GetClassGroupUseCase } from "../../application/use-cases/get-class-group.usecase";
+import type { GetSessionAttendanceUseCase } from "../../application/use-cases/get-session-attendance.usecase";
+import type { GetSessionUseCase } from "../../application/use-cases/get-session.usecase";
 import type { GetTeacherDashboardSummaryUseCase } from "../../application/use-cases/get-teacher-dashboard-summary.use-case";
 import type { GetTeacherDashboardUnpaidInvoicesUseCase } from "../../application/use-cases/get-teacher-dashboard-unpaid-invoices.use-case";
+import type { ListClassGroupsUseCase } from "../../application/use-cases/list-class-groups.usecase";
+import type { ListEnrollmentsUseCase } from "../../application/use-cases/list-enrollments.usecase";
+import type { ListSessionsUseCase } from "../../application/use-cases/list-sessions.usecase";
+import type { UpdateSessionUseCase } from "../../application/use-cases/update-session.usecase";
+import type { BulkUpsertAttendanceUseCase } from "../../application/use-cases/bulk-upsert-attendance.usecase";
 
-describe("classes tools", () => {
-  it("passes tenant/workspace context to teacher dashboard summary use case", async () => {
-    const summary = {
+const makeDeps = () => ({
+  getSummary: {
+    execute: vi.fn().mockResolvedValue({
       range: { dateFrom: "2026-02-01T00:00:00.000Z", dateTo: "2026-02-28T23:59:59.000Z" },
       counts: {
         todaySessions: 1,
@@ -21,15 +29,63 @@ describe("classes tools", () => {
         studentsMissingPayer: [],
       },
       attendanceMode: "MANUAL" as const,
-    };
-    const getSummary = {
-      execute: vi.fn().mockResolvedValue(summary),
-    } as unknown as GetTeacherDashboardSummaryUseCase;
-    const getUnpaidInvoices = {
-      execute: vi.fn(),
-    } as unknown as GetTeacherDashboardUnpaidInvoicesUseCase;
+    }),
+  } as unknown as GetTeacherDashboardSummaryUseCase,
+  getUnpaidInvoices: {
+    execute: vi.fn().mockResolvedValue({ count: 0 }),
+  } as unknown as GetTeacherDashboardUnpaidInvoicesUseCase,
+  listClassGroups: {
+    execute: vi
+      .fn()
+      .mockResolvedValue({ items: [], pageInfo: { page: 1, pageSize: 50, total: 0 } }),
+  } as unknown as ListClassGroupsUseCase,
+  listSessions: {
+    execute: vi
+      .fn()
+      .mockResolvedValue({ items: [], pageInfo: { page: 1, pageSize: 50, total: 0 } }),
+  } as unknown as ListSessionsUseCase,
+  getSession: {
+    execute: vi.fn().mockResolvedValue({
+      id: "session-1",
+      classGroupId: "group-1",
+      startsAt: new Date("2026-02-05T10:00:00.000Z"),
+      status: "PLANNED",
+    }),
+  } as unknown as GetSessionUseCase,
+  getSessionAttendance: {
+    execute: vi.fn().mockResolvedValue({ items: [], locked: false }),
+  } as unknown as GetSessionAttendanceUseCase,
+  listEnrollments: {
+    execute: vi
+      .fn()
+      .mockResolvedValue({ items: [], pageInfo: { page: 1, pageSize: 50, total: 0 } }),
+  } as unknown as ListEnrollmentsUseCase,
+  getClassGroup: {
+    execute: vi.fn().mockResolvedValue({
+      id: "group-1",
+      name: "Math A1",
+      subject: "Math",
+      level: "A1",
+      status: "ACTIVE",
+    }),
+  } as unknown as GetClassGroupUseCase,
+  updateSession: {
+    execute: vi.fn().mockResolvedValue({
+      id: "session-1",
+      classGroupId: "group-1",
+      status: "DONE",
+      startsAt: new Date("2026-02-05T10:00:00.000Z"),
+    }),
+  } as unknown as UpdateSessionUseCase,
+  bulkUpsertAttendance: {
+    execute: vi.fn().mockResolvedValue([]),
+  } as unknown as BulkUpsertAttendanceUseCase,
+});
 
-    const tool = buildClassesTools({ getSummary, getUnpaidInvoices }).find(
+describe("classes tools", () => {
+  it("passes tenant/workspace context to teacher dashboard summary use case", async () => {
+    const deps = makeDeps();
+    const tool = buildClassesTools(deps).find(
       (item) => item.name === "classes_getTeacherDashboardSummary"
     );
     expect(tool).toBeDefined();
@@ -45,8 +101,8 @@ describe("classes tools", () => {
       toolCallId: "tool-1",
     });
 
-    expect(result).toEqual(summary);
-    expect((getSummary as any).execute).toHaveBeenCalledWith(
+    expect(result).toMatchObject({ attendanceMode: "MANUAL" });
+    expect((deps.getSummary as any).execute).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "tenant-1",
         workspaceId: "workspace-9",
@@ -61,14 +117,8 @@ describe("classes tools", () => {
   });
 
   it("falls back workspaceId to tenantId when workspaceId is missing", async () => {
-    const getSummary = {
-      execute: vi.fn().mockResolvedValue({ ok: true }),
-    } as unknown as GetTeacherDashboardSummaryUseCase;
-    const getUnpaidInvoices = {
-      execute: vi.fn().mockResolvedValue({ count: 0 }),
-    } as unknown as GetTeacherDashboardUnpaidInvoicesUseCase;
-
-    const tool = buildClassesTools({ getSummary, getUnpaidInvoices }).find(
+    const deps = makeDeps();
+    const tool = buildClassesTools(deps).find(
       (item) => item.name === "classes_getTeacherDashboardUnpaidInvoices"
     );
     expect(tool).toBeDefined();
@@ -80,12 +130,25 @@ describe("classes tools", () => {
       toolCallId: "tool-2",
     });
 
-    expect((getUnpaidInvoices as any).execute).toHaveBeenCalledWith(
+    expect((deps.getUnpaidInvoices as any).execute).toHaveBeenCalledWith(
       expect.objectContaining({
         tenantId: "tenant-1",
         workspaceId: "tenant-1",
       }),
       {}
     );
+  });
+
+  it("marks write tools with approval gating", () => {
+    const deps = makeDeps();
+    const tools = buildClassesTools(deps);
+
+    const markDone = tools.find((tool) => tool.name === "classes_markSessionDone");
+    const bulkUpsert = tools.find((tool) => tool.name === "classes_bulkUpsertAttendance");
+
+    expect(markDone?.needsApproval).toBe(true);
+    expect(markDone?.kind).toBe("server");
+    expect(bulkUpsert?.needsApproval).toBe(true);
+    expect(bulkUpsert?.kind).toBe("server");
   });
 });

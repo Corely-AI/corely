@@ -47,6 +47,14 @@ import { buildEngagementTools } from "../engagement/adapters/tools/engagement.to
 import { ClassesModule } from "../classes/classes.module";
 import { GetTeacherDashboardSummaryUseCase } from "../classes/application/use-cases/get-teacher-dashboard-summary.use-case";
 import { GetTeacherDashboardUnpaidInvoicesUseCase } from "../classes/application/use-cases/get-teacher-dashboard-unpaid-invoices.use-case";
+import { ListClassGroupsUseCase } from "../classes/application/use-cases/list-class-groups.usecase";
+import { ListSessionsUseCase } from "../classes/application/use-cases/list-sessions.usecase";
+import { GetSessionUseCase } from "../classes/application/use-cases/get-session.usecase";
+import { GetSessionAttendanceUseCase } from "../classes/application/use-cases/get-session-attendance.usecase";
+import { ListEnrollmentsUseCase } from "../classes/application/use-cases/list-enrollments.usecase";
+import { GetClassGroupUseCase } from "../classes/application/use-cases/get-class-group.usecase";
+import { UpdateSessionUseCase } from "../classes/application/use-cases/update-session.usecase";
+import { BulkUpsertAttendanceUseCase } from "../classes/application/use-cases/bulk-upsert-attendance.usecase";
 import { buildClassesTools } from "../classes/adapters/tools/classes.tools";
 import { OtelObservabilityAdapter } from "../../shared/observability/otel-observability.adapter";
 import { type ObservabilityPort } from "@corely/kernel";
@@ -166,6 +174,14 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
         engagement: EngagementApplication,
         classSummary: GetTeacherDashboardSummaryUseCase,
         classUnpaidInvoices: GetTeacherDashboardUnpaidInvoicesUseCase,
+        listClassGroups: ListClassGroupsUseCase,
+        listSessions: ListSessionsUseCase,
+        getSession: GetSessionUseCase,
+        getSessionAttendance: GetSessionAttendanceUseCase,
+        listEnrollments: ListEnrollmentsUseCase,
+        getClassGroup: GetClassGroupUseCase,
+        updateSession: UpdateSessionUseCase,
+        bulkUpsertAttendance: BulkUpsertAttendanceUseCase,
         env: EnvService,
         promptRegistry: PromptRegistry,
         promptUsageLogger: PromptUsageLogger
@@ -203,6 +219,14 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
             buildClassesTools({
               getSummary: classSummary,
               getUnpaidInvoices: classUnpaidInvoices,
+              listClassGroups,
+              listSessions,
+              getSession,
+              getSessionAttendance,
+              listEnrollments,
+              getClassGroup,
+              updateSession,
+              bulkUpsertAttendance,
             })
           ),
         ];
@@ -217,6 +241,14 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
         EngagementApplication,
         GetTeacherDashboardSummaryUseCase,
         GetTeacherDashboardUnpaidInvoicesUseCase,
+        ListClassGroupsUseCase,
+        ListSessionsUseCase,
+        GetSessionUseCase,
+        GetSessionAttendanceUseCase,
+        ListEnrollmentsUseCase,
+        GetClassGroupUseCase,
+        UpdateSessionUseCase,
+        BulkUpsertAttendanceUseCase,
         EnvService,
         PromptRegistry,
         PromptUsageLogger,

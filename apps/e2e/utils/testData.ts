@@ -13,16 +13,19 @@ export interface TestData {
   };
 }
 
-const TEST_EMAIL = "e2e-test@corely.local";
 const TEST_PASSWORD = "E2ETestPassword123!";
+
+const buildTestEmail = (): string =>
+  `e2e-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@corely.local`;
 
 /**
  * Seeds test data using test harness endpoints
  */
 export async function seedTestData(): Promise<TestData | null> {
   try {
+    const email = buildTestEmail();
     const response = await apiClient.post("/test/seed", {
-      email: TEST_EMAIL,
+      email,
       password: TEST_PASSWORD,
       tenantName: "E2E Test Tenant",
     });
@@ -34,7 +37,7 @@ export async function seedTestData(): Promise<TestData | null> {
       },
       user: {
         id: response.userId,
-        email: TEST_EMAIL,
+        email,
         password: TEST_PASSWORD,
         name: response.userName,
       },
