@@ -426,10 +426,11 @@ export class TestHarnessService {
       });
 
       // 7. Create workspace with completed onboarding using use case
+      const uniqueWorkspaceName = `Default Workspace ${result.tenantId.slice(0, 8)}`;
       const workspaceResult = await this.createWorkspaceUseCase.execute({
         tenantId: result.tenantId,
         userId: result.userId,
-        name: "Default Workspace",
+        name: uniqueWorkspaceName,
         kind: "PERSONAL",
         legalName: params.tenantName,
         countryCode: "DE",
