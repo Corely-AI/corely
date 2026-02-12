@@ -23,6 +23,7 @@
     "viewAll": "View all",
     "comingSoon": "Coming soon",
     "noResults": "No results found",
+    "selectDate": "Select date",
     "noTopic": "No topic",
     "error": "Something went wrong",
     "success": "Success",
@@ -76,7 +77,12 @@
     "website": "Website",
     "bank": "Bank",
     "iban": "IBAN",
-    "default": "Default"
+    "default": "Default",
+    "copyLink": "Copy Link",
+    "add": "Add",
+    "created": "Created",
+    "updated": "Updated",
+    "notSet": "Not set"
   },
   "actions": {
     "takeAttendance": "Take Attendance",
@@ -462,12 +468,36 @@
   },
   "assistant": {
     "title": "Assistant",
-    "placeholder": "Ask me anything or upload a receipt...",
+    "subtitle": "Ask anything, extract receipts, generate invoices, or request quick summaries.",
+    "placeholder": "Ask anything...",
+    "emptyStateTitle": "How can I help you?",
+    "emptyStateDescription": "Ask anything, extract receipts, generate invoices, or request quick summaries.",
+    "awaitingInputs": "Awaiting your input...",
+    "approvalRequired": "Approval Required ({{toolName}})",
+    "approvalDescription": "The assistant wants to use the '{{toolName}}' tool. Do you want to allow this?",
+    "toolResult": "Result from {{toolName}}",
+    "toolFailed": "Tool {{toolName}} failed: {{reason}}",
+    "denied": "Denied by user",
+    "toolCall": "Running {{toolName}}...",
+    "send": "Send",
+    "sending": "Sending...",
     "suggestions": {
-      "addReceipt": "Add this receipt as an expense",
-      "generateInvoice": "Generate invoice for a client",
-      "showExpenses": "Show expenses this month",
-      "taxHelp": "What can I deduct in Germany?"
+      "extractReceipt": {
+        "label": "Extract a receipt and create an expense",
+        "value": "I uploaded a receipt. Extract it and draft an expense."
+      },
+      "invoiceDraft": {
+        "label": "Generate an invoice draft",
+        "value": "Generate an invoice draft for ACME GmbH for this month."
+      },
+      "summarizeExpenses": {
+        "label": "Summarize my expenses",
+        "value": "Summarize my expenses for the last 30 days."
+      },
+      "taxGuidance": {
+        "label": "Tax guidance",
+        "value": "What can I deduct as a freelancer in Germany?"
+      }
     },
     "toolCards": {
       "extractingReceipt": "Extracting receipt data...",
@@ -480,7 +510,29 @@
     "invoicePreview": "Invoice preview",
     "openExpense": "Open expense",
     "openInvoice": "Open invoice",
-    "issueInvoice": "Issue invoice"
+    "issueInvoice": "Issue invoice",
+    "userRole": "You",
+    "assistantRole": "Assistant",
+    "systemRole": "System"
+  },
+  "copilot": {
+    "title": "Assistant",
+    "placeholder": "Ask me anything...",
+    "confirmation": {
+      "title": "Approval Required",
+      "subtitle": "The assistant wants to use '{{toolName}}'. Do you want to allow this?"
+    },
+    "toolResult": "Result from {{toolName}}",
+    "toolFailed": "Tool {{toolName}} failed: {{reason}}",
+    "denied": "Denied by user",
+    "toolCall": "Running {{toolName}}...",
+    "roles": {
+      "user": "You",
+      "assistant": "Assistant"
+    },
+    "confidence": "{{percent}}% confidence",
+    "noStructuredOutput": "No structured data available",
+    "allowTool": "The assistant wants to use '{{toolName}}'. Do you want to allow this?"
   },
   "expenses": {
     "title": "Expenses",
@@ -1062,6 +1114,72 @@
     }
   },
   "crm": {
+    "activities": {
+      "title": "Activities",
+      "new": "New Activity",
+      "emptyTitle": "No activities found",
+      "emptyDescription": "Keep track of your interactions and tasks here."
+    },
+    "activity": {
+      "newTitle": "New Activity",
+      "newSubtitle": "Log a task, call, or meeting to keep your CRM updated.",
+      "create": "Create Activity",
+      "created": "Activity created successfully",
+      "createFailed": "Failed to create activity",
+      "subject": "Subject",
+      "subjectPlaceholder": "e.g. Follow up on proposal",
+      "type": "Activity Type",
+      "selectType": "Select type",
+      "dueAt": "Due Date & Time",
+      "selectDate": "Select date",
+      "reminderHint": "The activity will be scheduled for this time.",
+      "dealIdOptional": "Link to Deal (Optional)",
+      "dealIdPlaceholder": "Enter Deal ID",
+      "partyIdOptional": "Link to Contact (Optional)",
+      "partyIdPlaceholder": "Enter Contact ID",
+      "linkRequiredHint": "Link this activity to a deal or contact for better context.",
+      "notesPlaceholder": "Add any details or outcomes here...",
+      "tipTitle": "Activity Tips",
+      "tipSubtitle": "How to stay organized",
+      "tipOne": "Log activities immediately to keep data fresh.",
+      "tipTwo": "Use descriptive subjects for quick reference.",
+      "tipThree": "Link to deals to see full history in the pipeline.",
+      "subjectRequired": "Subject is required",
+      "linkRequired": "Must be linked to either a deal or a contact",
+      "due": "Due {{date}}",
+      "statuses": {
+        "completed": "Completed",
+        "canceled": "Canceled",
+        "scheduled": "Scheduled"
+      },
+      "types": {
+        "note": "Note",
+        "task": "Task",
+        "call": "Call",
+        "meeting": "Meeting",
+        "email_draft": "Email Draft"
+      },
+      "addTitle": "Add Activity",
+      "addSubtitle": "Log a quick update or task",
+      "pickDate": "Pick a date",
+      "time": "Time"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "subtitle": "Activity and interaction history for this deal",
+      "empty": "No activity recorded yet.",
+      "due": "Due {{date}}",
+      "stage": "Moved to {{stage}}",
+      "channelMessage": "{{channel}} message",
+      "filters": {
+        "all": "All",
+        "notes": "Notes",
+        "calls": "Calls",
+        "meetings": "Meetings",
+        "tasks": "Tasks",
+        "stage": "Stages"
+      }
+    },
     "deals": {
       "title": "Deals",
       "new": "New Deal",
@@ -1117,8 +1235,27 @@
         "stageRequired": "Stage selection is required",
         "amountNumber": "Amount must be a valid number",
         "currencyRequired": "Currency is required",
-        "probabilityRange": "Probability must be between 0 and 100"
-      }
+        "probabilityRange": "Probability must be between 0 and 100",
+        "probabilityValidation": "Probability must be between 0 and 100"
+      },
+      "deletedReason": "Deal deleted",
+      "loadFailed": "Failed to load deal",
+      "loadFailedHint": "We couldn't retrieve the deal details. Please try again.",
+      "backToDeals": "Back to Deals",
+      "markLostTitle": "Mark Deal as Lost",
+      "markLostDescription": "Please provide a reason why this deal was lost.",
+      "markLostPlaceholder": "e.g. Competitor won, Budget cut...",
+      "markLost": "Mark Lost",
+      "deleteTitle": "Delete Deal",
+      "deleteDescription": "Are you sure you want to delete this deal? This action cannot be undone.",
+      "delete": "Delete",
+      "noNotes": "No notes added.",
+      "probability": "Prob. {{probability}}%",
+      "probabilityValue": "{{probability}}%",
+      "expectedClose": "Exp. {{date}}",
+      "expectedCloseTitle": "Expected Close",
+      "markWon": "Mark Won",
+      "edit": "Edit Deal"
     }
   },
   "classes": {
@@ -1310,6 +1447,16 @@
       "duplicateDetectionHelp": "Warn when a bill with the same vendor and reference already exists",
       "approvalRequired": "Approval Required for Bills",
       "approvalRequiredHelp": "Vendor bills must be approved before they can be posted"
+    },
+    "copilot": {
+      "title": "Purchasing Assistant",
+      "purchaseOrderDraft": "Purchase Order Draft",
+      "vendorBillDraft": "Vendor Bill Draft",
+      "promptBill": "Extract data from a vendor bill text or image",
+      "promptBillLabel": "Extract Bill",
+      "promptPo": "Draft a purchase order for 50 laptops from Dell",
+      "promptPoLabel": "Draft PO",
+      "placeholder": "Ask the purchasing assistant anything..."
     }
   }
 }

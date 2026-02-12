@@ -1,30 +1,33 @@
 import { AlertCircle, FileText, Receipt, Sparkles, TrendingUp } from "lucide-react";
 import { Chat, type Suggestion } from "@/shared/components/Chat";
-
-const suggestions: Suggestion[] = [
-  {
-    icon: Receipt,
-    label: "Extract a receipt and create an expense",
-    value: "I uploaded a receipt. Extract it and draft an expense.",
-  },
-  {
-    icon: FileText,
-    label: "Generate an invoice draft",
-    value: "Generate an invoice draft for ACME GmbH for this month.",
-  },
-  {
-    icon: TrendingUp,
-    label: "Summarize my expenses",
-    value: "Summarize my expenses for the last 30 days.",
-  },
-  {
-    icon: AlertCircle,
-    label: "Tax guidance",
-    value: "What can I deduct as a freelancer in Germany?",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 export default function AssistantPage() {
+  const { t, i18n } = useTranslation();
+
+  const suggestions: Suggestion[] = [
+    {
+      icon: Receipt,
+      label: t("assistant.suggestions.extractReceipt.label"),
+      value: t("assistant.suggestions.extractReceipt.value"),
+    },
+    {
+      icon: FileText,
+      label: t("assistant.suggestions.invoiceDraft.label"),
+      value: t("assistant.suggestions.invoiceDraft.value"),
+    },
+    {
+      icon: TrendingUp,
+      label: t("assistant.suggestions.summarizeExpenses.label"),
+      value: t("assistant.suggestions.summarizeExpenses.value"),
+    },
+    {
+      icon: AlertCircle,
+      label: t("assistant.suggestions.taxGuidance.label"),
+      value: t("assistant.suggestions.taxGuidance.value"),
+    },
+  ];
+
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] lg:h-screen" data-testid="assistant-chat">
       <header className="flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
@@ -33,10 +36,8 @@ export default function AssistantPage() {
             <Sparkles className="h-5 w-5 text-accent" />
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Assistant</h1>
-            <p className="text-sm text-muted-foreground">
-              Ask anything, extract receipts, generate invoices, or request quick summaries.
-            </p>
+            <h1 className="text-lg font-semibold text-foreground">{t("assistant.title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("assistant.subtitle")}</p>
           </div>
         </div>
       </header>
@@ -45,11 +46,11 @@ export default function AssistantPage() {
         <div className="max-w-5xl mx-auto px-4 py-6" data-testid="assistant-messages">
           <Chat
             activeModule="assistant"
-            locale="en"
-            placeholder="Ask anything..."
+            locale={i18n.language}
+            placeholder={t("assistant.placeholder")}
             suggestions={suggestions}
-            emptyStateTitle="How can I help you?"
-            emptyStateDescription="Ask anything, extract receipts, generate invoices, or request quick summaries."
+            emptyStateTitle={t("assistant.emptyStateTitle")}
+            emptyStateDescription={t("assistant.emptyStateDescription")}
           />
         </div>
       </main>

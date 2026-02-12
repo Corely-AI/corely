@@ -28,6 +28,9 @@ import { buildInvoiceWorkflowTools } from "./infrastructure/tools/invoice-workfl
 import { PartyModule } from "../party";
 import { PartyApplication } from "../party/application/party.application";
 import { buildCustomerTools } from "../party/adapters/tools/customer.tools";
+import { CrmModule } from "../crm/crm.module";
+import { CrmApplication } from "../crm/application/crm.application";
+import { buildCrmAiTools } from "../crm/adapters/tools/crm.tools";
 import { SalesModule } from "../sales";
 import { SalesApplication } from "../sales/application/sales.application";
 import { buildSalesTools } from "../sales/adapters/tools/sales.tools";
@@ -41,6 +44,10 @@ import { buildApprovalTools } from "../approvals/adapters/tools/approval.tools";
 import { EngagementModule } from "../engagement/engagement.module";
 import { EngagementApplication } from "../engagement/application/engagement.application";
 import { buildEngagementTools } from "../engagement/adapters/tools/engagement.tools";
+import { ClassesModule } from "../classes/classes.module";
+import { GetTeacherDashboardSummaryUseCase } from "../classes/application/use-cases/get-teacher-dashboard-summary.use-case";
+import { GetTeacherDashboardUnpaidInvoicesUseCase } from "../classes/application/use-cases/get-teacher-dashboard-unpaid-invoices.use-case";
+import { buildClassesTools } from "../classes/adapters/tools/classes.tools";
 import { OtelObservabilityAdapter } from "../../shared/observability/otel-observability.adapter";
 import { type ObservabilityPort } from "@corely/kernel";
 import { CreateRunUseCase } from "./application/use-cases/create-run.usecase";
@@ -52,6 +59,8 @@ import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
 import { CHAT_STORE_PORT, type ChatStorePort } from "./application/ports/chat-store.port";
 import { CopilotContextBuilder } from "./application/services/copilot-context.builder";
 import { CopilotTaskStateTracker } from "./application/services/copilot-task-state.service";
+import type { DomainToolPort } from "./application/ports/domain-tool.port";
+import { PlatformEntitlementsModule } from "../platform-entitlements/platform-entitlements.module";
 
 @Module({
   imports: [
@@ -59,10 +68,13 @@ import { CopilotTaskStateTracker } from "./application/services/copilot-task-sta
     IdentityModule,
     InvoicesModule,
     PartyModule,
+    CrmModule,
     SalesModule,
     PurchasingModule,
     InventoryModule,
     EngagementModule,
+    ClassesModule,
+    PlatformEntitlementsModule,
     PromptModule,
   ],
   controllers: [CopilotController],
@@ -147,30 +159,64 @@ import { CopilotTaskStateTracker } from "./application/services/copilot-task-sta
       useFactory: (
         invoices: InvoicesApplication,
         partyCrm: PartyApplication,
+        crm: CrmApplication,
         sales: SalesApplication,
         purchasing: PurchasingApplication,
         inventory: InventoryApplication,
         engagement: EngagementApplication,
+        classSummary: GetTeacherDashboardSummaryUseCase,
+        classUnpaidInvoices: GetTeacherDashboardUnpaidInvoicesUseCase,
         env: EnvService,
         promptRegistry: PromptRegistry,
         promptUsageLogger: PromptUsageLogger
-      ) => [
-        ...buildInvoiceWorkflowTools(invoices, partyCrm),
-        ...buildInvoiceTools(invoices),
-        ...buildCustomerTools(partyCrm),
-        ...buildSalesTools(sales),
-        ...buildPurchasingTools(purchasing, env, promptRegistry, promptUsageLogger),
-        ...buildInventoryTools(inventory, env, promptRegistry, promptUsageLogger),
-        ...buildApprovalTools(env, promptRegistry, promptUsageLogger),
-        ...buildEngagementTools(engagement, partyCrm),
-      ],
+      ) => {
+        const withAppId = (appId: string, tools: DomainToolPort[]): DomainToolPort[] =>
+          tools.map((tool) => ({ ...tool, appId }));
+
+        return [
+          ...withAppId("invoices", buildInvoiceWorkflowTools(invoices, partyCrm)),
+          ...withAppId("invoices", buildInvoiceTools(invoices)),
+          ...withAppId("parties", buildCustomerTools(partyCrm)),
+          ...withAppId(
+            "crm",
+            buildCrmAiTools({
+              party: partyCrm,
+              crm,
+              env,
+              promptRegistry,
+              promptUsageLogger,
+            })
+          ),
+          ...withAppId("sales", buildSalesTools(sales)),
+          ...withAppId(
+            "purchasing",
+            buildPurchasingTools(purchasing, env, promptRegistry, promptUsageLogger)
+          ),
+          ...withAppId(
+            "inventory",
+            buildInventoryTools(inventory, env, promptRegistry, promptUsageLogger)
+          ),
+          ...withAppId("approvals", buildApprovalTools(env, promptRegistry, promptUsageLogger)),
+          ...withAppId("engagement", buildEngagementTools(engagement, partyCrm)),
+          ...withAppId(
+            "classes",
+            buildClassesTools({
+              getSummary: classSummary,
+              getUnpaidInvoices: classUnpaidInvoices,
+            })
+          ),
+        ];
+      },
       inject: [
         InvoicesApplication,
         PartyApplication,
+        CrmApplication,
         SalesApplication,
         PurchasingApplication,
         InventoryApplication,
         EngagementApplication,
+        GetTeacherDashboardSummaryUseCase,
+        GetTeacherDashboardUnpaidInvoicesUseCase,
         EnvService,
         PromptRegistry,
         PromptUsageLogger,
