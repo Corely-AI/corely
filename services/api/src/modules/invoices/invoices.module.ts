@@ -33,6 +33,7 @@ import { TENANT_TIMEZONE_PORT } from "../../shared/time/tenant-timezone.token";
 import { PartyModule } from "../party";
 import { DocumentsModule } from "../documents";
 import { TaxModule } from "../tax/tax.module";
+import { PlatformModule } from "../platform";
 import { TaxEngineService } from "../tax/application/services/tax-engine.service";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { CreateInvoiceUseCase } from "./application/use-cases/create-invoice/create-invoice.usecase";
@@ -62,7 +63,15 @@ import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
 import type { AiTextPort } from "../../shared/ai/ai-text.port";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule, TaxModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    IdentityModule,
+    PartyModule,
+    DocumentsModule,
+    TaxModule,
+    PlatformModule,
+  ],
   controllers: [
     InvoicesHttpController,
     InvoicesInternalController,
