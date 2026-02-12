@@ -13,9 +13,15 @@ const validationError = (issues: unknown) => ({
   details: issues,
 });
 
-const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?: string) => ({
+const buildCtx = (
+  tenantId: string,
+  workspaceId: string | undefined,
+  userId: string,
+  toolCallId?: string,
+  runId?: string
+) => ({
   tenantId,
-  workspaceId: tenantId,
+  workspaceId: workspaceId ?? tenantId,
   userId,
   correlationId: toolCallId ?? runId,
   requestId: toolCallId,
@@ -31,13 +37,16 @@ export const buildClassesTools = (deps: {
       "Get teacher dashboard summary metrics for classes in a date range (sessions and attendance health).",
     kind: "server",
     inputSchema: TeacherDashboardSummaryQuerySchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = TeacherDashboardSummaryQuerySchema.safeParse(input);
       if (!parsed.success) {
         return validationError(parsed.error.flatten());
       }
 
-      return deps.getSummary.execute(buildCtx(tenantId, userId, toolCallId, runId), parsed.data);
+      return deps.getSummary.execute(
+        buildCtx(tenantId, workspaceId, userId, toolCallId, runId),
+        parsed.data
+      );
     },
   },
   {
@@ -45,14 +54,14 @@ export const buildClassesTools = (deps: {
     description: "Get count of unpaid class-related invoices (optionally filtered by class group).",
     kind: "server",
     inputSchema: TeacherDashboardUnpaidInvoicesQuerySchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = TeacherDashboardUnpaidInvoicesQuerySchema.safeParse(input);
       if (!parsed.success) {
         return validationError(parsed.error.flatten());
       }
 
       return deps.getUnpaidInvoices.execute(
-        buildCtx(tenantId, userId, toolCallId, runId),
+        buildCtx(tenantId, workspaceId, userId, toolCallId, runId),
         parsed.data
       );
     },

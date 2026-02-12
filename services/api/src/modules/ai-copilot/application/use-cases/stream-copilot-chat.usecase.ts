@@ -263,6 +263,7 @@ export class StreamCopilotChatUseCase {
               tools,
               runId,
               tenantId,
+              workspaceId: params.workspaceId,
               userId,
               workspaceKind: params.workspaceKind,
               environment: params.environment,

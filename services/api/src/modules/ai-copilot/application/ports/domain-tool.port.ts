@@ -11,6 +11,7 @@ export interface DomainToolPort {
   needsApproval?: boolean;
   execute?: (params: {
     tenantId: string;
+    workspaceId?: string;
     userId: string;
     input: unknown;
     toolCallId?: string;

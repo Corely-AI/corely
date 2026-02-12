@@ -47,6 +47,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     tools: DomainToolPort[];
     runId: string;
     tenantId: string;
+    workspaceId?: string;
     userId: string;
     workspaceKind?: WorkspaceKind;
     environment?: string;
@@ -57,6 +58,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       audit: this.audit,
       outbox: this.outbox,
       tenantId: params.tenantId,
+      workspaceId: params.workspaceId,
       runId: params.runId,
       userId: params.userId,
       observability: this.observability,

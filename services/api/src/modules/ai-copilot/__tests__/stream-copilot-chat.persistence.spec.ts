@@ -203,7 +203,7 @@ describe("StreamCopilotChatUseCase persistence", () => {
       runId: "run-1",
       response: {} as any,
       requestId: "request-1",
-      workspaceId: "tenant-1",
+      workspaceId: "workspace-1",
       workspaceKind: "COMPANY",
       environment: "test",
     });
@@ -217,6 +217,11 @@ describe("StreamCopilotChatUseCase persistence", () => {
         )
     );
     expect(hasOriginalUserText).toBe(true);
+    expect(languageModel.streamChat).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: "workspace-1",
+      })
+    );
 
     const savedToolResult = saveCalls.some((call) =>
       call.messages.some((message) =>
