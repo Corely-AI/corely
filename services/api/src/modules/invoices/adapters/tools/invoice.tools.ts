@@ -1,6 +1,8 @@
 import {
   CancelInvoiceInputSchema,
   CreateInvoiceInputSchema,
+  DraftInvoiceIssueEmailInputSchema,
+  DraftInvoiceReminderEmailInputSchema,
   FinalizeInvoiceInputSchema,
   GetInvoiceByIdInputSchema,
   ListInvoicesInputSchema,
@@ -21,6 +23,7 @@ const validationError = (issues: unknown) => ({
 
 const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?: string) => ({
   tenantId,
+  workspaceId: tenantId,
   userId,
   correlationId: toolCallId ?? runId,
   requestId: toolCallId,
@@ -158,6 +161,42 @@ export const buildInvoiceTools = (app: InvoicesApplication): DomainToolPort[] =>
         return validationError(parsed.error.flatten());
       }
       const result = await app.cancelInvoice.execute(
+        parsed.data,
+        buildCtx(tenantId, userId, toolCallId, runId)
+      );
+      return mapToolResult(result);
+    },
+  },
+  {
+    name: "invoice_draft_issue_email",
+    description:
+      "Draft the first invoice sent/issued email in de/vi/en with friendly or neutral tone (draft-only, no send).",
+    kind: "server",
+    inputSchema: DraftInvoiceIssueEmailInputSchema,
+    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      const parsed = DraftInvoiceIssueEmailInputSchema.safeParse(input);
+      if (!parsed.success) {
+        return validationError(parsed.error.flatten());
+      }
+      const result = await app.draftInvoiceIssueEmail.execute(
+        parsed.data,
+        buildCtx(tenantId, userId, toolCallId, runId)
+      );
+      return mapToolResult(result);
+    },
+  },
+  {
+    name: "invoice_draft_reminder_email",
+    description:
+      "Draft a payment reminder email in de/vi/en with polite, normal, or firm tone (draft-only, no send).",
+    kind: "server",
+    inputSchema: DraftInvoiceReminderEmailInputSchema,
+    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      const parsed = DraftInvoiceReminderEmailInputSchema.safeParse(input);
+      if (!parsed.success) {
+        return validationError(parsed.error.flatten());
+      }
+      const result = await app.draftReminderEmail.execute(
         parsed.data,
         buildCtx(tenantId, userId, toolCallId, runId)
       );
