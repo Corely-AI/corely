@@ -42,6 +42,16 @@ export const inventoryPermissions: PermissionGroup[] = [
         danger: true,
       },
       {
+        key: "inventory.lots.read",
+        group: "inventory",
+        label: "View inventory lots",
+      },
+      {
+        key: "inventory.lots.manage",
+        group: "inventory",
+        label: "Manage inventory lots",
+      },
+      {
         key: "inventory.reorder.manage",
         group: "inventory",
         label: "Manage reorder policies",

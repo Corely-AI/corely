@@ -39,10 +39,37 @@ import { toUseCaseContext } from "../../../../shared/request-context";
 
 type RequestWithAuth = Request;
 
+function getHeaderValue(req: RequestWithAuth, key: string): string | undefined {
+  const value = req.headers[key];
+  if (Array.isArray(value)) {
+    return value.find((entry) => typeof entry === "string" && entry.length > 0);
+  }
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
 function buildContext(req: RequestWithAuth) {
   const ctx = toUseCaseContext(req as any);
+  const workspaceHeader = getHeaderValue(req, "x-workspace-id");
+  const tenantHeader = getHeaderValue(req, "x-tenant-id");
+  const queryWorkspaceId =
+    typeof (req.query as Record<string, unknown> | undefined)?.workspaceId === "string"
+      ? ((req.query as Record<string, unknown>).workspaceId as string)
+      : undefined;
+  const queryTenantId =
+    typeof (req.query as Record<string, unknown> | undefined)?.tenantId === "string"
+      ? ((req.query as Record<string, unknown>).tenantId as string)
+      : undefined;
+
   return {
-    tenantId: ctx.tenantId ?? ctx.workspaceId ?? undefined,
+    // Prefer explicit tenant scope first, then workspace scope as fallback.
+    tenantId:
+      tenantHeader ??
+      queryTenantId ??
+      workspaceHeader ??
+      queryWorkspaceId ??
+      ctx.tenantId ??
+      ctx.workspaceId ??
+      undefined,
     userId: ctx.userId,
     correlationId: ctx.correlationId ?? ctx.requestId,
     requestId: ctx.requestId,

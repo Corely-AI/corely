@@ -2,6 +2,12 @@ import { defineConfig, devices } from "@playwright/test";
 
 const isCI = !!process.env.CI;
 const isPublicWeb = process.env.PUBLIC_WEB_E2E === "true";
+const screenshotMode =
+  process.env.E2E_SCREENSHOT_MODE === "on"
+    ? "on"
+    : process.env.E2E_SCREENSHOT_MODE === "off"
+      ? "off"
+      : "only-on-failure";
 const baseURL =
   process.env.BASE_URL || (isPublicWeb ? "http://localhost:8082" : "http://localhost:8080");
 
@@ -20,7 +26,7 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "on-first-retry",
-    screenshot: "only-on-failure",
+    screenshot: screenshotMode,
     video: "retain-on-failure",
   },
 

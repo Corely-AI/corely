@@ -14,6 +14,28 @@ import type {
 export class PrismaReportingQueryAdapter implements ReportingQueryPort {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async loadProductNames(
+    tenantId: string,
+    productIds: string[]
+  ): Promise<Map<string, string>> {
+    if (productIds.length === 0) {
+      return new Map();
+    }
+
+    const items = await this.prisma.catalogItem.findMany({
+      where: {
+        tenantId,
+        id: { in: productIds },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    return new Map(items.map((item) => [item.id, item.name]));
+  }
+
   async countExpenses(tenantId: string): Promise<number> {
     return this.prisma.expense.count({ where: { tenantId } });
   }
@@ -107,15 +129,16 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
   ): Promise<InventoryBalance> {
     // Query inventory lots for current balance
     // For MVP: simplified query
-    const lots = await (this.prisma.inventoryLot.findMany as any)({
+    const lots = await this.prisma.inventoryLot.findMany({
       where: {
         tenantId,
         qtyOnHand: { gt: 0 },
       },
-      include: {
-        product: true,
-      },
     });
+    const productNames = await this.loadProductNames(
+      tenantId,
+      Array.from(new Set(lots.map((lot) => lot.productId)))
+    );
 
     let totalValueCents = 0;
     let totalQuantity = 0;
@@ -136,7 +159,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
       } else {
         productMap.set(lot.productId, {
           productId: lot.productId,
-          productName: (lot as any).product?.name || "Unknown",
+          productName: productNames.get(lot.productId) ?? "Unknown",
           quantity: lot.qtyOnHand,
           valueCents,
         });
@@ -160,19 +183,20 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
     const in90Days = new Date(now);
     in90Days.setDate(in90Days.getDate() + 90);
 
-    const lots = await (this.prisma.inventoryLot.findMany as any)({
+    const lots = await this.prisma.inventoryLot.findMany({
       where: {
         tenantId,
         expiryDate: { not: null },
         qtyOnHand: { gt: 0 },
       },
-      include: {
-        product: true,
-      },
       orderBy: {
         expiryDate: "asc",
       },
     });
+    const productNames = await this.loadProductNames(
+      tenantId,
+      Array.from(new Set(lots.map((lot) => lot.productId)))
+    );
 
     let expiring30Days = 0;
     let expiring60Days = 0;
@@ -201,7 +225,7 @@ export class PrismaReportingQueryAdapter implements ReportingQueryPort {
         lotId: lot.id,
         lotNumber: lot.lotNumber,
         productId: lot.productId,
-        productName: (lot as any).product?.name || "Unknown",
+        productName: productNames.get(lot.productId) ?? "Unknown",
         quantity: lot.qtyOnHand,
         expiryDate: lot.expiryDate ? new Date(lot.expiryDate).toISOString() : "",
         daysUntilExpiry: daysUntilExpiry !== null ? daysUntilExpiry : 0,
