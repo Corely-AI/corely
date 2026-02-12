@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { ListTenantsOutput } from "@corely/contracts";
-import type { UseCaseContext } from "@corely/kernel";
+import { type ListTenantsOutput, type TenantStatus } from "@corely/contracts";
+import { type UseCaseContext } from "@corely/kernel";
 import {
   TENANT_REPOSITORY_TOKEN,
   type TenantRepositoryPort,
@@ -37,6 +37,7 @@ export class ListTenantsUseCase {
         id: tenant.getId(),
         name: tenant.getName(),
         slug: tenant.getSlug(),
+        status: tenant.getStatus() as TenantStatus,
       })),
     };
   }

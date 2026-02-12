@@ -1,6 +1,10 @@
 {
   "common": {
     "active": "Hoạt động",
+    "inactive": "Ngưng hoạt động",
+    "suspended": "Đã tạm ngưng",
+    "activate": "Kích hoạt",
+    "deactivate": "Hủy kích hoạt",
     "appName": "Corely One ERP",
     "tagline": "Quản lý doanh nghiệp của bạn, toàn diện.",
     "loading": "Đang tải...",
@@ -108,7 +112,7 @@
     "assistant": "Trợ lý",
     "expenses": "Chi phí",
     "invoices": "Hóa đơn",
-    "tenants": "Khách thuê",
+    "tenants": "Tổ chức",
     "groups": {
       "core": "Chính",
       "sales": "Bán hàng",
@@ -1432,5 +1436,19 @@
       "promptPoLabel": "Soạn PO",
       "placeholder": "Hỏi trợ lý mua hàng bất cứ điều gì..."
     }
+  },
+  "tenants": {
+    "title": "Tổ chức (Tenants)",
+    "description": "Quản lý quyền và cài đặt của tổ chức.",
+    "listTitle": "Danh sách tổ chức",
+    "addTenant": "Thêm tổ chức",
+    "noTenants": "Không tìm thấy tổ chức nào.",
+    "status": "Trạng thái",
+    "slug": "Slug",
+    "tenantId": "ID Tổ chức",
+    "actions": "Hành động",
+    "manage": "Quản lý",
+    "confirmDeactivate": "Bạn có chắc chắn muốn hủy kích hoạt tổ chức này không? Người dùng sẽ không thể đăng nhập được nữa.",
+    "confirmActivate": "Bạn có chắc chắn muốn kích hoạt tổ chức này không?"
   }
 }

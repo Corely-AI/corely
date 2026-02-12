@@ -8,6 +8,7 @@ import {
   CreateTenantInputSchema,
   CreateTenantUserInputSchema,
   UpdateTenantUserRoleInputSchema,
+  UpdateTenantInputSchema,
 } from "@corely/contracts";
 import {
   buildUseCaseContext,
@@ -16,6 +17,7 @@ import {
 import { ListTenantUsersUseCase } from "../../application/use-cases/list-tenant-users.usecase";
 import { CreateTenantUserUseCase } from "../../application/use-cases/create-tenant-user.usecase";
 import { UpdateTenantUserRoleUseCase } from "../../application/use-cases/update-tenant-user-role.usecase";
+import { UpdateTenantUseCase } from "../../application/use-cases/update-tenant.usecase";
 import { GetTenantUseCase } from "../../application/use-cases/get-tenant.usecase";
 
 @Controller("platform/tenants")
@@ -30,6 +32,8 @@ export class TenantsController {
     private readonly createTenantUserUseCase: CreateTenantUserUseCase,
     @Inject(UpdateTenantUserRoleUseCase)
     private readonly updateTenantUserRoleUseCase: UpdateTenantUserRoleUseCase,
+    @Inject(UpdateTenantUseCase)
+    private readonly updateTenantUseCase: UpdateTenantUseCase,
     @Inject(GetTenantUseCase)
     private readonly getTenantUseCase: GetTenantUseCase
   ) {}
@@ -60,6 +64,14 @@ export class TenantsController {
       },
       ctx
     );
+  }
+
+  @Patch(":tenantId")
+  @RequirePermission("platform.tenants.write")
+  async update(@Param("tenantId") tenantId: string, @Body() body: unknown, @Req() req: Request) {
+    const input = UpdateTenantInputSchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    return await this.updateTenantUseCase.execute({ tenantId, input }, ctx);
   }
 
   @Get(":tenantId/users")

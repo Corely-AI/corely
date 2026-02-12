@@ -1,6 +1,10 @@
 {
   "common": {
     "active": "Active",
+    "inactive": "Inactive",
+    "suspended": "Suspended",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
     "appName": "Corely One ERP",
     "tagline": "Run your business, end-to-end.",
     "loading": "Loading...",
@@ -1458,5 +1462,19 @@
       "promptPoLabel": "Draft PO",
       "placeholder": "Ask the purchasing assistant anything..."
     }
+  },
+  "tenants": {
+    "title": "Tenants",
+    "description": "Manage tenant entitlements and settings.",
+    "listTitle": "Tenant list",
+    "addTenant": "Add tenant",
+    "noTenants": "No tenants found.",
+    "status": "Status",
+    "slug": "Slug",
+    "tenantId": "Tenant ID",
+    "actions": "Actions",
+    "manage": "Manage",
+    "confirmDeactivate": "Are you sure you want to deactivate this tenant? Users will no longer be able to log in.",
+    "confirmActivate": "Are you sure you want to activate this tenant?"
   }
 }

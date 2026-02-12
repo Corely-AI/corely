@@ -1,6 +1,10 @@
 {
   "common": {
     "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "suspended": "Suspendiert",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
     "appName": "Corely One ERP",
     "tagline": "Ihr Geschäft, von Anfang bis Ende.",
     "loading": "Wird geladen...",
@@ -1410,5 +1414,19 @@
       "promptPoLabel": "Bestellung entwerfen",
       "placeholder": "Fragen Sie den Einkaufsassistenten alles..."
     }
+  },
+  "tenants": {
+    "title": "Mandanten",
+    "description": "Verwalte Mandanten-Berechtigungen und Einstellungen.",
+    "listTitle": "Mandantenliste",
+    "addTenant": "Mandant hinzufügen",
+    "noTenants": "Keine Mandanten gefunden.",
+    "status": "Status",
+    "slug": "Slug",
+    "tenantId": "Mandanten-ID",
+    "actions": "Aktionen",
+    "manage": "Verwalten",
+    "confirmDeactivate": "Sind Sie sicher, dass Sie diesen Mandanten deaktivieren möchten? Benutzer können sich nicht mehr anmelden.",
+    "confirmActivate": "Sind Sie sicher, dass Sie diesen Mandanten aktivieren möchten?"
   }
 }

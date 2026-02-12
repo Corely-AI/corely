@@ -141,15 +141,21 @@ export const UserDtoSchema = z.object({
 });
 export type UserDto = z.infer<typeof UserDtoSchema>;
 
+export const TenantStatusSchema = z.enum(["ACTIVE", "SUSPENDED", "ARCHIVED"]);
+export type TenantStatus = z.infer<typeof TenantStatusSchema>;
+
 export const TenantDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
+  status: TenantStatusSchema,
 });
 export type TenantDto = z.infer<typeof TenantDtoSchema>;
 
-export const TenantStatusSchema = z.enum(["ACTIVE", "SUSPENDED", "ARCHIVED"]);
-export type TenantStatus = z.infer<typeof TenantStatusSchema>;
+export const UpdateTenantInputSchema = z.object({
+  status: TenantStatusSchema,
+});
+export type UpdateTenantInput = z.infer<typeof UpdateTenantInputSchema>;
 
 export const ListTenantsOutputSchema = z.object({
   tenants: z.array(TenantDtoSchema),
