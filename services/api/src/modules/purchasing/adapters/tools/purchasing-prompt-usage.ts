@@ -1,14 +1,9 @@
+import { type PromptRenderResult } from "@corely/prompts";
 import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
-
-type RenderedPromptMeta = {
-  promptId: string;
-  promptVersion: number;
-  promptHash: string;
-};
 
 export const logPurchasingPromptUsage = (params: {
   promptUsageLogger: PromptUsageLogger;
-  prompt: RenderedPromptMeta;
+  prompt: Pick<PromptRenderResult, "promptId" | "promptVersion" | "promptHash">;
   modelId: string;
   tenantId: string;
   userId: string;
