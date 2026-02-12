@@ -13,7 +13,9 @@ export function useUpdateTenant() {
     },
     onSuccess: (updatedTenant) => {
       queryClient.setQueryData(tenantsQueryKeys.all(), (old: TenantDto[] | undefined) => {
-        if (!old) {return old;}
+        if (!old) {
+          return old;
+        }
         return old.map((t) => (t.id === updatedTenant.id ? updatedTenant : t));
       });
       return queryClient.invalidateQueries({ queryKey: tenantsQueryKeys.list() });
