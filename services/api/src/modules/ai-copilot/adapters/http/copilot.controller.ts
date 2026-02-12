@@ -57,6 +57,7 @@ export class CopilotController {
 
     const ctx = toUseCaseContext(req as any);
     const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
+    const toolTenantId = ctx.tenantId ?? tenantId;
     const userId = ctx.userId || "unknown";
     const requestId = ctx.requestId || "unknown";
     const workspaceId = ctx.workspaceId ?? tenantId;
@@ -77,6 +78,7 @@ export class CopilotController {
       modelId: this.env.AI_MODEL_ID,
       modelProvider: this.env.AI_MODEL_PROVIDER,
       trigger: body.trigger,
+      toolTenantId,
     });
   }
 
@@ -160,6 +162,7 @@ export class CopilotController {
     }
     const ctx = toUseCaseContext(req as any);
     const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
+    const toolTenantId = ctx.tenantId ?? tenantId;
     const userId = ctx.userId || "unknown";
     const requestId = ctx.requestId || "unknown";
     const workspaceId = ctx.workspaceId ?? tenantId;
@@ -180,6 +183,7 @@ export class CopilotController {
       modelId: this.env.AI_MODEL_ID,
       modelProvider: this.env.AI_MODEL_PROVIDER,
       trigger: body.trigger,
+      toolTenantId,
     });
   }
 

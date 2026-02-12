@@ -24,6 +24,13 @@ import { type CopilotTaskStateTracker } from "../services/copilot-task-state.ser
 import { type WorkspaceKind } from "@corely/prompts";
 
 const ACTION_KEY = "copilot.chat";
+const isUniqueConstraintError = (error: unknown): boolean =>
+  Boolean(
+    error &&
+    typeof error === "object" &&
+    "code" in (error as Record<string, unknown>) &&
+    (error as { code?: string }).code === "P2002"
+  );
 
 export class StreamCopilotChatUseCase {
   constructor(
@@ -57,6 +64,7 @@ export class StreamCopilotChatUseCase {
     modelId?: string;
     modelProvider?: string;
     trigger?: string;
+    toolTenantId?: string;
   }): Promise<void> {
     const { tenantId, userId, idempotencyKey } = params;
     const incomingMessages = this.ensureMessageIds(
@@ -108,9 +116,9 @@ export class StreamCopilotChatUseCase {
       return;
     }
 
-    const runId = params.runId || nanoid();
+    let runId = params.runId || nanoid();
     const turnId = nanoid();
-    const tools = await this.toolRegistry.listForTenant(tenantId);
+    const tools = await this.toolRegistry.listForTenant(params.toolTenantId ?? tenantId);
 
     const turnSpan = this.observability.startTurnTrace({
       traceName: `copilot.turn:${params.intent ?? "general"}`,
@@ -147,13 +155,28 @@ export class StreamCopilotChatUseCase {
 
     const existingRun = await this.agentRuns.findById({ tenantId, runId });
     if (!existingRun) {
-      await this.agentRuns.create({
-        id: runId,
-        tenantId,
-        createdByUserId: userId,
-        status: "running",
-        traceId: turnSpan.traceId,
-      });
+      try {
+        await this.agentRuns.create({
+          id: runId,
+          tenantId,
+          createdByUserId: userId,
+          status: "running",
+          traceId: turnSpan.traceId,
+        });
+      } catch (error) {
+        if (isUniqueConstraintError(error)) {
+          runId = nanoid();
+          await this.agentRuns.create({
+            id: runId,
+            tenantId,
+            createdByUserId: userId,
+            status: "running",
+            traceId: turnSpan.traceId,
+          });
+        } else {
+          throw error;
+        }
+      }
     }
 
     const stored = await this.chatStore.load({ chatId: runId, tenantId });
