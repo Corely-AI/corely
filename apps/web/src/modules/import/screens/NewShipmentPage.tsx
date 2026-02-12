@@ -175,8 +175,38 @@ export default function NewShipmentPage() {
     queryFn: () => catalogApi.listItems({ type: "PRODUCT", status: "ACTIVE", pageSize: 200 }),
   });
 
-  const suppliers = suppliersQuery.data?.suppliers ?? [];
-  const products = productsQuery.data?.items ?? [];
+  const suppliers = useMemo(
+    () =>
+      (suppliersQuery.data?.suppliers ?? []).flatMap((supplier) => {
+        if (!supplier.id) {
+          return [];
+        }
+        return [
+          {
+            id: supplier.id,
+            displayName: supplier.displayName ?? supplier.id,
+          },
+        ];
+      }),
+    [suppliersQuery.data?.suppliers]
+  );
+
+  const products = useMemo(
+    () =>
+      (productsQuery.data?.items ?? []).flatMap((product) => {
+        if (!product.id) {
+          return [];
+        }
+        return [
+          {
+            id: product.id,
+            name: product.name ?? product.code ?? product.id,
+            hsCode: product.hsCode ?? null,
+          },
+        ];
+      }),
+    [productsQuery.data?.items]
+  );
 
   const productById = useMemo(() => {
     const map = new Map<string, (typeof products)[number]>();
