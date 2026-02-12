@@ -34,9 +34,10 @@ import {
   LotDetailPage,
   ExpiryDashboardPage,
 } from "../../modules/inventory";
-import { ShipmentsPage, ShipmentDetailPage } from "../../modules/import";
+import { ShipmentsPage, ShipmentDetailPage, NewShipmentPage } from "../../modules/import";
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
 import { RequireCapability } from "../../shared/workspaces/RequireCapability";
+import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 
 export const capabilityRoutes = (
   <>
@@ -348,7 +349,19 @@ export const capabilityRoutes = (
       path="/import/shipments"
       element={
         <RequireCapability capability="import.basic">
-          <ShipmentsPage />
+          <RequirePermission permission="import.shipments.read">
+            <ShipmentsPage />
+          </RequirePermission>
+        </RequireCapability>
+      }
+    />
+    <Route
+      path="/import/shipments/new"
+      element={
+        <RequireCapability capability="import.basic">
+          <RequirePermission permission="import.shipments.manage">
+            <NewShipmentPage />
+          </RequirePermission>
         </RequireCapability>
       }
     />
@@ -356,7 +369,9 @@ export const capabilityRoutes = (
       path="/import/shipments/:id"
       element={
         <RequireCapability capability="import.basic">
-          <ShipmentDetailPage />
+          <RequirePermission permission="import.shipments.read">
+            <ShipmentDetailPage />
+          </RequirePermission>
         </RequireCapability>
       }
     />

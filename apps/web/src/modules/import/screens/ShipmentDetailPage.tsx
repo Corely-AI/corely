@@ -12,8 +12,13 @@ export default function ShipmentDetailPage() {
 
   const { data: shipment, isLoading } = useQuery({
     queryKey: ["import", "shipments", "detail", id],
-    queryFn: () => importShipmentsApi.getShipment(id!),
-    enabled: !!id,
+    queryFn: async () => {
+      if (!id || id === "new") {
+        throw new Error("Invalid shipment id");
+      }
+      return importShipmentsApi.getShipment(id);
+    },
+    enabled: Boolean(id) && id !== "new",
   });
 
   const getStatusColor = (
@@ -78,6 +83,9 @@ export default function ShipmentDetailPage() {
         <div className="flex items-center gap-3 flex-1">
           <Ship className="h-8 w-8 text-muted-foreground" />
           <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Import / Shipments / {shipment.shipmentNumber || shipment.id.slice(0, 8)}
+            </p>
             <h1 className="text-h1 text-foreground">
               {shipment.shipmentNumber || `Shipment ${shipment.id.slice(0, 8)}`}
             </h1>

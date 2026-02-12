@@ -121,6 +121,7 @@ export class WorkspaceTemplateService {
       "catalog.basic": false,
       "inventory.warehouses": false,
       "inventory.serialTracking": false,
+      "import.basic": false,
 
       // Finance: Simplified
       "finance.costCenters": false,
@@ -285,6 +286,7 @@ export class WorkspaceTemplateService {
       "catalog.basic": true,
       "inventory.warehouses": false, // Can be enabled separately
       "inventory.serialTracking": false, // Can be enabled separately
+      "import.basic": true,
 
       // Finance: Advanced
       "finance.costCenters": true,
@@ -457,6 +459,7 @@ export class WorkspaceTemplateService {
       "parties", // customers
       "sales", // quotes, projects
       "tax",
+      "import",
       "rentals",
       "portfolio",
       "website",

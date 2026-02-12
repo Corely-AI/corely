@@ -1,8 +1,29 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { AppSidebar } from "./AppSidebar";
+
+let navigationGroupsState = [
+  {
+    id: "tax",
+    defaultLabel: "Tax",
+    items: [
+      {
+        id: "tax-filings",
+        label: "Filings",
+        route: "/tax/filings",
+        icon: "Files",
+      },
+      {
+        id: "tax-payments",
+        label: "Payments",
+        route: "/tax/payments",
+        icon: "CreditCard",
+      },
+    ],
+  },
+];
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -27,26 +48,7 @@ vi.mock("@/shared/workspaces/workspace-config-provider", () => ({
   useWorkspaceConfig: () => ({
     isLoading: false,
     error: null,
-    navigationGroups: [
-      {
-        id: "tax",
-        defaultLabel: "Tax",
-        items: [
-          {
-            id: "tax-filings",
-            label: "Filings",
-            route: "/tax/filings",
-            icon: "Files",
-          },
-          {
-            id: "tax-payments",
-            label: "Payments",
-            route: "/tax/payments",
-            icon: "CreditCard",
-          },
-        ],
-      },
-    ],
+    navigationGroups: navigationGroupsState,
   }),
 }));
 
@@ -75,6 +77,29 @@ vi.mock("@/shared/lib/permissions", () => ({
 }));
 
 describe("AppSidebar", () => {
+  beforeEach(() => {
+    navigationGroupsState = [
+      {
+        id: "tax",
+        defaultLabel: "Tax",
+        items: [
+          {
+            id: "tax-filings",
+            label: "Filings",
+            route: "/tax/filings",
+            icon: "Files",
+          },
+          {
+            id: "tax-payments",
+            label: "Payments",
+            route: "/tax/payments",
+            icon: "CreditCard",
+          },
+        ],
+      },
+    ];
+  });
+
   it("hides tax payments when payments are disabled", () => {
     render(
       <MemoryRouter>
@@ -84,5 +109,30 @@ describe("AppSidebar", () => {
 
     expect(screen.queryByTestId("nav-tax-payments")).not.toBeInTheDocument();
     expect(screen.getByTestId("nav-tax-filings")).toBeInTheDocument();
+  });
+
+  it("keeps import shipments menu active on shipment detail deep links", () => {
+    navigationGroupsState = [
+      {
+        id: "import",
+        defaultLabel: "Import",
+        items: [
+          {
+            id: "import-shipments",
+            label: "Shipments",
+            route: "/import/shipments",
+            icon: "Package",
+          },
+        ],
+      },
+    ];
+
+    render(
+      <MemoryRouter initialEntries={["/import/shipments/shp_123"]}>
+        <AppSidebar />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByTestId("nav-import-shipments")).toHaveClass("bg-sidebar-accent");
   });
 });

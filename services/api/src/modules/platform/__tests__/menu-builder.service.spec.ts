@@ -160,6 +160,59 @@ describe("MenuBuilderService", () => {
     expect(result.items).toEqual([]);
   });
 
+  it("shows import shipments when capability and permission requirements pass", async () => {
+    manifests["import"] = createManifest("import", [
+      createMenuItem({
+        id: "import-shipments",
+        route: "/import/shipments",
+        requiresCapabilities: ["import.basic"],
+        requiresPermissions: ["import.shipments.read"],
+      }),
+    ]);
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["import"]), new Set(["import.basic"]))
+    );
+
+    const result = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(["import.shipments.read"]),
+      scope: "web",
+      capabilityFilter: new Set(["import.basic"]),
+      capabilityKeys: new Set(["import.basic"]),
+    });
+
+    expect(result.groups).toHaveLength(1);
+    expect(result.groups[0].appId).toBe("import");
+    expect(result.items.map((item) => item.id)).toEqual(["import-shipments"]);
+  });
+
+  it("hides import shipments when workspace capability is disabled", async () => {
+    manifests["import"] = createManifest("import", [
+      createMenuItem({
+        id: "import-shipments",
+        route: "/import/shipments",
+        requiresCapabilities: ["import.basic"],
+        requiresPermissions: ["import.shipments.read"],
+      }),
+    ]);
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["import"]), new Set(["import.basic"]))
+    );
+
+    const result = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(["import.shipments.read"]),
+      scope: "web",
+      capabilityFilter: new Set(),
+      capabilityKeys: new Set(["import.basic"]),
+    });
+
+    expect(result.groups).toEqual([]);
+    expect(result.items).toEqual([]);
+  });
+
   it("sorts settings items last within each app group", async () => {
     manifests["sales"] = createManifest("sales", [
       createMenuItem({

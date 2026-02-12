@@ -20,6 +20,7 @@ import { rentalsAppManifest } from "../../../rentals/rentals.manifest";
 import { websiteAppManifest } from "../../../website/website.manifest";
 import { classesAppManifest } from "../../../classes/classes.manifest";
 import { catalogAppManifest } from "../../../catalog/catalog.manifest";
+import { importAppManifest } from "../../../import/import.manifest";
 
 /**
  * App Registry
@@ -107,5 +108,6 @@ export class AppRegistry implements AppRegistryPort {
     this.register(websiteAppManifest);
     this.register(classesAppManifest);
     this.register(catalogAppManifest);
+    this.register(importAppManifest);
   }
 }
