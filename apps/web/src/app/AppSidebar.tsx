@@ -39,6 +39,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
     error: configError,
     navigationGroups: visibleGroups,
   } = useWorkspaceConfig();
+  const isHostScope = user?.activeTenantId === null;
   const hasTaxNav = React.useMemo(
     () => visibleGroups.some((group) => group.items.some((item) => item.route?.startsWith("/tax"))),
     [visibleGroups]
@@ -47,16 +48,30 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
   const paymentsEnabled = taxCapabilities?.paymentsEnabled ?? false;
 
   const navigationGroups = React.useMemo(() => {
-    if (paymentsEnabled) {
-      return visibleGroups;
+    const groups = paymentsEnabled
+      ? visibleGroups
+      : visibleGroups
+          .map((group) => ({
+            ...group,
+            items: group.items.filter((item) => item.id !== "tax-payments"),
+          }))
+          .filter((group) => group.items.length > 0);
+
+    // Platform navigation is host-only.
+    if (isHostScope) {
+      return groups;
     }
-    return visibleGroups
+
+    return groups
       .map((group) => ({
         ...group,
-        items: group.items.filter((item) => item.id !== "tax-payments"),
+        items: group.items.filter((item) => {
+          const route = item.route ?? "";
+          return !route.startsWith("/settings/platform");
+        }),
       }))
       .filter((group) => group.items.length > 0);
-  }, [paymentsEnabled, visibleGroups]);
+  }, [isHostScope, paymentsEnabled, visibleGroups]);
 
   const changeLanguage = (lang: string) => {
     void i18n.changeLanguage(lang);

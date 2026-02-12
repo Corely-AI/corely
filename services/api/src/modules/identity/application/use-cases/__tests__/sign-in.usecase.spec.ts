@@ -10,10 +10,12 @@ import { MockAudit } from "../../../testkit/mocks/mock-audit";
 import { FakeIdGenerator } from "@shared/testkit/fakes/fake-id-generator";
 import { FakeClock } from "@shared/testkit/fakes/fake-clock";
 import { MockIdempotencyStoragePort } from "@shared/testkit/mocks/mock-idempotency-port";
+import { FakeTenantRepository } from "../../../testkit/fakes/fake-tenant-repo";
 import { buildSignInInput } from "../../../testkit/builders/build-signin-input";
 import { User } from "../../../domain/entities/user.entity";
 import { Email } from "../../../domain/value-objects/email.vo";
 import { Membership } from "../../../domain/entities/membership.entity";
+import { Tenant } from "../../../domain/entities/tenant.entity";
 import { ForbiddenError } from "@shared/errors/domain-errors";
 
 let useCase: SignInUseCase;
@@ -23,10 +25,12 @@ let refreshTokenRepo: FakeRefreshTokenRepository;
 let outbox: MockOutbox;
 let audit: MockAudit;
 let passwordHasher: MockPasswordHasher;
+let tenantRepo: FakeTenantRepository;
 
 const seedUser = async () => {
   const email = Email.create("user@example.com");
   const passwordHash = await passwordHasher.hash("password123");
+  await tenantRepo.create(Tenant.create("tenant-1", "Tenant 1", "tenant-1"));
   await userRepo.create(User.create("user-1", email, passwordHash, null));
   await membershipRepo.create(Membership.create("mem-1", "tenant-1", "user-1", "role-1"));
 };
@@ -38,11 +42,13 @@ beforeEach(async () => {
   outbox = new MockOutbox();
   audit = new MockAudit();
   passwordHasher = new MockPasswordHasher();
+  tenantRepo = new FakeTenantRepository();
 
   await seedUser();
 
   useCase = new SignInUseCase(
     userRepo,
+    tenantRepo,
     membershipRepo,
     passwordHasher,
     new MockTokenService(),

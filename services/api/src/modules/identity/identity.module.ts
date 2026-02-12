@@ -60,6 +60,7 @@ import { UpdateRolePermissionsUseCase } from "./application/use-cases/update-rol
 import { SyncRolePermissionsFromManifestsUseCase } from "./application/use-cases/sync-role-permissions-from-manifests.usecase";
 import { ListTenantsUseCase } from "./application/use-cases/list-tenants.usecase";
 import { CreateTenantUseCase } from "./application/use-cases/create-tenant.usecase";
+import { UpdateTenantUseCase } from "./application/use-cases/update-tenant.usecase";
 import { ListTenantUsersUseCase } from "./application/use-cases/list-tenant-users.usecase";
 import { CreateTenantUserUseCase } from "./application/use-cases/create-tenant-user.usecase";
 import { UpdateTenantUserRoleUseCase } from "./application/use-cases/update-tenant-user-role.usecase";
@@ -176,6 +177,7 @@ import { TenantRoleSeederService } from "./application/services/tenant-role-seed
     SyncRolePermissionsFromManifestsUseCase,
     ListTenantsUseCase,
     CreateTenantUseCase,
+    UpdateTenantUseCase,
     ListTenantUsersUseCase,
     CreateTenantUserUseCase,
     UpdateTenantUserRoleUseCase,

@@ -3,6 +3,7 @@ import {
   ConflictError,
   ForbiddenError,
   NotFoundError,
+  RateLimitError,
   UnauthorizedError,
   type UseCaseError,
   ValidationError,
@@ -21,6 +22,8 @@ export const toHttpException = (error: UseCaseError): HttpException => {
     status = HttpStatus.NOT_FOUND;
   } else if (error instanceof ConflictError) {
     status = HttpStatus.CONFLICT;
+  } else if (error instanceof RateLimitError) {
+    status = HttpStatus.TOO_MANY_REQUESTS;
   }
 
   return new HttpException(

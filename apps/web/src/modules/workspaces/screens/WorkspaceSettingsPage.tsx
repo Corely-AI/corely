@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
@@ -22,9 +22,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@corely/ui";
+import { useAuth } from "@/lib/auth-provider";
 
 export const WorkspaceSettingsPage: React.FC = () => {
   const { activeWorkspace, activeWorkspaceId, refresh } = useWorkspace();
+  const { user } = useAuth();
   const { config, refresh: refreshConfig } = useWorkspaceConfig();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -43,6 +45,29 @@ export const WorkspaceSettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const tenantName = useMemo(() => {
+    if (!user) {
+      return "";
+    }
+
+    const byWorkspace = activeWorkspaceId
+      ? user.memberships.find(
+          (membership) =>
+            membership.workspaceId === activeWorkspaceId ||
+            membership.tenantId === activeWorkspaceId
+        )
+      : undefined;
+
+    if (byWorkspace?.tenantName) {
+      return byWorkspace.tenantName;
+    }
+
+    const byTenant = user.activeTenantId
+      ? user.memberships.find((membership) => membership.tenantId === user.activeTenantId)
+      : undefined;
+
+    return byTenant?.tenantName ?? "";
+  }, [activeWorkspaceId, user]);
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -177,6 +202,10 @@ export const WorkspaceSettingsPage: React.FC = () => {
               value={form.name}
               onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Tenant name</Label>
+            <Input value={tenantName} readOnly />
           </div>
           <div className="space-y-2">
             <Label>Legal name</Label>

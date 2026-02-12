@@ -15,21 +15,8 @@ import type {
   StalledQuotesCard,
 } from "@corely/contracts";
 import { type DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
+import { buildToolCtx, validationError } from "../../../ai-copilot/infrastructure/tools/tool-utils";
 import { type SalesApplication } from "../../application/sales.application";
-
-const validationError = (issues: unknown) => ({
-  ok: false,
-  code: "VALIDATION_ERROR",
-  message: "Invalid input for tool call",
-  details: issues,
-});
-
-const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?: string) => ({
-  tenantId,
-  userId,
-  correlationId: toolCallId ?? runId,
-  requestId: toolCallId,
-});
 
 export const buildSalesTools = (app: SalesApplication): DomainToolPort[] => [
   {
@@ -37,7 +24,7 @@ export const buildSalesTools = (app: SalesApplication): DomainToolPort[] => [
     description: "Draft a sales quote proposal from free-form text.",
     kind: "server",
     inputSchema: SalesCreateQuoteFromTextInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = SalesCreateQuoteFromTextInputSchema.safeParse(input);
       if (!parsed.success) {
         return validationError(parsed.error.flatten());
@@ -138,7 +125,7 @@ export const buildSalesTools = (app: SalesApplication): DomainToolPort[] => [
     description: "Summarize a quote or deal with risks and next steps.",
     kind: "server",
     inputSchema: SalesSummarizeDealOrQuoteInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = SalesSummarizeDealOrQuoteInputSchema.safeParse(input);
       if (!parsed.success) {
         return validationError(parsed.error.flatten());
@@ -146,7 +133,7 @@ export const buildSalesTools = (app: SalesApplication): DomainToolPort[] => [
       if (parsed.data.quoteId) {
         const result = await app.getQuote.execute(
           { quoteId: parsed.data.quoteId },
-          buildCtx(tenantId, userId, toolCallId, runId)
+          buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
         );
         if ("error" in result) {
           return {
@@ -225,7 +212,7 @@ export const buildSalesTools = (app: SalesApplication): DomainToolPort[] => [
     description: "Detect quotes that have been sent but not responded to.",
     kind: "server",
     inputSchema: SalesDetectStalledQuotesInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = SalesDetectStalledQuotesInputSchema.safeParse(input);
       if (!parsed.success) {
         return validationError(parsed.error.flatten());
@@ -236,7 +223,7 @@ export const buildSalesTools = (app: SalesApplication): DomainToolPort[] => [
           fromDate: parsed.data.fromDate,
           toDate: parsed.data.toDate,
         },
-        buildCtx(tenantId, userId, toolCallId, runId)
+        buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
       );
       if ("error" in list) {
         return {

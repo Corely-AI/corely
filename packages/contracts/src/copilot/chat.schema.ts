@@ -48,6 +48,7 @@ export const CopilotToolInvocationSchema = z.object({
 
 export const CopilotDataRunSchema = z.object({
   runId: z.string(),
+  threadId: z.string().optional(),
 });
 
 export const CopilotDataMessageIdSchema = z.object({
@@ -105,6 +106,7 @@ export type CopilotUIMessage = z.infer<typeof CopilotUIMessageSchema>;
 
 export const CopilotChatRequestSchema = z.object({
   id: z.string().optional(),
+  threadId: z.string().optional(),
   message: CopilotUIMessageSchema.optional(),
   messages: z.array(CopilotUIMessageSchema).optional(),
   metadata: z.record(z.any()).optional(),

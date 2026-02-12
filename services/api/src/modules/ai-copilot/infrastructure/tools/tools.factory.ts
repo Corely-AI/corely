@@ -13,6 +13,7 @@ export function buildAiTools(
     audit: AuditPort;
     outbox: OutboxPort;
     tenantId: string;
+    workspaceId?: string;
     runId: string;
     userId: string;
     observability: ObservabilityPort;
@@ -58,6 +59,7 @@ export function buildAiTools(
         try {
           const result = await t.execute({
             tenantId: deps.tenantId,
+            workspaceId: deps.workspaceId,
             userId: deps.userId,
             input,
             toolCallId,

@@ -19,6 +19,10 @@ import {
   type IdempotencyStoragePort,
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
 } from "../../../../shared/ports/idempotency-storage.port";
+import {
+  type TenantRepositoryPort,
+  TENANT_REPOSITORY_TOKEN,
+} from "../ports/tenant-repository.port";
 import { type ClockPort, CLOCK_PORT_TOKEN } from "../../../../shared/ports/clock.port";
 import {
   type IdGeneratorPort,
@@ -54,6 +58,7 @@ const SIGN_IN_ACTION = "identity.sign_in";
 export class SignInUseCase {
   constructor(
     @Inject(USER_REPOSITORY_TOKEN) private readonly userRepo: UserRepositoryPort,
+    @Inject(TENANT_REPOSITORY_TOKEN) private readonly tenantRepo: TenantRepositoryPort,
     @Inject(MEMBERSHIP_REPOSITORY_TOKEN) private readonly membershipRepo: MembershipRepositoryPort,
     @Inject(PASSWORD_HASHER_TOKEN) private readonly passwordHasher: PasswordHasherPort,
     @Inject(TOKEN_SERVICE_TOKEN) private readonly tokenService: TokenServicePort,
@@ -94,6 +99,14 @@ export class SignInUseCase {
 
     const selectedTenantId =
       input.tenantId === undefined ? memberships[0].getTenantId() : input.tenantId;
+
+    if (selectedTenantId) {
+      const tenant = await this.tenantRepo.findById(selectedTenantId);
+      if (!tenant || !tenant.isActive()) {
+        throw new ForbiddenError("Tenant is inactive or suspended");
+      }
+    }
+
     if (!memberships.some((m) => m.getTenantId() === selectedTenantId)) {
       throw new ForbiddenError("User is not a member of the specified tenant");
     }

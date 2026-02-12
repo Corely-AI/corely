@@ -17,11 +17,12 @@ import {
   getDefaultInvoiceFormValues,
   type InvoiceFormData,
 } from "../schemas/invoice-form.schema";
-import type { UpdateInvoiceInput } from "@corely/contracts";
+import type { InvoiceEmailDraftLanguage, UpdateInvoiceInput } from "@corely/contracts";
 import { InvoiceFooter } from "../components/InvoiceFooter";
 import { SendInvoiceDialog } from "../components/SendInvoiceDialog";
 import { InvoicePaymentDialog } from "../components/InvoicePaymentDialog";
 import { InvoiceDetailHeader } from "../components/InvoiceDetailHeader";
+import { InvoiceCopilotPanel } from "../components/InvoiceCopilotPanel";
 import { invoiceQueryKeys } from "../queries";
 import { generateInvoiceNumber } from "../utils/invoice-generators";
 
@@ -80,6 +81,16 @@ export default function InvoiceDetailPage() {
   });
 
   const { handleSubmit, reset, watch, setValue, getValues } = methods;
+  const defaultCopilotLanguage = useMemo<InvoiceEmailDraftLanguage>(() => {
+    const language = i18n.resolvedLanguage ?? i18n.language;
+    if (language?.startsWith("de")) {
+      return "de";
+    }
+    if (language?.startsWith("vi")) {
+      return "vi";
+    }
+    return "en";
+  }, [i18n.language, i18n.resolvedLanguage]);
 
   // Prepare additional customer options from invoice data
   const additionalCustomerOptions = useMemo<CustomerOption[]>(() => {
@@ -622,6 +633,13 @@ export default function InvoiceDetailPage() {
           dueCents={invoice.totals?.dueCents ?? 0}
           locale={i18n.t("common.locale")}
           currency={invoice.currency}
+        />
+
+        <InvoiceCopilotPanel
+          invoiceId={invoice.id}
+          invoiceStatus={invoice.status}
+          amountDueCents={invoice.totals?.dueCents ?? 0}
+          defaultLanguage={defaultCopilotLanguage}
         />
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
