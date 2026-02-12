@@ -17,7 +17,104 @@ enum SalesOrderStatus {
   @@schema("commerce")
 }
 
+model SalesQuote {
+  id                      String           @id @default(cuid())
+  tenantId                String
+  number                  String?
+  status                  SalesQuoteStatus @default(DRAFT)
+  customerPartyId         String
+  customerContactPartyId  String?
+  issueDate               DateTime?        @db.Date
+  validUntilDate          DateTime?        @db.Date
+  currency                String           @db.VarChar(3)
+  paymentTerms            String?
+  notes                   String?
+  subtotalCents           Int
+  discountCents           Int
+  taxCents                Int
+  totalCents              Int
+  sentAt                  DateTime?        @db.Timestamptz(6)
+  acceptedAt              DateTime?        @db.Timestamptz(6)
+  rejectedAt              DateTime?        @db.Timestamptz(6)
+  convertedToSalesOrderId String?
+  convertedToInvoiceId    String?
+  createdAt               DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime         @updatedAt @db.Timestamptz(6)
 
+  lines SalesQuoteLine[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, customerPartyId])
+  @@index([tenantId, createdAt])
+  @@unique([tenantId, number])
+  @@schema("commerce")
+}
+
+model SalesQuoteLine {
+  id             String @id @default(cuid())
+  quoteId        String
+  description    String
+  quantity       Int
+  unitPriceCents Int
+  discountCents  Int?
+  taxCode        String?
+  revenueCategory String?
+  sortOrder      Int?
+
+  quote SalesQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  @@index([quoteId])
+  @@schema("commerce")
+}
+
+model SalesOrder {
+  id                     String           @id @default(cuid())
+  tenantId               String
+  number                 String?
+  status                 SalesOrderStatus @default(DRAFT)
+  customerPartyId        String
+  customerContactPartyId String?
+  orderDate              DateTime?        @db.Date
+  deliveryDate           DateTime?        @db.Date
+  currency               String           @db.VarChar(3)
+  notes                  String?
+  subtotalCents          Int
+  discountCents          Int
+  taxCents               Int
+  totalCents             Int
+  confirmedAt            DateTime?        @db.Timestamptz(6)
+  fulfilledAt            DateTime?        @db.Timestamptz(6)
+  canceledAt             DateTime?        @db.Timestamptz(6)
+  sourceQuoteId          String?
+  sourceInvoiceId        String?
+  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
+
+  lines SalesOrderLine[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, customerPartyId])
+  @@index([tenantId, createdAt])
+  @@unique([tenantId, number])
+  @@schema("commerce")
+}
+
+model SalesOrderLine {
+  id              String @id @default(cuid())
+  orderId         String
+  description     String
+  quantity        Int
+  unitPriceCents  Int
+  discountCents   Int?
+  taxCode         String?
+  revenueCategory String?
+  sortOrder       Int?
+
+  order SalesOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@schema("commerce")
+}
 
 model SalesSettings {
   id                             String   @id @default(cuid())

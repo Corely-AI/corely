@@ -18,12 +18,30 @@ export class PrismaQuoteRepositoryAdapter implements QuoteRepositoryPort {
     return this.prismaService;
   }
 
+  private getSalesQuoteDelegate() {
+    if (!this.prisma.salesQuote) {
+      throw new Error(
+        'Prisma delegate "salesQuote" is unavailable. Regenerate Prisma client and apply sales quote/order migrations.'
+      );
+    }
+    return this.prisma.salesQuote;
+  }
+
+  private getSalesQuoteLineDelegate() {
+    if (!this.prisma.salesQuoteLine) {
+      throw new Error(
+        'Prisma delegate "salesQuoteLine" is unavailable. Regenerate Prisma client and apply sales quote/order migrations.'
+      );
+    }
+    return this.prisma.salesQuoteLine;
+  }
+
   async save(tenantId: string, quote: QuoteAggregate): Promise<void> {
     if (tenantId !== quote.tenantId) {
       throw new Error("Tenant mismatch when saving quote");
     }
 
-    await this.prisma.salesQuote.upsert({
+    await this.getSalesQuoteDelegate().upsert({
       where: { id: quote.id },
       update: {
         number: quote.number,
@@ -85,7 +103,7 @@ export class PrismaQuoteRepositoryAdapter implements QuoteRepositoryPort {
     });
 
     const lineIds = quote.lineItems.map((line) => line.id);
-    await this.prisma.salesQuoteLine.deleteMany({
+    await this.getSalesQuoteLineDelegate().deleteMany({
       where: {
         quoteId: quote.id,
         id: { notIn: lineIds },
@@ -93,7 +111,7 @@ export class PrismaQuoteRepositoryAdapter implements QuoteRepositoryPort {
     });
 
     for (const line of quote.lineItems) {
-      await this.prisma.salesQuoteLine.upsert({
+      await this.getSalesQuoteLineDelegate().upsert({
         where: { id: line.id },
         update: {
           description: line.description,
@@ -124,7 +142,7 @@ export class PrismaQuoteRepositoryAdapter implements QuoteRepositoryPort {
   }
 
   async findById(tenantId: string, quoteId: string): Promise<QuoteAggregate | null> {
-    const data = await this.prisma.salesQuote.findFirst({
+    const data = await this.getSalesQuoteDelegate().findFirst({
       where: { id: quoteId, tenantId },
       include: { lines: true },
     });
@@ -194,7 +212,7 @@ export class PrismaQuoteRepositoryAdapter implements QuoteRepositoryPort {
       }
     }
 
-    const results = await this.prisma.salesQuote.findMany({
+    const results = await this.getSalesQuoteDelegate().findMany({
       where,
       take: pageSize,
       skip: cursor ? 1 : 0,
@@ -249,7 +267,7 @@ export class PrismaQuoteRepositoryAdapter implements QuoteRepositoryPort {
   }
 
   async isQuoteNumberTaken(tenantId: string, number: string): Promise<boolean> {
-    const existing = await this.prisma.salesQuote.findFirst({
+    const existing = await this.getSalesQuoteDelegate().findFirst({
       where: { tenantId, number },
       select: { id: true },
     });
