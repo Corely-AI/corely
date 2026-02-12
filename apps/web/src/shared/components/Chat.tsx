@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { Badge } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
@@ -36,6 +36,11 @@ export interface ChatProps {
   suggestions?: Suggestion[];
   emptyStateTitle?: string;
   emptyStateDescription?: string;
+  runId?: string;
+  runIdMode?: "persisted" | "controlled";
+  onRunIdResolved?: (runId: string) => void;
+  onConversationUpdated?: () => void;
+  focusMessageId?: string | null;
 }
 
 export function Chat({
@@ -45,20 +50,34 @@ export function Chat({
   suggestions = [],
   emptyStateTitle,
   emptyStateDescription,
+  runId: controlledRunId,
+  runIdMode = "persisted",
+  onRunIdResolved,
+  onConversationUpdated,
+  focusMessageId,
 }: ChatProps) {
   const { t } = useTranslation();
   const [streamEventStarted, setStreamEventStarted] = useState(false);
   const [toolRequestPending, setToolRequestPending] = useState(false);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+  const previousStatusRef = useRef<string | undefined>(undefined);
 
-  const handleStreamData = useCallback((data: unknown) => {
-    if (!data || typeof data !== "object") {
-      return;
-    }
-    const type = (data as { type?: string }).type;
-    if (type === "text-start" || type === "text-delta") {
-      setStreamEventStarted(true);
-    }
-  }, []);
+  const handleStreamData = useCallback(
+    (data: unknown) => {
+      if (!data || typeof data !== "object") {
+        return;
+      }
+      const payload = data as { type?: string; data?: { runId?: string } };
+      const type = payload.type;
+      if (type === "text-start" || type === "text-delta") {
+        setStreamEventStarted(true);
+      }
+      if (type === "data-run" && payload.data?.runId) {
+        onRunIdResolved?.(payload.data.runId);
+      }
+    },
+    [onRunIdResolved]
+  );
 
   const {
     options: chatOptions,
@@ -69,6 +88,8 @@ export function Chat({
   } = useCopilotChatOptions({
     activeModule,
     locale,
+    runId: controlledRunId,
+    runIdMode,
     onData: handleStreamData,
   });
 
@@ -132,6 +153,7 @@ export function Chat({
       parts: [{ type: "text" as const, text: input }],
     });
     setInput("");
+    onConversationUpdated?.();
   };
 
   const markSubmitting = (id: string, value: boolean) => {
@@ -158,6 +180,15 @@ export function Chat({
       setToolRequestPending(false);
     }
   }, [isLoading]);
+
+  useEffect(() => {
+    const previousStatus = previousStatusRef.current;
+    const wasLoading = previousStatus === "streaming" || previousStatus === "submitted";
+    if (wasLoading && !isLoading) {
+      onConversationUpdated?.();
+    }
+    previousStatusRef.current = status;
+  }, [isLoading, onConversationUpdated, status]);
 
   useEffect(() => {
     // Reset messages immediately when runId changes
@@ -230,6 +261,24 @@ export function Chat({
     }
   }, [responseStarted]);
 
+  useEffect(() => {
+    if (!focusMessageId || !messages.some((message) => message.id === focusMessageId)) {
+      return;
+    }
+    const element = document.querySelector(`[data-message-id="${focusMessageId}"]`);
+    if (!element) {
+      return;
+    }
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+    setHighlightedMessageId(focusMessageId);
+    const timeoutId = window.setTimeout(() => {
+      setHighlightedMessageId((current) => (current === focusMessageId ? null : current));
+    }, 1600);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [focusMessageId, messages]);
+
   const addToolResultWithTracking = useCallback(
     async (params: { toolCallId: string; output: unknown; tool: string }) => {
       if (!addToolResult) {
@@ -238,8 +287,9 @@ export function Chat({
       setStreamEventStarted(false);
       setToolRequestPending(true);
       await Promise.resolve(addToolResult(params));
+      onConversationUpdated?.();
     },
-    [addToolResult]
+    [addToolResult, onConversationUpdated]
   );
 
   const addToolApprovalResponseWithTracking = useCallback(
@@ -250,8 +300,9 @@ export function Chat({
       setStreamEventStarted(false);
       setToolRequestPending(true);
       await Promise.resolve(addToolApprovalResponse(params));
+      onConversationUpdated?.();
     },
-    [addToolApprovalResponse]
+    [addToolApprovalResponse, onConversationUpdated]
   );
 
   return (
@@ -317,7 +368,15 @@ export function Chat({
               }
 
               return (
-                <div key={m.id} className={cn("flex flex-col gap-2", roleStyle.align)}>
+                <div
+                  key={m.id}
+                  data-message-id={m.id}
+                  className={cn(
+                    "flex flex-col gap-2 rounded-2xl p-2 transition-colors",
+                    roleStyle.align,
+                    highlightedMessageId === m.id ? "bg-accent/10" : ""
+                  )}
+                >
                   <div
                     className={cn(
                       "flex items-center gap-2",

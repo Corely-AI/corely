@@ -157,6 +157,7 @@ export class StreamCopilotChatUseCase {
           tenantId,
           createdByUserId: userId,
           status: "running",
+          lastMessageAt: this.clock.now(),
           traceId: turnSpan.traceId,
         });
       } catch (error) {
@@ -167,6 +168,7 @@ export class StreamCopilotChatUseCase {
             tenantId,
             createdByUserId: userId,
             status: "running",
+            lastMessageAt: this.clock.now(),
             traceId: turnSpan.traceId,
           });
         } else {
@@ -226,7 +228,7 @@ export class StreamCopilotChatUseCase {
               tenantId,
               idempotencyKey,
               responseStatus: 200,
-              responseBody: { status: "STREAMED", runId, finishReason },
+              responseBody: { status: "STREAMED", runId, threadId: runId, finishReason },
             });
 
             this.observability.recordTurnOutput(turnSpan, {
@@ -277,7 +279,7 @@ export class StreamCopilotChatUseCase {
 
             writer.write({
               type: "data-run",
-              data: { runId },
+              data: { runId, threadId: runId },
               transient: true,
             });
 

@@ -2,17 +2,23 @@ model AgentRun {
   id             String   @id @default(cuid())
   tenantId       String
   createdByUserId String?
+  title          String?
   status         String
   startedAt      DateTime @default(now())
   finishedAt     DateTime?
+  lastMessageAt  DateTime @default(now())
+  archivedAt     DateTime?
   metadataJson   String?
   createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   traceId        String?
 
   messages       Message[]
   toolExecutions ToolExecution[]
 
   @@index([tenantId, createdAt])
+  @@index([tenantId, createdByUserId, lastMessageAt(sort: Desc)])
+  @@index([tenantId, createdByUserId, createdAt(sort: Desc)])
   @@schema("platform")
 }
 
@@ -22,12 +28,14 @@ model Message {
   runId     String
   role      String
   partsJson String
+  contentText String?
   createdAt DateTime @default(now())
   traceId   String?
 
   run AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, runId, createdAt])
+  @@index([tenantId, createdAt(sort: Desc)])
   @@schema("platform")
 }
 

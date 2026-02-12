@@ -93,6 +93,7 @@ export const appShellRoutes = (
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />
       <Route path="/assistant" element={<AssistantPage />} />
+      <Route path="/assistant/t/:threadId" element={<AssistantPage />} />
       <Route path="/cms/posts" element={<CmsPostsPage />} />
       <Route path="/cms/posts/new" element={<CmsPostEditorPage />} />
       <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />

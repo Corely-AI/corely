@@ -3,6 +3,38 @@ import { PrismaService } from "@corely/data";
 import { MessageRepositoryPort } from "../../application/ports/message-repository.port";
 import { CopilotMessage } from "../../domain/entities/message.entity";
 
+const extractTextFromPartsJson = (partsJson: string): string | undefined => {
+  try {
+    const parsed = JSON.parse(partsJson) as unknown;
+    if (Array.isArray(parsed)) {
+      const text = parsed
+        .map((part) =>
+          typeof part === "object" &&
+          part !== null &&
+          "type" in part &&
+          (part as { type?: string }).type === "text" &&
+          "text" in part &&
+          typeof (part as { text?: unknown }).text === "string"
+            ? (part as { text: string }).text
+            : ""
+        )
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      return text || undefined;
+    }
+    if (typeof parsed === "object" && parsed !== null && "content" in parsed) {
+      const content = (parsed as { content?: unknown }).content;
+      if (typeof content === "string" && content.trim()) {
+        return content.trim();
+      }
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+};
+
 @Injectable()
 export class PrismaMessageRepository implements MessageRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
@@ -22,6 +54,7 @@ export class PrismaMessageRepository implements MessageRepositoryPort {
         runId: message.runId,
         role: message.role,
         partsJson: message.partsJson,
+        contentText: extractTextFromPartsJson(message.partsJson),
         traceId: message.traceId,
       },
     });
@@ -57,6 +90,7 @@ export class PrismaMessageRepository implements MessageRepositoryPort {
         runId: m.runId,
         role: m.role,
         partsJson: m.partsJson,
+        contentText: extractTextFromPartsJson(m.partsJson),
         createdAt: m.createdAt,
         traceId: m.traceId,
       })),
@@ -91,6 +125,7 @@ export class PrismaMessageRepository implements MessageRepositoryPort {
       data: {
         partsJson: message.partsJson,
         role: message.role,
+        contentText: extractTextFromPartsJson(message.partsJson),
         traceId: message.traceId,
       },
     });

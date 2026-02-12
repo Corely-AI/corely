@@ -13,6 +13,28 @@ const serializeMessage = (message: CopilotUIMessage) =>
     metadata: message.metadata,
   });
 
+const extractTextFromMessage = (message: CopilotUIMessage): string => {
+  const fromParts =
+    message.parts
+      ?.map((part) => {
+        if (part.type === "text" && typeof part.text === "string") {
+          return part.text;
+        }
+        return "";
+      })
+      .join(" ") ?? "";
+
+  return fromParts.replace(/\s+/g, " ").trim();
+};
+
+const toThreadTitle = (value: string): string => {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    return "New chat";
+  }
+  return normalized.length > 80 ? `${normalized.slice(0, 79).trimEnd()}…` : normalized;
+};
+
 const parseMessage = (row: { id: string; role: string; partsJson: string }): CopilotUIMessage => {
   try {
     const parsed = JSON.parse(row.partsJson);
@@ -90,12 +112,17 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
 
     const run = await this.prisma.agentRun.findFirst({
       where: { id: params.chatId, tenantId: params.tenantId },
-      select: { metadataJson: true },
+      select: { metadataJson: true, title: true },
     });
     const nextMetadata = mergeMetadata(
       run?.metadataJson ? (JSON.parse(run.metadataJson) as CopilotChatMetadata) : undefined,
       params.metadata
     );
+    const firstUserText = params.messages.find((message) => message.role === "user");
+    const inferredTitle = firstUserText
+      ? toThreadTitle(extractTextFromMessage(firstUserText))
+      : null;
+    const now = new Date();
     if (!run) {
       try {
         await this.prisma.agentRun.create({
@@ -103,8 +130,10 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
             id: params.chatId,
             tenantId: params.tenantId,
             createdByUserId: params.metadata?.userId,
+            title: inferredTitle || undefined,
             status: "running",
             metadataJson: nextMetadata ? JSON.stringify(nextMetadata) : undefined,
+            lastMessageAt: now,
             traceId: params.traceId,
           },
         });
@@ -116,11 +145,20 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
         }
       }
     }
-    if (params.metadata) {
+    if (params.metadata || inferredTitle) {
       await this.prisma.agentRun.update({
         where: { id: params.chatId },
         data: {
           metadataJson: nextMetadata ? JSON.stringify(nextMetadata) : null,
+          title: run?.title ?? inferredTitle ?? undefined,
+          lastMessageAt: now,
+        },
+      });
+    } else if (params.messages.length) {
+      await this.prisma.agentRun.update({
+        where: { id: params.chatId },
+        data: {
+          lastMessageAt: now,
         },
       });
     }
@@ -130,6 +168,7 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
         continue;
       }
       const payload = serializeMessage(message);
+      const contentText = extractTextFromMessage(message) || undefined;
       const existing = await this.prisma.message.findUnique({
         where: { id: message.id },
         select: { tenantId: true },
@@ -144,6 +183,7 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
               runId: params.chatId,
               role: message.role ?? "assistant",
               partsJson: payload,
+              contentText,
               traceId: params.traceId,
             },
           });
@@ -165,6 +205,7 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
               data: {
                 partsJson: payload,
                 role: message.role ?? "assistant",
+                contentText,
                 traceId: params.traceId,
               },
             });
@@ -183,6 +224,7 @@ export class PrismaChatStoreAdapter implements ChatStorePort {
         data: {
           partsJson: payload,
           role: message.role ?? "assistant",
+          contentText,
           traceId: params.traceId,
         },
       });

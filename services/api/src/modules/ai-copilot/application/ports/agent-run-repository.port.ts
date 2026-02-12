@@ -5,7 +5,9 @@ export interface AgentRunRepositoryPort {
     id: string;
     tenantId: string;
     createdByUserId: string | null;
+    title?: string;
     status: string;
+    lastMessageAt?: Date;
     traceId?: string;
     metadataJson?: string;
   }): Promise<AgentRun>;

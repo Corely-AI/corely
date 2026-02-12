@@ -22,6 +22,12 @@ export interface DrainResult {
   failedCount: number;
 }
 
+export interface SeedCopilotThreadMessageResult {
+  threadId: string;
+  messageId: string;
+  title: string;
+}
+
 @Injectable()
 export class TestHarnessService {
   constructor(
@@ -246,6 +252,51 @@ export class TestHarnessService {
       studentEmail,
       documentTitle,
       documentId: document.id,
+    };
+  }
+
+  async seedCopilotThreadMessage(params: {
+    tenantId: string;
+    userId: string;
+    title: string;
+    messageText: string;
+  }): Promise<SeedCopilotThreadMessageResult> {
+    const now = new Date();
+    const thread = await this.prisma.agentRun.create({
+      data: {
+        tenantId: params.tenantId,
+        createdByUserId: params.userId,
+        title: params.title,
+        status: "completed",
+        startedAt: now,
+        finishedAt: now,
+        lastMessageAt: now,
+      },
+      select: {
+        id: true,
+        title: true,
+      },
+    });
+
+    const message = await this.prisma.message.create({
+      data: {
+        tenantId: params.tenantId,
+        runId: thread.id,
+        role: "user",
+        partsJson: JSON.stringify({
+          parts: [{ type: "text", text: params.messageText }],
+        }),
+        contentText: params.messageText,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return {
+      threadId: thread.id,
+      messageId: message.id,
+      title: thread.title ?? "New chat",
     };
   }
 
