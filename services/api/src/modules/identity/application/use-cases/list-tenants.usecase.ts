@@ -13,9 +13,15 @@ import {
   assertPlatformPermission,
   PLATFORM_PERMISSION_KEYS,
 } from "../policies/platform-permissions.policy";
+import { buildPageInfo } from "../../../../shared/http/pagination";
 
 export interface ListTenantsQuery {
   actorUserId: string;
+  q?: string;
+  status?: TenantStatus;
+  page?: number;
+  pageSize?: number;
+  sort?: string | string[];
 }
 
 @Injectable()
@@ -26,19 +32,31 @@ export class ListTenantsUseCase {
     private readonly grantRepo: RolePermissionGrantRepositoryPort
   ) {}
 
-  async execute(_query: ListTenantsQuery, ctx: UseCaseContext): Promise<ListTenantsOutput> {
+  async execute(query: ListTenantsQuery, ctx: UseCaseContext): Promise<ListTenantsOutput> {
     await assertPlatformPermission(ctx, PLATFORM_PERMISSION_KEYS.tenants.read, {
       grantRepo: this.grantRepo,
     });
 
-    const tenants = await this.tenantRepo.listAll();
+    const page = Math.max(query.page ?? 1, 1);
+    const pageSize = Math.max(query.pageSize ?? 20, 1);
+    const sort = Array.isArray(query.sort) ? query.sort[0] : query.sort;
+
+    const { items, total } = await this.tenantRepo.listAll({
+      q: query.q,
+      status: query.status,
+      page,
+      pageSize,
+      sort,
+    });
+
     return {
-      tenants: tenants.map((tenant) => ({
+      tenants: items.map((tenant) => ({
         id: tenant.getId(),
         name: tenant.getName(),
         slug: tenant.getSlug(),
         status: tenant.getStatus() as TenantStatus,
       })),
+      pageInfo: buildPageInfo(total, page, pageSize),
     };
   }
 }

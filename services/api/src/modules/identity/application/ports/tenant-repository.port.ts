@@ -1,4 +1,18 @@
 import { type Tenant } from "../../domain/entities/tenant.entity";
+import type { TenantStatus } from "@corely/contracts";
+
+export interface ListTenantsRepoQuery {
+  q?: string;
+  status?: TenantStatus;
+  page: number;
+  pageSize: number;
+  sort?: string;
+}
+
+export interface ListTenantsRepoResult {
+  items: Tenant[];
+  total: number;
+}
 
 /**
  * Tenant Repository Port (Interface)
@@ -22,7 +36,7 @@ export interface TenantRepositoryPort {
   /**
    * List all tenants (host-level)
    */
-  listAll(): Promise<Tenant[]>;
+  listAll(query: ListTenantsRepoQuery): Promise<ListTenantsRepoResult>;
 
   /**
    * Check if slug exists

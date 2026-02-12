@@ -11,13 +11,7 @@ export function useUpdateTenant() {
       const data = await apiClient.patch<TenantDto>(`/platform/tenants/${tenantId}`, input);
       return data;
     },
-    onSuccess: (updatedTenant) => {
-      queryClient.setQueryData(tenantsQueryKeys.all(), (old: TenantDto[] | undefined) => {
-        if (!old) {
-          return old;
-        }
-        return old.map((t) => (t.id === updatedTenant.id ? updatedTenant : t));
-      });
+    onSuccess: () => {
       return queryClient.invalidateQueries({ queryKey: tenantsQueryKeys.list() });
     },
   });

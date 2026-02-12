@@ -1,7 +1,12 @@
 import { Injectable, Inject } from "@nestjs/common";
+import type { Prisma } from "@prisma/client";
 import { PrismaService } from "@corely/data";
 import { Tenant } from "../../domain/entities/tenant.entity";
-import { TenantRepositoryPort } from "../../application/ports/tenant-repository.port";
+import {
+  type ListTenantsRepoQuery,
+  type ListTenantsRepoResult,
+  TenantRepositoryPort,
+} from "../../application/ports/tenant-repository.port";
 
 /**
  * Prisma Tenant Repository Implementation
@@ -46,12 +51,45 @@ export class PrismaTenantRepository implements TenantRepositoryPort {
     return Tenant.restore(data);
   }
 
-  async listAll(): Promise<Tenant[]> {
-    const data = await this.prisma.tenant.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+  async listAll(query: ListTenantsRepoQuery): Promise<ListTenantsRepoResult> {
+    const where: Prisma.TenantWhereInput = {};
 
-    return data.map((row) => Tenant.restore(row));
+    if (query.q) {
+      where.OR = [
+        { name: { contains: query.q, mode: "insensitive" } },
+        { slug: { contains: query.q, mode: "insensitive" } },
+      ];
+    }
+
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    const [sortFieldRaw, sortDirectionRaw] = (query.sort ?? "createdAt:desc").split(":");
+    const sortDirection: Prisma.SortOrder =
+      sortDirectionRaw?.toLowerCase() === "asc" ? "asc" : "desc";
+    const sortField = ["name", "slug", "status", "createdAt"].includes(sortFieldRaw)
+      ? sortFieldRaw
+      : "createdAt";
+    const orderBy: Prisma.TenantOrderByWithRelationInput = { [sortField]: sortDirection };
+
+    const skip = (query.page - 1) * query.pageSize;
+    const take = query.pageSize;
+
+    const [rows, total] = await this.prisma.$transaction([
+      this.prisma.tenant.findMany({
+        where,
+        orderBy,
+        skip,
+        take,
+      }),
+      this.prisma.tenant.count({ where }),
+    ]);
+
+    return {
+      items: rows.map((row) => Tenant.restore(row)),
+      total,
+    };
   }
 
   async slugExists(slug: string): Promise<boolean> {

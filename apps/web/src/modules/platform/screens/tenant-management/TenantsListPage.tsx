@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@corely/ui";
@@ -11,16 +11,59 @@ import { useUpdateTenant } from "../../hooks/useUpdateTenant";
 import type { TenantDto } from "@corely/contracts";
 import { useCanManageTenants } from "@/shared/lib/permissions";
 import { useTranslation } from "react-i18next";
+import {
+  ActiveFilterChips,
+  FilterPanel,
+  ListToolbar,
+  useListUrlState,
+  type FilterFieldDef,
+} from "@/shared/list-kit";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@corely/ui";
 
 export function TenantsListPage() {
   const { t } = useTranslation();
-  const { data: tenants = [], isLoading, error } = useTenants();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [state, setUrlState] = useListUrlState(
+    { pageSize: 20, sort: "createdAt:desc" },
+    { storageKey: "tenants-list-v1" }
+  );
+  const statusFilter = useMemo<TenantDto["status"] | undefined>(() => {
+    const filter = state.filters?.find((item) => item.field === "status" && item.operator === "eq");
+    const value = String(filter?.value ?? "");
+    return value === "ACTIVE" || value === "SUSPENDED" || value === "ARCHIVED" ? value : undefined;
+  }, [state.filters]);
+  const { data, isLoading, error } = useTenants({
+    q: state.q,
+    page: state.page,
+    pageSize: state.pageSize,
+    sort: state.sort,
+    status: statusFilter,
+  });
+  const tenants = data?.tenants ?? [];
+  const pageInfo = data?.pageInfo;
   const { mutate: updateTenant, isPending: isUpdating } = useUpdateTenant();
   const { can: canManageTenants } = useCanManageTenants();
 
-  const sortedTenants = useMemo(
-    () => [...tenants].sort((a, b) => a.name.localeCompare(b.name)),
-    [tenants]
+  const filterFields = useMemo<FilterFieldDef[]>(
+    () => [
+      {
+        key: "status",
+        label: t("tenants.status"),
+        type: "select",
+        options: [
+          { label: t("common.active"), value: "ACTIVE" },
+          { label: t("common.suspended"), value: "SUSPENDED" },
+          { label: "Archived", value: "ARCHIVED" },
+        ],
+      },
+    ],
+    [t]
   );
 
   const toggleStatus = (tenant: TenantDto) => {
@@ -71,7 +114,33 @@ export function TenantsListPage() {
         <CardHeader>
           <CardTitle>{t("tenants.listTitle")}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <ListToolbar
+            search={state.q}
+            onSearchChange={(value) => setUrlState({ q: value, page: 1 })}
+            sort={state.sort}
+            onSortChange={(value) => setUrlState({ sort: value, page: 1 })}
+            sortOptions={[
+              { label: `${t("common.name")} (A-Z)`, value: "name:asc" },
+              { label: `${t("common.name")} (Z-A)`, value: "name:desc" },
+              { label: `${t("tenants.slug")} (A-Z)`, value: "slug:asc" },
+              { label: `${t("tenants.slug")} (Z-A)`, value: "slug:desc" },
+              { label: "Created (Newest)", value: "createdAt:desc" },
+              { label: "Created (Oldest)", value: "createdAt:asc" },
+            ]}
+            onFilterClick={() => setIsFilterOpen(true)}
+            filterCount={state.filters?.length}
+          />
+          {(state.filters?.length ?? 0) > 0 ? (
+            <ActiveFilterChips
+              filters={state.filters ?? []}
+              onRemove={(filter) => {
+                const next = state.filters?.filter((entry) => entry !== filter) ?? [];
+                setUrlState({ filters: next, page: 1 });
+              }}
+              onClearAll={() => setUrlState({ filters: [], page: 1 })}
+            />
+          ) : null}
           <Table>
             <TableHeader>
               <TableRow>
@@ -83,14 +152,14 @@ export function TenantsListPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedTenants.length === 0 ? (
+              {tenants.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
                     {t("tenants.noTenants")}
                   </TableCell>
                 </TableRow>
               ) : (
-                sortedTenants.map((tenant: TenantDto) => (
+                tenants.map((tenant: TenantDto) => (
                   <TableRow key={tenant.id}>
                     <TableCell className="font-medium">{tenant.name}</TableCell>
                     <TableCell className="text-muted-foreground">{tenant.slug}</TableCell>
@@ -133,8 +202,44 @@ export function TenantsListPage() {
               )}
             </TableBody>
           </Table>
+          {pageInfo ? (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <span className="text-sm text-muted-foreground mr-4">
+                    Page {pageInfo.page} of{" "}
+                    {Math.max(1, Math.ceil(pageInfo.total / pageInfo.pageSize))}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => state.page > 1 && setUrlState({ page: state.page - 1 })}
+                    className={
+                      state.page <= 1 ? "pointer-events-none opacity-50" : "cursor-pointer"
+                    }
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => pageInfo.hasNextPage && setUrlState({ page: state.page + 1 })}
+                    className={
+                      !pageInfo.hasNextPage ? "pointer-events-none opacity-50" : "cursor-pointer"
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          ) : null}
         </CardContent>
       </Card>
+
+      <FilterPanel
+        open={isFilterOpen}
+        onOpenChange={setIsFilterOpen}
+        filters={state.filters ?? []}
+        onApply={(filters) => setUrlState({ filters, page: 1 })}
+        fields={filterFields}
+      />
     </div>
   );
 }

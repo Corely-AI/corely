@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CustomValuesSchema } from "./common/customization/custom-field";
+import { ListQuerySchema, PageInfoSchema } from "./common/list.contract";
 export * from "./common/list.contract";
 export * from "./documents";
 export * from "./invoices";
@@ -158,8 +159,14 @@ export const UpdateTenantInputSchema = z.object({
 });
 export type UpdateTenantInput = z.infer<typeof UpdateTenantInputSchema>;
 
+export const ListTenantsInputSchema = ListQuerySchema.extend({
+  status: TenantStatusSchema.optional(),
+});
+export type ListTenantsInput = z.infer<typeof ListTenantsInputSchema>;
+
 export const ListTenantsOutputSchema = z.object({
   tenants: z.array(TenantDtoSchema),
+  pageInfo: PageInfoSchema.optional(),
 });
 export type ListTenantsOutput = z.infer<typeof ListTenantsOutputSchema>;
 
