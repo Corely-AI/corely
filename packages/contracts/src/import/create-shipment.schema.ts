@@ -28,6 +28,9 @@ export const CreateShipmentInputSchema = z.object({
   finalWarehouseId: z.string().nullable().optional(),
   departureDate: localDateSchema.nullable().optional(),
   estimatedArrivalDate: localDateSchema.nullable().optional(),
+  actualArrivalDate: localDateSchema.nullable().optional(),
+  clearanceDate: localDateSchema.nullable().optional(),
+  receivedDate: localDateSchema.nullable().optional(),
   customsDeclarationNumber: z.string().nullable().optional(),
   importLicenseNumber: z.string().nullable().optional(),
   hsCodesPrimary: z.array(z.string()).optional(),
@@ -43,7 +46,7 @@ export const CreateShipmentInputSchema = z.object({
   totalPackages: z.number().int().nonnegative().nullable().optional(),
   notes: z.string().nullable().optional(),
   metadataJson: z.record(z.any()).nullable().optional(),
-  lines: z.array(ImportShipmentLineInputSchema).min(1),
+  lines: z.array(ImportShipmentLineInputSchema).default([]),
 });
 export type CreateShipmentInput = z.infer<typeof CreateShipmentInputSchema>;
 

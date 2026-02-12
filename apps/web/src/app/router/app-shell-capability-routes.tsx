@@ -358,11 +358,9 @@ export const capabilityRoutes = (
     <Route
       path="/import/shipments/new"
       element={
-        <RequireCapability capability="import.basic">
-          <RequirePermission permission="import.shipments.manage">
-            <NewShipmentPage />
-          </RequirePermission>
-        </RequireCapability>
+        <RequirePermission permission="import.shipments.read">
+          <NewShipmentPage />
+        </RequirePermission>
       }
     />
     <Route

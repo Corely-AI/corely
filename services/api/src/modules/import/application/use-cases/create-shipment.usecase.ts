@@ -38,18 +38,16 @@ export class CreateShipmentUseCase extends BaseUseCase<CreateShipmentInput, Crea
     input: CreateShipmentInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateShipmentOutput, UseCaseError>> {
-    const tenantId = ctx.tenantId!;
+    if (!ctx.tenantId) {
+      return err(new ValidationError("tenantId is required"));
+    }
+    const tenantId = ctx.tenantId;
     if (!ctx.userId) {
       return err(new ValidationError("userId is required"));
     }
     const userId = ctx.userId;
 
-    // Validate lines
-    if (!input.lines || input.lines.length === 0) {
-      return err(new ValidationError("At least one line is required"));
-    }
-
-    const now = this.shipmentDeps.clock.now();
+    const inputLines = input.lines ?? [];
     const shipmentId = this.shipmentDeps.idGenerator.newId();
 
     // Generate shipment number
@@ -58,7 +56,7 @@ export class CreateShipmentUseCase extends BaseUseCase<CreateShipmentInput, Crea
     // Calculate total FOB value from lines
     const fobValueCents =
       input.fobValueCents ??
-      input.lines.reduce((sum, line) => {
+      inputLines.reduce((sum, line) => {
         if (line.unitFobCostCents) {
           return sum + line.orderedQty * line.unitFobCostCents;
         }
@@ -75,7 +73,7 @@ export class CreateShipmentUseCase extends BaseUseCase<CreateShipmentInput, Crea
       (input.otherCostsCents ?? 0);
 
     // Create lines
-    const lines = input.lines.map((lineInput) =>
+    const lines = inputLines.map((lineInput) =>
       createImportShipmentLine({
         id: this.shipmentDeps.idGenerator.newId(),
         shipmentId,
@@ -108,9 +106,9 @@ export class CreateShipmentUseCase extends BaseUseCase<CreateShipmentInput, Crea
       finalWarehouseId: input.finalWarehouseId ?? null,
       departureDate: input.departureDate ?? null,
       estimatedArrivalDate: input.estimatedArrivalDate ?? null,
-      actualArrivalDate: null,
-      clearanceDate: null,
-      receivedDate: null,
+      actualArrivalDate: input.actualArrivalDate ?? null,
+      clearanceDate: input.clearanceDate ?? null,
+      receivedDate: input.receivedDate ?? null,
       customsDeclarationNumber: input.customsDeclarationNumber ?? null,
       importLicenseNumber: input.importLicenseNumber ?? null,
       hsCodesPrimary: input.hsCodesPrimary ?? [],
