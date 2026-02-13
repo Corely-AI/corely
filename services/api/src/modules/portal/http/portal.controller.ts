@@ -51,7 +51,7 @@ export class PortalController {
 
   @Post("invitations")
   @UseGuards(AuthGuard, RbacGuard)
-  @RequirePermission("party.write")
+  @RequirePermission("party.customers.manage")
   async inviteUser(@Body() body: any, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.inviteUser.execute(body, ctx);
