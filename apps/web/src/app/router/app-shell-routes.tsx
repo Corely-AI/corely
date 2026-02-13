@@ -14,6 +14,9 @@ import {
   CustomersPage,
   NewCustomerPage,
   EditCustomerPage,
+  SuppliersPage,
+  NewSupplierPage,
+  EditSupplierPage,
   StudentsPage,
   NewStudentPage,
   StudentDetailPage,
@@ -82,6 +85,7 @@ import {
 import { CopilotPage } from "../../routes/copilot";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
 import { RequireAuth } from "./require-auth";
+import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { appSettingsRoutes } from "./app-settings-routes";
 import { catalogRoutes } from "./catalog-routes";
 import { capabilityRoutes } from "./app-shell-capability-routes";
@@ -152,10 +156,70 @@ export const appShellRoutes = (
       <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
       <Route path="/invoices/:id/edit" element={<InvoiceDetailPage />} />
       {capabilityRoutes}
-      <Route path="/customers" element={<CustomersPage />} />
-      <Route path="/customers/new" element={<NewCustomerPage />} />
-      <Route path="/customers/:id" element={<EditCustomerPage />} />
-      <Route path="/customers/:id/edit" element={<EditCustomerPage />} />
+      <Route
+        path="/customers"
+        element={
+          <RequirePermission permission="party.customers.read">
+            <CustomersPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/customers/new"
+        element={
+          <RequirePermission permission="party.customers.manage">
+            <NewCustomerPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/customers/:id"
+        element={
+          <RequirePermission permission="party.customers.manage">
+            <EditCustomerPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/customers/:id/edit"
+        element={
+          <RequirePermission permission="party.customers.manage">
+            <EditCustomerPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/suppliers"
+        element={
+          <RequirePermission permission="party.customers.read">
+            <SuppliersPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/suppliers/new"
+        element={
+          <RequirePermission permission="party.customers.manage">
+            <NewSupplierPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/suppliers/:id"
+        element={
+          <RequirePermission permission="party.customers.manage">
+            <EditSupplierPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/suppliers/:id/edit"
+        element={
+          <RequirePermission permission="party.customers.manage">
+            <EditSupplierPage />
+          </RequirePermission>
+        }
+      />
       <Route path="/students" element={<StudentsPage />} />
       <Route path="/students/new" element={<NewStudentPage />} />
       <Route path="/students/:id" element={<StudentDetailPage />} />

@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
+import { PrismaService } from "@corely/data";
 import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
 import type { OutboxPort, AuditPort } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -34,6 +35,7 @@ import { PartyModule } from "../party";
 import { DocumentsModule } from "../documents";
 import { TaxModule } from "../tax/tax.module";
 import { PlatformModule } from "../platform";
+import { AccountingModule } from "../accounting/accounting.module";
 import { TaxEngineService } from "../tax/application/services/tax-engine.service";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { CreateInvoiceUseCase } from "./application/use-cases/create-invoice/create-invoice.usecase";
@@ -52,6 +54,7 @@ import { INVOICE_COMMANDS } from "./application/ports/invoice-commands.port";
 import { InvoiceCommandService } from "./application/services/invoice-command.service";
 import { INVOICE_COPILOT_RATE_LIMIT_PORT } from "./application/ports/invoice-copilot-rate-limit.port";
 import type { InvoiceCopilotRateLimitPort } from "./application/ports/invoice-copilot-rate-limit.port";
+import { CogsPostingService } from "../accounting/application/services/cogs-posting.service";
 import {
   INVOICE_REMINDER_STATE_PORT,
   type InvoiceReminderStatePort,
@@ -71,6 +74,7 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
     DocumentsModule,
     TaxModule,
     PlatformModule,
+    AccountingModule,
   ],
   controllers: [
     InvoicesHttpController,
@@ -172,7 +176,9 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         clock: any,
         customerQuery: CustomerQueryPort,
         paymentMethodQuery: any,
-        taxEngine: TaxEngineService
+        taxEngine: TaxEngineService,
+        prisma: PrismaService,
+        cogsPostingService: CogsPostingService
       ) =>
         new FinalizeInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -182,6 +188,8 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
           customerQuery,
           paymentMethodQuery,
           taxEngine,
+          prisma,
+          cogsPostingService,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
@@ -190,6 +198,8 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         CUSTOMER_QUERY_PORT,
         PAYMENT_METHOD_QUERY_PORT,
         TaxEngineService,
+        PrismaService,
+        CogsPostingService,
       ],
     },
     {

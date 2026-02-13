@@ -9,6 +9,9 @@ export const importAppManifest: AppManifest = {
   dependencies: [],
   capabilities: ["import.basic"],
   permissions: ["import.shipments.read", "import.shipments.manage"],
+  entitlement: {
+    defaultEnabled: true,
+  },
   menu: [
     {
       id: "import-shipments",

@@ -146,7 +146,9 @@
     "inventoryDocuments": "Kho - Chứng từ",
     "inventoryReorder": "Kho - Đặt hàng",
     "inventoryCopilot": "Kho - Trợ lý",
+    "catalogItems": "Mặt hàng danh mục",
     "importShipments": "Lô hàng",
+    "suppliers": "Nhà cung cấp",
     "automation": "Tự động hóa",
     "documents": "Tài liệu",
     "cms": {

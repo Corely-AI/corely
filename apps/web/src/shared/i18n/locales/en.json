@@ -153,7 +153,9 @@
     "inventoryDocuments": "Inventory - Documents",
     "inventoryReorder": "Inventory - Reorder",
     "inventoryCopilot": "Inventory - Copilot",
+    "catalogItems": "Catalog Items",
     "importShipments": "Shipments",
+    "suppliers": "Suppliers",
     "automation": "Automation",
     "documents": "Documents",
     "cms": {

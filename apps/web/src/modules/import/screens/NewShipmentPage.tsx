@@ -4,14 +4,14 @@ import { type Path, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { normalizeError } from "@corely/api-client";
+import { ApiError, normalizeError } from "@corely/api-client";
 import { ArrowLeft, Ship } from "lucide-react";
 import type { CreateShipmentInput, ShippingMode } from "@corely/contracts";
 import { Alert, AlertDescription, AlertTitle, Button } from "@corely/ui";
 import { toast } from "sonner";
 import { importShipmentsApi } from "@/lib/import-shipments-api";
-import { purchasingApi } from "@/lib/purchasing-api";
 import { catalogApi } from "@/lib/catalog-api";
+import { customersApi } from "@/lib/customers-api";
 import { hasPermission, useEffectivePermissions } from "@/shared/lib/permissions";
 import { mapValidationErrorsToForm } from "@/shared/lib/errors/map-validation-errors";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
@@ -123,6 +123,15 @@ export default function NewShipmentPage() {
   const rbacEnabled = hasCapability("workspace.rbac");
   const canManageShipments =
     !rbacEnabled || hasPermission(effectivePermissions?.permissions, "import.shipments.manage");
+  const canReadSuppliers =
+    !rbacEnabled || hasPermission(effectivePermissions?.permissions, "party.customers.read");
+  const canCreateSuppliers =
+    !rbacEnabled || hasPermission(effectivePermissions?.permissions, "party.customers.manage");
+  const canReadProducts =
+    !rbacEnabled || hasPermission(effectivePermissions?.permissions, "catalog.read");
+  const canCreateProducts =
+    !rbacEnabled || hasPermission(effectivePermissions?.permissions, "catalog.write");
+  const catalogEnabled = hasCapability("catalog.basic");
 
   const form = useForm<NewShipmentFormValues>({
     resolver: zodResolver(formSchema),
@@ -167,17 +176,27 @@ export default function NewShipmentPage() {
 
   const suppliersQuery = useQuery({
     queryKey: ["import", "suppliers", "new-shipment"],
-    queryFn: () => purchasingApi.listSuppliers({ pageSize: 200 }),
+    queryFn: () => customersApi.listCustomers({ role: "SUPPLIER", pageSize: 200 }),
+    enabled: hasCapability("import.basic") && canManageShipments && canReadSuppliers,
   });
 
   const productsQuery = useQuery({
     queryKey: ["import", "products", "new-shipment"],
     queryFn: () => catalogApi.listItems({ type: "PRODUCT", status: "ACTIVE", pageSize: 200 }),
+    enabled:
+      hasCapability("import.basic") && canManageShipments && catalogEnabled && canReadProducts,
+  });
+
+  const uomsQuery = useQuery({
+    queryKey: ["import", "catalog-uoms", "new-shipment"],
+    queryFn: () => catalogApi.listUoms({ page: 1, pageSize: 100 }),
+    enabled:
+      hasCapability("import.basic") && canManageShipments && catalogEnabled && canReadProducts,
   });
 
   const suppliers = useMemo(
     () =>
-      (suppliersQuery.data?.suppliers ?? []).flatMap((supplier) => {
+      (suppliersQuery.data?.customers ?? []).flatMap((supplier) => {
         if (!supplier.id) {
           return [];
         }
@@ -188,7 +207,7 @@ export default function NewShipmentPage() {
           },
         ];
       }),
-    [suppliersQuery.data?.suppliers]
+    [suppliersQuery.data?.customers]
   );
 
   const products = useMemo(
@@ -206,6 +225,17 @@ export default function NewShipmentPage() {
         ];
       }),
     [productsQuery.data?.items]
+  );
+
+  const quickCreateUoms = useMemo(
+    () =>
+      (uomsQuery.data?.items ?? []).flatMap((uom) => {
+        if (!uom.id || !uom.code || !uom.name) {
+          return [];
+        }
+        return [{ id: uom.id, code: uom.code, name: uom.name }];
+      }),
+    [uomsQuery.data?.items]
   );
 
   const productById = useMemo(() => {
@@ -245,6 +275,104 @@ export default function NewShipmentPage() {
       toast.error("Failed to create shipment draft");
     },
   });
+
+  const quickCreateSupplierMutation = useMutation({
+    mutationFn: (name: string) =>
+      customersApi.createCustomer({
+        displayName: name,
+        role: "SUPPLIER",
+      }),
+    onSuccess: async (supplier) => {
+      await suppliersQuery.refetch();
+      form.setValue("supplierPartyId", supplier.id, { shouldValidate: true });
+      toast.success("Supplier created");
+    },
+    onError: () => {
+      toast.error("Failed to create supplier");
+    },
+  });
+
+  const quickCreateProductMutation = useMutation({
+    mutationFn: (input: {
+      name: string;
+      code: string;
+      defaultUomId: string;
+      targetLineIndex?: number;
+    }) =>
+      catalogApi.createItem({
+        code: input.code,
+        name: input.name,
+        type: "PRODUCT",
+        defaultUomId: input.defaultUomId,
+      }),
+    onSuccess: async (result, variables) => {
+      const product = result.item;
+      const targetIndex = variables.targetLineIndex;
+      const currentLines = form.getValues("lines");
+
+      if (targetIndex !== undefined && targetIndex >= 0) {
+        if (targetIndex < currentLines.length) {
+          form.setValue(`lines.${targetIndex}.productId`, product.id, {
+            shouldValidate: true,
+          });
+          form.setValue(`lines.${targetIndex}.hsCode`, product.hsCode ?? "", {
+            shouldValidate: true,
+          });
+        } else {
+          append({
+            productId: product.id,
+            hsCode: product.hsCode ?? "",
+            orderedQty: "",
+            unitFobCost: "",
+            weightKg: "",
+            volumeM3: "",
+          });
+        }
+      } else if (currentLines.length === 0) {
+        append({
+          productId: product.id,
+          hsCode: product.hsCode ?? "",
+          orderedQty: "",
+          unitFobCost: "",
+          weightKg: "",
+          volumeM3: "",
+        });
+      }
+
+      await productsQuery.refetch();
+      toast.success("Product created");
+    },
+    onError: () => {
+      toast.error("Failed to create product");
+    },
+  });
+
+  const suppliersError = suppliersQuery.error
+    ? suppliersQuery.error instanceof ApiError
+      ? suppliersQuery.error
+      : normalizeError(suppliersQuery.error)
+    : null;
+  const productsError = productsQuery.error
+    ? productsQuery.error instanceof ApiError
+      ? productsQuery.error
+      : normalizeError(productsQuery.error)
+    : null;
+  const suppliersAccessDenied = !canReadSuppliers || suppliersError?.status === 403;
+  const productsAccessDenied = !catalogEnabled || !canReadProducts || productsError?.status === 403;
+
+  const suppliersLoadMessage = suppliersAccessDenied
+    ? "You don't have access to suppliers. Ask an admin for access."
+    : suppliersError
+      ? "There was a system problem loading suppliers. Retry."
+      : null;
+
+  const productsLoadMessage = !catalogEnabled
+    ? "Catalog isn't enabled for this workspace. Ask an admin to enable it."
+    : productsAccessDenied
+      ? "You don't have access to products. Ask an admin for access."
+      : productsError
+        ? "There was a system problem loading products. Retry."
+        : null;
 
   const watchedLines = form.watch("lines");
   const watchedFobValue = form.watch("fobValue");
@@ -418,9 +546,17 @@ export default function NewShipmentPage() {
         isCreatePending={createMutation.isPending}
         suppliers={suppliers}
         products={products}
+        uoms={quickCreateUoms}
         isSuppliersLoading={suppliersQuery.isLoading}
-        isSuppliersError={suppliersQuery.isError}
-        isProductsError={productsQuery.isError}
+        suppliersLoadMessage={suppliersLoadMessage}
+        productsLoadMessage={productsLoadMessage}
+        canCreateSuppliers={canCreateSuppliers}
+        canCreateProducts={canCreateProducts}
+        canQuickCreateProducts={quickCreateUoms.length > 0}
+        isQuickCreatingSupplier={quickCreateSupplierMutation.isPending}
+        isQuickCreatingProduct={quickCreateProductMutation.isPending}
+        onQuickCreateSupplier={(name) => quickCreateSupplierMutation.mutateAsync(name)}
+        onQuickCreateProduct={(input) => quickCreateProductMutation.mutateAsync(input)}
         onRetrySuppliers={suppliersQuery.refetch}
         onRetryProducts={productsQuery.refetch}
         lineFields={lineFields}

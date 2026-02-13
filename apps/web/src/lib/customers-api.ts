@@ -11,6 +11,7 @@ import type {
   SetPrimaryPayerOutput,
   ListStudentGuardiansOutput,
   PartyRoleType,
+  SearchCustomersOutput,
 } from "@corely/contracts";
 
 export const customersApi = {
@@ -90,6 +91,34 @@ export const customersApi = {
     }
 
     return response as { customers: CustomerDto[]; nextCursor?: string };
+  },
+
+  async searchCustomers(params?: {
+    q?: string;
+    cursor?: string;
+    pageSize?: number;
+    role?: PartyRoleType;
+  }): Promise<{ customers: CustomerDto[]; nextCursor?: string }> {
+    const queryParams = new URLSearchParams();
+    if (params?.q) {
+      queryParams.append("q", params.q);
+    }
+    if (params?.cursor) {
+      queryParams.append("cursor", params.cursor);
+    }
+    if (params?.pageSize) {
+      queryParams.append("pageSize", params.pageSize.toString());
+    }
+    if (params?.role) {
+      queryParams.append("role", params.role);
+    }
+    const queryString = queryParams.toString();
+    const endpoint = queryString ? `/customers/search?${queryString}` : "/customers/search";
+    const response = await apiClient.get<SearchCustomersOutput>(endpoint);
+    return {
+      customers: response.items,
+      nextCursor: response.nextCursor ?? undefined,
+    };
   },
 
   async archiveCustomer(id: string, role?: PartyRoleType): Promise<CustomerDto> {

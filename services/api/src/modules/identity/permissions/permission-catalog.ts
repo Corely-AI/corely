@@ -88,8 +88,9 @@ const mergeManifestPermissions = (
   );
 
   for (const manifestGroup of manifests) {
+    const existingGroup = groupMap.get(manifestGroup.id);
     const target =
-      groupMap.get(manifestGroup.id) ??
+      existingGroup ??
       ({
         id: manifestGroup.id,
         label: manifestGroup.label,
@@ -104,7 +105,9 @@ const mergeManifestPermissions = (
       target.permissions.push(permission);
     }
 
-    groupMap.set(target.id, target);
+    if (existingGroup || target.permissions.length > 0) {
+      groupMap.set(target.id, target);
+    }
   }
 
   return Array.from(groupMap.values());

@@ -8,7 +8,10 @@ export const partyAppManifest: AppManifest = {
   description: "Customer and client management",
   dependencies: [],
   capabilities: [],
-  permissions: ["parties.read", "parties.write"],
+  permissions: ["party.customers.read", "party.customers.manage"],
+  entitlement: {
+    defaultEnabled: true,
+  },
   menu: [
     {
       id: "clients",
@@ -19,6 +22,18 @@ export const partyAppManifest: AppManifest = {
       route: "/customers",
       icon: "UsersRound",
       order: 30,
+      requiresPermissions: ["party.customers.read"],
+    },
+    {
+      id: "suppliers",
+      scope: "web",
+      section: "suppliers",
+      labelKey: "nav.suppliers",
+      defaultLabel: "Suppliers",
+      route: "/suppliers",
+      icon: "Building2",
+      order: 31,
+      requiresPermissions: ["party.customers.read"],
     },
   ],
 };

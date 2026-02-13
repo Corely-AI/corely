@@ -7,6 +7,7 @@ import type { CreateReorderPolicyUseCase } from "./use-cases/create-reorder-poli
 import type { UpdateReorderPolicyUseCase } from "./use-cases/update-reorder-policy.usecase";
 import type { GetReorderSuggestionsUseCase } from "./use-cases/get-reorder-suggestions.usecase";
 import type { GetLowStockUseCase } from "./use-cases/get-low-stock.usecase";
+import type { PickForDeliveryUseCase } from "./use-cases/pick-for-delivery.usecase";
 
 export class StockApplication {
   constructor(
@@ -18,6 +19,7 @@ export class StockApplication {
     public readonly createReorderPolicy: CreateReorderPolicyUseCase,
     public readonly updateReorderPolicy: UpdateReorderPolicyUseCase,
     public readonly getReorderSuggestions: GetReorderSuggestionsUseCase,
-    public readonly getLowStock: GetLowStockUseCase
+    public readonly getLowStock: GetLowStockUseCase,
+    public readonly pickForDelivery: PickForDeliveryUseCase
   ) {}
 }

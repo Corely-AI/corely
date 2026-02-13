@@ -39,6 +39,7 @@ import { CreateReorderPolicyUseCase } from "../application/use-cases/create-reor
 import { UpdateReorderPolicyUseCase } from "../application/use-cases/update-reorder-policy.usecase";
 import { GetReorderSuggestionsUseCase } from "../application/use-cases/get-reorder-suggestions.usecase";
 import { GetLowStockUseCase } from "../application/use-cases/get-low-stock.usecase";
+import { PickForDeliveryUseCase } from "../application/use-cases/pick-for-delivery.usecase";
 
 export const applicationProviders: Provider[] = [
   {
@@ -241,7 +242,8 @@ export const applicationProviders: Provider[] = [
       createReorderPolicy: CreateReorderPolicyUseCase,
       updateReorderPolicy: UpdateReorderPolicyUseCase,
       getReorderSuggestions: GetReorderSuggestionsUseCase,
-      getLowStock: GetLowStockUseCase
+      getLowStock: GetLowStockUseCase,
+      pickForDelivery: PickForDeliveryUseCase
     ) =>
       new StockApplication(
         getOnHand,
@@ -252,7 +254,8 @@ export const applicationProviders: Provider[] = [
         createReorderPolicy,
         updateReorderPolicy,
         getReorderSuggestions,
-        getLowStock
+        getLowStock,
+        pickForDelivery
       ),
     inject: [
       GetOnHandUseCase,
@@ -264,6 +267,7 @@ export const applicationProviders: Provider[] = [
       UpdateReorderPolicyUseCase,
       GetReorderSuggestionsUseCase,
       GetLowStockUseCase,
+      PickForDeliveryUseCase,
     ],
   },
 ];

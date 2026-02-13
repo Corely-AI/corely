@@ -8,6 +8,11 @@ import {
   Button,
   Card,
   CardContent,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Input,
   Label,
 } from "@corely/ui";
@@ -21,6 +26,11 @@ type ProductOption = {
   name: string;
   hsCode?: string | null;
 };
+type UomOption = {
+  id: string;
+  code: string;
+  name: string;
+};
 type NewShipmentFormContentProps = {
   form: UseFormReturn<NewShipmentFormValues>;
   onSubmit: (values: NewShipmentFormValues) => void;
@@ -29,9 +39,22 @@ type NewShipmentFormContentProps = {
   isCreatePending: boolean;
   suppliers: SupplierOption[];
   products: ProductOption[];
+  uoms: UomOption[];
   isSuppliersLoading: boolean;
-  isSuppliersError: boolean;
-  isProductsError: boolean;
+  suppliersLoadMessage: string | null;
+  productsLoadMessage: string | null;
+  canCreateSuppliers: boolean;
+  canCreateProducts: boolean;
+  canQuickCreateProducts: boolean;
+  isQuickCreatingSupplier: boolean;
+  isQuickCreatingProduct: boolean;
+  onQuickCreateSupplier: (name: string) => Promise<unknown>;
+  onQuickCreateProduct: (input: {
+    name: string;
+    code: string;
+    defaultUomId: string;
+    targetLineIndex?: number;
+  }) => Promise<unknown>;
   onRetrySuppliers: () => Promise<unknown>;
   onRetryProducts: () => Promise<unknown>;
   lineFields: Array<FieldArrayWithId<NewShipmentFormValues, "lines", "id">>;
@@ -66,9 +89,17 @@ export function NewShipmentFormContent({
   isCreatePending,
   suppliers,
   products,
+  uoms,
   isSuppliersLoading,
-  isSuppliersError,
-  isProductsError,
+  suppliersLoadMessage,
+  productsLoadMessage,
+  canCreateSuppliers,
+  canCreateProducts,
+  canQuickCreateProducts,
+  isQuickCreatingSupplier,
+  isQuickCreatingProduct,
+  onQuickCreateSupplier,
+  onQuickCreateProduct,
   onRetrySuppliers,
   onRetryProducts,
   lineFields,
@@ -79,6 +110,53 @@ export function NewShipmentFormContent({
   totalLandedCostCents,
   hasFob,
 }: NewShipmentFormContentProps) {
+  const [supplierDialogOpen, setSupplierDialogOpen] = React.useState(false);
+  const [supplierName, setSupplierName] = React.useState("");
+  const [productDialogOpen, setProductDialogOpen] = React.useState(false);
+  const [productName, setProductName] = React.useState("");
+  const [productCode, setProductCode] = React.useState("");
+  const [productUomId, setProductUomId] = React.useState("");
+  const [targetLineIndex, setTargetLineIndex] = React.useState<number | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (!productUomId && uoms.length > 0) {
+      setProductUomId(uoms[0].id);
+    }
+  }, [productUomId, uoms]);
+
+  const submitQuickSupplier = async () => {
+    const trimmed = supplierName.trim();
+    if (!trimmed) {
+      return;
+    }
+    await onQuickCreateSupplier(trimmed);
+    setSupplierDialogOpen(false);
+    setSupplierName("");
+  };
+
+  const submitQuickProduct = async () => {
+    const nextName = productName.trim();
+    const nextCode = productCode.trim();
+    if (!nextName || !nextCode || !productUomId) {
+      return;
+    }
+    await onQuickCreateProduct({
+      name: nextName,
+      code: nextCode,
+      defaultUomId: productUomId,
+      targetLineIndex,
+    });
+    setProductDialogOpen(false);
+    setProductName("");
+    setProductCode("");
+    setTargetLineIndex(undefined);
+  };
+
+  const openQuickProductDialog = (lineIndex?: number) => {
+    setTargetLineIndex(lineIndex);
+    setProductDialogOpen(true);
+  };
+
   return (
     <>
       {globalError ? (
@@ -88,22 +166,33 @@ export function NewShipmentFormContent({
         </Alert>
       ) : null}
 
-      {(isSuppliersError || isProductsError) && (
+      {suppliersLoadMessage ? (
         <Alert variant="destructive">
-          <AlertTitle>Failed to load form data</AlertTitle>
+          <AlertTitle>Suppliers couldn&apos;t be loaded.</AlertTitle>
           <AlertDescription>
-            Could not load suppliers or products. Retry and try again.
+            {suppliersLoadMessage}
             <div className="mt-3 flex gap-2">
               <Button variant="outline" onClick={() => void onRetrySuppliers()}>
                 Retry suppliers
               </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      {productsLoadMessage ? (
+        <Alert variant="destructive">
+          <AlertTitle>Products couldn&apos;t be loaded.</AlertTitle>
+          <AlertDescription>
+            {productsLoadMessage}
+            <div className="mt-3 flex gap-2">
               <Button variant="outline" onClick={() => void onRetryProducts()}>
                 Retry products
               </Button>
             </div>
           </AlertDescription>
         </Alert>
-      )}
+      ) : null}
 
       <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}>
         <Card>
@@ -115,7 +204,10 @@ export function NewShipmentFormContent({
                 <select
                   id="supplierPartyId"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  {...form.register("supplierPartyId")}
+                  value={form.watch("supplierPartyId")}
+                  onChange={(event) =>
+                    form.setValue("supplierPartyId", event.target.value, { shouldValidate: true })
+                  }
                   disabled={isSuppliersLoading}
                 >
                   <option value="">Select supplier</option>
@@ -129,6 +221,32 @@ export function NewShipmentFormContent({
                   <p className="text-sm text-destructive">
                     {form.formState.errors.supplierPartyId.message}
                   </p>
+                ) : null}
+                {suppliers.length === 0 && !isSuppliersLoading && !suppliersLoadMessage ? (
+                  <div className="rounded-md border border-dashed p-3 text-sm">
+                    <p className="font-medium">No suppliers found.</p>
+                    <p className="text-muted-foreground mt-1">
+                      Add a supplier to continue creating this shipment.
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                      {canCreateSuppliers ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setSupplierDialogOpen(true)}
+                        >
+                          Create supplier
+                        </Button>
+                      ) : null}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => void onRetrySuppliers()}
+                      >
+                        Refresh
+                      </Button>
+                    </div>
+                  </div>
                 ) : null}
               </div>
               <div className="space-y-2">
@@ -302,6 +420,37 @@ export function NewShipmentFormContent({
                               </option>
                             ))}
                           </select>
+                          {products.length === 0 && !productsLoadMessage ? (
+                            <div className="mt-2 rounded-md border border-dashed p-2 text-xs">
+                              <p className="font-medium">No products found.</p>
+                              <div className="mt-2 flex gap-2">
+                                {canCreateProducts ? (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openQuickProductDialog(index)}
+                                    disabled={!canQuickCreateProducts}
+                                  >
+                                    Create product
+                                  </Button>
+                                ) : null}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => void onRetryProducts()}
+                                >
+                                  Refresh
+                                </Button>
+                              </div>
+                              {!canQuickCreateProducts ? (
+                                <p className="text-muted-foreground mt-1">
+                                  Add at least one UOM in Catalog before creating products.
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : null}
                           {form.formState.errors.lines?.[index]?.productId ? (
                             <p className="text-sm text-destructive">
                               {form.formState.errors.lines[index]?.productId?.message}
@@ -391,6 +540,34 @@ export function NewShipmentFormContent({
                     {formatCurrencyFromCents(lineTotals.totalFobCents)}
                   </span>
                 </div>
+              </div>
+            ) : null}
+            {products.length === 0 && !productsLoadMessage ? (
+              <div className="rounded-md border border-dashed p-3 text-sm">
+                <p className="font-medium">No products found.</p>
+                <p className="text-muted-foreground mt-1">
+                  Create a product first, then add shipment lines.
+                </p>
+                <div className="mt-3 flex gap-2">
+                  {canCreateProducts ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => openQuickProductDialog(undefined)}
+                      disabled={!canQuickCreateProducts}
+                    >
+                      Create product
+                    </Button>
+                  ) : null}
+                  <Button type="button" variant="outline" onClick={() => void onRetryProducts()}>
+                    Refresh
+                  </Button>
+                </div>
+                {!canQuickCreateProducts ? (
+                  <p className="text-muted-foreground mt-2">
+                    Add at least one UOM in Catalog before creating products.
+                  </p>
+                ) : null}
               </div>
             ) : null}
           </CardContent>
@@ -492,6 +669,107 @@ export function NewShipmentFormContent({
           </Button>
         </div>
       </form>
+
+      <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create supplier</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="quick-supplier-name">Supplier name</Label>
+            <Input
+              id="quick-supplier-name"
+              placeholder="e.g. Atlantic Trade Co."
+              value={supplierName}
+              onChange={(event) => setSupplierName(event.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setSupplierDialogOpen(false)}
+              disabled={isQuickCreatingSupplier}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="accent"
+              onClick={() => void submitQuickSupplier()}
+              disabled={isQuickCreatingSupplier || supplierName.trim().length === 0}
+            >
+              {isQuickCreatingSupplier ? "Creating..." : "Create supplier"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create product</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="quick-product-name">Product name</Label>
+              <Input
+                id="quick-product-name"
+                placeholder="e.g. Organic Chili Sauce"
+                value={productName}
+                onChange={(event) => setProductName(event.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quick-product-code">SKU / Code</Label>
+              <Input
+                id="quick-product-code"
+                placeholder="e.g. CHILI-001"
+                value={productCode}
+                onChange={(event) => setProductCode(event.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quick-product-uom">Unit of measure</Label>
+              <select
+                id="quick-product-uom"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={productUomId}
+                onChange={(event) => setProductUomId(event.target.value)}
+              >
+                {uoms.map((uom) => (
+                  <option key={uom.id} value={uom.id}>
+                    {uom.code} - {uom.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setProductDialogOpen(false)}
+              disabled={isQuickCreatingProduct}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="accent"
+              onClick={() => void submitQuickProduct()}
+              disabled={
+                isQuickCreatingProduct ||
+                productName.trim().length === 0 ||
+                productCode.trim().length === 0 ||
+                productUomId.length === 0
+              }
+            >
+              {isQuickCreatingProduct ? "Creating..." : "Create product"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

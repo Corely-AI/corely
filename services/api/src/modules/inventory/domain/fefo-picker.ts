@@ -40,6 +40,7 @@ export function pickFEFO(
 ): PickResult {
   const allocations: PickAllocation[] = [];
   let remainingQty = quantityRequested;
+  const todayIso = new Date().toISOString().slice(0, 10);
 
   // Sort lots by expiry date (earliest first)
   // Lots without expiry date are considered last
@@ -60,6 +61,11 @@ export function pickFEFO(
   for (const lot of sortedLots) {
     if (remainingQty <= 0) {
       break;
+    }
+
+    // Expired lots are blocked from FEFO allocation.
+    if (lot.expiryDate && lot.expiryDate < todayIso) {
+      continue;
     }
 
     const availableInLot = lot.qtyOnHand - lot.qtyReserved;

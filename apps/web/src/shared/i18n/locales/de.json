@@ -146,7 +146,9 @@
     "inventoryDocuments": "Inventar - Belege",
     "inventoryReorder": "Inventar - Nachbestellung",
     "inventoryCopilot": "Inventar - Copilot",
+    "catalogItems": "Katalogartikel",
     "importShipments": "Sendungen",
+    "suppliers": "Lieferanten",
     "automation": "Automatisierung",
     "documents": "Dokumente",
     "cms": {

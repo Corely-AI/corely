@@ -405,7 +405,7 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.inventory",
         defaultLabel: "Inventory",
         order: 4,
-        sectionOrder: ["products", "warehouses", "stock-movements"],
+        sectionOrder: ["inventory", "import", "products", "warehouses", "stock-movements"],
       },
       {
         id: "finance",
@@ -458,6 +458,7 @@ export class WorkspaceTemplateService {
       "expenses",
       "parties", // customers
       "sales", // quotes, projects
+      "catalog",
       "tax",
       "import",
       "rentals",

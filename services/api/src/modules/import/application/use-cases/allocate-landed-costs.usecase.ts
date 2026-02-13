@@ -13,6 +13,7 @@ import {
   RequireTenant,
 } from "@corely/kernel";
 import type { AllocateLandedCostsInput, AllocateLandedCostsOutput } from "@corely/contracts";
+import type { PrismaService } from "@corely/data";
 import type { ImportShipmentRepositoryPort } from "../ports/import-shipment-repository.port";
 import { toImportShipmentDto } from "../mappers/import-shipment-dto.mapper";
 import {
@@ -25,6 +26,7 @@ type Deps = {
   repo: ImportShipmentRepositoryPort;
   clock: ClockPort;
   audit: AuditPort;
+  prisma: PrismaService;
 };
 
 @RequireTenant()
@@ -78,6 +80,49 @@ export class AllocateLandedCostsUseCase extends BaseUseCase<
     };
 
     await this.shipmentDeps.repo.update(tenantId, updated);
+
+    // Keep lot valuation in sync with shipment allocation for linked lots.
+    const linkedLots = await this.shipmentDeps.prisma.inventoryLot.findMany({
+      where: {
+        tenantId,
+        shipmentId: shipment.id,
+        archivedAt: null,
+      },
+      select: {
+        id: true,
+        productId: true,
+      },
+    });
+
+    if (linkedLots.length > 0) {
+      const lineCostByProductId = new Map<string, number>();
+      for (const line of allocationResult.allocatedLines) {
+        if (line.unitLandedCostCents !== null && line.unitLandedCostCents !== undefined) {
+          lineCostByProductId.set(line.productId, line.unitLandedCostCents);
+        }
+      }
+
+      const fallbackUnitCost =
+        allocationResult.allocatedLines.length === 1
+          ? (allocationResult.allocatedLines[0].unitLandedCostCents ?? null)
+          : null;
+
+      for (const lot of linkedLots) {
+        const nextUnitCost =
+          lineCostByProductId.get(lot.productId) ?? fallbackUnitCost ?? undefined;
+        if (nextUnitCost === undefined) {
+          continue;
+        }
+
+        await this.shipmentDeps.prisma.inventoryLot.update({
+          where: { id: lot.id },
+          data: {
+            unitCostCents: nextUnitCost,
+            updatedAt: now,
+          },
+        });
+      }
+    }
 
     await this.shipmentDeps.audit.log({
       tenantId,

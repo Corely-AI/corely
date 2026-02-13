@@ -1,14 +1,17 @@
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { Ship, ArrowLeft, Package } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@corely/ui";
 import { importShipmentsApi } from "@/lib/import-shipments-api";
-import type { ImportShipmentStatus } from "@corely/contracts";
+import type { AllocationMethod, ImportShipmentStatus } from "@corely/contracts";
+import { toast } from "sonner";
 
 export default function ShipmentDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [allocationMethod, setAllocationMethod] = React.useState<AllocationMethod>("BY_FOB_VALUE");
 
   const { data: shipment, isLoading } = useQuery({
     queryKey: ["import", "shipments", "detail", id],
@@ -19,6 +22,40 @@ export default function ShipmentDetailPage() {
       return importShipmentsApi.getShipment(id);
     },
     enabled: Boolean(id) && id !== "new",
+  });
+
+  const submitMutation = useMutation({
+    mutationFn: async () => {
+      if (!id || id === "new") {
+        throw new Error("Invalid shipment id");
+      }
+      return importShipmentsApi.submitShipment(id);
+    },
+    onSuccess: async () => {
+      toast.success("Shipment submitted");
+      await queryClient.invalidateQueries({ queryKey: ["import", "shipments", "detail", id] });
+      await queryClient.invalidateQueries({ queryKey: ["import", "shipments"] });
+    },
+    onError: () => {
+      toast.error("Failed to submit shipment");
+    },
+  });
+
+  const allocateMutation = useMutation({
+    mutationFn: async () => {
+      if (!id || id === "new") {
+        throw new Error("Invalid shipment id");
+      }
+      return importShipmentsApi.allocateLandedCosts(id, { allocationMethod });
+    },
+    onSuccess: async () => {
+      toast.success("Landed costs allocated");
+      await queryClient.invalidateQueries({ queryKey: ["import", "shipments", "detail", id] });
+      await queryClient.invalidateQueries({ queryKey: ["import", "shipments"] });
+    },
+    onError: () => {
+      toast.error("Failed to allocate landed costs");
+    },
   });
 
   const getStatusColor = (
@@ -93,6 +130,38 @@ export default function ShipmentDetailPage() {
           </div>
         </div>
         <Badge variant={getStatusColor(shipment.status)}>{shipment.status}</Badge>
+        <div className="flex items-center gap-2">
+          {shipment.status === "DRAFT" ? (
+            <Button
+              variant="outline"
+              onClick={() => submitMutation.mutate()}
+              disabled={submitMutation.isPending}
+            >
+              {submitMutation.isPending ? "Submitting..." : "Submit"}
+            </Button>
+          ) : null}
+          {shipment.status === "RECEIVED" ? (
+            <div className="flex items-center gap-2">
+              <select
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={allocationMethod}
+                onChange={(event) => setAllocationMethod(event.target.value as AllocationMethod)}
+              >
+                <option value="BY_FOB_VALUE">By FOB value</option>
+                <option value="BY_WEIGHT">By weight</option>
+                <option value="BY_VOLUME">By volume</option>
+                <option value="EQUAL">Equal split</option>
+              </select>
+              <Button
+                variant="outline"
+                onClick={() => allocateMutation.mutate()}
+                disabled={allocateMutation.isPending}
+              >
+                {allocateMutation.isPending ? "Allocating..." : "Allocate Costs"}
+              </Button>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
