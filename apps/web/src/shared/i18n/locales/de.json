@@ -94,7 +94,11 @@
     "searchPlaceholder": "Suchen...",
     "sort": "Sortieren",
     "filters": "Filter",
+    "filtersDescription": "Filtern Sie die Liste durch Auswahl bestimmter Kriterien.",
     "clearAll": "Alle löschen",
+    "noActiveFilters": "Keine aktiven Filter",
+    "addFilter": "Filter hinzufügen",
+    "applyFilters": "Filter anwenden",
     "noResults": "Keine Einträge gefunden."
   },
   "nav": {

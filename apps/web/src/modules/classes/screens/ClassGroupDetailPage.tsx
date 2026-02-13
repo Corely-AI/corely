@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@corely/ui";
 import { toast } from "sonner";
+import { ApiError, normalizeError } from "@corely/api-client";
 import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
 import { formatDate, formatMoney } from "@/shared/lib/formatters";
@@ -174,7 +175,39 @@ export default function ClassGroupDetailPage() {
         queryKey: classSessionKeys.list({ classGroupId: groupId }),
       });
     },
-    onError: (err: any) => toast.error(err?.message || "Failed to generate sessions"),
+    onError: (error) => {
+      const apiError = error instanceof ApiError ? error : normalizeError(error);
+      if (apiError.code === "Classes:MonthLocked") {
+        toast.error("Month is locked", {
+          description:
+            apiError.detail ||
+            "This month has already been billed. Reopen the month or create an adjustment.",
+        });
+        console.warn("Classes:MonthLocked", {
+          code: apiError.code,
+          status: apiError.status,
+        });
+        return;
+      }
+
+      if (
+        apiError.status === 403 &&
+        (apiError.code === "Common:Http403" ||
+          apiError.code === "Common:Forbidden" ||
+          apiError.detail.toLowerCase().includes("classes.write") ||
+          apiError.detail.toLowerCase().includes("permission"))
+      ) {
+        toast.error("Cannot generate sessions for current month", {
+          description:
+            "This month may already be billed/locked, or your current workspace context does not match this class group.",
+        });
+        console.warn("Generate sessions blocked", { code: apiError.code, status: apiError.status });
+        return;
+      }
+
+      toast.error(apiError.detail || "Failed to generate sessions");
+      console.warn("Generate sessions failed", { code: apiError.code, status: apiError.status });
+    },
   });
 
   const rosterOptions = useMemo(

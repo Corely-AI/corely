@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -10,6 +11,9 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@corely/ui";
 import { RotateCw } from "lucide-react";
 import { formatDateTime } from "@/shared/lib/formatters";
@@ -63,12 +67,20 @@ export function SessionsPanel({
 }: SessionsPanelProps) {
   const sessions = sessionData?.items ?? [];
   const totalSessions = sessionData?.total ?? sessions.length;
+  const currentMonthLabel = React.useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        year: "numeric",
+      }).format(new Date()),
+    []
+  );
 
   return (
     <Card>
       <CardContent className="p-6 space-y-4">
         <div className="text-sm font-semibold">Sessions</div>
-        <div className="grid gap-4 md:grid-cols-[1fr_120px_160px_120px] items-end">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_120px_180px_auto] items-end">
           <div className="space-y-2">
             <Label>Start time</Label>
             <Input
@@ -91,28 +103,58 @@ export function SessionsPanel({
             <Label>Topic</Label>
             <Input value={sessionTopic} onChange={(e) => onSessionTopicChange(e.target.value)} />
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="space-y-2">
+            <Label className="sr-only">Actions</Label>
             <Button
               variant="accent"
-              className="w-full"
+              className="w-full lg:min-w-[136px]"
               onClick={onAddSession}
               disabled={createSessionPending}
             >
               Add session
             </Button>
-            {hasRecurringSchedule ? (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={onGenerateSessions}
-                disabled={generateSessionsPending}
-              >
-                <RotateCw className="h-4 w-4" />
-                Generate current month
-              </Button>
-            ) : null}
           </div>
         </div>
+        {hasRecurringSchedule ? (
+          <div className="rounded-lg border border-accent/30 bg-accent/5 px-4 py-3">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className="border-accent/40 bg-accent/10 text-accent uppercase tracking-wide text-[10px]"
+                  >
+                    Recurring schedule
+                  </Badge>
+                  <div className="text-sm font-medium">
+                    Generate sessions for {currentMonthLabel}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This adds only missing sessions based on your recurring schedule.
+                </p>
+              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="accent-outline"
+                    className="w-full md:w-auto md:min-w-[240px]"
+                    onClick={onGenerateSessions}
+                    disabled={generateSessionsPending}
+                  >
+                    <RotateCw
+                      className={generateSessionsPending ? "h-4 w-4 animate-spin" : "h-4 w-4"}
+                    />
+                    {generateSessionsPending ? "Generating..." : "Generate current month"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Safe to run multiple times. Existing sessions are not duplicated.
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </div>
+        ) : null}
 
         <div className="overflow-x-auto rounded-md border border-border">
           <table className="w-full">

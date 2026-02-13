@@ -101,7 +101,11 @@
     "searchPlaceholder": "Search...",
     "sort": "Sort",
     "filters": "Filters",
+    "filtersDescription": "Filter the list by selecting specific criteria.",
     "clearAll": "Clear all",
+    "noActiveFilters": "No active filters",
+    "addFilter": "Add filter",
+    "applyFilters": "Apply filters",
     "noResults": "No items found."
   },
   "nav": {

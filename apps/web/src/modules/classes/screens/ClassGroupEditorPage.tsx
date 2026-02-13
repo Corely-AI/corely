@@ -82,7 +82,8 @@ export default function ClassGroupEditorPage() {
       toast.success(isEdit ? "Class group updated" : "Class group created");
       navigate("/class-groups");
     },
-    onError: (err: any) => toast.error(err?.message || "Failed to save class group"),
+    onError: (err: unknown) =>
+      toast.error(err instanceof Error ? err.message : "Failed to save class group"),
   });
 
   const canSave =
@@ -100,9 +101,9 @@ export default function ClassGroupEditorPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3 sm:items-center">
           <Button variant="ghost" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -116,14 +117,16 @@ export default function ClassGroupEditorPage() {
             </div>
           </div>
         </div>
-        <Button variant="accent" disabled={!canSave || mutation.isPending} onClick={handleSave}>
-          <Save className="h-4 w-4" />
-          Save
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="accent" disabled={!canSave || mutation.isPending} onClick={handleSave}>
+            <Save className="h-4 w-4" />
+            Save
+          </Button>
+        </div>
       </div>
 
       <Card>
-        <CardContent className="p-6 space-y-5">
+        <CardContent className="p-6 space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Name</Label>

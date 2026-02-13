@@ -12,13 +12,25 @@ import { AppError } from "./app-error";
  * ```
  */
 export class ForbiddenError extends AppError {
-  constructor(message = "Forbidden", code = "Common:Forbidden") {
+  constructor(
+    message = "Forbidden",
+    code = "Common:Forbidden",
+    options?: {
+      publicMessage?: string;
+      data?: Record<string, unknown>;
+      internalDetails?: string;
+      cause?: Error;
+    }
+  ) {
     super({
       code,
       message,
-      publicMessage: "You don't have permission to perform this action", // Generic safe message
+      publicMessage: options?.publicMessage ?? "You don't have permission to perform this action",
       status: 403,
       logLevel: "warn",
+      data: options?.data,
+      internalDetails: options?.internalDetails,
+      cause: options?.cause,
     });
   }
 }

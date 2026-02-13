@@ -13,6 +13,13 @@ const normalizeBaseUrl = (value: string | undefined): string => {
     return DEFAULT_PORTAL_API_BASE_URL;
   }
 
+  // Support host-only config values like "api.corely.one" or "localhost:3000".
+  if (!raw.startsWith("/") && !/^https?:\/\//i.test(raw)) {
+    const isLocalHost = /^(localhost|127\.0\.0\.1)(:\d+)?$/i.test(raw);
+    const protocol = isLocalHost ? "http://" : "https://";
+    return `${protocol}${raw}`.replace(/\/+$/, "");
+  }
+
   // Keep origin-only URLs clean and avoid accidental double slashes in joins.
   return raw.replace(/\/+$/, "");
 };

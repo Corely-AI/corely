@@ -64,10 +64,8 @@ export class GenerateScheduledSessionsUseCase {
     if (settings.billingBasis === "SCHEDULED_SESSIONS") {
       const locked = await this.repo.isMonthLocked(tenantId, workspaceId, month);
       if (locked) {
-        throw new ForbiddenError(
-          monthLockedDetail(settings.billingMonthStrategy),
-          "Classes:MonthLocked"
-        );
+        const detail = monthLockedDetail(settings.billingMonthStrategy);
+        throw new ForbiddenError(detail, "Classes:MonthLocked", { publicMessage: detail });
       }
     }
 

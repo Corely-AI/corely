@@ -2,10 +2,21 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-import { CheckCircle2, XCircle, CalendarDays } from "lucide-react";
-import { Button, Card, CardContent } from "@corely/ui";
+import { CheckCircle2, XCircle, CalendarDays, RotateCw } from "lucide-react";
+import {
+  Button,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@corely/ui";
 import { toast } from "sonner";
 import { ApiError, normalizeError } from "@corely/api-client";
+import type { ClassSessionStatus } from "@corely/contracts";
 import { classesApi } from "@/lib/classes-api";
 import { CrudListPageLayout, CrudRowActions, ConfirmDeleteDialog } from "@/shared/crud";
 import {
@@ -17,6 +28,8 @@ import {
 } from "@/shared/list-kit";
 import { formatDateTime } from "@/shared/lib/formatters";
 import { classGroupKeys, classSessionKeys } from "../queries";
+
+const ALL_CLASS_GROUPS_VALUE = "__all_class_groups__";
 
 export default function SessionsPage() {
   const { t, i18n } = useTranslation();
@@ -86,6 +99,14 @@ export default function SessionsPage() {
       dateTo: dateTo ? String(dateTo.value) : undefined,
     };
   }, [state.filters]);
+  const selectedClassGroupId = filters.classGroupId;
+  const selectedClassGroup = useMemo(
+    () => groupsData?.items?.find((group) => group.id === selectedClassGroupId),
+    [groupsData?.items, selectedClassGroupId]
+  );
+  const canGenerateCurrentMonth = Boolean(
+    selectedClassGroupId && selectedClassGroup?.schedulePattern
+  );
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: classSessionKeys.list(state),
@@ -96,7 +117,7 @@ export default function SessionsPage() {
         pageSize: state.pageSize,
         sort: state.sort,
         classGroupId: filters.classGroupId,
-        status: filters.status as any,
+        status: filters.status as ClassSessionStatus | undefined,
         dateFrom: filters.dateFrom,
         dateTo: filters.dateTo,
         filters: state.filters,
@@ -105,6 +126,67 @@ export default function SessionsPage() {
   });
 
   const sessions = data?.items ?? [];
+
+  const generateCurrentMonth = useMutation({
+    mutationFn: async (classGroupId: string) => classesApi.generateClassGroupSessions(classGroupId),
+    onSuccess: async (result) => {
+      const count = result.items.length;
+      toast.success(
+        count > 0
+          ? t("classes.sessions.generatedForMonth", {
+              count,
+              defaultValue: `Generated ${count} session${count === 1 ? "" : "s"} for this month.`,
+            })
+          : t("classes.sessions.alreadyUpToDate", {
+              defaultValue: "Sessions are already up to date.",
+            })
+      );
+      await queryClient.invalidateQueries({ queryKey: classSessionKeys.list(undefined) });
+    },
+    onError: (error) => {
+      const apiError = error instanceof ApiError ? error : normalizeError(error);
+      if (apiError.code === "Classes:MonthLocked") {
+        toast.error(t("classes.sessions.monthLocked"), {
+          description: apiError.detail || t("classes.sessions.monthLockedDescription"),
+        });
+        console.warn("Classes:MonthLocked", {
+          code: apiError.code,
+          status: apiError.status,
+        });
+        return;
+      }
+
+      if (
+        apiError.status === 403 &&
+        (apiError.code === "Common:Http403" ||
+          apiError.code === "Common:Forbidden" ||
+          apiError.detail.toLowerCase().includes("classes.write") ||
+          apiError.detail.toLowerCase().includes("permission"))
+      ) {
+        toast.error(
+          t("classes.sessions.generateBlockedTitle", {
+            defaultValue: "Cannot generate sessions for current month",
+          }),
+          {
+            description: t("classes.sessions.generateBlockedDescription", {
+              defaultValue:
+                "This month may already be billed/locked, or your current workspace context does not match this class group.",
+            }),
+          }
+        );
+        console.warn("Generate sessions blocked", { code: apiError.code, status: apiError.status });
+        return;
+      }
+
+      toast.error(
+        apiError.detail ||
+          t("classes.sessions.generateFailed", {
+            defaultValue: "Failed to generate sessions",
+          })
+      );
+      console.warn("Generate sessions failed", { code: apiError.code, status: apiError.status });
+    },
+  });
 
   const updateStatus = useMutation({
     mutationFn: async (payload: { id: string; status: "DONE" | "CANCELLED" }) =>
@@ -156,6 +238,95 @@ export default function SessionsPage() {
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={state.filters?.length}
           >
+            <div className="flex items-center gap-2 ml-auto">
+              <Select
+                value={selectedClassGroupId ?? ALL_CLASS_GROUPS_VALUE}
+                onValueChange={(value) => {
+                  const nextFilters = (state.filters ?? []).filter(
+                    (filter) => filter.field !== "classGroupId"
+                  );
+
+                  if (value !== ALL_CLASS_GROUPS_VALUE) {
+                    nextFilters.push({
+                      field: "classGroupId",
+                      operator: "eq",
+                      value,
+                    });
+                  }
+
+                  setUrlState({ filters: nextFilters, page: 1 });
+                }}
+              >
+                <SelectTrigger className="w-[220px]">
+                  <SelectValue
+                    placeholder={t("classes.sessions.selectClassGroup", {
+                      defaultValue: "Select class group",
+                    })}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL_CLASS_GROUPS_VALUE}>
+                    {t("classes.sessions.allClassGroups", { defaultValue: "All class groups" })}
+                  </SelectItem>
+                  {groupOptions.map((groupOption) => (
+                    <SelectItem key={groupOption.value} value={groupOption.value}>
+                      {groupOption.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Button
+                      variant="accent-outline"
+                      size="sm"
+                      disabled={!canGenerateCurrentMonth || generateCurrentMonth.isPending}
+                      onClick={() => {
+                        if (!selectedClassGroupId) {
+                          return;
+                        }
+                        generateCurrentMonth.mutate(selectedClassGroupId);
+                      }}
+                    >
+                      <RotateCw
+                        className={
+                          generateCurrentMonth.isPending ? "h-4 w-4 animate-spin" : "h-4 w-4"
+                        }
+                      />
+                      {generateCurrentMonth.isPending
+                        ? t("classes.sessions.generatingCurrentMonth", {
+                            defaultValue: "Generating...",
+                          })
+                        : t("classes.sessions.generateCurrentMonth", {
+                            defaultValue: "Generate current month",
+                          })}
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                {!selectedClassGroupId ? (
+                  <TooltipContent>
+                    {t("classes.sessions.selectClassGroupFirst", {
+                      defaultValue: "Select a class group first.",
+                    })}
+                  </TooltipContent>
+                ) : !selectedClassGroup?.schedulePattern ? (
+                  <TooltipContent>
+                    {t("classes.sessions.recurringScheduleRequired", {
+                      defaultValue: "This class group has no recurring schedule.",
+                    })}
+                  </TooltipContent>
+                ) : (
+                  <TooltipContent>
+                    {t("classes.sessions.generateCurrentMonthHint", {
+                      defaultValue:
+                        "Adds missing sessions for the selected class group based on its recurring schedule.",
+                    })}
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </div>
             {isError ? (
               <div className="text-sm text-destructive">
                 {(error as Error)?.message || t("classes.sessions.loadFailed")}

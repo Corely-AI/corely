@@ -56,10 +56,8 @@ export class CreateSessionUseCase {
       const monthKey = getMonthKeyForInstant(new Date(input.startsAt));
       const locked = await this.repo.isMonthLocked(tenantId, workspaceId, monthKey);
       if (locked) {
-        throw new ForbiddenError(
-          monthLockedDetail(settings.billingMonthStrategy),
-          "Classes:MonthLocked"
-        );
+        const detail = monthLockedDetail(settings.billingMonthStrategy);
+        throw new ForbiddenError(detail, "Classes:MonthLocked", { publicMessage: detail });
       }
     }
 

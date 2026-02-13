@@ -104,10 +104,8 @@ export class CreateRecurringSessionsUseCase {
       for (const month of monthsToCheck) {
         const locked = await this.repo.isMonthLocked(tenantId, workspaceId, month);
         if (locked) {
-          throw new ForbiddenError(
-            monthLockedDetail(settings.billingMonthStrategy),
-            "Classes:MonthLocked"
-          );
+          const detail = monthLockedDetail(settings.billingMonthStrategy);
+          throw new ForbiddenError(detail, "Classes:MonthLocked", { publicMessage: detail });
         }
       }
     }

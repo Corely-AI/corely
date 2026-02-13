@@ -70,10 +70,8 @@ export class BulkUpsertAttendanceUseCase {
         });
 
         if (hasBillingImpact) {
-          throw new ForbiddenError(
-            monthLockedDetail(settings.billingMonthStrategy),
-            "Classes:MonthLocked"
-          );
+          const detail = monthLockedDetail(settings.billingMonthStrategy);
+          throw new ForbiddenError(detail, "Classes:MonthLocked", { publicMessage: detail });
         }
       }
     }
