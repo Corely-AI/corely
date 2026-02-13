@@ -6,7 +6,7 @@ import {
   UpsertEntityLayout,
   ValidationFailedError,
 } from "@corely/domain";
-import type { CustomFieldDefinitionRepository, EntityLayoutRepository } from "@corely/data";
+import { CustomFieldDefinitionRepository, EntityLayoutRepository } from "@corely/data";
 import type { AuditPort } from "../../shared/ports/audit.port";
 import { AUDIT_PORT_TOKEN } from "../../shared/ports/audit.port";
 import type { IdempotencyStoragePort } from "../../shared/ports/idempotency-storage.port";

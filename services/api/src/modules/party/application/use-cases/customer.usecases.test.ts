@@ -54,12 +54,34 @@ describe("Party & CRM - Customers", () => {
       partyRepo: repo,
       idGenerator,
       clock,
+      dimensionsWritePort: {
+        setEntityAssignments: async () => ({
+          entityRef: { entityType: "party", entityId: "x" },
+          assignments: [],
+        }),
+        deleteEntityAssignments: async () => {},
+      } as any,
+      customFieldsWritePort: {
+        setEntityValues: async () => ({}),
+        deleteEntityValues: async () => {},
+      } as any,
     });
     updateCustomer = new UpdateCustomerUseCase({
       logger: new NoopLogger(),
       partyRepo: repo,
       idGenerator,
       clock,
+      dimensionsWritePort: {
+        setEntityAssignments: async () => ({
+          entityRef: { entityType: "party", entityId: "x" },
+          assignments: [],
+        }),
+        deleteEntityAssignments: async () => {},
+      } as any,
+      customFieldsWritePort: {
+        setEntityValues: async () => ({}),
+        deleteEntityValues: async () => {},
+      } as any,
     });
     archiveCustomer = new ArchiveCustomerUseCase({
       logger: new NoopLogger(),

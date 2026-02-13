@@ -115,6 +115,17 @@ describe("Party student guardians", () => {
       partyRepo: repo,
       idGenerator,
       clock,
+      dimensionsWritePort: {
+        setEntityAssignments: async () => ({
+          entityRef: { entityType: "party", entityId: "x" },
+          assignments: [],
+        }),
+        deleteEntityAssignments: async () => {},
+      } as any,
+      customFieldsWritePort: {
+        setEntityValues: async () => ({}),
+        deleteEntityValues: async () => {},
+      } as any,
     });
 
     linkGuardian = new LinkGuardianToStudentUseCase({

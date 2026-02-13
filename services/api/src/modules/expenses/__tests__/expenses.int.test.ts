@@ -47,7 +47,25 @@ describe("Expenses integration (Postgres)", () => {
       new SystemIdGenerator(),
       new SystemClock(),
       new CustomFieldDefinitionRepository(prisma),
-      new CustomFieldIndexRepository(prisma)
+      new CustomFieldIndexRepository(prisma),
+      {
+        setEntityAssignments: async () => ({}),
+        deleteEntityAssignments: async () => {},
+      } as any,
+      {
+        setEntityValues: async () => ({}),
+        deleteEntityValues: async () => {},
+      } as any,
+      {
+        getWorkspaceByIdWithLegalEntity: async () => ({
+          id: "ws-1",
+          legalEntity: { kind: "PERSONAL" },
+        }),
+      } as any,
+      {
+        getDefaultCapabilities: () => ({ approvals: false }),
+      } as any,
+      prisma
     );
   });
 

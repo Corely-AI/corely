@@ -32,6 +32,7 @@ import { FormsEventHandler } from "../forms/forms-event.handler";
 import { FormsWorkerModule } from "../forms/forms-worker.module";
 import { ClassesInvoiceReadyToSendHandler } from "../classes/handlers/classes-invoice-ready-to-send.handler";
 import { ClassesWorkerModule } from "../classes/classes-worker.module";
+import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adapters/platform-entity-deleted.handler";
 
 // ... imports
 
@@ -53,6 +54,7 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
       }),
     },
     ClassesInvoiceReadyToSendHandler,
+    PlatformEntityDeletedHandler,
     {
       provide: InvoiceEmailRequestedHandler,
       useFactory: (
@@ -92,7 +94,8 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
         issueTranscriptionHandler: IssueTranscriptionRequestedHandler,
         taxReportPdfHandler: TaxReportPdfRequestedHandler,
         formsHandler: FormsEventHandler,
-        classesHandler: ClassesInvoiceReadyToSendHandler
+        classesHandler: ClassesInvoiceReadyToSendHandler,
+        platformEntityDeletedHandler: PlatformEntityDeletedHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           invoiceHandler,
@@ -102,6 +105,7 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
           taxReportPdfHandler,
           formsHandler,
           classesHandler,
+          platformEntityDeletedHandler,
         ]);
       },
       inject: [
@@ -114,6 +118,7 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
         TaxReportPdfRequestedHandler,
         FormsEventHandler,
         ClassesInvoiceReadyToSendHandler,
+        PlatformEntityDeletedHandler,
       ],
     },
   ],

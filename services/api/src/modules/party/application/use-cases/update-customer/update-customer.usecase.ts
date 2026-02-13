@@ -1,5 +1,6 @@
 import {
   CustomerBillingAddressSchema,
+  PartySocialLinksSchema,
   type UpdateCustomerInput,
   type UpdateCustomerOutput,
 } from "@corely/contracts";
@@ -23,11 +24,17 @@ import { toCustomerDto } from "../../mappers/customer-dto.mapper";
 import type { PartyRepoPort } from "../../ports/party-repository.port";
 import type { Address } from "../../../domain/address";
 import type { CustomerPatch } from "../../../domain/party.aggregate";
+import type {
+  CustomFieldsWritePort,
+  DimensionsWritePort,
+} from "../../../../platform-custom-attributes/application/ports/custom-attributes.ports";
 type Deps = {
   logger: LoggerPort;
   partyRepo: PartyRepoPort;
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
+  dimensionsWritePort: DimensionsWritePort;
+  customFieldsWritePort: CustomFieldsWritePort;
 };
 
 export class UpdateCustomerUseCase extends BaseUseCase<UpdateCustomerInput, UpdateCustomerOutput> {
@@ -66,8 +73,18 @@ export class UpdateCustomerUseCase extends BaseUseCase<UpdateCustomerInput, Upda
     try {
       const now = this.useCaseDeps.clock.now();
       const billingAddress = input.patch.billingAddress;
+      const socialLinks = input.patch.socialLinks;
       const patch = {
         ...input.patch,
+        socialLinks:
+          socialLinks === undefined || socialLinks === null
+            ? socialLinks
+            : PartySocialLinksSchema.parse(socialLinks).map((link) => ({
+                platform: link.platform,
+                url: link.url,
+                label: link.label ?? null,
+                isPrimary: link.isPrimary ?? false,
+              })),
         billingAddress:
           billingAddress === undefined || billingAddress === null
             ? billingAddress
@@ -80,6 +97,22 @@ export class UpdateCustomerUseCase extends BaseUseCase<UpdateCustomerInput, Upda
     }
 
     await this.useCaseDeps.partyRepo.updateCustomer(ctx.tenantId, existing);
+    if (input.patch.dimensionAssignments) {
+      await this.useCaseDeps.dimensionsWritePort.setEntityAssignments(
+        ctx.tenantId,
+        "party",
+        existing.id,
+        input.patch.dimensionAssignments
+      );
+    }
+    if (input.patch.customFieldValues !== undefined) {
+      await this.useCaseDeps.customFieldsWritePort.setEntityValues(
+        ctx.tenantId,
+        "party",
+        existing.id,
+        input.patch.customFieldValues ?? {}
+      );
+    }
     return ok({ customer: toCustomerDto(existing) });
   }
 }

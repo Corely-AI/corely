@@ -76,6 +76,12 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       tenantId,
       archivedAt: filters.includeArchived ? undefined : null,
     };
+    if (filters.entityIds) {
+      if (filters.entityIds.length === 0) {
+        return { items: [], total: 0, nextCursor: null };
+      }
+      where.id = { in: filters.entityIds };
+    }
     if (filters.status) {
       if (Array.isArray(filters.status)) {
         where.status = { in: filters.status };

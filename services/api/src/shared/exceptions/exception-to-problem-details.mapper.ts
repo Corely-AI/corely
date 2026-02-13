@@ -20,6 +20,7 @@ import {
   ForbiddenError as KernelForbiddenError,
 } from "@corely/kernel";
 import { type Prisma } from "@prisma/client";
+import { ZodError } from "zod";
 
 /**
  * Maps any error to a ProblemDetails response
@@ -52,18 +53,39 @@ export class ExceptionToProblemDetailsMapper {
       return this.mapUseCaseError(error);
     }
 
-    // 3. Handle Prisma errors
+    // 3. Handle Zod validation errors
+    if (error instanceof ZodError) {
+      return this.mapZodError(error);
+    }
+
+    // 4. Handle Prisma errors
     if (this.isPrismaError(error)) {
       return this.mapPrismaError(error);
     }
 
-    // 4. Handle NestJS HttpException
+    // 5. Handle NestJS HttpException
     if (error instanceof HttpException) {
       return this.mapHttpException(error);
     }
 
-    // 5. Handle unknown errors
+    // 6. Handle unknown errors
     return this.mapUnknownError(error);
+  }
+
+  private mapZodError(error: ZodError): ProblemDetails {
+    return {
+      type: "https://errors.corely.one/Common:ValidationFailed",
+      title: "Bad Request",
+      status: HttpStatus.BAD_REQUEST,
+      detail: "Validation failed",
+      instance: this.instance,
+      code: "Common:ValidationFailed",
+      validationErrors: error.issues.map((issue) => ({
+        message: issue.message,
+        members: issue.path.map((segment) => String(segment)),
+      })),
+      traceId: this.traceId,
+    };
   }
 
   /**

@@ -19,12 +19,16 @@ import CustomerFormFields from "../components/CustomerFormFields";
 import StudentGuardiansPanel from "../components/StudentGuardiansPanel";
 import { withWorkspace } from "@/shared/workspaces/workspace-query-keys";
 import { MaterialsSection } from "../../portal/components/MaterialsSection";
+import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function StudentDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const studentId = id ?? "";
   const queryClient = useQueryClient();
+  const [customAttributes, setCustomAttributes] = React.useState<CustomAttributesValue | undefined>(
+    undefined
+  );
 
   const studentKey = withWorkspace(["students", "detail", studentId]);
   const listKey = withWorkspace(["students", "list"]);
@@ -43,7 +47,15 @@ export default function StudentDetailPage() {
 
   const updateStudentMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
-      const patch = toUpdateCustomerInput(data);
+      const patch = {
+        ...toUpdateCustomerInput(data),
+        ...(customAttributes
+          ? {
+              customFieldValues: customAttributes.customFieldValues,
+              dimensionAssignments: customAttributes.dimensionAssignments,
+            }
+          : {}),
+      };
       return customersApi.updateCustomer(studentId, patch, "STUDENT");
     },
     onSuccess: async () => {
@@ -130,6 +142,13 @@ export default function StudentDetailPage() {
           </CardContent>
         </Card>
       </form>
+
+      <CustomAttributesSection
+        entityType="party"
+        entityId={studentId}
+        mode="edit"
+        onChange={setCustomAttributes}
+      />
 
       <StudentGuardiansPanel studentId={studentId} />
 

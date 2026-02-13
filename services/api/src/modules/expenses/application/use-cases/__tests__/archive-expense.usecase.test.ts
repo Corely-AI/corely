@@ -12,6 +12,9 @@ describe("ArchiveExpenseUseCase", () => {
   let archive: ArchiveExpenseUseCase;
   let unarchive: UnarchiveExpenseUseCase;
   const audit = { log: vi.fn().mockResolvedValue(undefined) };
+  const outbox = { enqueue: vi.fn().mockResolvedValue(undefined) };
+  const dimensionsWritePort = { deleteEntityAssignments: vi.fn().mockResolvedValue(undefined) };
+  const customFieldsWritePort = { deleteEntityValues: vi.fn().mockResolvedValue(undefined) };
   const ctx = { tenantId, userId, requestId: "req-1" } as any;
 
   beforeEach(() => {
@@ -19,7 +22,10 @@ describe("ArchiveExpenseUseCase", () => {
     archive = new ArchiveExpenseUseCase(
       repo,
       new FixedClock(new Date("2024-01-01T00:00:00Z")),
-      audit as any
+      audit as any,
+      outbox as any,
+      dimensionsWritePort as any,
+      customFieldsWritePort as any
     );
     unarchive = new UnarchiveExpenseUseCase(repo, audit as any);
   });
