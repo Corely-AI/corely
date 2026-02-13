@@ -29,6 +29,9 @@ const extractFromPath = (pathname: string): string | null => {
   return match?.[1]?.toLowerCase() ?? null;
 };
 
+export const resolveWorkspaceSlugFromPath = (): string | null =>
+  extractFromPath(window.location.pathname);
+
 const extractFromHost = (hostname: string, baseDomains: string[]): string | null => {
   const host = hostname.toLowerCase();
 
@@ -57,7 +60,7 @@ export const getPublicWorkspaceBaseDomains = (): string[] =>
   ).sort((a, b) => b.length - a.length);
 
 export function resolveWorkspaceSlug(): string | null {
-  const slugFromPath = extractFromPath(window.location.pathname);
+  const slugFromPath = resolveWorkspaceSlugFromPath();
   if (slugFromPath) {
     return slugFromPath;
   }

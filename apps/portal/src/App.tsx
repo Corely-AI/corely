@@ -3,15 +3,15 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PortalDashboard } from "./pages/Dashboard";
 import { LoginPage } from "./pages/Login";
 import { useAuthStore } from "./stores/auth";
-import { resolveWorkspaceSlug } from "./lib/api-config";
+import { resolveWorkspaceSlugFromPath } from "./lib/api-config";
 
 /**
- * Redirect that preserves the /w/:slug prefix from the current URL.
- * Works on F5 refresh because it reads the slug from window.location.
+ * Redirect that preserves /w/:slug only when it is explicitly present in the URL path.
+ * Host-based workspace URLs (e.g. slug.portal.corely.one/login) should stay path-clean.
  */
 const PortalRedirect = ({ to }: { to: string }) => {
-  const slug = resolveWorkspaceSlug();
-  const prefix = slug ? `/w/${slug}` : "";
+  const slugFromPath = resolveWorkspaceSlugFromPath();
+  const prefix = slugFromPath ? `/w/${slugFromPath}` : "";
   return <Navigate to={`${prefix}${to}`} replace />;
 };
 
