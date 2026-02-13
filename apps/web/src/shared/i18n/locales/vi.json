@@ -94,7 +94,11 @@
     "searchPlaceholder": "Tìm kiếm...",
     "sort": "Sắp xếp",
     "filters": "Bộ lọc",
+    "filtersDescription": "Lọc danh sách bằng cách chọn các tiêu chí cụ thể.",
     "clearAll": "Xóa tất cả",
+    "noActiveFilters": "Không có bộ lọc nào đang hoạt động",
+    "addFilter": "Thêm bộ lọc",
+    "applyFilters": "Áp dụng bộ lọc",
     "noResults": "Không tìm thấy mục nào."
   },
   "nav": {

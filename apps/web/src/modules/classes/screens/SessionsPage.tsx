@@ -156,6 +156,28 @@ export default function SessionsPage() {
         return;
       }
 
+      if (
+        apiError.status === 403 &&
+        (apiError.code === "Common:Http403" ||
+          apiError.code === "Common:Forbidden" ||
+          apiError.detail.toLowerCase().includes("classes.write") ||
+          apiError.detail.toLowerCase().includes("permission"))
+      ) {
+        toast.error(
+          t("classes.sessions.generateBlockedTitle", {
+            defaultValue: "Cannot generate sessions for current month",
+          }),
+          {
+            description: t("classes.sessions.generateBlockedDescription", {
+              defaultValue:
+                "This month may already be billed/locked, or your current workspace context does not match this class group.",
+            }),
+          }
+        );
+        console.warn("Generate sessions blocked", { code: apiError.code, status: apiError.status });
+        return;
+      }
+
       toast.error(
         apiError.detail ||
           t("classes.sessions.generateFailed", {
