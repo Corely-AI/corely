@@ -342,10 +342,19 @@ export const InvoiceIssuedPayloadSchema = z.object({
 });
 export type InvoiceIssuedPayload = z.infer<typeof InvoiceIssuedPayloadSchema>;
 
+export const PlatformEntityDeletedPayloadSchema = z.object({
+  tenantId: z.string(),
+  entityType: z.string().min(1),
+  entityId: z.string().min(1),
+});
+export type PlatformEntityDeletedPayload = z.infer<typeof PlatformEntityDeletedPayloadSchema>;
+
 export const EVENT_NAMES = {
   IDENTITY_USER_CREATED: "identity.user.created",
   EXPENSE_CREATED: "expense.created",
   INVOICE_ISSUED: "invoice.issued",
+  PLATFORM_ENTITY_DELETED: "platform.entity.deleted",
 } as const;
 
 export * from "./common/customization/custom-field";
+export * from "./common/customization/custom-attributes";

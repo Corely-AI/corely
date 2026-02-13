@@ -1,6 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+  useQueries,
+} from "@tanstack/react-query";
 import { Plus, Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
 
@@ -25,6 +31,7 @@ import {
   type FilterFieldDef,
 } from "@/shared/list-kit";
 import { expenseKeys } from "../queries";
+import { customAttributesApi } from "@/lib/custom-attributes-api";
 import {
   Pagination,
   PaginationContent,
@@ -65,8 +72,44 @@ export default function ExpensesPage() {
     { storageKey: "expenses-list-v1" }
   );
 
-  const filterFields = useMemo<FilterFieldDef[]>(
-    () => [
+  const { data: dimensionTypes = [] } = useQuery({
+    queryKey: ["custom-attributes", "dimensions", "expense"],
+    queryFn: () => customAttributesApi.listDimensionTypes("expense"),
+  });
+  const dimensionValuesQueries = useQueries({
+    queries: dimensionTypes.map((type) => ({
+      queryKey: ["custom-attributes", "dimension-values", type.id],
+      queryFn: () => customAttributesApi.listDimensionValues(type.id),
+      enabled: Boolean(type.id),
+    })),
+  });
+  const { data: indexedCustomFields = [] } = useQuery({
+    queryKey: ["custom-attributes", "indexed-custom-fields", "expense"],
+    queryFn: () => customAttributesApi.listIndexedCustomFields("expense"),
+  });
+
+  const filterFields = useMemo<FilterFieldDef[]>(() => {
+    const dimensionFields = dimensionTypes
+      .filter((type) => type.isActive)
+      .map((type, index) => {
+        const values = (dimensionValuesQueries[index]?.data ?? []).filter(
+          (value) => value.isActive
+        );
+        return {
+          key: `dimension:${type.id}`,
+          label: `Dimension: ${type.name}`,
+          type: "select" as const,
+          options: values.map((value) => ({ label: value.name, value: value.id })),
+        };
+      });
+
+    const customFields = indexedCustomFields.map((field) => ({
+      key: `custom:${field.fieldId}`,
+      label: `Custom: ${field.label}`,
+      type: field.type === "NUMBER" ? ("number" as const) : ("text" as const),
+    }));
+
+    return [
       {
         key: "category",
         label: "Category",
@@ -76,9 +119,10 @@ export default function ExpensesPage() {
       { key: "expenseDate", label: "Date", type: "date" },
       { key: "merchantName", label: "Merchant", type: "text" },
       { key: "totalAmountCents", label: "Amount", type: "number" },
-    ],
-    []
-  );
+      ...dimensionFields,
+      ...customFields,
+    ];
+  }, [dimensionTypes, dimensionValuesQueries, indexedCustomFields]);
 
   const filters = useMemo(() => {
     const categoryFilter = state.filters?.find(
@@ -91,15 +135,33 @@ export default function ExpensesPage() {
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: expenseKeys.list({ ...state }),
-    queryFn: () =>
-      expensesApi.listExpenses({
+    queryFn: () => {
+      const dimensionFilters = (state.filters ?? [])
+        .filter((filter) => filter.field.startsWith("dimension:") && filter.value)
+        .map((filter) => ({
+          typeId: filter.field.replace("dimension:", ""),
+          valueIds: [String(filter.value)],
+        }));
+
+      const customFieldFilters = (state.filters ?? [])
+        .filter((filter) => filter.field.startsWith("custom:"))
+        .map((filter) => ({
+          fieldId: filter.field.replace("custom:", ""),
+          operator: filter.operator,
+          value: filter.value,
+        }));
+
+      return expensesApi.listExpenses({
         q: state.q,
         page: state.page,
         pageSize: state.pageSize,
         sort: state.sort,
         category: filters.category || undefined,
         filters: state.filters,
-      }),
+        dimensionFilters,
+        customFieldFilters,
+      });
+    },
     placeholderData: keepPreviousData,
   });
 

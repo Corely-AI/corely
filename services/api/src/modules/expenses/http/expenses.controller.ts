@@ -15,6 +15,7 @@ import type { Request } from "express";
 import { z } from "zod";
 import {
   CreateExpenseWebInputSchema,
+  ListExpensesInputSchema,
   type ExpenseDto,
   type ExpenseStatus,
 } from "@corely/contracts";
@@ -103,6 +104,8 @@ export class ExpensesController {
         category: input.category,
         createdByUserId: input.createdByUserId ?? ctx.userId ?? "system",
         custom: input.custom,
+        customFieldValues: input.customFieldValues,
+        dimensionAssignments: input.dimensionAssignments,
         issuedAt,
         idempotencyKey: resolveIdempotencyKey(req) ?? input.idempotencyKey ?? "default",
       },
@@ -120,6 +123,15 @@ export class ExpensesController {
     const ctx = buildUseCaseContext(req);
     const category = typeof query.category === "string" ? query.category : undefined;
     const status = typeof query.status === "string" ? (query.status as ExpenseStatus) : undefined;
+    const parsed = ListExpensesInputSchema.partial().safeParse({
+      ...query,
+      dimensionFilters:
+        typeof query.dimensionFilters === "string" ? query.dimensionFilters : undefined,
+      customFieldFilters:
+        typeof query.customFieldFilters === "string" ? query.customFieldFilters : undefined,
+    });
+    const dimensionFilters = parsed.success ? parsed.data.dimensionFilters : undefined;
+    const customFieldFilters = parsed.success ? parsed.data.customFieldFilters : undefined;
 
     const result = await this.listExpensesUseCase.execute(
       {
@@ -133,6 +145,8 @@ export class ExpensesController {
         merchantName: typeof query.merchantName === "string" ? query.merchantName : undefined,
         fromDate: typeof query.fromDate === "string" ? query.fromDate : undefined,
         toDate: typeof query.toDate === "string" ? query.toDate : undefined,
+        dimensionFilters,
+        customFieldFilters,
       },
       ctx
     );
@@ -178,6 +192,8 @@ export class ExpensesController {
         category: input.category ?? null,
         vatRate: input.vatRate ?? null,
         custom: input.custom ?? null,
+        customFieldValues: input.customFieldValues ?? null,
+        dimensionAssignments: input.dimensionAssignments,
       },
       ctx
     );

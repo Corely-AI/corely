@@ -18,6 +18,13 @@ export const toCustomerDto = (party: PartyAggregate): CustomerDto => ({
   vatId: party.vatId ?? undefined,
   notes: party.notes ?? undefined,
   tags: party.tags ?? [],
+  socialLinks: party.socialLinks.map((link) => ({
+    type: "SOCIAL",
+    platform: link.platform,
+    url: link.url,
+    label: link.label ?? undefined,
+    isPrimary: link.isPrimary,
+  })),
   lifecycleStatus: party.lifecycleStatus as any,
   archivedAt: party.archivedAt ? party.archivedAt.toISOString() : null,
   createdAt: party.createdAt.toISOString(),

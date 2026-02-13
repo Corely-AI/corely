@@ -10,6 +10,7 @@ import {
   buildCustomFieldIndexes,
   validateAndNormalizeCustomValues,
 } from "@corely/domain";
+import type { EntityDimensionAssignment } from "@corely/contracts";
 import { Expense } from "../../domain/expense.entity";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
 import { Inject } from "@nestjs/common";
@@ -19,6 +20,10 @@ import {
 } from "../../../workspaces/application/ports/workspace-repository.port";
 import { WorkspaceTemplateService } from "../../../platform/application/services/workspace-template.service";
 import { PrismaService } from "@corely/data";
+import type {
+  CustomFieldsWritePort,
+  DimensionsWritePort,
+} from "../../../platform-custom-attributes/application/ports/custom-attributes.ports";
 
 export interface CreateExpenseInput {
   tenantId: string;
@@ -30,6 +35,8 @@ export interface CreateExpenseInput {
   issuedAt: Date;
   createdByUserId?: string;
   custom?: Record<string, unknown>;
+  customFieldValues?: Record<string, unknown>;
+  dimensionAssignments?: EntityDimensionAssignment[];
   idempotencyKey: string;
 }
 
@@ -45,6 +52,8 @@ export class CreateExpenseUseCase {
     private readonly clock: ClockPort,
     private readonly customFieldDefinitions: CustomFieldDefinitionPort,
     private readonly customFieldIndexes: CustomFieldIndexPort,
+    private readonly dimensionsWritePort: DimensionsWritePort,
+    private readonly customFieldsWritePort: CustomFieldsWritePort,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort,
     private readonly templateService: WorkspaceTemplateService,
@@ -86,7 +95,10 @@ export class CreateExpenseUseCase {
       input.tenantId,
       "expense"
     );
-    const normalizedCustom = validateAndNormalizeCustomValues(definitions, input.custom);
+    const normalizedCustom = validateAndNormalizeCustomValues(
+      definitions,
+      input.customFieldValues ?? input.custom
+    );
 
     const expense = new Expense(
       this.idGenerator.newId(),
@@ -143,6 +155,19 @@ export class CreateExpenseUseCase {
         indexRows
       );
     }
+
+    await this.customFieldsWritePort.setEntityValues(
+      input.tenantId,
+      "expense",
+      expense.id,
+      normalizedCustom
+    );
+    await this.dimensionsWritePort.setEntityAssignments(
+      input.tenantId,
+      "expense",
+      expense.id,
+      input.dimensionAssignments ?? []
+    );
 
     // Sync Tax Snapshot (moved from worker to API)
     if (expense.status === "APPROVED") {

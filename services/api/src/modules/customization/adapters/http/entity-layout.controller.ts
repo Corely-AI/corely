@@ -15,7 +15,7 @@ import {
   CurrentTenantId,
   CurrentUserId,
 } from "../../../identity/adapters/http/current-user.decorator";
-import type { CustomizationService } from "../../customization.service";
+import { CustomizationService } from "../../customization.service";
 
 @UseGuards(AuthGuard)
 @Controller("customization/layouts")

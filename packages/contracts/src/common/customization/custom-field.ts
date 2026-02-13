@@ -1,7 +1,12 @@
 import { z } from "zod";
+import {
+  CustomizableEntityTypes,
+  CustomizableEntityTypeSchema,
+  type CustomizableEntityType,
+} from "./custom-attributes";
 
-export const CustomEntityTypes = ["expense", "invoice", "client"] as const;
-export type CustomEntityType = (typeof CustomEntityTypes)[number];
+export const CustomEntityTypes = CustomizableEntityTypes;
+export type CustomEntityType = CustomizableEntityType;
 
 export const CustomFieldTypes = [
   "TEXT",
@@ -16,7 +21,7 @@ export type CustomFieldType = (typeof CustomFieldTypes)[number];
 
 const BaseCustomFieldDefinitionSchema = z.object({
   tenantId: z.string(),
-  entityType: z.enum(CustomEntityTypes),
+  entityType: CustomizableEntityTypeSchema,
   key: z.string().min(1),
   label: z.string().min(1),
   description: z.string().optional(),
@@ -66,7 +71,7 @@ export const LayoutSectionSchema = z.object({
 
 export const EntityLayoutSchema = z.object({
   tenantId: z.string().optional(),
-  entityType: z.enum(CustomEntityTypes),
+  entityType: CustomizableEntityTypeSchema,
   version: z.number().int().positive().default(1),
   layout: z.object({
     sections: z.array(LayoutSectionSchema),

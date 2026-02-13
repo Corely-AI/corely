@@ -1449,6 +1449,9 @@
       "placeholder": "Hỏi trợ lý mua hàng bất cứ điều gì..."
     }
   },
+  "workspace": {
+    "create": "Tạo không gian làm việc"
+  },
   "tenants": {
     "title": "Tổ chức (Tenants)",
     "description": "Quản lý quyền và cài đặt của tổ chức.",

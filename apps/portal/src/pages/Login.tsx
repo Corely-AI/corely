@@ -8,7 +8,7 @@ import { portalApiRequest } from "../lib/portal-api-client";
 const RESEND_COOLDOWN = 60;
 
 export const LoginPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -117,6 +117,37 @@ export const LoginPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4">
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+
+      {/* Language Switcher */}
+      <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-1 rounded-xl bg-white/5 border border-white/10 backdrop-blur-md z-50">
+        <button
+          onClick={() => {
+            void i18n.changeLanguage("en");
+            localStorage.setItem("Corely Portal-language", "en");
+          }}
+          className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "en" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
+        >
+          EN
+        </button>
+        <button
+          onClick={() => {
+            void i18n.changeLanguage("vi");
+            localStorage.setItem("Corely Portal-language", "vi");
+          }}
+          className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "vi" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
+        >
+          VI
+        </button>
+        <button
+          onClick={() => {
+            void i18n.changeLanguage("de");
+            localStorage.setItem("Corely Portal-language", "de");
+          }}
+          className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "de" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
+        >
+          DE
+        </button>
+      </div>
 
       <Card className="w-full max-w-md border-slate-700 bg-slate-900/50 backdrop-blur-xl shadow-2xl">
         <CardHeader className="space-y-1 text-center">

@@ -17,12 +17,16 @@ import {
   type CustomerFormData,
 } from "../schemas/customer-form.schema";
 import CustomerFormFields from "../components/CustomerFormFields";
+import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function EditCustomerPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const [customAttributes, setCustomAttributes] = React.useState<CustomAttributesValue | undefined>(
+    undefined
+  );
 
   const { data: customer, isLoading } = useQuery({
     queryKey: ["customers", id],
@@ -38,7 +42,15 @@ export default function EditCustomerPage() {
 
   const updateCustomerMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
-      const patch = toUpdateCustomerInput(data);
+      const patch = {
+        ...toUpdateCustomerInput(data),
+        ...(customAttributes
+          ? {
+              customFieldValues: customAttributes.customFieldValues,
+              dimensionAssignments: customAttributes.dimensionAssignments,
+            }
+          : {}),
+      };
       return customersApi.updateCustomer(id!, patch);
     },
     onSuccess: () => {
@@ -108,6 +120,13 @@ export default function EditCustomerPage() {
           </CardContent>
         </Card>
       </form>
+
+      <CustomAttributesSection
+        entityType="party"
+        entityId={id}
+        mode="edit"
+        onChange={setCustomAttributes}
+      />
     </div>
   );
 }

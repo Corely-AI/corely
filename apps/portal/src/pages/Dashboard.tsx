@@ -110,6 +110,15 @@ export const PortalDashboard = () => {
               >
                 VI
               </button>
+              <button
+                onClick={() => {
+                  void i18n.changeLanguage("de");
+                  localStorage.setItem("Corely Portal-language", "de");
+                }}
+                className={`text-[10px] font-bold px-2 py-1 rounded-lg transition-colors ${i18n.language === "de" ? "bg-teal-500/20 text-teal-400" : "text-slate-500 hover:text-slate-300"}`}
+              >
+                DE
+              </button>
             </div>
             <div className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
               <UserIcon className="w-4 h-4 text-teal-400" />

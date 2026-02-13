@@ -19,6 +19,8 @@ let customIndexes: CustomFieldIndexPort;
 let workspaceRepo: any;
 let templateService: any;
 let prisma: any;
+let dimensionsWritePort: any;
+let customFieldsWritePort: any;
 
 beforeEach(() => {
   repo = new FakeExpenseRepository();
@@ -59,6 +61,14 @@ beforeEach(() => {
       upsert: async () => ({}),
     },
   };
+  dimensionsWritePort = {
+    setEntityAssignments: async () => ({}),
+    deleteEntityAssignments: async () => {},
+  };
+  customFieldsWritePort = {
+    setEntityValues: async () => ({}),
+    deleteEntityValues: async () => {},
+  };
 
   useCase = new CreateExpenseUseCase(
     repo,
@@ -69,6 +79,8 @@ beforeEach(() => {
     new FakeClock(),
     customDefs,
     customIndexes,
+    dimensionsWritePort,
+    customFieldsWritePort,
     workspaceRepo,
     templateService,
     prisma

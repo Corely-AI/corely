@@ -1427,6 +1427,9 @@
       "placeholder": "Fragen Sie den Einkaufsassistenten alles..."
     }
   },
+  "workspace": {
+    "create": "Arbeitsbereich erstellen"
+  },
   "tenants": {
     "title": "Mandanten",
     "description": "Verwalte Mandanten-Berechtigungen und Einstellungen.",

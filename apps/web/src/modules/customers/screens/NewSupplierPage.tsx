@@ -15,10 +15,14 @@ import {
   type CustomerFormData,
 } from "../schemas/customer-form.schema";
 import CustomerFormFields from "../components/CustomerFormFields";
+import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function NewSupplierPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [customAttributes, setCustomAttributes] = React.useState<CustomAttributesValue | undefined>(
+    undefined
+  );
 
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerFormSchema),
@@ -28,7 +32,12 @@ export default function NewSupplierPage() {
   const createSupplierMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
       const input = toCreateCustomerInput(data);
-      return customersApi.createCustomer({ ...input, role: "SUPPLIER" });
+      return customersApi.createCustomer({
+        ...input,
+        role: "SUPPLIER",
+        customFieldValues: customAttributes?.customFieldValues,
+        dimensionAssignments: customAttributes?.dimensionAssignments,
+      });
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: withWorkspace(["suppliers"]) });
@@ -78,6 +87,8 @@ export default function NewSupplierPage() {
           </CardContent>
         </Card>
       </form>
+
+      <CustomAttributesSection entityType="party" mode="edit" onChange={setCustomAttributes} />
     </div>
   );
 }

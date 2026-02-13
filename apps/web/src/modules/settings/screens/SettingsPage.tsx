@@ -164,6 +164,28 @@ export default function SettingsPage() {
               <Link to="/settings/classes">Open</Link>
             </Button>
           </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="font-medium text-foreground">Dimensions</div>
+              <div className="text-sm text-muted-foreground">
+                Manage reporting segments for expenses and parties.
+              </div>
+            </div>
+            <Button asChild variant="outline">
+              <Link to="/settings/custom-attributes/dimensions">Open</Link>
+            </Button>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="font-medium text-foreground">Custom Fields</div>
+              <div className="text-sm text-muted-foreground">
+                Define custom field schemas and indexing per entity type.
+              </div>
+            </div>
+            <Button asChild variant="outline">
+              <Link to="/settings/custom-attributes/custom-fields">Open</Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

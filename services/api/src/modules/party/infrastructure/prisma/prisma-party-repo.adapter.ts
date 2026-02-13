@@ -23,6 +23,8 @@ type ContactPointRow = {
   partyId: string;
   type: ContactPointType;
   value: string;
+  platform: string | null;
+  label: string | null;
   isPrimary: boolean;
 };
 
@@ -64,6 +66,8 @@ const toAggregate = (row: PartyWithRelations): PartyAggregate => {
       id: cp.id,
       type: cp.type as ContactPointType,
       value: cp.value,
+      platform: (cp.platform as any) ?? undefined,
+      label: cp.label ?? null,
       isPrimary: cp.isPrimary,
     })),
     billingAddress: billingAddress
@@ -131,6 +135,8 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
             partyId: party.id,
             type: cp.type,
             value: cp.value,
+            platform: cp.platform ?? null,
+            label: cp.label ?? null,
             isPrimary: cp.isPrimary,
           })),
         });
@@ -191,41 +197,21 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
         });
       }
 
-      const contactTypes = party.contactPoints.map((cp) => cp.type);
-      for (const contact of party.contactPoints) {
-        await tx.contactPoint.upsert({
-          where: {
-            tenantId_partyId_type: {
-              tenantId,
-              partyId: party.id,
-              type: contact.type,
-            },
-          },
-          update: {
-            value: contact.value,
-            isPrimary: contact.isPrimary,
-          },
-          create: {
+      await tx.contactPoint.deleteMany({ where: { tenantId, partyId: party.id } });
+      if (party.contactPoints.length) {
+        await tx.contactPoint.createMany({
+          data: party.contactPoints.map((contact) => ({
             id: contact.id,
             tenantId,
             partyId: party.id,
             type: contact.type,
             value: contact.value,
+            platform: contact.platform ?? null,
+            label: contact.label ?? null,
             isPrimary: contact.isPrimary,
-          },
+          })),
+          skipDuplicates: true,
         });
-      }
-
-      if (contactTypes.length) {
-        await tx.contactPoint.deleteMany({
-          where: {
-            tenantId,
-            partyId: party.id,
-            type: { notIn: contactTypes },
-          },
-        });
-      } else {
-        await tx.contactPoint.deleteMany({ where: { tenantId, partyId: party.id } });
       }
 
       if (party.billingAddress) {

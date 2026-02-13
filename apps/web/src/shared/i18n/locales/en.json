@@ -1475,6 +1475,9 @@
       "placeholder": "Ask the purchasing assistant anything..."
     }
   },
+  "workspace": {
+    "create": "Create Workspace"
+  },
   "tenants": {
     "title": "Tenants",
     "description": "Manage tenant entitlements and settings.",

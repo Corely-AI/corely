@@ -66,3 +66,62 @@ model EntityLayout {
   @@unique([tenantId, entityType])
   @@schema("platform")
 }
+
+model DimensionType {
+  id            String   @id @default(cuid())
+  tenantId      String
+  code          String
+  name          String
+  description   String?
+  appliesTo     String[]
+  requiredFor   String[] @default([])
+  allowMultiple Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  values      DimensionValue[]
+  assignments EntityDimension[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, isActive, sortOrder])
+  @@schema("platform")
+}
+
+model DimensionValue {
+  id        String   @id @default(cuid())
+  tenantId  String
+  typeId    String
+  code      String
+  name      String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type        DimensionType    @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  assignments EntityDimension[]
+
+  @@unique([tenantId, typeId, code])
+  @@index([tenantId, typeId, isActive, sortOrder])
+  @@schema("platform")
+}
+
+model EntityDimension {
+  id         String   @id @default(cuid())
+  tenantId   String
+  entityType String
+  entityId   String
+  typeId     String
+  valueId    String
+  createdAt  DateTime @default(now())
+
+  type  DimensionType  @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  value DimensionValue @relation(fields: [valueId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, entityType, entityId, typeId, valueId])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, entityType, typeId, valueId])
+  @@schema("platform")
+}

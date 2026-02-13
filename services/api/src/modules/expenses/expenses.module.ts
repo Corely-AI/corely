@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
+import type { OutboxPort } from "@corely/kernel";
 import {
   DataModule,
   CustomFieldDefinitionRepository,
@@ -11,6 +12,7 @@ import {
   IdempotencyStoragePort,
   IDEMPOTENCY_STORAGE_PORT_TOKEN,
 } from "../../shared/ports/idempotency-storage.port";
+import type { AuditPort } from "../../shared/ports/audit.port";
 import { IdGeneratorPort, ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
 import { ClockPort, CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
 import { EXPENSE_REPOSITORY } from "./application/ports/expense-repository.port";
@@ -25,9 +27,19 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
 import { PlatformModule } from "../platform/platform.module";
 import { WORKSPACE_REPOSITORY_PORT } from "../workspaces/application/ports/workspace-repository.port";
 import { WorkspaceTemplateService } from "../platform/application/services/workspace-template.service";
+import {
+  CUSTOM_FIELDS_WRITE_PORT,
+  DIMENSIONS_WRITE_PORT,
+  type CustomFieldsWritePort,
+  type DimensionsWritePort,
+  PlatformCustomAttributesModule,
+  ResolveEntityIdsByCustomFieldFiltersUseCase,
+  ResolveEntityIdsByDimensionFiltersUseCase,
+} from "../platform-custom-attributes";
+import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/workspace-repository.port";
 
 @Module({
-  imports: [DataModule, KernelModule, PlatformModule],
+  imports: [DataModule, KernelModule, PlatformModule, PlatformCustomAttributesModule],
   controllers: [ExpensesController],
   providers: [
     // Repository
@@ -39,14 +51,16 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
       provide: CreateExpenseUseCase,
       useFactory: (
         repo: PrismaExpenseRepository,
-        outbox,
-        audit,
+        outbox: OutboxPort,
+        audit: AuditPort,
         idempotency: IdempotencyStoragePort,
         idGen: IdGeneratorPort,
         clock: ClockPort,
         customDefs: CustomFieldDefinitionRepository,
         customIndexes: CustomFieldIndexRepository,
-        workspaceRepo,
+        dimensionsWritePort: DimensionsWritePort,
+        customFieldsWritePort: CustomFieldsWritePort,
+        workspaceRepo: WorkspaceRepositoryPort,
         templateService: WorkspaceTemplateService,
         prisma: PrismaService
       ) =>
@@ -59,6 +73,8 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
           clock,
           customDefs,
           customIndexes,
+          dimensionsWritePort,
+          customFieldsWritePort,
           workspaceRepo,
           templateService,
           prisma
@@ -73,6 +89,8 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
         CLOCK_PORT_TOKEN,
         CustomFieldDefinitionRepository,
         CustomFieldIndexRepository,
+        DIMENSIONS_WRITE_PORT,
+        CUSTOM_FIELDS_WRITE_PORT,
         WORKSPACE_REPOSITORY_PORT,
         WorkspaceTemplateService,
         PrismaService,
@@ -80,20 +98,41 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
     },
     {
       provide: ArchiveExpenseUseCase,
-      useFactory: (repo: PrismaExpenseRepository, clock: ClockPort, audit) =>
-        new ArchiveExpenseUseCase(repo, clock, audit),
-      inject: [EXPENSE_REPOSITORY, CLOCK_PORT_TOKEN, AUDIT_PORT],
+      useFactory: (
+        repo: PrismaExpenseRepository,
+        clock: ClockPort,
+        audit: AuditPort,
+        outbox: OutboxPort,
+        dims: DimensionsWritePort,
+        customs: CustomFieldsWritePort
+      ) => new ArchiveExpenseUseCase(repo, clock, audit, outbox, dims, customs),
+      inject: [
+        EXPENSE_REPOSITORY,
+        CLOCK_PORT_TOKEN,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        DIMENSIONS_WRITE_PORT,
+        CUSTOM_FIELDS_WRITE_PORT,
+      ],
     },
     {
       provide: UnarchiveExpenseUseCase,
-      useFactory: (repo: PrismaExpenseRepository, audit) =>
+      useFactory: (repo: PrismaExpenseRepository, audit: AuditPort) =>
         new UnarchiveExpenseUseCase(repo, audit),
       inject: [EXPENSE_REPOSITORY, AUDIT_PORT],
     },
     {
       provide: ListExpensesUseCase,
-      useFactory: (repo: PrismaExpenseRepository) => new ListExpensesUseCase(repo),
-      inject: [EXPENSE_REPOSITORY],
+      useFactory: (
+        repo: PrismaExpenseRepository,
+        resolveByDimensions: ResolveEntityIdsByDimensionFiltersUseCase,
+        resolveByCustomFields: ResolveEntityIdsByCustomFieldFiltersUseCase
+      ) => new ListExpensesUseCase(repo, resolveByDimensions, resolveByCustomFields),
+      inject: [
+        EXPENSE_REPOSITORY,
+        ResolveEntityIdsByDimensionFiltersUseCase,
+        ResolveEntityIdsByCustomFieldFiltersUseCase,
+      ],
     },
     {
       provide: GetExpenseUseCase,
@@ -102,9 +141,36 @@ import { WorkspaceTemplateService } from "../platform/application/services/works
     },
     {
       provide: UpdateExpenseUseCase,
-      useFactory: (repo: PrismaExpenseRepository, audit, clock: ClockPort, prisma: PrismaService) =>
-        new UpdateExpenseUseCase(repo, audit, clock, prisma),
-      inject: [EXPENSE_REPOSITORY, AUDIT_PORT, CLOCK_PORT_TOKEN, PrismaService],
+      useFactory: (
+        repo: PrismaExpenseRepository,
+        audit: AuditPort,
+        clock: ClockPort,
+        prisma: PrismaService,
+        customDefs: CustomFieldDefinitionRepository,
+        customIndexes: CustomFieldIndexRepository,
+        dims: DimensionsWritePort,
+        customs: CustomFieldsWritePort
+      ) =>
+        new UpdateExpenseUseCase(
+          repo,
+          audit,
+          clock,
+          prisma,
+          customDefs,
+          customIndexes,
+          dims,
+          customs
+        ),
+      inject: [
+        EXPENSE_REPOSITORY,
+        AUDIT_PORT,
+        CLOCK_PORT_TOKEN,
+        PrismaService,
+        CustomFieldDefinitionRepository,
+        CustomFieldIndexRepository,
+        DIMENSIONS_WRITE_PORT,
+        CUSTOM_FIELDS_WRITE_PORT,
+      ],
     },
   ],
   exports: [CreateExpenseUseCase],
