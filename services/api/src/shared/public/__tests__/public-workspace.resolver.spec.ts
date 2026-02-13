@@ -12,7 +12,7 @@ const buildWorkspace = (overrides: Partial<any> = {}) => ({
 
 describe("PublicWorkspaceResolver", () => {
   const originalNodeEnv = process.env.NODE_ENV;
-  const originalBaseDomain = process.env.PUBLIC_WORKSPACE_BASE_DOMAIN;
+  const originalBaseDomains = process.env.PUBLIC_WORKSPACE_BASE_DOMAINS;
   const originalQueryFlag = process.env.PUBLIC_WORKSPACE_QUERY_ENABLED;
 
   let prisma: any;
@@ -32,10 +32,10 @@ describe("PublicWorkspaceResolver", () => {
 
   afterEach(() => {
     process.env.NODE_ENV = originalNodeEnv;
-    if (originalBaseDomain === undefined) {
-      delete process.env.PUBLIC_WORKSPACE_BASE_DOMAIN;
+    if (originalBaseDomains === undefined) {
+      delete process.env.PUBLIC_WORKSPACE_BASE_DOMAINS;
     } else {
-      process.env.PUBLIC_WORKSPACE_BASE_DOMAIN = originalBaseDomain;
+      process.env.PUBLIC_WORKSPACE_BASE_DOMAINS = originalBaseDomains;
     }
     if (originalQueryFlag === undefined) {
       delete process.env.PUBLIC_WORKSPACE_QUERY_ENABLED;
@@ -61,7 +61,7 @@ describe("PublicWorkspaceResolver", () => {
   });
 
   it("resolves by subdomain", async () => {
-    process.env.PUBLIC_WORKSPACE_BASE_DOMAIN = "my.corely.one";
+    process.env.PUBLIC_WORKSPACE_BASE_DOMAINS = "my.corely.one";
     const workspace = buildWorkspace({ slug: "acme" });
     prisma.workspaceDomain.findUnique.mockResolvedValue(null);
     prisma.workspace.findFirst.mockResolvedValue(workspace);
@@ -73,6 +73,38 @@ describe("PublicWorkspaceResolver", () => {
     });
 
     expect(result.workspaceSlug).toBe("acme");
+    expect(result.resolutionMethod).toBe("subdomain");
+  });
+
+  it("resolves portal subdomain when included in PUBLIC_WORKSPACE_BASE_DOMAINS", async () => {
+    process.env.PUBLIC_WORKSPACE_BASE_DOMAINS = "portal.corely.one,my.corely.one";
+    const workspace = buildWorkspace({ slug: "trang-dang-nachhilfe" });
+    prisma.workspaceDomain.findUnique.mockResolvedValue(null);
+    prisma.workspace.findFirst.mockResolvedValue(workspace);
+
+    const result = await resolver.resolveFromRequest({
+      host: "trang-dang-nachhilfe.portal.corely.one",
+      path: "/portal/me",
+      query: {},
+    });
+
+    expect(result.workspaceSlug).toBe("trang-dang-nachhilfe");
+    expect(result.resolutionMethod).toBe("subdomain");
+  });
+
+  it("resolves my subdomain when included in PUBLIC_WORKSPACE_BASE_DOMAINS", async () => {
+    process.env.PUBLIC_WORKSPACE_BASE_DOMAINS = "portal.corely.one,my.corely.one";
+    const workspace = buildWorkspace({ slug: "trang-dang-nachhilfe" });
+    prisma.workspaceDomain.findUnique.mockResolvedValue(null);
+    prisma.workspace.findFirst.mockResolvedValue(workspace);
+
+    const result = await resolver.resolveFromRequest({
+      host: "trang-dang-nachhilfe.my.corely.one",
+      path: "/public/cms/posts",
+      query: {},
+    });
+
+    expect(result.workspaceSlug).toBe("trang-dang-nachhilfe");
     expect(result.resolutionMethod).toBe("subdomain");
   });
 
@@ -148,6 +180,20 @@ describe("PublicWorkspaceResolver", () => {
       resolver.resolveFromRequest({
         host: "unknown.my.corely.one",
         path: "/public/rentals",
+        query: {},
+      })
+    ).rejects.toMatchObject({ code: "Public:WorkspaceNotResolved" });
+  });
+
+  it("returns not found when host does not match configured base domains", async () => {
+    process.env.PUBLIC_WORKSPACE_BASE_DOMAINS = "portal.corely.one,my.corely.one";
+    prisma.workspaceDomain.findUnique.mockResolvedValue(null);
+    prisma.workspace.findFirst.mockResolvedValue(buildWorkspace({ slug: "acme" }));
+
+    await expect(
+      resolver.resolveFromRequest({
+        host: "trang-dang-nachhilfe.other.corely.one",
+        path: "/portal/me",
         query: {},
       })
     ).rejects.toMatchObject({ code: "Public:WorkspaceNotResolved" });
