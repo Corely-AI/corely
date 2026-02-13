@@ -10,6 +10,7 @@ import {
   UpdateReorderPolicyInputSchema,
   GetReorderSuggestionsInputSchema,
   GetLowStockInputSchema,
+  PickForDeliveryInputSchema,
 } from "@corely/contracts";
 import { StockApplication } from "../../application/stock.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
@@ -139,6 +140,15 @@ export class StockController {
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.getLowStock.execute(input, ctx);
+    return mapResultToHttp(result);
+  }
+
+  @Post("pick/fefo")
+  @RequirePermission("inventory.documents.read")
+  async pickForDelivery(@Body() body: unknown, @Req() req: Request) {
+    const input = PickForDeliveryInputSchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.pickForDelivery.execute(input, ctx);
     return mapResultToHttp(result);
   }
 }

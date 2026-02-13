@@ -7,8 +7,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
-import { Loader2, Power, PowerOff, AlertCircle, CheckCircle2 } from "lucide-react";
-import { Alert, AlertDescription } from "@corely/ui";
+import { Loader2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +18,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@corely/ui";
+import { getAppManagementPolicy } from "../apps-management-policy";
+
+interface AppMutationError {
+  status?: number;
+  response?: {
+    status?: number;
+  };
+}
 
 interface TenantAppsTabProps {
   tenantId: string;
@@ -33,6 +40,7 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
     appId: string;
     dependents: string[];
   } | null>(null);
+  const [autoEnabledApps, setAutoEnabledApps] = useState<Set<string>>(new Set());
 
   // Merge catalog with entitlement status
   const apps = catalog.map((cat) => {
@@ -42,10 +50,53 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
       enabled: ent?.enabled ?? false,
       source: ent?.source,
       effectiveDependencies: ent?.dependencies || cat.dependencies,
+      policy: getAppManagementPolicy(cat.appId),
     };
   });
 
+  const requiredAppsToEnable = React.useMemo(
+    () =>
+      apps
+        .filter((app) => app.policy.forceEnabled && !app.enabled && !autoEnabledApps.has(app.appId))
+        .map((app) => app.appId),
+    [apps, autoEnabledApps]
+  );
+
+  React.useEffect(() => {
+    if (requiredAppsToEnable.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const run = async () => {
+      for (const appId of requiredAppsToEnable) {
+        if (cancelled) {
+          return;
+        }
+        setAutoEnabledApps((prev) => new Set(prev).add(appId));
+        try {
+          await platformEntitlementsApi.updateAppEnablement(tenantId, appId, true);
+          onRefresh();
+        } catch {
+          // keep the page usable; host can retry enable manually
+        }
+      }
+    };
+
+    void run();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [requiredAppsToEnable, tenantId, onRefresh]);
+
   const handleToggle = async (appId: string, currentEnabled: boolean) => {
+    const policy = getAppManagementPolicy(appId);
+    if (currentEnabled && policy.hideDisableAction) {
+      return;
+    }
+
     if (currentEnabled) {
       // API will throw 409 if dependents exist, then we prompt Force.
       // Or we can pre-check in UI? Prompt says "If disabling app with dependents: show modal...".
@@ -54,15 +105,15 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
       try {
         await platformEntitlementsApi.updateAppEnablement(tenantId, appId, false, false);
         onRefresh();
-      } catch (err: any) {
+      } catch (err: unknown) {
         // Assuming error response contains dependents?
         // We'll simulate checking response or just ask user if it fails.
         // Prompt B5 says "return 409 Conflict with list of dependent appIds".
         // API Client throws. I need to catch.
         // For now, if generic error, I just show alert. If 409, show cascading confirmation.
-        if (err.status === 409 || err.response?.status === 409) {
+        const error = err as AppMutationError;
+        if (error.status === 409 || error.response?.status === 409) {
           // Parse dependents from error body if possible, otherwise generic message
-          console.log("Dependents conflict", err);
           setConfirmDisable({ appId, dependents: [] }); // We assume dependencies exist
         } else {
           alert("Failed to disable app");
@@ -79,7 +130,7 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
         // I will just enable and assuming backend handles it safely or I can check deps locally.
         await platformEntitlementsApi.updateAppEnablement(tenantId, appId, true);
         onRefresh();
-      } catch (err) {
+      } catch {
         alert("Failed to enable app");
       } finally {
         setLoadingAppId(null);
@@ -100,7 +151,7 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
         true
       ); // Cascade=true
       onRefresh();
-    } catch (err) {
+    } catch {
       alert("Failed into force disable");
     } finally {
       setLoadingAppId(null);
@@ -121,7 +172,7 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                 </div>
                 {app.enabled ? (
                   <Badge variant="default" className="ml-2">
-                    Enabled
+                    {app.policy.forceEnabled ? "Always Enabled" : "Enabled"}
                   </Badge>
                 ) : (
                   <Badge variant="outline" className="ml-2">
@@ -141,21 +192,41 @@ export function TenantAppsTab({ tenantId, catalog, entitlements, onRefresh }: Te
                 </div>
               )}
 
-              <Button
-                variant={app.enabled ? "outline" : "default"}
-                size="sm"
-                className="w-full"
-                onClick={() => handleToggle(app.appId, !!app.enabled)}
-                disabled={loadingAppId !== null}
-              >
-                {loadingAppId === app.appId ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : app.enabled ? (
-                  <>Disable App</>
+              {app.enabled ? (
+                app.policy.hideDisableAction ? (
+                  <div className="text-xs text-muted-foreground text-center py-2 border rounded-md">
+                    {app.policy.reason ?? "This app is required and cannot be disabled."}
+                  </div>
                 ) : (
-                  <>Enable App</>
-                )}
-              </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleToggle(app.appId, true)}
+                    disabled={loadingAppId !== null}
+                  >
+                    {loadingAppId === app.appId ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>Disable App</>
+                    )}
+                  </Button>
+                )
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => handleToggle(app.appId, false)}
+                  disabled={loadingAppId !== null}
+                >
+                  {loadingAppId === app.appId ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>Enable App</>
+                  )}
+                </Button>
+              )}
             </CardContent>
           </Card>
         ))}

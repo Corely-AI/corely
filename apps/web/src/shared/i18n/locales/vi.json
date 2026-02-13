@@ -1,6 +1,10 @@
 {
   "common": {
     "active": "Hoạt động",
+    "inactive": "Ngưng hoạt động",
+    "suspended": "Đã tạm ngưng",
+    "activate": "Kích hoạt",
+    "deactivate": "Hủy kích hoạt",
     "appName": "Corely One ERP",
     "tagline": "Quản lý doanh nghiệp của bạn, toàn diện.",
     "loading": "Đang tải...",
@@ -23,6 +27,7 @@
     "viewAll": "Xem tất cả",
     "comingSoon": "Sắp ra mắt",
     "noResults": "Không tìm thấy kết quả",
+    "selectDate": "Chọn ngày",
     "noTopic": "Không có chủ đề",
     "error": "Đã xảy ra lỗi",
     "success": "Thành công",
@@ -50,6 +55,8 @@
     "createdAt": "Đã tạo {{date}}",
     "empty": "Trống",
     "amount": "Số tiền",
+    "type": "Loại",
+    "description": "Mô tả",
     "date": "Ngày",
     "noteOptional": "Ghi chú (Tùy chọn)",
     "saveChanges": "Lưu thay đổi",
@@ -105,7 +112,7 @@
     "assistant": "Trợ lý",
     "expenses": "Chi phí",
     "invoices": "Hóa đơn",
-    "tenants": "Khách thuê",
+    "tenants": "Tổ chức",
     "groups": {
       "core": "Chính",
       "sales": "Bán hàng",
@@ -139,6 +146,9 @@
     "inventoryDocuments": "Kho - Chứng từ",
     "inventoryReorder": "Kho - Đặt hàng",
     "inventoryCopilot": "Kho - Trợ lý",
+    "catalogItems": "Mặt hàng danh mục",
+    "importShipments": "Lô hàng",
+    "suppliers": "Nhà cung cấp",
     "automation": "Tự động hóa",
     "documents": "Tài liệu",
     "cms": {
@@ -364,6 +374,54 @@
     "addEntry": "Thêm bút toán",
     "dailyClose": "Chốt quỹ cuối ngày"
   },
+  "cash": {
+    "title": "Quản lý quỹ tiền mặt",
+    "subtitle": "Theo dõi quầy thu, bút toán và chốt quỹ cuối ngày",
+    "registers": {
+      "add": "Thêm quầy thu",
+      "addTitle": "Tạo quầy thu",
+      "namePlaceholder": "Tên quầy thu",
+      "noLocation": "Chưa có địa điểm",
+      "currentBalance": "Số dư hiện tại",
+      "empty": "Chưa có quầy thu nào",
+      "created": "Đã tạo quầy thu",
+      "createFailed": "Không thể tạo quầy thu"
+    },
+    "detail": {
+      "cashIn": "Thu tiền",
+      "cashOut": "Chi tiền",
+      "dailyCloses": "Chốt quỹ ngày",
+      "updatedBalance": "Số dư cập nhật",
+      "noEntriesFound": "Không tìm thấy bút toán",
+      "noDailyCloses": "Chưa có dữ liệu chốt quỹ ngày",
+      "addCashIn": "Thêm thu tiền",
+      "addCashOut": "Thêm chi tiền",
+      "reasonPlaceholder": "Lý do cho bút toán...",
+      "confirmIn": "Xác nhận thu",
+      "confirmOut": "Xác nhận chi",
+      "entryAdded": "Đã thêm bút toán",
+      "entryAddFailed": "Không thể thêm bút toán",
+      "invalidAmount": "Số tiền không hợp lệ"
+    },
+    "dailyClose": {
+      "title": "Chốt quỹ cuối ngày",
+      "reconcile": "Đối soát: {{register}}",
+      "businessDate": "Ngày kinh doanh",
+      "expectedBalance": "Số dư dự kiến",
+      "countedBalance": "Số dư kiểm đếm",
+      "countedCash": "Tiền mặt kiểm đếm ({{currency}})",
+      "difference": "Chênh lệch",
+      "perfectMatch": "Khớp hoàn toàn",
+      "discrepancyDetected": "Phát hiện chênh lệch",
+      "differenceEntryNote": "Bút toán chênh lệch sẽ được tạo tự động",
+      "notesPlaceholder": "Ghi chú cho lần chốt quỹ này...",
+      "submitClose": "Gửi chốt quỹ",
+      "submitting": "Đang gửi...",
+      "submitted": "Đã gửi chốt quỹ",
+      "submitFailed": "Chốt quỹ thất bại",
+      "enterCountedAmount": "Vui lòng nhập số tiền kiểm đếm"
+    }
+  },
   "dashboard": {
     "title": "Tổng quan",
     "welcome": "Chào mừng trở lại",
@@ -406,12 +464,36 @@
   },
   "assistant": {
     "title": "Trợ lý",
-    "placeholder": "Hỏi tôi bất cứ điều gì hoặc tải lên biên lai...",
+    "subtitle": "Hỏi bất cứ điều gì, trích xuất biên lai, tạo hóa đơn hoặc yêu cầu tóm tắt nhanh.",
+    "placeholder": "Hỏi tôi bất cứ điều gì...",
+    "emptyStateTitle": "Tôi có thể giúp gì cho bạn?",
+    "emptyStateDescription": "Hỏi bất cứ điều gì, trích xuất biên lai, tạo hóa đơn hoặc yêu cầu tóm tắt nhanh.",
+    "awaitingInputs": "Đang chờ dữ liệu nhập từ bạn...",
+    "approvalRequired": "Yêu cầu phê duyệt ({{toolName}})",
+    "approvalDescription": "Trợ lý muốn sử dụng công cụ '{{toolName}}'. Bạn có muốn cho phép không?",
+    "toolResult": "Kết quả từ {{toolName}}",
+    "toolFailed": "Công cụ {{toolName}} thất bại: {{reason}}",
+    "denied": "Bị từ chối bởi người dùng",
+    "toolCall": "Đang chạy {{toolName}}...",
+    "send": "Gửi",
+    "sending": "Đang gửi...",
     "suggestions": {
-      "addReceipt": "Thêm biên lai này như chi phí",
-      "generateInvoice": "Tạo hóa đơn cho khách hàng",
-      "showExpenses": "Hiển thị chi phí tháng này",
-      "taxHelp": "Tôi có thể khấu trừ những gì ở Việt Nam?"
+      "extractReceipt": {
+        "label": "Trích xuất biên lai và tạo chi phí",
+        "value": "Tôi đã tải lên một biên lai. Hãy trích xuất và tạo nháp chi phí."
+      },
+      "invoiceDraft": {
+        "label": "Tạo bản nháp hóa đơn",
+        "value": "Tạo bản nháp hóa đơn cho ACME GmbH cho tháng này."
+      },
+      "summarizeExpenses": {
+        "label": "Tóm tắt chi phí",
+        "value": "Tóm tắt các chi phí của tôi trong 30 ngày qua."
+      },
+      "taxGuidance": {
+        "label": "Hướng dẫn về thuế",
+        "value": "Tôi có thể khấu trừ những gì khi làm tự do ở Việt Nam?"
+      }
     },
     "toolCards": {
       "extractingReceipt": "Đang trích xuất dữ liệu biên lai...",
@@ -424,7 +506,29 @@
     "invoicePreview": "Xem trước hóa đơn",
     "openExpense": "Mở chi phí",
     "openInvoice": "Mở hóa đơn",
-    "issueInvoice": "Phát hành hóa đơn"
+    "issueInvoice": "Phát hành hóa đơn",
+    "userRole": "Bạn",
+    "assistantRole": "Trợ lý",
+    "systemRole": "Hệ thống"
+  },
+  "copilot": {
+    "title": "Trợ lý",
+    "placeholder": "Hỏi tôi bất cứ điều gì...",
+    "confirmation": {
+      "title": "Yêu cầu phê duyệt",
+      "subtitle": "Trợ lý muốn sử dụng '{{toolName}}'. Bạn có muốn cho phép không?"
+    },
+    "toolResult": "Kết quả từ {{toolName}}",
+    "toolFailed": "Công cụ {{toolName}} thất bại: {{reason}}",
+    "denied": "Bị từ chối bởi người dùng",
+    "toolCall": "Đang chạy {{toolName}}...",
+    "roles": {
+      "user": "Bạn",
+      "assistant": "Trợ lý"
+    },
+    "confidence": "Độ tin cậy {{percent}}%",
+    "noStructuredOutput": "Không có dữ liệu cấu trúc",
+    "allowTool": "Trợ lý muốn sử dụng '{{toolName}}'. Bạn có muốn cho phép không?"
   },
   "expenses": {
     "title": "Chi phí",
@@ -619,6 +723,7 @@
     "postalCode": "Mã bưu điện",
     "country": "Quốc gia",
     "vatId": "Mã số thuế",
+    "notes": "Ghi chú",
     "invoiceHistory": "Lịch sử hóa đơn",
     "totalRevenue": "Tổng doanh thu",
     "basicInformation": "Thông tin cơ bản",
@@ -1004,6 +1109,72 @@
     }
   },
   "crm": {
+    "activities": {
+      "title": "Hoạt động",
+      "new": "Hoạt động mới",
+      "emptyTitle": "Không tìm thấy hoạt động nào",
+      "emptyDescription": "Theo dõi các tương tác và nhiệm vụ của bạn tại đây."
+    },
+    "activity": {
+      "newTitle": "Hoạt động mới",
+      "newSubtitle": "Ghi lại một nhiệm vụ, cuộc gọi hoặc cuộc họp.",
+      "create": "Tạo hoạt động",
+      "created": "Đã tạo hoạt động thành công",
+      "createFailed": "Không thể tạo hoạt động",
+      "subject": "Tiêu đề",
+      "subjectPlaceholder": "ví dụ: Theo dõi báo giá",
+      "type": "Loại hoạt động",
+      "selectType": "Chọn loại",
+      "dueAt": "Ngày & Giờ đến hạn",
+      "selectDate": "Chọn ngày",
+      "reminderHint": "Hoạt động sẽ được lên lịch vào thời điểm này.",
+      "dealIdOptional": "Liên kết với Cơ hội (Tùy chọn)",
+      "dealIdPlaceholder": "Nhập ID Cơ hội",
+      "partyIdOptional": "Liên kết với Khách hàng (Tùy chọn)",
+      "partyIdPlaceholder": "Nhập ID Khách hàng",
+      "linkRequiredHint": "Liên kết hoạt động này với cơ hội hoặc khách hàng để có bối cảnh tốt hơn.",
+      "notesPlaceholder": "Thêm chi tiết hoặc kết quả tại đây...",
+      "tipTitle": "Mẹo hoạt động",
+      "tipSubtitle": "Cách duy trì sự ngăn nắp",
+      "tipOne": "Ghi lại hoạt động ngay lập tức.",
+      "tipTwo": "Sử dụng tiêu đề mô tả để tham khảo nhanh.",
+      "tipThree": "Liên kết với cơ hội để xem lịch sử đầy đủ.",
+      "subjectRequired": "Tiêu đề là bắt buộc",
+      "linkRequired": "Phải được liên kết với cơ hội hoặc khách hàng",
+      "due": "Hạn: {{date}}",
+      "statuses": {
+        "completed": "Đã hoàn thành",
+        "canceled": "Đã hủy",
+        "scheduled": "Đã lên lịch"
+      },
+      "types": {
+        "note": "Ghi chú",
+        "task": "Nhiệm vụ",
+        "call": "Cuộc gọi",
+        "meeting": "Cuộc họp",
+        "email_draft": "Thư nháp"
+      },
+      "addTitle": "Thêm hoạt động",
+      "addSubtitle": "Ghi nhanh một cập nhật hoặc nhiệm vụ",
+      "pickDate": "Chọn ngày",
+      "time": "Thời gian"
+    },
+    "timeline": {
+      "title": "Dòng thời gian",
+      "subtitle": "Lịch sử hoạt động và tương tác cho cơ hội này",
+      "empty": "Chưa có hoạt động nào được ghi lại.",
+      "due": "Hạn: {{date}}",
+      "stage": "Chuyển sang {{stage}}",
+      "channelMessage": "Tin nhắn {{channel}}",
+      "filters": {
+        "all": "Tất cả",
+        "notes": "Ghi chú",
+        "calls": "Cuộc gọi",
+        "meetings": "Cuộc họp",
+        "tasks": "Nhiệm vụ",
+        "stage": "Giai đoạn"
+      }
+    },
     "deals": {
       "title": "Cơ hội",
       "new": "Cơ hội mới",
@@ -1059,8 +1230,27 @@
         "stageRequired": "Cần chọn giai đoạn",
         "amountNumber": "Số tiền phải là một con số hợp lệ",
         "currencyRequired": "Tiền tệ là bắt buộc",
-        "probabilityRange": "Xác suất phải nằm trong khoảng từ 0 đến 100"
-      }
+        "probabilityRange": "Xác suất phải nằm trong khoảng từ 0 đến 100",
+        "probabilityValidation": "Xác suất phải từ 0 đến 100"
+      },
+      "deletedReason": "Đã xóa cơ hội",
+      "loadFailed": "Tải cơ hội thất bại",
+      "loadFailedHint": "Chúng tôi không thể tải chi tiết cơ hội. Vui lòng thử lại.",
+      "backToDeals": "Quay lại danh sách",
+      "markLostTitle": "Đánh dấu Thua",
+      "markLostDescription": "Vui lòng cung cấp lý do tại sao cơ hội này bị thua.",
+      "markLostPlaceholder": "ví dụ: Đối thủ thắng, Cắt giảm ngân sách...",
+      "markLost": "Đánh dấu Thua",
+      "deleteTitle": "Xóa cơ hội",
+      "deleteDescription": "Bạn có chắc chắn muốn xóa cơ hội này không? Hành động này không thể hoàn tác.",
+      "delete": "Xóa",
+      "noNotes": "Chưa có ghi chú nào.",
+      "probability": "Xác suất {{probability}}%",
+      "probabilityValue": "{{probability}}%",
+      "expectedClose": "Dự kiến {{date}}",
+      "expectedCloseTitle": "Đóng dự kiến",
+      "markWon": "Đánh dấu Thắng",
+      "edit": "Chỉnh sửa cơ hội"
     }
   },
   "classes": {
@@ -1239,6 +1429,30 @@
       "duplicateDetectionHelp": "Cảnh báo khi hóa đơn từ cùng nhà cung cấp và số tham chiếu đã tồn tại",
       "approvalRequired": "Yêu cầu phê duyệt hóa đơn",
       "approvalRequiredHelp": "Hóa đơn nhà cung cấp phải được phê duyệt trước khi có thể đăng"
+    },
+    "copilot": {
+      "title": "Trợ lý mua hàng",
+      "purchaseOrderDraft": "Bản nháp đơn mua hàng",
+      "vendorBillDraft": "Bản nháp hóa đơn nhà cung cấp",
+      "promptBill": "Trích xuất dữ liệu từ văn bản hoặc hình ảnh hóa đơn nhà cung cấp",
+      "promptBillLabel": "Trích xuất hóa đơn",
+      "promptPo": "Soạn nháp đơn mua hàng cho 50 laptop từ Dell",
+      "promptPoLabel": "Soạn PO",
+      "placeholder": "Hỏi trợ lý mua hàng bất cứ điều gì..."
     }
+  },
+  "tenants": {
+    "title": "Tổ chức (Tenants)",
+    "description": "Quản lý quyền và cài đặt của tổ chức.",
+    "listTitle": "Danh sách tổ chức",
+    "addTenant": "Thêm tổ chức",
+    "noTenants": "Không tìm thấy tổ chức nào.",
+    "status": "Trạng thái",
+    "slug": "Slug",
+    "tenantId": "ID Tổ chức",
+    "actions": "Hành động",
+    "manage": "Quản lý",
+    "confirmDeactivate": "Bạn có chắc chắn muốn hủy kích hoạt tổ chức này không? Người dùng sẽ không thể đăng nhập được nữa.",
+    "confirmActivate": "Bạn có chắc chắn muốn kích hoạt tổ chức này không?"
   }
 }

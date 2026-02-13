@@ -121,6 +121,7 @@ export class WorkspaceTemplateService {
       "catalog.basic": false,
       "inventory.warehouses": false,
       "inventory.serialTracking": false,
+      "import.basic": false,
 
       // Finance: Simplified
       "finance.costCenters": false,
@@ -285,6 +286,7 @@ export class WorkspaceTemplateService {
       "catalog.basic": true,
       "inventory.warehouses": false, // Can be enabled separately
       "inventory.serialTracking": false, // Can be enabled separately
+      "import.basic": true,
 
       // Finance: Advanced
       "finance.costCenters": true,
@@ -403,7 +405,7 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.inventory",
         defaultLabel: "Inventory",
         order: 4,
-        sectionOrder: ["products", "warehouses", "stock-movements"],
+        sectionOrder: ["inventory", "import", "products", "warehouses", "stock-movements"],
       },
       {
         id: "finance",
@@ -456,7 +458,9 @@ export class WorkspaceTemplateService {
       "expenses",
       "parties", // customers
       "sales", // quotes, projects
+      "catalog",
       "tax",
+      "import",
       "rentals",
       "portfolio",
       "website",

@@ -39,6 +39,7 @@ const SOURCE_EXTENSIONS = new Set([
   ".less",
 ]);
 const SOURCE_SUFFIXES = [".d.ts", ".d.mts", ".d.cts"];
+const E2E_TEST_SUFFIXES = [".e2e.test.ts", ".e2e.test.tsx", ".e2e.spec.ts", ".e2e.spec.tsx"];
 
 const execGit = (args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: 1024 * 1024 * 50 }).trim();
@@ -54,6 +55,14 @@ const isSourceFile = (file) => {
   }
   const extension = extname(file);
   return extension ? SOURCE_EXTENSIONS.has(extension) : false;
+};
+
+const isExcludedFromLineLimit = (file) => {
+  const normalized = file.replace(/\\/g, "/");
+  if (normalized.startsWith("apps/e2e/tests/")) {
+    return true;
+  }
+  return E2E_TEST_SUFFIXES.some((suffix) => normalized.endsWith(suffix));
 };
 
 const countLines = (text) => {
@@ -76,7 +85,9 @@ const getStagedContent = (file) =>
   });
 
 const main = () => {
-  const stagedFiles = getStagedFiles().filter(isSourceFile);
+  const stagedFiles = getStagedFiles().filter(
+    (file) => isSourceFile(file) && !isExcludedFromLineLimit(file)
+  );
   if (stagedFiles.length === 0) {
     return;
   }

@@ -223,25 +223,23 @@ export class PrismaJournalEntryRepository implements JournalEntryRepoPort {
     const { entry: entryData, lines: linesData } = journalEntryToPrisma(entry);
 
     await this.prisma.$transaction(async (tx) => {
-      // Upsert entry
+      // Upsert entry payload only; lines are replaced in a single pass below.
       await tx.journalEntry.upsert({
         where: { id: entry.id },
-        create: {
-          ...entryData,
-          lines: { create: linesData.map((l) => ({ ...l, tenantId: entry.tenantId })) },
-        },
+        create: entryData,
         update: entryData,
       });
 
-      // Delete existing lines if updating
+      // Replace lines atomically to keep idempotent updates deterministic.
       await tx.journalLine.deleteMany({
         where: { journalEntryId: entry.id },
       });
 
-      // Create new lines
-      await tx.journalLine.createMany({
-        data: linesData.map((l) => ({ ...l, tenantId: entry.tenantId })),
-      });
+      if (linesData.length > 0) {
+        await tx.journalLine.createMany({
+          data: linesData.map((l) => ({ ...l, tenantId: entry.tenantId })),
+        });
+      }
     });
   }
 

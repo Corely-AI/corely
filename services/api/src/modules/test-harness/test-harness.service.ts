@@ -22,6 +22,12 @@ export interface DrainResult {
   failedCount: number;
 }
 
+export interface SeedCopilotThreadMessageResult {
+  threadId: string;
+  messageId: string;
+  title: string;
+}
+
 @Injectable()
 export class TestHarnessService {
   constructor(
@@ -249,6 +255,51 @@ export class TestHarnessService {
     };
   }
 
+  async seedCopilotThreadMessage(params: {
+    tenantId: string;
+    userId: string;
+    title: string;
+    messageText: string;
+  }): Promise<SeedCopilotThreadMessageResult> {
+    const now = new Date();
+    const thread = await this.prisma.agentRun.create({
+      data: {
+        tenantId: params.tenantId,
+        createdByUserId: params.userId,
+        title: params.title,
+        status: "completed",
+        startedAt: now,
+        finishedAt: now,
+        lastMessageAt: now,
+      },
+      select: {
+        id: true,
+        title: true,
+      },
+    });
+
+    const message = await this.prisma.message.create({
+      data: {
+        tenantId: params.tenantId,
+        runId: thread.id,
+        role: "user",
+        partsJson: JSON.stringify({
+          parts: [{ type: "text", text: params.messageText }],
+        }),
+        contentText: params.messageText,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return {
+      threadId: thread.id,
+      messageId: message.id,
+      title: thread.title ?? "New chat",
+    };
+  }
+
   /**
    * Create a test tenant with user, roles, permissions, and workspace
    *
@@ -345,6 +396,26 @@ export class TestHarnessService {
           },
         });
 
+        // 6. Enable classes app for seeded tenant so assistant E2E can access classes tools.
+        await tx.tenantFeatureOverride.upsert({
+          where: {
+            tenantId_featureKey: {
+              tenantId: tenant.id,
+              featureKey: "app.classes.enabled",
+            },
+          },
+          create: {
+            tenantId: tenant.id,
+            featureKey: "app.classes.enabled",
+            valueJson: JSON.stringify(true),
+            updatedBy: user.id,
+          },
+          update: {
+            valueJson: JSON.stringify(true),
+            updatedBy: user.id,
+          },
+        });
+
         return {
           tenantId: tenant.id,
           tenantName: tenant.name,
@@ -355,10 +426,11 @@ export class TestHarnessService {
       });
 
       // 7. Create workspace with completed onboarding using use case
+      const uniqueWorkspaceName = `Default Workspace ${result.tenantId.slice(0, 8)}`;
       const workspaceResult = await this.createWorkspaceUseCase.execute({
         tenantId: result.tenantId,
         userId: result.userId,
-        name: "Default Workspace",
+        name: uniqueWorkspaceName,
         kind: "PERSONAL",
         legalName: params.tenantName,
         countryCode: "DE",

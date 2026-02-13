@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException, Inject } from "@nestjs/common";
 import type {
-  MenuItem,
+  MenuGroup,
   WorkspaceConfig,
   WorkspaceNavigationGroup,
   WorkspaceMembershipRole,
@@ -11,7 +11,6 @@ import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,
 } from "../../../workspaces/application/ports/workspace-repository.port";
-import type { NavigationGroupStructure } from "../services/workspace-template.service";
 import {
   TENANT_APP_INSTALL_REPOSITORY_TOKEN,
   type TenantAppInstallRepositoryPort,
@@ -62,7 +61,6 @@ export class GetWorkspaceConfigUseCase {
     const capabilities = this.templateService.getDefaultCapabilities(workspaceKind);
     const terminology = this.templateService.getDefaultTerminology(workspaceKind);
     const homeWidgets = this.templateService.getDefaultHomeWidgets(workspaceKind);
-    const navigationStructure = this.templateService.getNavigationGroupsStructure(workspaceKind);
 
     await this.ensureDefaultAppsInstalled(input.tenantId, input.userId, workspaceKind);
 
@@ -73,7 +71,7 @@ export class GetWorkspaceConfigUseCase {
     );
     const capabilityKeys = new Set(Object.keys(capabilities));
 
-    const items = await this.menuComposer.composeMenu({
+    const menu = await this.menuComposer.composeMenuTree({
       tenantId: input.tenantId,
       userId: input.userId,
       permissions: new Set(input.permissions),
@@ -95,7 +93,7 @@ export class GetWorkspaceConfigUseCase {
       capabilities,
       terminology,
       navigation: {
-        groups: this.buildNavigationGroups(navigationStructure, items),
+        groups: this.buildNavigationGroups(menu.groups),
       },
       home: {
         widgets: homeWidgets,
@@ -108,53 +106,14 @@ export class GetWorkspaceConfigUseCase {
     };
   }
 
-  private buildNavigationGroups(
-    structure: NavigationGroupStructure[],
-    items: MenuItem[]
-  ): WorkspaceNavigationGroup[] {
-    const itemsBySection = new Map<string, MenuItem[]>();
-    for (const item of items) {
-      const list = itemsBySection.get(item.section) ?? [];
-      list.push(item);
-      itemsBySection.set(item.section, list);
-    }
-
-    for (const list of itemsBySection.values()) {
-      list.sort((a, b) => a.order - b.order);
-    }
-
-    const sectionsInGroups = new Set(structure.flatMap((group) => group.sectionOrder));
-    const groups = structure
-      .map((group) => {
-        const groupItems: MenuItem[] = [];
-        for (const section of group.sectionOrder) {
-          const sectionItems = itemsBySection.get(section);
-          if (sectionItems) {
-            groupItems.push(...sectionItems);
-          }
-        }
-        return {
-          id: group.id,
-          labelKey: group.labelKey,
-          defaultLabel: group.defaultLabel,
-          order: group.order,
-          items: groupItems,
-        };
-      })
-      .filter((group) => group.items.length > 0);
-
-    const ungrouped = items.filter((item) => !sectionsInGroups.has(item.section));
-    if (ungrouped.length > 0) {
-      groups.push({
-        id: "other",
-        labelKey: "nav.groups.other",
-        defaultLabel: "Other",
-        order: 95,
-        items: ungrouped.sort((a, b) => a.order - b.order),
-      });
-    }
-
-    return groups.sort((a, b) => a.order - b.order);
+  private buildNavigationGroups(groups: MenuGroup[]): WorkspaceNavigationGroup[] {
+    return groups.map((group, index) => ({
+      id: group.appId,
+      labelKey: group.labelKey ?? group.defaultLabel,
+      defaultLabel: group.defaultLabel,
+      order: index + 1,
+      items: group.items,
+    }));
   }
 
   private async ensureDefaultAppsInstalled(

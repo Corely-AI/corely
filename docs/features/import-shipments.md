@@ -122,6 +122,11 @@ The Import Shipments module tracks international shipments from suppliers, manag
 - Status badges with color coding
 - Currency formatting
 - Date formatting
+- Reference data loading for new shipment:
+  - Suppliers are loaded from Party (`GET /customers?role=SUPPLIER`)
+  - Products are loaded from Catalog (`GET /catalog/items?type=PRODUCT&status=ACTIVE`)
+  - Errors are shown per source with permission-specific guidance
+  - Empty states include create actions for supplier/product so users are not blocked
 
 ## Business Rules
 

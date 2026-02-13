@@ -15,8 +15,10 @@ import { cashManagementApi } from "@/lib/cash-management-api";
 import { cashKeys } from "../queries";
 import { toast } from "sonner";
 import { CashEntryType, CashEntrySourceType } from "@corely/contracts";
+import { useTranslation } from "react-i18next";
 
 export function CashRegisterDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("entries");
@@ -50,7 +52,6 @@ export function CashRegisterDetailScreen() {
         throw new Error("No register ID");
       }
       return cashManagementApi.createEntry(id, {
-        tenantId: "current",
         registerId: id,
         type: vars.type,
         amountCents: vars.amountCents,
@@ -67,10 +68,12 @@ export function CashRegisterDetailScreen() {
       setEntryType(null);
       setParamAmount("");
       setParamDesc("");
-      toast.success("Entry added");
+      toast.success(t("cash.detail.entryAdded"));
     },
     onError: (err: any) => {
-      toast.error("Failed to add entry: " + (err.response?.data?.message || err.message));
+      toast.error(
+        `${t("cash.detail.entryAddFailed")}: ${err.response?.data?.message || err.message}`
+      );
     },
   });
 
@@ -84,7 +87,7 @@ export function CashRegisterDetailScreen() {
     }
     const cents = Math.round(parseFloat(paramAmount) * 100);
     if (isNaN(cents) || cents <= 0) {
-      toast.error("Invalid amount");
+      toast.error(t("cash.detail.invalidAmount"));
       return;
     }
     createEntryMutation.mutate({ type: entryType, amountCents: cents, desc: paramDesc });
@@ -95,10 +98,10 @@ export function CashRegisterDetailScreen() {
   const closes = closesData?.closes ?? [];
 
   if (regLoading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">{t("common.loading")}</div>;
   }
   if (!register) {
-    return <div className="p-6">Not found</div>;
+    return <div className="p-6">{t("errors.pageNotFound")}</div>;
   }
 
   return (
@@ -111,13 +114,15 @@ export function CashRegisterDetailScreen() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold">{register.name}</h1>
-          <p className="text-muted-foreground">{register.location || "No location"}</p>
+          <p className="text-muted-foreground">
+            {register.location || t("cash.registers.noLocation")}
+          </p>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <Button variant="outline" asChild>
             <Link to={`/cash-registers/${id}/daily-close`}>
               <Lock className="mr-2 h-4 w-4" />
-              Daily Close
+              {t("cash.dailyClose.title")}
             </Link>
           </Button>
         </div>
@@ -127,7 +132,7 @@ export function CashRegisterDetailScreen() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-muted-foreground text-sm font-medium">
-              Current Balance
+              {t("cash.registers.currentBalance")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -140,7 +145,7 @@ export function CashRegisterDetailScreen() {
         <Card className="md:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-muted-foreground text-sm font-medium">
-              Quick Actions
+              {t("dashboard.quickActions")}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex gap-3">
@@ -149,14 +154,14 @@ export function CashRegisterDetailScreen() {
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Cash In
+              {t("cash.detail.cashIn")}
             </Button>
             <Button
               onClick={() => setEntryType(CashEntryType.OUT)}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               <Minus className="mr-2 h-4 w-4" />
-              Cash Out
+              {t("cash.detail.cashOut")}
             </Button>
           </CardContent>
         </Card>
@@ -165,7 +170,7 @@ export function CashRegisterDetailScreen() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="entries">Entries</TabsTrigger>
-          <TabsTrigger value="closes">Daily Closes</TabsTrigger>
+          <TabsTrigger value="closes">{t("cash.detail.dailyCloses")}</TabsTrigger>
         </TabsList>
         <TabsContent value="entries" className="space-y-4">
           <Card>
@@ -173,11 +178,11 @@ export function CashRegisterDetailScreen() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-3 font-medium">Date</th>
-                    <th className="p-3 font-medium">Description</th>
-                    <th className="p-3 font-medium">Type</th>
-                    <th className="p-3 font-medium text-right">Amount</th>
-                    <th className="p-3 font-medium">Updated Balance</th>
+                    <th className="p-3 font-medium">{t("common.date")}</th>
+                    <th className="p-3 font-medium">{t("common.description")}</th>
+                    <th className="p-3 font-medium">{t("common.type")}</th>
+                    <th className="p-3 font-medium text-right">{t("common.amount")}</th>
+                    <th className="p-3 font-medium">{t("cash.detail.updatedBalance")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -211,7 +216,7 @@ export function CashRegisterDetailScreen() {
                   {entries.length === 0 && (
                     <tr>
                       <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                        No entries found
+                        {t("cash.detail.noEntriesFound")}
                       </td>
                     </tr>
                   )}
@@ -226,11 +231,11 @@ export function CashRegisterDetailScreen() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-3">Business Date</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3 text-right">Expected</th>
-                    <th className="p-3 text-right">Counted</th>
-                    <th className="p-3 text-right">Difference</th>
+                    <th className="p-3">{t("cash.dailyClose.businessDate")}</th>
+                    <th className="p-3">{t("common.status")}</th>
+                    <th className="p-3 text-right">{t("cash.dailyClose.expectedBalance")}</th>
+                    <th className="p-3 text-right">{t("cash.dailyClose.countedBalance")}</th>
+                    <th className="p-3 text-right">{t("cash.dailyClose.difference")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -256,7 +261,7 @@ export function CashRegisterDetailScreen() {
                   {closes.length === 0 && (
                     <tr>
                       <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                        No daily closes yet
+                        {t("cash.detail.noDailyCloses")}
                       </td>
                     </tr>
                   )}
@@ -271,11 +276,15 @@ export function CashRegisterDetailScreen() {
       <Dialog open={!!entryType} onOpenChange={(open) => !open && setEntryType(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{entryType === "IN" ? "Add Cash In" : "Add Cash Out"}</DialogTitle>
+            <DialogTitle>
+              {entryType === "IN" ? t("cash.detail.addCashIn") : t("cash.detail.addCashOut")}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div>
-              <Label>Amount ({register.currency})</Label>
+              <Label>
+                {t("common.amount")} ({register.currency})
+              </Label>
               <Input
                 type="number"
                 step="0.01"
@@ -286,9 +295,9 @@ export function CashRegisterDetailScreen() {
               />
             </div>
             <div>
-              <Label>Description</Label>
+              <Label>{t("common.description")}</Label>
               <Textarea
-                placeholder="Reason for entry..."
+                placeholder={t("cash.detail.reasonPlaceholder")}
                 value={paramDesc}
                 onChange={(e) => setParamDesc(e.target.value)}
               />
@@ -307,7 +316,7 @@ export function CashRegisterDetailScreen() {
               }
               disabled={createEntryMutation.isPending}
             >
-              {entryType === "IN" ? "Confirm In" : "Confirm Out"}
+              {entryType === "IN" ? t("cash.detail.confirmIn") : t("cash.detail.confirmOut")}
             </Button>
           </DialogFooter>
         </DialogContent>

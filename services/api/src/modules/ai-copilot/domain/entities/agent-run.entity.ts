@@ -7,6 +7,10 @@ export class AgentRun {
     public readonly startedAt: Date,
     public finishedAt?: Date,
     public metadataJson?: string,
-    public readonly traceId?: string
+    public readonly traceId?: string,
+    public readonly title?: string | null,
+    public readonly lastMessageAt?: Date,
+    public readonly archivedAt?: Date,
+    public readonly updatedAt?: Date
   ) {}
 }

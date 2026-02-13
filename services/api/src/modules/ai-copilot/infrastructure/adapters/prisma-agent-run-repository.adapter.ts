@@ -12,7 +12,9 @@ export class PrismaAgentRunRepository implements AgentRunRepositoryPort {
     id: string;
     tenantId: string;
     createdByUserId: string | null;
+    title?: string;
     status: string;
+    lastMessageAt?: Date;
     traceId?: string | undefined;
     metadataJson?: string | undefined;
   }): Promise<AgentRun> {
@@ -22,7 +24,9 @@ export class PrismaAgentRunRepository implements AgentRunRepositoryPort {
           id: run.id,
           tenantId: run.tenantId,
           createdByUserId: run.createdByUserId || undefined,
+          title: run.title,
           status: run.status,
+          lastMessageAt: run.lastMessageAt,
           metadataJson: run.metadataJson,
           traceId: run.traceId,
         },
@@ -35,7 +39,11 @@ export class PrismaAgentRunRepository implements AgentRunRepositoryPort {
         created.startedAt,
         created.finishedAt || undefined,
         created.metadataJson || undefined,
-        created.traceId || undefined
+        created.traceId || undefined,
+        created.title,
+        created.lastMessageAt,
+        created.archivedAt || undefined,
+        created.updatedAt
       );
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -51,7 +59,11 @@ export class PrismaAgentRunRepository implements AgentRunRepositoryPort {
             existing.startedAt,
             existing.finishedAt || undefined,
             existing.metadataJson || undefined,
-            existing.traceId || undefined
+            existing.traceId || undefined,
+            existing.title,
+            existing.lastMessageAt,
+            existing.archivedAt || undefined,
+            existing.updatedAt
           );
         }
       }
@@ -81,7 +93,11 @@ export class PrismaAgentRunRepository implements AgentRunRepositoryPort {
       found.startedAt,
       found.finishedAt || undefined,
       found.metadataJson || undefined,
-      found.traceId || undefined
+      found.traceId || undefined,
+      found.title,
+      found.lastMessageAt,
+      found.archivedAt || undefined,
+      found.updatedAt
     );
   }
 }

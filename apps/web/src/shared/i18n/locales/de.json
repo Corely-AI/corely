@@ -1,6 +1,10 @@
 {
   "common": {
     "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "suspended": "Suspendiert",
+    "activate": "Aktivieren",
+    "deactivate": "Deaktivieren",
     "appName": "Corely One ERP",
     "tagline": "Ihr Geschäft, von Anfang bis Ende.",
     "loading": "Wird geladen...",
@@ -23,6 +27,7 @@
     "viewAll": "Alle anzeigen",
     "comingSoon": "Demnächst verfügbar",
     "noResults": "Keine Ergebnisse gefunden",
+    "selectDate": "Datum auswählen",
     "noTopic": "Kein Thema",
     "error": "Etwas ist schief gelaufen",
     "success": "Erfolgreich",
@@ -50,6 +55,8 @@
     "createdAt": "Erstellt am {{date}}",
     "empty": "Leer",
     "amount": "Betrag",
+    "type": "Typ",
+    "description": "Beschreibung",
     "date": "Datum",
     "noteOptional": "Notiz (Optional)",
     "saveChanges": "Änderungen speichern",
@@ -139,6 +146,9 @@
     "inventoryDocuments": "Inventar - Belege",
     "inventoryReorder": "Inventar - Nachbestellung",
     "inventoryCopilot": "Inventar - Copilot",
+    "catalogItems": "Katalogartikel",
+    "importShipments": "Sendungen",
+    "suppliers": "Lieferanten",
     "automation": "Automatisierung",
     "documents": "Dokumente",
     "cms": {
@@ -364,6 +374,54 @@
     "addEntry": "Eintrag hinzufügen",
     "dailyClose": "Tagesabschluss"
   },
+  "cash": {
+    "title": "Kassenmanagement",
+    "subtitle": "Kassen, Buchungen und Tagesabschluss verwalten",
+    "registers": {
+      "add": "Kasse hinzufügen",
+      "addTitle": "Kasse erstellen",
+      "namePlaceholder": "Kassenname",
+      "noLocation": "Kein Standort",
+      "currentBalance": "Aktueller Saldo",
+      "empty": "Noch keine Kassen vorhanden",
+      "created": "Kasse erstellt",
+      "createFailed": "Kasse konnte nicht erstellt werden"
+    },
+    "detail": {
+      "cashIn": "Geldeingang",
+      "cashOut": "Geldausgang",
+      "dailyCloses": "Tagesabschlüsse",
+      "updatedBalance": "Aktualisierter Saldo",
+      "noEntriesFound": "Keine Buchungen gefunden",
+      "noDailyCloses": "Noch keine Tagesabschlüsse",
+      "addCashIn": "Geldeingang hinzufügen",
+      "addCashOut": "Geldausgang hinzufügen",
+      "reasonPlaceholder": "Grund für die Buchung...",
+      "confirmIn": "Eingang bestätigen",
+      "confirmOut": "Ausgang bestätigen",
+      "entryAdded": "Buchung hinzugefügt",
+      "entryAddFailed": "Buchung konnte nicht hinzugefügt werden",
+      "invalidAmount": "Ungültiger Betrag"
+    },
+    "dailyClose": {
+      "title": "Tagesabschluss",
+      "reconcile": "Abstimmen: {{register}}",
+      "businessDate": "Geschäftsdatum",
+      "expectedBalance": "Erwarteter Saldo",
+      "countedBalance": "Gezählter Saldo",
+      "countedCash": "Gezähltes Bargeld ({{currency}})",
+      "difference": "Differenz",
+      "perfectMatch": "Perfekte Übereinstimmung",
+      "discrepancyDetected": "Abweichung erkannt",
+      "differenceEntryNote": "Ein Differenz-Eintrag wird automatisch erstellt",
+      "notesPlaceholder": "Notizen zum Abschluss...",
+      "submitClose": "Abschluss senden",
+      "submitting": "Wird gesendet...",
+      "submitted": "Tagesabschluss übermittelt",
+      "submitFailed": "Abschluss fehlgeschlagen",
+      "enterCountedAmount": "Bitte gezählten Betrag eingeben"
+    }
+  },
   "dashboard": {
     "title": "Übersicht",
     "welcome": "Willkommen zurück",
@@ -406,12 +464,36 @@
   },
   "assistant": {
     "title": "Assistent",
-    "placeholder": "Fragen Sie mich etwas oder laden Sie einen Beleg hoch...",
+    "subtitle": "Fragen Sie alles, extrahieren Sie Belege, erstellen Sie Rechnungen oder fordern Sie Zusammenfassungen an.",
+    "placeholder": "Fragen Sie mich alles...",
+    "emptyStateTitle": "Wie kann ich Ihnen helfen?",
+    "emptyStateDescription": "Fragen Sie alles, extrahieren Sie Belege, erstellen Sie Rechnungen oder fordern Sie Zusammenfassungen an.",
+    "awaitingInputs": "Warte auf Ihre Eingabe...",
+    "approvalRequired": "Zustimmung erforderlich ({{toolName}})",
+    "approvalDescription": "Der Assistent möchte das Werkzeug '{{toolName}}' verwenden. Möchten Sie dies zulassen?",
+    "toolResult": "Ergebnis von {{toolName}}",
+    "toolFailed": "Werkzeug {{toolName}} fehlgeschlagen: {{reason}}",
+    "denied": "Vom Benutzer abgelehnt",
+    "toolCall": "Führe {{toolName}} aus...",
+    "send": "Senden",
+    "sending": "Wird gesendet...",
     "suggestions": {
-      "addReceipt": "Diesen Beleg als Ausgabe hinzufügen",
-      "generateInvoice": "Rechnung für einen Kunden erstellen",
-      "showExpenses": "Ausgaben diesen Monat anzeigen",
-      "taxHelp": "Was kann ich in Deutschland absetzen?"
+      "extractReceipt": {
+        "label": "Beleg extrahieren und Ausgabe erstellen",
+        "value": "Ich habe einen Beleg hochgeladen. Extrahieren Sie ihn und erstellen Sie einen Ausgabenentwurf."
+      },
+      "invoiceDraft": {
+        "label": "Rechnungsentwurf erstellen",
+        "value": "Erstellen Sie einen Rechnungsentwurf für die ACME GmbH für diesen Monat."
+      },
+      "summarizeExpenses": {
+        "label": "Ausgaben zusammenfassen",
+        "value": "Fassen Sie meine Ausgaben der letzten 30 Tage zusammen."
+      },
+      "taxGuidance": {
+        "label": "Steuerberatung",
+        "value": "Was kann ich als Freelancer in Deutschland absetzen?"
+      }
     },
     "toolCards": {
       "extractingReceipt": "Belegdaten werden extrahiert...",
@@ -424,7 +506,29 @@
     "invoicePreview": "Rechnungsvorschau",
     "openExpense": "Ausgabe öffnen",
     "openInvoice": "Rechnung öffnen",
-    "issueInvoice": "Rechnung ausstellen"
+    "issueInvoice": "Rechnung ausstellen",
+    "userRole": "Sie",
+    "assistantRole": "Assistent",
+    "systemRole": "System"
+  },
+  "copilot": {
+    "title": "Assistent",
+    "placeholder": "Fragen Sie mich alles...",
+    "confirmation": {
+      "title": "Zustimmung erforderlich",
+      "subtitle": "Der Assistent möchte '{{toolName}}' verwenden. Möchten Sie dies zulassen?"
+    },
+    "toolResult": "Ergebnis von {{toolName}}",
+    "toolFailed": "Werkzeug {{toolName}} fehlgeschlagen: {{reason}}",
+    "denied": "Vom Benutzer abgelehnt",
+    "toolCall": "Führe {{toolName}} aus...",
+    "roles": {
+      "user": "Sie",
+      "assistant": "Assistent"
+    },
+    "confidence": "{{percent}}% Vertrauen",
+    "noStructuredOutput": "Keine strukturierten Daten verfügbar",
+    "allowTool": "Der Assistent möchte '{{toolName}}' verwenden. Möchten Sie dies zulassen?"
   },
   "expenses": {
     "title": "Ausgaben",
@@ -619,6 +723,7 @@
     "postalCode": "Postleitzahl",
     "country": "Land",
     "vatId": "USt-IdNr.",
+    "notes": "Notizen",
     "invoiceHistory": "Rechnungshistorie",
     "totalRevenue": "Gesamtumsatz",
     "basicInformation": "Grundinformationen",
@@ -982,6 +1087,72 @@
     }
   },
   "crm": {
+    "activities": {
+      "title": "Aktivitäten",
+      "new": "Neue Aktivität",
+      "emptyTitle": "Keine Aktivitäten gefunden",
+      "emptyDescription": "Verfolgen Sie Ihre Interaktionen und Aufgaben hier."
+    },
+    "activity": {
+      "newTitle": "Neue Aktivität",
+      "newSubtitle": "Erfassen Sie eine Aufgabe, einen Anruf oder ein Treffen.",
+      "create": "Aktivität erstellen",
+      "created": "Aktivität erfolgreich erstellt",
+      "createFailed": "Fehler beim Erstellen der Aktivität",
+      "subject": "Betreff",
+      "subjectPlaceholder": "z.B. Nachfassgespräch zum Angebot",
+      "type": "Aktivitätstyp",
+      "selectType": "Typ auswählen",
+      "dueAt": "Fälligkeitstermin & Uhrzeit",
+      "selectDate": "Datum auswählen",
+      "reminderHint": "Die Aktivität wird für diesen Zeitpunkt geplant.",
+      "dealIdOptional": "Mit Deal verknüpfen (Optional)",
+      "dealIdPlaceholder": "Deal-ID eingeben",
+      "partyIdOptional": "Mit Kontakt verknüpfen (Optional)",
+      "partyIdPlaceholder": "Kontakt-ID eingeben",
+      "linkRequiredHint": "Verknüpfen Sie diese Aktivität mit einem Deal oder Kontakt für besseren Kontext.",
+      "notesPlaceholder": "Details oder Ergebnisse hier hinzufügen...",
+      "tipTitle": "Aktivitäts-Tipps",
+      "tipSubtitle": "So bleiben Sie organisiert",
+      "tipOne": "Erfassen Sie Aktivitäten sofort.",
+      "tipTwo": "Verwenden Sie aussagekräftige Betreffzeilen.",
+      "tipThree": "Verknüpfen Sie Deals, um die vollständige Historie zu sehen.",
+      "subjectRequired": "Betreff ist erforderlich",
+      "linkRequired": "Muss mit einem Deal oder Kontakt verknüpft sein",
+      "due": "Fällig am {{date}}",
+      "statuses": {
+        "completed": "Abgeschlossen",
+        "canceled": "Storniert",
+        "scheduled": "Geplant"
+      },
+      "types": {
+        "note": "Notiz",
+        "task": "Aufgabe",
+        "call": "Anruf",
+        "meeting": "Meeting",
+        "email_draft": "E-Mail-Entwurf"
+      },
+      "addTitle": "Aktivität hinzufügen",
+      "addSubtitle": "Loggen Sie ein kurzes Update oder eine Aufgabe",
+      "pickDate": "Datum wählen",
+      "time": "Zeit"
+    },
+    "timeline": {
+      "title": "Zeitplan",
+      "subtitle": "Aktivitäts- und Interaktionsverlauf für diesen Deal",
+      "empty": "Noch keine Aktivitäten aufgezeichnet.",
+      "due": "Fällig am {{date}}",
+      "stage": "Verschoben nach {{stage}}",
+      "channelMessage": "{{channel}} Nachricht",
+      "filters": {
+        "all": "Alle",
+        "notes": "Notizen",
+        "calls": "Anrufe",
+        "meetings": "Meetings",
+        "tasks": "Aufgaben",
+        "stage": "Phasen"
+      }
+    },
     "deals": {
       "title": "Deals",
       "new": "Neuer Deal",
@@ -1037,8 +1208,27 @@
         "stageRequired": "Phasenauswahl ist erforderlich",
         "amountNumber": "Betrag muss eine gültige Zahl sein",
         "currencyRequired": "Währung ist erforderlich",
-        "probabilityRange": "Wahrscheinlichkeit muss zwischen 0 und 100 liegen"
-      }
+        "probabilityRange": "Wahrscheinlichkeit muss zwischen 0 und 100 liegen",
+        "probabilityValidation": "Wahrscheinlichkeit muss zwischen 0 und 100 liegen"
+      },
+      "deletedReason": "Deal gelöscht",
+      "loadFailed": "Deal konnte nicht geladen werden",
+      "loadFailedHint": "Die Details konnten nicht abgerufen werden. Bitte versuchen Sie es erneut.",
+      "backToDeals": "Zurück zu Deals",
+      "markLostTitle": "Deal als verloren markieren",
+      "markLostDescription": "Bitte geben Sie einen Grund an, warum dieser Deal verloren ging.",
+      "markLostPlaceholder": "z.B. Wettbewerber hat gewonnen, Budget gekürzt...",
+      "markLost": "Als verloren markieren",
+      "deleteTitle": "Deal löschen",
+      "deleteDescription": "Sind Sie sicher, dass Sie diesen Deal löschen möchten? Dieser Vorgang kann nicht rückgängig gemacht werden.",
+      "delete": "Löschen",
+      "noNotes": "Keine Notizen hinzugefügt.",
+      "probability": "Wahrsch. {{probability}}%",
+      "probabilityValue": "{{probability}}%",
+      "expectedClose": "Erw. {{date}}",
+      "expectedCloseTitle": "Erwarteter Abschluss",
+      "markWon": "Als gewonnen markieren",
+      "edit": "Deal bearbeiten"
     }
   },
   "classes": {
@@ -1217,6 +1407,30 @@
       "duplicateDetectionHelp": "Warnen, wenn eine Rechnung mit demselben Lieferanten und Referenz bereits existiert",
       "approvalRequired": "Genehmigung für Rechnungen erforderlich",
       "approvalRequiredHelp": "Lieferantenrechnungen müssen genehmigt werden, bevor sie gebucht werden können"
+    },
+    "copilot": {
+      "title": "Einkaufsassistent",
+      "purchaseOrderDraft": "Bestellentwurf",
+      "vendorBillDraft": "Eingangsrechnungsentwurf",
+      "promptBill": "Daten aus einem Rechnungstext oder -bild extrahieren",
+      "promptBillLabel": "Rechnung extrahieren",
+      "promptPo": "Erstellen Sie einen Bestellentwurf für 50 Laptops von Dell",
+      "promptPoLabel": "Bestellung entwerfen",
+      "placeholder": "Fragen Sie den Einkaufsassistenten alles..."
     }
+  },
+  "tenants": {
+    "title": "Mandanten",
+    "description": "Verwalte Mandanten-Berechtigungen und Einstellungen.",
+    "listTitle": "Mandantenliste",
+    "addTenant": "Mandant hinzufügen",
+    "noTenants": "Keine Mandanten gefunden.",
+    "status": "Status",
+    "slug": "Slug",
+    "tenantId": "Mandanten-ID",
+    "actions": "Aktionen",
+    "manage": "Verwalten",
+    "confirmDeactivate": "Sind Sie sicher, dass Sie diesen Mandanten deaktivieren möchten? Benutzer können sich nicht mehr anmelden.",
+    "confirmActivate": "Sind Sie sicher, dass Sie diesen Mandanten aktivieren möchten?"
   }
 }

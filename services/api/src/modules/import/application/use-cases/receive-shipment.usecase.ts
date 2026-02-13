@@ -48,10 +48,10 @@ export class ReceiveShipmentUseCase extends BaseUseCase<
       return err(new NotFoundError("Import shipment not found", { shipmentId: input.shipmentId }));
     }
 
-    // Only allow receiving from CLEARED status
-    if (shipment.status !== "CLEARED") {
+    // Allow receiving from operational statuses where goods can be physically received.
+    if (shipment.status !== "CLEARED" && shipment.status !== "SUBMITTED") {
       return err(
-        new ValidationError("Only CLEARED shipments can be received", {
+        new ValidationError("Only SUBMITTED or CLEARED shipments can be received", {
           currentStatus: shipment.status,
         })
       );

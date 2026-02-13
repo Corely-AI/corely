@@ -4,6 +4,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import type { EnvService } from "@corely/config";
 import { type PromptRegistry } from "@corely/prompts";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
+import { validationError } from "../../../ai-copilot/infrastructure/tools/tool-utils";
 import type { PurchasingApplication } from "../../application/purchasing.application";
 import {
   SupplierPartyProposalCardSchema,
@@ -17,13 +18,7 @@ import {
 } from "@corely/contracts";
 import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
-
-const validationError = (issues: unknown) => ({
-  ok: false,
-  code: "VALIDATION_ERROR",
-  message: "Invalid input for tool call",
-  details: issues,
-});
+import { logPurchasingPromptUsage } from "./purchasing-prompt-usage";
 
 export const buildPurchasingTools = (
   _app: PurchasingApplication,
@@ -41,7 +36,7 @@ export const buildPurchasingTools = (
       inputSchema: z.object({
         sourceText: z.string(),
       }),
-      execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z.object({ sourceText: z.string() }).safeParse(input);
         if (!parsed.success) {
           return validationError(parsed.error.flatten());
@@ -53,12 +48,10 @@ export const buildPurchasingTools = (
           buildPromptContext({ env, tenantId }),
           { SOURCE_TEXT: sourceText }
         );
-        promptUsageLogger.logUsage({
-          promptId: prompt.promptId,
-          promptVersion: prompt.promptVersion,
-          promptHash: prompt.promptHash,
+        logPurchasingPromptUsage({
+          promptUsageLogger,
+          prompt,
           modelId: env.AI_MODEL_ID,
-          provider: "anthropic",
           tenantId,
           userId,
           runId,
@@ -112,7 +105,7 @@ export const buildPurchasingTools = (
         sourceText: z.string(),
         supplierPartyId: z.string().optional(),
       }),
-      execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z
           .object({ sourceText: z.string(), supplierPartyId: z.string().optional() })
           .safeParse(input);
@@ -126,12 +119,10 @@ export const buildPurchasingTools = (
           buildPromptContext({ env, tenantId }),
           { SOURCE_TEXT: sourceText }
         );
-        promptUsageLogger.logUsage({
-          promptId: prompt.promptId,
-          promptVersion: prompt.promptVersion,
-          promptHash: prompt.promptHash,
+        logPurchasingPromptUsage({
+          promptUsageLogger,
+          prompt,
           modelId: env.AI_MODEL_ID,
-          provider: "anthropic",
           tenantId,
           userId,
           runId,
@@ -196,7 +187,7 @@ export const buildPurchasingTools = (
       inputSchema: z.object({
         sourceText: z.string(),
       }),
-      execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z.object({ sourceText: z.string() }).safeParse(input);
         if (!parsed.success) {
           return validationError(parsed.error.flatten());
@@ -208,12 +199,10 @@ export const buildPurchasingTools = (
           buildPromptContext({ env, tenantId }),
           { SOURCE_TEXT: sourceText }
         );
-        promptUsageLogger.logUsage({
-          promptId: prompt.promptId,
-          promptVersion: prompt.promptVersion,
-          promptHash: prompt.promptHash,
+        logPurchasingPromptUsage({
+          promptUsageLogger,
+          prompt,
           modelId: env.AI_MODEL_ID,
-          provider: "anthropic",
           tenantId,
           userId,
           runId,
@@ -291,7 +280,7 @@ export const buildPurchasingTools = (
           )
           .optional(),
       }),
-      execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      execute: async ({ tenantId, userId, input, runId }) => {
         const parsed = z
           .object({
             vendorBillId: z.string().optional(),
@@ -315,12 +304,10 @@ export const buildPurchasingTools = (
           buildPromptContext({ env, tenantId }),
           {}
         );
-        promptUsageLogger.logUsage({
-          promptId: prompt.promptId,
-          promptVersion: prompt.promptVersion,
-          promptHash: prompt.promptHash,
+        logPurchasingPromptUsage({
+          promptUsageLogger,
+          prompt,
           modelId: env.AI_MODEL_ID,
-          provider: "anthropic",
           tenantId,
           userId,
           runId,
@@ -413,12 +400,10 @@ export const buildPurchasingTools = (
             CONTEXT: parsed.data.context ?? "",
           }
         );
-        promptUsageLogger.logUsage({
-          promptId: prompt.promptId,
-          promptVersion: prompt.promptVersion,
-          promptHash: prompt.promptHash,
+        logPurchasingPromptUsage({
+          promptUsageLogger,
+          prompt,
           modelId: env.AI_MODEL_ID,
-          provider: "anthropic",
           tenantId,
           userId,
           runId,

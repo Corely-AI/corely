@@ -5,9 +5,16 @@ import { Card, CardContent, Badge, Button, Input, Label } from "@corely/ui";
 import { importShipmentsApi } from "@/lib/import-shipments-api";
 import { useNavigate } from "react-router-dom";
 import type { ImportShipmentStatus } from "@corely/contracts";
+import { hasPermission, useEffectivePermissions } from "@/shared/lib/permissions";
+import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 
 export default function ShipmentsPage() {
   const navigate = useNavigate();
+  const { hasCapability } = useWorkspaceConfig();
+  const { data: effectivePermissions } = useEffectivePermissions();
+  const rbacEnabled = hasCapability("workspace.rbac");
+  const canManageShipments =
+    !rbacEnabled || hasPermission(effectivePermissions?.permissions, "import.shipments.manage");
 
   const [statusFilter, setStatusFilter] = useState<ImportShipmentStatus | "">("");
   const [containerFilter, setContainerFilter] = useState("");
@@ -66,6 +73,9 @@ export default function ShipmentsPage() {
         <div className="flex items-center gap-3">
           <Ship className="h-8 w-8 text-muted-foreground" />
           <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Import / Shipments
+            </p>
             <h1 className="text-h1 text-foreground">Import Shipments</h1>
             <p className="text-sm text-muted-foreground">
               Track international shipments and customs clearance
@@ -77,9 +87,11 @@ export default function ShipmentsPage() {
             <Filter className="h-4 w-4 mr-2" />
             {showFilters ? "Hide Filters" : "Show Filters"}
           </Button>
-          <Button variant="accent" onClick={() => navigate("/import/shipments/new")}>
-            Create Shipment
-          </Button>
+          {canManageShipments ? (
+            <Button variant="accent" onClick={() => navigate("/import/shipments/new")}>
+              Create Shipment
+            </Button>
+          ) : null}
         </div>
       </div>
 

@@ -42,10 +42,14 @@ describe("invoice tools", () => {
   let app: InvoicesApplication;
   const getExecute = vi.fn();
   const updateExecute = vi.fn();
+  const draftIssueExecute = vi.fn();
 
   beforeEach(() => {
     getExecute.mockResolvedValue(ok({ invoice }));
     updateExecute.mockResolvedValue(ok({ invoice }));
+    draftIssueExecute.mockResolvedValue(
+      ok({ subject: "Invoice INV-001", body: "Please find your invoice attached." })
+    );
     app = {
       getInvoiceById: { execute: getExecute },
       listInvoices: {
@@ -59,6 +63,12 @@ describe("invoice tools", () => {
       },
       recordPayment: { execute: vi.fn().mockResolvedValue(ok({ invoice })) },
       cancelInvoice: { execute: vi.fn().mockResolvedValue(ok({ invoice })) },
+      draftInvoiceIssueEmail: { execute: draftIssueExecute },
+      draftReminderEmail: {
+        execute: vi
+          .fn()
+          .mockResolvedValue(ok({ subject: "Payment reminder", body: "Please pay." })),
+      },
     } as unknown as InvoicesApplication;
   });
 
@@ -66,6 +76,7 @@ describe("invoice tools", () => {
     const [getInvoiceTool] = buildInvoiceTools(app);
     const result = await getInvoiceTool.execute?.({
       tenantId: "tenant-1",
+      workspaceId: "workspace-1",
       userId: "user-1",
       input: { invoiceId: "inv-1" },
       toolCallId: "tool-1",
@@ -74,7 +85,11 @@ describe("invoice tools", () => {
     expect(result).toEqual({ ok: true, invoice });
     expect(getExecute).toHaveBeenCalledWith(
       { invoiceId: "inv-1" },
-      expect.objectContaining({ tenantId: "tenant-1", correlationId: "tool-1" })
+      expect.objectContaining({
+        tenantId: "tenant-1",
+        workspaceId: "workspace-1",
+        correlationId: "tool-1",
+      })
     );
   });
 
@@ -101,5 +116,39 @@ describe("invoice tools", () => {
     });
 
     expect(result).toEqual(expect.objectContaining({ ok: false, code: "NOT_FOUND" }));
+  });
+
+  it("invokes invoice_draft_issue_email with workspace scoped context", async () => {
+    const tools = buildInvoiceTools(app);
+    const draftTool = tools.find((tool) => tool.name === "invoice_draft_issue_email");
+
+    const result = await draftTool?.execute?.({
+      tenantId: "workspace-1",
+      userId: "user-1",
+      input: {
+        invoiceId: "inv-1",
+        language: "de",
+        tone: "friendly",
+      },
+      toolCallId: "tool-2",
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      subject: "Invoice INV-001",
+      body: "Please find your invoice attached.",
+    });
+    expect(draftIssueExecute).toHaveBeenCalledWith(
+      {
+        invoiceId: "inv-1",
+        language: "de",
+        tone: "friendly",
+      },
+      expect.objectContaining({
+        tenantId: "workspace-1",
+        workspaceId: "workspace-1",
+        correlationId: "tool-2",
+      })
+    );
   });
 });

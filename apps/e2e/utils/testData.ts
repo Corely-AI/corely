@@ -13,36 +13,70 @@ export interface TestData {
   };
 }
 
-const TEST_EMAIL = "e2e-test@corely.local";
 const TEST_PASSWORD = "E2ETestPassword123!";
+const MAX_SEED_ATTEMPTS = 8;
+
+interface SeedResponse {
+  tenantId: string;
+  tenantName: string;
+  userId: string;
+  userName: string;
+}
+
+const buildTestEmail = (): string =>
+  `e2e-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@corely.local`;
+
+const buildTenantName = (): string =>
+  `E2E Test Tenant ${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Seeds test data using test harness endpoints
  */
 export async function seedTestData(): Promise<TestData | null> {
-  try {
-    const response = await apiClient.post("/test/seed", {
-      email: TEST_EMAIL,
-      password: TEST_PASSWORD,
-      tenantName: "E2E Test Tenant",
-    });
+  for (let attempt = 1; attempt <= MAX_SEED_ATTEMPTS; attempt += 1) {
+    const email = buildTestEmail();
 
-    return {
-      tenant: {
-        id: response.tenantId,
-        name: response.tenantName,
-      },
-      user: {
-        id: response.userId,
-        email: TEST_EMAIL,
+    try {
+      const response = await apiClient.post<SeedResponse>("/test/seed", {
+        email,
         password: TEST_PASSWORD,
-        name: response.userName,
-      },
-    };
-  } catch (error) {
-    console.error("Failed to seed test data:", error);
-    return null;
+        tenantName: buildTenantName(),
+      });
+
+      return {
+        tenant: {
+          id: response.tenantId,
+          name: response.tenantName,
+        },
+        user: {
+          id: response.userId,
+          email,
+          password: TEST_PASSWORD,
+          name: response.userName,
+        },
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const isConflict = message.includes("409");
+      const isTransientNetworkError =
+        message.includes("fetch failed") ||
+        message.includes("UND_ERR_SOCKET") ||
+        message.includes("ECONNREFUSED") ||
+        message.includes("other side closed");
+      const isLastAttempt = attempt === MAX_SEED_ATTEMPTS;
+
+      if ((!isConflict && !isTransientNetworkError) || isLastAttempt) {
+        console.error("Failed to seed test data:", error);
+        return null;
+      }
+
+      await wait(200 * attempt);
+    }
   }
+
+  return null;
 }
 
 /**
@@ -63,7 +97,7 @@ export async function resetTestData(tenantId: string): Promise<void> {
  */
 export async function drainOutbox(): Promise<{ processedCount: number }> {
   try {
-    const response = await apiClient.post("/test/drain-outbox");
+    const response = await apiClient.post<{ processedCount?: number }>("/test/drain-outbox");
     return { processedCount: response.processedCount || 0 };
   } catch (error) {
     console.error("Failed to drain outbox:", error);

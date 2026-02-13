@@ -33,7 +33,6 @@ export function CashRegistersScreen() {
   const createMutation = useMutation({
     mutationFn: (name: string) =>
       cashManagementApi.createRegister({
-        tenantId: "current",
         name,
         currency: "EUR",
       }),

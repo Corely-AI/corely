@@ -7,15 +7,9 @@ import {
 } from "@corely/contracts";
 import { isErr } from "@corely/kernel";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
+import { buildToolCtx } from "../../../ai-copilot/infrastructure/tools/tool-utils";
 import { type PartyApplication } from "../../../party/application/party.application";
 import { type EngagementApplication } from "../../application/engagement.application";
-
-const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?: string) => ({
-  tenantId,
-  userId,
-  correlationId: toolCallId ?? runId,
-  requestId: toolCallId,
-});
 
 export const buildEngagementTools = (
   engagement: EngagementApplication,
@@ -26,7 +20,7 @@ export const buildEngagementTools = (
     description: "Find a customer for kiosk check-in based on name/phone/email context.",
     kind: "server",
     inputSchema: EngagementFindCustomerInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = EngagementFindCustomerInputSchema.safeParse(input);
       if (!parsed.success) {
         return { ok: false, code: "VALIDATION_ERROR", details: parsed.error.flatten() };
@@ -34,7 +28,7 @@ export const buildEngagementTools = (
 
       const result = await partyCrm.searchCustomers.execute(
         { q: parsed.data.searchText, pageSize: parsed.data.limit },
-        buildCtx(tenantId, userId, toolCallId, runId)
+        buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
       );
       if (isErr(result)) {
         return { ok: false, code: result.error.code, message: result.error.message };
@@ -69,7 +63,7 @@ export const buildEngagementTools = (
     description: "Assess duplicate risk and recommend check-in decision.",
     kind: "server",
     inputSchema: EngagementCheckInAssistantInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = EngagementCheckInAssistantInputSchema.safeParse(input);
       if (!parsed.success) {
         return { ok: false, code: "VALIDATION_ERROR", details: parsed.error.flatten() };
@@ -83,7 +77,7 @@ export const buildEngagementTools = (
           from,
           pageSize: 5,
         },
-        buildCtx(tenantId, userId, toolCallId, runId)
+        buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
       );
 
       const recent = checkins.ok ? checkins.value.items : [];
@@ -110,7 +104,7 @@ export const buildEngagementTools = (
     description: "Suggest the next best loyalty action after check-in.",
     kind: "server",
     inputSchema: EngagementLoyaltyNextBestActionInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = EngagementLoyaltyNextBestActionInputSchema.safeParse(input);
       if (!parsed.success) {
         return { ok: false, code: "VALIDATION_ERROR", details: parsed.error.flatten() };
@@ -118,7 +112,7 @@ export const buildEngagementTools = (
 
       const settings = await engagement.getSettings.execute(
         {},
-        buildCtx(tenantId, userId, toolCallId, runId)
+        buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
       );
       const rewardRules = settings.ok ? (settings.value.settings.rewardRules ?? []) : [];
       const pointsBalance = parsed.data.pointsBalance ?? 0;
@@ -149,7 +143,7 @@ export const buildEngagementTools = (
     description: "Explain how the loyalty program works for this customer.",
     kind: "server",
     inputSchema: EngagementExplainLoyaltyInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = EngagementExplainLoyaltyInputSchema.safeParse(input);
       if (!parsed.success) {
         return { ok: false, code: "VALIDATION_ERROR", details: parsed.error.flatten() };
@@ -157,7 +151,7 @@ export const buildEngagementTools = (
 
       const settings = await engagement.getSettings.execute(
         {},
-        buildCtx(tenantId, userId, toolCallId, runId)
+        buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
       );
       const pointsPerVisit = settings.ok ? settings.value.settings.pointsPerVisit : 0;
       const rewardRules = settings.ok ? (settings.value.settings.rewardRules ?? []) : [];

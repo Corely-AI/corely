@@ -9,16 +9,21 @@ export const catalogAppManifest: AppManifest = {
   dependencies: [],
   capabilities: ["catalog.basic"],
   permissions: ["catalog.read", "catalog.write"],
+  entitlement: {
+    defaultEnabled: true,
+  },
   menu: [
     {
       id: "catalog-items",
       scope: "web",
       section: "inventory",
-      labelKey: "nav.catalog.items",
-      defaultLabel: "Catalog",
+      labelKey: "nav.catalogItems",
+      defaultLabel: "Catalog Items",
       route: "/catalog/items",
       icon: "Package",
       order: 5,
+      requiresCapabilities: ["catalog.basic"],
+      requiresPermissions: ["catalog.read"],
     },
   ],
 };

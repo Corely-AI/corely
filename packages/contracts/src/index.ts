@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CustomValuesSchema } from "./common/customization/custom-field";
+import { ListQuerySchema, PageInfoSchema } from "./common/list.contract";
 export * from "./common/list.contract";
 export * from "./documents";
 export * from "./invoices";
@@ -100,6 +101,7 @@ export * from "./errors";
 export * from "./platform";
 export * from "./copilot/collect-inputs.schema";
 export * from "./copilot/chat.schema";
+export * from "./copilot/chat-history.schema";
 export * from "./cash-management";
 export * from "./ai/richtext";
 
@@ -141,18 +143,30 @@ export const UserDtoSchema = z.object({
 });
 export type UserDto = z.infer<typeof UserDtoSchema>;
 
+export const TenantStatusSchema = z.enum(["ACTIVE", "SUSPENDED", "ARCHIVED"]);
+export type TenantStatus = z.infer<typeof TenantStatusSchema>;
+
 export const TenantDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
+  status: TenantStatusSchema,
 });
 export type TenantDto = z.infer<typeof TenantDtoSchema>;
 
-export const TenantStatusSchema = z.enum(["ACTIVE", "SUSPENDED", "ARCHIVED"]);
-export type TenantStatus = z.infer<typeof TenantStatusSchema>;
+export const UpdateTenantInputSchema = z.object({
+  status: TenantStatusSchema,
+});
+export type UpdateTenantInput = z.infer<typeof UpdateTenantInputSchema>;
+
+export const ListTenantsInputSchema = ListQuerySchema.extend({
+  status: TenantStatusSchema.optional(),
+});
+export type ListTenantsInput = z.infer<typeof ListTenantsInputSchema>;
 
 export const ListTenantsOutputSchema = z.object({
   tenants: z.array(TenantDtoSchema),
+  pageInfo: PageInfoSchema.optional(),
 });
 export type ListTenantsOutput = z.infer<typeof ListTenantsOutputSchema>;
 

@@ -4,20 +4,7 @@ import { type DomainToolPort } from "../../application/ports/domain-tool.port";
 import { type InvoicesApplication } from "../../../invoices/application/invoices.application";
 import { type PartyApplication } from "../../../party/application/party.application";
 import { mapToolResult } from "../../../../shared/adapters/tools/tool-mappers";
-
-const validationError = (issues: unknown) => ({
-  ok: false,
-  code: "VALIDATION_ERROR",
-  message: "Invalid input for tool call",
-  details: issues,
-});
-
-const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?: string) => ({
-  tenantId,
-  userId,
-  correlationId: toolCallId ?? runId,
-  requestId: toolCallId,
-});
+import { buildToolCtx, validationError } from "./tool-utils";
 
 const toCustomerCandidate = (customer: { id: string; displayName: string }) => ({
   id: customer.id,
@@ -34,13 +21,13 @@ export const buildInvoiceWorkflowTools = (
       "Resolve a customer by name and create a draft invoice when required fields are present.",
     kind: "server",
     inputSchema: CreateInvoiceFromCustomerInputSchema,
-    execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+    execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
       const parsed = CreateInvoiceFromCustomerInputSchema.safeParse(input);
       if (!parsed.success) {
         return validationError(parsed.error.flatten());
       }
 
-      const ctx = buildCtx(tenantId, userId, toolCallId, runId);
+      const ctx = buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId });
       const customerQuery = parsed.data.customerQuery;
 
       const searchResult = await party.searchCustomers.execute(

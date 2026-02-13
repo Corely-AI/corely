@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import type { Request } from "express";
 import { AuthGuard } from "./auth.guard";
 import { RbacGuard, RequirePermission } from "./rbac.guard";
@@ -7,7 +18,9 @@ import { CreateTenantUseCase } from "../../application/use-cases/create-tenant.u
 import {
   CreateTenantInputSchema,
   CreateTenantUserInputSchema,
+  ListTenantsInputSchema,
   UpdateTenantUserRoleInputSchema,
+  UpdateTenantInputSchema,
 } from "@corely/contracts";
 import {
   buildUseCaseContext,
@@ -16,7 +29,9 @@ import {
 import { ListTenantUsersUseCase } from "../../application/use-cases/list-tenant-users.usecase";
 import { CreateTenantUserUseCase } from "../../application/use-cases/create-tenant-user.usecase";
 import { UpdateTenantUserRoleUseCase } from "../../application/use-cases/update-tenant-user-role.usecase";
+import { UpdateTenantUseCase } from "../../application/use-cases/update-tenant.usecase";
 import { GetTenantUseCase } from "../../application/use-cases/get-tenant.usecase";
+import { parseListQuery } from "../../../../shared/http/pagination";
 
 @Controller("platform/tenants")
 @UseGuards(AuthGuard, RbacGuard)
@@ -30,15 +45,42 @@ export class TenantsController {
     private readonly createTenantUserUseCase: CreateTenantUserUseCase,
     @Inject(UpdateTenantUserRoleUseCase)
     private readonly updateTenantUserRoleUseCase: UpdateTenantUserRoleUseCase,
+    @Inject(UpdateTenantUseCase)
+    private readonly updateTenantUseCase: UpdateTenantUseCase,
     @Inject(GetTenantUseCase)
     private readonly getTenantUseCase: GetTenantUseCase
   ) {}
 
   @Get()
   @RequirePermission("platform.tenants.read")
-  async list(@Req() req: Request) {
+  async list(@Query() query: any, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
-    return await this.listTenantsUseCase.execute({ actorUserId: ctx.userId ?? "unknown" }, ctx);
+    const parsed = parseListQuery(query, { defaultPageSize: 20, maxPageSize: 100 });
+    const statusFromFilters = Array.isArray(parsed.filters)
+      ? parsed.filters.find((filter) => filter.field === "status" && filter.operator === "eq")
+      : undefined;
+
+    const input = ListTenantsInputSchema.parse({
+      ...parsed,
+      status:
+        typeof query.status === "string"
+          ? query.status
+          : typeof statusFromFilters?.value === "string"
+            ? statusFromFilters.value
+            : undefined,
+    });
+
+    return await this.listTenantsUseCase.execute(
+      {
+        actorUserId: ctx.userId ?? "unknown",
+        q: input.q,
+        page: input.page,
+        pageSize: input.pageSize,
+        sort: input.sort,
+        status: input.status,
+      },
+      ctx
+    );
   }
 
   @Get(":tenantId")
@@ -60,6 +102,14 @@ export class TenantsController {
       },
       ctx
     );
+  }
+
+  @Patch(":tenantId")
+  @RequirePermission("platform.tenants.write")
+  async update(@Param("tenantId") tenantId: string, @Body() body: unknown, @Req() req: Request) {
+    const input = UpdateTenantInputSchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    return await this.updateTenantUseCase.execute({ tenantId, input }, ctx);
   }
 
   @Get(":tenantId/users")

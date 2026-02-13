@@ -15,6 +15,7 @@ import {
   ValidationError as KernelValidationError,
   NotFoundError as KernelNotFoundError,
   ConflictError as KernelConflictError,
+  RateLimitError as KernelRateLimitError,
   UnauthorizedError as KernelUnauthorizedError,
   ForbiddenError as KernelForbiddenError,
 } from "@corely/kernel";
@@ -105,6 +106,9 @@ export class ExceptionToProblemDetailsMapper {
       status = HttpStatus.NOT_FOUND;
     } else if (error instanceof KernelConflictError) {
       status = HttpStatus.CONFLICT;
+    } else if (error instanceof KernelRateLimitError) {
+      status = HttpStatus.TOO_MANY_REQUESTS;
+      isPublic = true;
     }
 
     // Extract validation errors if present in details
@@ -263,6 +267,8 @@ export class ExceptionToProblemDetailsMapper {
         return "Conflict";
       case 422:
         return "Unprocessable entity";
+      case 429:
+        return "Too many requests";
       case 500:
         return "An unexpected error occurred";
       case 502:
@@ -291,6 +297,8 @@ export class ExceptionToProblemDetailsMapper {
         return "Conflict";
       case 422:
         return "Unprocessable Entity";
+      case 429:
+        return "Too Many Requests";
       case 500:
         return "Internal Server Error";
       case 502:

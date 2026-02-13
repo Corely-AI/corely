@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { CashManagementController } from "./infrastructure/http/cash-management.controller";
+import { IdentityModule } from "../identity";
 import { CreateRegisterUseCase } from "./application/use-cases/create-register.usecase";
 import { AddEntryUseCase } from "./application/use-cases/add-entry.usecase";
 import { ReverseEntryUseCase } from "./application/use-cases/reverse-entry.usecase";
@@ -11,7 +12,7 @@ import { CASH_REPOSITORY } from "./application/ports/cash-repository.port";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 
 @Module({
-  imports: [DataModule, KernelModule],
+  imports: [DataModule, KernelModule, IdentityModule],
   controllers: [CashManagementController],
   providers: [
     PrismaCashRepository,

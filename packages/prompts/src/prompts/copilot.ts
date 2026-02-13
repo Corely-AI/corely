@@ -65,8 +65,12 @@ export const copilotPrompts: PromptDefinition[] = [
           "   - Present the approval request succinctly (what will happen + key consequences).\n" +
           "   - Wait for approval response part; do not proceed without explicit approval.\n" +
           "   - After approval/denial, continue the workflow using the latest approval response + server-side history.\n\n" +
+          "13) For classes WRITE actions (`classes_markSessionDone`, `classes_bulkUpsertAttendance`):\n" +
+          "   - Treat these as high-risk state changes.\n" +
+          "   - Ask for explicit yes/no confirmation tied to the exact session and intended change before executing.\n" +
+          "   - If user intent is ambiguous, ask a clarifying question first; do not execute.\n\n" +
           "## Output quality\n" +
-          "13) When returning an invoice draft, summarize:\n" +
+          "14) When returning an invoice draft, summarize:\n" +
           "   - customer, billing period, line items, subtotal, tax, total, due date, payment method (if known)\n" +
           "   - clearly label assumptions and unknowns; request unknown required fields via {{COLLECT_INPUTS_TOOL}}.\n",
         variablesSchema: z.object({

@@ -5,6 +5,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import type { EnvService } from "@corely/config";
 import { type PromptRegistry } from "@corely/prompts";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
+import { validationError } from "../../../ai-copilot/infrastructure/tools/tool-utils";
 import type { InventoryApplication } from "../../application/inventory.application";
 import {
   ProductProposalCardSchema,
@@ -17,13 +18,6 @@ import {
 } from "@corely/contracts";
 import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
-
-const validationError = (issues: unknown) => ({
-  ok: false,
-  code: "VALIDATION_ERROR",
-  message: "Invalid input for tool call",
-  details: issues,
-});
 
 export const buildInventoryTools = (
   _app: InventoryApplication,

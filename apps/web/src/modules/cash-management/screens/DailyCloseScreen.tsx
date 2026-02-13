@@ -11,8 +11,10 @@ import { formatMoney } from "@/shared/lib/formatters";
 import { cashManagementApi } from "@/lib/cash-management-api";
 import { cashKeys } from "../queries";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export function DailyCloseScreen() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>(); // registerId
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -33,7 +35,6 @@ export function DailyCloseScreen() {
         throw new Error("No register ID");
       }
       return cashManagementApi.submitDailyClose(id, {
-        tenantId: "current",
         registerId: id,
         countedBalanceCents: data.counted,
         notes: data.notes,
@@ -46,11 +47,13 @@ export function DailyCloseScreen() {
       }
       await queryClient.invalidateQueries({ queryKey: cashKeys.registers.detail(id) });
       await queryClient.invalidateQueries({ queryKey: cashKeys.dailyCloses.list(id, {}) });
-      toast.success("Daily close submitted");
+      toast.success(t("cash.dailyClose.submitted"));
       navigate(`/cash-registers/${id}`);
     },
     onError: (err: any) => {
-      toast.error("Failed to close: " + (err.response?.data?.message || err.message));
+      toast.error(
+        `${t("cash.dailyClose.submitFailed")}: ${err.response?.data?.message || err.message}`
+      );
     },
   });
 
@@ -61,10 +64,10 @@ export function DailyCloseScreen() {
   const register = regData?.register;
 
   if (regLoading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">{t("common.loading")}</div>;
   }
   if (!register) {
-    return <div className="p-6">Not found</div>;
+    return <div className="p-6">{t("errors.pageNotFound")}</div>;
   }
 
   const expectedCents = register.currentBalanceCents;
@@ -73,7 +76,7 @@ export function DailyCloseScreen() {
 
   const handleSubmit = () => {
     if (!countedStr) {
-      toast.error("Please enter counted amount");
+      toast.error(t("cash.dailyClose.enterCountedAmount"));
       return;
     }
     submitMutation.mutate({ counted: countedCents, notes, date: businessDate });
@@ -84,19 +87,19 @@ export function DailyCloseScreen() {
       <div className="flex items-center gap-4 mb-4">
         <Button variant="ghost" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {t("common.back")}
         </Button>
-        <h1 className="text-2xl font-bold">Daily Customer Close</h1>
+        <h1 className="text-2xl font-bold">{t("cash.dailyClose.title")}</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Reconcile: {register.name}</CardTitle>
+          <CardTitle>{t("cash.dailyClose.reconcile", { register: register.name })}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-muted-foreground">Business Date</Label>
+              <Label className="text-muted-foreground">{t("cash.dailyClose.businessDate")}</Label>
               <Input
                 type="date"
                 value={businessDate}
@@ -104,7 +107,9 @@ export function DailyCloseScreen() {
               />
             </div>
             <div>
-              <Label className="text-muted-foreground">Expected Balance</Label>
+              <Label className="text-muted-foreground">
+                {t("cash.dailyClose.expectedBalance")}
+              </Label>
               <div className="text-2xl font-bold py-1">
                 {formatMoney(expectedCents, register.currency)}
               </div>
@@ -112,7 +117,7 @@ export function DailyCloseScreen() {
           </div>
 
           <div className="space-y-2">
-            <Label>Counted Cash ({register.currency})</Label>
+            <Label>{t("cash.dailyClose.countedCash", { currency: register.currency })}</Label>
             <Input
               type="number"
               step="0.01"
@@ -135,21 +140,23 @@ export function DailyCloseScreen() {
               )}
               <div className="flex-1">
                 <div className="font-medium">
-                  {difference === 0 ? "Perfect Match" : "Discrepancy Detected"}
+                  {difference === 0
+                    ? t("cash.dailyClose.perfectMatch")
+                    : t("cash.dailyClose.discrepancyDetected")}
                 </div>
                 <div className="text-sm">
-                  Difference: {difference > 0 ? "+" : ""}
+                  {t("cash.dailyClose.difference")}: {difference > 0 ? "+" : ""}
                   {formatMoney(difference, register.currency)}
-                  {difference !== 0 && " (A difference entry will be created automatically)"}
+                  {difference !== 0 && ` (${t("cash.dailyClose.differenceEntryNote")})`}
                 </div>
               </div>
             </div>
           )}
 
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t("common.notes")}</Label>
             <Textarea
-              placeholder="Any notes about this close..."
+              placeholder={t("cash.dailyClose.notesPlaceholder")}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -157,10 +164,12 @@ export function DailyCloseScreen() {
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={() => navigate(-1)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={!countedStr || submitMutation.isPending}>
-            {submitMutation.isPending ? "Submitting..." : "Submit Close"}
+            {submitMutation.isPending
+              ? t("cash.dailyClose.submitting")
+              : t("cash.dailyClose.submitClose")}
           </Button>
         </CardFooter>
       </Card>

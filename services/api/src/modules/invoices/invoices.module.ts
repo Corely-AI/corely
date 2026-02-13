@@ -1,10 +1,12 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
+import { PrismaService } from "@corely/data";
 import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
 import type { OutboxPort, AuditPort } from "@corely/kernel";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { InvoicesHttpController } from "./adapters/http/invoices.controller";
 import { InvoicesInternalController } from "./adapters/http/invoices-internal.controller";
+import { InvoicesCopilotController } from "./adapters/http/invoices-copilot.controller";
 import { ResendWebhookController } from "./adapters/webhooks/resend-webhook.controller";
 import {
   PrismaInvoiceEmailDeliveryAdapter,
@@ -32,6 +34,8 @@ import { TENANT_TIMEZONE_PORT } from "../../shared/time/tenant-timezone.token";
 import { PartyModule } from "../party";
 import { DocumentsModule } from "../documents";
 import { TaxModule } from "../tax/tax.module";
+import { PlatformModule } from "../platform";
+import { AccountingModule } from "../accounting/accounting.module";
 import { TaxEngineService } from "../tax/application/services/tax-engine.service";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
 import { CreateInvoiceUseCase } from "./application/use-cases/create-invoice/create-invoice.usecase";
@@ -42,22 +46,52 @@ import { RecordPaymentUseCase } from "./application/use-cases/record-payment/rec
 import { SendInvoiceUseCase } from "./application/use-cases/send-invoice/send-invoice.usecase";
 import { SendInvoiceRemindersUseCase } from "./application/use-cases/send-invoice-reminders/send-invoice-reminders.usecase";
 import { UpdateInvoiceUseCase } from "./application/use-cases/update-invoice/update-invoice.usecase";
+import { DraftInvoiceEmailUseCase } from "./application/use-cases/copilot/draft-invoice-email.usecase";
+import { DraftReminderEmailUseCase } from "./application/use-cases/copilot/draft-reminder-email.usecase";
 import { PrismaInvoiceRepoAdapter } from "./infrastructure/adapters/prisma-invoice-repository.adapter";
+import { PrismaInvoiceCopilotRateLimitAdapter } from "./infrastructure/adapters/prisma-invoice-copilot-rate-limit.adapter";
 import { INVOICE_COMMANDS } from "./application/ports/invoice-commands.port";
 import { InvoiceCommandService } from "./application/services/invoice-command.service";
+import { INVOICE_COPILOT_RATE_LIMIT_PORT } from "./application/ports/invoice-copilot-rate-limit.port";
+import type { InvoiceCopilotRateLimitPort } from "./application/ports/invoice-copilot-rate-limit.port";
+import { CogsPostingService } from "../accounting/application/services/cogs-posting.service";
 import {
   INVOICE_REMINDER_STATE_PORT,
   type InvoiceReminderStatePort,
   INVOICE_REMINDER_SETTINGS_PORT,
   type InvoiceReminderSettingsPort,
 } from "@corely/kernel";
+import { AI_TEXT_PORT } from "../../shared/ai/ai-text.port";
+import { AiSdkTextAdapter } from "../../shared/ai/ai-sdk-text.adapter";
+import type { AiTextPort } from "../../shared/ai/ai-text.port";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, PartyModule, DocumentsModule, TaxModule],
-  controllers: [InvoicesHttpController, InvoicesInternalController, ResendWebhookController],
+  imports: [
+    DataModule,
+    KernelModule,
+    IdentityModule,
+    PartyModule,
+    DocumentsModule,
+    TaxModule,
+    PlatformModule,
+    AccountingModule,
+  ],
+  controllers: [
+    InvoicesHttpController,
+    InvoicesInternalController,
+    InvoicesCopilotController,
+    ResendWebhookController,
+  ],
   providers: [
     PrismaInvoiceRepoAdapter,
+    PrismaInvoiceCopilotRateLimitAdapter,
     PrismaTenantTimeZoneAdapter,
+    AiSdkTextAdapter,
+    { provide: AI_TEXT_PORT, useExisting: AiSdkTextAdapter },
+    {
+      provide: INVOICE_COPILOT_RATE_LIMIT_PORT,
+      useExisting: PrismaInvoiceCopilotRateLimitAdapter,
+    },
     { provide: TENANT_TIMEZONE_PORT, useExisting: PrismaTenantTimeZoneAdapter },
     {
       provide: TimeService,
@@ -142,7 +176,9 @@ import {
         clock: any,
         customerQuery: CustomerQueryPort,
         paymentMethodQuery: any,
-        taxEngine: TaxEngineService
+        taxEngine: TaxEngineService,
+        prisma: PrismaService,
+        cogsPostingService: CogsPostingService
       ) =>
         new FinalizeInvoiceUseCase({
           logger: new NestLoggerAdapter(),
@@ -152,6 +188,8 @@ import {
           customerQuery,
           paymentMethodQuery,
           taxEngine,
+          prisma,
+          cogsPostingService,
         }),
       inject: [
         PrismaInvoiceRepoAdapter,
@@ -160,6 +198,8 @@ import {
         CUSTOMER_QUERY_PORT,
         PAYMENT_METHOD_QUERY_PORT,
         TaxEngineService,
+        PrismaService,
+        CogsPostingService,
       ],
     },
     {
@@ -271,6 +311,40 @@ import {
       inject: [PrismaInvoiceRepoAdapter, TimeService],
     },
     {
+      provide: DraftInvoiceEmailUseCase,
+      useFactory: (
+        repo: PrismaInvoiceRepoAdapter,
+        aiText: AiTextPort,
+        audit: AuditPort,
+        rateLimit: InvoiceCopilotRateLimitPort
+      ) =>
+        new DraftInvoiceEmailUseCase({
+          logger: new NestLoggerAdapter(),
+          invoiceRepo: repo,
+          aiText,
+          audit,
+          rateLimit,
+        }),
+      inject: [PrismaInvoiceRepoAdapter, AI_TEXT_PORT, AUDIT_PORT, INVOICE_COPILOT_RATE_LIMIT_PORT],
+    },
+    {
+      provide: DraftReminderEmailUseCase,
+      useFactory: (
+        repo: PrismaInvoiceRepoAdapter,
+        aiText: AiTextPort,
+        audit: AuditPort,
+        rateLimit: InvoiceCopilotRateLimitPort
+      ) =>
+        new DraftReminderEmailUseCase({
+          logger: new NestLoggerAdapter(),
+          invoiceRepo: repo,
+          aiText,
+          audit,
+          rateLimit,
+        }),
+      inject: [PrismaInvoiceRepoAdapter, AI_TEXT_PORT, AUDIT_PORT, INVOICE_COPILOT_RATE_LIMIT_PORT],
+    },
+    {
       provide: InvoicesApplication,
       useFactory: (
         createInvoice: CreateInvoiceUseCase,
@@ -280,7 +354,9 @@ import {
         recordPayment: RecordPaymentUseCase,
         cancelInvoice: CancelInvoiceUseCase,
         getInvoice: GetInvoiceByIdUseCase,
-        listInvoices: ListInvoicesUseCase
+        listInvoices: ListInvoicesUseCase,
+        draftIssueEmail: DraftInvoiceEmailUseCase,
+        draftReminderEmail: DraftReminderEmailUseCase
       ) =>
         new InvoicesApplication(
           createInvoice,
@@ -290,7 +366,9 @@ import {
           recordPayment,
           cancelInvoice,
           getInvoice,
-          listInvoices
+          listInvoices,
+          draftIssueEmail,
+          draftReminderEmail
         ),
       inject: [
         CreateInvoiceUseCase,
@@ -301,6 +379,8 @@ import {
         CancelInvoiceUseCase,
         GetInvoiceByIdUseCase,
         ListInvoicesUseCase,
+        DraftInvoiceEmailUseCase,
+        DraftReminderEmailUseCase,
       ],
     },
     {

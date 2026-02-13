@@ -7,3 +7,4 @@ export * from "./billing.schema";
 export * from "./classes-events.schema";
 export * from "./settings.schema";
 export * from "./teacher-dashboard.schema";
+export * from "./copilot-tools.schema";

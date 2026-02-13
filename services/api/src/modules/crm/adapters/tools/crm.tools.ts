@@ -6,6 +6,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import type { EnvService } from "@corely/config";
 import { type PromptRegistry } from "@corely/prompts";
 import type { DomainToolPort } from "../../../ai-copilot/application/ports/domain-tool.port";
+import { buildToolCtx, validationError } from "../../../ai-copilot/infrastructure/tools/tool-utils";
 import type { PartyApplication } from "../../../party/application/party.application";
 import type { CrmApplication } from "../../application/crm.application";
 import {
@@ -17,20 +18,6 @@ import {
 } from "@corely/contracts";
 import { type PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logger";
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
-
-const validationError = (issues: unknown) => ({
-  ok: false,
-  code: "VALIDATION_ERROR",
-  message: "Invalid input for tool call",
-  details: issues,
-});
-
-const buildCtx = (tenantId: string, userId: string, toolCallId?: string, runId?: string) => ({
-  tenantId,
-  userId,
-  correlationId: toolCallId ?? runId,
-  requestId: toolCallId,
-});
 
 export const buildCrmAiTools = (deps: {
   party: PartyApplication;
@@ -57,7 +44,7 @@ export const buildCrmAiTools = (deps: {
           .optional()
           .describe("Optional role hints for the party"),
       }),
-      execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
         const parsed = z
           .object({ sourceText: z.string(), suggestedRoles: z.array(z.string()).optional() })
           .safeParse(input);
@@ -125,7 +112,7 @@ export const buildCrmAiTools = (deps: {
         if (object.email) {
           const searchResult = await deps.party.searchCustomers.execute(
             { q: object.email, pageSize: 5 },
-            buildCtx(tenantId, userId, toolCallId, runId)
+            buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
           );
           if (isOk(searchResult)) {
             duplicates.push(
@@ -178,7 +165,7 @@ export const buildCrmAiTools = (deps: {
         sourceText: z.string().describe("The unstructured text containing deal information"),
         partyId: z.string().optional().describe("Optional party ID to associate the deal with"),
       }),
-      execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
         const parsed = z
           .object({ sourceText: z.string(), partyId: z.string().optional() })
           .safeParse(input);
@@ -271,7 +258,7 @@ export const buildCrmAiTools = (deps: {
           .optional()
           .describe("Additional context (e.g., meeting notes, conversation summary)"),
       }),
-      execute: async ({ tenantId, userId, input, toolCallId, runId }) => {
+      execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
         const parsed = z
           .object({ dealId: z.string(), context: z.string().optional() })
           .safeParse(input);
@@ -284,7 +271,7 @@ export const buildCrmAiTools = (deps: {
         // Fetch deal details
         const dealResult = await deps.crm.getDealById.execute(
           { dealId },
-          buildCtx(tenantId, userId, toolCallId, runId)
+          buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
         );
         if (isErr(dealResult)) {
           return { ok: false, code: "DEAL_NOT_FOUND", message: "Deal not found" };
@@ -294,7 +281,7 @@ export const buildCrmAiTools = (deps: {
         // Fetch existing activities for the deal
         const activitiesResult = await deps.crm.listActivities.execute(
           { dealId, limit: 10 },
-          buildCtx(tenantId, userId, toolCallId, runId)
+          buildToolCtx({ tenantId, workspaceId, userId, toolCallId, runId })
         );
         const existingActivities = isOk(activitiesResult) ? activitiesResult.value.items : [];
         const existingActivitiesList =

@@ -7,6 +7,10 @@ export class CopilotChatRequestDto {
   id?: string;
 
   @IsOptional()
+  @IsString()
+  threadId?: string;
+
+  @IsOptional()
   @IsArray()
   messages?: CopilotUIMessage[];
 

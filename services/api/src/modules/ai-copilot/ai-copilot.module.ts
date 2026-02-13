@@ -8,6 +8,7 @@ import { PrismaAgentRunRepository } from "./infrastructure/adapters/prisma-agent
 import { PrismaMessageRepository } from "./infrastructure/adapters/prisma-message-repository.adapter";
 import { PrismaChatStoreAdapter } from "./infrastructure/adapters/prisma-chat-store.adapter";
 import { PrismaToolExecutionRepository } from "./infrastructure/adapters/prisma-tool-execution-repository.adapter";
+import { PrismaThreadHistoryRepository } from "./infrastructure/adapters/prisma-thread-history-repository.adapter";
 import { ToolRegistry } from "./infrastructure/tools/tool-registry";
 import { AiSdkModelAdapter } from "./infrastructure/model/ai-sdk.model-adapter";
 import { PrismaAuditAdapter } from "./infrastructure/audit/prisma.audit.adapter";
@@ -28,6 +29,9 @@ import { buildInvoiceWorkflowTools } from "./infrastructure/tools/invoice-workfl
 import { PartyModule } from "../party";
 import { PartyApplication } from "../party/application/party.application";
 import { buildCustomerTools } from "../party/adapters/tools/customer.tools";
+import { CrmModule } from "../crm/crm.module";
+import { CrmApplication } from "../crm/application/crm.application";
+import { buildCrmAiTools } from "../crm/adapters/tools/crm.tools";
 import { SalesModule } from "../sales";
 import { SalesApplication } from "../sales/application/sales.application";
 import { buildSalesTools } from "../sales/adapters/tools/sales.tools";
@@ -41,17 +45,40 @@ import { buildApprovalTools } from "../approvals/adapters/tools/approval.tools";
 import { EngagementModule } from "../engagement/engagement.module";
 import { EngagementApplication } from "../engagement/application/engagement.application";
 import { buildEngagementTools } from "../engagement/adapters/tools/engagement.tools";
+import { ClassesModule } from "../classes/classes.module";
+import { GetTeacherDashboardSummaryUseCase } from "../classes/application/use-cases/get-teacher-dashboard-summary.use-case";
+import { GetTeacherDashboardUnpaidInvoicesUseCase } from "../classes/application/use-cases/get-teacher-dashboard-unpaid-invoices.use-case";
+import { ListClassGroupsUseCase } from "../classes/application/use-cases/list-class-groups.usecase";
+import { ListSessionsUseCase } from "../classes/application/use-cases/list-sessions.usecase";
+import { GetSessionUseCase } from "../classes/application/use-cases/get-session.usecase";
+import { GetSessionAttendanceUseCase } from "../classes/application/use-cases/get-session-attendance.usecase";
+import { ListEnrollmentsUseCase } from "../classes/application/use-cases/list-enrollments.usecase";
+import { GetClassGroupUseCase } from "../classes/application/use-cases/get-class-group.usecase";
+import { UpdateSessionUseCase } from "../classes/application/use-cases/update-session.usecase";
+import { BulkUpsertAttendanceUseCase } from "../classes/application/use-cases/bulk-upsert-attendance.usecase";
+import { buildClassesTools } from "../classes/adapters/tools/classes.tools";
 import { OtelObservabilityAdapter } from "../../shared/observability/otel-observability.adapter";
 import { type ObservabilityPort } from "@corely/kernel";
 import { CreateRunUseCase } from "./application/use-cases/create-run.usecase";
 import { GetRunUseCase } from "./application/use-cases/get-run.usecase";
 import { ListMessagesUseCase } from "./application/use-cases/list-messages.usecase";
+import { ListCopilotThreadsUseCase } from "./application/use-cases/list-copilot-threads.usecase";
+import { GetCopilotThreadUseCase } from "./application/use-cases/get-copilot-thread.usecase";
+import { ListCopilotThreadMessagesUseCase } from "./application/use-cases/list-copilot-thread-messages.usecase";
+import { SearchCopilotMessagesUseCase } from "./application/use-cases/search-copilot-messages.usecase";
+import { CreateCopilotThreadUseCase } from "./application/use-cases/create-copilot-thread.usecase";
 import { PromptModule } from "../../shared/prompts/prompt.module";
 import { PromptRegistry } from "@corely/prompts";
 import { PromptUsageLogger } from "../../shared/prompts/prompt-usage.logger";
 import { CHAT_STORE_PORT, type ChatStorePort } from "./application/ports/chat-store.port";
+import {
+  THREAD_HISTORY_REPOSITORY_PORT,
+  type ThreadHistoryRepositoryPort,
+} from "./application/ports/thread-history-repository.port";
 import { CopilotContextBuilder } from "./application/services/copilot-context.builder";
 import { CopilotTaskStateTracker } from "./application/services/copilot-task-state.service";
+import type { DomainToolPort } from "./application/ports/domain-tool.port";
+import { PlatformEntitlementsModule } from "../platform-entitlements/platform-entitlements.module";
 
 @Module({
   imports: [
@@ -59,10 +86,13 @@ import { CopilotTaskStateTracker } from "./application/services/copilot-task-sta
     IdentityModule,
     InvoicesModule,
     PartyModule,
+    CrmModule,
     SalesModule,
     PurchasingModule,
     InventoryModule,
     EngagementModule,
+    ClassesModule,
+    PlatformEntitlementsModule,
     PromptModule,
   ],
   controllers: [CopilotController],
@@ -71,6 +101,7 @@ import { CopilotTaskStateTracker } from "./application/services/copilot-task-sta
     PrismaMessageRepository,
     PrismaChatStoreAdapter,
     PrismaToolExecutionRepository,
+    PrismaThreadHistoryRepository,
     ToolRegistry,
     PrismaAuditAdapter,
     IdempotencyService,
@@ -134,6 +165,38 @@ import { CopilotTaskStateTracker } from "./application/services/copilot-task-sta
       provide: CHAT_STORE_PORT,
       useClass: PrismaChatStoreAdapter,
     },
+    {
+      provide: THREAD_HISTORY_REPOSITORY_PORT,
+      useClass: PrismaThreadHistoryRepository,
+    },
+    {
+      provide: ListCopilotThreadsUseCase,
+      useFactory: (threads: ThreadHistoryRepositoryPort) => new ListCopilotThreadsUseCase(threads),
+      inject: [THREAD_HISTORY_REPOSITORY_PORT],
+    },
+    {
+      provide: GetCopilotThreadUseCase,
+      useFactory: (threads: ThreadHistoryRepositoryPort) => new GetCopilotThreadUseCase(threads),
+      inject: [THREAD_HISTORY_REPOSITORY_PORT],
+    },
+    {
+      provide: ListCopilotThreadMessagesUseCase,
+      useFactory: (threads: ThreadHistoryRepositoryPort) =>
+        new ListCopilotThreadMessagesUseCase(threads),
+      inject: [THREAD_HISTORY_REPOSITORY_PORT],
+    },
+    {
+      provide: SearchCopilotMessagesUseCase,
+      useFactory: (threads: ThreadHistoryRepositoryPort) =>
+        new SearchCopilotMessagesUseCase(threads),
+      inject: [THREAD_HISTORY_REPOSITORY_PORT],
+    },
+    {
+      provide: CreateCopilotThreadUseCase,
+      useFactory: (threads: ThreadHistoryRepositoryPort, clock: ClockPort) =>
+        new CreateCopilotThreadUseCase(threads, clock),
+      inject: [THREAD_HISTORY_REPOSITORY_PORT, "COPILOT_CLOCK"],
+    },
     CopilotContextBuilder,
     CopilotTaskStateTracker,
     {
@@ -147,30 +210,88 @@ import { CopilotTaskStateTracker } from "./application/services/copilot-task-sta
       useFactory: (
         invoices: InvoicesApplication,
         partyCrm: PartyApplication,
+        crm: CrmApplication,
         sales: SalesApplication,
         purchasing: PurchasingApplication,
         inventory: InventoryApplication,
         engagement: EngagementApplication,
+        classSummary: GetTeacherDashboardSummaryUseCase,
+        classUnpaidInvoices: GetTeacherDashboardUnpaidInvoicesUseCase,
+        listClassGroups: ListClassGroupsUseCase,
+        listSessions: ListSessionsUseCase,
+        getSession: GetSessionUseCase,
+        getSessionAttendance: GetSessionAttendanceUseCase,
+        listEnrollments: ListEnrollmentsUseCase,
+        getClassGroup: GetClassGroupUseCase,
+        updateSession: UpdateSessionUseCase,
+        bulkUpsertAttendance: BulkUpsertAttendanceUseCase,
         env: EnvService,
         promptRegistry: PromptRegistry,
         promptUsageLogger: PromptUsageLogger
-      ) => [
-        ...buildInvoiceWorkflowTools(invoices, partyCrm),
-        ...buildInvoiceTools(invoices),
-        ...buildCustomerTools(partyCrm),
-        ...buildSalesTools(sales),
-        ...buildPurchasingTools(purchasing, env, promptRegistry, promptUsageLogger),
-        ...buildInventoryTools(inventory, env, promptRegistry, promptUsageLogger),
-        ...buildApprovalTools(env, promptRegistry, promptUsageLogger),
-        ...buildEngagementTools(engagement, partyCrm),
-      ],
+      ) => {
+        const withAppId = (appId: string, tools: DomainToolPort[]): DomainToolPort[] =>
+          tools.map((tool) => ({ ...tool, appId }));
+
+        return [
+          ...withAppId("invoices", buildInvoiceWorkflowTools(invoices, partyCrm)),
+          ...withAppId("invoices", buildInvoiceTools(invoices)),
+          ...withAppId("parties", buildCustomerTools(partyCrm)),
+          ...withAppId(
+            "crm",
+            buildCrmAiTools({
+              party: partyCrm,
+              crm,
+              env,
+              promptRegistry,
+              promptUsageLogger,
+            })
+          ),
+          ...withAppId("sales", buildSalesTools(sales)),
+          ...withAppId(
+            "purchasing",
+            buildPurchasingTools(purchasing, env, promptRegistry, promptUsageLogger)
+          ),
+          ...withAppId(
+            "inventory",
+            buildInventoryTools(inventory, env, promptRegistry, promptUsageLogger)
+          ),
+          ...withAppId("approvals", buildApprovalTools(env, promptRegistry, promptUsageLogger)),
+          ...withAppId("engagement", buildEngagementTools(engagement, partyCrm)),
+          ...withAppId(
+            "classes",
+            buildClassesTools({
+              getSummary: classSummary,
+              getUnpaidInvoices: classUnpaidInvoices,
+              listClassGroups,
+              listSessions,
+              getSession,
+              getSessionAttendance,
+              listEnrollments,
+              getClassGroup,
+              updateSession,
+              bulkUpsertAttendance,
+            })
+          ),
+        ];
+      },
       inject: [
         InvoicesApplication,
         PartyApplication,
+        CrmApplication,
         SalesApplication,
         PurchasingApplication,
         InventoryApplication,
         EngagementApplication,
+        GetTeacherDashboardSummaryUseCase,
+        GetTeacherDashboardUnpaidInvoicesUseCase,
+        ListClassGroupsUseCase,
+        ListSessionsUseCase,
+        GetSessionUseCase,
+        GetSessionAttendanceUseCase,
+        ListEnrollmentsUseCase,
+        GetClassGroupUseCase,
+        UpdateSessionUseCase,
+        BulkUpsertAttendanceUseCase,
         EnvService,
         PromptRegistry,
         PromptUsageLogger,

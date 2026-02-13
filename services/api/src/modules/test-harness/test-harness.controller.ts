@@ -88,6 +88,23 @@ export class TestHarnessController {
   }
 
   /**
+   * Seed one copilot thread and one user message (for deterministic search E2E)
+   */
+  @Post("copilot/seed-thread-message")
+  @HttpCode(HttpStatus.OK)
+  async seedCopilotThreadMessage(
+    @Body() payload: { tenantId: string; userId: string; title: string; messageText: string }
+  ) {
+    if (!payload.tenantId || !payload.userId || !payload.title || !payload.messageText) {
+      throw new BadRequestException(
+        "Missing required fields: tenantId, userId, title, messageText"
+      );
+    }
+
+    return this.testHarnessService.seedCopilotThreadMessage(payload);
+  }
+
+  /**
    * Health check endpoint
    */
   @Post("health")

@@ -117,10 +117,6 @@ export class RbacGuard implements CanActivate {
       const tenantMembership = await this.membershipRepo.findByTenantAndUser(tenantId, userId);
       if (tenantMembership) {
         const roleId = tenantMembership.getRoleId();
-        const role = await this.roleRepo.findById(tenantId, roleId);
-        if (role?.systemKey === "OWNER") {
-          return true;
-        }
         tenantRoleIds.push(roleId);
       }
     }

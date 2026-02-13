@@ -6,9 +6,17 @@ import { AssistantPage } from "../../modules/assistant";
 import { ExpensesPage, NewExpensePage, ExpenseDetailPage } from "../../modules/expenses";
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
 import {
+  CashRegistersScreen,
+  CashRegisterDetailScreen,
+  DailyCloseScreen,
+} from "../../modules/cash-management";
+import {
   CustomersPage,
   NewCustomerPage,
   EditCustomerPage,
+  SuppliersPage,
+  NewSupplierPage,
+  EditSupplierPage,
   StudentsPage,
   NewStudentPage,
   StudentDetailPage,
@@ -32,47 +40,12 @@ import {
   NewActivityPage,
 } from "../../modules/crm";
 import {
-  QuotesPage as SalesQuotesPage,
-  NewQuotePage,
-  QuoteDetailPage,
-  OrdersPage as SalesOrdersPage,
-  NewOrderPage,
-  OrderDetailPage,
-  SalesSettingsPage,
-  SalesCopilotPage,
-} from "../../modules/sales";
-import {
   AccountingDashboard,
   SetupWizard,
   ChartOfAccountsList,
   JournalEntriesList,
   ReportsHub,
 } from "../../modules/accounting/screens";
-import {
-  PurchaseOrdersPage,
-  PurchaseOrderDetailPage,
-  NewPurchaseOrderPage,
-  VendorBillsPage,
-  VendorBillDetailPage,
-  NewVendorBillPage,
-  RecordBillPaymentPage,
-  PurchasingSettingsPage,
-  PurchasingCopilotPage,
-} from "../../modules/purchasing";
-import {
-  ProductsPage,
-  ProductDetailPage,
-  WarehousesPage,
-  StockOverviewPage,
-  DocumentsPage,
-  DocumentDetailPage,
-  ReorderDashboardPage,
-  InventoryCopilotPage,
-  LotsPage,
-  LotDetailPage,
-  ExpiryDashboardPage,
-} from "../../modules/inventory";
-import { ShipmentsPage, ShipmentDetailPage } from "../../modules/import";
 import { CmsPostsPage, CmsPostEditorPage, CmsCommentsPage } from "../../modules/cms";
 import {
   WebsiteSitesPage,
@@ -110,11 +83,12 @@ import {
   TaxDocumentsPage,
 } from "../../modules/tax";
 import { CopilotPage } from "../../routes/copilot";
-import { RequireCapability } from "../../shared/workspaces/RequireCapability";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
 import { RequireAuth } from "./require-auth";
+import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { appSettingsRoutes } from "./app-settings-routes";
 import { catalogRoutes } from "./catalog-routes";
+import { capabilityRoutes } from "./app-shell-capability-routes";
 
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
@@ -123,6 +97,7 @@ export const appShellRoutes = (
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />
       <Route path="/assistant" element={<AssistantPage />} />
+      <Route path="/assistant/t/:threadId" element={<AssistantPage />} />
       <Route path="/cms/posts" element={<CmsPostsPage />} />
       <Route path="/cms/posts/new" element={<CmsPostEditorPage />} />
       <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
@@ -173,126 +148,78 @@ export const appShellRoutes = (
       <Route path="/expenses/new" element={<NewExpensePage />} />
       <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
       <Route path="/expenses/:id/edit" element={<NewExpensePage />} />
+      <Route path="/cash-registers" element={<CashRegistersScreen />} />
+      <Route path="/cash-registers/:id" element={<CashRegisterDetailScreen />} />
+      <Route path="/cash-registers/:id/daily-close" element={<DailyCloseScreen />} />
       <Route path="/invoices" element={<InvoicesPage />} />
       <Route path="/invoices/new" element={<NewInvoicePage />} />
       <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
       <Route path="/invoices/:id/edit" element={<InvoiceDetailPage />} />
+      {capabilityRoutes}
       <Route
-        path="/sales/quotes"
+        path="/customers"
         element={
-          <RequireCapability capability="sales.quotes">
-            <SalesQuotesPage />
-          </RequireCapability>
+          <RequirePermission permission="party.customers.read">
+            <CustomersPage />
+          </RequirePermission>
         }
       />
       <Route
-        path="/sales/quotes/new"
+        path="/customers/new"
         element={
-          <RequireCapability capability="sales.quotes">
-            <NewQuotePage />
-          </RequireCapability>
+          <RequirePermission permission="party.customers.manage">
+            <NewCustomerPage />
+          </RequirePermission>
         }
       />
       <Route
-        path="/sales/quotes/:quoteId"
+        path="/customers/:id"
         element={
-          <RequireCapability capability="sales.quotes">
-            <QuoteDetailPage />
-          </RequireCapability>
+          <RequirePermission permission="party.customers.manage">
+            <EditCustomerPage />
+          </RequirePermission>
         }
       />
       <Route
-        path="/sales/quotes/:quoteId/edit"
+        path="/customers/:id/edit"
         element={
-          <RequireCapability capability="sales.quotes">
-            <QuoteDetailPage />
-          </RequireCapability>
+          <RequirePermission permission="party.customers.manage">
+            <EditCustomerPage />
+          </RequirePermission>
         }
       />
       <Route
-        path="/sales/orders"
+        path="/suppliers"
         element={
-          <RequireCapability capability="sales.quotes">
-            <SalesOrdersPage />
-          </RequireCapability>
+          <RequirePermission permission="party.customers.read">
+            <SuppliersPage />
+          </RequirePermission>
         }
       />
       <Route
-        path="/sales/orders/new"
+        path="/suppliers/new"
         element={
-          <RequireCapability capability="sales.quotes">
-            <NewOrderPage />
-          </RequireCapability>
+          <RequirePermission permission="party.customers.manage">
+            <NewSupplierPage />
+          </RequirePermission>
         }
       />
       <Route
-        path="/sales/orders/:orderId"
+        path="/suppliers/:id"
         element={
-          <RequireCapability capability="sales.quotes">
-            <OrderDetailPage />
-          </RequireCapability>
+          <RequirePermission permission="party.customers.manage">
+            <EditSupplierPage />
+          </RequirePermission>
         }
       />
       <Route
-        path="/sales/orders/:orderId/edit"
+        path="/suppliers/:id/edit"
         element={
-          <RequireCapability capability="sales.quotes">
-            <OrderDetailPage />
-          </RequireCapability>
+          <RequirePermission permission="party.customers.manage">
+            <EditSupplierPage />
+          </RequirePermission>
         }
       />
-      <Route
-        path="/sales/invoices"
-        element={
-          <RequireCapability capability="sales.quotes">
-            <InvoicesPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/sales/invoices/new"
-        element={
-          <RequireCapability capability="sales.quotes">
-            <NewInvoicePage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/sales/invoices/:invoiceId"
-        element={
-          <RequireCapability capability="sales.quotes">
-            <InvoiceDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/sales/invoices/:invoiceId/edit"
-        element={
-          <RequireCapability capability="sales.quotes">
-            <InvoiceDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/sales/settings"
-        element={
-          <RequireCapability capability="sales.quotes">
-            <SalesSettingsPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/sales/copilot"
-        element={
-          <RequireCapability capability="sales.quotes">
-            <SalesCopilotPage />
-          </RequireCapability>
-        }
-      />
-      <Route path="/customers" element={<CustomersPage />} />
-      <Route path="/customers/new" element={<NewCustomerPage />} />
-      <Route path="/customers/:id" element={<EditCustomerPage />} />
-      <Route path="/customers/:id/edit" element={<EditCustomerPage />} />
       <Route path="/students" element={<StudentsPage />} />
       <Route path="/students/new" element={<NewStudentPage />} />
       <Route path="/students/:id" element={<StudentDetailPage />} />
@@ -308,214 +235,6 @@ export const appShellRoutes = (
       <Route path="/accounting/accounts" element={<ChartOfAccountsList />} />
       <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
       <Route path="/accounting/reports" element={<ReportsHub />} />
-      <Route
-        path="/purchasing/purchase-orders"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <PurchaseOrdersPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/purchase-orders/new"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <NewPurchaseOrderPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/purchase-orders/:id"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <PurchaseOrderDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/purchase-orders/:id/edit"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <PurchaseOrderDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/vendor-bills"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <VendorBillsPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/vendor-bills/new"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <NewVendorBillPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/vendor-bills/:id"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <VendorBillDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/vendor-bills/:id/edit"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <VendorBillDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/vendor-bills/:id/pay"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <RecordBillPaymentPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/settings"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <PurchasingSettingsPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/purchasing/copilot"
-        element={
-          <RequireCapability capability="purchasing.purchaseOrders">
-            <PurchasingCopilotPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/products"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <ProductsPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/products/:id"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <ProductDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/products/:id/edit"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <ProductDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/warehouses"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <WarehousesPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/stock"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <StockOverviewPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/documents"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <DocumentsPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/documents/:id"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <DocumentDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/documents/:id/edit"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <DocumentDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/reorder"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <ReorderDashboardPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/copilot"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <InventoryCopilotPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/lots"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <LotsPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/lots/:id"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <LotDetailPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/inventory/expiry"
-        element={
-          <RequireCapability capability="inventory.basic">
-            <ExpiryDashboardPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/import/shipments"
-        element={
-          <RequireCapability capability="import.basic">
-            <ShipmentsPage />
-          </RequireCapability>
-        }
-      />
-      <Route
-        path="/import/shipments/:id"
-        element={
-          <RequireCapability capability="import.basic">
-            <ShipmentDetailPage />
-          </RequireCapability>
-        }
-      />
       {catalogRoutes}
       <Route path="/copilot" element={<CopilotPage />} />
       <Route path="/tax" element={<TaxCenterPage />} />

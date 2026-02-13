@@ -18,12 +18,30 @@ export class PrismaSalesOrderRepositoryAdapter implements SalesOrderRepositoryPo
     return this.prismaService;
   }
 
+  private getSalesOrderDelegate() {
+    if (!this.prisma.salesOrder) {
+      throw new Error(
+        'Prisma delegate "salesOrder" is unavailable. Regenerate Prisma client and apply sales quote/order migrations.'
+      );
+    }
+    return this.prisma.salesOrder;
+  }
+
+  private getSalesOrderLineDelegate() {
+    if (!this.prisma.salesOrderLine) {
+      throw new Error(
+        'Prisma delegate "salesOrderLine" is unavailable. Regenerate Prisma client and apply sales quote/order migrations.'
+      );
+    }
+    return this.prisma.salesOrderLine;
+  }
+
   async save(tenantId: string, order: SalesOrderAggregate): Promise<void> {
     if (tenantId !== order.tenantId) {
       throw new Error("Tenant mismatch when saving sales order");
     }
 
-    await this.prisma.salesOrder.upsert({
+    await this.getSalesOrderDelegate().upsert({
       where: { id: order.id },
       update: {
         number: order.number,
@@ -83,7 +101,7 @@ export class PrismaSalesOrderRepositoryAdapter implements SalesOrderRepositoryPo
     });
 
     const lineIds = order.lineItems.map((line) => line.id);
-    await this.prisma.salesOrderLine.deleteMany({
+    await this.getSalesOrderLineDelegate().deleteMany({
       where: {
         orderId: order.id,
         id: { notIn: lineIds },
@@ -91,7 +109,7 @@ export class PrismaSalesOrderRepositoryAdapter implements SalesOrderRepositoryPo
     });
 
     for (const line of order.lineItems) {
-      await this.prisma.salesOrderLine.upsert({
+      await this.getSalesOrderLineDelegate().upsert({
         where: { id: line.id },
         update: {
           description: line.description,
@@ -122,7 +140,7 @@ export class PrismaSalesOrderRepositoryAdapter implements SalesOrderRepositoryPo
   }
 
   async findById(tenantId: string, orderId: string): Promise<SalesOrderAggregate | null> {
-    const data = await this.prisma.salesOrder.findFirst({
+    const data = await this.getSalesOrderDelegate().findFirst({
       where: { id: orderId, tenantId },
       include: { lines: true },
     });
@@ -192,7 +210,7 @@ export class PrismaSalesOrderRepositoryAdapter implements SalesOrderRepositoryPo
       }
     }
 
-    const results = await this.prisma.salesOrder.findMany({
+    const results = await this.getSalesOrderDelegate().findMany({
       where,
       take: pageSize,
       skip: cursor ? 1 : 0,
@@ -246,7 +264,7 @@ export class PrismaSalesOrderRepositoryAdapter implements SalesOrderRepositoryPo
   }
 
   async isOrderNumberTaken(tenantId: string, number: string): Promise<boolean> {
-    const existing = await this.prisma.salesOrder.findFirst({
+    const existing = await this.getSalesOrderDelegate().findFirst({
       where: { tenantId, number },
       select: { id: true },
     });

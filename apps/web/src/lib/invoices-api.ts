@@ -6,6 +6,10 @@
 import type {
   CreateInvoiceInput,
   CreateInvoiceOutput,
+  DraftInvoiceIssueEmailInput,
+  DraftInvoiceIssueEmailOutput,
+  DraftInvoiceReminderEmailInput,
+  DraftInvoiceReminderEmailOutput,
   RequestInvoicePdfOutput,
   InvoiceDto,
   InvoiceCapabilities,
@@ -140,6 +144,38 @@ export class InvoicesApi {
       }
     );
     return result.invoice;
+  }
+
+  /**
+   * Draft first-send invoice email (copilot, draft-only)
+   */
+  async draftIssueEmail(
+    id: string,
+    input: Omit<DraftInvoiceIssueEmailInput, "invoiceId">
+  ): Promise<DraftInvoiceIssueEmailOutput> {
+    return apiClient.post<DraftInvoiceIssueEmailOutput>(
+      `/invoices/${id}/copilot/draft-issue-email`,
+      input,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  /**
+   * Draft payment reminder email (copilot, draft-only)
+   */
+  async draftReminderEmail(
+    id: string,
+    input: Omit<DraftInvoiceReminderEmailInput, "invoiceId">
+  ): Promise<DraftInvoiceReminderEmailOutput> {
+    return apiClient.post<DraftInvoiceReminderEmailOutput>(
+      `/invoices/${id}/copilot/draft-reminder`,
+      input,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
   }
 
   /**

@@ -11,6 +11,7 @@ import { NestLoggerAdapter } from "../../../shared/adapters/logger/nest-logger.a
 import { ID_GENERATOR_TOKEN } from "../../../shared/ports/id-generator.port";
 import { CLOCK_PORT_TOKEN } from "../../../shared/ports/clock.port";
 import { AUDIT_PORT_TOKEN } from "../../../shared/ports/audit.port";
+import { PrismaService } from "@corely/data";
 
 export const importShipmentUseCaseProviders: Provider[] = [
   {
@@ -91,14 +92,21 @@ export const importShipmentUseCaseProviders: Provider[] = [
   },
   {
     provide: AllocateLandedCostsUseCase,
-    useFactory: (logger, repo, clock, audit) => {
+    useFactory: (logger, repo, clock, audit, prisma) => {
       return new AllocateLandedCostsUseCase({
         logger,
         repo,
         clock,
         audit,
+        prisma,
       });
     },
-    inject: [NestLoggerAdapter, IMPORT_SHIPMENT_REPOSITORY, CLOCK_PORT_TOKEN, AUDIT_PORT_TOKEN],
+    inject: [
+      NestLoggerAdapter,
+      IMPORT_SHIPMENT_REPOSITORY,
+      CLOCK_PORT_TOKEN,
+      AUDIT_PORT_TOKEN,
+      PrismaService,
+    ],
   },
 ];

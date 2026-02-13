@@ -11,6 +11,8 @@ import { DEPackV1 } from "../../../../tax/application/services/jurisdictions/de-
 import { InMemoryTaxProfileRepo } from "../../../../tax/testkit/fakes/in-memory-tax-profile-repo";
 import { InMemoryTaxCodeRepo } from "../../../../tax/testkit/fakes/in-memory-tax-code-repo";
 import { InMemoryTaxRateRepo } from "../../../../tax/testkit/fakes/in-memory-tax-rate-repo";
+import type { CogsPostingService } from "../../../../accounting/application/services/cogs-posting.service";
+import type { PrismaService } from "@corely/data";
 
 describe("FinalizeInvoiceUseCase", () => {
   let repo: FakeInvoiceRepository;
@@ -25,6 +27,11 @@ describe("FinalizeInvoiceUseCase", () => {
   let taxCodeRepo: InMemoryTaxCodeRepo;
   let taxRateRepo: InMemoryTaxRateRepo;
   let dePack: DEPackV1;
+  let prismaMock: Pick<
+    PrismaService,
+    "journalEntry" | "inventoryLot" | "catalogItem" | "$transaction"
+  >;
+  let cogsPostingServiceMock: Pick<CogsPostingService, "postCogsFromLots">;
 
   const clock = new FixedClock(new Date("2025-01-02T00:00:00.000Z"));
 
@@ -67,6 +74,25 @@ describe("FinalizeInvoiceUseCase", () => {
     // Create implicit standard tax code (DE defaults to 19% even without code, but let's be explicit)
     // Note: DEPack logic will default to 1900bps if no codes exist for STANDARD
 
+    prismaMock = {
+      journalEntry: {
+        findFirst: async () => null,
+      },
+      inventoryLot: {
+        findMany: async () => [],
+        findFirst: async () => null,
+        update: async () => ({}),
+      },
+      catalogItem: {
+        findFirst: async () => null,
+      },
+      $transaction: async (callback) => callback(prismaMock as unknown as PrismaService),
+    };
+
+    cogsPostingServiceMock = {
+      postCogsFromLots: async () => ({ journalEntryId: null }),
+    };
+
     useCase = new FinalizeInvoiceUseCase({
       logger: new NoopLogger(),
       invoiceRepo: repo,
@@ -75,6 +101,8 @@ describe("FinalizeInvoiceUseCase", () => {
       customerQuery: customers,
       paymentMethodQuery: payments,
       taxEngine: taxEngine,
+      prisma: prismaMock as unknown as PrismaService,
+      cogsPostingService: cogsPostingServiceMock as CogsPostingService,
     });
   });
 
