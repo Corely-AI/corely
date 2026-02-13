@@ -1,0 +1,64 @@
+{
+  "portal": {
+    "title": "Portal",
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Willkommen",
+      "students": {
+        "title": "Schüler",
+        "select": "Schüler auswählen",
+        "linked": "Verknüpfte Schüler",
+        "viewing": "ANSEHEN",
+        "student": "SCHÜLER",
+        "none": "Keine Schüler verknüpft"
+      },
+      "sessions": {
+        "title": "Nächste Sitzungen",
+        "subtitle": "Sehen Sie Ihren anstehenden Kursplan und Links zur Teilnahme an Online-Sitzungen.",
+        "open": "Zeitplan öffnen"
+      },
+      "materials": {
+        "title": "Materialien",
+        "subtitle": "Alle Dokumente, die mit Ihnen und Ihren Schülern geteilt wurden.",
+        "items_one": "{{count}} ELEMENT",
+        "items_other": "{{count}} ELEMENTE",
+        "items": "ELEMENTE",
+        "added": "Hinzugefügt",
+        "personal": "PERSÖNLICH",
+        "class_group": "KLASSENGRUPPE",
+        "getFile": "Datei abrufen",
+        "empty": {
+          "title": "Noch nichts hier",
+          "subtitle": "Ihre Lernmaterialien erscheinen hier, sobald Ihr Lehrer sie hochlädt."
+        }
+      }
+    },
+    "login": {
+      "title": "Schüler- & Erziehungsberechtigten-Portal",
+      "email_prompt": "Geben Sie Ihre E-Mail-Adresse ein, um einen Login-Code zu erhalten",
+      "code_sent": "Geben Sie den 6-stelligen Code ein, der an {{email}} gesendet wurde",
+      "email_label": "E-Mail",
+      "email_placeholder": "name@beispiel.de",
+      "send_code": "Login-Code senden",
+      "code_label": "Login-Code",
+      "code_placeholder": "000000",
+      "change_email": "E-Mail ändern",
+      "resend_code": "Code erneut senden",
+      "resend_in": "Erneut senden in {{count}}s",
+      "verify_sign_in": "Verifizieren & Anmelden",
+      "errors": {
+        "send_failed": "Code konnte nicht gesendet werden",
+        "verify_failed": "Ungültiger oder abgelaufener Code"
+      }
+    }
+  },
+  "common": {
+    "logout": "Abmelden",
+    "loading": "Laden...",
+    "languages": {
+      "en": "EN",
+      "vi": "VI",
+      "de": "DE"
+    }
+  }
+}
