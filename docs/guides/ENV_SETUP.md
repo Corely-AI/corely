@@ -110,6 +110,24 @@ Production example:
 PUBLIC_WORKSPACE_BASE_DOMAINS=portal.corely.one,my.corely.one
 ```
 
+### Portal Frontend (apps/portal)
+
+Portal API calls are configured in the frontend build:
+
+- `VITE_PORTAL_API_BASE_URL`: API base URL used by portal client
+  - Default: `/api` (recommended; same-origin + proxy/rewrite)
+- `VITE_PUBLIC_WORKSPACE_BASE_DOMAINS`: comma-separated base domains used to derive workspace slug from hostname
+  - Default: `portal.corely.one,my.corely.one`
+- `VITE_PORTAL_WORKSPACE_SLUG`: optional local fallback when hostname/path do not include slug
+
+Example:
+
+```bash
+VITE_PORTAL_API_BASE_URL=/api
+VITE_PUBLIC_WORKSPACE_BASE_DOMAINS=portal.corely.one,my.corely.one
+VITE_PORTAL_WORKSPACE_SLUG=trang-dang-nachhilfe
+```
+
 ### E2E Testing (.env.e2e)
 
 For e2e tests, you can typically use dummy values unless testing specific integrations:

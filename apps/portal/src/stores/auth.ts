@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { portalRequest } from "./workspace";
+import { portalApiRequest } from "../lib/portal-api-client";
 
 interface PortalUser {
   userId: string;
@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          await portalRequest({
+          await portalApiRequest({
             url: "/portal/auth/logout",
             method: "POST",
             body: {},
@@ -54,7 +54,7 @@ export const useAuthStore = create<AuthState>()(
 
       refreshSession: async () => {
         try {
-          const res: any = await portalRequest({
+          const res: any = await portalApiRequest({
             url: "/portal/auth/refresh",
             method: "POST",
             body: {},

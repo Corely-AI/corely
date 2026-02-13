@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/portal/(.*)", "destination": "https://api.corely.one/portal/$1" },
+    { "source": "/api/(.*)", "destination": "https://api.corely.one/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
