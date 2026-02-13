@@ -12,13 +12,14 @@ import type {
 } from "./public-workspace.types";
 
 const DEFAULT_PUBLIC_BASE_DOMAIN = "my.corely.one";
+const PUBLIC_BASE_DOMAINS_ENV = "PUBLIC_WORKSPACE_BASE_DOMAINS";
 
 @Injectable()
 export class PublicWorkspaceResolver {
   constructor(private readonly prisma: PrismaService) {}
 
   async resolve(req: ContextAwareRequest): Promise<PublicWorkspaceContext> {
-    const host = resolveHost(req.headers ?? undefined);
+    const host = normalizeHost(pickHostHeader(req.headers ?? undefined));
     const path = resolvePath(req);
     const query = req.query as Record<string, string | string[] | undefined> | undefined;
 
@@ -30,7 +31,7 @@ export class PublicWorkspaceResolver {
     path: string;
     query?: Record<string, string | string[] | undefined> | undefined;
   }): Promise<PublicWorkspaceContext> {
-    const host = input.host;
+    const host = normalizeHost(input.host);
     const path = input.path;
 
     if (host) {
@@ -43,7 +44,7 @@ export class PublicWorkspaceResolver {
         return this.buildContext(domainMatch.workspace, "custom-domain");
       }
 
-      const subdomainSlug = parseSubdomainSlug(host);
+      const subdomainSlug = extractWorkspaceSlug(host, getBaseDomains());
       if (subdomainSlug) {
         const workspace = await this.findWorkspaceBySlug(subdomainSlug);
         if (workspace) {
@@ -118,23 +119,13 @@ export class PublicWorkspaceResolver {
   }
 }
 
-const resolveHost = (headers?: Record<string, string | string[] | undefined>): string | null => {
+const pickHostHeader = (
+  headers?: Record<string, string | string[] | undefined>
+): string | undefined => {
   if (!headers) {
-    return null;
+    return undefined;
   }
-
-  const forwarded = pickHeader(headers, "x-forwarded-host");
-  const rawHost = forwarded ?? pickHeader(headers, "host");
-  if (!rawHost) {
-    return null;
-  }
-
-  const first = rawHost.split(",")[0]?.trim();
-  if (!first) {
-    return null;
-  }
-
-  return first.replace(/:\d+$/, "").toLowerCase();
+  return pickHeader(headers, "x-forwarded-host") ?? pickHeader(headers, "host");
 };
 
 const resolvePath = (req: ContextAwareRequest): string => {
@@ -164,15 +155,42 @@ const pickHeader = (
   return typeof value === "string" && value.length > 0 ? value : undefined;
 };
 
-const parseSubdomainSlug = (host: string): string | null => {
-  const baseDomain = (process.env.PUBLIC_WORKSPACE_BASE_DOMAIN || DEFAULT_PUBLIC_BASE_DOMAIN)
-    .toLowerCase()
-    .trim();
-  if (!baseDomain || host === baseDomain) {
+const normalizeHost = (rawHost?: string | null): string | null => {
+  if (!rawHost) {
     return null;
   }
 
-  if (!host.endsWith(`.${baseDomain}`)) {
+  const first = rawHost.split(",")[0]?.trim();
+  if (!first) {
+    return null;
+  }
+
+  const normalized = first.replace(/:\d+$/, "").toLowerCase();
+  return normalized.length > 0 ? normalized : null;
+};
+
+const getBaseDomains = (): string[] => {
+  const rawDomains = process.env[PUBLIC_BASE_DOMAINS_ENV] || DEFAULT_PUBLIC_BASE_DOMAIN;
+
+  return rawDomains
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter((entry) => entry.length > 0)
+    .sort((a, b) => b.length - a.length);
+};
+
+const matchBaseDomain = (host: string, baseDomains: string[]): string | null => {
+  for (const baseDomain of baseDomains) {
+    if (host === baseDomain || host.endsWith(`.${baseDomain}`)) {
+      return baseDomain;
+    }
+  }
+  return null;
+};
+
+const extractWorkspaceSlug = (host: string, baseDomains: string[]): string | null => {
+  const baseDomain = matchBaseDomain(host, baseDomains);
+  if (!baseDomain || host === baseDomain) {
     return null;
   }
 

@@ -8,6 +8,7 @@ export const customerFormSchema = z.object({
   vatId: z.string().optional(),
   notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  lifecycleStatus: z.enum(["LEAD", "ACTIVE", "PAUSED", "ARCHIVED"]).default("ACTIVE"),
   billingAddress: z
     .object({
       line1: z.string().optional(),
@@ -29,6 +30,7 @@ export function toCreateCustomerInput(data: CustomerFormData): CreateCustomerInp
     vatId: data.vatId || undefined,
     notes: data.notes || undefined,
     tags: data.tags,
+    lifecycleStatus: data.lifecycleStatus,
     billingAddress:
       data.billingAddress?.line1 || data.billingAddress?.city
         ? {
@@ -50,6 +52,7 @@ export function toUpdateCustomerInput(data: CustomerFormData): UpdateCustomerInp
     vatId: data.vatId || null,
     notes: data.notes || null,
     tags: data.tags || null,
+    lifecycleStatus: data.lifecycleStatus,
     billingAddress:
       data.billingAddress?.line1 || data.billingAddress?.city
         ? {
@@ -71,6 +74,7 @@ export function getDefaultCustomerFormValues(): CustomerFormData {
     vatId: "",
     notes: "",
     tags: [],
+    lifecycleStatus: "ACTIVE",
     billingAddress: {
       line1: "",
       line2: "",
@@ -92,6 +96,7 @@ export function toCustomerFormValues(customer: CustomerDto): CustomerFormData {
     vatId: customer.vatId ?? "",
     notes: customer.notes ?? "",
     tags: customer.tags ?? [],
+    lifecycleStatus: customer.lifecycleStatus ?? "ACTIVE",
     billingAddress: {
       ...defaults.billingAddress,
       line1: customer.billingAddress?.line1 ?? "",

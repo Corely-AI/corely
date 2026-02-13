@@ -14,6 +14,9 @@ export type PartyRoleType = z.infer<typeof PartyRoleTypeSchema>;
 export const ContactPointTypeSchema = z.enum(["EMAIL", "PHONE"]);
 export type ContactPointType = z.infer<typeof ContactPointTypeSchema>;
 
+export const PartyLifecycleStatusSchema = z.enum(["LEAD", "ACTIVE", "PAUSED", "ARCHIVED"]);
+export type PartyLifecycleStatus = z.infer<typeof PartyLifecycleStatusSchema>;
+
 export const ContactPointSchema = z.object({
   type: ContactPointTypeSchema,
   value: z.string(),
@@ -43,6 +46,7 @@ export const PartyDtoSchema = z.object({
   email: z.string().email().nullable().optional(), // primary email (derived from contactPoints)
   phone: z.string().nullable().optional(), // primary phone (derived from contactPoints)
   billingAddress: AddressSchema.nullable().optional(), // billing address (derived from addresses)
+  lifecycleStatus: PartyLifecycleStatusSchema,
   archivedAt: utcInstantSchema.nullable(),
   createdAt: utcInstantSchema,
   updatedAt: utcInstantSchema,

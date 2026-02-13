@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
+import { PartyLifecycleStatusSchema } from "../crm/party.types";
 
 export const CustomerBillingAddressSchema = z.object({
   line1: z.string(),
@@ -18,6 +19,7 @@ export const CustomerDtoSchema = z.object({
   vatId: z.string().optional(),
   notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  lifecycleStatus: PartyLifecycleStatusSchema.optional(),
   archivedAt: utcInstantSchema.nullable().optional(),
   createdAt: utcInstantSchema,
   updatedAt: utcInstantSchema,

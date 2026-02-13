@@ -98,6 +98,18 @@ The e2e environment uses different ports to avoid conflicts:
 - `GOOGLE_CLOUD_PROJECT` - Your GCP project ID
 - `GOOGLE_APPLICATION_CREDENTIALS` - Path to your GCP service account JSON
 
+### Public Workspace Domain Resolution
+
+For public workspace routes (for example portal/public endpoints), configure base domains on the API:
+
+- `PUBLIC_WORKSPACE_BASE_DOMAINS`: comma-separated list of base domains
+
+Production example:
+
+```bash
+PUBLIC_WORKSPACE_BASE_DOMAINS=portal.corely.one,my.corely.one
+```
+
 ### E2E Testing (.env.e2e)
 
 For e2e tests, you can typically use dummy values unless testing specific integrations:

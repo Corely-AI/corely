@@ -68,6 +68,7 @@ export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, Crea
       vatId: input.vatId ?? null,
       notes: input.notes ?? null,
       tags: input.tags ?? [],
+      lifecycleStatus: input.lifecycleStatus,
       createdAt: now,
       generateId: () => this.useCaseDeps.idGenerator.newId(),
     });

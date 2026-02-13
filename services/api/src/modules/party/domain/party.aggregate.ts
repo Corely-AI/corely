@@ -28,6 +28,7 @@ export type CustomerPatch = {
   vatId?: string | null;
   notes?: string | null;
   tags?: string[] | null;
+  lifecycleStatus?: PartyLifecycleStatus;
 };
 
 export class PartyAggregate {
@@ -115,6 +116,7 @@ export class PartyAggregate {
     vatId?: string | null;
     notes?: string | null;
     tags?: string[];
+    lifecycleStatus?: PartyLifecycleStatus;
     createdAt: Date;
     generateId: () => string;
   }) {
@@ -148,6 +150,9 @@ export class PartyAggregate {
     }
     if (patch.tags !== undefined) {
       this.tags = patch.tags ?? [];
+    }
+    if (patch.lifecycleStatus !== undefined) {
+      this.lifecycleStatus = patch.lifecycleStatus;
     }
 
     this.touch(now);

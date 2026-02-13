@@ -1,11 +1,9 @@
-import React from "react";
-import type { UseFormReturn } from "react-hook-form";
+import { Controller, type UseFormReturn } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/shared/lib/utils";
-import { Input } from "@corely/ui";
-import { Label } from "@corely/ui";
-import { Textarea } from "@corely/ui";
+import { Input, Label, Textarea } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 
 import type { CustomerFormData } from "../schemas/customer-form.schema";
 
@@ -72,6 +70,33 @@ export function CustomerFormFields({ form, className }: CustomerFormFieldsProps)
               {...form.register("vatId")}
               placeholder={t("customers.placeholders.vatId")}
               data-testid="customer-vatId-input"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="lifecycleStatus">
+              {t("common.status")} <span className="text-destructive">*</span>
+            </Label>
+            <Controller
+              name="lifecycleStatus"
+              control={form.control}
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger id="lifecycleStatus" data-testid="customer-status-select">
+                    <SelectValue placeholder={t("customers.placeholders.status")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LEAD">{t("common.lead")}</SelectItem>
+                    <SelectItem value="ACTIVE">{t("common.active")}</SelectItem>
+                    <SelectItem value="PAUSED">{t("common.paused")}</SelectItem>
+                    <SelectItem value="ARCHIVED">{t("common.archived")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             />
           </div>
         </div>

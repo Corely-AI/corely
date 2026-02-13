@@ -6,11 +6,11 @@ import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
 import { PublicWorkspaceRoute } from "../../../shared/public";
 
 @Controller("portal")
-@PublicWorkspaceRoute()
 export class PortalController {
   constructor(private readonly app: PortalApplication) {}
 
   @Get("me")
+  @PublicWorkspaceRoute()
   @UseGuards(AuthGuard)
   async getMe(@Req() req: Request) {
     const ctx = buildUseCaseContext(req);
@@ -19,6 +19,7 @@ export class PortalController {
   }
 
   @Get("students/:studentId/classes")
+  @PublicWorkspaceRoute()
   @UseGuards(AuthGuard)
   async getStudentClasses(@Param("studentId") studentId: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
@@ -27,6 +28,7 @@ export class PortalController {
   }
 
   @Get("students/:studentId/materials")
+  @PublicWorkspaceRoute()
   @UseGuards(AuthGuard)
   async getStudentMaterials(@Param("studentId") studentId: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
@@ -35,6 +37,7 @@ export class PortalController {
   }
 
   @Get("materials/:documentId/download-url")
+  @PublicWorkspaceRoute()
   @UseGuards(AuthGuard)
   async getDownloadUrl(
     @Param("documentId") documentId: string,
