@@ -3,7 +3,7 @@ import { useAuthStore } from "../stores/auth";
 import { useTranslation } from "react-i18next";
 import { Button, Input, Card, CardHeader, CardTitle, CardContent, CardFooter } from "@corely/ui";
 import { LogIn, Loader2, ArrowLeft, Mail } from "lucide-react";
-import { portalRequest } from "../stores/workspace";
+import { portalApiRequest } from "../lib/portal-api-client";
 
 const RESEND_COOLDOWN = 60;
 
@@ -42,7 +42,7 @@ export const LoginPage = () => {
     setError(null);
 
     try {
-      await portalRequest({
+      await portalApiRequest({
         url: "/portal/auth/request-code",
         method: "POST",
         body: { email },
@@ -63,7 +63,7 @@ export const LoginPage = () => {
     setError(null);
 
     try {
-      const response: any = await portalRequest({
+      const response: any = await portalApiRequest({
         url: "/portal/auth/verify-code",
         method: "POST",
         body: { email, code },
@@ -88,7 +88,7 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      await portalRequest({
+      await portalApiRequest({
         url: "/portal/auth/request-code",
         method: "POST",
         body: { email },

@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PortalDashboard } from "./pages/Dashboard";
 import { LoginPage } from "./pages/Login";
 import { useAuthStore } from "./stores/auth";
-import { resolveWorkspaceSlug } from "./stores/workspace";
+import { resolveWorkspaceSlug } from "./lib/api-config";
 
 /**
  * Redirect that preserves the /w/:slug prefix from the current URL.

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/auth";
 import { useTranslation } from "react-i18next";
-import { portalRequest } from "../stores/workspace";
+import { portalApiRequest } from "../lib/portal-api-client";
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Skeleton } from "@corely/ui";
 import {
   BookOpen,
@@ -26,7 +26,7 @@ export const PortalDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const me: any = await portalRequest({
+        const me: any = await portalApiRequest({
           url: "/portal/me",
           accessToken,
         });
@@ -35,7 +35,7 @@ export const PortalDashboard = () => {
         if (me.students?.length > 0) {
           const studentId = me.students[0].id;
           setSelectedStudentId(studentId);
-          const mats: any = await portalRequest({
+          const mats: any = await portalApiRequest({
             url: `/portal/students/${studentId}/materials`,
             accessToken,
           });
@@ -57,7 +57,7 @@ export const PortalDashboard = () => {
 
   const handleDownload = async (docId: string, studentId: string) => {
     try {
-      const res: any = await portalRequest({
+      const res: any = await portalApiRequest({
         url: `/portal/materials/${docId}/download-url?studentId=${studentId}`,
         accessToken,
       });
@@ -163,7 +163,7 @@ export const PortalDashboard = () => {
                           onClick={async () => {
                             setSelectedStudentId(s.id);
                             try {
-                              const mats: any = await portalRequest({
+                              const mats: any = await portalApiRequest({
                                 url: `/portal/students/${s.id}/materials`,
                                 accessToken,
                               });
