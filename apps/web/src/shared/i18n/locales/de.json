@@ -723,6 +723,7 @@
     "postalCode": "Postleitzahl",
     "country": "Land",
     "vatId": "USt-IdNr.",
+    "notes": "Notizen",
     "invoiceHistory": "Rechnungshistorie",
     "totalRevenue": "Gesamtumsatz",
     "basicInformation": "Grundinformationen",

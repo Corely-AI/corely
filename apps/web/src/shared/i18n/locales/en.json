@@ -734,6 +734,7 @@
     "postalCode": "Postal Code",
     "country": "Country",
     "vatId": "VAT ID",
+    "notes": "Notes",
     "invoiceHistory": "Invoice history",
     "totalRevenue": "Total revenue",
     "basicInformation": "Basic Information",

@@ -723,6 +723,7 @@
     "postalCode": "Mã bưu điện",
     "country": "Quốc gia",
     "vatId": "Mã số thuế",
+    "notes": "Ghi chú",
     "invoiceHistory": "Lịch sử hóa đơn",
     "totalRevenue": "Tổng doanh thu",
     "basicInformation": "Thông tin cơ bản",
