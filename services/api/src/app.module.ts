@@ -26,6 +26,7 @@ import { ApprovalsModule } from "./modules/approvals";
 import { EngagementModule } from "./modules/engagement/engagement.module";
 import { PlatformModule } from "./modules/platform";
 import { PlatformEntitlementsModule } from "./modules/platform-entitlements/platform-entitlements.module";
+import { PlatformCustomAttributesModule } from "./modules/platform-custom-attributes";
 import { AiCopilotModule } from "./modules/ai-copilot/ai-copilot.module";
 import { CmsModule } from "./modules/cms";
 import { FormsModule } from "./modules/forms";
@@ -37,6 +38,7 @@ import { WebsiteModule } from "./modules/website";
 import { ClassesModule } from "./modules/classes";
 import { PortalModule } from "./modules/portal/portal.module";
 import { CashManagementModule } from "./modules/cash-management/cash-management.module";
+import { CustomizationModule } from "./modules/customization/customization.module";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -59,6 +61,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     DataModule,
     IdentityModule,
     PlatformModule,
+    PlatformCustomAttributesModule,
     PlatformEntitlementsModule,
     PartyModule,
     CrmModule,
@@ -88,7 +91,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     WorkflowModule,
     AutomationModule,
     ReportingModule,
-    // CustomizationModule,
+    CustomizationModule,
     AiCopilotModule,
     AiRichTextModule,
     // Conditional imports based on env

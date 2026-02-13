@@ -11,6 +11,7 @@ enum PartyRoleType {
 enum ContactPointType {
   EMAIL
   PHONE
+  SOCIAL
   @@schema("crm")
 }
 
@@ -95,14 +96,16 @@ model ContactPoint {
   partyId   String
   type      ContactPointType
   value     String
+  platform  String?
+  label     String?
   isPrimary Boolean          @default(false)
   createdAt DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt DateTime         @updatedAt @db.Timestamptz(6)
 
   party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
 
-  @@unique([tenantId, partyId, type], name: "tenantId_partyId_type")
-  @@index([tenantId, partyId, type])
+  @@unique([tenantId, partyId, type, value], name: "tenantId_partyId_type_value", map: "tenantId_partyId_type_value")
+  @@index([tenantId, partyId, type, isPrimary])
   @@schema("crm")
 }
 

@@ -37,9 +37,22 @@ import { CreateTutoringLeadUseCase } from "./application/use-cases/create-tutori
 import { UpdatePartyLifecycleStatusUseCase } from "./application/use-cases/update-party-lifecycle-status.usecase";
 import { PARTY_QUERY_PORT } from "./application/ports/party-query.port";
 import { PrismaPartyQueryAdapter } from "./infrastructure/prisma/prisma-party-query.adapter";
+import {
+  CUSTOM_FIELDS_WRITE_PORT,
+  DIMENSIONS_WRITE_PORT,
+  PlatformCustomAttributesModule,
+  type CustomFieldsWritePort,
+  type DimensionsWritePort,
+} from "../platform-custom-attributes";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, PlatformModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    IdentityModule,
+    PlatformModule,
+    PlatformCustomAttributesModule,
+  ],
   controllers: [CustomersHttpController, PartyInternalController],
   providers: [
     PrismaPartyRepoAdapter,
@@ -49,25 +62,53 @@ import { PrismaPartyQueryAdapter } from "./infrastructure/prisma/prisma-party-qu
     { provide: PARTY_QUERY_PORT, useExisting: PrismaPartyQueryAdapter },
     {
       provide: CreateCustomerUseCase,
-      useFactory: (repo: PrismaPartyRepoAdapter, idGen: any, clock: any) =>
+      useFactory: (
+        repo: PrismaPartyRepoAdapter,
+        idGen: any,
+        clock: any,
+        dimensionsWritePort: DimensionsWritePort,
+        customFieldsWritePort: CustomFieldsWritePort
+      ) =>
         new CreateCustomerUseCase({
           logger: new NestLoggerAdapter(),
           partyRepo: repo,
           idGenerator: idGen,
           clock,
+          dimensionsWritePort,
+          customFieldsWritePort,
         }),
-      inject: [PrismaPartyRepoAdapter, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+      inject: [
+        PrismaPartyRepoAdapter,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        DIMENSIONS_WRITE_PORT,
+        CUSTOM_FIELDS_WRITE_PORT,
+      ],
     },
     {
       provide: UpdateCustomerUseCase,
-      useFactory: (repo: PrismaPartyRepoAdapter, idGen: any, clock: any) =>
+      useFactory: (
+        repo: PrismaPartyRepoAdapter,
+        idGen: any,
+        clock: any,
+        dimensionsWritePort: DimensionsWritePort,
+        customFieldsWritePort: CustomFieldsWritePort
+      ) =>
         new UpdateCustomerUseCase({
           logger: new NestLoggerAdapter(),
           partyRepo: repo,
           idGenerator: idGen,
           clock,
+          dimensionsWritePort,
+          customFieldsWritePort,
         }),
-      inject: [PrismaPartyRepoAdapter, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+      inject: [
+        PrismaPartyRepoAdapter,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+        DIMENSIONS_WRITE_PORT,
+        CUSTOM_FIELDS_WRITE_PORT,
+      ],
     },
     {
       provide: ArchiveCustomerUseCase,

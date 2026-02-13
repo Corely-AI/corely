@@ -7,6 +7,8 @@ import type {
   ExpenseCapabilities,
   ExpenseDto,
   CreateExpenseWebInput,
+  CustomFieldFilter,
+  DimensionFilter,
   FilterSpec,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
@@ -20,6 +22,8 @@ export type ListExpensesParams = {
   category?: string;
   status?: string | string[]; // Added
   filters?: FilterSpec[]; // Added
+  dimensionFilters?: DimensionFilter[];
+  customFieldFilters?: CustomFieldFilter[];
   fromDate?: string;
   toDate?: string;
   includeArchived?: boolean;

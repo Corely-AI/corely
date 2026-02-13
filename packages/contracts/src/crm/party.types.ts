@@ -11,18 +11,62 @@ export const PartyRoleTypeSchema = z.enum([
 ]);
 export type PartyRoleType = z.infer<typeof PartyRoleTypeSchema>;
 
-export const ContactPointTypeSchema = z.enum(["EMAIL", "PHONE"]);
+export const SocialPlatformSchema = z.enum([
+  "linkedin",
+  "facebook",
+  "instagram",
+  "x",
+  "github",
+  "tiktok",
+  "youtube",
+  "other",
+]);
+export type SocialPlatform = z.infer<typeof SocialPlatformSchema>;
+
+export const ContactPointTypeSchema = z.enum(["EMAIL", "PHONE", "SOCIAL"]);
 export type ContactPointType = z.infer<typeof ContactPointTypeSchema>;
 
 export const PartyLifecycleStatusSchema = z.enum(["LEAD", "ACTIVE", "PAUSED", "ARCHIVED"]);
 export type PartyLifecycleStatus = z.infer<typeof PartyLifecycleStatusSchema>;
 
-export const ContactPointSchema = z.object({
+export const ContactPointSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("EMAIL"),
+    value: z.string(),
+    isPrimary: z.boolean(),
+  }),
+  z.object({
+    type: z.literal("PHONE"),
+    value: z.string(),
+    isPrimary: z.boolean(),
+  }),
+  z.object({
+    type: z.literal("SOCIAL"),
+    value: z.string().url(),
+    platform: SocialPlatformSchema,
+    label: z.string().optional(),
+    isPrimary: z.boolean(),
+  }),
+]);
+
+export const PartySocialContactPointSchema = z.object({
+  type: z.literal("SOCIAL"),
+  platform: SocialPlatformSchema,
+  url: z.string().url(),
+  label: z.string().optional(),
+  isPrimary: z.boolean().optional(),
+});
+export type PartySocialContactPoint = z.infer<typeof PartySocialContactPointSchema>;
+
+export const PartySocialLinksSchema = z.array(PartySocialContactPointSchema);
+
+export const PartyContactPointSchema = z.object({
   type: ContactPointTypeSchema,
   value: z.string(),
+  platform: SocialPlatformSchema.optional(),
+  label: z.string().optional(),
   isPrimary: z.boolean(),
 });
-
 export type ContactPoint = z.infer<typeof ContactPointSchema>;
 
 export const AddressSchema = z.object({

@@ -12,6 +12,7 @@ import {
 } from "@corely/kernel";
 import {
   CustomerBillingAddressSchema,
+  PartySocialLinksSchema,
   type CreateCustomerInput,
   type CreateCustomerOutput,
 } from "@corely/contracts";
@@ -19,12 +20,18 @@ import { type PartyRepoPort } from "../../ports/party-repository.port";
 import { PartyAggregate } from "../../../domain/party.aggregate";
 import type { Address } from "../../../domain/address";
 import { toCustomerDto } from "../../mappers/customer-dto.mapper";
+import type {
+  CustomFieldsWritePort,
+  DimensionsWritePort,
+} from "../../../../platform-custom-attributes/application/ports/custom-attributes.ports";
 
 type Deps = {
   logger: LoggerPort;
   partyRepo: PartyRepoPort;
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
+  dimensionsWritePort: DimensionsWritePort;
+  customFieldsWritePort: CustomFieldsWritePort;
 };
 
 export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, CreateCustomerOutput> {
@@ -51,6 +58,14 @@ export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, Crea
     const billingAddress = input.billingAddress
       ? (CustomerBillingAddressSchema.parse(input.billingAddress) as Address)
       : null;
+    const socialLinks = input.socialLinks
+      ? PartySocialLinksSchema.parse(input.socialLinks).map((link) => ({
+          platform: link.platform,
+          url: link.url,
+          label: link.label ?? null,
+          isPrimary: link.isPrimary ?? false,
+        }))
+      : undefined;
 
     const roles: PartyAggregate["roles"] = ["CUSTOMER"];
     if (input.role && !roles.includes(input.role)) {
@@ -68,12 +83,25 @@ export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, Crea
       vatId: input.vatId ?? null,
       notes: input.notes ?? null,
       tags: input.tags ?? [],
+      socialLinks,
       lifecycleStatus: input.lifecycleStatus,
       createdAt: now,
       generateId: () => this.useCaseDeps.idGenerator.newId(),
     });
 
     await this.useCaseDeps.partyRepo.createCustomer(ctx.tenantId, party);
+    await this.useCaseDeps.dimensionsWritePort.setEntityAssignments(
+      ctx.tenantId,
+      "party",
+      party.id,
+      input.dimensionAssignments ?? []
+    );
+    await this.useCaseDeps.customFieldsWritePort.setEntityValues(
+      ctx.tenantId,
+      "party",
+      party.id,
+      input.customFieldValues ?? {}
+    );
     return ok({ customer: toCustomerDto(party) });
   }
 }

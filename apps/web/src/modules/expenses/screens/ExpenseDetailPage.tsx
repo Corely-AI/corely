@@ -12,6 +12,7 @@ import { Skeleton } from "@/shared/components/Skeleton";
 import { invalidateResourceQueries } from "@/shared/crud";
 import { toast } from "sonner";
 import { DetailScreenHeader } from "@/shared/components/DetailScreenHeader";
+import { CustomAttributesSection } from "@/shared/custom-attributes";
 
 export const ExpenseDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -152,6 +153,7 @@ export const ExpenseDetailPage = () => {
         </Card>
 
         <div className="space-y-4">
+          <CustomAttributesSection entityType="expense" entityId={expense.id} mode="read" />
           <Card>
             <CardHeader>
               <CardTitle>Receipts</CardTitle>

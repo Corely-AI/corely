@@ -1,5 +1,5 @@
 import { type Address } from "./address";
-import { type ContactPoint, type ContactPointType } from "./contact-point";
+import { type ContactPoint, type ContactPointType, type SocialPlatform } from "./contact-point";
 import { type PartyRoleType } from "./party-role";
 
 export type PartyLifecycleStatus = "LEAD" | "ACTIVE" | "PAUSED" | "ARCHIVED";
@@ -24,6 +24,12 @@ export type CustomerPatch = {
   displayName?: string;
   email?: string | null;
   phone?: string | null;
+  socialLinks?: Array<{
+    platform: SocialPlatform;
+    url: string;
+    label?: string | null;
+    isPrimary?: boolean;
+  }> | null;
   billingAddress?: Address | null;
   vatId?: string | null;
   notes?: string | null;
@@ -77,6 +83,12 @@ export class PartyAggregate {
     vatId?: string | null;
     notes?: string | null;
     tags?: string[];
+    socialLinks?: Array<{
+      platform: SocialPlatform;
+      url: string;
+      label?: string | null;
+      isPrimary?: boolean;
+    }>;
     lifecycleStatus?: PartyLifecycleStatus;
     createdAt: Date;
     generateId: () => string;
@@ -102,6 +114,7 @@ export class PartyAggregate {
     });
     aggregate.setContactPoint("EMAIL", params.email ?? null, params.generateId);
     aggregate.setContactPoint("PHONE", params.phone ?? null, params.generateId);
+    aggregate.setSocialLinks(params.socialLinks, params.generateId);
     aggregate.setBillingAddress(params.billingAddress ?? null, params.generateId);
     return aggregate;
   }
@@ -140,6 +153,7 @@ export class PartyAggregate {
 
     this.setContactPoint("EMAIL", patch.email, generateId);
     this.setContactPoint("PHONE", patch.phone, generateId);
+    this.setSocialLinks(patch.socialLinks, generateId);
     this.setBillingAddress(patch.billingAddress, generateId);
 
     if (patch.vatId !== undefined) {
@@ -208,8 +222,26 @@ export class PartyAggregate {
     return this.contactPoints.find((cp) => cp.type === "PHONE" && cp.isPrimary)?.value;
   }
 
+  get socialLinks(): Array<{
+    id: string;
+    platform: SocialPlatform;
+    url: string;
+    label?: string | null;
+    isPrimary: boolean;
+  }> {
+    return this.contactPoints
+      .filter((cp) => cp.type === "SOCIAL" && !!cp.platform)
+      .map((cp) => ({
+        id: cp.id,
+        platform: cp.platform as SocialPlatform,
+        url: cp.value,
+        label: cp.label ?? null,
+        isPrimary: cp.isPrimary,
+      }));
+  }
+
   private setContactPoint(
-    type: ContactPointType,
+    type: Extract<ContactPointType, "EMAIL" | "PHONE">,
     value: string | null | undefined,
     generateId: () => string
   ) {
@@ -246,6 +278,50 @@ export class PartyAggregate {
       return index === this.contactPoints.findIndex((p) => p.type === type)
         ? cp
         : { ...cp, isPrimary: false };
+    });
+  }
+
+  private setSocialLinks(
+    links:
+      | Array<{ platform: SocialPlatform; url: string; label?: string | null; isPrimary?: boolean }>
+      | null
+      | undefined,
+    generateId: () => string
+  ) {
+    if (links === undefined) {
+      return;
+    }
+
+    this.contactPoints = this.contactPoints.filter((cp) => cp.type !== "SOCIAL");
+    if (!links || links.length === 0) {
+      return;
+    }
+
+    const normalized = links
+      .map((link) => ({
+        platform: link.platform,
+        url: link.url.trim(),
+        label: link.label?.trim() || null,
+        isPrimary: Boolean(link.isPrimary),
+      }))
+      .filter((link) => !!link.url);
+
+    if (normalized.length === 0) {
+      return;
+    }
+
+    const primaryIndex = normalized.findIndex((link) => link.isPrimary);
+    const effectivePrimaryIndex = primaryIndex >= 0 ? primaryIndex : 0;
+
+    normalized.forEach((link, index) => {
+      this.contactPoints.push({
+        id: generateId(),
+        type: "SOCIAL",
+        value: link.url,
+        platform: link.platform,
+        label: link.label,
+        isPrimary: index === effectivePrimaryIndex,
+      });
     });
   }
 

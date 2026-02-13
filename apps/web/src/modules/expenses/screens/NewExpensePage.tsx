@@ -10,6 +10,7 @@ import { ExpenseForm, type ExpenseFormValues } from "../components/ExpenseForm";
 import { expenseKeys } from "../queries";
 import { invalidateResourceQueries } from "@/shared/crud";
 import { toast } from "sonner";
+import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function NewExpensePage() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +25,9 @@ export default function NewExpensePage() {
   });
 
   const expense = queryResult && "expense" in queryResult ? queryResult.expense : null;
+  const [customAttributes, setCustomAttributes] = React.useState<CustomAttributesValue | undefined>(
+    undefined
+  );
 
   const mutation = useMutation({
     mutationFn: async (values: ExpenseFormValues) => {
@@ -39,6 +43,8 @@ export default function NewExpensePage() {
         category: values.category,
         notes: values.notes,
         vatRate: values.vatRate ? Number(values.vatRate) : undefined,
+        customFieldValues: customAttributes?.customFieldValues,
+        dimensionAssignments: customAttributes?.dimensionAssignments,
       };
       return isEdit && id
         ? expensesApi.updateExpense(id, payload)
@@ -101,6 +107,13 @@ export default function NewExpensePage() {
           submitLabel={isEdit ? "Save changes" : "Create expense"}
         />
       )}
+
+      <CustomAttributesSection
+        entityType="expense"
+        entityId={isEdit ? id : undefined}
+        mode="edit"
+        onChange={setCustomAttributes}
+      />
     </div>
   );
 }

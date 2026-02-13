@@ -1,8 +1,9 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
+import { Controller, useFieldArray, type UseFormReturn } from "react-hook-form";
+import { Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "@/shared/lib/utils";
-import { Input, Label, Textarea } from "@corely/ui";
+import { Button, Input, Label, Textarea } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 
 import type { CustomerFormData } from "../schemas/customer-form.schema";
@@ -14,6 +15,10 @@ interface CustomerFormFieldsProps {
 
 export function CustomerFormFields({ form, className }: CustomerFormFieldsProps) {
   const { t } = useTranslation();
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "socialLinks",
+  });
 
   return (
     <div className={cn("space-y-6", className)}>
@@ -168,6 +173,75 @@ export function CustomerFormFields({ form, className }: CustomerFormFieldsProps)
           rows={4}
           data-testid="customer-notes-input"
         />
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">Social Profiles</h2>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => append({ platform: "linkedin", url: "", label: "", isPrimary: false })}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add profile
+          </Button>
+        </div>
+
+        {fields.length === 0 ? (
+          <div className="text-sm text-muted-foreground">No social profiles added.</div>
+        ) : (
+          <div className="space-y-3">
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="grid grid-cols-1 md:grid-cols-12 gap-3 rounded-md border border-border/70 dark:border-border/40 p-3"
+              >
+                <div className="md:col-span-3">
+                  <Label>Platform</Label>
+                  <Controller
+                    control={form.control}
+                    name={`socialLinks.${index}.platform`}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="linkedin">LinkedIn</SelectItem>
+                          <SelectItem value="facebook">Facebook</SelectItem>
+                          <SelectItem value="instagram">Instagram</SelectItem>
+                          <SelectItem value="x">X</SelectItem>
+                          <SelectItem value="github">GitHub</SelectItem>
+                          <SelectItem value="tiktok">TikTok</SelectItem>
+                          <SelectItem value="youtube">YouTube</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+                <div className="md:col-span-5">
+                  <Label>URL</Label>
+                  <Input {...form.register(`socialLinks.${index}.url`)} placeholder="https://..." />
+                </div>
+                <div className="md:col-span-3">
+                  <Label>Label</Label>
+                  <Input
+                    {...form.register(`socialLinks.${index}.label`)}
+                    placeholder="Public profile"
+                  />
+                </div>
+                <div className="md:col-span-1 flex items-end justify-end">
+                  <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

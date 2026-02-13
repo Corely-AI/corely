@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { localDateSchema } from "../shared/local-date.schema";
 import { ExpenseDtoSchema } from "./expense.types";
+import { EntityDimensionAssignmentSchema } from "../common/customization/custom-attributes";
 
 /**
  * Web-friendly expense create payload
@@ -16,6 +17,8 @@ export const CreateExpenseWebInputSchema = z.object({
   notes: z.string().optional(),
   vatRate: z.number().optional(),
   custom: z.record(z.any()).optional(),
+  customFieldValues: z.record(z.any()).optional(),
+  dimensionAssignments: z.array(EntityDimensionAssignmentSchema).optional(),
   idempotencyKey: z.string().optional(),
   tenantId: z.string().optional(), // typically provided via headers/token
 });

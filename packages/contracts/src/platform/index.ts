@@ -17,3 +17,6 @@ export * from "./entitlements.schema";
 
 // Menu
 export * from "./menu.schema";
+
+// Custom Attributes
+export * from "./custom-attributes.schema";

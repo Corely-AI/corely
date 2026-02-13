@@ -11,6 +11,7 @@ export interface ExpenseListFilters {
   includeArchived?: boolean;
   sort?: string;
   structuredFilters?: any;
+  entityIds?: string[];
 }
 
 export interface ExpenseListResult {

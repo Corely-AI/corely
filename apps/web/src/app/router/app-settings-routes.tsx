@@ -1,6 +1,8 @@
 import React from "react";
 import { Navigate, Route } from "react-router-dom";
 import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
+import DimensionsSettingsPage from "../../modules/settings/screens/DimensionsSettingsPage";
+import CustomFieldsSettingsPage from "../../modules/settings/screens/CustomFieldsSettingsPage";
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import {
@@ -29,6 +31,11 @@ export const appSettingsRoutes = (
     <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
     <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
     <Route path="/settings/classes" element={<ClassesSettingsPage />} />
+    <Route path="/settings/custom-attributes/dimensions" element={<DimensionsSettingsPage />} />
+    <Route
+      path="/settings/custom-attributes/custom-fields"
+      element={<CustomFieldsSettingsPage />}
+    />
     <Route
       path="/settings/members"
       element={

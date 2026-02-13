@@ -15,10 +15,14 @@ import {
   type CustomerFormData,
 } from "../schemas/customer-form.schema";
 import CustomerFormFields from "../components/CustomerFormFields";
+import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function NewStudentPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [customAttributes, setCustomAttributes] = React.useState<CustomAttributesValue | undefined>(
+    undefined
+  );
 
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerFormSchema),
@@ -27,7 +31,12 @@ export default function NewStudentPage() {
 
   const createStudentMutation = useMutation({
     mutationFn: async (data: CustomerFormData) => {
-      const input = { ...toCreateCustomerInput(data), role: "STUDENT" as const };
+      const input = {
+        ...toCreateCustomerInput(data),
+        role: "STUDENT" as const,
+        customFieldValues: customAttributes?.customFieldValues,
+        dimensionAssignments: customAttributes?.dimensionAssignments,
+      };
       return customersApi.createCustomer(input);
     },
     onSuccess: async () => {
@@ -80,6 +89,8 @@ export default function NewStudentPage() {
           </CardContent>
         </Card>
       </form>
+
+      <CustomAttributesSection entityType="party" mode="edit" onChange={setCustomAttributes} />
     </div>
   );
 }

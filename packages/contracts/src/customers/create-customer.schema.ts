@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { CustomerDtoSchema, CustomerBillingAddressSchema } from "./customer.types";
-import { PartyRoleTypeSchema, PartyLifecycleStatusSchema } from "../crm/party.types";
+import {
+  PartyRoleTypeSchema,
+  PartyLifecycleStatusSchema,
+  PartySocialLinksSchema,
+} from "../crm/party.types";
+import { EntityDimensionAssignmentSchema } from "../common/customization/custom-attributes";
 
 export const CreateCustomerInputSchema = z.object({
   displayName: z.string().min(1),
@@ -10,6 +15,9 @@ export const CreateCustomerInputSchema = z.object({
   vatId: z.string().optional(),
   notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  socialLinks: PartySocialLinksSchema.optional(),
+  customFieldValues: z.record(z.string(), z.unknown()).optional(),
+  dimensionAssignments: z.array(EntityDimensionAssignmentSchema).optional(),
   role: PartyRoleTypeSchema.optional(),
   lifecycleStatus: PartyLifecycleStatusSchema.optional(),
 });
