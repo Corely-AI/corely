@@ -5,6 +5,9 @@
     "suspended": "Suspended",
     "activate": "Activate",
     "deactivate": "Deactivate",
+    "lead": "Lead",
+    "paused": "Paused",
+    "archived": "Archived",
     "appName": "Corely One ERP",
     "tagline": "Run your business, end-to-end.",
     "loading": "Loading...",
@@ -749,7 +752,8 @@
       "city": "Berlin",
       "postalCode": "10115",
       "country": "Germany",
-      "notes": "Additional notes about this customer"
+      "notes": "Additional notes about this customer",
+      "status": "Select status"
     },
     "createDescription": "Create a new customer with basic contact and billing information.",
     "selectCustomer": "Select a customer",

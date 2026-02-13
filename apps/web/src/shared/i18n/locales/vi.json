@@ -5,6 +5,9 @@
     "suspended": "Đã tạm ngưng",
     "activate": "Kích hoạt",
     "deactivate": "Hủy kích hoạt",
+    "lead": "Tiềm năng",
+    "paused": "Tạm dừng",
+    "archived": "Lưu trữ",
     "appName": "Corely One ERP",
     "tagline": "Quản lý doanh nghiệp của bạn, toàn diện.",
     "loading": "Đang tải...",
@@ -738,7 +741,8 @@
       "city": "Hồ Chí Minh",
       "postalCode": "700000",
       "country": "Việt Nam",
-      "notes": "Ghi chú thêm về khách hàng này"
+      "notes": "Ghi chú thêm về khách hàng này",
+      "status": "Chọn trạng thái"
     },
     "createDescription": "Tạo khách hàng mới với thông tin liên hệ và thanh toán cơ bản.",
     "selectCustomer": "Chọn khách hàng",

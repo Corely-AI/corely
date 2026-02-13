@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CustomerDtoSchema, CustomerBillingAddressSchema } from "./customer.types";
-import { PartyRoleTypeSchema } from "../crm/party.types";
+import { PartyRoleTypeSchema, PartyLifecycleStatusSchema } from "../crm/party.types";
 
 export const CreateCustomerInputSchema = z.object({
   displayName: z.string().min(1),
@@ -11,6 +11,7 @@ export const CreateCustomerInputSchema = z.object({
   notes: z.string().optional(),
   tags: z.array(z.string()).optional(),
   role: PartyRoleTypeSchema.optional(),
+  lifecycleStatus: PartyLifecycleStatusSchema.optional(),
 });
 
 export const CreateCustomerOutputSchema = z.object({

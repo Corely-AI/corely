@@ -18,6 +18,7 @@ export const toCustomerDto = (party: PartyAggregate): CustomerDto => ({
   vatId: party.vatId ?? undefined,
   notes: party.notes ?? undefined,
   tags: party.tags ?? [],
+  lifecycleStatus: party.lifecycleStatus as any,
   archivedAt: party.archivedAt ? party.archivedAt.toISOString() : null,
   createdAt: party.createdAt.toISOString(),
   updatedAt: party.updatedAt.toISOString(),
