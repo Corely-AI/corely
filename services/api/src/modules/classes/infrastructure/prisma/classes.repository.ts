@@ -44,6 +44,7 @@ import {
   findBillingInvoiceLinkByIdempotency,
   findBillingRunById,
   findBillingRunByMonth,
+  getInvoiceRecipientEmailsByIds,
   getInvoiceStatusesByIds,
   getBillingInvoiceSendProgress,
   listBillingRunsByMonths,
@@ -253,6 +254,10 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
 
   async getInvoiceStatusesByIds(tenantId: string, invoiceIds: string[]) {
     return getInvoiceStatusesByIds(this.prisma, tenantId, invoiceIds);
+  }
+
+  async getInvoiceRecipientEmailsByIds(tenantId: string, invoiceIds: string[]) {
+    return getInvoiceRecipientEmailsByIds(this.prisma, tenantId, invoiceIds);
   }
 
   async getBillingInvoiceSendProgress(

@@ -7,6 +7,7 @@ import type {
 import type {
   BillingInvoiceSendProgress,
   BillingPreviewFilters,
+  InvoiceRecipientEmailLookup,
 } from "../../application/ports/classes-repository.port";
 import type { AttendanceBillingRow } from "../../domain/rules/billing.rules";
 import { toBillingInvoiceLink, toBillingRun } from "./prisma.mappers";
@@ -295,6 +296,33 @@ export const getInvoiceStatusesByIds = async (
     },
     {}
   );
+};
+
+export const getInvoiceRecipientEmailsByIds = async (
+  prisma: PrismaService,
+  tenantId: string,
+  invoiceIds: string[]
+): Promise<InvoiceRecipientEmailLookup[]> => {
+  const uniqueIds = Array.from(new Set(invoiceIds)).filter(Boolean);
+  if (uniqueIds.length === 0) {
+    return [];
+  }
+
+  const rows = await prisma.invoice.findMany({
+    where: {
+      tenantId,
+      id: { in: uniqueIds },
+    },
+    select: {
+      id: true,
+      billToEmail: true,
+    },
+  });
+
+  return rows.map((row) => ({
+    invoiceId: row.id,
+    email: row.billToEmail?.trim() ? row.billToEmail.trim() : null,
+  }));
 };
 
 export const getBillingInvoiceSendProgress = async (

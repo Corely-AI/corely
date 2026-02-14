@@ -63,6 +63,11 @@ export type BillingInvoiceSendProgress = {
   hasFailures: boolean;
 };
 
+export type InvoiceRecipientEmailLookup = {
+  invoiceId: string;
+  email: string | null;
+};
+
 export interface ClassesRepositoryPort {
   createClassGroup(group: ClassGroupEntity): Promise<ClassGroupEntity>;
   updateClassGroup(
@@ -193,6 +198,10 @@ export interface ClassesRepositoryPort {
     sentAfter: Date,
     expectedInvoiceCount: number
   ): Promise<BillingInvoiceSendProgress>;
+  getInvoiceRecipientEmailsByIds?(
+    tenantId: string,
+    invoiceIds: string[]
+  ): Promise<InvoiceRecipientEmailLookup[]>;
   findBillingInvoiceLinkByIdempotency(
     tenantId: string,
     workspaceId: string,
