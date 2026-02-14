@@ -133,13 +133,19 @@ export class InvoicesApi {
       cc?: string[];
       bcc?: string[];
       attachPdf?: boolean;
+      idempotencyKey?: string;
     }
   ): Promise<InvoiceDto> {
+    const requestIdempotencyKey = payload?.idempotencyKey ?? apiClient.generateIdempotencyKey();
+    const requestPayload = {
+      ...(payload || {}),
+      idempotencyKey: requestIdempotencyKey,
+    };
     const result = await apiClient.post<{ invoice: InvoiceDto }>(
       `/invoices/${id}/send`,
-      payload || {},
+      requestPayload,
       {
-        idempotencyKey: apiClient.generateIdempotencyKey(),
+        idempotencyKey: requestIdempotencyKey,
         correlationId: apiClient.generateCorrelationId(),
       }
     );

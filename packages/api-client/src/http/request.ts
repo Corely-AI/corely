@@ -76,6 +76,7 @@ export async function request<T = unknown>(opts: RequestOptions): Promise<T> {
     url: opts.url,
     method,
     headers,
+    credentials: "include",
   };
   if (opts.signal) {
     init.signal = opts.signal;

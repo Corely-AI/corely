@@ -98,6 +98,8 @@ export class TestHarnessService {
     studentEmail: string;
     documentTitle: string;
     documentId: string;
+    invoiceId: string;
+    invoiceNumber: string;
   }> {
     const timestamp = Date.now();
     const studentEmail = `portal-student-${timestamp}@test.com`;
@@ -244,6 +246,29 @@ export class TestHarnessService {
       },
     });
 
+    const invoiceNumber = `INV-${timestamp}`;
+    const invoice = await this.prisma.invoice.create({
+      data: {
+        tenantId: workspace.id,
+        customerPartyId: party.id,
+        billToName: party.displayName,
+        status: "ISSUED",
+        number: invoiceNumber,
+        currency: "USD",
+        invoiceDate: new Date(),
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        lines: {
+          create: [
+            {
+              description: "E2E Tuition",
+              qty: 1,
+              unitPriceCents: 12000,
+            },
+          ],
+        },
+      },
+    });
+
     return {
       tenantId: tenant.id,
       workspaceId: workspace.id,
@@ -252,6 +277,8 @@ export class TestHarnessService {
       studentEmail,
       documentTitle,
       documentId: document.id,
+      invoiceId: invoice.id,
+      invoiceNumber,
     };
   }
 

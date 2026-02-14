@@ -9,6 +9,8 @@ import { GetPortalMeUseCase } from "./application/use-cases/get-portal-me.usecas
 import { GetStudentClassesUseCase } from "./application/use-cases/get-student-classes.usecase";
 import { GetStudentMaterialsUseCase } from "./application/use-cases/get-student-materials.usecase";
 import { GetPortalDownloadUrlUseCase } from "./application/use-cases/get-portal-download-url.usecase";
+import { GetStudentInvoicesUseCase } from "./application/use-cases/get-student-invoices.usecase";
+import { GetPortalInvoiceDownloadUrlUseCase } from "./application/use-cases/get-portal-invoice-download-url.usecase";
 import { ResolveAccessibleStudentIdsUseCase } from "./application/use-cases/resolve-accessible-student-ids.usecase";
 import { InvitePortalUserUseCase } from "./application/use-cases/invite-portal-user.usecase";
 import { PortalRequestCodeUseCase } from "./application/use-cases/portal-request-code.usecase";
@@ -19,6 +21,7 @@ import { IdentityModule } from "../identity";
 import { PartyModule } from "../party";
 import { ClassesModule } from "../classes";
 import { DocumentsModule } from "../documents";
+import { InvoicesModule } from "../invoices";
 import { PrismaUserRepository } from "../identity/infrastructure/adapters/prisma-user-repository.adapter";
 import { PrismaPartyRepoAdapter } from "../party/infrastructure/prisma/prisma-party-repo.adapter";
 import { PrismaClassesRepository } from "../classes/infrastructure/prisma/classes.repository";
@@ -46,6 +49,8 @@ import { ResendPortalEmailAdapter } from "./infrastructure/resend-portal-email.a
 import { PublicWorkspaceResolver } from "../../shared/public";
 import { PlatformModule } from "../platform";
 import { WorkspacesModule } from "../workspaces";
+import { InvoicesApplication } from "../invoices/application/invoices.application";
+import { DocumentsApplication } from "../documents/application/documents.application";
 
 @Module({
   imports: [
@@ -55,6 +60,7 @@ import { WorkspacesModule } from "../workspaces";
     PartyModule,
     ClassesModule,
     DocumentsModule,
+    InvoicesModule,
     // Required for RbacGuard (used in portal invitations endpoint)
     forwardRef(() => PlatformModule),
     forwardRef(() => WorkspacesModule),
@@ -230,6 +236,41 @@ import { WorkspacesModule } from "../workspaces";
       inject: [GetDownloadUrlUseCase, GetStudentMaterialsUseCase],
     },
     {
+      provide: GetStudentInvoicesUseCase,
+      useFactory: (
+        userRepo: PrismaUserRepository,
+        resolveStudents: ResolveAccessibleStudentIdsUseCase,
+        classesRepo: PrismaClassesRepository,
+        invoicesApp: InvoicesApplication
+      ) =>
+        new GetStudentInvoicesUseCase({
+          logger: new NestLoggerAdapter(),
+          userRepo,
+          resolveStudents,
+          classesRepo,
+          invoicesApp,
+        }),
+      inject: [
+        PrismaUserRepository,
+        ResolveAccessibleStudentIdsUseCase,
+        PrismaClassesRepository,
+        InvoicesApplication,
+      ],
+    },
+    {
+      provide: GetPortalInvoiceDownloadUrlUseCase,
+      useFactory: (
+        documentsApp: DocumentsApplication,
+        getStudentInvoices: GetStudentInvoicesUseCase
+      ) =>
+        new GetPortalInvoiceDownloadUrlUseCase({
+          logger: new NestLoggerAdapter(),
+          documentsApp,
+          getStudentInvoices,
+        }),
+      inject: [DocumentsApplication, GetStudentInvoicesUseCase],
+    },
+    {
       provide: InvitePortalUserUseCase,
       useFactory: (
         userRepo: PrismaUserRepository,
@@ -270,6 +311,8 @@ import { WorkspacesModule } from "../workspaces";
         getStudentClasses: GetStudentClassesUseCase,
         getStudentMaterials: GetStudentMaterialsUseCase,
         getDownloadUrl: GetPortalDownloadUrlUseCase,
+        getStudentInvoices: GetStudentInvoicesUseCase,
+        getInvoiceDownloadUrl: GetPortalInvoiceDownloadUrlUseCase,
         inviteUser: InvitePortalUserUseCase
       ) =>
         new PortalApplication(
@@ -277,6 +320,8 @@ import { WorkspacesModule } from "../workspaces";
           getStudentClasses,
           getStudentMaterials,
           getDownloadUrl,
+          getStudentInvoices,
+          getInvoiceDownloadUrl,
           inviteUser
         ),
       inject: [
@@ -284,6 +329,8 @@ import { WorkspacesModule } from "../workspaces";
         GetStudentClassesUseCase,
         GetStudentMaterialsUseCase,
         GetPortalDownloadUrlUseCase,
+        GetStudentInvoicesUseCase,
+        GetPortalInvoiceDownloadUrlUseCase,
         InvitePortalUserUseCase,
       ],
     },

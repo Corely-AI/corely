@@ -71,12 +71,20 @@ export function InvoiceEmail({
                     </Text>
                   ))
                 ) : (
-                  <Text style={value}>See attached invoice PDF</Text>
+                  <Text style={value}>
+                    {viewInvoiceUrl
+                      ? "Open the invoice from the portal link below"
+                      : "See attached invoice PDF"}
+                  </Text>
                 )}
               </Column>
               <Column style={detailsColumn}>
                 <Text style={label}>Invoice</Text>
-                <Text style={value}>The invoice is attached to this email</Text>
+                <Text style={value}>
+                  {viewInvoiceUrl
+                    ? "Open the invoice in the student portal to view and download PDF"
+                    : "The invoice is attached to this email"}
+                </Text>
               </Column>
             </Row>
 

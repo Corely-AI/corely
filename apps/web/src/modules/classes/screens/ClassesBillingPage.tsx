@@ -28,6 +28,8 @@ import { customersApi } from "@/lib/customers-api";
 import { CrudListPageLayout } from "@/shared/crud";
 import { classBillingKeys } from "../queries";
 import { formatMoney } from "@/shared/lib/formatters";
+import { useSendInvoice } from "../../invoices/hooks/use-send-invoice";
+import { SendInvoiceDialog } from "../../invoices/components/SendInvoiceDialog";
 
 const toMonthValue = (date: Date) => date.toISOString().slice(0, 7);
 
@@ -38,6 +40,16 @@ export default function ClassesBillingPage() {
   const [resultSummary, setResultSummary] = useState<string | null>(null);
   const [sendPromptOpen, setSendPromptOpen] = useState(false);
   const [createdCount, setCreatedCount] = useState(0);
+
+  const {
+    isOpen: sendDialogOpen,
+    setIsOpen: setSendDialogOpen,
+    isSending,
+    isFetching,
+    currentInvoice,
+    openSendDialog,
+    handleSend: handleSendInvoice,
+  } = useSendInvoice();
 
   const {
     data: preview,
@@ -290,11 +302,22 @@ export default function ClassesBillingPage() {
                       </div>
                     </div>
                     {invoiceByPayer.get(item.payerClientId) ? (
-                      <Button asChild variant="outline" size="sm">
-                        <Link to={`/invoices/${invoiceByPayer.get(item.payerClientId)}`}>
-                          {t("classes.billing.viewInvoice")}
-                        </Link>
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openSendDialog(invoiceByPayer.get(item.payerClientId)!)}
+                          disabled={isFetching}
+                        >
+                          <Mail className="h-4 w-4" />
+                          {t("invoices.actions.send")}
+                        </Button>
+                        <Button asChild variant="outline" size="sm">
+                          <Link to={`/invoices/${invoiceByPayer.get(item.payerClientId)}`}>
+                            {t("classes.billing.viewInvoice")}
+                          </Link>
+                        </Button>
+                      </div>
                     ) : null}
                   </div>
                 </div>
@@ -357,6 +380,16 @@ export default function ClassesBillingPage() {
           </div>
         )}
       </div>
+
+      {currentInvoice && (
+        <SendInvoiceDialog
+          open={sendDialogOpen}
+          onOpenChange={setSendDialogOpen}
+          invoice={currentInvoice}
+          onSend={handleSendInvoice}
+          isSending={isSending}
+        />
+      )}
     </CrudListPageLayout>
   );
 }

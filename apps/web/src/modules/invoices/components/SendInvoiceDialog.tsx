@@ -13,7 +13,6 @@ import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { Textarea } from "@corely/ui";
 import { Checkbox } from "@corely/ui";
-import { FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface SendInvoiceDialogProps {
@@ -116,18 +115,10 @@ export function SendInvoiceDialog({
             />
           </div>
 
-          {/* Attachments */}
+          {/* Delivery */}
           <div className="space-y-2">
-            <Label>{t("common.attachments")}</Label>
-            <p className="text-sm text-muted-foreground">{t("invoices.email.attachmentsHint")}</p>
-            <div className="flex items-center gap-3 p-3 border rounded-md bg-muted/10 w-fit">
-              <FileText className="h-5 w-5 text-blue-500" />
-              <span className="text-sm text-blue-600 font-medium">
-                {invoice.number
-                  ? t("invoices.email.attachmentName", { number: invoice.number })
-                  : t("invoices.email.attachmentFallback")}
-              </span>
-            </div>
+            <Label>{t("invoices.email.deliveryLabel")}</Label>
+            <p className="text-sm text-muted-foreground">{t("invoices.email.deliveryHint")}</p>
           </div>
         </div>
 

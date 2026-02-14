@@ -33,6 +33,7 @@ const baseEvent = {
 describe("InvoiceEmailRequestedHandler", () => {
   const invoiceRepo = {
     findInvoiceWithLines: vi.fn(),
+    findWorkspaceSlug: vi.fn(),
   };
   const documentRepo = {
     findByTypeAndEntityLink: vi.fn(),
@@ -70,6 +71,7 @@ describe("InvoiceEmailRequestedHandler", () => {
         { id: "line-1", invoiceId: "inv-1", description: "Work", qty: 1, unitPriceCents: 1000 },
       ],
     });
+    invoiceRepo.findWorkspaceSlug.mockResolvedValue("test-workspace");
     documentRepo.findByTypeAndEntityLink.mockResolvedValue({
       id: "doc-1",
       status: "READY",
@@ -101,6 +103,7 @@ describe("InvoiceEmailRequestedHandler", () => {
     await handler.handle(baseEvent as any);
 
     expect(sender.calls[0].to).toEqual(["customer@example.com"]);
+    expect(sender.calls[0].html).toContain("http://localhost:8083/w/test-workspace");
     expect(deliveryRepo.updateStatus).toHaveBeenCalledWith("tenant-1", "delivery-1", "SENT", {
       providerMessageId: "msg-123",
     });

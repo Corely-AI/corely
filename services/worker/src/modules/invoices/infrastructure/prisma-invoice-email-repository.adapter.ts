@@ -17,4 +17,12 @@ export class PrismaInvoiceEmailRepository {
       },
     });
   }
+
+  async findWorkspaceSlug(workspaceId: string): Promise<string | null> {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { slug: true },
+    });
+    return workspace?.slug ?? null;
+  }
 }

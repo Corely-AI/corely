@@ -11,6 +11,8 @@ interface SeedPortalResult {
   studentEmail: string;
   documentTitle: string;
   documentId: string;
+  invoiceId: string;
+  invoiceNumber: string;
 }
 
 /**
@@ -102,6 +104,25 @@ test.describe("Portal Materials", () => {
     // Verify the API request uses the correct document ID (not "undefined")
     const req = await downloadRequest;
     expect(req.url()).toContain(`/portal/materials/${seedResult.documentId}/download-url`);
+    expect(req.url()).not.toContain("/undefined/");
+  });
+
+  test("Student can request an invoice download link", async ({ page, context }) => {
+    const seedResult = await setupPortalSession(page, context);
+
+    await expect(page.getByText(seedResult.invoiceNumber)).toBeVisible({ timeout: 15000 });
+
+    const downloadRequest = page.waitForRequest(
+      (req) => req.url().includes("/portal/invoices/") && req.url().includes("/download-url")
+    );
+
+    const invoiceCard = page.locator('[class*="rounded-[2rem]"]').filter({
+      hasText: seedResult.invoiceNumber,
+    });
+    await invoiceCard.getByRole("button", { name: /download invoice/i }).click();
+
+    const req = await downloadRequest;
+    expect(req.url()).toContain(`/portal/invoices/${seedResult.invoiceId}/download-url`);
     expect(req.url()).not.toContain("/undefined/");
   });
 });

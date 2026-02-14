@@ -37,7 +37,7 @@ async function bootstrap() {
   // Register global exception filter (converts all errors to ProblemDetails)
   app.useGlobalFilters(new ProblemDetailsExceptionFilter());
 
-  app.enableCors({ origin: true });
+  app.enableCors({ origin: true, credentials: true });
 
   if (process.env.NODE_ENV !== "production") {
     app.useStaticAssets(path.join(process.cwd(), "pdfs"), {

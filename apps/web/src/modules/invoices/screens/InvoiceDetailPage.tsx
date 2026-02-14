@@ -25,6 +25,7 @@ import { InvoiceDetailHeader } from "../components/InvoiceDetailHeader";
 import { InvoiceCopilotPanel } from "../components/InvoiceCopilotPanel";
 import { invoiceQueryKeys } from "../queries";
 import { generateInvoiceNumber } from "../utils/invoice-generators";
+import { useSendInvoice } from "../hooks/use-send-invoice";
 
 // Sub-components
 import {
@@ -65,7 +66,16 @@ export default function InvoiceDetailPage() {
   const capabilities = invoiceData?.capabilities;
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+
+  const {
+    isOpen: sendDialogOpen,
+    setIsOpen: setSendDialogOpen,
+    isSending,
+    currentInvoice,
+    openSendDialog,
+    handleSend: handleSendInvoice,
+  } = useSendInvoice();
+
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [paymentDate, setPaymentDate] = useState<string>(() =>
@@ -375,38 +385,6 @@ export default function InvoiceDetailPage() {
     },
   });
 
-  const handleSendInvoice = async (data: {
-    to: string;
-    subject: string;
-    message: string;
-    sendCopy: boolean;
-  }) => {
-    if (!id || !invoice) {
-      return;
-    }
-    setIsProcessing(true);
-    try {
-      if (invoice.status === "DRAFT") {
-        await invoicesApi.finalizeInvoice(id);
-      }
-      await invoicesApi.sendInvoice(id, {
-        to: data.to,
-        subject: data.subject,
-        message: data.message,
-        attachPdf: true,
-      });
-      toast.success(t("invoices.email.sent"));
-      setSendDialogOpen(false);
-      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.detail(id ?? "") });
-      void queryClient.invalidateQueries({ queryKey: invoiceQueryKeys.all() });
-    } catch (err) {
-      console.error("Failed to send invoice", err);
-      toast.error(t("invoices.email.sendFailed"));
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
   const handleTransition = useCallback(
     async (to: string, input?: Record<string, string>) => {
       if (!id || !invoice) {
@@ -414,7 +392,7 @@ export default function InvoiceDetailPage() {
       }
 
       if (to === "SENT") {
-        setSendDialogOpen(true);
+        void openSendDialog(invoice);
         return;
       }
 
@@ -446,7 +424,7 @@ export default function InvoiceDetailPage() {
       }
 
       if (actionKey === "send" || actionKey === "resend") {
-        setSendDialogOpen(true);
+        void openSendDialog(invoice);
         return;
       }
       logPdfDebug("Invoice header action clicked", { actionKey, invoiceId: id });
@@ -614,9 +592,9 @@ export default function InvoiceDetailPage() {
         <SendInvoiceDialog
           open={sendDialogOpen}
           onOpenChange={setSendDialogOpen}
-          invoice={invoice}
+          invoice={currentInvoice || (invoice as any)}
           onSend={handleSendInvoice}
-          isSending={isProcessing}
+          isSending={isSending}
         />
 
         <InvoicePaymentDialog
