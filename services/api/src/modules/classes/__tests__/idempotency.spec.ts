@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ValidationFailedError } from "@corely/domain";
 import { ok, type UseCaseContext } from "@corely/kernel";
 import { CreateMonthlyBillingRunUseCase } from "../application/use-cases/create-monthly-billing-run.usecase";
 import type { ClassesRepositoryPort } from "../application/ports/classes-repository.port";
@@ -33,6 +34,7 @@ class FakeIdempotency implements IdempotencyStoragePort {
 class FakeRepo implements ClassesRepositoryPort {
   public runs = new Map<string, any>();
   public links = new Map<string, any>();
+  public missingEmailInvoiceIds = new Set<string>();
   async createClassGroup() {
     throw new Error("not implemented");
   }
@@ -141,6 +143,13 @@ class FakeRepo implements ClassesRepositoryPort {
   async listBillingInvoiceLinks(tenantId: string, workspaceId: string, billingRunId: string) {
     return Array.from(this.links.values()).filter((link) => link.billingRunId === billingRunId);
   }
+  async getInvoiceRecipientEmailsByIds(tenantId: string, invoiceIds: string[]) {
+    void tenantId;
+    return invoiceIds.map((invoiceId) => ({
+      invoiceId,
+      email: this.missingEmailInvoiceIds.has(invoiceId) ? null : `${invoiceId}@example.com`,
+    }));
+  }
   async findBillingInvoiceLinkByIdempotency(
     tenantId: string,
     workspaceId: string,
@@ -195,7 +204,9 @@ class FakeAudit implements AuditPort {
 }
 
 class FakeOutbox implements OutboxPort {
+  public enqueueCalls = 0;
   async enqueue() {
+    this.enqueueCalls += 1;
     return;
   }
 }
@@ -242,5 +253,47 @@ describe("classes billing idempotency", () => {
 
     expect(invoices.createCalls).toBe(2);
     expect(repo.links.size).toBe(2);
+  });
+
+  it("blocks send when any payer email is missing", async () => {
+    const repo = new FakeRepo();
+    const invoices = new FakeInvoices();
+    const audit = new FakeAudit();
+    const outbox = new FakeOutbox();
+    const idempotency = new FakeIdempotency();
+    const idGen = new FakeIdGen();
+    const clock = new FakeClock();
+    const settingsRepo = new FakeSettingsRepo();
+
+    const useCase = new CreateMonthlyBillingRunUseCase(
+      repo,
+      settingsRepo,
+      invoices,
+      audit,
+      outbox,
+      idempotency,
+      idGen,
+      clock
+    );
+
+    const ctx = buildCtx();
+    const created = await useCase.execute(
+      { month: "2024-01", createInvoices: true, idempotencyKey: "create-1" },
+      ctx
+    );
+    repo.missingEmailInvoiceIds.add(created.invoiceIds[0]);
+
+    await expect(
+      useCase.execute(
+        {
+          month: "2024-01",
+          createInvoices: false,
+          sendInvoices: true,
+          idempotencyKey: "send-1",
+        },
+        ctx
+      )
+    ).rejects.toBeInstanceOf(ValidationFailedError);
+    expect(outbox.enqueueCalls).toBe(1);
   });
 });

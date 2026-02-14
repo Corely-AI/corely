@@ -135,8 +135,9 @@ jobs:
           service: corely-worker
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
-          flags: --port=8080
+          flags: --port=8080 --memory=1Gi --min-instances=1 --max-instances=3 --no-cpu-throttling
           env_vars: |
             NODE_ENV=production
             DATABASE_URL=${{ env.DATABASE_URL }}
             WORKFLOW_QUEUE_DRIVER=memory
+            PDF_RENDER_CONCURRENCY=1

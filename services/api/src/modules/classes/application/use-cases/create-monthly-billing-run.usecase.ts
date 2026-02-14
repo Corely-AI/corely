@@ -1,4 +1,4 @@
-import { ConflictError } from "@corely/domain";
+import { ConflictError, ValidationFailedError } from "@corely/domain";
 import { RequireTenant, type UseCaseContext, isErr } from "@corely/kernel";
 import type { CreateBillingRunInput } from "@corely/contracts";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
@@ -234,6 +234,8 @@ export class CreateMonthlyBillingRunUseCase {
         : existingLinks.map((link) => link.invoiceId);
       const uniqueInvoiceIds = Array.from(new Set(invoiceIdsToSend));
       if (uniqueInvoiceIds.length > 0) {
+        await this.ensureInvoicesHaveRecipientEmail(tenantId, uniqueInvoiceIds);
+
         for (const invoiceId of uniqueInvoiceIds) {
           await this.outbox.enqueue({
             tenantId,
@@ -302,12 +304,20 @@ export class CreateMonthlyBillingRunUseCase {
     const output = { billingRun: run, invoiceIds };
 
     if (idempotencyKey) {
-      await this.idempotency.store(this.actionKey, tenantId, idempotencyKey, {
-        body: {
-          billingRun: this.toJson(run),
-          invoiceIds,
-        },
-      });
+      try {
+        await this.idempotency.store(this.actionKey, tenantId, idempotencyKey, {
+          body: {
+            billingRun: this.toJson(run),
+            invoiceIds,
+          },
+        });
+      } catch (error: any) {
+        // For re-send flows, the same idempotency key may already exist with an empty invoiceIds payload.
+        // Do not fail the send operation if only the idempotency write collides.
+        if (error?.code !== "P2002" && !String(error?.message ?? "").includes("P2002")) {
+          throw error;
+        }
+      }
     }
 
     return output;
@@ -356,6 +366,28 @@ export class CreateMonthlyBillingRunUseCase {
           updatedAt: now,
         });
       }
+    }
+  }
+
+  private async ensureInvoicesHaveRecipientEmail(tenantId: string, invoiceIds: string[]) {
+    if (!this.repo.getInvoiceRecipientEmailsByIds) {
+      return;
+    }
+
+    const recipients = await this.repo.getInvoiceRecipientEmailsByIds(tenantId, invoiceIds);
+    const emailByInvoiceId = new Map(recipients.map((item) => [item.invoiceId, item.email]));
+    const missingInvoiceIds = invoiceIds.filter((invoiceId) => !emailByInvoiceId.get(invoiceId));
+
+    if (missingInvoiceIds.length > 0) {
+      throw new ValidationFailedError(
+        "Cannot send invoices until all students have a payer email",
+        [
+          {
+            message: `Missing payer email for ${missingInvoiceIds.length} invoice(s): ${missingInvoiceIds.join(", ")}`,
+            members: ["sendInvoices"],
+          },
+        ]
+      );
     }
   }
 

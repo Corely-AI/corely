@@ -14,6 +14,7 @@ import {
   createClassGroup,
   createClassEnrollment,
   createDocumentWithLink,
+  createInvoice,
 } from "@corely/testkit";
 import cookieParser from "cookie-parser";
 import { AuthGuard } from "../../identity";
@@ -30,7 +31,6 @@ describe("Portal Materials E2E", () => {
   const TEST_STUDENT_ID = "student-" + Date.now();
   const TEST_STUDENT_USER_ID = "student-user-" + Date.now();
   const TEST_CLASS_GROUP_ID = "class-group-" + Date.now();
-  const TEST_DOC_ID = "doc-" + Date.now();
 
   beforeAll(async () => {
     db = await createTestDb();
@@ -66,7 +66,7 @@ describe("Portal Materials E2E", () => {
     await stopSharedContainer();
   });
 
-  it("should return materials for enrolled student in specific workspace context", async () => {
+  it("should return materials and invoices for enrolled student in specific workspace context", async () => {
     // 1. Setup Tenant and Workspace
     const tenant = await createTenant(prisma, {
       id: TEST_TENANT_ID,
@@ -125,16 +125,34 @@ describe("Portal Materials E2E", () => {
       linkTo: { entityType: "CLASS_GROUP", entityId: classGroup.id },
     });
 
+    const invoice = await createInvoice(prisma, {
+      tenantId: workspace.id,
+      customerPartyId: studentParty.id,
+      status: "ISSUED",
+      number: `INV-${Date.now()}`,
+    });
+
     // 6. Make Request (Mocked Guard puts user in context)
-    const response = await request(app.getHttpServer())
+    const materialsResponse = await request(app.getHttpServer())
       .get(`/portal/students/${TEST_STUDENT_ID}/materials`)
       .query({ w: TEST_WORKSPACE_SLUG })
       .expect(200);
 
-    // 7. Assert
-    expect(response.body.items).toBeDefined();
-    expect(response.body.items).toHaveLength(1);
-    expect(response.body.items[0].title).toBe("Syllabus");
-    expect(response.body.items[0].linkedTo).toBe("CLASS_GROUP");
+    const invoicesResponse = await request(app.getHttpServer())
+      .get(`/portal/students/${TEST_STUDENT_ID}/invoices`)
+      .query({ w: TEST_WORKSPACE_SLUG })
+      .expect(200);
+
+    // 7. Assert materials
+    expect(materialsResponse.body.items).toBeDefined();
+    expect(materialsResponse.body.items).toHaveLength(1);
+    expect(materialsResponse.body.items[0].title).toBe("Syllabus");
+    expect(materialsResponse.body.items[0].linkedTo).toBe("CLASS_GROUP");
+
+    // 8. Assert invoices
+    expect(invoicesResponse.body.items).toBeDefined();
+    expect(invoicesResponse.body.items).toHaveLength(1);
+    expect(invoicesResponse.body.items[0].id).toBe(invoice.id);
+    expect(invoicesResponse.body.items[0].customerPartyId).toBe(studentParty.id);
   });
 });

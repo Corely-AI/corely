@@ -17,4 +17,26 @@ export class PrismaInvoiceEmailRepository {
       },
     });
   }
+
+  async findWorkspaceSlug(workspaceId: string): Promise<string | null> {
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { slug: true },
+    });
+    return workspace?.slug ?? null;
+  }
+
+  async markInvoiceAsSent(tenantId: string, invoiceId: string, sentAt: Date): Promise<void> {
+    await this.prisma.invoice.updateMany({
+      where: {
+        tenantId,
+        id: invoiceId,
+        status: "ISSUED",
+      },
+      data: {
+        status: "SENT",
+        sentAt,
+      },
+    });
+  }
 }

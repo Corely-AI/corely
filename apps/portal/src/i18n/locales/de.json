@@ -24,12 +24,30 @@
         "items_other": "{{count}} ELEMENTE",
         "items": "ELEMENTE",
         "added": "Hinzugefügt",
+        "download_failed": "Download-URL konnte nicht abgerufen werden",
         "personal": "PERSÖNLICH",
         "class_group": "KLASSENGRUPPE",
         "getFile": "Datei abrufen",
         "empty": {
           "title": "Noch nichts hier",
           "subtitle": "Ihre Lernmaterialien erscheinen hier, sobald Ihr Lehrer sie hochlädt."
+        }
+      },
+      "invoices": {
+        "title": "Rechnungen",
+        "subtitle": "Rechnungen für den ausgewählten Schüler herunterladen.",
+        "items_one": "{{count}} RECHNUNG",
+        "items_other": "{{count}} RECHNUNGEN",
+        "items": "RECHNUNGEN",
+        "invoice": "Rechnung",
+        "issued": "Ausgestellt",
+        "due": "Fällig",
+        "amount_due": "Offener Betrag",
+        "download": "Rechnung herunterladen",
+        "download_failed": "Rechnungs-Download-Link konnte nicht abgerufen werden",
+        "empty": {
+          "title": "Noch keine Rechnungen",
+          "subtitle": "Rechnungen für diesen Schüler werden hier angezeigt, sobald sie ausgestellt sind."
         }
       }
     },

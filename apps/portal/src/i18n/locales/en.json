@@ -24,12 +24,30 @@
         "items_other": "{{count}} ITEMS",
         "items": "ITEMS",
         "added": "Added",
+        "download_failed": "Failed to get download URL",
         "personal": "PERSONAL",
         "class_group": "CLASS GROUP",
         "getFile": "Get File",
         "empty": {
           "title": "Nothing here yet",
           "subtitle": "Your learning materials will appear here once your teacher uploads them."
+        }
+      },
+      "invoices": {
+        "title": "Invoices",
+        "subtitle": "Download invoices for the selected student.",
+        "items_one": "{{count}} INVOICE",
+        "items_other": "{{count}} INVOICES",
+        "items": "INVOICES",
+        "invoice": "Invoice",
+        "issued": "Issued",
+        "due": "Due",
+        "amount_due": "Amount Due",
+        "download": "Download Invoice",
+        "download_failed": "Failed to get invoice download link",
+        "empty": {
+          "title": "No invoices yet",
+          "subtitle": "Invoices for this student will appear here once they are issued."
         }
       }
     },

@@ -105,6 +105,41 @@ export class TestHarnessController {
   }
 
   /**
+   * Seed classes billing send scenario with 2 customers/invoices.
+   */
+  @Post("classes-billing/seed-send-invoices")
+  @HttpCode(HttpStatus.OK)
+  async seedClassesBillingSendInvoices(
+    @Body()
+    payload: {
+      tenantId: string;
+      workspaceId: string;
+      actorUserId: string;
+      month?: string;
+      label?: string;
+    }
+  ) {
+    if (!payload.tenantId || !payload.workspaceId || !payload.actorUserId) {
+      throw new BadRequestException("Missing required fields: tenantId, workspaceId, actorUserId");
+    }
+    return this.testHarnessService.seedClassesBillingSendScenario(payload);
+  }
+
+  /**
+   * List email delivery records for invoices (for E2E verification).
+   */
+  @Post("invoices/email-deliveries")
+  @HttpCode(HttpStatus.OK)
+  async listInvoiceEmailDeliveries(@Body() payload: { tenantId: string; invoiceIds: string[] }) {
+    if (!payload.tenantId || !Array.isArray(payload.invoiceIds)) {
+      throw new BadRequestException("Missing required fields: tenantId, invoiceIds");
+    }
+    return {
+      deliveries: await this.testHarnessService.listInvoiceEmailDeliveries(payload),
+    };
+  }
+
+  /**
    * Health check endpoint
    */
   @Post("health")

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import type { ContextAwareRequest } from "../request-context";
 import {
@@ -16,12 +16,17 @@ const PUBLIC_BASE_DOMAINS_ENV = "PUBLIC_WORKSPACE_BASE_DOMAINS";
 
 @Injectable()
 export class PublicWorkspaceResolver {
+  private readonly logger = new Logger(PublicWorkspaceResolver.name);
   constructor(private readonly prisma: PrismaService) {}
 
   async resolve(req: ContextAwareRequest): Promise<PublicWorkspaceContext> {
     const host = normalizeHost(pickHostHeader(req.headers ?? undefined));
     const path = resolvePath(req);
     const query = req.query as Record<string, string | string[] | undefined> | undefined;
+
+    this.logger.debug(
+      `Resolving workspace for: host=${host}, path=${path}, query=${JSON.stringify(query)}`
+    );
 
     return this.resolveFromRequest({ host, path, query });
   }
@@ -69,6 +74,9 @@ export class PublicWorkspaceResolver {
       }
     }
 
+    this.logger.warn(
+      `Failed to resolve workspace from request: host=${input.host}, path=${input.path}`
+    );
     throw publicWorkspaceNotResolvedError();
   }
 

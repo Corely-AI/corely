@@ -23,12 +23,14 @@ export function InvoiceEmail({
   viewInvoiceUrl,
 }: InvoiceEmailProps) {
   const previewText = `${companyName} sent you an invoice ${invoiceNumber}`;
-  const payToLines = [
-    paymentDetails?.bankName,
-    paymentDetails?.accountHolderName,
-    paymentDetails?.iban,
-    paymentDetails?.bic,
+  const payToItems = [
+    paymentDetails?.method ? `Method: ${paymentDetails.method}` : undefined,
+    paymentDetails?.accountHolderName ? `Account: ${paymentDetails.accountHolderName}` : undefined,
+    paymentDetails?.bankName ? `Bank: ${paymentDetails.bankName}` : undefined,
+    paymentDetails?.iban ? `IBAN: ${paymentDetails.iban}` : undefined,
+    paymentDetails?.bic ? `BIC: ${paymentDetails.bic}` : undefined,
     paymentDetails?.referenceText ? `Reference: ${paymentDetails.referenceText}` : undefined,
+    paymentDetails?.instructions ? `Instructions: ${paymentDetails.instructions}` : undefined,
   ].filter((line): line is string => Boolean(line && line.trim().length > 0));
 
   return (
@@ -64,19 +66,35 @@ export function InvoiceEmail({
             <Row style={detailsRow}>
               <Column style={detailsColumn}>
                 <Text style={label}>Pay to</Text>
-                {payToLines.length > 0 ? (
-                  payToLines.map((line) => (
+                {payToItems.length > 0 ? (
+                  payToItems.map((line) => (
                     <Text key={line} style={value}>
                       {line}
                     </Text>
                   ))
                 ) : (
-                  <Text style={value}>See attached invoice PDF</Text>
+                  <Text style={value}>
+                    {viewInvoiceUrl
+                      ? "Open the invoice from the portal link below"
+                      : "See attached invoice PDF"}
+                  </Text>
                 )}
               </Column>
               <Column style={detailsColumn}>
                 <Text style={label}>Invoice</Text>
-                <Text style={value}>The invoice is attached to this email</Text>
+                <Text style={value}>
+                  {viewInvoiceUrl
+                    ? "Open the invoice in the portal to view details and download the PDF"
+                    : "The invoice is attached to this email"}
+                </Text>
+                {viewInvoiceUrl ? (
+                  <Text style={value}>
+                    Portal link:{" "}
+                    <Link href={viewInvoiceUrl} style={inlineLink}>
+                      {viewInvoiceUrl}
+                    </Link>
+                  </Text>
+                ) : null}
               </Column>
             </Row>
 
@@ -176,6 +194,12 @@ const value: CSSProperties = {
   fontSize: "26px",
   lineHeight: "34px",
   color: "#616f7c",
+};
+
+const inlineLink: CSSProperties = {
+  color: "#143b66",
+  textDecoration: "underline",
+  wordBreak: "break-all",
 };
 
 const buttonSection: CSSProperties = {

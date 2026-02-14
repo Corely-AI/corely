@@ -69,13 +69,15 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
 
     // 3. Prepare email template props
     const companyName = this.resolveCompanyName(invoice);
+    const workspaceSlug = await this.repo.findWorkspaceSlug(event.tenantId);
+    const portalUrl = this.buildPortalUrl(workspaceSlug, payload.invoiceId);
 
     const emailProps = mapToInvoiceEmailProps({
       invoice,
       companyName,
       customMessage: payload.message,
       locale: payload.locale,
-      // viewInvoiceUrl: `https://app.example.com/invoices/${invoice.id}`, // TODO: Generate from config
+      viewInvoiceUrl: portalUrl,
     });
 
     const subject = buildInvoiceEmailSubject(emailProps);
@@ -117,6 +119,8 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
       }
 
       const result = await this.emailSender.sendEmail(emailRequest);
+
+      await this.repo.markInvoiceAsSent(event.tenantId, payload.invoiceId, new Date());
 
       // 6. Update delivery record to SENT
       await this.deliveryRepo.updateStatus(event.tenantId, payload.deliveryId, "SENT", {
@@ -221,5 +225,24 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
 
     const trimmed = maybeName.trim();
     return trimmed.length > 0 ? trimmed : undefined;
+  }
+
+  private buildPortalUrl(workspaceSlug: string | null, invoiceId: string): string | undefined {
+    if (!workspaceSlug) {
+      return undefined;
+    }
+    const encodedInvoiceId = encodeURIComponent(invoiceId);
+    const invoicePath = `/invoices/${encodedInvoiceId}`;
+
+    const isProduction = process.env.NODE_ENV === "production";
+    if (isProduction) {
+      const portalDomain = process.env.PORTAL_DOMAIN || "portal.corely.one";
+      return `https://${workspaceSlug}.${portalDomain}${invoicePath}`;
+    }
+
+    const portalBase =
+      process.env.PORTAL_URL || process.env.WEB_BASE_URL || "http://localhost:8080";
+    const normalizedBase = portalBase.replace(/\/+$/, "");
+    return `${normalizedBase}/w/${workspaceSlug}${invoicePath}`;
   }
 }
