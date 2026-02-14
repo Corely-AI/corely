@@ -43,6 +43,24 @@ type EventResult = {
   errors: number;
 };
 
+class UnknownOutboxEventTypeError extends Error {
+  readonly permanent = true;
+
+  constructor(eventType: string) {
+    super(`No handler found for event type: ${eventType}`);
+    this.name = "UnknownOutboxEventTypeError";
+  }
+}
+
+class OutboxEventTimeoutError extends Error {
+  readonly retryable = true;
+
+  constructor(eventId: string, eventType: string, timeoutMs: number) {
+    super(`Event ${eventId} (${eventType}) timed out after ${timeoutMs}ms`);
+    this.name = "OutboxEventTimeoutError";
+  }
+}
+
 @Injectable()
 export class OutboxPollerService implements Runner {
   private readonly logger = new Logger(OutboxPollerService.name);
@@ -80,6 +98,11 @@ export class OutboxPollerService implements Runner {
     const retryBaseDelayMs = Math.max(100, this.env.OUTBOX_RETRY_BASE_MS);
     const retryMaxDelayMs = Math.max(retryBaseDelayMs, this.env.OUTBOX_RETRY_MAX_MS);
     const retryJitterMs = Math.max(0, this.env.OUTBOX_RETRY_JITTER_MS);
+    const eventTimeoutRaw = Number(
+      process.env.OUTBOX_EVENT_TIMEOUT_MS ?? Math.max(1_000, Math.floor(leaseDurationMs * 0.75))
+    );
+    const eventTimeoutMs =
+      Number.isFinite(eventTimeoutRaw) && eventTimeoutRaw > 0 ? eventTimeoutRaw : leaseDurationMs;
     const pdfConcurrency = Math.max(1, this.env.PDF_RENDER_CONCURRENCY);
     const pdfSemaphore = new Semaphore(pdfConcurrency);
 
@@ -146,6 +169,7 @@ export class OutboxPollerService implements Runner {
         retryBaseDelayMs,
         retryMaxDelayMs,
         retryJitterMs,
+        eventTimeoutMs,
         pdfSemaphore,
       });
 
@@ -190,6 +214,7 @@ export class OutboxPollerService implements Runner {
     retryBaseDelayMs: number;
     retryMaxDelayMs: number;
     retryJitterMs: number;
+    eventTimeoutMs: number;
     pdfSemaphore: Semaphore;
   }): Promise<EventResult> {
     const workers = Math.min(args.concurrency, args.events.length);
@@ -223,6 +248,7 @@ export class OutboxPollerService implements Runner {
       retryBaseDelayMs: number;
       retryMaxDelayMs: number;
       retryJitterMs: number;
+      eventTimeoutMs: number;
       pdfSemaphore: Semaphore;
     },
     event: {
@@ -279,15 +305,20 @@ export class OutboxPollerService implements Runner {
           correlationId: event.correlationId,
         });
       } else {
-        this.logger.warn(`No handler found for event type: ${event.eventType}`);
+        throw new UnknownOutboxEventTypeError(event.eventType);
       }
     };
 
     try {
       if (this.heavyPdfEventTypes.has(event.eventType)) {
-        await args.pdfSemaphore.withPermit(execute);
+        await this.withEventTimeout(
+          args.pdfSemaphore.withPermit(execute),
+          event.id,
+          event.eventType,
+          args.eventTimeoutMs
+        );
       } else {
-        await execute();
+        await this.withEventTimeout(execute(), event.id, event.eventType, args.eventTimeoutMs);
       }
 
       const markedSent = await this.outboxRepo.markSent(event.id, this.workerId);
@@ -347,5 +378,29 @@ export class OutboxPollerService implements Runner {
       return false;
     }
     return true;
+  }
+
+  private async withEventTimeout<T>(
+    promise: Promise<T>,
+    eventId: string,
+    eventType: string,
+    timeoutMs: number
+  ): Promise<T> {
+    const boundedTimeoutMs = Math.max(1, timeoutMs);
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(new OutboxEventTimeoutError(eventId, eventType, boundedTimeoutMs));
+      }, boundedTimeoutMs);
+
+      promise
+        .then((value) => {
+          clearTimeout(timer);
+          resolve(value);
+        })
+        .catch((error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
+    });
   }
 }

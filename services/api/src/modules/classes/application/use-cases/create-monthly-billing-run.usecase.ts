@@ -143,22 +143,46 @@ export class CreateMonthlyBillingRunUseCase {
         ? await this.repo.listBillableScheduledForMonth(tenantId, workspaceId, {
             monthStart: startUtc,
             monthEnd: endUtc,
+            classGroupId: input.classGroupId,
+            payerClientId: input.payerClientId,
           })
         : await this.repo.listBillableAttendanceForMonth(tenantId, workspaceId, {
             monthStart: startUtc,
             monthEnd: endUtc,
+            classGroupId: input.classGroupId,
+            payerClientId: input.payerClientId,
           });
     const previewItems = aggregateBillingPreview(rows).filter((item) => item.totalAmountCents > 0);
+    const previewInvoiceTargets = previewItems.flatMap((item) =>
+      item.lines
+        .filter((line) => line.amountCents > 0)
+        .map((line) => ({
+          payerClientId: item.payerClientId,
+          currency: item.currency,
+          line,
+        }))
+    );
 
     const invoiceIds: string[] = [];
     if (input.createInvoices) {
-      for (const item of previewItems) {
-        const invoiceKey = `${tenantId}:${month}:${item.payerClientId}`;
-        const existingLink = await this.repo.findBillingInvoiceLinkByIdempotency(
+      for (const target of previewInvoiceTargets) {
+        const invoiceKey = `${tenantId}:${month}:${target.payerClientId}:${target.line.classGroupId}`;
+        let existingLink = await this.repo.findBillingInvoiceLinkByIdempotency(
           tenantId,
           workspaceId,
           invoiceKey
         );
+        if (!existingLink) {
+          // Backward compatibility for links created before classGroup-scoped idempotency.
+          const legacyInvoiceKey = `${tenantId}:${month}:${target.payerClientId}`;
+          if (legacyInvoiceKey !== invoiceKey) {
+            existingLink = await this.repo.findBillingInvoiceLinkByIdempotency(
+              tenantId,
+              workspaceId,
+              legacyInvoiceKey
+            );
+          }
+        }
         if (existingLink) {
           invoiceIds.push(existingLink.invoiceId);
           continue;
@@ -166,15 +190,17 @@ export class CreateMonthlyBillingRunUseCase {
 
         const result = await this.invoices.createDraft(
           {
-            customerPartyId: item.payerClientId,
-            currency: item.currency,
-            lineItems: item.lines.map((line) => ({
-              description: `${line.classGroupName} (${line.sessions} ${
-                effectiveSettings.billingBasis === "SCHEDULED_SESSIONS" ? "scheduled" : "attended"
-              } sessions)`,
-              qty: line.sessions,
-              unitPriceCents: line.priceCents,
-            })),
+            customerPartyId: target.payerClientId,
+            currency: target.currency,
+            lineItems: [
+              {
+                description: `${target.line.classGroupName} (${target.line.sessions} ${
+                  effectiveSettings.billingBasis === "SCHEDULED_SESSIONS" ? "scheduled" : "attended"
+                } sessions)`,
+                qty: target.line.sessions,
+                unitPriceCents: target.line.priceCents,
+              },
+            ],
             sourceType: "manual",
             sourceId: run.id,
             idempotencyKey: invoiceKey,
@@ -206,7 +232,8 @@ export class CreateMonthlyBillingRunUseCase {
           tenantId,
           workspaceId,
           billingRunId: run.id,
-          payerClientId: item.payerClientId,
+          payerClientId: target.payerClientId,
+          classGroupId: target.line.classGroupId,
           invoiceId,
           idempotencyKey: invoiceKey,
           createdAt: this.clock.now(),
@@ -229,19 +256,33 @@ export class CreateMonthlyBillingRunUseCase {
     }
 
     if (input.sendInvoices) {
+      const selectedPreviewKeys = new Set(
+        previewInvoiceTargets.map((target) => `${target.payerClientId}:${target.line.classGroupId}`)
+      );
       const invoiceIdsToSend = input.createInvoices
         ? invoiceIds
-        : existingLinks.map((link) => link.invoiceId);
+        : existingLinks
+            .filter((link) => {
+              if (link.classGroupId) {
+                return selectedPreviewKeys.has(`${link.payerClientId}:${link.classGroupId}`);
+              }
+              // Legacy links may not have classGroupId. Fall back to payer match.
+              return previewItems.some((item) => item.payerClientId === link.payerClientId);
+            })
+            .map((link) => link.invoiceId);
       const uniqueInvoiceIds = Array.from(new Set(invoiceIdsToSend));
       if (uniqueInvoiceIds.length > 0) {
-        await this.ensureInvoicesHaveRecipientEmail(tenantId, uniqueInvoiceIds);
+        await this.ensureInvoicesHaveRecipientEmail(tenantId, workspaceId, uniqueInvoiceIds);
 
         for (const invoiceId of uniqueInvoiceIds) {
+          // Invoices/deliveries are scoped by workspaceId in billing tables.
+          // Use workspace scope for outbox partition + payload so worker can resolve the invoice.
+          const invoiceScopeId = workspaceId;
           await this.outbox.enqueue({
-            tenantId,
+            tenantId: invoiceScopeId,
             eventType: CLASSES_INVOICE_READY_TO_SEND_EVENT,
             payload: {
-              tenantId,
+              tenantId: invoiceScopeId,
               invoiceId,
             },
           });
@@ -255,6 +296,7 @@ export class CreateMonthlyBillingRunUseCase {
               : {}),
             sentAt: sentAt.toISOString(),
             sentInvoiceCount: uniqueInvoiceIds.length,
+            sentInvoiceIds: uniqueInvoiceIds,
           },
           updatedAt: sentAt,
         });
@@ -369,12 +411,20 @@ export class CreateMonthlyBillingRunUseCase {
     }
   }
 
-  private async ensureInvoicesHaveRecipientEmail(tenantId: string, invoiceIds: string[]) {
+  private async ensureInvoicesHaveRecipientEmail(
+    tenantId: string,
+    workspaceId: string,
+    invoiceIds: string[]
+  ) {
     if (!this.repo.getInvoiceRecipientEmailsByIds) {
       return;
     }
 
-    const recipients = await this.repo.getInvoiceRecipientEmailsByIds(tenantId, invoiceIds);
+    const recipients = await this.repo.getInvoiceRecipientEmailsByIds(
+      tenantId,
+      workspaceId,
+      invoiceIds
+    );
     const emailByInvoiceId = new Map(recipients.map((item) => [item.invoiceId, item.email]));
     const missingInvoiceIds = invoiceIds.filter((invoiceId) => !emailByInvoiceId.get(invoiceId));
 

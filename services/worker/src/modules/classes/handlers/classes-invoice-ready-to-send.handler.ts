@@ -58,13 +58,11 @@ export class ClassesInvoiceReadyToSendHandler implements EventHandler {
     const invoice = await this.repo.findInvoiceForEmail(tenantId, invoiceId);
 
     if (!invoice) {
-      this.logger.warn(`Invoice ${invoiceId} not found. Skipping email.`);
-      return;
+      throw new Error(`Invoice ${invoiceId} not found for scope ${tenantId}`);
     }
 
     if (!invoice.customerEmail) {
-      this.logger.warn(`Invoice ${invoiceId} has no customer email. Skipping.`);
-      return;
+      throw new Error(`Invoice ${invoiceId} has no customer email`);
     }
 
     try {

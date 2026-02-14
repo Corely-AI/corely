@@ -100,6 +100,13 @@ class FakeRepo implements ClassesRepositoryPort {
         currency: "EUR",
       },
       {
+        payerClientId: "client-a",
+        classGroupId: "group-2",
+        classGroupName: "Science",
+        priceCents: 1500,
+        currency: "EUR",
+      },
+      {
         payerClientId: "client-b",
         classGroupId: "group-2",
         classGroupName: "Science",
@@ -143,8 +150,13 @@ class FakeRepo implements ClassesRepositoryPort {
   async listBillingInvoiceLinks(tenantId: string, workspaceId: string, billingRunId: string) {
     return Array.from(this.links.values()).filter((link) => link.billingRunId === billingRunId);
   }
-  async getInvoiceRecipientEmailsByIds(tenantId: string, invoiceIds: string[]) {
+  async getInvoiceRecipientEmailsByIds(
+    tenantId: string,
+    workspaceId: string,
+    invoiceIds: string[]
+  ) {
     void tenantId;
+    void workspaceId;
     return invoiceIds.map((invoiceId) => ({
       invoiceId,
       email: this.missingEmailInvoiceIds.has(invoiceId) ? null : `${invoiceId}@example.com`,
@@ -182,8 +194,10 @@ class FakeSettingsRepo implements ClassesSettingsRepositoryPort {
 
 class FakeInvoices implements InvoicesWritePort {
   public createCalls = 0;
+  public createInputs: any[] = [];
   async createDraft(input: any) {
     this.createCalls += 1;
+    this.createInputs.push(input);
     return ok({ invoice: { id: `inv-${this.createCalls}` } } as any);
   }
   async cancel() {
@@ -251,8 +265,19 @@ describe("classes billing idempotency", () => {
     await useCase.execute({ month: "2024-01", createInvoices: true }, ctx);
     await useCase.execute({ month: "2024-01", createInvoices: true }, ctx);
 
-    expect(invoices.createCalls).toBe(2);
-    expect(repo.links.size).toBe(2);
+    expect(invoices.createCalls).toBe(3);
+    expect(repo.links.size).toBe(3);
+    expect(
+      invoices.createInputs.filter(
+        (input) => input.customerPartyId === "client-a" && input.lineItems?.length === 1
+      )
+    ).toHaveLength(2);
+    expect(invoices.createInputs.some((input) => input.idempotencyKey.endsWith(":group-1"))).toBe(
+      true
+    );
+    expect(invoices.createInputs.some((input) => input.idempotencyKey.endsWith(":group-2"))).toBe(
+      true
+    );
   });
 
   it("blocks send when any payer email is missing", async () => {

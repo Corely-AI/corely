@@ -252,16 +252,19 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     return listBillingInvoiceLinks(this.prisma, tenantId, workspaceId, billingRunId);
   }
 
-  async getInvoiceStatusesByIds(tenantId: string, invoiceIds: string[]) {
-    return getInvoiceStatusesByIds(this.prisma, tenantId, invoiceIds);
+  async getInvoiceStatusesByIds(workspaceId: string, invoiceIds: string[]) {
+    return getInvoiceStatusesByIds(this.prisma, workspaceId, invoiceIds);
   }
 
-  async getInvoiceRecipientEmailsByIds(tenantId: string, invoiceIds: string[]) {
-    return getInvoiceRecipientEmailsByIds(this.prisma, tenantId, invoiceIds);
+  async getInvoiceRecipientEmailsByIds(
+    tenantId: string,
+    workspaceId: string,
+    invoiceIds: string[]
+  ) {
+    return getInvoiceRecipientEmailsByIds(this.prisma, tenantId, workspaceId, invoiceIds);
   }
 
   async getBillingInvoiceSendProgress(
-    tenantId: string,
     workspaceId: string,
     invoiceIds: string[],
     sentAfter: Date,
@@ -269,7 +272,6 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
   ) {
     return getBillingInvoiceSendProgress(
       this.prisma,
-      tenantId,
       workspaceId,
       invoiceIds,
       sentAfter,

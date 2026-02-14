@@ -14,6 +14,7 @@ describe("TickOrchestrator", () => {
   const mockEnvService = {
     WORKER_TICK_RUNNERS: "outbox,invoiceReminders,classesBilling", // Default
     WORKER_TICK_OVERALL_MAX_MS: 1000,
+    WORKER_TICK_RUNNER_TIMEOUT_MS: 5_000,
   };
 
   const mockLockService = {
@@ -76,14 +77,25 @@ describe("TickOrchestrator", () => {
 
   it("should skip singleton runners when lock is not acquired", async () => {
     mockLockService.withAdvisoryXactLock
-      .mockResolvedValueOnce({ acquired: false })
-      .mockResolvedValueOnce({ acquired: false });
+      .mockResolvedValueOnce({ acquired: false, reason: "contention" })
+      .mockResolvedValueOnce({ acquired: false, reason: "contention" });
 
     await orchestrator.runOnce();
 
     expect(mockOutboxRunner.run).toHaveBeenCalled();
     expect(mockInvoiceRunner.run).not.toHaveBeenCalled();
     expect(mockClassesBillingRunner.run).not.toHaveBeenCalled();
+  });
+
+  it("should count lock subsystem errors as runner errors", async () => {
+    mockLockService.withAdvisoryXactLock
+      .mockResolvedValueOnce({ acquired: false, reason: "error", error: "db unavailable" })
+      .mockResolvedValueOnce({ acquired: false, reason: "error", error: "db unavailable" });
+
+    const result = await orchestrator.runOnce();
+
+    expect(result.runnerResults.invoiceReminders?.errorCount).toBe(1);
+    expect(result.runnerResults.classesBilling?.errorCount).toBe(1);
   });
 
   it("should respect WORKER_TICK_RUNNERS config", async () => {

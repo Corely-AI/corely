@@ -1394,12 +1394,16 @@
       "sessions": "Sessions",
       "pricePerSession": "Price / Session",
       "subtotal": "Subtotal",
+      "invoice": "Invoice",
       "viewInvoice": "View invoice",
+      "invoiceNotCreated": "Not created",
       "emptyTitle": "No billable sessions",
       "emptyDescription": "There are no confirmed sessions for the selected month that haven't been billed yet.",
       "attendedSessionsTip": "Tip: In \"Attended Sessions\" mode, you must mark sessions as DONE and record attendance before they can be billed.",
       "regenerate": "Regenerate invoices",
-      "regenerateConfirm": "Are you sure you want to regenerate invoices? This will detach existing draft invoices for this month."
+      "regenerateConfirm": "Are you sure you want to regenerate invoices? This will detach existing draft invoices for this month.",
+      "allGroups": "All groups",
+      "selectAllGroups": "Select group"
     },
     "settings": {
       "title": "Classes Settings",

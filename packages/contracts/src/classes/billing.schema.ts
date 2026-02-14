@@ -29,6 +29,7 @@ export type BillingPreviewItem = z.infer<typeof BillingPreviewItemSchema>;
 
 export const BillingPreviewInvoiceLinkSchema = z.object({
   payerClientId: z.string(),
+  classGroupId: z.string().optional().nullable(),
   invoiceId: z.string(),
   invoiceStatus: InvoiceStatusSchema.optional().nullable(),
 });
@@ -73,6 +74,8 @@ export type BillingPreviewOutput = z.infer<typeof BillingPreviewOutputSchema>;
 
 export const CreateBillingRunInputSchema = z.object({
   month: BillingMonthSchema,
+  classGroupId: z.string().optional(),
+  payerClientId: z.string().optional(),
   createInvoices: z.boolean().default(true),
   sendInvoices: z.boolean().default(false),
   idempotencyKey: z.string().optional(),

@@ -202,6 +202,7 @@ describe("Outbox reliability (worker + Postgres)", () => {
       OUTBOX_RETRY_BASE_MS: 10,
       OUTBOX_RETRY_MAX_MS: 100,
       OUTBOX_RETRY_JITTER_MS: 0,
+      OUTBOX_EVENT_TIMEOUT_MS: 30_000,
     } as any;
 
     const pollerA = new OutboxPollerService(repo, env, [handler]);

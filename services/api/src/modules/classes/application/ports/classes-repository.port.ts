@@ -188,11 +188,10 @@ export interface ClassesRepositoryPort {
     billingRunId: string
   ): Promise<ClassBillingInvoiceLinkEntity[]>;
   getInvoiceStatusesByIds?(
-    tenantId: string,
+    workspaceId: string,
     invoiceIds: string[]
   ): Promise<Record<string, "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED">>;
   getBillingInvoiceSendProgress?(
-    tenantId: string,
     workspaceId: string,
     invoiceIds: string[],
     sentAfter: Date,
@@ -200,6 +199,7 @@ export interface ClassesRepositoryPort {
   ): Promise<BillingInvoiceSendProgress>;
   getInvoiceRecipientEmailsByIds?(
     tenantId: string,
+    workspaceId: string,
     invoiceIds: string[]
   ): Promise<InvoiceRecipientEmailLookup[]>;
   findBillingInvoiceLinkByIdempotency(

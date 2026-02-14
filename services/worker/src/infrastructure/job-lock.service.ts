@@ -2,6 +2,10 @@ import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { createHash } from "node:crypto";
 
+export type AdvisoryLockResult<T> =
+  | { acquired: true; value: T }
+  | { acquired: false; reason: "contention" | "error"; error?: string };
+
 @Injectable()
 export class JobLockService {
   private readonly logger = new Logger(JobLockService.name);
@@ -14,7 +18,7 @@ export class JobLockService {
       runId: string;
     },
     callback: () => Promise<T>
-  ): Promise<{ acquired: boolean; value?: T }> {
+  ): Promise<AdvisoryLockResult<T>> {
     const lockKey = this.hashLockKey(args.lockName);
     try {
       return this.prisma.$transaction(async (tx) => {
@@ -30,7 +34,7 @@ export class JobLockService {
               lockName: args.lockName,
             })
           );
-          return { acquired: false };
+          return { acquired: false, reason: "contention" } as const;
         }
 
         this.logger.log(
@@ -52,7 +56,11 @@ export class JobLockService {
           error: error instanceof Error ? error.message : String(error),
         })
       );
-      return { acquired: false };
+      return {
+        acquired: false,
+        reason: "error",
+        error: error instanceof Error ? error.message : String(error),
+      } as const;
     }
   }
 

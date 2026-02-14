@@ -121,6 +121,7 @@ export const ClassBillingInvoiceLinkSchema = z.object({
   workspaceId: z.string(),
   billingRunId: z.string(),
   payerClientId: z.string(),
+  classGroupId: z.string().optional().nullable(),
   invoiceId: z.string(),
   idempotencyKey: z.string(),
   createdAt: utcInstantSchema,

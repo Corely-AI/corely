@@ -246,13 +246,20 @@ export class ClassesApi {
     );
   }
 
-  async getBillingPreview(month: string): Promise<BillingPreviewOutput> {
-    return apiClient.get<BillingPreviewOutput>(
-      `/classes/billing/preview?month=${encodeURIComponent(month)}`,
-      {
-        correlationId: apiClient.generateCorrelationId(),
-      }
-    );
+  async getBillingPreview(
+    month: string,
+    filters?: { classGroupId?: string; payerClientId?: string }
+  ): Promise<BillingPreviewOutput> {
+    const query = new URLSearchParams({ month });
+    if (filters?.classGroupId) {
+      query.append("classGroupId", filters.classGroupId);
+    }
+    if (filters?.payerClientId) {
+      query.append("payerClientId", filters.payerClientId);
+    }
+    return apiClient.get<BillingPreviewOutput>(`/classes/billing/preview?${query.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
   }
 
   async waitForBillingSendCompletion(

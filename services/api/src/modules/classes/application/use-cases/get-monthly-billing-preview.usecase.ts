@@ -46,6 +46,19 @@ const readSnapshotItems = (
   return billingSnapshot.items.filter(isValidSnapshotItem);
 };
 
+const readSnapshotSentInvoiceIds = (billingSnapshot: Record<string, unknown> | null): string[] => {
+  if (!billingSnapshot || !Array.isArray(billingSnapshot.sentInvoiceIds)) {
+    return [];
+  }
+  return Array.from(
+    new Set(
+      billingSnapshot.sentInvoiceIds.filter(
+        (invoiceId): invoiceId is string => typeof invoiceId === "string" && invoiceId.length > 0
+      )
+    )
+  );
+};
+
 @RequireTenant()
 export class GetMonthlyBillingPreviewUseCase {
   constructor(
@@ -87,10 +100,24 @@ export class GetMonthlyBillingPreviewUseCase {
     const invoiceLinks = existingRun
       ? await this.repo.listBillingInvoiceLinks(tenantId, workspaceId, existingRun.id)
       : [];
+    const hasFilter = Boolean(input.classGroupId || input.payerClientId);
+    const filteredLineKeys = new Set(
+      items.flatMap((item) =>
+        item.lines.map((line) => `${item.payerClientId}:${line.classGroupId}`)
+      )
+    );
+    const filteredInvoiceLinks = hasFilter
+      ? invoiceLinks.filter((link) => {
+          if (link.classGroupId) {
+            return filteredLineKeys.has(`${link.payerClientId}:${link.classGroupId}`);
+          }
+          return items.some((item) => item.payerClientId === link.payerClientId);
+        })
+      : invoiceLinks;
     const invoiceStatusesById = this.repo.getInvoiceStatusesByIds
       ? await this.repo.getInvoiceStatusesByIds(
-          tenantId,
-          invoiceLinks.map((link) => link.invoiceId)
+          workspaceId,
+          filteredInvoiceLinks.map((link) => link.invoiceId)
         )
       : {};
 
@@ -105,6 +132,10 @@ export class GetMonthlyBillingPreviewUseCase {
       billingSnapshot && typeof billingSnapshot.sentInvoiceCount === "number"
         ? billingSnapshot.sentInvoiceCount
         : null;
+    const sentInvoiceIds = readSnapshotSentInvoiceIds(billingSnapshot);
+    const invoiceIdsForProgress = sentInvoiceIds.length
+      ? sentInvoiceIds
+      : filteredInvoiceLinks.map((link) => link.invoiceId);
 
     let invoiceSendProgress: Awaited<
       ReturnType<NonNullable<typeof this.repo.getBillingInvoiceSendProgress>>
@@ -112,11 +143,15 @@ export class GetMonthlyBillingPreviewUseCase {
     if (this.repo.getBillingInvoiceSendProgress && invoicesSentAt) {
       const sentAfter = new Date(invoicesSentAt);
       if (!Number.isNaN(sentAfter.valueOf())) {
-        const expectedInvoiceCount = Math.max(sentInvoiceCount ?? 0, invoiceLinks.length);
+        const expectedInvoiceCount =
+          sentInvoiceIds.length > 0
+            ? sentInvoiceIds.length
+            : sentInvoiceCount !== null
+              ? sentInvoiceCount
+              : filteredInvoiceLinks.length;
         invoiceSendProgress = await this.repo.getBillingInvoiceSendProgress(
-          tenantId,
           workspaceId,
-          invoiceLinks.map((link) => link.invoiceId),
+          invoiceIdsForProgress,
           sentAfter,
           expectedInvoiceCount
         );
@@ -124,7 +159,7 @@ export class GetMonthlyBillingPreviewUseCase {
     }
 
     const snapshotItems = readSnapshotItems(billingSnapshot);
-    const effectiveItems = items.length > 0 ? items : snapshotItems;
+    const effectiveItems = hasFilter || items.length > 0 ? items : snapshotItems;
 
     return {
       month,
@@ -132,8 +167,9 @@ export class GetMonthlyBillingPreviewUseCase {
       billingBasis: settings.billingBasis,
       billingRunStatus: existingRun?.status ?? null,
       items: effectiveItems,
-      invoiceLinks: invoiceLinks.map((link) => ({
+      invoiceLinks: filteredInvoiceLinks.map((link) => ({
         payerClientId: link.payerClientId,
+        classGroupId: link.classGroupId ?? null,
         invoiceId: link.invoiceId,
         invoiceStatus: invoiceStatusesById[link.invoiceId] ?? null,
       })),

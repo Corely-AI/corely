@@ -100,6 +100,7 @@ export const toBillingPreviewOutput = (input: {
   items: BillingPreviewItem[];
   invoiceLinks?: {
     payerClientId: string;
+    classGroupId?: string | null;
     invoiceId: string;
     invoiceStatus?: "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED" | null;
   }[];
@@ -126,6 +127,7 @@ export const toBillingPreviewOutput = (input: {
   generatedAt: input.generatedAt.toISOString(),
   invoiceLinks: input.invoiceLinks?.map((link) => ({
     payerClientId: link.payerClientId,
+    classGroupId: link.classGroupId ?? null,
     invoiceId: link.invoiceId,
     invoiceStatus: link.invoiceStatus ?? null,
   })),

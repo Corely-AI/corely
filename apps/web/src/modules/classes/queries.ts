@@ -20,6 +20,11 @@ export const classAttendanceKeys = {
 };
 
 export const classBillingKeys = {
-  preview: (month: string) => ["class-billing", "preview", month],
+  preview: (month: string, classGroupId?: string) => [
+    "class-billing",
+    "preview",
+    month,
+    classGroupId,
+  ],
   runs: () => ["class-billing", "runs"],
 };

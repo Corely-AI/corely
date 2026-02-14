@@ -270,7 +270,7 @@ export const listBillingInvoiceLinks = async (
 
 export const getInvoiceStatusesByIds = async (
   prisma: PrismaService,
-  tenantId: string,
+  workspaceId: string,
   invoiceIds: string[]
 ): Promise<Record<string, "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED">> => {
   const uniqueIds = Array.from(new Set(invoiceIds)).filter(Boolean);
@@ -280,7 +280,7 @@ export const getInvoiceStatusesByIds = async (
 
   const rows = await prisma.invoice.findMany({
     where: {
-      tenantId,
+      tenantId: workspaceId,
       id: { in: uniqueIds },
     },
     select: {
@@ -301,6 +301,7 @@ export const getInvoiceStatusesByIds = async (
 export const getInvoiceRecipientEmailsByIds = async (
   prisma: PrismaService,
   tenantId: string,
+  workspaceId: string,
   invoiceIds: string[]
 ): Promise<InvoiceRecipientEmailLookup[]> => {
   const uniqueIds = Array.from(new Set(invoiceIds)).filter(Boolean);
@@ -310,31 +311,71 @@ export const getInvoiceRecipientEmailsByIds = async (
 
   const rows = await prisma.invoice.findMany({
     where: {
-      tenantId,
+      tenantId: workspaceId,
       id: { in: uniqueIds },
     },
     select: {
       id: true,
       billToEmail: true,
+      customerPartyId: true,
     },
   });
 
-  return rows.map((row) => ({
-    invoiceId: row.id,
-    email: row.billToEmail?.trim() ? row.billToEmail.trim() : null,
-  }));
+  const idsWithMissingEmail = rows.filter((row) => !row.billToEmail?.trim()).map((row) => row.id);
+
+  const fallbackEmails = new Map<string, string>();
+
+  if (idsWithMissingEmail.length > 0) {
+    const partyIds = Array.from(
+      new Set(
+        rows
+          .filter((row) => idsWithMissingEmail.includes(row.id))
+          .map((row) => row.customerPartyId)
+          .filter((partyId): partyId is string => Boolean(partyId))
+      )
+    );
+
+    const parties = await prisma.party.findMany({
+      where: {
+        tenantId,
+        id: { in: partyIds },
+      },
+      select: {
+        id: true,
+        contactPoints: {
+          where: { type: "EMAIL" },
+          select: { value: true, isPrimary: true },
+        },
+      },
+    });
+
+    for (const party of parties) {
+      const email =
+        party.contactPoints.find((cp) => cp.isPrimary)?.value || party.contactPoints[0]?.value;
+      if (email) {
+        fallbackEmails.set(party.id, email);
+      }
+    }
+  }
+
+  return rows.map((row) => {
+    const email = row.billToEmail?.trim()
+      ? row.billToEmail.trim()
+      : fallbackEmails.get(row.customerPartyId) || null;
+    return {
+      invoiceId: row.id,
+      email,
+    };
+  });
 };
 
 export const getBillingInvoiceSendProgress = async (
   prisma: PrismaService,
-  tenantId: string,
   workspaceId: string,
   invoiceIds: string[],
   sentAfter: Date,
   expectedInvoiceCount: number
 ): Promise<BillingInvoiceSendProgress> => {
-  void workspaceId;
-
   const uniqueInvoiceIds = Array.from(new Set(invoiceIds));
   const normalizedExpected = Math.max(expectedInvoiceCount, uniqueInvoiceIds.length, 0);
 
@@ -372,7 +413,7 @@ export const getBillingInvoiceSendProgress = async (
 
   const deliveries = await prisma.invoiceEmailDelivery.findMany({
     where: {
-      tenantId,
+      tenantId: workspaceId,
       invoiceId: { in: uniqueInvoiceIds },
       createdAt: { gte: sentAfter },
     },
@@ -465,6 +506,7 @@ export const createBillingInvoiceLink = async (
       workspaceId: link.workspaceId,
       billingRunId: link.billingRunId,
       payerClientId: link.payerClientId,
+      classGroupId: link.classGroupId ?? null,
       invoiceId: link.invoiceId,
       idempotencyKey: link.idempotencyKey,
       createdAt: link.createdAt,
@@ -495,7 +537,7 @@ export const isMonthLocked = async (
       tenantId,
       workspaceId,
       month,
-      status: { in: ["INVOICES_CREATED", "LOCKED"] },
+      status: "LOCKED",
     },
     select: { id: true },
   });

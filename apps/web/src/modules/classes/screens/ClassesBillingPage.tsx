@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { normalizeError } from "@corely/api-client";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Mail, RefreshCcw } from "lucide-react";
@@ -18,6 +19,11 @@ import {
   Card,
   CardContent,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@corely/ui";
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
@@ -30,18 +36,23 @@ import { SendInvoiceDialog } from "../../invoices/components/SendInvoiceDialog";
 
 const toMonthValue = (date: Date) => date.toISOString().slice(0, 7);
 const getErrorMessage = (error: unknown): string | null => {
-  if (!error || typeof error !== "object") {
+  if (!error) {
     return null;
   }
 
-  const maybeMessage = (error as { message?: unknown }).message;
-  return typeof maybeMessage === "string" ? maybeMessage : null;
+  const apiError = normalizeError(error);
+  if (apiError.validationErrors?.length) {
+    return apiError.validationErrors[0].message;
+  }
+
+  return apiError.detail || apiError.message || null;
 };
 
 export default function ClassesBillingPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [month, setMonth] = useState(toMonthValue(new Date()));
+  const [classGroupId, setClassGroupId] = useState<string>("ALL");
   const [resultSummary, setResultSummary] = useState<string | null>(null);
   const [sendPromptOpen, setSendPromptOpen] = useState(false);
   const [createdCount, setCreatedCount] = useState(0);
@@ -63,8 +74,11 @@ export default function ClassesBillingPage() {
     isError,
     error,
   } = useQuery({
-    queryKey: classBillingKeys.preview(month),
-    queryFn: () => classesApi.getBillingPreview(month),
+    queryKey: classBillingKeys.preview(month, classGroupId),
+    queryFn: () =>
+      classesApi.getBillingPreview(month, {
+        classGroupId: classGroupId === "ALL" ? undefined : classGroupId,
+      }),
   });
 
   const { data: customersData } = useQuery({
@@ -85,6 +99,14 @@ export default function ClassesBillingPage() {
     return map;
   }, [customersData]);
 
+  const emailByClient = useMemo(() => {
+    const map = new Map<string, string | null>();
+    (customersData?.customers ?? []).forEach((customer) => {
+      map.set(customer.id, customer.email ?? null);
+    });
+    return map;
+  }, [customersData]);
+
   const nameByGroup = useMemo(() => {
     const map = new Map<string, string>();
     (groupsData?.items ?? []).forEach((group) => {
@@ -93,24 +115,34 @@ export default function ClassesBillingPage() {
     return map;
   }, [groupsData]);
 
-  const invoiceByPayer = useMemo(() => {
+  const invoiceByPayerAndClass = useMemo(() => {
     const map = new Map<
       string,
       { invoiceId: string; invoiceStatus: "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED" | null }
     >();
+    const legacyByPayer = new Map<
+      string,
+      { invoiceId: string; invoiceStatus: "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED" | null }
+    >();
     (preview?.invoiceLinks ?? []).forEach((link) => {
-      map.set(link.payerClientId, {
+      const invoice = {
         invoiceId: link.invoiceId,
         invoiceStatus: link.invoiceStatus ?? null,
-      });
+      };
+      if (link.classGroupId) {
+        map.set(`${link.payerClientId}:${link.classGroupId}`, invoice);
+      } else {
+        legacyByPayer.set(link.payerClientId, invoice);
+      }
     });
-    return map;
+    return { map, legacyByPayer };
   }, [preview?.invoiceLinks]);
 
   const createRun = useMutation({
     mutationFn: async (args?: { force?: boolean }) =>
       classesApi.createBillingRun({
         month,
+        classGroupId: classGroupId === "ALL" ? undefined : classGroupId,
         createInvoices: true,
         sendInvoices: false,
         force: args?.force,
@@ -131,9 +163,10 @@ export default function ClassesBillingPage() {
     mutationFn: async () => {
       const runResult = await classesApi.createBillingRun({
         month,
+        classGroupId: classGroupId === "ALL" ? undefined : classGroupId,
         createInvoices: false,
         sendInvoices: true,
-        idempotencyKey: `classes-billing-send:${month}:${Date.now()}`,
+        idempotencyKey: `classes-billing-send:${month}:${classGroupId}:${Date.now()}`,
       });
 
       return classesApi.waitForBillingSendCompletionWithSse(runResult.billingRun.id, month, {
@@ -245,10 +278,31 @@ export default function ClassesBillingPage() {
               className="w-[180px]"
             />
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">
+              {t("classes.billing.classGroup")}
+            </span>
+            <Select value={classGroupId} onValueChange={setClassGroupId}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder={t("classes.billing.selectAllGroups")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">{t("classes.billing.allGroups")}</SelectItem>
+                {(groupsData?.items ?? []).map((group) => (
+                  <SelectItem key={group.id} value={group.id}>
+                    {group.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <Button
             variant="ghost"
             onClick={() =>
-              queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) })
+              queryClient.invalidateQueries({
+                queryKey: classBillingKeys.preview(month, classGroupId),
+              })
             }
           >
             <RefreshCcw className="h-4 w-4" />
@@ -336,9 +390,6 @@ export default function ClassesBillingPage() {
         ) : preview?.items?.length ? (
           <div className="grid gap-6 lg:grid-cols-1">
             {preview.items.map((item) => {
-              const payerInvoice = invoiceByPayer.get(item.payerClientId);
-              const payerInvoiceId = payerInvoice?.invoiceId;
-              const payerInvoiceStatus = payerInvoice?.invoiceStatus ?? null;
               return (
                 <div
                   key={item.payerClientId}
@@ -349,8 +400,22 @@ export default function ClassesBillingPage() {
                       <div className="text-sm font-bold text-foreground">
                         {nameByClient.get(item.payerClientId) ?? item.payerClientId}
                       </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {t("classes.billing.payerId")} {item.payerClientId}
+                      <div className="text-xs mt-0.5">
+                        {emailByClient.has(item.payerClientId) ? (
+                          emailByClient.get(item.payerClientId) ? (
+                            <span className="text-muted-foreground">
+                              {emailByClient.get(item.payerClientId)}
+                            </span>
+                          ) : (
+                            <span className="text-destructive font-medium italic">
+                              Missing email
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-muted-foreground">
+                            {t("classes.billing.payerId")} {item.payerClientId}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -361,37 +426,7 @@ export default function ClassesBillingPage() {
                         <div className="text-xs text-muted-foreground">
                           {item.totalSessions} {t("classes.billing.sessionsTotal")}
                         </div>
-                        {payerInvoiceStatus ? (
-                          <Badge
-                            variant="outline"
-                            className={
-                              payerInvoiceStatus === "SENT"
-                                ? "mt-1 border-green-200 bg-green-50 text-green-700"
-                                : "mt-1"
-                            }
-                          >
-                            {payerInvoiceStatus}
-                          </Badge>
-                        ) : null}
                       </div>
-                      {payerInvoiceId ? (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openSendDialog(payerInvoiceId)}
-                            disabled={isFetching}
-                          >
-                            <Mail className="h-4 w-4" />
-                            {t("invoices.actions.send")}
-                          </Button>
-                          <Button asChild variant="outline" size="sm">
-                            <Link to={`/invoices/${payerInvoiceId}`}>
-                              {t("classes.billing.viewInvoice")}
-                            </Link>
-                          </Button>
-                        </div>
-                      ) : null}
                     </div>
                   </div>
 
@@ -411,28 +446,78 @@ export default function ClassesBillingPage() {
                           <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
                             {t("classes.billing.subtotal")}
                           </th>
+                          <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                            {t("classes.billing.invoice")}
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/50">
-                        {item.lines.map((line) => (
-                          <tr
-                            key={line.classGroupId}
-                            className="hover:bg-muted/20 transition-colors"
-                          >
-                            <td className="px-4 py-3 text-sm font-medium">
-                              {nameByGroup.get(line.classGroupId) ?? line.classGroupId}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-center text-muted-foreground italic">
-                              {line.sessions}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-right text-muted-foreground">
-                              {formatMoney(line.priceCents, undefined, item.currency)}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-right font-semibold">
-                              {formatMoney(line.amountCents, undefined, item.currency)}
-                            </td>
-                          </tr>
-                        ))}
+                        {item.lines.map((line) => {
+                          const classScopedInvoice = invoiceByPayerAndClass.map.get(
+                            `${item.payerClientId}:${line.classGroupId}`
+                          );
+                          const lineInvoice =
+                            classScopedInvoice ??
+                            (item.lines.length === 1
+                              ? invoiceByPayerAndClass.legacyByPayer.get(item.payerClientId)
+                              : undefined);
+                          const lineInvoiceStatus = lineInvoice?.invoiceStatus ?? null;
+                          return (
+                            <tr
+                              key={line.classGroupId}
+                              className="hover:bg-muted/20 transition-colors"
+                            >
+                              <td className="px-4 py-3 text-sm font-medium">
+                                {nameByGroup.get(line.classGroupId) ?? line.classGroupId}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-center text-muted-foreground italic">
+                                {line.sessions}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-right text-muted-foreground">
+                                {formatMoney(line.priceCents, undefined, item.currency)}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-right font-semibold">
+                                {formatMoney(line.amountCents, undefined, item.currency)}
+                              </td>
+                              <td className="px-4 py-3">
+                                {lineInvoice ? (
+                                  <div className="flex items-center justify-end gap-2">
+                                    {lineInvoiceStatus ? (
+                                      <Badge
+                                        variant="outline"
+                                        className={
+                                          lineInvoiceStatus === "SENT"
+                                            ? "border-green-200 bg-green-50 text-green-700"
+                                            : ""
+                                        }
+                                      >
+                                        {lineInvoiceStatus}
+                                      </Badge>
+                                    ) : null}
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => openSendDialog(lineInvoice.invoiceId)}
+                                      disabled={isFetching}
+                                    >
+                                      <Mail className="h-4 w-4" />
+                                      {t("invoices.actions.send")}
+                                    </Button>
+                                    <Button asChild variant="outline" size="sm">
+                                      <Link to={`/invoices/${lineInvoice.invoiceId}`}>
+                                        {t("classes.billing.viewInvoice")}
+                                      </Link>
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="text-right text-xs text-muted-foreground">
+                                    {t("classes.billing.invoiceNotCreated")}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

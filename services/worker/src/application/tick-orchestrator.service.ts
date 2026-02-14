@@ -22,6 +22,7 @@ export class TickOrchestrator {
   private readonly logger = new Logger(TickOrchestrator.name);
   private readonly runners: Map<string, Runner> = new Map();
   private inFlightRun?: Promise<TickRunSummary>;
+  private readonly activeRunnerExecutions = new Map<string, Promise<RunnerReport>>();
 
   constructor(
     @Inject(EnvService) private readonly env: EnvService,
@@ -70,6 +71,13 @@ export class TickOrchestrator {
       .filter(Boolean);
     const overallMaxMs = Number(this.env.WORKER_TICK_OVERALL_MAX_MS || 480000);
     const perRunnerMaxMs = Number(this.env.WORKER_TICK_RUNNER_MAX_MS || 60000);
+    const hardRunnerTimeoutRaw = Number(
+      process.env.WORKER_TICK_RUNNER_TIMEOUT_MS ?? perRunnerMaxMs
+    );
+    const hardRunnerTimeoutMs =
+      Number.isFinite(hardRunnerTimeoutRaw) && hardRunnerTimeoutRaw > 0
+        ? hardRunnerTimeoutRaw
+        : perRunnerMaxMs;
     const perRunnerMaxItems = Number(this.env.WORKER_TICK_RUNNER_MAX_ITEMS || 200);
 
     const ctx: TickContext = {
@@ -122,39 +130,43 @@ export class TickOrchestrator {
         continue;
       }
 
+      if (this.activeRunnerExecutions.has(name)) {
+        this.logger.warn(
+          `[tick:${runId}] Runner "${name}" has an in-flight execution from a previous tick; skipping to avoid overlap`
+        );
+        results[name] = {
+          processedCount: 0,
+          updatedCount: 0,
+          skippedCount: 1,
+          errorCount: 0,
+          durationMs: 0,
+        };
+        continue;
+      }
+
       const runnerStart = Date.now();
       try {
         this.logger.log(
           `[tick:${runId}] Runner "${name}" starting (${i + 1}/${enabledRunnerNames.length}, elapsed=${elapsedMs}ms, lock=${runner.singletonLockKey ?? "none"})...`
         );
 
-        let report: RunnerReport | undefined;
-        if (runner.singletonLockKey) {
-          this.logger.log(
-            `[tick:${runId}] Runner "${name}" acquiring advisory lock "${runner.singletonLockKey}"...`
-          );
-          const locked = await this.jobLockService.withAdvisoryXactLock(
-            { lockName: runner.singletonLockKey, runId },
-            async () => runner.run(ctx)
-          );
-          if (!locked.acquired) {
-            this.logger.log(
-              `[tick:${runId}] Runner "${name}" lock not acquired (another instance holds it), skipped`
-            );
-            report = {
-              processedCount: 0,
-              updatedCount: 0,
-              skippedCount: 1,
-              errorCount: 0,
-              durationMs: Date.now() - runnerStart,
-            };
-          } else {
-            this.logger.log(`[tick:${runId}] Runner "${name}" lock acquired, execution completed`);
-            report = locked.value;
-          }
-        } else {
-          report = await runner.run(ctx);
-        }
+        const runPromise = this.executeRunner(name, runner, ctx, runId, runnerStart);
+        this.activeRunnerExecutions.set(name, runPromise);
+        void runPromise
+          .finally(() => {
+            const active = this.activeRunnerExecutions.get(name);
+            if (active === runPromise) {
+              this.activeRunnerExecutions.delete(name);
+            }
+          })
+          .catch(() => undefined);
+
+        const report = await this.withTimeout(
+          runPromise,
+          hardRunnerTimeoutMs,
+          `runner:${name}`,
+          runId
+        );
 
         const runnerDurationMs = Date.now() - runnerStart;
         results[name] = report ?? {
@@ -230,5 +242,74 @@ export class TickOrchestrator {
       }
       this.logger.log("[runOnce] Tick promise settled, slot cleared");
     }
+  }
+
+  private async executeRunner(
+    name: string,
+    runner: Runner,
+    ctx: TickContext,
+    runId: string,
+    runnerStart: number
+  ): Promise<RunnerReport> {
+    if (!runner.singletonLockKey) {
+      return runner.run(ctx);
+    }
+
+    this.logger.log(
+      `[tick:${runId}] Runner "${name}" acquiring advisory lock "${runner.singletonLockKey}"...`
+    );
+    const locked = await this.jobLockService.withAdvisoryXactLock(
+      { lockName: runner.singletonLockKey, runId },
+      async () => runner.run(ctx)
+    );
+    if (!locked.acquired) {
+      if ("reason" in locked && locked.reason === "error") {
+        throw new Error(
+          `Runner "${name}" lock acquisition failed due to lock subsystem error: ${
+            "error" in locked ? (locked.error ?? "unknown") : "unknown"
+          }`
+        );
+      }
+      this.logger.log(
+        `[tick:${runId}] Runner "${name}" lock not acquired (another instance holds it), skipped`
+      );
+      return {
+        processedCount: 0,
+        updatedCount: 0,
+        skippedCount: 1,
+        errorCount: 0,
+        durationMs: Date.now() - runnerStart,
+      };
+    }
+    this.logger.log(`[tick:${runId}] Runner "${name}" lock acquired, execution completed`);
+    return locked.value;
+  }
+
+  private async withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    label: string,
+    runId: string
+  ): Promise<T> {
+    const timeout = Math.max(1_000, timeoutMs);
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(
+          new Error(
+            `[tick:${runId}] ${label} exceeded timeout (${timeout}ms); marking as failed while keeping the underlying execution isolated`
+          )
+        );
+      }, timeout);
+
+      promise
+        .then((value) => {
+          clearTimeout(timer);
+          resolve(value);
+        })
+        .catch((error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
+    });
   }
 }
