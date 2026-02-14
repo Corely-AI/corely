@@ -144,13 +144,21 @@ const parseSseBlock = <TData>(
     }
   }
 
-  return {
+  const parsedEvent: SseParsedEvent<TData> = {
     event,
-    id,
-    retry,
     rawData,
     data,
   };
+
+  if (id !== undefined) {
+    parsedEvent.id = id;
+  }
+
+  if (retry !== undefined) {
+    parsedEvent.retry = retry;
+  }
+
+  return parsedEvent;
 };
 
 const consumeSseResponse = async <TData>(
