@@ -82,6 +82,7 @@ Specific feature implementation details.
 - [Tax Snapshot](./features/TAX_SNAPSHOT_IMPLEMENTATION.md)
 - [Catalog Module](./features/catalog.md)
 - [Custom Attributes Framework](./features/custom-attributes.md)
+- [Command Palette](./features/command-palette.md)
 
 ### 📚 Guides
 
