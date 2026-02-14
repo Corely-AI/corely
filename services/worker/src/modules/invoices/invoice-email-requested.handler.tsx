@@ -70,7 +70,7 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
     // 3. Prepare email template props
     const companyName = this.resolveCompanyName(invoice);
     const workspaceSlug = await this.repo.findWorkspaceSlug(event.tenantId);
-    const portalUrl = this.buildPortalUrl(workspaceSlug);
+    const portalUrl = this.buildPortalUrl(workspaceSlug, payload.invoiceId);
 
     const emailProps = mapToInvoiceEmailProps({
       invoice,
@@ -225,19 +225,22 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
     return trimmed.length > 0 ? trimmed : undefined;
   }
 
-  private buildPortalUrl(workspaceSlug: string | null): string | undefined {
+  private buildPortalUrl(workspaceSlug: string | null, invoiceId: string): string | undefined {
     if (!workspaceSlug) {
       return undefined;
     }
+    const encodedInvoiceId = encodeURIComponent(invoiceId);
+    const invoicePath = `/invoices/${encodedInvoiceId}`;
 
     const isProduction = process.env.NODE_ENV === "production";
     if (isProduction) {
       const portalDomain = process.env.PORTAL_DOMAIN || "portal.corely.one";
-      return `https://${workspaceSlug}.${portalDomain}`;
+      return `https://${workspaceSlug}.${portalDomain}${invoicePath}`;
     }
 
-    const portalBase = process.env.PORTAL_URL || "http://localhost:8083";
+    const portalBase =
+      process.env.PORTAL_URL || process.env.WEB_BASE_URL || "http://localhost:8080";
     const normalizedBase = portalBase.replace(/\/+$/, "");
-    return `${normalizedBase}/w/${workspaceSlug}`;
+    return `${normalizedBase}/w/${workspaceSlug}${invoicePath}`;
   }
 }

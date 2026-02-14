@@ -23,11 +23,13 @@ export function InvoiceEmail({
   viewInvoiceUrl,
 }: InvoiceEmailProps) {
   const previewText = `${companyName} sent you an invoice ${invoiceNumber}`;
-  const payToLines = [
-    paymentDetails?.bankName,
-    paymentDetails?.accountHolderName,
-    paymentDetails?.iban,
-    paymentDetails?.bic,
+  const payToItems = [
+    paymentDetails?.bankName ? `Bank: ${paymentDetails.bankName}` : undefined,
+    paymentDetails?.accountHolderName
+      ? `Account holder: ${paymentDetails.accountHolderName}`
+      : undefined,
+    paymentDetails?.iban ? `IBAN: ${paymentDetails.iban}` : undefined,
+    paymentDetails?.bic ? `BIC: ${paymentDetails.bic}` : undefined,
     paymentDetails?.referenceText ? `Reference: ${paymentDetails.referenceText}` : undefined,
   ].filter((line): line is string => Boolean(line && line.trim().length > 0));
 
@@ -64,8 +66,8 @@ export function InvoiceEmail({
             <Row style={detailsRow}>
               <Column style={detailsColumn}>
                 <Text style={label}>Pay to</Text>
-                {payToLines.length > 0 ? (
-                  payToLines.map((line) => (
+                {payToItems.length > 0 ? (
+                  payToItems.map((line) => (
                     <Text key={line} style={value}>
                       {line}
                     </Text>
@@ -82,9 +84,17 @@ export function InvoiceEmail({
                 <Text style={label}>Invoice</Text>
                 <Text style={value}>
                   {viewInvoiceUrl
-                    ? "Open the invoice in the student portal to view and download PDF"
+                    ? "Open the invoice in the portal to view details and download the PDF"
                     : "The invoice is attached to this email"}
                 </Text>
+                {viewInvoiceUrl ? (
+                  <Text style={value}>
+                    Portal link:{" "}
+                    <Link href={viewInvoiceUrl} style={inlineLink}>
+                      {viewInvoiceUrl}
+                    </Link>
+                  </Text>
+                ) : null}
               </Column>
             </Row>
 
@@ -184,6 +194,12 @@ const value: CSSProperties = {
   fontSize: "26px",
   lineHeight: "34px",
   color: "#616f7c",
+};
+
+const inlineLink: CSSProperties = {
+  color: "#143b66",
+  textDecoration: "underline",
+  wordBreak: "break-all",
 };
 
 const buttonSection: CSSProperties = {

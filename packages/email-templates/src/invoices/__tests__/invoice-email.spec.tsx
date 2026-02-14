@@ -99,6 +99,28 @@ describe("InvoiceEmail Template", () => {
 
       expect(result.html).toContain("https://example.com/invoices/123");
       expect(result.html).toContain("View Invoice");
+      expect(result.html).toContain("Portal link:");
+    });
+
+    it("should include labeled pay to details when provided", async () => {
+      const propsWithPaymentDetails: InvoiceEmailProps = {
+        ...mockProps,
+        paymentDetails: {
+          bankName: "ACME Bank",
+          accountHolderName: "Acme Corp",
+          iban: "DE89370400440532013000",
+          bic: "COBADEFFXXX",
+          referenceText: "INV-001",
+        },
+      };
+
+      const result = await renderEmail(<InvoiceEmail {...propsWithPaymentDetails} />);
+
+      expect(result.html).toContain("Bank: ACME Bank");
+      expect(result.html).toContain("Account holder: Acme Corp");
+      expect(result.html).toContain("IBAN: DE89370400440532013000");
+      expect(result.html).toContain("BIC: COBADEFFXXX");
+      expect(result.html).toContain("Reference: INV-001");
     });
 
     it("should render plain text version with invoice details", async () => {

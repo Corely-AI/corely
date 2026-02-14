@@ -103,7 +103,7 @@ describe("InvoiceEmailRequestedHandler", () => {
     await handler.handle(baseEvent as any);
 
     expect(sender.calls[0].to).toEqual(["customer@example.com"]);
-    expect(sender.calls[0].html).toContain("http://localhost:8083/w/test-workspace");
+    expect(sender.calls[0].html).toContain("http://localhost:8080/w/test-workspace/invoices/inv-1");
     expect(deliveryRepo.updateStatus).toHaveBeenCalledWith("tenant-1", "delivery-1", "SENT", {
       providerMessageId: "msg-123",
     });
