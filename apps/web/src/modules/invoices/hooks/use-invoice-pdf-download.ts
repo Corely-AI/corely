@@ -6,7 +6,7 @@ import { paymentMethodsApi } from "@/lib/payment-methods-api";
 import { invoiceQueryKeys } from "../queries";
 
 type InvoiceForPdf = {
-  status: string;
+  status?: string;
   legalEntityId?: string | null;
   paymentMethodId?: string | null;
 };

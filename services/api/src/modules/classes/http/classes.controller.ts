@@ -2,15 +2,19 @@ import {
   Body,
   Controller,
   Get,
+  MessageEvent,
   Param,
   Patch,
   Post,
   Put,
   Query,
   Req,
+  Sse,
   UseGuards,
 } from "@nestjs/common";
 import type { Request } from "express";
+import type { Observable } from "rxjs";
+import type { BillingInvoiceSendProgressEvent } from "@corely/contracts";
 import {
   BulkUpsertAttendanceInputSchema,
   CreateBillingRunInputSchema,
@@ -57,6 +61,8 @@ import { CreateMonthlyBillingRunUseCase } from "../application/use-cases/create-
 import { LockMonthUseCase } from "../application/use-cases/lock-month.usecase";
 import { GetClassesBillingSettingsUseCase } from "../application/use-cases/get-classes-billing-settings.usecase";
 import { UpdateClassesBillingSettingsUseCase } from "../application/use-cases/update-classes-billing-settings.usecase";
+import { GetBillingRunSendProgressUseCase } from "../application/use-cases/get-billing-run-send-progress.usecase";
+import { SseStreamFactory } from "@/shared/sse";
 import {
   toAttendanceDto,
   toBillingPreviewOutput,
@@ -86,10 +92,12 @@ export class ClassesController {
     private readonly bulkUpsertAttendanceUseCase: BulkUpsertAttendanceUseCase,
     private readonly getSessionAttendanceUseCase: GetSessionAttendanceUseCase,
     private readonly getMonthlyBillingPreviewUseCase: GetMonthlyBillingPreviewUseCase,
+    private readonly getBillingRunSendProgressUseCase: GetBillingRunSendProgressUseCase,
     private readonly createMonthlyBillingRunUseCase: CreateMonthlyBillingRunUseCase,
     private readonly lockMonthUseCase: LockMonthUseCase,
     private readonly getClassesBillingSettingsUseCase: GetClassesBillingSettingsUseCase,
-    private readonly updateClassesBillingSettingsUseCase: UpdateClassesBillingSettingsUseCase
+    private readonly updateClassesBillingSettingsUseCase: UpdateClassesBillingSettingsUseCase,
+    private readonly sseStreamFactory: SseStreamFactory
   ) {}
 
   // Class Groups
@@ -353,5 +361,28 @@ export class ClassesController {
     const ctx = buildUseCaseContext(req);
     const run = await this.lockMonthUseCase.execute({ billingRunId: id }, ctx);
     return { billingRun: toBillingRunDto(run) };
+  }
+
+  @Sse("billing/runs/:billingRunId/send-progress/stream")
+  @RequirePermission("classes.billing")
+  streamBillingSendProgress(
+    @Param("billingRunId") billingRunId: string,
+    @Req() req: Request
+  ): Observable<MessageEvent> {
+    const ctx = buildUseCaseContext(req);
+    return this.sseStreamFactory.createPollingStream<BillingInvoiceSendProgressEvent>(req, {
+      event: "billing.invoice-send-progress",
+      intervalMs: 1_500,
+      timeoutMs: 90_000,
+      fetchSnapshot: () => this.getBillingRunSendProgressUseCase.execute({ billingRunId }, ctx),
+      isComplete: (snapshot) => snapshot.isComplete,
+      toEnvelope: (payload) => payload,
+      emitOnChangeOnly: true,
+      hash: (snapshot) =>
+        JSON.stringify({
+          progress: snapshot.progress,
+          isComplete: snapshot.isComplete,
+        }),
+    });
   }
 }

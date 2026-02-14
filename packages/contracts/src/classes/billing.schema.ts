@@ -49,6 +49,15 @@ export const BillingInvoiceSendProgressSchema = z.object({
 });
 export type BillingInvoiceSendProgress = z.infer<typeof BillingInvoiceSendProgressSchema>;
 
+export const BillingInvoiceSendProgressEventSchema = z.object({
+  billingRunId: z.string(),
+  month: BillingMonthSchema,
+  progress: BillingInvoiceSendProgressSchema.nullable(),
+  isComplete: z.boolean(),
+  generatedAt: utcInstantSchema,
+});
+export type BillingInvoiceSendProgressEvent = z.infer<typeof BillingInvoiceSendProgressEventSchema>;
+
 export const BillingPreviewOutputSchema = z.object({
   month: BillingMonthSchema,
   billingMonthStrategy: ClassBillingMonthStrategySchema,

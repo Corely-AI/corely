@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Mail, RefreshCcw } from "lucide-react";
 import { Link } from "react-router-dom";
+import type { BillingInvoiceSendProgress } from "@corely/contracts";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,7 @@ export default function ClassesBillingPage() {
   const [resultSummary, setResultSummary] = useState<string | null>(null);
   const [sendPromptOpen, setSendPromptOpen] = useState(false);
   const [createdCount, setCreatedCount] = useState(0);
+  const [sendProgress, setSendProgress] = useState<BillingInvoiceSendProgress | null>(null);
 
   const {
     isOpen: sendDialogOpen,
@@ -127,19 +129,23 @@ export default function ClassesBillingPage() {
 
   const sendInvoices = useMutation({
     mutationFn: async () => {
-      await classesApi.createBillingRun({
+      const runResult = await classesApi.createBillingRun({
         month,
         createInvoices: false,
         sendInvoices: true,
         idempotencyKey: `classes-billing-send:${month}:${Date.now()}`,
       });
 
-      return classesApi.waitForBillingSendCompletion(month, {
+      return classesApi.waitForBillingSendCompletionWithSse(runResult.billingRun.id, month, {
         timeoutMs: 90_000,
         intervalMs: 1_500,
+        onProgress: (progress) => {
+          setSendProgress(progress);
+        },
       });
     },
     onMutate: () => {
+      setSendProgress(null);
       const toastId = toast.loading(`${t("classes.billing.sendInvoices")}...`);
       return { toastId };
     },
@@ -173,6 +179,7 @@ export default function ClassesBillingPage() {
         );
       }
 
+      setSendProgress(null);
       setSendPromptOpen(false);
       await queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) });
     },
@@ -180,6 +187,7 @@ export default function ClassesBillingPage() {
       if (context?.toastId) {
         toast.dismiss(context.toastId);
       }
+      setSendProgress(null);
       toast.error(getErrorMessage(err) || t("classes.billing.sendFailed"));
     },
   });
@@ -274,6 +282,14 @@ export default function ClassesBillingPage() {
           <div className="rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-sm text-success flex items-center gap-2">
             <FileText className="h-4 w-4" />
             {resultSummary}
+          </div>
+        ) : null}
+
+        {sendInvoices.isPending && sendProgress ? (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary flex items-center gap-2">
+            <RefreshCcw className="h-4 w-4 animate-spin" />
+            {t("classes.billing.sendInvoices")}: {sendProgress.processedInvoiceCount}/
+            {sendProgress.expectedInvoiceCount} processed
           </div>
         ) : null}
 
