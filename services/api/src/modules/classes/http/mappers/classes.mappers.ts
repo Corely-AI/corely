@@ -98,8 +98,25 @@ export const toBillingPreviewOutput = (input: {
   billingBasis: string;
   billingRunStatus: string | null;
   items: BillingPreviewItem[];
-  invoiceLinks?: { payerClientId: string; invoiceId: string }[];
+  invoiceLinks?: {
+    payerClientId: string;
+    invoiceId: string;
+    invoiceStatus?: "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED" | null;
+  }[];
   invoicesSentAt?: string | null;
+  invoiceSendProgress?: {
+    expectedInvoiceCount: number;
+    processedInvoiceCount: number;
+    pendingCount: number;
+    queuedCount: number;
+    sentCount: number;
+    deliveredCount: number;
+    delayedCount: number;
+    failedCount: number;
+    bouncedCount: number;
+    isComplete: boolean;
+    hasFailures: boolean;
+  } | null;
   generatedAt: Date;
 }): BillingPreviewOutput => ({
   month: input.month,
@@ -110,8 +127,10 @@ export const toBillingPreviewOutput = (input: {
   invoiceLinks: input.invoiceLinks?.map((link) => ({
     payerClientId: link.payerClientId,
     invoiceId: link.invoiceId,
+    invoiceStatus: link.invoiceStatus ?? null,
   })),
   invoicesSentAt: input.invoicesSentAt ?? null,
+  invoiceSendProgress: input.invoiceSendProgress ?? null,
   items: input.items.map((item) => ({
     payerClientId: item.payerClientId,
     totalSessions: item.totalSessions,

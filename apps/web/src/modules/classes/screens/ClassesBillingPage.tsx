@@ -17,10 +17,6 @@ import {
   Card,
   CardContent,
   Input,
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
 } from "@corely/ui";
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
@@ -32,6 +28,14 @@ import { useSendInvoice } from "../../invoices/hooks/use-send-invoice";
 import { SendInvoiceDialog } from "../../invoices/components/SendInvoiceDialog";
 
 const toMonthValue = (date: Date) => date.toISOString().slice(0, 7);
+const getErrorMessage = (error: unknown): string | null => {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const maybeMessage = (error as { message?: unknown }).message;
+  return typeof maybeMessage === "string" ? maybeMessage : null;
+};
 
 export default function ClassesBillingPage() {
   const { t } = useTranslation();
@@ -88,9 +92,15 @@ export default function ClassesBillingPage() {
   }, [groupsData]);
 
   const invoiceByPayer = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<
+      string,
+      { invoiceId: string; invoiceStatus: "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED" | null }
+    >();
     (preview?.invoiceLinks ?? []).forEach((link) => {
-      map.set(link.payerClientId, link.invoiceId);
+      map.set(link.payerClientId, {
+        invoiceId: link.invoiceId,
+        invoiceStatus: link.invoiceStatus ?? null,
+      });
     });
     return map;
   }, [preview?.invoiceLinks]);
@@ -112,25 +122,67 @@ export default function ClassesBillingPage() {
       );
       await queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) });
     },
-    onError: (err: any) => toast.error(err?.message || t("classes.billing.loadFailed")),
+    onError: (err: unknown) => toast.error(getErrorMessage(err) || t("classes.billing.loadFailed")),
   });
 
   const sendInvoices = useMutation({
-    mutationFn: async () =>
-      classesApi.createBillingRun({
+    mutationFn: async () => {
+      await classesApi.createBillingRun({
         month,
         createInvoices: false,
         sendInvoices: true,
-      }),
-    onSuccess: () => {
-      toast.success(t("classes.billing.invoicesSent"));
-      setSendPromptOpen(false);
-      void queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) });
-    },
-    onError: (err: any) => toast.error(err?.message || t("classes.billing.sendFailed")),
-  });
+        idempotencyKey: `classes-billing-send:${month}:${Date.now()}`,
+      });
 
-  const invoicesAlreadySent = Boolean(preview?.invoicesSentAt);
+      return classesApi.waitForBillingSendCompletion(month, {
+        timeoutMs: 90_000,
+        intervalMs: 1_500,
+      });
+    },
+    onMutate: () => {
+      const toastId = toast.loading(`${t("classes.billing.sendInvoices")}...`);
+      return { toastId };
+    },
+    onSuccess: async (finalPreview, _vars, context) => {
+      if (context?.toastId) {
+        toast.dismiss(context.toastId);
+      }
+
+      const progress = finalPreview.invoiceSendProgress;
+      if (progress?.hasFailures) {
+        toast.error(t("classes.billing.sendFailed"), {
+          description: `${progress.failedCount + progress.bouncedCount} failed, ${
+            progress.sentCount + progress.deliveredCount + progress.delayedCount
+          } successful`,
+        });
+      } else {
+        toast.success(t("classes.billing.invoicesSent"), {
+          description: progress
+            ? `${progress.sentCount + progress.deliveredCount + progress.delayedCount}/${
+                progress.expectedInvoiceCount
+              }`
+            : undefined,
+        });
+      }
+
+      if (progress) {
+        setResultSummary(
+          `Send result: ${progress.sentCount + progress.deliveredCount + progress.delayedCount}/${
+            progress.expectedInvoiceCount
+          } successful${progress.hasFailures ? `, ${progress.failedCount + progress.bouncedCount} failed` : ""}`
+        );
+      }
+
+      setSendPromptOpen(false);
+      await queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) });
+    },
+    onError: (err: unknown, _vars, context) => {
+      if (context?.toastId) {
+        toast.dismiss(context.toastId);
+      }
+      toast.error(getErrorMessage(err) || t("classes.billing.sendFailed"));
+    },
+  });
 
   return (
     <CrudListPageLayout
@@ -139,25 +191,14 @@ export default function ClassesBillingPage() {
       primaryAction={
         <div className="flex items-center gap-2">
           {preview?.billingRunStatus === "INVOICES_CREATED" && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span>
-                    <Button
-                      variant="outline"
-                      onClick={() => sendInvoices.mutate()}
-                      disabled={sendInvoices.isPending || !month || invoicesAlreadySent}
-                    >
-                      <Mail className="h-4 w-4" />
-                      {t("classes.billing.sendInvoices")}
-                    </Button>
-                  </span>
-                </TooltipTrigger>
-                {invoicesAlreadySent ? (
-                  <TooltipContent>{t("classes.billing.alreadySent")}</TooltipContent>
-                ) : null}
-              </Tooltip>
-            </TooltipProvider>
+            <Button
+              variant="outline"
+              onClick={() => sendInvoices.mutate()}
+              disabled={sendInvoices.isPending || !month}
+            >
+              <Mail className="h-4 w-4" />
+              {t("classes.billing.sendInvoices")}
+            </Button>
           )}
           {preview?.billingRunStatus === "INVOICES_CREATED" && (
             <Button
@@ -220,7 +261,7 @@ export default function ClassesBillingPage() {
             <AlertDialogCancel>{t("classes.billing.sendDialogNo")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => sendInvoices.mutate()}
-              disabled={sendInvoices.isPending || invoicesAlreadySent}
+              disabled={sendInvoices.isPending}
             >
               {t("classes.billing.sendDialogYes")}
             </AlertDialogAction>
@@ -278,90 +319,110 @@ export default function ClassesBillingPage() {
           </div>
         ) : preview?.items?.length ? (
           <div className="grid gap-6 lg:grid-cols-1">
-            {preview.items.map((item) => (
-              <div
-                key={item.payerClientId}
-                className="rounded-lg border border-border bg-card overflow-hidden shadow-sm"
-              >
-                <div className="bg-muted/30 px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <div className="text-sm font-bold text-foreground">
-                      {nameByClient.get(item.payerClientId) ?? item.payerClientId}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {t("classes.billing.payerId")} {item.payerClientId}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-end">
+            {preview.items.map((item) => {
+              const payerInvoice = invoiceByPayer.get(item.payerClientId);
+              const payerInvoiceId = payerInvoice?.invoiceId;
+              const payerInvoiceStatus = payerInvoice?.invoiceStatus ?? null;
+              return (
+                <div
+                  key={item.payerClientId}
+                  className="rounded-lg border border-border bg-card overflow-hidden shadow-sm"
+                >
+                  <div className="bg-muted/30 px-4 py-3 border-b border-border flex flex-wrap items-center justify-between gap-4">
+                    <div>
                       <div className="text-sm font-bold text-foreground">
-                        {formatMoney(item.totalAmountCents, undefined, item.currency)}
+                        {nameByClient.get(item.payerClientId) ?? item.payerClientId}
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {item.totalSessions} {t("classes.billing.sessionsTotal")}
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        {t("classes.billing.payerId")} {item.payerClientId}
                       </div>
                     </div>
-                    {invoiceByPayer.get(item.payerClientId) ? (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openSendDialog(invoiceByPayer.get(item.payerClientId)!)}
-                          disabled={isFetching}
-                        >
-                          <Mail className="h-4 w-4" />
-                          {t("invoices.actions.send")}
-                        </Button>
-                        <Button asChild variant="outline" size="sm">
-                          <Link to={`/invoices/${invoiceByPayer.get(item.payerClientId)}`}>
-                            {t("classes.billing.viewInvoice")}
-                          </Link>
-                        </Button>
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col items-end">
+                        <div className="text-sm font-bold text-foreground">
+                          {formatMoney(item.totalAmountCents, undefined, item.currency)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.totalSessions} {t("classes.billing.sessionsTotal")}
+                        </div>
+                        {payerInvoiceStatus ? (
+                          <Badge
+                            variant="outline"
+                            className={
+                              payerInvoiceStatus === "SENT"
+                                ? "mt-1 border-green-200 bg-green-50 text-green-700"
+                                : "mt-1"
+                            }
+                          >
+                            {payerInvoiceStatus}
+                          </Badge>
+                        ) : null}
                       </div>
-                    ) : null}
+                      {payerInvoiceId ? (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openSendDialog(payerInvoiceId)}
+                            disabled={isFetching}
+                          >
+                            <Mail className="h-4 w-4" />
+                            {t("invoices.actions.send")}
+                          </Button>
+                          <Button asChild variant="outline" size="sm">
+                            <Link to={`/invoices/${payerInvoiceId}`}>
+                              {t("classes.billing.viewInvoice")}
+                            </Link>
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border bg-muted/10">
+                          <th className="text-left text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                            {t("classes.billing.classGroup")}
+                          </th>
+                          <th className="text-center text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                            {t("classes.billing.sessions")}
+                          </th>
+                          <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                            {t("classes.billing.pricePerSession")}
+                          </th>
+                          <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
+                            {t("classes.billing.subtotal")}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/50">
+                        {item.lines.map((line) => (
+                          <tr
+                            key={line.classGroupId}
+                            className="hover:bg-muted/20 transition-colors"
+                          >
+                            <td className="px-4 py-3 text-sm font-medium">
+                              {nameByGroup.get(line.classGroupId) ?? line.classGroupId}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-center text-muted-foreground italic">
+                              {line.sessions}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right text-muted-foreground">
+                              {formatMoney(line.priceCents, undefined, item.currency)}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right font-semibold">
+                              {formatMoney(line.amountCents, undefined, item.currency)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/10">
-                        <th className="text-left text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
-                          {t("classes.billing.classGroup")}
-                        </th>
-                        <th className="text-center text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
-                          {t("classes.billing.sessions")}
-                        </th>
-                        <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
-                          {t("classes.billing.pricePerSession")}
-                        </th>
-                        <th className="text-right text-[11px] uppercase tracking-wider font-semibold text-muted-foreground px-4 py-2">
-                          {t("classes.billing.subtotal")}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/50">
-                      {item.lines.map((line) => (
-                        <tr key={line.classGroupId} className="hover:bg-muted/20 transition-colors">
-                          <td className="px-4 py-3 text-sm font-medium">
-                            {nameByGroup.get(line.classGroupId) ?? line.classGroupId}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-center text-muted-foreground italic">
-                            {line.sessions}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-right text-muted-foreground">
-                            {formatMoney(line.priceCents, undefined, item.currency)}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-right font-semibold">
-                            {formatMoney(line.amountCents, undefined, item.currency)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-border rounded-xl">

@@ -302,12 +302,20 @@ export class CreateMonthlyBillingRunUseCase {
     const output = { billingRun: run, invoiceIds };
 
     if (idempotencyKey) {
-      await this.idempotency.store(this.actionKey, tenantId, idempotencyKey, {
-        body: {
-          billingRun: this.toJson(run),
-          invoiceIds,
-        },
-      });
+      try {
+        await this.idempotency.store(this.actionKey, tenantId, idempotencyKey, {
+          body: {
+            billingRun: this.toJson(run),
+            invoiceIds,
+          },
+        });
+      } catch (error: any) {
+        // For re-send flows, the same idempotency key may already exist with an empty invoiceIds payload.
+        // Do not fail the send operation if only the idempotency write collides.
+        if (error?.code !== "P2002" && !String(error?.message ?? "").includes("P2002")) {
+          throw error;
+        }
+      }
     }
 
     return output;

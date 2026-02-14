@@ -4,7 +4,10 @@ import type {
   ClassBillingInvoiceLinkEntity,
   ClassMonthlyBillingRunEntity,
 } from "../../domain/entities/classes.entities";
-import type { BillingPreviewFilters } from "../../application/ports/classes-repository.port";
+import type {
+  BillingInvoiceSendProgress,
+  BillingPreviewFilters,
+} from "../../application/ports/classes-repository.port";
 import type { AttendanceBillingRow } from "../../domain/rules/billing.rules";
 import { toBillingInvoiceLink, toBillingRun } from "./prisma.mappers";
 import { formatInTimeZone } from "date-fns-tz";
@@ -172,8 +175,9 @@ export const findBillingRunByMonth = async (
   workspaceId: string,
   month: string
 ): Promise<ClassMonthlyBillingRunEntity | null> => {
+  void workspaceId;
   const row = await prisma.classMonthlyBillingRun.findFirst({
-    where: { tenantId, workspaceId, month },
+    where: { tenantId, month },
   });
   return row ? toBillingRun(row) : null;
 };
@@ -184,11 +188,12 @@ export const listBillingRunsByMonths = async (
   workspaceId: string,
   months: string[]
 ): Promise<ClassMonthlyBillingRunEntity[]> => {
+  void workspaceId;
   if (months.length === 0) {
     return [];
   }
   const rows = await prisma.classMonthlyBillingRun.findMany({
-    where: { tenantId, workspaceId, month: { in: months } },
+    where: { tenantId, month: { in: months } },
   });
   return rows.map(toBillingRun);
 };
@@ -255,10 +260,157 @@ export const listBillingInvoiceLinks = async (
   workspaceId: string,
   billingRunId: string
 ): Promise<ClassBillingInvoiceLinkEntity[]> => {
+  void workspaceId;
   const rows = await prisma.classBillingInvoiceLink.findMany({
-    where: { tenantId, workspaceId, billingRunId },
+    where: { tenantId, billingRunId },
   });
   return rows.map(toBillingInvoiceLink);
+};
+
+export const getInvoiceStatusesByIds = async (
+  prisma: PrismaService,
+  tenantId: string,
+  invoiceIds: string[]
+): Promise<Record<string, "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED">> => {
+  const uniqueIds = Array.from(new Set(invoiceIds)).filter(Boolean);
+  if (uniqueIds.length === 0) {
+    return {};
+  }
+
+  const rows = await prisma.invoice.findMany({
+    where: {
+      tenantId,
+      id: { in: uniqueIds },
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  return rows.reduce<Record<string, "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED">>(
+    (acc, row) => {
+      acc[row.id] = row.status;
+      return acc;
+    },
+    {}
+  );
+};
+
+export const getBillingInvoiceSendProgress = async (
+  prisma: PrismaService,
+  tenantId: string,
+  workspaceId: string,
+  invoiceIds: string[],
+  sentAfter: Date,
+  expectedInvoiceCount: number
+): Promise<BillingInvoiceSendProgress> => {
+  void workspaceId;
+
+  const uniqueInvoiceIds = Array.from(new Set(invoiceIds));
+  const normalizedExpected = Math.max(expectedInvoiceCount, uniqueInvoiceIds.length, 0);
+
+  if (normalizedExpected === 0) {
+    return {
+      expectedInvoiceCount: 0,
+      processedInvoiceCount: 0,
+      pendingCount: 0,
+      queuedCount: 0,
+      sentCount: 0,
+      deliveredCount: 0,
+      delayedCount: 0,
+      failedCount: 0,
+      bouncedCount: 0,
+      isComplete: true,
+      hasFailures: false,
+    };
+  }
+
+  if (uniqueInvoiceIds.length === 0) {
+    return {
+      expectedInvoiceCount: normalizedExpected,
+      processedInvoiceCount: 0,
+      pendingCount: normalizedExpected,
+      queuedCount: 0,
+      sentCount: 0,
+      deliveredCount: 0,
+      delayedCount: 0,
+      failedCount: 0,
+      bouncedCount: 0,
+      isComplete: false,
+      hasFailures: false,
+    };
+  }
+
+  const deliveries = await prisma.invoiceEmailDelivery.findMany({
+    where: {
+      tenantId,
+      invoiceId: { in: uniqueInvoiceIds },
+      createdAt: { gte: sentAfter },
+    },
+    orderBy: [{ invoiceId: "asc" }, { createdAt: "desc" }],
+    select: {
+      invoiceId: true,
+      status: true,
+    },
+  });
+
+  const latestStatusByInvoice = new Map<string, string>();
+  for (const delivery of deliveries) {
+    if (!latestStatusByInvoice.has(delivery.invoiceId)) {
+      latestStatusByInvoice.set(delivery.invoiceId, delivery.status);
+    }
+  }
+
+  let queuedCount = 0;
+  let sentCount = 0;
+  let deliveredCount = 0;
+  let delayedCount = 0;
+  let failedCount = 0;
+  let bouncedCount = 0;
+
+  for (const status of latestStatusByInvoice.values()) {
+    switch (status) {
+      case "QUEUED":
+        queuedCount += 1;
+        break;
+      case "SENT":
+        sentCount += 1;
+        break;
+      case "DELIVERED":
+        deliveredCount += 1;
+        break;
+      case "DELAYED":
+        delayedCount += 1;
+        break;
+      case "FAILED":
+        failedCount += 1;
+        break;
+      case "BOUNCED":
+        bouncedCount += 1;
+        break;
+      default:
+        break;
+    }
+  }
+
+  const processedInvoiceCount = latestStatusByInvoice.size;
+  const pendingCount = Math.max(normalizedExpected - processedInvoiceCount, 0);
+  const isComplete = pendingCount === 0 && queuedCount === 0;
+
+  return {
+    expectedInvoiceCount: normalizedExpected,
+    processedInvoiceCount,
+    pendingCount,
+    queuedCount,
+    sentCount,
+    deliveredCount,
+    delayedCount,
+    failedCount,
+    bouncedCount,
+    isComplete,
+    hasFailures: failedCount > 0 || bouncedCount > 0,
+  };
 };
 
 export const findBillingInvoiceLinkByIdempotency = async (
@@ -267,8 +419,9 @@ export const findBillingInvoiceLinkByIdempotency = async (
   workspaceId: string,
   idempotencyKey: string
 ): Promise<ClassBillingInvoiceLinkEntity | null> => {
+  void workspaceId;
   const row = await prisma.classBillingInvoiceLink.findFirst({
-    where: { tenantId, workspaceId, idempotencyKey },
+    where: { tenantId, idempotencyKey },
   });
   return row ? toBillingInvoiceLink(row) : null;
 };

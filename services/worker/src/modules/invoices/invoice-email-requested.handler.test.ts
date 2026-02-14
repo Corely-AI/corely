@@ -34,6 +34,7 @@ describe("InvoiceEmailRequestedHandler", () => {
   const invoiceRepo = {
     findInvoiceWithLines: vi.fn(),
     findWorkspaceSlug: vi.fn(),
+    markInvoiceAsSent: vi.fn(),
   };
   const documentRepo = {
     findByTypeAndEntityLink: vi.fn(),
@@ -104,6 +105,11 @@ describe("InvoiceEmailRequestedHandler", () => {
 
     expect(sender.calls[0].to).toEqual(["customer@example.com"]);
     expect(sender.calls[0].html).toContain("http://localhost:8080/w/test-workspace/invoices/inv-1");
+    expect(invoiceRepo.markInvoiceAsSent).toHaveBeenCalledWith(
+      "tenant-1",
+      "inv-1",
+      expect.any(Date)
+    );
     expect(deliveryRepo.updateStatus).toHaveBeenCalledWith("tenant-1", "delivery-1", "SENT", {
       providerMessageId: "msg-123",
     });

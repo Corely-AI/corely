@@ -120,6 +120,8 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
 
       const result = await this.emailSender.sendEmail(emailRequest);
 
+      await this.repo.markInvoiceAsSent(event.tenantId, payload.invoiceId, new Date());
+
       // 6. Update delivery record to SENT
       await this.deliveryRepo.updateStatus(event.tenantId, payload.deliveryId, "SENT", {
         providerMessageId: result.providerMessageId,

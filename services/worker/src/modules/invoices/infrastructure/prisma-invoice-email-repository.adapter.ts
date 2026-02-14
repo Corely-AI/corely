@@ -25,4 +25,18 @@ export class PrismaInvoiceEmailRepository {
     });
     return workspace?.slug ?? null;
   }
+
+  async markInvoiceAsSent(tenantId: string, invoiceId: string, sentAt: Date): Promise<void> {
+    await this.prisma.invoice.updateMany({
+      where: {
+        tenantId,
+        id: invoiceId,
+        status: "ISSUED",
+      },
+      data: {
+        status: "SENT",
+        sentAt,
+      },
+    });
+  }
 }

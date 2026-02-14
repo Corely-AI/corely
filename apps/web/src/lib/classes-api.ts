@@ -28,9 +28,14 @@ import type {
   GetClassesBillingSettingsOutput,
   UpdateClassesBillingSettingsInput,
   UpdateClassesBillingSettingsOutput,
+  BillingInvoiceSendProgress,
 } from "@corely/contracts";
 
 export class ClassesApi {
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async listClassGroups(params?: ListClassGroupsInput): Promise<ListClassGroupsOutput> {
     const query = new URLSearchParams();
     if (params?.q) {
@@ -245,6 +250,43 @@ export class ClassesApi {
       {
         correlationId: apiClient.generateCorrelationId(),
       }
+    );
+  }
+
+  async waitForBillingSendCompletion(
+    month: string,
+    options?: {
+      timeoutMs?: number;
+      intervalMs?: number;
+      onProgress?: (progress: BillingInvoiceSendProgress | null) => void;
+    }
+  ): Promise<BillingPreviewOutput> {
+    const timeoutMs = options?.timeoutMs ?? 90_000;
+    const intervalMs = options?.intervalMs ?? 1_500;
+    const startedAt = Date.now();
+    let lastPreview: BillingPreviewOutput | null = null;
+
+    while (Date.now() - startedAt < timeoutMs) {
+      const preview = await this.getBillingPreview(month);
+      lastPreview = preview;
+      const progress = preview.invoiceSendProgress ?? null;
+      options?.onProgress?.(progress);
+
+      if (!preview.invoicesSentAt && (preview.invoiceLinks?.length ?? 0) === 0) {
+        return preview;
+      }
+
+      if (progress && progress.isComplete) {
+        return preview;
+      }
+
+      await this.sleep(intervalMs);
+    }
+
+    const expectedCount = lastPreview?.invoiceSendProgress?.expectedInvoiceCount ?? 0;
+    const processedCount = lastPreview?.invoiceSendProgress?.processedInvoiceCount ?? 0;
+    throw new Error(
+      `Timed out waiting for invoice send results (${processedCount}/${expectedCount} processed).`
     );
   }
 

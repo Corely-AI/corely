@@ -49,6 +49,20 @@ export type BillingPreviewFilters = {
   payerClientId?: string;
 };
 
+export type BillingInvoiceSendProgress = {
+  expectedInvoiceCount: number;
+  processedInvoiceCount: number;
+  pendingCount: number;
+  queuedCount: number;
+  sentCount: number;
+  deliveredCount: number;
+  delayedCount: number;
+  failedCount: number;
+  bouncedCount: number;
+  isComplete: boolean;
+  hasFailures: boolean;
+};
+
 export interface ClassesRepositoryPort {
   createClassGroup(group: ClassGroupEntity): Promise<ClassGroupEntity>;
   updateClassGroup(
@@ -168,6 +182,17 @@ export interface ClassesRepositoryPort {
     workspaceId: string,
     billingRunId: string
   ): Promise<ClassBillingInvoiceLinkEntity[]>;
+  getInvoiceStatusesByIds?(
+    tenantId: string,
+    invoiceIds: string[]
+  ): Promise<Record<string, "DRAFT" | "ISSUED" | "SENT" | "PAID" | "CANCELED">>;
+  getBillingInvoiceSendProgress?(
+    tenantId: string,
+    workspaceId: string,
+    invoiceIds: string[],
+    sentAfter: Date,
+    expectedInvoiceCount: number
+  ): Promise<BillingInvoiceSendProgress>;
   findBillingInvoiceLinkByIdempotency(
     tenantId: string,
     workspaceId: string,

@@ -24,13 +24,13 @@ export function InvoiceEmail({
 }: InvoiceEmailProps) {
   const previewText = `${companyName} sent you an invoice ${invoiceNumber}`;
   const payToItems = [
+    paymentDetails?.method ? `Method: ${paymentDetails.method}` : undefined,
+    paymentDetails?.accountHolderName ? `Account: ${paymentDetails.accountHolderName}` : undefined,
     paymentDetails?.bankName ? `Bank: ${paymentDetails.bankName}` : undefined,
-    paymentDetails?.accountHolderName
-      ? `Account holder: ${paymentDetails.accountHolderName}`
-      : undefined,
     paymentDetails?.iban ? `IBAN: ${paymentDetails.iban}` : undefined,
     paymentDetails?.bic ? `BIC: ${paymentDetails.bic}` : undefined,
     paymentDetails?.referenceText ? `Reference: ${paymentDetails.referenceText}` : undefined,
+    paymentDetails?.instructions ? `Instructions: ${paymentDetails.instructions}` : undefined,
   ].filter((line): line is string => Boolean(line && line.trim().length > 0));
 
   return (

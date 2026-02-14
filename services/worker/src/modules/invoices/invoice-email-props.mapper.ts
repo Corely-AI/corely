@@ -18,11 +18,14 @@ type InvoiceLineLike = {
 };
 
 type PaymentDetailsLike = {
+  type?: string | null;
+  label?: string | null;
   accountHolderName?: string | null;
   iban?: string | null;
   bic?: string | null;
   bankName?: string | null;
   referenceText?: string | null;
+  instructions?: string | null;
 };
 
 type InvoiceLike = BillToFields & {
@@ -90,11 +93,13 @@ export function mapToInvoiceEmailProps(input: MapperInput): InvoiceEmailProps {
     })),
     paymentDetails: paymentSnapshot
       ? {
+          method: paymentSnapshot.label ?? paymentSnapshot.type ?? undefined,
           accountHolderName: paymentSnapshot.accountHolderName ?? undefined,
           iban: paymentSnapshot.iban ?? undefined,
           bic: paymentSnapshot.bic ?? undefined,
           bankName: paymentSnapshot.bankName ?? undefined,
           referenceText: paymentSnapshot.referenceText ?? undefined,
+          instructions: paymentSnapshot.instructions ?? undefined,
         }
       : undefined,
     viewInvoiceUrl,
@@ -115,16 +120,30 @@ function toPaymentDetails(value: unknown): PaymentDetailsLike | undefined {
   const bic = typeof record.bic === "string" ? record.bic : undefined;
   const bankName = typeof record.bankName === "string" ? record.bankName : undefined;
   const referenceText = typeof record.referenceText === "string" ? record.referenceText : undefined;
+  const instructions = typeof record.instructions === "string" ? record.instructions : undefined;
+  const label = typeof record.label === "string" ? record.label : undefined;
+  const type = typeof record.type === "string" ? record.type : undefined;
 
-  if (!accountHolderName && !iban && !bic && !bankName && !referenceText) {
+  if (
+    !accountHolderName &&
+    !iban &&
+    !bic &&
+    !bankName &&
+    !referenceText &&
+    !instructions &&
+    !label
+  ) {
     return undefined;
   }
 
   return {
+    type,
+    label,
     accountHolderName,
     iban,
     bic,
     bankName,
     referenceText,
+    instructions,
   };
 }
