@@ -68,21 +68,29 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                             {item.body}
                           </p>
                         )}
-                        {isActivity && item.metadata?.dueAt && (
-                          <p className="text-xs text-muted-foreground">
-                            {t("crm.timeline.due", {
-                              date: new Date(item.metadata.dueAt as string).toLocaleString(
-                                i18n.language,
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
-                              ),
-                            })}
-                          </p>
+                        {isActivity && item.metadata && (
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {item.metadata.dueAt && (
+                              <p className="text-xs text-muted-foreground mr-2">
+                                Due: {new Date(item.metadata.dueAt as string).toLocaleDateString()}
+                              </p>
+                            )}
+                            {item.metadata.outcome && (
+                              <span className="text-xs bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded">
+                                {String(item.metadata.outcome)}
+                              </span>
+                            )}
+                            {item.metadata.durationSeconds && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                ⏱ {Math.round(Number(item.metadata.durationSeconds) / 60)}m
+                              </span>
+                            )}
+                            {item.metadata.location && (
+                              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                📍 {String(item.metadata.location)}
+                              </span>
+                            )}
+                          </div>
                         )}
                         {isStageChange && item.metadata?.toStageId && (
                           <p className="text-xs text-muted-foreground">

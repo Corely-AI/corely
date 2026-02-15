@@ -2,6 +2,8 @@ import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
+import { PartyModule } from "../party";
+import { LeadsController } from "./adapters/http/leads.controller";
 import { DealsHttpController } from "./adapters/http/deals.controller";
 import {
   ActivitiesHttpController,
@@ -31,21 +33,100 @@ import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-tim
 import { ChannelCatalogService } from "./application/channel-catalog.service";
 import { ChannelsHttpController } from "./adapters/http/channels.controller";
 import { LogMessageUseCase } from "./application/use-cases/log-message/log-message.usecase";
+import { CreateLeadUseCase } from "./application/use-cases/create-lead/create-lead.usecase";
+import { ConvertLeadUseCase } from "./application/use-cases/convert-lead/convert-lead.usecase";
+import { PrismaLeadRepoAdapter } from "./infrastructure/prisma/prisma-lead-repo.adapter";
+import { LEAD_REPO_PORT } from "./application/ports/lead-repository.port";
+import { PartyApplication } from "../party/application/party.application";
+
+import { GetDealSummaryTool } from "./copilot/tools/get-deal-summary.tool";
+import { COPILOT_TOOLS } from "../ai-copilot/application/ports/tool-registry.port";
+import { SequencesInternalController } from "./adapters/http/sequences-internal.controller";
+import { PrismaSequenceRepoAdapter } from "./infrastructure/prisma/prisma-sequence-repo.adapter";
+import { PrismaEnrollmentRepoAdapter } from "./infrastructure/prisma/prisma-enrollment-repo.adapter";
+import { EnrollEntityUseCase } from "./application/use-cases/enroll-entity/enroll-entity.usecase";
+import { RunSequenceStepsUseCase } from "./application/use-cases/run-sequence-steps/run-sequence-steps.usecase";
+import { SEQUENCE_REPO_PORT } from "./application/ports/sequence-repository.port";
+import { ENROLLMENT_REPO_PORT } from "./application/ports/enrollment-repository.port";
+
+import { CreateEmailDraftTool } from "./copilot/tools/create-email-draft.tool";
+import { RecommendNextStepTool } from "./copilot/tools/recommend-next-step.tool";
+
+import { SequencesHttpController } from "./adapters/http/sequences.controller";
+import { CreateSequenceUseCase } from "./application/use-cases/create-sequence/create-sequence.usecase";
 
 @Module({
-  imports: [DataModule, IdentityModule, KernelModule, PlatformModule],
+  imports: [DataModule, IdentityModule, KernelModule, PlatformModule, PartyModule],
   controllers: [
     DealsHttpController,
     ActivitiesHttpController,
     TimelineHttpController,
     ChannelsHttpController,
+    LeadsController,
+    SequencesInternalController,
+    SequencesHttpController,
   ],
   providers: [
     ChannelCatalogService,
+    {
+      provide: COPILOT_TOOLS,
+      useClass: GetDealSummaryTool,
+      multi: true,
+    },
+    {
+      provide: COPILOT_TOOLS,
+      useClass: CreateEmailDraftTool,
+      multi: true,
+    },
+    {
+      provide: COPILOT_TOOLS,
+      useClass: RecommendNextStepTool,
+      multi: true,
+    },
+    EnrollEntityUseCase,
+    RunSequenceStepsUseCase,
+    CreateSequenceUseCase, // Add this
     PrismaDealRepoAdapter,
     PrismaActivityRepoAdapter,
     { provide: DEAL_REPO_PORT, useExisting: PrismaDealRepoAdapter },
     { provide: ACTIVITY_REPO_PORT, useExisting: PrismaActivityRepoAdapter },
+    PrismaLeadRepoAdapter,
+    { provide: LEAD_REPO_PORT, useExisting: PrismaLeadRepoAdapter },
+    PrismaSequenceRepoAdapter,
+    PrismaEnrollmentRepoAdapter,
+    { provide: SEQUENCE_REPO_PORT, useExisting: PrismaSequenceRepoAdapter },
+    { provide: ENROLLMENT_REPO_PORT, useExisting: PrismaEnrollmentRepoAdapter },
+    {
+      provide: CreateLeadUseCase,
+      useFactory: (leadRepo: PrismaLeadRepoAdapter, clock: ClockPort, idGen: IdGeneratorPort) =>
+        new CreateLeadUseCase({ leadRepo, clock, idGenerator: idGen, logger: new NestLoggerAdapter() }),
+      inject: [LEAD_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
+    },
+    {
+      provide: ConvertLeadUseCase,
+      useFactory: (
+        leadRepo: PrismaLeadRepoAdapter,
+        partyApp: PartyApplication,
+        createDeal: CreateDealUseCase,
+        clock: ClockPort,
+        idGen: IdGeneratorPort
+      ) =>
+        new ConvertLeadUseCase({
+          leadRepo,
+          partyApp,
+          createDeal,
+          clock,
+          idGenerator: idGen,
+          logger: new NestLoggerAdapter(),
+        }),
+      inject: [
+        LEAD_REPO_PORT,
+        PartyApplication,
+        CreateDealUseCase,
+        CLOCK_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+      ],
+    },
     {
       provide: CreateDealUseCase,
       useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort, idGen: IdGeneratorPort) =>

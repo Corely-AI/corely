@@ -9,6 +9,11 @@ export const UpdateActivityInputSchema = z
     body: z.string().optional(),
     dueAt: utcInstantSchema.optional(),
     assignedToUserId: z.string().nullable().optional(),
+    outcome: z.string().nullable().optional(),
+    durationSeconds: z.number().nullable().optional(),
+    location: z.string().nullable().optional(),
+    attendees: z.array(z.unknown()).nullable().optional(),
+    metadata: z.record(z.unknown()).nullable().optional(),
   })
   .refine((val) => Object.keys(val).length > 1, {
     message: "At least one field besides activityId must be provided",

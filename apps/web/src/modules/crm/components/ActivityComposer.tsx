@@ -33,6 +33,9 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
         body: z.string().optional(),
         dueDate: z.date().optional(),
         dueTime: z.string().optional(),
+        outcome: z.string().optional(),
+        durationMinutes: z.coerce.number().optional(),
+        location: z.string().optional(),
       }),
     [t]
   );
@@ -46,10 +49,13 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
       body: "",
       dueDate: undefined,
       dueTime: "",
+      outcome: "",
+      location: "",
     },
   });
 
   const dueDate = form.watch("dueDate");
+  const selectedType = form.watch("type");
 
   const handleSubmit = (values: ActivityFormValues) => {
     const dateWithTime = values.dueDate ? new Date(values.dueDate) : undefined;
@@ -74,6 +80,9 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
         body: values.body || undefined,
         partyId: partyId || undefined,
         dueAt: dateWithTime?.toISOString(),
+        outcome: values.type === "CALL" ? values.outcome : undefined,
+        durationSeconds: values.durationMinutes ? values.durationMinutes * 60 : undefined,
+        location: values.type === "MEETING" ? values.location : undefined,
       },
     });
     form.reset({ type: values.type, subject: "", body: "", dueDate: undefined, dueTime: "" });
@@ -181,6 +190,67 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                 )}
               />
             </div>
+
+            {(selectedType === "CALL" || selectedType === "MEETING") && (
+              <div className="grid gap-3 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                    name="durationMinutes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duration (minutes)</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} placeholder="Example: 15, 30, 60" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {selectedType === "CALL" && (
+                   <FormField
+                    control={form.control}
+                    name="outcome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Outcome</FormLabel>
+                         <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select outcome" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                             <SelectItem value="Connected">Connected</SelectItem>
+                             <SelectItem value="Voicemail">Voicemail</SelectItem>
+                             <SelectItem value="No Answer">No Answer</SelectItem>
+                             <SelectItem value="Busy">Busy</SelectItem>
+                             <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                {selectedType === "MEETING" && (
+                   <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Zoom link or physical location" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            )}
 
             <FormField
               control={form.control}

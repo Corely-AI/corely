@@ -5,6 +5,7 @@ import { Runner, RunnerReport, TickContext } from "./runner.interface";
 import { OutboxPollerService } from "../modules/outbox/outbox-poller.service";
 import { InvoiceReminderRunnerService } from "../modules/invoices/invoice-reminder-runner.service";
 import { MonthlyBillingRunnerService } from "../modules/classes/monthly-billing-runner.service";
+import { SequenceRunnerService } from "../modules/crm/sequence-runner.service";
 import { v4 as uuidv4 } from "uuid";
 
 export interface TickRunSummary {
@@ -33,14 +34,22 @@ export class TickOrchestrator {
     private readonly invoiceRunner: InvoiceReminderRunnerService,
     @Optional()
     @Inject(MonthlyBillingRunnerService)
-    private readonly classesBillingRunner: MonthlyBillingRunnerService
+    private readonly classesBillingRunner: MonthlyBillingRunnerService,
+    @Optional()
+    @Inject(SequenceRunnerService)
+    private readonly sequenceRunner: SequenceRunnerService
   ) {
     this.logger.log(
-      `[init] TickOrchestrator created — outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}`
+      `[init] TickOrchestrator created — outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}, sequenceRunner=${!!this.sequenceRunner}`
     );
 
     // Register available runners
-    const candidates = [this.outboxRunner, this.invoiceRunner, this.classesBillingRunner];
+    const candidates = [
+        this.outboxRunner, 
+        this.invoiceRunner, 
+        this.classesBillingRunner,
+        this.sequenceRunner
+    ];
     for (const runner of candidates) {
       if (runner) {
         this.registerRunner(runner);

@@ -4,6 +4,9 @@ export * from "./deal.types";
 export * from "./activity.types";
 export * from "./pipeline.types";
 export * from "./channel.types";
+export * from "./lead.types";
+export * from "./create-lead.schema";
+export * from "./convert-lead.schema";
 
 // Party operations
 // TODO: Add party operation schemas (create-party, update-party, list-parties, etc.)
@@ -11,6 +14,7 @@ export * from "./channel.types";
 // Deal operations
 export * from "./create-deal.schema";
 export * from "./update-deal.schema";
+export * from "./sequence.types";
 export * from "./move-deal-stage.schema";
 export * from "./mark-deal-won.schema";
 export * from "./mark-deal-lost.schema";

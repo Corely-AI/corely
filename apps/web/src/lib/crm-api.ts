@@ -10,6 +10,12 @@ import type {
   ActivityDto,
   TimelineItem,
   ChannelDefinition,
+  CreateLeadInput,
+  ConvertLeadInput,
+  LeadDto,
+  CreateLeadOutput,
+  ConvertLeadOutput,
+  SequenceDto,
 } from "@corely/contracts";
 import type { LogMessageInput, LogMessageOutput, ListChannelsOutput } from "@corely/contracts";
 import { apiClient } from "./api-client";
@@ -236,5 +242,39 @@ export const crmApi = {
       input
     );
     return response.activity;
+  },
+
+  // ============================================================
+  // Lead Operations
+  // ============================================================
+  async createLead(input: CreateLeadInput): Promise<LeadDto> {
+    const response = await apiClient.post<CreateLeadOutput>("/crm/leads", input);
+    return response.lead;
+  },
+
+  async listLeads(params?: { status?: string }): Promise<LeadDto[]> {
+    const response = await apiClient.get<{ items: LeadDto[]; nextCursor?: string | null }>(
+      params?.status ? `/crm/leads?status=${params.status}` : "/crm/leads"
+    );
+    return response.items;
+  },
+
+  async getLead(id: string): Promise<LeadDto> {
+    return await apiClient.get<LeadDto>(`/crm/leads/${id}`);
+  },
+
+  async convertLead(input: ConvertLeadInput): Promise<ConvertLeadOutput> {
+    return await apiClient.post<ConvertLeadOutput>(`/crm/leads/${input.leadId}/convert`, input);
+  },
+
+  // ============================================================
+  // Sequence Operations
+  // ============================================================
+  async listSequences(): Promise<SequenceDto[]> {
+    return await apiClient.get<SequenceDto[]>("/crm/sequences");
+  },
+
+  async enrollEntity(input: { sequenceId: string; entityType: "lead" | "party"; entityId: string }): Promise<{ enrollmentId: string }> {
+    return await apiClient.post<{ enrollmentId: string }>("/crm/sequences/enroll", input);
   },
 };

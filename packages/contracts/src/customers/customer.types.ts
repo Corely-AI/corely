@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
-import { PartyLifecycleStatusSchema, PartySocialLinksSchema } from "../crm/party.types";
+import { PartyLifecycleStatusSchema, PartySocialLinksSchema, PartyKindSchema } from "../crm/party.types";
 
 export const CustomerBillingAddressSchema = z.object({
   line1: z.string(),
@@ -12,7 +12,16 @@ export const CustomerBillingAddressSchema = z.object({
 
 export const CustomerDtoSchema = z.object({
   id: z.string(),
+  tenantId: z.string(),
+  kind: PartyKindSchema.default("INDIVIDUAL"),
   displayName: z.string(),
+  firstName: z.string().nullable().optional(),
+  lastName: z.string().nullable().optional(),
+  organizationName: z.string().nullable().optional(),
+  jobTitle: z.string().nullable().optional(),
+  department: z.string().nullable().optional(),
+  industry: z.string().nullable().optional(),
+  website: z.string().nullable().optional(),
   email: z.string().email().optional(),
   phone: z.string().optional(),
   billingAddress: CustomerBillingAddressSchema.optional(),

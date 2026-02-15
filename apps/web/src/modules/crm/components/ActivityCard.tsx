@@ -43,7 +43,25 @@ export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
       </CardHeader>
       {activity.body && (
         <CardContent>
-          <p className="text-sm text-muted-foreground line-clamp-3">{activity.body}</p>
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-2">{activity.body}</p>
+          
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+             {activity.outcome && (
+                 <span className="bg-slate-100 px-2 py-1 rounded-md font-medium text-slate-700">
+                     Outcome: {activity.outcome}
+                 </span>
+             )}
+             {activity.durationSeconds && (
+                 <span className="flex items-center gap-1">
+                     ⏱ {Math.round(activity.durationSeconds / 60)} min
+                 </span>
+             )}
+             {activity.location && (
+                 <span className="flex items-center gap-1">
+                     📍 {activity.location}
+                 </span>
+             )}
+          </div>
         </CardContent>
       )}
     </Card>
