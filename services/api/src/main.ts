@@ -7,9 +7,9 @@ import * as path from "path";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { json, urlencoded } from "express";
 import cookieParser from "cookie-parser";
-import { AppModule } from "./app.module.js";
-import { ProblemDetailsExceptionFilter } from "./shared/exceptions/problem-details.filter.js";
-import { setupTracing, shutdownTracing } from "./shared/observability/setup-tracing.js";
+import { AppModule } from "./app.module";
+import { ProblemDetailsExceptionFilter } from "./shared/exceptions/problem-details.filter";
+import { setupTracing, shutdownTracing } from "./shared/observability/setup-tracing";
 
 // Load env files before anything else
 loadEnv();

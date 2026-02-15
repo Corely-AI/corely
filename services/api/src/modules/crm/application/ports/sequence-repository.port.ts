@@ -1,4 +1,4 @@
-import { SequenceAggregate } from "../../domain/sequence.aggregate";
+import type { SequenceAggregate } from "../../domain/sequence.aggregate";
 
 export const SEQUENCE_REPO_PORT = Symbol("SEQUENCE_REPO_PORT");
 

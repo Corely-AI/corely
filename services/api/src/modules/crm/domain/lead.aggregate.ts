@@ -87,19 +87,25 @@ export class LeadAggregate {
   }
 
   qualify(now: Date) {
-    if (this.status === "CONVERTED") throw new Error("Cannot qualify a converted lead");
+    if (this.status === "CONVERTED") {
+      throw new Error("Cannot qualify a converted lead");
+    }
     this.status = "QUALIFIED";
     this.updatedAt = now;
   }
 
   disqualify(now: Date) {
-    if (this.status === "CONVERTED") throw new Error("Cannot disqualify a converted lead");
+    if (this.status === "CONVERTED") {
+      throw new Error("Cannot disqualify a converted lead");
+    }
     this.status = "DISQUALIFIED";
     this.updatedAt = now;
   }
 
   convert(dealId: string, partyId: string, now: Date) {
-    if (this.status === "CONVERTED") throw new Error("Lead is already converted");
+    if (this.status === "CONVERTED") {
+      throw new Error("Lead is already converted");
+    }
     this.status = "CONVERTED";
     this.convertedDealId = dealId;
     this.convertedPartyId = partyId;

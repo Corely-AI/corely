@@ -1,4 +1,4 @@
-import { EnrollmentStatus, SequenceStepType } from "@prisma/client";
+import type { EnrollmentStatus, SequenceStepType } from "@prisma/client";
 
 export const ENROLLMENT_REPO_PORT = Symbol("ENROLLMENT_REPO_PORT");
 

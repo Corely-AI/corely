@@ -46,7 +46,9 @@ export class PrismaLeadRepoAdapter implements LeadRepoPort {
     const row = await (this.prisma as any).lead.findFirst({
       where: { id, tenantId },
     });
-    if (!row) return null;
+    if (!row) {
+      return null;
+    }
     return this.toAggregate(row);
   }
 
