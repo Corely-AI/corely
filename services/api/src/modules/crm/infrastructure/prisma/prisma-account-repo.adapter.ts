@@ -58,7 +58,9 @@ export class PrismaAccountRepoAdapter implements AccountRepositoryPort {
       },
     });
 
-    if (!record) {return null;}
+    if (!record) {
+      return null;
+    }
     return this.toAggregate(record);
   }
 
@@ -74,7 +76,9 @@ export class PrismaAccountRepoAdapter implements AccountRepositoryPort {
       },
     });
 
-    if (!record) {return null;}
+    if (!record) {
+      return null;
+    }
     return this.toAggregate(record);
   }
 
@@ -85,9 +89,15 @@ export class PrismaAccountRepoAdapter implements AccountRepositoryPort {
   ): Promise<{ items: AccountAggregate[]; total: number }> {
     // Build where clause combining CRM profile + Party filters
     const profileWhere: Record<string, unknown> = { tenantId };
-    if (filters.status) {profileWhere.status = filters.status;}
-    if (filters.accountType) {profileWhere.accountType = filters.accountType;}
-    if (filters.ownerUserId) {profileWhere.ownerUserId = filters.ownerUserId;}
+    if (filters.status) {
+      profileWhere.status = filters.status;
+    }
+    if (filters.accountType) {
+      profileWhere.accountType = filters.accountType;
+    }
+    if (filters.ownerUserId) {
+      profileWhere.ownerUserId = filters.ownerUserId;
+    }
 
     // Search query filters on Party.displayName
     if (filters.q) {

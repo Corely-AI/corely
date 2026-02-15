@@ -48,8 +48,12 @@ export default function LeadDetailPage() {
     },
   });
 
-  if (isLoading) {return <div>Loading...</div>;}
-  if (!lead) {return <div>Lead not found</div>;}
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+  if (!lead) {
+    return <div>Lead not found</div>;
+  }
 
   const handleConvert = () => {
     if (

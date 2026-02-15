@@ -26,14 +26,18 @@ export class RecommendNextStepTool implements DomainToolPort {
     const { dealId } = InputSchema.parse(params.input);
 
     const dealResult = await this.getDeal.execute({ dealId } as any, { tenantId: params.tenantId });
-    if (!dealResult.ok) {throw (dealResult as any).error;}
+    if (!dealResult.ok) {
+      throw (dealResult as any).error;
+    }
     const deal = dealResult.value.deal;
 
     const timelineResult = await this.getTimeline.execute(
       { entityType: "deal", entityId: dealId, limit: 10 },
       { tenantId: params.tenantId }
     );
-    if (!timelineResult.ok) {throw (timelineResult as any).error;}
+    if (!timelineResult.ok) {
+      throw (timelineResult as any).error;
+    }
     const activities = timelineResult.value.items.filter((i) => i.type === "ACTIVITY");
 
     // Rule-based logic
