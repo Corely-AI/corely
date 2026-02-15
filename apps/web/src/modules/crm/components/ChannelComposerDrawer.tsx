@@ -125,13 +125,22 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
         {channel.capabilities.subject && (
           <div className="space-y-2">
             <Label>{t("crm.channel.subject")}</Label>
-            <Input value={subject} onChange={(e) => setSubject(e.target.value)} data-testid="crm-channel-subject" />
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              data-testid="crm-channel-subject"
+            />
           </div>
         )}
 
         <div className="space-y-2">
           <Label>{t("crm.channel.message")}</Label>
-          <Textarea rows={5} value={body} onChange={(e) => setBody(e.target.value)} data-testid="crm-channel-message" />
+          <Textarea
+            rows={5}
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            data-testid="crm-channel-message"
+          />
         </div>
 
         <DrawerFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
@@ -142,7 +151,12 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
             </Button>
           )}
           {canOpen && (
-            <Button variant="outline" onClick={handleOpen} disabled={!openUrl} data-testid="crm-channel-open-link">
+            <Button
+              variant="outline"
+              onClick={handleOpen}
+              disabled={!openUrl}
+              data-testid="crm-channel-open-link"
+            >
               <ExternalLink className="h-4 w-4 mr-1" />
               {t("common.open")}
             </Button>

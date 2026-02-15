@@ -22,28 +22,27 @@ export class CreateEmailDraftTool implements DomainToolPort {
 
   constructor(private readonly createActivity: CreateActivityUseCase) {}
 
-  execute = async (params: {
-    tenantId: string;
-    userId: string;
-    input: unknown;
-  }) => {
+  execute = async (params: { tenantId: string; userId: string; input: unknown }) => {
     const input = InputSchema.parse(params.input);
 
-    const result = await this.createActivity.execute({
+    const result = await this.createActivity.execute(
+      {
         type: "EMAIL_DRAFT",
         subject: input.subject,
         body: input.body,
         dealId: input.dealId,
         partyId: input.partyId,
         metadata: {
-            recipientEmail: input.recipientEmail,
+          recipientEmail: input.recipientEmail,
         },
         // other fields optional
-    }, { tenantId: params.tenantId });
+      },
+      { tenantId: params.tenantId }
+    );
 
     if (!result.ok) {
-        throw (result as any).error;
-    } 
+      throw (result as any).error;
+    }
 
     return {
       activityId: result.value.activity!.id,

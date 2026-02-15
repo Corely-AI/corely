@@ -1,4 +1,4 @@
-import { LeadDto } from "@corely/contracts";
+import { type LeadDto } from "@corely/contracts";
 import { Card, CardContent } from "@corely/ui";
 import { User, RefreshCcw, CheckCircle, XCircle } from "lucide-react";
 
@@ -27,7 +27,9 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
         <div className="flex justify-between items-start">
           <div>
             <h3 className="font-semibold text-lg text-foreground">
-              {lead.companyName || `${lead.firstName || ""} ${lead.lastName || ""}` || "Unnamed Lead"}
+              {lead.companyName ||
+                `${lead.firstName || ""} ${lead.lastName || ""}` ||
+                "Unnamed Lead"}
             </h3>
             {lead.companyName && (lead.firstName || lead.lastName) && (
               <p className="text-sm text-muted-foreground">
@@ -47,14 +49,14 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
             </div>
           )}
           {lead.phone && (
-             <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1">
               <span>{lead.phone}</span>
             </div>
           )}
         </div>
-        
+
         <div className="text-xs text-muted-foreground pt-2 border-t">
-            Source: {lead.source} • Created {new Date(lead.createdAt).toLocaleDateString()}
+          Source: {lead.source} • Created {new Date(lead.createdAt).toLocaleDateString()}
         </div>
       </CardContent>
     </Card>

@@ -1,7 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
-import { AccountAggregate, type AccountProfileProps, type PartySnapshot } from "../../domain/account.aggregate";
-import type { AccountRepositoryPort, AccountFilters } from "../../application/ports/account-repository.port";
+import {
+  AccountAggregate,
+  type AccountProfileProps,
+  type PartySnapshot,
+} from "../../domain/account.aggregate";
+import type {
+  AccountRepositoryPort,
+  AccountFilters,
+} from "../../application/ports/account-repository.port";
 import type { AccountStatus, CrmAccountType } from "@corely/contracts";
 
 @Injectable()
@@ -51,7 +58,7 @@ export class PrismaAccountRepoAdapter implements AccountRepositoryPort {
       },
     });
 
-    if (!record) return null;
+    if (!record) {return null;}
     return this.toAggregate(record);
   }
 
@@ -67,7 +74,7 @@ export class PrismaAccountRepoAdapter implements AccountRepositoryPort {
       },
     });
 
-    if (!record) return null;
+    if (!record) {return null;}
     return this.toAggregate(record);
   }
 
@@ -78,9 +85,9 @@ export class PrismaAccountRepoAdapter implements AccountRepositoryPort {
   ): Promise<{ items: AccountAggregate[]; total: number }> {
     // Build where clause combining CRM profile + Party filters
     const profileWhere: Record<string, unknown> = { tenantId };
-    if (filters.status) profileWhere.status = filters.status;
-    if (filters.accountType) profileWhere.accountType = filters.accountType;
-    if (filters.ownerUserId) profileWhere.ownerUserId = filters.ownerUserId;
+    if (filters.status) {profileWhere.status = filters.status;}
+    if (filters.accountType) {profileWhere.accountType = filters.accountType;}
+    if (filters.ownerUserId) {profileWhere.ownerUserId = filters.ownerUserId;}
 
     // Search query filters on Party.displayName
     if (filters.q) {
@@ -143,8 +150,10 @@ export class PrismaAccountRepoAdapter implements AccountRepositoryPort {
       contactPoints: Array<{ type: string; value: string; isPrimary: boolean }>;
     };
   }): AccountAggregate {
-    const primaryEmail = record.party.contactPoints.find((cp) => cp.type === "EMAIL")?.value ?? null;
-    const primaryPhone = record.party.contactPoints.find((cp) => cp.type === "PHONE")?.value ?? null;
+    const primaryEmail =
+      record.party.contactPoints.find((cp) => cp.type === "EMAIL")?.value ?? null;
+    const primaryPhone =
+      record.party.contactPoints.find((cp) => cp.type === "PHONE")?.value ?? null;
 
     const partySnapshot: PartySnapshot = {
       id: record.party.id,

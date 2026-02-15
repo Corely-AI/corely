@@ -3,8 +3,9 @@
 ## ✅ What Was Implemented
 
 ### Backend (API Service)
+
 - ✅ **Database Schema**: Sequence, SequenceStep, SequenceEnrollment tables
-- ✅ **Domain Models**: 
+- ✅ **Domain Models**:
   - `SequenceAggregate` - Automation workflow definition
   - `EnrollmentAggregate` - Entity enrollment with business logic
 - ✅ **Use Cases**:
@@ -19,16 +20,19 @@
   - `POST /internal/crm/sequences/run` - Execute steps (worker-only)
 
 ### Worker Service
+
 - ✅ **SequenceRunnerService**: Triggers automation execution
 - ✅ **CrmWorkerModule**: Registered in worker
 - ✅ **Tick Integration**: Runs on scheduled intervals
 
 ### AI Copilot
+
 - ✅ **CreateEmailDraftTool**: AI drafts emails
 - ✅ **RecommendNextStepTool**: AI suggests next actions
 - ✅ **GetDealSummaryTool**: Enhanced for context
 
 ### Frontend (Web App)
+
 - ✅ **SequencesPage**: Browse automation workflows
 - ✅ **SequenceEnrollmentCard**: One-click enrollment
 - ✅ **Navigation**: "Sequences" menu item (⚡ Zap icon)
@@ -36,6 +40,7 @@
 - ✅ **Integration**: Enrollment card in Lead Detail page
 
 ### Data & Types
+
 - ✅ **Contracts**: Full type definitions in `@corely/contracts`
 - ✅ **Migrations**: Database schema applied (20260215135945)
 - ✅ **Prisma Client**: Generated and ready
@@ -43,23 +48,26 @@
 ## 🚀 Quick Start
 
 ### 1. Verify Migration
+
 ```bash
 # Already applied! ✅
 pnpm prisma:migrate
 ```
 
 ### 2. Seed Test Data
+
 ```bash
 export TEST_TENANT_ID="your-tenant-id"
 pnpm -F @corely/data tsx scripts/seed-test-sequence.ts
 ```
 
 ### 3. Start Services
+
 ```bash
 # Terminal 1: API
 pnpm dev:api
 
-# Terminal 2: Worker  
+# Terminal 2: Worker
 pnpm dev:worker
 
 # Terminal 3: Web
@@ -67,6 +75,7 @@ pnpm dev:web
 ```
 
 ### 4. Test in Browser
+
 Navigate to: `http://localhost:5173/crm/sequences`
 
 ## 📋 Test Checklist
@@ -90,6 +99,7 @@ Run through the [TESTING_GUIDE_SEQUENCES.md](./TESTING_GUIDE_SEQUENCES.md):
 ## 🎯 Next Steps
 
 ### Immediate (Testing)
+
 1. Seed test sequences
 2. Create a lead
 3. Enroll lead in sequence
@@ -97,12 +107,14 @@ Run through the [TESTING_GUIDE_SEQUENCES.md](./TESTING_GUIDE_SEQUENCES.md):
 5. Verify automation works
 
 ### Short-term (Enhancements)
+
 1. Add permissions (`crm.sequences.read`, `crm.sequences.manage`)
 2. Implement actual email sending for EMAIL_AUTO steps
 3. Build Sequence Builder UI
 4. Add analytics dashboard
 
 ### Long-term (Advanced Features)
+
 1. Conditional branching
 2. A/B testing
 3. Performance metrics
@@ -160,19 +172,23 @@ Run through the [TESTING_GUIDE_SEQUENCES.md](./TESTING_GUIDE_SEQUENCES.md):
 ## 🎨 Features
 
 ### Sequence Types
+
 - **EMAIL_AUTO**: Automatically sends email
 - **EMAIL_MANUAL**: Creates draft for review
 - **CALL**: Creates call reminder task
 - **TASK**: Creates generic task
 
 ### Enrollment States
+
 - **ACTIVE**: Processing steps
 - **PAUSED**: Temporarily stopped
 - **COMPLETED**: All steps done
 - **CANCELED**: Manually stopped
 
 ### AI Integration
+
 AI Copilot can:
+
 - Draft personalized emails
 - Recommend next best actions
 - Analyze deal timelines
@@ -181,6 +197,7 @@ AI Copilot can:
 ## 🔧 Technical Details
 
 ### Stack
+
 - **Backend**: NestJS + Prisma
 - **Frontend**: React + TypeScript
 - **Database**: PostgreSQL (multi-schema)
@@ -188,6 +205,7 @@ AI Copilot can:
 - **Types**: Zod schemas + TypeScript
 
 ### Patterns Used
+
 - Repository pattern
 - Use case pattern (CQRS-lite)
 - Domain-driven design
@@ -195,6 +213,7 @@ AI Copilot can:
 - Dependency injection
 
 ### Security
+
 - Service token for internal endpoints
 - Tenant isolation
 - Permission-ready (TODO: implement)
@@ -202,11 +221,12 @@ AI Copilot can:
 ## 💡 Tips
 
 ### Development
+
 ```bash
 # Watch API logs
 tail -f logs/api.log | grep sequence
 
-# Watch worker logs  
+# Watch worker logs
 tail -f logs/worker.log
 
 # Check database
@@ -214,6 +234,7 @@ psql -d kerniflow -c "SELECT * FROM crm.\"Sequence\""
 ```
 
 ### Debugging
+
 - Check `nextExecutionAt` is in past to trigger execution
 - Verify `WORKER_SERVICE_TOKEN` matches between services
 - Ensure `API_BASE_URL` points to running API
@@ -222,6 +243,7 @@ psql -d kerniflow -c "SELECT * FROM crm.\"Sequence\""
 ## 🙏 Credits
 
 Implemented with care following:
+
 - Existing codebase patterns
 - Clean architecture principles
 - Type safety best practices

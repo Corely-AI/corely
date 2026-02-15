@@ -135,7 +135,20 @@ export class ActivityEntity {
   }
 
   updateActivity(
-    patch: Partial<Pick<ActivityProps, "subject" | "body" | "dueAt" | "assignedToUserId" | "outcome" | "durationSeconds" | "location" | "attendees" | "metadata">>,
+    patch: Partial<
+      Pick<
+        ActivityProps,
+        | "subject"
+        | "body"
+        | "dueAt"
+        | "assignedToUserId"
+        | "outcome"
+        | "durationSeconds"
+        | "location"
+        | "attendees"
+        | "metadata"
+      >
+    >,
     now: Date
   ) {
     if (this.status === "COMPLETED") {
@@ -160,11 +173,11 @@ export class ActivityEntity {
     if (patch.assignedToUserId !== undefined) {
       this.assignedToUserId = patch.assignedToUserId;
     }
-    if (patch.outcome !== undefined) this.outcome = patch.outcome;
-    if (patch.durationSeconds !== undefined) this.durationSeconds = patch.durationSeconds;
-    if (patch.location !== undefined) this.location = patch.location;
-    if (patch.attendees !== undefined) this.attendees = patch.attendees;
-    if (patch.metadata !== undefined) this.metadata = patch.metadata;
+    if (patch.outcome !== undefined) {this.outcome = patch.outcome;}
+    if (patch.durationSeconds !== undefined) {this.durationSeconds = patch.durationSeconds;}
+    if (patch.location !== undefined) {this.location = patch.location;}
+    if (patch.attendees !== undefined) {this.attendees = patch.attendees;}
+    if (patch.metadata !== undefined) {this.metadata = patch.metadata;}
 
     this.touch(now);
   }

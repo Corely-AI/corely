@@ -33,7 +33,7 @@ export default function NewLeadPage() {
     mutationFn: (data: any) => crmApi.createLead(data),
     onSuccess: () => {
       toast.success("Lead created successfully");
-      queryClient.invalidateQueries({ queryKey: ["leads"] });
+      void queryClient.invalidateQueries({ queryKey: ["leads"] });
       navigate("/crm/leads");
     },
     onError: (error) => {
@@ -57,7 +57,9 @@ export default function NewLeadPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate("/crm/leads")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-h2" data-testid="crm-lead-form-header">New Lead</h1>
+        <h1 className="text-h2" data-testid="crm-lead-form-header">
+          New Lead
+        </h1>
       </div>
 
       <Card>

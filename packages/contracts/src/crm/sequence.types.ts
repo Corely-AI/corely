@@ -1,28 +1,13 @@
 import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
 
-export const SequenceStepTypeSchema = z.enum([
-  "EMAIL_AUTO",
-  "EMAIL_MANUAL",
-  "CALL",
-  "TASK",
-]);
+export const SequenceStepTypeSchema = z.enum(["EMAIL_AUTO", "EMAIL_MANUAL", "CALL", "TASK"]);
 export type SequenceStepType = z.infer<typeof SequenceStepTypeSchema>;
 
-export const SequenceStatusSchema = z.enum([
-  "ACTIVE",
-  "PAUSED",
-  "COMPLETED",
-  "ARCHIVED",
-]);
+export const SequenceStatusSchema = z.enum(["ACTIVE", "PAUSED", "COMPLETED", "ARCHIVED"]);
 export type SequenceStatus = z.infer<typeof SequenceStatusSchema>;
 
-export const EnrollmentStatusSchema = z.enum([
-  "ACTIVE",
-  "PAUSED",
-  "COMPLETED",
-  "CANCELED",
-]);
+export const EnrollmentStatusSchema = z.enum(["ACTIVE", "PAUSED", "COMPLETED", "CANCELED"]);
 export type EnrollmentStatus = z.infer<typeof EnrollmentStatusSchema>;
 
 export const SequenceStepDtoSchema = z.object({
@@ -66,15 +51,17 @@ export type SequenceEnrollmentDto = z.infer<typeof SequenceEnrollmentDtoSchema>;
 export const CreateSequenceInputSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  steps: z.array(
-    z.object({
-      stepOrder: z.number().int().positive(),
-      type: SequenceStepTypeSchema,
-      dayDelay: z.number().int().nonnegative(),
-      templateSubject: z.string().optional(),
-      templateBody: z.string().optional(),
-    })
-  ).min(1),
+  steps: z
+    .array(
+      z.object({
+        stepOrder: z.number().int().positive(),
+        type: SequenceStepTypeSchema,
+        dayDelay: z.number().int().nonnegative(),
+        templateSubject: z.string().optional(),
+        templateBody: z.string().optional(),
+      })
+    )
+    .min(1),
 });
 export type CreateSequenceInput = z.infer<typeof CreateSequenceInputSchema>;
 

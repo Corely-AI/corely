@@ -7,6 +7,7 @@ This plan outlines the expansion of the CRM module to include robust engagement 
 **Objective**: unified view of all customer interactions (Calls, Emails, Meetings) with specific details for each type.
 
 ### 1. Domain & Schema Updates
+
 - **`Activity` Model Enhancements**:
   - Add `outcome` (String?): For call results (e.g., "Voicemail", "Connected", "No Answer").
   - Add `durationSeconds` (Int?): For calls and meetings.
@@ -15,11 +16,13 @@ This plan outlines the expansion of the CRM module to include robust engagement 
   - Add `metadata` (Json?): For flexible extensions (e.g. email headers, call recording URLs).
 
 ### 2. Contract Updates
+
 - **`packages/contracts/src/crm/activity.types.ts`**:
   - Update `ActivityDto` to include new fields.
   - Update `CreateActivityInput` to support specific payloads for `CALL`, `MEETING`, `EMAIL`.
 
 ### 3. Backend Implementation
+
 - **`PrismaActivityRepoAdapter`**: Map new fields to Prisma model.
 - **Use Cases**:
   - `LogCallUseCase`: Specialized use case for calls.
@@ -28,6 +31,7 @@ This plan outlines the expansion of the CRM module to include robust engagement 
 - **Timeline Aggregation**: Ensure `GetTimelineUseCase` returns rich details for each activity type.
 
 ### 4. Frontend Implementation
+
 - **Activity Feed (`Timeline`)**:
   - Differentiate rendering for Calls, Meetings, Emails, and Notes.
   - Show "Call Outcome" and "Duration" badges.
@@ -43,6 +47,7 @@ This plan outlines the expansion of the CRM module to include robust engagement 
 **Objective**: Automate repetitive tasks using Sequences and leverage AI for content generation and decision support.
 
 ### 1. Domain & Schema Updates
+
 - **`Sequence` Model**:
   - `name`, `ownerUserId`, `createdAt`.
 - **`SequenceStep` Model**:
@@ -51,6 +56,7 @@ This plan outlines the expansion of the CRM module to include robust engagement 
   - `sequenceId`, `entityId` (Lead/Party), `currentStep`, `status`, `nextExecutionAt`.
 
 ### 2. Automation Engine (Worker)
+
 - **`SequenceRunner`**:
   - Polls active enrollments due for execution.
   - **Auto Email**: Sends email via EmailService -> Logs `EMAIL` Activity -> Advances step.
@@ -58,6 +64,7 @@ This plan outlines the expansion of the CRM module to include robust engagement 
   - **Task/Call**: Creates `TASK` Activity -> Advances step (upon completion).
 
 ### 3. AI Copilot Integration
+
 - **Smart Drafting**:
   - `GenerateEmailDraftTool`: Uses LLM to draft email content based on Deal/Lead context and user prompt.
   - "Rewrite with AI" button in Email Modal.
@@ -67,6 +74,7 @@ This plan outlines the expansion of the CRM module to include robust engagement 
   - `ExtractContactInfoTool`: Parses email signature from raw text to update Contact details.
 
 ## Execution Order
+
 1.  **Phase 2 Schema & Contracts** (Foundation).
 2.  **Phase 2 Backend & UI** (Engagement features).
 3.  **Phase 3 Schema & Worker** (Automation engine).

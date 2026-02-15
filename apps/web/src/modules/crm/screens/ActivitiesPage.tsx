@@ -26,7 +26,11 @@ export default function ActivitiesPage() {
         <h1 className="text-h1 text-foreground" data-testid="crm-activities-header">
           {t("crm.activities.title")}
         </h1>
-        <Button variant="accent" onClick={() => navigate("/crm/activities/new")} data-testid="crm-activities-create">
+        <Button
+          variant="accent"
+          onClick={() => navigate("/crm/activities/new")}
+          data-testid="crm-activities-create"
+        >
           <Plus className="h-4 w-4" />
           {t("crm.activities.new")}
         </Button>

@@ -1,21 +1,10 @@
 import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
 
-export const LeadStatusSchema = z.enum([
-  "NEW",
-  "QUALIFIED",
-  "DISQUALIFIED",
-  "CONVERTED",
-]);
+export const LeadStatusSchema = z.enum(["NEW", "QUALIFIED", "DISQUALIFIED", "CONVERTED"]);
 export type LeadStatus = z.infer<typeof LeadStatusSchema>;
 
-export const LeadSourceSchema = z.enum([
-  "WEB_FORM",
-  "MANUAL",
-  "IMPORT",
-  "REFERRAL",
-  "OTHER",
-]);
+export const LeadSourceSchema = z.enum(["WEB_FORM", "MANUAL", "IMPORT", "REFERRAL", "OTHER"]);
 export type LeadSource = z.infer<typeof LeadSourceSchema>;
 
 export const LeadDtoSchema = z.object({

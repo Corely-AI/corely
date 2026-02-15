@@ -39,20 +39,48 @@ export class AccountAggregate {
   ) {}
 
   // Getters — expose composed view
-  get id() { return this.profile.id; }
-  get tenantId() { return this.profile.tenantId; }
-  get partyId() { return this.party.id; }
-  get name() { return this.party.displayName; }
-  get website() { return this.party.website; }
-  get email() { return this.party.primaryEmail; }
-  get phone() { return this.party.primaryPhone; }
-  get accountType() { return this.profile.accountType; }
-  get status() { return this.profile.status; }
-  get industry() { return this.profile.industry ?? this.party.industry ?? undefined; }
-  get ownerUserId() { return this.profile.ownerUserId; }
-  get notes() { return this.profile.notes; }
-  get createdAt() { return this.profile.createdAt; }
-  get updatedAt() { return this.profile.updatedAt; }
+  get id() {
+    return this.profile.id;
+  }
+  get tenantId() {
+    return this.profile.tenantId;
+  }
+  get partyId() {
+    return this.party.id;
+  }
+  get name() {
+    return this.party.displayName;
+  }
+  get website() {
+    return this.party.website;
+  }
+  get email() {
+    return this.party.primaryEmail;
+  }
+  get phone() {
+    return this.party.primaryPhone;
+  }
+  get accountType() {
+    return this.profile.accountType;
+  }
+  get status() {
+    return this.profile.status;
+  }
+  get industry() {
+    return this.profile.industry ?? this.party.industry ?? undefined;
+  }
+  get ownerUserId() {
+    return this.profile.ownerUserId;
+  }
+  get notes() {
+    return this.profile.notes;
+  }
+  get createdAt() {
+    return this.profile.createdAt;
+  }
+  get updatedAt() {
+    return this.profile.updatedAt;
+  }
 
   /**
    * Compose from persistence (Party + CrmAccountProfile)

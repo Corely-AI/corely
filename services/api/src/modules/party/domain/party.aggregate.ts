@@ -202,12 +202,12 @@ export class PartyAggregate {
     // Logic: if kind is ORGANIZATION, ensure organizationName is set or use displayName
     let finalDisplayName = params.displayName;
     const finalKind = params.kind ?? "INDIVIDUAL";
-    
+
     // Safety check: ensure displayName is not empty
     if (!finalDisplayName && finalKind === "INDIVIDUAL" && params.firstName && params.lastName) {
-       finalDisplayName = `${params.firstName} ${params.lastName}`;
+      finalDisplayName = `${params.firstName} ${params.lastName}`;
     } else if (!finalDisplayName && finalKind === "ORGANIZATION" && params.organizationName) {
-       finalDisplayName = params.organizationName;
+      finalDisplayName = params.organizationName;
     }
 
     return PartyAggregate.createParty({
@@ -228,15 +228,16 @@ export class PartyAggregate {
       }
       this.displayName = patch.displayName.trim();
     }
-    if (patch.kind !== undefined) this.kind = patch.kind;
-    if (patch.firstName !== undefined) this.firstName = patch.firstName ?? null;
-    if (patch.lastName !== undefined) this.lastName = patch.lastName ?? null;
-    if (patch.organizationName !== undefined) this.organizationName = patch.organizationName ?? null;
-    if (patch.jobTitle !== undefined) this.jobTitle = patch.jobTitle ?? null;
-    if (patch.department !== undefined) this.department = patch.department ?? null;
-    if (patch.industry !== undefined) this.industry = patch.industry ?? null;
-    if (patch.website !== undefined) this.website = patch.website ?? null;
-    if (patch.size !== undefined) this.size = patch.size ?? null;
+    if (patch.kind !== undefined) {this.kind = patch.kind;}
+    if (patch.firstName !== undefined) {this.firstName = patch.firstName ?? null;}
+    if (patch.lastName !== undefined) {this.lastName = patch.lastName ?? null;}
+    if (patch.organizationName !== undefined)
+      {this.organizationName = patch.organizationName ?? null;}
+    if (patch.jobTitle !== undefined) {this.jobTitle = patch.jobTitle ?? null;}
+    if (patch.department !== undefined) {this.department = patch.department ?? null;}
+    if (patch.industry !== undefined) {this.industry = patch.industry ?? null;}
+    if (patch.website !== undefined) {this.website = patch.website ?? null;}
+    if (patch.size !== undefined) {this.size = patch.size ?? null;}
 
     this.setContactPoint("EMAIL", patch.email, generateId);
     this.setContactPoint("PHONE", patch.phone, generateId);

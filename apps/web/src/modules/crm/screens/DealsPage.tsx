@@ -47,7 +47,10 @@ export default function DealsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="crm-deals-list">
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          data-testid="crm-deals-list"
+        >
           {deals.map((deal) => (
             <DealCard key={deal.id} deal={deal} onClick={() => navigate(`/crm/deals/${deal.id}`)} />
           ))}

@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
-import { PartyLifecycleStatusSchema, PartySocialLinksSchema, PartyKindSchema } from "../crm/party.types";
+import {
+  PartyLifecycleStatusSchema,
+  PartySocialLinksSchema,
+  PartyKindSchema,
+} from "../crm/party.types";
 
 export const CustomerBillingAddressSchema = z.object({
   line1: z.string(),

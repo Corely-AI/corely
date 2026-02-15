@@ -3,6 +3,7 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 1. ✅ Database migrations applied (`pnpm prisma:migrate`)
 2. ✅ Prisma client generated (`pnpm prisma:generate`)
 3. ✅ API service running
@@ -39,12 +40,14 @@ pnpm -F @corely/data tsx scripts/seed-test-sequence.ts
 ```
 
 This creates:
+
 - "New Lead Follow-up" sequence (3 steps)
 - "Deal Nurture Campaign" sequence (2 steps)
 
 ### 2. Test API Endpoints
 
 #### List Sequences
+
 ```bash
 curl http://localhost:3000/crm/sequences \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -54,6 +57,7 @@ curl http://localhost:3000/crm/sequences \
 Expected: JSON array of sequences with their steps
 
 #### Create a Sequence
+
 ```bash
 curl -X POST http://localhost:3000/crm/sequences \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -82,6 +86,7 @@ curl -X POST http://localhost:3000/crm/sequences \
 ```
 
 #### Enroll a Lead
+
 ```bash
 # First create a lead (or use existing)
 curl -X POST http://localhost:3000/crm/leads \
@@ -110,8 +115,9 @@ curl -X POST http://localhost:3000/crm/sequences/enroll \
 ### 3. Test Worker Execution
 
 #### Check Current Enrollments
+
 ```sql
-SELECT 
+SELECT
   e.id,
   e."currentStepOrder",
   e.status,
@@ -124,11 +130,13 @@ WHERE e.status = 'ACTIVE'
 ```
 
 #### Manually Trigger Worker Tick
+
 ```bash
 pnpm dev:worker:tick
 ```
 
 #### What Should Happen:
+
 1. Worker calls `/internal/crm/sequences/run`
 2. API processes due enrollments
 3. Activities created based on step type:
@@ -139,9 +147,10 @@ pnpm dev:worker:tick
 4. Enrollment advances to next step or completes
 
 #### Verify Results
+
 ```sql
 -- Check created activities
-SELECT 
+SELECT
   a.id,
   a.type,
   a.subject,
@@ -151,7 +160,7 @@ WHERE a."createdAt" > NOW() - INTERVAL '5 minutes'
 ORDER BY a."createdAt" DESC;
 
 -- Check enrollment status
-SELECT 
+SELECT
   id,
   "currentStepOrder",
   status,
@@ -163,6 +172,7 @@ WHERE id = 'YOUR_ENROLLMENT_ID';
 ### 4. Test UI Components
 
 #### View Sequences Page
+
 1. Navigate to: `http://localhost:5173/crm/sequences`
 2. You should see:
    - List of sequences as cards
@@ -170,6 +180,7 @@ WHERE id = 'YOUR_ENROLLMENT_ID';
    - "New Sequence (Coming Soon)" button
 
 #### Test Enrollment Card
+
 1. Navigate to a lead detail page: `/crm/leads/YOUR_LEAD_ID`
 2. Look for the "Automation" card in the sidebar
 3. Select a sequence from dropdown
@@ -181,6 +192,7 @@ WHERE id = 'YOUR_ENROLLMENT_ID';
 #### In the CRM Chat Interface:
 
 **Test CreateEmailDraftTool:**
+
 ```
 Draft an email to follow up with John Smith about the enterprise deal
 ```
@@ -188,6 +200,7 @@ Draft an email to follow up with John Smith about the enterprise deal
 Expected: AI creates an email draft activity
 
 **Test RecommendNextStepTool:**
+
 ```
 What should I do next for deal XYZ?
 ```
@@ -195,6 +208,7 @@ What should I do next for deal XYZ?
 Expected: AI analyzes timeline and suggests next step
 
 **Test GetDealSummaryTool:**
+
 ```
 Summarize the current status of our pipeline
 ```
@@ -204,6 +218,7 @@ Expected: AI provides deal summary
 ### 6. Test Edge Cases
 
 #### Enroll Same Lead Twice
+
 ```bash
 # Should succeed - leads can be in multiple sequences
 curl -X POST http://localhost:3000/crm/sequences/enroll \
@@ -218,6 +233,7 @@ curl -X POST http://localhost:3000/crm/sequences/enroll \
 ```
 
 #### Invalid Sequence
+
 ```bash
 curl -X POST http://localhost:3000/crm/sequences/enroll \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -233,6 +249,7 @@ curl -X POST http://localhost:3000/crm/sequences/enroll \
 Expected: 404 or validation error
 
 #### Missing Entity
+
 ```bash
 curl -X POST http://localhost:3000/crm/sequences/enroll \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -252,12 +269,14 @@ Expected: Validation error
 ### Worker Not Processing Enrollments
 
 **Check 1: Worker Configuration**
+
 ```bash
 # Ensure sequences runner is enabled
 echo $WORKER_TICK_RUNNERS
 ```
 
 **Check 2: API Connectivity**
+
 ```bash
 # From worker container/process
 curl http://localhost:3000/health
@@ -269,12 +288,14 @@ Verify `WORKER_SERVICE_TOKEN` is set and matches API configuration
 ### Activities Not Being Created
 
 **Check enrollment status:**
+
 ```sql
-SELECT * FROM "crm"."SequenceEnrollment" 
+SELECT * FROM "crm"."SequenceEnrollment"
 WHERE id = 'YOUR_ENROLLMENT_ID';
 ```
 
 **Check API logs:**
+
 ```bash
 # Look for errors in sequence execution
 tail -f logs/api.log | grep sequence
@@ -283,10 +304,12 @@ tail -f logs/api.log | grep sequence
 ### UI Not Showing Sequences
 
 **Check browser console:**
+
 - Look for API errors
 - Verify authentication token
 
 **Check API response:**
+
 ```bash
 curl http://localhost:3000/crm/sequences \
   -H "Authorization: Bearer YOUR_TOKEN" \
@@ -297,8 +320,9 @@ curl http://localhost:3000/crm/sequences \
 ## 📊 Monitoring Queries
 
 ### Active Enrollments Summary
+
 ```sql
-SELECT 
+SELECT
   s.name,
   COUNT(*) as enrollment_count,
   COUNT(*) FILTER (WHERE e."nextExecutionAt" <= NOW()) as due_count
@@ -310,8 +334,9 @@ ORDER BY enrollment_count DESC;
 ```
 
 ### Sequence Performance
+
 ```sql
-SELECT 
+SELECT
   s.name,
   COUNT(DISTINCT e.id) as total_enrollments,
   COUNT(DISTINCT e.id) FILTER (WHERE e.status = 'COMPLETED') as completed,
@@ -324,8 +349,9 @@ ORDER BY total_enrollments DESC;
 ```
 
 ### Recent Activity from Sequences
+
 ```sql
-SELECT 
+SELECT
   a.type,
   a.subject,
   a."createdAt",

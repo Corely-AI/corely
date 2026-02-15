@@ -45,10 +45,10 @@ export class TickOrchestrator {
 
     // Register available runners
     const candidates = [
-        this.outboxRunner, 
-        this.invoiceRunner, 
-        this.classesBillingRunner,
-        this.sequenceRunner
+      this.outboxRunner,
+      this.invoiceRunner,
+      this.classesBillingRunner,
+      this.sequenceRunner,
     ];
     for (const runner of candidates) {
       if (runner) {

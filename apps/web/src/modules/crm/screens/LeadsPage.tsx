@@ -26,7 +26,11 @@ export default function LeadsPage() {
         <h1 className="text-h1 text-foreground" data-testid="crm-leads-header">
           Leads
         </h1>
-        <Button variant="accent" onClick={() => navigate("/crm/leads/new")} data-testid="crm-leads-create">
+        <Button
+          variant="accent"
+          onClick={() => navigate("/crm/leads/new")}
+          data-testid="crm-leads-create"
+        >
           <UserPlus className="h-4 w-4" />
           New Lead
         </Button>
@@ -43,7 +47,10 @@ export default function LeadsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="crm-leads-list">
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          data-testid="crm-leads-list"
+        >
           {leadList.map((lead) => (
             <LeadCard key={lead.id} lead={lead} onClick={() => navigate(`/crm/leads/${lead.id}`)} />
           ))}

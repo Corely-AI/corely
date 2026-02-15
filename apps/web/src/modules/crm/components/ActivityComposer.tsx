@@ -109,7 +109,11 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
         </div>
 
         <Form {...form}>
-          <form className="space-y-3" onSubmit={form.handleSubmit(handleSubmit)} data-testid="crm-activity-form">
+          <form
+            className="space-y-3"
+            onSubmit={form.handleSubmit(handleSubmit)}
+            data-testid="crm-activity-form"
+          >
             <div className="grid gap-3 md:grid-cols-3">
               <FormField
                 control={form.control}
@@ -183,7 +187,12 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                     <FormControl>
                       <div className="flex items-center gap-2">
                         <Clock3 className="h-4 w-4 text-muted-foreground" />
-                        <Input type="time" {...field} disabled={!dueDate} data-testid="crm-activity-time" />
+                        <Input
+                          type="time"
+                          {...field}
+                          disabled={!dueDate}
+                          data-testid="crm-activity-time"
+                        />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -196,7 +205,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
               <div className="grid gap-3 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                    name="durationMinutes"
+                  name="durationMinutes"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Duration (minutes)</FormLabel>
@@ -207,26 +216,26 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                     </FormItem>
                   )}
                 />
-                
+
                 {selectedType === "CALL" && (
-                   <FormField
+                  <FormField
                     control={form.control}
                     name="outcome"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Outcome</FormLabel>
-                         <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="crm-activity-outcome">
                               <SelectValue placeholder="Select outcome" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                             <SelectItem value="Connected">Connected</SelectItem>
-                             <SelectItem value="Voicemail">Voicemail</SelectItem>
-                             <SelectItem value="No Answer">No Answer</SelectItem>
-                             <SelectItem value="Busy">Busy</SelectItem>
-                             <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+                            <SelectItem value="Connected">Connected</SelectItem>
+                            <SelectItem value="Voicemail">Voicemail</SelectItem>
+                            <SelectItem value="No Answer">No Answer</SelectItem>
+                            <SelectItem value="Busy">Busy</SelectItem>
+                            <SelectItem value="Wrong Number">Wrong Number</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -236,7 +245,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                 )}
 
                 {selectedType === "MEETING" && (
-                   <FormField
+                  <FormField
                     control={form.control}
                     name="location"
                     render={({ field }) => (
@@ -260,7 +269,11 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                 <FormItem>
                   <FormLabel>{t("crm.activity.subject")}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t("crm.activity.subjectPlaceholder")} {...field} data-testid="crm-activity-subject" />
+                    <Input
+                      placeholder={t("crm.activity.subjectPlaceholder")}
+                      {...field}
+                      data-testid="crm-activity-subject"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

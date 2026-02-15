@@ -1,6 +1,7 @@
 # Phase 3: Automation Engine & AI Tools - Implementation Summary
 
 ## Overview
+
 Phase 3 has been successfully implemented, adding automation capabilities through sequence-based workflows and AI-powered tools for the CRM module.
 
 ## What Was Implemented
@@ -8,24 +9,29 @@ Phase 3 has been successfully implemented, adding automation capabilities throug
 ### 1. **Backend - Sequence Automation Engine**
 
 #### Database Schema (`packages/data/prisma/schema/45_party_crm.prisma`)
+
 - **Sequence** model: Defines automation workflows with steps
 - **SequenceStep** model: Individual steps in a sequence (EMAIL_AUTO, EMAIL_MANUAL, CALL, TASK)
 - **SequenceEnrollment** model: Tracks entities enrolled in sequences
 
 #### Domain Layer
+
 - **SequenceAggregate** (`services/api/src/modules/crm/domain/sequence.aggregate.ts`)
 - **EnrollmentAggregate** (`services/api/src/modules/crm/domain/enrollment.aggregate.ts`)
 
 #### Application Layer - Use Cases
+
 1. **CreateSequenceUseCase**: Create new automation sequences
 2. **EnrollEntityUseCase**: Enroll leads/parties into sequences
 3. **RunSequenceStepsUseCase**: Process due sequence steps (executed by worker)
 
 #### Infrastructure - Repositories
+
 - **PrismaSequenceRepoAdapter**: Sequence data persistence
 - **PrismaEnrollmentRepoAdapter**: Enrollment data persistence with `findDueEnrollments()` method
 
 #### API Controllers
+
 - **SequencesHttpController** (`/crm/sequences`):
   - `GET /crm/sequences` - List all sequences
   - `POST /crm/sequences` - Create new sequence
@@ -37,15 +43,16 @@ Phase 3 has been successfully implemented, adding automation capabilities throug
 ### 2. **Worker Service - Sequence Runner**
 
 #### CRM Worker Module
+
 - **SequenceRunnerService** (`services/worker/src/modules/crm/sequence-runner.service.ts`):
   - Calls internal API endpoint to trigger sequence step execution
   - Integrated into `TickOrchestratorService`
-  
 - **CrmWorkerModule**: Registered in `WorkerModule`
 
 ### 3. **AI Copilot Tools**
 
 #### Domain Tools (implements `DomainToolPort`)
+
 1. **CreateEmailDraftTool** (`create-email-draft.tool.ts`):
    - Allows AI to create draft email activities
    - Input: subject, body, dealId, partyId, recipientEmail
@@ -64,29 +71,34 @@ All tools registered in `CrmModule` under `COPILOT_TOOLS` token.
 ### 4. **Frontend - Sequence Management UI**
 
 #### New Pages
+
 - **SequencesPage** (`apps/web/src/modules/crm/screens/SequencesPage.tsx`):
   - Lists all available sequences
   - Shows sequence name, description, step count
   - Placeholder for "New Sequence" button (coming soon)
 
 #### New Components
+
 - **SequenceEnrollmentCard** (`apps/web/src/modules/crm/components/SequenceEnrollmentCard.tsx`):
   - Dropdown to select sequence
   - "Enroll" button to add lead/party to sequence
   - Integrated into `LeadDetailPage`
 
 #### API Client
+
 - **crmApi** (`apps/web/src/lib/crm-api.ts`):
   - `listSequences()`: Fetch all sequences
   - `enrollEntity()`: Enroll lead/party in sequence
 
 #### Navigation
+
 - Added `/crm/sequences` route to CRM routes
 - Added "Sequences" menu item to CRM manifest (icon: Zap, order: 37)
 
 ### 5. **Contracts & Types**
 
 #### New Schemas (`packages/contracts/src/crm/sequence.types.ts`)
+
 - `SequenceStepTypeSchema`: EMAIL_AUTO, EMAIL_MANUAL, CALL, TASK
 - `SequenceStatusSchema`: ACTIVE, PAUSED, COMPLETED, ARCHIVED
 - `EnrollmentStatusSchema`: ACTIVE, PAUSED, COMPLETED, CANCELED
@@ -98,19 +110,23 @@ All tools registered in `CrmModule` under `COPILOT_TOOLS` token.
 ## Architecture Decisions
 
 ### Separation of Concerns
+
 - **Worker triggers, API executes**: Worker calls internal API endpoint rather than directly accessing database
 - **Security**: Internal endpoints protected by `ServiceTokenGuard`
 - **Scalability**: Worker can be scaled independently of API
 
 ### Repository Pattern
+
 - Consistent use of repository ports and Prisma adapters
 - `findDueEnrollments()` method for efficient querying of enrollments ready to execute
 
 ### Use Case Pattern
+
 - Each business operation encapsulated in a dedicated use case
 - Proper error handling with `Result<T, E>` pattern
 
 ### AI Tool Integration
+
 - Tools implement `DomainToolPort` interface
 - Registered via dependency injection (`COPILOT_TOOLS` token)
 - Tools can be enabled/disabled per tenant
@@ -118,15 +134,18 @@ All tools registered in `CrmModule` under `COPILOT_TOOLS` token.
 ## Configuration
 
 ### Environment Variables
+
 - `API_BASE_URL`: Required in worker for internal API calls
 - `WORKER_TICK_RUNNERS`: Should include `sequences` (or use default)
 
 ### Worker Configuration
+
 The sequence runner is automatically included in the tick orchestrator. No additional configuration needed beyond ensuring the worker has access to the API.
 
 ## Next Steps
 
 ### Immediate (Phase 3 completion)
+
 1. ✅ Generate Prisma client: `pnpm prisma:generate`
 2. ⏳ Run database migration: `pnpm prisma:migrate`
 3. ⏳ Test sequence creation and enrollment via API
@@ -134,6 +153,7 @@ The sequence runner is automatically included in the tick orchestrator. No addit
 5. ⏳ Test AI Copilot tools in chat interface
 
 ### Future Enhancements (Phase 4+)
+
 1. **Sequence Builder UI**: Visual editor for creating sequences
 2. **Email Templates**: Rich text editor for email content
 3. **Conditional Logic**: Branch sequences based on engagement
@@ -145,11 +165,13 @@ The sequence runner is automatically included in the tick orchestrator. No addit
 ## Known Issues
 
 ### Lint Warnings (Non-blocking)
+
 - `multi: true` property warnings in NestJS providers (TypeScript strict mode)
 - `isolatedModules` warnings for type imports in decorated signatures
 - These are TypeScript configuration strictness issues, not runtime errors
 
 ### Placeholder Implementations
+
 - Email sending for `EMAIL_AUTO` and `EMAIL_MANUAL` steps creates TASK activities instead of actually sending emails
 - Sequence creation UI is disabled (button shows "Coming Soon")
 
@@ -169,6 +191,7 @@ The sequence runner is automatically included in the tick orchestrator. No addit
 ## Files Modified/Created
 
 ### Backend (API)
+
 - ✅ `services/api/src/modules/crm/domain/sequence.aggregate.ts` (new)
 - ✅ `services/api/src/modules/crm/domain/enrollment.aggregate.ts` (new)
 - ✅ `services/api/src/modules/crm/application/use-cases/create-sequence/` (new)
@@ -184,12 +207,14 @@ The sequence runner is automatically included in the tick orchestrator. No addit
 - ✅ `services/api/src/modules/crm/crm.manifest.ts` (modified)
 
 ### Worker
+
 - ✅ `services/worker/src/modules/crm/sequence-runner.service.ts` (new)
 - ✅ `services/worker/src/modules/crm/crm-worker.module.ts` (new)
 - ✅ `services/worker/src/worker.module.ts` (modified)
 - ✅ `services/worker/src/tick-orchestrator.service.ts` (modified)
 
 ### Frontend
+
 - ✅ `apps/web/src/modules/crm/screens/SequencesPage.tsx` (new)
 - ✅ `apps/web/src/modules/crm/components/SequenceEnrollmentCard.tsx` (new)
 - ✅ `apps/web/src/modules/crm/routes.tsx` (modified)
@@ -197,12 +222,14 @@ The sequence runner is automatically included in the tick orchestrator. No addit
 - ✅ `apps/web/src/modules/crm/screens/LeadDetailPage.tsx` (modified)
 
 ### Contracts & Schema
+
 - ✅ `packages/contracts/src/crm/sequence.types.ts` (new)
 - ✅ `packages/data/prisma/schema/45_party_crm.prisma` (modified)
 
 ## Summary
 
 Phase 3 successfully implements a complete automation engine for the CRM module, enabling:
+
 - **Automated follow-ups** through sequence-based workflows
 - **AI-powered assistance** with email drafting and next-step recommendations
 - **Worker-based execution** for reliable, scalable automation

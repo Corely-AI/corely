@@ -6,7 +6,7 @@ export const ConvertLeadInputSchema = z.object({
   leadId: z.string(),
   dealTitle: z.string().optional(), // Defaults to Lead's name + " Deal"
   assignToUserId: z.string().optional(),
-  
+
   // Optional: Merge with existing Party instead of creating new
   existingPartyId: z.string().optional(),
   existingCompanyId: z.string().optional(),

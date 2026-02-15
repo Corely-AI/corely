@@ -25,7 +25,7 @@ export const ActivityDtoSchema = z.object({
   outcome: z.string().nullable().optional(),
   durationSeconds: z.number().nullable().optional(),
   location: z.string().nullable().optional(),
-  attendees: z.array(z.unknown()).nullable().optional(), 
+  attendees: z.array(z.unknown()).nullable().optional(),
   metadata: z.record(z.unknown()).nullable().optional(),
   assignedToUserId: z.string().nullable(),
   createdByUserId: z.string().nullable(),
