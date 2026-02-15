@@ -20,7 +20,11 @@ export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
         : "bg-blue-100 text-blue-800";
 
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
+    <Card
+      className="cursor-pointer hover:shadow-md transition-shadow"
+      onClick={onClick}
+      data-testid={`crm-activities-row-${activity.id}`}
+    >
       <CardHeader>
         <div className="flex items-start gap-3">
           <ActivityTypeIcon type={activity.type} className="w-5 h-5 mt-1" />

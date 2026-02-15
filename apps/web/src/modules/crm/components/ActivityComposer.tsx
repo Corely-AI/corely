@@ -89,7 +89,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
   };
 
   return (
-    <Card className="border-dashed">
+    <Card className="border-dashed" data-testid="crm-activity-composer">
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -101,6 +101,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
             size="sm"
             onClick={form.handleSubmit(handleSubmit)}
             disabled={addActivity.isPending}
+            data-testid="crm-activity-add"
           >
             <Plus className="h-4 w-4 mr-1" />
             {t("common.add")}
@@ -108,7 +109,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
         </div>
 
         <Form {...form}>
-          <form className="space-y-3" onSubmit={form.handleSubmit(handleSubmit)}>
+          <form className="space-y-3" onSubmit={form.handleSubmit(handleSubmit)} data-testid="crm-activity-form">
             <div className="grid gap-3 md:grid-cols-3">
               <FormField
                 control={form.control}
@@ -118,7 +119,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                     <FormLabel>{t("crm.activity.type")}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger data-testid="crm-activity-type">
                           <SelectValue placeholder={t("crm.activity.selectType")} />
                         </SelectTrigger>
                       </FormControl>
@@ -182,7 +183,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                     <FormControl>
                       <div className="flex items-center gap-2">
                         <Clock3 className="h-4 w-4 text-muted-foreground" />
-                        <Input type="time" {...field} disabled={!dueDate} />
+                        <Input type="time" {...field} disabled={!dueDate} data-testid="crm-activity-time" />
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -216,7 +217,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                         <FormLabel>Outcome</FormLabel>
                          <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger data-testid="crm-activity-outcome">
                               <SelectValue placeholder="Select outcome" />
                             </SelectTrigger>
                           </FormControl>
@@ -259,7 +260,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                 <FormItem>
                   <FormLabel>{t("crm.activity.subject")}</FormLabel>
                   <FormControl>
-                    <Input placeholder={t("crm.activity.subjectPlaceholder")} {...field} />
+                    <Input placeholder={t("crm.activity.subjectPlaceholder")} {...field} data-testid="crm-activity-subject" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -277,6 +278,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                       rows={3}
                       placeholder={t("crm.activity.notesPlaceholder")}
                       {...field}
+                      data-testid="crm-activity-body"
                     />
                   </FormControl>
                   <FormMessage />

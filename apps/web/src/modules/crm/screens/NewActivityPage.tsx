@@ -166,7 +166,11 @@ export default function NewActivityPage() {
                     <FormItem className="md:col-span-2">
                       <FormLabel>{t("crm.activity.subject")}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t("crm.activity.subjectPlaceholder")} {...field} />
+                        <Input
+                          placeholder={t("crm.activity.subjectPlaceholder")}
+                          {...field}
+                          data-testid="crm-new-activity-subject"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -181,7 +185,7 @@ export default function NewActivityPage() {
                       <FormLabel>{t("crm.activity.type")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger data-testid="crm-new-activity-type">
                             <SelectValue placeholder={t("crm.activity.selectType")} />
                           </SelectTrigger>
                         </FormControl>
@@ -245,6 +249,7 @@ export default function NewActivityPage() {
                               onChange={(event) =>
                                 updateDueAt(dueAt ?? new Date(), event.target.value)
                               }
+                              data-testid="crm-new-activity-time"
                             />
                           </div>
                         </FormControl>
@@ -262,7 +267,11 @@ export default function NewActivityPage() {
                     <FormItem>
                       <FormLabel>{t("crm.activity.dealIdOptional")}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t("crm.activity.dealIdPlaceholder")} {...field} />
+                        <Input
+                          placeholder={t("crm.activity.dealIdPlaceholder")}
+                          {...field}
+                          data-testid="crm-new-activity-deal-id"
+                        />
                       </FormControl>
                       <FormDescription>{t("crm.activity.linkRequiredHint")}</FormDescription>
                       <FormMessage />
@@ -277,7 +286,11 @@ export default function NewActivityPage() {
                     <FormItem>
                       <FormLabel>{t("crm.activity.partyIdOptional")}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t("crm.activity.partyIdPlaceholder")} {...field} />
+                        <Input
+                          placeholder={t("crm.activity.partyIdPlaceholder")}
+                          {...field}
+                          data-testid="crm-new-activity-party-id"
+                        />
                       </FormControl>
                       <FormDescription>{t("crm.activity.linkRequiredHint")}</FormDescription>
                       <FormMessage />

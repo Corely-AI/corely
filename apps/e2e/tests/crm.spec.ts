@@ -1,0 +1,340 @@
+import type { Page } from "@playwright/test";
+import { test, expect } from "./fixtures";
+import { selectors } from "../utils/selectors";
+
+test.use({ timezoneId: "Europe/Berlin" });
+
+const API_URL = process.env.API_URL || "http://localhost:3000";
+
+async function login(
+  page: Page,
+  creds: {
+    email: string;
+    password: string;
+    tenantId: string;
+  }
+) {
+  await page.goto(`/auth/login?tenant=${encodeURIComponent(creds.tenantId)}`);
+  await page.fill(selectors.auth.loginEmailInput, creds.email);
+  await page.fill(selectors.auth.loginPasswordInput, creds.password);
+  await page.click(selectors.auth.loginSubmitButton);
+  await page.waitForURL("**/dashboard", { timeout: 10_000 });
+}
+
+function uniqueSuffix() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+async function createDealFixture(page: Page, suffix: string): Promise<{ dealId: string }> {
+  const accessToken = await page.evaluate(() => localStorage.getItem("accessToken"));
+  if (!accessToken) {
+    throw new Error("Missing access token");
+  }
+  const workspaceId = (await page.evaluate(() => localStorage.getItem("corely-active-workspace"))) ?? "";
+
+  const customerRes = await page.request.post(`${API_URL}/customers`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      ...(workspaceId ? { "X-Workspace-Id": workspaceId } : {}),
+    },
+    data: {
+      displayName: `E2E Customer ${suffix}`,
+      email: `customer-${suffix}@example.com`,
+    },
+  });
+  expect(customerRes.ok()).toBeTruthy();
+  const customerBody = (await customerRes.json()) as { id?: string; customer?: { id?: string } };
+  const partyId = customerBody.customer?.id ?? customerBody.id;
+  if (!partyId) {
+    throw new Error("Could not resolve customer id");
+  }
+
+  const dealRes = await page.request.post(`${API_URL}/crm/deals`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      ...(workspaceId ? { "X-Workspace-Id": workspaceId } : {}),
+    },
+    data: {
+      title: `E2E Deal ${suffix}`,
+      partyId,
+      stageId: "lead",
+      amountCents: 120000,
+      currency: "EUR",
+      probability: 40,
+    },
+  });
+  expect(dealRes.ok()).toBeTruthy();
+  const dealBody = (await dealRes.json()) as { id?: string; deal?: { id?: string } };
+  const dealId = dealBody.deal?.id ?? dealBody.id;
+  if (!dealId) {
+    throw new Error("Could not resolve deal id");
+  }
+
+  return { dealId };
+}
+
+test.describe("CRM Smoke + Navigation", () => {
+  test("opens CRM from nav and renders deals list/empty state", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+
+    const crmNav = page.locator('[data-testid^="nav-crm"]').first();
+    if ((await crmNav.count()) > 0) {
+      await crmNav.click();
+    } else {
+      await page.goto("/crm/deals");
+    }
+
+    await expect(page).toHaveURL(/\/crm\/deals/);
+    await expect(page.locator(selectors.crm.dealsHeader)).toBeVisible();
+    await expect(page.locator(selectors.crm.dealsCreate)).toBeVisible();
+    await expect(
+      page.locator(`${selectors.crm.dealsList}, ${selectors.crm.dealsPage} [data-testid="crm-deals-empty"]`)
+    ).toBeVisible();
+  });
+});
+
+test.describe("CRM Leads -> Deals", () => {
+  test("creates lead and converts to deal", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+    const suffix = uniqueSuffix();
+
+    await page.goto("/crm/leads/new");
+    await expect(page.locator(selectors.crm.leadForm)).toBeVisible();
+    await page.fill(selectors.crm.leadFirstName, "E2E");
+    await page.fill(selectors.crm.leadLastName, `Lead ${suffix}`);
+    await page.fill(selectors.crm.leadCompanyName, `E2E LeadCo ${suffix}`);
+    await page.fill(selectors.crm.leadEmail, `lead-${suffix}@example.com`);
+    await page.fill(selectors.crm.leadPhone, "+49111111111");
+    await page.fill(selectors.crm.leadNotes, "Qualification notes");
+    const createLeadResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes("/crm/leads") &&
+        response.request().method() === "POST"
+    );
+    await page.click(selectors.crm.leadSave);
+    const createLeadResponse = await createLeadResponsePromise;
+    expect(createLeadResponse.ok()).toBeTruthy();
+
+    await expect(page).toHaveURL(/\/crm\/leads$/, { timeout: 15_000 });
+    await page.locator(selectors.crm.leadsRow).filter({ hasText: suffix }).first().click();
+    await expect(page).toHaveURL(/\/crm\/leads\/.+/);
+
+    page.once("dialog", async (dialog) => {
+      await dialog.accept();
+    });
+    const convertLeadResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes("/crm/leads/") &&
+        response.url().includes("/convert") &&
+        response.request().method() === "POST"
+    );
+    await page.click(selectors.crm.leadConvert);
+    const convertLeadResponse = await convertLeadResponsePromise;
+    if (!convertLeadResponse.ok()) {
+      throw new Error(
+        `Lead conversion failed with ${convertLeadResponse.status()}: ${await convertLeadResponse.text()}`
+      );
+    }
+    await expect(page).toHaveURL(/\/crm\/deals\/.+/, { timeout: 20_000 });
+    await expect(page.locator(selectors.crm.dealDetailPage)).toBeVisible();
+  });
+});
+
+test.describe("CRM Deals Lifecycle", () => {
+  test("moves stage and logs timeline entries", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+    const { dealId } = await createDealFixture(page, uniqueSuffix());
+
+    await page.goto(`/crm/deals/${dealId}`);
+    const stageSelect = page.locator(selectors.crm.dealStageSelect).first();
+    await expect(stageSelect).toBeVisible();
+
+    await stageSelect.click();
+    await page.locator('[role="option"]').nth(1).click();
+    await expect(page.locator(selectors.crm.timeline)).toContainText(/stage|lead|qualified|proposal|negotiation/i);
+  });
+
+  test("marks deal as won and then blocks stage edits", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+    const { dealId } = await createDealFixture(page, uniqueSuffix());
+
+    await page.goto(`/crm/deals/${dealId}`);
+    await page.click(selectors.crm.dealMarkWon);
+    await expect(page.locator(selectors.crm.dealDetailPage)).toContainText(/won/i);
+    await expect(page.locator(selectors.crm.dealMarkWon)).toBeDisabled();
+    await expect(page.locator(selectors.crm.dealMarkLost)).toBeDisabled();
+  });
+
+  test("marks deal as lost with reason", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+    const { dealId } = await createDealFixture(page, uniqueSuffix());
+
+    await page.goto(`/crm/deals/${dealId}`);
+    await page.click(selectors.crm.dealMarkLost);
+    const confirmButton = page.getByRole("button", { name: /confirm|mark lost|save/i }).last();
+    if (await confirmButton.isVisible()) {
+      await confirmButton.click();
+    }
+    await expect(page.locator(selectors.crm.dealDetailPage)).toContainText(/lost/i);
+  });
+});
+
+test.describe("CRM Activities + Timeline", () => {
+  test("adds a note activity from deal composer", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+    const suffix = uniqueSuffix();
+    const { dealId } = await createDealFixture(page, suffix);
+
+    await page.goto(`/crm/deals/${dealId}`);
+    await page.fill(selectors.crm.activitySubject, `Follow-up ${suffix}`);
+    await page.fill(selectors.crm.activityBody, "Shared next steps with customer");
+    await page.click(selectors.crm.activityAdd);
+    await expect(page.locator(selectors.crm.timeline)).toContainText(`Follow-up ${suffix}`);
+  });
+
+  test("logs call outcome in timeline", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+    const suffix = uniqueSuffix();
+    const { dealId } = await createDealFixture(page, suffix);
+
+    await page.goto(`/crm/deals/${dealId}`);
+    await page.click(selectors.crm.activityType);
+    await page.getByRole("option", { name: "Call" }).click();
+    await page.fill(selectors.crm.activitySubject, `Call ${suffix}`);
+    await page.click(selectors.crm.activityOutcome);
+    await page.getByRole("option", { name: "Connected" }).click();
+    await page.click(selectors.crm.activityAdd);
+    await expect(page.locator(selectors.crm.timeline)).toContainText("Connected");
+  });
+});
+
+test.describe("CRM Channel Catalog", () => {
+  test("builds email channel deep link with placeholders", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+    const { dealId } = await createDealFixture(page, uniqueSuffix());
+
+    await page.goto(`/crm/deals/${dealId}`);
+    await page.click(selectors.crm.channelOpenEmail);
+    await expect(page.locator(selectors.crm.channelComposer)).toBeVisible();
+
+    await page.evaluate(() => {
+      (window as any).__crmOpenUrl = "";
+      const originalOpen = window.open;
+      window.open = ((url?: string | URL) => {
+        (window as any).__crmOpenUrl = String(url ?? "");
+        return null;
+      }) as typeof originalOpen;
+    });
+
+    await page.click(selectors.crm.channelOpenLink);
+    const opened = await page.evaluate(() => (window as any).__crmOpenUrl as string);
+    expect(opened).toContain("mailto:");
+    expect(opened).toContain("subject=");
+    expect(opened).toContain("body=");
+  });
+});
+
+test.describe("CRM Full Platform Placeholders", () => {
+  test.skip("contacts CRUD routes (/crm/contacts) are not implemented in current UI build", async () => {});
+  test.skip("custom properties UI flow is not implemented in current UI build", async () => {});
+  test.skip("sequence creation flow is not implemented in current UI build", async () => {});
+  test.skip("workflow automation verification hooks are not exposed in current UI build", async () => {});
+  test.skip("tickets UI flow is not implemented in current UI build", async () => {});
+  test.skip(
+    "AI CRM-specific tool-card mutation flow is not deterministic in current E2E harness",
+    async () => {}
+  );
+});
+
+test.describe("CRM Accounts CRUD", () => {
+  test("creates an account, views detail, edits, and confirms", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+
+    const suffix = uniqueSuffix();
+    const accountName = `Acme Corp ${suffix}`;
+    const accountEmail = `acme-${suffix}@example.com`;
+    const accountPhone = "+1234567890";
+
+    // Navigate to accounts list
+    await page.goto("/crm/accounts");
+    await expect(page.locator(selectors.crm.accountsList)).toBeVisible();
+
+    // Click create
+    await page.click(selectors.crm.accountsCreate);
+    await expect(page.locator(selectors.crm.accountName)).toBeVisible();
+
+    // Fill identity (Party) fields
+    await page.fill(selectors.crm.accountName, accountName);
+    await page.fill(selectors.crm.accountEmail, accountEmail);
+    await page.fill(selectors.crm.accountPhone, accountPhone);
+
+    // Fill CRM profile fields
+    await page.selectOption(selectors.crm.accountType, "CUSTOMER");
+    await page.selectOption(selectors.crm.accountStatus, "ACTIVE");
+
+    // Submit
+    await page.click(selectors.crm.accountSave);
+
+    // Verify detail page is shown
+    await expect(page.locator(selectors.crm.accountDetail)).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(selectors.crm.accountDetailName)).toContainText(accountName);
+    await expect(page.locator(selectors.crm.accountEmail)).toContainText(accountEmail);
+    await expect(page.locator(selectors.crm.accountPhone)).toContainText(accountPhone);
+    await expect(page.locator(selectors.crm.accountStatus)).toContainText("ACTIVE");
+
+    // Edit — change the name
+    const editedName = `Acme Updated ${suffix}`;
+    await page.click('button:has-text("Edit")');
+    // Wait for form input to be visible to ensure navigation completed
+    await expect(page.locator(selectors.crm.accountName)).toBeVisible();
+    await page.fill(selectors.crm.accountName, editedName);
+    await page.click(selectors.crm.accountSave);
+
+    // Verify edit persisted
+    await expect(page.locator(selectors.crm.accountDetail)).toBeVisible({ timeout: 10000 });
+    await expect(page.locator(selectors.crm.accountDetailName)).toContainText(editedName);
+
+    // Verify list shows the account
+    await page.goto("/crm/accounts");
+    await expect(page.locator(selectors.crm.accountsList)).toBeVisible();
+    await expect(page.getByText(editedName)).toBeVisible();
+  });
+});

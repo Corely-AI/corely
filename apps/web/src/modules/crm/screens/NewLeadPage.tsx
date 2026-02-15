@@ -57,7 +57,7 @@ export default function NewLeadPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate("/crm/leads")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-h2">New Lead</h1>
+        <h1 className="text-h2" data-testid="crm-lead-form-header">New Lead</h1>
       </div>
 
       <Card>
@@ -66,7 +66,7 @@ export default function NewLeadPage() {
           <CardDescription>Enter the information for the new potential customer.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" data-testid="crm-lead-form">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First Name</Label>
@@ -76,6 +76,7 @@ export default function NewLeadPage() {
                   value={formData.firstName}
                   onChange={handleChange}
                   required
+                  data-testid="crm-lead-first-name"
                 />
               </div>
               <div className="space-y-2">
@@ -86,6 +87,7 @@ export default function NewLeadPage() {
                   value={formData.lastName}
                   onChange={handleChange}
                   required
+                  data-testid="crm-lead-last-name"
                 />
               </div>
             </div>
@@ -97,6 +99,7 @@ export default function NewLeadPage() {
                 name="companyName"
                 value={formData.companyName}
                 onChange={handleChange}
+                data-testid="crm-lead-company-name"
               />
             </div>
 
@@ -109,6 +112,7 @@ export default function NewLeadPage() {
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
+                  data-testid="crm-lead-email"
                 />
               </div>
               <div className="space-y-2">
@@ -118,6 +122,7 @@ export default function NewLeadPage() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  data-testid="crm-lead-phone"
                 />
               </div>
             </div>
@@ -130,11 +135,12 @@ export default function NewLeadPage() {
                 value={formData.notes}
                 onChange={handleChange}
                 rows={4}
+                data-testid="crm-lead-notes"
               />
             </div>
 
             <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={createMutation.isPending}>
+              <Button type="submit" disabled={createMutation.isPending} data-testid="crm-lead-save">
                 {createMutation.isPending ? "Creating..." : "Create Lead"}
               </Button>
             </div>

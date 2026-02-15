@@ -1,10 +1,14 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { BaseUseCase, UseCaseContext, Result, ok, UseCaseError, ClockPort, IdGeneratorPort } from "@corely/kernel";
+import { BaseUseCase, UseCaseContext, Result, ok, UseCaseError } from "@corely/kernel";
 import { CreateSequenceInput, SequenceDto } from "@corely/contracts";
 import { PrismaSequenceRepoAdapter } from "../../../infrastructure/prisma/prisma-sequence-repo.adapter";
 import { SequenceAggregate } from "../../../domain/sequence.aggregate";
 import { SequenceStepType } from "@prisma/client";
-import { ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN } from "@corely/kernel";
+import { CLOCK_PORT_TOKEN, type ClockPort } from "../../../../../shared/ports/clock.port";
+import {
+  ID_GENERATOR_TOKEN,
+  type IdGeneratorPort,
+} from "../../../../../shared/ports/id-generator.port";
 
 @Injectable()
 export class CreateSequenceUseCase extends BaseUseCase<CreateSequenceInput, SequenceDto> {

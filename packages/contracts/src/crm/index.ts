@@ -5,6 +5,7 @@ export * from "./activity.types";
 export * from "./pipeline.types";
 export * from "./channel.types";
 export * from "./lead.types";
+export * from "./account.types";
 export * from "./create-lead.schema";
 export * from "./convert-lead.schema";
 

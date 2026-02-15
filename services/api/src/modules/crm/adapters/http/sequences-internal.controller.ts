@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
-import { Request } from "express";
+import type { Request } from "express";
 import { 
     RunSequenceStepsInputSchema, 
     RunSequenceStepsOutputSchema 
@@ -20,12 +20,6 @@ export class SequencesInternalController {
     
     // Force input type for TS if needed since defaults handling can be tricky in inference
     const result = await this.runSequenceSteps.execute(input as { limit: number }, ctx);
-    
-    if (!result.ok) {
-        const httpResult = mapResultToHttp(result);
-        throw httpResult.error; // Or return error response
-    }
-    
-    return RunSequenceStepsOutputSchema.parse(result.value);
+    return RunSequenceStepsOutputSchema.parse(mapResultToHttp(result));
   }
 }

@@ -18,7 +18,11 @@ export function LeadCard({ lead, onClick }: LeadCardProps) {
   const statusColor = statusColors[lead.status] || "bg-gray-100 text-gray-700";
 
   return (
-    <Card onClick={onClick} className="cursor-pointer hover:shadow-md transition-shadow">
+    <Card
+      onClick={onClick}
+      className="cursor-pointer hover:shadow-md transition-shadow"
+      data-testid={`crm-leads-row-${lead.id}`}
+    >
       <CardContent className="p-4 space-y-3">
         <div className="flex justify-between items-start">
           <div>

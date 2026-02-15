@@ -24,7 +24,7 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
   const sortedDates = Object.keys(grouped).sort((a, b) => (a < b ? 1 : -1));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="crm-timeline">
       {sortedDates.map((date) => (
         <div key={date} className="space-y-3">
           <p className="text-xs font-semibold text-muted-foreground">
@@ -43,7 +43,11 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                   ? (item.metadata.activityType as ActivityType | undefined)
                   : undefined;
               return (
-                <div key={item.id} className="flex gap-4 pb-3 border-b last:border-0">
+                <div
+                  key={item.id}
+                  className="flex gap-4 pb-3 border-b last:border-0"
+                  data-testid={`crm-timeline-item-${item.id}`}
+                >
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                     {isActivity && activityType ? (
                       <ActivityTypeIcon type={activityType} className="w-4 h-4" />

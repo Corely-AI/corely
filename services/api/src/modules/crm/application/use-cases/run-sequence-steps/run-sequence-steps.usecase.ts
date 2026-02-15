@@ -1,8 +1,10 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { BaseUseCase, ok, Result, UseCaseContext, ClockPort, IdGeneratorPort, UseCaseError } from "@corely/kernel";
+import { Injectable, Logger, Inject } from "@nestjs/common";
+import { BaseUseCase, ok, Result, UseCaseContext, UseCaseError } from "@corely/kernel";
 import { PrismaEnrollmentRepoAdapter, EnrollmentWithRelations } from "../../../infrastructure/prisma/prisma-enrollment-repo.adapter";
 import { PrismaActivityRepoAdapter } from "../../../infrastructure/prisma/prisma-activity-repo.adapter";
 import { ActivityEntity } from "../../../domain/activity.entity";
+import { CLOCK_PORT_TOKEN, type ClockPort } from "../../../../../shared/ports/clock.port";
+import { ID_GENERATOR_TOKEN, type IdGeneratorPort } from "../../../../../shared/ports/id-generator.port";
 
 @Injectable()
 export class RunSequenceStepsUseCase extends BaseUseCase<{ limit: number }, { processed: number }> {
@@ -11,10 +13,10 @@ export class RunSequenceStepsUseCase extends BaseUseCase<{ limit: number }, { pr
     constructor(
         private readonly enrollmentRepo: PrismaEnrollmentRepoAdapter,
         private readonly activityRepo: PrismaActivityRepoAdapter,
-        private readonly clock: ClockPort,
-        private readonly idGenerator: IdGeneratorPort,
+        @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
+        @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
     ) {
-        super();
+        super({});
     }
 
     protected async handle(

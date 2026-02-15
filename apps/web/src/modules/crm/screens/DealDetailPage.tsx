@@ -246,7 +246,7 @@ export default function DealDetailPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-deal-detail-page">
       <DealHeader
         deal={deal}
         stages={stages}

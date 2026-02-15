@@ -45,14 +45,14 @@ export default function LeadDetailPage() {
   };
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-4xl mx-auto">
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-4xl mx-auto" data-testid="crm-lead-detail-page">
       <div className="flex items-center justify-between">
         <div>
             <h1 className="text-h2 font-bold mb-1">
             {lead.companyName || `${lead.firstName || ""} ${lead.lastName || ""}`}
             </h1>
             <div className="flex items-center gap-2">
-                <Badge variant={lead.status === "CONVERTED" ? "success" : "secondary"}>
+                <Badge variant={lead.status === "CONVERTED" ? "success" : "secondary"} data-testid="crm-lead-status">
                     {lead.status}
                 </Badge>
                 <span className="text-sm text-muted-foreground">{lead.source}</span>
@@ -60,7 +60,7 @@ export default function LeadDetailPage() {
         </div>
         
         {lead.status !== "CONVERTED" && (
-            <Button onClick={handleConvert} disabled={convertMutation.isPending}>
+            <Button onClick={handleConvert} disabled={convertMutation.isPending} data-testid="crm-lead-convert">
             {convertMutation.isPending ? "Converting..." : "Convert to Deal"}
             <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

@@ -21,17 +21,19 @@ export default function LeadsPage() {
   const leadList = leads || [];
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-leads-page">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Leads</h1>
-        <Button variant="accent" onClick={() => navigate("/crm/leads/new")}>
+        <h1 className="text-h1 text-foreground" data-testid="crm-leads-header">
+          Leads
+        </h1>
+        <Button variant="accent" onClick={() => navigate("/crm/leads/new")} data-testid="crm-leads-create">
           <UserPlus className="h-4 w-4" />
           New Lead
         </Button>
       </div>
 
       {leadList.length === 0 ? (
-        <Card>
+        <Card data-testid="crm-leads-empty">
           <CardContent className="p-0">
             <EmptyState
               icon={Briefcase}
@@ -41,7 +43,7 @@ export default function LeadsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="crm-leads-list">
           {leadList.map((lead) => (
             <LeadCard key={lead.id} lead={lead} onClick={() => navigate(`/crm/leads/${lead.id}`)} />
           ))}

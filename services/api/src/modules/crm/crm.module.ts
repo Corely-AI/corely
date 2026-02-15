@@ -55,6 +55,14 @@ import { RecommendNextStepTool } from "./copilot/tools/recommend-next-step.tool"
 import { SequencesHttpController } from "./adapters/http/sequences.controller";
 import { CreateSequenceUseCase } from "./application/use-cases/create-sequence/create-sequence.usecase";
 
+import { AccountsHttpController } from "./adapters/http/accounts.controller";
+import { PrismaAccountRepoAdapter } from "./infrastructure/prisma/prisma-account-repo.adapter";
+import { ACCOUNT_REPO_PORT } from "./application/ports/account-repository.port";
+import { CreateAccountUseCase } from "./application/use-cases/create-account/create-account.usecase";
+import { UpdateAccountUseCase } from "./application/use-cases/update-account/update-account.usecase";
+import { GetAccountUseCase } from "./application/use-cases/get-account/get-account.usecase";
+import { ListAccountsUseCase } from "./application/use-cases/list-accounts/list-accounts.usecase";
+
 @Module({
   imports: [DataModule, IdentityModule, KernelModule, PlatformModule, PartyModule],
   controllers: [
@@ -65,6 +73,7 @@ import { CreateSequenceUseCase } from "./application/use-cases/create-sequence/c
     LeadsController,
     SequencesInternalController,
     SequencesHttpController,
+    AccountsHttpController,
   ],
   providers: [
     ChannelCatalogService,
@@ -72,17 +81,17 @@ import { CreateSequenceUseCase } from "./application/use-cases/create-sequence/c
       provide: COPILOT_TOOLS,
       useClass: GetDealSummaryTool,
       multi: true,
-    },
+    } as any,
     {
       provide: COPILOT_TOOLS,
       useClass: CreateEmailDraftTool,
       multi: true,
-    },
+    } as any,
     {
       provide: COPILOT_TOOLS,
       useClass: RecommendNextStepTool,
       multi: true,
-    },
+    } as any,
     EnrollEntityUseCase,
     RunSequenceStepsUseCase,
     CreateSequenceUseCase, // Add this
@@ -96,6 +105,52 @@ import { CreateSequenceUseCase } from "./application/use-cases/create-sequence/c
     PrismaEnrollmentRepoAdapter,
     { provide: SEQUENCE_REPO_PORT, useExisting: PrismaSequenceRepoAdapter },
     { provide: ENROLLMENT_REPO_PORT, useExisting: PrismaEnrollmentRepoAdapter },
+    PrismaAccountRepoAdapter,
+    { provide: ACCOUNT_REPO_PORT, useExisting: PrismaAccountRepoAdapter },
+    {
+      provide: CreateAccountUseCase,
+      useFactory: (
+        accountRepo: PrismaAccountRepoAdapter,
+        partyApp: PartyApplication,
+        clock: ClockPort,
+        idGen: IdGeneratorPort
+      ) =>
+        new CreateAccountUseCase({
+          accountRepo,
+          partyApp,
+          clock,
+          idGenerator: idGen,
+          logger: new NestLoggerAdapter(),
+        }),
+      inject: [ACCOUNT_REPO_PORT, PartyApplication, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
+    },
+    {
+      provide: UpdateAccountUseCase,
+      useFactory: (
+        accountRepo: PrismaAccountRepoAdapter,
+        partyApp: PartyApplication,
+        clock: ClockPort
+      ) =>
+        new UpdateAccountUseCase({
+          accountRepo,
+          partyApp,
+          clock,
+          logger: new NestLoggerAdapter(),
+        }),
+      inject: [ACCOUNT_REPO_PORT, PartyApplication, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: GetAccountUseCase,
+      useFactory: (accountRepo: PrismaAccountRepoAdapter) =>
+        new GetAccountUseCase({ accountRepo, logger: new NestLoggerAdapter() }),
+      inject: [ACCOUNT_REPO_PORT],
+    },
+    {
+      provide: ListAccountsUseCase,
+      useFactory: (accountRepo: PrismaAccountRepoAdapter) =>
+        new ListAccountsUseCase({ accountRepo, logger: new NestLoggerAdapter() }),
+      inject: [ACCOUNT_REPO_PORT],
+    },
     {
       provide: CreateLeadUseCase,
       useFactory: (leadRepo: PrismaLeadRepoAdapter, clock: ClockPort, idGen: IdGeneratorPort) =>

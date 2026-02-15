@@ -81,6 +81,45 @@ enum PartyLifecycleStatus {
   @@schema("crm")
 }
 
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  PROSPECT
+  @@schema("crm")
+}
+
+enum CrmAccountType {
+  CUSTOMER
+  VENDOR
+  PARTNER
+  OTHER
+  @@schema("crm")
+}
+
+// CrmAccountProfile stores CRM-specific fields only
+// Identity/contact/address data lives in Party + ContactPoint + Address
+model CrmAccountProfile {
+  id          String          @id @default(cuid())
+  tenantId    String
+  partyId     String          @unique // FK to Party (canonical identity) - unique for 1:1
+  accountType CrmAccountType  @default(CUSTOMER)
+  status      AccountStatus   @default(ACTIVE)
+  industry    String?         // CRM-specific sales segmentation field
+  ownerUserId String?         // Sales owner
+  notes       String?         // CRM-specific notes
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @db.Timestamptz(6)
+
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, partyId]) // One profile per party
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, accountType])
+  @@index([tenantId, ownerUserId])
+  @@schema("crm")
+}
+
 model Party {
   id              String               @id @default(cuid())
   tenantId        String
@@ -113,6 +152,7 @@ model Party {
   companyDeals      Deal[]              @relation("DealCompany")
   lifecycleHistory PartyLifecycleTransition[]
   enrollments      SequenceEnrollment[]
+  crmAccountProfile CrmAccountProfile?  // Optional CRM account profile
 
   @@index([tenantId, displayName])
   @@index([tenantId, archivedAt])

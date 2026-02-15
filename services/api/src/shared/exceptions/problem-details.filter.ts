@@ -6,7 +6,7 @@ import {
   HttpException,
   HttpStatus,
 } from "@nestjs/common";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { AppError } from "@corely/domain";
 import { ExceptionToProblemDetailsMapper } from "./exception-to-problem-details.mapper";
 

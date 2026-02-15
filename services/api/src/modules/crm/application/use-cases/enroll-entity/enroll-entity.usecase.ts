@@ -1,8 +1,11 @@
-import { Injectable } from "@nestjs/common";
-import { BaseUseCase, ok, Result, UseCaseContext, RequireTenant, IdGeneratorPort, ClockPort, UseCaseError } from "@corely/kernel";
+import { Injectable, Inject } from "@nestjs/common";
+import { BaseUseCase, ok, Result, UseCaseContext, RequireTenant, UseCaseError } from "@corely/kernel";
 import { EnrollEntityInput } from "@corely/contracts";
 import { PrismaEnrollmentRepoAdapter } from "../../../infrastructure/prisma/prisma-enrollment-repo.adapter";
 import { PrismaSequenceRepoAdapter } from "../../../infrastructure/prisma/prisma-sequence-repo.adapter";
+import { CLOCK_PORT_TOKEN, type ClockPort } from "../../../../../shared/ports/clock.port";
+import { ID_GENERATOR_TOKEN, type IdGeneratorPort } from "../../../../../shared/ports/id-generator.port";
+import { NestLoggerAdapter } from "../../../../../shared/adapters/logger/nest-logger.adapter";
 
 @Injectable()
 @RequireTenant()
@@ -10,10 +13,10 @@ export class EnrollEntityUseCase extends BaseUseCase<EnrollEntityInput, { enroll
   constructor(
     private readonly enrollmentRepo: PrismaEnrollmentRepoAdapter,
     private readonly sequenceRepo: PrismaSequenceRepoAdapter,
-    private readonly idGenerator: IdGeneratorPort,
-    private readonly clock: ClockPort
+    @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort,
+    @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort
   ) {
-    super();
+    super({ logger: new NestLoggerAdapter() });
   }
 
   protected async handle(

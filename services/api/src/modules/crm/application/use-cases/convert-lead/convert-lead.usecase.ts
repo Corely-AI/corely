@@ -90,6 +90,7 @@ export class ConvertLeadUseCase extends BaseUseCase<ConvertLeadInput, ConvertLea
     const createDealResult = await this.deps.createDeal.execute({
       title: dealTitle,
       partyId: contactId, // Primary contact
+      stageId: "lead",
     }, ctx);
 
 

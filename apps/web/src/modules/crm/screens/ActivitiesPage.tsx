@@ -21,10 +21,12 @@ export default function ActivitiesPage() {
   const activities = activitiesData?.activities || [];
 
   return (
-    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-activities-page">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">{t("crm.activities.title")}</h1>
-        <Button variant="accent" onClick={() => navigate("/crm/activities/new")}>
+        <h1 className="text-h1 text-foreground" data-testid="crm-activities-header">
+          {t("crm.activities.title")}
+        </h1>
+        <Button variant="accent" onClick={() => navigate("/crm/activities/new")} data-testid="crm-activities-create">
           <Plus className="h-4 w-4" />
           {t("crm.activities.new")}
         </Button>

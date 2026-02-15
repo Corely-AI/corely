@@ -3,7 +3,7 @@ import { z } from "zod";
 import { DomainToolPort, ToolKind } from "../../../ai-copilot/application/ports/domain-tool.port";
 import { GetDealByIdUseCase } from "../../application/use-cases/get-deal-by-id/get-deal-by-id.usecase";
 import { GetTimelineUseCase } from "../../application/use-cases/get-timeline/get-timeline.usecase";
-import { err } from "@corely/kernel";
+import { ok } from "@corely/kernel";
 
 const InputSchema = z.object({
   dealId: z.string().describe("The ID of the deal to summarize"),
@@ -29,7 +29,7 @@ export class GetDealSummaryTool implements DomainToolPort {
   }) => {
     const { dealId } = InputSchema.parse(params.input);
 
-    const dealResult = await this.getDeal.execute({ id: dealId }, { tenantId: params.tenantId });
+    const dealResult = await this.getDeal.execute({ dealId }, { tenantId: params.tenantId });
     if (!dealResult.ok) throw (dealResult as any).error;
 
     const timelineResult = await this.getTimeline.execute(
