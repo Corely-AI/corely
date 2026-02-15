@@ -9,6 +9,10 @@ import {
   type ClockPort,
   type IdGeneratorPort,
   type LoggerPort,
+  RequireTenant,
+  type IdempotencyPort,
+  type AuditPort,
+  type OutboxPort,
 } from "@corely/kernel";
 import type { CreateAccountInput, CreateAccountOutput } from "@corely/contracts";
 import type { AccountRepositoryPort } from "../../ports/account-repository.port";
@@ -21,11 +25,15 @@ type Deps = {
   logger: LoggerPort;
   accountRepo: AccountRepositoryPort;
   partyApp: PartyApplication;
+  idempotency: IdempotencyPort;
+  audit: AuditPort;
+  outbox: OutboxPort;
 };
 
+@RequireTenant()
 export class CreateAccountUseCase extends BaseUseCase<CreateAccountInput, CreateAccountOutput> {
   constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+    super({ logger: deps.logger, idempotency: deps.idempotency });
   }
 
   protected validate(input: CreateAccountInput): CreateAccountInput {
@@ -39,7 +47,9 @@ export class CreateAccountUseCase extends BaseUseCase<CreateAccountInput, Create
     input: CreateAccountInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateAccountOutput, UseCaseError>> {
-    if (!ctx.tenantId) return err(new ValidationError("Tenant ID required"));
+    if (!ctx.tenantId) {
+      return err(new ValidationError("Tenant ID required"));
+    }
 
     const now = this.deps.clock.now();
 
@@ -92,6 +102,20 @@ export class CreateAccountUseCase extends BaseUseCase<CreateAccountInput, Create
     if (!account) {
       return err(new ValidationError("Account created but not found on read-back"));
     }
+    await this.deps.audit.log({
+      tenantId: ctx.tenantId,
+      userId: ctx.userId ?? "system",
+      action: "crm.account.create",
+      entityType: "account",
+      entityId: profileId,
+      metadata: { partyId },
+    });
+    await this.deps.outbox.enqueue({
+      eventType: "crm.account.created",
+      tenantId: ctx.tenantId,
+      correlationId: ctx.correlationId,
+      payload: { accountId: profileId, partyId },
+    });
 
     return ok({ account: account.toDto() });
   }

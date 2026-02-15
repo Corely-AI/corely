@@ -1,7 +1,20 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { BaseUseCase, UseCaseContext, Result, ok, UseCaseError } from "@corely/kernel";
+import {
+  BaseUseCase,
+  UseCaseContext,
+  Result,
+  ok,
+  UseCaseError,
+  RequireTenant,
+  AUDIT_PORT,
+  OUTBOX_PORT,
+  IDEMPOTENCY_PORT,
+  type AuditPort,
+  type OutboxPort,
+  type IdempotencyPort,
+} from "@corely/kernel";
 import { CreateSequenceInput, SequenceDto } from "@corely/contracts";
-import { PrismaSequenceRepoAdapter } from "../../../infrastructure/prisma/prisma-sequence-repo.adapter";
+import { SEQUENCE_REPO_PORT, type SequenceRepoPort } from "../../ports/sequence-repository.port";
 import { SequenceAggregate } from "../../../domain/sequence.aggregate";
 import { SequenceStepType } from "@prisma/client";
 import { CLOCK_PORT_TOKEN, type ClockPort } from "../../../../../shared/ports/clock.port";
@@ -11,13 +24,17 @@ import {
 } from "../../../../../shared/ports/id-generator.port";
 
 @Injectable()
+@RequireTenant()
 export class CreateSequenceUseCase extends BaseUseCase<CreateSequenceInput, SequenceDto> {
   constructor(
-    private readonly sequenceRepo: PrismaSequenceRepoAdapter,
+    @Inject(SEQUENCE_REPO_PORT) private readonly sequenceRepo: SequenceRepoPort,
+    @Inject(AUDIT_PORT) private readonly audit: AuditPort,
+    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
+    @Inject(IDEMPOTENCY_PORT) idempotency: IdempotencyPort,
     @Inject(CLOCK_PORT_TOKEN) private readonly clock: ClockPort,
     @Inject(ID_GENERATOR_TOKEN) private readonly idGenerator: IdGeneratorPort
   ) {
-    super({});
+    super({ idempotency });
   }
 
   protected async handle(
@@ -47,6 +64,8 @@ export class CreateSequenceUseCase extends BaseUseCase<CreateSequenceInput, Sequ
       input.name,
       input.description || null,
       ctx.userId || null,
+      now,
+      now
       // other fields if aggregate has them? constructor signature:
       // id, tenantId, steps, name, description, ownerUserId?
     );
@@ -60,25 +79,39 @@ export class CreateSequenceUseCase extends BaseUseCase<CreateSequenceInput, Sequ
     // public readonly ownerUserId?: string | null
 
     await this.sequenceRepo.create(ctx.tenantId, aggregate);
+    await this.audit.log({
+      tenantId: ctx.tenantId,
+      userId: ctx.userId ?? "system",
+      action: "crm.sequence.create",
+      entityType: "sequence",
+      entityId: aggregate.id,
+      metadata: { stepCount: aggregate.steps.length },
+    });
+    await this.outbox.enqueue({
+      eventType: "crm.sequence.created",
+      tenantId: ctx.tenantId,
+      correlationId: ctx.correlationId,
+      payload: { sequenceId: aggregate.id },
+    });
 
     return ok({
-        id: aggregate.id,
-        tenantId: aggregate.tenantId,
-        name: aggregate.name,
-        description: aggregate.description,
-        ownerUserId: aggregate.ownerUserId,
-        createdAt: now.toISOString(),
-        updatedAt: now.toISOString(),
-        steps: steps.map(s => ({
-            id: s.id,
-            tenantId: s.tenantId,
-            sequenceId: s.sequenceId,
-            stepOrder: s.stepOrder,
-            type: s.type,
-            dayDelay: s.dayDelay,
-            templateSubject: s.templateSubject,
-            templateBody: s.templateBody,
-        }))
+      id: aggregate.id,
+      tenantId: aggregate.tenantId,
+      name: aggregate.name,
+      description: aggregate.description,
+      ownerUserId: aggregate.ownerUserId,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+      steps: steps.map((s) => ({
+        id: s.id,
+        tenantId: s.tenantId,
+        sequenceId: s.sequenceId,
+        stepOrder: s.stepOrder,
+        type: s.type,
+        dayDelay: s.dayDelay,
+        templateSubject: s.templateSubject,
+        templateBody: s.templateBody,
+      })),
     });
   }
 }

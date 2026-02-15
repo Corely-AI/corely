@@ -5,6 +5,7 @@ import { ArrowLeft, Building2, Edit, Mail, Phone, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { crmApi } from "@/lib/crm-api";
+import { CustomAttributesSection } from "@/shared/custom-attributes";
 
 export default function AccountDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,6 +14,11 @@ export default function AccountDetailPage() {
   const { data: account, isLoading } = useQuery({
     queryKey: ["account", id],
     queryFn: () => crmApi.getAccount(id!),
+    enabled: !!id,
+  });
+  const { data: customAttributes } = useQuery({
+    queryKey: ["account", id, "custom-attributes"],
+    queryFn: () => crmApi.getAccountCustomAttributes(id!),
     enabled: !!id,
   });
 
@@ -44,7 +50,11 @@ export default function AccountDetailPage() {
           </h1>
           <p className="text-sm text-muted-foreground">Account · {account.accountType}</p>
         </div>
-        <Button variant="outline" onClick={() => navigate(`/crm/accounts/${id}/edit`)}>
+        <Button
+          variant="outline"
+          onClick={() => navigate(`/crm/accounts/${id}/edit`)}
+          data-testid="crm-account-edit"
+        >
           <Edit className="h-4 w-4" />
           Edit
         </Button>
@@ -130,6 +140,21 @@ export default function AccountDetailPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div data-testid="crm-account-custom-fields">
+        <CustomAttributesSection
+          entityType="party"
+          mode="read"
+          value={
+            customAttributes
+              ? {
+                  customFieldValues: customAttributes.customFieldValues,
+                  dimensionAssignments: customAttributes.dimensionAssignments,
+                }
+              : undefined
+          }
+        />
       </div>
     </div>
   );

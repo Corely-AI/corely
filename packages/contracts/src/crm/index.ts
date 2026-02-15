@@ -16,6 +16,7 @@ export * from "./convert-lead.schema";
 export * from "./create-deal.schema";
 export * from "./update-deal.schema";
 export * from "./sequence.types";
+export * from "./set-account-custom-attributes.schema";
 export * from "./move-deal-stage.schema";
 export * from "./mark-deal-won.schema";
 export * from "./mark-deal-lost.schema";

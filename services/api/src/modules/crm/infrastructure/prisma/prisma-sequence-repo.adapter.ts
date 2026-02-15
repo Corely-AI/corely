@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { SequenceAggregate } from "../../domain/sequence.aggregate";
+import type { SequenceRepoPort } from "../../application/ports/sequence-repository.port";
 
 @Injectable()
-export class PrismaSequenceRepoAdapter {
+export class PrismaSequenceRepoAdapter implements SequenceRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async findById(tenantId: string, id: string): Promise<SequenceAggregate | null> {
@@ -12,7 +13,9 @@ export class PrismaSequenceRepoAdapter {
       include: { steps: true },
     });
 
-    if (!sequence || sequence.tenantId !== tenantId) return null;
+    if (!sequence || sequence.tenantId !== tenantId) {
+      return null;
+    }
 
     return SequenceAggregate.from(sequence);
   }

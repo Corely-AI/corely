@@ -7,6 +7,7 @@ import {
   ok,
   err,
   type LoggerPort,
+  RequireTenant,
 } from "@corely/kernel";
 import type { ListAccountsQuery, ListAccountsResponse } from "@corely/contracts";
 import type { AccountRepositoryPort } from "../../ports/account-repository.port";
@@ -16,6 +17,7 @@ type Deps = {
   accountRepo: AccountRepositoryPort;
 };
 
+@RequireTenant()
 export class ListAccountsUseCase extends BaseUseCase<ListAccountsQuery, ListAccountsResponse> {
   constructor(private readonly deps: Deps) {
     super({ logger: deps.logger });
@@ -29,7 +31,9 @@ export class ListAccountsUseCase extends BaseUseCase<ListAccountsQuery, ListAcco
     input: ListAccountsQuery,
     ctx: UseCaseContext
   ): Promise<Result<ListAccountsResponse, UseCaseError>> {
-    if (!ctx.tenantId) return err(new ValidationError("Tenant ID required"));
+    if (!ctx.tenantId) {
+      return err(new ValidationError("Tenant ID required"));
+    }
 
     const { items, total } = await this.deps.accountRepo.list(
       ctx.tenantId,

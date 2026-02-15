@@ -1,50 +1,43 @@
-import { Body, Controller, Get, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
 import type { Request } from "express";
-import { 
-    EnrollEntityInputSchema
-} from "@corely/contracts";
+import { EnrollEntityInputSchema } from "@corely/contracts";
 import { EnrollEntityUseCase } from "../../application/use-cases/enroll-entity/enroll-entity.usecase";
-import { PrismaSequenceRepoAdapter } from "../../infrastructure/prisma/prisma-sequence-repo.adapter";
-import type { UseCaseContext } from "@corely/kernel";
-import { Err } from "@corely/kernel";
-
 import { CreateSequenceInputSchema } from "@corely/contracts";
 import { CreateSequenceUseCase } from "../../application/use-cases/create-sequence/create-sequence.usecase";
+import { ListSequencesUseCase } from "../../application/use-cases/list-sequences/list-sequences.usecase";
+import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
+import { AuthGuard } from "../../../identity";
+import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 
 @Controller("crm/sequences")
+@UseGuards(AuthGuard, RbacGuard)
 export class SequencesHttpController {
   constructor(
+    private readonly listSequences: ListSequencesUseCase,
     private readonly enrollEntity: EnrollEntityUseCase,
-    private readonly createSequence: CreateSequenceUseCase,
-    private readonly sequenceRepo: PrismaSequenceRepoAdapter
+    private readonly createSequence: CreateSequenceUseCase
   ) {}
 
   @Get()
+  @RequirePermission("crm.deals.read")
   async list(@Req() req: Request) {
-    const tenantId = (req as { tenantId?: string }).tenantId;
-    return this.sequenceRepo.list(tenantId!);
+    const result = await this.listSequences.execute({}, buildUseCaseContext(req));
+    return mapResultToHttp(result);
   }
 
   @Post()
+  @RequirePermission("crm.deals.manage")
   async create(@Body() body: unknown, @Req() req: Request) {
     const input = CreateSequenceInputSchema.parse(body);
-    const user = (req as { user?: { id?: string } }).user;
-    const ctx: UseCaseContext = { tenantId: (req as { tenantId?: string }).tenantId!, userId: user?.id };
-    const result = await this.createSequence.execute(input, ctx);
-    if (!result.ok) {
-      throw (result as Err<unknown>).error;
-    }
-    return result.value;
+    const result = await this.createSequence.execute(input, buildUseCaseContext(req));
+    return mapResultToHttp(result);
   }
 
   @Post("enroll")
+  @RequirePermission("crm.deals.manage")
   async enroll(@Body() body: unknown, @Req() req: Request) {
     const input = EnrollEntityInputSchema.parse(body);
-    const ctx: UseCaseContext = { tenantId: (req as { tenantId?: string }).tenantId! };
-    const result = await this.enrollEntity.execute(input, ctx);
-    if (!result.ok) {
-      throw (result as Err<unknown>).error;
-    }
-    return { enrollmentId: result.value.enrollmentId };
+    const result = await this.enrollEntity.execute(input, buildUseCaseContext(req));
+    return mapResultToHttp(result);
   }
 }

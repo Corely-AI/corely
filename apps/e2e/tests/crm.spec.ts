@@ -30,7 +30,8 @@ async function createDealFixture(page: Page, suffix: string): Promise<{ dealId: 
   if (!accessToken) {
     throw new Error("Missing access token");
   }
-  const workspaceId = (await page.evaluate(() => localStorage.getItem("corely-active-workspace"))) ?? "";
+  const workspaceId =
+    (await page.evaluate(() => localStorage.getItem("corely-active-workspace"))) ?? "";
 
   const customerRes = await page.request.post(`${API_URL}/customers`, {
     headers: {
@@ -94,7 +95,9 @@ test.describe("CRM Smoke + Navigation", () => {
     await expect(page.locator(selectors.crm.dealsHeader)).toBeVisible();
     await expect(page.locator(selectors.crm.dealsCreate)).toBeVisible();
     await expect(
-      page.locator(`${selectors.crm.dealsList}, ${selectors.crm.dealsPage} [data-testid="crm-deals-empty"]`)
+      page.locator(
+        `${selectors.crm.dealsList}, ${selectors.crm.dealsPage} [data-testid="crm-deals-empty"]`
+      )
     ).toBeVisible();
   });
 });
@@ -117,9 +120,7 @@ test.describe("CRM Leads -> Deals", () => {
     await page.fill(selectors.crm.leadPhone, "+49111111111");
     await page.fill(selectors.crm.leadNotes, "Qualification notes");
     const createLeadResponsePromise = page.waitForResponse(
-      (response) =>
-        response.url().includes("/crm/leads") &&
-        response.request().method() === "POST"
+      (response) => response.url().includes("/crm/leads") && response.request().method() === "POST"
     );
     await page.click(selectors.crm.leadSave);
     const createLeadResponse = await createLeadResponsePromise;
@@ -165,7 +166,9 @@ test.describe("CRM Deals Lifecycle", () => {
 
     await stageSelect.click();
     await page.locator('[role="option"]').nth(1).click();
-    await expect(page.locator(selectors.crm.timeline)).toContainText(/stage|lead|qualified|proposal|negotiation/i);
+    await expect(page.locator(selectors.crm.timeline)).toContainText(
+      /stage|lead|qualified|proposal|negotiation/i
+    );
   });
 
   test("marks deal as won and then blocks stage edits", async ({ page, testData }) => {
@@ -193,10 +196,7 @@ test.describe("CRM Deals Lifecycle", () => {
 
     await page.goto(`/crm/deals/${dealId}`);
     await page.click(selectors.crm.dealMarkLost);
-    const confirmButton = page.getByRole("button", { name: /confirm|mark lost|save/i }).last();
-    if (await confirmButton.isVisible()) {
-      await confirmButton.click();
-    }
+    await page.click(selectors.crm.dealLostConfirm);
     await expect(page.locator(selectors.crm.dealDetailPage)).toContainText(/lost/i);
   });
 });
@@ -269,15 +269,184 @@ test.describe("CRM Channel Catalog", () => {
 });
 
 test.describe("CRM Full Platform Placeholders", () => {
-  test.skip("contacts CRUD routes (/crm/contacts) are not implemented in current UI build", async () => {});
-  test.skip("custom properties UI flow is not implemented in current UI build", async () => {});
-  test.skip("sequence creation flow is not implemented in current UI build", async () => {});
-  test.skip("workflow automation verification hooks are not exposed in current UI build", async () => {});
+  test("workflow automation hook creates timeline item deterministically", async ({
+    page,
+    testData,
+  }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+
+    const suffix = uniqueSuffix();
+    const { dealId } = await createDealFixture(page, suffix);
+    const hookSubject = `Workflow Hook Task ${suffix}`;
+
+    const hookRes = await page.request.post(`${API_URL}/test/crm/seed-workflow-activity`, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-Test-Secret": process.env.TEST_HARNESS_SECRET || "test-secret-key",
+      },
+      data: {
+        tenantId: testData.tenant.id,
+        dealId,
+        actorUserId: testData.user.id,
+        subject: hookSubject,
+      },
+    });
+    expect(hookRes.ok()).toBeTruthy();
+
+    await page.goto(`/crm/deals/${dealId}`);
+    await expect(page.locator(selectors.crm.timeline)).toBeVisible();
+    await expect(page.locator(selectors.crm.timeline)).toContainText(hookSubject);
+  });
   test.skip("tickets UI flow is not implemented in current UI build", async () => {});
-  test.skip(
-    "AI CRM-specific tool-card mutation flow is not deterministic in current E2E harness",
-    async () => {}
-  );
+  test.skip("AI CRM-specific tool-card mutation flow is not deterministic in current E2E harness", async () => {});
+});
+
+test.describe("CRM Custom Properties", () => {
+  test("creates custom field definition and shows value on account detail", async ({
+    page,
+    testData,
+  }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+
+    const suffix = uniqueSuffix();
+    const fieldKey = `crm_cf_${suffix.replace(/[^a-zA-Z0-9_]/g, "_")}`;
+    const fieldLabel = `CRM Field ${suffix}`;
+    const fieldValue = `Value ${suffix}`;
+    const accountName = `CF Account ${suffix}`;
+    const accessToken = await page.evaluate(() => localStorage.getItem("accessToken"));
+    if (!accessToken) throw new Error("Missing access token");
+    const workspaceId =
+      (await page.evaluate(() => localStorage.getItem("corely-active-workspace"))) ?? "";
+
+    const createFieldRes = await page.request.post(`${API_URL}/customization/custom-fields`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        ...(workspaceId ? { "X-Workspace-Id": workspaceId } : {}),
+      },
+      data: {
+        entityType: "party",
+        key: fieldKey,
+        label: fieldLabel,
+        type: "TEXT",
+        required: false,
+        isIndexed: false,
+      },
+    });
+    expect(createFieldRes.ok()).toBeTruthy();
+
+    await page.goto("/crm/accounts/new");
+    await page.fill(selectors.crm.accountName, accountName);
+    await page.fill(selectors.crm.accountEmail, `cf-${suffix}@example.com`);
+    await page.click(selectors.crm.accountSave);
+
+    await expect(page).toHaveURL(/\/crm\/accounts\/[^/]+$/, { timeout: 15_000 });
+    await expect(page.locator(selectors.crm.accountDetail)).toBeVisible();
+    const accountId = page.url().split("/").pop();
+    expect(accountId && accountId !== "new").toBeTruthy();
+    const setAttributesRes = await page.request.put(
+      `${API_URL}/crm/accounts/${accountId}/custom-attributes`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+          ...(workspaceId ? { "X-Workspace-Id": workspaceId } : {}),
+        },
+        data: {
+          customFieldValues: {
+            [fieldKey]: fieldValue,
+          },
+          dimensionAssignments: [],
+        },
+      }
+    );
+    if (!setAttributesRes.ok()) {
+      const body = await setAttributesRes.text();
+      throw new Error(
+        `set custom attributes failed: ${setAttributesRes.status()} ${setAttributesRes.statusText()} ${body}`
+      );
+    }
+    await page.reload();
+
+    await expect(page.locator(`div[data-testid="custom-field-value-${fieldKey}"]`)).toContainText(
+      fieldValue
+    );
+  });
+});
+
+test.describe("CRM Contacts CRUD", () => {
+  test("creates contact and opens detail page", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+
+    const suffix = uniqueSuffix();
+    const contactName = `E2E Contact ${suffix}`;
+    const contactEmail = `contact-${suffix}@example.com`;
+    const contactPhone = "+491234567890";
+
+    await page.goto("/crm/contacts");
+    await expect(page.locator(selectors.crm.contactsPage)).toBeVisible();
+    await page.click(selectors.crm.contactsCreate);
+
+    await expect(page).toHaveURL(/\/crm\/contacts\/new$/);
+    await expect(page.locator(selectors.crm.contactForm)).toBeVisible();
+    await page.fill(selectors.crm.contactName, contactName);
+    await page.fill(selectors.crm.contactEmail, contactEmail);
+    await page.fill(selectors.crm.contactPhone, contactPhone);
+    await page.click(selectors.crm.contactSave);
+
+    await expect(page).toHaveURL(/\/crm\/contacts\/[^/]+$/, { timeout: 15_000 });
+    await expect(page.locator(selectors.crm.contactDetail)).toBeVisible();
+    await expect(page.locator(selectors.crm.contactDetailName)).toContainText(contactName);
+  });
+});
+
+test.describe("CRM Sequences", () => {
+  test("creates a sequence from UI and sees it in list", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+
+    const suffix = uniqueSuffix();
+    const sequenceName = `E2E Sequence ${suffix}`;
+
+    await page.goto("/crm/sequences");
+    await expect(page.locator(selectors.crm.sequencesPage)).toBeVisible();
+    await page.click(selectors.crm.sequencesCreate);
+
+    await expect(page).toHaveURL(/\/crm\/sequences\/new$/);
+    await expect(page.locator(selectors.crm.sequenceForm)).toBeVisible();
+    await page.fill(selectors.crm.sequenceName, sequenceName);
+    await page.fill(selectors.crm.sequenceDescription, "E2E sequence description");
+    await page.selectOption(selectors.crm.sequenceStepType, "TASK");
+    await page.fill(selectors.crm.sequenceDayDelay, "0");
+    await page.fill(selectors.crm.sequenceStepSubject, `Task ${suffix}`);
+    await page.fill(selectors.crm.sequenceStepBody, "Follow up with the prospect");
+
+    const createSequenceResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes("/crm/sequences") && response.request().method() === "POST"
+    );
+    await page.click(selectors.crm.sequenceSave);
+    const createSequenceResponse = await createSequenceResponsePromise;
+    expect(createSequenceResponse.ok()).toBeTruthy();
+
+    await expect(page).toHaveURL(/\/crm\/sequences$/, { timeout: 15_000 });
+    await expect(page.locator(selectors.crm.sequencesList)).toContainText(sequenceName);
+  });
 });
 
 test.describe("CRM Accounts CRUD", () => {
@@ -322,7 +491,7 @@ test.describe("CRM Accounts CRUD", () => {
 
     // Edit — change the name
     const editedName = `Acme Updated ${suffix}`;
-    await page.click('button:has-text("Edit")');
+    await page.click(selectors.crm.accountEdit);
     // Wait for form input to be visible to ensure navigation completed
     await expect(page.locator(selectors.crm.accountName)).toBeVisible();
     await page.fill(selectors.crm.accountName, editedName);

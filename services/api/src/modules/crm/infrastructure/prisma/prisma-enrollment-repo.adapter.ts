@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { EnrollmentStatus, SequenceEnrollment } from "@prisma/client";
+import type { EnrollmentRepoPort } from "../../application/ports/enrollment-repository.port";
 
 export type EnrollmentWithRelations = SequenceEnrollment & {
   sequence: {
@@ -15,7 +16,7 @@ export type EnrollmentWithRelations = SequenceEnrollment & {
 };
 
 @Injectable()
-export class PrismaEnrollmentRepoAdapter {
+export class PrismaEnrollmentRepoAdapter implements EnrollmentRepoPort {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: {

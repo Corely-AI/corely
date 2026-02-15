@@ -9,6 +9,10 @@ import {
   type ClockPort,
   type IdGeneratorPort,
   type LoggerPort,
+  RequireTenant,
+  type IdempotencyPort,
+  type AuditPort,
+  type OutboxPort,
 } from "@corely/kernel";
 import { CreateLeadInput, CreateLeadOutput } from "@corely/contracts";
 import { LeadAggregate, LeadSource } from "../../../domain/lead.aggregate";
@@ -19,11 +23,15 @@ type Deps = {
   idGenerator: IdGeneratorPort;
   logger: LoggerPort;
   leadRepo: LeadRepoPort; // injected manually or via DI logic later
+  idempotency: IdempotencyPort;
+  audit: AuditPort;
+  outbox: OutboxPort;
 };
 
+@RequireTenant()
 export class CreateLeadUseCase extends BaseUseCase<CreateLeadInput, CreateLeadOutput> {
   constructor(private readonly deps: Deps) {
-    super({ logger: deps.logger });
+    super({ logger: deps.logger, idempotency: deps.idempotency });
   }
 
   protected validate(input: CreateLeadInput): CreateLeadInput {
@@ -35,7 +43,9 @@ export class CreateLeadUseCase extends BaseUseCase<CreateLeadInput, CreateLeadOu
     input: CreateLeadInput,
     ctx: UseCaseContext
   ): Promise<Result<CreateLeadOutput, UseCaseError>> {
-    if (!ctx.tenantId) return err(new ValidationError("Tenant ID required"));
+    if (!ctx.tenantId) {
+      return err(new ValidationError("Tenant ID required"));
+    }
 
     const now = this.deps.clock.now();
     const lead = LeadAggregate.create({
@@ -53,6 +63,20 @@ export class CreateLeadUseCase extends BaseUseCase<CreateLeadInput, CreateLeadOu
     });
 
     await this.deps.leadRepo.create(ctx.tenantId, lead);
+    await this.deps.audit.log({
+      tenantId: ctx.tenantId,
+      userId: ctx.userId ?? "system",
+      action: "crm.lead.create",
+      entityType: "lead",
+      entityId: lead.id,
+      metadata: { source: lead.source, status: lead.status },
+    });
+    await this.deps.outbox.enqueue({
+      eventType: "crm.lead.created",
+      tenantId: ctx.tenantId,
+      correlationId: ctx.correlationId,
+      payload: { leadId: lead.id },
+    });
 
     return ok({
       lead: {

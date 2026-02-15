@@ -127,8 +127,15 @@ export function CustomFieldsSection({
           if (mode === "read") {
             return (
               <div key={key} className="space-y-1">
-                <Label>{definition.label}</Label>
-                <div className="text-sm text-muted-foreground">{toDisplayValue(raw)}</div>
+                <Label data-testid={`custom-field-label-${definition.key}`}>
+                  {definition.label}
+                </Label>
+                <div
+                  className="text-sm text-muted-foreground"
+                  data-testid={`custom-field-value-${definition.key}`}
+                >
+                  {toDisplayValue(raw)}
+                </div>
               </div>
             );
           }
@@ -144,6 +151,7 @@ export function CustomFieldsSection({
                     onChange={(event) =>
                       updateValue(definition.id, definition.key, Number(event.target.value))
                     }
+                    data-testid={`custom-field-input-${definition.key}`}
                   />
                 </div>
               );
@@ -157,6 +165,7 @@ export function CustomFieldsSection({
                     onChange={(event) =>
                       updateValue(definition.id, definition.key, event.target.value)
                     }
+                    data-testid={`custom-field-input-${definition.key}`}
                   />
                 </div>
               );
@@ -168,6 +177,7 @@ export function CustomFieldsSection({
                     onCheckedChange={(checked) =>
                       updateValue(definition.id, definition.key, checked === true)
                     }
+                    data-testid={`custom-field-input-${definition.key}`}
                   />
                   <Label>{definition.label}</Label>
                 </div>
@@ -182,7 +192,7 @@ export function CustomFieldsSection({
                       updateValue(definition.id, definition.key, nextValue)
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger data-testid={`custom-field-input-${definition.key}`}>
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -208,6 +218,7 @@ export function CustomFieldsSection({
                         amountCents: Math.round(amount * 100),
                       });
                     }}
+                    data-testid={`custom-field-input-${definition.key}`}
                   />
                 </div>
               );
@@ -232,6 +243,7 @@ export function CustomFieldsSection({
                               }
                               updateValue(definition.id, definition.key, Array.from(next));
                             }}
+                            data-testid={`custom-field-input-${definition.key}`}
                           />
                           <span className="text-sm">{String(option)}</span>
                         </div>
@@ -250,6 +262,7 @@ export function CustomFieldsSection({
                     onChange={(event) =>
                       updateValue(definition.id, definition.key, event.target.value)
                     }
+                    data-testid={`custom-field-input-${definition.key}`}
                   />
                 </div>
               );

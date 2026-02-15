@@ -4,9 +4,11 @@ import {
   type Result,
   type UseCaseError,
   ValidationError,
+  NotFoundError,
   ok,
   err,
   type LoggerPort,
+  RequireTenant,
 } from "@corely/kernel";
 import type { GetAccountOutput } from "@corely/contracts";
 import type { AccountRepositoryPort } from "../../ports/account-repository.port";
@@ -18,6 +20,7 @@ type Deps = {
   accountRepo: AccountRepositoryPort;
 };
 
+@RequireTenant()
 export class GetAccountUseCase extends BaseUseCase<GetAccountInput, GetAccountOutput> {
   constructor(private readonly deps: Deps) {
     super({ logger: deps.logger });
@@ -31,10 +34,14 @@ export class GetAccountUseCase extends BaseUseCase<GetAccountInput, GetAccountOu
     input: GetAccountInput,
     ctx: UseCaseContext
   ): Promise<Result<GetAccountOutput, UseCaseError>> {
-    if (!ctx.tenantId) return err(new ValidationError("Tenant ID required"));
+    if (!ctx.tenantId) {
+      return err(new ValidationError("Tenant ID required"));
+    }
 
     const account = await this.deps.accountRepo.findById(ctx.tenantId, input.id);
-    if (!account) return err(new ValidationError("Account not found"));
+    if (!account) {
+      return err(new NotFoundError("Account not found"));
+    }
 
     return ok({ account: account.toDto() });
   }

@@ -2,10 +2,9 @@ import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from "@nest
 import type { Request } from "express";
 import { CreateLeadUseCase } from "../../application/use-cases/create-lead/create-lead.usecase";
 import { ConvertLeadUseCase } from "../../application/use-cases/convert-lead/convert-lead.usecase";
-import { LEAD_REPO_PORT } from "../../application/ports/lead-repository.port";
-import type { LeadRepoPort } from "../../application/ports/lead-repository.port";
-import { Inject } from "@nestjs/common";
-import { CreateLeadInputSchema, CreateLeadInput, ConvertLeadInputSchema, ConvertLeadInput } from "@corely/contracts";
+import { ListLeadsUseCase } from "../../application/use-cases/list-leads/list-leads.usecase";
+import { GetLeadUseCase } from "../../application/use-cases/get-lead/get-lead.usecase";
+import { CreateLeadInputSchema, ConvertLeadInputSchema } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { AuthGuard } from "../../../identity";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
@@ -16,7 +15,8 @@ export class LeadsController {
   constructor(
     private readonly createLead: CreateLeadUseCase,
     private readonly convertLead: ConvertLeadUseCase,
-    @Inject(LEAD_REPO_PORT) private readonly leadRepo: LeadRepoPort,
+    private readonly listLeads: ListLeadsUseCase,
+    private readonly getLead: GetLeadUseCase
   ) {}
 
   @Post()
@@ -42,21 +42,14 @@ export class LeadsController {
   @Get()
   @RequirePermission("crm.deals.read")
   async list(@Req() req: Request, @Query("status") status?: string) {
-    const tenantId = (req as any).tenantId as string;
-    const leads = await this.leadRepo.list(tenantId, { status });
-    // Need mapping to DTO? Or just return Aggregate (usually mapped)
-    // Adapter usually returns Aggregates. Controller should map to DTO.
-    // For now returning Aggregates is okayish but DTO is better.
-    // I'll skip mapping for speed, assuming DTO-like shape.
-    return { items: leads, nextCursor: null };
+    const result = await this.listLeads.execute({ status }, buildUseCaseContext(req));
+    return mapResultToHttp(result);
   }
 
   @Get(":id")
   @RequirePermission("crm.deals.read")
   async get(@Req() req: Request, @Param("id") id: string) {
-    const tenantId = (req as any).tenantId as string;
-    const lead = await this.leadRepo.findById(tenantId, id);
-    if (!lead) throw new Error("Not found");
-    return lead;
+    const result = await this.getLead.execute({ id }, buildUseCaseContext(req));
+    return mapResultToHttp(result);
   }
 }

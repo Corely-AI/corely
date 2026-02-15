@@ -349,14 +349,20 @@ export default function DealDetailPage() {
               placeholder={t("crm.deals.markLostPlaceholder")}
               value={lostReason}
               onChange={(e) => setLostReason(e.target.value)}
+              data-testid="crm-deal-lost-reason"
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLostDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setLostDialogOpen(false)}
+              data-testid="crm-deal-lost-cancel"
+            >
               {t("common.cancel")}
             </Button>
             <Button
               variant="destructive"
+              data-testid="crm-deal-lost-confirm"
               onClick={() => {
                 markLost.mutate({ dealId: deal.id, reason: lostReason });
                 setLostDialogOpen(false);

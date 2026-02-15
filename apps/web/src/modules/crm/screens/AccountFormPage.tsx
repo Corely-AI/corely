@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save } from "lucide-react";
@@ -8,6 +8,7 @@ import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { crmApi } from "@/lib/crm-api";
 import type { CreateAccountInput, CrmAccountType, AccountStatus } from "@corely/contracts";
+import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 type FormData = {
   name: string;
@@ -39,12 +40,30 @@ export default function AccountFormPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
+  const [customAttributes, setCustomAttributes] = useState<CustomAttributesValue>({
+    dimensionAssignments: [],
+    customFieldValues: {},
+  });
+  const customAttributesRef = useRef<CustomAttributesValue>({
+    dimensionAssignments: [],
+    customFieldValues: {},
+  });
+
+  const handleCustomAttributesChange = (next: CustomAttributesValue) => {
+    customAttributesRef.current = next;
+    setCustomAttributes(next);
+  };
 
   // Load existing account if editing
   const { data: existing } = useQuery({
     queryKey: ["account", id],
     queryFn: () => crmApi.getAccount(id!),
     enabled: isEdit,
+  });
+  const { data: existingCustomAttributes } = useQuery({
+    queryKey: ["account", id, "custom-attributes"],
+    queryFn: () => crmApi.getAccountCustomAttributes(id!),
+    enabled: isEdit && !!id,
   });
 
   useEffect(() => {
@@ -63,19 +82,57 @@ export default function AccountFormPage() {
     }
   }, [existing]);
 
+  useEffect(() => {
+    if (existingCustomAttributes) {
+      const next = {
+        customFieldValues: existingCustomAttributes.customFieldValues,
+        dimensionAssignments: existingCustomAttributes.dimensionAssignments,
+      };
+      customAttributesRef.current = next;
+      setCustomAttributes(next);
+    }
+  }, [existingCustomAttributes]);
+
   const createMutation = useMutation({
-    mutationFn: (input: CreateAccountInput) => crmApi.createAccount(input),
+    mutationFn: async (input: CreateAccountInput) => {
+      const account = await crmApi.createAccount(input);
+      const attributes = customAttributesRef.current;
+      if (
+        Object.keys(attributes.customFieldValues).length > 0 ||
+        attributes.dimensionAssignments.length > 0
+      ) {
+        await crmApi.setAccountCustomAttributes(account.id, {
+          customFieldValues: attributes.customFieldValues,
+          dimensionAssignments: attributes.dimensionAssignments,
+        });
+      }
+      return account;
+    },
     onSuccess: (account) => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      void queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      void queryClient.invalidateQueries({ queryKey: ["account", account.id] });
       navigate(`/crm/accounts/${account.id}`);
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (patch: Record<string, unknown>) => crmApi.updateAccount(id!, patch),
+    mutationFn: async (patch: Record<string, unknown>) => {
+      const account = await crmApi.updateAccount(id!, patch);
+      const attributes = customAttributesRef.current;
+      if (
+        Object.keys(attributes.customFieldValues).length > 0 ||
+        attributes.dimensionAssignments.length > 0
+      ) {
+        await crmApi.setAccountCustomAttributes(account.id, {
+          customFieldValues: attributes.customFieldValues,
+          dimensionAssignments: attributes.dimensionAssignments,
+        });
+      }
+      return account;
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      queryClient.invalidateQueries({ queryKey: ["account", id] });
+      void queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      void queryClient.invalidateQueries({ queryKey: ["account", id] });
       navigate(`/crm/accounts/${id}`);
     },
   });
@@ -112,9 +169,7 @@ export default function AccountFormPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-h1 text-foreground">
-          {isEdit ? "Edit Account" : "New Account"}
-        </h1>
+        <h1 className="text-h1 text-foreground">{isEdit ? "Edit Account" : "New Account"}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -180,9 +235,7 @@ export default function AccountFormPage() {
         <Card>
           <CardHeader>
             <CardTitle>CRM Profile</CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Sales-specific fields
-            </p>
+            <p className="text-xs text-muted-foreground">Sales-specific fields</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -231,12 +284,26 @@ export default function AccountFormPage() {
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button type="submit" variant="accent" disabled={isPending} data-testid="crm-account-save">
+          <Button
+            type="submit"
+            variant="accent"
+            disabled={isPending}
+            data-testid="crm-account-save"
+          >
             <Save className="h-4 w-4" />
             {isPending ? "Saving..." : isEdit ? "Update Account" : "Create Account"}
           </Button>
         </div>
       </form>
+
+      <div data-testid="crm-account-custom-attributes">
+        <CustomAttributesSection
+          entityType="party"
+          mode="edit"
+          value={customAttributes}
+          onChange={handleCustomAttributesChange}
+        />
+      </div>
     </div>
   );
 }
