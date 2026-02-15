@@ -70,6 +70,10 @@
       }
     }
   },
+  "errors": {
+    "pageNotFound": "Seite nicht gefunden",
+    "returnHome": "Zurück zur Startseite"
+  },
   "common": {
     "logout": "Abmelden",
     "loading": "Laden...",

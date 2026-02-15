@@ -70,6 +70,10 @@
       }
     }
   },
+  "errors": {
+    "pageNotFound": "Không tìm thấy trang",
+    "returnHome": "Về trang chủ"
+  },
   "common": {
     "logout": "Đăng xuất",
     "loading": "Đang tải...",
