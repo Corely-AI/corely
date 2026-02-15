@@ -1,10 +1,11 @@
 /**
  * Test Sequence Seeder
- * 
+ *
  * This script creates a sample sequence in the database for testing.
  * Run with: pnpm -F @corely/data tsx scripts/seed-test-sequence.ts
  */
 
+/* eslint-disable no-console, no-process-exit */
 import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 
@@ -13,7 +14,7 @@ const prisma = new PrismaClient();
 async function main() {
   // You'll need to replace this with an actual tenant ID from your database
   const TENANT_ID = process.env.TEST_TENANT_ID || "replace-with-real-tenant-id";
-  
+
   console.log("🌱 Seeding test sequence...");
 
   // Create a sample sequence
@@ -33,7 +34,8 @@ async function main() {
             type: "EMAIL_AUTO",
             dayDelay: 0,
             templateSubject: "Welcome! Let's connect",
-            templateBody: "Hi {{firstName}},\n\nThank you for your interest! I'd love to learn more about your needs.\n\nBest regards,\nThe Team",
+            templateBody:
+              "Hi {{firstName}},\n\nThank you for your interest! I'd love to learn more about your needs.\n\nBest regards,\nThe Team",
           },
           {
             id: randomUUID(),
@@ -51,7 +53,8 @@ async function main() {
             type: "EMAIL_MANUAL",
             dayDelay: 5,
             templateSubject: "Checking in",
-            templateBody: "Hi {{firstName}},\n\nI wanted to follow up on our previous conversation. Do you have any questions?\n\nBest regards",
+            templateBody:
+              "Hi {{firstName}},\n\nI wanted to follow up on our previous conversation. Do you have any questions?\n\nBest regards",
           },
         ],
       },
@@ -64,7 +67,7 @@ async function main() {
   console.log("✅ Created sequence:", sequence.name);
   console.log(`   ID: ${sequence.id}`);
   console.log(`   Steps: ${sequence.steps.length}`);
-  
+
   // Create another sequence
   const sequence2 = await prisma.sequence.create({
     data: {
@@ -104,7 +107,7 @@ async function main() {
   console.log("✅ Created sequence:", sequence2.name);
   console.log(`   ID: ${sequence2.id}`);
   console.log(`   Steps: ${sequence2.steps.length}`);
-  
+
   console.log("\n🎉 Seeding complete!");
 }
 
