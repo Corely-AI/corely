@@ -108,10 +108,15 @@ export class GetMonthlyBillingPreviewUseCase {
     );
     const filteredInvoiceLinks = hasFilter
       ? invoiceLinks.filter((link) => {
+          if (input.classGroupId) {
+            return link.classGroupId === input.classGroupId;
+          }
           if (link.classGroupId) {
             return filteredLineKeys.has(`${link.payerClientId}:${link.classGroupId}`);
           }
-          return items.some((item) => item.payerClientId === link.payerClientId);
+          return items.some(
+            (item) => item.payerClientId === link.payerClientId && item.lines.length === 1
+          );
         })
       : invoiceLinks;
     const invoiceStatusesById = this.repo.getInvoiceStatusesByIds

@@ -35,6 +35,36 @@ class FakeRepo implements ClassesRepositoryPort {
   public runs = new Map<string, any>();
   public links = new Map<string, any>();
   public missingEmailInvoiceIds = new Set<string>();
+  private readonly billableRows = [
+    {
+      payerClientId: "client-a",
+      classGroupId: "group-1",
+      classGroupName: "Math",
+      priceCents: 2000,
+      currency: "EUR",
+    },
+    {
+      payerClientId: "client-a",
+      classGroupId: "group-1",
+      classGroupName: "Math",
+      priceCents: 2000,
+      currency: "EUR",
+    },
+    {
+      payerClientId: "client-a",
+      classGroupId: "group-2",
+      classGroupName: "Science",
+      priceCents: 1500,
+      currency: "EUR",
+    },
+    {
+      payerClientId: "client-b",
+      classGroupId: "group-2",
+      classGroupName: "Science",
+      priceCents: 1500,
+      currency: "EUR",
+    },
+  ];
   async createClassGroup() {
     throw new Error("not implemented");
   }
@@ -83,37 +113,16 @@ class FakeRepo implements ClassesRepositoryPort {
   async bulkUpsertAttendance() {
     throw new Error("not implemented");
   }
-  async listBillableAttendanceForMonth() {
-    return [
-      {
-        payerClientId: "client-a",
-        classGroupId: "group-1",
-        classGroupName: "Math",
-        priceCents: 2000,
-        currency: "EUR",
-      },
-      {
-        payerClientId: "client-a",
-        classGroupId: "group-1",
-        classGroupName: "Math",
-        priceCents: 2000,
-        currency: "EUR",
-      },
-      {
-        payerClientId: "client-a",
-        classGroupId: "group-2",
-        classGroupName: "Science",
-        priceCents: 1500,
-        currency: "EUR",
-      },
-      {
-        payerClientId: "client-b",
-        classGroupId: "group-2",
-        classGroupName: "Science",
-        priceCents: 1500,
-        currency: "EUR",
-      },
-    ];
+  async listBillableAttendanceForMonth(_tenantId: string, _workspaceId: string, filters: any) {
+    return this.billableRows.filter((row) => {
+      if (filters?.classGroupId && row.classGroupId !== filters.classGroupId) {
+        return false;
+      }
+      if (filters?.payerClientId && row.payerClientId !== filters.payerClientId) {
+        return false;
+      }
+      return true;
+    });
   }
   async listBillableScheduledForMonth() {
     return [];
@@ -278,6 +287,105 @@ describe("classes billing idempotency", () => {
     expect(invoices.createInputs.some((input) => input.idempotencyKey.endsWith(":group-2"))).toBe(
       true
     );
+  });
+
+  it("does not reuse legacy payer-level idempotency links for class-scoped creation", async () => {
+    const repo = new FakeRepo();
+    const invoices = new FakeInvoices();
+    const audit = new FakeAudit();
+    const outbox = new FakeOutbox();
+    const idempotency = new FakeIdempotency();
+    const idGen = new FakeIdGen();
+    const clock = new FakeClock();
+    const settingsRepo = new FakeSettingsRepo();
+
+    repo.links.set("tenant-1:workspace-1:tenant-1:2024-01:client-a", {
+      id: "legacy-link-1",
+      tenantId: "tenant-1",
+      workspaceId: "workspace-1",
+      billingRunId: "legacy-run",
+      payerClientId: "client-a",
+      classGroupId: null,
+      invoiceId: "legacy-invoice",
+      idempotencyKey: "tenant-1:2024-01:client-a",
+      createdAt: new Date("2024-01-01T00:00:00.000Z"),
+    });
+
+    const useCase = new CreateMonthlyBillingRunUseCase(
+      repo,
+      settingsRepo,
+      invoices,
+      audit,
+      outbox,
+      idempotency,
+      idGen,
+      clock
+    );
+
+    await useCase.execute({ month: "2024-01", createInvoices: true }, buildCtx());
+
+    expect(invoices.createCalls).toBe(3);
+    expect(invoices.createInputs.some((input) => input.idempotencyKey.endsWith(":group-1"))).toBe(
+      true
+    );
+    expect(invoices.createInputs.some((input) => input.idempotencyKey.endsWith(":group-2"))).toBe(
+      true
+    );
+  });
+
+  it("scopes default idempotency by filters so class-specific creates do not collide", async () => {
+    const repo = new FakeRepo();
+    const invoices = new FakeInvoices();
+    const audit = new FakeAudit();
+    const outbox = new FakeOutbox();
+    const idempotency = new FakeIdempotency();
+    const idGen = new FakeIdGen();
+    const clock = new FakeClock();
+    const settingsRepo = new FakeSettingsRepo();
+
+    const useCase = new CreateMonthlyBillingRunUseCase(
+      repo,
+      settingsRepo,
+      invoices,
+      audit,
+      outbox,
+      idempotency,
+      idGen,
+      clock
+    );
+
+    const first = await useCase.execute(
+      { month: "2024-01", classGroupId: "group-1", createInvoices: true },
+      buildCtx()
+    );
+    const second = await useCase.execute(
+      { month: "2024-01", classGroupId: "group-2", createInvoices: true },
+      buildCtx()
+    );
+
+    expect(first.invoiceIds).toHaveLength(1);
+    expect(second.invoiceIds).toHaveLength(2);
+    expect(invoices.createCalls).toBe(3);
+  });
+
+  it("rejects force regenerate when class or payer filters are set", async () => {
+    const useCase = new CreateMonthlyBillingRunUseCase(
+      new FakeRepo(),
+      new FakeSettingsRepo(),
+      new FakeInvoices(),
+      new FakeAudit(),
+      new FakeOutbox(),
+      new FakeIdempotency(),
+      new FakeIdGen(),
+      new FakeClock()
+    );
+
+    await expect(
+      useCase.execute(
+        { month: "2024-01", classGroupId: "group-1", createInvoices: true, force: true },
+        buildCtx()
+      )
+    ).rejects.toBeInstanceOf(ValidationFailedError);
   });
 
   it("blocks send when any payer email is missing", async () => {

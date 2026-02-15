@@ -1,23 +1,11 @@
 import React, { useMemo, useState } from "react";
-import { normalizeError } from "@corely/api-client";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FileText, Mail, RefreshCcw } from "lucide-react";
-import { Link } from "react-router-dom";
 import type { BillingInvoiceSendProgress } from "@corely/contracts";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Badge,
   Button,
-  Card,
-  CardContent,
   Input,
   Select,
   SelectContent,
@@ -33,20 +21,11 @@ import { classBillingKeys } from "../queries";
 import { formatMoney } from "@/shared/lib/formatters";
 import { useSendInvoice } from "../../invoices/hooks/use-send-invoice";
 import { SendInvoiceDialog } from "../../invoices/components/SendInvoiceDialog";
+import { BillingSendPromptDialog } from "../components/BillingSendPromptDialog";
+import { ClassBillingLineRow } from "../components/ClassBillingLineRow";
+import { getBillingErrorMessage } from "../lib/get-billing-error-message";
 
 const toMonthValue = (date: Date) => date.toISOString().slice(0, 7);
-const getErrorMessage = (error: unknown): string | null => {
-  if (!error) {
-    return null;
-  }
-
-  const apiError = normalizeError(error);
-  if (apiError.validationErrors?.length) {
-    return apiError.validationErrors[0].message;
-  }
-
-  return apiError.detail || apiError.message || null;
-};
 
 export default function ClassesBillingPage() {
   const { t } = useTranslation();
@@ -67,6 +46,10 @@ export default function ClassesBillingPage() {
     openSendDialog,
     handleSend: handleSendInvoice,
   } = useSendInvoice();
+
+  const invalidateMonthPreview = async () => {
+    await queryClient.invalidateQueries({ queryKey: classBillingKeys.previewMonth(month) });
+  };
 
   const {
     data: preview,
@@ -154,9 +137,10 @@ export default function ClassesBillingPage() {
       setResultSummary(
         t("classes.billing.summaryCreated", { count: data.invoiceIds.length, month })
       );
-      await queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) });
+      await invalidateMonthPreview();
     },
-    onError: (err: unknown) => toast.error(getErrorMessage(err) || t("classes.billing.loadFailed")),
+    onError: (err: unknown) =>
+      toast.error(getBillingErrorMessage(err) || t("classes.billing.loadFailed")),
   });
 
   const sendInvoices = useMutation({
@@ -214,14 +198,14 @@ export default function ClassesBillingPage() {
 
       setSendProgress(null);
       setSendPromptOpen(false);
-      await queryClient.invalidateQueries({ queryKey: classBillingKeys.preview(month) });
+      await invalidateMonthPreview();
     },
     onError: (err: unknown, _vars, context) => {
       if (context?.toastId) {
         toast.dismiss(context.toastId);
       }
       setSendProgress(null);
-      toast.error(getErrorMessage(err) || t("classes.billing.sendFailed"));
+      toast.error(getBillingErrorMessage(err) || t("classes.billing.sendFailed"));
     },
   });
 
@@ -241,7 +225,7 @@ export default function ClassesBillingPage() {
               {t("classes.billing.sendInvoices")}
             </Button>
           )}
-          {preview?.billingRunStatus === "INVOICES_CREATED" && (
+          {preview?.billingRunStatus === "INVOICES_CREATED" && classGroupId === "ALL" && (
             <Button
               variant="outline"
               onClick={() => {
@@ -311,25 +295,16 @@ export default function ClassesBillingPage() {
         </div>
       }
     >
-      <AlertDialog open={sendPromptOpen} onOpenChange={setSendPromptOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("classes.billing.sendDialogTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t("classes.billing.sendDialogDescription", { count: createdCount })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("classes.billing.sendDialogNo")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => sendInvoices.mutate()}
-              disabled={sendInvoices.isPending}
-            >
-              {t("classes.billing.sendDialogYes")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <BillingSendPromptDialog
+        open={sendPromptOpen}
+        onOpenChange={setSendPromptOpen}
+        title={t("classes.billing.sendDialogTitle")}
+        description={t("classes.billing.sendDialogDescription", { count: createdCount })}
+        cancelLabel={t("classes.billing.sendDialogNo")}
+        confirmLabel={t("classes.billing.sendDialogYes")}
+        isPending={sendInvoices.isPending}
+        onConfirm={() => sendInvoices.mutate()}
+      />
 
       <div className="p-6 space-y-6">
         {resultSummary ? (
@@ -458,64 +433,24 @@ export default function ClassesBillingPage() {
                           );
                           const lineInvoice =
                             classScopedInvoice ??
-                            (item.lines.length === 1
+                            (classGroupId === "ALL" && item.lines.length === 1
                               ? invoiceByPayerAndClass.legacyByPayer.get(item.payerClientId)
                               : undefined);
-                          const lineInvoiceStatus = lineInvoice?.invoiceStatus ?? null;
                           return (
-                            <tr
+                            <ClassBillingLineRow
                               key={line.classGroupId}
-                              className="hover:bg-muted/20 transition-colors"
-                            >
-                              <td className="px-4 py-3 text-sm font-medium">
-                                {nameByGroup.get(line.classGroupId) ?? line.classGroupId}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-center text-muted-foreground italic">
-                                {line.sessions}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-right text-muted-foreground">
-                                {formatMoney(line.priceCents, undefined, item.currency)}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-right font-semibold">
-                                {formatMoney(line.amountCents, undefined, item.currency)}
-                              </td>
-                              <td className="px-4 py-3">
-                                {lineInvoice ? (
-                                  <div className="flex items-center justify-end gap-2">
-                                    {lineInvoiceStatus ? (
-                                      <Badge
-                                        variant="outline"
-                                        className={
-                                          lineInvoiceStatus === "SENT"
-                                            ? "border-green-200 bg-green-50 text-green-700"
-                                            : ""
-                                        }
-                                      >
-                                        {lineInvoiceStatus}
-                                      </Badge>
-                                    ) : null}
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => openSendDialog(lineInvoice.invoiceId)}
-                                      disabled={isFetching}
-                                    >
-                                      <Mail className="h-4 w-4" />
-                                      {t("invoices.actions.send")}
-                                    </Button>
-                                    <Button asChild variant="outline" size="sm">
-                                      <Link to={`/invoices/${lineInvoice.invoiceId}`}>
-                                        {t("classes.billing.viewInvoice")}
-                                      </Link>
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <div className="text-right text-xs text-muted-foreground">
-                                    {t("classes.billing.invoiceNotCreated")}
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
+                              line={line}
+                              currency={item.currency}
+                              classGroupName={
+                                nameByGroup.get(line.classGroupId) ?? line.classGroupId
+                              }
+                              lineInvoice={lineInvoice}
+                              isFetching={isFetching}
+                              onOpenSendDialog={openSendDialog}
+                              sendLabel={t("invoices.actions.send")}
+                              viewInvoiceLabel={t("classes.billing.viewInvoice")}
+                              notCreatedLabel={t("classes.billing.invoiceNotCreated")}
+                            />
                           );
                         })}
                       </tbody>
@@ -548,7 +483,10 @@ export default function ClassesBillingPage() {
           open={sendDialogOpen}
           onOpenChange={setSendDialogOpen}
           invoice={currentInvoice}
-          onSend={handleSendInvoice}
+          onSend={async (data) => {
+            await handleSendInvoice(data);
+            await invalidateMonthPreview();
+          }}
           isSending={isSending}
         />
       )}

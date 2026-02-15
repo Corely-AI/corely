@@ -46,7 +46,23 @@ export class CreateMonthlyBillingRunUseCase {
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     const month = normalizeBillingMonth(input.month);
-    const idempotencyKey = input.idempotencyKey ?? `${tenantId}:${month}`;
+    const defaultIdempotencyScope = [
+      input.classGroupId ?? "ALL_CLASSES",
+      input.payerClientId ?? "ALL_PAYERS",
+      input.createInvoices ? "CREATE" : "NO_CREATE",
+      input.sendInvoices ? "SEND" : "NO_SEND",
+    ].join(":");
+    const idempotencyKey =
+      input.idempotencyKey ?? `${tenantId}:${month}:${defaultIdempotencyScope}`;
+
+    if (input.force && (input.classGroupId || input.payerClientId)) {
+      throw new ValidationFailedError("Regenerate invoices only supports unfiltered monthly runs", [
+        {
+          message: "Clear class/payer filters before regenerating invoices for a month",
+          members: ["force"],
+        },
+      ]);
+    }
 
     if (idempotencyKey && !input.force) {
       const cached = await this.idempotency.get(this.actionKey, tenantId, idempotencyKey);
@@ -167,22 +183,11 @@ export class CreateMonthlyBillingRunUseCase {
     if (input.createInvoices) {
       for (const target of previewInvoiceTargets) {
         const invoiceKey = `${tenantId}:${month}:${target.payerClientId}:${target.line.classGroupId}`;
-        let existingLink = await this.repo.findBillingInvoiceLinkByIdempotency(
+        const existingLink = await this.repo.findBillingInvoiceLinkByIdempotency(
           tenantId,
           workspaceId,
           invoiceKey
         );
-        if (!existingLink) {
-          // Backward compatibility for links created before classGroup-scoped idempotency.
-          const legacyInvoiceKey = `${tenantId}:${month}:${target.payerClientId}`;
-          if (legacyInvoiceKey !== invoiceKey) {
-            existingLink = await this.repo.findBillingInvoiceLinkByIdempotency(
-              tenantId,
-              workspaceId,
-              legacyInvoiceKey
-            );
-          }
-        }
         if (existingLink) {
           invoiceIds.push(existingLink.invoiceId);
           continue;
@@ -266,8 +271,14 @@ export class CreateMonthlyBillingRunUseCase {
               if (link.classGroupId) {
                 return selectedPreviewKeys.has(`${link.payerClientId}:${link.classGroupId}`);
               }
-              // Legacy links may not have classGroupId. Fall back to payer match.
-              return previewItems.some((item) => item.payerClientId === link.payerClientId);
+              // Legacy links may not have classGroupId. Never use them for class-group filtered sends.
+              if (input.classGroupId) {
+                return false;
+              }
+              // For unfiltered sends, only allow legacy links when payer has exactly one class line.
+              return previewItems.some(
+                (item) => item.payerClientId === link.payerClientId && item.lines.length === 1
+              );
             })
             .map((link) => link.invoiceId);
       const uniqueInvoiceIds = Array.from(new Set(invoiceIdsToSend));
