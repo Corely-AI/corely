@@ -2,6 +2,9 @@ import { Injectable, Logger } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { Runner, RunnerReport, TickContext } from "../../application/runner.interface";
 
+const toCount = (value: unknown): number =>
+  typeof value === "number" && Number.isFinite(value) ? value : 0;
+
 @Injectable()
 export class SequenceRunnerService implements Runner {
   private readonly logger = new Logger(SequenceRunnerService.name);
@@ -47,13 +50,21 @@ export class SequenceRunnerService implements Runner {
         throw new Error(`Failed to run sequences: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const payload = await response.json();
+      const data =
+        typeof payload === "object" && payload !== null
+          ? (payload as {
+              processedCount?: unknown;
+              updatedCount?: unknown;
+              errorCount?: unknown;
+            })
+          : {};
 
       return {
-        processedCount: data.processedCount || 0,
-        updatedCount: data.updatedCount || 0,
+        processedCount: toCount(data.processedCount),
+        updatedCount: toCount(data.updatedCount),
         skippedCount: 0,
-        errorCount: data.errorCount || 0,
+        errorCount: toCount(data.errorCount),
         durationMs: Date.now() - startTime,
       };
     } catch (err) {
