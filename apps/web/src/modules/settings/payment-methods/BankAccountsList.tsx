@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { Plus, Trash2, Check, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -30,22 +30,6 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
   const accounts = data?.bankAccounts ?? [];
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const shouldSkipCloseOnVisibilityChange = useRef(false);
-
-  useEffect(() => {
-    if (typeof document === "undefined") {
-      return;
-    }
-
-    const handleVisibilityChange = () => {
-      shouldSkipCloseOnVisibilityChange.current = document.visibilityState === "hidden";
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
 
   const createMutation = useCreateBankAccount();
   const setDefaultMutation = useSetBankAccountDefault();
@@ -61,17 +45,7 @@ export function BankAccountsList({ legalEntityId }: BankAccountsListProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold">Bank Accounts</h3>
-        <Dialog
-          open={isFormOpen}
-          onOpenChange={(open) => {
-            if (!open && shouldSkipCloseOnVisibilityChange.current) {
-              shouldSkipCloseOnVisibilityChange.current = false;
-              return;
-            }
-
-            setIsFormOpen(open);
-          }}
-        >
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button size="sm" className="gap-2">
               <Plus className="w-4 h-4" />

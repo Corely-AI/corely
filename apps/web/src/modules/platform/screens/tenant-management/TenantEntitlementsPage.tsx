@@ -57,7 +57,7 @@ export function TenantEntitlementsPage() {
     <div className="container py-6">
       <h1 className="text-2xl font-bold mb-6">Tenant Entitlements</h1>
 
-      <Tabs defaultValue="apps">
+      <Tabs keepMounted defaultValue="apps">
         <TabsList>
           <TabsTrigger value="apps">Apps</TabsTrigger>
           <TabsTrigger value="features">Features</TabsTrigger>

@@ -3,7 +3,20 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import { cn } from "./lib/utils";
 
-const Tabs = TabsPrimitive.Root;
+const TabsKeepMountedContext = React.createContext(false);
+
+type TabsProps = React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> & {
+  keepMounted?: boolean;
+};
+
+const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
+  ({ keepMounted = false, ...props }, ref) => (
+    <TabsKeepMountedContext.Provider value={keepMounted}>
+      <TabsPrimitive.Root ref={ref} {...props} />
+    </TabsKeepMountedContext.Provider>
+  )
+);
+Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const TabsList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
@@ -38,16 +51,21 @@ TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
 const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-      className
-    )}
-    {...props}
-  />
-));
+>(({ className, forceMount, ...props }, ref) => {
+  const keepMounted = React.useContext(TabsKeepMountedContext);
+
+  return (
+    <TabsPrimitive.Content
+      ref={ref}
+      forceMount={forceMount || keepMounted ? true : undefined}
+      className={cn(
+        "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        className
+      )}
+      {...props}
+    />
+  );
+});
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };
