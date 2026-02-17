@@ -22,7 +22,7 @@ export function PaymentMethodsSettings() {
         </p>
       </div>
 
-      <Tabs defaultValue="accounts" className="w-full">
+      <Tabs keepMounted defaultValue="accounts" className="w-full">
         <TabsList>
           <TabsTrigger value="accounts">Bank Accounts</TabsTrigger>
           <TabsTrigger value="methods">Payment Methods</TabsTrigger>
