@@ -33,6 +33,7 @@ import { FormsWorkerModule } from "../forms/forms-worker.module";
 import { ClassesInvoiceReadyToSendHandler } from "../classes/handlers/classes-invoice-ready-to-send.handler";
 import { ClassesWorkerModule } from "../classes/classes-worker.module";
 import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adapters/platform-entity-deleted.handler";
+import { NotificationIntentHandler } from "../notifications/handlers/notification-intent.handler";
 
 // ... imports
 
@@ -95,7 +96,8 @@ import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adap
         taxReportPdfHandler: TaxReportPdfRequestedHandler,
         formsHandler: FormsEventHandler,
         classesHandler: ClassesInvoiceReadyToSendHandler,
-        platformEntityDeletedHandler: PlatformEntityDeletedHandler
+        platformEntityDeletedHandler: PlatformEntityDeletedHandler,
+        notificationIntentHandler: NotificationIntentHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           invoiceHandler,
@@ -106,6 +108,7 @@ import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adap
           formsHandler,
           classesHandler,
           platformEntityDeletedHandler,
+          notificationIntentHandler,
         ]);
       },
       inject: [
@@ -119,6 +122,7 @@ import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adap
         FormsEventHandler,
         ClassesInvoiceReadyToSendHandler,
         PlatformEntityDeletedHandler,
+        NotificationIntentHandler,
       ],
     },
   ],

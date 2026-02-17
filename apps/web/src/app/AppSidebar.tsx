@@ -21,6 +21,7 @@ import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provide
 import { WorkspaceTypeBadge } from "@/shared/workspaces/WorkspaceTypeBadge";
 import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
 import { useCanReadTenants } from "@/shared/lib/permissions";
+import { NotificationBell } from "@/modules/notifications/components/notification-bell";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -214,6 +215,9 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
       <div className="border-t border-sidebar-border p-3 space-y-2">
         {/* Controls row */}
         <div className={cn("flex items-center", collapsed ? "flex-col gap-2" : "gap-2 px-2")}>
+          {/* Notifications */}
+          <NotificationBell />
+
           {/* Theme toggle */}
           <Button
             variant="ghost"

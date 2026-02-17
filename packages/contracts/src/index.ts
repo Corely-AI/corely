@@ -104,6 +104,7 @@ export * from "./copilot/chat.schema";
 export * from "./copilot/chat-history.schema";
 export * from "./cash-management";
 export * from "./ai/richtext";
+export * from "./notifications";
 
 export const CONTRACTS_HELLO = "Corely contracts loaded ✅";
 
