@@ -87,7 +87,7 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-4">
-        <CardTitle>Details</CardTitle>
+        <CardTitle>{t("common.details")}</CardTitle>
         <div className="flex gap-2">
           {isEditing ? (
             <>

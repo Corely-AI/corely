@@ -153,7 +153,7 @@ export default function DealDetailPage() {
 
   const handleMarkWon = () => {
     if (!deal || !isOpen) {
-      toast.error("Deal is already closed");
+      toast.error(t("crm.deals.alreadyClosed"));
       return;
     }
     markWon.mutate(deal.id);
@@ -161,7 +161,7 @@ export default function DealDetailPage() {
 
   const handleMarkLost = () => {
     if (!deal || !isOpen) {
-      toast.error("Deal is already closed");
+      toast.error(t("crm.deals.alreadyClosed"));
       return;
     }
     setLostDialogOpen(true);
@@ -172,7 +172,7 @@ export default function DealDetailPage() {
       return;
     }
     if (!isOpen) {
-      toast.error("Deal is already closed");
+      toast.error(t("crm.deals.alreadyClosed"));
       return;
     }
     changeStage.mutate({ dealId: deal.id, stageId });
@@ -224,10 +224,10 @@ export default function DealDetailPage() {
             void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId] });
             void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId, "timeline"] });
           }
-          toast.success("Draft communication created");
+          toast.success(t("crm.channel.draftCreated"));
         })
         .catch((error: unknown) => {
-          toast.error(error instanceof Error ? error.message : "Failed to create draft");
+          toast.error(error instanceof Error ? error.message : t("crm.channel.createDraftFailed"));
         });
     } else {
       void crmApi
@@ -247,10 +247,10 @@ export default function DealDetailPage() {
             void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId] });
             void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId, "timeline"] });
           }
-          toast.success("Message logged");
+          toast.success(t("crm.channel.messageLogged"));
         })
         .catch((error: unknown) => {
-          toast.error(error instanceof Error ? error.message : "Failed to log message");
+          toast.error(error instanceof Error ? error.message : t("crm.channel.logFailed"));
         });
     }
     setComposerOpen(false);

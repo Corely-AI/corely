@@ -74,7 +74,9 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                         </h4>
                         {communicationStatus ? (
                           <span className="inline-flex mt-1 text-[11px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
-                            {communicationStatus}
+                            {t(
+                              `crm.activity.communication${communicationStatus.charAt(0).toUpperCase() + communicationStatus.slice(1).toLowerCase()}`
+                            )}
                           </span>
                         ) : null}
                         {item.body && (
@@ -86,12 +88,19 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                           <div className="flex flex-wrap gap-2 mt-1">
                             {item.metadata.dueAt && (
                               <p className="text-xs text-muted-foreground mr-2">
-                                Due: {new Date(item.metadata.dueAt as string).toLocaleDateString()}
+                                {t("crm.timeline.duePrefix")}
+                                {new Date(item.metadata.dueAt as string).toLocaleDateString(
+                                  i18n.language
+                                )}
                               </p>
                             )}
                             {item.metadata.outcome && (
                               <span className="text-xs bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded">
-                                {String(item.metadata.outcome)}
+                                {t(
+                                  `crm.activity.outcomes.${String(item.metadata.outcome)
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "")}`
+                                )}
                               </span>
                             )}
                             {item.metadata.durationSeconds && (

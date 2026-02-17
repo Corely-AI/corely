@@ -312,9 +312,13 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                   name="durationMinutes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Duration (minutes)</FormLabel>
+                      <FormLabel>{t("crm.activity.duration")}</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} placeholder="Example: 15, 30, 60" />
+                        <Input
+                          type="number"
+                          {...field}
+                          placeholder={t("crm.activity.durationPlaceholder")}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -327,19 +331,27 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                     name="outcome"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Outcome</FormLabel>
+                        <FormLabel>{t("crm.activity.outcome")}</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="crm-activity-outcome">
-                              <SelectValue placeholder="Select outcome" />
+                              <SelectValue placeholder={t("crm.activity.selectOutcome")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Connected">Connected</SelectItem>
-                            <SelectItem value="Voicemail">Voicemail</SelectItem>
-                            <SelectItem value="No Answer">No Answer</SelectItem>
-                            <SelectItem value="Busy">Busy</SelectItem>
-                            <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+                            <SelectItem value="Connected">
+                              {t("crm.activity.outcomes.connected")}
+                            </SelectItem>
+                            <SelectItem value="Voicemail">
+                              {t("crm.activity.outcomes.voicemail")}
+                            </SelectItem>
+                            <SelectItem value="No Answer">
+                              {t("crm.activity.outcomes.noAnswer")}
+                            </SelectItem>
+                            <SelectItem value="Busy">{t("crm.activity.outcomes.busy")}</SelectItem>
+                            <SelectItem value="Wrong Number">
+                              {t("crm.activity.outcomes.wrongNumber")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -354,9 +366,9 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                     name="location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Location</FormLabel>
+                        <FormLabel>{t("crm.activity.location")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Zoom link or physical location" {...field} />
+                          <Input placeholder={t("crm.activity.locationPlaceholder")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
