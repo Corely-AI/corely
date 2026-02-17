@@ -89,7 +89,9 @@
     "add": "Add",
     "created": "Created",
     "updated": "Updated",
-    "notSet": "Not set"
+    "notSet": "Not set",
+    "done": "Done",
+    "customFields": "Custom fields"
   },
   "actions": {
     "takeAttendance": "Take Attendance",
@@ -702,13 +704,15 @@
     },
     "email": {
       "title": "Send Invoice",
-      "subtitle": "Send this invoice to your customer via email.",
+      "subtitle": "Send this invoice by email with a link to the student portal.",
       "to": "Recipient",
       "toPlaceholder": "customer@example.com",
       "subject": "Invoice {{number}} from {{brand}}",
       "sendCopy": "Send me a copy",
       "savedForFuture": "This email will be saved for {{name}}'s profile.",
       "messagePlaceholder": "Add a personal note...",
+      "deliveryLabel": "Delivery",
+      "deliveryHint": "A student portal link will be included. The recipient can download the invoice PDF from the portal.",
       "attachmentsHint": "The PDF invoice will be automatically attached.",
       "attachmentName": "Invoice-{{number}}.pdf",
       "attachmentFallback": "Invoice.pdf",
@@ -765,7 +769,12 @@
     "searchOrAdd": "Search customers or add a new one",
     "addNewCustomer": "Add New Customer",
     "noCustomersFound": "No customers found.",
-    "selectExisting": "Search existing clients or create a new one."
+    "selectExisting": "Search existing clients or create a new one.",
+    "social": {
+      "title": "Social Profiles",
+      "add": "Add profile",
+      "empty": "No social profiles added."
+    }
   },
   "settings": {
     "title": "Settings",
@@ -1338,7 +1347,13 @@
     "students": {
       "title": "Students",
       "subtitle": "Manage student records and guardians",
+      "createTitle": "Create Student",
       "add": "Add student",
+      "creating": "Creating...",
+      "created": "Student Created",
+      "createSuccess": "Student created. You can now link guardians.",
+      "createFailed": "Failed to create student. Please try again.",
+      "createFirstTip": "Create the student first, then link guardians.",
       "loading": "Loading students...",
       "loadFailed": "Failed to load students.",
       "emptyTitle": "No students yet",
@@ -1359,6 +1374,12 @@
       "statusOptions": {
         "active": "Active",
         "archived": "Archived"
+      },
+      "guardians": {
+        "title": "Guardians",
+        "subtitle": "Link parents or guardians and set the billing payer.",
+        "link": "Link guardian",
+        "empty": "No guardians linked yet. Add one to manage billing responsibility."
       }
     },
     "billing": {
@@ -1392,12 +1413,33 @@
       "sessions": "Sessions",
       "pricePerSession": "Price / Session",
       "subtotal": "Subtotal",
+      "invoice": "Invoice",
+      "markSent": "Mark Sent",
+      "markSentSuccess": "Invoice marked as sent",
+      "markSentFailed": "Failed to mark invoice as sent",
+      "customerEmailRequired": "Customer email is required",
+      "generatePrivateLink": "Generate Link",
+      "generateLinkSuccess": "Private link generated",
+      "generateLinkFailed": "Failed to generate private link",
+      "copyLink": "Copy Link",
+      "copyLinkSuccess": "Link copied to clipboard",
+      "copyLinkFailed": "Failed to copy link",
+      "regenerateLink": "Regenerate Link",
+      "regenerateLinkSuccess": "Private link regenerated",
+      "regenerateLinkConfirmTitle": "Regenerate private link?",
+      "regenerateLinkConfirmDescription": "The old link will stop working immediately.",
+      "regenerateLinkConfirmAction": "Regenerate",
+      "linkRegenerated": "Link regenerated",
+      "linkGenerationFailed": "Failed to generate link",
       "viewInvoice": "View invoice",
+      "invoiceNotCreated": "Not created",
       "emptyTitle": "No billable sessions",
       "emptyDescription": "There are no confirmed sessions for the selected month that haven't been billed yet.",
       "attendedSessionsTip": "Tip: In \"Attended Sessions\" mode, you must mark sessions as DONE and record attendance before they can be billed.",
       "regenerate": "Regenerate invoices",
-      "regenerateConfirm": "Are you sure you want to regenerate invoices? This will detach existing draft invoices for this month."
+      "regenerateConfirm": "Are you sure you want to regenerate invoices? This will detach existing draft invoices for this month.",
+      "allGroups": "All groups",
+      "selectAllGroups": "Select group"
     },
     "settings": {
       "title": "Classes Settings",

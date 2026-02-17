@@ -8,4 +8,4 @@ export type {
   CurrentUserResponse,
   AuthClientConfig,
 } from "./auth-client";
-export type { ApiClientConfig } from "./api-client";
+export type { ApiClientConfig, ApiClientSseOptions } from "./api-client";

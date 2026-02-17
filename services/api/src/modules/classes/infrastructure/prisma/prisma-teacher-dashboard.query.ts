@@ -288,7 +288,7 @@ export class PrismaTeacherDashboardQuery implements TeacherDashboardQueryPort {
         select: { payerClientId: true },
       });
       const payerIds = [...new Set(enrollments.map((e) => e.payerClientId))];
-      linkWhere.payerClientId = { in: payerIds };
+      linkWhere.OR = [{ classGroupId }, { classGroupId: null, payerClientId: { in: payerIds } }];
     }
 
     const links = await this.prisma.classBillingInvoiceLink.findMany({

@@ -90,6 +90,7 @@ export type ClassBillingInvoiceLinkEntity = {
   workspaceId: string;
   billingRunId: string;
   payerClientId: string;
+  classGroupId?: string | null;
   invoiceId: string;
   idempotencyKey: string;
   createdAt: Date;

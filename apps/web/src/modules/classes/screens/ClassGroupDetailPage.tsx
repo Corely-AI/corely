@@ -74,6 +74,10 @@ export default function ClassGroupDetailPage() {
   const [sessionStart, setSessionStart] = useState("");
   const [sessionDuration, setSessionDuration] = useState("60");
   const [sessionTopic, setSessionTopic] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  });
 
   const { data: guardiansData } = useQuery({
     queryKey: ["students", selectedStudentId, "guardians"],
@@ -163,7 +167,7 @@ export default function ClassGroupDetailPage() {
   });
 
   const generateSessionsForMonth = useMutation({
-    mutationFn: async () => classesApi.generateClassGroupSessions(groupId),
+    mutationFn: async (month?: string) => classesApi.generateClassGroupSessions(groupId, { month }),
     onSuccess: async (data) => {
       const count = data.items.length;
       toast.success(
@@ -437,8 +441,10 @@ export default function ClassGroupDetailPage() {
         onSessionStartChange={setSessionStart}
         onSessionDurationChange={setSessionDuration}
         onSessionTopicChange={setSessionTopic}
+        selectedMonth={selectedMonth}
+        onMonthChange={setSelectedMonth}
         onAddSession={() => createSession.mutate()}
-        onGenerateSessions={() => generateSessionsForMonth.mutate()}
+        onGenerateSessions={(m) => generateSessionsForMonth.mutate(m)}
         createSessionPending={createSession.isPending}
         generateSessionsPending={generateSessionsForMonth.isPending}
       />

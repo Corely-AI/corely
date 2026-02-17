@@ -20,7 +20,11 @@ export const DealCard: FC<DealCardProps> = ({ deal, onClick }) => {
       : t("crm.deals.noAmount");
 
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
+    <Card
+      className="cursor-pointer hover:shadow-md transition-shadow"
+      onClick={onClick}
+      data-testid={`crm-deals-row-${deal.id}`}
+    >
       <CardHeader>
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">{deal.title}</CardTitle>

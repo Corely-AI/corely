@@ -10,11 +10,15 @@ import {
 } from "@nestjs/common";
 import { TestHarnessGuard } from "./guards/test-harness.guard";
 import { TestHarnessService } from "./test-harness.service";
+import { CrmTestHooksService } from "./crm-test-hooks.service";
 
 @Controller("test")
 @UseGuards(TestHarnessGuard)
 export class TestHarnessController {
-  constructor(@Inject("TEST_HARNESS_SERVICE") private testHarnessService: TestHarnessService) {}
+  constructor(
+    @Inject("TEST_HARNESS_SERVICE") private testHarnessService: TestHarnessService,
+    private readonly crmTestHooksService: CrmTestHooksService
+  ) {}
 
   /**
    * Seed test data: creates a new tenant with user and roles
@@ -102,6 +106,62 @@ export class TestHarnessController {
     }
 
     return this.testHarnessService.seedCopilotThreadMessage(payload);
+  }
+
+  /**
+   * Seed classes billing send scenario with 2 customers/invoices.
+   */
+  @Post("classes-billing/seed-send-invoices")
+  @HttpCode(HttpStatus.OK)
+  async seedClassesBillingSendInvoices(
+    @Body()
+    payload: {
+      tenantId: string;
+      workspaceId: string;
+      actorUserId: string;
+      month?: string;
+      label?: string;
+    }
+  ) {
+    if (!payload.tenantId || !payload.workspaceId || !payload.actorUserId) {
+      throw new BadRequestException("Missing required fields: tenantId, workspaceId, actorUserId");
+    }
+    return this.testHarnessService.seedClassesBillingSendScenario(payload);
+  }
+
+  /**
+   * List email delivery records for invoices (for E2E verification).
+   */
+  @Post("invoices/email-deliveries")
+  @HttpCode(HttpStatus.OK)
+  async listInvoiceEmailDeliveries(@Body() payload: { tenantId: string; invoiceIds: string[] }) {
+    if (!payload.tenantId || !Array.isArray(payload.invoiceIds)) {
+      throw new BadRequestException("Missing required fields: tenantId, invoiceIds");
+    }
+    return {
+      deliveries: await this.testHarnessService.listInvoiceEmailDeliveries(payload),
+    };
+  }
+
+  /**
+   * Seed a deterministic CRM activity produced by an automation trigger.
+   * Used by E2E to verify workflow effects in timeline without waiting on async workers.
+   */
+  @Post("crm/seed-workflow-activity")
+  @HttpCode(HttpStatus.OK)
+  async seedCrmWorkflowActivity(
+    @Body()
+    payload: {
+      tenantId: string;
+      dealId: string;
+      actorUserId: string;
+      subject?: string;
+    }
+  ) {
+    if (!payload.tenantId || !payload.dealId || !payload.actorUserId) {
+      throw new BadRequestException("Missing required fields: tenantId, dealId, actorUserId");
+    }
+    return this.crmTestHooksService.seedWorkflowActivity(payload);
   }
 
   /**

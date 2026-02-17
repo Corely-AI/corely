@@ -24,12 +24,30 @@
         "items_other": "{{count}} MỤC",
         "items": "MỤC",
         "added": "Đã thêm",
+        "download_failed": "Không thể lấy liên kết tải tài liệu",
         "personal": "CÁ NHÂN",
         "class_group": "NHÓM LỚP",
         "getFile": "Tải tài liệu",
         "empty": {
           "title": "Chưa có gì ở đây",
           "subtitle": "Tài liệu học tập của bạn sẽ xuất hiện ở đây sau khi giáo viên tải lên."
+        }
+      },
+      "invoices": {
+        "title": "Hóa đơn",
+        "subtitle": "Tải hóa đơn cho học sinh đã chọn.",
+        "items_one": "{{count}} HÓA ĐƠN",
+        "items_other": "{{count}} HÓA ĐƠN",
+        "items": "HÓA ĐƠN",
+        "invoice": "Hóa đơn",
+        "issued": "Phát hành",
+        "due": "Đến hạn",
+        "amount_due": "Số tiền cần trả",
+        "download": "Tải hóa đơn",
+        "download_failed": "Không thể lấy liên kết tải hóa đơn",
+        "empty": {
+          "title": "Chưa có hóa đơn",
+          "subtitle": "Hóa đơn của học sinh sẽ xuất hiện ở đây sau khi được phát hành."
         }
       }
     },
@@ -51,6 +69,10 @@
         "verify_failed": "Mã không hợp lệ hoặc đã hết hạn"
       }
     }
+  },
+  "errors": {
+    "pageNotFound": "Không tìm thấy trang",
+    "returnHome": "Về trang chủ"
   },
   "common": {
     "logout": "Đăng xuất",

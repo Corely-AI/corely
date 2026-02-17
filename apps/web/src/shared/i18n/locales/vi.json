@@ -84,7 +84,12 @@
     "website": "Website",
     "bank": "Ngân hàng",
     "iban": "IBAN",
-    "default": "Mặc định"
+    "default": "Mặc định",
+    "created": "Đã tạo",
+    "updated": "Đã cập nhật",
+    "notSet": "Chưa thiết lập",
+    "done": "Xong",
+    "customFields": "Trường tùy chỉnh"
   },
   "actions": {
     "takeAttendance": "Điểm danh",
@@ -691,13 +696,15 @@
     },
     "email": {
       "title": "Gửi hóa đơn",
-      "subtitle": "Gửi hóa đơn này cho khách hàng của bạn qua email.",
+      "subtitle": "Gửi hóa đơn này qua email kèm liên kết tới cổng học sinh.",
       "to": "Người nhận",
       "toPlaceholder": "khachhang@email.com",
       "subject": "Hóa đơn {{number}} từ {{brand}}",
       "sendCopy": "Gửi cho tôi một bản sao",
       "savedForFuture": "Email này sẽ được lưu vào hồ sơ của {{name}}.",
       "messagePlaceholder": "Thêm một ghi chú cá nhân...",
+      "deliveryLabel": "Hình thức gửi",
+      "deliveryHint": "Email sẽ bao gồm liên kết cổng học sinh. Người nhận có thể tải PDF hóa đơn từ cổng.",
       "attachmentsHint": "Hóa đơn PDF sẽ được tự động đính kèm.",
       "attachmentName": "Hóa đơn-{{number}}.pdf",
       "attachmentFallback": "Hoa-don.pdf",
@@ -754,7 +761,12 @@
     "searchOrAdd": "Tìm khách hàng hoặc thêm mới",
     "addNewCustomer": "Thêm khách hàng mới",
     "noCustomersFound": "Không tìm thấy khách hàng.",
-    "selectExisting": "Tìm kiếm khách hàng hiện có hoặc tạo mới."
+    "selectExisting": "Tìm kiếm khách hàng hiện có hoặc tạo mới.",
+    "social": {
+      "title": "Hồ sơ mạng xã hội",
+      "add": "Thêm hồ sơ",
+      "empty": "Chưa có hồ sơ mạng xã hội nào."
+    }
   },
   "settings": {
     "title": "Cài đặt",
@@ -1325,7 +1337,13 @@
     "students": {
       "title": "Học sinh",
       "subtitle": "Quản lý hồ sơ học sinh và người giám hộ",
+      "createTitle": "Tạo học sinh",
       "add": "Thêm học sinh",
+      "creating": "Đang tạo...",
+      "created": "Đã tạo học sinh",
+      "createSuccess": "Đã tạo học sinh thành công. Hiện tại bạn có thể liên kết với người giám hộ.",
+      "createFailed": "Không thể tạo học sinh. Vui lòng thử lại.",
+      "createFirstTip": "Tạo học sinh trước, sau đó liên kết với người giám hộ.",
       "loading": "Đang tải danh sách học sinh...",
       "loadFailed": "Không thể tải danh sách học sinh.",
       "emptyTitle": "Chưa có học sinh nào",
@@ -1346,6 +1364,12 @@
       "statusOptions": {
         "active": "Đang hoạt động",
         "archived": "Đã lưu trữ"
+      },
+      "guardians": {
+        "title": "Người giám hộ",
+        "subtitle": "Liên kết cha mẹ hoặc người giám hộ và thiết lập người thanh toán.",
+        "link": "Liên kết người giám hộ",
+        "empty": "Chưa có người giám hộ nào được liên kết. Thêm một người để quản lý trách nhiệm thanh toán."
       }
     },
     "billing": {
@@ -1379,6 +1403,23 @@
       "sessions": "Số buổi",
       "pricePerSession": "Giá / Buổi",
       "subtotal": "Tạm tính",
+      "markSent": "Đánh dấu đã gửi",
+      "markSentSuccess": "Đã đánh dấu hóa đơn là đã gửi",
+      "markSentFailed": "Không thể đánh dấu hóa đơn là đã gửi",
+      "customerEmailRequired": "Cần có email khách hàng",
+      "generatePrivateLink": "Tạo link riêng tư",
+      "generateLinkSuccess": "Đã tạo link riêng tư",
+      "generateLinkFailed": "Không thể tạo link riêng tư",
+      "copyLink": "Sao chép link",
+      "copyLinkSuccess": "Đã sao chép link",
+      "copyLinkFailed": "Không thể sao chép link",
+      "regenerateLink": "Tạo lại link",
+      "regenerateLinkSuccess": "Đã tạo lại link riêng tư",
+      "regenerateLinkConfirmTitle": "Tạo lại link riêng tư?",
+      "regenerateLinkConfirmDescription": "Link cũ sẽ ngừng hoạt động ngay lập tức.",
+      "regenerateLinkConfirmAction": "Tạo lại",
+      "linkRegenerated": "Đã tạo lại liên kết",
+      "linkGenerationFailed": "Không thể tạo liên kết",
       "viewInvoice": "Xem hóa đơn",
       "emptyTitle": "Không có buổi học nào cần quyết toán",
       "emptyDescription": "Không có buổi học nào đã xác nhận trong tháng được chọn mà chưa được xuất hóa đơn.",

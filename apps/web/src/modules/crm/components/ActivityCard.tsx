@@ -20,7 +20,11 @@ export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
         : "bg-blue-100 text-blue-800";
 
   return (
-    <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
+    <Card
+      className="cursor-pointer hover:shadow-md transition-shadow"
+      onClick={onClick}
+      data-testid={`crm-activities-row-${activity.id}`}
+    >
       <CardHeader>
         <div className="flex items-start gap-3">
           <ActivityTypeIcon type={activity.type} className="w-5 h-5 mt-1" />
@@ -43,7 +47,23 @@ export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
       </CardHeader>
       {activity.body && (
         <CardContent>
-          <p className="text-sm text-muted-foreground line-clamp-3">{activity.body}</p>
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-2">{activity.body}</p>
+
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            {activity.outcome && (
+              <span className="bg-slate-100 px-2 py-1 rounded-md font-medium text-slate-700">
+                Outcome: {activity.outcome}
+              </span>
+            )}
+            {activity.durationSeconds && (
+              <span className="flex items-center gap-1">
+                ⏱ {Math.round(activity.durationSeconds / 60)} min
+              </span>
+            )}
+            {activity.location && (
+              <span className="flex items-center gap-1">📍 {activity.location}</span>
+            )}
+          </div>
         </CardContent>
       )}
     </Card>

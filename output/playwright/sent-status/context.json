@@ -1,0 +1,14 @@
+{
+  "createdAt": "2026-02-14T14:25:01.753Z",
+  "email": "screenshot-e2e-1771079101378@corely.local",
+  "password": "E2ETestPassword123!",
+  "tenantId": "cmlmerovp003hdtitt5l9ynnj",
+  "workspaceId": "5cc998d5-fd6c-4fb1-925f-90409c7c573c",
+  "userId": "cmlmerow5003idtitelra8xnx",
+  "month": "2026-02",
+  "invoiceIds": ["cmlmeroyl0068dtityer36s3l", "cmlmeroyr006adtitjlk1dfd0"],
+  "recipients": [
+    "delivered+classes-a-shot-1771079101378@resend.dev",
+    "delivered+classes-b-shot-1771079101378@resend.dev"
+  ]
+}

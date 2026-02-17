@@ -12,6 +12,7 @@ High-level design, boundaries, and core decisions.
 - [Boundaries](./architecture/BOUNDARIES.md)
 - [Overall Structure](./architecture/overall-structure.md)
 - [Ports & Adapters](./architecture/ports-adapters-migration.md)
+- [SSE Streaming](./architecture/sse-streaming.md)
 - [Offline First](./architecture/offline-first.md)
 - [Offline Implementation](./architecture/offline-implementation.md)
 
@@ -82,6 +83,7 @@ Specific feature implementation details.
 - [Tax Snapshot](./features/TAX_SNAPSHOT_IMPLEMENTATION.md)
 - [Catalog Module](./features/catalog.md)
 - [Custom Attributes Framework](./features/custom-attributes.md)
+- [Command Palette](./features/command-palette.md)
 
 ### 📚 Guides
 

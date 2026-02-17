@@ -1,6 +1,7 @@
 import { Module, Global } from "@nestjs/common";
 import { TestHarnessController } from "./test-harness.controller";
 import { TestHarnessService } from "./test-harness.service";
+import { CrmTestHooksService } from "./crm-test-hooks.service";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity/identity.module";
@@ -11,6 +12,7 @@ import { IdentityModule } from "../identity/identity.module";
   controllers: [TestHarnessController],
   providers: [
     TestHarnessService,
+    CrmTestHooksService,
     {
       provide: "TEST_HARNESS_SERVICE",
       useExisting: TestHarnessService,

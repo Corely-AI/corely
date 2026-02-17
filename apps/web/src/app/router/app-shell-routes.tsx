@@ -38,6 +38,17 @@ import {
   DealDetailPage,
   ActivitiesPage,
   NewActivityPage,
+  LeadsPage,
+  NewLeadPage,
+  LeadDetailPage,
+  ContactsPage,
+  ContactFormPage,
+  ContactDetailPage,
+  SequencesPage,
+  NewSequencePage,
+  AccountsPage,
+  AccountDetailPage,
+  AccountFormPage,
 } from "../../modules/crm";
 import {
   AccountingDashboard,
@@ -230,6 +241,19 @@ export const appShellRoutes = (
       <Route path="/crm/deals/:id/edit" element={<DealDetailPage />} />
       <Route path="/crm/activities" element={<ActivitiesPage />} />
       <Route path="/crm/activities/new" element={<NewActivityPage />} />
+      <Route path="/crm/leads" element={<LeadsPage />} />
+      <Route path="/crm/leads/new" element={<NewLeadPage />} />
+      <Route path="/crm/leads/:id" element={<LeadDetailPage />} />
+      <Route path="/crm/contacts" element={<ContactsPage />} />
+      <Route path="/crm/contacts/new" element={<ContactFormPage />} />
+      <Route path="/crm/contacts/:id" element={<ContactDetailPage />} />
+      <Route path="/crm/contacts/:id/edit" element={<ContactFormPage />} />
+      <Route path="/crm/sequences" element={<SequencesPage />} />
+      <Route path="/crm/sequences/new" element={<NewSequencePage />} />
+      <Route path="/crm/accounts" element={<AccountsPage />} />
+      <Route path="/crm/accounts/new" element={<AccountFormPage />} />
+      <Route path="/crm/accounts/:id" element={<AccountDetailPage />} />
+      <Route path="/crm/accounts/:id/edit" element={<AccountFormPage />} />
       <Route path="/accounting" element={<AccountingDashboard />} />
       <Route path="/accounting/setup" element={<SetupWizard />} />
       <Route path="/accounting/accounts" element={<ChartOfAccountsList />} />

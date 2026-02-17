@@ -14,6 +14,11 @@ export const CreateActivityInputSchema = z.object({
   messageDirection: z.string().optional(),
   messageTo: z.string().optional(),
   openUrl: z.string().optional(),
+  outcome: z.string().optional(),
+  durationSeconds: z.number().optional(),
+  location: z.string().optional(),
+  attendees: z.array(z.unknown()).optional(),
+  metadata: z.record(z.unknown()).optional(),
 });
 
 export const CreateActivityOutputSchema = z.object({

@@ -156,15 +156,17 @@ model ClassBillingInvoiceLink {
   workspaceId    String
   billingRunId   String
   payerClientId  String
+  classGroupId   String?
   invoiceId      String
   idempotencyKey String
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
   billingRun     ClassMonthlyBillingRun @relation(fields: [billingRunId], references: [id], onDelete: Cascade)
 
-  @@unique([tenantId, billingRunId, payerClientId], name: "tenantId_billingRunId_payerClientId")
+  @@unique([tenantId, billingRunId, payerClientId, classGroupId], name: "tenantId_billingRunId_payerClientId_classGroupId")
   @@unique([tenantId, idempotencyKey], name: "tenantId_idempotencyKey")
   @@index([tenantId, billingRunId])
   @@index([tenantId, payerClientId])
+  @@index([tenantId, classGroupId])
   @@schema("crm")
 }

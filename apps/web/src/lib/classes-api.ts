@@ -1,4 +1,5 @@
 import { apiClient } from "./api-client";
+import { BillingInvoiceSendProgressEventSchema } from "@corely/contracts";
 import type {
   CreateClassGroupInput,
   UpdateClassGroupInput,
@@ -28,9 +29,15 @@ import type {
   GetClassesBillingSettingsOutput,
   UpdateClassesBillingSettingsInput,
   UpdateClassesBillingSettingsOutput,
+  BillingInvoiceSendProgress,
+  BillingInvoiceSendProgressEvent,
 } from "@corely/contracts";
 
 export class ClassesApi {
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async listClassGroups(params?: ListClassGroupsInput): Promise<ListClassGroupsOutput> {
     const query = new URLSearchParams();
     if (params?.q) {
@@ -239,13 +246,164 @@ export class ClassesApi {
     );
   }
 
-  async getBillingPreview(month: string): Promise<BillingPreviewOutput> {
-    return apiClient.get<BillingPreviewOutput>(
-      `/classes/billing/preview?month=${encodeURIComponent(month)}`,
-      {
-        correlationId: apiClient.generateCorrelationId(),
+  async getBillingPreview(
+    month: string,
+    filters?: { classGroupId?: string; payerClientId?: string }
+  ): Promise<BillingPreviewOutput> {
+    const query = new URLSearchParams({ month });
+    if (filters?.classGroupId) {
+      query.append("classGroupId", filters.classGroupId);
+    }
+    if (filters?.payerClientId) {
+      query.append("payerClientId", filters.payerClientId);
+    }
+    return apiClient.get<BillingPreviewOutput>(`/classes/billing/preview?${query.toString()}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async waitForBillingSendCompletion(
+    month: string,
+    options?: {
+      timeoutMs?: number;
+      intervalMs?: number;
+      onProgress?: (progress: BillingInvoiceSendProgress | null) => void;
+    }
+  ): Promise<BillingPreviewOutput> {
+    const timeoutMs = options?.timeoutMs ?? 90_000;
+    const intervalMs = options?.intervalMs ?? 1_500;
+    const startedAt = Date.now();
+    let lastPreview: BillingPreviewOutput | null = null;
+
+    while (Date.now() - startedAt < timeoutMs) {
+      const preview = await this.getBillingPreview(month);
+      lastPreview = preview;
+      const progress = preview.invoiceSendProgress ?? null;
+      options?.onProgress?.(progress);
+
+      if (!preview.invoicesSentAt && (preview.invoiceLinks?.length ?? 0) === 0) {
+        return preview;
       }
+
+      if (progress && progress.isComplete) {
+        return preview;
+      }
+
+      await this.sleep(intervalMs);
+    }
+
+    const expectedCount = lastPreview?.invoiceSendProgress?.expectedInvoiceCount ?? 0;
+    const processedCount = lastPreview?.invoiceSendProgress?.processedInvoiceCount ?? 0;
+    throw new Error(
+      `Timed out waiting for invoice send results (${processedCount}/${expectedCount} processed).`
     );
+  }
+
+  private async waitForBillingSendCompletionViaSse(
+    billingRunId: string,
+    month: string,
+    options?: {
+      timeoutMs?: number;
+      onProgress?: (progress: BillingInvoiceSendProgress | null) => void;
+    }
+  ): Promise<BillingPreviewOutput> {
+    const timeoutMs = options?.timeoutMs ?? 90_000;
+
+    return new Promise<BillingPreviewOutput>((resolve, reject) => {
+      const abortController = new AbortController();
+      let closeStream: (() => void) | null = null;
+      let settled = false;
+
+      const finish = async () => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutHandle);
+        abortController.abort();
+        closeStream?.();
+        try {
+          const preview = await this.getBillingPreview(month);
+          resolve(preview);
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      const fail = (error: unknown) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timeoutHandle);
+        abortController.abort();
+        closeStream?.();
+        reject(error instanceof Error ? error : new Error("SSE stream failed"));
+      };
+
+      const timeoutHandle = setTimeout(() => {
+        fail(new Error("SSE stream timed out before completion"));
+      }, timeoutMs + 1_000);
+
+      void (async () => {
+        try {
+          closeStream = await apiClient.subscribeSse<unknown>(
+            `/classes/billing/runs/${encodeURIComponent(billingRunId)}/send-progress/stream`,
+            {
+              signal: abortController.signal,
+              reconnect: {
+                maxAttempts: 3,
+                initialDelayMs: 500,
+                maxDelayMs: 5_000,
+              },
+              onEvent: (event) => {
+                if (event.event !== "billing.invoice-send-progress") {
+                  return;
+                }
+
+                const parsed = BillingInvoiceSendProgressEventSchema.safeParse(event.data);
+                if (!parsed.success) {
+                  return;
+                }
+
+                const payload: BillingInvoiceSendProgressEvent = parsed.data;
+                options?.onProgress?.(payload.progress ?? null);
+                if (payload.isComplete) {
+                  void finish();
+                }
+              },
+              onError: fail,
+              onClose: () => {
+                if (!settled) {
+                  fail(new Error("SSE stream closed before completion"));
+                }
+              },
+            }
+          );
+        } catch (error) {
+          fail(error);
+        }
+      })();
+    });
+  }
+
+  async waitForBillingSendCompletionWithSse(
+    billingRunId: string,
+    month: string,
+    options?: {
+      timeoutMs?: number;
+      intervalMs?: number;
+      onProgress?: (progress: BillingInvoiceSendProgress | null) => void;
+    }
+  ): Promise<BillingPreviewOutput> {
+    try {
+      return await this.waitForBillingSendCompletionViaSse(billingRunId, month, {
+        timeoutMs: options?.timeoutMs,
+        onProgress: options?.onProgress,
+      });
+    } catch {
+      return this.waitForBillingSendCompletion(month, options);
+    }
   }
 
   async createBillingRun(input: CreateBillingRunInput): Promise<CreateBillingRunOutput> {

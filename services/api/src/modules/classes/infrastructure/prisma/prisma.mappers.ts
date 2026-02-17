@@ -86,6 +86,7 @@ export const toBillingInvoiceLink = (row: any): ClassBillingInvoiceLinkEntity =>
   workspaceId: row.workspaceId,
   billingRunId: row.billingRunId,
   payerClientId: row.payerClientId,
+  classGroupId: row.classGroupId ?? null,
   invoiceId: row.invoiceId,
   idempotencyKey: row.idempotencyKey,
   createdAt: row.createdAt,

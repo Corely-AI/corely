@@ -13,11 +13,13 @@ export type InvoiceEmailProps = {
     amount: string;
   }>;
   paymentDetails?: {
+    method?: string | undefined;
     accountHolderName?: string | undefined;
     iban?: string | undefined;
     bic?: string | undefined;
     bankName?: string | undefined;
     referenceText?: string | undefined;
+    instructions?: string | undefined;
   };
   viewInvoiceUrl?: string | undefined;
   locale?: string | undefined;

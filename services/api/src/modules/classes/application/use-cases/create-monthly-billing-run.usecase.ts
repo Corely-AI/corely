@@ -1,4 +1,4 @@
-import { ConflictError } from "@corely/domain";
+import { ConflictError, ValidationFailedError } from "@corely/domain";
 import { RequireTenant, type UseCaseContext, isErr } from "@corely/kernel";
 import type { CreateBillingRunInput } from "@corely/contracts";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
@@ -46,7 +46,23 @@ export class CreateMonthlyBillingRunUseCase {
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     const month = normalizeBillingMonth(input.month);
-    const idempotencyKey = input.idempotencyKey ?? `${tenantId}:${month}`;
+    const defaultIdempotencyScope = [
+      input.classGroupId ?? "ALL_CLASSES",
+      input.payerClientId ?? "ALL_PAYERS",
+      input.createInvoices ? "CREATE" : "NO_CREATE",
+      input.sendInvoices ? "SEND" : "NO_SEND",
+    ].join(":");
+    const idempotencyKey =
+      input.idempotencyKey ?? `${tenantId}:${month}:${defaultIdempotencyScope}`;
+
+    if (input.force && (input.classGroupId || input.payerClientId)) {
+      throw new ValidationFailedError("Regenerate invoices only supports unfiltered monthly runs", [
+        {
+          message: "Clear class/payer filters before regenerating invoices for a month",
+          members: ["force"],
+        },
+      ]);
+    }
 
     if (idempotencyKey && !input.force) {
       const cached = await this.idempotency.get(this.actionKey, tenantId, idempotencyKey);
@@ -143,17 +159,30 @@ export class CreateMonthlyBillingRunUseCase {
         ? await this.repo.listBillableScheduledForMonth(tenantId, workspaceId, {
             monthStart: startUtc,
             monthEnd: endUtc,
+            classGroupId: input.classGroupId,
+            payerClientId: input.payerClientId,
           })
         : await this.repo.listBillableAttendanceForMonth(tenantId, workspaceId, {
             monthStart: startUtc,
             monthEnd: endUtc,
+            classGroupId: input.classGroupId,
+            payerClientId: input.payerClientId,
           });
     const previewItems = aggregateBillingPreview(rows).filter((item) => item.totalAmountCents > 0);
+    const previewInvoiceTargets = previewItems.flatMap((item) =>
+      item.lines
+        .filter((line) => line.amountCents > 0)
+        .map((line) => ({
+          payerClientId: item.payerClientId,
+          currency: item.currency,
+          line,
+        }))
+    );
 
     const invoiceIds: string[] = [];
     if (input.createInvoices) {
-      for (const item of previewItems) {
-        const invoiceKey = `${tenantId}:${month}:${item.payerClientId}`;
+      for (const target of previewInvoiceTargets) {
+        const invoiceKey = `${tenantId}:${month}:${target.payerClientId}:${target.line.classGroupId}`;
         const existingLink = await this.repo.findBillingInvoiceLinkByIdempotency(
           tenantId,
           workspaceId,
@@ -166,15 +195,17 @@ export class CreateMonthlyBillingRunUseCase {
 
         const result = await this.invoices.createDraft(
           {
-            customerPartyId: item.payerClientId,
-            currency: item.currency,
-            lineItems: item.lines.map((line) => ({
-              description: `${line.classGroupName} (${line.sessions} ${
-                effectiveSettings.billingBasis === "SCHEDULED_SESSIONS" ? "scheduled" : "attended"
-              } sessions)`,
-              qty: line.sessions,
-              unitPriceCents: line.priceCents,
-            })),
+            customerPartyId: target.payerClientId,
+            currency: target.currency,
+            lineItems: [
+              {
+                description: `${target.line.classGroupName} (${target.line.sessions} ${
+                  effectiveSettings.billingBasis === "SCHEDULED_SESSIONS" ? "scheduled" : "attended"
+                } sessions)`,
+                qty: target.line.sessions,
+                unitPriceCents: target.line.priceCents,
+              },
+            ],
             sourceType: "manual",
             sourceId: run.id,
             idempotencyKey: invoiceKey,
@@ -206,7 +237,8 @@ export class CreateMonthlyBillingRunUseCase {
           tenantId,
           workspaceId,
           billingRunId: run.id,
-          payerClientId: item.payerClientId,
+          payerClientId: target.payerClientId,
+          classGroupId: target.line.classGroupId,
           invoiceId,
           idempotencyKey: invoiceKey,
           createdAt: this.clock.now(),
@@ -229,17 +261,39 @@ export class CreateMonthlyBillingRunUseCase {
     }
 
     if (input.sendInvoices) {
+      const selectedPreviewKeys = new Set(
+        previewInvoiceTargets.map((target) => `${target.payerClientId}:${target.line.classGroupId}`)
+      );
       const invoiceIdsToSend = input.createInvoices
         ? invoiceIds
-        : existingLinks.map((link) => link.invoiceId);
+        : existingLinks
+            .filter((link) => {
+              if (link.classGroupId) {
+                return selectedPreviewKeys.has(`${link.payerClientId}:${link.classGroupId}`);
+              }
+              // Legacy links may not have classGroupId. Never use them for class-group filtered sends.
+              if (input.classGroupId) {
+                return false;
+              }
+              // For unfiltered sends, only allow legacy links when payer has exactly one class line.
+              return previewItems.some(
+                (item) => item.payerClientId === link.payerClientId && item.lines.length === 1
+              );
+            })
+            .map((link) => link.invoiceId);
       const uniqueInvoiceIds = Array.from(new Set(invoiceIdsToSend));
       if (uniqueInvoiceIds.length > 0) {
+        await this.ensureInvoicesHaveRecipientEmail(tenantId, workspaceId, uniqueInvoiceIds);
+
         for (const invoiceId of uniqueInvoiceIds) {
+          // Invoices/deliveries are scoped by workspaceId in billing tables.
+          // Use workspace scope for outbox partition + payload so worker can resolve the invoice.
+          const invoiceScopeId = workspaceId;
           await this.outbox.enqueue({
-            tenantId,
+            tenantId: invoiceScopeId,
             eventType: CLASSES_INVOICE_READY_TO_SEND_EVENT,
             payload: {
-              tenantId,
+              tenantId: invoiceScopeId,
               invoiceId,
             },
           });
@@ -253,6 +307,7 @@ export class CreateMonthlyBillingRunUseCase {
               : {}),
             sentAt: sentAt.toISOString(),
             sentInvoiceCount: uniqueInvoiceIds.length,
+            sentInvoiceIds: uniqueInvoiceIds,
           },
           updatedAt: sentAt,
         });
@@ -302,12 +357,20 @@ export class CreateMonthlyBillingRunUseCase {
     const output = { billingRun: run, invoiceIds };
 
     if (idempotencyKey) {
-      await this.idempotency.store(this.actionKey, tenantId, idempotencyKey, {
-        body: {
-          billingRun: this.toJson(run),
-          invoiceIds,
-        },
-      });
+      try {
+        await this.idempotency.store(this.actionKey, tenantId, idempotencyKey, {
+          body: {
+            billingRun: this.toJson(run),
+            invoiceIds,
+          },
+        });
+      } catch (error: any) {
+        // For re-send flows, the same idempotency key may already exist with an empty invoiceIds payload.
+        // Do not fail the send operation if only the idempotency write collides.
+        if (error?.code !== "P2002" && !String(error?.message ?? "").includes("P2002")) {
+          throw error;
+        }
+      }
     }
 
     return output;
@@ -356,6 +419,36 @@ export class CreateMonthlyBillingRunUseCase {
           updatedAt: now,
         });
       }
+    }
+  }
+
+  private async ensureInvoicesHaveRecipientEmail(
+    tenantId: string,
+    workspaceId: string,
+    invoiceIds: string[]
+  ) {
+    if (!this.repo.getInvoiceRecipientEmailsByIds) {
+      return;
+    }
+
+    const recipients = await this.repo.getInvoiceRecipientEmailsByIds(
+      tenantId,
+      workspaceId,
+      invoiceIds
+    );
+    const emailByInvoiceId = new Map(recipients.map((item) => [item.invoiceId, item.email]));
+    const missingInvoiceIds = invoiceIds.filter((invoiceId) => !emailByInvoiceId.get(invoiceId));
+
+    if (missingInvoiceIds.length > 0) {
+      throw new ValidationFailedError(
+        "Cannot send invoices until all students have a payer email",
+        [
+          {
+            message: `Missing payer email for ${missingInvoiceIds.length} invoice(s): ${missingInvoiceIds.join(", ")}`,
+            members: ["sendInvoices"],
+          },
+        ]
+      );
     }
   }
 

@@ -5,6 +5,9 @@ export interface TestData {
     id: string;
     name: string;
   };
+  workspace: {
+    id: string;
+  };
   user: {
     id: string;
     email: string;
@@ -19,6 +22,7 @@ const MAX_SEED_ATTEMPTS = 8;
 interface SeedResponse {
   tenantId: string;
   tenantName: string;
+  workspaceId: string;
   userId: string;
   userName: string;
 }
@@ -49,6 +53,9 @@ export async function seedTestData(): Promise<TestData | null> {
         tenant: {
           id: response.tenantId,
           name: response.tenantName,
+        },
+        workspace: {
+          id: response.workspaceId,
         },
         user: {
           id: response.userId,

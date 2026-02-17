@@ -58,6 +58,7 @@ import { GetClassesBillingSettingsUseCase } from "./application/use-cases/get-cl
 import { UpdateClassesBillingSettingsUseCase } from "./application/use-cases/update-classes-billing-settings.usecase";
 import { GetTeacherDashboardSummaryUseCase } from "./application/use-cases/get-teacher-dashboard-summary.use-case";
 import { GetTeacherDashboardUnpaidInvoicesUseCase } from "./application/use-cases/get-teacher-dashboard-unpaid-invoices.use-case";
+import { GetBillingRunSendProgressUseCase } from "./application/use-cases/get-billing-run-send-progress.usecase";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule, InvoicesModule],
@@ -259,6 +260,14 @@ import { GetTeacherDashboardUnpaidInvoicesUseCase } from "./application/use-case
         clock: ClockPort
       ) => new GetMonthlyBillingPreviewUseCase(repo, settingsRepo, clock),
       inject: [CLASSES_REPOSITORY_PORT, CLASSES_SETTINGS_REPOSITORY_PORT, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: GetBillingRunSendProgressUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        getMonthlyBillingPreviewUseCase: GetMonthlyBillingPreviewUseCase
+      ) => new GetBillingRunSendProgressUseCase(repo, getMonthlyBillingPreviewUseCase),
+      inject: [CLASSES_REPOSITORY_PORT, GetMonthlyBillingPreviewUseCase],
     },
     {
       provide: CreateMonthlyBillingRunUseCase,

@@ -1,4 +1,11 @@
-import { request, createIdempotencyKey, HttpError } from "@corely/api-client";
+import {
+  request,
+  createIdempotencyKey,
+  HttpError,
+  subscribeSse,
+  type SseParsedEvent,
+  type SseReconnectOptions,
+} from "@corely/api-client";
 import type { AuthClient } from "./auth-client";
 import type { TokenStorage } from "./storage/storage.interface";
 
@@ -7,6 +14,17 @@ export interface ApiClientConfig {
   authClient: AuthClient;
   storage: TokenStorage;
   onAuthError?: () => void;
+}
+
+export interface ApiClientSseOptions<TData = unknown> {
+  onEvent: (event: SseParsedEvent<TData>) => void;
+  onError?: (error: unknown) => void;
+  onOpen?: (response: Response) => void;
+  onClose?: () => void;
+  parseData?: (rawData: string, event: string) => TData;
+  signal?: AbortSignal;
+  reconnect?: Partial<SseReconnectOptions>;
+  headers?: HeadersInit;
 }
 
 export class ApiClient {
@@ -167,5 +185,29 @@ export class ApiClient {
       { ...opts, parseJson: false }
     );
     return response.blob();
+  }
+
+  async subscribeSse<TData = unknown>(
+    endpoint: string,
+    options: ApiClientSseOptions<TData>
+  ): Promise<() => void> {
+    const accessToken = this.authClient.getAccessToken();
+    const workspaceId = await this.storage.getActiveWorkspaceId();
+
+    const headers: Record<string, string> = {
+      ...(options.headers as Record<string, string>),
+    };
+
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+    if (workspaceId) {
+      headers["X-Workspace-Id"] = workspaceId;
+    }
+
+    return subscribeSse<TData>(`${this.apiUrl}${endpoint}`, {
+      ...options,
+      headers,
+    });
   }
 }

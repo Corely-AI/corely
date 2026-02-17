@@ -9,5 +9,5 @@
       "@corely/kernel": ["../kernel/src"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "scripts"]
 }

@@ -41,5 +41,16 @@ export const crmAppManifest: AppManifest = {
       order: 36,
       requiresPermissions: ["crm.activities.read"],
     },
+    {
+      id: "crm-sequences",
+      scope: "web",
+      section: "crm",
+      labelKey: "nav.crmSequences",
+      defaultLabel: "Sequences",
+      route: "/crm/sequences",
+      icon: "Zap",
+      order: 37,
+      // requiresPermissions: ["crm.sequences.read"], // TODO: Add permissions
+    },
   ],
 };

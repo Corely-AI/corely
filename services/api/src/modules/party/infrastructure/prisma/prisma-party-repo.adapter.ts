@@ -10,6 +10,8 @@ import { PartyRoleType } from "../../domain/party-role";
 import { ContactPointType } from "../../domain/contact-point";
 import { Address } from "../../domain/address";
 import { type PartyLifecycleStatus } from "../../domain/party.aggregate";
+import { type PartyKind } from "../../domain/party-kind";
+
 type PartyRoleRow = {
   id: string;
   tenantId: string;
@@ -54,6 +56,15 @@ type PartyWithRelations = {
   contactPoints: ContactPointRow[];
   addresses: AddressRow[];
   roles: PartyRoleRow[];
+  kind: PartyKind;
+  firstName: string | null;
+  lastName: string | null;
+  organizationName: string | null;
+  jobTitle: string | null;
+  department: string | null;
+  industry: string | null;
+  website: string | null;
+  size: string | null;
 };
 
 const toAggregate = (row: PartyWithRelations): PartyAggregate => {
@@ -89,6 +100,15 @@ const toAggregate = (row: PartyWithRelations): PartyAggregate => {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     roles: row.roles.map((role) => role.role as PartyRoleType),
+    kind: row.kind,
+    firstName: row.firstName,
+    lastName: row.lastName,
+    organizationName: row.organizationName,
+    jobTitle: row.jobTitle,
+    department: row.department,
+    industry: row.industry,
+    website: row.website,
+    size: row.size,
   });
 };
 
@@ -114,6 +134,15 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
           archivedAt: party.archivedAt,
           createdAt: party.createdAt,
           updatedAt: party.updatedAt,
+          kind: party.kind,
+          firstName: party.firstName,
+          lastName: party.lastName,
+          organizationName: party.organizationName,
+          jobTitle: party.jobTitle,
+          department: party.department,
+          industry: party.industry,
+          website: party.website,
+          size: party.size,
         } as any,
       });
 
@@ -176,6 +205,15 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
           lifecycleStatus: party.lifecycleStatus as any,
           archivedAt: party.archivedAt,
           updatedAt: party.updatedAt,
+          kind: party.kind,
+          firstName: party.firstName,
+          lastName: party.lastName,
+          organizationName: party.organizationName,
+          jobTitle: party.jobTitle,
+          department: party.department,
+          industry: party.industry,
+          website: party.website,
+          size: party.size,
         } as any,
       });
 

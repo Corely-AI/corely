@@ -60,6 +60,11 @@ export class CreateActivityUseCase extends BaseUseCase<CreateActivityInput, Crea
       assignedToUserId: input.assignedToUserId ?? ctx.userId ?? null,
       createdByUserId: ctx.userId ?? null,
       createdAt: now,
+      outcome: input.outcome ?? null,
+      durationSeconds: input.durationSeconds ?? null,
+      location: input.location ?? null,
+      attendees: input.attendees ?? null,
+      metadata: input.metadata ?? null,
     });
 
     await this.activityRepo.create(ctx.tenantId, activity);

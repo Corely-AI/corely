@@ -187,7 +187,11 @@ export default function NewDealPage() {
                     <FormItem className="md:col-span-2">
                       <FormLabel>{t("crm.deals.titleLabel")}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t("crm.deals.titlePlaceholder")} {...field} />
+                        <Input
+                          placeholder={t("crm.deals.titlePlaceholder")}
+                          {...field}
+                          data-testid="crm-deal-title"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -206,6 +210,7 @@ export default function NewDealPage() {
                           list="deal-customer-options"
                           autoComplete="off"
                           {...field}
+                          data-testid="crm-deal-party-id"
                         />
                       </FormControl>
                       <FormDescription>
@@ -233,7 +238,7 @@ export default function NewDealPage() {
                       <FormLabel>{t("crm.deals.stage")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger data-testid="crm-deal-stage">
                             <SelectValue placeholder={t("crm.deals.stagePlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
@@ -307,6 +312,7 @@ export default function NewDealPage() {
                           min="0"
                           placeholder={t("crm.deals.amountPlaceholder")}
                           {...field}
+                          data-testid="crm-deal-amount"
                         />
                       </FormControl>
                       <FormMessage />
@@ -322,7 +328,7 @@ export default function NewDealPage() {
                       <FormLabel>{t("crm.deals.currency")}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger data-testid="crm-deal-currency">
                             <SelectValue placeholder={t("crm.deals.currencyPlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
@@ -351,6 +357,7 @@ export default function NewDealPage() {
                           step="1"
                           placeholder={t("crm.deals.probabilityPlaceholder")}
                           {...field}
+                          data-testid="crm-deal-probability"
                         />
                       </FormControl>
                       <FormMessage />
@@ -366,7 +373,12 @@ export default function NewDealPage() {
                   <FormItem>
                     <FormLabel>{t("common.notes")}</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} placeholder={t("crm.deals.notesPlaceholder")} {...field} />
+                      <Textarea
+                        rows={4}
+                        placeholder={t("crm.deals.notesPlaceholder")}
+                        {...field}
+                        data-testid="crm-deal-notes"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

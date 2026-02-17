@@ -6,6 +6,7 @@ import { PrismaIdempotencyStorageAdapter } from "../infrastructure/persistence/p
 import { ID_GENERATOR_TOKEN } from "../ports/id-generator.port";
 import { CLOCK_PORT_TOKEN } from "../ports/clock.port";
 import { IDEMPOTENCY_STORAGE_PORT_TOKEN } from "../ports/idempotency-storage.port";
+import { SseStreamFactory } from "../sse";
 
 @Module({
   imports: [DataModule],
@@ -16,6 +17,7 @@ import { IDEMPOTENCY_STORAGE_PORT_TOKEN } from "../ports/idempotency-storage.por
     { provide: CLOCK_PORT_TOKEN, useExisting: SystemClock },
     PrismaIdempotencyStorageAdapter,
     { provide: IDEMPOTENCY_STORAGE_PORT_TOKEN, useExisting: PrismaIdempotencyStorageAdapter },
+    SseStreamFactory,
   ],
   exports: [
     ID_GENERATOR_TOKEN,
@@ -24,6 +26,7 @@ import { IDEMPOTENCY_STORAGE_PORT_TOKEN } from "../ports/idempotency-storage.por
     SystemIdGenerator,
     SystemClock,
     PrismaIdempotencyStorageAdapter,
+    SseStreamFactory,
   ],
 })
 export class KernelModule {}

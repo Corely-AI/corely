@@ -28,6 +28,11 @@ type ActivityRow = {
   createdByUserId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  outcome: string | null;
+  durationSeconds: number | null;
+  location: string | null;
+  attendees: any | null;
+  metadata: any | null;
 };
 
 const toEntity = (row: ActivityRow): ActivityEntity => {
@@ -50,6 +55,11 @@ const toEntity = (row: ActivityRow): ActivityEntity => {
     createdByUserId: row.createdByUserId,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    outcome: row.outcome,
+    durationSeconds: row.durationSeconds,
+    location: row.location,
+    attendees: row.attendees,
+    metadata: row.metadata,
   });
 };
 
@@ -123,6 +133,11 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
         createdByUserId: activity.createdByUserId,
         createdAt: activity.createdAt,
         updatedAt: activity.updatedAt,
+        outcome: activity.outcome,
+        durationSeconds: activity.durationSeconds,
+        location: activity.location,
+        attendees: activity.attendees ?? undefined,
+        metadata: activity.metadata ?? undefined,
       },
     });
   }
@@ -149,6 +164,11 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
         status: activity.status,
         assignedToUserId: activity.assignedToUserId,
         updatedAt: activity.updatedAt,
+        outcome: activity.outcome,
+        durationSeconds: activity.durationSeconds,
+        location: activity.location,
+        attendees: activity.attendees ?? undefined,
+        metadata: activity.metadata ?? undefined,
       },
     });
   }
@@ -189,6 +209,10 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
           assignedToUserId: activity.assignedToUserId,
           dueAt: activity.dueAt?.toISOString() ?? null,
           completedAt: activity.completedAt?.toISOString() ?? null,
+          outcome: (activity as any).outcome,
+          durationSeconds: (activity as any).durationSeconds,
+          location: (activity as any).location,
+          attendees: (activity as any).attendees,
         },
       };
     });

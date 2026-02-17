@@ -54,7 +54,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
     channel.requiredContactFields.every((field) => contactContext[field]);
 
   return (
-    <Card>
+    <Card data-testid="crm-deal-quick-actions">
       <CardHeader>
         <CardTitle>{t("crm.deals.quickActions")}</CardTitle>
       </CardHeader>
@@ -66,7 +66,13 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
           disabled={disabled}
         />
         <div className="flex gap-2">
-          <Button className="flex-1" variant="accent" onClick={onMarkWon} disabled={disabled}>
+          <Button
+            className="flex-1"
+            variant="accent"
+            onClick={onMarkWon}
+            disabled={disabled}
+            data-testid="crm-deal-mark-won"
+          >
             {t("crm.deals.markWon")}
           </Button>
           <Button
@@ -74,6 +80,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
             variant="outline"
             onClick={() => onMarkLost?.()}
             disabled={disabled}
+            data-testid="crm-deal-mark-lost"
           >
             {t("crm.deals.markLost")}
           </Button>
@@ -99,6 +106,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
                       variant="secondary"
                       disabled={disabled || !enabled}
                       onClick={() => onSelectChannel?.(channel)}
+                      data-testid={`crm-channel-open-${channel.key}`}
                     >
                       {icon}
                       <span className="ml-2">{channel.label}</span>
@@ -130,6 +138,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
             placeholder={t("crm.deals.noteSubject")}
             value={noteSubject}
             onChange={(e) => setNoteSubject(e.target.value)}
+            data-testid="crm-deal-quick-note-subject"
           />
           <Textarea
             rows={3}
@@ -145,6 +154,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
               setNoteSubject("");
               setNoteBody("");
             }}
+            data-testid="crm-deal-quick-note-add"
           >
             {t("crm.deals.addNote")}
           </Button>

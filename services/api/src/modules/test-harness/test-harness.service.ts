@@ -8,10 +8,12 @@ import { buildPermissionCatalog } from "../identity/permissions/permission-catal
 import { TOKEN_SERVICE_TOKEN } from "../identity/application/ports/token-service.port";
 import type { TokenServicePort } from "../identity/application/ports/token-service.port";
 import { randomUUID, createHash } from "crypto";
+import { seedPortalTestData, type SeedPortalTestDataResult } from "./seed-portal-test-data";
 
 export interface SeedResult {
   tenantId: string;
   tenantName: string;
+  workspaceId: string;
   userId: string;
   userName: string;
   email: string;
@@ -26,6 +28,23 @@ export interface SeedCopilotThreadMessageResult {
   threadId: string;
   messageId: string;
   title: string;
+}
+
+export interface SeedClassesBillingSendResult {
+  tenantId: string;
+  workspaceId: string;
+  month: string;
+  invoiceIds: string[];
+  recipients: string[];
+}
+
+export interface InvoiceEmailDeliveryLookup {
+  invoiceId: string;
+  to: string;
+  status: string;
+  provider: string;
+  providerMessageId: string | null;
+  lastError: string | null;
 }
 
 @Injectable()
@@ -90,169 +109,8 @@ export class TestHarnessService {
   /**
    * Seed complete portal test data for E2E testing
    */
-  async seedPortalTestData(): Promise<{
-    tenantId: string;
-    workspaceId: string;
-    workspaceSlug: string;
-    studentUserId: string;
-    studentEmail: string;
-    documentTitle: string;
-    documentId: string;
-  }> {
-    const timestamp = Date.now();
-    const studentEmail = `portal-student-${timestamp}@test.com`;
-    const documentTitle = `E2E Test Material ${timestamp}`;
-    const workspaceSlug = `portal-ws-${timestamp}`;
-
-    // 1. Create Tenant
-    const tenant = await this.prisma.tenant.create({
-      data: {
-        name: `Portal E2E Tenant ${timestamp}`,
-        slug: `portal-e2e-${timestamp}`,
-        status: "ACTIVE",
-      },
-    });
-
-    // 2. Create Legal Entity and Workspace
-    const legalEntity = await this.prisma.legalEntity.create({
-      data: {
-        tenantId: tenant.id,
-        kind: "COMPANY",
-        legalName: "Portal Test Company",
-        countryCode: "US",
-        currency: "USD",
-      },
-    });
-
-    const workspace = await this.prisma.workspace.create({
-      data: {
-        tenantId: tenant.id,
-        name: "Portal Test Workspace",
-        slug: workspaceSlug,
-        publicEnabled: true,
-        legalEntityId: legalEntity.id,
-      },
-    });
-
-    // 3. Create Student User
-    const passwordHash = await bcrypt.hash("TestPassword123!", 10);
-    const user = await this.prisma.user.create({
-      data: {
-        email: studentEmail,
-        name: "E2E Test Student",
-        passwordHash,
-        status: "ACTIVE",
-      },
-    });
-
-    // 4. Create Party and PartyRole (STUDENT)
-    const party = await this.prisma.party.create({
-      data: {
-        tenantId: tenant.id,
-        displayName: "E2E Test Student",
-        lifecycleStatus: "ACTIVE",
-      },
-    });
-
-    await this.prisma.partyRole.create({
-      data: {
-        tenantId: tenant.id,
-        partyId: party.id,
-        role: "STUDENT",
-      },
-    });
-
-    // 5. Link User to Party
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { partyId: party.id },
-    });
-
-    // 6. Create Role and Membership
-    const role = await this.prisma.role.create({
-      data: {
-        tenantId: tenant.id,
-        name: "Portal User",
-        systemKey: "PORTAL_USER",
-        isSystem: true,
-      },
-    });
-
-    await this.prisma.membership.create({
-      data: {
-        tenantId: tenant.id,
-        userId: user.id,
-        roleId: role.id,
-      },
-    });
-
-    // 7. Create Class Group
-    const classGroup = await this.prisma.classGroup.create({
-      data: {
-        tenantId: tenant.id,
-        workspaceId: workspace.id,
-        name: "E2E Test Class",
-        subject: "Testing",
-        level: "Beginner",
-        status: "ACTIVE",
-        defaultPricePerSession: 100,
-        currency: "USD",
-      },
-    });
-
-    // 8. Create Class Enrollment
-    await this.prisma.classEnrollment.create({
-      data: {
-        tenantId: tenant.id,
-        workspaceId: workspace.id,
-        classGroupId: classGroup.id,
-        studentClientId: party.id,
-        payerClientId: party.id,
-        isActive: true,
-      },
-    });
-
-    // 9. Create Document, File, and Link to Class
-    const document = await this.prisma.document.create({
-      data: {
-        tenantId: tenant.id,
-        title: documentTitle,
-        type: "UPLOAD",
-        status: "READY",
-      },
-    });
-
-    await this.prisma.file.create({
-      data: {
-        tenantId: tenant.id,
-        documentId: document.id,
-        kind: "ORIGINAL",
-        storageProvider: "gcs",
-        bucket: "e2e-test-bucket",
-        objectKey: `e2e/${tenant.id}/${document.id}/test-material.pdf`,
-        contentType: "application/pdf",
-        sizeBytes: 1024,
-      },
-    });
-
-    await this.prisma.documentLink.create({
-      data: {
-        tenantId: tenant.id,
-        documentId: document.id,
-        entityType: "CLASS_GROUP",
-        entityId: classGroup.id,
-      },
-    });
-
-    return {
-      tenantId: tenant.id,
-      workspaceId: workspace.id,
-      workspaceSlug,
-      studentUserId: user.id,
-      studentEmail,
-      documentTitle,
-      documentId: document.id,
-    };
+  async seedPortalTestData(): Promise<SeedPortalTestDataResult> {
+    return seedPortalTestData(this.prisma);
   }
 
   async seedCopilotThreadMessage(params: {
@@ -451,11 +309,322 @@ export class TestHarnessService {
         onboardingCompletedAt: new Date(),
       });
 
-      return result;
+      return {
+        ...result,
+        workspaceId: workspaceResult.workspace.id,
+      };
     } catch (error) {
       console.error("Error seeding test data:", error);
       throw error;
     }
+  }
+
+  async seedClassesBillingSendScenario(params: {
+    tenantId: string;
+    workspaceId: string;
+    actorUserId: string;
+    month?: string;
+    label?: string;
+  }): Promise<SeedClassesBillingSendResult> {
+    const now = new Date();
+    const month =
+      params.month ?? `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+    const suffix = params.label?.trim() || `${Date.now()}`;
+    const recipientA = `delivered+classes-a-${suffix}@resend.dev`;
+    const recipientB = `delivered+classes-b-${suffix}@resend.dev`;
+
+    const [partyA, partyB] = await this.prisma.$transaction(async (tx) => {
+      const createdPartyA = await tx.party.create({
+        data: {
+          tenantId: params.tenantId,
+          displayName: `E2E Student A ${suffix}`,
+          lifecycleStatus: "ACTIVE",
+        },
+      });
+
+      const createdPartyB = await tx.party.create({
+        data: {
+          tenantId: params.tenantId,
+          displayName: `E2E Student B ${suffix}`,
+          lifecycleStatus: "ACTIVE",
+        },
+      });
+
+      await tx.partyRole.createMany({
+        data: [
+          { tenantId: params.tenantId, partyId: createdPartyA.id, role: "CUSTOMER" },
+          { tenantId: params.tenantId, partyId: createdPartyB.id, role: "CUSTOMER" },
+        ],
+      });
+
+      await tx.contactPoint.createMany({
+        data: [
+          {
+            tenantId: params.tenantId,
+            partyId: createdPartyA.id,
+            type: "EMAIL",
+            value: recipientA,
+            isPrimary: true,
+          },
+          {
+            tenantId: params.tenantId,
+            partyId: createdPartyB.id,
+            type: "EMAIL",
+            value: recipientB,
+            isPrimary: true,
+          },
+        ],
+      });
+
+      return [createdPartyA, createdPartyB];
+    });
+
+    const invoiceA = await this.prisma.invoice.create({
+      data: {
+        tenantId: params.tenantId,
+        customerPartyId: partyA.id,
+        billToName: partyA.displayName,
+        billToEmail: recipientA,
+        number: `E2E-CLS-${Date.now()}-A`,
+        status: "ISSUED",
+        currency: "USD",
+        invoiceDate: now,
+        dueDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+        lines: {
+          create: [{ description: "E2E Class Tuition A", qty: 1, unitPriceCents: 15000 }],
+        },
+      },
+      select: { id: true },
+    });
+
+    const invoiceB = await this.prisma.invoice.create({
+      data: {
+        tenantId: params.tenantId,
+        customerPartyId: partyB.id,
+        billToName: partyB.displayName,
+        billToEmail: recipientB,
+        number: `E2E-CLS-${Date.now()}-B`,
+        status: "ISSUED",
+        currency: "USD",
+        invoiceDate: now,
+        dueDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+        lines: {
+          create: [{ description: "E2E Class Tuition B", qty: 1, unitPriceCents: 17000 }],
+        },
+      },
+      select: { id: true },
+    });
+
+    const [yearPart, monthPart] = month.split("-").map((part) => Number(part));
+    const monthIndex = Math.max(0, monthPart - 1);
+    const sessionAStart = new Date(Date.UTC(yearPart, monthIndex, 10, 9, 0, 0));
+    const sessionBStart = new Date(Date.UTC(yearPart, monthIndex, 11, 9, 0, 0));
+    const enrollmentStartDate = new Date(Date.UTC(yearPart, monthIndex, 1));
+
+    const classGroupA = await this.prisma.classGroup.create({
+      data: {
+        tenantId: params.tenantId,
+        workspaceId: params.workspaceId,
+        name: `E2E Class A ${suffix}`,
+        subject: "Math",
+        level: "A1",
+        defaultPricePerSession: 15000,
+        currency: "USD",
+        status: "ACTIVE",
+      },
+      select: { id: true },
+    });
+
+    const classGroupB = await this.prisma.classGroup.create({
+      data: {
+        tenantId: params.tenantId,
+        workspaceId: params.workspaceId,
+        name: `E2E Class B ${suffix}`,
+        subject: "Science",
+        level: "A1",
+        defaultPricePerSession: 17000,
+        currency: "USD",
+        status: "ACTIVE",
+      },
+      select: { id: true },
+    });
+
+    await this.prisma.classSession.createMany({
+      data: [
+        {
+          tenantId: params.tenantId,
+          workspaceId: params.workspaceId,
+          classGroupId: classGroupA.id,
+          startsAt: sessionAStart,
+          status: "PLANNED",
+        },
+        {
+          tenantId: params.tenantId,
+          workspaceId: params.workspaceId,
+          classGroupId: classGroupB.id,
+          startsAt: sessionBStart,
+          status: "PLANNED",
+        },
+      ],
+    });
+
+    await this.prisma.classEnrollment.createMany({
+      data: [
+        {
+          tenantId: params.tenantId,
+          workspaceId: params.workspaceId,
+          classGroupId: classGroupA.id,
+          studentClientId: partyA.id,
+          payerClientId: partyA.id,
+          isActive: true,
+          priceOverridePerSession: 15000,
+          startDate: enrollmentStartDate,
+        },
+        {
+          tenantId: params.tenantId,
+          workspaceId: params.workspaceId,
+          classGroupId: classGroupB.id,
+          studentClientId: partyB.id,
+          payerClientId: partyB.id,
+          isActive: true,
+          priceOverridePerSession: 17000,
+          startDate: enrollmentStartDate,
+        },
+      ],
+    });
+
+    const seededSnapshot = {
+      billMonth: month,
+      seededBy: "test-harness",
+      seededAt: now.toISOString(),
+      strategy: "PREPAID_CURRENT_MONTH",
+      basis: "SCHEDULED_SESSIONS",
+      items: [
+        {
+          payerClientId: partyA.id,
+          totalSessions: 1,
+          totalAmountCents: 15000,
+          currency: "USD",
+          lines: [
+            {
+              classGroupId: classGroupA.id,
+              classGroupName: `E2E Class A ${suffix}`,
+              sessions: 1,
+              priceCents: 15000,
+              amountCents: 15000,
+              currency: "USD",
+            },
+          ],
+        },
+        {
+          payerClientId: partyB.id,
+          totalSessions: 1,
+          totalAmountCents: 17000,
+          currency: "USD",
+          lines: [
+            {
+              classGroupId: classGroupB.id,
+              classGroupName: `E2E Class B ${suffix}`,
+              sessions: 1,
+              priceCents: 17000,
+              amountCents: 17000,
+              currency: "USD",
+            },
+          ],
+        },
+      ],
+    };
+
+    const billingRun = await this.prisma.classMonthlyBillingRun.upsert({
+      where: {
+        tenantId_month: {
+          tenantId: params.tenantId,
+          month,
+        },
+      },
+      create: {
+        tenantId: params.tenantId,
+        workspaceId: params.workspaceId,
+        month,
+        billingMonthStrategy: "PREPAID_CURRENT_MONTH",
+        billingBasis: "SCHEDULED_SESSIONS",
+        billingSnapshot: seededSnapshot,
+        status: "INVOICES_CREATED",
+        runId: randomUUID(),
+        generatedAt: now,
+        createdByUserId: params.actorUserId,
+      },
+      update: {
+        workspaceId: params.workspaceId,
+        billingMonthStrategy: "PREPAID_CURRENT_MONTH",
+        billingBasis: "SCHEDULED_SESSIONS",
+        status: "INVOICES_CREATED",
+        billingSnapshot: seededSnapshot,
+        updatedAt: now,
+      },
+      select: { id: true },
+    });
+
+    await this.prisma.classBillingInvoiceLink.createMany({
+      data: [
+        {
+          tenantId: params.tenantId,
+          workspaceId: params.workspaceId,
+          billingRunId: billingRun.id,
+          payerClientId: partyA.id,
+          invoiceId: invoiceA.id,
+          idempotencyKey: `e2e-billing-link-${billingRun.id}-${partyA.id}-${Date.now()}`,
+        },
+        {
+          tenantId: params.tenantId,
+          workspaceId: params.workspaceId,
+          billingRunId: billingRun.id,
+          payerClientId: partyB.id,
+          invoiceId: invoiceB.id,
+          idempotencyKey: `e2e-billing-link-${billingRun.id}-${partyB.id}-${Date.now() + 1}`,
+        },
+      ],
+    });
+
+    return {
+      tenantId: params.tenantId,
+      workspaceId: params.workspaceId,
+      month,
+      invoiceIds: [invoiceA.id, invoiceB.id],
+      recipients: [recipientA, recipientB],
+    };
+  }
+
+  async listInvoiceEmailDeliveries(params: {
+    tenantId: string;
+    invoiceIds: string[];
+  }): Promise<InvoiceEmailDeliveryLookup[]> {
+    if (params.invoiceIds.length === 0) {
+      return [];
+    }
+    const rows = await this.prisma.invoiceEmailDelivery.findMany({
+      where: {
+        tenantId: params.tenantId,
+        invoiceId: { in: params.invoiceIds },
+      },
+      orderBy: { createdAt: "desc" },
+      select: {
+        invoiceId: true,
+        to: true,
+        status: true,
+        provider: true,
+        providerMessageId: true,
+        lastError: true,
+      },
+    });
+    return rows.map((row) => ({
+      invoiceId: row.invoiceId,
+      to: row.to,
+      status: row.status,
+      provider: row.provider,
+      providerMessageId: row.providerMessageId ?? null,
+      lastError: row.lastError ?? null,
+    }));
   }
 
   /**

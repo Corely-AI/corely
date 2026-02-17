@@ -11,6 +11,12 @@ export const PartyRoleTypeSchema = z.enum([
 ]);
 export type PartyRoleType = z.infer<typeof PartyRoleTypeSchema>;
 
+export const PartyKindSchema = z.enum(["INDIVIDUAL", "ORGANIZATION"]);
+export type PartyKind = z.infer<typeof PartyKindSchema>;
+
+export const PartyRelationshipTypeSchema = z.enum(["WORKS_FOR", "SUBSIDIARY_OF", "PARTNER_OF"]);
+export type PartyRelationshipType = z.infer<typeof PartyRelationshipTypeSchema>;
+
 export const SocialPlatformSchema = z.enum([
   "linkedin",
   "facebook",
@@ -82,7 +88,19 @@ export type Address = z.infer<typeof AddressSchema>;
 export const PartyDtoSchema = z.object({
   id: z.string(),
   tenantId: z.string(),
+  // Core Identity
+  kind: PartyKindSchema.default("INDIVIDUAL"),
   displayName: z.string(),
+  // Individual Fields
+  firstName: z.string().nullable().optional(),
+  lastName: z.string().nullable().optional(),
+  jobTitle: z.string().nullable().optional(),
+  department: z.string().nullable().optional(),
+  // Organization Fields
+  organizationName: z.string().nullable().optional(),
+  industry: z.string().nullable().optional(),
+  website: z.string().nullable().optional(),
+  // Common
   roles: z.array(PartyRoleTypeSchema),
   vatId: z.string().nullable(),
   notes: z.string().nullable(),

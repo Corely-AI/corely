@@ -36,6 +36,15 @@ export class PortalController {
     return mapResultToHttp(result);
   }
 
+  @Get("students/:studentId/invoices")
+  @PublicWorkspaceRoute()
+  @UseGuards(AuthGuard)
+  async getStudentInvoices(@Param("studentId") studentId: string, @Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.getStudentInvoices.execute({ studentId }, ctx);
+    return mapResultToHttp(result);
+  }
+
   @Get("materials/:documentId/download-url")
   @PublicWorkspaceRoute()
   @UseGuards(AuthGuard)
@@ -46,6 +55,19 @@ export class PortalController {
   ) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.getDownloadUrl.execute({ studentId, documentId }, ctx);
+    return mapResultToHttp(result);
+  }
+
+  @Get("invoices/:invoiceId/download-url")
+  @PublicWorkspaceRoute()
+  @UseGuards(AuthGuard)
+  async getInvoiceDownloadUrl(
+    @Param("invoiceId") invoiceId: string,
+    @Query("studentId") studentId: string,
+    @Req() req: Request
+  ) {
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.getInvoiceDownloadUrl.execute({ studentId, invoiceId }, ctx);
     return mapResultToHttp(result);
   }
 

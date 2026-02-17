@@ -36,6 +36,7 @@ Base path: `/classes`
 
 - `GET /classes/billing/preview?month=YYYY-MM`
 - `POST /classes/billing/runs` create billing run + invoices
+- `GET /classes/billing/runs/:billingRunId/send-progress/stream` SSE send-progress stream
 - `POST /classes/billing/runs/:id/lock` lock a billing month
 
 ## Billing Rules

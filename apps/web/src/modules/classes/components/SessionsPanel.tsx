@@ -11,6 +11,11 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -44,9 +49,11 @@ interface SessionsPanelProps {
   onSessionDurationChange: (value: string) => void;
   onSessionTopicChange: (value: string) => void;
   onAddSession: () => void;
-  onGenerateSessions: () => void;
+  onGenerateSessions: (month?: string) => void;
   createSessionPending: boolean;
   generateSessionsPending: boolean;
+  selectedMonth: string;
+  onMonthChange: (month: string) => void;
 }
 
 export function SessionsPanel({
@@ -64,22 +71,52 @@ export function SessionsPanel({
   onGenerateSessions,
   createSessionPending,
   generateSessionsPending,
+  selectedMonth,
+  onMonthChange,
 }: SessionsPanelProps) {
   const sessions = sessionData?.items ?? [];
   const totalSessions = sessionData?.total ?? sessions.length;
-  const currentMonthLabel = React.useMemo(
-    () =>
-      new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        year: "numeric",
-      }).format(new Date()),
-    []
-  );
+  const currentMonthLabel = React.useMemo(() => {
+    const [year, month] = selectedMonth.split("-").map(Number);
+    return new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      year: "numeric",
+    }).format(new Date(year, month - 1));
+  }, [selectedMonth]);
+
+  const monthOptions = React.useMemo(() => {
+    const now = new Date();
+    const options = [];
+    for (let i = -2; i <= 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      const label = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(d);
+      options.push({ key, label });
+    }
+    return options;
+  }, []);
 
   return (
     <Card>
       <CardContent className="p-6 space-y-4">
-        <div className="text-sm font-semibold">Sessions</div>
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-semibold">Sessions</div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground font-medium">Month:</span>
+            <Select value={selectedMonth} onValueChange={onMonthChange}>
+              <SelectTrigger className="h-8 w-[160px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {monthOptions.map((opt) => (
+                  <SelectItem key={opt.key} value={opt.key} className="text-xs">
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_120px_180px_auto] items-end">
           <div className="space-y-2">
             <Label>Start time</Label>
@@ -139,13 +176,15 @@ export function SessionsPanel({
                   <Button
                     variant="accent-outline"
                     className="w-full md:w-auto md:min-w-[240px]"
-                    onClick={onGenerateSessions}
+                    onClick={() => onGenerateSessions(selectedMonth)}
                     disabled={generateSessionsPending}
                   >
                     <RotateCw
                       className={generateSessionsPending ? "h-4 w-4 animate-spin" : "h-4 w-4"}
                     />
-                    {generateSessionsPending ? "Generating..." : "Generate current month"}
+                    {generateSessionsPending
+                      ? "Generating..."
+                      : `Generate for ${currentMonthLabel}`}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>

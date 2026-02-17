@@ -1,7 +1,17 @@
 import { Module } from "@nestjs/common";
+import {
+  AUDIT_PORT,
+  IDEMPOTENCY_PORT,
+  OUTBOX_PORT,
+  type AuditPort,
+  type IdempotencyPort,
+  type OutboxPort,
+} from "@corely/kernel";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
+import { PartyModule } from "../party";
+import { LeadsController } from "./adapters/http/leads.controller";
 import { DealsHttpController } from "./adapters/http/deals.controller";
 import {
   ActivitiesHttpController,
@@ -31,21 +41,231 @@ import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-tim
 import { ChannelCatalogService } from "./application/channel-catalog.service";
 import { ChannelsHttpController } from "./adapters/http/channels.controller";
 import { LogMessageUseCase } from "./application/use-cases/log-message/log-message.usecase";
+import { CreateLeadUseCase } from "./application/use-cases/create-lead/create-lead.usecase";
+import { ConvertLeadUseCase } from "./application/use-cases/convert-lead/convert-lead.usecase";
+import { ListLeadsUseCase } from "./application/use-cases/list-leads/list-leads.usecase";
+import { GetLeadUseCase } from "./application/use-cases/get-lead/get-lead.usecase";
+import { PrismaLeadRepoAdapter } from "./infrastructure/prisma/prisma-lead-repo.adapter";
+import { LEAD_REPO_PORT } from "./application/ports/lead-repository.port";
+import { PartyApplication } from "../party/application/party.application";
+import { PlatformCustomAttributesModule } from "../platform-custom-attributes/platform-custom-attributes.module";
+
+import { GetDealSummaryTool } from "./copilot/tools/get-deal-summary.tool";
+import { COPILOT_TOOLS } from "../ai-copilot/application/ports/tool-registry.port";
+import { SequencesInternalController } from "./adapters/http/sequences-internal.controller";
+import { PrismaSequenceRepoAdapter } from "./infrastructure/prisma/prisma-sequence-repo.adapter";
+import { PrismaEnrollmentRepoAdapter } from "./infrastructure/prisma/prisma-enrollment-repo.adapter";
+import { EnrollEntityUseCase } from "./application/use-cases/enroll-entity/enroll-entity.usecase";
+import { RunSequenceStepsUseCase } from "./application/use-cases/run-sequence-steps/run-sequence-steps.usecase";
+import { SEQUENCE_REPO_PORT } from "./application/ports/sequence-repository.port";
+import { ENROLLMENT_REPO_PORT } from "./application/ports/enrollment-repository.port";
+
+import { CreateEmailDraftTool } from "./copilot/tools/create-email-draft.tool";
+import { RecommendNextStepTool } from "./copilot/tools/recommend-next-step.tool";
+
+import { SequencesHttpController } from "./adapters/http/sequences.controller";
+import { CreateSequenceUseCase } from "./application/use-cases/create-sequence/create-sequence.usecase";
+import { ListSequencesUseCase } from "./application/use-cases/list-sequences/list-sequences.usecase";
+
+import { AccountsHttpController } from "./adapters/http/accounts.controller";
+import { PrismaAccountRepoAdapter } from "./infrastructure/prisma/prisma-account-repo.adapter";
+import { ACCOUNT_REPO_PORT } from "./application/ports/account-repository.port";
+import { CreateAccountUseCase } from "./application/use-cases/create-account/create-account.usecase";
+import { UpdateAccountUseCase } from "./application/use-cases/update-account/update-account.usecase";
+import { GetAccountUseCase } from "./application/use-cases/get-account/get-account.usecase";
+import { ListAccountsUseCase } from "./application/use-cases/list-accounts/list-accounts.usecase";
+import { SetAccountCustomAttributesUseCase } from "./application/use-cases/set-account-custom-attributes/set-account-custom-attributes.usecase";
+import { GetAccountCustomAttributesUseCase } from "./application/use-cases/get-account-custom-attributes/get-account-custom-attributes.usecase";
 
 @Module({
-  imports: [DataModule, IdentityModule, KernelModule, PlatformModule],
+  imports: [
+    DataModule,
+    IdentityModule,
+    KernelModule,
+    PlatformModule,
+    PartyModule,
+    PlatformCustomAttributesModule,
+  ],
   controllers: [
     DealsHttpController,
     ActivitiesHttpController,
     TimelineHttpController,
     ChannelsHttpController,
+    LeadsController,
+    SequencesInternalController,
+    SequencesHttpController,
+    AccountsHttpController,
   ],
   providers: [
     ChannelCatalogService,
+    {
+      provide: COPILOT_TOOLS,
+      useClass: GetDealSummaryTool,
+      multi: true,
+    } as any,
+    {
+      provide: COPILOT_TOOLS,
+      useClass: CreateEmailDraftTool,
+      multi: true,
+    } as any,
+    {
+      provide: COPILOT_TOOLS,
+      useClass: RecommendNextStepTool,
+      multi: true,
+    } as any,
+    EnrollEntityUseCase,
+    RunSequenceStepsUseCase,
+    CreateSequenceUseCase, // Add this
+    ListSequencesUseCase,
     PrismaDealRepoAdapter,
     PrismaActivityRepoAdapter,
     { provide: DEAL_REPO_PORT, useExisting: PrismaDealRepoAdapter },
     { provide: ACTIVITY_REPO_PORT, useExisting: PrismaActivityRepoAdapter },
+    PrismaLeadRepoAdapter,
+    { provide: LEAD_REPO_PORT, useExisting: PrismaLeadRepoAdapter },
+    PrismaSequenceRepoAdapter,
+    PrismaEnrollmentRepoAdapter,
+    { provide: SEQUENCE_REPO_PORT, useExisting: PrismaSequenceRepoAdapter },
+    { provide: ENROLLMENT_REPO_PORT, useExisting: PrismaEnrollmentRepoAdapter },
+    PrismaAccountRepoAdapter,
+    { provide: ACCOUNT_REPO_PORT, useExisting: PrismaAccountRepoAdapter },
+    {
+      provide: CreateAccountUseCase,
+      useFactory: (
+        accountRepo: PrismaAccountRepoAdapter,
+        partyApp: PartyApplication,
+        clock: ClockPort,
+        idGen: IdGeneratorPort,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) =>
+        new CreateAccountUseCase({
+          accountRepo,
+          partyApp,
+          clock,
+          idGenerator: idGen,
+          logger: new NestLoggerAdapter(),
+          idempotency,
+          audit,
+          outbox,
+        }),
+      inject: [
+        ACCOUNT_REPO_PORT,
+        PartyApplication,
+        CLOCK_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
+    },
+    {
+      provide: UpdateAccountUseCase,
+      useFactory: (
+        accountRepo: PrismaAccountRepoAdapter,
+        partyApp: PartyApplication,
+        clock: ClockPort,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) =>
+        new UpdateAccountUseCase({
+          accountRepo,
+          partyApp,
+          clock,
+          logger: new NestLoggerAdapter(),
+          idempotency,
+          audit,
+          outbox,
+        }),
+      inject: [
+        ACCOUNT_REPO_PORT,
+        PartyApplication,
+        CLOCK_PORT_TOKEN,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
+    },
+    {
+      provide: GetAccountUseCase,
+      useFactory: (accountRepo: PrismaAccountRepoAdapter) =>
+        new GetAccountUseCase({ accountRepo, logger: new NestLoggerAdapter() }),
+      inject: [ACCOUNT_REPO_PORT],
+    },
+    {
+      provide: ListAccountsUseCase,
+      useFactory: (accountRepo: PrismaAccountRepoAdapter) =>
+        new ListAccountsUseCase({ accountRepo, logger: new NestLoggerAdapter() }),
+      inject: [ACCOUNT_REPO_PORT],
+    },
+    SetAccountCustomAttributesUseCase,
+    GetAccountCustomAttributesUseCase,
+    {
+      provide: CreateLeadUseCase,
+      useFactory: (
+        leadRepo: PrismaLeadRepoAdapter,
+        clock: ClockPort,
+        idGen: IdGeneratorPort,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) =>
+        new CreateLeadUseCase({
+          leadRepo,
+          clock,
+          idGenerator: idGen,
+          logger: new NestLoggerAdapter(),
+          idempotency,
+          audit,
+          outbox,
+        }),
+      inject: [
+        LEAD_REPO_PORT,
+        CLOCK_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
+    },
+    {
+      provide: ConvertLeadUseCase,
+      useFactory: (
+        leadRepo: PrismaLeadRepoAdapter,
+        partyApp: PartyApplication,
+        createDeal: CreateDealUseCase,
+        clock: ClockPort,
+        idGen: IdGeneratorPort,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) =>
+        new ConvertLeadUseCase({
+          leadRepo,
+          partyApp,
+          createDeal,
+          clock,
+          idGenerator: idGen,
+          logger: new NestLoggerAdapter(),
+          idempotency,
+          audit,
+          outbox,
+        }),
+      inject: [
+        LEAD_REPO_PORT,
+        PartyApplication,
+        CreateDealUseCase,
+        CLOCK_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
+    },
+    ListLeadsUseCase,
+    GetLeadUseCase,
     {
       provide: CreateDealUseCase,
       useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort, idGen: IdGeneratorPort) =>

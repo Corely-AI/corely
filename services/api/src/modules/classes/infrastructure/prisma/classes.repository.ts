@@ -44,6 +44,9 @@ import {
   findBillingInvoiceLinkByIdempotency,
   findBillingRunById,
   findBillingRunByMonth,
+  getInvoiceRecipientEmailsByIds,
+  getInvoiceStatusesByIds,
+  getBillingInvoiceSendProgress,
   listBillingRunsByMonths,
   isMonthLocked,
   listBillingInvoiceLinks,
@@ -247,6 +250,33 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     billingRunId: string
   ): Promise<ClassBillingInvoiceLinkEntity[]> {
     return listBillingInvoiceLinks(this.prisma, tenantId, workspaceId, billingRunId);
+  }
+
+  async getInvoiceStatusesByIds(workspaceId: string, invoiceIds: string[]) {
+    return getInvoiceStatusesByIds(this.prisma, workspaceId, invoiceIds);
+  }
+
+  async getInvoiceRecipientEmailsByIds(
+    tenantId: string,
+    workspaceId: string,
+    invoiceIds: string[]
+  ) {
+    return getInvoiceRecipientEmailsByIds(this.prisma, tenantId, workspaceId, invoiceIds);
+  }
+
+  async getBillingInvoiceSendProgress(
+    workspaceId: string,
+    invoiceIds: string[],
+    sentAfter: Date,
+    expectedInvoiceCount: number
+  ) {
+    return getBillingInvoiceSendProgress(
+      this.prisma,
+      workspaceId,
+      invoiceIds,
+      sentAfter,
+      expectedInvoiceCount
+    );
   }
 
   async findBillingInvoiceLinkByIdempotency(
