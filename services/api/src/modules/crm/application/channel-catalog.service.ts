@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import type { ChannelDefinition } from "@corely/contracts";
+import { PrismaService } from "@corely/data";
 
 const PLACEHOLDER_WHITELIST = [
   "firstName",
@@ -19,17 +20,31 @@ const PLACEHOLDER_WHITELIST = [
   "subject",
 ];
 
-const SAFE_SCHEMES = ["https://", "mailto:"];
+const SAFE_SCHEMES = ["https://", "mailto:", "sms:"];
 
 const DEFAULT_CHANNELS: ChannelDefinition[] = [
   {
     key: "whatsapp",
     label: "WhatsApp",
+    category: "MESSAGING",
     enabled: true,
     order: 1,
     iconKey: "whatsapp",
+    defaultProviderKey: "meta",
     requiredContactFields: ["phoneE164"],
-    capabilities: { open: true, copy: true, log: true, subject: false, attachments: false },
+    capabilities: {
+      canSendFromCRM: true,
+      canReceiveInbound: true,
+      hasDeliveryReceipts: true,
+      supportsThreads: true,
+      supportsAttachments: false,
+      manualOnly: false,
+      open: true,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
     action: {
       type: "deeplink",
       urlTemplate: "https://wa.me/{phoneE164}?text={encodedMessage}",
@@ -43,13 +58,81 @@ const DEFAULT_CHANNELS: ChannelDefinition[] = [
     ],
   },
   {
+    key: "sms",
+    label: "SMS",
+    category: "MESSAGING",
+    enabled: true,
+    order: 1.5,
+    iconKey: "message-square",
+    defaultProviderKey: "twilio",
+    requiredContactFields: ["phoneE164"],
+    capabilities: {
+      canSendFromCRM: true,
+      canReceiveInbound: true,
+      hasDeliveryReceipts: true,
+      supportsThreads: false,
+      supportsAttachments: false,
+      manualOnly: false,
+      open: false,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
+    action: {
+      type: "deeplink",
+      urlTemplate: "sms:{phoneE164}?body={encodedMessage}",
+    },
+    templates: [],
+  },
+  {
+    key: "in_app",
+    label: "In-App",
+    category: "INTERNAL",
+    enabled: true,
+    order: 1.6,
+    iconKey: "message-circle",
+    requiredContactFields: [],
+    capabilities: {
+      canSendFromCRM: true,
+      canReceiveInbound: true,
+      hasDeliveryReceipts: false,
+      supportsThreads: true,
+      supportsAttachments: true,
+      manualOnly: false,
+      open: false,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: true,
+    },
+    action: {
+      type: "deeplink",
+      urlTemplate: "https://app.corely.one/inbox?message={encodedMessage}",
+    },
+    templates: [],
+  },
+  {
     key: "linkedin",
     label: "LinkedIn",
+    category: "SOCIAL",
     enabled: true,
     order: 2,
     iconKey: "linkedin",
     requiredContactFields: ["profileUrl_linkedin"],
-    capabilities: { open: true, copy: true, log: true, subject: false, attachments: false },
+    capabilities: {
+      canSendFromCRM: false,
+      canReceiveInbound: false,
+      hasDeliveryReceipts: false,
+      supportsThreads: true,
+      supportsAttachments: false,
+      manualOnly: true,
+      open: true,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
     action: {
       type: "profileUrl",
       urlTemplate: "{profileUrl_linkedin}",
@@ -63,33 +146,195 @@ const DEFAULT_CHANNELS: ChannelDefinition[] = [
     ],
   },
   {
-    key: "facebook",
-    label: "Facebook",
+    key: "facebook_messenger",
+    label: "Facebook Messenger",
+    category: "SOCIAL",
     enabled: true,
     order: 2.5,
-    iconKey: "facebook",
-    requiredContactFields: ["profileUrl_facebook"],
-    capabilities: { open: true, copy: true, log: true, subject: false, attachments: false },
+    iconKey: "message-circle",
+    requiredContactFields: ["profileUrl_facebook_messenger"],
+    capabilities: {
+      canSendFromCRM: false,
+      canReceiveInbound: false,
+      hasDeliveryReceipts: false,
+      supportsThreads: true,
+      supportsAttachments: false,
+      manualOnly: true,
+      open: true,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
     action: {
       type: "profileUrl",
-      urlTemplate: "{profileUrl_facebook}",
+      urlTemplate: "{profileUrl_facebook_messenger}",
     },
     templates: [
       {
-        id: "facebook-intro",
+        id: "facebook-messenger-intro",
         name: "Intro",
         body: "Hi {firstName}, reaching out regarding {dealTitle}.",
       },
     ],
   },
   {
-    key: "email",
-    label: "Email",
+    key: "instagram_dm",
+    label: "Instagram DM",
+    category: "SOCIAL",
+    enabled: true,
+    order: 2.6,
+    iconKey: "instagram",
+    requiredContactFields: ["profileUrl_instagram_dm"],
+    capabilities: {
+      canSendFromCRM: false,
+      canReceiveInbound: false,
+      hasDeliveryReceipts: false,
+      supportsThreads: true,
+      supportsAttachments: false,
+      manualOnly: true,
+      open: true,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
+    action: {
+      type: "profileUrl",
+      urlTemplate: "{profileUrl_instagram_dm}",
+    },
+    templates: [],
+  },
+  {
+    key: "x_dm",
+    label: "X DM",
+    category: "SOCIAL",
+    enabled: true,
+    order: 2.7,
+    iconKey: "send",
+    requiredContactFields: ["profileUrl_x_dm"],
+    capabilities: {
+      canSendFromCRM: false,
+      canReceiveInbound: false,
+      hasDeliveryReceipts: false,
+      supportsThreads: true,
+      supportsAttachments: false,
+      manualOnly: true,
+      open: true,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
+    action: {
+      type: "profileUrl",
+      urlTemplate: "{profileUrl_x_dm}",
+    },
+    templates: [],
+  },
+  {
+    key: "telegram",
+    label: "Telegram",
+    category: "SOCIAL",
+    enabled: true,
+    order: 2.8,
+    iconKey: "message-circle",
+    requiredContactFields: ["profileUrl_telegram"],
+    capabilities: {
+      canSendFromCRM: false,
+      canReceiveInbound: false,
+      hasDeliveryReceipts: false,
+      supportsThreads: true,
+      supportsAttachments: false,
+      manualOnly: true,
+      open: true,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
+    action: {
+      type: "profileUrl",
+      urlTemplate: "{profileUrl_telegram}",
+    },
+    templates: [],
+  },
+  {
+    key: "wechat",
+    label: "WeChat",
+    category: "SOCIAL",
+    enabled: true,
+    order: 2.9,
+    iconKey: "message-circle",
+    requiredContactFields: ["profileUrl_wechat"],
+    capabilities: {
+      canSendFromCRM: false,
+      canReceiveInbound: false,
+      hasDeliveryReceipts: false,
+      supportsThreads: true,
+      supportsAttachments: false,
+      manualOnly: true,
+      open: true,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
+    action: {
+      type: "profileUrl",
+      urlTemplate: "{profileUrl_wechat}",
+    },
+    templates: [],
+  },
+  {
+    key: "line",
+    label: "LINE",
+    category: "SOCIAL",
     enabled: true,
     order: 3,
+    iconKey: "message-circle",
+    requiredContactFields: ["profileUrl_line"],
+    capabilities: {
+      canSendFromCRM: false,
+      canReceiveInbound: false,
+      hasDeliveryReceipts: false,
+      supportsThreads: true,
+      supportsAttachments: false,
+      manualOnly: true,
+      open: true,
+      copy: true,
+      log: true,
+      subject: false,
+      attachments: false,
+    },
+    action: {
+      type: "profileUrl",
+      urlTemplate: "{profileUrl_line}",
+    },
+    templates: [],
+  },
+  {
+    key: "email",
+    label: "Email",
+    category: "EMAIL",
+    enabled: true,
+    order: 4,
     iconKey: "email",
+    defaultProviderKey: "resend",
     requiredContactFields: ["email"],
-    capabilities: { open: true, copy: true, log: true, subject: true, attachments: false },
+    capabilities: {
+      canSendFromCRM: true,
+      canReceiveInbound: true,
+      hasDeliveryReceipts: true,
+      supportsThreads: true,
+      supportsAttachments: true,
+      manualOnly: false,
+      open: true,
+      copy: true,
+      log: true,
+      subject: true,
+      attachments: true,
+    },
     action: {
       type: "mailto",
       urlTemplate: "mailto:{email}?subject={subject}&body={encodedMessage}",
@@ -127,10 +372,70 @@ function validateUrlTemplate(url: string) {
 
 @Injectable()
 export class ChannelCatalogService {
+  constructor(private readonly prisma: PrismaService) {}
+
   async getChannels(): Promise<ChannelDefinition[]> {
-    for (const channel of DEFAULT_CHANNELS) {
+    let rows: Array<{
+      key: string;
+      displayName: string;
+      category: "EMAIL" | "MESSAGING" | "SOCIAL" | "INTERNAL";
+      capabilities: unknown;
+      defaultProviderKey: string | null;
+      enabled: boolean;
+    }> | null = null;
+
+    try {
+      rows = await this.prisma.channelRegistry.findMany({
+        where: { enabled: true },
+        orderBy: { key: "asc" },
+      });
+    } catch {
+      rows = null;
+    }
+
+    const defaultsByKey = new Map(DEFAULT_CHANNELS.map((channel) => [channel.key, channel]));
+    const source = rows && rows.length ? rows : null;
+
+    const channels = source
+      ? source.map((row) => {
+          const fallback = defaultsByKey.get(row.key);
+          return {
+            key: row.key,
+            label: row.displayName,
+            category: row.category,
+            enabled: row.enabled,
+            order: fallback?.order ?? 100,
+            iconKey: fallback?.iconKey,
+            requiredContactFields: fallback?.requiredContactFields ?? [],
+            defaultProviderKey: row.defaultProviderKey ?? fallback?.defaultProviderKey,
+            capabilities: {
+              ...(fallback?.capabilities ?? {
+                canSendFromCRM: false,
+                canReceiveInbound: false,
+                hasDeliveryReceipts: false,
+                supportsThreads: false,
+                supportsAttachments: false,
+                manualOnly: true,
+                open: true,
+                copy: true,
+                log: true,
+                subject: false,
+                attachments: false,
+              }),
+              ...(typeof row.capabilities === "object" && row.capabilities ? row.capabilities : {}),
+            },
+            action: fallback?.action ?? {
+              type: "profileUrl",
+              urlTemplate: "{profileUrl}",
+            },
+            templates: fallback?.templates ?? [],
+          } satisfies ChannelDefinition;
+        })
+      : DEFAULT_CHANNELS;
+
+    for (const channel of channels) {
       validateUrlTemplate(channel.action.urlTemplate);
     }
-    return DEFAULT_CHANNELS;
+    return channels;
   }
 }

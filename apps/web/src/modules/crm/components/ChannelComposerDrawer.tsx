@@ -48,6 +48,9 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
 
   const canCopy = channel?.capabilities.copy;
   const canOpen = channel?.capabilities.open;
+  const isSendCapable = Boolean(
+    channel?.capabilities.canSendFromCRM && !channel?.capabilities.manualOnly
+  );
 
   const openUrl = useMemo(() => {
     if (!channel) {
@@ -163,7 +166,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
           )}
           <Button variant="accent" onClick={handleLog} data-testid="crm-channel-log">
             <Send className="h-4 w-4 mr-1" />
-            {t("crm.channel.log")}
+            {isSendCapable ? t("common.save") : t("crm.channel.log")}
           </Button>
         </DrawerFooter>
       </DrawerContent>

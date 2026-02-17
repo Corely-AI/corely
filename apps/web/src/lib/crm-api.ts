@@ -25,7 +25,14 @@ import type {
   AccountCustomAttributes,
   SetAccountCustomAttributesInput,
 } from "@corely/contracts";
-import type { LogMessageInput, LogMessageOutput, ListChannelsOutput } from "@corely/contracts";
+import type {
+  CreateCommunicationDraftInput,
+  LogCommunicationInput,
+  LogMessageInput,
+  LogMessageOutput,
+  SendCommunicationInput,
+  ListChannelsOutput,
+} from "@corely/contracts";
 import { apiClient } from "./api-client";
 
 const unwrapDealResponse = (response: unknown): DealDto => {
@@ -176,6 +183,11 @@ export const crmApi = {
     dealId?: string;
     type?: string;
     status?: string;
+    channelKey?: string;
+    direction?: string;
+    communicationStatus?: string;
+    activityDateFrom?: string;
+    activityDateTo?: string;
     assignedToUserId?: string;
     cursor?: string;
     pageSize?: number;
@@ -192,6 +204,21 @@ export const crmApi = {
     }
     if (params?.status) {
       queryParams.append("status", params.status);
+    }
+    if (params?.channelKey) {
+      queryParams.append("channelKey", params.channelKey);
+    }
+    if (params?.direction) {
+      queryParams.append("direction", params.direction);
+    }
+    if (params?.communicationStatus) {
+      queryParams.append("communicationStatus", params.communicationStatus);
+    }
+    if (params?.activityDateFrom) {
+      queryParams.append("activityDateFrom", params.activityDateFrom);
+    }
+    if (params?.activityDateTo) {
+      queryParams.append("activityDateTo", params.activityDateTo);
     }
     if (params?.assignedToUserId) {
       queryParams.append("assignedToUserId", params.assignedToUserId);
@@ -247,6 +274,34 @@ export const crmApi = {
   async logMessage(input: LogMessageInput): Promise<ActivityDto> {
     const response = await apiClient.post<LogMessageOutput>(
       `/crm/deals/${input.dealId}/messages`,
+      input
+    );
+    return response.activity;
+  },
+
+  async createCommunicationDraft(input: CreateCommunicationDraftInput): Promise<ActivityDto> {
+    const response = await apiClient.post<{ activity: ActivityDto }>(
+      "/crm/communications/draft",
+      input
+    );
+    return response.activity;
+  },
+
+  async sendCommunication(id: string, providerKey?: string): Promise<ActivityDto> {
+    const payload: Partial<SendCommunicationInput> = {};
+    if (providerKey) {
+      payload.providerKey = providerKey;
+    }
+    const response = await apiClient.post<{ activity: ActivityDto }>(
+      `/crm/communications/${id}/send`,
+      payload
+    );
+    return response.activity;
+  },
+
+  async logCommunication(input: LogCommunicationInput): Promise<ActivityDto> {
+    const response = await apiClient.post<{ activity: ActivityDto }>(
+      "/crm/communications/log",
       input
     );
     return response.activity;

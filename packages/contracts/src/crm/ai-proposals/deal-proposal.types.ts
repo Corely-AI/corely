@@ -44,7 +44,7 @@ export const DealSummarySchema = z.object({
   suggestedTasks: z.array(
     z.object({
       subject: z.string(),
-      type: z.enum(["NOTE", "TASK", "CALL", "MEETING", "EMAIL_DRAFT"]),
+      type: z.enum(["NOTE", "TASK", "CALL", "MEETING", "COMMUNICATION"]),
       dueAt: z.string().optional(),
     })
   ),

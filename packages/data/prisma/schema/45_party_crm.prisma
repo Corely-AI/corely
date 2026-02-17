@@ -62,7 +62,8 @@ enum ActivityType {
   TASK
   CALL
   MEETING
-  EMAIL_DRAFT
+  COMMUNICATION
+  SYSTEM_EVENT
   @@schema("crm")
 }
 
@@ -70,6 +71,38 @@ enum ActivityStatus {
   OPEN
   COMPLETED
   CANCELED
+  @@schema("crm")
+}
+
+enum ActivityRecordSource {
+  MANUAL
+  SYSTEM
+  INTEGRATION
+  @@schema("crm")
+}
+
+enum CommunicationDirection {
+  INBOUND
+  OUTBOUND
+  @@schema("crm")
+}
+
+enum CommunicationLifecycleStatus {
+  LOGGED
+  DRAFT
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  @@schema("crm")
+}
+
+enum ChannelCategory {
+  EMAIL
+  MESSAGING
+  SOCIAL
+  INTERNAL
   @@schema("crm")
 }
 
@@ -253,7 +286,24 @@ model Activity {
   subject          String
   body             String?
   channelKey       String?
-  messageDirection String?
+  direction        CommunicationDirection?
+  communicationStatus CommunicationLifecycleStatus?
+  activityDate     DateTime?      @db.Timestamptz(6)
+  ownerId          String?
+  recordSource     ActivityRecordSource?
+  recordSourceDetails Json?
+  toRecipients     Json?
+  ccRecipients     Json?
+  participants     Json?
+  threadKey        String?
+  externalThreadId String?
+  externalMessageId String?
+  providerKey      String?
+  errorCode        String?
+  errorMessage     String?
+  rawProviderPayload Json?
+  attachments      Json?
+  messageDirection String? // deprecated legacy alias
   messageTo        String?
   openUrl          String?
   partyId          String?
@@ -276,11 +326,48 @@ model Activity {
 
   party Party? @relation(fields: [partyId], references: [id], onDelete: Cascade)
   deal  Deal?  @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  webhookEvents CommunicationWebhookEvent[]
 
   @@index([tenantId, partyId, createdAt])
   @@index([tenantId, dealId, createdAt])
   @@index([tenantId, assignedToUserId, status])
+  @@index([tenantId, channelKey, direction, communicationStatus])
+  @@index([tenantId, externalMessageId])
+  @@index([tenantId, activityDate])
   @@index([tenantId, createdAt])
+  @@schema("crm")
+}
+
+model ChannelRegistry {
+  key                String          @id
+  displayName        String
+  category           ChannelCategory
+  capabilities       Json
+  defaultProviderKey String?
+  enabled            Boolean         @default(true)
+  createdAt          DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime        @updatedAt @db.Timestamptz(6)
+
+  @@schema("crm")
+}
+
+model CommunicationWebhookEvent {
+  id                String   @id @default(cuid())
+  tenantId          String
+  providerKey       String
+  channelKey        String
+  externalMessageId String
+  eventType         String
+  eventTimestamp    DateTime @db.Timestamptz(6)
+  payload           Json
+  receivedAt        DateTime @default(now()) @db.Timestamptz(6)
+  activityId        String?
+
+  activity Activity? @relation(fields: [activityId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, providerKey, externalMessageId, eventType, eventTimestamp], map: "crm_webhook_event_dedupe")
+  @@index([tenantId, externalMessageId, eventTimestamp])
+  @@index([tenantId, providerKey, channelKey])
   @@schema("crm")
 }
 

@@ -26,11 +26,13 @@ import { Calendar } from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { crmApi } from "@/lib/crm-api";
 import { toast } from "sonner";
+import { useCrmChannels } from "../hooks/useChannels";
 
-const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "EMAIL_DRAFT"] as const;
+const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "COMMUNICATION"] as const;
 
 export default function NewActivityPage() {
   const { t, i18n } = useTranslation();
+  const { data: channels = [] } = useCrmChannels();
   const activityFormSchema = useMemo(
     () =>
       z
@@ -41,6 +43,9 @@ export default function NewActivityPage() {
           partyId: z.string().optional(),
           dealId: z.string().optional(),
           dueAt: z.string().optional(),
+          channelKey: z.string().optional(),
+          direction: z.enum(["INBOUND", "OUTBOUND"]).optional(),
+          communicationStatus: z.enum(["LOGGED", "DRAFT"]).optional(),
         })
         .refine((value) => Boolean(value.partyId || value.dealId), {
           message: t("crm.activity.linkRequired"),
@@ -61,6 +66,9 @@ export default function NewActivityPage() {
       partyId: "",
       dealId: "",
       dueAt: "",
+      channelKey: "email",
+      direction: "OUTBOUND",
+      communicationStatus: "LOGGED",
     },
   });
 
@@ -77,7 +85,12 @@ export default function NewActivityPage() {
         body: values.body || undefined,
         partyId: values.partyId || undefined,
         dealId: values.dealId || undefined,
-        dueAt: dueAtIso,
+        dueAt: values.type === "COMMUNICATION" ? undefined : dueAtIso,
+        channelKey: values.type === "COMMUNICATION" ? values.channelKey : undefined,
+        direction: values.type === "COMMUNICATION" ? values.direction : undefined,
+        communicationStatus:
+          values.type === "COMMUNICATION" ? values.communicationStatus : undefined,
+        activityDate: values.type === "COMMUNICATION" ? dueAtIso : undefined,
       });
     },
     onSuccess: () => {
@@ -96,6 +109,7 @@ export default function NewActivityPage() {
   };
 
   const dueAtRaw = form.watch("dueAt");
+  const selectedType = form.watch("type");
   const parsedDueAt = dueAtRaw ? new Date(dueAtRaw) : undefined;
   const dueAt = parsedDueAt && !Number.isNaN(parsedDueAt.getTime()) ? parsedDueAt : undefined;
   const dueTime = dueAt ? dueAt.toISOString().slice(11, 16) : "";
@@ -259,6 +273,87 @@ export default function NewActivityPage() {
                     </FormItem>
                   )}
                 />
+
+                {selectedType === "COMMUNICATION" && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="channelKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("crm.activity.channel")}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="crm-new-activity-channel">
+                                <SelectValue placeholder={t("crm.activity.channel")} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {channels.map((channel) => (
+                                <SelectItem key={channel.key} value={channel.key}>
+                                  {channel.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="direction"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("crm.activity.direction")}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="crm-new-activity-direction">
+                                <SelectValue placeholder={t("crm.activity.direction")} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="OUTBOUND">
+                                {t("crm.activity.directionOutbound")}
+                              </SelectItem>
+                              <SelectItem value="INBOUND">
+                                {t("crm.activity.directionInbound")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="communicationStatus"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("crm.activity.communicationStatus")}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="crm-new-activity-communication-status">
+                                <SelectValue placeholder={t("crm.activity.communicationStatus")} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="LOGGED">
+                                {t("crm.activity.communicationLogged")}
+                              </SelectItem>
+                              <SelectItem value="DRAFT">
+                                {t("crm.activity.communicationDraft")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
 
                 <FormField
                   control={form.control}

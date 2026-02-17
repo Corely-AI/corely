@@ -17,6 +17,10 @@ import {
   ActivitiesHttpController,
   TimelineHttpController,
 } from "./adapters/http/activities.controller";
+import {
+  CommunicationsHttpController,
+  CommunicationsWebhookController,
+} from "./adapters/http/communications.controller";
 import { PrismaDealRepoAdapter } from "./infrastructure/prisma/prisma-deal-repo.adapter";
 import { PrismaActivityRepoAdapter } from "./infrastructure/prisma/prisma-activity-repo.adapter";
 import { CLOCK_PORT_TOKEN, type ClockPort } from "../../shared/ports/clock.port";
@@ -41,6 +45,10 @@ import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-tim
 import { ChannelCatalogService } from "./application/channel-catalog.service";
 import { ChannelsHttpController } from "./adapters/http/channels.controller";
 import { LogMessageUseCase } from "./application/use-cases/log-message/log-message.usecase";
+import { CreateCommunicationDraftUseCase } from "./application/use-cases/create-communication-draft/create-communication-draft.usecase";
+import { SendCommunicationUseCase } from "./application/use-cases/send-communication/send-communication.usecase";
+import { LogCommunicationUseCase } from "./application/use-cases/log-communication/log-communication.usecase";
+import { ProcessCommunicationWebhookUseCase } from "./application/use-cases/process-communication-webhook/process-communication-webhook.usecase";
 import { CreateLeadUseCase } from "./application/use-cases/create-lead/create-lead.usecase";
 import { ConvertLeadUseCase } from "./application/use-cases/convert-lead/convert-lead.usecase";
 import { ListLeadsUseCase } from "./application/use-cases/list-leads/list-leads.usecase";
@@ -90,6 +98,8 @@ import { GetAccountCustomAttributesUseCase } from "./application/use-cases/get-a
     DealsHttpController,
     ActivitiesHttpController,
     TimelineHttpController,
+    CommunicationsHttpController,
+    CommunicationsWebhookController,
     ChannelsHttpController,
     LeadsController,
     SequencesInternalController,
@@ -327,6 +337,39 @@ import { GetAccountCustomAttributesUseCase } from "./application/use-cases/get-a
       inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
     },
     {
+      provide: CreateCommunicationDraftUseCase,
+      useFactory: (
+        activityRepo: PrismaActivityRepoAdapter,
+        clock: ClockPort,
+        idGen: IdGeneratorPort
+      ) => new CreateCommunicationDraftUseCase(activityRepo, clock, idGen, new NestLoggerAdapter()),
+      inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
+    },
+    {
+      provide: SendCommunicationUseCase,
+      useFactory: (
+        activityRepo: PrismaActivityRepoAdapter,
+        clock: ClockPort,
+        idGen: IdGeneratorPort
+      ) => new SendCommunicationUseCase(activityRepo, clock, idGen, new NestLoggerAdapter()),
+      inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
+    },
+    {
+      provide: LogCommunicationUseCase,
+      useFactory: (
+        activityRepo: PrismaActivityRepoAdapter,
+        clock: ClockPort,
+        idGen: IdGeneratorPort
+      ) => new LogCommunicationUseCase(activityRepo, clock, idGen, new NestLoggerAdapter()),
+      inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN, ID_GENERATOR_TOKEN],
+    },
+    {
+      provide: ProcessCommunicationWebhookUseCase,
+      useFactory: (activityRepo: PrismaActivityRepoAdapter, clock: ClockPort) =>
+        new ProcessCommunicationWebhookUseCase(activityRepo, clock, new NestLoggerAdapter()),
+      inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN],
+    },
+    {
       provide: UpdateActivityUseCase,
       useFactory: (activityRepo: PrismaActivityRepoAdapter, clock: ClockPort) =>
         new UpdateActivityUseCase(activityRepo, clock, new NestLoggerAdapter()),
@@ -365,7 +408,11 @@ import { GetAccountCustomAttributesUseCase } from "./application/use-cases/get-a
         completeActivity: CompleteActivityUseCase,
         listActivities: ListActivitiesUseCase,
         getTimeline: GetTimelineUseCase,
-        logMessage: LogMessageUseCase
+        logMessage: LogMessageUseCase,
+        createCommunicationDraft: CreateCommunicationDraftUseCase,
+        sendCommunication: SendCommunicationUseCase,
+        logCommunication: LogCommunicationUseCase,
+        processCommunicationWebhook: ProcessCommunicationWebhookUseCase
       ) =>
         new CrmApplication(
           createDeal,
@@ -380,7 +427,11 @@ import { GetAccountCustomAttributesUseCase } from "./application/use-cases/get-a
           completeActivity,
           listActivities,
           getTimeline,
-          logMessage
+          logMessage,
+          createCommunicationDraft,
+          sendCommunication,
+          logCommunication,
+          processCommunicationWebhook
         ),
       inject: [
         CreateDealUseCase,
@@ -396,6 +447,10 @@ import { GetAccountCustomAttributesUseCase } from "./application/use-cases/get-a
         ListActivitiesUseCase,
         GetTimelineUseCase,
         LogMessageUseCase,
+        CreateCommunicationDraftUseCase,
+        SendCommunicationUseCase,
+        LogCommunicationUseCase,
+        ProcessCommunicationWebhookUseCase,
       ],
     },
   ],

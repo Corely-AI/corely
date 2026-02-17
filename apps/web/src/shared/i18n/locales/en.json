@@ -1179,12 +1179,20 @@
         "canceled": "Canceled",
         "scheduled": "Scheduled"
       },
+      "channel": "Channel",
+      "direction": "Direction",
+      "directionOutbound": "Outbound",
+      "directionInbound": "Inbound",
+      "communicationStatus": "Communication Status",
+      "communicationLogged": "Logged",
+      "communicationDraft": "Draft",
       "types": {
         "note": "Note",
         "task": "Task",
         "call": "Call",
         "meeting": "Meeting",
-        "email_draft": "Email Draft"
+        "communication": "Communication",
+        "system_event": "System Event"
       },
       "addTitle": "Add Activity",
       "addSubtitle": "Log a quick update or task",
@@ -1204,6 +1212,7 @@
         "calls": "Calls",
         "meetings": "Meetings",
         "tasks": "Tasks",
+        "communications": "Communications",
         "stage": "Stages"
       }
     },
@@ -1248,6 +1257,9 @@
       "tipsOne": "Keep your deal titles descriptive yet concise.",
       "tipsTwo": "Update the probability as the deal progresses through stages.",
       "tipsThree": "Set a realistic expected close date for better forecasting.",
+      "quickActions": "Quick Actions",
+      "message": "Message",
+      "quickNote": "Quick Note",
       "stages": {
         "lead": "Lead",
         "qualified": "Qualified",

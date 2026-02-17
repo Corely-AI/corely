@@ -2,7 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { z } from "zod";
 import { CreateActivityUseCase } from "../../application/use-cases/create-activity/create-activity.usecase";
 import { DomainToolPort, ToolKind } from "../../../ai-copilot/application/ports/domain-tool.port";
-import { ActivityTypeSchema } from "@corely/contracts";
 
 const InputSchema = z.object({
   dealId: z.string().optional().describe("ID of the deal to link context"),
@@ -27,11 +26,15 @@ export class CreateEmailDraftTool implements DomainToolPort {
 
     const result = await this.createActivity.execute(
       {
-        type: "EMAIL_DRAFT",
+        type: "COMMUNICATION",
+        channelKey: "email",
+        direction: "OUTBOUND",
+        communicationStatus: "DRAFT",
         subject: input.subject,
         body: input.body,
         dealId: input.dealId,
         partyId: input.partyId,
+        to: input.recipientEmail ? [input.recipientEmail] : undefined,
         metadata: {
           recipientEmail: input.recipientEmail,
         },
@@ -40,8 +43,8 @@ export class CreateEmailDraftTool implements DomainToolPort {
       { tenantId: params.tenantId }
     );
 
-    if (!result.ok) {
-      throw (result as any).error;
+    if ("error" in result) {
+      throw result.error;
     }
 
     return {

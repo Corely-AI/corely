@@ -38,6 +38,11 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
             {grouped[date].map((item) => {
               const isStageChange = item.type === "STAGE_TRANSITION";
               const isActivity = item.type === "ACTIVITY";
+              const communicationStatus =
+                item.status ??
+                (typeof item.metadata?.communicationStatus === "string"
+                  ? item.metadata.communicationStatus
+                  : undefined);
               const activityType =
                 isActivity && item.metadata && "activityType" in item.metadata
                   ? (item.metadata.activityType as ActivityType | undefined)
@@ -67,6 +72,11 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                             ? t("crm.timeline.channelMessage", { channel: item.channelKey })
                             : item.subject}
                         </h4>
+                        {communicationStatus ? (
+                          <span className="inline-flex mt-1 text-[11px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
+                            {communicationStatus}
+                          </span>
+                        ) : null}
                         {item.body && (
                           <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                             {item.body}

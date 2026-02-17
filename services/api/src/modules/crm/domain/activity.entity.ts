@@ -1,5 +1,15 @@
-export type ActivityType = "NOTE" | "TASK" | "CALL" | "MEETING" | "EMAIL_DRAFT";
+export type ActivityType = "NOTE" | "TASK" | "CALL" | "MEETING" | "COMMUNICATION" | "SYSTEM_EVENT";
 export type ActivityStatus = "OPEN" | "COMPLETED" | "CANCELED";
+export type CommunicationDirection = "INBOUND" | "OUTBOUND";
+export type CommunicationStatus =
+  | "LOGGED"
+  | "DRAFT"
+  | "QUEUED"
+  | "SENT"
+  | "DELIVERED"
+  | "READ"
+  | "FAILED";
+export type ActivityRecordSource = "MANUAL" | "SYSTEM" | "INTEGRATION";
 
 type ActivityProps = {
   id: string;
@@ -8,37 +18,28 @@ type ActivityProps = {
   subject: string;
   body: string | null;
   channelKey: string | null;
-  messageDirection: string | null;
-  messageTo: string | null;
+  direction: CommunicationDirection | null;
+  communicationStatus: CommunicationStatus | null;
+  messageDirection: string | null; // deprecated alias
+  messageTo: string | null; // deprecated alias
   openUrl: string | null;
   partyId: string | null;
   dealId: string | null;
-  dueAt: Date | null;
-  completedAt: Date | null;
-  status: ActivityStatus;
-  assignedToUserId: string | null;
-  createdByUserId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  outcome?: string | null;
-  durationSeconds?: number | null;
-  location?: string | null;
-  attendees?: any | null; // Keep flexible as any/unknown
-  metadata?: any | null;
-};
-
-export class ActivityEntity {
-  id: string;
-  tenantId: string;
-  type: ActivityType;
-  subject: string;
-  body: string | null;
-  channelKey: string | null;
-  messageDirection: string | null;
-  messageTo: string | null;
-  openUrl: string | null;
-  partyId: string | null;
-  dealId: string | null;
+  activityDate: Date | null;
+  ownerId: string | null;
+  recordSource: ActivityRecordSource | null;
+  recordSourceDetails: Record<string, unknown> | null;
+  toRecipients: string[] | null;
+  ccRecipients: string[] | null;
+  participants: string[] | null;
+  threadKey: string | null;
+  externalThreadId: string | null;
+  externalMessageId: string | null;
+  providerKey: string | null;
+  errorCode: string | null;
+  errorMessage: string | null;
+  rawProviderPayload: Record<string, unknown> | null;
+  attachments: Array<Record<string, unknown>> | null;
   dueAt: Date | null;
   completedAt: Date | null;
   status: ActivityStatus;
@@ -49,19 +50,69 @@ export class ActivityEntity {
   outcome: string | null;
   durationSeconds: number | null;
   location: string | null;
-  attendees: any | null;
-  metadata: any | null;
+  attendees: unknown[] | null;
+  metadata: Record<string, unknown> | null;
+};
+
+export class ActivityEntity {
+  id: string;
+  tenantId: string;
+  type: ActivityType;
+  subject: string;
+  body: string | null;
+  channelKey: string | null;
+  direction: CommunicationDirection | null;
+  communicationStatus: CommunicationStatus | null;
+  messageDirection: string | null;
+  messageTo: string | null;
+  openUrl: string | null;
+  partyId: string | null;
+  dealId: string | null;
+  activityDate: Date | null;
+  ownerId: string | null;
+  recordSource: ActivityRecordSource | null;
+  recordSourceDetails: Record<string, unknown> | null;
+  toRecipients: string[] | null;
+  ccRecipients: string[] | null;
+  participants: string[] | null;
+  threadKey: string | null;
+  externalThreadId: string | null;
+  externalMessageId: string | null;
+  providerKey: string | null;
+  errorCode: string | null;
+  errorMessage: string | null;
+  rawProviderPayload: Record<string, unknown> | null;
+  attachments: Array<Record<string, unknown>> | null;
+  dueAt: Date | null;
+  completedAt: Date | null;
+  status: ActivityStatus;
+  assignedToUserId: string | null;
+  createdByUserId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  outcome: string | null;
+  durationSeconds: number | null;
+  location: string | null;
+  attendees: unknown[] | null;
+  metadata: Record<string, unknown> | null;
 
   constructor(props: ActivityProps) {
-    // Validate required fields
     if (!props.subject.trim()) {
       throw new Error("Activity subject is required");
     }
-
-    // Validate that at least one context is provided (partyId or dealId)
-    // Relaxed for now as we might have global tasks, but strict per previous logic
     if (!props.partyId && !props.dealId) {
       throw new Error("Activity must be associated with either a party or a deal");
+    }
+    if (props.type === "COMMUNICATION") {
+      if (!props.channelKey) {
+        throw new Error("Communication activity requires channelKey");
+      }
+      if (!props.direction) {
+        throw new Error("Communication activity requires direction");
+      }
+      if (!props.communicationStatus) {
+        throw new Error("Communication activity requires communicationStatus");
+      }
     }
 
     this.id = props.id;
@@ -70,11 +121,28 @@ export class ActivityEntity {
     this.subject = props.subject;
     this.body = props.body;
     this.channelKey = props.channelKey;
+    this.direction = props.direction;
+    this.communicationStatus = props.communicationStatus;
     this.messageDirection = props.messageDirection;
     this.messageTo = props.messageTo;
     this.openUrl = props.openUrl;
     this.partyId = props.partyId;
     this.dealId = props.dealId;
+    this.activityDate = props.activityDate;
+    this.ownerId = props.ownerId;
+    this.recordSource = props.recordSource;
+    this.recordSourceDetails = props.recordSourceDetails;
+    this.toRecipients = props.toRecipients;
+    this.ccRecipients = props.ccRecipients;
+    this.participants = props.participants;
+    this.threadKey = props.threadKey;
+    this.externalThreadId = props.externalThreadId;
+    this.externalMessageId = props.externalMessageId;
+    this.providerKey = props.providerKey;
+    this.errorCode = props.errorCode;
+    this.errorMessage = props.errorMessage;
+    this.rawProviderPayload = props.rawProviderPayload;
+    this.attachments = props.attachments;
     this.dueAt = props.dueAt;
     this.completedAt = props.completedAt;
     this.status = props.status;
@@ -82,11 +150,11 @@ export class ActivityEntity {
     this.createdByUserId = props.createdByUserId;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
-    this.outcome = props.outcome ?? null;
-    this.durationSeconds = props.durationSeconds ?? null;
-    this.location = props.location ?? null;
-    this.attendees = props.attendees ?? null;
-    this.metadata = props.metadata ?? null;
+    this.outcome = props.outcome;
+    this.durationSeconds = props.durationSeconds;
+    this.location = props.location;
+    this.attendees = props.attendees;
+    this.metadata = props.metadata;
   }
 
   static create(params: {
@@ -96,11 +164,28 @@ export class ActivityEntity {
     subject: string;
     body?: string | null;
     channelKey?: string | null;
+    direction?: CommunicationDirection | null;
+    communicationStatus?: CommunicationStatus | null;
     messageDirection?: string | null;
     messageTo?: string | null;
     openUrl?: string | null;
     partyId?: string | null;
     dealId?: string | null;
+    activityDate?: Date | null;
+    ownerId?: string | null;
+    recordSource?: ActivityRecordSource | null;
+    recordSourceDetails?: Record<string, unknown> | null;
+    toRecipients?: string[] | null;
+    ccRecipients?: string[] | null;
+    participants?: string[] | null;
+    threadKey?: string | null;
+    externalThreadId?: string | null;
+    externalMessageId?: string | null;
+    providerKey?: string | null;
+    errorCode?: string | null;
+    errorMessage?: string | null;
+    rawProviderPayload?: Record<string, unknown> | null;
+    attachments?: Array<Record<string, unknown>> | null;
     dueAt?: Date | null;
     assignedToUserId?: string | null;
     createdByUserId?: string | null;
@@ -108,18 +193,35 @@ export class ActivityEntity {
     outcome?: string | null;
     durationSeconds?: number | null;
     location?: string | null;
-    attendees?: any | null;
-    metadata?: any | null;
+    attendees?: unknown[] | null;
+    metadata?: Record<string, unknown> | null;
   }) {
     return new ActivityEntity({
       ...params,
       body: params.body ?? null,
       channelKey: params.channelKey ?? null,
-      messageDirection: params.messageDirection ?? null,
-      messageTo: params.messageTo ?? null,
+      direction: params.direction ?? null,
+      communicationStatus: params.communicationStatus ?? null,
+      messageDirection: params.messageDirection ?? params.direction?.toLowerCase() ?? null,
+      messageTo: params.messageTo ?? params.toRecipients?.at(0) ?? null,
       openUrl: params.openUrl ?? null,
       partyId: params.partyId ?? null,
       dealId: params.dealId ?? null,
+      activityDate: params.activityDate ?? params.createdAt,
+      ownerId: params.ownerId ?? params.assignedToUserId ?? null,
+      recordSource: params.recordSource ?? "MANUAL",
+      recordSourceDetails: params.recordSourceDetails ?? null,
+      toRecipients: params.toRecipients ?? null,
+      ccRecipients: params.ccRecipients ?? null,
+      participants: params.participants ?? null,
+      threadKey: params.threadKey ?? null,
+      externalThreadId: params.externalThreadId ?? null,
+      externalMessageId: params.externalMessageId ?? null,
+      providerKey: params.providerKey ?? null,
+      errorCode: params.errorCode ?? null,
+      errorMessage: params.errorMessage ?? null,
+      rawProviderPayload: params.rawProviderPayload ?? null,
+      attachments: params.attachments ?? null,
       dueAt: params.dueAt ?? null,
       assignedToUserId: params.assignedToUserId ?? null,
       createdByUserId: params.createdByUserId ?? null,
@@ -146,6 +248,20 @@ export class ActivityEntity {
         | "durationSeconds"
         | "location"
         | "attendees"
+        | "channelKey"
+        | "direction"
+        | "communicationStatus"
+        | "toRecipients"
+        | "ccRecipients"
+        | "participants"
+        | "threadKey"
+        | "externalThreadId"
+        | "externalMessageId"
+        | "providerKey"
+        | "errorCode"
+        | "errorMessage"
+        | "rawProviderPayload"
+        | "activityDate"
         | "metadata"
       >
     >,
@@ -172,6 +288,7 @@ export class ActivityEntity {
     }
     if (patch.assignedToUserId !== undefined) {
       this.assignedToUserId = patch.assignedToUserId;
+      this.ownerId = patch.assignedToUserId;
     }
     if (patch.outcome !== undefined) {
       this.outcome = patch.outcome;
@@ -185,10 +302,93 @@ export class ActivityEntity {
     if (patch.attendees !== undefined) {
       this.attendees = patch.attendees;
     }
+    if (patch.channelKey !== undefined) {
+      this.channelKey = patch.channelKey;
+    }
+    if (patch.direction !== undefined) {
+      this.direction = patch.direction;
+      this.messageDirection = patch.direction ? patch.direction.toLowerCase() : null;
+    }
+    if (patch.communicationStatus !== undefined) {
+      this.communicationStatus = patch.communicationStatus;
+    }
+    if (patch.toRecipients !== undefined) {
+      this.toRecipients = patch.toRecipients;
+      this.messageTo = patch.toRecipients?.at(0) ?? null;
+    }
+    if (patch.ccRecipients !== undefined) {
+      this.ccRecipients = patch.ccRecipients;
+    }
+    if (patch.participants !== undefined) {
+      this.participants = patch.participants;
+    }
+    if (patch.threadKey !== undefined) {
+      this.threadKey = patch.threadKey;
+    }
+    if (patch.externalThreadId !== undefined) {
+      this.externalThreadId = patch.externalThreadId;
+    }
+    if (patch.externalMessageId !== undefined) {
+      this.externalMessageId = patch.externalMessageId;
+    }
+    if (patch.providerKey !== undefined) {
+      this.providerKey = patch.providerKey;
+    }
+    if (patch.errorCode !== undefined) {
+      this.errorCode = patch.errorCode;
+    }
+    if (patch.errorMessage !== undefined) {
+      this.errorMessage = patch.errorMessage;
+    }
+    if (patch.rawProviderPayload !== undefined) {
+      this.rawProviderPayload = patch.rawProviderPayload;
+    }
+    if (patch.activityDate !== undefined) {
+      this.activityDate = patch.activityDate;
+    }
     if (patch.metadata !== undefined) {
       this.metadata = patch.metadata;
     }
 
+    this.touch(now);
+  }
+
+  setCommunicationStatus(
+    status: CommunicationStatus,
+    now: Date,
+    options?: {
+      providerKey?: string | null;
+      externalMessageId?: string | null;
+      externalThreadId?: string | null;
+      errorCode?: string | null;
+      errorMessage?: string | null;
+      rawProviderPayload?: Record<string, unknown> | null;
+    }
+  ) {
+    if (this.type !== "COMMUNICATION") {
+      throw new Error("Only communication activities can have communication status");
+    }
+    this.communicationStatus = status;
+    if (options) {
+      if (options.providerKey !== undefined) {
+        this.providerKey = options.providerKey;
+      }
+      if (options.externalMessageId !== undefined) {
+        this.externalMessageId = options.externalMessageId;
+      }
+      if (options.externalThreadId !== undefined) {
+        this.externalThreadId = options.externalThreadId;
+      }
+      if (options.errorCode !== undefined) {
+        this.errorCode = options.errorCode;
+      }
+      if (options.errorMessage !== undefined) {
+        this.errorMessage = options.errorMessage;
+      }
+      if (options.rawProviderPayload !== undefined) {
+        this.rawProviderPayload = options.rawProviderPayload;
+      }
+    }
     this.touch(now);
   }
 

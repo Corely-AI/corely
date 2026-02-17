@@ -1169,12 +1169,20 @@
         "canceled": "Đã hủy",
         "scheduled": "Đã lên lịch"
       },
+      "channel": "Kênh",
+      "direction": "Chiều",
+      "directionOutbound": "Gửi đi",
+      "directionInbound": "Nhận vào",
+      "communicationStatus": "Trạng thái liên lạc",
+      "communicationLogged": "Đã ghi nhận",
+      "communicationDraft": "Bản nháp",
       "types": {
         "note": "Ghi chú",
         "task": "Nhiệm vụ",
         "call": "Cuộc gọi",
         "meeting": "Cuộc họp",
-        "email_draft": "Thư nháp"
+        "communication": "Liên lạc",
+        "system_event": "Sự kiện hệ thống"
       },
       "addTitle": "Thêm hoạt động",
       "addSubtitle": "Ghi nhanh một cập nhật hoặc nhiệm vụ",
@@ -1194,6 +1202,7 @@
         "calls": "Cuộc gọi",
         "meetings": "Cuộc họp",
         "tasks": "Nhiệm vụ",
+        "communications": "Liên lạc",
         "stage": "Giai đoạn"
       }
     },
@@ -1238,6 +1247,9 @@
       "tipsOne": "Giữ tiêu đề cơ hội mô tả nhưng súc tích.",
       "tipsTwo": "Cập nhật xác suất khi cơ hội tiến triển qua các giai đoạn.",
       "tipsThree": "Đặt ngày đóng dự kiến thực tế để dự báo tốt hơn.",
+      "quickActions": "Thao tác nhanh",
+      "message": "Tin nhắn",
+      "quickNote": "Ghi chú nhanh",
       "stages": {
         "lead": "Tiềm năng",
         "qualified": "Đủ điều kiện",

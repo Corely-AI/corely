@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@corely/ui";
 import { Button } from "@corely/ui";
@@ -61,6 +61,7 @@ export default function DealDetailPage() {
   const navigate = useNavigate();
   const [detailsEditing, setDetailsEditing] = useState(false);
   const [timelineFilter, setTimelineFilter] = useState<TimelineFilter>("ALL");
+  const [timelineChannels, setTimelineChannels] = useState<string[]>([]);
   const [lostReason, setLostReason] = useState("");
   const [lostDialogOpen, setLostDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -84,19 +85,6 @@ export default function DealDetailPage() {
   const markWon = useMarkDealWon();
   const markLost = useMarkDealLost();
   const addActivity = useAddDealActivity();
-  const logMessageMutation = useMutation({
-    mutationFn: crmApi.logMessage,
-    onSuccess: (activity) => {
-      if (activity.dealId) {
-        void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId] });
-        void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId, "timeline"] });
-      }
-      toast.success("Message logged");
-    },
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to log message");
-    },
-  });
   const isOpen = deal?.status === "OPEN";
   const contactContext = useMemo(() => {
     const displayName = party?.displayName || "";
@@ -112,7 +100,14 @@ export default function DealDetailPage() {
       phoneE164: party?.phone,
       profileUrl: (party as any)?.profileUrl,
       profileUrl_linkedin: (party as any)?.profileUrl_linkedin ?? (party as any)?.profileUrl,
-      profileUrl_facebook: (party as any)?.profileUrl_facebook ?? (party as any)?.profileUrl,
+      profileUrl_facebook_messenger:
+        (party as any)?.profileUrl_facebook_messenger ?? (party as any)?.profileUrl,
+      profileUrl_instagram_dm:
+        (party as any)?.profileUrl_instagram_dm ?? (party as any)?.profileUrl,
+      profileUrl_x_dm: (party as any)?.profileUrl_x_dm ?? (party as any)?.profileUrl,
+      profileUrl_telegram: (party as any)?.profileUrl_telegram ?? (party as any)?.profileUrl,
+      profileUrl_wechat: (party as any)?.profileUrl_wechat ?? (party as any)?.profileUrl,
+      profileUrl_line: (party as any)?.profileUrl_line ?? (party as any)?.profileUrl,
     };
   }, [party, deal]);
 
@@ -183,7 +178,15 @@ export default function DealDetailPage() {
     changeStage.mutate({ dealId: deal.id, stageId });
   };
 
-  const timelineItems = useMemo(() => timelineData?.items ?? [], [timelineData]);
+  const timelineItems = useMemo(() => {
+    const baseItems = timelineData?.items ?? [];
+    if (!timelineChannels.length) {
+      return baseItems;
+    }
+    return baseItems.filter(
+      (item) => item.channelKey && timelineChannels.includes(item.channelKey)
+    );
+  }, [timelineChannels, timelineData]);
 
   const templateContext = useMemo(
     () => ({
@@ -204,15 +207,52 @@ export default function DealDetailPage() {
     if (!deal || !selectedChannel) {
       return;
     }
-    logMessageMutation.mutate({
-      dealId: deal.id,
-      channelKey: selectedChannel.key,
-      direction: "outbound",
-      subject: payload.subject,
-      body: payload.body,
-      openUrl: payload.openUrl,
-      to: contactContext.email || contactContext.phoneE164,
-    });
+    if (selectedChannel.capabilities.canSendFromCRM && !selectedChannel.capabilities.manualOnly) {
+      void crmApi
+        .createCommunicationDraft({
+          dealId: deal.id,
+          channelKey: selectedChannel.key,
+          direction: "OUTBOUND",
+          status: "DRAFT",
+          subject: payload.subject,
+          body: payload.body,
+          to: contactContext.email ? [contactContext.email] : undefined,
+          participants: contactContext.phoneE164 ? [contactContext.phoneE164] : undefined,
+        })
+        .then((activity) => {
+          if (activity.dealId) {
+            void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId] });
+            void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId, "timeline"] });
+          }
+          toast.success("Draft communication created");
+        })
+        .catch((error: unknown) => {
+          toast.error(error instanceof Error ? error.message : "Failed to create draft");
+        });
+    } else {
+      void crmApi
+        .logCommunication({
+          dealId: deal.id,
+          channelKey: selectedChannel.key,
+          direction: "OUTBOUND",
+          status: "LOGGED",
+          subject: payload.subject,
+          body: payload.body,
+          openUrl: payload.openUrl,
+          to: contactContext.email ? [contactContext.email] : undefined,
+          participants: contactContext.phoneE164 ? [contactContext.phoneE164] : undefined,
+        })
+        .then((activity) => {
+          if (activity.dealId) {
+            void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId] });
+            void queryClient.invalidateQueries({ queryKey: ["deal", activity.dealId, "timeline"] });
+          }
+          toast.success("Message logged");
+        })
+        .catch((error: unknown) => {
+          toast.error(error instanceof Error ? error.message : "Failed to log message");
+        });
+    }
     setComposerOpen(false);
   };
 
@@ -284,9 +324,37 @@ export default function DealDetailPage() {
                     <TabsTrigger value="CALL">{t("crm.timeline.filters.calls")}</TabsTrigger>
                     <TabsTrigger value="MEETING">{t("crm.timeline.filters.meetings")}</TabsTrigger>
                     <TabsTrigger value="TASK">{t("crm.timeline.filters.tasks")}</TabsTrigger>
+                    <TabsTrigger value="COMMUNICATION">
+                      {t("crm.timeline.filters.communications")}
+                    </TabsTrigger>
                     <TabsTrigger value="STAGE">{t("crm.timeline.filters.stage")}</TabsTrigger>
                   </TabsList>
                 </div>
+                {channels?.length ? (
+                  <div className="px-6 pt-3 flex flex-wrap items-center gap-2">
+                    {channels.map((channel) => {
+                      const active = timelineChannels.includes(channel.key);
+                      return (
+                        <Button
+                          key={channel.key}
+                          type="button"
+                          variant={active ? "secondary" : "outline"}
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() =>
+                            setTimelineChannels((prev) =>
+                              prev.includes(channel.key)
+                                ? prev.filter((key) => key !== channel.key)
+                                : [...prev, channel.key]
+                            )
+                          }
+                        >
+                          {channel.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                ) : null}
                 <TabsContent value={timelineFilter}>
                   <div className="p-6">
                     {timelineLoading ? (

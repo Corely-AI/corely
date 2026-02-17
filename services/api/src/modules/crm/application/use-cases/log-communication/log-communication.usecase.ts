@@ -10,18 +10,18 @@ import {
   ValidationError,
   RequireTenant,
   ok,
-  err,
 } from "@corely/kernel";
-import type { LogMessageInput, LogMessageOutput } from "@corely/contracts";
+import type { LogCommunicationInput, LogCommunicationOutput } from "@corely/contracts";
 import type { ActivityRepoPort } from "../../ports/activity-repository.port";
 import { ActivityEntity } from "../../../domain/activity.entity";
 import { toActivityDto } from "../../mappers/activity-dto.mapper";
 
-const SAFE_SCHEMES = ["https://", "mailto:"];
-
 @RequireTenant()
 @Injectable()
-export class LogMessageUseCase extends BaseUseCase<LogMessageInput, LogMessageOutput> {
+export class LogCommunicationUseCase extends BaseUseCase<
+  LogCommunicationInput,
+  LogCommunicationOutput
+> {
   constructor(
     private readonly activityRepo: ActivityRepoPort,
     private readonly clock: ClockPort,
@@ -31,52 +31,52 @@ export class LogMessageUseCase extends BaseUseCase<LogMessageInput, LogMessageOu
     super({ logger });
   }
 
-  protected validate(input: LogMessageInput): LogMessageInput {
-    if (!input.dealId) {
-      throw new ValidationError("dealId is required");
-    }
+  protected validate(input: LogCommunicationInput): LogCommunicationInput {
     if (!input.channelKey) {
       throw new ValidationError("channelKey is required");
     }
-    if (input.openUrl) {
-      const lower = input.openUrl.toLowerCase();
-      if (!SAFE_SCHEMES.some((scheme) => lower.startsWith(scheme))) {
-        throw new ValidationError("Invalid URL scheme");
-      }
+    if (!input.dealId && !input.partyId) {
+      throw new ValidationError("Communication must be linked to a deal or party");
     }
     return input;
   }
 
   protected async handle(
-    input: LogMessageInput,
+    input: LogCommunicationInput,
     ctx: UseCaseContext
-  ): Promise<Result<LogMessageOutput, UseCaseError>> {
+  ): Promise<Result<LogCommunicationOutput, UseCaseError>> {
     const now = this.clock.now();
     const activity = ActivityEntity.create({
       id: this.idGenerator.newId(),
       tenantId: ctx.tenantId,
       type: "COMMUNICATION",
-      subject: input.subject || `${input.channelKey} message`,
+      subject: input.subject?.trim() || `${input.channelKey} message`,
       body: input.body ?? null,
       channelKey: input.channelKey,
-      direction: input.direction === "inbound" ? "INBOUND" : "OUTBOUND",
-      communicationStatus: "LOGGED",
-      messageDirection: input.direction ?? "outbound",
-      messageTo: input.to ?? null,
+      direction: input.direction,
+      communicationStatus: input.status,
       openUrl: input.openUrl ?? null,
-      toRecipients: input.to ? [input.to] : null,
-      partyId: null,
-      dealId: input.dealId,
+      partyId: input.partyId ?? null,
+      dealId: input.dealId ?? null,
       activityDate: input.occurredAt ? new Date(input.occurredAt) : now,
-      recordSource: "MANUAL",
-      dueAt: null,
+      ownerId: ctx.userId ?? null,
+      recordSource: input.recordSource ?? "MANUAL",
+      recordSourceDetails: input.recordSourceDetails ?? null,
+      toRecipients: input.to ?? null,
+      ccRecipients: input.cc ?? null,
+      participants: input.participants ?? null,
+      threadKey: input.threadKey ?? null,
+      externalThreadId: input.externalThreadId ?? null,
+      externalMessageId: input.externalMessageId ?? null,
+      providerKey: input.providerKey ?? null,
+      attachments: input.attachments ?? null,
+      metadata: input.metadata ?? null,
       assignedToUserId: ctx.userId ?? null,
       createdByUserId: ctx.userId ?? null,
       createdAt: now,
     });
 
     await this.activityRepo.create(ctx.tenantId, activity);
-
     return ok({ activity: toActivityDto(activity) });
   }
 }

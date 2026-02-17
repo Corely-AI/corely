@@ -29,7 +29,14 @@ export const useDeal = (id: string | undefined) => {
   });
 };
 
-export type TimelineFilter = "ALL" | "NOTE" | "TASK" | "CALL" | "MEETING" | "EMAIL_DRAFT" | "STAGE";
+export type TimelineFilter =
+  | "ALL"
+  | "NOTE"
+  | "TASK"
+  | "CALL"
+  | "MEETING"
+  | "COMMUNICATION"
+  | "STAGE";
 
 export const useDealTimeline = (id: string | undefined, filter: TimelineFilter = "ALL") => {
   return useQuery({
@@ -55,9 +62,15 @@ export const useDealTimeline = (id: string | undefined, filter: TimelineFilter =
       }
       return {
         ...data,
-        items: data.items.filter(
-          (item) => item.type === "ACTIVITY" && item.metadata?.activityType === filter
-        ),
+        items: data.items.filter((item) => {
+          if (filter === "COMMUNICATION") {
+            return (
+              item.type === "MESSAGE" ||
+              (item.type === "ACTIVITY" && item.metadata?.activityType === "COMMUNICATION")
+            );
+          }
+          return item.type === "ACTIVITY" && item.metadata?.activityType === filter;
+        }),
       };
     },
   });
