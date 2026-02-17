@@ -1157,6 +1157,7 @@
       "type": "Activity Type",
       "selectType": "Select type",
       "dueAt": "Due Date & Time",
+      "dueDate": "Due Date",
       "selectDate": "Select date",
       "reminderHint": "The activity will be scheduled for this time.",
       "dealIdOptional": "Link to Deal (Optional)",

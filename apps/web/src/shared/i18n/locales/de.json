@@ -1125,6 +1125,7 @@
       "type": "Aktivitätstyp",
       "selectType": "Typ auswählen",
       "dueAt": "Fälligkeitstermin & Uhrzeit",
+      "dueDate": "Fälligkeitsdatum",
       "selectDate": "Datum auswählen",
       "reminderHint": "Die Aktivität wird für diesen Zeitpunkt geplant.",
       "dealIdOptional": "Mit Deal verknüpfen (Optional)",

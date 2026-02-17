@@ -1147,6 +1147,7 @@
       "type": "Loại hoạt động",
       "selectType": "Chọn loại",
       "dueAt": "Ngày & Giờ đến hạn",
+      "dueDate": "Ngày đến hạn",
       "selectDate": "Chọn ngày",
       "reminderHint": "Hoạt động sẽ được lên lịch vào thời điểm này.",
       "dealIdOptional": "Liên kết với Cơ hội (Tùy chọn)",
