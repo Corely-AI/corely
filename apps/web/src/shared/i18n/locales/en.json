@@ -89,7 +89,9 @@
     "add": "Add",
     "created": "Created",
     "updated": "Updated",
-    "notSet": "Not set"
+    "notSet": "Not set",
+    "done": "Done",
+    "customFields": "Custom fields"
   },
   "actions": {
     "takeAttendance": "Take Attendance",
@@ -767,7 +769,12 @@
     "searchOrAdd": "Search customers or add a new one",
     "addNewCustomer": "Add New Customer",
     "noCustomersFound": "No customers found.",
-    "selectExisting": "Search existing clients or create a new one."
+    "selectExisting": "Search existing clients or create a new one.",
+    "social": {
+      "title": "Social Profiles",
+      "add": "Add profile",
+      "empty": "No social profiles added."
+    }
   },
   "settings": {
     "title": "Settings",
@@ -1340,7 +1347,13 @@
     "students": {
       "title": "Students",
       "subtitle": "Manage student records and guardians",
+      "createTitle": "Create Student",
       "add": "Add student",
+      "creating": "Creating...",
+      "created": "Student Created",
+      "createSuccess": "Student created. You can now link guardians.",
+      "createFailed": "Failed to create student. Please try again.",
+      "createFirstTip": "Create the student first, then link guardians.",
       "loading": "Loading students...",
       "loadFailed": "Failed to load students.",
       "emptyTitle": "No students yet",
@@ -1361,6 +1374,12 @@
       "statusOptions": {
         "active": "Active",
         "archived": "Archived"
+      },
+      "guardians": {
+        "title": "Guardians",
+        "subtitle": "Link parents or guardians and set the billing payer.",
+        "link": "Link guardian",
+        "empty": "No guardians linked yet. Add one to manage billing responsibility."
       }
     },
     "billing": {
@@ -1395,6 +1414,23 @@
       "pricePerSession": "Price / Session",
       "subtotal": "Subtotal",
       "invoice": "Invoice",
+      "markSent": "Mark Sent",
+      "markSentSuccess": "Invoice marked as sent",
+      "markSentFailed": "Failed to mark invoice as sent",
+      "customerEmailRequired": "Customer email is required",
+      "generatePrivateLink": "Generate Link",
+      "generateLinkSuccess": "Private link generated",
+      "generateLinkFailed": "Failed to generate private link",
+      "copyLink": "Copy Link",
+      "copyLinkSuccess": "Link copied to clipboard",
+      "copyLinkFailed": "Failed to copy link",
+      "regenerateLink": "Regenerate Link",
+      "regenerateLinkSuccess": "Private link regenerated",
+      "regenerateLinkConfirmTitle": "Regenerate private link?",
+      "regenerateLinkConfirmDescription": "The old link will stop working immediately.",
+      "regenerateLinkConfirmAction": "Regenerate",
+      "linkRegenerated": "Link regenerated",
+      "linkGenerationFailed": "Failed to generate link",
       "viewInvoice": "View invoice",
       "invoiceNotCreated": "Not created",
       "emptyTitle": "No billable sessions",

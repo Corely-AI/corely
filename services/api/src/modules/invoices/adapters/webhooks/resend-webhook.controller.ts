@@ -1,5 +1,5 @@
 import { Controller, Post, Req, Res, HttpStatus, type RawBodyRequest } from "@nestjs/common";
-import { Request, type Response } from "express";
+import type { Request, Response } from "express";
 import { Resend } from "resend";
 import { EnvService } from "@corely/config";
 import { PrismaInvoiceEmailDeliveryAdapter } from "@corely/data";

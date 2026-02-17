@@ -17,6 +17,9 @@ import type {
   UpdateInvoiceInput,
   ListInvoicesInput,
   ListInvoicesOutput,
+  GenerateInvoiceShareLinkInput,
+  GenerateInvoiceShareLinkOutput,
+  GetInvoiceShareLinkOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 import { buildListQuery } from "./api-query-utils";
@@ -238,6 +241,28 @@ export class InvoicesApi {
       }
     );
     return result.invoice;
+  }
+
+  /**
+   * Generate or regenerate anonymous share link for invoice PDF viewing
+   */
+  async generateShareLink(
+    id: string,
+    input?: GenerateInvoiceShareLinkInput
+  ): Promise<GenerateInvoiceShareLinkOutput> {
+    return apiClient.post<GenerateInvoiceShareLinkOutput>(
+      `/invoices/${id}/share-link`,
+      input ?? {
+        regenerate: false,
+      }
+    );
+  }
+
+  /**
+   * Get existing anonymous share link (if generated before)
+   */
+  async getShareLink(id: string): Promise<GetInvoiceShareLinkOutput> {
+    return apiClient.get<GetInvoiceShareLinkOutput>(`/invoices/${id}/share-link`);
   }
 }
 

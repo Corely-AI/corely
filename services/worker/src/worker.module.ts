@@ -9,6 +9,7 @@ import { TaxWorkerModule } from "./modules/tax/tax-worker.module";
 import { ClassesWorkerModule } from "./modules/classes/classes-worker.module";
 import { InvoicesWorkerModule } from "./modules/invoices/invoices-worker.module";
 import { FormsWorkerModule } from "./modules/forms/forms-worker.module";
+import { CrmWorkerModule } from "./modules/crm/crm-worker.module";
 
 import { TickOrchestrator } from "./application/tick-orchestrator.service";
 import { JobLockService } from "./infrastructure/job-lock.service";
@@ -30,6 +31,7 @@ import { StorageModule } from "./modules/storage/storage.module";
     ClassesWorkerModule,
     InvoicesWorkerModule,
     FormsWorkerModule,
+    CrmWorkerModule,
   ],
   providers: [TickOrchestrator, JobLockService],
 })

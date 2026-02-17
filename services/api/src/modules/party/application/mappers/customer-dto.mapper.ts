@@ -3,7 +3,16 @@ import { type PartyAggregate } from "../../domain/party.aggregate";
 
 export const toCustomerDto = (party: PartyAggregate): CustomerDto => ({
   id: party.id,
+  tenantId: party.tenantId,
+  kind: party.kind,
   displayName: party.displayName,
+  firstName: party.firstName ?? undefined,
+  lastName: party.lastName ?? undefined,
+  organizationName: party.organizationName ?? undefined,
+  jobTitle: party.jobTitle ?? undefined,
+  department: party.department ?? undefined,
+  industry: party.industry ?? undefined,
+  website: party.website ?? undefined,
   email: party.primaryEmail,
   phone: party.primaryPhone,
   billingAddress: party.billingAddress

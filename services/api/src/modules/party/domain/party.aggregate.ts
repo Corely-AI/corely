@@ -1,6 +1,7 @@
 import { type Address } from "./address";
 import { type ContactPoint, type ContactPointType, type SocialPlatform } from "./contact-point";
 import { type PartyRoleType } from "./party-role";
+import { type PartyKind } from "./party-kind";
 
 export type PartyLifecycleStatus = "LEAD" | "ACTIVE" | "PAUSED" | "ARCHIVED";
 
@@ -18,10 +19,29 @@ type PartyProps = {
   createdAt: Date;
   updatedAt: Date;
   roles: PartyRoleType[];
+  // Phase 1: Contact/Company fields
+  kind: PartyKind;
+  firstName?: string | null;
+  lastName?: string | null;
+  organizationName?: string | null;
+  jobTitle?: string | null;
+  department?: string | null;
+  industry?: string | null;
+  website?: string | null;
+  size?: string | null;
 };
 
 export type CustomerPatch = {
   displayName?: string;
+  kind?: PartyKind;
+  firstName?: string | null;
+  lastName?: string | null;
+  organizationName?: string | null;
+  jobTitle?: string | null;
+  department?: string | null;
+  industry?: string | null;
+  website?: string | null;
+  size?: string | null;
   email?: string | null;
   phone?: string | null;
   socialLinks?: Array<{
@@ -51,6 +71,15 @@ export class PartyAggregate {
   createdAt: Date;
   updatedAt: Date;
   roles: PartyRoleType[];
+  kind: PartyKind;
+  firstName: string | null;
+  lastName: string | null;
+  organizationName: string | null;
+  jobTitle: string | null;
+  department: string | null;
+  industry: string | null;
+  website: string | null;
+  size: string | null;
 
   constructor(props: PartyProps) {
     if (!props.displayName.trim()) {
@@ -70,6 +99,15 @@ export class PartyAggregate {
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
     this.roles = props.roles;
+    this.kind = props.kind;
+    this.firstName = props.firstName ?? null;
+    this.lastName = props.lastName ?? null;
+    this.organizationName = props.organizationName ?? null;
+    this.jobTitle = props.jobTitle ?? null;
+    this.department = props.department ?? null;
+    this.industry = props.industry ?? null;
+    this.website = props.website ?? null;
+    this.size = props.size ?? null;
   }
 
   static createParty(params: {
@@ -92,6 +130,16 @@ export class PartyAggregate {
     lifecycleStatus?: PartyLifecycleStatus;
     createdAt: Date;
     generateId: () => string;
+    // New fields
+    kind?: PartyKind;
+    firstName?: string | null;
+    lastName?: string | null;
+    organizationName?: string | null;
+    jobTitle?: string | null;
+    department?: string | null;
+    industry?: string | null;
+    website?: string | null;
+    size?: string | null;
   }) {
     if (params.roles.length === 0) {
       throw new Error("Party must have at least one role");
@@ -111,6 +159,15 @@ export class PartyAggregate {
       createdAt: params.createdAt,
       updatedAt: params.createdAt,
       roles: params.roles,
+      kind: params.kind ?? "INDIVIDUAL",
+      firstName: params.firstName,
+      lastName: params.lastName,
+      organizationName: params.organizationName,
+      jobTitle: params.jobTitle,
+      department: params.department,
+      industry: params.industry,
+      website: params.website,
+      size: params.size,
     });
     aggregate.setContactPoint("EMAIL", params.email ?? null, params.generateId);
     aggregate.setContactPoint("PHONE", params.phone ?? null, params.generateId);
@@ -123,6 +180,15 @@ export class PartyAggregate {
     id: string;
     tenantId: string;
     displayName: string;
+    kind?: PartyKind; // Default INDIVIDUAL
+    firstName?: string | null;
+    lastName?: string | null;
+    organizationName?: string | null;
+    jobTitle?: string | null;
+    department?: string | null;
+    industry?: string | null;
+    website?: string | null;
+    size?: string | null;
     email?: string | null;
     phone?: string | null;
     billingAddress?: Address | null;
@@ -133,8 +199,20 @@ export class PartyAggregate {
     createdAt: Date;
     generateId: () => string;
   }) {
+    // Logic: if kind is ORGANIZATION, ensure organizationName is set or use displayName
+    let finalDisplayName = params.displayName;
+    const finalKind = params.kind ?? "INDIVIDUAL";
+
+    // Safety check: ensure displayName is not empty
+    if (!finalDisplayName && finalKind === "INDIVIDUAL" && params.firstName && params.lastName) {
+      finalDisplayName = `${params.firstName} ${params.lastName}`;
+    } else if (!finalDisplayName && finalKind === "ORGANIZATION" && params.organizationName) {
+      finalDisplayName = params.organizationName;
+    }
+
     return PartyAggregate.createParty({
       ...params,
+      displayName: finalDisplayName,
       roles: ["CUSTOMER"],
     });
   }
@@ -149,6 +227,33 @@ export class PartyAggregate {
         throw new Error("Display name is required");
       }
       this.displayName = patch.displayName.trim();
+    }
+    if (patch.kind !== undefined) {
+      this.kind = patch.kind;
+    }
+    if (patch.firstName !== undefined) {
+      this.firstName = patch.firstName ?? null;
+    }
+    if (patch.lastName !== undefined) {
+      this.lastName = patch.lastName ?? null;
+    }
+    if (patch.organizationName !== undefined) {
+      this.organizationName = patch.organizationName ?? null;
+    }
+    if (patch.jobTitle !== undefined) {
+      this.jobTitle = patch.jobTitle ?? null;
+    }
+    if (patch.department !== undefined) {
+      this.department = patch.department ?? null;
+    }
+    if (patch.industry !== undefined) {
+      this.industry = patch.industry ?? null;
+    }
+    if (patch.website !== undefined) {
+      this.website = patch.website ?? null;
+    }
+    if (patch.size !== undefined) {
+      this.size = patch.size ?? null;
     }
 
     this.setContactPoint("EMAIL", patch.email, generateId);

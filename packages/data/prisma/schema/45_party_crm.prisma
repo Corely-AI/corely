@@ -8,6 +8,36 @@ enum PartyRoleType {
   @@schema("crm")
 }
 
+enum PartyKind {
+  INDIVIDUAL
+  ORGANIZATION
+  @@schema("crm")
+}
+
+enum PartyRelationshipType {
+  WORKS_FOR
+  SUBSIDIARY_OF
+  PARTNER_OF
+  @@schema("crm")
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFIED
+  DISQUALIFIED
+  CONVERTED
+  @@schema("crm")
+}
+
+enum LeadSource {
+  WEB_FORM
+  MANUAL
+  IMPORT
+  REFERRAL
+  OTHER
+  @@schema("crm")
+}
+
 enum ContactPointType {
   EMAIL
   PHONE
@@ -51,6 +81,45 @@ enum PartyLifecycleStatus {
   @@schema("crm")
 }
 
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  PROSPECT
+  @@schema("crm")
+}
+
+enum CrmAccountType {
+  CUSTOMER
+  VENDOR
+  PARTNER
+  OTHER
+  @@schema("crm")
+}
+
+// CrmAccountProfile stores CRM-specific fields only
+// Identity/contact/address data lives in Party + ContactPoint + Address
+model CrmAccountProfile {
+  id          String          @id @default(cuid())
+  tenantId    String
+  partyId     String          @unique // FK to Party (canonical identity) - unique for 1:1
+  accountType CrmAccountType  @default(CUSTOMER)
+  status      AccountStatus   @default(ACTIVE)
+  industry    String?         // CRM-specific sales segmentation field
+  ownerUserId String?         // Sales owner
+  notes       String?         // CRM-specific notes
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @db.Timestamptz(6)
+
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, partyId]) // One profile per party
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, accountType])
+  @@index([tenantId, ownerUserId])
+  @@schema("crm")
+}
+
 model Party {
   id              String               @id @default(cuid())
   tenantId        String
@@ -58,6 +127,15 @@ model Party {
   vatId           String?
   notes           String?
   tags            String[]             @default([])
+  kind            PartyKind            @default(INDIVIDUAL)
+  firstName       String?
+  lastName        String?
+  organizationName String?
+  jobTitle        String?
+  department      String?
+  industry        String?
+  website         String?
+  size            String?
   lifecycleStatus PartyLifecycleStatus @default(LEAD)
   archivedAt      DateTime?            @db.Timestamptz(6)
   archivedByUserId String?
@@ -69,7 +147,12 @@ model Party {
   roles         PartyRole[]
   deals         Deal[]
   activities    Activity[]
+  relationshipsFrom PartyRelationship[] @relation("FromParty")
+  relationshipsTo   PartyRelationship[] @relation("ToParty")
+  companyDeals      Deal[]              @relation("DealCompany")
   lifecycleHistory PartyLifecycleTransition[]
+  enrollments      SequenceEnrollment[]
+  crmAccountProfile CrmAccountProfile?  // Optional CRM account profile
 
   @@index([tenantId, displayName])
   @@index([tenantId, archivedAt])
@@ -134,6 +217,7 @@ model Deal {
   tenantId          String
   title             String
   partyId           String
+  companyId         String? // Organization
   stageId           String
   amountCents       Int?
   currency          String     @db.VarChar(3) @default("EUR")
@@ -150,6 +234,7 @@ model Deal {
   updatedAt         DateTime   @updatedAt @db.Timestamptz(6)
 
   party             Party                 @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  company           Party?                @relation("DealCompany", fields: [companyId], references: [id])
   activities        Activity[]
   stageTransitions  DealStageTransition[]
 
@@ -176,6 +261,14 @@ model Activity {
   dueAt            DateTime?      @db.Timestamptz(6)
   completedAt      DateTime?      @db.Timestamptz(6)
   status           ActivityStatus @default(OPEN)
+  
+  // Engagement Fields
+  outcome          String?        // e.g. "Connected", "Voicemail", "No Answer"
+  durationSeconds  Int?
+  location         String?        // For meetings
+  attendees        Json?          // For meetings
+  metadata         Json?          // Flexible extension
+  
   assignedToUserId String?
   createdByUserId  String?
   createdAt        DateTime       @default(now()) @db.Timestamptz(6)
@@ -228,5 +321,124 @@ model PartyLifecycleTransition {
   party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, partyId, changedAt])
+  @@schema("crm")
+}
+
+model PartyRelationship {
+  id        String                @id @default(cuid())
+  tenantId  String
+  fromPartyId String
+  toPartyId   String
+  type        PartyRelationshipType
+  title       String?
+  
+  fromParty Party @relation("FromParty", fields: [fromPartyId], references: [id], onDelete: Cascade)
+  toParty   Party @relation("ToParty", fields: [toPartyId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, fromPartyId])
+  @@index([tenantId, toPartyId])
+  @@unique([tenantId, fromPartyId, toPartyId, type])
+  @@schema("crm")
+}
+
+model Lead {
+  id               String     @id @default(cuid())
+  tenantId         String
+  source           LeadSource @default(MANUAL)
+  status           LeadStatus @default(NEW)
+  firstName        String?
+  lastName         String?
+  companyName      String?
+  email            String?
+  phone            String?
+  ownerUserId      String?
+  convertedDealId  String?
+  convertedPartyId String?
+  notes            String?
+  createdAt        DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime   @updatedAt @db.Timestamptz(6)
+
+  @@index([tenantId, email])
+  @@schema("crm")
+
+  enrollments SequenceEnrollment[]
+}
+
+enum SequenceStepType {
+  EMAIL_AUTO
+  EMAIL_MANUAL
+  CALL
+  TASK
+  @@schema("crm")
+}
+
+enum SequenceStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+  @@schema("crm")
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELED
+  @@schema("crm")
+}
+
+model Sequence {
+  id            String   @id @default(cuid())
+  tenantId      String
+  name          String
+  ownerUserId   String?
+  description   String?
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+
+  steps       SequenceStep[]
+  enrollments SequenceEnrollment[]
+
+  @@index([tenantId])
+  @@schema("crm")
+}
+
+model SequenceStep {
+  id              String           @id @default(cuid())
+  tenantId        String
+  sequenceId      String
+  stepOrder       Int
+  type            SequenceStepType
+  dayDelay        Int              @default(0)
+  templateSubject String?
+  templateBody    String?
+  
+  sequence Sequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, sequenceId])
+  @@schema("crm")
+}
+
+model SequenceEnrollment {
+  id              String           @id @default(cuid())
+  tenantId        String
+  sequenceId      String
+  leadId          String?
+  partyId         String?
+  currentStepOrder Int              @default(1)
+  status          EnrollmentStatus @default(ACTIVE)
+  nextExecutionAt DateTime?        @db.Timestamptz(6)
+  createdAt       DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime         @updatedAt @db.Timestamptz(6)
+
+  sequence Sequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  lead     Lead?    @relation(fields: [leadId], references: [id])
+  party    Party?   @relation(fields: [partyId], references: [id])
+
+  @@index([tenantId, sequenceId])
+  @@index([tenantId, leadId])
+  @@index([tenantId, partyId])
+  @@index([tenantId, nextExecutionAt])
   @@schema("crm")
 }

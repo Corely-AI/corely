@@ -10,11 +10,15 @@ import {
 } from "@nestjs/common";
 import { TestHarnessGuard } from "./guards/test-harness.guard";
 import { TestHarnessService } from "./test-harness.service";
+import { CrmTestHooksService } from "./crm-test-hooks.service";
 
 @Controller("test")
 @UseGuards(TestHarnessGuard)
 export class TestHarnessController {
-  constructor(@Inject("TEST_HARNESS_SERVICE") private testHarnessService: TestHarnessService) {}
+  constructor(
+    @Inject("TEST_HARNESS_SERVICE") private testHarnessService: TestHarnessService,
+    private readonly crmTestHooksService: CrmTestHooksService
+  ) {}
 
   /**
    * Seed test data: creates a new tenant with user and roles
@@ -137,6 +141,27 @@ export class TestHarnessController {
     return {
       deliveries: await this.testHarnessService.listInvoiceEmailDeliveries(payload),
     };
+  }
+
+  /**
+   * Seed a deterministic CRM activity produced by an automation trigger.
+   * Used by E2E to verify workflow effects in timeline without waiting on async workers.
+   */
+  @Post("crm/seed-workflow-activity")
+  @HttpCode(HttpStatus.OK)
+  async seedCrmWorkflowActivity(
+    @Body()
+    payload: {
+      tenantId: string;
+      dealId: string;
+      actorUserId: string;
+      subject?: string;
+    }
+  ) {
+    if (!payload.tenantId || !payload.dealId || !payload.actorUserId) {
+      throw new BadRequestException("Missing required fields: tenantId, dealId, actorUserId");
+    }
+    return this.crmTestHooksService.seedWorkflowActivity(payload);
   }
 
   /**

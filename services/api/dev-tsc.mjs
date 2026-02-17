@@ -109,9 +109,10 @@ const startNode = async () => {
     `\n🚀 Starting server${isDebugMode ? " (Debug Mode on port " + debugPort + ")" : ""}...\n`
   );
 
+  const resolutionFlag = "--experimental-specifier-resolution=node";
   const nodeArgs = isDebugMode
-    ? [`--inspect=0.0.0.0:${debugPort}`, "dist/main.js"]
-    : ["dist/main.js"];
+    ? [`--inspect=0.0.0.0:${debugPort}`, resolutionFlag, "dist/main.js"]
+    : [resolutionFlag, "dist/main.js"];
 
   nodeProcess = spawn("node", nodeArgs, {
     stdio: "inherit",

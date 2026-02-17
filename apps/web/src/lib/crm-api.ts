@@ -10,6 +10,20 @@ import type {
   ActivityDto,
   TimelineItem,
   ChannelDefinition,
+  CreateLeadInput,
+  ConvertLeadInput,
+  LeadDto,
+  CreateLeadOutput,
+  ConvertLeadOutput,
+  SequenceDto,
+  CreateSequenceInput,
+  AccountDto,
+  CreateAccountInput,
+  CreateAccountOutput,
+  UpdateAccountInput,
+  ListAccountsResponse,
+  AccountCustomAttributes,
+  SetAccountCustomAttributesInput,
 } from "@corely/contracts";
 import type { LogMessageInput, LogMessageOutput, ListChannelsOutput } from "@corely/contracts";
 import { apiClient } from "./api-client";
@@ -236,5 +250,107 @@ export const crmApi = {
       input
     );
     return response.activity;
+  },
+
+  // ============================================================
+  // Lead Operations
+  // ============================================================
+  async createLead(input: CreateLeadInput): Promise<LeadDto> {
+    const response = await apiClient.post<CreateLeadOutput>("/crm/leads", input);
+    return response.lead;
+  },
+
+  async listLeads(params?: { status?: string }): Promise<LeadDto[]> {
+    const response = await apiClient.get<{ items: LeadDto[]; nextCursor?: string | null }>(
+      params?.status ? `/crm/leads?status=${params.status}` : "/crm/leads"
+    );
+    return response.items;
+  },
+
+  async getLead(id: string): Promise<LeadDto> {
+    return await apiClient.get<LeadDto>(`/crm/leads/${id}`);
+  },
+
+  async convertLead(input: ConvertLeadInput): Promise<ConvertLeadOutput> {
+    return await apiClient.post<ConvertLeadOutput>(`/crm/leads/${input.leadId}/convert`, input);
+  },
+
+  // ============================================================
+  // Sequence Operations
+  // ============================================================
+  async listSequences(): Promise<SequenceDto[]> {
+    return await apiClient.get<SequenceDto[]>("/crm/sequences");
+  },
+
+  async createSequence(input: CreateSequenceInput): Promise<SequenceDto> {
+    return await apiClient.post<SequenceDto>("/crm/sequences", input);
+  },
+
+  async enrollEntity(input: {
+    sequenceId: string;
+    entityType: "lead" | "party";
+    entityId: string;
+  }): Promise<{ enrollmentId: string }> {
+    return await apiClient.post<{ enrollmentId: string }>("/crm/sequences/enroll", input);
+  },
+
+  // ============================================================
+  // Account Operations
+  // ============================================================
+  async createAccount(input: CreateAccountInput): Promise<AccountDto> {
+    const response = await apiClient.post<CreateAccountOutput>("/crm/accounts", input);
+    return response.account;
+  },
+
+  async updateAccount(id: string, patch: Partial<UpdateAccountInput>): Promise<AccountDto> {
+    const response = await apiClient.patch<{ account: AccountDto }>(`/crm/accounts/${id}`, patch);
+    return response.account;
+  },
+
+  async setAccountCustomAttributes(
+    id: string,
+    input: SetAccountCustomAttributesInput
+  ): Promise<void> {
+    await apiClient.put(`/crm/accounts/${id}/custom-attributes`, input);
+  },
+
+  async getAccountCustomAttributes(id: string): Promise<AccountCustomAttributes> {
+    return await apiClient.get<AccountCustomAttributes>(`/crm/accounts/${id}/custom-attributes`);
+  },
+
+  async getAccount(id: string): Promise<AccountDto> {
+    const response = await apiClient.get<{ account: AccountDto }>(`/crm/accounts/${id}`);
+    return response.account;
+  },
+
+  async listAccounts(params?: {
+    q?: string;
+    status?: string;
+    accountType?: string;
+    ownerUserId?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<ListAccountsResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.q) {
+      queryParams.append("q", params.q);
+    }
+    if (params?.status) {
+      queryParams.append("status", params.status);
+    }
+    if (params?.accountType) {
+      queryParams.append("accountType", params.accountType);
+    }
+    if (params?.ownerUserId) {
+      queryParams.append("ownerUserId", params.ownerUserId);
+    }
+    if (params?.page) {
+      queryParams.append("page", params.page.toString());
+    }
+    if (params?.pageSize) {
+      queryParams.append("pageSize", params.pageSize.toString());
+    }
+    const qs = queryParams.toString();
+    return await apiClient.get<ListAccountsResponse>(qs ? `/crm/accounts?${qs}` : "/crm/accounts");
   },
 };

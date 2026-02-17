@@ -84,7 +84,12 @@
     "website": "Webseite",
     "bank": "Bank",
     "iban": "IBAN",
-    "default": "Standard"
+    "default": "Standard",
+    "created": "Erstellt",
+    "updated": "Aktualisiert",
+    "notSet": "Nicht festgelegt",
+    "done": "Fertig",
+    "customFields": "Benutzerdefinierte Felder"
   },
   "actions": {
     "takeAttendance": "Anwesenheit erfassen",
@@ -756,7 +761,12 @@
     "searchOrAdd": "Kunden suchen oder neuen hinzufügen",
     "addNewCustomer": "Neuen Kunden hinzufügen",
     "noCustomersFound": "Keine Kunden gefunden.",
-    "selectExisting": "Bestehende Kunden durchsuchen oder neuen erstellen."
+    "selectExisting": "Bestehende Kunden durchsuchen oder neuen erstellen.",
+    "social": {
+      "title": "Soziale Profile",
+      "add": "Profil hinzufügen",
+      "empty": "Keine sozialen Profile hinzugefügt."
+    }
   },
   "settings": {
     "title": "Einstellungen",
@@ -1305,7 +1315,13 @@
     "students": {
       "title": "Studenten",
       "subtitle": "Studentenakten und Erziehungsberechtigte verwalten",
+      "createTitle": "Schüler erstellen",
       "add": "Student hinzufügen",
+      "creating": "Wird erstellt...",
+      "created": "Schüler erstellt",
+      "createSuccess": "Student wurde erstellt. Sie können nun Erziehungsberechtigte verknüpfen.",
+      "createFailed": "Schüler konnte nicht erstellt werden. Bitte versuchen Sie es erneut.",
+      "createFirstTip": "Erstellen Sie zuerst den Schüler, um danach Erziehungsberechtigte zu verknüpfen.",
       "loading": "Studenten werden geladen...",
       "loadFailed": "Fehler beim Laden der Studenten.",
       "emptyTitle": "Noch keine Studenten",
@@ -1326,6 +1342,12 @@
       "statusOptions": {
         "active": "Aktiv",
         "archived": "Archiviert"
+      },
+      "guardians": {
+        "title": "Erziehungsberechtigte",
+        "subtitle": "Verknüpfen Sie Eltern oder Erziehungsberechtigte und legen Sie den Rechnungsempfänger fest.",
+        "link": "Berechtigten verknüpfen",
+        "empty": "Noch keine Erziehungsberechtigten verknüpft. Fügen Sie einen hinzu, um die Abrechnungsverantwortung zu verwalten."
       }
     },
     "billing": {
@@ -1359,6 +1381,23 @@
       "sessions": "Termine",
       "pricePerSession": "Preis / Termin",
       "subtotal": "Zwischensumme",
+      "markSent": "Als gesendet markieren",
+      "markSentSuccess": "Rechnung als gesendet markiert",
+      "markSentFailed": "Rechnung konnte nicht als gesendet markiert werden",
+      "customerEmailRequired": "Kunden-E-Mail ist erforderlich",
+      "generatePrivateLink": "Privaten Link erstellen",
+      "generateLinkSuccess": "Privater Link erstellt",
+      "generateLinkFailed": "Privater Link konnte nicht erstellt werden",
+      "copyLink": "Link kopieren",
+      "copyLinkSuccess": "Link kopiert",
+      "copyLinkFailed": "Link konnte nicht kopiert werden",
+      "regenerateLink": "Link neu erzeugen",
+      "regenerateLinkSuccess": "Privater Link neu erzeugt",
+      "regenerateLinkConfirmTitle": "Privaten Link neu erzeugen?",
+      "regenerateLinkConfirmDescription": "Der alte Link funktioniert sofort nicht mehr.",
+      "regenerateLinkConfirmAction": "Neu erzeugen",
+      "linkRegenerated": "Link neu erstellt",
+      "linkGenerationFailed": "Link konnte nicht erstellt werden",
       "viewInvoice": "Rechnung anzeigen",
       "emptyTitle": "Keine abrechenbaren Termine",
       "emptyDescription": "Es gibt keine bestätigten Termine für den ausgewählten Monat, die noch nicht abgerechnet wurden.",

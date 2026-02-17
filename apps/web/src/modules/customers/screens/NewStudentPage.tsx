@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,11 +16,14 @@ import {
   type CustomerFormData,
 } from "../schemas/customer-form.schema";
 import CustomerFormFields from "../components/CustomerFormFields";
+import StudentGuardiansPanel from "../components/StudentGuardiansPanel";
 import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
 
 export default function NewStudentPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
+  const [createdStudentId, setCreatedStudentId] = React.useState<string | null>(null);
   const [customAttributes, setCustomAttributes] = React.useState<CustomAttributesValue | undefined>(
     undefined
   );
@@ -39,15 +43,15 @@ export default function NewStudentPage() {
       };
       return customersApi.createCustomer(input);
     },
-    onSuccess: async () => {
+    onSuccess: async (student) => {
       await queryClient.invalidateQueries({ queryKey: withWorkspace(["students"]) });
       await queryClient.invalidateQueries({ queryKey: withWorkspace(["customers"]) });
-      toast.success("Student created successfully!");
-      navigate("/students");
+      setCreatedStudentId(student.id);
+      toast.success(t("classes.students.createSuccess"));
     },
     onError: (error) => {
       console.error("Error creating student:", error);
-      toast.error("Failed to create student. Please try again.");
+      toast.error(t("classes.students.createFailed"));
     },
   });
 
@@ -62,7 +66,7 @@ export default function NewStudentPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/students")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">Create Student</h1>
+          <h1 className="text-h1 text-foreground">{t("classes.students.createTitle")}</h1>
         </div>
         <div className="flex gap-2">
           <Button
@@ -70,14 +74,18 @@ export default function NewStudentPage() {
             onClick={() => navigate("/students")}
             disabled={createStudentMutation.isPending}
           >
-            Cancel
+            {createdStudentId ? t("common.done") : t("common.cancel")}
           </Button>
           <Button
             variant="accent"
             onClick={form.handleSubmit(onSubmit)}
-            disabled={createStudentMutation.isPending}
+            disabled={createStudentMutation.isPending || Boolean(createdStudentId)}
           >
-            {createStudentMutation.isPending ? "Creating..." : "Create Student"}
+            {createStudentMutation.isPending
+              ? t("classes.students.creating")
+              : createdStudentId
+                ? t("classes.students.created")
+                : t("classes.students.createTitle")}
           </Button>
         </div>
       </div>
@@ -85,12 +93,28 @@ export default function NewStudentPage() {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardContent className="p-8">
-            <CustomerFormFields form={form} />
+            <CustomerFormFields
+              form={form}
+              afterDisplayName={
+                createdStudentId ? (
+                  <StudentGuardiansPanel studentId={createdStudentId} />
+                ) : (
+                  <div className="rounded-md border border-border p-4 text-sm text-muted-foreground">
+                    {t("classes.students.createFirstTip")}
+                  </div>
+                )
+              }
+            />
           </CardContent>
         </Card>
       </form>
 
-      <CustomAttributesSection entityType="party" mode="edit" onChange={setCustomAttributes} />
+      <CustomAttributesSection
+        entityType="party"
+        entityId={createdStudentId ?? undefined}
+        mode="edit"
+        onChange={setCustomAttributes}
+      />
     </div>
   );
 }

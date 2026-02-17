@@ -20,6 +20,11 @@ type ActivityProps = {
   createdByUserId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  outcome?: string | null;
+  durationSeconds?: number | null;
+  location?: string | null;
+  attendees?: any | null; // Keep flexible as any/unknown
+  metadata?: any | null;
 };
 
 export class ActivityEntity {
@@ -41,6 +46,11 @@ export class ActivityEntity {
   createdByUserId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  outcome: string | null;
+  durationSeconds: number | null;
+  location: string | null;
+  attendees: any | null;
+  metadata: any | null;
 
   constructor(props: ActivityProps) {
     // Validate required fields
@@ -49,6 +59,7 @@ export class ActivityEntity {
     }
 
     // Validate that at least one context is provided (partyId or dealId)
+    // Relaxed for now as we might have global tasks, but strict per previous logic
     if (!props.partyId && !props.dealId) {
       throw new Error("Activity must be associated with either a party or a deal");
     }
@@ -71,6 +82,11 @@ export class ActivityEntity {
     this.createdByUserId = props.createdByUserId;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
+    this.outcome = props.outcome ?? null;
+    this.durationSeconds = props.durationSeconds ?? null;
+    this.location = props.location ?? null;
+    this.attendees = props.attendees ?? null;
+    this.metadata = props.metadata ?? null;
   }
 
   static create(params: {
@@ -89,6 +105,11 @@ export class ActivityEntity {
     assignedToUserId?: string | null;
     createdByUserId?: string | null;
     createdAt: Date;
+    outcome?: string | null;
+    durationSeconds?: number | null;
+    location?: string | null;
+    attendees?: any | null;
+    metadata?: any | null;
   }) {
     return new ActivityEntity({
       ...params,
@@ -105,11 +126,29 @@ export class ActivityEntity {
       status: "OPEN",
       completedAt: null,
       updatedAt: params.createdAt,
+      outcome: params.outcome ?? null,
+      durationSeconds: params.durationSeconds ?? null,
+      location: params.location ?? null,
+      attendees: params.attendees ?? null,
+      metadata: params.metadata ?? null,
     });
   }
 
   updateActivity(
-    patch: Partial<Pick<ActivityProps, "subject" | "body" | "dueAt" | "assignedToUserId">>,
+    patch: Partial<
+      Pick<
+        ActivityProps,
+        | "subject"
+        | "body"
+        | "dueAt"
+        | "assignedToUserId"
+        | "outcome"
+        | "durationSeconds"
+        | "location"
+        | "attendees"
+        | "metadata"
+      >
+    >,
     now: Date
   ) {
     if (this.status === "COMPLETED") {
@@ -133,6 +172,21 @@ export class ActivityEntity {
     }
     if (patch.assignedToUserId !== undefined) {
       this.assignedToUserId = patch.assignedToUserId;
+    }
+    if (patch.outcome !== undefined) {
+      this.outcome = patch.outcome;
+    }
+    if (patch.durationSeconds !== undefined) {
+      this.durationSeconds = patch.durationSeconds;
+    }
+    if (patch.location !== undefined) {
+      this.location = patch.location;
+    }
+    if (patch.attendees !== undefined) {
+      this.attendees = patch.attendees;
+    }
+    if (patch.metadata !== undefined) {
+      this.metadata = patch.metadata;
     }
 
     this.touch(now);

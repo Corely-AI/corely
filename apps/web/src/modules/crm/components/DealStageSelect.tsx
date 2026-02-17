@@ -27,7 +27,7 @@ export const DealStageSelect: React.FC<DealStageSelectProps> = ({
 
   return (
     <Select onValueChange={onChange} value={value} disabled={disabled}>
-      <SelectTrigger className="min-w-[180px]">
+      <SelectTrigger className="min-w-[180px]" data-testid="crm-deal-stage-select">
         {showBadge ? (
           <Badge variant={current?.isClosed ? "outline" : "secondary"}>
             {current?.name ?? value}
