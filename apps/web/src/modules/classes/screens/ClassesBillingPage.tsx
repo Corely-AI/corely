@@ -1,9 +1,17 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FileText, Mail, RefreshCcw } from "lucide-react";
+import { FileText, Mail, RefreshCcw, Facebook, ExternalLink } from "lucide-react";
 import type { BillingInvoiceSendProgress } from "@corely/contracts";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Badge,
   Button,
   Input,
@@ -16,6 +24,7 @@ import {
 import { toast } from "sonner";
 import { classesApi } from "@/lib/classes-api";
 import { customersApi } from "@/lib/customers-api";
+import { invoicesApi } from "@/lib/invoices-api";
 import { CrudListPageLayout } from "@/shared/crud";
 import { classBillingKeys } from "../queries";
 import { formatMoney } from "@/shared/lib/formatters";
@@ -36,6 +45,15 @@ export default function ClassesBillingPage() {
   const [sendPromptOpen, setSendPromptOpen] = useState(false);
   const [createdCount, setCreatedCount] = useState(0);
   const [sendProgress, setSendProgress] = useState<BillingInvoiceSendProgress | null>(null);
+  const [regenerateInvoicesConfirmOpen, setRegenerateInvoicesConfirmOpen] = useState(false);
+  const [shareLinksByInvoiceId, setShareLinksByInvoiceId] = useState<Record<string, string>>({});
+  const [shareLinkPendingInvoiceId, setShareLinkPendingInvoiceId] = useState<string | null>(null);
+  const [loadedShareLinkInvoiceIds, setLoadedShareLinkInvoiceIds] = useState<Record<string, true>>(
+    {}
+  );
+  const [regenerateShareTargetInvoiceId, setRegenerateShareTargetInvoiceId] = useState<
+    string | null
+  >(null);
 
   const {
     isOpen: sendDialogOpen,
@@ -46,6 +64,26 @@ export default function ClassesBillingPage() {
     openSendDialog,
     handleSend: handleSendInvoice,
   } = useSendInvoice();
+
+  const shareLink = useMutation({
+    mutationFn: async ({ invoiceId, regenerate }: { invoiceId: string; regenerate: boolean }) => {
+      setShareLinkPendingInvoiceId(invoiceId);
+      return invoicesApi.generateShareLink(invoiceId, { regenerate });
+    },
+    onSettled: () => setShareLinkPendingInvoiceId(null),
+    onSuccess: (data, variables) => {
+      setShareLinksByInvoiceId((prev) => ({
+        ...prev,
+        [variables.invoiceId]: data.url,
+      }));
+      if (variables.regenerate) {
+        toast.success(t("classes.billing.linkRegenerated"));
+      }
+    },
+    onError: () => {
+      toast.error(t("classes.billing.linkGenerationFailed"));
+    },
+  });
 
   const invalidateMonthPreview = async () => {
     await queryClient.invalidateQueries({ queryKey: classBillingKeys.previewMonth(month) });
@@ -78,6 +116,15 @@ export default function ClassesBillingPage() {
     const map = new Map<string, string>();
     (customersData?.customers ?? []).forEach((customer) => {
       map.set(customer.id, customer.displayName || customer.id);
+    });
+    return map;
+  }, [customersData]);
+
+  const facebookByClient = useMemo(() => {
+    const map = new Map<string, string | null>();
+    (customersData?.customers ?? []).forEach((customer) => {
+      const fb = customer.socialLinks?.find((l) => l.platform === "facebook");
+      map.set(customer.id, fb?.url ?? null);
     });
     return map;
   }, [customersData]);
@@ -209,6 +256,70 @@ export default function ClassesBillingPage() {
     },
   });
 
+  const markSent = useMutation({
+    mutationFn: async ({ invoiceId, to }: { invoiceId: string; to: string }) =>
+      invoicesApi.sendInvoice(invoiceId, {
+        to,
+        attachPdf: false,
+      }),
+    onSuccess: async () => {
+      toast.success(t("classes.billing.markSentSuccess"));
+      await invalidateMonthPreview();
+    },
+    onError: (err: unknown) => {
+      toast.error(getBillingErrorMessage(err) || t("classes.billing.markSentFailed"));
+    },
+  });
+
+  useEffect(() => {
+    const invoiceIds = Array.from(
+      new Set((preview?.invoiceLinks ?? []).map((link) => link.invoiceId))
+    );
+    const toLoad = invoiceIds.filter((invoiceId) => !loadedShareLinkInvoiceIds[invoiceId]);
+    if (toLoad.length === 0) {
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      const rows = await Promise.all(
+        toLoad.map(async (invoiceId) => {
+          try {
+            const result = await invoicesApi.getShareLink(invoiceId);
+            return { invoiceId, url: result.url };
+          } catch {
+            return { invoiceId, url: null as string | null };
+          }
+        })
+      );
+      if (cancelled) {
+        return;
+      }
+
+      setLoadedShareLinkInvoiceIds((prev) => {
+        const next = { ...prev };
+        toLoad.forEach((invoiceId) => {
+          next[invoiceId] = true;
+        });
+        return next;
+      });
+
+      setShareLinksByInvoiceId((prev) => {
+        const next = { ...prev };
+        rows.forEach((row) => {
+          if (row.url) {
+            next[row.invoiceId] = row.url;
+          }
+        });
+        return next;
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [loadedShareLinkInvoiceIds, preview?.invoiceLinks]);
+
   return (
     <CrudListPageLayout
       title={t("classes.billing.title")}
@@ -228,11 +339,7 @@ export default function ClassesBillingPage() {
           {preview?.billingRunStatus === "INVOICES_CREATED" && classGroupId === "ALL" && (
             <Button
               variant="outline"
-              onClick={() => {
-                if (window.confirm(t("classes.billing.regenerateConfirm"))) {
-                  createRun.mutate({ force: true });
-                }
-              }}
+              onClick={() => setRegenerateInvoicesConfirmOpen(true)}
               disabled={createRun.isPending || !month}
             >
               <RefreshCcw className="h-4 w-4" />
@@ -306,6 +413,61 @@ export default function ClassesBillingPage() {
         onConfirm={() => sendInvoices.mutate()}
       />
 
+      <AlertDialog
+        open={regenerateInvoicesConfirmOpen}
+        onOpenChange={setRegenerateInvoicesConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("classes.billing.regenerate")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("classes.billing.regenerateConfirm")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => createRun.mutate({ force: true })}
+              disabled={createRun.isPending}
+            >
+              {t("common.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={regenerateShareTargetInvoiceId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRegenerateShareTargetInvoiceId(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("classes.billing.regenerateLinkConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("classes.billing.regenerateLinkConfirmDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!regenerateShareTargetInvoiceId) {
+                  return;
+                }
+                shareLink.mutate({ invoiceId: regenerateShareTargetInvoiceId, regenerate: true });
+                setRegenerateShareTargetInvoiceId(null);
+              }}
+            >
+              {t("classes.billing.regenerateLinkConfirmAction")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="p-6 space-y-6">
         {resultSummary ? (
           <div className="rounded-lg border border-success/20 bg-success/5 px-4 py-3 text-sm text-success flex items-center gap-2">
@@ -375,7 +537,7 @@ export default function ClassesBillingPage() {
                       <div className="text-sm font-bold text-foreground">
                         {nameByClient.get(item.payerClientId) ?? item.payerClientId}
                       </div>
-                      <div className="text-xs mt-0.5">
+                      <div className="text-xs mt-0.5 flex items-center gap-2">
                         {emailByClient.has(item.payerClientId) ? (
                           emailByClient.get(item.payerClientId) ? (
                             <span className="text-muted-foreground">
@@ -390,6 +552,18 @@ export default function ClassesBillingPage() {
                           <span className="text-muted-foreground">
                             {t("classes.billing.payerId")} {item.payerClientId}
                           </span>
+                        )}
+                        {facebookByClient.get(item.payerClientId) && (
+                          <a
+                            href={facebookByClient.get(item.payerClientId)!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+                            title="Open Facebook profile"
+                          >
+                            <Facebook className="h-3 w-3" />
+                            <ExternalLink className="h-2.5 w-2.5 opacity-50" />
+                          </a>
                         )}
                       </div>
                     </div>
@@ -446,10 +620,49 @@ export default function ClassesBillingPage() {
                               }
                               lineInvoice={lineInvoice}
                               isFetching={isFetching}
+                              isMarkSentPending={markSent.isPending}
+                              isShareLinkPending={
+                                shareLinkPendingInvoiceId === lineInvoice?.invoiceId
+                              }
+                              payerEmail={emailByClient.get(item.payerClientId)}
+                              privateLink={
+                                lineInvoice ? shareLinksByInvoiceId[lineInvoice.invoiceId] : null
+                              }
                               onOpenSendDialog={openSendDialog}
+                              onMarkSent={(invoiceId) => {
+                                const payerEmail = emailByClient.get(item.payerClientId);
+                                if (!payerEmail) {
+                                  toast.error(t("classes.billing.customerEmailRequired"));
+                                  return;
+                                }
+                                markSent.mutate({ invoiceId, to: payerEmail });
+                              }}
+                              onGenerateShareLink={(invoiceId) => {
+                                shareLink.mutate({ invoiceId, regenerate: false });
+                              }}
+                              onCopyShareLink={async (invoiceId) => {
+                                const url = shareLinksByInvoiceId[invoiceId];
+                                if (!url) {
+                                  return;
+                                }
+                                try {
+                                  await navigator.clipboard.writeText(url);
+                                  toast.success(t("classes.billing.copyLinkSuccess"));
+                                } catch {
+                                  toast.error(t("classes.billing.copyLinkFailed"));
+                                }
+                              }}
+                              onRequestRegenerateShareLink={(invoiceId) => {
+                                setRegenerateShareTargetInvoiceId(invoiceId);
+                              }}
                               sendLabel={t("invoices.actions.send")}
+                              markSentLabel={t("classes.billing.markSent")}
+                              generateShareLinkLabel={t("classes.billing.generatePrivateLink")}
+                              copyLinkLabel={t("classes.billing.copyLink")}
+                              regenerateLinkLabel={t("classes.billing.regenerateLink")}
                               viewInvoiceLabel={t("classes.billing.viewInvoice")}
                               notCreatedLabel={t("classes.billing.invoiceNotCreated")}
+                              moreActionsLabel={t("common.moreActions")}
                             />
                           );
                         })}

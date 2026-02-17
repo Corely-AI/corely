@@ -138,7 +138,10 @@ export default function StudentDetailPage() {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <Card>
           <CardContent className="p-8">
-            <CustomerFormFields form={form} />
+            <CustomerFormFields
+              form={form}
+              afterDisplayName={<StudentGuardiansPanel studentId={studentId} />}
+            />
           </CardContent>
         </Card>
       </form>
@@ -149,8 +152,6 @@ export default function StudentDetailPage() {
         mode="edit"
         onChange={setCustomAttributes}
       />
-
-      <StudentGuardiansPanel studentId={studentId} />
 
       <MaterialsSection entityId={studentId} entityType="PARTY" />
     </div>

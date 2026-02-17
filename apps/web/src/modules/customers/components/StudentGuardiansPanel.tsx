@@ -1,5 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, ShieldCheck, UserMinus, Mail } from "lucide-react";
@@ -42,12 +43,15 @@ const guardiansKey = (studentId: string) => withWorkspace(["students", studentId
 
 export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPanelProps) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [linkOpen, setLinkOpen] = React.useState(false);
   const [createOpen, setCreateOpen] = React.useState(false);
   const [selectedGuardianId, setSelectedGuardianId] = React.useState("");
   const [isPrimaryPayer, setIsPrimaryPayer] = React.useState(false);
   const [isPrimaryContact, setIsPrimaryContact] = React.useState(false);
   const [deleteTarget, setDeleteTarget] = React.useState<string | null>(null);
+  const [facebookUrl, setFacebookUrl] = React.useState("");
+  const [facebookUrlError, setFacebookUrlError] = React.useState<string | null>(null);
 
   const customersOptionsKey = withWorkspace(["customers", "options"]);
 
@@ -70,6 +74,8 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
   React.useEffect(() => {
     if (!createOpen) {
       createGuardianForm.reset(getDefaultCustomerFormValues());
+      setFacebookUrl("");
+      setFacebookUrlError(null);
     }
   }, [createOpen, createGuardianForm]);
 
@@ -106,9 +112,19 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
   });
 
   const createGuardianMutation = useMutation({
-    mutationFn: async (data: CustomerFormData) => {
+    mutationFn: async ({ data, facebook }: { data: CustomerFormData; facebook?: string }) => {
+      const socialLinks = facebook
+        ? [
+            {
+              platform: "facebook" as const,
+              url: facebook,
+              label: "Facebook",
+              isPrimary: true,
+            },
+          ]
+        : [];
       const input = {
-        ...toCreateCustomerInput(data),
+        ...toCreateCustomerInput({ ...data, socialLinks }),
         role: "GUARDIAN" as const,
       };
       return customersApi.createCustomer(input);
@@ -145,19 +161,40 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
     onError: (err: any) => toast.error("Failed to send invitation: " + err.message),
   });
 
+  const handleCreateGuardian = createGuardianForm.handleSubmit((data) => {
+    const trimmedFacebook = facebookUrl.trim();
+    if (trimmedFacebook) {
+      try {
+        const parsed = new URL(trimmedFacebook);
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          throw new Error("invalid-protocol");
+        }
+      } catch {
+        setFacebookUrlError("Enter a valid Facebook URL (include https://).");
+        return;
+      }
+    }
+
+    setFacebookUrlError(null);
+    createGuardianMutation.mutate({
+      data,
+      facebook: trimmedFacebook || undefined,
+    });
+  });
+
   return (
     <Card>
       <CardContent className="p-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold">Guardians</div>
+            <div className="text-sm font-semibold">{t("classes.students.guardians.title")}</div>
             <div className="text-xs text-muted-foreground">
-              Link parents or guardians and set the billing payer.
+              {t("classes.students.guardians.subtitle")}
             </div>
           </div>
           <Button variant="outline" onClick={() => setLinkOpen(true)}>
             <Plus className="h-4 w-4" />
-            Link guardian
+            {t("classes.students.guardians.link")}
           </Button>
         </div>
 
@@ -171,7 +208,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
           <div className="text-sm text-muted-foreground">Loading guardians...</div>
         ) : guardians.length === 0 ? (
           <div className="text-sm text-muted-foreground">
-            No guardians linked yet. Add one to manage billing responsibility.
+            {t("classes.students.guardians.empty")}
           </div>
         ) : (
           <div className="space-y-3">
@@ -309,14 +346,14 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setLinkOpen(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 variant="accent"
                 onClick={() => linkGuardian.mutate()}
                 disabled={!selectedGuardianId || linkGuardian.isPending}
               >
-                {linkGuardian.isPending ? "Linking..." : "Link guardian"}
+                {linkGuardian.isPending ? "Linking..." : t("classes.students.guardians.link")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -335,12 +372,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
             <DialogHeader>
               <DialogTitle>Add guardian</DialogTitle>
             </DialogHeader>
-            <form
-              onSubmit={createGuardianForm.handleSubmit((data) =>
-                createGuardianMutation.mutate(data)
-              )}
-              className="space-y-4"
-            >
+            <form onSubmit={handleCreateGuardian} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="guardian-displayName">
                   Full name <span className="text-destructive">*</span>
@@ -355,6 +387,22 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                     {createGuardianForm.formState.errors.displayName.message}
                   </p>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guardian-facebook">Facebook</Label>
+                <Input
+                  id="guardian-facebook"
+                  type="url"
+                  value={facebookUrl}
+                  onChange={(event) => {
+                    setFacebookUrl(event.target.value);
+                    if (facebookUrlError) {
+                      setFacebookUrlError(null);
+                    }
+                  }}
+                  placeholder="https://facebook.com/username"
+                />
+                {facebookUrlError && <p className="text-sm text-destructive">{facebookUrlError}</p>}
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
@@ -391,7 +439,7 @@ export default function StudentGuardiansPanel({ studentId }: StudentGuardiansPan
                   }}
                   disabled={createGuardianMutation.isPending}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button type="submit" variant="accent" disabled={createGuardianMutation.isPending}>
                   {createGuardianMutation.isPending ? "Creating..." : "Create guardian"}

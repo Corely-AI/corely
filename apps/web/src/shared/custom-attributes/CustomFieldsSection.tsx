@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Checkbox } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import type { CustomizableEntityType } from "@corely/contracts";
 import {
@@ -48,6 +49,7 @@ export function CustomFieldsSection({
   value,
   onChange,
 }: CustomFieldsSectionProps) {
+  const { t } = useTranslation();
   const { data: definitions = [], isLoading: isDefinitionsLoading } =
     useCustomFieldDefinitions(entityType);
   const { data: layout } = useCustomFieldLayout(entityType);
@@ -84,10 +86,10 @@ export function CustomFieldsSection({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Custom fields</CardTitle>
+          <CardTitle>{t("common.customFields")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">Loading custom fields...</div>
+          <div className="text-sm text-muted-foreground">{t("common.loading")}</div>
         </CardContent>
       </Card>
     );
@@ -117,7 +119,7 @@ export function CustomFieldsSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Custom fields</CardTitle>
+        <CardTitle>{t("common.customFields")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {orderedDefinitions.map((definition) => {

@@ -20,6 +20,7 @@ import { PartyApplication } from "../../../party/application/party.application";
 import {
   CancelInvoiceInputSchema,
   CreateInvoiceInputSchema,
+  GenerateInvoiceShareLinkInputSchema,
   RequestInvoicePdfInputSchema,
   FinalizeInvoiceInputSchema,
   GetInvoiceByIdInputSchema,
@@ -28,12 +29,20 @@ import {
   SendInvoiceInputSchema,
   UpdateInvoiceInputSchema,
 } from "@corely/contracts";
+import { EXT_KV_PORT, type ExtKvPort } from "@corely/data";
 import { parseListQuery } from "../../../../shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
 
 import { AuthGuard } from "../../../identity";
 import { ModuleRef } from "@nestjs/core";
 import { DocumentsApplication } from "../../../documents/application/documents.application";
+import {
+  INVOICE_SHARE_LINK_MODULE_ID,
+  INVOICE_SHARE_LINK_SCOPE,
+  createInvoiceShareToken,
+  invoiceShareLinkKey,
+  parseInvoiceShareLinkRecord,
+} from "./invoice-share-link.utils";
 
 const SEND_INVOICE_PDF_WAIT_MS = 90_000;
 
@@ -46,6 +55,7 @@ export class InvoicesHttpController {
     @Inject(DocumentsApplication)
     @Optional()
     private readonly documentsApp: DocumentsApplication | null,
+    @Inject(EXT_KV_PORT) @Optional() private readonly extKv: ExtKvPort | null,
     @Optional() private readonly moduleRef?: ModuleRef
   ) {}
 
@@ -148,6 +158,104 @@ export class InvoicesHttpController {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.cancelInvoice.execute(input, ctx);
     return mapResultToHttp(result).invoice;
+  }
+
+  @Post(":invoiceId/share-link")
+  async generateShareLink(
+    @Param("invoiceId") invoiceId: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = GenerateInvoiceShareLinkInputSchema.parse(body ?? {});
+    const ctx = buildUseCaseContext(req);
+    const app = this.app ?? this.moduleRef?.get(InvoicesApplication, { strict: false });
+    if (!app) {
+      throw new Error("InvoicesApplication not available");
+    }
+    if (!this.extKv) {
+      throw new Error("ExtKvPort not available");
+    }
+
+    const invoiceResult = await app.getInvoiceById.execute({ invoiceId }, ctx);
+    const { invoice } = mapResultToHttp(invoiceResult);
+    if (invoice.status === "CANCELED") {
+      throw new HttpException("Cannot share canceled invoice", HttpStatus.CONFLICT);
+    }
+
+    const tenantId = ctx.workspaceId ?? ctx.tenantId;
+    if (!tenantId) {
+      throw new HttpException("workspaceId or tenantId is required", HttpStatus.BAD_REQUEST);
+    }
+
+    const key = invoiceShareLinkKey(invoiceId);
+    const existing = await this.extKv.get({
+      tenantId,
+      moduleId: INVOICE_SHARE_LINK_MODULE_ID,
+      scope: INVOICE_SHARE_LINK_SCOPE,
+      key,
+    });
+
+    const existingRecord = parseInvoiceShareLinkRecord(existing?.value);
+    const token =
+      existingRecord && !input.regenerate ? existingRecord.token : createInvoiceShareToken();
+
+    if (!existingRecord || input.regenerate) {
+      await this.extKv.set({
+        tenantId,
+        moduleId: INVOICE_SHARE_LINK_MODULE_ID,
+        scope: INVOICE_SHARE_LINK_SCOPE,
+        key,
+        value: {
+          token,
+          issuedAt: new Date().toISOString(),
+        },
+      });
+    }
+
+    const host = req.get("host");
+    const protocol = req.protocol;
+    const url = `${protocol}://${host}/invoices/public/${encodeURIComponent(invoiceId)}/${encodeURIComponent(token)}`;
+    return { url };
+  }
+
+  @Get(":invoiceId/share-link")
+  async getShareLink(@Param("invoiceId") invoiceId: string, @Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    const app = this.app ?? this.moduleRef?.get(InvoicesApplication, { strict: false });
+    if (!app) {
+      throw new Error("InvoicesApplication not available");
+    }
+    if (!this.extKv) {
+      throw new Error("ExtKvPort not available");
+    }
+
+    const invoiceResult = await app.getInvoiceById.execute({ invoiceId }, ctx);
+    const { invoice } = mapResultToHttp(invoiceResult);
+    if (invoice.status === "CANCELED") {
+      return { url: null };
+    }
+
+    const tenantId = ctx.workspaceId ?? ctx.tenantId;
+    if (!tenantId) {
+      throw new HttpException("workspaceId or tenantId is required", HttpStatus.BAD_REQUEST);
+    }
+
+    const existing = await this.extKv.get({
+      tenantId,
+      moduleId: INVOICE_SHARE_LINK_MODULE_ID,
+      scope: INVOICE_SHARE_LINK_SCOPE,
+      key: invoiceShareLinkKey(invoiceId),
+    });
+    const record = parseInvoiceShareLinkRecord(existing?.value);
+    if (!record) {
+      return { url: null };
+    }
+
+    const host = req.get("host");
+    const protocol = req.protocol;
+    return {
+      url: `${protocol}://${host}/invoices/public/${encodeURIComponent(invoiceId)}/${encodeURIComponent(record.token)}`,
+    };
   }
 
   @Get(":invoiceId/pdf")

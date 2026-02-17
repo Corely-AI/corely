@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Controller, useFieldArray, type UseFormReturn } from "react-hook-form";
 import { Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -11,9 +12,10 @@ import type { CustomerFormData } from "../schemas/customer-form.schema";
 interface CustomerFormFieldsProps {
   form: UseFormReturn<CustomerFormData>;
   className?: string;
+  afterDisplayName?: ReactNode;
 }
 
-export function CustomerFormFields({ form, className }: CustomerFormFieldsProps) {
+export function CustomerFormFields({ form, className, afterDisplayName }: CustomerFormFieldsProps) {
   const { t } = useTranslation();
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -43,6 +45,8 @@ export function CustomerFormFields({ form, className }: CustomerFormFieldsProps)
               </p>
             )}
           </div>
+
+          {afterDisplayName ? <div className="md:col-span-2">{afterDisplayName}</div> : null}
 
           <div>
             <Label htmlFor="email">{t("customers.email")}</Label>
@@ -177,7 +181,7 @@ export function CustomerFormFields({ form, className }: CustomerFormFieldsProps)
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">Social Profiles</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t("customers.social.title")}</h2>
           <Button
             type="button"
             variant="outline"
@@ -185,12 +189,12 @@ export function CustomerFormFields({ form, className }: CustomerFormFieldsProps)
             onClick={() => append({ platform: "linkedin", url: "", label: "", isPrimary: false })}
           >
             <Plus className="h-4 w-4 mr-1" />
-            Add profile
+            {t("customers.social.add")}
           </Button>
         </div>
 
         {fields.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No social profiles added.</div>
+          <div className="text-sm text-muted-foreground">{t("customers.social.empty")}</div>
         ) : (
           <div className="space-y-3">
             {fields.map((field, index) => (
