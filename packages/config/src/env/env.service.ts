@@ -237,6 +237,18 @@ export class EnvService {
     return this.config.ANTHROPIC_API_KEY;
   }
 
+  get CRM_AI_ENABLED(): boolean {
+    return this.config.CRM_AI_ENABLED;
+  }
+
+  get CRM_AI_V2_ANALYTICS_ENABLED(): boolean {
+    return this.config.CRM_AI_V2_ANALYTICS_ENABLED;
+  }
+
+  get CRM_AI_INTENT_SENTIMENT_ENABLED(): boolean {
+    return this.config.CRM_AI_INTENT_SENTIMENT_ENABLED;
+  }
+
   // ============================================================================
   // EMAIL PROVIDERS
   // ============================================================================

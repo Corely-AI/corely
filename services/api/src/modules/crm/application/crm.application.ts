@@ -15,6 +15,14 @@ import type { CreateCommunicationDraftUseCase } from "./use-cases/create-communi
 import type { SendCommunicationUseCase } from "./use-cases/send-communication/send-communication.usecase";
 import type { LogCommunicationUseCase } from "./use-cases/log-communication/log-communication.usecase";
 import type { ProcessCommunicationWebhookUseCase } from "./use-cases/process-communication-webhook/process-communication-webhook.usecase";
+import type { GetDealAiInsightsUseCase } from "./use-cases/ai/get-deal-ai-insights.usecase";
+import type { GetDealAiRecommendationsUseCase } from "./use-cases/ai/get-deal-ai-recommendations.usecase";
+import type { DraftDealAiMessageUseCase } from "./use-cases/ai/draft-deal-ai-message.usecase";
+import type { ParseActivityAiUseCase } from "./use-cases/ai/parse-activity-ai.usecase";
+import type { ExtractActivityAiUseCase } from "./use-cases/ai/extract-activity-ai.usecase";
+import type { SummarizeCommunicationAiUseCase } from "./use-cases/ai/summarize-communication-ai.usecase";
+import type { GetCrmAiSettingsUseCase } from "./use-cases/ai/get-crm-ai-settings.usecase";
+import type { UpdateCrmAiSettingsUseCase } from "./use-cases/ai/update-crm-ai-settings.usecase";
 
 export class CrmApplication {
   constructor(
@@ -34,6 +42,14 @@ export class CrmApplication {
     public readonly createCommunicationDraft: CreateCommunicationDraftUseCase,
     public readonly sendCommunication: SendCommunicationUseCase,
     public readonly logCommunication: LogCommunicationUseCase,
-    public readonly processCommunicationWebhook: ProcessCommunicationWebhookUseCase
+    public readonly processCommunicationWebhook: ProcessCommunicationWebhookUseCase,
+    public readonly getDealAiInsights: GetDealAiInsightsUseCase,
+    public readonly getDealAiRecommendations: GetDealAiRecommendationsUseCase,
+    public readonly draftDealAiMessage: DraftDealAiMessageUseCase,
+    public readonly parseActivityAi: ParseActivityAiUseCase,
+    public readonly extractActivityAi: ExtractActivityAiUseCase,
+    public readonly summarizeCommunicationAi: SummarizeCommunicationAiUseCase,
+    public readonly getCrmAiSettings: GetCrmAiSettingsUseCase,
+    public readonly updateCrmAiSettings: UpdateCrmAiSettingsUseCase
   ) {}
 }

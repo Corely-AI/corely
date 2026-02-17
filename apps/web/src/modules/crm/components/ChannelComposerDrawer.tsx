@@ -17,6 +17,8 @@ type ChannelComposerDrawerProps = {
   channel: ChannelDefinition | null;
   context: Record<string, string | undefined>;
   onLog: (payload: { subject?: string; body: string; openUrl?: string }) => void;
+  onOpenAiDraft?: () => void;
+  aiDisabled?: boolean;
 };
 
 export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
@@ -25,6 +27,8 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
   channel,
   context,
   onLog,
+  onOpenAiDraft,
+  aiDisabled = false,
 }) => {
   const { t } = useTranslation();
   const [templateId, setTemplateId] = useState<string | undefined>();
@@ -147,6 +151,11 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
         </div>
 
         <DrawerFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          {onOpenAiDraft && (
+            <Button variant="outline" onClick={onOpenAiDraft} disabled={aiDisabled}>
+              AI Draft
+            </Button>
+          )}
           {canCopy && (
             <Button variant="secondary" onClick={handleCopy}>
               <Copy className="h-4 w-4 mr-1" />

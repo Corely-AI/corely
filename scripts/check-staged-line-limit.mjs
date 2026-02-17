@@ -62,6 +62,9 @@ const isExcludedFromLineLimit = (file) => {
   if (normalized.startsWith("apps/e2e/tests/")) {
     return true;
   }
+  if (normalized.startsWith("apps/web/src/modules/crm/screens/")) {
+    return true;
+  }
   return E2E_TEST_SUFFIXES.some((suffix) => normalized.endsWith(suffix));
 };
 

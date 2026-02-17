@@ -270,12 +270,32 @@ model Deal {
   company           Party?                @relation("DealCompany", fields: [companyId], references: [id])
   activities        Activity[]
   stageTransitions  DealStageTransition[]
+  aiSnapshots       DealAiSnapshot[]
 
   @@index([tenantId, status])
   @@index([tenantId, partyId])
   @@index([tenantId, ownerUserId])
   @@index([tenantId, stageId])
   @@index([tenantId, createdAt])
+  @@schema("crm")
+}
+
+model DealAiSnapshot {
+  id           String   @id @default(cuid())
+  tenantId     String
+  workspaceId  String
+  dealId       String
+  kind         String
+  generatedAt  DateTime @db.Timestamptz(6)
+  payloadJson  Json
+  version      String
+  ttlExpiresAt DateTime @db.Timestamptz(6)
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+
+  deal Deal @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId, dealId, kind, generatedAt(sort: Desc)])
+  @@index([tenantId, workspaceId, kind, ttlExpiresAt])
   @@schema("crm")
 }
 

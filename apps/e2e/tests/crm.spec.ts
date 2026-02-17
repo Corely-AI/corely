@@ -26,12 +26,7 @@ function uniqueSuffix() {
 }
 
 async function createDealFixture(page: Page, suffix: string): Promise<{ dealId: string }> {
-  const accessToken = await page.evaluate(() => localStorage.getItem("accessToken"));
-  if (!accessToken) {
-    throw new Error("Missing access token");
-  }
-  const workspaceId =
-    (await page.evaluate(() => localStorage.getItem("corely-active-workspace"))) ?? "";
+  const { accessToken, workspaceId } = await getAuthContext(page);
 
   const customerRes = await page.request.post(`${API_URL}/customers`, {
     headers: {
@@ -74,6 +69,46 @@ async function createDealFixture(page: Page, suffix: string): Promise<{ dealId: 
   }
 
   return { dealId };
+}
+
+async function getAuthContext(page: Page): Promise<{ accessToken: string; workspaceId: string }> {
+  const accessToken = await page.evaluate(() => localStorage.getItem("accessToken"));
+  if (!accessToken) {
+    throw new Error("Missing access token");
+  }
+  const workspaceId =
+    (await page.evaluate(() => localStorage.getItem("corely-active-workspace"))) ?? "";
+  return { accessToken, workspaceId };
+}
+
+async function ensureCrmAiEnabled(page: Page): Promise<boolean> {
+  const { accessToken, workspaceId } = await getAuthContext(page);
+  await page.request.patch(`${API_URL}/crm/ai/settings`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      ...(workspaceId ? { "X-Workspace-Id": workspaceId } : {}),
+    },
+    data: {
+      aiEnabled: true,
+      intentSentimentEnabled: true,
+    },
+  });
+
+  const settingsRes = await page.request.get(`${API_URL}/crm/ai/settings`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+      ...(workspaceId ? { "X-Workspace-Id": workspaceId } : {}),
+    },
+  });
+  if (!settingsRes.ok()) {
+    return false;
+  }
+  const body = (await settingsRes.json()) as {
+    settings?: { aiEnabled?: boolean; intentSentimentEnabled?: boolean };
+  };
+  return Boolean(body.settings?.aiEnabled);
 }
 
 test.describe("CRM Smoke + Navigation", () => {
@@ -235,6 +270,61 @@ test.describe("CRM Activities + Timeline", () => {
     await page.getByRole("option", { name: "Connected" }).click();
     await page.click(selectors.crm.activityAdd);
     await expect(page.locator(selectors.crm.timeline)).toContainText("Connected");
+  });
+});
+
+test.describe("CRM AI Smoke", () => {
+  test("generates deal insights from object page", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+
+    const aiEnabled = await ensureCrmAiEnabled(page);
+    test.skip(!aiEnabled, "CRM AI is disabled in this environment");
+
+    const { dealId } = await createDealFixture(page, uniqueSuffix());
+    await page.goto(`/crm/deals/${dealId}`);
+    await expect(page.locator(selectors.crm.dealAiInsightsCard)).toBeVisible();
+
+    const insightsResponse = page.waitForResponse(
+      (response) =>
+        response.url().includes(`/crm/deals/${dealId}/ai/insights`) &&
+        response.request().method() === "GET"
+    );
+    await page.getByRole("button", { name: "Generate insights" }).click();
+    const response = await insightsResponse;
+    expect(response.ok()).toBeTruthy();
+  });
+
+  test("parses activity from describe input", async ({ page, testData }) => {
+    await login(page, {
+      email: testData.user.email,
+      password: testData.user.password,
+      tenantId: testData.tenant.id,
+    });
+
+    const aiEnabled = await ensureCrmAiEnabled(page);
+    test.skip(!aiEnabled, "CRM AI is disabled in this environment");
+
+    await page.goto("/crm/activities/new");
+    await page.fill(
+      selectors.crm.activityDescribeInput,
+      "Call John tomorrow 10:00 about pricing, then send follow-up."
+    );
+
+    const parseResponse = page.waitForResponse(
+      (response) =>
+        response.url().includes("/crm/activities/ai/parse") &&
+        response.request().method() === "POST"
+    );
+    await page.click(selectors.crm.activityDescribeParse);
+    const response = await parseResponse;
+    expect(response.ok()).toBeTruthy();
+
+    await page.click(selectors.crm.activityDescribeApply);
+    await expect(page.locator(selectors.crm.newActivitySubject)).toHaveValue(/.+/);
   });
 });
 

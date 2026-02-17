@@ -114,6 +114,48 @@ export const envSchema = z.object({
   SPEECH_TO_TEXT_PROVIDER: z.enum(["openai", "google", "none"]).optional(),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+  CRM_AI_ENABLED: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) {
+          return true;
+        }
+        if (["false", "0", "no", "n"].includes(normalized)) {
+          return false;
+        }
+      }
+      return value;
+    }, z.boolean())
+    .default(false),
+  CRM_AI_V2_ANALYTICS_ENABLED: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) {
+          return true;
+        }
+        if (["false", "0", "no", "n"].includes(normalized)) {
+          return false;
+        }
+      }
+      return value;
+    }, z.boolean())
+    .default(false),
+  CRM_AI_INTENT_SENTIMENT_ENABLED: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) {
+          return true;
+        }
+        if (["false", "0", "no", "n"].includes(normalized)) {
+          return false;
+        }
+      }
+      return value;
+    }, z.boolean())
+    .default(false),
 
   // ============================================================================
   // EMAIL PROVIDERS
