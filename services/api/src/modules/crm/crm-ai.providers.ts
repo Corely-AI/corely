@@ -176,13 +176,7 @@ export const CRM_AI_PROVIDERS: Provider[] = [
         env,
         new NestLoggerAdapter()
       ),
-    inject: [
-      AI_TEXT_PORT,
-      CrmAiFeatureGateService,
-      PromptRegistry,
-      PromptUsageLogger,
-      EnvService,
-    ],
+    inject: [AI_TEXT_PORT, CrmAiFeatureGateService, PromptRegistry, PromptUsageLogger, EnvService],
   },
   {
     provide: SummarizeCommunicationAiUseCase,
@@ -201,12 +195,6 @@ export const CRM_AI_PROVIDERS: Provider[] = [
         env,
         new NestLoggerAdapter()
       ),
-    inject: [
-      AI_TEXT_PORT,
-      CrmAiFeatureGateService,
-      PromptRegistry,
-      PromptUsageLogger,
-      EnvService,
-    ],
+    inject: [AI_TEXT_PORT, CrmAiFeatureGateService, PromptRegistry, PromptUsageLogger, EnvService],
   },
 ];
