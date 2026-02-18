@@ -3,6 +3,8 @@ import HeroSection from "@/components/landing/HeroSection";
 import SocialProofStrip from "@/components/landing/SocialProofStrip";
 import PASSection from "@/components/landing/PASSection";
 import MethodSection from "@/components/landing/MethodSection";
+import ProgramHighlights from "@/components/landing/ProgramHighlights";
+import GroupLearningSection from "@/components/landing/GroupLearningSection";
 import CoursePackages from "@/components/landing/CoursePackages";
 import ScheduleSection from "@/components/landing/ScheduleSection";
 import InstructorSection from "@/components/landing/InstructorSection";
@@ -21,6 +23,8 @@ const Index = () => {
         <SocialProofStrip />
         <PASSection />
         <MethodSection />
+        <ProgramHighlights />
+        <GroupLearningSection />
         <CoursePackages />
         <ScheduleSection />
         <InstructorSection />

@@ -10,21 +10,29 @@ const Footer = () => (
         </div>
 
         <div className="flex items-center gap-4">
-          <a href="https://facebook.com/ThuTrangNguyenGermany" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="opacity-70 hover:opacity-100 transition-opacity">
+          <a
+            href="https://www.facebook.com/TrangBGerman"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Facebook"
+            className="opacity-70 hover:opacity-100 transition-opacity"
+          >
             <Facebook className="w-5 h-5" />
           </a>
-          <a href="https://instagram.com/tranginberlin" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="opacity-70 hover:opacity-100 transition-opacity">
+          <a
+            href="https://www.instagram.com/ThuTrangNguyenGermany"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Instagram"
+            className="opacity-70 hover:opacity-100 transition-opacity"
+          >
             <Instagram className="w-5 h-5" />
           </a>
         </div>
-
-        <div className="flex flex-wrap justify-center gap-4 text-xs opacity-70">
-          <a href="#" className="hover:opacity-100 transition-opacity underline">Impressum</a>
-          <a href="#" className="hover:opacity-100 transition-opacity underline">Datenschutzerklärung</a>
-          <a href="#" className="hover:opacity-100 transition-opacity underline">Terms</a>
-        </div>
       </div>
-      <p className="text-center text-xs opacity-50 mt-6">© 2026 Deutsch Liebe – Thu Trang Nguyen. Alle Rechte vorbehalten.</p>
+      <p className="text-center text-xs opacity-50 mt-6">
+        © 2026 Deutsch Liebe – Thu Trang Nguyen. Alle Rechte vorbehalten.
+      </p>
     </div>
   </footer>
 );

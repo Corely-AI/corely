@@ -195,7 +195,25 @@ export default async function WorkspaceRootPage({
       token: resolvedSearchParams?.token ?? undefined,
     });
 
-    return <WebsitePublicPageScreen page={output} host={ctx.host} previewMode={previewMode} />;
+    let wallOfLoveItems: Awaited<ReturnType<typeof publicApi.listWallOfLoveItems>>["items"] = [];
+    try {
+      const wallOfLove = await publicApi.listWallOfLoveItems({
+        siteId: output.siteId,
+        locale: output.locale,
+      });
+      wallOfLoveItems = wallOfLove.items;
+    } catch {
+      wallOfLoveItems = [];
+    }
+
+    return (
+      <WebsitePublicPageScreen
+        page={output}
+        host={ctx.host}
+        previewMode={previewMode}
+        wallOfLoveItems={wallOfLoveItems}
+      />
+    );
   } catch (error) {
     const resolvedError = resolveWebsiteError(error);
     if (resolvedError?.kind === "not-found") {

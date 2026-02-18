@@ -65,6 +65,8 @@ import {
   WebsitePagesPage,
   WebsitePageEditorPage,
   WebsiteMenusPage,
+  WebsiteFeedbackConfigPage,
+  WebsiteWallOfLovePage,
 } from "../../modules/website";
 import {
   RentalPropertiesPage,
@@ -119,6 +121,8 @@ export const appShellRoutes = (
       <Route path="/website/sites/:siteId/edit" element={<WebsiteSiteEditorPage />} />
       <Route path="/website/sites/:siteId/domains" element={<WebsiteDomainsPage />} />
       <Route path="/website/sites/:siteId/menus" element={<WebsiteMenusPage />} />
+      <Route path="/website/sites/:siteId/feedback" element={<WebsiteFeedbackConfigPage />} />
+      <Route path="/website/sites/:siteId/wall-of-love" element={<WebsiteWallOfLovePage />} />
       <Route path="/website/sites/:siteId/pages" element={<WebsitePagesPage />} />
       <Route path="/website/sites/:siteId/pages/new" element={<WebsitePageEditorPage />} />
       <Route path="/website/pages/:pageId/edit" element={<WebsitePageEditorPage />} />

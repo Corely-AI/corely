@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const combos = [
   {
@@ -7,7 +8,11 @@ const combos = [
     subtitle: "Phát âm + A1.1",
     sessions: "25 buổi",
     suitableFor: "Người mới bắt đầu, mất gốc",
-    outcomes: ["Phát âm chuẩn cơ bản", "Giao tiếp chào hỏi, tự giới thiệu", "Hiểu câu đơn giản trong Alltag"],
+    outcomes: [
+      "Phát âm chuẩn cơ bản",
+      "Giao tiếp chào hỏi, tự giới thiệu",
+      "Hiểu câu đơn giản trong Alltag",
+    ],
     highlight: false,
   },
   {
@@ -15,7 +20,11 @@ const combos = [
     subtitle: "Phát âm + A1.2 + Ôn thi A1",
     sessions: "34 buổi",
     suitableFor: "Muốn thi chứng chỉ A1, đi làm cơ bản",
-    outcomes: ["Phát âm vững + nghe hiểu tốt hơn", "Tự tin đi sở, bác sĩ đơn giản", "Ôn thi A1 Prüfung bài bản"],
+    outcomes: [
+      "Phát âm vững + nghe hiểu tốt hơn",
+      "Tự tin đi sở, bác sĩ đơn giản",
+      "Ôn thi A1 Prüfung bài bản",
+    ],
     highlight: true,
   },
   {
@@ -23,7 +32,11 @@ const combos = [
     subtitle: "Phát âm + A2.2 / B1",
     sessions: "29 buổi",
     suitableFor: "Đã có nền A1–A2, muốn lên trình",
-    outcomes: ["Giao tiếp phức tạp hơn (đi làm, hội thoại)", "Phản xạ nhanh, nói tự nhiên hơn", "Chuẩn bị thi B1 nếu cần"],
+    outcomes: [
+      "Giao tiếp phức tạp hơn (đi làm, hội thoại)",
+      "Phản xạ nhanh, nói tự nhiên hơn",
+      "Chuẩn bị thi B1 nếu cần",
+    ],
     highlight: false,
   },
 ];
@@ -62,7 +75,9 @@ const CoursePackages = () => {
                 <p className="text-primary font-semibold">{combo.subtitle}</p>
               </div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="bg-muted px-3 py-1 rounded-full text-xs font-medium text-muted-foreground">{combo.sessions}</span>
+                <span className="bg-muted px-3 py-1 rounded-full text-xs font-medium text-muted-foreground">
+                  {combo.sessions}
+                </span>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
                 <strong>Phù hợp:</strong> {combo.suitableFor}
@@ -76,14 +91,16 @@ const CoursePackages = () => {
                 ))}
               </ul>
               <div className="bg-accent/60 rounded-lg px-3 py-2 mb-4 text-center">
-                <span className="text-xs text-accent-foreground font-medium">Ưu đãi theo đợt — hỏi Trang để biết thêm</span>
+                <span className="text-xs text-accent-foreground font-medium">
+                  Ưu đãi theo đợt — hỏi Trang để biết thêm
+                </span>
               </div>
               <Button
                 variant={combo.highlight ? "hero" : "hero-outline"}
                 className="w-full"
-                onClick={scrollToForm}
+                asChild
               >
-                Chọn combo này
+                <Link to="/contact">Chọn combo này</Link>
               </Button>
             </div>
           ))}

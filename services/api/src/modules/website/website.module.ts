@@ -20,6 +20,8 @@ import { WebsiteSitesController } from "./adapters/http/website-sites.controller
 import { WebsiteDomainsController } from "./adapters/http/website-domains.controller";
 import { WebsitePagesController } from "./adapters/http/website-pages.controller";
 import { WebsiteMenusController } from "./adapters/http/website-menus.controller";
+import { WebsiteQaController } from "./adapters/http/website-qa.controller";
+import { WebsiteWallOfLoveController } from "./adapters/http/website-wall-of-love.controller";
 import { WebsitePublicController } from "./adapters/http/website-public.controller";
 import { WebsiteAiController } from "./adapters/http/website-ai.controller";
 import { WebsiteApplication } from "./application/website.application";
@@ -41,11 +43,28 @@ import { ListWebsiteMenusUseCase } from "./application/use-cases/list-menus.usec
 import { ResolveWebsitePublicPageUseCase } from "./application/use-cases/resolve-public-page.usecase";
 import { GenerateWebsitePageFromPromptUseCase } from "./application/use-cases/generate-page-from-prompt.usecase";
 import { WebsiteSlugExistsUseCase } from "./application/use-cases/slug-exists.usecase";
+import { CreateWebsiteFeedbackUseCase } from "./application/use-cases/create-website-feedback.usecase";
+import { ListWebsitePublicQaUseCase } from "./application/use-cases/list-website-public-qa.usecase";
+import { ListWebsiteQaUseCase } from "./application/use-cases/list-website-qa.usecase";
+import { CreateWebsiteQaUseCase } from "./application/use-cases/create-website-qa.usecase";
+import { UpdateWebsiteQaUseCase } from "./application/use-cases/update-website-qa.usecase";
+import { DeleteWebsiteQaUseCase } from "./application/use-cases/delete-website-qa.usecase";
+import { ListWebsiteWallOfLoveItemsUseCase } from "./application/use-cases/list-website-wall-of-love-items.usecase";
+import { CreateWebsiteWallOfLoveItemUseCase } from "./application/use-cases/create-website-wall-of-love-item.usecase";
+import { UpdateWebsiteWallOfLoveItemUseCase } from "./application/use-cases/update-website-wall-of-love-item.usecase";
+import { ReorderWebsiteWallOfLoveItemsUseCase } from "./application/use-cases/reorder-website-wall-of-love-items.usecase";
+import { PublishWebsiteWallOfLoveItemUseCase } from "./application/use-cases/publish-website-wall-of-love-item.usecase";
+import { UnpublishWebsiteWallOfLoveItemUseCase } from "./application/use-cases/unpublish-website-wall-of-love-item.usecase";
+import { ListPublicWebsiteWallOfLoveItemsUseCase } from "./application/use-cases/list-public-website-wall-of-love-items.usecase";
 import { PrismaWebsiteSiteRepository } from "./infrastructure/prisma/prisma-website-site-repository.adapter";
 import { PrismaWebsiteDomainRepository } from "./infrastructure/prisma/prisma-website-domain-repository.adapter";
 import { PrismaWebsitePageRepository } from "./infrastructure/prisma/prisma-website-page-repository.adapter";
 import { PrismaWebsiteMenuRepository } from "./infrastructure/prisma/prisma-website-menu-repository.adapter";
 import { PrismaWebsiteSnapshotRepository } from "./infrastructure/prisma/prisma-website-snapshot-repository.adapter";
+import { PrismaWebsiteFeedbackRepository } from "./infrastructure/prisma/prisma-website-feedback-repository.adapter";
+import { PrismaWebsiteQaRepository } from "./infrastructure/prisma/prisma-website-qa-repository.adapter";
+import { PrismaWebsiteWallOfLoveRepository } from "./infrastructure/prisma/prisma-website-wall-of-love-repository.adapter";
+import { PrismaWebsiteWallOfLoveImagesRepository } from "./infrastructure/prisma/prisma-website-wall-of-love-images-repository.adapter";
 import { CmsWebsitePortAdapter } from "./infrastructure/cms/cms-website-port.adapter";
 import { AiSdkWebsitePageGenerator } from "./infrastructure/ai/ai-sdk-website-page-generator.adapter";
 import {
@@ -68,6 +87,22 @@ import {
   WEBSITE_SNAPSHOT_REPO_PORT,
   type WebsiteSnapshotRepositoryPort,
 } from "./application/ports/snapshot-repository.port";
+import {
+  WEBSITE_FEEDBACK_REPO_PORT,
+  type WebsiteFeedbackRepositoryPort,
+} from "./application/ports/feedback-repository.port";
+import {
+  WEBSITE_QA_REPO_PORT,
+  type WebsiteQaRepositoryPort,
+} from "./application/ports/qa-repository.port";
+import {
+  WEBSITE_WALL_OF_LOVE_REPO_PORT,
+  type WebsiteWallOfLoveRepositoryPort,
+} from "./application/ports/wall-of-love-repository.port";
+import {
+  WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT,
+  type WebsiteWallOfLoveImagesRepositoryPort,
+} from "./application/ports/wall-of-love-images-repository.port";
 import { CMS_READ_PORT, type CmsReadPort } from "./application/ports/cms-read.port";
 import { CMS_WRITE_PORT, type CmsWritePort } from "./application/ports/cms-write.port";
 import { WEBSITE_AI_PORT, type WebsiteAiGeneratorPort } from "./application/ports/website-ai.port";
@@ -80,6 +115,8 @@ import { PublicWorkspaceResolver } from "@/shared/public";
     WebsiteDomainsController,
     WebsitePagesController,
     WebsiteMenusController,
+    WebsiteQaController,
+    WebsiteWallOfLoveController,
     WebsitePublicController,
     WebsiteAiController,
   ],
@@ -95,6 +132,17 @@ import { PublicWorkspaceResolver } from "@/shared/public";
     { provide: WEBSITE_MENU_REPO_PORT, useExisting: PrismaWebsiteMenuRepository },
     PrismaWebsiteSnapshotRepository,
     { provide: WEBSITE_SNAPSHOT_REPO_PORT, useExisting: PrismaWebsiteSnapshotRepository },
+    PrismaWebsiteFeedbackRepository,
+    { provide: WEBSITE_FEEDBACK_REPO_PORT, useExisting: PrismaWebsiteFeedbackRepository },
+    PrismaWebsiteQaRepository,
+    { provide: WEBSITE_QA_REPO_PORT, useExisting: PrismaWebsiteQaRepository },
+    PrismaWebsiteWallOfLoveRepository,
+    { provide: WEBSITE_WALL_OF_LOVE_REPO_PORT, useExisting: PrismaWebsiteWallOfLoveRepository },
+    PrismaWebsiteWallOfLoveImagesRepository,
+    {
+      provide: WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT,
+      useExisting: PrismaWebsiteWallOfLoveImagesRepository,
+    },
     {
       provide: CmsWebsitePortAdapter,
       useFactory: (cms: CmsApplication) => new CmsWebsitePortAdapter(cms),
@@ -328,6 +376,247 @@ import { PublicWorkspaceResolver } from "@/shared/public";
       ],
     },
     {
+      provide: CreateWebsiteFeedbackUseCase,
+      useFactory: (
+        feedbackRepo: WebsiteFeedbackRepositoryPort,
+        domainRepo: WebsiteDomainRepositoryPort,
+        siteRepo: WebsiteSiteRepositoryPort,
+        pageRepo: WebsitePageRepositoryPort,
+        publicWorkspaceResolver: PublicWorkspaceResolver,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) =>
+        new CreateWebsiteFeedbackUseCase({
+          logger: new NestLoggerAdapter(),
+          feedbackRepo,
+          domainRepo,
+          siteRepo,
+          pageRepo,
+          publicWorkspaceResolver,
+          idGenerator,
+          clock,
+        }),
+      inject: [
+        WEBSITE_FEEDBACK_REPO_PORT,
+        WEBSITE_DOMAIN_REPO_PORT,
+        WEBSITE_SITE_REPO_PORT,
+        WEBSITE_PAGE_REPO_PORT,
+        PublicWorkspaceResolver,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: ListWebsitePublicQaUseCase,
+      useFactory: (
+        qaRepo: WebsiteQaRepositoryPort,
+        domainRepo: WebsiteDomainRepositoryPort,
+        siteRepo: WebsiteSiteRepositoryPort,
+        pageRepo: WebsitePageRepositoryPort,
+        publicWorkspaceResolver: PublicWorkspaceResolver
+      ) =>
+        new ListWebsitePublicQaUseCase({
+          logger: new NestLoggerAdapter(),
+          qaRepo,
+          domainRepo,
+          siteRepo,
+          pageRepo,
+          publicWorkspaceResolver,
+        }),
+      inject: [
+        WEBSITE_QA_REPO_PORT,
+        WEBSITE_DOMAIN_REPO_PORT,
+        WEBSITE_SITE_REPO_PORT,
+        WEBSITE_PAGE_REPO_PORT,
+        PublicWorkspaceResolver,
+      ],
+    },
+    {
+      provide: ListWebsiteQaUseCase,
+      useFactory: (siteRepo: WebsiteSiteRepositoryPort, qaRepo: WebsiteQaRepositoryPort) =>
+        new ListWebsiteQaUseCase({
+          logger: new NestLoggerAdapter(),
+          siteRepo,
+          qaRepo,
+        }),
+      inject: [WEBSITE_SITE_REPO_PORT, WEBSITE_QA_REPO_PORT],
+    },
+    {
+      provide: CreateWebsiteQaUseCase,
+      useFactory: (
+        siteRepo: WebsiteSiteRepositoryPort,
+        qaRepo: WebsiteQaRepositoryPort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) =>
+        new CreateWebsiteQaUseCase({
+          logger: new NestLoggerAdapter(),
+          siteRepo,
+          qaRepo,
+          idGenerator,
+          clock,
+        }),
+      inject: [WEBSITE_SITE_REPO_PORT, WEBSITE_QA_REPO_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: UpdateWebsiteQaUseCase,
+      useFactory: (qaRepo: WebsiteQaRepositoryPort, clock: ClockPort) =>
+        new UpdateWebsiteQaUseCase({
+          logger: new NestLoggerAdapter(),
+          qaRepo,
+          clock,
+        }),
+      inject: [WEBSITE_QA_REPO_PORT, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: DeleteWebsiteQaUseCase,
+      useFactory: (qaRepo: WebsiteQaRepositoryPort) =>
+        new DeleteWebsiteQaUseCase({
+          logger: new NestLoggerAdapter(),
+          qaRepo,
+        }),
+      inject: [WEBSITE_QA_REPO_PORT],
+    },
+    {
+      provide: ListWebsiteWallOfLoveItemsUseCase,
+      useFactory: (
+        siteRepo: WebsiteSiteRepositoryPort,
+        wallOfLoveRepo: WebsiteWallOfLoveRepositoryPort,
+        wallOfLoveImagesRepo: WebsiteWallOfLoveImagesRepositoryPort
+      ) =>
+        new ListWebsiteWallOfLoveItemsUseCase({
+          logger: new NestLoggerAdapter(),
+          siteRepo,
+          wallOfLoveRepo,
+          wallOfLoveImagesRepo,
+        }),
+      inject: [
+        WEBSITE_SITE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT,
+      ],
+    },
+    {
+      provide: CreateWebsiteWallOfLoveItemUseCase,
+      useFactory: (
+        siteRepo: WebsiteSiteRepositoryPort,
+        wallOfLoveRepo: WebsiteWallOfLoveRepositoryPort,
+        wallOfLoveImagesRepo: WebsiteWallOfLoveImagesRepositoryPort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) =>
+        new CreateWebsiteWallOfLoveItemUseCase({
+          logger: new NestLoggerAdapter(),
+          siteRepo,
+          wallOfLoveRepo,
+          wallOfLoveImagesRepo,
+          idGenerator,
+          clock,
+        }),
+      inject: [
+        WEBSITE_SITE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: UpdateWebsiteWallOfLoveItemUseCase,
+      useFactory: (
+        wallOfLoveRepo: WebsiteWallOfLoveRepositoryPort,
+        wallOfLoveImagesRepo: WebsiteWallOfLoveImagesRepositoryPort,
+        clock: ClockPort,
+        idGenerator: IdGeneratorPort
+      ) =>
+        new UpdateWebsiteWallOfLoveItemUseCase({
+          logger: new NestLoggerAdapter(),
+          wallOfLoveRepo,
+          wallOfLoveImagesRepo,
+          clock,
+          idGenerator,
+        }),
+      inject: [
+        WEBSITE_WALL_OF_LOVE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT,
+        CLOCK_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+      ],
+    },
+    {
+      provide: ReorderWebsiteWallOfLoveItemsUseCase,
+      useFactory: (
+        clock: ClockPort,
+        siteRepo: WebsiteSiteRepositoryPort,
+        wallOfLoveRepo: WebsiteWallOfLoveRepositoryPort,
+        wallOfLoveImagesRepo: WebsiteWallOfLoveImagesRepositoryPort
+      ) =>
+        new ReorderWebsiteWallOfLoveItemsUseCase({
+          logger: new NestLoggerAdapter(),
+          clock,
+          siteRepo,
+          wallOfLoveRepo,
+          wallOfLoveImagesRepo,
+        }),
+      inject: [
+        CLOCK_PORT_TOKEN,
+        WEBSITE_SITE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT,
+      ],
+    },
+    {
+      provide: PublishWebsiteWallOfLoveItemUseCase,
+      useFactory: (
+        wallOfLoveRepo: WebsiteWallOfLoveRepositoryPort,
+        wallOfLoveImagesRepo: WebsiteWallOfLoveImagesRepositoryPort,
+        clock: ClockPort
+      ) =>
+        new PublishWebsiteWallOfLoveItemUseCase({
+          logger: new NestLoggerAdapter(),
+          wallOfLoveRepo,
+          wallOfLoveImagesRepo,
+          clock,
+        }),
+      inject: [
+        WEBSITE_WALL_OF_LOVE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: UnpublishWebsiteWallOfLoveItemUseCase,
+      useFactory: (
+        wallOfLoveRepo: WebsiteWallOfLoveRepositoryPort,
+        wallOfLoveImagesRepo: WebsiteWallOfLoveImagesRepositoryPort,
+        clock: ClockPort
+      ) =>
+        new UnpublishWebsiteWallOfLoveItemUseCase({
+          logger: new NestLoggerAdapter(),
+          wallOfLoveRepo,
+          wallOfLoveImagesRepo,
+          clock,
+        }),
+      inject: [
+        WEBSITE_WALL_OF_LOVE_REPO_PORT,
+        WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: ListPublicWebsiteWallOfLoveItemsUseCase,
+      useFactory: (
+        wallOfLoveRepo: WebsiteWallOfLoveRepositoryPort,
+        wallOfLoveImagesRepo: WebsiteWallOfLoveImagesRepositoryPort
+      ) =>
+        new ListPublicWebsiteWallOfLoveItemsUseCase({
+          logger: new NestLoggerAdapter(),
+          wallOfLoveRepo,
+          wallOfLoveImagesRepo,
+        }),
+      inject: [WEBSITE_WALL_OF_LOVE_REPO_PORT, WEBSITE_WALL_OF_LOVE_IMAGES_REPO_PORT],
+    },
+    {
       provide: WebsiteSlugExistsUseCase,
       useFactory: (
         siteRepo: WebsiteSiteRepositoryPort,
@@ -390,6 +679,19 @@ import { PublicWorkspaceResolver } from "@/shared/public";
         upsertMenu: UpsertWebsiteMenuUseCase,
         listMenus: ListWebsiteMenusUseCase,
         resolvePublicPage: ResolveWebsitePublicPageUseCase,
+        createFeedback: CreateWebsiteFeedbackUseCase,
+        listPublicQa: ListWebsitePublicQaUseCase,
+        listQa: ListWebsiteQaUseCase,
+        createQa: CreateWebsiteQaUseCase,
+        updateQa: UpdateWebsiteQaUseCase,
+        deleteQa: DeleteWebsiteQaUseCase,
+        listWallOfLoveItems: ListWebsiteWallOfLoveItemsUseCase,
+        createWallOfLoveItem: CreateWebsiteWallOfLoveItemUseCase,
+        updateWallOfLoveItem: UpdateWebsiteWallOfLoveItemUseCase,
+        reorderWallOfLoveItems: ReorderWebsiteWallOfLoveItemsUseCase,
+        publishWallOfLoveItem: PublishWebsiteWallOfLoveItemUseCase,
+        unpublishWallOfLoveItem: UnpublishWebsiteWallOfLoveItemUseCase,
+        listPublicWallOfLoveItems: ListPublicWebsiteWallOfLoveItemsUseCase,
         generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase,
         slugExists: WebsiteSlugExistsUseCase
       ) =>
@@ -410,6 +712,19 @@ import { PublicWorkspaceResolver } from "@/shared/public";
           upsertMenu,
           listMenus,
           resolvePublicPage,
+          createFeedback,
+          listPublicQa,
+          listQa,
+          createQa,
+          updateQa,
+          deleteQa,
+          listWallOfLoveItems,
+          createWallOfLoveItem,
+          updateWallOfLoveItem,
+          reorderWallOfLoveItems,
+          publishWallOfLoveItem,
+          unpublishWallOfLoveItem,
+          listPublicWallOfLoveItems,
           generatePageFromPrompt,
           slugExists
         ),
@@ -430,6 +745,19 @@ import { PublicWorkspaceResolver } from "@/shared/public";
         UpsertWebsiteMenuUseCase,
         ListWebsiteMenusUseCase,
         ResolveWebsitePublicPageUseCase,
+        CreateWebsiteFeedbackUseCase,
+        ListWebsitePublicQaUseCase,
+        ListWebsiteQaUseCase,
+        CreateWebsiteQaUseCase,
+        UpdateWebsiteQaUseCase,
+        DeleteWebsiteQaUseCase,
+        ListWebsiteWallOfLoveItemsUseCase,
+        CreateWebsiteWallOfLoveItemUseCase,
+        UpdateWebsiteWallOfLoveItemUseCase,
+        ReorderWebsiteWallOfLoveItemsUseCase,
+        PublishWebsiteWallOfLoveItemUseCase,
+        UnpublishWebsiteWallOfLoveItemUseCase,
+        ListPublicWebsiteWallOfLoveItemsUseCase,
         GenerateWebsitePageFromPromptUseCase,
         WebsiteSlugExistsUseCase,
       ],

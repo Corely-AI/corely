@@ -1,12 +1,20 @@
 import { request } from "@corely/api-client";
 import {
   CheckAvailabilityOutputSchema,
+  CreateWebsiteFeedbackInputSchema,
+  CreateWebsiteFeedbackOutputSchema,
   GetRentalContactSettingsOutputSchema,
   GetPublicCmsPostOutputSchema,
+  ListWebsiteQaInputSchema,
+  ListWebsiteQaOutputSchema,
+  ListPublicWebsiteWallOfLoveItemsInputSchema,
+  ListPublicWebsiteWallOfLoveItemsOutputSchema,
   ListPublicCmsPostsOutputSchema,
   GetPublicRentalPropertyOutputSchema,
   ListPublicRentalPropertiesOutputSchema,
   ListRentalCategoriesOutputSchema,
+  PublicSubmitInputSchema,
+  PublicSubmitOutputSchema,
   PublicPortfolioShowcaseListInputSchema,
   PublicPortfolioShowcaseOutputSchema,
   PublicPortfolioShowcasesOutputSchema,
@@ -187,5 +195,82 @@ export const publicApi = {
     });
     const data = await request({ url });
     return WebsiteSlugExistsOutputSchema.parse(data);
+  },
+
+  async createWebsiteFeedback(
+    input: unknown,
+    options?: {
+      workspaceSlug?: string | null;
+    }
+  ) {
+    const parsed = CreateWebsiteFeedbackInputSchema.parse(input);
+    const url = buildUrl("/public/website/feedback", undefined, options?.workspaceSlug);
+    const data = await request({
+      url,
+      method: "POST",
+      body: parsed,
+    });
+    return CreateWebsiteFeedbackOutputSchema.parse(data);
+  },
+
+  async listWebsiteQa(
+    input: unknown,
+    options?: {
+      workspaceSlug?: string | null;
+    }
+  ) {
+    const parsed = ListWebsiteQaInputSchema.parse(input);
+    const url = buildUrl(
+      "/public/website/qa",
+      {
+        hostname: parsed.hostname,
+        path: parsed.path,
+        locale: parsed.locale,
+        scope: parsed.scope,
+      },
+      options?.workspaceSlug
+    );
+    const data = await request({ url });
+    return ListWebsiteQaOutputSchema.parse(data);
+  },
+
+  async listWallOfLoveItems(
+    input: unknown,
+    options?: {
+      workspaceSlug?: string | null;
+    }
+  ) {
+    const parsed = ListPublicWebsiteWallOfLoveItemsInputSchema.parse(input);
+    const url = buildUrl(
+      "/public/website/wall-of-love",
+      {
+        siteId: parsed.siteId,
+        locale: parsed.locale,
+      },
+      options?.workspaceSlug
+    );
+    const data = await request({ url });
+    return ListPublicWebsiteWallOfLoveItemsOutputSchema.parse(data);
+  },
+
+  async submitPublicForm(
+    publicId: string,
+    input: unknown,
+    options?: {
+      workspaceSlug?: string | null;
+    }
+  ) {
+    const parsed = PublicSubmitInputSchema.parse(input);
+    const url = buildUrl(
+      `/public/forms/${publicId}/submissions`,
+      undefined,
+      options?.workspaceSlug
+    );
+    const data = await request({
+      url,
+      method: "POST",
+      body: parsed,
+    });
+    return PublicSubmitOutputSchema.parse(data);
   },
 };

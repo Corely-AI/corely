@@ -12,6 +12,10 @@ export const websiteMenuKeys = {
   list: (siteId: string) => ["website-menus", siteId],
 };
 
+export const websiteWallOfLoveKeys = {
+  list: (siteId: string) => ["website-wall-of-love", siteId],
+};
+
 export const websiteSiteListKey = (params?: ListWebsiteSitesInput) => [
   "website-sites",
   "list",

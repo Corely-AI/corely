@@ -5,5 +5,8 @@ export * from "./website-page.schema";
 export * from "./website-menu.schema";
 export * from "./website-publish.schema";
 export * from "./website-public.schema";
+export * from "./website-qa.schema";
+export * from "./wall-of-love";
 export * from "./website-ai.schema";
 export * from "./website-events.schema";
+export * from "./public";
