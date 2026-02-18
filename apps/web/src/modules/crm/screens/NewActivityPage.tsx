@@ -1,14 +1,17 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar as CalendarIcon, Clock3 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Calendar as CalendarIcon, Clock3, Sparkles } from "lucide-react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 
+import { Alert, AlertDescription, AlertTitle } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
+import { Checkbox } from "@corely/ui";
 import {
   Form,
   FormControl,
@@ -23,34 +26,75 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@corely/ui";
 import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import { Calendar } from "@corely/ui";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@corely/ui";
 import { cn } from "@/shared/lib/utils";
 import { crmApi } from "@/lib/crm-api";
+import { customersApi } from "@/lib/customers-api";
 import { toast } from "sonner";
+import { useCrmChannels } from "../hooks/useChannels";
+import { useCrmAiSettings } from "../hooks/useDeal";
+import type {
+  ActivityAiExtractOutput,
+  ActivityAiParseOutput,
+  CreateActivityToolCard,
+} from "@corely/contracts";
 
-const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "EMAIL_DRAFT"] as const;
+const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "COMMUNICATION"] as const;
+
+const getErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error ? error.message : fallback;
 
 export default function NewActivityPage() {
   const { t, i18n } = useTranslation();
+  const { data: channels = [] } = useCrmChannels();
+  const { data: aiSettings } = useCrmAiSettings();
+  const aiEnabled = Boolean(aiSettings?.settings.aiEnabled);
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator === "undefined" ? true : navigator.onLine
+  );
+  const [describeText, setDescribeText] = useState("");
+  const [parseResult, setParseResult] = useState<ActivityAiParseOutput | null>(null);
+  const [extractResult, setExtractResult] = useState<ActivityAiExtractOutput | null>(null);
+  const [selectedFollowUps, setSelectedFollowUps] = useState<Record<string, boolean>>({});
+  const [confirmCreateFollowUpsOpen, setConfirmCreateFollowUpsOpen] = useState(false);
   const activityFormSchema = useMemo(
     () =>
-      z
-        .object({
-          type: z.enum(ACTIVITY_TYPES),
-          subject: z.string().min(1, t("crm.activity.subjectRequired")),
-          body: z.string().optional(),
-          partyId: z.string().optional(),
-          dealId: z.string().optional(),
-          dueAt: z.string().optional(),
-        })
-        .refine((value) => Boolean(value.partyId || value.dealId), {
-          message: t("crm.activity.linkRequired"),
-          path: ["partyId"],
-        }),
+      z.object({
+        type: z.enum(ACTIVITY_TYPES),
+        subject: z.string().min(1, t("crm.activity.subjectRequired")),
+        body: z.string().optional(),
+        partyId: z.string().optional(),
+        dealId: z.string().optional(),
+        dueAt: z.string().optional(),
+        channelKey: z.string().optional(),
+        direction: z.enum(["INBOUND", "OUTBOUND"]).optional(),
+        communicationStatus: z.enum(["LOGGED", "DRAFT"]).optional(),
+      }),
     [t]
   );
   type ActivityFormValues = z.infer<typeof activityFormSchema>;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const markOnline = () => setIsOnline(true);
+    const markOffline = () => setIsOnline(false);
+    window.addEventListener("online", markOnline);
+    window.addEventListener("offline", markOffline);
+    return () => {
+      window.removeEventListener("online", markOnline);
+      window.removeEventListener("offline", markOffline);
+    };
+  }, []);
 
   const form = useForm<ActivityFormValues>({
     resolver: zodResolver(activityFormSchema),
@@ -61,6 +105,9 @@ export default function NewActivityPage() {
       partyId: "",
       dealId: "",
       dueAt: "",
+      channelKey: "email",
+      direction: "OUTBOUND",
+      communicationStatus: "LOGGED",
     },
   });
 
@@ -77,7 +124,12 @@ export default function NewActivityPage() {
         body: values.body || undefined,
         partyId: values.partyId || undefined,
         dealId: values.dealId || undefined,
-        dueAt: dueAtIso,
+        dueAt: values.type === "COMMUNICATION" ? undefined : dueAtIso,
+        channelKey: values.type === "COMMUNICATION" ? values.channelKey : undefined,
+        direction: values.type === "COMMUNICATION" ? values.direction : undefined,
+        communicationStatus:
+          values.type === "COMMUNICATION" ? values.communicationStatus : undefined,
+        activityDate: values.type === "COMMUNICATION" ? dueAtIso : undefined,
       });
     },
     onSuccess: () => {
@@ -86,19 +138,143 @@ export default function NewActivityPage() {
       navigate("/crm/activities");
     },
     onError: (error) => {
-      console.error("Error creating activity:", error);
-      toast.error(t("crm.activity.createFailed"));
+      toast.error(getErrorMessage(error, t("crm.activity.createFailed")));
     },
   });
 
-  const onSubmit = (values: ActivityFormValues) => {
-    createMutation.mutate(values);
-  };
+  const parseMutation = useMutation({
+    mutationFn: async (description: string) =>
+      crmApi.parseActivityAi({
+        description,
+        workspaceLanguage: i18n.language,
+      }),
+    onSuccess: (result) => {
+      setParseResult(result);
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Failed to parse activity description"));
+    },
+  });
 
+  const extractMutation = useMutation({
+    mutationFn: async (notes: string) =>
+      crmApi.extractActivityAi({
+        notes,
+        workspaceLanguage: i18n.language,
+      }),
+    onSuccess: (result) => {
+      setExtractResult(result);
+      const initialSelection = result.followUpToolCards.reduce<Record<string, boolean>>(
+        (acc, toolCard) => {
+          const key = toolCard.idempotencyKey ?? toolCard.payload.subject;
+          acc[key] = true;
+          return acc;
+        },
+        {}
+      );
+      setSelectedFollowUps(initialSelection);
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Failed to extract activity outcomes"));
+    },
+  });
+
+  const createFollowUpsMutation = useMutation({
+    mutationFn: async (toolCards: CreateActivityToolCard[]) => {
+      for (const toolCard of toolCards) {
+        await crmApi.createActivity(toolCard.payload, {
+          idempotencyKey: toolCard.idempotencyKey,
+        });
+      }
+    },
+    onSuccess: () => {
+      toast.success("Follow-up tasks created");
+      void queryClient.invalidateQueries({ queryKey: ["activities"] });
+      setConfirmCreateFollowUpsOpen(false);
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Failed to create follow-up tasks"));
+    },
+  });
+
+  const subjectValue = form.watch("subject");
+  const notesValue = form.watch("body") ?? "";
   const dueAtRaw = form.watch("dueAt");
+  const selectedType = form.watch("type");
+  const partyIdValue = form.watch("partyId");
+  const dealIdValue = form.watch("dealId");
   const parsedDueAt = dueAtRaw ? new Date(dueAtRaw) : undefined;
   const dueAt = parsedDueAt && !Number.isNaN(parsedDueAt.getTime()) ? parsedDueAt : undefined;
   const dueTime = dueAt ? dueAt.toISOString().slice(11, 16) : "";
+
+  const linkSuggestionQuery = `${subjectValue} ${notesValue}`.trim();
+  const { data: dealsSuggestionData } = useQuery({
+    queryKey: ["crm", "activity", "deal-suggestions", linkSuggestionQuery],
+    queryFn: () => crmApi.listDeals({ pageSize: 25 }),
+    enabled: aiEnabled && linkSuggestionQuery.length >= 3,
+    staleTime: 60_000,
+  });
+  const { data: contactsSuggestionData } = useQuery({
+    queryKey: ["crm", "activity", "contact-suggestions", linkSuggestionQuery],
+    queryFn: () => customersApi.searchCustomers({ q: linkSuggestionQuery, pageSize: 5 }),
+    enabled: aiEnabled && linkSuggestionQuery.length >= 3,
+    staleTime: 60_000,
+  });
+
+  const dealSuggestions = useMemo(() => {
+    const query = linkSuggestionQuery.toLowerCase();
+    const deals = dealsSuggestionData?.deals ?? [];
+    return deals
+      .map((deal) => {
+        const title = deal.title.toLowerCase();
+        const score =
+          title.includes(query) || query.includes(title)
+            ? 0.9
+            : query
+                .split(/\s+/)
+                .filter((token) => token.length >= 3)
+                .reduce((acc, token) => (title.includes(token) ? acc + 0.15 : acc), 0);
+        return {
+          id: deal.id,
+          label: deal.title,
+          score,
+        };
+      })
+      .filter((item) => item.score >= 0.3)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+  }, [dealsSuggestionData?.deals, linkSuggestionQuery]);
+
+  const contactSuggestions = useMemo(
+    () =>
+      (contactsSuggestionData?.customers ?? []).map((customer) => ({
+        id: customer.id,
+        label: customer.displayName,
+      })),
+    [contactsSuggestionData?.customers]
+  );
+
+  const qualityNudges = useMemo(() => {
+    const nudges: string[] = [];
+    if (!dueAtRaw) {
+      nudges.push("Due date is missing.");
+    }
+    if (!partyIdValue && !dealIdValue) {
+      nudges.push("No linked deal or contact.");
+    }
+    if (!subjectValue.trim()) {
+      nudges.push("Subject is empty. Use Generate subject.");
+    }
+    return nudges;
+  }, [dueAtRaw, partyIdValue, dealIdValue, subjectValue]);
+
+  const selectedFollowUpCards = useMemo(() => {
+    const cards = extractResult?.followUpToolCards ?? [];
+    return cards.filter((toolCard) => {
+      const key = toolCard.idempotencyKey ?? toolCard.payload.subject;
+      return Boolean(selectedFollowUps[key]);
+    });
+  }, [extractResult?.followUpToolCards, selectedFollowUps]);
 
   const updateDueAt = (date: Date | undefined, time: string | undefined) => {
     if (!date) {
@@ -118,6 +294,65 @@ export default function NewActivityPage() {
     next.setSeconds(0, 0);
     form.setValue("dueAt", next.toISOString(), { shouldDirty: true });
   };
+
+  const generateSubject = () => {
+    const firstLine = describeText
+      .trim()
+      .split(/\n|\./)
+      .find((line) => line.trim().length > 0);
+    const notesLine = notesValue
+      .trim()
+      .split(/\n|\./)
+      .find((line) => line.trim().length > 0);
+    const generated =
+      firstLine?.trim() ||
+      notesLine?.trim() ||
+      `${selectedType === "COMMUNICATION" ? "Send message" : "Follow up"} for customer`;
+    form.setValue("subject", generated.slice(0, 120), {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  };
+
+  const applyParsedFields = () => {
+    if (!parseResult) {
+      return;
+    }
+    const parsed = parseResult.result;
+    if (
+      parsed.activityType &&
+      (parsed.activityType === "NOTE" ||
+        parsed.activityType === "TASK" ||
+        parsed.activityType === "CALL" ||
+        parsed.activityType === "MEETING" ||
+        parsed.activityType === "COMMUNICATION")
+    ) {
+      form.setValue("type", parsed.activityType, { shouldDirty: true });
+    }
+    if (parsed.subject) {
+      form.setValue("subject", parsed.subject, { shouldDirty: true, shouldValidate: true });
+    }
+    if (parsed.notesTemplate) {
+      form.setValue("body", parsed.notesTemplate, { shouldDirty: true });
+    }
+    if (parsed.dueAt) {
+      form.setValue("dueAt", parsed.dueAt, { shouldDirty: true });
+    }
+    if (parsed.suggestedDeals[0]) {
+      form.setValue("dealId", parsed.suggestedDeals[0].id, { shouldDirty: true });
+    }
+    if (parsed.suggestedContacts[0]) {
+      form.setValue("partyId", parsed.suggestedContacts[0].id, { shouldDirty: true });
+    }
+    toast.success("Parsed fields applied");
+  };
+
+  const onSubmit = (values: ActivityFormValues) => {
+    createMutation.mutate(values);
+  };
+
+  const offline = !isOnline;
+  const canUseAi = aiEnabled && !offline;
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -150,6 +385,107 @@ export default function NewActivityPage() {
         </div>
       </div>
 
+      {aiEnabled ? (
+        <Card data-testid="crm-activity-describe-card">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Describe it
+            </CardTitle>
+            <CardDescription>
+              Example: Call John tomorrow 10:00 about pricing, then send a follow-up email.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                value={describeText}
+                onChange={(event) => setDescribeText(event.target.value)}
+                placeholder="Describe the activity in plain language"
+                data-testid="crm-activity-describe-input"
+              />
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (!describeText.trim()) {
+                    toast.error("Describe the activity first.");
+                    return;
+                  }
+                  parseMutation.mutate(describeText.trim());
+                }}
+                disabled={!canUseAi || parseMutation.isPending}
+                data-testid="crm-activity-describe-parse"
+              >
+                {parseMutation.isPending ? "Parsing..." : "Parse"}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={applyParsedFields}
+                disabled={!parseResult}
+                data-testid="crm-activity-describe-apply"
+              >
+                Apply
+              </Button>
+            </div>
+
+            {offline ? (
+              <p className="text-xs text-muted-foreground">AI requires connection.</p>
+            ) : null}
+
+            {parseResult ? (
+              <div className="rounded-md border p-3 space-y-2 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  {parseResult.result.activityType ? (
+                    <Badge variant="secondary">Type: {parseResult.result.activityType}</Badge>
+                  ) : null}
+                  <Badge variant="outline">
+                    Confidence: {Math.round(parseResult.result.confidence * 100)}%
+                  </Badge>
+                </div>
+                {parseResult.result.subject ? <p>Subject: {parseResult.result.subject}</p> : null}
+                {parseResult.result.dueAt ? (
+                  <p>Due: {new Date(parseResult.result.dueAt).toLocaleString(i18n.language)}</p>
+                ) : null}
+                {parseResult.result.suggestedDeals.length ? (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Suggested deals</p>
+                    <div className="flex flex-wrap gap-2">
+                      {parseResult.result.suggestedDeals.map((item) => (
+                        <Button
+                          key={item.id}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => form.setValue("dealId", item.id, { shouldDirty: true })}
+                        >
+                          {item.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {parseResult.result.suggestedContacts.length ? (
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Suggested contacts</p>
+                    <div className="flex flex-wrap gap-2">
+                      {parseResult.result.suggestedContacts.map((item) => (
+                        <Button
+                          key={item.id}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => form.setValue("partyId", item.id, { shouldDirty: true })}
+                        >
+                          {item.label}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -164,7 +500,12 @@ export default function NewActivityPage() {
                   name="subject"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>{t("crm.activity.subject")}</FormLabel>
+                      <div className="flex items-center justify-between gap-2">
+                        <FormLabel>{t("crm.activity.subject")}</FormLabel>
+                        <Button type="button" variant="outline" size="sm" onClick={generateSubject}>
+                          Generate subject
+                        </Button>
+                      </div>
                       <FormControl>
                         <Input
                           placeholder={t("crm.activity.subjectPlaceholder")}
@@ -205,7 +546,7 @@ export default function NewActivityPage() {
                 <FormField
                   control={form.control}
                   name="dueAt"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel>{t("crm.activity.dueAt")}</FormLabel>
                       <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
@@ -260,6 +601,87 @@ export default function NewActivityPage() {
                   )}
                 />
 
+                {selectedType === "COMMUNICATION" && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="channelKey"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("crm.activity.channel")}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="crm-new-activity-channel">
+                                <SelectValue placeholder={t("crm.activity.channel")} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {channels.map((channel) => (
+                                <SelectItem key={channel.key} value={channel.key}>
+                                  {channel.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="direction"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("crm.activity.direction")}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="crm-new-activity-direction">
+                                <SelectValue placeholder={t("crm.activity.direction")} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="OUTBOUND">
+                                {t("crm.activity.directionOutbound")}
+                              </SelectItem>
+                              <SelectItem value="INBOUND">
+                                {t("crm.activity.directionInbound")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="communicationStatus"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("crm.activity.communicationStatus")}</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="crm-new-activity-communication-status">
+                                <SelectValue placeholder={t("crm.activity.communicationStatus")} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="LOGGED">
+                                {t("crm.activity.communicationLogged")}
+                              </SelectItem>
+                              <SelectItem value="DRAFT">
+                                {t("crm.activity.communicationDraft")}
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+
                 <FormField
                   control={form.control}
                   name="dealId"
@@ -297,6 +719,54 @@ export default function NewActivityPage() {
                     </FormItem>
                   )}
                 />
+
+                {aiEnabled && (dealSuggestions.length || contactSuggestions.length) ? (
+                  <div className="md:col-span-2 space-y-2 rounded-md border p-3">
+                    <p className="text-sm font-medium">Smart linking suggestions</p>
+                    {dealSuggestions.length ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Deals</p>
+                        <div className="flex flex-wrap gap-2">
+                          {dealSuggestions.map((dealSuggestion) => (
+                            <Button
+                              key={dealSuggestion.id}
+                              size="sm"
+                              variant="outline"
+                              type="button"
+                              onClick={() =>
+                                form.setValue("dealId", dealSuggestion.id, { shouldDirty: true })
+                              }
+                            >
+                              {dealSuggestion.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {contactSuggestions.length ? (
+                      <div className="space-y-1">
+                        <p className="text-xs text-muted-foreground">Contacts</p>
+                        <div className="flex flex-wrap gap-2">
+                          {contactSuggestions.map((contactSuggestion) => (
+                            <Button
+                              key={contactSuggestion.id}
+                              size="sm"
+                              variant="outline"
+                              type="button"
+                              onClick={() =>
+                                form.setValue("partyId", contactSuggestion.id, {
+                                  shouldDirty: true,
+                                })
+                              }
+                            >
+                              {contactSuggestion.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <FormField
@@ -304,18 +774,104 @@ export default function NewActivityPage() {
                 name="body"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("common.notes")}</FormLabel>
+                    <div className="flex items-center justify-between gap-2">
+                      <FormLabel>{t("common.notes")}</FormLabel>
+                      {aiEnabled ? (
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => extractMutation.mutate(notesValue)}
+                            disabled={!canUseAi || !notesValue.trim() || extractMutation.isPending}
+                          >
+                            Summarize
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => extractMutation.mutate(notesValue)}
+                            disabled={!canUseAi || !notesValue.trim() || extractMutation.isPending}
+                          >
+                            Extract action items
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => {
+                              if (!extractResult?.followUpToolCards.length) {
+                                extractMutation.mutate(notesValue);
+                                return;
+                              }
+                              setConfirmCreateFollowUpsOpen(true);
+                            }}
+                            disabled={
+                              !canUseAi || !notesValue.trim() || createFollowUpsMutation.isPending
+                            }
+                          >
+                            Create follow-ups
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
                     <FormControl>
                       <Textarea
                         rows={4}
                         placeholder={t("crm.activity.notesPlaceholder")}
                         {...field}
+                        data-testid="crm-new-activity-notes"
                       />
                     </FormControl>
+                    {aiEnabled && offline ? (
+                      <p className="text-xs text-muted-foreground">AI requires connection.</p>
+                    ) : null}
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {extractResult ? (
+                <div
+                  className="space-y-3 rounded-md border p-3"
+                  data-testid="crm-activity-ai-extract"
+                >
+                  <p className="text-sm font-medium">AI Notes Summary</p>
+                  <p className="text-sm">{extractResult.result.summary}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Confidence: {Math.round(extractResult.result.confidence * 100)}%
+                  </p>
+                  {extractResult.result.actionItems.length ? (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">Action items</p>
+                      {extractResult.followUpToolCards.map((toolCard) => {
+                        const key = toolCard.idempotencyKey ?? toolCard.payload.subject;
+                        return (
+                          <div
+                            key={key}
+                            className="flex items-center justify-between gap-3 rounded border px-3 py-2"
+                          >
+                            <div className="space-y-0.5">
+                              <p className="text-sm font-medium">{toolCard.payload.subject}</p>
+                              <p className="text-xs text-muted-foreground">{toolCard.title}</p>
+                            </div>
+                            <Checkbox
+                              checked={Boolean(selectedFollowUps[key])}
+                              onCheckedChange={(checked) =>
+                                setSelectedFollowUps((prev) => ({
+                                  ...prev,
+                                  [key]: checked === true,
+                                }))
+                              }
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
 
@@ -324,14 +880,43 @@ export default function NewActivityPage() {
               <CardTitle>{t("crm.activity.tipTitle")}</CardTitle>
               <CardDescription>{t("crm.activity.tipSubtitle")}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm text-muted-foreground">
+            <CardContent className="space-y-3 text-sm text-muted-foreground">
               <div>{t("crm.activity.tipOne")}</div>
               <div>{t("crm.activity.tipTwo")}</div>
               <div>{t("crm.activity.tipThree")}</div>
+              <Alert>
+                <AlertTitle>Quality checks (non-blocking)</AlertTitle>
+                <AlertDescription className="space-y-1">
+                  {qualityNudges.map((nudge) => (
+                    <p key={nudge}>{nudge}</p>
+                  ))}
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
         </form>
       </Form>
+
+      <AlertDialog open={confirmCreateFollowUpsOpen} onOpenChange={setConfirmCreateFollowUpsOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Create follow-up tasks</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedFollowUpCards.length} selected follow-up task(s) will be created.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                void createFollowUpsMutation.mutateAsync(selectedFollowUpCards);
+              }}
+            >
+              Create selected
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

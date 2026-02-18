@@ -58,6 +58,7 @@
     "createdAt": "Created {{date}}",
     "empty": "Empty",
     "amount": "Amount",
+    "copy": "Copy",
     "type": "Type",
     "description": "Description",
     "date": "Date",
@@ -1157,6 +1158,7 @@
       "type": "Activity Type",
       "selectType": "Select type",
       "dueAt": "Due Date & Time",
+      "dueDate": "Due Date",
       "selectDate": "Select date",
       "reminderHint": "The activity will be scheduled for this time.",
       "dealIdOptional": "Link to Deal (Optional)",
@@ -1178,17 +1180,38 @@
         "canceled": "Canceled",
         "scheduled": "Scheduled"
       },
+      "channel": "Channel",
+      "direction": "Direction",
+      "directionOutbound": "Outbound",
+      "directionInbound": "Inbound",
+      "communicationStatus": "Communication Status",
+      "communicationLogged": "Logged",
+      "communicationDraft": "Draft",
       "types": {
         "note": "Note",
         "task": "Task",
         "call": "Call",
         "meeting": "Meeting",
-        "email_draft": "Email Draft"
+        "communication": "Communication",
+        "system_event": "System Event"
       },
       "addTitle": "Add Activity",
       "addSubtitle": "Log a quick update or task",
       "pickDate": "Pick a date",
-      "time": "Time"
+      "time": "Time",
+      "duration": "Duration (minutes)",
+      "durationPlaceholder": "Example: 15, 30, 60",
+      "outcome": "Outcome",
+      "selectOutcome": "Select outcome",
+      "location": "Location",
+      "locationPlaceholder": "Zoom link or physical location",
+      "outcomes": {
+        "connected": "Connected",
+        "voicemail": "Voicemail",
+        "noanswer": "No Answer",
+        "busy": "Busy",
+        "wrongnumber": "Wrong Number"
+      }
     },
     "timeline": {
       "title": "Timeline",
@@ -1203,8 +1226,10 @@
         "calls": "Calls",
         "meetings": "Meetings",
         "tasks": "Tasks",
+        "communications": "Communications",
         "stage": "Stages"
-      }
+      },
+      "duePrefix": "Due: "
     },
     "deals": {
       "title": "Deals",
@@ -1214,6 +1239,11 @@
       "noAmount": "No amount",
       "stage": "Stage",
       "status": {
+        "open": "Open",
+        "won": "Won",
+        "lost": "Lost"
+      },
+      "statuses": {
         "open": "Open",
         "won": "Won",
         "lost": "Lost"
@@ -1247,6 +1277,9 @@
       "tipsOne": "Keep your deal titles descriptive yet concise.",
       "tipsTwo": "Update the probability as the deal progresses through stages.",
       "tipsThree": "Set a realistic expected close date for better forecasting.",
+      "quickActions": "Quick Actions",
+      "message": "Message",
+      "quickNote": "Quick Note",
       "stages": {
         "lead": "Lead",
         "qualified": "Qualified",
@@ -1271,6 +1304,12 @@
       "markLostTitle": "Mark Deal as Lost",
       "markLostDescription": "Please provide a reason why this deal was lost.",
       "markLostPlaceholder": "e.g. Competitor won, Budget cut...",
+      "channelsLoading": "Loading channels...",
+      "noChannels": "No channels available",
+      "missingContactFields": "Missing contact information: {{fields}}",
+      "noteSubject": "Subject",
+      "noteDetails": "Note details...",
+      "addNote": "Add Note",
       "markLost": "Mark Lost",
       "deleteTitle": "Delete Deal",
       "deleteDescription": "Are you sure you want to delete this deal? This action cannot be undone.",
@@ -1281,7 +1320,26 @@
       "expectedClose": "Exp. {{date}}",
       "expectedCloseTitle": "Expected Close",
       "markWon": "Mark Won",
-      "edit": "Edit Deal"
+      "edit": "Edit Deal",
+      "alreadyClosed": "Deal is already closed",
+      "relationships": "Relationships",
+      "party": "Linked Contact",
+      "owner": "Deal Owner",
+      "unassigned": "Unassigned"
+    },
+    "channel": {
+      "messageVia": "Message via {{channel}}",
+      "template": "Template",
+      "chooseTemplate": "Choose a template",
+      "subject": "Subject",
+      "message": "Message",
+      "log": "Log Message",
+      "copySuccess": "Copied to clipboard",
+      "copyFailed": "Failed to copy",
+      "draftCreated": "Draft communication created",
+      "messageLogged": "Message logged",
+      "createDraftFailed": "Failed to create draft",
+      "logFailed": "Failed to log message"
     }
   },
   "classes": {

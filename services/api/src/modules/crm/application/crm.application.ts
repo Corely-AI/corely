@@ -11,6 +11,18 @@ import type { CompleteActivityUseCase } from "./use-cases/complete-activity/comp
 import type { ListActivitiesUseCase } from "./use-cases/list-activities/list-activities.usecase";
 import type { GetTimelineUseCase } from "./use-cases/get-timeline/get-timeline.usecase";
 import type { LogMessageUseCase } from "./use-cases/log-message/log-message.usecase";
+import type { CreateCommunicationDraftUseCase } from "./use-cases/create-communication-draft/create-communication-draft.usecase";
+import type { SendCommunicationUseCase } from "./use-cases/send-communication/send-communication.usecase";
+import type { LogCommunicationUseCase } from "./use-cases/log-communication/log-communication.usecase";
+import type { ProcessCommunicationWebhookUseCase } from "./use-cases/process-communication-webhook/process-communication-webhook.usecase";
+import type { GetDealAiInsightsUseCase } from "./use-cases/ai/get-deal-ai-insights.usecase";
+import type { GetDealAiRecommendationsUseCase } from "./use-cases/ai/get-deal-ai-recommendations.usecase";
+import type { DraftDealAiMessageUseCase } from "./use-cases/ai/draft-deal-ai-message.usecase";
+import type { ParseActivityAiUseCase } from "./use-cases/ai/parse-activity-ai.usecase";
+import type { ExtractActivityAiUseCase } from "./use-cases/ai/extract-activity-ai.usecase";
+import type { SummarizeCommunicationAiUseCase } from "./use-cases/ai/summarize-communication-ai.usecase";
+import type { GetCrmAiSettingsUseCase } from "./use-cases/ai/get-crm-ai-settings.usecase";
+import type { UpdateCrmAiSettingsUseCase } from "./use-cases/ai/update-crm-ai-settings.usecase";
 
 export class CrmApplication {
   constructor(
@@ -26,6 +38,18 @@ export class CrmApplication {
     public readonly completeActivity: CompleteActivityUseCase,
     public readonly listActivities: ListActivitiesUseCase,
     public readonly getTimeline: GetTimelineUseCase,
-    public readonly logMessage: LogMessageUseCase
+    public readonly logMessage: LogMessageUseCase,
+    public readonly createCommunicationDraft: CreateCommunicationDraftUseCase,
+    public readonly sendCommunication: SendCommunicationUseCase,
+    public readonly logCommunication: LogCommunicationUseCase,
+    public readonly processCommunicationWebhook: ProcessCommunicationWebhookUseCase,
+    public readonly getDealAiInsights: GetDealAiInsightsUseCase,
+    public readonly getDealAiRecommendations: GetDealAiRecommendationsUseCase,
+    public readonly draftDealAiMessage: DraftDealAiMessageUseCase,
+    public readonly parseActivityAi: ParseActivityAiUseCase,
+    public readonly extractActivityAi: ExtractActivityAiUseCase,
+    public readonly summarizeCommunicationAi: SummarizeCommunicationAiUseCase,
+    public readonly getCrmAiSettings: GetCrmAiSettingsUseCase,
+    public readonly updateCrmAiSettings: UpdateCrmAiSettingsUseCase
   ) {}
 }

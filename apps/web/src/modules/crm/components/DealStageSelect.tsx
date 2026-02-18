@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { Badge } from "@corely/ui";
 
@@ -23,6 +24,7 @@ export const DealStageSelect: React.FC<DealStageSelectProps> = ({
   disabled,
   showBadge = false,
 }) => {
+  const { t } = useTranslation();
   const current = stages.find((stage) => stage.id === value);
 
   return (
@@ -33,7 +35,7 @@ export const DealStageSelect: React.FC<DealStageSelectProps> = ({
             {current?.name ?? value}
           </Badge>
         ) : (
-          <SelectValue placeholder="Select stage" />
+          <SelectValue placeholder={t("crm.deals.stagePlaceholder")} />
         )}
       </SelectTrigger>
       <SelectContent>

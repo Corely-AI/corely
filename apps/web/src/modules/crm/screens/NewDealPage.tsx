@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar as CalendarIcon } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, Plus } from "lucide-react";
 import { z } from "zod";
 import { DEFAULT_PIPELINE_STAGES } from "@corely/contracts";
 import { useTranslation } from "react-i18next";
@@ -11,6 +11,14 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@corely/ui";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@corely/ui";
 import {
   Form,
   FormControl,
@@ -62,6 +70,8 @@ export default function NewDealPage() {
   type DealFormValues = z.infer<typeof dealFormSchema>;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
+  const [partyInputValue, setPartyInputValue] = useState("");
 
   const { data: customersData, isLoading: customersLoading } = useQuery({
     queryKey: ["customers"],
@@ -84,6 +94,18 @@ export default function NewDealPage() {
       tags: "",
     },
   });
+  const selectedPartyId = form.watch("partyId");
+
+  useEffect(() => {
+    if (!selectedPartyId) {
+      return;
+    }
+
+    const matchedCustomer = customers.find((customer) => customer.id === selectedPartyId);
+    if (matchedCustomer && matchedCustomer.displayName !== partyInputValue) {
+      setPartyInputValue(matchedCustomer.displayName);
+    }
+  }, [customers, partyInputValue, selectedPartyId]);
 
   const createDealMutation = useMutation({
     mutationFn: async (values: DealFormValues) => {
@@ -127,6 +149,49 @@ export default function NewDealPage() {
     },
     onError: (error) => {
       console.error("Error creating deal:", error);
+      toast.error(t("crm.deals.createFailed"));
+    },
+  });
+
+  const newCustomerFormSchema = useMemo(
+    () =>
+      z.object({
+        displayName: z.string().min(1, t("customers.displayName")),
+        email: z.string().email(t("customers.email")).optional().or(z.literal("")),
+        phone: z.string().optional(),
+      }),
+    [t]
+  );
+  type NewCustomerFormValues = z.infer<typeof newCustomerFormSchema>;
+
+  const newCustomerForm = useForm<NewCustomerFormValues>({
+    resolver: zodResolver(newCustomerFormSchema),
+    defaultValues: {
+      displayName: "",
+      email: "",
+      phone: "",
+    },
+  });
+
+  const createCustomerMutation = useMutation({
+    mutationFn: async (values: NewCustomerFormValues) =>
+      customersApi.createCustomer({
+        role: "CUSTOMER",
+        kind: "INDIVIDUAL",
+        displayName: values.displayName.trim(),
+        email: values.email?.trim() || undefined,
+        phone: values.phone?.trim() || undefined,
+      }),
+    onSuccess: (customer) => {
+      void queryClient.invalidateQueries({ queryKey: ["customers"] });
+      form.setValue("partyId", customer.id, { shouldValidate: true, shouldDirty: true });
+      setPartyInputValue(customer.displayName);
+      newCustomerForm.reset();
+      setIsCreateCustomerOpen(false);
+      toast.success(t("customers.addNewCustomer"));
+    },
+    onError: (error) => {
+      console.error("Error creating customer:", error);
       toast.error(t("crm.deals.createFailed"));
     },
   });
@@ -203,13 +268,36 @@ export default function NewDealPage() {
                   name="partyId"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2">
-                      <FormLabel>{t("crm.deals.customer")}</FormLabel>
+                      <FormLabel className="flex items-center justify-between gap-2">
+                        <span>{t("crm.deals.customer")}</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => setIsCreateCustomerOpen(true)}
+                        >
+                          <Plus className="mr-1 h-3 w-3" />
+                          {t("customers.addNewClient")}
+                        </Button>
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder={t("crm.deals.customerPlaceholder")}
                           list="deal-customer-options"
                           autoComplete="off"
-                          {...field}
+                          value={partyInputValue}
+                          onChange={(event) => {
+                            const value = event.target.value;
+                            setPartyInputValue(value);
+                            const matchedCustomer = customers.find(
+                              (customer) => customer.displayName === value || customer.id === value
+                            );
+                            field.onChange(matchedCustomer ? matchedCustomer.id : "");
+                          }}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
                           data-testid="crm-deal-party-id"
                         />
                       </FormControl>
@@ -221,9 +309,7 @@ export default function NewDealPage() {
                       <FormMessage />
                       <datalist id="deal-customer-options">
                         {customers.map((customer) => (
-                          <option key={customer.id} value={customer.id}>
-                            {customer.displayName}
-                          </option>
+                          <option key={customer.id} value={customer.displayName} />
                         ))}
                       </datalist>
                     </FormItem>
@@ -438,6 +524,92 @@ export default function NewDealPage() {
           </div>
         </form>
       </Form>
+
+      <Dialog open={isCreateCustomerOpen} onOpenChange={setIsCreateCustomerOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t("customers.addNewClient")}</DialogTitle>
+            <DialogDescription>{t("customers.createDescription")}</DialogDescription>
+          </DialogHeader>
+
+          <Form {...newCustomerForm}>
+            <form
+              className="space-y-4"
+              onSubmit={newCustomerForm.handleSubmit((values) =>
+                createCustomerMutation.mutate(values)
+              )}
+            >
+              <FormField
+                control={newCustomerForm.control}
+                name="displayName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("customers.displayName")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder={t("customers.placeholders.displayName")}
+                        data-testid="crm-deal-new-customer-display-name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={newCustomerForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("customers.email")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        {...field}
+                        placeholder={t("customers.placeholders.email")}
+                        data-testid="crm-deal-new-customer-email"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={newCustomerForm.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("customers.phone")}</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder={t("customers.placeholders.phone")}
+                        data-testid="crm-deal-new-customer-phone"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateCustomerOpen(false)}
+                >
+                  {t("common.cancel")}
+                </Button>
+                <Button type="submit" variant="accent" disabled={createCustomerMutation.isPending}>
+                  {createCustomerMutation.isPending ? t("common.saving") : t("common.save")}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -6,6 +6,11 @@ import {
   type DealDto,
   type TimelineItem,
   type CreateActivityInput,
+  type GetDealAiInsightsOutput,
+  type GetDealAiRecommendationsOutput,
+  type GetCrmAiSettingsOutput,
+  type UpdateCrmAiSettingsInput,
+  type UpdateCrmAiSettingsOutput,
 } from "@corely/contracts";
 import { crmApi } from "@/lib/crm-api";
 import { toast } from "sonner";
@@ -14,6 +19,9 @@ export const dealQueryKeys = {
   list: ["deals"] as const,
   detail: (id: string) => ["deal", id] as const,
   timeline: (id: string) => ["deal", id, "timeline"] as const,
+  aiInsights: (id: string) => ["deals", id, "ai", "insights"] as const,
+  aiRecommendations: (id: string) => ["deals", id, "ai", "recommendations"] as const,
+  aiSettings: ["crm", "ai", "settings"] as const,
 };
 
 export const useDeal = (id: string | undefined) => {
@@ -29,7 +37,14 @@ export const useDeal = (id: string | undefined) => {
   });
 };
 
-export type TimelineFilter = "ALL" | "NOTE" | "TASK" | "CALL" | "MEETING" | "EMAIL_DRAFT" | "STAGE";
+export type TimelineFilter =
+  | "ALL"
+  | "NOTE"
+  | "TASK"
+  | "CALL"
+  | "MEETING"
+  | "COMMUNICATION"
+  | "STAGE";
 
 export const useDealTimeline = (id: string | undefined, filter: TimelineFilter = "ALL") => {
   return useQuery({
@@ -55,9 +70,15 @@ export const useDealTimeline = (id: string | undefined, filter: TimelineFilter =
       }
       return {
         ...data,
-        items: data.items.filter(
-          (item) => item.type === "ACTIVITY" && item.metadata?.activityType === filter
-        ),
+        items: data.items.filter((item) => {
+          if (filter === "COMMUNICATION") {
+            return (
+              item.type === "MESSAGE" ||
+              (item.type === "ACTIVITY" && item.metadata?.activityType === "COMMUNICATION")
+            );
+          }
+          return item.type === "ACTIVITY" && item.metadata?.activityType === filter;
+        }),
       };
     },
   });
@@ -66,8 +87,58 @@ export const useDealTimeline = (id: string | undefined, filter: TimelineFilter =
 const invalidateDeal = (queryClient: ReturnType<typeof useQueryClient>, dealId: string) => {
   void queryClient.invalidateQueries({ queryKey: dealQueryKeys.detail(dealId) });
   void queryClient.invalidateQueries({ queryKey: dealQueryKeys.timeline(dealId) });
+  void queryClient.invalidateQueries({ queryKey: dealQueryKeys.aiInsights(dealId) });
+  void queryClient.invalidateQueries({ queryKey: dealQueryKeys.aiRecommendations(dealId) });
   void queryClient.invalidateQueries({ queryKey: dealQueryKeys.list });
   void queryClient.invalidateQueries({ queryKey: ["activities"] });
+};
+
+export const useCrmAiSettings = () => {
+  return useQuery<GetCrmAiSettingsOutput>({
+    queryKey: dealQueryKeys.aiSettings,
+    queryFn: () => crmApi.getCrmAiSettings(),
+    retry: false,
+  });
+};
+
+export const useUpdateCrmAiSettings = () => {
+  const queryClient = useQueryClient();
+  return useMutation<UpdateCrmAiSettingsOutput, Error, UpdateCrmAiSettingsInput>({
+    mutationFn: (input) => crmApi.updateCrmAiSettings(input),
+    onSuccess: (data) => {
+      queryClient.setQueryData(dealQueryKeys.aiSettings, data);
+    },
+  });
+};
+
+export const useDealAiInsights = (id: string | undefined, enabled = true) => {
+  return useQuery<GetDealAiInsightsOutput>({
+    queryKey: id ? dealQueryKeys.aiInsights(id) : ["deal", "ai", "insights", "missing"],
+    queryFn: () => {
+      if (!id) {
+        throw new Error("Deal id is required");
+      }
+      return crmApi.getDealAiInsights(id);
+    },
+    enabled: Boolean(id) && enabled,
+    retry: false,
+  });
+};
+
+export const useDealAiRecommendations = (id: string | undefined, enabled = true) => {
+  return useQuery<GetDealAiRecommendationsOutput>({
+    queryKey: id
+      ? dealQueryKeys.aiRecommendations(id)
+      : ["deal", "ai", "recommendations", "missing"],
+    queryFn: () => {
+      if (!id) {
+        throw new Error("Deal id is required");
+      }
+      return crmApi.getDealAiRecommendations(id);
+    },
+    enabled: Boolean(id) && enabled,
+    retry: false,
+  });
 };
 
 export const useUpdateDeal = () => {

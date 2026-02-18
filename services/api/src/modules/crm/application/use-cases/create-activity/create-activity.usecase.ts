@@ -33,8 +33,8 @@ export class CreateActivityUseCase extends BaseUseCase<CreateActivityInput, Crea
     if (!input.subject.trim()) {
       throw new ValidationError("Activity subject is required");
     }
-    if (!input.partyId && !input.dealId) {
-      throw new ValidationError("Activity must be associated with either a party or a deal");
+    if (input.type === "COMMUNICATION" && !input.channelKey) {
+      throw new ValidationError("Communication activity requires channelKey");
     }
     return input;
   }
@@ -51,11 +51,39 @@ export class CreateActivityUseCase extends BaseUseCase<CreateActivityInput, Crea
       subject: input.subject,
       body: input.body,
       channelKey: input.channelKey ?? null,
-      messageDirection: input.messageDirection ?? null,
+      direction:
+        input.type === "COMMUNICATION"
+          ? input.direction
+          : (input.direction ??
+            (input.messageDirection
+              ? input.messageDirection.toUpperCase() === "INBOUND"
+                ? "INBOUND"
+                : "OUTBOUND"
+              : null)),
+      communicationStatus:
+        input.type === "COMMUNICATION" ? (input.communicationStatus ?? "LOGGED") : null,
+      messageDirection: input.direction
+        ? input.direction.toLowerCase()
+        : (input.messageDirection ?? null),
       messageTo: input.messageTo ?? null,
       openUrl: input.openUrl ?? null,
       partyId: input.partyId,
       dealId: input.dealId,
+      activityDate: input.activityDate ? new Date(input.activityDate) : now,
+      ownerId: input.assignedToUserId ?? ctx.userId ?? null,
+      recordSource: input.recordSource ?? "MANUAL",
+      recordSourceDetails: input.recordSourceDetails ?? null,
+      toRecipients: input.to ?? null,
+      ccRecipients: input.cc ?? null,
+      participants: input.participants ?? null,
+      threadKey: input.threadKey ?? null,
+      externalThreadId: input.externalThreadId ?? null,
+      externalMessageId: input.externalMessageId ?? null,
+      providerKey: input.providerKey ?? null,
+      errorCode: input.errorCode ?? null,
+      errorMessage: input.errorMessage ?? null,
+      rawProviderPayload: input.rawProviderPayload ?? null,
+      attachments: input.attachments ?? null,
       dueAt: input.dueAt ? new Date(input.dueAt) : null,
       assignedToUserId: input.assignedToUserId ?? ctx.userId ?? null,
       createdByUserId: ctx.userId ?? null,

@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { FileText, CheckSquare, Phone, Calendar, Mail } from "lucide-react";
+import { FileText, CheckSquare, Phone, Calendar, Mail, Sparkles } from "lucide-react";
 import type { ActivityType } from "@corely/contracts";
 
 interface ActivityTypeIconProps {
@@ -12,7 +12,8 @@ const iconMap: Record<ActivityType, FC<{ className?: string }>> = {
   TASK: CheckSquare,
   CALL: Phone,
   MEETING: Calendar,
-  EMAIL_DRAFT: Mail,
+  COMMUNICATION: Mail,
+  SYSTEM_EVENT: Sparkles,
 };
 
 export const ActivityTypeIcon: FC<ActivityTypeIconProps> = ({ type, className }) => {

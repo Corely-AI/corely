@@ -14,8 +14,10 @@ import { Calendar as CalendarIcon, Clock3, Plus } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { useAddDealActivity } from "../hooks/useDeal";
 import { useTranslation } from "react-i18next";
+import { useCrmChannels } from "../hooks/useChannels";
 
-const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "EMAIL_DRAFT"] as const;
+const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "COMMUNICATION"] as const;
+const COMMUNICATION_STATUSES = ["LOGGED", "DRAFT"] as const;
 
 interface ActivityComposerProps {
   dealId: string;
@@ -25,6 +27,7 @@ interface ActivityComposerProps {
 export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, partyId }) => {
   const { t, i18n } = useTranslation();
   const addActivity = useAddDealActivity();
+  const { data: channels = [] } = useCrmChannels();
   const activitySchema = useMemo(
     () =>
       z.object({
@@ -33,6 +36,9 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
         body: z.string().optional(),
         dueDate: z.date().optional(),
         dueTime: z.string().optional(),
+        channelKey: z.string().optional(),
+        direction: z.enum(["INBOUND", "OUTBOUND"]).optional(),
+        communicationStatus: z.enum(COMMUNICATION_STATUSES).optional(),
         outcome: z.string().optional(),
         durationMinutes: z.coerce.number().optional(),
         location: z.string().optional(),
@@ -49,6 +55,9 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
       body: "",
       dueDate: undefined,
       dueTime: "",
+      channelKey: "email",
+      direction: "OUTBOUND",
+      communicationStatus: "LOGGED",
       outcome: "",
       location: "",
     },
@@ -79,13 +88,27 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
         subject: values.subject,
         body: values.body || undefined,
         partyId: partyId || undefined,
-        dueAt: dateWithTime?.toISOString(),
+        channelKey: values.type === "COMMUNICATION" ? values.channelKey || undefined : undefined,
+        direction: values.type === "COMMUNICATION" ? values.direction : undefined,
+        communicationStatus:
+          values.type === "COMMUNICATION" ? values.communicationStatus : undefined,
+        activityDate: values.type === "COMMUNICATION" ? dateWithTime?.toISOString() : undefined,
+        dueAt: values.type === "COMMUNICATION" ? undefined : dateWithTime?.toISOString(),
         outcome: values.type === "CALL" ? values.outcome : undefined,
         durationSeconds: values.durationMinutes ? values.durationMinutes * 60 : undefined,
         location: values.type === "MEETING" ? values.location : undefined,
       },
     });
-    form.reset({ type: values.type, subject: "", body: "", dueDate: undefined, dueTime: "" });
+    form.reset({
+      type: values.type,
+      subject: "",
+      body: "",
+      dueDate: undefined,
+      dueTime: "",
+      channelKey: values.channelKey,
+      direction: values.direction,
+      communicationStatus: values.communicationStatus,
+    });
   };
 
   return (
@@ -201,6 +224,87 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
               />
             </div>
 
+            {selectedType === "COMMUNICATION" && (
+              <div className="grid gap-3 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="channelKey"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("crm.activity.channel")}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="crm-activity-channel">
+                            <SelectValue placeholder={t("crm.activity.channel")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {channels.map((channel) => (
+                            <SelectItem key={channel.key} value={channel.key}>
+                              {channel.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="direction"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("crm.activity.direction")}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="crm-activity-direction">
+                            <SelectValue placeholder={t("crm.activity.direction")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="OUTBOUND">
+                            {t("crm.activity.directionOutbound")}
+                          </SelectItem>
+                          <SelectItem value="INBOUND">
+                            {t("crm.activity.directionInbound")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="communicationStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("crm.activity.communicationStatus")}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="crm-activity-communication-status">
+                            <SelectValue placeholder={t("crm.activity.communicationStatus")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="LOGGED">
+                            {t("crm.activity.communicationLogged")}
+                          </SelectItem>
+                          <SelectItem value="DRAFT">
+                            {t("crm.activity.communicationDraft")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
             {(selectedType === "CALL" || selectedType === "MEETING") && (
               <div className="grid gap-3 md:grid-cols-2">
                 <FormField
@@ -208,9 +312,13 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                   name="durationMinutes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Duration (minutes)</FormLabel>
+                      <FormLabel>{t("crm.activity.duration")}</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} placeholder="Example: 15, 30, 60" />
+                        <Input
+                          type="number"
+                          {...field}
+                          placeholder={t("crm.activity.durationPlaceholder")}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -223,19 +331,27 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                     name="outcome"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Outcome</FormLabel>
+                        <FormLabel>{t("crm.activity.outcome")}</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="crm-activity-outcome">
-                              <SelectValue placeholder="Select outcome" />
+                              <SelectValue placeholder={t("crm.activity.selectOutcome")} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Connected">Connected</SelectItem>
-                            <SelectItem value="Voicemail">Voicemail</SelectItem>
-                            <SelectItem value="No Answer">No Answer</SelectItem>
-                            <SelectItem value="Busy">Busy</SelectItem>
-                            <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+                            <SelectItem value="Connected">
+                              {t("crm.activity.outcomes.connected")}
+                            </SelectItem>
+                            <SelectItem value="Voicemail">
+                              {t("crm.activity.outcomes.voicemail")}
+                            </SelectItem>
+                            <SelectItem value="No Answer">
+                              {t("crm.activity.outcomes.noAnswer")}
+                            </SelectItem>
+                            <SelectItem value="Busy">{t("crm.activity.outcomes.busy")}</SelectItem>
+                            <SelectItem value="Wrong Number">
+                              {t("crm.activity.outcomes.wrongNumber")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -250,9 +366,9 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                     name="location"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Location</FormLabel>
+                        <FormLabel>{t("crm.activity.location")}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Zoom link or physical location" {...field} />
+                          <Input placeholder={t("crm.activity.locationPlaceholder")} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

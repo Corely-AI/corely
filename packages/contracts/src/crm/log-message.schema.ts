@@ -1,10 +1,12 @@
 import { z } from "zod";
-import { ActivityDtoSchema } from "./activity.types";
+import { ActivityDtoSchema, ChannelKeySchema } from "./activity.types";
 import { utcInstantSchema } from "../shared/local-date.schema";
+import { LogCommunicationInputSchema } from "./communications.schema";
 
+// Deprecated compatibility schema. Prefer LogCommunicationInputSchema.
 export const LogMessageInputSchema = z.object({
   dealId: z.string(),
-  channelKey: z.string(),
+  channelKey: ChannelKeySchema,
   direction: z.enum(["outbound", "inbound"]).default("outbound"),
   subject: z.string().optional(),
   body: z.string().optional(),
@@ -20,3 +22,5 @@ export const LogMessageOutputSchema = z.object({
 
 export type LogMessageInput = z.infer<typeof LogMessageInputSchema>;
 export type LogMessageOutput = z.infer<typeof LogMessageOutputSchema>;
+
+export { LogCommunicationInputSchema };

@@ -83,9 +83,10 @@ export class RunSequenceStepsUseCase extends BaseUseCase<{ limit: number }, { pr
           // For now, log as completed email activity
           const activity = ActivityEntity.create({
             ...activityBase,
-            // actually EMAIL isn't in ActivityType enum yet? It is "EMAIL_DRAFT".
-            // Let's use "TASK" and say "Auto Email Sent"
-            type: "TASK",
+            type: "COMMUNICATION",
+            channelKey: "email",
+            direction: "OUTBOUND",
+            communicationStatus: "SENT",
             subject: `[Auto Email] ${activityBase.subject}`,
           });
           // Mark completed immediately
@@ -94,7 +95,10 @@ export class RunSequenceStepsUseCase extends BaseUseCase<{ limit: number }, { pr
         } else if (currentStep.type === "EMAIL_MANUAL") {
           const activity = ActivityEntity.create({
             ...activityBase,
-            type: "EMAIL_DRAFT",
+            type: "COMMUNICATION",
+            channelKey: "email",
+            direction: "OUTBOUND",
+            communicationStatus: "DRAFT",
           });
           await this.activityRepo.create(enrollment.tenantId, activity);
         } else if (currentStep.type === "CALL") {

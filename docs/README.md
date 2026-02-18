@@ -71,6 +71,7 @@ Specific feature implementation details.
 - [Accounting Core Status](./features/ACCOUNTING_CORE_STATUS.md)
 - [Accounting Frontend Progress](./features/ACCOUNTING_FRONTEND_PROGRESS.md)
 - [CRM Implementation Summary](./features/CRM_IMPLEMENTATION_SUMMARY.md)
+- [CRM AI](./features/crm-ai.md)
 - [Implementation Progress](./features/IMPLEMENTATION_PROGRESS.md)
 - [CMS Module](./features/CMS.md)
 - [Website Module](./features/website.md)

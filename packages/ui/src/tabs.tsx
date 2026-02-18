@@ -53,11 +53,12 @@ const TabsContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, forceMount, ...props }, ref) => {
   const keepMounted = React.useContext(TabsKeepMountedContext);
+  const shouldForceMount = Boolean(forceMount || keepMounted);
 
   return (
     <TabsPrimitive.Content
       ref={ref}
-      forceMount={forceMount || keepMounted ? true : undefined}
+      {...(shouldForceMount ? { forceMount: true as const } : {})}
       className={cn(
         "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         className

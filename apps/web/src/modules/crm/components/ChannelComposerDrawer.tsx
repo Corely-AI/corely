@@ -17,6 +17,8 @@ type ChannelComposerDrawerProps = {
   channel: ChannelDefinition | null;
   context: Record<string, string | undefined>;
   onLog: (payload: { subject?: string; body: string; openUrl?: string }) => void;
+  onOpenAiDraft?: () => void;
+  aiDisabled?: boolean;
 };
 
 export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
@@ -25,6 +27,8 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
   channel,
   context,
   onLog,
+  onOpenAiDraft,
+  aiDisabled = false,
 }) => {
   const { t } = useTranslation();
   const [templateId, setTemplateId] = useState<string | undefined>();
@@ -48,6 +52,9 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
 
   const canCopy = channel?.capabilities.copy;
   const canOpen = channel?.capabilities.open;
+  const isSendCapable = Boolean(
+    channel?.capabilities.canSendFromCRM && !channel?.capabilities.manualOnly
+  );
 
   const openUrl = useMemo(() => {
     if (!channel) {
@@ -144,6 +151,11 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
         </div>
 
         <DrawerFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          {onOpenAiDraft && (
+            <Button variant="outline" onClick={onOpenAiDraft} disabled={aiDisabled}>
+              AI Draft
+            </Button>
+          )}
           {canCopy && (
             <Button variant="secondary" onClick={handleCopy}>
               <Copy className="h-4 w-4 mr-1" />
@@ -163,7 +175,7 @@ export const ChannelComposerDrawer: React.FC<ChannelComposerDrawerProps> = ({
           )}
           <Button variant="accent" onClick={handleLog} data-testid="crm-channel-log">
             <Send className="h-4 w-4 mr-1" />
-            {t("crm.channel.log")}
+            {isSendCapable ? t("common.save") : t("crm.channel.log")}
           </Button>
         </DrawerFooter>
       </DrawerContent>

@@ -328,7 +328,7 @@ export const buildCrmAiTools = (deps: {
           schema: z.object({
             activities: z.array(
               z.object({
-                type: z.enum(["NOTE", "TASK", "CALL", "MEETING", "EMAIL_DRAFT"]),
+                type: z.enum(["NOTE", "TASK", "CALL", "MEETING", "COMMUNICATION"]),
                 subject: z.string(),
                 body: z.string().optional(),
                 dueAt: z.string().optional().describe("ISO 8601 date-time"),

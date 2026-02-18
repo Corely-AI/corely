@@ -58,6 +58,7 @@
     "createdAt": "Erstellt am {{date}}",
     "empty": "Leer",
     "amount": "Betrag",
+    "copy": "Kopieren",
     "type": "Typ",
     "description": "Beschreibung",
     "date": "Datum",
@@ -1125,6 +1126,7 @@
       "type": "Aktivitätstyp",
       "selectType": "Typ auswählen",
       "dueAt": "Fälligkeitstermin & Uhrzeit",
+      "dueDate": "Fälligkeitsdatum",
       "selectDate": "Datum auswählen",
       "reminderHint": "Die Aktivität wird für diesen Zeitpunkt geplant.",
       "dealIdOptional": "Mit Deal verknüpfen (Optional)",
@@ -1146,17 +1148,38 @@
         "canceled": "Storniert",
         "scheduled": "Geplant"
       },
+      "channel": "Kanal",
+      "direction": "Richtung",
+      "directionOutbound": "Ausgehend",
+      "directionInbound": "Eingehend",
+      "communicationStatus": "Kommunikationsstatus",
+      "communicationLogged": "Protokolliert",
+      "communicationDraft": "Entwurf",
       "types": {
         "note": "Notiz",
         "task": "Aufgabe",
         "call": "Anruf",
         "meeting": "Meeting",
-        "email_draft": "E-Mail-Entwurf"
+        "communication": "Kommunikation",
+        "system_event": "Systemereignis"
       },
       "addTitle": "Aktivität hinzufügen",
       "addSubtitle": "Loggen Sie ein kurzes Update oder eine Aufgabe",
       "pickDate": "Datum wählen",
-      "time": "Zeit"
+      "time": "Zeit",
+      "duration": "Dauer (Minuten)",
+      "durationPlaceholder": "Beispiel: 15, 30, 60",
+      "outcome": "Ergebnis",
+      "selectOutcome": "Ergebnis auswählen",
+      "location": "Ort",
+      "locationPlaceholder": "Zoom-Link oder physischer Ort",
+      "outcomes": {
+        "connected": "Verbunden",
+        "voicemail": "Voicemail",
+        "noanswer": "Keine Antwort",
+        "busy": "Besetzt",
+        "wrongnumber": "Falsche Nummer"
+      }
     },
     "timeline": {
       "title": "Zeitplan",
@@ -1171,8 +1194,10 @@
         "calls": "Anrufe",
         "meetings": "Meetings",
         "tasks": "Aufgaben",
+        "communications": "Kommunikation",
         "stage": "Phasen"
-      }
+      },
+      "duePrefix": "Fällig: "
     },
     "deals": {
       "title": "Deals",
@@ -1182,6 +1207,11 @@
       "noAmount": "Kein Betrag",
       "stage": "Stufe",
       "status": {
+        "open": "Offen",
+        "won": "Gewonnen",
+        "lost": "Verloren"
+      },
+      "statuses": {
         "open": "Offen",
         "won": "Gewonnen",
         "lost": "Verloren"
@@ -1215,6 +1245,9 @@
       "tipsOne": "Halten Sie Deal-Titel aussagekräftig und prägnant.",
       "tipsTwo": "Aktualisieren Sie die Wahrscheinlichkeit, wenn der Deal Phasen durchläuft.",
       "tipsThree": "Setzen Sie ein realistisches Abschlussdatum für bessere Prognosen.",
+      "quickActions": "Schnellaktionen",
+      "message": "Nachricht",
+      "quickNote": "Schnellnotiz",
       "stages": {
         "lead": "Lead",
         "qualified": "Qualifiziert",
@@ -1239,6 +1272,12 @@
       "markLostTitle": "Deal als verloren markieren",
       "markLostDescription": "Bitte geben Sie einen Grund an, warum dieser Deal verloren ging.",
       "markLostPlaceholder": "z.B. Wettbewerber hat gewonnen, Budget gekürzt...",
+      "channelsLoading": "Kanäle werden geladen...",
+      "noChannels": "Keine Kanäle verfügbar",
+      "missingContactFields": "Fehlende Kontaktinformationen: {{fields}}",
+      "noteSubject": "Betreff",
+      "noteDetails": "Notizdetails...",
+      "addNote": "Notiz hinzufügen",
       "markLost": "Als verloren markieren",
       "deleteTitle": "Deal löschen",
       "deleteDescription": "Sind Sie sicher, dass Sie diesen Deal löschen möchten? Dieser Vorgang kann nicht rückgängig gemacht werden.",
@@ -1249,7 +1288,26 @@
       "expectedClose": "Erw. {{date}}",
       "expectedCloseTitle": "Erwarteter Abschluss",
       "markWon": "Als gewonnen markieren",
-      "edit": "Deal bearbeiten"
+      "edit": "Deal bearbeiten",
+      "alreadyClosed": "Deal bereits abgeschlossen",
+      "relationships": "Beziehungen",
+      "party": "Verknüpfter Kontakt",
+      "owner": "Deal-Inhaber",
+      "unassigned": "Nicht zugewiesen"
+    },
+    "channel": {
+      "messageVia": "Nachricht über {{channel}}",
+      "template": "Vorlage",
+      "chooseTemplate": "Vorlage wählen",
+      "subject": "Betreff",
+      "message": "Nachricht",
+      "log": "Nachricht protokollieren",
+      "copySuccess": "In die Zwischenablage kopiert",
+      "copyFailed": "Kopieren fehlgeschlagen",
+      "draftCreated": "Kommunikationsentwurf erstellt",
+      "messageLogged": "Nachricht protokolliert",
+      "createDraftFailed": "Entwurf konnte nicht erstellt werden",
+      "logFailed": "Nachricht konnte nicht protokolliert werden"
     }
   },
   "classes": {

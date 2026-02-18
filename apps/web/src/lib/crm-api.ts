@@ -24,8 +24,28 @@ import type {
   ListAccountsResponse,
   AccountCustomAttributes,
   SetAccountCustomAttributesInput,
+  GetDealAiInsightsOutput,
+  GetDealAiRecommendationsOutput,
+  DraftDealMessageInput,
+  DraftDealMessageOutput,
+  ActivityAiParseInput,
+  ActivityAiParseOutput,
+  ActivityAiExtractInput,
+  ActivityAiExtractOutput,
+  CommunicationAiSummarizeInput,
+  CommunicationAiSummarizeOutput,
+  GetCrmAiSettingsOutput,
+  UpdateCrmAiSettingsInput,
+  UpdateCrmAiSettingsOutput,
 } from "@corely/contracts";
-import type { LogMessageInput, LogMessageOutput, ListChannelsOutput } from "@corely/contracts";
+import type {
+  CreateCommunicationDraftInput,
+  LogCommunicationInput,
+  LogMessageInput,
+  LogMessageOutput,
+  SendCommunicationInput,
+  ListChannelsOutput,
+} from "@corely/contracts";
 import { apiClient } from "./api-client";
 
 const unwrapDealResponse = (response: unknown): DealDto => {
@@ -154,8 +174,13 @@ export const crmApi = {
   // ============================================================
   // Activity Operations
   // ============================================================
-  async createActivity(input: CreateActivityInput): Promise<ActivityDto> {
-    const response = await apiClient.post<unknown>("/crm/activities", input);
+  async createActivity(
+    input: CreateActivityInput,
+    options?: { idempotencyKey?: string }
+  ): Promise<ActivityDto> {
+    const response = await apiClient.post<unknown>("/crm/activities", input, {
+      idempotencyKey: options?.idempotencyKey,
+    });
     return unwrapActivityResponse(response);
   },
 
@@ -176,6 +201,11 @@ export const crmApi = {
     dealId?: string;
     type?: string;
     status?: string;
+    channelKey?: string;
+    direction?: string;
+    communicationStatus?: string;
+    activityDateFrom?: string;
+    activityDateTo?: string;
     assignedToUserId?: string;
     cursor?: string;
     pageSize?: number;
@@ -192,6 +222,21 @@ export const crmApi = {
     }
     if (params?.status) {
       queryParams.append("status", params.status);
+    }
+    if (params?.channelKey) {
+      queryParams.append("channelKey", params.channelKey);
+    }
+    if (params?.direction) {
+      queryParams.append("direction", params.direction);
+    }
+    if (params?.communicationStatus) {
+      queryParams.append("communicationStatus", params.communicationStatus);
+    }
+    if (params?.activityDateFrom) {
+      queryParams.append("activityDateFrom", params.activityDateFrom);
+    }
+    if (params?.activityDateTo) {
+      queryParams.append("activityDateTo", params.activityDateTo);
     }
     if (params?.assignedToUserId) {
       queryParams.append("assignedToUserId", params.assignedToUserId);
@@ -250,6 +295,89 @@ export const crmApi = {
       input
     );
     return response.activity;
+  },
+
+  async createCommunicationDraft(
+    input: CreateCommunicationDraftInput,
+    options?: { idempotencyKey?: string }
+  ): Promise<ActivityDto> {
+    const response = await apiClient.post<{ activity: ActivityDto }>(
+      "/crm/communications/draft",
+      input,
+      { idempotencyKey: options?.idempotencyKey }
+    );
+    return response.activity;
+  },
+
+  async sendCommunication(id: string, providerKey?: string): Promise<ActivityDto> {
+    const payload: Partial<SendCommunicationInput> = {};
+    if (providerKey) {
+      payload.providerKey = providerKey;
+    }
+    const response = await apiClient.post<{ activity: ActivityDto }>(
+      `/crm/communications/${id}/send`,
+      payload
+    );
+    return response.activity;
+  },
+
+  async logCommunication(
+    input: LogCommunicationInput,
+    options?: { idempotencyKey?: string }
+  ): Promise<ActivityDto> {
+    const response = await apiClient.post<{ activity: ActivityDto }>(
+      "/crm/communications/log",
+      input,
+      { idempotencyKey: options?.idempotencyKey }
+    );
+    return response.activity;
+  },
+
+  async getDealAiInsights(
+    dealId: string,
+    params?: { refresh?: boolean }
+  ): Promise<GetDealAiInsightsOutput> {
+    const query = params?.refresh ? "?refresh=true" : "";
+    return apiClient.get<GetDealAiInsightsOutput>(`/crm/deals/${dealId}/ai/insights${query}`);
+  },
+
+  async getDealAiRecommendations(
+    dealId: string,
+    params?: { refresh?: boolean }
+  ): Promise<GetDealAiRecommendationsOutput> {
+    const query = params?.refresh ? "?refresh=true" : "";
+    return apiClient.get<GetDealAiRecommendationsOutput>(
+      `/crm/deals/${dealId}/ai/recommendations${query}`
+    );
+  },
+
+  async draftDealAiMessage(
+    dealId: string,
+    input: DraftDealMessageInput
+  ): Promise<DraftDealMessageOutput> {
+    return apiClient.post<DraftDealMessageOutput>(`/crm/deals/${dealId}/ai/draft-message`, input);
+  },
+
+  async parseActivityAi(input: ActivityAiParseInput): Promise<ActivityAiParseOutput> {
+    return apiClient.post<ActivityAiParseOutput>("/crm/activities/ai/parse", input);
+  },
+
+  async extractActivityAi(input: ActivityAiExtractInput): Promise<ActivityAiExtractOutput> {
+    return apiClient.post<ActivityAiExtractOutput>("/crm/activities/ai/extract", input);
+  },
+
+  async summarizeCommunicationAi(
+    input: CommunicationAiSummarizeInput
+  ): Promise<CommunicationAiSummarizeOutput> {
+    return apiClient.post<CommunicationAiSummarizeOutput>("/crm/comms/ai/summarize", input);
+  },
+
+  async getCrmAiSettings(): Promise<GetCrmAiSettingsOutput> {
+    return apiClient.get<GetCrmAiSettingsOutput>("/crm/ai/settings");
+  },
+
+  async updateCrmAiSettings(input: UpdateCrmAiSettingsInput): Promise<UpdateCrmAiSettingsOutput> {
+    return apiClient.patch<UpdateCrmAiSettingsOutput>("/crm/ai/settings", input);
   },
 
   // ============================================================

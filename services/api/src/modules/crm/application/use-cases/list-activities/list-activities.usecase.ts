@@ -37,6 +37,11 @@ export class ListActivitiesUseCase extends BaseUseCase<ListActivitiesInput, List
       dealId: input.dealId,
       type: input.type,
       status: input.status,
+      channelKey: input.channelKey,
+      direction: input.direction,
+      communicationStatus: input.communicationStatus,
+      activityDateFrom: input.activityDateFrom ? new Date(input.activityDateFrom) : undefined,
+      activityDateTo: input.activityDateTo ? new Date(input.activityDateTo) : undefined,
       assignedToUserId: input.assignedToUserId,
     };
 

@@ -58,6 +58,7 @@
     "createdAt": "Đã tạo {{date}}",
     "empty": "Trống",
     "amount": "Số tiền",
+    "copy": "Sao chép",
     "type": "Loại",
     "description": "Mô tả",
     "date": "Ngày",
@@ -1147,6 +1148,7 @@
       "type": "Loại hoạt động",
       "selectType": "Chọn loại",
       "dueAt": "Ngày & Giờ đến hạn",
+      "dueDate": "Ngày đến hạn",
       "selectDate": "Chọn ngày",
       "reminderHint": "Hoạt động sẽ được lên lịch vào thời điểm này.",
       "dealIdOptional": "Liên kết với Cơ hội (Tùy chọn)",
@@ -1168,17 +1170,38 @@
         "canceled": "Đã hủy",
         "scheduled": "Đã lên lịch"
       },
+      "channel": "Kênh",
+      "direction": "Chiều",
+      "directionOutbound": "Gửi đi",
+      "directionInbound": "Nhận vào",
+      "communicationStatus": "Trạng thái liên lạc",
+      "communicationLogged": "Đã ghi nhận",
+      "communicationDraft": "Bản nháp",
       "types": {
         "note": "Ghi chú",
         "task": "Nhiệm vụ",
         "call": "Cuộc gọi",
         "meeting": "Cuộc họp",
-        "email_draft": "Thư nháp"
+        "communication": "Liên lạc",
+        "system_event": "Sự kiện hệ thống"
       },
       "addTitle": "Thêm hoạt động",
       "addSubtitle": "Ghi nhanh một cập nhật hoặc nhiệm vụ",
       "pickDate": "Chọn ngày",
-      "time": "Thời gian"
+      "time": "Thời gian",
+      "duration": "Thời lượng (phút)",
+      "durationPlaceholder": "VD: 15, 30, 60",
+      "outcome": "Kết quả",
+      "selectOutcome": "Chọn kết quả",
+      "location": "Địa điểm",
+      "locationPlaceholder": "Link Zoom hoặc địa chỉ thực tế",
+      "outcomes": {
+        "connected": "Đã kết nối",
+        "voicemail": "Hộp thư thoại",
+        "noanswer": "Không nhấc máy",
+        "busy": "Bận",
+        "wrongnumber": "Sai số"
+      }
     },
     "timeline": {
       "title": "Dòng thời gian",
@@ -1193,8 +1216,10 @@
         "calls": "Cuộc gọi",
         "meetings": "Cuộc họp",
         "tasks": "Nhiệm vụ",
+        "communications": "Liên lạc",
         "stage": "Giai đoạn"
-      }
+      },
+      "duePrefix": "Hạn: "
     },
     "deals": {
       "title": "Cơ hội",
@@ -1204,6 +1229,11 @@
       "noAmount": "Không có giá trị",
       "stage": "Giai đoạn",
       "status": {
+        "open": "Mở",
+        "won": "Thắng",
+        "lost": "Thua"
+      },
+      "statuses": {
         "open": "Mở",
         "won": "Thắng",
         "lost": "Thua"
@@ -1237,6 +1267,9 @@
       "tipsOne": "Giữ tiêu đề cơ hội mô tả nhưng súc tích.",
       "tipsTwo": "Cập nhật xác suất khi cơ hội tiến triển qua các giai đoạn.",
       "tipsThree": "Đặt ngày đóng dự kiến thực tế để dự báo tốt hơn.",
+      "quickActions": "Thao tác nhanh",
+      "message": "Tin nhắn",
+      "quickNote": "Ghi chú nhanh",
       "stages": {
         "lead": "Tiềm năng",
         "qualified": "Đủ điều kiện",
@@ -1261,6 +1294,12 @@
       "markLostTitle": "Đánh dấu Thua",
       "markLostDescription": "Vui lòng cung cấp lý do tại sao cơ hội này bị thua.",
       "markLostPlaceholder": "ví dụ: Đối thủ thắng, Cắt giảm ngân sách...",
+      "channelsLoading": "Đang tải kênh...",
+      "noChannels": "Không có kênh nào",
+      "missingContactFields": "Thiếu thông tin liên hệ: {{fields}}",
+      "noteSubject": "Tiêu đề",
+      "noteDetails": "Chi tiết ghi chú...",
+      "addNote": "Thêm ghi chú",
       "markLost": "Đánh dấu Thua",
       "deleteTitle": "Xóa cơ hội",
       "deleteDescription": "Bạn có chắc chắn muốn xóa cơ hội này không? Hành động này không thể hoàn tác.",
@@ -1271,7 +1310,26 @@
       "expectedClose": "Dự kiến {{date}}",
       "expectedCloseTitle": "Đóng dự kiến",
       "markWon": "Đánh dấu Thắng",
-      "edit": "Chỉnh sửa cơ hội"
+      "edit": "Chỉnh sửa cơ hội",
+      "alreadyClosed": "Cơ hội đã đóng",
+      "relationships": "Mối quan hệ",
+      "party": "Liên hệ liên quan",
+      "owner": "Người phụ trách",
+      "unassigned": "Chưa bộ phận"
+    },
+    "channel": {
+      "messageVia": "Nhắn tin qua {{channel}}",
+      "template": "Mẫu",
+      "chooseTemplate": "Chọn một mẫu",
+      "subject": "Tiêu đề",
+      "message": "Tin nhắn",
+      "log": "Ghi nhận tin nhắn",
+      "copySuccess": "Đã sao chép vào bộ nhớ tạm",
+      "copyFailed": "Không thể sao chép",
+      "draftCreated": "Đã tạo bản nháp liên lạc",
+      "messageLogged": "Đã ghi nhận tin nhắn",
+      "createDraftFailed": "Không thể tạo bản nháp",
+      "logFailed": "Không thể ghi nhận tin nhắn"
     }
   },
   "classes": {
