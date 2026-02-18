@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   authClient,
   type CurrentUserResponse,
@@ -7,6 +8,8 @@ import {
   type AuthResponse,
 } from "./auth-client";
 import { setActiveWorkspaceId } from "@/shared/workspaces/workspace-store";
+import { setPublicWorkspaceSlug } from "@/shared/public-workspace";
+import { clearClientLocalData } from "./clear-local-data";
 
 interface AuthContextType {
   user: CurrentUserResponse | null;
@@ -31,6 +34,7 @@ export interface AuthProviderProps {
  * Wraps app with authentication context
  */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<CurrentUserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,15 +102,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async (): Promise<void> => {
+    let logoutError: unknown;
     try {
       setError(null);
       await authClient.signout();
-      setActiveWorkspaceId(null);
-      setUser(null);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Logout failed";
+      logoutError = err;
+    } finally {
+      await authClient.clearTokens();
+      setActiveWorkspaceId(null);
+      setPublicWorkspaceSlug(null);
+      queryClient.clear();
+      await clearClientLocalData();
+      setUser(null);
+    }
+
+    if (logoutError) {
+      const message = logoutError instanceof Error ? logoutError.message : "Logout failed";
       setError(message);
-      throw err;
+      throw logoutError;
     }
   };
 
