@@ -4,10 +4,13 @@ import { ActivityTypeIcon } from "./ActivityTypeIcon";
 import { ArrowRight } from "lucide-react";
 import { MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Markdown } from "@/shared/components/Markdown";
 
 interface TimelineViewProps {
   items: TimelineItem[];
 }
+
+const looksLikeHtml = (value: string) => /<([a-z][a-z0-9]*)\b[^>]*>[\s\S]*<\/\1>/i.test(value);
 
 export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
   const { t, i18n } = useTranslation();
@@ -79,11 +82,26 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                             )}
                           </span>
                         ) : null}
-                        {item.body && (
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            {item.body}
-                          </p>
-                        )}
+                        {item.body &&
+                          (activityType === "NOTE" ? (
+                            <div className="mt-1 rounded-md border bg-muted/20 px-3 py-2">
+                              {looksLikeHtml(item.body) ? (
+                                <div
+                                  className="prose prose-sm max-w-none text-muted-foreground dark:prose-invert"
+                                  dangerouslySetInnerHTML={{ __html: item.body }}
+                                />
+                              ) : (
+                                <Markdown
+                                  content={item.body}
+                                  className="text-sm text-muted-foreground"
+                                />
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                              {item.body}
+                            </p>
+                          ))}
                         {isActivity && item.metadata && (
                           <div className="flex flex-wrap gap-2 mt-1">
                             {item.metadata.dueAt && (
