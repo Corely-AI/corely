@@ -1,7 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import {
   BaseUseCase,
-  ExternalServiceError,
   type LoggerPort,
   type Result,
   type UseCaseContext,
@@ -9,7 +8,6 @@ import {
   ValidationError,
   RequireTenant,
   ok,
-  err,
 } from "@corely/kernel";
 import {
   DealAiInsightsSchema,
@@ -191,11 +189,12 @@ export class GetDealAiInsightsUseCase extends BaseUseCase<
           cached: false,
         });
       } catch (cause) {
-        return err(
-          new ExternalServiceError("Failed to generate deal AI insights", {
-            reason: cause instanceof Error ? cause.message : String(cause),
-          })
-        );
+        this.logger.warn("GetDealAiInsightsUseCase.ai_fallback", {
+          tenantId: ctx.tenantId,
+          workspaceId,
+          dealId: input.dealId,
+          reason: cause instanceof Error ? cause.message : String(cause),
+        });
       }
     }
 
@@ -219,18 +218,56 @@ export class GetDealAiInsightsUseCase extends BaseUseCase<
   }
 
   private parsePromptOutput(payload: Record<string, unknown>): DealInsightsPromptOutput {
+    const normalizedPayload = this.normalizePromptPayload(payload);
     const parsed = DealAiInsightsSchema.pick({
       summary: true,
       whatMissing: true,
       keyEntities: true,
       confidence: true,
-    }).parse(payload);
+    }).parse(normalizedPayload);
     return {
       summary: parsed.summary,
       whatMissing: parsed.whatMissing,
       keyEntities: parsed.keyEntities,
       confidence: parsed.confidence,
     };
+  }
+
+  private normalizePromptPayload(payload: Record<string, unknown>): Record<string, unknown> {
+    const normalized: Record<string, unknown> = { ...payload };
+    const confidence = this.coerceNumber(payload.confidence);
+    if (confidence !== undefined) {
+      normalized.confidence = confidence;
+    }
+
+    if (Array.isArray(payload.keyEntities)) {
+      normalized.keyEntities = payload.keyEntities.map((entity) => {
+        if (!entity || typeof entity !== "object") {
+          return entity;
+        }
+        const normalizedEntity = { ...(entity as Record<string, unknown>) };
+        const entityConfidence = this.coerceNumber(normalizedEntity.confidence);
+        if (entityConfidence !== undefined) {
+          normalizedEntity.confidence = entityConfidence;
+        }
+        return normalizedEntity;
+      });
+    }
+
+    return normalized;
+  }
+
+  private coerceNumber(value: unknown): number | undefined {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === "string") {
+      const parsed = Number(value.trim());
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+    return undefined;
   }
 
   private buildMissingItems(params: {
