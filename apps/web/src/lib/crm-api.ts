@@ -24,6 +24,19 @@ import type {
   ListAccountsResponse,
   AccountCustomAttributes,
   SetAccountCustomAttributesInput,
+  GetDealAiInsightsOutput,
+  GetDealAiRecommendationsOutput,
+  DraftDealMessageInput,
+  DraftDealMessageOutput,
+  ActivityAiParseInput,
+  ActivityAiParseOutput,
+  ActivityAiExtractInput,
+  ActivityAiExtractOutput,
+  CommunicationAiSummarizeInput,
+  CommunicationAiSummarizeOutput,
+  GetCrmAiSettingsOutput,
+  UpdateCrmAiSettingsInput,
+  UpdateCrmAiSettingsOutput,
 } from "@corely/contracts";
 import type {
   CreateCommunicationDraftInput,
@@ -161,8 +174,13 @@ export const crmApi = {
   // ============================================================
   // Activity Operations
   // ============================================================
-  async createActivity(input: CreateActivityInput): Promise<ActivityDto> {
-    const response = await apiClient.post<unknown>("/crm/activities", input);
+  async createActivity(
+    input: CreateActivityInput,
+    options?: { idempotencyKey?: string }
+  ): Promise<ActivityDto> {
+    const response = await apiClient.post<unknown>("/crm/activities", input, {
+      idempotencyKey: options?.idempotencyKey,
+    });
     return unwrapActivityResponse(response);
   },
 
@@ -279,10 +297,14 @@ export const crmApi = {
     return response.activity;
   },
 
-  async createCommunicationDraft(input: CreateCommunicationDraftInput): Promise<ActivityDto> {
+  async createCommunicationDraft(
+    input: CreateCommunicationDraftInput,
+    options?: { idempotencyKey?: string }
+  ): Promise<ActivityDto> {
     const response = await apiClient.post<{ activity: ActivityDto }>(
       "/crm/communications/draft",
-      input
+      input,
+      { idempotencyKey: options?.idempotencyKey }
     );
     return response.activity;
   },
@@ -299,12 +321,63 @@ export const crmApi = {
     return response.activity;
   },
 
-  async logCommunication(input: LogCommunicationInput): Promise<ActivityDto> {
+  async logCommunication(
+    input: LogCommunicationInput,
+    options?: { idempotencyKey?: string }
+  ): Promise<ActivityDto> {
     const response = await apiClient.post<{ activity: ActivityDto }>(
       "/crm/communications/log",
-      input
+      input,
+      { idempotencyKey: options?.idempotencyKey }
     );
     return response.activity;
+  },
+
+  async getDealAiInsights(
+    dealId: string,
+    params?: { refresh?: boolean }
+  ): Promise<GetDealAiInsightsOutput> {
+    const query = params?.refresh ? "?refresh=true" : "";
+    return apiClient.get<GetDealAiInsightsOutput>(`/crm/deals/${dealId}/ai/insights${query}`);
+  },
+
+  async getDealAiRecommendations(
+    dealId: string,
+    params?: { refresh?: boolean }
+  ): Promise<GetDealAiRecommendationsOutput> {
+    const query = params?.refresh ? "?refresh=true" : "";
+    return apiClient.get<GetDealAiRecommendationsOutput>(
+      `/crm/deals/${dealId}/ai/recommendations${query}`
+    );
+  },
+
+  async draftDealAiMessage(
+    dealId: string,
+    input: DraftDealMessageInput
+  ): Promise<DraftDealMessageOutput> {
+    return apiClient.post<DraftDealMessageOutput>(`/crm/deals/${dealId}/ai/draft-message`, input);
+  },
+
+  async parseActivityAi(input: ActivityAiParseInput): Promise<ActivityAiParseOutput> {
+    return apiClient.post<ActivityAiParseOutput>("/crm/activities/ai/parse", input);
+  },
+
+  async extractActivityAi(input: ActivityAiExtractInput): Promise<ActivityAiExtractOutput> {
+    return apiClient.post<ActivityAiExtractOutput>("/crm/activities/ai/extract", input);
+  },
+
+  async summarizeCommunicationAi(
+    input: CommunicationAiSummarizeInput
+  ): Promise<CommunicationAiSummarizeOutput> {
+    return apiClient.post<CommunicationAiSummarizeOutput>("/crm/comms/ai/summarize", input);
+  },
+
+  async getCrmAiSettings(): Promise<GetCrmAiSettingsOutput> {
+    return apiClient.get<GetCrmAiSettingsOutput>("/crm/ai/settings");
+  },
+
+  async updateCrmAiSettings(input: UpdateCrmAiSettingsInput): Promise<UpdateCrmAiSettingsOutput> {
+    return apiClient.patch<UpdateCrmAiSettingsOutput>("/crm/ai/settings", input);
   },
 
   // ============================================================
