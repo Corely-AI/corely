@@ -214,8 +214,7 @@ describe("Website public QA API (HTTP + Postgres)", () => {
     });
 
     const response = await request(server).get("/public/website/qa").query({
-      hostname: "qa.example.com",
-      path: "/pricing",
+      siteId: site.id,
       locale: "de-DE",
       scope: "site",
     });
@@ -279,10 +278,10 @@ describe("Website public QA API (HTTP + Postgres)", () => {
     });
 
     const scopedResponse = await request(server).get("/public/website/qa").query({
-      hostname: "scope.example.com",
-      path: "/faq",
+      siteId: site.id,
       locale: "en-US",
       scope: "page",
+      pageId: page.id,
     });
 
     expect(scopedResponse.status).toBe(200);
@@ -290,8 +289,7 @@ describe("Website public QA API (HTTP + Postgres)", () => {
     expect(scopedResponse.body.items[0]?.id).toBe("qa-page-published");
 
     const missingPageResponse = await request(server).get("/public/website/qa").query({
-      hostname: "scope.example.com",
-      path: "/missing-page",
+      siteId: site.id,
       locale: "en-US",
       scope: "page",
     });

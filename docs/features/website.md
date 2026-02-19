@@ -90,12 +90,13 @@ Example response:
 
 ## Public Q&A
 
-`GET /public/website/qa?hostname=&path=&locale=&scope=site|page`
+`GET /public/website/qa?siteId=&locale=&scope=site|page&pageId=`
 
 - Returns only `published` records.
 - `scope=site` lists site-level FAQ items.
-- `scope=page` lists page-level FAQ items; returns an empty array when the page does not resolve.
+- `scope=page` lists page-level FAQ items (`pageId` required for siteId mode; returns empty when missing/not found).
 - Locale fallback: requested locale first, then site default locale.
+- Backward compatibility: `hostname + path` query is still supported.
 
 Example response:
 

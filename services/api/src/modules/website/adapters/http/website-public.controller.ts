@@ -121,10 +121,12 @@ export class WebsitePublicController {
   @Header("Cache-Control", "public, max-age=30, s-maxage=120, stale-while-revalidate=60")
   async listQa(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const input = ListWebsiteQaInputSchema.parse({
+      siteId: query.siteId,
       hostname: query.hostname,
       path: query.path,
       locale: query.locale,
       scope: query.scope,
+      pageId: query.pageId,
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicQa.execute(input, ctx);

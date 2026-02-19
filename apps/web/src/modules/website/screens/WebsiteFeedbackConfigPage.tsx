@@ -21,7 +21,7 @@ const DEFAULT_FORM: QaFormState = {
   locale: "en-US",
   scope: "site",
   pageId: "",
-  status: "draft",
+  status: "published",
   order: 0,
   question: "",
   answerHtml: "",
