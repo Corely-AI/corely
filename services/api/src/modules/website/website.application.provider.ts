@@ -11,6 +11,8 @@ import { CreateWebsitePageUseCase } from "./application/use-cases/create-page.us
 import { UpdateWebsitePageUseCase } from "./application/use-cases/update-page.usecase";
 import { ListWebsitePagesUseCase } from "./application/use-cases/list-pages.usecase";
 import { GetWebsitePageUseCase } from "./application/use-cases/get-page.usecase";
+import { GetWebsitePageContentUseCase } from "./application/use-cases/get-page-content.usecase";
+import { UpdateWebsitePageContentUseCase } from "./application/use-cases/update-page-content.usecase";
 import { PublishWebsitePageUseCase } from "./application/use-cases/publish-page.usecase";
 import { UnpublishWebsitePageUseCase } from "./application/use-cases/unpublish-page.usecase";
 import { UpsertWebsiteMenuUseCase } from "./application/use-cases/upsert-menu.usecase";
@@ -32,6 +34,8 @@ import { UnpublishWebsiteWallOfLoveItemUseCase } from "./application/use-cases/u
 import { ListPublicWebsiteWallOfLoveItemsUseCase } from "./application/use-cases/list-public-website-wall-of-love-items.usecase";
 import { GenerateWebsitePageFromPromptUseCase } from "./application/use-cases/generate-page-from-prompt.usecase";
 import { WebsiteSlugExistsUseCase } from "./application/use-cases/slug-exists.usecase";
+import { GenerateWebsiteBlocksUseCase } from "./application/use-cases/generate-blocks.usecase";
+import { RegenerateWebsiteBlockUseCase } from "./application/use-cases/regenerate-block.usecase";
 
 export const WEBSITE_APPLICATION_PROVIDER: Provider = {
   provide: WebsiteApplication,
@@ -47,6 +51,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     updatePage: UpdateWebsitePageUseCase,
     listPages: ListWebsitePagesUseCase,
     getPage: GetWebsitePageUseCase,
+    getPageContent: GetWebsitePageContentUseCase,
+    updatePageContent: UpdateWebsitePageContentUseCase,
     publishPage: PublishWebsitePageUseCase,
     unpublishPage: UnpublishWebsitePageUseCase,
     upsertMenu: UpsertWebsiteMenuUseCase,
@@ -66,6 +72,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     publishWallOfLoveItem: PublishWebsiteWallOfLoveItemUseCase,
     unpublishWallOfLoveItem: UnpublishWebsiteWallOfLoveItemUseCase,
     listPublicWallOfLoveItems: ListPublicWebsiteWallOfLoveItemsUseCase,
+    generateBlocks: GenerateWebsiteBlocksUseCase,
+    regenerateBlock: RegenerateWebsiteBlockUseCase,
     generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase,
     slugExists: WebsiteSlugExistsUseCase
   ) =>
@@ -81,6 +89,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
       updatePage,
       listPages,
       getPage,
+      getPageContent,
+      updatePageContent,
       publishPage,
       unpublishPage,
       upsertMenu,
@@ -100,6 +110,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
       publishWallOfLoveItem,
       unpublishWallOfLoveItem,
       listPublicWallOfLoveItems,
+      generateBlocks,
+      regenerateBlock,
       generatePageFromPrompt,
       slugExists
     ),
@@ -115,6 +127,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     UpdateWebsitePageUseCase,
     ListWebsitePagesUseCase,
     GetWebsitePageUseCase,
+    GetWebsitePageContentUseCase,
+    UpdateWebsitePageContentUseCase,
     PublishWebsitePageUseCase,
     UnpublishWebsitePageUseCase,
     UpsertWebsiteMenuUseCase,
@@ -134,6 +148,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     PublishWebsiteWallOfLoveItemUseCase,
     UnpublishWebsiteWallOfLoveItemUseCase,
     ListPublicWebsiteWallOfLoveItemsUseCase,
+    GenerateWebsiteBlocksUseCase,
+    RegenerateWebsiteBlockUseCase,
     GenerateWebsitePageFromPromptUseCase,
     WebsiteSlugExistsUseCase,
   ],

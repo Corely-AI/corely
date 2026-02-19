@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import type { Request } from "express";
 import {
   CreateWebsitePageInputSchema,
@@ -8,6 +19,9 @@ import {
   PublishWebsitePageOutputSchema,
   UnpublishWebsitePageOutputSchema,
   GetWebsitePageOutputSchema,
+  GetWebsitePageContentOutputSchema,
+  UpdateWebsitePageContentInputSchema,
+  UpdateWebsitePageContentOutputSchema,
 } from "@corely/contracts";
 import { parseListQuery } from "@/shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "@/shared/http/usecase-mappers";
@@ -61,6 +75,21 @@ export class WebsitePagesController {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.updatePage.execute({ pageId, input }, ctx);
     return WebsitePageSchema.parse(mapResultToHttp(result));
+  }
+
+  @Get("pages/:pageId/content")
+  async getContent(@Param("pageId") pageId: string, @Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.getPageContent.execute({ pageId }, ctx);
+    return GetWebsitePageContentOutputSchema.parse(mapResultToHttp(result));
+  }
+
+  @Patch("pages/:pageId/content")
+  async patchContent(@Param("pageId") pageId: string, @Body() body: unknown, @Req() req: Request) {
+    const input = UpdateWebsitePageContentInputSchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.updatePageContent.execute({ pageId, input }, ctx);
+    return UpdateWebsitePageContentOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Post("pages/:pageId/publish")

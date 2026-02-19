@@ -196,9 +196,9 @@ const sanitizeCommonSettingsForSave = (
       facebook: value.socials?.facebook?.trim() || undefined,
       email: value.socials?.email?.trim() || undefined,
     },
-    seo: {
-      titleTemplate: value.seo?.titleTemplate?.trim() || undefined,
-      defaultDescription: value.seo?.defaultDescription?.trim() || undefined,
+    seoDefaults: {
+      titleTemplate: value.seoDefaults?.titleTemplate?.trim() || undefined,
+      defaultDescription: value.seoDefaults?.defaultDescription?.trim() || undefined,
     },
     logo: {
       fileId: value.logo?.fileId?.trim() || undefined,
@@ -256,7 +256,9 @@ export default function WebsiteSiteEditorPage() {
   const [customRows, setCustomRows] = useState<CustomPropertyRow[]>([]);
   const [customRowErrors, setCustomRowErrors] = useState<Record<string, string>>({});
 
-  const [commonJson, setCommonJson] = useState(() => JSON.stringify(DEFAULT_COMMON_SETTINGS, null, 2));
+  const [commonJson, setCommonJson] = useState(() =>
+    JSON.stringify(DEFAULT_COMMON_SETTINGS, null, 2)
+  );
   const [themeJson, setThemeJson] = useState(() => JSON.stringify(DEFAULT_THEME_SETTINGS, null, 2));
 
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
@@ -280,7 +282,10 @@ export default function WebsiteSiteEditorPage() {
       return;
     }
 
-    const normalizedCommon = normalizeCommonSettings(site.settings?.common ?? site.brandingJson, site.name);
+    const normalizedCommon = normalizeCommonSettings(
+      site.settings?.common ?? site.brandingJson,
+      site.name
+    );
     const normalizedTheme = normalizeThemeSettings(site.settings?.theme ?? site.themeJson);
 
     setName(site.name);
@@ -423,7 +428,10 @@ export default function WebsiteSiteEditorPage() {
   };
 
   const canSave =
-    name.trim().length > 0 && slug.trim().length > 0 && defaultLocale.trim().length > 0 && !mutation.isPending;
+    name.trim().length > 0 &&
+    slug.trim().length > 0 &&
+    defaultLocale.trim().length > 0 &&
+    !mutation.isPending;
 
   const footerLinks = common.footer?.links ?? [];
 
@@ -437,7 +445,9 @@ export default function WebsiteSiteEditorPage() {
           </Button>
           <div>
             <div className="text-lg font-semibold">{isEdit ? "Edit site" : "Create site"}</div>
-            <div className="text-sm text-muted-foreground">Manage website branding and settings</div>
+            <div className="text-sm text-muted-foreground">
+              Manage website branding and settings
+            </div>
           </div>
         </div>
         <Button variant="accent" disabled={!canSave} onClick={handleSave}>
@@ -762,7 +772,10 @@ export default function WebsiteSiteEditorPage() {
                     </Button>
                   </div>
                   {footerLinks.map((link, index) => (
-                    <div key={`${index}-${link.label}`} className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+                    <div
+                      key={`${index}-${link.label}`}
+                      className="grid gap-2 md:grid-cols-[1fr_1fr_auto]"
+                    >
                       <Input
                         placeholder="Label"
                         value={link.label}
@@ -804,7 +817,9 @@ export default function WebsiteSiteEditorPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => {
-                          const nextLinks = footerLinks.filter((_, itemIndex) => itemIndex !== index);
+                          const nextLinks = footerLinks.filter(
+                            (_, itemIndex) => itemIndex !== index
+                          );
                           syncCommon({
                             ...common,
                             footer: {
@@ -830,7 +845,9 @@ export default function WebsiteSiteEditorPage() {
                     <Input
                       key={field}
                       placeholder={field}
-                      value={(common.socials?.[field as keyof typeof common.socials] as string) ?? ""}
+                      value={
+                        (common.socials?.[field as keyof typeof common.socials] as string) ?? ""
+                      }
                       onChange={(event) =>
                         syncCommon({
                           ...common,
@@ -849,12 +866,12 @@ export default function WebsiteSiteEditorPage() {
                 <Label>SEO defaults</Label>
                 <Input
                   placeholder="Title template"
-                  value={common.seo?.titleTemplate ?? ""}
+                  value={common.seoDefaults?.titleTemplate ?? ""}
                   onChange={(event) =>
                     syncCommon({
                       ...common,
-                      seo: {
-                        ...common.seo,
+                      seoDefaults: {
+                        ...common.seoDefaults,
                         titleTemplate: event.target.value.trim() ? event.target.value : undefined,
                       },
                     })
@@ -863,13 +880,15 @@ export default function WebsiteSiteEditorPage() {
                 <Textarea
                   rows={3}
                   placeholder="Default description"
-                  value={common.seo?.defaultDescription ?? ""}
+                  value={common.seoDefaults?.defaultDescription ?? ""}
                   onChange={(event) =>
                     syncCommon({
                       ...common,
-                      seo: {
-                        ...common.seo,
-                        defaultDescription: event.target.value.trim() ? event.target.value : undefined,
+                      seoDefaults: {
+                        ...common.seoDefaults,
+                        defaultDescription: event.target.value.trim()
+                          ? event.target.value
+                          : undefined,
                       },
                     })
                   }
@@ -985,7 +1004,10 @@ export default function WebsiteSiteEditorPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() =>
-                  setCustomRows((prev) => [...prev, { id: createRowId(), key: "", valueText: "{}" }])
+                  setCustomRows((prev) => [
+                    ...prev,
+                    { id: createRowId(), key: "", valueText: "{}" },
+                  ])
                 }
               >
                 <Plus className="h-4 w-4" />
@@ -1077,7 +1099,9 @@ export default function WebsiteSiteEditorPage() {
                           toast.error("Common JSON is invalid.");
                           return;
                         }
-                        const parsed = WebsiteSiteCommonSettingsSchema.safeParse(commonJsonState.parsed);
+                        const parsed = WebsiteSiteCommonSettingsSchema.safeParse(
+                          commonJsonState.parsed
+                        );
                         if (!parsed.success) {
                           toast.error(parsed.error.issues[0]?.message || "Common JSON is invalid.");
                           return;
@@ -1110,7 +1134,9 @@ export default function WebsiteSiteEditorPage() {
                           toast.error("Theme JSON is invalid.");
                           return;
                         }
-                        const parsed = WebsiteSiteThemeSettingsSchema.safeParse(themeJsonState.parsed);
+                        const parsed = WebsiteSiteThemeSettingsSchema.safeParse(
+                          themeJsonState.parsed
+                        );
                         if (!parsed.success) {
                           toast.error(parsed.error.issues[0]?.message || "Theme JSON is invalid.");
                           return;

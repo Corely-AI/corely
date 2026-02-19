@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+  UseGuards,
+} from "@nestjs/common";
 import type { Request } from "express";
 import {
   CreateWebsiteSiteInputSchema,
@@ -49,6 +60,14 @@ export class WebsiteSitesController {
 
   @Put(":siteId")
   async update(@Param("siteId") siteId: string, @Body() body: unknown, @Req() req: Request) {
+    const input = UpdateWebsiteSiteInputSchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.updateSite.execute({ siteId, input }, ctx);
+    return WebsiteSiteSchema.parse(mapResultToHttp(result));
+  }
+
+  @Patch(":siteId")
+  async patch(@Param("siteId") siteId: string, @Body() body: unknown, @Req() req: Request) {
     const input = UpdateWebsiteSiteInputSchema.parse(body);
     const ctx = buildUseCaseContext(req);
     const result = await this.app.updateSite.execute({ siteId, input }, ctx);

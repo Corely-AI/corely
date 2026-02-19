@@ -13,12 +13,15 @@ import {
 } from "@corely/kernel";
 import type { UpdateWebsitePageInput, WebsitePage } from "@corely/contracts";
 import type { WebsitePageRepositoryPort } from "../ports/page-repository.port";
+import type { CmsWritePort } from "../ports/cms-write.port";
 import type { ClockPort } from "@shared/ports/clock.port";
 import { normalizeLocale, normalizePath } from "../../domain/website.validators";
+import { normalizeWebsitePageContent } from "../../domain/page-content";
 
 type Deps = {
   logger: LoggerPort;
   pageRepo: WebsitePageRepositoryPort;
+  cmsWrite: CmsWritePort;
   clock: ClockPort;
 };
 
@@ -62,11 +65,12 @@ export class UpdateWebsitePageUseCase extends BaseUseCase<
     }
 
     const now = this.deps.clock.now().toISOString();
-    const updated: WebsitePage = {
+    let updated: WebsitePage = {
       ...existing,
       path: nextPath,
       locale: nextLocale,
-      template: input.input.template?.trim() ?? existing.template,
+      template:
+        input.input.templateKey?.trim() ?? input.input.template?.trim() ?? existing.template,
       cmsEntryId: input.input.cmsEntryId ?? existing.cmsEntryId,
       seoTitle: input.input.seoTitle === undefined ? existing.seoTitle : input.input.seoTitle,
       seoDescription:
@@ -80,7 +84,36 @@ export class UpdateWebsitePageUseCase extends BaseUseCase<
       updatedAt: now,
     };
 
-    const saved = await this.deps.pageRepo.update(updated);
-    return ok(saved);
+    updated = await this.deps.pageRepo.update(updated);
+
+    if (input.input.content) {
+      if (!ctx.workspaceId) {
+        return err(
+          new ValidationError(
+            "workspaceId is required when setting page content",
+            undefined,
+            "Website:WorkspaceRequired"
+          )
+        );
+      }
+
+      const content = normalizeWebsitePageContent(input.input.content, updated.template);
+      await this.deps.cmsWrite.updateDraftEntryContentJson({
+        tenantId: ctx.tenantId,
+        workspaceId: ctx.workspaceId,
+        entryId: updated.cmsEntryId,
+        contentJson: content,
+      });
+
+      if (updated.template !== content.templateKey) {
+        updated = await this.deps.pageRepo.update({
+          ...updated,
+          template: content.templateKey,
+          updatedAt: this.deps.clock.now().toISOString(),
+        });
+      }
+    }
+
+    return ok(updated);
   }
 }

@@ -19,6 +19,8 @@ export interface CmsReadPort {
     locale?: string;
     mode: CmsReadMode;
   }): Promise<CmsRenderPayload>;
+
+  getEntryContentJson(params: { tenantId: string; entryId: string }): Promise<unknown>;
 }
 
 export const CMS_READ_PORT = "website/cms-read-port";

@@ -94,7 +94,15 @@ const WebsiteSiteHeaderCtaSchema = z.object({
   variant: z.enum(["primary", "secondary", "outline", "ghost"]).optional(),
 });
 
-export const WebsiteSiteCommonSettingsSchema = z
+export const WebsiteSiteSeoDefaultsSchema = z
+  .object({
+    titleTemplate: z.string().max(160).optional(),
+    defaultDescription: z.string().max(320).optional(),
+  })
+  .default({});
+export type WebsiteSiteSeoDefaults = z.infer<typeof WebsiteSiteSeoDefaultsSchema>;
+
+const WebsiteSiteCommonSettingsCoreSchema = z
   .object({
     siteTitle: z.string().min(1).max(160),
     siteSubtitle: z.string().min(1).max(240).optional(),
@@ -123,14 +131,23 @@ export const WebsiteSiteCommonSettingsSchema = z
         email: WEBSITE_SITE_EMAIL_SCHEMA.optional(),
       })
       .default({}),
-    seo: z
-      .object({
-        titleTemplate: z.string().max(160).optional(),
-        defaultDescription: z.string().max(320).optional(),
-      })
-      .default({}),
+    seoDefaults: WebsiteSiteSeoDefaultsSchema,
   })
   .passthrough();
+
+export const WebsiteSiteCommonSettingsSchema = z.preprocess((value) => {
+  if (!isPlainObject(value)) {
+    return value;
+  }
+
+  const next: Record<string, unknown> = { ...value };
+
+  if (!Object.prototype.hasOwnProperty.call(next, "seoDefaults") && next.seo !== undefined) {
+    next.seoDefaults = next.seo;
+  }
+
+  return next;
+}, WebsiteSiteCommonSettingsCoreSchema);
 export type WebsiteSiteCommonSettings = z.infer<typeof WebsiteSiteCommonSettingsSchema>;
 
 export const WebsiteSiteThemeSettingsSchema = z

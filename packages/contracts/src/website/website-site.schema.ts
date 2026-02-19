@@ -8,31 +8,65 @@ import {
   WebsiteSiteThemeSettingsSchema,
 } from "./website-site-settings.schema";
 
-export const CreateWebsiteSiteInputSchema = z.object({
-  name: z.string().min(1),
-  slug: WebsiteSlugSchema,
-  defaultLocale: z.string().min(2),
-  common: WebsiteSiteCommonSettingsSchema.optional(),
-  theme: WebsiteSiteThemeSettingsSchema.optional(),
-  custom: WebsiteSiteCustomSettingsSchema.optional(),
-  brandingJson: WebsiteSiteCommonSettingsSchema.optional().nullable(),
-  themeJson: WebsiteSiteThemeSettingsSchema.optional().nullable(),
-  isDefault: z.boolean().optional(),
-  idempotencyKey: z.string().optional(),
-});
+const withWebsiteSiteSettingsAliases = (input: unknown): unknown => {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return input;
+  }
+  const record = input as Record<string, unknown>;
+  return {
+    ...record,
+    common:
+      record.common !== undefined
+        ? record.common
+        : record.settingsCommon !== undefined
+          ? record.settingsCommon
+          : undefined,
+    theme:
+      record.theme !== undefined
+        ? record.theme
+        : record.settingsTheme !== undefined
+          ? record.settingsTheme
+          : undefined,
+    custom:
+      record.custom !== undefined
+        ? record.custom
+        : record.settingsCustom !== undefined
+          ? record.settingsCustom
+          : undefined,
+  };
+};
+
+export const CreateWebsiteSiteInputSchema = z.preprocess(
+  withWebsiteSiteSettingsAliases,
+  z.object({
+    name: z.string().min(1),
+    slug: WebsiteSlugSchema,
+    defaultLocale: z.string().min(2),
+    common: WebsiteSiteCommonSettingsSchema.optional(),
+    theme: WebsiteSiteThemeSettingsSchema.optional(),
+    custom: WebsiteSiteCustomSettingsSchema.optional(),
+    brandingJson: WebsiteSiteCommonSettingsSchema.optional().nullable(),
+    themeJson: WebsiteSiteThemeSettingsSchema.optional().nullable(),
+    isDefault: z.boolean().optional(),
+    idempotencyKey: z.string().optional(),
+  })
+);
 export type CreateWebsiteSiteInput = z.infer<typeof CreateWebsiteSiteInputSchema>;
 
-export const UpdateWebsiteSiteInputSchema = z.object({
-  name: z.string().min(1).optional(),
-  slug: WebsiteSlugSchema.optional(),
-  defaultLocale: z.string().min(2).optional(),
-  common: WebsiteSiteCommonSettingsSchema.optional(),
-  theme: WebsiteSiteThemeSettingsSchema.optional(),
-  custom: WebsiteSiteCustomSettingsSchema.optional(),
-  brandingJson: WebsiteSiteCommonSettingsSchema.optional().nullable(),
-  themeJson: WebsiteSiteThemeSettingsSchema.optional().nullable(),
-  isDefault: z.boolean().optional(),
-});
+export const UpdateWebsiteSiteInputSchema = z.preprocess(
+  withWebsiteSiteSettingsAliases,
+  z.object({
+    name: z.string().min(1).optional(),
+    slug: WebsiteSlugSchema.optional(),
+    defaultLocale: z.string().min(2).optional(),
+    common: WebsiteSiteCommonSettingsSchema.optional(),
+    theme: WebsiteSiteThemeSettingsSchema.optional(),
+    custom: WebsiteSiteCustomSettingsSchema.optional(),
+    brandingJson: WebsiteSiteCommonSettingsSchema.optional().nullable(),
+    themeJson: WebsiteSiteThemeSettingsSchema.optional().nullable(),
+    isDefault: z.boolean().optional(),
+  })
+);
 export type UpdateWebsiteSiteInput = z.infer<typeof UpdateWebsiteSiteInputSchema>;
 
 export const WebsiteSiteWithSettingsSchema = WebsiteSiteSchema.extend({

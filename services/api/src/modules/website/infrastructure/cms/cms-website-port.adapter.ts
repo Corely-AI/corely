@@ -47,4 +47,32 @@ export class CmsWebsitePortAdapter implements CmsReadPort, CmsWritePort {
 
     return unwrap(result);
   }
+
+  async getEntryContentJson(params: { tenantId: string; entryId: string }): Promise<unknown> {
+    const payload = await this.getEntryForWebsiteRender({
+      tenantId: params.tenantId,
+      entryId: params.entryId,
+      mode: "preview",
+    });
+    return payload.contentJson;
+  }
+
+  async updateDraftEntryContentJson(params: {
+    tenantId: string;
+    workspaceId?: string | null;
+    entryId: string;
+    contentJson: unknown;
+  }): Promise<void> {
+    const result = await this.cms.updatePostContent.execute(
+      {
+        postId: params.entryId,
+        contentJson: params.contentJson,
+      },
+      {
+        tenantId: params.tenantId,
+        workspaceId: params.workspaceId ?? undefined,
+      }
+    );
+    unwrap(result);
+  }
 }

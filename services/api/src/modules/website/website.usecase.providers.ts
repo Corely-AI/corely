@@ -15,6 +15,8 @@ import { CreateWebsitePageUseCase } from "./application/use-cases/create-page.us
 import { UpdateWebsitePageUseCase } from "./application/use-cases/update-page.usecase";
 import { ListWebsitePagesUseCase } from "./application/use-cases/list-pages.usecase";
 import { GetWebsitePageUseCase } from "./application/use-cases/get-page.usecase";
+import { GetWebsitePageContentUseCase } from "./application/use-cases/get-page-content.usecase";
+import { UpdateWebsitePageContentUseCase } from "./application/use-cases/update-page-content.usecase";
 import { PublishWebsitePageUseCase } from "./application/use-cases/publish-page.usecase";
 import { UnpublishWebsitePageUseCase } from "./application/use-cases/unpublish-page.usecase";
 import { UpsertWebsiteMenuUseCase } from "./application/use-cases/upsert-menu.usecase";
@@ -64,6 +66,7 @@ import {
   WEBSITE_CUSTOM_ATTRIBUTES_PORT,
   type WebsiteCustomAttributesPort,
 } from "./application/ports/custom-attributes.port";
+import { CMS_WRITE_PORT, type CmsWritePort } from "./application/ports/cms-write.port";
 
 export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
   {
@@ -163,6 +166,7 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
     useFactory: (
       pageRepo: WebsitePageRepositoryPort,
       siteRepo: WebsiteSiteRepositoryPort,
+      cmsWrite: CmsWritePort,
       idGenerator: IdGeneratorPort,
       clock: ClockPort
     ) =>
@@ -170,16 +174,23 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
         logger: new NestLoggerAdapter(),
         pageRepo,
         siteRepo,
+        cmsWrite,
         idGenerator,
         clock,
       }),
-    inject: [WEBSITE_PAGE_REPO_PORT, WEBSITE_SITE_REPO_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+    inject: [
+      WEBSITE_PAGE_REPO_PORT,
+      WEBSITE_SITE_REPO_PORT,
+      CMS_WRITE_PORT,
+      ID_GENERATOR_TOKEN,
+      CLOCK_PORT_TOKEN,
+    ],
   },
   {
     provide: UpdateWebsitePageUseCase,
-    useFactory: (pageRepo: WebsitePageRepositoryPort, clock: ClockPort) =>
-      new UpdateWebsitePageUseCase({ logger: new NestLoggerAdapter(), pageRepo, clock }),
-    inject: [WEBSITE_PAGE_REPO_PORT, CLOCK_PORT_TOKEN],
+    useFactory: (pageRepo: WebsitePageRepositoryPort, cmsWrite: CmsWritePort, clock: ClockPort) =>
+      new UpdateWebsitePageUseCase({ logger: new NestLoggerAdapter(), pageRepo, cmsWrite, clock }),
+    inject: [WEBSITE_PAGE_REPO_PORT, CMS_WRITE_PORT, CLOCK_PORT_TOKEN],
   },
   {
     provide: ListWebsitePagesUseCase,
@@ -194,11 +205,35 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
     inject: [WEBSITE_PAGE_REPO_PORT],
   },
   {
+    provide: GetWebsitePageContentUseCase,
+    useFactory: (pageRepo: WebsitePageRepositoryPort, cmsRead: CmsReadPort) =>
+      new GetWebsitePageContentUseCase({
+        logger: new NestLoggerAdapter(),
+        pageRepo,
+        cmsRead,
+      }),
+    inject: [WEBSITE_PAGE_REPO_PORT, CMS_READ_PORT],
+  },
+  {
+    provide: UpdateWebsitePageContentUseCase,
+    useFactory: (pageRepo: WebsitePageRepositoryPort, cmsWrite: CmsWritePort, clock: ClockPort) =>
+      new UpdateWebsitePageContentUseCase({
+        logger: new NestLoggerAdapter(),
+        pageRepo,
+        cmsWrite,
+        clock,
+      }),
+    inject: [WEBSITE_PAGE_REPO_PORT, CMS_WRITE_PORT, CLOCK_PORT_TOKEN],
+  },
+  {
     provide: PublishWebsitePageUseCase,
     useFactory: (
       pageRepo: WebsitePageRepositoryPort,
       snapshotRepo: WebsiteSnapshotRepositoryPort,
       cmsRead: CmsReadPort,
+      siteRepo: WebsiteSiteRepositoryPort,
+      menuRepo: WebsiteMenuRepositoryPort,
+      customAttributes: WebsiteCustomAttributesPort,
       outbox: OutboxPort,
       uow: UnitOfWorkPort,
       idGenerator: IdGeneratorPort,
@@ -209,6 +244,9 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
         pageRepo,
         snapshotRepo,
         cmsRead,
+        siteRepo,
+        menuRepo,
+        customAttributes,
         outbox,
         uow,
         idGenerator,
@@ -218,6 +256,9 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
       WEBSITE_PAGE_REPO_PORT,
       WEBSITE_SNAPSHOT_REPO_PORT,
       CMS_READ_PORT,
+      WEBSITE_SITE_REPO_PORT,
+      WEBSITE_MENU_REPO_PORT,
+      WEBSITE_CUSTOM_ATTRIBUTES_PORT,
       OUTBOX_PORT,
       UNIT_OF_WORK,
       ID_GENERATOR_TOKEN,
