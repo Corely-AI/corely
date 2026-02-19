@@ -38,7 +38,7 @@ const normalizeImageFileIds = (rawIds: string[] | undefined): string[] => {
   if (!rawIds) {
     return [];
   }
-  return Array.from(new Set(rawIds.map((id) => id.trim()).filter(Boolean)));
+  return Array.from(new Set(rawIds.map((id) => id.trim()).filter(Boolean))).slice(0, 1);
 };
 
 @RequireTenant()

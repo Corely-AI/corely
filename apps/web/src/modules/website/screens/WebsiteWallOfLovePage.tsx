@@ -1,22 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  ArrowDown,
-  ArrowUp,
-  ImagePlus,
-  Pencil,
-  Save,
-  Star,
-  UploadCloud,
-} from "lucide-react";
-import { Badge, Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
+import { ArrowLeft, ImagePlus, Save, Star, UploadCloud } from "lucide-react";
+import { Button, Card, CardContent, Input, Label, Textarea } from "@corely/ui";
 import { toast } from "sonner";
 import { websiteApi } from "@/lib/website-api";
 import { buildPublicFileUrl, cmsApi } from "@/lib/cms-api";
 import { websiteWallOfLoveKeys } from "../queries";
 import type { WebsiteWallOfLoveItemDto, WebsiteWallOfLoveItemType } from "@corely/contracts";
+import { WebsiteWallOfLoveItemsList } from "../components/website-wall-of-love-items-list";
 
 type FormState = {
   type: WebsiteWallOfLoveItemType;
@@ -48,8 +40,10 @@ const toNullableString = (value: string): string | null => {
   return trimmed.length > 0 ? trimmed : null;
 };
 
-const dedupeFileIds = (fileIds: string[]): string[] =>
-  Array.from(new Set(fileIds.map((id) => id.trim()).filter(Boolean)));
+const normalizeSingleImageFileIds = (fileIds: string[]): string[] => {
+  const deduped = Array.from(new Set(fileIds.map((id) => id.trim()).filter(Boolean)));
+  return deduped.length > 0 ? [deduped[0]!] : [];
+};
 
 export default function WebsiteWallOfLovePage() {
   const { siteId } = useParams<{ siteId: string }>();
@@ -117,7 +111,7 @@ export default function WebsiteWallOfLovePage() {
         throw new Error("Missing siteId");
       }
 
-      const imageFileIds = dedupeFileIds(form.imageFileIds);
+      const imageFileIds = normalizeSingleImageFileIds(form.imageFileIds);
       if (editingItemId) {
         return websiteApi.updateWallOfLoveItem(editingItemId, {
           type: form.type,
@@ -197,7 +191,7 @@ export default function WebsiteWallOfLovePage() {
       authorTitle: item.authorTitle ?? "",
       sourceLabel: item.sourceLabel ?? "",
       linkUrl: item.linkUrl ?? "",
-      imageFileIds: item.imageFileIds,
+      imageFileIds: normalizeSingleImageFileIds(item.imageFileIds),
     });
     setManualFileId("");
   };
@@ -226,7 +220,7 @@ export default function WebsiteWallOfLovePage() {
     }
     setForm((prev) => ({
       ...prev,
-      imageFileIds: dedupeFileIds([...prev.imageFileIds, trimmed]),
+      imageFileIds: [trimmed],
     }));
     setManualFileId("");
   };
@@ -238,20 +232,20 @@ export default function WebsiteWallOfLovePage() {
     setIsUploadingImages(true);
 
     try {
-      const uploadedFileIds: string[] = [];
-      for (const file of Array.from(files)) {
-        const uploaded = await cmsApi.uploadCmsAsset(file, {
-          purpose: "website-wall-of-love-image",
-          category: "website",
-        });
-        uploadedFileIds.push(uploaded.fileId);
+      const file = Array.from(files)[0];
+      if (!file) {
+        return;
       }
+      const uploaded = await cmsApi.uploadCmsAsset(file, {
+        purpose: "website-wall-of-love-image",
+        category: "website",
+      });
 
       setForm((prev) => ({
         ...prev,
-        imageFileIds: dedupeFileIds([...prev.imageFileIds, ...uploadedFileIds]),
+        imageFileIds: [uploaded.fileId],
       }));
-      toast.success(`Uploaded ${uploadedFileIds.length} image(s)`);
+      toast.success("Uploaded image");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to upload images");
     } finally {
@@ -366,17 +360,17 @@ export default function WebsiteWallOfLovePage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Image attachments (fileIds)</Label>
+            <Label>Image attachment (fileId)</Label>
             <div className="flex flex-wrap items-center gap-2">
               <Input
                 value={manualFileId}
                 onChange={(event) => setManualFileId(event.target.value)}
-                placeholder="Paste fileId and press Add"
+                placeholder="Paste fileId (replaces current)"
                 className="max-w-sm"
               />
               <Button type="button" variant="outline" onClick={addManualFileId}>
                 <ImagePlus className="h-4 w-4" />
-                Add
+                Set
               </Button>
               <Button
                 type="button"
@@ -385,13 +379,12 @@ export default function WebsiteWallOfLovePage() {
                 disabled={isUploadingImages}
               >
                 <UploadCloud className="h-4 w-4" />
-                {isUploadingImages ? "Uploading..." : "Upload images"}
+                {isUploadingImages ? "Uploading..." : "Upload image"}
               </Button>
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                multiple
                 className="hidden"
                 onChange={(event) => {
                   void onUploadImages(event.target.files);
@@ -443,96 +436,22 @@ export default function WebsiteWallOfLovePage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-6 space-y-4">
-          <div className="text-base font-semibold">Items</div>
-          {itemsQuery.isLoading ? (
-            <div className="text-sm text-muted-foreground">Loading items...</div>
-          ) : orderedItems.length === 0 ? (
-            <div className="rounded-md border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
-              No Wall Of Love items yet.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {orderedItems.map((item, index) => (
-                <div
-                  key={item.id}
-                  className="rounded-md border border-border/60 p-4 flex items-start justify-between gap-3"
-                >
-                  <div className="space-y-1">
-                    <div className="font-medium line-clamp-2">{item.quote || "(No quote)"}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {item.authorName || "Unknown author"}
-                      {item.authorTitle ? ` · ${item.authorTitle}` : ""}
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Badge variant={item.status === "published" ? "success" : "warning"}>
-                        {item.status}
-                      </Badge>
-                      <span>type: {item.type}</span>
-                      <span>images: {item.imageFileIds.length}</span>
-                      <span>order: {index + 1}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => moveItem(item.id, "up")}
-                      disabled={index === 0}
-                    >
-                      <ArrowUp className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => moveItem(item.id, "down")}
-                      disabled={index === orderedItems.length - 1}
-                    >
-                      <ArrowDown className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="ghost" size="icon" onClick={() => onEdit(item)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    {item.status === "published" ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => void unpublishMutation.mutate(item.id)}
-                      >
-                        Unpublish
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => void publishMutation.mutate(item.id)}
-                      >
-                        Publish
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {orderedItems.length > 0 ? (
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="accent"
-                disabled={!isOrderDirty}
-                onClick={() => void reorderMutation.mutate()}
-              >
-                Save order
-              </Button>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
+      <WebsiteWallOfLoveItemsList
+        isLoading={itemsQuery.isLoading}
+        items={orderedItems}
+        isOrderDirty={isOrderDirty}
+        onMoveItem={moveItem}
+        onEditItem={onEdit}
+        onPublishItem={(itemId) => {
+          void publishMutation.mutate(itemId);
+        }}
+        onUnpublishItem={(itemId) => {
+          void unpublishMutation.mutate(itemId);
+        }}
+        onSaveOrder={() => {
+          void reorderMutation.mutate();
+        }}
+      />
     </div>
   );
 }

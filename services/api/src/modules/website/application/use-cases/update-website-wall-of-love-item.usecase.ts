@@ -36,7 +36,7 @@ const normalizeImageFileIds = (rawIds: string[] | undefined): string[] => {
   if (!rawIds) {
     return [];
   }
-  return Array.from(new Set(rawIds.map((id) => id.trim()).filter(Boolean)));
+  return Array.from(new Set(rawIds.map((id) => id.trim()).filter(Boolean))).slice(0, 1);
 };
 
 @RequireTenant()
@@ -67,7 +67,8 @@ export class UpdateWebsiteWallOfLoveItemUseCase extends BaseUseCase<
     ]);
     const currentImageFileIds = existingImages
       .sort((a, b) => a.order - b.order)
-      .map((image) => image.fileId);
+      .map((image) => image.fileId)
+      .slice(0, 1);
 
     const input = params.input;
     const nextType = input.type ?? existing.type;

@@ -9,6 +9,7 @@ import { createTenant, createTestDb, stopSharedContainer } from "@corely/testkit
 import { NestLoggerAdapter } from "@/shared/adapters/logger/nest-logger.adapter";
 import { WebsiteApplication } from "../application/website.application";
 import { ListPublicWebsiteWallOfLoveItemsUseCase } from "../application/use-cases/list-public-website-wall-of-love-items.usecase";
+import { WEBSITE_PUBLIC_FILE_URL_PORT } from "../application/ports/public-file-url.port";
 import { WebsitePublicController } from "../adapters/http/website-public.controller";
 import { PrismaWebsiteWallOfLoveRepository } from "../infrastructure/prisma/prisma-website-wall-of-love-repository.adapter";
 import { PrismaWebsiteWallOfLoveImagesRepository } from "../infrastructure/prisma/prisma-website-wall-of-love-images-repository.adapter";
@@ -38,17 +39,30 @@ describe("Website public wall-of-love API (HTTP + Postgres)", () => {
         PrismaWebsiteWallOfLoveRepository,
         PrismaWebsiteWallOfLoveImagesRepository,
         {
+          provide: WEBSITE_PUBLIC_FILE_URL_PORT,
+          useValue: {
+            getPublicUrl: async (fileId: string) =>
+              `https://storage.googleapis.com/test-bucket/${encodeURIComponent(fileId)}`,
+          },
+        },
+        {
           provide: ListPublicWebsiteWallOfLoveItemsUseCase,
           useFactory: (
             wallOfLoveRepo: PrismaWebsiteWallOfLoveRepository,
-            wallOfLoveImagesRepo: PrismaWebsiteWallOfLoveImagesRepository
+            wallOfLoveImagesRepo: PrismaWebsiteWallOfLoveImagesRepository,
+            publicFileUrlPort: { getPublicUrl(fileId: string): Promise<string | null> }
           ) =>
             new ListPublicWebsiteWallOfLoveItemsUseCase({
               logger: new NestLoggerAdapter(),
               wallOfLoveRepo,
               wallOfLoveImagesRepo,
+              publicFileUrlPort,
             }),
-          inject: [PrismaWebsiteWallOfLoveRepository, PrismaWebsiteWallOfLoveImagesRepository],
+          inject: [
+            PrismaWebsiteWallOfLoveRepository,
+            PrismaWebsiteWallOfLoveImagesRepository,
+            WEBSITE_PUBLIC_FILE_URL_PORT,
+          ],
         },
         {
           provide: WebsiteApplication,
@@ -167,8 +181,13 @@ describe("Website public wall-of-love API (HTTP + Postgres)", () => {
     expect(response.body.items).toHaveLength(2);
     expect(response.body.items[0]?.id).toBe("wol-published-image");
     expect(response.body.items[1]?.id).toBe("wol-published-x");
-    expect(response.body.items[0]?.imageFileIds).toEqual(["file-image-1"]);
+    expect(response.body.items[0]?.imageFileId).toBe("file-image-1");
+    expect(response.body.items[0]?.imageUrl).toBe(
+      "https://storage.googleapis.com/test-bucket/file-image-1"
+    );
     expect(response.body.items[1]?.type).toBe("x");
     expect(response.body.items[1]?.linkUrl).toBe("https://x.com/corely/status/12345");
+    expect(response.body.items[1]?.imageUrl).toBeUndefined();
+    expect(response.body.items[1]?.imageFileId).toBeUndefined();
   });
 });

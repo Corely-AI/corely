@@ -9,7 +9,7 @@ const normalizeImageFileIds = (rawIds: string[] | undefined): string[] | undefin
     return undefined;
   }
   const deduped = Array.from(new Set(rawIds.map((id) => id.trim()).filter(Boolean)));
-  return deduped;
+  return deduped.slice(0, 1);
 };
 
 const extractYoutubeVideoId = (url: URL): string | null => {
@@ -158,7 +158,7 @@ const WallOfLoveMutableFieldsSchema = z.object({
   authorTitle: z.string().trim().min(1).max(200).optional(),
   sourceLabel: z.string().trim().min(1).max(200).optional(),
   linkUrl: LinkUrlSchema.optional(),
-  imageFileIds: z.array(z.string().trim().min(1)).max(20).optional(),
+  imageFileIds: z.array(z.string().trim().min(1)).max(1).optional(),
 });
 
 export const CreateWebsiteWallOfLoveItemInputSchema = z
@@ -184,7 +184,7 @@ export const UpdateWebsiteWallOfLoveItemInputSchema = z
     authorTitle: z.string().trim().min(1).max(200).optional().nullable(),
     sourceLabel: z.string().trim().min(1).max(200).optional().nullable(),
     linkUrl: LinkUrlSchema.optional().nullable(),
-    imageFileIds: z.array(z.string().trim().min(1)).max(20).optional(),
+    imageFileIds: z.array(z.string().trim().min(1)).max(1).optional(),
   })
   .superRefine((value, ctx) => validateTypeSpecificFields(value, ctx))
   .transform((value) => ({
@@ -228,7 +228,7 @@ export const WebsiteWallOfLoveItemDtoSchema = z.object({
   authorTitle: z.string().nullable().optional(),
   sourceLabel: z.string().nullable().optional(),
   linkUrl: z.string().nullable().optional(),
-  imageFileIds: z.array(z.string()),
+  imageFileIds: z.array(z.string()).max(1),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -258,7 +258,8 @@ export const PublicWebsiteWallOfLoveItemSchema = z.object({
   id: z.string(),
   type: WebsiteWallOfLoveItemTypeSchema,
   linkUrl: z.string().optional(),
-  imageFileIds: z.array(z.string()),
+  imageFileId: z.string().optional(),
+  imageUrl: z.string().optional(),
   quote: z.string().optional(),
   authorName: z.string().optional(),
   authorTitle: z.string().optional(),

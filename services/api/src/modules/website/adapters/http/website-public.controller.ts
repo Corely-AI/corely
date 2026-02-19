@@ -63,6 +63,30 @@ const enforceFeedbackRateLimit = (key: string): void => {
   feedbackRateBuckets.set(key, bucket);
 };
 
+const resolvePublicBaseUrl = (req: Request): string => {
+  const origin = req.get("origin");
+  if (origin && origin.length > 0) {
+    return origin.replace(/\/$/, "");
+  }
+
+  const forwardedProtoHeader = req.headers["x-forwarded-proto"];
+  const forwardedProto = Array.isArray(forwardedProtoHeader)
+    ? forwardedProtoHeader[0]
+    : forwardedProtoHeader;
+  const protocol =
+    typeof forwardedProto === "string" && forwardedProto.length > 0
+      ? forwardedProto.split(",")[0]!.trim()
+      : req.protocol;
+
+  const host = req.get("host") ?? "localhost:3000";
+  return `${protocol}://${host}`.replace(/\/$/, "");
+};
+
+const toAbsoluteUrl = (baseUrl: string, pathOrUrl: string): string =>
+  /^https?:\/\//i.test(pathOrUrl)
+    ? pathOrUrl
+    : `${baseUrl}${pathOrUrl.startsWith("/") ? "" : "/"}${pathOrUrl}`;
+
 @Controller("public/website")
 export class WebsitePublicController {
   constructor(private readonly app: WebsiteApplication) {}
@@ -116,7 +140,16 @@ export class WebsitePublicController {
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.listPublicWallOfLoveItems.execute(input, ctx);
-    return ListPublicWebsiteWallOfLoveItemsOutputSchema.parse(mapResultToHttp(result));
+
+    const output = mapResultToHttp(result);
+    const baseUrl = resolvePublicBaseUrl(req);
+    const items = output.items.map((item) => ({
+      ...item,
+      imageUrl:
+        item.type === "image" && item.imageUrl ? toAbsoluteUrl(baseUrl, item.imageUrl) : undefined,
+    }));
+
+    return ListPublicWebsiteWallOfLoveItemsOutputSchema.parse({ items });
   }
 
   @Get("slug-exists")

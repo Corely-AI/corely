@@ -45,11 +45,16 @@ export const WebsitePublicPageScreen = ({
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {wallOfLoveItems.map((item) => {
               const youtubeEmbed = toYoutubeEmbedUrl(item.linkUrl);
+              const imageSrc =
+                item.type === "image"
+                  ? (item.imageUrl ??
+                    (item.imageFileId ? buildPublicFileUrl(item.imageFileId) : null))
+                  : null;
               return (
                 <article key={item.id} className="rounded-xl border border-border/60 bg-card p-4">
-                  {item.type === "image" && item.imageFileIds[0] ? (
+                  {imageSrc ? (
                     <img
-                      src={buildPublicFileUrl(item.imageFileIds[0])}
+                      src={imageSrc}
                       alt={item.authorName ?? "Wall Of Love image"}
                       className="mb-3 h-44 w-full rounded-lg object-cover"
                     />

@@ -6,7 +6,9 @@ export const buildImageMap = (images: WebsiteWallOfLoveImageRecord[]): Map<strin
   const map = new Map<string, string[]>();
   for (const image of images) {
     const current = map.get(image.itemId) ?? [];
-    current.push(image.fileId);
+    if (current.length === 0) {
+      current.push(image.fileId);
+    }
     map.set(image.itemId, current);
   }
   return map;
