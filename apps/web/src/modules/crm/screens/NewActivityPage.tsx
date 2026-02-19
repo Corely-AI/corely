@@ -3,7 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Calendar as CalendarIcon, Clock3, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar as CalendarIcon,
+  Check,
+  ChevronDown,
+  Clock3,
+  MessageCircle,
+  Sparkles,
+} from "lucide-react";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 
@@ -26,6 +34,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@corely/ui";
 import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import { Calendar } from "@corely/ui";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@corely/ui";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,6 +69,14 @@ const ACTIVITY_TYPES = ["NOTE", "TASK", "CALL", "MEETING", "COMMUNICATION"] as c
 const getErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error ? error.message : fallback;
 
+const normalizeWhatsAppPhone = (phone: string | null | undefined) => {
+  if (!phone) {
+    return null;
+  }
+  const digits = phone.replace(/\D/g, "");
+  return digits.length >= 6 ? digits : null;
+};
+
 export default function NewActivityPage() {
   const { t, i18n } = useTranslation();
   const { data: channels = [] } = useCrmChannels();
@@ -66,6 +90,8 @@ export default function NewActivityPage() {
   const [extractResult, setExtractResult] = useState<ActivityAiExtractOutput | null>(null);
   const [selectedFollowUps, setSelectedFollowUps] = useState<Record<string, boolean>>({});
   const [confirmCreateFollowUpsOpen, setConfirmCreateFollowUpsOpen] = useState(false);
+  const [dealComboboxOpen, setDealComboboxOpen] = useState(false);
+  const [contactComboboxOpen, setContactComboboxOpen] = useState(false);
   const activityFormSchema = useMemo(
     () =>
       z.object({
@@ -207,6 +233,17 @@ export default function NewActivityPage() {
   const dueAt = parsedDueAt && !Number.isNaN(parsedDueAt.getTime()) ? parsedDueAt : undefined;
   const dueTime = dueAt ? dueAt.toISOString().slice(11, 16) : "";
 
+  const { data: selectableDealsData, isLoading: selectableDealsLoading } = useQuery({
+    queryKey: ["crm", "activity", "selectable-deals"],
+    queryFn: () => crmApi.listDeals({ pageSize: 100 }),
+    staleTime: 60_000,
+  });
+  const { data: selectableContactsData, isLoading: selectableContactsLoading } = useQuery({
+    queryKey: ["crm", "activity", "selectable-contacts"],
+    queryFn: () => customersApi.listCustomers({ pageSize: 100 }),
+    staleTime: 60_000,
+  });
+
   const linkSuggestionQuery = `${subjectValue} ${notesValue}`.trim();
   const { data: dealsSuggestionData } = useQuery({
     queryKey: ["crm", "activity", "deal-suggestions", linkSuggestionQuery],
@@ -252,6 +289,58 @@ export default function NewActivityPage() {
         label: customer.displayName,
       })),
     [contactsSuggestionData?.customers]
+  );
+
+  const selectableDealOptions = useMemo(
+    () =>
+      (selectableDealsData?.deals ?? []).map((deal) => ({
+        id: deal.id,
+        label: deal.title,
+        partyId: deal.partyId,
+      })),
+    [selectableDealsData?.deals]
+  );
+
+  const selectableContactOptions = useMemo(
+    () =>
+      (selectableContactsData?.customers ?? []).map((customer) => ({
+        id: customer.id,
+        label: customer.displayName,
+        phone: customer.phone,
+      })),
+    [selectableContactsData?.customers]
+  );
+
+  const selectedDealOption = useMemo(
+    () => selectableDealOptions.find((deal) => deal.id === dealIdValue),
+    [selectableDealOptions, dealIdValue]
+  );
+  const selectedContactOption = useMemo(
+    () => selectableContactOptions.find((contact) => contact.id === partyIdValue),
+    [selectableContactOptions, partyIdValue]
+  );
+
+  const { data: selectedDealContact } = useQuery({
+    queryKey: ["crm", "activity", "selected-deal-contact", selectedDealOption?.partyId],
+    queryFn: () => customersApi.getCustomer(selectedDealOption?.partyId as string),
+    enabled: Boolean(selectedDealOption?.partyId),
+    staleTime: 60_000,
+  });
+
+  const whatsappPhone = useMemo(
+    () => normalizeWhatsAppPhone(selectedDealContact?.phone),
+    [selectedDealContact?.phone]
+  );
+  const whatsappMessage = useMemo(() => {
+    const displayName = selectedDealContact?.displayName?.trim();
+    return displayName ? `Hello ${displayName}` : "Hello";
+  }, [selectedDealContact?.displayName]);
+  const whatsappHref = useMemo(
+    () =>
+      whatsappPhone
+        ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`
+        : null,
+    [whatsappMessage, whatsappPhone]
   );
 
   const qualityNudges = useMemo(() => {
@@ -689,13 +778,100 @@ export default function NewActivityPage() {
                     <FormItem>
                       <FormLabel>{t("crm.activity.dealIdOptional")}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={t("crm.activity.dealIdPlaceholder")}
-                          {...field}
-                          data-testid="crm-new-activity-deal-id"
-                        />
+                        <div className="space-y-2">
+                          <input
+                            type="hidden"
+                            name={field.name}
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            data-testid="crm-new-activity-deal-id"
+                          />
+                          <Popover open={dealComboboxOpen} onOpenChange={setDealComboboxOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                type="button"
+                                role="combobox"
+                                aria-expanded={dealComboboxOpen}
+                                data-testid="crm-new-activity-deal-picker"
+                                className="w-full justify-between"
+                              >
+                                <span className={cn(!field.value && "text-muted-foreground")}>
+                                  {selectedDealOption?.label ||
+                                    field.value ||
+                                    t("crm.activity.dealIdPlaceholder")}
+                                </span>
+                                <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                              <Command>
+                                <CommandInput placeholder="Search deals..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    {selectableDealsLoading ? "Loading deals..." : "No deals found"}
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {field.value ? (
+                                      <CommandItem
+                                        value="clear-selected-deal"
+                                        onSelect={() => {
+                                          field.onChange("");
+                                          setDealComboboxOpen(false);
+                                        }}
+                                      >
+                                        Clear selection
+                                      </CommandItem>
+                                    ) : null}
+                                    {selectableDealOptions.map((deal) => (
+                                      <CommandItem
+                                        key={deal.id}
+                                        value={`${deal.label} ${deal.id}`}
+                                        data-testid={`crm-new-activity-deal-option-${deal.id}`}
+                                        onSelect={() => {
+                                          field.onChange(deal.id);
+                                          setDealComboboxOpen(false);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === deal.id ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        <div className="flex min-w-0 flex-col">
+                                          <span className="truncate">{deal.label}</span>
+                                          <span className="text-xs text-muted-foreground truncate">
+                                            {deal.id}
+                                          </span>
+                                        </div>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                       </FormControl>
                       <FormDescription>{t("crm.activity.linkRequiredHint")}</FormDescription>
+                      {whatsappHref ? (
+                        <Button
+                          asChild
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="mt-2 w-fit"
+                          data-testid="crm-new-activity-whatsapp-link"
+                        >
+                          <a href={whatsappHref} target="_blank" rel="noopener noreferrer">
+                            <MessageCircle className="mr-2 h-4 w-4" />
+                            Chat on WhatsApp
+                          </a>
+                        </Button>
+                      ) : null}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -708,11 +884,85 @@ export default function NewActivityPage() {
                     <FormItem>
                       <FormLabel>{t("crm.activity.partyIdOptional")}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={t("crm.activity.partyIdPlaceholder")}
-                          {...field}
-                          data-testid="crm-new-activity-party-id"
-                        />
+                        <div className="space-y-2">
+                          <input
+                            type="hidden"
+                            name={field.name}
+                            value={field.value ?? ""}
+                            onChange={field.onChange}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            data-testid="crm-new-activity-party-id"
+                          />
+                          <Popover open={contactComboboxOpen} onOpenChange={setContactComboboxOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                type="button"
+                                role="combobox"
+                                aria-expanded={contactComboboxOpen}
+                                data-testid="crm-new-activity-party-picker"
+                                className="w-full justify-between"
+                              >
+                                <span className={cn(!field.value && "text-muted-foreground")}>
+                                  {selectedContactOption?.label ||
+                                    field.value ||
+                                    t("crm.activity.partyIdPlaceholder")}
+                                </span>
+                                <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                              <Command>
+                                <CommandInput placeholder="Search contacts..." />
+                                <CommandList>
+                                  <CommandEmpty>
+                                    {selectableContactsLoading
+                                      ? "Loading contacts..."
+                                      : "No contacts found"}
+                                  </CommandEmpty>
+                                  <CommandGroup>
+                                    {field.value ? (
+                                      <CommandItem
+                                        value="clear-selected-contact"
+                                        onSelect={() => {
+                                          field.onChange("");
+                                          setContactComboboxOpen(false);
+                                        }}
+                                      >
+                                        Clear selection
+                                      </CommandItem>
+                                    ) : null}
+                                    {selectableContactOptions.map((contact) => (
+                                      <CommandItem
+                                        key={contact.id}
+                                        value={`${contact.label} ${contact.id}`}
+                                        data-testid={`crm-new-activity-party-option-${contact.id}`}
+                                        onSelect={() => {
+                                          field.onChange(contact.id);
+                                          setContactComboboxOpen(false);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === contact.id ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                        <div className="flex min-w-0 flex-col">
+                                          <span className="truncate">{contact.label}</span>
+                                          <span className="text-xs text-muted-foreground truncate">
+                                            {contact.id}
+                                          </span>
+                                        </div>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                       </FormControl>
                       <FormDescription>{t("crm.activity.linkRequiredHint")}</FormDescription>
                       <FormMessage />
