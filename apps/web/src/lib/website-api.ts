@@ -21,6 +21,14 @@ import type {
   GenerateWebsitePageOutput,
   GetWebsitePageOutput,
   GetWebsiteSiteOutput,
+  CreateWebsiteQaInput,
+  ListWebsiteQaAdminOutput,
+  UpdateWebsiteQaInput,
+  UpsertWebsiteQaOutput,
+  CreateWebsiteWallOfLoveItemInput,
+  ListWebsiteWallOfLoveItemsOutput,
+  UpdateWebsiteWallOfLoveItemInput,
+  WebsiteWallOfLoveUpsertOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -179,6 +187,129 @@ export class WebsiteApi {
       idempotencyKey: apiClient.generateIdempotencyKey(),
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  async listQa(
+    siteId: string,
+    params?: { locale?: string; scope?: "site" | "page"; status?: "draft" | "published" }
+  ): Promise<ListWebsiteQaAdminOutput> {
+    const query = new URLSearchParams();
+    if (params?.locale) {
+      query.append("locale", params.locale);
+    }
+    if (params?.scope) {
+      query.append("scope", params.scope);
+    }
+    if (params?.status) {
+      query.append("status", params.status);
+    }
+    const endpoint = query.toString()
+      ? `/website/sites/${siteId}/qa?${query.toString()}`
+      : `/website/sites/${siteId}/qa`;
+    return apiClient.get<ListWebsiteQaAdminOutput>(endpoint, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createQa(siteId: string, input: CreateWebsiteQaInput): Promise<UpsertWebsiteQaOutput> {
+    return apiClient.post<UpsertWebsiteQaOutput>(
+      `/website/sites/${siteId}/qa`,
+      { ...input, siteId },
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async updateQa(
+    siteId: string,
+    qaId: string,
+    input: UpdateWebsiteQaInput
+  ): Promise<UpsertWebsiteQaOutput> {
+    return apiClient.put<UpsertWebsiteQaOutput>(`/website/sites/${siteId}/qa/${qaId}`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async deleteQa(siteId: string, qaId: string): Promise<void> {
+    await apiClient.delete(`/website/sites/${siteId}/qa/${qaId}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async listWallOfLoveItems(siteId: string): Promise<ListWebsiteWallOfLoveItemsOutput> {
+    return apiClient.get<ListWebsiteWallOfLoveItemsOutput>(
+      `/website/sites/${siteId}/wall-of-love/items`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async createWallOfLoveItem(
+    siteId: string,
+    input: Omit<CreateWebsiteWallOfLoveItemInput, "siteId">
+  ): Promise<WebsiteWallOfLoveUpsertOutput> {
+    return apiClient.post<WebsiteWallOfLoveUpsertOutput>(
+      `/website/sites/${siteId}/wall-of-love/items`,
+      { ...input, siteId },
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async updateWallOfLoveItem(
+    itemId: string,
+    input: UpdateWebsiteWallOfLoveItemInput
+  ): Promise<WebsiteWallOfLoveUpsertOutput> {
+    return apiClient.patch<WebsiteWallOfLoveUpsertOutput>(
+      `/website/wall-of-love/items/${itemId}`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async publishWallOfLoveItem(itemId: string): Promise<WebsiteWallOfLoveUpsertOutput> {
+    return apiClient.post<WebsiteWallOfLoveUpsertOutput>(
+      `/website/wall-of-love/items/${itemId}/publish`,
+      {},
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async unpublishWallOfLoveItem(itemId: string): Promise<WebsiteWallOfLoveUpsertOutput> {
+    return apiClient.post<WebsiteWallOfLoveUpsertOutput>(
+      `/website/wall-of-love/items/${itemId}/unpublish`,
+      {},
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async reorderWallOfLoveItems(
+    siteId: string,
+    orderedIds: string[]
+  ): Promise<ListWebsiteWallOfLoveItemsOutput> {
+    return apiClient.post<ListWebsiteWallOfLoveItemsOutput>(
+      `/website/sites/${siteId}/wall-of-love/items/reorder`,
+      { siteId, orderedIds },
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
   }
 }
 

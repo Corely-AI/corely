@@ -4,6 +4,7 @@ import { buildWebsitePathFromSegments, isPreviewMode } from "@/lib/website-routi
 import { getWebsitePageData, getWebsitePageMetadata } from "../_shared";
 import { WebsitePublicPageScreen } from "@/components/pages/website-public-page";
 import { WebsiteNotFound } from "@/components/website/website-not-found";
+import { publicApi } from "@/lib/public-api";
 
 export const revalidate = 120;
 
@@ -59,5 +60,23 @@ export default async function WebsitePublicPage({
     return <WebsiteNotFound message={result.message ?? "Website is temporarily unavailable."} />;
   }
 
-  return <WebsitePublicPageScreen page={result.page} host={ctx.host} previewMode={previewMode} />;
+  let wallOfLoveItems: Awaited<ReturnType<typeof publicApi.listWallOfLoveItems>>["items"] = [];
+  try {
+    const wallOfLove = await publicApi.listWallOfLoveItems({
+      siteId: result.page.siteId,
+      locale: result.page.locale,
+    });
+    wallOfLoveItems = wallOfLove.items;
+  } catch {
+    wallOfLoveItems = [];
+  }
+
+  return (
+    <WebsitePublicPageScreen
+      page={result.page}
+      host={ctx.host}
+      previewMode={previewMode}
+      wallOfLoveItems={wallOfLoveItems}
+    />
+  );
 }

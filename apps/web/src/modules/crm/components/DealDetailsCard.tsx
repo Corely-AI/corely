@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@corely/ui";
 import { Textarea } from "@corely/ui";
 import type { DealDto } from "@corely/contracts";
-import { cn } from "@/shared/lib/utils";
+import { Markdown } from "@/shared/components/Markdown";
 import { useTranslation } from "react-i18next";
 
 interface DealDetailsCardProps {
@@ -129,7 +129,12 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
                   <FormItem>
                     <FormLabel>{t("common.notes")}</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} placeholder={t("crm.deals.notesPlaceholder")} {...field} />
+                      <Textarea
+                        rows={4}
+                        placeholder={t("crm.deals.notesPlaceholder")}
+                        className="font-mono text-sm"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -169,9 +174,13 @@ export const DealDetailsCard: React.FC<DealDetailsCardProps> = ({
           <div className="space-y-3 text-sm">
             <div>
               <p className="text-muted-foreground">{t("common.notes")}</p>
-              <p className={cn("mt-1", !deal.notes && "text-muted-foreground")}>
-                {deal.notes || t("crm.deals.noNotes")}
-              </p>
+              {deal.notes ? (
+                <div className="mt-1 rounded-md border bg-muted/20 px-3 py-2">
+                  <Markdown content={deal.notes} className="text-sm text-foreground" />
+                </div>
+              ) : (
+                <p className="mt-1 text-muted-foreground">{t("crm.deals.noNotes")}</p>
+              )}
             </div>
             <div className="grid gap-3 md:grid-cols-2">
               <div>

@@ -462,6 +462,7 @@ export default function NewDealPage() {
                       <Textarea
                         rows={4}
                         placeholder={t("crm.deals.notesPlaceholder")}
+                        className="font-mono text-sm"
                         {...field}
                         data-testid="crm-deal-notes"
                       />

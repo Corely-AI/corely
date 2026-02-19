@@ -212,12 +212,24 @@ export default async function WorkspaceWebsitePage({
       token: resolvedSearchParams?.token ?? undefined,
     });
 
+    let wallOfLoveItems: Awaited<ReturnType<typeof publicApi.listWallOfLoveItems>>["items"] = [];
+    try {
+      const wallOfLove = await publicApi.listWallOfLoveItems({
+        siteId: output.siteId,
+        locale: output.locale,
+      });
+      wallOfLoveItems = wallOfLove.items;
+    } catch {
+      wallOfLoveItems = [];
+    }
+
     return (
       <WebsitePublicPageScreen
         page={output}
         host={ctx.host ?? resolved.host}
         previewMode={previewMode}
         basePath={resolved.basePath}
+        wallOfLoveItems={wallOfLoveItems}
       />
     );
   } catch (error) {
