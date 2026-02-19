@@ -15,9 +15,13 @@ import type { WebsiteSiteRepositoryPort } from "../ports/site-repository.port";
 import type { WebsitePageRepositoryPort } from "../ports/page-repository.port";
 import type { WebsiteSnapshotRepositoryPort } from "../ports/snapshot-repository.port";
 import type { WebsiteMenuRepositoryPort } from "../ports/menu-repository.port";
+import type { WebsitePublicFileUrlPort } from "../ports/public-file-url.port";
 import type { CmsReadPort } from "../ports/cms-read.port";
+import type { WebsiteCustomAttributesPort } from "../ports/custom-attributes.port";
 import { type PublicWorkspaceResolver } from "@/shared/public";
 import { buildSeo } from "../../domain/website.validators";
+import { buildWebsiteSiteSettings, WEBSITE_SITE_SETTINGS_ENTITY_TYPE } from "../../domain/site-settings";
+import { withResolvedSiteAssetUrls } from "./site-settings-assets";
 import { resolvePublicWebsiteSiteRef } from "./resolve-public-site-ref";
 
 type Deps = {
@@ -27,7 +31,9 @@ type Deps = {
   pageRepo: WebsitePageRepositoryPort;
   snapshotRepo: WebsiteSnapshotRepositoryPort;
   menuRepo: WebsiteMenuRepositoryPort;
+  publicFileUrlPort: WebsitePublicFileUrlPort;
   cmsRead: CmsReadPort;
+  customAttributes: WebsiteCustomAttributesPort;
   publicWorkspaceResolver: PublicWorkspaceResolver;
 };
 
@@ -62,6 +68,18 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
       return err(new NotFoundError("Page not found", undefined, "Website:PageNotFound"));
     }
     const { site, page, locale } = resolved;
+    const customSettings = await this.deps.customAttributes.getAttributes({
+      tenantId: site.tenantId,
+      entityType: WEBSITE_SITE_SETTINGS_ENTITY_TYPE,
+      entityId: site.id,
+    });
+    const settings = buildWebsiteSiteSettings({
+      siteName: site.name,
+      brandingJson: site.brandingJson,
+      themeJson: site.themeJson,
+      custom: customSettings,
+    });
+    const resolvedSettings = await withResolvedSiteAssetUrls(settings, this.deps.publicFileUrlPort);
 
     const menus = await this.deps.menuRepo.listBySite(site.tenantId, site.id);
     const localeMenus = menus.filter((menu) => menu.locale === locale);
@@ -80,6 +98,7 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
       return ok({
         siteId: site.id,
         siteSlug: site.slug,
+        settings: resolvedSettings,
         pageId: page.id,
         path: page.path,
         locale,
@@ -113,6 +132,7 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
     return ok({
       siteId: site.id,
       siteSlug: site.slug,
+      settings: resolvedSettings,
       pageId: page.id,
       path: page.path,
       locale,

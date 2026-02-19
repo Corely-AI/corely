@@ -8,9 +8,11 @@ import {
   ValidationError,
   ok,
   err,
-  RequireTenant,
 } from "@corely/kernel";
-import type { GetWebsiteSiteOutput } from "@corely/contracts";
+import type {
+  ResolveWebsitePublicSiteSettingsInput,
+  ResolveWebsitePublicSiteSettingsOutput,
+} from "@corely/contracts";
 import type { WebsiteSiteRepositoryPort } from "../ports/site-repository.port";
 import type { WebsiteCustomAttributesPort } from "../ports/custom-attributes.port";
 import type { WebsitePublicFileUrlPort } from "../ports/public-file-url.port";
@@ -24,27 +26,34 @@ type Deps = {
   publicFileUrlPort: WebsitePublicFileUrlPort;
 };
 
-@RequireTenant()
-export class GetWebsiteSiteUseCase extends BaseUseCase<{ siteId: string }, GetWebsiteSiteOutput> {
+export class ResolveWebsitePublicSiteSettingsUseCase extends BaseUseCase<
+  ResolveWebsitePublicSiteSettingsInput,
+  ResolveWebsitePublicSiteSettingsOutput
+> {
   constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
   }
 
-  protected async handle(
-    input: { siteId: string },
-    ctx: UseCaseContext
-  ): Promise<Result<GetWebsiteSiteOutput, UseCaseError>> {
-    if (!ctx.tenantId) {
-      return err(new ValidationError("tenantId is required", undefined, "Website:TenantRequired"));
+  protected validate(
+    input: ResolveWebsitePublicSiteSettingsInput
+  ): ResolveWebsitePublicSiteSettingsInput {
+    if (!input.siteId?.trim()) {
+      throw new ValidationError("siteId is required", undefined, "Website:InvalidSiteId");
     }
+    return input;
+  }
 
-    const site = await this.deps.siteRepo.findById(ctx.tenantId, input.siteId);
+  protected async handle(
+    input: ResolveWebsitePublicSiteSettingsInput,
+    _ctx: UseCaseContext
+  ): Promise<Result<ResolveWebsitePublicSiteSettingsOutput, UseCaseError>> {
+    const site = await this.deps.siteRepo.findByIdPublic?.(input.siteId);
     if (!site) {
       return err(new NotFoundError("Site not found", undefined, "Website:SiteNotFound"));
     }
 
     const customSettings = await this.deps.customAttributes.getAttributes({
-      tenantId: ctx.tenantId,
+      tenantId: site.tenantId,
       entityType: WEBSITE_SITE_SETTINGS_ENTITY_TYPE,
       entityId: site.id,
     });
@@ -58,12 +67,9 @@ export class GetWebsiteSiteUseCase extends BaseUseCase<{ siteId: string }, GetWe
     const resolvedSettings = await withResolvedSiteAssetUrls(settings, this.deps.publicFileUrlPort);
 
     return ok({
-      site: {
-        ...site,
-        brandingJson: resolvedSettings.common,
-        themeJson: resolvedSettings.theme,
-        settings: resolvedSettings,
-      },
+      siteId: site.id,
+      siteSlug: site.slug,
+      settings: resolvedSettings,
     });
   }
 }

@@ -200,7 +200,21 @@ describe("Website integration (Postgres)", () => {
       pageRepo: new PrismaWebsitePageRepository(prisma),
       snapshotRepo: new PrismaWebsiteSnapshotRepository(prisma),
       menuRepo: new PrismaWebsiteMenuRepository(prisma),
+      publicFileUrlPort: {
+        async getPublicUrl() {
+          return null;
+        },
+      },
       cmsRead,
+      customAttributes: {
+        async getAttributes() {
+          return {};
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
       publicWorkspaceResolver: new PublicWorkspaceResolver(prisma),
     });
 
@@ -211,6 +225,7 @@ describe("Website integration (Postgres)", () => {
       expect(result.value.template).toBe("landing-v2");
       expect(result.value.menus).toHaveLength(1);
       expect(result.value.menus[0].name).toBe("header");
+      expect(result.value.settings.common.siteTitle).toBe("Resolve Site");
     }
   });
 

@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post, Put, Query, Req, UseGuards } from "
 import type { Request } from "express";
 import {
   CreateWebsiteSiteInputSchema,
+  GetWebsiteSiteOutputSchema,
   ListWebsiteSitesInputSchema,
   UpdateWebsiteSiteInputSchema,
   WebsiteSiteSchema,
@@ -43,7 +44,7 @@ export class WebsiteSitesController {
   async get(@Param("siteId") siteId: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.getSite.execute({ siteId }, ctx);
-    return mapResultToHttp(result);
+    return GetWebsiteSiteOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Put(":siteId")

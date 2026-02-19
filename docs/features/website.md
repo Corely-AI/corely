@@ -21,6 +21,24 @@ CMS module:
 - Draft/publish lifecycle for content entries
 - Public content rendering for CMS-owned content types
 
+## Site Settings Contract
+
+Website public resolve now includes `site.settings` as a typed contract:
+
+- `settings.common`: branding + SEO defaults + header/footer/socials
+- `settings.theme`: theme token settings
+- `settings.custom`: arbitrary JSON key/value properties
+
+Persistence boundaries:
+
+- `common` and `theme` are stored in `WebsiteSite.brandingJson` / `WebsiteSite.themeJson`
+- `custom` is stored in Customization custom attributes (`ext.entity_attr`) with:
+  - `entityType = \"WebsiteSite\"`
+  - `entityId = siteId`
+  - module-scoped storage via the customization service adapter
+
+Website does not write customization tables directly from its Prisma repositories.
+
 ## Integration Boundaries
 
 - No direct reads/writes of CMS tables from Website.
@@ -47,6 +65,15 @@ CMS module:
 - Resolves domain → site → page (with normalized host/path/locale).
 - `mode=preview` returns CMS render payload for the linked `cmsEntryId`.
 - `mode=live` returns the latest snapshot payload.
+
+## Public Site Settings
+
+`GET /public/website/settings?siteId=<siteId>`
+
+- Returns typed website settings only:
+  - `settings.common` + `settings.theme` from `WebsiteSite` JSON
+  - `settings.custom` from customization custom attributes
+- Intended for public custom React/Next clients that need branding + custom settings without resolving a page payload.
 
 ## Public Feedback
 

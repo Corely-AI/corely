@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { WebsiteMenuPublicSchema, WebsiteSeoSchema } from "./website.types";
+import { WebsiteSiteSettingsSchema } from "./website-site-settings.schema";
 
 export const WebsiteResolveModeSchema = z.enum(["live", "preview"]);
 export type WebsiteResolveMode = z.infer<typeof WebsiteResolveModeSchema>;
@@ -13,9 +14,17 @@ export const ResolveWebsitePublicInputSchema = z.object({
 });
 export type ResolveWebsitePublicInput = z.infer<typeof ResolveWebsitePublicInputSchema>;
 
+export const ResolveWebsitePublicSiteSettingsInputSchema = z.object({
+  siteId: z.string().min(1),
+});
+export type ResolveWebsitePublicSiteSettingsInput = z.infer<
+  typeof ResolveWebsitePublicSiteSettingsInputSchema
+>;
+
 export const ResolveWebsitePublicOutputSchema = z.object({
   siteId: z.string(),
   siteSlug: z.string(),
+  settings: WebsiteSiteSettingsSchema,
   pageId: z.string(),
   path: z.string(),
   locale: z.string(),
@@ -26,6 +35,15 @@ export const ResolveWebsitePublicOutputSchema = z.object({
   snapshotVersion: z.number().int().nonnegative().optional().nullable(),
 });
 export type ResolveWebsitePublicOutput = z.infer<typeof ResolveWebsitePublicOutputSchema>;
+
+export const ResolveWebsitePublicSiteSettingsOutputSchema = z.object({
+  siteId: z.string(),
+  siteSlug: z.string(),
+  settings: WebsiteSiteSettingsSchema,
+});
+export type ResolveWebsitePublicSiteSettingsOutput = z.infer<
+  typeof ResolveWebsitePublicSiteSettingsOutputSchema
+>;
 
 export const WebsiteSlugExistsInputSchema = z.object({
   workspaceSlug: z.string().min(1),

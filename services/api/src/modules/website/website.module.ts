@@ -5,6 +5,7 @@ import { IdentityModule } from "@/modules/identity";
 import { DocumentsModule } from "@/modules/documents/documents.module";
 import { PromptModule } from "@/shared/prompts/prompt.module";
 import { CmsModule } from "@/modules/cms";
+import { CustomizationModule } from "@/modules/customization/customization.module";
 import { PublicWorkspaceResolver } from "@/shared/public";
 import { WebsiteSitesController } from "./adapters/http/website-sites.controller";
 import { WebsiteDomainsController } from "./adapters/http/website-domains.controller";
@@ -21,7 +22,15 @@ import { WEBSITE_WALL_OF_LOVE_USE_CASE_PROVIDERS } from "./website.wall-of-love.
 import { WEBSITE_APPLICATION_PROVIDER } from "./website.application.provider";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, DocumentsModule, PromptModule, CmsModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    IdentityModule,
+    DocumentsModule,
+    PromptModule,
+    CmsModule,
+    CustomizationModule,
+  ],
   controllers: [
     WebsiteSitesController,
     WebsiteDomainsController,

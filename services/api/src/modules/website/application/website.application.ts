@@ -14,6 +14,7 @@ import type { UnpublishWebsitePageUseCase } from "./use-cases/unpublish-page.use
 import type { UpsertWebsiteMenuUseCase } from "./use-cases/upsert-menu.usecase";
 import type { ListWebsiteMenusUseCase } from "./use-cases/list-menus.usecase";
 import type { ResolveWebsitePublicPageUseCase } from "./use-cases/resolve-public-page.usecase";
+import type { ResolveWebsitePublicSiteSettingsUseCase } from "./use-cases/resolve-public-site-settings.usecase";
 import type { GenerateWebsitePageFromPromptUseCase } from "./use-cases/generate-page-from-prompt.usecase";
 import type { WebsiteSlugExistsUseCase } from "./use-cases/slug-exists.usecase";
 import type { CreateWebsiteFeedbackUseCase } from "./use-cases/create-website-feedback.usecase";
@@ -48,6 +49,7 @@ export class WebsiteApplication {
     public readonly upsertMenu: UpsertWebsiteMenuUseCase,
     public readonly listMenus: ListWebsiteMenusUseCase,
     public readonly resolvePublicPage: ResolveWebsitePublicPageUseCase,
+    public readonly resolvePublicSiteSettings: ResolveWebsitePublicSiteSettingsUseCase,
     public readonly createFeedback: CreateWebsiteFeedbackUseCase,
     public readonly listPublicQa: ListWebsitePublicQaUseCase,
     public readonly listQa: ListWebsiteQaUseCase,

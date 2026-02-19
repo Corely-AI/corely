@@ -1,4 +1,5 @@
 export * from "./website.types";
+export * from "./website-site-settings.schema";
 export * from "./website-site.schema";
 export * from "./website-domain.schema";
 export * from "./website-page.schema";

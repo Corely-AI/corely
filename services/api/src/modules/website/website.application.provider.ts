@@ -16,6 +16,7 @@ import { UnpublishWebsitePageUseCase } from "./application/use-cases/unpublish-p
 import { UpsertWebsiteMenuUseCase } from "./application/use-cases/upsert-menu.usecase";
 import { ListWebsiteMenusUseCase } from "./application/use-cases/list-menus.usecase";
 import { ResolveWebsitePublicPageUseCase } from "./application/use-cases/resolve-public-page.usecase";
+import { ResolveWebsitePublicSiteSettingsUseCase } from "./application/use-cases/resolve-public-site-settings.usecase";
 import { CreateWebsiteFeedbackUseCase } from "./application/use-cases/create-website-feedback.usecase";
 import { ListWebsitePublicQaUseCase } from "./application/use-cases/list-website-public-qa.usecase";
 import { ListWebsiteQaUseCase } from "./application/use-cases/list-website-qa.usecase";
@@ -51,6 +52,7 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     upsertMenu: UpsertWebsiteMenuUseCase,
     listMenus: ListWebsiteMenusUseCase,
     resolvePublicPage: ResolveWebsitePublicPageUseCase,
+    resolvePublicSiteSettings: ResolveWebsitePublicSiteSettingsUseCase,
     createFeedback: CreateWebsiteFeedbackUseCase,
     listPublicQa: ListWebsitePublicQaUseCase,
     listQa: ListWebsiteQaUseCase,
@@ -84,6 +86,7 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
       upsertMenu,
       listMenus,
       resolvePublicPage,
+      resolvePublicSiteSettings,
       createFeedback,
       listPublicQa,
       listQa,
@@ -117,6 +120,7 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     UpsertWebsiteMenuUseCase,
     ListWebsiteMenusUseCase,
     ResolveWebsitePublicPageUseCase,
+    ResolveWebsitePublicSiteSettingsUseCase,
     CreateWebsiteFeedbackUseCase,
     ListWebsitePublicQaUseCase,
     ListWebsiteQaUseCase,

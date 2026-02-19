@@ -22,6 +22,8 @@ import {
   PublicPortfolioProjectOutputSchema,
   ResolveWebsitePublicInputSchema,
   ResolveWebsitePublicOutputSchema,
+  ResolveWebsitePublicSiteSettingsInputSchema,
+  ResolveWebsitePublicSiteSettingsOutputSchema,
   WebsiteSlugExistsOutputSchema,
 } from "@corely/contracts";
 import { withQuery } from "./urls";
@@ -186,6 +188,15 @@ export const publicApi = {
     });
     const data = await request({ url });
     return ResolveWebsitePublicOutputSchema.parse(data);
+  },
+
+  async resolveWebsiteSettings(input: { siteId: string }) {
+    const parsed = ResolveWebsitePublicSiteSettingsInputSchema.parse(input);
+    const url = buildUrl("/public/website/settings", {
+      siteId: parsed.siteId,
+    });
+    const data = await request({ url });
+    return ResolveWebsitePublicSiteSettingsOutputSchema.parse(data);
   },
 
   async websiteSlugExists(input: { workspaceSlug: string; websiteSlug: string }) {

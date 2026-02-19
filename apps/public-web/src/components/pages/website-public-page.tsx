@@ -37,7 +37,13 @@ export const WebsitePublicPageScreen = ({
   const Template = template === "default" ? TemplateDefault : TemplateDefault;
 
   return (
-    <PublicSiteLayout menus={page.menus} host={host} previewMode={previewMode} basePath={basePath}>
+    <PublicSiteLayout
+      menus={page.menus}
+      settings={page.settings}
+      host={host}
+      previewMode={previewMode}
+      basePath={basePath}
+    >
       <Template payload={page.payloadJson} />
       {wallOfLoveItems && wallOfLoveItems.length > 0 ? (
         <section className="mx-auto max-w-6xl px-4 pb-16 pt-10">

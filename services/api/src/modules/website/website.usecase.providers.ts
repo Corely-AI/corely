@@ -20,6 +20,7 @@ import { UnpublishWebsitePageUseCase } from "./application/use-cases/unpublish-p
 import { UpsertWebsiteMenuUseCase } from "./application/use-cases/upsert-menu.usecase";
 import { ListWebsiteMenusUseCase } from "./application/use-cases/list-menus.usecase";
 import { ResolveWebsitePublicPageUseCase } from "./application/use-cases/resolve-public-page.usecase";
+import { ResolveWebsitePublicSiteSettingsUseCase } from "./application/use-cases/resolve-public-site-settings.usecase";
 import { CreateWebsiteFeedbackUseCase } from "./application/use-cases/create-website-feedback.usecase";
 import { ListWebsitePublicQaUseCase } from "./application/use-cases/list-website-public-qa.usecase";
 import { ListWebsiteQaUseCase } from "./application/use-cases/list-website-qa.usecase";
@@ -55,32 +56,52 @@ import {
   type WebsiteQaRepositoryPort,
 } from "./application/ports/qa-repository.port";
 import { CMS_READ_PORT, type CmsReadPort } from "./application/ports/cms-read.port";
+import {
+  WEBSITE_PUBLIC_FILE_URL_PORT,
+  type WebsitePublicFileUrlPort,
+} from "./application/ports/public-file-url.port";
+import {
+  WEBSITE_CUSTOM_ATTRIBUTES_PORT,
+  type WebsiteCustomAttributesPort,
+} from "./application/ports/custom-attributes.port";
 
 export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
   {
     provide: CreateWebsiteSiteUseCase,
     useFactory: (
       siteRepo: WebsiteSiteRepositoryPort,
+      customAttributes: WebsiteCustomAttributesPort,
       idGenerator: IdGeneratorPort,
       clock: ClockPort
     ) =>
       new CreateWebsiteSiteUseCase({
         logger: new NestLoggerAdapter(),
         siteRepo,
+        customAttributes,
         idGenerator,
         clock,
       }),
-    inject: [WEBSITE_SITE_REPO_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+    inject: [
+      WEBSITE_SITE_REPO_PORT,
+      WEBSITE_CUSTOM_ATTRIBUTES_PORT,
+      ID_GENERATOR_TOKEN,
+      CLOCK_PORT_TOKEN,
+    ],
   },
   {
     provide: UpdateWebsiteSiteUseCase,
-    useFactory: (siteRepo: WebsiteSiteRepositoryPort, clock: ClockPort) =>
+    useFactory: (
+      siteRepo: WebsiteSiteRepositoryPort,
+      customAttributes: WebsiteCustomAttributesPort,
+      clock: ClockPort
+    ) =>
       new UpdateWebsiteSiteUseCase({
         logger: new NestLoggerAdapter(),
         siteRepo,
+        customAttributes,
         clock,
       }),
-    inject: [WEBSITE_SITE_REPO_PORT, CLOCK_PORT_TOKEN],
+    inject: [WEBSITE_SITE_REPO_PORT, WEBSITE_CUSTOM_ATTRIBUTES_PORT, CLOCK_PORT_TOKEN],
   },
   {
     provide: ListWebsiteSitesUseCase,
@@ -90,9 +111,18 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
   },
   {
     provide: GetWebsiteSiteUseCase,
-    useFactory: (siteRepo: WebsiteSiteRepositoryPort) =>
-      new GetWebsiteSiteUseCase({ logger: new NestLoggerAdapter(), siteRepo }),
-    inject: [WEBSITE_SITE_REPO_PORT],
+    useFactory: (
+      siteRepo: WebsiteSiteRepositoryPort,
+      customAttributes: WebsiteCustomAttributesPort,
+      publicFileUrlPort: WebsitePublicFileUrlPort
+    ) =>
+      new GetWebsiteSiteUseCase({
+        logger: new NestLoggerAdapter(),
+        siteRepo,
+        customAttributes,
+        publicFileUrlPort,
+      }),
+    inject: [WEBSITE_SITE_REPO_PORT, WEBSITE_CUSTOM_ATTRIBUTES_PORT, WEBSITE_PUBLIC_FILE_URL_PORT],
   },
   {
     provide: AddWebsiteDomainUseCase,
@@ -240,7 +270,9 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
       pageRepo: WebsitePageRepositoryPort,
       snapshotRepo: WebsiteSnapshotRepositoryPort,
       menuRepo: WebsiteMenuRepositoryPort,
+      publicFileUrlPort: WebsitePublicFileUrlPort,
       cmsRead: CmsReadPort,
+      customAttributes: WebsiteCustomAttributesPort,
       publicWorkspaceResolver: PublicWorkspaceResolver
     ) =>
       new ResolveWebsitePublicPageUseCase({
@@ -250,7 +282,9 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
         pageRepo,
         snapshotRepo,
         menuRepo,
+        publicFileUrlPort,
         cmsRead,
+        customAttributes,
         publicWorkspaceResolver,
       }),
     inject: [
@@ -259,9 +293,26 @@ export const WEBSITE_USE_CASE_PROVIDERS: Provider[] = [
       WEBSITE_PAGE_REPO_PORT,
       WEBSITE_SNAPSHOT_REPO_PORT,
       WEBSITE_MENU_REPO_PORT,
+      WEBSITE_PUBLIC_FILE_URL_PORT,
       CMS_READ_PORT,
+      WEBSITE_CUSTOM_ATTRIBUTES_PORT,
       PublicWorkspaceResolver,
     ],
+  },
+  {
+    provide: ResolveWebsitePublicSiteSettingsUseCase,
+    useFactory: (
+      siteRepo: WebsiteSiteRepositoryPort,
+      customAttributes: WebsiteCustomAttributesPort,
+      publicFileUrlPort: WebsitePublicFileUrlPort
+    ) =>
+      new ResolveWebsitePublicSiteSettingsUseCase({
+        logger: new NestLoggerAdapter(),
+        siteRepo,
+        customAttributes,
+        publicFileUrlPort,
+      }),
+    inject: [WEBSITE_SITE_REPO_PORT, WEBSITE_CUSTOM_ATTRIBUTES_PORT, WEBSITE_PUBLIC_FILE_URL_PORT],
   },
   {
     provide: CreateWebsiteFeedbackUseCase,

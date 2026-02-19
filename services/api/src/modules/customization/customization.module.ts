@@ -3,6 +3,7 @@ import { CustomFieldsController } from "./adapters/http/custom-fields.controller
 
 import { EntityLayoutController } from "./adapters/http/entity-layout.controller";
 import { CustomizationService } from "./customization.service";
+import { CustomAttributesService } from "./custom-attributes.service";
 import {
   CustomFieldDefinitionRepository,
   EntityLayoutRepository,
@@ -16,10 +17,11 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
   controllers: [CustomFieldsController, EntityLayoutController],
   providers: [
     CustomizationService,
+    CustomAttributesService,
     CustomFieldDefinitionRepository,
     CustomFieldIndexRepository,
     EntityLayoutRepository,
   ],
-  exports: [CustomizationService],
+  exports: [CustomizationService, CustomAttributesService],
 })
 export class CustomizationModule {}
