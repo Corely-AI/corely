@@ -201,6 +201,21 @@ export const DealDetailMainContent: React.FC<DealDetailMainContentProps> = ({
         </div>
 
         <div className="space-y-6">
+          <DealQuickActions
+            deal={deal}
+            stages={stages}
+            onChangeStage={onChangeStage}
+            onMarkWon={onMarkWon}
+            onMarkLost={onMarkLost}
+            onQuickNote={onQuickNote}
+            onDelete={onDelete}
+            disabled={quickActionsDisabled || !isOpen}
+            channels={channels}
+            channelsLoading={channelsLoading}
+            onSelectChannel={onSelectChannel}
+            contactContext={contactContext}
+          />
+
           <DealAiInsightsCard
             enabled={aiEnabled}
             offline={offline}
@@ -298,21 +313,6 @@ export const DealDetailMainContent: React.FC<DealDetailMainContentProps> = ({
               </CardContent>
             </Card>
           ) : null}
-
-          <DealQuickActions
-            deal={deal}
-            stages={stages}
-            onChangeStage={onChangeStage}
-            onMarkWon={onMarkWon}
-            onMarkLost={onMarkLost}
-            onQuickNote={onQuickNote}
-            onDelete={onDelete}
-            disabled={quickActionsDisabled || !isOpen}
-            channels={channels}
-            channelsLoading={channelsLoading}
-            onSelectChannel={onSelectChannel}
-            contactContext={contactContext}
-          />
 
           <DealMetaSidebar deal={deal} />
         </div>
