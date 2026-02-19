@@ -32,12 +32,26 @@ const normalizeHostname = (rawHost: string): string => {
 export const WebsiteQaScopeSchema = z.enum(["site", "page"]);
 export type WebsiteQaScope = z.infer<typeof WebsiteQaScopeSchema>;
 
-export const ListWebsiteQaInputSchema = z.object({
-  hostname: z.string().min(1).transform(normalizeHostname),
-  path: z.string().min(1).transform(normalizePublicPath),
-  locale: z.string().trim().min(1).optional(),
-  scope: WebsiteQaScopeSchema.default("site"),
-});
+export const ListWebsiteQaInputSchema = z
+  .object({
+    siteId: z.string().trim().min(1).optional(),
+    hostname: z.string().min(1).transform(normalizeHostname).optional(),
+    path: z.string().min(1).transform(normalizePublicPath).optional(),
+    locale: z.string().trim().min(1).optional(),
+    scope: WebsiteQaScopeSchema.default("site"),
+    pageId: z.string().trim().min(1).optional(),
+  })
+  .superRefine((input, ctx) => {
+    if (input.siteId) {
+      return;
+    }
+    if (!input.hostname || !input.path) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "siteId or hostname+path is required",
+      });
+    }
+  });
 export type ListWebsiteQaInput = z.infer<typeof ListWebsiteQaInputSchema>;
 
 export const ListWebsiteQaOutputSchema = z.object({

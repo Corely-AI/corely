@@ -39,7 +39,7 @@ export const CreateWebsiteQaInputSchema = z.object({
   locale: z.string().trim().min(1),
   scope: WebsiteQaScopeSchema,
   pageId: z.string().trim().min(1).optional().nullable(),
-  status: WebsiteQaStatusSchema.default("draft"),
+  status: WebsiteQaStatusSchema.default("published"),
   order: z.number().int().default(0),
   question: z.string().trim().min(1).max(500),
   answerHtml: z.string().trim().min(1).max(50_000),

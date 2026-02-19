@@ -223,10 +223,12 @@ export const publicApi = {
     const url = buildUrl(
       "/public/website/qa",
       {
+        siteId: parsed.siteId,
         hostname: parsed.hostname,
         path: parsed.path,
         locale: parsed.locale,
         scope: parsed.scope,
+        pageId: parsed.pageId,
       },
       options?.workspaceSlug
     );

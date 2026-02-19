@@ -64,6 +64,12 @@ export class PrismaWebsiteSiteRepository implements WebsiteSiteRepositoryPort {
     return row ? mapSite(row) : null;
   }
 
+  async findByIdPublic(siteId: string, tx?: TransactionContext): Promise<WebsiteSite | null> {
+    const client = getPrismaClient(this.prisma, tx as any);
+    const row = await client.websiteSite.findUnique({ where: { id: siteId } });
+    return row ? mapSite(row) : null;
+  }
+
   async findBySlug(
     tenantId: string,
     slug: string,
