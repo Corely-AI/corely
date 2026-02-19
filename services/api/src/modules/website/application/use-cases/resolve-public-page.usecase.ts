@@ -17,13 +17,8 @@ import type { WebsiteSnapshotRepositoryPort } from "../ports/snapshot-repository
 import type { WebsiteMenuRepositoryPort } from "../ports/menu-repository.port";
 import type { CmsReadPort } from "../ports/cms-read.port";
 import { type PublicWorkspaceResolver } from "@/shared/public";
-import { RESERVED_PUBLIC_PREFIXES } from "@corely/public-urls";
-import {
-  buildSeo,
-  normalizeHostname,
-  normalizeLocale,
-  normalizePath,
-} from "../../domain/website.validators";
+import { buildSeo } from "../../domain/website.validators";
+import { resolvePublicWebsiteSiteRef } from "./resolve-public-site-ref";
 
 type Deps = {
   logger: LoggerPort;
@@ -44,25 +39,6 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
     super({ logger: deps.logger });
   }
 
-  private async resolveWorkspaceContext(host: string) {
-    try {
-      return await this.deps.publicWorkspaceResolver.resolveFromRequest({
-        host,
-        path: "/",
-      });
-    } catch {
-      // Ignore and attempt dev-style workspace resolution below.
-    }
-    try {
-      return await this.deps.publicWorkspaceResolver.resolveFromRequest({
-        host: null,
-        path: `/w/${host}`,
-      });
-    } catch {
-      return null;
-    }
-  }
-
   protected validate(input: ResolveWebsitePublicInput): ResolveWebsitePublicInput {
     if (!input.host?.trim()) {
       throw new ValidationError("host is required", undefined, "Website:InvalidHost");
@@ -77,54 +53,15 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
     input: ResolveWebsitePublicInput,
     _ctx: UseCaseContext
   ): Promise<Result<ResolveWebsitePublicOutput, UseCaseError>> {
-    const host = normalizeHostname(input.host);
-    const path = normalizePath(input.path);
-
-    const domain = await this.deps.domainRepo.findByHostname(null, host);
-    let site = domain ? await this.deps.siteRepo.findById(domain.tenantId, domain.siteId) : null;
-    let resolvedPath = path;
-
-    if (!site) {
-      const workspace = await this.resolveWorkspaceContext(host);
-      if (!workspace) {
-        return err(new NotFoundError("Page not found", undefined, "Website:PageNotFound"));
-      }
-
-      const segments = path.split("/").filter(Boolean);
-      const candidateSlug = segments[0]?.toLowerCase();
-      const isReserved = candidateSlug
-        ? RESERVED_PUBLIC_PREFIXES.includes(
-            candidateSlug as (typeof RESERVED_PUBLIC_PREFIXES)[number]
-          )
-        : false;
-
-      if (candidateSlug && !isReserved) {
-        const candidateSite = await this.deps.siteRepo.findBySlug(
-          workspace.tenantId,
-          candidateSlug
-        );
-        if (candidateSite) {
-          site = candidateSite;
-          resolvedPath = segments.length > 1 ? `/${segments.slice(1).join("/")}` : "/";
-        }
-      }
-
-      if (!site) {
-        site = await this.deps.siteRepo.findDefaultByTenant(workspace.tenantId);
-        resolvedPath = path;
-      }
-    }
-
-    if (!site) {
+    const resolved = await resolvePublicWebsiteSiteRef(this.deps, {
+      host: input.host,
+      path: input.path,
+      locale: input.locale,
+    });
+    if (!resolved || !resolved.page) {
       return err(new NotFoundError("Page not found", undefined, "Website:PageNotFound"));
     }
-
-    const locale = normalizeLocale(input.locale ?? site.defaultLocale);
-
-    const page = await this.deps.pageRepo.findByPath(site.tenantId, site.id, resolvedPath, locale);
-    if (!page) {
-      return err(new NotFoundError("Page not found", undefined, "Website:PageNotFound"));
-    }
+    const { site, page, locale } = resolved;
 
     const menus = await this.deps.menuRepo.listBySite(site.tenantId, site.id);
     const localeMenus = menus.filter((menu) => menu.locale === locale);
