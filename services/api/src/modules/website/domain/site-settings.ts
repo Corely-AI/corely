@@ -140,9 +140,7 @@ export const normalizeWebsiteSiteCommonSettings = (
   return WebsiteSiteCommonSettingsSchema.parse({ siteTitle: fallbackTitle });
 };
 
-export const parseWebsiteSiteThemeSettingsForWrite = (
-  input: unknown
-): WebsiteSiteThemeSettings => {
+export const parseWebsiteSiteThemeSettingsForWrite = (input: unknown): WebsiteSiteThemeSettings => {
   if (input === undefined || input === null) {
     return WebsiteSiteThemeSettingsSchema.parse({});
   }
@@ -154,13 +152,10 @@ export const normalizeWebsiteSiteThemeSettings = (input: unknown): WebsiteSiteTh
   return parsed.success ? parsed.data : WebsiteSiteThemeSettingsSchema.parse({});
 };
 
-export const parseWebsiteSiteCustomSettingsForWrite = (
-  input: unknown
-): WebsiteSiteCustomSettings => WebsiteSiteCustomSettingsSchema.parse(input ?? {});
+export const parseWebsiteSiteCustomSettingsForWrite = (input: unknown): WebsiteSiteCustomSettings =>
+  WebsiteSiteCustomSettingsSchema.parse(input ?? {});
 
-export const normalizeWebsiteSiteCustomSettings = (
-  input: unknown
-): WebsiteSiteCustomSettings => {
+export const normalizeWebsiteSiteCustomSettings = (input: unknown): WebsiteSiteCustomSettings => {
   const parsed = WebsiteSiteCustomSettingsSchema.safeParse(input ?? {});
   return parsed.success ? parsed.data : WebsiteSiteCustomSettingsSchema.parse({});
 };

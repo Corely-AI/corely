@@ -90,7 +90,10 @@ describe("UpdateWebsiteSiteUseCase settings", () => {
       },
     };
 
-    const result = await useCase.execute({ siteId: existing.id, input }, { tenantId: existing.tenantId });
+    const result = await useCase.execute(
+      { siteId: existing.id, input },
+      { tenantId: existing.tenantId }
+    );
 
     expect(result.ok).toBe(true);
     expect(updatedSite?.brandingJson).toMatchObject({
