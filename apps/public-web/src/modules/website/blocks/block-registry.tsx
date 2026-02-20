@@ -34,7 +34,7 @@ import {
   FAQSection,
   LeadForm,
   Footer,
-} from "../templates/landing-deutschliebe-v1.sections";
+} from "../templates/landing-tutoring-v1.sections";
 
 type BlockEditorField = {
   key: string;

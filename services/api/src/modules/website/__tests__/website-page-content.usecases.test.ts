@@ -52,7 +52,7 @@ const basePage = (): WebsitePage => ({
   siteId: "site-1",
   path: "/",
   locale: "en-US",
-  template: "landing.deutschliebe.v1",
+  template: "landing.tutoring.v1",
   status: "DRAFT",
   cmsEntryId: "cms-1",
   seoTitle: null,
@@ -103,7 +103,7 @@ describe("Website page content use cases", () => {
     });
 
     const input: WebsitePageContent = {
-      templateKey: "landing.deutschliebe.v1",
+      templateKey: "landing.tutoring.v1",
       blocks: [
         { id: "hero-1", type: "hero", enabled: true, props: { headline: "Hello" } },
         { id: "schedule-1", type: "schedule", enabled: false, props: { heading: "Schedule" } },
@@ -124,7 +124,7 @@ describe("Website page content use cases", () => {
     ]);
     expect(output.content.blocks.map((block) => block.enabled)).toEqual([true, false, false]);
     expect(savedContentJson).toMatchObject({
-      templateKey: "landing.deutschliebe.v1",
+      templateKey: "landing.tutoring.v1",
       blocks: [
         { id: "hero-1", type: "hero", enabled: true },
         { id: "schedule-1", type: "schedule", enabled: false },
@@ -244,7 +244,7 @@ describe("Website page content use cases", () => {
           title: "Preview",
           excerpt: "Draft",
           contentJson: {
-            templateKey: "landing.deutschliebe.v1",
+            templateKey: "landing.tutoring.v1",
             blocks: [
               { id: "hero-1", type: "hero", enabled: true, props: {} },
               { id: "schedule-1", type: "schedule", enabled: false, props: {} },
@@ -370,7 +370,7 @@ describe("Website page content use cases", () => {
           title: "Landing",
           excerpt: "Landing page",
           contentJson: {
-            templateKey: "landing.deutschliebe.v1",
+            templateKey: "landing.tutoring.v1",
             blocks: [
               { id: "hero-1", type: "hero", enabled: true, props: {} },
               { id: "schedule-1", type: "schedule", enabled: false, props: {} },

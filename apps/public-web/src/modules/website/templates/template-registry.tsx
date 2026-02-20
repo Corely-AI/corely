@@ -29,8 +29,8 @@ const defaultLandingBlocks = (): WebsiteBlock[] => [
   { id: "footer", type: "footer", enabled: true, props: {} },
 ];
 
-const landingDeutschliebeTemplate: TemplateDefinition = {
-  key: "landing.deutschliebe.v1",
+const landingTutoringTemplate: TemplateDefinition = {
+  key: "landing.tutoring.v1",
   version: "1",
   allowedBlockTypes: [...WEBSITE_BLOCK_TYPES],
   defaultBlocks: defaultLandingBlocks,
@@ -47,7 +47,7 @@ const landingDeutschliebeTemplate: TemplateDefinition = {
 };
 
 const registry = new Map<string, TemplateDefinition>([
-  [landingDeutschliebeTemplate.key, landingDeutschliebeTemplate],
+  [landingTutoringTemplate.key, landingTutoringTemplate],
 ]);
 
 export const TemplateRegistry = {
@@ -58,6 +58,6 @@ export const TemplateRegistry = {
     return Array.from(registry.values());
   },
   fallback(): TemplateDefinition {
-    return landingDeutschliebeTemplate;
+    return landingTutoringTemplate;
   },
 };

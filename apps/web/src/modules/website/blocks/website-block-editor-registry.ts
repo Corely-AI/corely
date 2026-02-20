@@ -190,7 +190,7 @@ const definitions: Record<WebsiteBlockType, WebsiteBlockEditorDefinition> = {
   }),
 };
 
-const defaultBlocksForLandingDeutschliebe = (): WebsiteBlock[] => [
+const defaultBlocksForLandingTutoring = (): WebsiteBlock[] => [
   { id: "sticky-nav", type: "stickyNav", enabled: true, props: {} },
   { id: "hero", type: "hero", enabled: true, props: {} },
   { id: "social-proof", type: "socialProof", enabled: true, props: {} },
@@ -216,14 +216,14 @@ export type WebsiteTemplateEditorDefinition = {
 };
 
 const templateDefinitions: Record<string, WebsiteTemplateEditorDefinition> = {
-  "landing.deutschliebe.v1": {
-    templateKey: "landing.deutschliebe.v1",
+  "landing.tutoring.v1": {
+    templateKey: "landing.tutoring.v1",
     version: "1",
     allowedBlockTypes: [...WEBSITE_BLOCK_TYPES],
     defaultContent: () => ({
-      templateKey: "landing.deutschliebe.v1",
+      templateKey: "landing.tutoring.v1",
       templateVersion: "1",
-      blocks: defaultBlocksForLandingDeutschliebe(),
+      blocks: defaultBlocksForLandingTutoring(),
     }),
   },
 };
@@ -242,6 +242,6 @@ export const WebsiteTemplateEditorRegistry = {
     return templateDefinitions[templateKey] ?? null;
   },
   fallback(): WebsiteTemplateEditorDefinition {
-    return templateDefinitions["landing.deutschliebe.v1"];
+    return templateDefinitions["landing.tutoring.v1"];
   },
 };

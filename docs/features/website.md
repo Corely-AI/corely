@@ -42,7 +42,7 @@ Shared contracts are defined in `packages/contracts/src/website/blocks/*` and ex
 
 Current template:
 
-- `landing.deutschliebe.v1` with block types:
+- `landing.tutoring.v1` with block types:
   `stickyNav`, `hero`, `socialProof`, `pas`, `method`, `programHighlights`, `groupLearning`,
   `coursePackages`, `schedule`, `instructor`, `testimonials`, `scholarship`, `faq`, `leadForm`, `footer`
 

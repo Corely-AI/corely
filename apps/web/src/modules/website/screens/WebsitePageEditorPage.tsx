@@ -170,7 +170,7 @@ export default function WebsitePageEditorPage() {
 
   const [path, setPath] = useState("/");
   const [locale, setLocale] = useState("en-US");
-  const [template, setTemplate] = useState("landing.deutschliebe.v1");
+  const [template, setTemplate] = useState("landing.tutoring.v1");
   const [cmsEntryId, setCmsEntryId] = useState("");
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
@@ -536,7 +536,7 @@ export default function WebsitePageEditorPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6 lg:p-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" onClick={() => navigate(-1)}>

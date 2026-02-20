@@ -4,12 +4,12 @@ import {
   type WebsitePageContent,
 } from "@corely/contracts";
 
-const DEFAULT_TEMPLATE_KEY = "landing.deutschliebe.v1";
+const DEFAULT_TEMPLATE_KEY = "landing.tutoring.v1";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
 
-const createDefaultBlocksForLandingDeutschliebe = (): WebsiteBlock[] => [
+const createDefaultBlocksForLandingTutoring = (): WebsiteBlock[] => [
   { id: "sticky-nav", type: "stickyNav", enabled: true, props: {} },
   { id: "hero", type: "hero", enabled: true, props: {} },
   { id: "social-proof", type: "socialProof", enabled: true, props: {} },
@@ -34,7 +34,7 @@ export const buildDefaultWebsitePageContent = (
     return {
       templateKey,
       templateVersion: "1",
-      blocks: createDefaultBlocksForLandingDeutschliebe(),
+      blocks: createDefaultBlocksForLandingTutoring(),
     };
   }
 
