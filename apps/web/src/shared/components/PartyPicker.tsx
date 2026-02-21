@@ -27,6 +27,7 @@ interface PartyPickerProps {
   pageSize?: number;
   allowClear?: boolean;
   testId?: string;
+  optionTestIdPrefix?: string;
 }
 
 const DEFAULT_PAGE_SIZE = 100;
@@ -43,6 +44,7 @@ export function PartyPicker({
   pageSize = DEFAULT_PAGE_SIZE,
   allowClear = true,
   testId,
+  optionTestIdPrefix,
 }: PartyPickerProps) {
   const [open, setOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
@@ -70,8 +72,23 @@ export function PartyPicker({
   });
 
   const options = React.useMemo(() => {
-    return isSearching ? (searchQuery.data?.customers ?? []) : (listQuery.data?.customers ?? []);
-  }, [isSearching, listQuery.data?.customers, searchQuery.data?.customers]);
+    const listed = listQuery.data?.customers ?? [];
+    if (!isSearching) {
+      return listed;
+    }
+
+    const searched = searchQuery.data?.customers ?? [];
+    if (searched.length > 0) {
+      return searched;
+    }
+
+    const query = trimmedSearchTerm.toLowerCase();
+    return listed.filter((party) => {
+      const displayName = party.displayName.toLowerCase();
+      const id = party.id.toLowerCase();
+      return displayName.includes(query) || id.includes(query);
+    });
+  }, [isSearching, listQuery.data?.customers, searchQuery.data?.customers, trimmedSearchTerm]);
 
   const selectedParty = React.useMemo(() => {
     if (!value) {
@@ -140,6 +157,7 @@ export function PartyPicker({
                 <CommandItem
                   key={party.id}
                   value={`${party.displayName} ${party.id}`}
+                  data-testid={optionTestIdPrefix ? `${optionTestIdPrefix}-${party.id}` : undefined}
                   onSelect={() => {
                     onValueChange(party.id);
                     setOpen(false);
