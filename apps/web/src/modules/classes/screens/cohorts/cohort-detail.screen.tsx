@@ -390,7 +390,11 @@ export default function CohortDetailScreen() {
   const selectedEnrollment = enrolledLearners.find((item) => item.id === selectedEnrollmentId);
 
   return (
-    <div className="space-y-6 p-6 lg:p-8">
+    <div
+      className="space-y-6 p-6 lg:p-8"
+      data-testid="classes-cohort-detail-screen"
+      data-cohort-id={cohort.id}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">{cohort.name}</h1>
@@ -401,13 +405,23 @@ export default function CohortDetailScreen() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline">{cohort.lifecycle}</Badge>
+          <Badge variant="outline" data-testid="classes-cohort-lifecycle-badge">
+            {cohort.lifecycle}
+          </Badge>
           {nextLifecycle ? (
-            <Button variant="accent" onClick={() => void onTransitionLifecycle()}>
+            <Button
+              variant="accent"
+              data-testid="classes-cohort-lifecycle-next-button"
+              onClick={() => void onTransitionLifecycle()}
+            >
               {nextLifecycle}
             </Button>
           ) : null}
-          <Button variant="outline" onClick={() => navigate(`/classes/cohorts/${cohort.id}/edit`)}>
+          <Button
+            variant="outline"
+            data-testid="classes-cohort-edit-button"
+            onClick={() => navigate(`/classes/cohorts/${cohort.id}/edit`)}
+          >
             Edit
           </Button>
         </div>
@@ -415,16 +429,28 @@ export default function CohortDetailScreen() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          <TabsTrigger value="learners">Learners</TabsTrigger>
-          <TabsTrigger value="billing">Billing</TabsTrigger>
-          <TabsTrigger value="outcomes">Outcomes</TabsTrigger>
-          <TabsTrigger value="resources">Resources</TabsTrigger>
+          <TabsTrigger value="overview" data-testid="classes-cohort-tab-overview">
+            Overview
+          </TabsTrigger>
+          <TabsTrigger value="sessions" data-testid="classes-cohort-tab-sessions">
+            Sessions
+          </TabsTrigger>
+          <TabsTrigger value="learners" data-testid="classes-cohort-tab-learners">
+            Learners
+          </TabsTrigger>
+          <TabsTrigger value="billing" data-testid="classes-cohort-tab-billing">
+            Billing
+          </TabsTrigger>
+          <TabsTrigger value="outcomes" data-testid="classes-cohort-tab-outcomes">
+            Outcomes
+          </TabsTrigger>
+          <TabsTrigger value="resources" data-testid="classes-cohort-tab-resources">
+            Resources
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4 pt-4">
-          <Card>
+          <Card data-testid="classes-cohort-overview-meta-card">
             <CardContent className="grid gap-4 p-6 md:grid-cols-3">
               <div>
                 <div className="text-sm text-muted-foreground">Program</div>
@@ -441,13 +467,18 @@ export default function CohortDetailScreen() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card data-testid="classes-cohort-team-card">
             <CardContent className="space-y-4 p-6">
               <h2 className="text-base font-semibold">Team</h2>
               {(teamQuery.data?.items?.length ?? 0) === 0 ? (
-                <div className="text-sm text-muted-foreground">No team members assigned yet.</div>
+                <div
+                  className="text-sm text-muted-foreground"
+                  data-testid="classes-cohort-team-empty"
+                >
+                  No team members assigned yet.
+                </div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-2" data-testid="classes-cohort-team-list">
                   {TEAM_ROLES.map((role) => {
                     const members = (teamQuery.data?.items ?? []).filter(
                       (item) => item.role === role
@@ -456,7 +487,7 @@ export default function CohortDetailScreen() {
                       return null;
                     }
                     return (
-                      <div key={role}>
+                      <div key={role} data-testid={`classes-cohort-team-role-${role}`}>
                         <div className="text-xs uppercase text-muted-foreground">{role}</div>
                         <div className="text-sm">
                           {members
@@ -480,12 +511,13 @@ export default function CohortDetailScreen() {
                   placeholder="Select team member"
                   searchPlaceholder="Search people by name or partyId..."
                   testId="classes-cohort-team-party-picker"
+                  optionTestIdPrefix="classes-cohort-team-party-option"
                 />
                 <Select
                   value={teamRole}
                   onValueChange={(value) => setTeamRole(value as ClassGroupInstructorRole)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="classes-cohort-team-role-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -498,6 +530,7 @@ export default function CohortDetailScreen() {
                 </Select>
                 <Button
                   variant="outline"
+                  data-testid="classes-cohort-team-add-button"
                   disabled={!teamPartyId.trim() || upsertTeamMutation.isPending}
                   onClick={() => void onAddTeamMember()}
                 >
@@ -510,15 +543,24 @@ export default function CohortDetailScreen() {
 
         <TabsContent value="sessions" className="space-y-4 pt-4">
           {sessionsQuery.isLoading ? (
-            <div className="rounded-md border border-border p-4 text-sm text-muted-foreground">
+            <div
+              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+              data-testid="classes-cohort-sessions-loading"
+            >
               Loading sessions...
             </div>
           ) : sessions.length === 0 ? (
-            <div className="rounded-md border border-border p-4 text-sm text-muted-foreground">
+            <div
+              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+              data-testid="classes-cohort-sessions-empty"
+            >
               No sessions found.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-md border border-border">
+            <div
+              className="overflow-x-auto rounded-md border border-border"
+              data-testid="classes-cohort-sessions-table"
+            >
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
@@ -538,7 +580,11 @@ export default function CohortDetailScreen() {
                 </thead>
                 <tbody>
                   {sessions.map((session) => (
-                    <tr key={session.id} className="border-b border-border last:border-0">
+                    <tr
+                      key={session.id}
+                      className="border-b border-border last:border-0"
+                      data-testid={`classes-cohort-session-row-${session.id}`}
+                    >
                       <td className="px-4 py-3 text-sm">
                         {formatDateTime(session.startsAt, "en-US")}
                       </td>
@@ -571,7 +617,7 @@ export default function CohortDetailScreen() {
         </TabsContent>
 
         <TabsContent value="learners" className="space-y-4 pt-4">
-          <Card>
+          <Card data-testid="classes-cohort-create-application-card">
             <CardContent className="space-y-3 p-6">
               <h2 className="text-base font-semibold">Create application</h2>
               <div className="grid gap-3 md:grid-cols-2">
@@ -580,6 +626,7 @@ export default function CohortDetailScreen() {
                   <Input
                     value={studentClientId}
                     onChange={(event) => setStudentClientId(event.target.value)}
+                    data-testid="classes-cohort-application-student-client-id"
                   />
                 </div>
                 <div className="space-y-2">
@@ -587,6 +634,7 @@ export default function CohortDetailScreen() {
                   <Input
                     value={payerClientId}
                     onChange={(event) => setPayerClientId(event.target.value)}
+                    data-testid="classes-cohort-application-payer-client-id"
                   />
                 </div>
                 <div className="space-y-2">
@@ -594,6 +642,7 @@ export default function CohortDetailScreen() {
                   <Input
                     value={placementLevel}
                     onChange={(event) => setPlacementLevel(event.target.value)}
+                    data-testid="classes-cohort-application-placement-level"
                   />
                 </div>
                 <div className="space-y-2">
@@ -601,20 +650,29 @@ export default function CohortDetailScreen() {
                   <Input
                     value={placementGoal}
                     onChange={(event) => setPlacementGoal(event.target.value)}
+                    data-testid="classes-cohort-application-placement-goal"
                   />
                 </div>
               </div>
-              <Button variant="accent" onClick={() => void onCreateApplication()}>
+              <Button
+                variant="accent"
+                data-testid="classes-cohort-application-create-button"
+                onClick={() => void onCreateApplication()}
+              >
                 Create APPLIED enrollment
               </Button>
             </CardContent>
           </Card>
 
-          <div className="flex flex-wrap gap-2">
+          <div
+            className="flex flex-wrap gap-2"
+            data-testid="classes-cohort-learners-status-filters"
+          >
             {ENROLLMENT_STATUSES.map((status) => (
               <Button
                 key={status}
                 variant={learnerStatus === status ? "accent" : "outline"}
+                data-testid={`classes-cohort-learners-status-${status}`}
                 onClick={() => setLearnerStatus(status)}
               >
                 {status}
@@ -623,15 +681,24 @@ export default function CohortDetailScreen() {
           </div>
 
           {learnersQuery.isLoading ? (
-            <div className="rounded-md border border-border p-4 text-sm text-muted-foreground">
+            <div
+              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+              data-testid="classes-cohort-learners-loading"
+            >
               Loading learners...
             </div>
           ) : learners.length === 0 ? (
-            <div className="rounded-md border border-border p-4 text-sm text-muted-foreground">
+            <div
+              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+              data-testid="classes-cohort-learners-empty"
+            >
               No learners with status {learnerStatus}.
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-md border border-border">
+            <div
+              className="overflow-x-auto rounded-md border border-border"
+              data-testid="classes-cohort-learners-table"
+            >
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
@@ -655,7 +722,11 @@ export default function CohortDetailScreen() {
                 </thead>
                 <tbody>
                   {learners.map((enrollment) => (
-                    <tr key={enrollment.id} className="border-b border-border last:border-0">
+                    <tr
+                      key={enrollment.id}
+                      className="border-b border-border last:border-0"
+                      data-testid={`classes-cohort-enrollment-row-${enrollment.id}`}
+                    >
                       <td className="px-4 py-3 text-sm">{enrollment.studentClientId}</td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
                         {enrollment.status}
@@ -680,6 +751,7 @@ export default function CohortDetailScreen() {
                         {enrollment.status === "APPLIED" ? (
                           <Button
                             variant="outline"
+                            data-testid={`classes-cohort-enrollment-approve-${enrollment.id}`}
                             onClick={() => void onApproveApplication(enrollment.id)}
                           >
                             Approve & enroll
@@ -695,18 +767,23 @@ export default function CohortDetailScreen() {
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-4 pt-4">
-          <Card>
+          <Card data-testid="classes-cohort-billing-card">
             <CardContent className="space-y-3 p-6">
               <h2 className="text-base font-semibold">Enrollment billing plan</h2>
               {enrolledLearners.length === 0 ? (
-                <div className="text-sm text-muted-foreground">No enrolled learners yet.</div>
+                <div
+                  className="text-sm text-muted-foreground"
+                  data-testid="classes-cohort-billing-empty"
+                >
+                  No enrolled learners yet.
+                </div>
               ) : (
                 <>
                   <div className="grid gap-3 md:grid-cols-4">
                     <div className="space-y-2 md:col-span-2">
                       <Label>Enrollment</Label>
                       <Select value={selectedEnrollmentId} onValueChange={setSelectedEnrollmentId}>
-                        <SelectTrigger>
+                        <SelectTrigger data-testid="classes-cohort-billing-enrollment-select">
                           <SelectValue placeholder="Select enrollment" />
                         </SelectTrigger>
                         <SelectContent>
@@ -724,7 +801,7 @@ export default function CohortDetailScreen() {
                         value={billingType}
                         onValueChange={(value) => setBillingType(value as BillingPlanType)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger data-testid="classes-cohort-billing-plan-type-select">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -744,6 +821,7 @@ export default function CohortDetailScreen() {
                         min="0"
                         value={billingAmount}
                         onChange={(event) => setBillingAmount(event.target.value)}
+                        data-testid="classes-cohort-billing-amount-input"
                       />
                     </div>
                     <div className="space-y-2">
@@ -751,6 +829,7 @@ export default function CohortDetailScreen() {
                       <Input
                         value={billingCurrency}
                         onChange={(event) => setBillingCurrency(event.target.value)}
+                        data-testid="classes-cohort-billing-currency-input"
                       />
                     </div>
                     <div className="space-y-2">
@@ -759,6 +838,7 @@ export default function CohortDetailScreen() {
                         type="date"
                         value={billingDueDate}
                         onChange={(event) => setBillingDueDate(event.target.value)}
+                        data-testid="classes-cohort-billing-due-date-input"
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
@@ -769,14 +849,25 @@ export default function CohortDetailScreen() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button variant="accent" onClick={() => void onUpsertBillingPlan()}>
+                    <Button
+                      variant="accent"
+                      data-testid="classes-cohort-billing-save-plan-button"
+                      onClick={() => void onUpsertBillingPlan()}
+                    >
                       Save billing plan
                     </Button>
-                    <Button variant="outline" onClick={() => void onGenerateInvoices()}>
+                    <Button
+                      variant="outline"
+                      data-testid="classes-cohort-billing-generate-invoices-button"
+                      onClick={() => void onGenerateInvoices()}
+                    >
                       Generate invoices
                     </Button>
                   </div>
-                  <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
+                  <div
+                    className="rounded-md border border-border bg-muted/30 p-3 text-sm"
+                    data-testid="classes-cohort-billing-current-plan"
+                  >
                     Current plan:{" "}
                     {billingPlanQuery.data?.billingPlan
                       ? `${billingPlanQuery.data.billingPlan.type}`
@@ -789,21 +880,21 @@ export default function CohortDetailScreen() {
         </TabsContent>
 
         <TabsContent value="outcomes" className="space-y-4 pt-4">
-          <Card>
+          <Card data-testid="classes-cohort-outcomes-summary-card">
             <CardContent className="grid gap-4 p-6 md:grid-cols-3">
-              <div>
+              <div data-testid="classes-cohort-outcomes-required-count">
                 <div className="text-sm text-muted-foreground">Required milestones</div>
                 <div className="text-xl font-semibold">
                   {outcomesSummaryQuery.data?.summary.totalRequiredMilestones ?? 0}
                 </div>
               </div>
-              <div>
+              <div data-testid="classes-cohort-outcomes-passed-count">
                 <div className="text-sm text-muted-foreground">Passed completions</div>
                 <div className="text-xl font-semibold">
                   {outcomesSummaryQuery.data?.summary.totalCompletionsPassed ?? 0}
                 </div>
               </div>
-              <div>
+              <div data-testid="classes-cohort-outcomes-at-risk-count">
                 <div className="text-sm text-muted-foreground">At-risk learners</div>
                 <div className="text-xl font-semibold">
                   {outcomesSummaryQuery.data?.summary.atRiskLearnersCount ?? 0}
@@ -812,7 +903,7 @@ export default function CohortDetailScreen() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card data-testid="classes-cohort-milestones-card">
             <CardContent className="space-y-3 p-6">
               <h2 className="text-base font-semibold">Milestones</h2>
               <div className="grid gap-2 md:grid-cols-3">
@@ -820,8 +911,13 @@ export default function CohortDetailScreen() {
                   placeholder="Milestone title"
                   value={milestoneTitle}
                   onChange={(event) => setMilestoneTitle(event.target.value)}
+                  data-testid="classes-cohort-milestone-title-input"
                 />
-                <Button variant="accent" onClick={() => void onCreateMilestone()}>
+                <Button
+                  variant="accent"
+                  data-testid="classes-cohort-milestone-add-button"
+                  onClick={() => void onCreateMilestone()}
+                >
                   Add milestone
                 </Button>
               </div>
@@ -835,6 +931,7 @@ export default function CohortDetailScreen() {
                     <div
                       key={milestone.id}
                       className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3"
+                      data-testid={`classes-cohort-milestone-row-${milestone.id}`}
                     >
                       <div>
                         <div className="text-sm font-medium">{milestone.title}</div>
@@ -859,7 +956,10 @@ export default function CohortDetailScreen() {
                             });
                           }}
                         >
-                          <SelectTrigger className="w-[160px]">
+                          <SelectTrigger
+                            className="w-[160px]"
+                            data-testid={`classes-cohort-milestone-status-${milestone.id}`}
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -872,6 +972,7 @@ export default function CohortDetailScreen() {
                         </Select>
                         <Button
                           variant="outline"
+                          data-testid={`classes-cohort-milestone-delete-${milestone.id}`}
                           onClick={() => void milestoneMutations.remove.mutateAsync(milestone.id)}
                         >
                           Delete
@@ -886,7 +987,7 @@ export default function CohortDetailScreen() {
         </TabsContent>
 
         <TabsContent value="resources" className="space-y-4 pt-4">
-          <Card>
+          <Card data-testid="classes-cohort-resources-add-card">
             <CardContent className="space-y-3 p-6">
               <h2 className="text-base font-semibold">Add resource</h2>
               <div className="grid gap-3 md:grid-cols-2">
@@ -896,7 +997,7 @@ export default function CohortDetailScreen() {
                     value={resourceType}
                     onValueChange={(value) => setResourceType(value as ClassResourceType)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger data-testid="classes-cohort-resource-type-select">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -916,7 +1017,7 @@ export default function CohortDetailScreen() {
                       setResourceVisibility(value as ClassResourceVisibility)
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger data-testid="classes-cohort-resource-visibility-select">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -933,6 +1034,7 @@ export default function CohortDetailScreen() {
                   <Input
                     value={resourceTitle}
                     onChange={(event) => setResourceTitle(event.target.value)}
+                    data-testid="classes-cohort-resource-title-input"
                   />
                 </div>
                 <div className="space-y-2">
@@ -941,6 +1043,7 @@ export default function CohortDetailScreen() {
                     value={resourceUrl}
                     onChange={(event) => setResourceUrl(event.target.value)}
                     placeholder="https://..."
+                    data-testid="classes-cohort-resource-url-input"
                   />
                 </div>
                 <div className="space-y-2">
@@ -948,22 +1051,30 @@ export default function CohortDetailScreen() {
                   <Input
                     value={resourceDocumentId}
                     onChange={(event) => setResourceDocumentId(event.target.value)}
+                    data-testid="classes-cohort-resource-document-id-input"
                   />
                 </div>
               </div>
-              <Button variant="accent" onClick={() => void onCreateResource()}>
+              <Button
+                variant="accent"
+                data-testid="classes-cohort-resource-add-button"
+                onClick={() => void onCreateResource()}
+              >
                 Add resource
               </Button>
             </CardContent>
           </Card>
 
           {resourcesQuery.isLoading ? (
-            <div className="rounded-md border border-border p-4 text-sm text-muted-foreground">
+            <div
+              className="rounded-md border border-border p-4 text-sm text-muted-foreground"
+              data-testid="classes-cohort-resources-loading"
+            >
               Loading resources...
             </div>
           ) : (
             groupedResources.map((group) => (
-              <Card key={group.type}>
+              <Card key={group.type} data-testid={`classes-cohort-resources-group-${group.type}`}>
                 <CardContent className="space-y-3 p-6">
                   <h3 className="text-sm font-semibold">{group.type}</h3>
                   {group.items.length === 0 ? (
@@ -975,6 +1086,7 @@ export default function CohortDetailScreen() {
                       <div
                         key={resource.id}
                         className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3"
+                        data-testid={`classes-cohort-resource-row-${resource.id}`}
                       >
                         <div className="space-y-1">
                           <div className="text-sm font-medium">{resource.title}</div>
@@ -990,6 +1102,7 @@ export default function CohortDetailScreen() {
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
+                            data-testid={`classes-cohort-resource-up-${resource.id}`}
                             disabled={index === 0}
                             onClick={() => void onMoveResource(resource.id, "up")}
                           >
@@ -997,6 +1110,7 @@ export default function CohortDetailScreen() {
                           </Button>
                           <Button
                             variant="outline"
+                            data-testid={`classes-cohort-resource-down-${resource.id}`}
                             disabled={index === group.items.length - 1}
                             onClick={() => void onMoveResource(resource.id, "down")}
                           >
@@ -1004,6 +1118,7 @@ export default function CohortDetailScreen() {
                           </Button>
                           <Button
                             variant="outline"
+                            data-testid={`classes-cohort-resource-delete-${resource.id}`}
                             onClick={() => void resourceMutations.remove.mutateAsync(resource.id)}
                           >
                             Delete

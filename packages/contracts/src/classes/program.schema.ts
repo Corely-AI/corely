@@ -48,6 +48,20 @@ export const UpdateProgramInputSchema = z.object({
 });
 export type UpdateProgramInput = z.infer<typeof UpdateProgramInputSchema>;
 
+export const UpsertProgramSessionTemplatesBodySchema = z.object({
+  items: z.array(ProgramSessionTemplateInputSchema).default([]),
+});
+export type UpsertProgramSessionTemplatesBody = z.infer<
+  typeof UpsertProgramSessionTemplatesBodySchema
+>;
+
+export const UpsertProgramMilestoneTemplatesBodySchema = z.object({
+  items: z.array(ProgramMilestoneTemplateInputSchema).default([]),
+});
+export type UpsertProgramMilestoneTemplatesBody = z.infer<
+  typeof UpsertProgramMilestoneTemplatesBodySchema
+>;
+
 export const ListProgramsInputSchema = ListQuerySchema.extend({
   levelTag: z.string().optional(),
 });

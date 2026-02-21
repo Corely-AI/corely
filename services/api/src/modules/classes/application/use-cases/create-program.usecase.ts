@@ -1,4 +1,3 @@
-import { ValidationFailedError } from "@corely/domain";
 import { RequireTenant, type UseCaseContext } from "@corely/kernel";
 import type { CreateProgramInput } from "@corely/contracts/classes";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
@@ -7,12 +6,18 @@ import type { IdGeneratorPort } from "../ports/id-generator.port";
 import type { ClockPort } from "../ports/clock.port";
 import type { AuditPort } from "../ports/audit.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanCohortManage } from "../../policies/assert-can-classes";
+import { assertCanProgramsManage } from "../../policies/assert-can-classes";
 import type {
   ClassProgramEntity,
   ClassProgramMilestoneTemplateEntity,
   ClassProgramSessionTemplateEntity,
 } from "../../domain/entities/classes.entities";
+import {
+  assertValidExpectedSessionsCount,
+  assertValidMilestoneTemplates,
+  assertValidProgramTitle,
+  assertValidSessionTemplates,
+} from "../../domain/rules/program.rules";
 
 @RequireTenant()
 export class CreateProgramUseCase {
@@ -34,14 +39,12 @@ export class CreateProgramUseCase {
     sessionTemplates: ClassProgramSessionTemplateEntity[];
     milestoneTemplates: ClassProgramMilestoneTemplateEntity[];
   }> {
-    assertCanCohortManage(ctx);
+    assertCanProgramsManage(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
-
-    if (!input.title?.trim()) {
-      throw new ValidationFailedError("title is required", [
-        { message: "title is required", members: ["title"] },
-      ]);
-    }
+    assertValidProgramTitle(input.title);
+    assertValidExpectedSessionsCount(input.expectedSessionsCount);
+    assertValidSessionTemplates(input.sessionTemplates ?? []);
+    assertValidMilestoneTemplates(input.milestoneTemplates ?? []);
 
     if (input.idempotencyKey) {
       const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);

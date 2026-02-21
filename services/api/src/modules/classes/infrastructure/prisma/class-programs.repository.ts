@@ -65,6 +65,17 @@ export const findProgramById = async (
   return row ? toProgram(row) : null;
 };
 
+export const deleteProgram = async (
+  prisma: PrismaService,
+  tenantId: string,
+  workspaceId: string,
+  programId: string
+): Promise<void> => {
+  await prisma.classProgram.delete({
+    where: { id: programId, tenantId, workspaceId },
+  });
+};
+
 export const listPrograms = async (
   prisma: PrismaService,
   tenantId: string,

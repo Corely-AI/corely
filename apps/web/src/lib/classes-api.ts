@@ -44,6 +44,8 @@ import type {
   UpdateMilestoneInput,
   UpdateProgramInput,
   UpdateCohortLifecycleInput,
+  UpsertProgramMilestoneTemplatesBody,
+  UpsertProgramSessionTemplatesBody,
   UpsertCohortTeamInput,
   UpsertEnrollmentBillingPlanInput,
   UpsertMilestoneCompletionInput,
@@ -538,6 +540,40 @@ export class ClassesApi {
   async updateProgram(programId: string, input: UpdateProgramInput): Promise<ProgramDetail> {
     return apiClient.patch<ProgramDetail>(`/classes/programs/${programId}`, input, {
       idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async replaceProgramSessionTemplates(
+    programId: string,
+    input: UpsertProgramSessionTemplatesBody
+  ): Promise<{ items: ProgramDetail["sessionTemplates"] }> {
+    return apiClient.put<{ items: ProgramDetail["sessionTemplates"] }>(
+      `/classes/programs/${programId}/session-templates`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async replaceProgramMilestoneTemplates(
+    programId: string,
+    input: UpsertProgramMilestoneTemplatesBody
+  ): Promise<{ items: ProgramDetail["milestoneTemplates"] }> {
+    return apiClient.put<{ items: ProgramDetail["milestoneTemplates"] }>(
+      `/classes/programs/${programId}/milestone-templates`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async deleteProgram(programId: string): Promise<{ ok: boolean }> {
+    return apiClient.delete<{ ok: boolean }>(`/classes/programs/${programId}`, {
       correlationId: apiClient.generateCorrelationId(),
     });
   }

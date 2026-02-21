@@ -2,7 +2,7 @@ import { NotFoundError } from "@corely/domain";
 import { RequireTenant, type UseCaseContext } from "@corely/kernel";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanCohortManage } from "../../policies/assert-can-classes";
+import { assertCanProgramsView } from "../../policies/assert-can-classes";
 import type {
   ClassProgramEntity,
   ClassProgramMilestoneTemplateEntity,
@@ -21,7 +21,7 @@ export class GetProgramUseCase {
     sessionTemplates: ClassProgramSessionTemplateEntity[];
     milestoneTemplates: ClassProgramMilestoneTemplateEntity[];
   }> {
-    assertCanCohortManage(ctx);
+    assertCanProgramsView(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     const program = await this.repo.findProgramById(tenantId, workspaceId, input.programId);

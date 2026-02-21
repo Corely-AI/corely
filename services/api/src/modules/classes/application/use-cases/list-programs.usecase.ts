@@ -3,7 +3,7 @@ import type { ListProgramsInput } from "@corely/contracts/classes";
 import { buildPageInfo } from "@/shared/http/pagination";
 import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanCohortManage } from "../../policies/assert-can-classes";
+import { assertCanProgramsView } from "../../policies/assert-can-classes";
 
 export type ListProgramsQuery = ListProgramsInput & {
   page: number;
@@ -15,7 +15,7 @@ export class ListProgramsUseCase {
   constructor(private readonly repo: ClassesRepositoryPort) {}
 
   async execute(input: ListProgramsQuery, ctx: UseCaseContext) {
-    assertCanCohortManage(ctx);
+    assertCanProgramsView(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     const { items, total } = await this.repo.listPrograms(

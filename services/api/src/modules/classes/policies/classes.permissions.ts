@@ -66,6 +66,18 @@ export const classesPermissions: PermissionGroup[] = [
         description: "Manage applications and cohort enrollments.",
       },
       {
+        key: "classes.programs.view",
+        group: "classes",
+        label: "View programs",
+        description: "View reusable classes program templates (combos).",
+      },
+      {
+        key: "classes.programs.manage",
+        group: "classes",
+        label: "Manage programs",
+        description: "Create, update and delete classes program templates (combos).",
+      },
+      {
         key: "classes.teacher.dashboard.view",
         group: "classes",
         label: "View teacher dashboard",

@@ -19,6 +19,8 @@ import type {
   UpsertCohortTeamInput,
   UpsertEnrollmentBillingPlanInput,
   UpsertMilestoneCompletionInput,
+  UpsertProgramMilestoneTemplatesBody,
+  UpsertProgramSessionTemplatesBody,
   GenerateBillingPlanInvoicesInput,
 } from "@corely/contracts";
 import { classesApi } from "@/lib/classes-api";
@@ -428,17 +430,19 @@ export function useProgramQuery(programId: string | undefined) {
   });
 }
 
-export function useProgramMutations(programId?: string) {
+export function useCreateProgramMutation() {
   const queryClient = useQueryClient();
-
-  const create = useMutation({
+  return useMutation({
     mutationFn: (input: CreateProgramInput) => classesApi.createProgram(input),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["classes", "programs", "list"] });
     },
   });
+}
 
-  const update = useMutation({
+export function useUpdateProgramMutation(programId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
     mutationFn: (input: UpdateProgramInput) => {
       if (!programId) {
         throw new Error("Missing program id");
@@ -454,8 +458,78 @@ export function useProgramMutations(programId?: string) {
       await queryClient.invalidateQueries({ queryKey: ["classes", "programs", "list"] });
     },
   });
+}
 
-  return { create, update };
+export function useDeleteProgramMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (programId: string) => classesApi.deleteProgram(programId),
+    onSuccess: async (_result, programId) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["classes", "programs", "list"] }),
+        queryClient.invalidateQueries({
+          queryKey: classesAcademyQueryKeys.programs.detail(programId),
+        }),
+      ]);
+    },
+  });
+}
+
+export function useReplaceProgramSessionTemplatesMutation(programId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpsertProgramSessionTemplatesBody) => {
+      if (!programId) {
+        throw new Error("Missing program id");
+      }
+      return classesApi.replaceProgramSessionTemplates(programId, input);
+    },
+    onSuccess: async () => {
+      if (programId) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: classesAcademyQueryKeys.programs.detail(programId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: classesAcademyQueryKeys.programs.sessionTemplates(programId),
+          }),
+        ]);
+      }
+    },
+  });
+}
+
+export function useReplaceProgramMilestoneTemplatesMutation(programId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpsertProgramMilestoneTemplatesBody) => {
+      if (!programId) {
+        throw new Error("Missing program id");
+      }
+      return classesApi.replaceProgramMilestoneTemplates(programId, input);
+    },
+    onSuccess: async () => {
+      if (programId) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: classesAcademyQueryKeys.programs.detail(programId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: classesAcademyQueryKeys.programs.milestoneTemplates(programId),
+          }),
+        ]);
+      }
+    },
+  });
+}
+
+export function useProgramMutations(programId?: string) {
+  const create = useCreateProgramMutation();
+  const update = useUpdateProgramMutation(programId);
+  const remove = useDeleteProgramMutation();
+  const replaceSessionTemplates = useReplaceProgramSessionTemplatesMutation(programId);
+  const replaceMilestoneTemplates = useReplaceProgramMilestoneTemplatesMutation(programId);
+  return { create, update, remove, replaceSessionTemplates, replaceMilestoneTemplates };
 }
 
 export function useCreateCohortFromProgramMutation(programId: string | undefined) {

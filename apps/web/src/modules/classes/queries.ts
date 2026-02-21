@@ -43,6 +43,8 @@ export const classesAcademyQueryKeys = {
   programs: {
     list: (params?: ListProgramsInput) => ["classes", "programs", "list", params] as const,
     detail: (id: string) => ["classes", "programs", id] as const,
+    sessionTemplates: (id: string) => ["classes", "programs", id, "sessionTemplates"] as const,
+    milestoneTemplates: (id: string) => ["classes", "programs", id, "milestoneTemplates"] as const,
   },
   enrollments: {
     billingPlan: (enrollmentId: string) =>

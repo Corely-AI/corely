@@ -45,6 +45,9 @@ class FakeRepo implements ClassesRepositoryPort {
   async findProgramById() {
     return null;
   }
+  async deleteProgram() {
+    return;
+  }
   async listPrograms() {
     return { items: [], total: 0 };
   }

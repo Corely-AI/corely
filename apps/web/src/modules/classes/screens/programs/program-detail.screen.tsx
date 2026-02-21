@@ -138,7 +138,19 @@ export default function ProgramDetailScreen() {
         navigate(`/classes/programs/${created.program.id}`);
         return;
       }
-      await programMutations.update.mutateAsync(payload);
+      await programMutations.update.mutateAsync({
+        title: payload.title,
+        description: payload.description,
+        levelTag: payload.levelTag,
+        expectedSessionsCount: payload.expectedSessionsCount,
+        defaultTimezone: payload.defaultTimezone,
+      });
+      await programMutations.replaceSessionTemplates.mutateAsync({
+        items: payload.sessionTemplates,
+      });
+      await programMutations.replaceMilestoneTemplates.mutateAsync({
+        items: payload.milestoneTemplates,
+      });
       toast.success("Combo updated");
       if (id) {
         navigate(`/classes/programs/${id}`);
@@ -176,6 +188,9 @@ export default function ProgramDetailScreen() {
   const pending =
     programMutations.create.isPending ||
     programMutations.update.isPending ||
+    programMutations.replaceSessionTemplates.isPending ||
+    programMutations.replaceMilestoneTemplates.isPending ||
+    programMutations.remove.isPending ||
     createCohortMutation.isPending;
 
   if (!isNew && isLoading) {
@@ -196,7 +211,7 @@ export default function ProgramDetailScreen() {
   }
 
   return (
-    <div className="space-y-6 p-6 lg:p-8">
+    <div className="space-y-6 p-6 lg:p-8" data-testid="classes-program-detail-screen">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold">
@@ -208,12 +223,42 @@ export default function ProgramDetailScreen() {
         </div>
         <div className="flex items-center gap-2">
           {!isNew && !isEdit ? (
-            <Button variant="outline" onClick={() => navigate(`/classes/programs/${id}/edit`)}>
+            <Button
+              variant="outline"
+              data-testid="classes-program-edit-button"
+              onClick={() => navigate(`/classes/programs/${id}/edit`)}
+            >
               Edit
             </Button>
           ) : null}
+          {!isNew ? (
+            <Button
+              variant="outline"
+              data-testid="classes-program-delete-button"
+              disabled={pending}
+              onClick={async () => {
+                if (!id) {
+                  return;
+                }
+                try {
+                  await programMutations.remove.mutateAsync(id);
+                  toast.success("Combo deleted");
+                  navigate("/classes/programs");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Failed to delete combo");
+                }
+              }}
+            >
+              Delete
+            </Button>
+          ) : null}
           {isEdit ? (
-            <Button variant="accent" disabled={pending} onClick={() => void saveProgram()}>
+            <Button
+              variant="accent"
+              data-testid="classes-program-save-button"
+              disabled={pending}
+              onClick={() => void saveProgram()}
+            >
               Save
             </Button>
           ) : null}
@@ -228,6 +273,7 @@ export default function ProgramDetailScreen() {
               value={title}
               onChange={(event) => setTitle(event.target.value)}
               disabled={!isEdit}
+              data-testid="classes-program-title-input"
             />
           </div>
           <div className="space-y-2">
@@ -237,6 +283,7 @@ export default function ProgramDetailScreen() {
               onChange={(event) => setLevelTag(event.target.value)}
               placeholder="A1.1, A1.2, B1..."
               disabled={!isEdit}
+              data-testid="classes-program-level-tag-input"
             />
           </div>
           <div className="space-y-2">
@@ -247,6 +294,7 @@ export default function ProgramDetailScreen() {
               value={expectedSessionsCount}
               onChange={(event) => setExpectedSessionsCount(event.target.value)}
               disabled={!isEdit}
+              data-testid="classes-program-expected-sessions-input"
             />
           </div>
           <div className="space-y-2">
@@ -255,6 +303,7 @@ export default function ProgramDetailScreen() {
               value={defaultTimezone}
               onChange={(event) => setDefaultTimezone(event.target.value)}
               disabled={!isEdit}
+              data-testid="classes-program-timezone-input"
             />
           </div>
           <div className="space-y-2 md:col-span-2">
@@ -263,6 +312,7 @@ export default function ProgramDetailScreen() {
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               disabled={!isEdit}
+              data-testid="classes-program-description-input"
             />
           </div>
         </CardContent>
@@ -275,6 +325,7 @@ export default function ProgramDetailScreen() {
             {isEdit ? (
               <Button
                 variant="outline"
+                data-testid="classes-program-add-session-template-button"
                 onClick={() =>
                   setSessionTemplates((current) => [
                     ...current,
@@ -296,7 +347,11 @@ export default function ProgramDetailScreen() {
               <div className="text-sm text-muted-foreground">No session templates configured.</div>
             ) : (
               sessionTemplates.map((item, index) => (
-                <div key={`${item.index}-${index}`} className="grid gap-3 md:grid-cols-12">
+                <div
+                  key={`${item.index}-${index}`}
+                  className="grid gap-3 md:grid-cols-12"
+                  data-testid={`classes-program-session-template-row-${index}`}
+                >
                   <Input
                     className="md:col-span-1"
                     value={String(item.index)}
@@ -309,6 +364,7 @@ export default function ProgramDetailScreen() {
                       )
                     }
                     disabled={!isEdit}
+                    data-testid={`classes-program-session-template-index-${index}`}
                   />
                   <Input
                     className="md:col-span-5"
@@ -322,6 +378,7 @@ export default function ProgramDetailScreen() {
                       )
                     }
                     disabled={!isEdit}
+                    data-testid={`classes-program-session-template-title-${index}`}
                   />
                   <Input
                     className="md:col-span-2"
@@ -338,6 +395,7 @@ export default function ProgramDetailScreen() {
                       )
                     }
                     disabled={!isEdit}
+                    data-testid={`classes-program-session-template-duration-${index}`}
                   />
                   <Select
                     value={item.type}
@@ -350,7 +408,10 @@ export default function ProgramDetailScreen() {
                     }
                     disabled={!isEdit}
                   >
-                    <SelectTrigger className="md:col-span-3">
+                    <SelectTrigger
+                      className="md:col-span-3"
+                      data-testid={`classes-program-session-template-type-${index}`}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -365,6 +426,7 @@ export default function ProgramDetailScreen() {
                     <Button
                       className="md:col-span-1"
                       variant="ghost"
+                      data-testid={`classes-program-session-template-remove-${index}`}
                       onClick={() =>
                         setSessionTemplates((current) =>
                           current.filter((_, rowIndex) => rowIndex !== index)
@@ -388,6 +450,7 @@ export default function ProgramDetailScreen() {
             {isEdit ? (
               <Button
                 variant="outline"
+                data-testid="classes-program-add-milestone-template-button"
                 onClick={() =>
                   setMilestoneTemplates((current) => [
                     ...current,
@@ -411,7 +474,11 @@ export default function ProgramDetailScreen() {
               </div>
             ) : (
               milestoneTemplates.map((item, index) => (
-                <div key={`${item.index}-${index}`} className="grid gap-3 md:grid-cols-12">
+                <div
+                  key={`${item.index}-${index}`}
+                  className="grid gap-3 md:grid-cols-12"
+                  data-testid={`classes-program-milestone-template-row-${index}`}
+                >
                   <Input
                     className="md:col-span-1"
                     value={String(item.index)}
@@ -424,6 +491,7 @@ export default function ProgramDetailScreen() {
                       )
                     }
                     disabled={!isEdit}
+                    data-testid={`classes-program-milestone-template-index-${index}`}
                   />
                   <Input
                     className="md:col-span-6"
@@ -437,6 +505,7 @@ export default function ProgramDetailScreen() {
                       )
                     }
                     disabled={!isEdit}
+                    data-testid={`classes-program-milestone-template-title-${index}`}
                   />
                   <Select
                     value={item.type}
@@ -449,7 +518,10 @@ export default function ProgramDetailScreen() {
                     }
                     disabled={!isEdit}
                   >
-                    <SelectTrigger className="md:col-span-3">
+                    <SelectTrigger
+                      className="md:col-span-3"
+                      data-testid={`classes-program-milestone-template-type-${index}`}
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -464,6 +536,7 @@ export default function ProgramDetailScreen() {
                     className="md:col-span-1"
                     variant={item.required ? "accent-outline" : "outline"}
                     disabled={!isEdit}
+                    data-testid={`classes-program-milestone-template-required-${index}`}
                     onClick={() =>
                       setMilestoneTemplates((current) =>
                         current.map((row, rowIndex) =>
@@ -478,6 +551,7 @@ export default function ProgramDetailScreen() {
                     <Button
                       className="md:col-span-1"
                       variant="ghost"
+                      data-testid={`classes-program-milestone-template-remove-${index}`}
                       onClick={() =>
                         setMilestoneTemplates((current) =>
                           current.filter((_, rowIndex) => rowIndex !== index)
@@ -495,7 +569,7 @@ export default function ProgramDetailScreen() {
       </Card>
 
       {!isNew ? (
-        <Card>
+        <Card data-testid="classes-program-create-cohort-panel">
           <CardContent className="space-y-4 p-6">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold">Create cohort from this combo</h2>
@@ -504,13 +578,18 @@ export default function ProgramDetailScreen() {
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>Cohort name</Label>
-                <Input value={cohortName} onChange={(event) => setCohortName(event.target.value)} />
+                <Input
+                  value={cohortName}
+                  onChange={(event) => setCohortName(event.target.value)}
+                  data-testid="classes-program-create-cohort-name-input"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Subject</Label>
                 <Input
                   value={cohortSubject}
                   onChange={(event) => setCohortSubject(event.target.value)}
+                  data-testid="classes-program-create-cohort-subject-input"
                 />
               </div>
               <div className="space-y-2">
@@ -518,6 +597,7 @@ export default function ProgramDetailScreen() {
                 <Input
                   value={cohortLevel}
                   onChange={(event) => setCohortLevel(event.target.value)}
+                  data-testid="classes-program-create-cohort-level-input"
                 />
               </div>
               <div className="space-y-2">
@@ -525,6 +605,7 @@ export default function ProgramDetailScreen() {
                 <Input
                   value={defaultTimezone}
                   onChange={(event) => setDefaultTimezone(event.target.value)}
+                  data-testid="classes-program-create-cohort-timezone-input"
                 />
               </div>
               <div className="space-y-2">
@@ -535,14 +616,24 @@ export default function ProgramDetailScreen() {
                   min="0"
                   value={defaultPrice}
                   onChange={(event) => setDefaultPrice(event.target.value)}
+                  data-testid="classes-program-create-cohort-price-input"
                 />
               </div>
               <div className="space-y-2">
                 <Label>Currency</Label>
-                <Input value={currency} onChange={(event) => setCurrency(event.target.value)} />
+                <Input
+                  value={currency}
+                  onChange={(event) => setCurrency(event.target.value)}
+                  data-testid="classes-program-create-cohort-currency-input"
+                />
               </div>
             </div>
-            <Button variant="accent" disabled={pending} onClick={() => void createCohort()}>
+            <Button
+              variant="accent"
+              data-testid="classes-program-create-cohort-button"
+              disabled={pending}
+              onClick={() => void createCohort()}
+            >
               Create cohort
             </Button>
           </CardContent>

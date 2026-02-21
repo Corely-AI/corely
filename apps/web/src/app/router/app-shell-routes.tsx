@@ -169,6 +169,10 @@ export const appShellRoutes = (
       <Route path="/classes/cohorts/new" element={<ClassGroupEditorPage />} />
       <Route path="/classes/cohorts/:id" element={<CohortDetailScreen />} />
       <Route path="/classes/cohorts/:id/edit" element={<ClassGroupEditorPage />} />
+      <Route path="/programs" element={<ProgramsListScreen />} />
+      <Route path="/programs/new" element={<ProgramDetailScreen />} />
+      <Route path="/programs/:id" element={<ProgramDetailScreen />} />
+      <Route path="/programs/:id/edit" element={<ProgramDetailScreen />} />
       <Route path="/classes/programs" element={<ProgramsListScreen />} />
       <Route path="/classes/programs/new" element={<ProgramDetailScreen />} />
       <Route path="/classes/programs/:id" element={<ProgramDetailScreen />} />

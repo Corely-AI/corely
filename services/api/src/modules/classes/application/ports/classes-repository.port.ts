@@ -138,6 +138,7 @@ export interface ClassesRepositoryPort {
     workspaceId: string,
     programId: string
   ): Promise<ClassProgramEntity | null>;
+  deleteProgram(tenantId: string, workspaceId: string, programId: string): Promise<void>;
   listPrograms(
     tenantId: string,
     workspaceId: string,

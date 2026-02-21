@@ -6,12 +6,18 @@ import type { IdGeneratorPort } from "../ports/id-generator.port";
 import type { ClockPort } from "../ports/clock.port";
 import type { AuditPort } from "../ports/audit.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanCohortManage } from "../../policies/assert-can-classes";
+import { assertCanProgramsManage } from "../../policies/assert-can-classes";
 import type {
   ClassProgramEntity,
   ClassProgramMilestoneTemplateEntity,
   ClassProgramSessionTemplateEntity,
 } from "../../domain/entities/classes.entities";
+import {
+  assertValidExpectedSessionsCount,
+  assertValidMilestoneTemplates,
+  assertValidProgramTitle,
+  assertValidSessionTemplates,
+} from "../../domain/rules/program.rules";
 
 type UpdateProgramParams = UpdateProgramInput & { programId: string };
 
@@ -32,8 +38,18 @@ export class UpdateProgramUseCase {
     sessionTemplates: ClassProgramSessionTemplateEntity[];
     milestoneTemplates: ClassProgramMilestoneTemplateEntity[];
   }> {
-    assertCanCohortManage(ctx);
+    assertCanProgramsManage(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
+    if (input.title !== undefined) {
+      assertValidProgramTitle(input.title);
+    }
+    assertValidExpectedSessionsCount(input.expectedSessionsCount);
+    if (input.sessionTemplates) {
+      assertValidSessionTemplates(input.sessionTemplates);
+    }
+    if (input.milestoneTemplates) {
+      assertValidMilestoneTemplates(input.milestoneTemplates);
+    }
 
     const existing = await this.repo.findProgramById(tenantId, workspaceId, input.programId);
     if (!existing) {

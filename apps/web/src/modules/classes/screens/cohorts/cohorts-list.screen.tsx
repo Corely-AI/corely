@@ -98,7 +98,11 @@ export default function CohortsListScreen() {
         title="Cohorts"
         subtitle="Manage active and upcoming language cohorts"
         primaryAction={
-          <Button variant="accent" onClick={() => navigate("/classes/cohorts/new")}>
+          <Button
+            variant="accent"
+            data-testid="classes-cohorts-new-button"
+            onClick={() => navigate("/classes/cohorts/new")}
+          >
             <Plus className="h-4 w-4" />
             New cohort
           </Button>
@@ -137,81 +141,87 @@ export default function CohortsListScreen() {
           ) : undefined
         }
       >
-        {isLoading ? (
-          <div className="rounded-md border border-border p-6 text-sm text-muted-foreground">
-            Loading cohorts...
-          </div>
-        ) : items.length === 0 ? (
-          <EmptyState
-            title="No cohorts found"
-            description="Create a cohort or adjust filters."
-            action={
-              <Button asChild variant="accent">
-                <Link to="/classes/cohorts/new">Create cohort</Link>
-              </Button>
-            }
-          />
-        ) : (
-          <div className="overflow-x-auto rounded-md border border-border">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/40">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Lifecycle
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Program
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Start / End
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Delivery
-                  </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                    Capacity
-                  </th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {items.map((cohort) => (
-                  <tr key={cohort.id} className="border-b border-border last:border-0">
-                    <td className="px-4 py-3 text-sm font-medium">{cohort.name}</td>
-                    <td className="px-4 py-3 text-sm">
-                      <Badge variant="outline">{cohort.lifecycle}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {cohort.programId || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {cohort.startAt ? formatDate(cohort.startAt, "en-US") : "—"}
-                      {" / "}
-                      {cohort.endAt ? formatDate(cohort.endAt, "en-US") : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {cohort.deliveryMode}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {cohort.capacity ?? "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <CrudRowActions
-                        primaryAction={{ label: "Open", href: `/classes/cohorts/${cohort.id}` }}
-                        secondaryActions={[
-                          { label: "Edit", href: `/classes/cohorts/${cohort.id}/edit` },
-                        ]}
-                      />
-                    </td>
+        <div data-testid="classes-cohorts-list">
+          {isLoading ? (
+            <div className="rounded-md border border-border p-6 text-sm text-muted-foreground">
+              Loading cohorts...
+            </div>
+          ) : items.length === 0 ? (
+            <EmptyState
+              title="No cohorts found"
+              description="Create a cohort or adjust filters."
+              action={
+                <Button asChild variant="accent">
+                  <Link to="/classes/cohorts/new">Create cohort</Link>
+                </Button>
+              }
+            />
+          ) : (
+            <div className="overflow-x-auto rounded-md border border-border">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40">
+                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                      Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                      Lifecycle
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                      Program
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                      Start / End
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                      Delivery
+                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                      Capacity
+                    </th>
+                    <th />
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {items.map((cohort) => (
+                    <tr
+                      key={cohort.id}
+                      className="border-b border-border last:border-0"
+                      data-testid={`classes-cohort-row-${cohort.id}`}
+                    >
+                      <td className="px-4 py-3 text-sm font-medium">{cohort.name}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <Badge variant="outline">{cohort.lifecycle}</Badge>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {cohort.programId || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {cohort.startAt ? formatDate(cohort.startAt, "en-US") : "—"}
+                        {" / "}
+                        {cohort.endAt ? formatDate(cohort.endAt, "en-US") : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {cohort.deliveryMode}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">
+                        {cohort.capacity ?? "—"}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <CrudRowActions
+                          primaryAction={{ label: "Open", href: `/classes/cohorts/${cohort.id}` }}
+                          secondaryActions={[
+                            { label: "Edit", href: `/classes/cohorts/${cohort.id}/edit` },
+                          ]}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </CrudListPageLayout>
 
       <FilterPanel

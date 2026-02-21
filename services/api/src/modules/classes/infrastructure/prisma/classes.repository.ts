@@ -67,6 +67,7 @@ import {
 } from "./classes.repository.billing";
 import {
   createProgram,
+  deleteProgram,
   findProgramById,
   listProgramMilestoneTemplates,
   listProgramSessionTemplates,
@@ -180,6 +181,10 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     programId: string
   ): Promise<ClassProgramEntity | null> {
     return findProgramById(this.prisma, tenantId, workspaceId, programId);
+  }
+
+  async deleteProgram(tenantId: string, workspaceId: string, programId: string): Promise<void> {
+    return deleteProgram(this.prisma, tenantId, workspaceId, programId);
   }
 
   async listPrograms(

@@ -62,6 +62,9 @@ import { CreateProgramUseCase } from "./application/use-cases/create-program.use
 import { UpdateProgramUseCase } from "./application/use-cases/update-program.usecase";
 import { ListProgramsUseCase } from "./application/use-cases/list-programs.usecase";
 import { GetProgramUseCase } from "./application/use-cases/get-program.usecase";
+import { DeleteProgramUseCase } from "./application/use-cases/delete-program.usecase";
+import { ReplaceProgramSessionTemplatesUseCase } from "./application/use-cases/replace-program-session-templates.usecase";
+import { ReplaceProgramMilestoneTemplatesUseCase } from "./application/use-cases/replace-program-milestone-templates.usecase";
 import { CreateCohortFromProgramUseCase } from "./application/use-cases/create-cohort-from-program.usecase";
 import { UpdateCohortLifecycleUseCase } from "./application/use-cases/update-cohort-lifecycle.usecase";
 import { ListCohortTeamUseCase } from "./application/use-cases/list-cohort-team.usecase";
@@ -395,6 +398,31 @@ import { ReorderResourcesUseCase } from "./application/use-cases/reorder-resourc
       provide: GetProgramUseCase,
       useFactory: (repo: ClassesRepositoryPort) => new GetProgramUseCase(repo),
       inject: [CLASSES_REPOSITORY_PORT],
+    },
+    {
+      provide: DeleteProgramUseCase,
+      useFactory: (repo: ClassesRepositoryPort, audit) => new DeleteProgramUseCase(repo, audit),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT],
+    },
+    {
+      provide: ReplaceProgramSessionTemplatesUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new ReplaceProgramSessionTemplatesUseCase(repo, audit, idGenerator, clock),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: ReplaceProgramMilestoneTemplatesUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new ReplaceProgramMilestoneTemplatesUseCase(repo, audit, idGenerator, clock),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
     },
     {
       provide: CreateCohortFromProgramUseCase,

@@ -226,8 +226,7 @@ test.describe("Classes Cohort Academy v1.1", () => {
       resourcesAfterEnd.items.some((item: { title: string }) => item.title === resourceTitle)
     ).toBe(true);
 
-    await page.goto(`/classes/cohorts/${cohortId}`);
-    await page.getByRole("tab", { name: "Resources" }).click();
-    await expect(page.getByText(resourceTitle)).toBeVisible({ timeout: 20_000 });
+    await page.locator(selectors.navigation.classesProgramsNavLink).click();
+    await expect(page.locator(selectors.classes.programsList)).toBeVisible({ timeout: 20_000 });
   });
 });

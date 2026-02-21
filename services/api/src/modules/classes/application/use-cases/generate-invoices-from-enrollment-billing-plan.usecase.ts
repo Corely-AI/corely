@@ -57,7 +57,22 @@ export class GenerateInvoicesFromEnrollmentBillingPlanUseCase {
 
     const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
     if (cached?.body) {
-      return cached.body as { invoiceIds: string[]; links: ClassBillingInvoiceLinkEntity[] };
+      const body = cached.body as {
+        invoiceIds?: string[];
+        links?: Array<ClassBillingInvoiceLinkEntity & { createdAt?: Date | string }>;
+      };
+      return {
+        invoiceIds: Array.isArray(body.invoiceIds) ? body.invoiceIds : [],
+        links: Array.isArray(body.links)
+          ? body.links.map((link) => ({
+              ...link,
+              createdAt:
+                link.createdAt instanceof Date
+                  ? link.createdAt
+                  : new Date(link.createdAt ?? this.clock.now().toISOString()),
+            }))
+          : [],
+      };
     }
 
     const enrollment = await this.repo.findEnrollmentById(

@@ -29,6 +29,8 @@ import {
   ListProgramsInputSchema,
   ProgramDetailSchema,
   ReorderClassGroupResourcesInputSchema,
+  UpsertProgramMilestoneTemplatesBodySchema,
+  UpsertProgramSessionTemplatesBodySchema,
   UpdateClassGroupResourceInputSchema,
   UpdateCohortLifecycleInputSchema,
   UpdateMilestoneInputSchema,
@@ -44,6 +46,9 @@ import { CreateProgramUseCase } from "../application/use-cases/create-program.us
 import { UpdateProgramUseCase } from "../application/use-cases/update-program.usecase";
 import { ListProgramsUseCase } from "../application/use-cases/list-programs.usecase";
 import { GetProgramUseCase } from "../application/use-cases/get-program.usecase";
+import { DeleteProgramUseCase } from "../application/use-cases/delete-program.usecase";
+import { ReplaceProgramSessionTemplatesUseCase } from "../application/use-cases/replace-program-session-templates.usecase";
+import { ReplaceProgramMilestoneTemplatesUseCase } from "../application/use-cases/replace-program-milestone-templates.usecase";
 import { CreateCohortFromProgramUseCase } from "../application/use-cases/create-cohort-from-program.usecase";
 import { UpdateCohortLifecycleUseCase } from "../application/use-cases/update-cohort-lifecycle.usecase";
 import { ListCohortTeamUseCase } from "../application/use-cases/list-cohort-team.usecase";
@@ -86,6 +91,9 @@ export class ClassesAcademyController {
     private readonly updateProgramUseCase: UpdateProgramUseCase,
     private readonly listProgramsUseCase: ListProgramsUseCase,
     private readonly getProgramUseCase: GetProgramUseCase,
+    private readonly deleteProgramUseCase: DeleteProgramUseCase,
+    private readonly replaceProgramSessionTemplatesUseCase: ReplaceProgramSessionTemplatesUseCase,
+    private readonly replaceProgramMilestoneTemplatesUseCase: ReplaceProgramMilestoneTemplatesUseCase,
     private readonly createCohortFromProgramUseCase: CreateCohortFromProgramUseCase,
     private readonly updateCohortLifecycleUseCase: UpdateCohortLifecycleUseCase,
     private readonly listCohortTeamUseCase: ListCohortTeamUseCase,
@@ -109,7 +117,7 @@ export class ClassesAcademyController {
   ) {}
 
   @Get("programs")
-  @RequirePermission("classes.cohort.manage")
+  @RequirePermission("classes.programs.view")
   async listPrograms(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const listQuery = parseListQuery(query, { defaultPageSize: 20 });
     const input = ListProgramsInputSchema.parse({
@@ -129,7 +137,7 @@ export class ClassesAcademyController {
   }
 
   @Post("programs")
-  @RequirePermission("classes.cohort.manage")
+  @RequirePermission("classes.programs.manage")
   async createProgram(@Body() body: unknown, @Req() req: Request) {
     const input = CreateProgramInputSchema.parse(body);
     const ctx = buildUseCaseContext(req);
@@ -146,7 +154,7 @@ export class ClassesAcademyController {
   }
 
   @Get("programs/:id")
-  @RequirePermission("classes.cohort.manage")
+  @RequirePermission("classes.programs.view")
   async getProgram(@Param("id") id: string, @Req() req: Request) {
     const ctx = buildUseCaseContext(req);
     const result = await this.getProgramUseCase.execute({ programId: id }, ctx);
@@ -159,7 +167,7 @@ export class ClassesAcademyController {
   }
 
   @Patch("programs/:id")
-  @RequirePermission("classes.cohort.manage")
+  @RequirePermission("classes.programs.manage")
   async updateProgram(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const input = UpdateProgramInputSchema.parse(body);
     const ctx = buildUseCaseContext(req);
@@ -170,6 +178,52 @@ export class ClassesAcademyController {
       sessionTemplates: result.sessionTemplates.map(toProgramSessionTemplateDto),
       milestoneTemplates: result.milestoneTemplates.map(toProgramMilestoneTemplateDto),
     });
+  }
+
+  @Put("programs/:id/session-templates")
+  @RequirePermission("classes.programs.manage")
+  async replaceProgramSessionTemplates(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = UpsertProgramSessionTemplatesBodySchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    const sessionTemplates = await this.replaceProgramSessionTemplatesUseCase.execute(
+      { programId: id, items: input.items },
+      ctx
+    );
+
+    return {
+      items: sessionTemplates.map(toProgramSessionTemplateDto),
+    };
+  }
+
+  @Put("programs/:id/milestone-templates")
+  @RequirePermission("classes.programs.manage")
+  async replaceProgramMilestoneTemplates(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const input = UpsertProgramMilestoneTemplatesBodySchema.parse(body);
+    const ctx = buildUseCaseContext(req);
+    const milestoneTemplates = await this.replaceProgramMilestoneTemplatesUseCase.execute(
+      { programId: id, items: input.items },
+      ctx
+    );
+
+    return {
+      items: milestoneTemplates.map(toProgramMilestoneTemplateDto),
+    };
+  }
+
+  @Delete("programs/:id")
+  @RequirePermission("classes.programs.manage")
+  async deleteProgram(@Param("id") id: string, @Req() req: Request) {
+    const ctx = buildUseCaseContext(req);
+    await this.deleteProgramUseCase.execute({ programId: id }, ctx);
+    return { ok: true };
   }
 
   @Post("programs/:id/create-cohort")
