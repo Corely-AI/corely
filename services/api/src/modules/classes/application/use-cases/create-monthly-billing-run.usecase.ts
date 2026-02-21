@@ -237,10 +237,12 @@ export class CreateMonthlyBillingRunUseCase {
           tenantId,
           workspaceId,
           billingRunId: run.id,
+          enrollmentId: null,
           payerClientId: target.payerClientId,
           classGroupId: target.line.classGroupId,
           invoiceId,
           idempotencyKey: invoiceKey,
+          purpose: "MONTHLY_RUN",
           createdAt: this.clock.now(),
         });
       }
@@ -415,6 +417,10 @@ export class CreateMonthlyBillingRunUseCase {
           topic: null,
           notes: null,
           status: "PLANNED",
+          type: "LECTURE",
+          meetingProvider: null,
+          meetingJoinUrl: null,
+          meetingExternalId: null,
           createdAt: now,
           updatedAt: now,
         });

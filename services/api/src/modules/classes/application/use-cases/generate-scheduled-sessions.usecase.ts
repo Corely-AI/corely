@@ -106,6 +106,10 @@ export class GenerateScheduledSessionsUseCase {
         topic: null,
         notes: null,
         status: "PLANNED",
+        type: "LECTURE",
+        meetingProvider: null,
+        meetingJoinUrl: null,
+        meetingExternalId: null,
         createdAt: now,
         updatedAt: now,
       };

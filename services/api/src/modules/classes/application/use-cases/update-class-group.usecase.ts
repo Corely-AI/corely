@@ -5,7 +5,7 @@ import type { ClassesRepositoryPort } from "../ports/classes-repository.port";
 import type { AuditPort } from "../ports/audit.port";
 import type { ClockPort } from "../ports/clock.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanClasses } from "../../policies/assert-can-classes";
+import { assertCanClasses, assertCanCohortManage } from "../../policies/assert-can-classes";
 import type { ClassGroupEntity } from "../../domain/entities/classes.entities";
 
 type UpdateClassGroupParams = UpdateClassGroupInput & { classGroupId: string };
@@ -20,6 +20,7 @@ export class UpdateClassGroupUseCase {
 
   async execute(input: UpdateClassGroupParams, ctx: UseCaseContext): Promise<ClassGroupEntity> {
     assertCanClasses(ctx, "classes.write");
+    assertCanCohortManage(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     const existing = await this.repo.findClassGroupById(tenantId, workspaceId, input.classGroupId);
@@ -40,6 +41,17 @@ export class UpdateClassGroupUseCase {
       currency: input.currency ?? undefined,
       schedulePattern,
       status: input.status ?? undefined,
+      kind: input.kind ?? undefined,
+      lifecycle: input.lifecycle ?? undefined,
+      startAt: input.startAt ? new Date(input.startAt) : input.startAt === null ? null : undefined,
+      endAt: input.endAt ? new Date(input.endAt) : input.endAt === null ? null : undefined,
+      timezone: input.timezone ?? undefined,
+      capacity: input.capacity ?? undefined,
+      waitlistEnabled: input.waitlistEnabled ?? undefined,
+      deliveryMode: input.deliveryMode ?? undefined,
+      communityUrl:
+        input.communityUrl === null ? null : input.communityUrl ? input.communityUrl : undefined,
+      programId: input.programId ?? undefined,
       updatedAt: this.clock.now(),
     });
 

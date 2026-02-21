@@ -110,6 +110,10 @@ export class ClassesController {
       status: typeof query.status === "string" ? query.status : undefined,
       subject: typeof query.subject === "string" ? query.subject : undefined,
       level: typeof query.level === "string" ? query.level : undefined,
+      kind: typeof query.kind === "string" ? query.kind : undefined,
+      lifecycle: typeof query.lifecycle === "string" ? query.lifecycle : undefined,
+      startAtFrom: typeof query.startAtFrom === "string" ? query.startAtFrom : undefined,
+      startAtTo: typeof query.startAtTo === "string" ? query.startAtTo : undefined,
     });
     const ctx = buildUseCaseContext(req);
     const result = await this.listClassGroupsUseCase.execute(
@@ -163,6 +167,7 @@ export class ClassesController {
       ...listQuery,
       classGroupId: typeof query.classGroupId === "string" ? query.classGroupId : undefined,
       status: typeof query.status === "string" ? query.status : undefined,
+      type: typeof query.type === "string" ? query.type : undefined,
       dateFrom: typeof query.dateFrom === "string" ? query.dateFrom : undefined,
       dateTo: typeof query.dateTo === "string" ? query.dateTo : undefined,
     });
@@ -245,6 +250,9 @@ export class ClassesController {
       studentClientId:
         typeof query.studentClientId === "string" ? query.studentClientId : undefined,
       payerClientId: typeof query.payerClientId === "string" ? query.payerClientId : undefined,
+      payerPartyId: typeof query.payerPartyId === "string" ? query.payerPartyId : undefined,
+      status: typeof query.status === "string" ? query.status : undefined,
+      seatType: typeof query.seatType === "string" ? query.seatType : undefined,
       isActive:
         typeof query.isActive === "string"
           ? query.isActive === "true" || query.isActive === "1"

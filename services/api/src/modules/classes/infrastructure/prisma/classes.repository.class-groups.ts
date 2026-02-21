@@ -31,6 +31,16 @@ export const createClassGroup = async (
       currency: group.currency,
       schedulePattern: toJsonValue(group.schedulePattern),
       status: group.status,
+      kind: group.kind,
+      lifecycle: group.lifecycle,
+      startAt: group.startAt ?? undefined,
+      endAt: group.endAt ?? undefined,
+      timezone: group.timezone,
+      capacity: group.capacity ?? undefined,
+      waitlistEnabled: group.waitlistEnabled,
+      deliveryMode: group.deliveryMode,
+      communityUrl: group.communityUrl ?? undefined,
+      programId: group.programId ?? undefined,
       createdAt: group.createdAt,
       updatedAt: group.updatedAt,
     },
@@ -54,6 +64,16 @@ export const updateClassGroup = async (
       currency: updates.currency,
       schedulePattern: toJsonValue(updates.schedulePattern),
       status: updates.status,
+      kind: updates.kind,
+      lifecycle: updates.lifecycle,
+      startAt: updates.startAt ?? undefined,
+      endAt: updates.endAt ?? undefined,
+      timezone: updates.timezone,
+      capacity: updates.capacity ?? undefined,
+      waitlistEnabled: updates.waitlistEnabled,
+      deliveryMode: updates.deliveryMode,
+      communityUrl: updates.communityUrl ?? undefined,
+      programId: updates.programId ?? undefined,
       updatedAt: updates.updatedAt,
     },
   });
@@ -90,6 +110,18 @@ export const listClassGroups = async (
   if (filters.level) {
     where.level = filters.level;
   }
+  if (filters.kind) {
+    where.kind = filters.kind;
+  }
+  if (filters.lifecycle) {
+    where.lifecycle = filters.lifecycle;
+  }
+  if (filters.startAtFrom || filters.startAtTo) {
+    where.startAt = {
+      ...(filters.startAtFrom ? { gte: filters.startAtFrom } : {}),
+      ...(filters.startAtTo ? { lte: filters.startAtTo } : {}),
+    };
+  }
   if (filters.q) {
     where.OR = [
       { name: { contains: filters.q, mode: "insensitive" } },
@@ -103,7 +135,7 @@ export const listClassGroups = async (
       where,
       orderBy: parseSort(
         filters.sort,
-        ["createdAt", "updatedAt", "name", "subject", "level"],
+        ["createdAt", "updatedAt", "name", "subject", "level", "lifecycle", "startAt"],
         "updatedAt"
       ),
       skip: (pagination.page - 1) * pagination.pageSize,

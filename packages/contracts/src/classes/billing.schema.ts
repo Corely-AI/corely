@@ -2,6 +2,7 @@ import { z } from "zod";
 import { utcInstantSchema } from "../shared/local-date.schema";
 import { InvoiceStatusSchema } from "../invoices/invoice.types";
 import {
+  BillingInvoicePurposeSchema,
   ClassBillingBasisSchema,
   ClassBillingMonthStrategySchema,
   ClassBillingRunStatusSchema,
@@ -30,7 +31,9 @@ export type BillingPreviewItem = z.infer<typeof BillingPreviewItemSchema>;
 export const BillingPreviewInvoiceLinkSchema = z.object({
   payerClientId: z.string(),
   classGroupId: z.string().optional().nullable(),
+  enrollmentId: z.string().optional().nullable(),
   invoiceId: z.string(),
+  purpose: BillingInvoicePurposeSchema.optional(),
   invoiceStatus: InvoiceStatusSchema.optional().nullable(),
 });
 export type BillingPreviewInvoiceLink = z.infer<typeof BillingPreviewInvoiceLinkSchema>;

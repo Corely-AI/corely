@@ -3,9 +3,17 @@ import { PrismaService } from "@corely/data";
 import type {
   ClassAttendanceEntity,
   ClassBillingInvoiceLinkEntity,
+  ClassEnrollmentBillingPlanEntity,
   ClassEnrollmentEntity,
   ClassGroupEntity,
+  ClassGroupInstructorEntity,
+  ClassMilestoneCompletionEntity,
+  ClassMilestoneEntity,
   ClassMonthlyBillingRunEntity,
+  ClassProgramEntity,
+  ClassProgramMilestoneTemplateEntity,
+  ClassProgramSessionTemplateEntity,
+  ClassGroupResourceEntity,
   ClassSessionEntity,
 } from "../../domain/entities/classes.entities";
 import type {
@@ -14,6 +22,7 @@ import type {
   ClassesRepositoryPort,
   EnrollmentListFilters,
   ListPagination,
+  ProgramListFilters,
   SessionListFilters,
 } from "../../application/ports/classes-repository.port";
 import type { AttendanceBillingRow } from "../../domain/rules/billing.rules";
@@ -41,20 +50,59 @@ import { bulkUpsertAttendance, listAttendanceBySession } from "./classes.reposit
 import {
   createBillingInvoiceLink,
   createBillingRun,
+  deleteBillingInvoiceLinks,
   findBillingInvoiceLinkByIdempotency,
   findBillingRunById,
   findBillingRunByMonth,
+  getBillingInvoiceSendProgress,
   getInvoiceRecipientEmailsByIds,
   getInvoiceStatusesByIds,
-  getBillingInvoiceSendProgress,
-  listBillingRunsByMonths,
   isMonthLocked,
   listBillingInvoiceLinks,
+  listBillingInvoiceLinksByEnrollment,
+  listBillingRunsByMonths,
   listBillableAttendanceForMonth,
   listBillableScheduledForMonth,
   updateBillingRun,
-  deleteBillingInvoiceLinks,
 } from "./classes.repository.billing";
+import {
+  createProgram,
+  deleteProgram,
+  findProgramById,
+  listProgramMilestoneTemplates,
+  listProgramSessionTemplates,
+  listPrograms,
+  replaceProgramMilestoneTemplates,
+  replaceProgramSessionTemplates,
+  updateProgram,
+} from "./class-programs.repository";
+import {
+  listClassGroupInstructors,
+  replaceClassGroupInstructors,
+} from "./class-group-instructors.repository";
+import {
+  findEnrollmentBillingPlan,
+  upsertEnrollmentBillingPlan,
+} from "./class-enrollment-billing-plans.repository";
+import {
+  createMilestone,
+  deleteMilestone,
+  findMilestoneById,
+  listMilestonesByClassGroup,
+  updateMilestone,
+} from "./class-milestones.repository";
+import {
+  listMilestoneCompletionsByClassGroup,
+  upsertMilestoneCompletion,
+} from "./class-milestone-completions.repository";
+import {
+  createResource,
+  deleteResource,
+  findResourceById,
+  listResourcesByClassGroup,
+  reorderResources,
+  updateResource,
+} from "./class-group-resources.repository";
 
 @Injectable()
 export class PrismaClassesRepository implements ClassesRepositoryPort {
@@ -95,6 +143,91 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     workspaceId: string
   ): Promise<ClassGroupEntity[]> {
     return listClassGroupsWithSchedulePattern(this.prisma, tenantId, workspaceId);
+  }
+
+  async listClassGroupInstructors(
+    tenantId: string,
+    workspaceId: string,
+    classGroupId: string
+  ): Promise<ClassGroupInstructorEntity[]> {
+    return listClassGroupInstructors(this.prisma, tenantId, workspaceId, classGroupId);
+  }
+
+  async replaceClassGroupInstructors(
+    tenantId: string,
+    workspaceId: string,
+    classGroupId: string,
+    members: ClassGroupInstructorEntity[]
+  ): Promise<ClassGroupInstructorEntity[]> {
+    return replaceClassGroupInstructors(this.prisma, tenantId, workspaceId, classGroupId, members);
+  }
+
+  async createProgram(program: ClassProgramEntity): Promise<ClassProgramEntity> {
+    return createProgram(this.prisma, program);
+  }
+
+  async updateProgram(
+    tenantId: string,
+    workspaceId: string,
+    programId: string,
+    updates: Partial<ClassProgramEntity>
+  ): Promise<ClassProgramEntity> {
+    return updateProgram(this.prisma, tenantId, workspaceId, programId, updates);
+  }
+
+  async findProgramById(
+    tenantId: string,
+    workspaceId: string,
+    programId: string
+  ): Promise<ClassProgramEntity | null> {
+    return findProgramById(this.prisma, tenantId, workspaceId, programId);
+  }
+
+  async deleteProgram(tenantId: string, workspaceId: string, programId: string): Promise<void> {
+    return deleteProgram(this.prisma, tenantId, workspaceId, programId);
+  }
+
+  async listPrograms(
+    tenantId: string,
+    workspaceId: string,
+    filters: ProgramListFilters,
+    pagination: ListPagination
+  ): Promise<{ items: ClassProgramEntity[]; total: number }> {
+    return listPrograms(this.prisma, tenantId, workspaceId, filters, pagination);
+  }
+
+  async replaceProgramSessionTemplates(
+    tenantId: string,
+    workspaceId: string,
+    programId: string,
+    items: ClassProgramSessionTemplateEntity[]
+  ): Promise<ClassProgramSessionTemplateEntity[]> {
+    return replaceProgramSessionTemplates(this.prisma, tenantId, workspaceId, programId, items);
+  }
+
+  async replaceProgramMilestoneTemplates(
+    tenantId: string,
+    workspaceId: string,
+    programId: string,
+    items: ClassProgramMilestoneTemplateEntity[]
+  ): Promise<ClassProgramMilestoneTemplateEntity[]> {
+    return replaceProgramMilestoneTemplates(this.prisma, tenantId, workspaceId, programId, items);
+  }
+
+  async listProgramSessionTemplates(
+    tenantId: string,
+    workspaceId: string,
+    programId: string
+  ): Promise<ClassProgramSessionTemplateEntity[]> {
+    return listProgramSessionTemplates(this.prisma, tenantId, workspaceId, programId);
+  }
+
+  async listProgramMilestoneTemplates(
+    tenantId: string,
+    workspaceId: string,
+    programId: string
+  ): Promise<ClassProgramMilestoneTemplateEntity[]> {
+    return listProgramMilestoneTemplates(this.prisma, tenantId, workspaceId, programId);
   }
 
   async createSession(session: ClassSessionEntity): Promise<ClassSessionEntity> {
@@ -174,6 +307,23 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     return listEnrollments(this.prisma, tenantId, workspaceId, filters, pagination);
   }
 
+  async findEnrollmentBillingPlan(
+    tenantId: string,
+    workspaceId: string,
+    enrollmentId: string
+  ): Promise<ClassEnrollmentBillingPlanEntity | null> {
+    return findEnrollmentBillingPlan(this.prisma, tenantId, workspaceId, enrollmentId);
+  }
+
+  async upsertEnrollmentBillingPlan(
+    tenantId: string,
+    workspaceId: string,
+    enrollmentId: string,
+    data: ClassEnrollmentBillingPlanEntity
+  ): Promise<ClassEnrollmentBillingPlanEntity> {
+    return upsertEnrollmentBillingPlan(this.prisma, tenantId, workspaceId, enrollmentId, data);
+  }
+
   async listAttendanceBySession(
     tenantId: string,
     workspaceId: string,
@@ -189,6 +339,106 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     items: ClassAttendanceEntity[]
   ): Promise<ClassAttendanceEntity[]> {
     return bulkUpsertAttendance(this.prisma, tenantId, workspaceId, sessionId, items);
+  }
+
+  async listMilestonesByClassGroup(
+    tenantId: string,
+    workspaceId: string,
+    classGroupId: string
+  ): Promise<ClassMilestoneEntity[]> {
+    return listMilestonesByClassGroup(this.prisma, tenantId, workspaceId, classGroupId);
+  }
+
+  async createMilestone(milestone: ClassMilestoneEntity): Promise<ClassMilestoneEntity> {
+    return createMilestone(this.prisma, milestone);
+  }
+
+  async updateMilestone(
+    tenantId: string,
+    workspaceId: string,
+    milestoneId: string,
+    updates: Partial<ClassMilestoneEntity>
+  ): Promise<ClassMilestoneEntity> {
+    return updateMilestone(this.prisma, tenantId, workspaceId, milestoneId, updates);
+  }
+
+  async deleteMilestone(tenantId: string, workspaceId: string, milestoneId: string): Promise<void> {
+    return deleteMilestone(this.prisma, tenantId, workspaceId, milestoneId);
+  }
+
+  async findMilestoneById(
+    tenantId: string,
+    workspaceId: string,
+    milestoneId: string
+  ): Promise<ClassMilestoneEntity | null> {
+    return findMilestoneById(this.prisma, tenantId, workspaceId, milestoneId);
+  }
+
+  async upsertMilestoneCompletion(
+    tenantId: string,
+    workspaceId: string,
+    milestoneId: string,
+    enrollmentId: string,
+    data: ClassMilestoneCompletionEntity
+  ): Promise<ClassMilestoneCompletionEntity> {
+    return upsertMilestoneCompletion(
+      this.prisma,
+      tenantId,
+      workspaceId,
+      milestoneId,
+      enrollmentId,
+      data
+    );
+  }
+
+  async listMilestoneCompletionsByClassGroup(
+    tenantId: string,
+    workspaceId: string,
+    classGroupId: string
+  ): Promise<ClassMilestoneCompletionEntity[]> {
+    return listMilestoneCompletionsByClassGroup(this.prisma, tenantId, workspaceId, classGroupId);
+  }
+
+  async listResourcesByClassGroup(
+    tenantId: string,
+    workspaceId: string,
+    classGroupId: string
+  ): Promise<ClassGroupResourceEntity[]> {
+    return listResourcesByClassGroup(this.prisma, tenantId, workspaceId, classGroupId);
+  }
+
+  async createResource(resource: ClassGroupResourceEntity): Promise<ClassGroupResourceEntity> {
+    return createResource(this.prisma, resource);
+  }
+
+  async updateResource(
+    tenantId: string,
+    workspaceId: string,
+    resourceId: string,
+    updates: Partial<ClassGroupResourceEntity>
+  ): Promise<ClassGroupResourceEntity> {
+    return updateResource(this.prisma, tenantId, workspaceId, resourceId, updates);
+  }
+
+  async deleteResource(tenantId: string, workspaceId: string, resourceId: string): Promise<void> {
+    return deleteResource(this.prisma, tenantId, workspaceId, resourceId);
+  }
+
+  async reorderResources(
+    tenantId: string,
+    workspaceId: string,
+    classGroupId: string,
+    orderedIds: string[]
+  ): Promise<void> {
+    return reorderResources(this.prisma, tenantId, workspaceId, classGroupId, orderedIds);
+  }
+
+  async findResourceById(
+    tenantId: string,
+    workspaceId: string,
+    resourceId: string
+  ): Promise<ClassGroupResourceEntity | null> {
+    return findResourceById(this.prisma, tenantId, workspaceId, resourceId);
   }
 
   async listBillableAttendanceForMonth(
@@ -250,6 +500,14 @@ export class PrismaClassesRepository implements ClassesRepositoryPort {
     billingRunId: string
   ): Promise<ClassBillingInvoiceLinkEntity[]> {
     return listBillingInvoiceLinks(this.prisma, tenantId, workspaceId, billingRunId);
+  }
+
+  async listBillingInvoiceLinksByEnrollment(
+    tenantId: string,
+    workspaceId: string,
+    enrollmentId: string
+  ): Promise<ClassBillingInvoiceLinkEntity[]> {
+    return listBillingInvoiceLinksByEnrollment(this.prisma, tenantId, workspaceId, enrollmentId);
   }
 
   async getInvoiceStatusesByIds(workspaceId: string, invoiceIds: string[]) {

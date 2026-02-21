@@ -52,6 +52,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@corely/ui";
+import { PartyPicker } from "@/shared/components";
 import { cn } from "@/shared/lib/utils";
 import { crmApi } from "@/lib/crm-api";
 import { customersApi } from "@/lib/customers-api";
@@ -91,7 +92,6 @@ export default function NewActivityPage() {
   const [selectedFollowUps, setSelectedFollowUps] = useState<Record<string, boolean>>({});
   const [confirmCreateFollowUpsOpen, setConfirmCreateFollowUpsOpen] = useState(false);
   const [dealComboboxOpen, setDealComboboxOpen] = useState(false);
-  const [contactComboboxOpen, setContactComboboxOpen] = useState(false);
   const activityFormSchema = useMemo(
     () =>
       z.object({
@@ -238,11 +238,6 @@ export default function NewActivityPage() {
     queryFn: () => crmApi.listDeals({ pageSize: 100 }),
     staleTime: 60_000,
   });
-  const { data: selectableContactsData, isLoading: selectableContactsLoading } = useQuery({
-    queryKey: ["crm", "activity", "selectable-contacts"],
-    queryFn: () => customersApi.listCustomers({ pageSize: 100 }),
-    staleTime: 60_000,
-  });
 
   const linkSuggestionQuery = `${subjectValue} ${notesValue}`.trim();
   const { data: dealsSuggestionData } = useQuery({
@@ -301,23 +296,9 @@ export default function NewActivityPage() {
     [selectableDealsData?.deals]
   );
 
-  const selectableContactOptions = useMemo(
-    () =>
-      (selectableContactsData?.customers ?? []).map((customer) => ({
-        id: customer.id,
-        label: customer.displayName,
-        phone: customer.phone,
-      })),
-    [selectableContactsData?.customers]
-  );
-
   const selectedDealOption = useMemo(
     () => selectableDealOptions.find((deal) => deal.id === dealIdValue),
     [selectableDealOptions, dealIdValue]
-  );
-  const selectedContactOption = useMemo(
-    () => selectableContactOptions.find((contact) => contact.id === partyIdValue),
-    [selectableContactOptions, partyIdValue]
   );
 
   const { data: selectedDealContact } = useQuery({
@@ -894,74 +875,15 @@ export default function NewActivityPage() {
                             ref={field.ref}
                             data-testid="crm-new-activity-party-id"
                           />
-                          <Popover open={contactComboboxOpen} onOpenChange={setContactComboboxOpen}>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                type="button"
-                                role="combobox"
-                                aria-expanded={contactComboboxOpen}
-                                data-testid="crm-new-activity-party-picker"
-                                className="w-full justify-between"
-                              >
-                                <span className={cn(!field.value && "text-muted-foreground")}>
-                                  {selectedContactOption?.label ||
-                                    field.value ||
-                                    t("crm.activity.partyIdPlaceholder")}
-                                </span>
-                                <ChevronDown className="ml-2 h-4 w-4 opacity-70" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                              <Command>
-                                <CommandInput placeholder="Search contacts..." />
-                                <CommandList>
-                                  <CommandEmpty>
-                                    {selectableContactsLoading
-                                      ? "Loading contacts..."
-                                      : "No contacts found"}
-                                  </CommandEmpty>
-                                  <CommandGroup>
-                                    {field.value ? (
-                                      <CommandItem
-                                        value="clear-selected-contact"
-                                        onSelect={() => {
-                                          field.onChange("");
-                                          setContactComboboxOpen(false);
-                                        }}
-                                      >
-                                        Clear selection
-                                      </CommandItem>
-                                    ) : null}
-                                    {selectableContactOptions.map((contact) => (
-                                      <CommandItem
-                                        key={contact.id}
-                                        value={`${contact.label} ${contact.id}`}
-                                        data-testid={`crm-new-activity-party-option-${contact.id}`}
-                                        onSelect={() => {
-                                          field.onChange(contact.id);
-                                          setContactComboboxOpen(false);
-                                        }}
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            field.value === contact.id ? "opacity-100" : "opacity-0"
-                                          )}
-                                        />
-                                        <div className="flex min-w-0 flex-col">
-                                          <span className="truncate">{contact.label}</span>
-                                          <span className="text-xs text-muted-foreground truncate">
-                                            {contact.id}
-                                          </span>
-                                        </div>
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
+                          <PartyPicker
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            placeholder={t("crm.activity.partyIdPlaceholder")}
+                            searchPlaceholder="Search contacts..."
+                            emptyText="No contacts found"
+                            testId="crm-new-activity-party-picker"
+                            optionTestIdPrefix="crm-new-activity-party-option"
+                          />
                         </div>
                       </FormControl>
                       <FormDescription>{t("crm.activity.linkRequiredHint")}</FormDescription>

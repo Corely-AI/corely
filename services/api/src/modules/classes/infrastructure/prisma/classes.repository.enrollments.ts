@@ -25,10 +25,21 @@ export const upsertEnrollment = async (
     },
     update: {
       payerClientId: data.payerClientId,
+      payerPartyId: data.payerPartyId ?? undefined,
+      status: data.status,
+      seatType: data.seatType,
+      source: data.source,
       startDate: data.startDate ?? undefined,
       endDate: data.endDate ?? undefined,
       isActive: data.isActive,
       priceOverridePerSession: data.priceOverridePerSession ?? undefined,
+      priceCents: data.priceCents ?? undefined,
+      currency: data.currency ?? undefined,
+      discountCents: data.discountCents ?? undefined,
+      discountLabel: data.discountLabel ?? undefined,
+      placementLevel: data.placementLevel ?? undefined,
+      placementGoal: data.placementGoal ?? undefined,
+      placementNote: data.placementNote ?? undefined,
       updatedAt: data.updatedAt,
     },
     create: {
@@ -38,10 +49,21 @@ export const upsertEnrollment = async (
       classGroupId,
       studentClientId,
       payerClientId: data.payerClientId,
+      payerPartyId: data.payerPartyId ?? undefined,
+      status: data.status,
+      seatType: data.seatType,
+      source: data.source,
       startDate: data.startDate ?? undefined,
       endDate: data.endDate ?? undefined,
       isActive: data.isActive,
       priceOverridePerSession: data.priceOverridePerSession ?? undefined,
+      priceCents: data.priceCents ?? undefined,
+      currency: data.currency ?? undefined,
+      discountCents: data.discountCents ?? undefined,
+      discountLabel: data.discountLabel ?? undefined,
+      placementLevel: data.placementLevel ?? undefined,
+      placementGoal: data.placementGoal ?? undefined,
+      placementNote: data.placementNote ?? undefined,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     },
@@ -59,10 +81,21 @@ export const updateEnrollment = async (
     where: { id: enrollmentId, tenantId },
     data: {
       payerClientId: updates.payerClientId,
+      payerPartyId: updates.payerPartyId ?? undefined,
+      status: updates.status,
+      seatType: updates.seatType,
+      source: updates.source,
       startDate: updates.startDate ?? undefined,
       endDate: updates.endDate ?? undefined,
       isActive: updates.isActive,
       priceOverridePerSession: updates.priceOverridePerSession ?? undefined,
+      priceCents: updates.priceCents ?? undefined,
+      currency: updates.currency ?? undefined,
+      discountCents: updates.discountCents ?? undefined,
+      discountLabel: updates.discountLabel ?? undefined,
+      placementLevel: updates.placementLevel ?? undefined,
+      placementGoal: updates.placementGoal ?? undefined,
+      placementNote: updates.placementNote ?? undefined,
       updatedAt: updates.updatedAt,
     },
   });
@@ -98,6 +131,15 @@ export const listEnrollments = async (
   if (filters.payerClientId) {
     where.payerClientId = filters.payerClientId;
   }
+  if (filters.payerPartyId) {
+    where.payerPartyId = filters.payerPartyId;
+  }
+  if (filters.status) {
+    where.status = filters.status;
+  }
+  if (filters.seatType) {
+    where.seatType = filters.seatType;
+  }
   if (typeof filters.isActive === "boolean") {
     where.isActive = filters.isActive;
   }
@@ -105,13 +147,19 @@ export const listEnrollments = async (
     where.OR = [
       { studentClientId: { contains: filters.q, mode: "insensitive" } },
       { payerClientId: { contains: filters.q, mode: "insensitive" } },
+      { discountLabel: { contains: filters.q, mode: "insensitive" } },
+      { placementLevel: { contains: filters.q, mode: "insensitive" } },
     ];
   }
 
   const [items, total] = await prisma.$transaction([
     prisma.classEnrollment.findMany({
       where,
-      orderBy: parseSort(filters.sort, ["createdAt", "updatedAt"], "createdAt"),
+      orderBy: parseSort(
+        filters.sort,
+        ["createdAt", "updatedAt", "status", "seatType"],
+        "createdAt"
+      ),
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
     }),

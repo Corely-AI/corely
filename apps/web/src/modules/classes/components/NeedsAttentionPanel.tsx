@@ -24,7 +24,11 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
     needsAttention.studentsMissingPayer.length === 0;
 
   return (
-    <Card variant="default" className="h-full border-warning/20">
+    <Card
+      variant="default"
+      className="h-full border-warning/20"
+      data-testid="classes-teacher-dashboard-needs-attention"
+    >
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg">
           {t("dashboard.teacher.needsAttention", "Needs Attention")}
@@ -34,7 +38,7 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
         <div className="space-y-4">
           {/* Missing Attendance Section */}
           {attendanceMode === "MANUAL" && needsAttention.missingAttendanceSessions.length > 0 && (
-            <div>
+            <div data-testid="classes-teacher-dashboard-needs-attention-missing-attendance">
               <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">
                 {t("dashboard.teacher.missingAttendance", "Missing Attendance")}
               </h4>
@@ -44,6 +48,7 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
                     key={session.id}
                     to={`/sessions/${session.id}`}
                     className="flex items-center justify-between py-2 px-3 rounded-lg bg-warning/5 hover:bg-warning/10 border border-warning/10 transition-colors"
+                    data-testid={`classes-teacher-dashboard-missing-attendance-session-${session.id}`}
                   >
                     <div className="flex items-center gap-3">
                       <AlertCircle className="h-4 w-4 text-warning" />
@@ -67,7 +72,7 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
 
           {/* Unfinished Section */}
           {needsAttention.unfinishedPastSessions.length > 0 && (
-            <div>
+            <div data-testid="classes-teacher-dashboard-needs-attention-unfinished">
               <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider mt-4">
                 {t("dashboard.teacher.unfinishedSessions", "Unfinished Sessions")}
               </h4>
@@ -77,6 +82,7 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
                     key={session.id}
                     to={`/sessions/${session.id}`}
                     className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                    data-testid={`classes-teacher-dashboard-unfinished-session-${session.id}`}
                   >
                     <div className="flex items-center gap-3">
                       <Clock className="h-4 w-4 text-muted-foreground" />
@@ -100,7 +106,7 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
 
           {/* Students Missing Payer Section */}
           {needsAttention.studentsMissingPayer.length > 0 && (
-            <div>
+            <div data-testid="classes-teacher-dashboard-needs-attention-missing-payer">
               <h4 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider mt-4">
                 {t("dashboard.teacher.studentsMissingPayer", "Students Missing Payer")}
               </h4>
@@ -110,6 +116,7 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
                     key={student.id}
                     to={`/classes/${student.classGroupId}/enrollments`}
                     className="flex items-center justify-between py-2 px-3 rounded-lg bg-warning/5 hover:bg-warning/10 border border-warning/10 transition-colors"
+                    data-testid={`classes-teacher-dashboard-missing-payer-student-${student.id}`}
                   >
                     <div className="flex items-center gap-3">
                       <UserX className="h-4 w-4 text-warning" />
@@ -130,7 +137,10 @@ export function NeedsAttentionPanel({ needsAttention, attendanceMode }: NeedsAtt
           )}
 
           {hasNoAlerts && (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div
+              className="flex flex-col items-center justify-center py-8 text-center"
+              data-testid="classes-teacher-dashboard-needs-attention-empty"
+            >
               <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center mb-3">
                 <CheckCircle className="h-6 w-6 text-success" />
               </div>
