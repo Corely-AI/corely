@@ -30,6 +30,8 @@ import type {
   MeetingProvider,
 } from "@corely/contracts";
 import { classesApi } from "@/lib/classes-api";
+import { customersApi } from "@/lib/customers-api";
+import { PartyPicker } from "@/shared/components";
 import { formatDate, formatDateTime, formatMoney } from "@/shared/lib/formatters";
 import {
   useApproveApplicationMutation,
@@ -140,6 +142,27 @@ export default function CohortDetailScreen() {
 
   const cohort = cohortQuery.data?.classGroup;
   const nextLifecycle = cohort ? LIFECYCLE_NEXT[cohort.lifecycle] : null;
+  const teamMemberPartyIds = React.useMemo(
+    () => Array.from(new Set((teamQuery.data?.items ?? []).map((member) => member.partyId))),
+    [teamQuery.data?.items]
+  );
+  const teamPartyLabelsQuery = useQuery({
+    queryKey: ["classes", "cohorts", cohortId, "team", "parties", teamMemberPartyIds],
+    queryFn: async () => {
+      const entries = await Promise.all(
+        teamMemberPartyIds.map(async (partyId) => {
+          const party = await customersApi.getCustomer(partyId);
+          return { partyId, displayName: party?.displayName ?? partyId };
+        })
+      );
+      return entries.reduce<Record<string, string>>((acc, entry) => {
+        acc[entry.partyId] = entry.displayName;
+        return acc;
+      }, {});
+    },
+    enabled: teamMemberPartyIds.length > 0,
+    staleTime: 60_000,
+  });
 
   React.useEffect(() => {
     const firstEnrollment = enrolledLearnersQuery.data?.items?.[0];
@@ -436,7 +459,14 @@ export default function CohortDetailScreen() {
                       <div key={role}>
                         <div className="text-xs uppercase text-muted-foreground">{role}</div>
                         <div className="text-sm">
-                          {members.map((member) => member.partyId).join(", ")}
+                          {members
+                            .map((member) => {
+                              const displayName = teamPartyLabelsQuery.data?.[member.partyId];
+                              return displayName && displayName !== member.partyId
+                                ? `${displayName} (${member.partyId})`
+                                : member.partyId;
+                            })
+                            .join(", ")}
                         </div>
                       </div>
                     );
@@ -444,10 +474,12 @@ export default function CohortDetailScreen() {
                 </div>
               )}
               <div className="grid gap-2 md:grid-cols-3">
-                <Input
-                  placeholder="partyId"
+                <PartyPicker
                   value={teamPartyId}
-                  onChange={(event) => setTeamPartyId(event.target.value)}
+                  onValueChange={setTeamPartyId}
+                  placeholder="Select team member"
+                  searchPlaceholder="Search people by name or partyId..."
+                  testId="classes-cohort-team-party-picker"
                 />
                 <Select
                   value={teamRole}
@@ -464,7 +496,11 @@ export default function CohortDetailScreen() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button variant="outline" onClick={() => void onAddTeamMember()}>
+                <Button
+                  variant="outline"
+                  disabled={!teamPartyId.trim() || upsertTeamMutation.isPending}
+                  onClick={() => void onAddTeamMember()}
+                >
                   Add team member
                 </Button>
               </div>
