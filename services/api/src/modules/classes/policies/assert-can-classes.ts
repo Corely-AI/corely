@@ -17,3 +17,20 @@ export const assertCanClasses = (ctx: UseCaseContext, permission: string) => {
     throw new ForbiddenError("Missing permission", "Classes:PermissionDenied");
   }
 };
+
+export const assertCanCohortManage = (ctx: UseCaseContext) =>
+  assertCanClasses(ctx, "classes.cohort.manage");
+export const assertCanCohortTeamManage = (ctx: UseCaseContext) =>
+  assertCanClasses(ctx, "classes.cohort.team.manage");
+export const assertCanCohortBillingManage = (ctx: UseCaseContext) =>
+  assertCanClasses(ctx, "classes.cohort.billing.manage");
+export const assertCanCohortOutcomesManage = (ctx: UseCaseContext) =>
+  assertCanClasses(ctx, "classes.cohort.outcomes.manage");
+export const assertCanCohortResourcesManage = (ctx: UseCaseContext) =>
+  assertCanClasses(ctx, "classes.cohort.resources.manage");
+export const assertCanSessionManage = (ctx: UseCaseContext) =>
+  assertCanClasses(ctx, "classes.session.manage");
+export const assertCanEnrollmentManage = (ctx: UseCaseContext) =>
+  assertCanClasses(ctx, "classes.enrollment.manage");
+export const assertCanTeacherDashboardView = (ctx: UseCaseContext) =>
+  assertCanClasses(ctx, "classes.teacher.dashboard.view");

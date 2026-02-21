@@ -7,6 +7,7 @@ import {
   type TeacherDashboardUnpaidInvoicesResponse,
 } from "@corely/contracts/classes";
 import { resolveTenantScope } from "../helpers/resolve-scope";
+import { assertCanTeacherDashboardView } from "../../policies/assert-can-classes";
 
 @Injectable()
 export class GetTeacherDashboardUnpaidInvoicesUseCase {
@@ -19,6 +20,7 @@ export class GetTeacherDashboardUnpaidInvoicesUseCase {
     ctx: UseCaseContext,
     query: TeacherDashboardUnpaidInvoicesQuery
   ): Promise<TeacherDashboardUnpaidInvoicesResponse> {
+    assertCanTeacherDashboardView(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
     return this.teacherDashboardQuery.getUnpaidInvoices(tenantId, workspaceId, query);
   }

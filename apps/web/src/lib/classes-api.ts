@@ -1,16 +1,27 @@
 import { apiClient } from "./api-client";
 import { BillingInvoiceSendProgressEventSchema } from "@corely/contracts";
 import type {
+  ApproveApplicationInput,
   CreateClassGroupInput,
+  CreateClassGroupResourceInput,
   UpdateClassGroupInput,
+  UpdateClassGroupResourceInput,
   ListClassGroupsInput,
   ListClassGroupsOutput,
+  ListClassGroupResourcesOutput,
+  ListMilestonesOutput,
+  ListProgramsInput,
+  ListProgramsOutput,
   GetClassGroupOutput,
   CreateClassSessionInput,
   UpdateClassSessionInput,
   ListClassSessionsInput,
   ListClassSessionsOutput,
   GetClassSessionOutput,
+  CreateProgramInput,
+  CreateCohortFromProgramInput,
+  CreateCohortFromProgramOutput,
+  ProgramDetail,
   CreateRecurringSessionsInput,
   CreateRecurringSessionsOutput,
   GenerateClassGroupSessionsInput,
@@ -19,12 +30,31 @@ import type {
   ListEnrollmentsOutput,
   UpsertEnrollmentInput,
   UpdateEnrollmentInput,
+  CreateApplicationInput,
   BulkUpsertAttendanceInput,
   GetSessionAttendanceOutput,
   BillingPreviewOutput,
+  GenerateBillingPlanInvoicesInput,
+  GenerateBillingPlanInvoicesOutput,
+  GetEnrollmentBillingPlanOutput,
+  GetOutcomesSummaryOutput,
   CreateBillingRunInput,
   CreateBillingRunOutput,
+  CreateMilestoneInput,
+  UpdateMilestoneInput,
+  UpdateProgramInput,
+  UpdateCohortLifecycleInput,
+  UpsertCohortTeamInput,
+  UpsertEnrollmentBillingPlanInput,
+  UpsertMilestoneCompletionInput,
+  ReorderClassGroupResourcesInput,
   ClassEnrollment,
+  ClassGroup,
+  ClassGroupInstructorsOutput,
+  ClassMilestone,
+  ClassMilestoneCompletion,
+  ClassGroupResource,
+  ClassEnrollmentBillingPlan,
   ClassMonthlyBillingRun,
   GetClassesBillingSettingsOutput,
   UpdateClassesBillingSettingsInput,
@@ -60,6 +90,18 @@ export class ClassesApi {
     }
     if (params?.level) {
       query.append("level", params.level);
+    }
+    if (params?.kind) {
+      query.append("kind", params.kind);
+    }
+    if (params?.lifecycle) {
+      query.append("lifecycle", params.lifecycle);
+    }
+    if (params?.startAtFrom) {
+      query.append("startAtFrom", params.startAtFrom);
+    }
+    if (params?.startAtTo) {
+      query.append("startAtTo", params.startAtTo);
     }
     if (params?.filters) {
       query.append("filters", JSON.stringify(params.filters));
@@ -111,6 +153,9 @@ export class ClassesApi {
     }
     if (params?.status) {
       query.append("status", params.status);
+    }
+    if (params?.type) {
+      query.append("type", params.type);
     }
     if (params?.dateFrom) {
       query.append("dateFrom", params.dateFrom);
@@ -194,6 +239,15 @@ export class ClassesApi {
     }
     if (params?.payerClientId) {
       query.append("payerClientId", params.payerClientId);
+    }
+    if (params?.payerPartyId) {
+      query.append("payerPartyId", params.payerPartyId);
+    }
+    if (params?.status) {
+      query.append("status", params.status);
+    }
+    if (params?.seatType) {
+      query.append("seatType", params.seatType);
     }
     if (typeof params?.isActive === "boolean") {
       query.append("isActive", String(params.isActive));
@@ -437,6 +491,292 @@ export class ClassesApi {
       idempotencyKey: apiClient.generateIdempotencyKey(),
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  async listPrograms(params?: ListProgramsInput): Promise<ListProgramsOutput> {
+    const query = new URLSearchParams();
+    if (params?.q) {
+      query.append("q", params.q);
+    }
+    if (params?.page) {
+      query.append("page", String(params.page));
+    }
+    if (params?.pageSize) {
+      query.append("pageSize", String(params.pageSize));
+    }
+    if (params?.sort) {
+      query.append("sort", Array.isArray(params.sort) ? params.sort[0] : params.sort);
+    }
+    if (params?.levelTag) {
+      query.append("levelTag", params.levelTag);
+    }
+    if (params?.filters) {
+      query.append("filters", JSON.stringify(params.filters));
+    }
+
+    const endpoint = query.toString()
+      ? `/classes/programs?${query.toString()}`
+      : "/classes/programs";
+    return apiClient.get<ListProgramsOutput>(endpoint, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createProgram(input: CreateProgramInput): Promise<ProgramDetail> {
+    return apiClient.post<ProgramDetail>("/classes/programs", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async getProgram(programId: string): Promise<ProgramDetail> {
+    return apiClient.get<ProgramDetail>(`/classes/programs/${programId}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async updateProgram(programId: string, input: UpdateProgramInput): Promise<ProgramDetail> {
+    return apiClient.patch<ProgramDetail>(`/classes/programs/${programId}`, input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createCohortFromProgram(
+    programId: string,
+    input: CreateCohortFromProgramInput
+  ): Promise<CreateCohortFromProgramOutput> {
+    return apiClient.post<CreateCohortFromProgramOutput>(
+      `/classes/programs/${programId}/create-cohort`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async updateCohortLifecycle(
+    classGroupId: string,
+    input: UpdateCohortLifecycleInput
+  ): Promise<{ classGroup: ClassGroup }> {
+    return apiClient.post<{ classGroup: ClassGroup }>(
+      `/classes/class-groups/${classGroupId}/lifecycle`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async getCohortTeam(classGroupId: string): Promise<ClassGroupInstructorsOutput> {
+    return apiClient.get<ClassGroupInstructorsOutput>(
+      `/classes/class-groups/${classGroupId}/team`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async upsertCohortTeam(
+    classGroupId: string,
+    input: UpsertCohortTeamInput
+  ): Promise<ClassGroupInstructorsOutput> {
+    return apiClient.put<ClassGroupInstructorsOutput>(
+      `/classes/class-groups/${classGroupId}/team`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async createApplication(
+    classGroupId: string,
+    input: CreateApplicationInput
+  ): Promise<{ enrollment: ClassEnrollment }> {
+    return apiClient.post<{ enrollment: ClassEnrollment }>(
+      `/classes/class-groups/${classGroupId}/applications`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async approveApplication(
+    enrollmentId: string,
+    input: ApproveApplicationInput
+  ): Promise<{ enrollment: ClassEnrollment }> {
+    return apiClient.post<{ enrollment: ClassEnrollment }>(
+      `/classes/enrollments/${enrollmentId}/approve`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async getEnrollmentBillingPlan(enrollmentId: string): Promise<GetEnrollmentBillingPlanOutput> {
+    return apiClient.get<GetEnrollmentBillingPlanOutput>(
+      `/classes/enrollments/${enrollmentId}/billing-plan`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async upsertEnrollmentBillingPlan(
+    enrollmentId: string,
+    input: UpsertEnrollmentBillingPlanInput
+  ): Promise<{ billingPlan: ClassEnrollmentBillingPlan }> {
+    return apiClient.put<{ billingPlan: ClassEnrollmentBillingPlan }>(
+      `/classes/enrollments/${enrollmentId}/billing-plan`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async generateBillingPlanInvoices(
+    enrollmentId: string,
+    input: GenerateBillingPlanInvoicesInput
+  ): Promise<GenerateBillingPlanInvoicesOutput> {
+    return apiClient.post<GenerateBillingPlanInvoicesOutput>(
+      `/classes/enrollments/${enrollmentId}/billing-plan/generate-invoices`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async listMilestones(classGroupId: string): Promise<ListMilestonesOutput> {
+    return apiClient.get<ListMilestonesOutput>(`/classes/class-groups/${classGroupId}/milestones`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async createMilestone(
+    classGroupId: string,
+    input: CreateMilestoneInput
+  ): Promise<{ milestone: ClassMilestone }> {
+    return apiClient.post<{ milestone: ClassMilestone }>(
+      `/classes/class-groups/${classGroupId}/milestones`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async updateMilestone(
+    milestoneId: string,
+    input: UpdateMilestoneInput
+  ): Promise<{ milestone: ClassMilestone }> {
+    return apiClient.patch<{ milestone: ClassMilestone }>(
+      `/classes/milestones/${milestoneId}`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async deleteMilestone(milestoneId: string): Promise<{ ok: boolean }> {
+    return apiClient.delete<{ ok: boolean }>(`/classes/milestones/${milestoneId}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async upsertMilestoneCompletion(
+    milestoneId: string,
+    enrollmentId: string,
+    input: UpsertMilestoneCompletionInput
+  ): Promise<{ completion: ClassMilestoneCompletion }> {
+    return apiClient.put<{ completion: ClassMilestoneCompletion }>(
+      `/classes/milestones/${milestoneId}/completions/${enrollmentId}`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async getOutcomesSummary(classGroupId: string): Promise<GetOutcomesSummaryOutput> {
+    return apiClient.get<GetOutcomesSummaryOutput>(
+      `/classes/class-groups/${classGroupId}/outcomes-summary`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async listResources(classGroupId: string): Promise<ListClassGroupResourcesOutput> {
+    return apiClient.get<ListClassGroupResourcesOutput>(
+      `/classes/class-groups/${classGroupId}/resources`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async createResource(
+    classGroupId: string,
+    input: CreateClassGroupResourceInput
+  ): Promise<{ resource: ClassGroupResource }> {
+    return apiClient.post<{ resource: ClassGroupResource }>(
+      `/classes/class-groups/${classGroupId}/resources`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async updateResource(
+    resourceId: string,
+    input: UpdateClassGroupResourceInput
+  ): Promise<{ resource: ClassGroupResource }> {
+    return apiClient.patch<{ resource: ClassGroupResource }>(
+      `/classes/resources/${resourceId}`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async deleteResource(resourceId: string): Promise<{ ok: boolean }> {
+    return apiClient.delete<{ ok: boolean }>(`/classes/resources/${resourceId}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async reorderResources(
+    classGroupId: string,
+    input: ReorderClassGroupResourcesInput
+  ): Promise<{ ok: boolean }> {
+    return apiClient.put<{ ok: boolean }>(
+      `/classes/class-groups/${classGroupId}/resources/reorder`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
   }
 }
 

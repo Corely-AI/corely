@@ -1,2 +1,19 @@
 export const MONTHLY_INVOICES_GENERATED_EVENT = "classes.monthly-invoices.generated";
 export const CLASSES_INVOICE_READY_TO_SEND_EVENT = "classes.invoice.ready_to_send";
+export const CLASSES_COHORT_PUBLISHED_EVENT = "classes.cohort.published";
+export const CLASSES_COHORT_STARTED_EVENT = "classes.cohort.started";
+export const CLASSES_COHORT_ENDED_EVENT = "classes.cohort.ended";
+export const CLASSES_COHORT_TEAM_UPDATED_EVENT = "classes.cohort.team_updated";
+export const CLASSES_ENROLLMENT_APPLIED_EVENT = "classes.enrollment.applied";
+export const CLASSES_ENROLLMENT_APPROVED_EVENT = "classes.enrollment.approved";
+export const CLASSES_ENROLLMENT_UPDATED_EVENT = "classes.enrollment.updated";
+export const CLASSES_ENROLLMENT_BILLING_PLAN_UPDATED_EVENT =
+  "classes.enrollment.billing_plan_updated";
+export const CLASSES_INVOICE_GENERATED_EVENT = "classes.invoice.generated";
+export const CLASSES_MILESTONE_CREATED_EVENT = "classes.milestone.created";
+export const CLASSES_MILESTONE_UPDATED_EVENT = "classes.milestone.updated";
+export const CLASSES_MILESTONE_DELETED_EVENT = "classes.milestone.deleted";
+export const CLASSES_MILESTONE_COMPLETION_UPDATED_EVENT = "classes.milestone.completion_updated";
+export const CLASSES_RESOURCE_CREATED_EVENT = "classes.resource.created";
+export const CLASSES_RESOURCE_UPDATED_EVENT = "classes.resource.updated";
+export const CLASSES_RESOURCE_DELETED_EVENT = "classes.resource.deleted";

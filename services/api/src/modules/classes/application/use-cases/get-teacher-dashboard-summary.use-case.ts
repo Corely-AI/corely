@@ -10,6 +10,7 @@ import {
 } from "@corely/contracts";
 import { DEFAULT_PREPAID_SETTINGS, normalizeBillingSettings } from "../helpers/billing-settings";
 import { resolveTenantScope } from "../helpers/resolve-scope";
+import { assertCanTeacherDashboardView } from "../../policies/assert-can-classes";
 
 @Injectable()
 export class GetTeacherDashboardSummaryUseCase {
@@ -24,6 +25,7 @@ export class GetTeacherDashboardSummaryUseCase {
     ctx: UseCaseContext,
     query: TeacherDashboardSummaryQuery
   ): Promise<TeacherDashboardSummaryResponse> {
+    assertCanTeacherDashboardView(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     // Fetch settings to determine attendance mode

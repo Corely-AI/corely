@@ -8,7 +8,19 @@ export const classesAppManifest: AppManifest = {
   description: "Manage tutoring class groups, sessions, attendance, and billing",
   dependencies: ["invoices", "crm"],
   capabilities: [],
-  permissions: ["classes.read", "classes.write", "classes.billing"],
+  permissions: [
+    "classes.read",
+    "classes.write",
+    "classes.billing",
+    "classes.cohort.manage",
+    "classes.cohort.team.manage",
+    "classes.cohort.billing.manage",
+    "classes.cohort.outcomes.manage",
+    "classes.cohort.resources.manage",
+    "classes.session.manage",
+    "classes.enrollment.manage",
+    "classes.teacher.dashboard.view",
+  ],
   menu: [
     {
       id: "teacher-dashboard",

@@ -1,5 +1,5 @@
 import React from "react";
-import { Route } from "react-router-dom";
+import { Navigate, Route } from "react-router-dom";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
@@ -27,6 +27,10 @@ import {
   ClassGroupsListPage,
   ClassGroupEditorPage,
   ClassGroupDetailPage,
+  CohortsListScreen,
+  CohortDetailScreen,
+  ProgramsListScreen,
+  ProgramDetailScreen,
   SessionsPage,
   SessionDetailPage,
   ClassesBillingPage,
@@ -154,6 +158,21 @@ export const appShellRoutes = (
       <Route path="/class-groups/new" element={<ClassGroupEditorPage />} />
       <Route path="/class-groups/:id" element={<ClassGroupDetailPage />} />
       <Route path="/class-groups/:id/edit" element={<ClassGroupEditorPage />} />
+      <Route path="/classes/class-groups" element={<Navigate to="/classes/cohorts" replace />} />
+      <Route
+        path="/classes/class-groups/new"
+        element={<Navigate to="/classes/cohorts/new" replace />}
+      />
+      <Route path="/classes/class-groups/:id" element={<CohortDetailScreen />} />
+      <Route path="/classes/class-groups/:id/edit" element={<ClassGroupEditorPage />} />
+      <Route path="/classes/cohorts" element={<CohortsListScreen />} />
+      <Route path="/classes/cohorts/new" element={<ClassGroupEditorPage />} />
+      <Route path="/classes/cohorts/:id" element={<CohortDetailScreen />} />
+      <Route path="/classes/cohorts/:id/edit" element={<ClassGroupEditorPage />} />
+      <Route path="/classes/programs" element={<ProgramsListScreen />} />
+      <Route path="/classes/programs/new" element={<ProgramDetailScreen />} />
+      <Route path="/classes/programs/:id" element={<ProgramDetailScreen />} />
+      <Route path="/classes/programs/:id/edit" element={<ProgramDetailScreen />} />
       <Route path="/sessions" element={<SessionsPage />} />
       <Route path="/sessions/:id" element={<SessionDetailPage />} />
       <Route path="/billing" element={<ClassesBillingPage />} />
