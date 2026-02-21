@@ -67,9 +67,7 @@ describe("GetPublicFileUrlUseCase", () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.value.url).toBe(
-        "https://storage.googleapis.com/fake-bucket/public%2Ffile-2"
-      );
+      expect(result.value.url).toBe("https://storage.googleapis.com/fake-bucket/public%2Ffile-2");
     }
   });
 });

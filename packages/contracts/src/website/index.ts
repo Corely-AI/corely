@@ -11,3 +11,4 @@ export * from "./wall-of-love";
 export * from "./website-ai.schema";
 export * from "./website-events.schema";
 export * from "./public";
+export * from "./blocks";

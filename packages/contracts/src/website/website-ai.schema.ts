@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { WebsitePageContentSchema, WebsiteBlockUnionSchema } from "./blocks";
 
 export const WebsitePageBlueprintSchema = z.object({
   title: z.string().min(1),
@@ -32,3 +33,30 @@ export const GenerateWebsitePageOutputSchema = z.object({
   previewSummary: z.string(),
 });
 export type GenerateWebsitePageOutput = z.infer<typeof GenerateWebsitePageOutputSchema>;
+
+export const GenerateWebsiteBlocksInputSchema = z.object({
+  templateKey: z.string().min(1),
+  locale: z.string().min(2),
+  brief: z.string().min(1),
+  existingBlocks: z.array(WebsiteBlockUnionSchema).optional(),
+  lockedBlockIds: z.array(z.string().min(1)).optional(),
+});
+export type GenerateWebsiteBlocksInput = z.infer<typeof GenerateWebsiteBlocksInputSchema>;
+
+export const GenerateWebsiteBlocksOutputSchema = z.object({
+  content: WebsitePageContentSchema,
+});
+export type GenerateWebsiteBlocksOutput = z.infer<typeof GenerateWebsiteBlocksOutputSchema>;
+
+export const RegenerateWebsiteBlockInputSchema = z.object({
+  templateKey: z.string().min(1),
+  blockType: z.string().min(1),
+  currentBlock: WebsiteBlockUnionSchema,
+  instruction: z.string().min(1),
+});
+export type RegenerateWebsiteBlockInput = z.infer<typeof RegenerateWebsiteBlockInputSchema>;
+
+export const RegenerateWebsiteBlockOutputSchema = z.object({
+  block: WebsiteBlockUnionSchema,
+});
+export type RegenerateWebsiteBlockOutput = z.infer<typeof RegenerateWebsiteBlockOutputSchema>;

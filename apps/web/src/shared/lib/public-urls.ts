@@ -50,6 +50,11 @@ export function getPublicCmsUrl(postSlug: string, workspaceSlug?: string): strin
  * When no domain is provided, fall back to path-based routing:
  * - Default site root: /w/:workspaceSlug
  * - Other pages/sites: /w/:workspaceSlug/:websiteSlug
+ *
+ * Runtime host resolution:
+ * - Uses `VITE_WEBSITE_RUNTIME_BASE_URL` when provided.
+ * - In local development, defaults to `http://localhost:8084` (website runtime app).
+ * - In production, falls back to `VITE_PUBLIC_WEB_BASE_URL` for backward compatibility.
  */
 export function getPublicWebsiteUrl(input: {
   hostname?: string | null;
@@ -72,10 +77,12 @@ export function getPublicWebsiteUrl(input: {
     return null;
   }
 
-  const publicWebBaseUrl =
-    import.meta.env.VITE_PUBLIC_WEB_BASE_URL ||
-    (import.meta.env.DEV ? "http://localhost:8082" : "https://my.corely.one");
-  const baseUrl = new URL(publicWebBaseUrl);
+  const websiteRuntimeBaseUrl = import.meta.env.VITE_WEBSITE_RUNTIME_BASE_URL
+    ? import.meta.env.VITE_WEBSITE_RUNTIME_BASE_URL
+    : import.meta.env.DEV
+      ? "http://localhost:8084"
+      : import.meta.env.VITE_PUBLIC_WEB_BASE_URL || "https://my.corely.one";
+  const baseUrl = new URL(websiteRuntimeBaseUrl);
   const rootDomain = import.meta.env.VITE_PUBLIC_ROOT_DOMAIN || baseUrl.hostname;
   const canUseSubdomain =
     import.meta.env.PROD && Boolean(input.workspaceSlug) && baseUrl.hostname === rootDomain;

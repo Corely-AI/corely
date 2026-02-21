@@ -20,7 +20,15 @@ import type { CmsReadPort } from "../ports/cms-read.port";
 import type { WebsiteCustomAttributesPort } from "../ports/custom-attributes.port";
 import { type PublicWorkspaceResolver } from "@/shared/public";
 import { buildSeo } from "../../domain/website.validators";
-import { buildWebsiteSiteSettings, WEBSITE_SITE_SETTINGS_ENTITY_TYPE } from "../../domain/site-settings";
+import {
+  buildWebsiteSiteSettings,
+  WEBSITE_SITE_SETTINGS_ENTITY_TYPE,
+} from "../../domain/site-settings";
+import {
+  extractWebsitePageContentFromCmsPayload,
+  normalizeWebsitePageContent,
+} from "../../domain/page-content";
+import { isWebsitePreviewTokenValid } from "../../domain/preview-token";
 import { withResolvedSiteAssetUrls } from "./site-settings-assets";
 import { resolvePublicWebsiteSiteRef } from "./resolve-public-site-ref";
 
@@ -35,6 +43,34 @@ type Deps = {
   cmsRead: CmsReadPort;
   customAttributes: WebsiteCustomAttributesPort;
   publicWorkspaceResolver: PublicWorkspaceResolver;
+};
+
+type PublicMenu = {
+  name: string;
+  locale: string;
+  itemsJson: unknown;
+};
+
+const toPublicMenus = (menus: unknown): PublicMenu[] => {
+  if (!Array.isArray(menus)) {
+    return [];
+  }
+  return menus
+    .map((menu) => {
+      if (!menu || typeof menu !== "object") {
+        return null;
+      }
+      const candidate = menu as { name?: unknown; locale?: unknown; itemsJson?: unknown };
+      if (typeof candidate.name !== "string" || typeof candidate.locale !== "string") {
+        return null;
+      }
+      return {
+        name: candidate.name,
+        locale: candidate.locale,
+        itemsJson: candidate.itemsJson ?? [],
+      };
+    })
+    .filter((menu): menu is PublicMenu => Boolean(menu));
 };
 
 export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
@@ -88,28 +124,45 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
       : menus.filter((menu) => menu.locale === site.defaultLocale);
 
     if (input.mode === "preview") {
+      if (!isWebsitePreviewTokenValid(input.token)) {
+        return err(
+          new ValidationError("preview token is invalid", undefined, "Website:InvalidPreviewToken")
+        );
+      }
+
       const cmsPayload = await this.deps.cmsRead.getEntryForWebsiteRender({
         tenantId: site.tenantId,
         entryId: page.cmsEntryId,
         locale,
         mode: "preview",
       });
+      const content = extractWebsitePageContentFromCmsPayload(cmsPayload, page.template);
+      const previewSeo = content.seoOverride ?? buildSeo(page);
+      const publicMenus: PublicMenu[] = resolvedMenus.map((menu) => ({
+        name: menu.name,
+        locale: menu.locale,
+        itemsJson: menu.itemsJson,
+      }));
 
       return ok({
         siteId: site.id,
         siteSlug: site.slug,
         settings: resolvedSettings,
+        page: {
+          id: page.id,
+          path: page.path,
+          locale,
+          templateKey: content.templateKey,
+          content,
+          seo: previewSeo,
+        },
         pageId: page.id,
         path: page.path,
         locale,
-        template: page.template,
-        payloadJson: cmsPayload,
-        seo: buildSeo(page),
-        menus: resolvedMenus.map((menu) => ({
-          name: menu.name,
-          locale: menu.locale,
-          itemsJson: menu.itemsJson,
-        })),
+        template: content.templateKey,
+        payloadJson: content,
+        seo: previewSeo,
+        menus: publicMenus,
         snapshotVersion: null,
       });
     }
@@ -127,23 +180,54 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
       template?: string;
       seo?: { title?: string | null; description?: string | null; imageFileId?: string | null };
       content?: unknown;
+      settings?: unknown;
+      menus?: unknown;
     };
+    const content = normalizeWebsitePageContent(snapshotPayload?.content, page.template);
+    const liveSeo = snapshotPayload?.seo ?? content.seoOverride ?? buildSeo(page);
+    const snapshotMenus = toPublicMenus(snapshotPayload?.menus);
+    const publicMenus =
+      snapshotMenus.length > 0
+        ? snapshotMenus
+        : resolvedMenus.map((menu) => ({
+            name: menu.name,
+            locale: menu.locale,
+            itemsJson: menu.itemsJson,
+          }));
+    const snapshotSettings = buildWebsiteSiteSettings({
+      siteName: site.name,
+      brandingJson:
+        (snapshotPayload?.settings as { common?: unknown } | undefined)?.common ??
+        site.brandingJson,
+      themeJson:
+        (snapshotPayload?.settings as { theme?: unknown } | undefined)?.theme ?? site.themeJson,
+      custom:
+        (snapshotPayload?.settings as { custom?: unknown } | undefined)?.custom ?? customSettings,
+    });
+    const liveSettings = await withResolvedSiteAssetUrls(
+      snapshotSettings,
+      this.deps.publicFileUrlPort
+    );
 
     return ok({
       siteId: site.id,
       siteSlug: site.slug,
-      settings: resolvedSettings,
+      settings: liveSettings,
+      page: {
+        id: page.id,
+        path: page.path,
+        locale,
+        templateKey: content.templateKey,
+        content,
+        seo: liveSeo,
+      },
       pageId: page.id,
       path: page.path,
       locale,
-      template: snapshotPayload?.template ?? page.template,
-      payloadJson: snapshotPayload?.content ?? snapshot.payloadJson,
-      seo: snapshotPayload?.seo ?? buildSeo(page),
-      menus: resolvedMenus.map((menu) => ({
-        name: menu.name,
-        locale: menu.locale,
-        itemsJson: menu.itemsJson,
-      })),
+      template: content.templateKey,
+      payloadJson: content,
+      seo: liveSeo,
+      menus: publicMenus,
       snapshotVersion: snapshot.version,
     });
   }

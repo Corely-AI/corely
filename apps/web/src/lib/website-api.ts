@@ -19,7 +19,14 @@ import type {
   ListWebsiteMenusOutput,
   GenerateWebsitePageInput,
   GenerateWebsitePageOutput,
+  GenerateWebsiteBlocksInput,
+  GenerateWebsiteBlocksOutput,
+  RegenerateWebsiteBlockInput,
+  RegenerateWebsiteBlockOutput,
   GetWebsitePageOutput,
+  GetWebsitePageContentOutput,
+  UpdateWebsitePageContentInput,
+  UpdateWebsitePageContentOutput,
   GetWebsiteSiteOutput,
   CreateWebsiteQaInput,
   ListWebsiteQaAdminOutput,
@@ -126,6 +133,12 @@ export class WebsiteApi {
     });
   }
 
+  async getPageContent(pageId: string): Promise<GetWebsitePageContentOutput> {
+    return apiClient.get<GetWebsitePageContentOutput>(`/website/pages/${pageId}/content`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
   async createPage(siteId: string, input: CreateWebsitePageInput): Promise<WebsitePage> {
     return apiClient.post<WebsitePage>(
       `/website/sites/${siteId}/pages`,
@@ -142,6 +155,20 @@ export class WebsiteApi {
       idempotencyKey: apiClient.generateIdempotencyKey(),
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  async updatePageContent(
+    pageId: string,
+    input: UpdateWebsitePageContentInput
+  ): Promise<UpdateWebsitePageContentOutput> {
+    return apiClient.patch<UpdateWebsitePageContentOutput>(
+      `/website/pages/${pageId}/content`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
   }
 
   async publishPage(pageId: string): Promise<PublishWebsitePageOutput> {
@@ -184,6 +211,20 @@ export class WebsiteApi {
 
   async generatePage(input: GenerateWebsitePageInput): Promise<GenerateWebsitePageOutput> {
     return apiClient.post<GenerateWebsitePageOutput>("/website/ai/generate-page", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async generateBlocks(input: GenerateWebsiteBlocksInput): Promise<GenerateWebsiteBlocksOutput> {
+    return apiClient.post<GenerateWebsiteBlocksOutput>("/website/ai/generate-blocks", input, {
+      idempotencyKey: apiClient.generateIdempotencyKey(),
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async regenerateBlock(input: RegenerateWebsiteBlockInput): Promise<RegenerateWebsiteBlockOutput> {
+    return apiClient.post<RegenerateWebsiteBlockOutput>("/website/ai/regenerate-block", input, {
       idempotencyKey: apiClient.generateIdempotencyKey(),
       correlationId: apiClient.generateCorrelationId(),
     });

@@ -1,0 +1,8 @@
+{
+  "extends": "@corely/tsconfig/node.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false
+  },
+  "include": ["next.config.mjs"]
+}

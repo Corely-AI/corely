@@ -101,6 +101,9 @@ describe("Website use cases", () => {
           publishedAt: null,
         };
       },
+      async getEntryContentJson() {
+        return { templateKey: "landing", blocks: [] };
+      },
     };
 
     let outboxTx: TransactionContext | undefined;
@@ -115,6 +118,58 @@ describe("Website use cases", () => {
       pageRepo,
       snapshotRepo,
       cmsRead,
+      siteRepo: {
+        async create(site) {
+          return site;
+        },
+        async update(site) {
+          return site;
+        },
+        async findById() {
+          return {
+            id: "site-1",
+            tenantId: "tenant-1",
+            name: "Site",
+            slug: "site",
+            defaultLocale: "en-US",
+            brandingJson: null,
+            themeJson: null,
+            isDefault: true,
+            createdAt: nowIso,
+            updatedAt: nowIso,
+          };
+        },
+        async findByIdPublic() {
+          return null;
+        },
+        async findBySlug() {
+          return null;
+        },
+        async findDefaultByTenant() {
+          return null;
+        },
+        async setDefault() {},
+        async list() {
+          return { items: [], total: 0 };
+        },
+      },
+      menuRepo: {
+        async upsert(menu) {
+          return menu;
+        },
+        async listBySite() {
+          return [];
+        },
+      },
+      customAttributes: {
+        async getAttributes() {
+          return {};
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
       outbox,
       uow,
       idGenerator: { newId: () => "snap-1" } as any,
@@ -307,6 +362,9 @@ describe("Website use cases", () => {
       async getEntryForWebsiteRender() {
         throw new Error("not used");
       },
+      async getEntryContentJson() {
+        return null;
+      },
     };
 
     const useCase = new ResolveWebsitePublicPageUseCase({
@@ -343,6 +401,7 @@ describe("Website use cases", () => {
 
     expect(output.snapshotVersion).toBe(2);
     expect(output.template).toBe("landing");
+    expect(output.page.templateKey).toBe("landing");
     expect(output.settings.common.siteTitle).toBe("Site");
     expect(output.settings.common.logo.url).toBe("https://cdn.example.com/logo-file-id");
     expect(output.settings.common.favicon.url).toBe("https://cdn.example.com/favicon-file-id");
@@ -590,6 +649,7 @@ describe("Website use cases", () => {
         createdEntryId = "cms-1";
         return { entryId: "cms-1" };
       },
+      async updateDraftEntryContentJson() {},
     };
 
     const idempotency: IdempotencyStoragePort = {

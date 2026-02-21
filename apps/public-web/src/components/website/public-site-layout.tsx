@@ -107,12 +107,49 @@ export const PublicSiteLayout = ({
     ([, value]) => typeof value === "string" && value.trim().length > 0
   );
   const homeHref = resolveInternalHref("/", basePath);
+  const theme = settings?.theme;
+  const tokenVars: Record<string, string | number> = {};
+  if (theme?.colors?.primary) {
+    tokenVars["--website-color-primary"] = theme.colors.primary;
+  }
+  if (theme?.colors?.accent) {
+    tokenVars["--website-color-accent"] = theme.colors.accent;
+  }
+  if (theme?.colors?.background) {
+    tokenVars["--website-color-background"] = theme.colors.background;
+  }
+  if (theme?.colors?.text) {
+    tokenVars["--website-color-text"] = theme.colors.text;
+  }
+  if (theme?.typography?.headingFont) {
+    tokenVars["--website-font-heading"] = theme.typography.headingFont;
+  }
+  if (theme?.typography?.bodyFont) {
+    tokenVars["--website-font-body"] = theme.typography.bodyFont;
+  }
+  if (theme?.radius) {
+    tokenVars["--website-radius"] = theme.radius;
+  }
+  for (const [key, value] of Object.entries(theme?.tokens ?? {})) {
+    tokenVars[`--website-token-${key}`] =
+      typeof value === "string" || typeof value === "number" ? value : JSON.stringify(value);
+  }
+  const themeStyle = tokenVars as React.CSSProperties;
+  if (theme?.colors?.background) {
+    themeStyle.backgroundColor = theme.colors.background;
+  }
+  if (theme?.colors?.text) {
+    themeStyle.color = theme.colors.text;
+  }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground" style={themeStyle}>
       <header className="border-b border-border/60 bg-background/80 backdrop-blur sticky top-0 z-40">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-          <Link href={homeHref} className="flex items-center gap-3 text-lg font-semibold tracking-tight">
+          <Link
+            href={homeHref}
+            className="flex items-center gap-3 text-lg font-semibold tracking-tight"
+          >
             {showLogo && logoSrc ? (
               <img
                 src={logoSrc}
@@ -163,11 +200,7 @@ export const PublicSiteLayout = ({
           <div className="flex flex-wrap gap-4">
             {socials.map(([key, value]) => {
               const href =
-                key === "email"
-                  ? value.startsWith("mailto:")
-                    ? value
-                    : `mailto:${value}`
-                  : value;
+                key === "email" ? (value.startsWith("mailto:") ? value : `mailto:${value}`) : value;
               return (
                 <a
                   key={key}

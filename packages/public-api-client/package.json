@@ -1,0 +1,22 @@
+{
+  "name": "@corely/public-api-client",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@corely/api-client": "workspace:*",
+    "@corely/contracts": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

@@ -18,9 +18,8 @@ import type { WebsitePageRepositoryPort } from "../ports/page-repository.port";
 import type { WebsiteSiteRepositoryPort } from "../ports/site-repository.port";
 import type { WebsiteFeedbackRepositoryPort } from "../ports/feedback-repository.port";
 import { normalizeYoutubeUrls } from "../../domain/youtube-url";
+import { isWebsitePreviewTokenValid } from "../../domain/preview-token";
 import { resolvePublicWebsiteSiteRef } from "./resolve-public-site-ref";
-
-const PREVIEW_TOKEN_REGEX = /^[A-Za-z0-9._~-]{8,512}$/;
 
 type Deps = {
   logger: LoggerPort;
@@ -48,9 +47,6 @@ const normalizeImageFileIds = (fileIds: string[] | undefined): string[] => {
   return Array.from(values);
 };
 
-const isValidPreviewToken = (token: string | undefined): boolean =>
-  Boolean(token && PREVIEW_TOKEN_REGEX.test(token));
-
 export class CreateWebsiteFeedbackUseCase extends BaseUseCase<
   CreateWebsiteFeedbackInput,
   CreateWebsiteFeedbackOutput
@@ -74,7 +70,7 @@ export class CreateWebsiteFeedbackUseCase extends BaseUseCase<
     input: CreateWebsiteFeedbackInput,
     _ctx: UseCaseContext
   ): Promise<Result<CreateWebsiteFeedbackOutput, UseCaseError>> {
-    if (input.siteRef.mode === "preview" && !isValidPreviewToken(input.siteRef.token)) {
+    if (input.siteRef.mode === "preview" && !isWebsitePreviewTokenValid(input.siteRef.token)) {
       return err(
         new ValidationError("preview token is invalid", undefined, "Website:InvalidPreviewToken")
       );

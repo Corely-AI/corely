@@ -71,6 +71,12 @@ describe("Website page + domain use cases", () => {
       logger: console as any,
       pageRepo,
       siteRepo,
+      cmsWrite: {
+        async createDraftEntryFromBlueprint() {
+          throw new Error("not used");
+        },
+        async updateDraftEntryContentJson() {},
+      },
       idGenerator: { newId: () => "page-1" } as any,
       clock: { now: () => new Date(nowIso) } as any,
     });
@@ -133,6 +139,12 @@ describe("Website page + domain use cases", () => {
     const useCase = new UpdateWebsitePageUseCase({
       logger: console as any,
       pageRepo,
+      cmsWrite: {
+        async createDraftEntryFromBlueprint() {
+          throw new Error("not used");
+        },
+        async updateDraftEntryContentJson() {},
+      },
       clock: { now: () => new Date(nowIso) } as any,
     });
 

@@ -10,9 +10,7 @@ type AttributeScope = {
 
 @Injectable()
 export class CustomAttributesService {
-  constructor(
-    @Inject(EXT_ENTITY_ATTR_PORT) private readonly extEntityAttr: ExtEntityAttrPort
-  ) {}
+  constructor(@Inject(EXT_ENTITY_ATTR_PORT) private readonly extEntityAttr: ExtEntityAttrPort) {}
 
   async getAttributes(scope: AttributeScope): Promise<Record<string, unknown>> {
     const rows = await this.extEntityAttr.list(scope);

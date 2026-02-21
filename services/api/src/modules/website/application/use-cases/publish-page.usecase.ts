@@ -16,15 +16,26 @@ import type { PublishWebsitePageOutput, WebsitePage, WebsitePageSnapshot } from 
 import type { WebsitePageRepositoryPort } from "../ports/page-repository.port";
 import type { WebsiteSnapshotRepositoryPort } from "../ports/snapshot-repository.port";
 import type { CmsReadPort } from "../ports/cms-read.port";
+import type { WebsiteSiteRepositoryPort } from "../ports/site-repository.port";
+import type { WebsiteMenuRepositoryPort } from "../ports/menu-repository.port";
+import type { WebsiteCustomAttributesPort } from "../ports/custom-attributes.port";
 import type { IdGeneratorPort } from "@shared/ports/id-generator.port";
 import type { ClockPort } from "@shared/ports/clock.port";
 import { buildSeo } from "../../domain/website.validators";
+import {
+  buildWebsiteSiteSettings,
+  WEBSITE_SITE_SETTINGS_ENTITY_TYPE,
+} from "../../domain/site-settings";
+import { extractWebsitePageContentFromCmsPayload } from "../../domain/page-content";
 
 type Deps = {
   logger: LoggerPort;
   pageRepo: WebsitePageRepositoryPort;
   snapshotRepo: WebsiteSnapshotRepositoryPort;
   cmsRead: CmsReadPort;
+  siteRepo: WebsiteSiteRepositoryPort;
+  menuRepo: WebsiteMenuRepositoryPort;
+  customAttributes: WebsiteCustomAttributesPort;
   outbox: OutboxPort;
   uow: UnitOfWorkPort;
   idGenerator: IdGeneratorPort;
@@ -53,17 +64,43 @@ export class PublishWebsitePageUseCase extends BaseUseCase<
       return err(new NotFoundError("Page not found", undefined, "Website:PageNotFound"));
     }
 
+    const site = await this.deps.siteRepo.findById(ctx.tenantId, page.siteId);
+    if (!site) {
+      return err(new NotFoundError("Site not found", undefined, "Website:SiteNotFound"));
+    }
+
     const cmsPayload = await this.deps.cmsRead.getEntryForWebsiteRender({
       tenantId: ctx.tenantId,
       entryId: page.cmsEntryId,
       locale: page.locale,
       mode: "preview",
     });
+    const content = extractWebsitePageContentFromCmsPayload(cmsPayload, page.template);
+
+    const customSettings = await this.deps.customAttributes.getAttributes({
+      tenantId: ctx.tenantId,
+      entityType: WEBSITE_SITE_SETTINGS_ENTITY_TYPE,
+      entityId: site.id,
+    });
+    const settings = buildWebsiteSiteSettings({
+      siteName: site.name,
+      brandingJson: site.brandingJson,
+      themeJson: site.themeJson,
+      custom: customSettings,
+    });
+
+    const menus = await this.deps.menuRepo.listBySite(ctx.tenantId, site.id);
 
     const snapshotPayload = {
       template: page.template,
       seo: buildSeo(page),
-      content: cmsPayload,
+      content,
+      settings,
+      menus: menus.map((menu) => ({
+        name: menu.name,
+        locale: menu.locale,
+        itemsJson: menu.itemsJson,
+      })),
     };
 
     const now = this.deps.clock.now().toISOString();
@@ -110,7 +147,7 @@ export class PublishWebsitePageUseCase extends BaseUseCase<
             path: page.path,
             locale: page.locale,
             cmsEntryId: page.cmsEntryId,
-            template: page.template,
+            template: content.templateKey,
             snapshotId: createdSnapshot.id,
             version,
             publishedAt: now,

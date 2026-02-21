@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { WebsiteMenuPublicSchema, WebsiteSeoSchema } from "./website.types";
 import { WebsiteSiteSettingsSchema } from "./website-site-settings.schema";
+import { WebsitePageContentSchema } from "./blocks";
 
 export const WebsiteResolveModeSchema = z.enum(["live", "preview"]);
 export type WebsiteResolveMode = z.infer<typeof WebsiteResolveModeSchema>;
@@ -21,18 +22,30 @@ export type ResolveWebsitePublicSiteSettingsInput = z.infer<
   typeof ResolveWebsitePublicSiteSettingsInputSchema
 >;
 
+export const ResolveWebsitePublicPageSchema = z.object({
+  id: z.string(),
+  path: z.string(),
+  locale: z.string(),
+  templateKey: z.string(),
+  content: WebsitePageContentSchema,
+  seo: WebsiteSeoSchema.optional().nullable(),
+});
+export type ResolveWebsitePublicPage = z.infer<typeof ResolveWebsitePublicPageSchema>;
+
 export const ResolveWebsitePublicOutputSchema = z.object({
   siteId: z.string(),
   siteSlug: z.string(),
   settings: WebsiteSiteSettingsSchema,
+  page: ResolveWebsitePublicPageSchema,
+  menus: z.array(WebsiteMenuPublicSchema),
+  snapshotVersion: z.number().int().nonnegative().optional().nullable(),
+  // Backward-compatible fields retained for old clients.
   pageId: z.string(),
   path: z.string(),
   locale: z.string(),
   template: z.string(),
   payloadJson: z.unknown(),
   seo: WebsiteSeoSchema.optional().nullable(),
-  menus: z.array(WebsiteMenuPublicSchema),
-  snapshotVersion: z.number().int().nonnegative().optional().nullable(),
 });
 export type ResolveWebsitePublicOutput = z.infer<typeof ResolveWebsitePublicOutputSchema>;
 

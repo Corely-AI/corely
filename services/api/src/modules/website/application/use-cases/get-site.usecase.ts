@@ -14,7 +14,10 @@ import type { GetWebsiteSiteOutput } from "@corely/contracts";
 import type { WebsiteSiteRepositoryPort } from "../ports/site-repository.port";
 import type { WebsiteCustomAttributesPort } from "../ports/custom-attributes.port";
 import type { WebsitePublicFileUrlPort } from "../ports/public-file-url.port";
-import { buildWebsiteSiteSettings, WEBSITE_SITE_SETTINGS_ENTITY_TYPE } from "../../domain/site-settings";
+import {
+  buildWebsiteSiteSettings,
+  WEBSITE_SITE_SETTINGS_ENTITY_TYPE,
+} from "../../domain/site-settings";
 import { withResolvedSiteAssetUrls } from "./site-settings-assets";
 
 type Deps = {

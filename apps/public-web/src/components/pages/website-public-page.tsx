@@ -1,11 +1,14 @@
 import React from "react";
-import type {
-  ListPublicWebsiteWallOfLoveItemsOutput,
-  ResolveWebsitePublicOutput,
+import {
+  type ListPublicWebsiteWallOfLoveItemsOutput,
+  type ResolveWebsitePublicOutput,
+  type WebsitePageContent,
+  WebsitePageContentSchema,
 } from "@corely/contracts";
 import { PublicSiteLayout } from "@/components/website/public-site-layout";
 import { TemplateDefault } from "@/components/website/template-default";
 import { buildPublicFileUrl } from "@/lib/public-api";
+import { TemplateRegistry } from "@/modules/website/templates/template-registry";
 
 const toYoutubeEmbedUrl = (linkUrl: string | undefined): string | null => {
   if (!linkUrl) {
@@ -33,8 +36,21 @@ export const WebsitePublicPageScreen = ({
   basePath?: string;
   wallOfLoveItems?: ListPublicWebsiteWallOfLoveItemsOutput["items"];
 }) => {
-  const template = page.template?.toLowerCase() ?? "default";
-  const Template = template === "default" ? TemplateDefault : TemplateDefault;
+  const parsedLegacyContent = WebsitePageContentSchema.safeParse(page.payloadJson);
+  const content: WebsitePageContent =
+    page.page?.content ??
+    (parsedLegacyContent.success
+      ? parsedLegacyContent.data
+      : {
+          templateKey: page.template,
+          blocks: [],
+        });
+  const templateDefinition = TemplateRegistry.get(content.templateKey);
+  const templateRender = templateDefinition ? (
+    templateDefinition.render(content)
+  ) : (
+    <TemplateDefault payload={page.payloadJson} />
+  );
 
   return (
     <PublicSiteLayout
@@ -44,7 +60,7 @@ export const WebsitePublicPageScreen = ({
       previewMode={previewMode}
       basePath={basePath}
     >
-      <Template payload={page.payloadJson} />
+      {templateRender}
       {wallOfLoveItems && wallOfLoveItems.length > 0 ? (
         <section className="mx-auto max-w-6xl px-4 pb-16 pt-10">
           <h2 className="mb-6 text-2xl font-semibold">Wall Of Love</h2>

@@ -46,7 +46,9 @@ const resolveFileUrl = async (
     return normalizedCurrentUrl;
   }
 
-  const resolvedUrl = normalizeNonEmptyString(await publicFileUrlPort.getPublicUrl(effectiveFileId));
+  const resolvedUrl = normalizeNonEmptyString(
+    await publicFileUrlPort.getPublicUrl(effectiveFileId)
+  );
   return resolvedUrl;
 };
 
@@ -56,11 +58,7 @@ export const withResolvedSiteAssetUrls = async (
 ): Promise<WebsiteSiteSettings> => {
   const [logoUrl, faviconUrl] = await Promise.all([
     resolveFileUrl(settings.common.logo.fileId, settings.common.logo.url, publicFileUrlPort),
-    resolveFileUrl(
-      settings.common.favicon.fileId,
-      settings.common.favicon.url,
-      publicFileUrlPort
-    ),
+    resolveFileUrl(settings.common.favicon.fileId, settings.common.favicon.url, publicFileUrlPort),
   ]);
 
   return {
