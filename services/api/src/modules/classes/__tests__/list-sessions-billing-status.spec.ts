@@ -30,6 +30,39 @@ class FakeRepo implements ClassesRepositoryPort {
   async listClassGroupsWithSchedulePattern() {
     return [];
   }
+  async listClassGroupInstructors() {
+    return [];
+  }
+  async replaceClassGroupInstructors() {
+    return [];
+  }
+  async createProgram() {
+    throw new Error("not implemented");
+  }
+  async updateProgram() {
+    throw new Error("not implemented");
+  }
+  async findProgramById() {
+    return null;
+  }
+  async deleteProgram() {
+    return;
+  }
+  async listPrograms() {
+    return { items: [], total: 0 };
+  }
+  async replaceProgramSessionTemplates() {
+    return [];
+  }
+  async replaceProgramMilestoneTemplates() {
+    return [];
+  }
+  async listProgramSessionTemplates() {
+    return [];
+  }
+  async listProgramMilestoneTemplates() {
+    return [];
+  }
   async createSession() {
     throw new Error("not implemented");
   }
@@ -87,6 +120,12 @@ class FakeRepo implements ClassesRepositoryPort {
   async listEnrollments() {
     throw new Error("not implemented");
   }
+  async findEnrollmentBillingPlan() {
+    return null;
+  }
+  async upsertEnrollmentBillingPlan() {
+    throw new Error("not implemented");
+  }
   async listAttendanceBySession() {
     throw new Error("not implemented");
   }
@@ -124,11 +163,53 @@ class FakeRepo implements ClassesRepositoryPort {
   async listBillingInvoiceLinks() {
     throw new Error("not implemented");
   }
+  async listBillingInvoiceLinksByEnrollment() {
+    return [];
+  }
   async findBillingInvoiceLinkByIdempotency() {
     throw new Error("not implemented");
   }
   async createBillingInvoiceLink() {
     throw new Error("not implemented");
+  }
+  async listMilestonesByClassGroup() {
+    return [];
+  }
+  async createMilestone() {
+    throw new Error("not implemented");
+  }
+  async updateMilestone() {
+    throw new Error("not implemented");
+  }
+  async deleteMilestone() {
+    throw new Error("not implemented");
+  }
+  async findMilestoneById() {
+    return null;
+  }
+  async upsertMilestoneCompletion() {
+    throw new Error("not implemented");
+  }
+  async listMilestoneCompletionsByClassGroup() {
+    return [];
+  }
+  async listResourcesByClassGroup() {
+    return [];
+  }
+  async createResource() {
+    throw new Error("not implemented");
+  }
+  async updateResource() {
+    throw new Error("not implemented");
+  }
+  async deleteResource() {
+    throw new Error("not implemented");
+  }
+  async reorderResources() {
+    return;
+  }
+  async findResourceById() {
+    return null;
   }
   async isMonthLocked() {
     throw new Error("not implemented");

@@ -22,6 +22,10 @@ export const createSession = async (
       topic: session.topic ?? undefined,
       notes: session.notes ?? undefined,
       status: session.status,
+      type: session.type,
+      meetingProvider: session.meetingProvider ?? undefined,
+      meetingJoinUrl: session.meetingJoinUrl ?? undefined,
+      meetingExternalId: session.meetingExternalId ?? undefined,
       createdAt: session.createdAt,
       updatedAt: session.updatedAt,
     },
@@ -46,6 +50,10 @@ export const upsertSession = async (
       topic: session.topic ?? undefined,
       notes: session.notes ?? undefined,
       status: session.status,
+      type: session.type,
+      meetingProvider: session.meetingProvider ?? undefined,
+      meetingJoinUrl: session.meetingJoinUrl ?? undefined,
+      meetingExternalId: session.meetingExternalId ?? undefined,
       updatedAt: session.updatedAt,
     },
     create: {
@@ -58,6 +66,10 @@ export const upsertSession = async (
       topic: session.topic ?? undefined,
       notes: session.notes ?? undefined,
       status: session.status,
+      type: session.type,
+      meetingProvider: session.meetingProvider ?? undefined,
+      meetingJoinUrl: session.meetingJoinUrl ?? undefined,
+      meetingExternalId: session.meetingExternalId ?? undefined,
       createdAt: session.createdAt,
       updatedAt: session.updatedAt,
     },
@@ -79,6 +91,10 @@ export const updateSession = async (
       topic: updates.topic ?? undefined,
       notes: updates.notes ?? undefined,
       status: updates.status,
+      type: updates.type,
+      meetingProvider: updates.meetingProvider ?? undefined,
+      meetingJoinUrl: updates.meetingJoinUrl ?? undefined,
+      meetingExternalId: updates.meetingExternalId ?? undefined,
       updatedAt: updates.updatedAt,
     },
   });
@@ -111,6 +127,9 @@ export const listSessions = async (
   if (filters.status) {
     where.status = filters.status;
   }
+  if (filters.type) {
+    where.type = filters.type;
+  }
   if (filters.dateFrom || filters.dateTo) {
     where.startsAt = {
       ...(filters.dateFrom ? { gte: filters.dateFrom } : {}),
@@ -121,13 +140,18 @@ export const listSessions = async (
     where.OR = [
       { topic: { contains: filters.q, mode: "insensitive" } },
       { notes: { contains: filters.q, mode: "insensitive" } },
+      { meetingJoinUrl: { contains: filters.q, mode: "insensitive" } },
     ];
   }
 
   const [items, total] = await prisma.$transaction([
     prisma.classSession.findMany({
       where,
-      orderBy: parseSort(filters.sort, ["startsAt", "createdAt", "updatedAt"], "startsAt"),
+      orderBy: parseSort(
+        filters.sort,
+        ["startsAt", "createdAt", "updatedAt", "type", "status"],
+        "startsAt"
+      ),
       skip: (pagination.page - 1) * pagination.pageSize,
       take: pagination.pageSize,
     }),

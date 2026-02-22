@@ -16,6 +16,8 @@ import { UnpublishWebsiteWallOfLoveItemUseCase } from "./application/use-cases/u
 import { ListPublicWebsiteWallOfLoveItemsUseCase } from "./application/use-cases/list-public-website-wall-of-love-items.usecase";
 import { WebsiteSlugExistsUseCase } from "./application/use-cases/slug-exists.usecase";
 import { GenerateWebsitePageFromPromptUseCase } from "./application/use-cases/generate-page-from-prompt.usecase";
+import { GenerateWebsiteBlocksUseCase } from "./application/use-cases/generate-blocks.usecase";
+import { RegenerateWebsiteBlockUseCase } from "./application/use-cases/regenerate-block.usecase";
 import {
   WEBSITE_SITE_REPO_PORT,
   type WebsiteSiteRepositoryPort,
@@ -197,6 +199,22 @@ export const WEBSITE_WALL_OF_LOVE_USE_CASE_PROVIDERS: Provider[] = [
         publicWorkspaceResolver,
       }),
     inject: [WEBSITE_SITE_REPO_PORT, PublicWorkspaceResolver],
+  },
+  {
+    provide: GenerateWebsiteBlocksUseCase,
+    useFactory: () =>
+      new GenerateWebsiteBlocksUseCase({
+        logger: new NestLoggerAdapter(),
+      }),
+    inject: [],
+  },
+  {
+    provide: RegenerateWebsiteBlockUseCase,
+    useFactory: () =>
+      new RegenerateWebsiteBlockUseCase({
+        logger: new NestLoggerAdapter(),
+      }),
+    inject: [],
   },
   {
     provide: GenerateWebsitePageFromPromptUseCase,

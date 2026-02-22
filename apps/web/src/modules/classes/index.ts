@@ -1,6 +1,10 @@
 export { default as ClassGroupsListPage } from "./screens/ClassGroupsListPage";
 export { default as ClassGroupEditorPage } from "./screens/ClassGroupEditorPage";
 export { default as ClassGroupDetailPage } from "./screens/ClassGroupDetailPage";
+export { default as CohortsListScreen } from "./screens/cohorts/cohorts-list.screen";
+export { default as CohortDetailScreen } from "./screens/cohorts/cohort-detail.screen";
+export { default as ProgramsListScreen } from "./screens/programs/programs-list.screen";
+export { default as ProgramDetailScreen } from "./screens/programs/program-detail.screen";
 export { default as SessionsPage } from "./screens/SessionsPage";
 export { default as SessionDetailPage } from "./screens/SessionDetailPage";
 export { default as ClassesBillingPage } from "./screens/ClassesBillingPage";

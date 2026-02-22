@@ -3,3 +3,5 @@
 - Run all E2E tests: `pnpm --filter apps/e2e e2e`
 - Run only CRM tests: `pnpm --filter apps/e2e e2e tests/crm.spec.ts`
 - Run only CRM tests in Chromium: `pnpm --filter apps/e2e e2e --project=chromium tests/crm.spec.ts`
+- Run Classes Cohort Academy v1.1 suite: `pnpm --filter @corely/e2e e2e tests/classes/*.spec.ts`
+- Run a single Classes scenario (Chromium): `pnpm --filter @corely/e2e e2e --project=chromium tests/classes/programs-and-cohorts.spec.ts`

@@ -20,6 +20,9 @@ type Deps = {
   downloadTtlSeconds: number;
 };
 
+const buildDirectGcsPublicUrl = (bucket: string, objectKey: string): string =>
+  `https://storage.googleapis.com/${encodeURIComponent(bucket)}/${encodeURIComponent(objectKey)}`;
+
 export class GetPublicFileUrlUseCase extends BaseUseCase<
   GetPublicFileUrlInput,
   GetPublicFileUrlOutput
@@ -44,6 +47,15 @@ export class GetPublicFileUrlUseCase extends BaseUseCase<
       : await this.useCaseDeps.fileRepo.findByIdGlobal(input.fileId);
     if (!file || !file.isPublic) {
       return err(new NotFoundError("File not found"));
+    }
+
+    const expiresAt = new Date(Date.now() + this.useCaseDeps.downloadTtlSeconds * 1000);
+
+    if (file.storageProvider === "gcs") {
+      return ok({
+        url: buildDirectGcsPublicUrl(file.bucket, file.objectKey),
+        expiresAt: expiresAt.toISOString(),
+      });
     }
 
     const signed = await this.useCaseDeps.objectStorage.createSignedDownloadUrl({

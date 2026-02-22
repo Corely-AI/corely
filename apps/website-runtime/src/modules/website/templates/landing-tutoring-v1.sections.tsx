@@ -1,0 +1,15 @@
+export { StickyNav } from "./landing-tutoring-v1/components/StickyNav";
+export { HeroSection } from "./landing-tutoring-v1/components/HeroSection";
+export { SocialProofStrip } from "./landing-tutoring-v1/components/SocialProofStrip";
+export { PASSection } from "./landing-tutoring-v1/components/PASSection";
+export { MethodSection } from "./landing-tutoring-v1/components/MethodSection";
+export { ProgramHighlights } from "./landing-tutoring-v1/components/ProgramHighlights";
+export { GroupLearningSection } from "./landing-tutoring-v1/components/GroupLearningSection";
+export { CoursePackages } from "./landing-tutoring-v1/components/CoursePackages";
+export { ScheduleSection } from "./landing-tutoring-v1/components/ScheduleSection";
+export { InstructorSection } from "./landing-tutoring-v1/components/InstructorSection";
+export { TestimonialsSection } from "./landing-tutoring-v1/components/TestimonialsSection";
+export { ScholarshipSection } from "./landing-tutoring-v1/components/ScholarshipSection";
+export { FAQSection } from "./landing-tutoring-v1/components/FAQSection";
+export { LeadForm } from "./landing-tutoring-v1/components/LeadForm";
+export { Footer } from "./landing-tutoring-v1/components/Footer";

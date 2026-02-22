@@ -80,6 +80,39 @@ class FakeRepo implements ClassesRepositoryPort {
   async listClassGroupsWithSchedulePattern() {
     return [];
   }
+  async listClassGroupInstructors() {
+    return [];
+  }
+  async replaceClassGroupInstructors() {
+    return [];
+  }
+  async createProgram() {
+    throw new Error("not implemented");
+  }
+  async updateProgram() {
+    throw new Error("not implemented");
+  }
+  async findProgramById() {
+    return null;
+  }
+  async deleteProgram() {
+    return;
+  }
+  async listPrograms() {
+    return { items: [], total: 0 };
+  }
+  async replaceProgramSessionTemplates() {
+    return [];
+  }
+  async replaceProgramMilestoneTemplates() {
+    return [];
+  }
+  async listProgramSessionTemplates() {
+    return [];
+  }
+  async listProgramMilestoneTemplates() {
+    return [];
+  }
   async createSession() {
     throw new Error("not implemented");
   }
@@ -105,6 +138,12 @@ class FakeRepo implements ClassesRepositoryPort {
     throw new Error("not implemented");
   }
   async listEnrollments() {
+    throw new Error("not implemented");
+  }
+  async findEnrollmentBillingPlan() {
+    return null;
+  }
+  async upsertEnrollmentBillingPlan() {
     throw new Error("not implemented");
   }
   async listAttendanceBySession() {
@@ -159,6 +198,15 @@ class FakeRepo implements ClassesRepositoryPort {
   async listBillingInvoiceLinks(tenantId: string, workspaceId: string, billingRunId: string) {
     return Array.from(this.links.values()).filter((link) => link.billingRunId === billingRunId);
   }
+  async listBillingInvoiceLinksByEnrollment(
+    tenantId: string,
+    workspaceId: string,
+    enrollmentId: string
+  ) {
+    void tenantId;
+    void workspaceId;
+    return Array.from(this.links.values()).filter((link) => link.enrollmentId === enrollmentId);
+  }
   async getInvoiceRecipientEmailsByIds(
     tenantId: string,
     workspaceId: string,
@@ -181,6 +229,45 @@ class FakeRepo implements ClassesRepositoryPort {
   async createBillingInvoiceLink(link: any) {
     this.links.set(`${link.tenantId}:${link.workspaceId}:${link.idempotencyKey}`, link);
     return link;
+  }
+  async listMilestonesByClassGroup() {
+    return [];
+  }
+  async createMilestone() {
+    throw new Error("not implemented");
+  }
+  async updateMilestone() {
+    throw new Error("not implemented");
+  }
+  async deleteMilestone() {
+    throw new Error("not implemented");
+  }
+  async findMilestoneById() {
+    return null;
+  }
+  async upsertMilestoneCompletion() {
+    throw new Error("not implemented");
+  }
+  async listMilestoneCompletionsByClassGroup() {
+    return [];
+  }
+  async listResourcesByClassGroup() {
+    return [];
+  }
+  async createResource() {
+    throw new Error("not implemented");
+  }
+  async updateResource() {
+    throw new Error("not implemented");
+  }
+  async deleteResource() {
+    throw new Error("not implemented");
+  }
+  async reorderResources() {
+    return;
+  }
+  async findResourceById() {
+    return null;
   }
   async isMonthLocked() {
     return false;

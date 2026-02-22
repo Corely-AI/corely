@@ -11,11 +11,14 @@ import { CreateWebsitePageUseCase } from "./application/use-cases/create-page.us
 import { UpdateWebsitePageUseCase } from "./application/use-cases/update-page.usecase";
 import { ListWebsitePagesUseCase } from "./application/use-cases/list-pages.usecase";
 import { GetWebsitePageUseCase } from "./application/use-cases/get-page.usecase";
+import { GetWebsitePageContentUseCase } from "./application/use-cases/get-page-content.usecase";
+import { UpdateWebsitePageContentUseCase } from "./application/use-cases/update-page-content.usecase";
 import { PublishWebsitePageUseCase } from "./application/use-cases/publish-page.usecase";
 import { UnpublishWebsitePageUseCase } from "./application/use-cases/unpublish-page.usecase";
 import { UpsertWebsiteMenuUseCase } from "./application/use-cases/upsert-menu.usecase";
 import { ListWebsiteMenusUseCase } from "./application/use-cases/list-menus.usecase";
 import { ResolveWebsitePublicPageUseCase } from "./application/use-cases/resolve-public-page.usecase";
+import { ResolveWebsitePublicSiteSettingsUseCase } from "./application/use-cases/resolve-public-site-settings.usecase";
 import { CreateWebsiteFeedbackUseCase } from "./application/use-cases/create-website-feedback.usecase";
 import { ListWebsitePublicQaUseCase } from "./application/use-cases/list-website-public-qa.usecase";
 import { ListWebsiteQaUseCase } from "./application/use-cases/list-website-qa.usecase";
@@ -31,6 +34,8 @@ import { UnpublishWebsiteWallOfLoveItemUseCase } from "./application/use-cases/u
 import { ListPublicWebsiteWallOfLoveItemsUseCase } from "./application/use-cases/list-public-website-wall-of-love-items.usecase";
 import { GenerateWebsitePageFromPromptUseCase } from "./application/use-cases/generate-page-from-prompt.usecase";
 import { WebsiteSlugExistsUseCase } from "./application/use-cases/slug-exists.usecase";
+import { GenerateWebsiteBlocksUseCase } from "./application/use-cases/generate-blocks.usecase";
+import { RegenerateWebsiteBlockUseCase } from "./application/use-cases/regenerate-block.usecase";
 
 export const WEBSITE_APPLICATION_PROVIDER: Provider = {
   provide: WebsiteApplication,
@@ -46,11 +51,14 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     updatePage: UpdateWebsitePageUseCase,
     listPages: ListWebsitePagesUseCase,
     getPage: GetWebsitePageUseCase,
+    getPageContent: GetWebsitePageContentUseCase,
+    updatePageContent: UpdateWebsitePageContentUseCase,
     publishPage: PublishWebsitePageUseCase,
     unpublishPage: UnpublishWebsitePageUseCase,
     upsertMenu: UpsertWebsiteMenuUseCase,
     listMenus: ListWebsiteMenusUseCase,
     resolvePublicPage: ResolveWebsitePublicPageUseCase,
+    resolvePublicSiteSettings: ResolveWebsitePublicSiteSettingsUseCase,
     createFeedback: CreateWebsiteFeedbackUseCase,
     listPublicQa: ListWebsitePublicQaUseCase,
     listQa: ListWebsiteQaUseCase,
@@ -64,6 +72,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     publishWallOfLoveItem: PublishWebsiteWallOfLoveItemUseCase,
     unpublishWallOfLoveItem: UnpublishWebsiteWallOfLoveItemUseCase,
     listPublicWallOfLoveItems: ListPublicWebsiteWallOfLoveItemsUseCase,
+    generateBlocks: GenerateWebsiteBlocksUseCase,
+    regenerateBlock: RegenerateWebsiteBlockUseCase,
     generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase,
     slugExists: WebsiteSlugExistsUseCase
   ) =>
@@ -79,11 +89,14 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
       updatePage,
       listPages,
       getPage,
+      getPageContent,
+      updatePageContent,
       publishPage,
       unpublishPage,
       upsertMenu,
       listMenus,
       resolvePublicPage,
+      resolvePublicSiteSettings,
       createFeedback,
       listPublicQa,
       listQa,
@@ -97,6 +110,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
       publishWallOfLoveItem,
       unpublishWallOfLoveItem,
       listPublicWallOfLoveItems,
+      generateBlocks,
+      regenerateBlock,
       generatePageFromPrompt,
       slugExists
     ),
@@ -112,11 +127,14 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     UpdateWebsitePageUseCase,
     ListWebsitePagesUseCase,
     GetWebsitePageUseCase,
+    GetWebsitePageContentUseCase,
+    UpdateWebsitePageContentUseCase,
     PublishWebsitePageUseCase,
     UnpublishWebsitePageUseCase,
     UpsertWebsiteMenuUseCase,
     ListWebsiteMenusUseCase,
     ResolveWebsitePublicPageUseCase,
+    ResolveWebsitePublicSiteSettingsUseCase,
     CreateWebsiteFeedbackUseCase,
     ListWebsitePublicQaUseCase,
     ListWebsiteQaUseCase,
@@ -130,6 +148,8 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     PublishWebsiteWallOfLoveItemUseCase,
     UnpublishWebsiteWallOfLoveItemUseCase,
     ListPublicWebsiteWallOfLoveItemsUseCase,
+    GenerateWebsiteBlocksUseCase,
+    RegenerateWebsiteBlockUseCase,
     GenerateWebsitePageFromPromptUseCase,
     WebsiteSlugExistsUseCase,
   ],

@@ -17,6 +17,8 @@ import {
   ListWebsiteQaOutputSchema,
   ListPublicWebsiteWallOfLoveItemsInputSchema,
   ListPublicWebsiteWallOfLoveItemsOutputSchema,
+  ResolveWebsitePublicSiteSettingsInputSchema,
+  ResolveWebsitePublicSiteSettingsOutputSchema,
   ResolveWebsitePublicInputSchema,
   ResolveWebsitePublicOutputSchema,
   WebsiteSlugExistsInputSchema,
@@ -104,6 +106,17 @@ export class WebsitePublicController {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.resolvePublicPage.execute(input, ctx);
     return ResolveWebsitePublicOutputSchema.parse(mapResultToHttp(result));
+  }
+
+  @Get("settings")
+  @Header("Cache-Control", "public, max-age=30, s-maxage=120, stale-while-revalidate=60")
+  async resolveSettings(@Query() query: Record<string, unknown>, @Req() req: Request) {
+    const input = ResolveWebsitePublicSiteSettingsInputSchema.parse({
+      siteId: query.siteId,
+    });
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.resolvePublicSiteSettings.execute(input, ctx);
+    return ResolveWebsitePublicSiteSettingsOutputSchema.parse(mapResultToHttp(result));
   }
 
   @Post("feedback")

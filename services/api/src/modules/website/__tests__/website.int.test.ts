@@ -79,6 +79,9 @@ describe("Website integration (Postgres)", () => {
           publishedAt: null,
         };
       },
+      async getEntryContentJson() {
+        return { templateKey: "landing", blocks: [] };
+      },
     };
 
     const useCase = new PublishWebsitePageUseCase({
@@ -86,6 +89,17 @@ describe("Website integration (Postgres)", () => {
       pageRepo: new PrismaWebsitePageRepository(prisma),
       snapshotRepo: new PrismaWebsiteSnapshotRepository(prisma),
       cmsRead,
+      siteRepo: new PrismaWebsiteSiteRepository(prisma),
+      menuRepo: new PrismaWebsiteMenuRepository(prisma),
+      customAttributes: {
+        async getAttributes() {
+          return {};
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
       outbox: new PrismaOutboxAdapter(prisma),
       uow: new PrismaUnitOfWork(prisma),
       idGenerator: { newId: () => "snap-1" } as any,
@@ -170,7 +184,7 @@ describe("Website integration (Postgres)", () => {
         path: page.path,
         locale: page.locale,
         version: 1,
-        payloadJson: { template: "landing", content: { blocks: [] } },
+        payloadJson: { template: "landing", content: { templateKey: "landing", blocks: [] } },
       },
     });
 
@@ -183,13 +197,16 @@ describe("Website integration (Postgres)", () => {
         path: page.path,
         locale: page.locale,
         version: 2,
-        payloadJson: { template: "landing-v2", content: { blocks: ["latest"] } },
+        payloadJson: { template: "landing-v2", content: { templateKey: "landing-v2", blocks: [] } },
       },
     });
 
     const cmsRead: CmsReadPort = {
       async getEntryForWebsiteRender() {
         throw new Error("CMS should not be called for live mode");
+      },
+      async getEntryContentJson() {
+        return null;
       },
     };
 
@@ -200,7 +217,21 @@ describe("Website integration (Postgres)", () => {
       pageRepo: new PrismaWebsitePageRepository(prisma),
       snapshotRepo: new PrismaWebsiteSnapshotRepository(prisma),
       menuRepo: new PrismaWebsiteMenuRepository(prisma),
+      publicFileUrlPort: {
+        async getPublicUrl() {
+          return null;
+        },
+      },
       cmsRead,
+      customAttributes: {
+        async getAttributes() {
+          return {};
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
       publicWorkspaceResolver: new PublicWorkspaceResolver(prisma),
     });
 
@@ -209,8 +240,10 @@ describe("Website integration (Postgres)", () => {
     if (result.ok) {
       expect(result.value.snapshotVersion).toBe(2);
       expect(result.value.template).toBe("landing-v2");
+      expect(result.value.page.templateKey).toBe("landing-v2");
       expect(result.value.menus).toHaveLength(1);
       expect(result.value.menus[0].name).toBe("header");
+      expect(result.value.settings.common.siteTitle).toBe("Resolve Site");
     }
   });
 

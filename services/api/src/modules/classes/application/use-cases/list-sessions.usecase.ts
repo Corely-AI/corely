@@ -33,6 +33,7 @@ export class ListSessionsUseCase {
         q: input.q,
         classGroupId: input.classGroupId,
         status: input.status,
+        type: input.type,
         dateFrom: input.dateFrom ? new Date(input.dateFrom) : undefined,
         dateTo: input.dateTo ? new Date(input.dateTo) : undefined,
         sort: input.sort,

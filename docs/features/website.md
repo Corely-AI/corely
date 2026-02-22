@@ -6,6 +6,12 @@ This document summarizes the Website module introduced on top of CMS.
 
 The Website module owns websites, domains, pages/routes, menus, publish/unpublish, and published snapshots. It integrates with CMS for content authoring and rendering without direct DB access across modules.
 
+Website rendering follows a `Templates + Blocks` model:
+
+- Templates are fixed React implementations owned and versioned by Corely.
+- Blocks are validated JSON content edited in admin.
+- Customers no longer edit arbitrary React code per site.
+
 ## Responsibility Split
 
 Website module (this module):
@@ -14,6 +20,7 @@ Website module (this module):
 - Page routing, SEO metadata, publish/unpublish state
 - Public resolve endpoint (`/public/website/resolve`)
 - AI-assisted page generation (draft + CMS content blueprint)
+- Page content draft editing endpoints (`/website/pages/:pageId/content`)
 
 CMS module:
 
@@ -21,12 +28,52 @@ CMS module:
 - Draft/publish lifecycle for content entries
 - Public content rendering for CMS-owned content types
 
+## Templates + Blocks Contracts
+
+Shared contracts are defined in `packages/contracts/src/website/blocks/*` and exported from `@corely/contracts`.
+
+- `WebsiteBlockBaseSchema`
+- `WebsiteBlockUnionSchema` (discriminated by `type`)
+- `WebsitePageContentSchema` with:
+  - `templateKey`
+  - `templateVersion?`
+  - `blocks[]`
+  - `seoOverride?`
+
+Current template:
+
+- `landing.tutoring.v1` with block types:
+  `stickyNav`, `hero`, `socialProof`, `pas`, `method`, `programHighlights`, `groupLearning`,
+  `coursePackages`, `schedule`, `instructor`, `testimonials`, `scholarship`, `faq`, `leadForm`, `footer`
+
+## Site Settings Contract
+
+Website public resolve now includes `site.settings` as a typed contract:
+
+- `settings.common`: branding + SEO defaults + header/footer/socials
+- `settings.theme`: theme token settings
+- `settings.custom`: arbitrary JSON key/value properties
+
+Persistence boundaries:
+
+- `common` and `theme` are stored in `WebsiteSite.brandingJson` / `WebsiteSite.themeJson`
+- `custom` is stored in Customization custom attributes (`ext.entity_attr`) with:
+  - `entityType = \"WebsiteSite\"`
+  - `entityId = siteId`
+  - module-scoped storage via the customization service adapter
+
+Website does not write customization tables directly from its Prisma repositories.
+
+Website settings updates call the Customization adapter port (`WebsiteCustomAttributesPort`) for `settings.custom`.
+
 ## Integration Boundaries
 
 - No direct reads/writes of CMS tables from Website.
 - Website uses explicit ports:
   - `CmsReadPort.getEntryForWebsiteRender(...)`
+  - `CmsReadPort.getEntryContentJson(...)`
   - `CmsWritePort.createDraftEntryFromBlueprint(...)`
+  - `CmsWritePort.updateDraftEntryContentJson(...)`
 - Website publish/unpublish writes outbox events:
   - `website.page.published`
   - `website.page.unpublished`
@@ -36,17 +83,39 @@ CMS module:
 - Publish generates a `WebsitePageSnapshot` with:
   - `template`
   - `seo`
-  - `content` (CMS render payload at publish time)
+  - `content` (resolved page blocks JSON)
+  - `settings` (common/theme/custom)
+  - `menus` (resolved public menu payload)
 - Snapshot + page status update + outbox event are done in a single transaction.
 - Live resolve always serves the latest snapshot; preview resolve reads CMS render payload directly.
+
+## Admin Page Content Endpoints
+
+- `GET /website/pages/:pageId/content`
+- `PATCH /website/pages/:pageId/content`
+
+Draft blocks are stored in CMS draft content (`contentJson`) for `WebsitePage.cmsEntryId`.
 
 ## Public Resolve
 
 `GET /public/website/resolve?host=&path=&locale=&mode=live|preview`
 
 - Resolves domain → site → page (with normalized host/path/locale).
-- `mode=preview` returns CMS render payload for the linked `cmsEntryId`.
+- `mode=preview` requires a valid preview token and returns draft content for linked `cmsEntryId`.
 - `mode=live` returns the latest snapshot payload.
+- Response includes:
+  - `site.settings` (`common`, `theme`, `custom`)
+  - `page.content` (`WebsitePageContent`)
+  - legacy compatibility fields (`template`, `payloadJson`, etc.)
+
+## Public Site Settings
+
+`GET /public/website/settings?siteId=<siteId>`
+
+- Returns typed website settings only:
+  - `settings.common` + `settings.theme` from `WebsiteSite` JSON
+  - `settings.custom` from customization custom attributes
+- Intended for public custom React/Next clients that need branding + custom settings without resolving a page payload.
 
 ## Public Feedback
 
@@ -175,6 +244,7 @@ Validation:
 
 ## Security Notes
 
+- Public resolve preview mode requires a non-empty, validated preview token.
 - Preview submissions require `siteRef.mode=\"preview\"` with a non-empty, validated token shape.
 - Public feedback endpoint includes a basic per-IP, per-host rate limit.
 - All public website endpoints resolve by host/path via existing workspace + domain resolution logic, including custom domains.
@@ -187,3 +257,10 @@ Validation:
 - Uses the shared AI client/adapter and strict Zod validation for a JSON blueprint.
 - Creates a CMS draft entry from the blueprint (via `CmsWritePort`).
 - Creates a Website page in `DRAFT` referencing `cmsEntryId`.
+
+Additional AI block endpoints:
+
+- `POST /website/ai/generate-blocks`
+  - Generates validated `blocks[]` for a template.
+- `POST /website/ai/regenerate-block`
+  - Regenerates one block (`blockType`) with schema validation.

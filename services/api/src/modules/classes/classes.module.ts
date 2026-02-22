@@ -9,12 +9,11 @@ import {
   type IdempotencyStoragePort,
 } from "@/shared/ports/idempotency-storage.port";
 import { ClassesController } from "./http/classes.controller";
+import { ClassesAcademyController } from "./http/classes-academy.controller";
 import { ClassesInternalController } from "./http/classes-internal.controller";
 import { TeacherDashboardController } from "./http/controllers/teacher-dashboard.controller";
-
 import { PrismaClassesRepository } from "./infrastructure/prisma/classes.repository";
 import { PrismaTeacherDashboardQuery } from "./infrastructure/prisma/prisma-teacher-dashboard.query";
-
 import { InvoicesWriteAdapter } from "./infrastructure/adapters/invoices-write.adapter";
 import { ExtKvClassesSettingsRepository } from "./infrastructure/adapters/ext-kv-classes-settings.repository";
 import { InvoicesModule } from "../invoices/invoices.module";
@@ -59,22 +58,52 @@ import { UpdateClassesBillingSettingsUseCase } from "./application/use-cases/upd
 import { GetTeacherDashboardSummaryUseCase } from "./application/use-cases/get-teacher-dashboard-summary.use-case";
 import { GetTeacherDashboardUnpaidInvoicesUseCase } from "./application/use-cases/get-teacher-dashboard-unpaid-invoices.use-case";
 import { GetBillingRunSendProgressUseCase } from "./application/use-cases/get-billing-run-send-progress.usecase";
+import { CreateProgramUseCase } from "./application/use-cases/create-program.usecase";
+import { UpdateProgramUseCase } from "./application/use-cases/update-program.usecase";
+import { ListProgramsUseCase } from "./application/use-cases/list-programs.usecase";
+import { GetProgramUseCase } from "./application/use-cases/get-program.usecase";
+import { DeleteProgramUseCase } from "./application/use-cases/delete-program.usecase";
+import { ReplaceProgramSessionTemplatesUseCase } from "./application/use-cases/replace-program-session-templates.usecase";
+import { ReplaceProgramMilestoneTemplatesUseCase } from "./application/use-cases/replace-program-milestone-templates.usecase";
+import { CreateCohortFromProgramUseCase } from "./application/use-cases/create-cohort-from-program.usecase";
+import { UpdateCohortLifecycleUseCase } from "./application/use-cases/update-cohort-lifecycle.usecase";
+import { ListCohortTeamUseCase } from "./application/use-cases/list-cohort-team.usecase";
+import { UpsertCohortTeamUseCase } from "./application/use-cases/upsert-cohort-team.usecase";
+import { CreateApplicationUseCase } from "./application/use-cases/create-application.usecase";
+import { ApproveApplicationUseCase } from "./application/use-cases/approve-application.usecase";
+import { GetEnrollmentBillingPlanUseCase } from "./application/use-cases/get-enrollment-billing-plan.usecase";
+import { UpsertEnrollmentBillingPlanUseCase } from "./application/use-cases/upsert-enrollment-billing-plan.usecase";
+import { GenerateInvoicesFromEnrollmentBillingPlanUseCase } from "./application/use-cases/generate-invoices-from-enrollment-billing-plan.usecase";
+import { ListMilestonesUseCase } from "./application/use-cases/list-milestones.usecase";
+import { CreateMilestoneUseCase } from "./application/use-cases/create-milestone.usecase";
+import { UpdateMilestoneUseCase } from "./application/use-cases/update-milestone.usecase";
+import { DeleteMilestoneUseCase } from "./application/use-cases/delete-milestone.usecase";
+import { UpsertMilestoneCompletionUseCase } from "./application/use-cases/upsert-milestone-completion.usecase";
+import { GetOutcomesSummaryUseCase } from "./application/use-cases/get-outcomes-summary.usecase";
+import { ListResourcesUseCase } from "./application/use-cases/list-resources.usecase";
+import { CreateResourceUseCase } from "./application/use-cases/create-resource.usecase";
+import { UpdateResourceUseCase } from "./application/use-cases/update-resource.usecase";
+import { DeleteResourceUseCase } from "./application/use-cases/delete-resource.usecase";
+import { ReorderResourcesUseCase } from "./application/use-cases/reorder-resources.usecase";
 
 @Module({
   imports: [DataModule, KernelModule, IdentityModule, PlatformModule, InvoicesModule],
-  controllers: [ClassesController, ClassesInternalController, TeacherDashboardController],
-
+  controllers: [
+    ClassesController,
+    ClassesAcademyController,
+    ClassesInternalController,
+    TeacherDashboardController,
+  ],
   providers: [
     PrismaClassesRepository,
-
     { provide: CLASSES_REPOSITORY_PORT, useExisting: PrismaClassesRepository },
     ExtKvClassesSettingsRepository,
     { provide: CLASSES_SETTINGS_REPOSITORY_PORT, useExisting: ExtKvClassesSettingsRepository },
     PrismaTeacherDashboardQuery,
     { provide: TEACHER_DASHBOARD_QUERY, useExisting: PrismaTeacherDashboardQuery },
     InvoicesWriteAdapter,
-
     { provide: INVOICES_WRITE_PORT, useExisting: InvoicesWriteAdapter },
+
     {
       provide: CreateClassGroupUseCase,
       useFactory: (
@@ -326,12 +355,316 @@ import { GetBillingRunSendProgressUseCase } from "./application/use-cases/get-bi
         new GetTeacherDashboardUnpaidInvoicesUseCase(query),
       inject: [TEACHER_DASHBOARD_QUERY],
     },
-
     {
       provide: LockMonthUseCase,
       useFactory: (repo: ClassesRepositoryPort, audit, clock: ClockPort) =>
         new LockMonthUseCase(repo, audit, clock),
       inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, CLOCK_PORT_TOKEN],
+    },
+
+    {
+      provide: CreateProgramUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        idempotency: IdempotencyStoragePort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new CreateProgramUseCase(repo, audit, idempotency, idGenerator, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: UpdateProgramUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new UpdateProgramUseCase(repo, audit, idGenerator, clock),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: ListProgramsUseCase,
+      useFactory: (repo: ClassesRepositoryPort) => new ListProgramsUseCase(repo),
+      inject: [CLASSES_REPOSITORY_PORT],
+    },
+    {
+      provide: GetProgramUseCase,
+      useFactory: (repo: ClassesRepositoryPort) => new GetProgramUseCase(repo),
+      inject: [CLASSES_REPOSITORY_PORT],
+    },
+    {
+      provide: DeleteProgramUseCase,
+      useFactory: (repo: ClassesRepositoryPort, audit) => new DeleteProgramUseCase(repo, audit),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT],
+    },
+    {
+      provide: ReplaceProgramSessionTemplatesUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new ReplaceProgramSessionTemplatesUseCase(repo, audit, idGenerator, clock),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: ReplaceProgramMilestoneTemplatesUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new ReplaceProgramMilestoneTemplatesUseCase(repo, audit, idGenerator, clock),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, ID_GENERATOR_TOKEN, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: CreateCohortFromProgramUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        idempotency: IdempotencyStoragePort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new CreateCohortFromProgramUseCase(repo, audit, idempotency, idGenerator, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: UpdateCohortLifecycleUseCase,
+      useFactory: (repo: ClassesRepositoryPort, audit, outbox, clock: ClockPort) =>
+        new UpdateCohortLifecycleUseCase(repo, audit, outbox, clock),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, OUTBOX_PORT, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: ListCohortTeamUseCase,
+      useFactory: (repo: ClassesRepositoryPort) => new ListCohortTeamUseCase(repo),
+      inject: [CLASSES_REPOSITORY_PORT],
+    },
+    {
+      provide: UpsertCohortTeamUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        outbox,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new UpsertCohortTeamUseCase(repo, audit, outbox, idGenerator, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: CreateApplicationUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        outbox,
+        idempotency: IdempotencyStoragePort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new CreateApplicationUseCase(repo, audit, outbox, idempotency, idGenerator, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: ApproveApplicationUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        outbox,
+        idempotency: IdempotencyStoragePort,
+        clock: ClockPort
+      ) => new ApproveApplicationUseCase(repo, audit, outbox, idempotency, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: GetEnrollmentBillingPlanUseCase,
+      useFactory: (repo: ClassesRepositoryPort) => new GetEnrollmentBillingPlanUseCase(repo),
+      inject: [CLASSES_REPOSITORY_PORT],
+    },
+    {
+      provide: UpsertEnrollmentBillingPlanUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        outbox,
+        idempotency: IdempotencyStoragePort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) =>
+        new UpsertEnrollmentBillingPlanUseCase(
+          repo,
+          audit,
+          outbox,
+          idempotency,
+          idGenerator,
+          clock
+        ),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: GenerateInvoicesFromEnrollmentBillingPlanUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        invoices: InvoicesWritePort,
+        audit,
+        outbox,
+        idempotency: IdempotencyStoragePort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) =>
+        new GenerateInvoicesFromEnrollmentBillingPlanUseCase(
+          repo,
+          invoices,
+          audit,
+          outbox,
+          idempotency,
+          idGenerator,
+          clock
+        ),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        INVOICES_WRITE_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: ListMilestonesUseCase,
+      useFactory: (repo: ClassesRepositoryPort) => new ListMilestonesUseCase(repo),
+      inject: [CLASSES_REPOSITORY_PORT],
+    },
+    {
+      provide: CreateMilestoneUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        outbox,
+        idempotency: IdempotencyStoragePort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new CreateMilestoneUseCase(repo, audit, outbox, idempotency, idGenerator, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: UpdateMilestoneUseCase,
+      useFactory: (repo: ClassesRepositoryPort, audit, outbox, clock: ClockPort) =>
+        new UpdateMilestoneUseCase(repo, audit, outbox, clock),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, OUTBOX_PORT, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: DeleteMilestoneUseCase,
+      useFactory: (repo: ClassesRepositoryPort, audit, outbox) =>
+        new DeleteMilestoneUseCase(repo, audit, outbox),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, OUTBOX_PORT],
+    },
+    {
+      provide: UpsertMilestoneCompletionUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        outbox,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new UpsertMilestoneCompletionUseCase(repo, audit, outbox, idGenerator, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: GetOutcomesSummaryUseCase,
+      useFactory: (repo: ClassesRepositoryPort) => new GetOutcomesSummaryUseCase(repo),
+      inject: [CLASSES_REPOSITORY_PORT],
+    },
+    {
+      provide: ListResourcesUseCase,
+      useFactory: (repo: ClassesRepositoryPort) => new ListResourcesUseCase(repo),
+      inject: [CLASSES_REPOSITORY_PORT],
+    },
+    {
+      provide: CreateResourceUseCase,
+      useFactory: (
+        repo: ClassesRepositoryPort,
+        audit,
+        outbox,
+        idempotency: IdempotencyStoragePort,
+        idGenerator: IdGeneratorPort,
+        clock: ClockPort
+      ) => new CreateResourceUseCase(repo, audit, outbox, idempotency, idGenerator, clock),
+      inject: [
+        CLASSES_REPOSITORY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
+        ID_GENERATOR_TOKEN,
+        CLOCK_PORT_TOKEN,
+      ],
+    },
+    {
+      provide: UpdateResourceUseCase,
+      useFactory: (repo: ClassesRepositoryPort, audit, outbox, clock: ClockPort) =>
+        new UpdateResourceUseCase(repo, audit, outbox, clock),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, OUTBOX_PORT, CLOCK_PORT_TOKEN],
+    },
+    {
+      provide: DeleteResourceUseCase,
+      useFactory: (repo: ClassesRepositoryPort, audit, outbox) =>
+        new DeleteResourceUseCase(repo, audit, outbox),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT, OUTBOX_PORT],
+    },
+    {
+      provide: ReorderResourcesUseCase,
+      useFactory: (repo: ClassesRepositoryPort, audit) => new ReorderResourcesUseCase(repo, audit),
+      inject: [CLASSES_REPOSITORY_PORT, AUDIT_PORT],
     },
   ],
   exports: [
@@ -348,6 +681,9 @@ import { GetBillingRunSendProgressUseCase } from "./application/use-cases/get-bi
     GetClassGroupUseCase,
     UpdateSessionUseCase,
     BulkUpsertAttendanceUseCase,
+    ListProgramsUseCase,
+    GetProgramUseCase,
+    GetEnrollmentBillingPlanUseCase,
   ],
 })
 export class ClassesModule {}

@@ -20,6 +20,19 @@ describe("getWebsitePageData", () => {
     mockResolveWebsitePage.mockResolvedValue({
       siteId: "site-1",
       siteSlug: "site",
+      settings: {
+        common: {
+          siteTitle: "Site",
+          logo: {},
+          favicon: {},
+          header: { showLogo: true },
+          footer: { links: [] },
+          socials: {},
+          seo: {},
+        },
+        theme: { colors: {}, typography: {}, tokens: {} },
+        custom: {},
+      },
       pageId: "page-1",
       path: "/about",
       locale: "en-US",

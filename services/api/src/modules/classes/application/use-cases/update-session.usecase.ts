@@ -7,7 +7,7 @@ import type { ClassesSettingsRepositoryPort } from "../ports/classes-settings-re
 import type { AuditPort } from "../ports/audit.port";
 import type { IdGeneratorPort } from "../ports/id-generator.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanClasses } from "../../policies/assert-can-classes";
+import { assertCanClasses, assertCanSessionManage } from "../../policies/assert-can-classes";
 import { getMonthKeyForInstant } from "../helpers/billing-period";
 import type {
   ClassSessionEntity,
@@ -41,6 +41,7 @@ export class UpdateSessionUseCase {
     ctx: UseCaseContext
   ): Promise<SessionWithBillingStatus> {
     assertCanClasses(ctx, "classes.write");
+    assertCanSessionManage(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     const existing = await this.repo.findSessionById(tenantId, workspaceId, input.sessionId);
@@ -84,6 +85,20 @@ export class UpdateSessionUseCase {
       topic: input.topic ?? undefined,
       notes: input.notes ?? undefined,
       status: input.status ?? undefined,
+      type: input.type ?? undefined,
+      meetingProvider: input.meetingProvider ?? undefined,
+      meetingJoinUrl:
+        input.meetingJoinUrl === null
+          ? null
+          : input.meetingJoinUrl
+            ? input.meetingJoinUrl
+            : undefined,
+      meetingExternalId:
+        input.meetingExternalId === null
+          ? null
+          : input.meetingExternalId
+            ? input.meetingExternalId
+            : undefined,
       updatedAt: this.clock.now(),
     });
 

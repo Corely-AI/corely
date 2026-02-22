@@ -29,6 +29,8 @@ import { CMS_READ_PORT } from "./application/ports/cms-read.port";
 import { CMS_WRITE_PORT } from "./application/ports/cms-write.port";
 import { WEBSITE_AI_PORT } from "./application/ports/website-ai.port";
 import { WebsitePublicFileUrlPortAdapter } from "./infrastructure/documents/website-public-file-url.port.adapter";
+import { CustomizationWebsiteCustomAttributesAdapter } from "./infrastructure/customization/customization-website-custom-attributes.adapter";
+import { WEBSITE_CUSTOM_ATTRIBUTES_PORT } from "./application/ports/custom-attributes.port";
 
 export const WEBSITE_INFRASTRUCTURE_PROVIDERS: Provider[] = [
   PrismaWebsiteSiteRepository,
@@ -77,5 +79,10 @@ export const WEBSITE_INFRASTRUCTURE_PROVIDERS: Provider[] = [
     useFactory: (env: EnvService, registry: PromptRegistry, logger: PromptUsageLogger) =>
       new AiSdkWebsitePageGenerator(env, registry, logger),
     inject: [EnvService, PromptRegistry, PromptUsageLogger],
+  },
+  CustomizationWebsiteCustomAttributesAdapter,
+  {
+    provide: WEBSITE_CUSTOM_ATTRIBUTES_PORT,
+    useExisting: CustomizationWebsiteCustomAttributesAdapter,
   },
 ];
