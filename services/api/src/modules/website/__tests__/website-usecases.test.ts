@@ -559,6 +559,85 @@ describe("Website use cases", () => {
     expect(output.settings.common.favicon.url).toBe("https://legacy.example/favicon.ico");
   });
 
+  it("refreshes signed GCS asset URLs by inferring fileId from stored URL", async () => {
+    const siteRepo: WebsiteSiteRepositoryPort = {
+      async create(site) {
+        return site;
+      },
+      async update(site) {
+        return site;
+      },
+      async findById() {
+        return null;
+      },
+      async findByIdPublic() {
+        const site: WebsiteSite = {
+          id: "site-1",
+          tenantId: "tenant-1",
+          name: "Site",
+          slug: "site",
+          defaultLocale: "en-US",
+          brandingJson: {
+            siteTitle: "Site",
+            logo: {
+              url: "https://storage.googleapis.com/corely/tenant%2Ftenant-1%2Fdocuments%2Fdoc-1%2Ffiles%2Flogo-file-id%2Flogo.png?X-Goog-Algorithm=GOOG4-RSA-SHA256",
+            },
+            favicon: {
+              url: "https://storage.googleapis.com/corely/tenant%2Ftenant-1%2Fdocuments%2Fdoc-1%2Ffiles%2Ffavicon-file-id%2Ffavicon.ico?X-Goog-Algorithm=GOOG4-RSA-SHA256",
+            },
+            header: { showLogo: true },
+            footer: { links: [] },
+            socials: {},
+            seo: {},
+          },
+          themeJson: { colors: {}, typography: {}, tokens: {} },
+          isDefault: true,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+        return site;
+      },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        return null;
+      },
+      async setDefault() {},
+      async list() {
+        return { items: [], total: 0 };
+      },
+    };
+
+    const requestedFileIds: string[] = [];
+    const useCase = new ResolveWebsitePublicSiteSettingsUseCase({
+      logger: console as any,
+      siteRepo,
+      customAttributes: {
+        async getAttributes() {
+          return {};
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
+      publicFileUrlPort: {
+        async getPublicUrl(fileId: string) {
+          requestedFileIds.push(fileId);
+          return `https://cdn.example.com/${fileId}`;
+        },
+      },
+    });
+
+    const result = await useCase.execute({ siteId: "site-1" }, {});
+    const output = unwrap(result);
+
+    expect(requestedFileIds).toEqual(["logo-file-id", "favicon-file-id"]);
+    expect(output.settings.common.logo.url).toBe("https://cdn.example.com/logo-file-id");
+    expect(output.settings.common.favicon.url).toBe("https://cdn.example.com/favicon-file-id");
+  });
+
   it("AI generate creates CMS entry + page", async () => {
     const ai: WebsiteAiGeneratorPort = {
       async generatePageBlueprint() {
