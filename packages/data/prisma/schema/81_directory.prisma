@@ -1,0 +1,62 @@
+enum DirectoryRestaurantStatus {
+  ACTIVE
+  HIDDEN
+  @@schema("content")
+}
+
+enum DirectoryLeadStatus {
+  NEW
+  CONTACTED
+  CLOSED
+  @@schema("content")
+}
+
+model DirectoryRestaurant {
+  id               String                  @id @default(cuid())
+  tenantId         String
+  workspaceId      String
+  slug             String
+  name             String
+  shortDescription String?
+  phone            String?
+  website          String?
+  priceRange       String?                 @db.VarChar(16)
+  dishTags         String[]                @default([])
+  neighborhoodSlug String?
+  addressLine      String
+  postalCode       String
+  city             String                  @default("Berlin")
+  lat              Decimal?                @db.Decimal(10, 7)
+  lng              Decimal?                @db.Decimal(10, 7)
+  openingHoursJson Json?
+  status           DirectoryRestaurantStatus @default(ACTIVE)
+  createdAt        DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                @updatedAt @db.Timestamptz(6)
+
+  leads DirectoryLead[]
+
+  @@unique([tenantId, workspaceId, slug])
+  @@index([tenantId, workspaceId, status, neighborhoodSlug])
+  @@index([tenantId, workspaceId, name])
+  @@index([tenantId, workspaceId, createdAt])
+  @@schema("content")
+}
+
+model DirectoryLead {
+  id           String            @id @default(cuid())
+  tenantId     String
+  workspaceId  String
+  restaurantId String
+  name         String
+  contact      String
+  message      String            @db.Text
+  status       DirectoryLeadStatus @default(NEW)
+  createdAt    DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(6)
+
+  restaurant DirectoryRestaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId, restaurantId, status])
+  @@index([tenantId, workspaceId, createdAt])
+  @@schema("content")
+}

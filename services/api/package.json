@@ -80,7 +80,8 @@
     "build:esbuild": "node esbuild.config.mjs",
     "start": "node dist/main.js",
     "start:debug": "node --inspect=0.0.0.0:9229 dist/main.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "seed:directory": "tsx --env-file=../../.env src/scripts/seed-directory-restaurants.ts"
   },
   "author": "Ha Doan <ha@oneway8x.com>"
 }

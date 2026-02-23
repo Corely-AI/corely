@@ -90,6 +90,7 @@ import {
   TeamPage,
   TeamEditorPage,
 } from "../../modules/portfolio";
+import { directoryRoutes } from "../../modules/directory";
 import {
   TaxSettingsPage,
   TaxCenterPage,
@@ -134,6 +135,17 @@ export const appShellRoutes = (
       <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
       <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
       <Route path="/rentals/categories" element={<RentalCategoriesPage />} />
+      {directoryRoutes.map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={
+            <RequirePermission permission="platform.tenants.write">
+              {route.element}
+            </RequirePermission>
+          }
+        />
+      ))}
       <Route path="/portfolio/showcases" element={<ShowcasesPage />} />
       <Route path="/portfolio/showcases/new" element={<ShowcaseEditorPage />} />
       <Route path="/portfolio/showcases/:id/edit" element={<ShowcaseEditorPage />} />

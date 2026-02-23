@@ -131,6 +131,9 @@
     "assistant": "Assistant",
     "expenses": "Expenses",
     "invoices": "Invoices",
+    "directory": {
+      "restaurants": "Restaurants"
+    },
     "tenants": "Tenants",
     "groups": {
       "core": "Core",
@@ -828,7 +831,9 @@
     "overdue_one": "1 day overdue"
   },
   "errors": {
-    "loadMenuFailed": "Failed to load menu"
+    "loadMenuFailed": "Failed to load menu",
+    "pageNotFound": "Page not found",
+    "returnHome": "Return home"
   },
   "accounting": {
     "entryStatus": {
@@ -1179,6 +1184,7 @@
       "linkRequired": "Must be linked to either a deal or a contact",
       "due": "Due {{date}}",
       "statuses": {
+        "open": "Open",
         "completed": "Completed",
         "canceled": "Canceled",
         "scheduled": "Scheduled"
