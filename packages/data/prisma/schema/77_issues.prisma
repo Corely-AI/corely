@@ -6,6 +6,7 @@ enum IssueStatus {
   RESOLVED
   CLOSED
   REOPENED
+
   @@schema("crm")
 }
 
@@ -14,6 +15,7 @@ enum IssuePriority {
   MEDIUM
   HIGH
   URGENT
+
   @@schema("crm")
 }
 
@@ -21,12 +23,14 @@ enum IssueSiteType {
   FIELD
   CUSTOMER
   MANUFACTURER
+
   @@schema("crm")
 }
 
 enum IssueAttachmentKind {
   IMAGE
   AUDIO
+
   @@schema("crm")
 }
 
@@ -38,6 +42,7 @@ enum IssueActivityType {
   RESOLVED
   REOPENED
   ASSIGNED
+
   @@schema("crm")
 }
 
@@ -45,31 +50,32 @@ enum IssueTranscriptionStatus {
   PENDING
   COMPLETED
   FAILED
+
   @@schema("crm")
 }
 
 model Issue {
-  id                 String      @id @default(cuid())
-  tenantId           String
-  title              String
-  description        String?
-  status             IssueStatus @default(NEW)
-  priority           IssuePriority @default(MEDIUM)
-  siteType           IssueSiteType
-  siteId             String?
-  customerPartyId    String?
+  id                  String        @id @default(cuid())
+  tenantId            String
+  title               String
+  description         String?
+  status              IssueStatus   @default(NEW)
+  priority            IssuePriority @default(MEDIUM)
+  siteType            IssueSiteType
+  siteId              String?
+  customerPartyId     String?
   manufacturerPartyId String?
-  assigneeUserId     String?
-  reporterUserId     String?
-  resolvedAt         DateTime?   @db.Timestamptz(6)
-  resolvedByUserId   String?
-  closedAt           DateTime?   @db.Timestamptz(6)
-  createdAt          DateTime    @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime    @updatedAt @db.Timestamptz(6)
+  assigneeUserId      String?
+  reporterUserId      String?
+  resolvedAt          DateTime?     @db.Timestamptz(6)
+  resolvedByUserId    String?
+  closedAt            DateTime?     @db.Timestamptz(6)
+  createdAt           DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime      @updatedAt @db.Timestamptz(6)
 
-  comments           IssueComment[]
-  attachments        IssueAttachment[]
-  activity           IssueActivity[]
+  comments    IssueComment[]
+  attachments IssueAttachment[]
+  activity    IssueActivity[]
 
   @@index([tenantId, status])
   @@index([tenantId, assigneeUserId])
@@ -79,39 +85,39 @@ model Issue {
 }
 
 model IssueComment {
-  id               String   @id @default(cuid())
-  tenantId         String
-  issueId          String
-  body             String
-  createdAt        DateTime @default(now()) @db.Timestamptz(6)
-  createdByUserId  String
+  id              String   @id @default(cuid())
+  tenantId        String
+  issueId         String
+  body            String
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  createdByUserId String
 
-  issue            Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  attachments      IssueAttachment[]
+  issue       Issue             @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  attachments IssueAttachment[]
 
   @@index([tenantId, issueId, createdAt])
   @@schema("crm")
 }
 
 model IssueAttachment {
-  id                   String                  @id @default(cuid())
-  tenantId             String
-  issueId              String
-  commentId            String?
-  documentId           String
-  kind                 IssueAttachmentKind
-  mimeType             String
-  sizeBytes            Int
-  durationSeconds      Int?
-  transcriptText       String?
+  id                     String                    @id @default(cuid())
+  tenantId               String
+  issueId                String
+  commentId              String?
+  documentId             String
+  kind                   IssueAttachmentKind
+  mimeType               String
+  sizeBytes              Int
+  durationSeconds        Int?
+  transcriptText         String?
   transcriptSegmentsJson String?
-  transcriptionStatus  IssueTranscriptionStatus?
-  transcriptionError   String?
-  createdAt            DateTime                @default(now()) @db.Timestamptz(6)
-  createdByUserId      String?
+  transcriptionStatus    IssueTranscriptionStatus?
+  transcriptionError     String?
+  createdAt              DateTime                  @default(now()) @db.Timestamptz(6)
+  createdByUserId        String?
 
-  issue                Issue                  @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  comment              IssueComment?          @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  issue   Issue         @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  comment IssueComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, issueId])
   @@index([tenantId, commentId])
@@ -120,15 +126,15 @@ model IssueAttachment {
 }
 
 model IssueActivity {
-  id               String            @id @default(cuid())
-  tenantId         String
-  issueId          String
-  type             IssueActivityType
-  metadataJson     String?
-  createdAt        DateTime          @default(now()) @db.Timestamptz(6)
-  createdByUserId  String?
+  id              String            @id @default(cuid())
+  tenantId        String
+  issueId         String
+  type            IssueActivityType
+  metadataJson    String?
+  createdAt       DateTime          @default(now()) @db.Timestamptz(6)
+  createdByUserId String?
 
-  issue            Issue             @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, issueId, createdAt])
   @@schema("crm")

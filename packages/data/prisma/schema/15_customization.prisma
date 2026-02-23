@@ -6,6 +6,7 @@ enum CustomFieldType {
   SELECT
   MULTI_SELECT
   MONEY
+
   @@schema("platform")
 }
 
@@ -32,18 +33,18 @@ model CustomFieldDefinition {
 }
 
 model CustomFieldIndex {
-  id         String   @id @default(cuid())
-  tenantId   String
-  entityType String
-  entityId   String
-  fieldId    String
-  fieldKey   String
-  valueText  String?
+  id          String    @id @default(cuid())
+  tenantId    String
+  entityType  String
+  entityId    String
+  fieldId     String
+  fieldKey    String
+  valueText   String?
   valueNumber Float?
-  valueDate  DateTime?
-  valueBool  Boolean?
-  valueJson  Json?
-  updatedAt  DateTime @updatedAt
+  valueDate   DateTime?
+  valueBool   Boolean?
+  valueJson   Json?
+  updatedAt   DateTime  @updatedAt
 
   @@unique([tenantId, entityType, entityId, fieldId])
   @@index([tenantId, entityType, fieldId])
@@ -100,7 +101,7 @@ model DimensionValue {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  type        DimensionType    @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  type        DimensionType     @relation(fields: [typeId], references: [id], onDelete: Cascade)
   assignments EntityDimension[]
 
   @@unique([tenantId, typeId, code])

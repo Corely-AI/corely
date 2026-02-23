@@ -107,6 +107,7 @@ import { RequirePermission } from "../../modules/settings/components/RequirePerm
 import { appSettingsRoutes } from "./app-settings-routes";
 import { catalogRoutes } from "./catalog-routes";
 import { capabilityRoutes } from "./app-shell-capability-routes";
+import { bookingRoutes } from "./booking-routes";
 
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
@@ -299,6 +300,7 @@ export const appShellRoutes = (
       <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
       <Route path="/accounting/reports" element={<ReportsHub />} />
       {catalogRoutes}
+      {bookingRoutes}
       <Route path="/copilot" element={<CopilotPage />} />
       <Route path="/tax" element={<TaxCenterPage />} />
       <Route path="/tax/filings" element={<FilingsListPage />} />

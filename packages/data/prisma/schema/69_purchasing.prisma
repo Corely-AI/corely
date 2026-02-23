@@ -6,6 +6,7 @@ enum PurchaseOrderStatus {
   RECEIVED
   CLOSED
   CANCELED
+
   @@schema("commerce")
 }
 
@@ -16,6 +17,7 @@ enum VendorBillStatus {
   PARTIALLY_PAID
   PAID
   VOID
+
   @@schema("commerce")
 }
 
@@ -24,44 +26,45 @@ enum BillPaymentMethod {
   CASH
   CARD
   OTHER
+
   @@schema("commerce")
 }
 
 model PurchaseOrder {
-  id                     String             @id @default(cuid())
+  id                     String              @id @default(cuid())
   tenantId               String
   poNumber               String?
   status                 PurchaseOrderStatus @default(DRAFT)
   supplierPartyId        String
   supplierContactPartyId String?
-  orderDate              DateTime?          @db.Date
-  expectedDeliveryDate   DateTime?          @db.Date
-  currency               String           @db.VarChar(3)
+  orderDate              DateTime?           @db.Date
+  expectedDeliveryDate   DateTime?           @db.Date
+  currency               String              @db.VarChar(3)
   notes                  String?
   subtotalCents          Int
   taxCents               Int
   totalCents             Int
-  approvedAt             DateTime?          @db.Timestamptz(6)
-  sentAt                 DateTime?          @db.Timestamptz(6)
-  receivedAt             DateTime?          @db.Timestamptz(6)
-  closedAt               DateTime?          @db.Timestamptz(6)
-  canceledAt             DateTime?          @db.Timestamptz(6)
+  approvedAt             DateTime?           @db.Timestamptz(6)
+  sentAt                 DateTime?           @db.Timestamptz(6)
+  receivedAt             DateTime?           @db.Timestamptz(6)
+  closedAt               DateTime?           @db.Timestamptz(6)
+  canceledAt             DateTime?           @db.Timestamptz(6)
   createdByUserId        String?
   updatedByUserId        String?
-  createdAt              DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime           @updatedAt @db.Timestamptz(6)
+  createdAt              DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime            @updatedAt @db.Timestamptz(6)
 
   lines PurchaseOrderLine[]
 
+  @@unique([tenantId, poNumber])
   @@index([tenantId, status])
   @@index([tenantId, supplierPartyId])
   @@index([tenantId, createdAt])
-  @@unique([tenantId, poNumber])
   @@schema("commerce")
 }
 
 model PurchaseOrderLine {
-  id              String   @id @default(cuid())
+  id              String  @id @default(cuid())
   purchaseOrderId String
   description     String
   quantity        Int
@@ -77,55 +80,55 @@ model PurchaseOrderLine {
 }
 
 model VendorBill {
-  id                     String          @id @default(cuid())
-  tenantId               String
-  billNumber             String?
-  internalBillRef        String?
-  status                 VendorBillStatus @default(DRAFT)
-  supplierPartyId        String
-  supplierContactPartyId String?
-  billDate               DateTime        @db.Date
-  dueDate                DateTime        @db.Date
-  currency               String           @db.VarChar(3)
-  paymentTerms           String?
-  notes                  String?
-  subtotalCents          Int
-  taxCents               Int
-  totalCents             Int
-  paidCents              Int
-  dueCents               Int
-  approvedAt             DateTime?       @db.Timestamptz(6)
-  postedAt               DateTime?       @db.Timestamptz(6)
-  voidedAt               DateTime?       @db.Timestamptz(6)
-  purchaseOrderId        String?
-  postedJournalEntryId   String?
+  id                        String           @id @default(cuid())
+  tenantId                  String
+  billNumber                String?
+  internalBillRef           String?
+  status                    VendorBillStatus @default(DRAFT)
+  supplierPartyId           String
+  supplierContactPartyId    String?
+  billDate                  DateTime         @db.Date
+  dueDate                   DateTime         @db.Date
+  currency                  String           @db.VarChar(3)
+  paymentTerms              String?
+  notes                     String?
+  subtotalCents             Int
+  taxCents                  Int
+  totalCents                Int
+  paidCents                 Int
+  dueCents                  Int
+  approvedAt                DateTime?        @db.Timestamptz(6)
+  postedAt                  DateTime?        @db.Timestamptz(6)
+  voidedAt                  DateTime?        @db.Timestamptz(6)
+  purchaseOrderId           String?
+  postedJournalEntryId      String?
   possibleDuplicateOfBillId String?
-  duplicateScore         Float?
-  createdByUserId        String?
-  updatedByUserId        String?
-  createdAt              DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime        @updatedAt @db.Timestamptz(6)
+  duplicateScore            Float?
+  createdByUserId           String?
+  updatedByUserId           String?
+  createdAt                 DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt                 DateTime         @updatedAt @db.Timestamptz(6)
 
-  lines     VendorBillLine[]
-  payments  BillPayment[]
+  lines    VendorBillLine[]
+  payments BillPayment[]
 
+  @@unique([tenantId, supplierPartyId, billNumber])
   @@index([tenantId, status])
   @@index([tenantId, supplierPartyId])
   @@index([tenantId, createdAt])
-  @@unique([tenantId, supplierPartyId, billNumber])
   @@schema("commerce")
 }
 
 model VendorBillLine {
-  id           String   @id @default(cuid())
-  vendorBillId String
-  description  String
-  quantity     Int
+  id            String  @id @default(cuid())
+  vendorBillId  String
+  description   String
+  quantity      Int
   unitCostCents Int
-  category     String?
-  glAccountId  String?
-  taxCode      String?
-  sortOrder    Int?
+  category      String?
+  glAccountId   String?
+  taxCode       String?
+  sortOrder     Int?
 
   vendorBill VendorBill @relation(fields: [vendorBillId], references: [id], onDelete: Cascade)
 
@@ -134,16 +137,16 @@ model VendorBillLine {
 }
 
 model BillPayment {
-  id               String           @id @default(cuid())
+  id               String            @id @default(cuid())
   tenantId         String
   vendorBillId     String
   amountCents      Int
-  currency         String   @db.VarChar(3)
-  paymentDate      DateTime         @db.Date
+  currency         String            @db.VarChar(3)
+  paymentDate      DateTime          @db.Date
   method           BillPaymentMethod
   reference        String?
   notes            String?
-  recordedAt       DateTime         @default(now()) @db.Timestamptz(6)
+  recordedAt       DateTime          @default(now()) @db.Timestamptz(6)
   recordedByUserId String?
   journalEntryId   String?
 
@@ -155,34 +158,35 @@ model BillPayment {
 }
 
 model PurchasingSettings {
-  id                             String   @id @default(cuid())
-  tenantId                       String   @unique
-  defaultPaymentTerms            String?
-  defaultCurrency                String   @db.VarChar(3) @default("EUR")
-  poNumberingPrefix              String   @default("PO-")
-  poNextNumber                   Int      @default(1)
-  billInternalRefPrefix          String?  @default("BILL-")
-  billNextNumber                 Int?     @default(1)
+  id                              String   @id @default(cuid())
+  tenantId                        String   @unique
+  defaultPaymentTerms             String?
+  defaultCurrency                 String   @default("EUR") @db.VarChar(3)
+  poNumberingPrefix               String   @default("PO-")
+  poNextNumber                    Int      @default(1)
+  billInternalRefPrefix           String?  @default("BILL-")
+  billNextNumber                  Int?     @default(1)
   defaultAccountsPayableAccountId String?
-  defaultExpenseAccountId        String?
-  defaultBankAccountId           String?
-  autoPostOnBillPost             Boolean  @default(true)
-  autoPostOnPaymentRecord        Boolean  @default(true)
-  billDuplicateDetectionEnabled  Boolean  @default(true)
-  approvalRequiredForBills       Boolean  @default(false)
-  createdAt                      DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt                      DateTime @updatedAt @db.Timestamptz(6)
+  defaultExpenseAccountId         String?
+  defaultBankAccountId            String?
+  autoPostOnBillPost              Boolean  @default(true)
+  autoPostOnPaymentRecord         Boolean  @default(true)
+  billDuplicateDetectionEnabled   Boolean  @default(true)
+  approvalRequiredForBills        Boolean  @default(false)
+  createdAt                       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt                       DateTime @updatedAt @db.Timestamptz(6)
+
   @@schema("commerce")
 }
 
 model PurchasingAccountMapping {
-  id             String   @id @default(cuid())
-  tenantId       String
+  id              String   @id @default(cuid())
+  tenantId        String
   supplierPartyId String
-  categoryKey    String
-  glAccountId    String
-  createdAt      DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime @updatedAt @db.Timestamptz(6)
+  categoryKey     String
+  glAccountId     String
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 
   @@unique([tenantId, supplierPartyId, categoryKey])
   @@index([tenantId, supplierPartyId])

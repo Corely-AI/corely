@@ -1,6 +1,7 @@
 enum ClassGroupStatus {
   ACTIVE
   ARCHIVED
+
   @@schema("crm")
 }
 
@@ -9,6 +10,7 @@ enum ClassGroupKind {
   DROP_IN
   OFFICE_HOURS
   WORKSHOP
+
   @@schema("crm")
 }
 
@@ -18,6 +20,7 @@ enum ClassGroupLifecycle {
   RUNNING
   ENDED
   ARCHIVED
+
   @@schema("crm")
 }
 
@@ -25,6 +28,7 @@ enum ClassDeliveryMode {
   ONLINE
   HYBRID
   IN_PERSON
+
   @@schema("crm")
 }
 
@@ -32,6 +36,7 @@ enum ClassGroupInstructorRole {
   INSTRUCTOR
   MENTOR
   TA
+
   @@schema("crm")
 }
 
@@ -39,6 +44,7 @@ enum ClassSessionStatus {
   PLANNED
   DONE
   CANCELLED
+
   @@schema("crm")
 }
 
@@ -48,6 +54,7 @@ enum ClassSessionType {
   OFFICE_HOURS
   REVIEW
   DEMO_DAY
+
   @@schema("crm")
 }
 
@@ -56,6 +63,7 @@ enum MeetingProvider {
   GOOGLE_MEET
   TEAMS
   OTHER
+
   @@schema("crm")
 }
 
@@ -65,6 +73,7 @@ enum ClassEnrollmentStatus {
   DEFERRED
   DROPPED
   COMPLETED
+
   @@schema("crm")
 }
 
@@ -72,6 +81,7 @@ enum ClassEnrollmentSeatType {
   LEARNER
   AUDITOR
   SPONSORED
+
   @@schema("crm")
 }
 
@@ -80,6 +90,7 @@ enum ClassEnrollmentSource {
   SALES
   ADMIN
   PARTNER
+
   @@schema("crm")
 }
 
@@ -88,6 +99,7 @@ enum ClassAttendanceStatus {
   ABSENT
   MAKEUP
   EXCUSED
+
   @@schema("crm")
 }
 
@@ -96,18 +108,21 @@ enum ClassBillingRunStatus {
   INVOICES_CREATED
   LOCKED
   FAILED
+
   @@schema("crm")
 }
 
 enum ClassBillingMonthStrategy {
   PREPAID_CURRENT_MONTH
   ARREARS_PREVIOUS_MONTH
+
   @@schema("crm")
 }
 
 enum ClassBillingBasis {
   SCHEDULED_SESSIONS
   ATTENDED_SESSIONS
+
   @@schema("crm")
 }
 
@@ -116,6 +131,7 @@ enum ClassEnrollmentBillingPlanType {
   INSTALLMENTS
   INVOICE_NET
   SUBSCRIPTION
+
   @@schema("crm")
 }
 
@@ -125,6 +141,7 @@ enum ClassBillingInvoicePurpose {
   FINAL
   ADHOC
   MONTHLY_RUN
+
   @@schema("crm")
 }
 
@@ -132,6 +149,7 @@ enum ClassMilestoneType {
   PROJECT
   ASSESSMENT
   CHECKPOINT
+
   @@schema("crm")
 }
 
@@ -140,6 +158,7 @@ enum ClassMilestoneCompletionStatus {
   SUBMITTED
   PASSED
   FAILED
+
   @@schema("crm")
 }
 
@@ -147,12 +166,14 @@ enum ClassResourceType {
   RECORDING
   DOC
   LINK
+
   @@schema("crm")
 }
 
 enum ClassResourceVisibility {
   ENROLLED_ONLY
   PUBLIC
+
   @@schema("crm")
 }
 
@@ -168,9 +189,9 @@ model ClassProgram {
   createdAt             DateTime @default(now()) @db.Timestamptz(6)
   updatedAt             DateTime @updatedAt @db.Timestamptz(6)
 
-  classGroups           ClassGroup[]
-  sessionTemplates      ClassProgramSessionTemplate[]
-  milestoneTemplates    ClassProgramMilestoneTemplate[]
+  classGroups        ClassGroup[]
+  sessionTemplates   ClassProgramSessionTemplate[]
+  milestoneTemplates ClassProgramMilestoneTemplate[]
 
   @@index([tenantId, workspaceId])
   @@index([tenantId, levelTag])
@@ -189,7 +210,7 @@ model ClassProgramSessionTemplate {
   createdAt          DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime         @updatedAt @db.Timestamptz(6)
 
-  program            ClassProgram     @relation(fields: [programId], references: [id], onDelete: Cascade)
+  program ClassProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, programId, index], name: "tenantId_programId_index")
   @@index([tenantId, programId])
@@ -197,18 +218,18 @@ model ClassProgramSessionTemplate {
 }
 
 model ClassProgramMilestoneTemplate {
-  id         String             @id @default(cuid())
-  tenantId   String
+  id          String             @id @default(cuid())
+  tenantId    String
   workspaceId String
-  programId  String
-  title      String
-  type       ClassMilestoneType @default(CHECKPOINT)
-  required   Boolean            @default(true)
-  index      Int
-  createdAt  DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime           @updatedAt @db.Timestamptz(6)
+  programId   String
+  title       String
+  type        ClassMilestoneType @default(CHECKPOINT)
+  required    Boolean            @default(true)
+  index       Int
+  createdAt   DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime           @updatedAt @db.Timestamptz(6)
 
-  program    ClassProgram       @relation(fields: [programId], references: [id], onDelete: Cascade)
+  program    ClassProgram     @relation(fields: [programId], references: [id], onDelete: Cascade)
   milestones ClassMilestone[]
 
   @@unique([tenantId, programId, index], name: "tenantId_programId_milestone_index")
@@ -240,12 +261,12 @@ model ClassGroup {
   createdAt              DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime            @updatedAt @db.Timestamptz(6)
 
-  program                ClassProgram?       @relation(fields: [programId], references: [id], onDelete: SetNull)
-  sessions               ClassSession[]
-  enrollments            ClassEnrollment[]
-  instructors            ClassGroupInstructor[]
-  milestones             ClassMilestone[]
-  resources              ClassGroupResource[]
+  program     ClassProgram?          @relation(fields: [programId], references: [id], onDelete: SetNull)
+  sessions    ClassSession[]
+  enrollments ClassEnrollment[]
+  instructors ClassGroupInstructor[]
+  milestones  ClassMilestone[]
+  resources   ClassGroupResource[]
 
   @@index([tenantId, workspaceId])
   @@index([tenantId, status])
@@ -266,7 +287,7 @@ model ClassGroupInstructor {
   createdAt    DateTime                 @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime                 @updatedAt @db.Timestamptz(6)
 
-  classGroup   ClassGroup               @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  classGroup ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, classGroupId, partyId, role], name: "tenantId_classGroupId_partyId_role")
   @@index([tenantId, partyId])
@@ -291,8 +312,8 @@ model ClassSession {
   createdAt         DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt         DateTime           @updatedAt @db.Timestamptz(6)
 
-  classGroup        ClassGroup         @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
-  attendance        ClassAttendance[]
+  classGroup ClassGroup        @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  attendance ClassAttendance[]
 
   @@unique([tenantId, classGroupId, startsAt], name: "tenantId_classGroupId_startsAt")
   @@index([tenantId, workspaceId, startsAt])
@@ -325,11 +346,11 @@ model ClassEnrollment {
   createdAt               DateTime                @default(now()) @db.Timestamptz(6)
   updatedAt               DateTime                @updatedAt @db.Timestamptz(6)
 
-  classGroup              ClassGroup                @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
-  attendance              ClassAttendance[]
-  billingPlan             ClassEnrollmentBillingPlan?
-  milestoneCompletions    ClassMilestoneCompletion[]
-  billingInvoiceLinks     ClassBillingInvoiceLink[]
+  classGroup           ClassGroup                  @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  attendance           ClassAttendance[]
+  billingPlan          ClassEnrollmentBillingPlan?
+  milestoneCompletions ClassMilestoneCompletion[]
+  billingInvoiceLinks  ClassBillingInvoiceLink[]
 
   @@unique([tenantId, classGroupId, studentClientId], name: "tenantId_classGroupId_studentClientId")
   @@index([tenantId, classGroupId])
@@ -341,16 +362,16 @@ model ClassEnrollment {
 }
 
 model ClassEnrollmentBillingPlan {
-  id           String                        @id @default(cuid())
+  id           String                         @id @default(cuid())
   tenantId     String
   workspaceId  String
-  enrollmentId String                        @unique
+  enrollmentId String                         @unique
   type         ClassEnrollmentBillingPlanType
-  scheduleJson Json                          @db.JsonB
-  createdAt    DateTime                      @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime                      @updatedAt @db.Timestamptz(6)
+  scheduleJson Json                           @db.JsonB
+  createdAt    DateTime                       @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime                       @updatedAt @db.Timestamptz(6)
 
-  enrollment   ClassEnrollment               @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  enrollment ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, workspaceId])
   @@index([tenantId, type])
@@ -369,8 +390,8 @@ model ClassAttendance {
   createdAt    DateTime              @default(now()) @db.Timestamptz(6)
   updatedAt    DateTime              @updatedAt @db.Timestamptz(6)
 
-  session      ClassSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  enrollment   ClassEnrollment       @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  session    ClassSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  enrollment ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, sessionId, enrollmentId], name: "tenantId_sessionId_enrollmentId")
   @@index([tenantId, sessionId])
@@ -379,21 +400,21 @@ model ClassAttendance {
 }
 
 model ClassMonthlyBillingRun {
-  id                   String                     @id @default(cuid())
+  id                   String                    @id @default(cuid())
   tenantId             String
   workspaceId          String
-  month                String                     @db.VarChar(7)
-  billingMonthStrategy ClassBillingMonthStrategy  @default(ARREARS_PREVIOUS_MONTH)
-  billingBasis         ClassBillingBasis          @default(ATTENDED_SESSIONS)
-  billingSnapshot      Json?                      @db.JsonB
-  status               ClassBillingRunStatus      @default(DRAFT)
+  month                String                    @db.VarChar(7)
+  billingMonthStrategy ClassBillingMonthStrategy @default(ARREARS_PREVIOUS_MONTH)
+  billingBasis         ClassBillingBasis         @default(ATTENDED_SESSIONS)
+  billingSnapshot      Json?                     @db.JsonB
+  status               ClassBillingRunStatus     @default(DRAFT)
   runId                String
-  generatedAt          DateTime?                  @db.Timestamptz(6)
+  generatedAt          DateTime?                 @db.Timestamptz(6)
   createdByUserId      String
-  createdAt            DateTime                   @default(now()) @db.Timestamptz(6)
-  updatedAt            DateTime                   @updatedAt @db.Timestamptz(6)
+  createdAt            DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime                  @updatedAt @db.Timestamptz(6)
 
-  invoices             ClassBillingInvoiceLink[]
+  invoices ClassBillingInvoiceLink[]
 
   @@unique([tenantId, month], name: "tenantId_month")
   @@index([tenantId, status])
@@ -413,8 +434,8 @@ model ClassBillingInvoiceLink {
   purpose        ClassBillingInvoicePurpose @default(MONTHLY_RUN)
   createdAt      DateTime                   @default(now()) @db.Timestamptz(6)
 
-  billingRun     ClassMonthlyBillingRun?    @relation(fields: [billingRunId], references: [id], onDelete: Cascade)
-  enrollment     ClassEnrollment?           @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  billingRun ClassMonthlyBillingRun? @relation(fields: [billingRunId], references: [id], onDelete: Cascade)
+  enrollment ClassEnrollment?        @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, billingRunId, payerClientId, classGroupId], name: "tenantId_billingRunId_payerClientId_classGroupId")
   @@unique([tenantId, idempotencyKey], name: "tenantId_idempotencyKey")
@@ -439,9 +460,9 @@ model ClassMilestone {
   createdAt                  DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt                  DateTime           @updatedAt @db.Timestamptz(6)
 
-  classGroup                 ClassGroup                   @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
-  programMilestoneTemplate   ClassProgramMilestoneTemplate? @relation(fields: [programMilestoneTemplateId], references: [id], onDelete: SetNull)
-  completions                ClassMilestoneCompletion[]
+  classGroup               ClassGroup                     @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  programMilestoneTemplate ClassProgramMilestoneTemplate? @relation(fields: [programMilestoneTemplateId], references: [id], onDelete: SetNull)
+  completions              ClassMilestoneCompletion[]
 
   @@index([tenantId, classGroupId])
   @@index([tenantId, dueAt])
@@ -462,8 +483,8 @@ model ClassMilestoneCompletion {
   createdAt       DateTime                       @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime                       @updatedAt @db.Timestamptz(6)
 
-  milestone       ClassMilestone                 @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  enrollment      ClassEnrollment                @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  milestone  ClassMilestone  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  enrollment ClassEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, milestoneId, enrollmentId], name: "tenantId_milestoneId_enrollmentId")
   @@index([tenantId, enrollmentId])
@@ -471,20 +492,20 @@ model ClassMilestoneCompletion {
 }
 
 model ClassGroupResource {
-  id          String                  @id @default(cuid())
-  tenantId    String
-  workspaceId String
+  id           String                  @id @default(cuid())
+  tenantId     String
+  workspaceId  String
   classGroupId String
-  type        ClassResourceType
-  title       String
-  documentId  String?
-  url         String?
-  visibility  ClassResourceVisibility @default(ENROLLED_ONLY)
-  sortOrder   Int                     @default(0)
-  createdAt   DateTime                @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime                @updatedAt @db.Timestamptz(6)
+  type         ClassResourceType
+  title        String
+  documentId   String?
+  url          String?
+  visibility   ClassResourceVisibility @default(ENROLLED_ONLY)
+  sortOrder    Int                     @default(0)
+  createdAt    DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime                @updatedAt @db.Timestamptz(6)
 
-  classGroup  ClassGroup              @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+  classGroup ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, classGroupId, sortOrder])
   @@index([tenantId, documentId])

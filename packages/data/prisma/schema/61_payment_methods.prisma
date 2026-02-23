@@ -7,6 +7,7 @@ enum PaymentMethodType {
   CASH
   CARD
   OTHER
+
   @@schema("billing")
 }
 
@@ -19,7 +20,7 @@ model BankAccount {
   iban              String
   bic               String?
   bankName          String?
-  currency          String   @db.VarChar(3) @default("EUR")
+  currency          String   @default("EUR") @db.VarChar(3)
   country           String?  @db.Char(2)
   isActive          Boolean  @default(true)
   isDefault         Boolean  @default(false)
@@ -27,8 +28,8 @@ model BankAccount {
   updatedAt         DateTime @updatedAt @db.Timestamptz(6)
 
   // Relations
-  legalEntity       LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
-  paymentMethods    PaymentMethod[]
+  legalEntity    LegalEntity     @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+  paymentMethods PaymentMethod[]
 
   // Indices for efficient querying
   @@unique([tenantId, legalEntityId, label])
@@ -39,25 +40,24 @@ model BankAccount {
 }
 
 model PaymentMethod {
-  id                      String            @id @default(cuid())
-  tenantId                String
-  legalEntityId           String
-  type                    PaymentMethodType
-  label                   String
-  isActive                Boolean           @default(true)
-  isDefaultForInvoicing   Boolean           @default(false)
-  bankAccountId           String?
-  instructions            String?
-  payUrl                  String?
-  referenceTemplate       String            @default("INV-{invoiceNumber}")
-  createdAt               DateTime          @default(now()) @db.Timestamptz(6)
-  updatedAt               DateTime          @updatedAt @db.Timestamptz(6)
+  id                    String            @id @default(cuid())
+  tenantId              String
+  legalEntityId         String
+  type                  PaymentMethodType
+  label                 String
+  isActive              Boolean           @default(true)
+  isDefaultForInvoicing Boolean           @default(false)
+  bankAccountId         String?
+  instructions          String?
+  payUrl                String?
+  referenceTemplate     String            @default("INV-{invoiceNumber}")
+  createdAt             DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime          @updatedAt @db.Timestamptz(6)
 
   // Relations
-  legalEntity             LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
-  bankAccount             BankAccount? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
-  invoices                Invoice[]
-
+  legalEntity LegalEntity  @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+  bankAccount BankAccount? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  invoices    Invoice[]
 
   // Indices for efficient querying
   @@unique([tenantId, legalEntityId, label])
