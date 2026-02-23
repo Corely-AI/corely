@@ -7,9 +7,15 @@ export class PublicWorkspacePathMiddleware implements NestMiddleware {
 
   use(req: Request, _res: Response, next: NextFunction) {
     const raw = (req.originalUrl ?? req.url) as string;
-    this.logger.debug(`[Middleware] Incoming request: ${raw}`);
-
     const u = new URL(raw, "http://local"); // base required for relative URLs
+    const hasWorkspaceSegment = u.pathname.includes("/w/");
+
+    // Fast path: most API routes (e.g. /copilot/*) do not include a public workspace slug.
+    if (!hasWorkspaceSegment) {
+      return next();
+    }
+
+    this.logger.debug(`[Middleware] Incoming request: ${raw}`);
 
     // Match: [anything]/w/:slug[anything]
     const m = u.pathname.match(/^(.*?)\/w\/([^/]+)(\/.*)?$/);
