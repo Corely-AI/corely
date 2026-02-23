@@ -35,6 +35,9 @@ export const envSchema = z.object({
   WEB_PORT: z.coerce.number().int().positive().default(8080),
   MOCK_PORT: z.coerce.number().int().positive().default(4000),
   WORKER_PORT: z.coerce.number().int().positive().default(3001),
+  DIRECTORY_PUBLIC_TENANT_ID: z.string().optional(),
+  DIRECTORY_PUBLIC_WORKSPACE_ID: z.string().optional(),
+  DIRECTORY_LEADS_NOTIFY_EMAIL: z.string().email().optional(),
 
   // ============================================================================
   // WORKER

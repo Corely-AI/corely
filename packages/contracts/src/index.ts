@@ -13,6 +13,8 @@ export * from "./tax";
 export * from "./accounting";
 export * from "./reporting";
 export * from "./crm";
+export * from "./directory";
+export * from "./directory-admin";
 export * from "./cms";
 export * from "./website";
 export * from "./sales";

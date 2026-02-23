@@ -1,0 +1,31 @@
+{
+  "name": "@corely/restaurant-listing",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "prebuild": "pnpm --filter @corely/vite-config build",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.app.json --noEmit"
+  },
+  "dependencies": {
+    "@corely/api-client": "workspace:*",
+    "@corely/contracts": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router-dom": "^6.30.1"
+  },
+  "devDependencies": {
+    "@corely/vite-config": "workspace:*",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react-swc": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}
