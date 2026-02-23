@@ -1184,6 +1184,7 @@
       "linkRequired": "Must be linked to either a deal or a contact",
       "due": "Due {{date}}",
       "statuses": {
+        "open": "Open",
         "completed": "Completed",
         "canceled": "Canceled",
         "scheduled": "Scheduled"

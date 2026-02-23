@@ -1151,6 +1151,7 @@
       "linkRequired": "Muss mit einem Deal oder Kontakt verknüpft sein",
       "due": "Fällig am {{date}}",
       "statuses": {
+        "open": "Offen",
         "completed": "Abgeschlossen",
         "canceled": "Storniert",
         "scheduled": "Geplant"

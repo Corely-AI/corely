@@ -1174,6 +1174,7 @@
       "linkRequired": "Phải được liên kết với cơ hội hoặc khách hàng",
       "due": "Hạn: {{date}}",
       "statuses": {
+        "open": "Mở",
         "completed": "Đã hoàn thành",
         "canceled": "Đã hủy",
         "scheduled": "Đã lên lịch"
