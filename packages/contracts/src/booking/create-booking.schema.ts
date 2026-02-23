@@ -2,7 +2,9 @@ import { z } from "zod";
 import { BookingDtoSchema, BookingStatusSchema } from "./booking.types";
 
 const QueryNumberSchema = z.preprocess((value) => {
-  if (value == null || value === "") {return undefined;}
+  if (value == null || value === "") {
+    return undefined;
+  }
   if (typeof value === "string") {
     const numeric = Number(value);
     return Number.isNaN(numeric) ? value : numeric;

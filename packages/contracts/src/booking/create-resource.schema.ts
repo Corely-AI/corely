@@ -2,13 +2,19 @@ import { z } from "zod";
 import { ResourceDtoSchema, ResourceTypeSchema } from "./booking.types";
 
 const QueryBooleanSchema = z.preprocess((value) => {
-  if (value === "true") {return true;}
-  if (value === "false") {return false;}
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
   return value;
 }, z.boolean());
 
 const QueryNumberSchema = z.preprocess((value) => {
-  if (value == null || value === "") {return undefined;}
+  if (value == null || value === "") {
+    return undefined;
+  }
   if (typeof value === "string") {
     const numeric = Number(value);
     return Number.isNaN(numeric) ? value : numeric;

@@ -59,10 +59,14 @@ export function DealsBoardView({
   function handleDragEnd({ active, over }: DragEndEvent) {
     setActiveDeal(null);
 
-    if (!over) {return;}
+    if (!over) {
+      return;
+    }
 
     const draggedDeal = deals.find((d) => d.id === active.id);
-    if (!draggedDeal) {return;}
+    if (!draggedDeal) {
+      return;
+    }
 
     // `over.id` can be a stage id (droppable) or another deal id (sortable).
     // Resolve the target stage id.
@@ -74,11 +78,15 @@ export function DealsBoardView({
     } else {
       // over is a deal id – find which stage that deal belongs to
       const overDeal = deals.find((d) => d.id === over.id);
-      if (!overDeal) {return;}
+      if (!overDeal) {
+        return;
+      }
       targetStageId = overDeal.stageId;
     }
 
-    if (draggedDeal.stageId === targetStageId) {return;}
+    if (draggedDeal.stageId === targetStageId) {
+      return;
+    }
 
     updateStage({
       dealId: draggedDeal.id,
