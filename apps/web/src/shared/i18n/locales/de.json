@@ -127,6 +127,9 @@
     "assistant": "Assistent",
     "expenses": "Ausgaben",
     "invoices": "Rechnungen",
+    "directory": {
+      "restaurants": "Restaurants"
+    },
     "tenants": "Mandanten",
     "groups": {
       "core": "Kernfunktionen",
@@ -817,7 +820,9 @@
     "overdue_one": "einen Tag überfällig"
   },
   "errors": {
-    "loadMenuFailed": "Menü konnte nicht geladen werden"
+    "loadMenuFailed": "Menü konnte nicht geladen werden",
+    "pageNotFound": "Seite nicht gefunden",
+    "returnHome": "Zur Startseite"
   },
   "accounting": {
     "entryStatus": {

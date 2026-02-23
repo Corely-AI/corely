@@ -22,7 +22,7 @@ export const directoryAppManifest: AppManifest = {
       route: "/directory/restaurants",
       icon: "Home",
       order: 20,
-      requiresPermissions: ["directory.restaurants.manage"],
+      requiresPermissions: ["platform.tenants.write"],
     },
   ],
 };

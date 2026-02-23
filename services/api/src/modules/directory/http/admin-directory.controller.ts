@@ -37,8 +37,9 @@ import { AdminGetRestaurantByIdQueryUseCase } from "../application/use-cases/adm
 import { AdminListRestaurantsQueryUseCase } from "../application/use-cases/admin-list-restaurants-query.usecase";
 import { AdminSetRestaurantStatusCommandUseCase } from "../application/use-cases/admin-set-restaurant-status-command.usecase";
 import { AdminUpdateRestaurantCommandUseCase } from "../application/use-cases/admin-update-restaurant-command.usecase";
-import { DIRECTORY_PERMISSIONS } from "../policies/directory.policies";
 import { z } from "zod";
+
+const HOST_DIRECTORY_PERMISSION = "platform.tenants.write";
 
 @Controller("v1/admin/directory/restaurants")
 @UseGuards(AuthGuard, RbacGuard)
@@ -53,7 +54,7 @@ export class AdminDirectoryController {
   ) {}
 
   @Get()
-  @RequirePermission(DIRECTORY_PERMISSIONS.manageRestaurants)
+  @RequirePermission(HOST_DIRECTORY_PERMISSION)
   async listRestaurants(@Query() query: Record<string, unknown>, @Req() req: Request) {
     const input = this.parseOrThrow(AdminDirectoryRestaurantListQuerySchema, query);
     const ctx = this.withDirectoryScope(buildUseCaseContext(req));
@@ -63,7 +64,7 @@ export class AdminDirectoryController {
   }
 
   @Get(":id")
-  @RequirePermission(DIRECTORY_PERMISSIONS.manageRestaurants)
+  @RequirePermission(HOST_DIRECTORY_PERMISSION)
   async getRestaurantById(@Param("id") id: string, @Req() req: Request) {
     this.parseOrThrow(AdminDirectoryRestaurantIdParamSchema, { id });
     const ctx = this.withDirectoryScope(buildUseCaseContext(req));
@@ -74,7 +75,7 @@ export class AdminDirectoryController {
 
   @Post()
   @Header("Cache-Control", "no-store")
-  @RequirePermission(DIRECTORY_PERMISSIONS.manageRestaurants)
+  @RequirePermission(HOST_DIRECTORY_PERMISSION)
   async createRestaurant(@Body() body: unknown, @Req() req: Request) {
     const idempotencyKey = resolveIdempotencyKey(req);
 
@@ -98,7 +99,7 @@ export class AdminDirectoryController {
 
   @Patch(":id")
   @Header("Cache-Control", "no-store")
-  @RequirePermission(DIRECTORY_PERMISSIONS.manageRestaurants)
+  @RequirePermission(HOST_DIRECTORY_PERMISSION)
   async updateRestaurant(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     this.parseOrThrow(AdminDirectoryRestaurantIdParamSchema, { id });
     const patch = this.parseOrThrow(UpdateAdminDirectoryRestaurantRequestSchema, body);
@@ -110,7 +111,7 @@ export class AdminDirectoryController {
 
   @Patch(":id/status")
   @Header("Cache-Control", "no-store")
-  @RequirePermission(DIRECTORY_PERMISSIONS.manageRestaurants)
+  @RequirePermission(HOST_DIRECTORY_PERMISSION)
   async setRestaurantStatus(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     this.parseOrThrow(AdminDirectoryRestaurantIdParamSchema, { id });
     const input = this.parseOrThrow(SetRestaurantStatusRequestSchema, body);

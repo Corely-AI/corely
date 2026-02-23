@@ -10,13 +10,14 @@ import { getPrismaClient } from "../uow/prisma-unit-of-work.adapter";
 @Injectable()
 export class PrismaIdempotencyAdapter implements IdempotencyPort {
   private readonly actionKey = "usecase";
+  private readonly tenantId = "__global__";
 
   constructor(private readonly prisma: PrismaService) {}
 
   async isProcessed(key: string, tx?: TransactionContext): Promise<boolean> {
     const client = getPrismaClient(this.prisma, tx);
     const uniqueKey = {
-      tenantId: null as unknown as string,
+      tenantId: this.tenantId,
       actionKey: this.actionKey,
       key,
     };
@@ -30,7 +31,7 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
     const client = getPrismaClient(this.prisma, tx);
     await client.idempotencyKey.create({
       data: {
-        tenantId: null,
+        tenantId: this.tenantId,
         actionKey: this.actionKey,
         key,
         responseJson: result ? JSON.stringify(result) : null,
@@ -41,7 +42,7 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
   async getResult<T = any>(key: string, tx?: TransactionContext): Promise<T | null> {
     const client = getPrismaClient(this.prisma, tx);
     const uniqueKey = {
-      tenantId: null as unknown as string,
+      tenantId: this.tenantId,
       actionKey: this.actionKey,
       key,
     };
@@ -56,7 +57,7 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
 
   async run<T>(key: string, fn: () => Promise<T>): Promise<T> {
     const uniqueKey = {
-      tenantId: null as unknown as string,
+      tenantId: this.tenantId,
       actionKey: this.actionKey,
       key,
     };
@@ -71,7 +72,7 @@ export class PrismaIdempotencyAdapter implements IdempotencyPort {
     try {
       await this.prisma.idempotencyKey.create({
         data: {
-          tenantId: null,
+          tenantId: this.tenantId,
           actionKey: this.actionKey,
           key,
           responseJson: null,

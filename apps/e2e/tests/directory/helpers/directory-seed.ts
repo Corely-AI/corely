@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { buildDirectoryRestaurantFixtures } from "../fixtures/restaurants.fixture";
 import { DIRECTORY_SCOPE, cleanupDirectoryFixturesByPrefix, seedDirectoryRestaurants } from "./db";
 import { getRepoRoot, loadDirectoryE2eEnv } from "./env";
@@ -40,24 +40,24 @@ export async function cleanupDirectoryFixtureSet(prefix: string): Promise<void> 
 }
 
 export function runDirectoryImportSeedCli(args: { slugPrefix: string; namePrefix: string }): void {
-  const command = [
+  execFileSync(
     "pnpm",
-    "seed:directory",
-    "--",
-    "--yes",
-    "--tenant-id",
-    DIRECTORY_SCOPE.tenantId,
-    "--workspace-id",
-    DIRECTORY_SCOPE.workspaceId,
-    "--slug-prefix",
-    args.slugPrefix,
-    "--name-prefix",
-    args.namePrefix,
-  ].join(" ");
-
-  execSync(command, {
-    cwd: getRepoRoot(),
-    stdio: "inherit",
-    env: process.env,
-  });
+    [
+      "seed:directory",
+      "--yes",
+      "--tenant-id",
+      DIRECTORY_SCOPE.tenantId,
+      "--workspace-id",
+      DIRECTORY_SCOPE.workspaceId,
+      "--slug-prefix",
+      args.slugPrefix,
+      "--name-prefix",
+      args.namePrefix,
+    ],
+    {
+      cwd: getRepoRoot(),
+      stdio: "inherit",
+      env: process.env,
+    }
+  );
 }

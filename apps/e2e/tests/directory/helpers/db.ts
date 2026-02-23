@@ -1,5 +1,7 @@
 import { PrismaClient, type DirectoryRestaurantStatus } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { DIRECTORY_EVENT_TYPES } from "@corely/contracts";
+import { Pool } from "pg";
 import { loadDirectoryE2eEnv } from "./env";
 
 loadDirectoryE2eEnv();
@@ -22,11 +24,14 @@ export type DirectoryRestaurantFixture = {
 };
 
 let prismaSingleton: PrismaClient | null = null;
+let poolSingleton: Pool | null = null;
 
 export const DIRECTORY_SCOPE: DirectoryScope = {
   tenantId: process.env.DIRECTORY_PUBLIC_TENANT_ID ?? "directory-public-tenant",
   workspaceId: process.env.DIRECTORY_PUBLIC_WORKSPACE_ID ?? "directory-public-workspace",
 };
+const WORKER_IDEMPOTENCY_ACTION_KEY = "usecase";
+const WORKER_IDEMPOTENCY_TENANT = "__global__";
 
 function ensureDatabaseUrl(): void {
   if (!process.env.DATABASE_URL) {
@@ -34,23 +39,39 @@ function ensureDatabaseUrl(): void {
   }
 }
 
+function getPool(): Pool {
+  ensureDatabaseUrl();
+
+  if (!poolSingleton) {
+    poolSingleton = new Pool({
+      connectionString: process.env.DATABASE_URL,
+    });
+  }
+
+  return poolSingleton;
+}
+
 export function getPrisma(): PrismaClient {
   ensureDatabaseUrl();
 
   if (!prismaSingleton) {
-    prismaSingleton = new PrismaClient();
+    const adapter = new PrismaPg(getPool());
+    prismaSingleton = new PrismaClient({ adapter });
   }
 
   return prismaSingleton;
 }
 
 export async function closePrisma(): Promise<void> {
-  if (!prismaSingleton) {
-    return;
+  if (prismaSingleton) {
+    await prismaSingleton.$disconnect();
+    prismaSingleton = null;
   }
 
-  await prismaSingleton.$disconnect();
-  prismaSingleton = null;
+  if (poolSingleton) {
+    await poolSingleton.end();
+    poolSingleton = null;
+  }
 }
 
 export async function ensureDirectorySchemaReady(): Promise<void> {
@@ -65,10 +86,10 @@ export async function ensureDirectorySchemaReady(): Promise<void> {
     }>
   >`
     SELECT
-      to_regclass('content."DirectoryRestaurant"') AS restaurant_table,
-      to_regclass('content."DirectoryLead"') AS lead_table,
-      to_regclass('workflow."OutboxEvent"') AS outbox_table,
-      to_regclass('workflow."IdempotencyKey"') AS idempotency_table
+      to_regclass('content."DirectoryRestaurant"')::text AS restaurant_table,
+      to_regclass('content."DirectoryLead"')::text AS lead_table,
+      to_regclass('workflow."OutboxEvent"')::text AS outbox_table,
+      to_regclass('workflow."IdempotencyKey"')::text AS idempotency_table
   `;
 
   const info = rows[0];
@@ -174,7 +195,7 @@ export async function cleanupDirectoryFixturesByPrefix(slugPrefix: string): Prom
   if (outboxEventIds.length > 0) {
     await prisma.idempotencyKey.deleteMany({
       where: {
-        tenantId: null,
+        OR: [{ tenantId: null }, { tenantId: WORKER_IDEMPOTENCY_TENANT }],
         actionKey: "usecase",
         key: {
           in: outboxEventIds.map((eventId) => `${DIRECTORY_EVENT_TYPES.LEAD_CREATED}:${eventId}`),
@@ -270,8 +291,8 @@ export async function rewindOutboxEventForReplay(eventId: string): Promise<void>
 export async function clearWorkerIdempotencyForEvent(eventId: string): Promise<void> {
   await getPrisma().idempotencyKey.deleteMany({
     where: {
-      tenantId: null,
-      actionKey: "usecase",
+      OR: [{ tenantId: null }, { tenantId: WORKER_IDEMPOTENCY_TENANT }],
+      actionKey: WORKER_IDEMPOTENCY_ACTION_KEY,
       key: `${DIRECTORY_EVENT_TYPES.LEAD_CREATED}:${eventId}`,
     },
   });
@@ -280,8 +301,8 @@ export async function clearWorkerIdempotencyForEvent(eventId: string): Promise<v
 export async function countWorkerIdempotencyForEvent(eventId: string): Promise<number> {
   return getPrisma().idempotencyKey.count({
     where: {
-      tenantId: null,
-      actionKey: "usecase",
+      OR: [{ tenantId: null }, { tenantId: WORKER_IDEMPOTENCY_TENANT }],
+      actionKey: WORKER_IDEMPOTENCY_ACTION_KEY,
       key: `${DIRECTORY_EVENT_TYPES.LEAD_CREATED}:${eventId}`,
     },
   });

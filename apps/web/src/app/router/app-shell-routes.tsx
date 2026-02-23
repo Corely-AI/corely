@@ -140,7 +140,7 @@ export const appShellRoutes = (
           key={route.path}
           path={route.path}
           element={
-            <RequirePermission permission="directory.restaurants.manage">
+            <RequirePermission permission="platform.tenants.write">
               {route.element}
             </RequirePermission>
           }

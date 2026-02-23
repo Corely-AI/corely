@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import {
   AUDIT_PORT,
   OUTBOX_PORT,
@@ -11,6 +11,8 @@ import { DataModule } from "@corely/data";
 import { KernelModule } from "@/shared/kernel/kernel.module";
 import { IdempotencyService } from "@/shared/infrastructure/idempotency/idempotency.service";
 import { IdentityModule } from "../identity";
+import { PlatformModule } from "../platform";
+import { WorkspacesModule } from "../workspaces";
 import { DirectoryPublicScopeResolver } from "./application/directory-public-scope.resolver";
 import {
   DIRECTORY_REPOSITORY_PORT,
@@ -29,7 +31,14 @@ import { PublicDirectoryController } from "./http/public-directory.controller";
 import { PrismaDirectoryRepositoryAdapter } from "./infrastructure/prisma-directory-repository.adapter";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    IdentityModule,
+    // Required for RbacGuard dependencies in admin endpoints.
+    forwardRef(() => PlatformModule),
+    forwardRef(() => WorkspacesModule),
+  ],
   controllers: [PublicDirectoryController, AdminDirectoryController],
   providers: [
     PrismaDirectoryRepositoryAdapter,
