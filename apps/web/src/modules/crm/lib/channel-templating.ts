@@ -17,6 +17,15 @@ const PLACEHOLDER_WHITELIST = [
 
 type TemplateContext = Record<string, string | undefined | null>;
 
+const normalizePhoneForDeepLink = (phone: string | undefined | null): string | undefined => {
+  if (!phone) {
+    return undefined;
+  }
+
+  const digits = phone.replace(/\D/g, "");
+  return digits || undefined;
+};
+
 export const interpolateTemplate = (
   template: string,
   ctx: TemplateContext,
@@ -52,5 +61,10 @@ export const buildChannelUrl = (
   ctx: TemplateContext,
   channelKey?: string
 ): string => {
-  return interpolateTemplate(urlTemplate, ctx, channelKey);
+  const normalizedContext: TemplateContext = {
+    ...ctx,
+    phoneE164: normalizePhoneForDeepLink(ctx.phoneE164) ?? ctx.phoneE164,
+  };
+
+  return interpolateTemplate(urlTemplate, normalizedContext, channelKey);
 };
