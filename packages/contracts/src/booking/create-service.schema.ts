@@ -1,6 +1,27 @@
 import { z } from "zod";
 import { ServiceOfferingDtoSchema, ResourceTypeSchema } from "./booking.types";
 
+const QueryBooleanSchema = z.preprocess((value) => {
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+  return value;
+}, z.boolean());
+
+const QueryNumberSchema = z.preprocess((value) => {
+  if (value == null || value === "") {
+    return undefined;
+  }
+  if (typeof value === "string") {
+    const numeric = Number(value);
+    return Number.isNaN(numeric) ? value : numeric;
+  }
+  return value;
+}, z.number().int().positive());
+
 export const CreateServiceOfferingInputSchema = z.object({
   name: z.string().min(1).max(200),
   description: z.string().max(2000).optional().nullable(),
@@ -29,9 +50,9 @@ export type CreateServiceOfferingOutput = z.infer<typeof CreateServiceOfferingOu
 
 export const ListServiceOfferingsInputSchema = z.object({
   q: z.string().optional(),
-  page: z.number().int().positive().optional(),
-  pageSize: z.number().int().positive().optional(),
+  page: QueryNumberSchema.optional(),
+  pageSize: QueryNumberSchema.optional(),
   sort: z.string().optional(),
-  isActive: z.boolean().optional(),
+  isActive: QueryBooleanSchema.optional(),
 });
 export type ListServiceOfferingsInput = z.infer<typeof ListServiceOfferingsInputSchema>;

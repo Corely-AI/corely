@@ -9,6 +9,10 @@ export const bookingAppManifest: AppManifest = {
   dependencies: [],
   capabilities: ["booking.basic"],
   permissions: [],
+  entitlement: {
+    enabledFeatureKey: "app.booking.enabled",
+    defaultEnabled: true,
+  },
   menu: [
     {
       id: "booking-appointments",

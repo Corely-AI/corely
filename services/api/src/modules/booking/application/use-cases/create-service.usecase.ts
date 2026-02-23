@@ -19,7 +19,7 @@ export interface CreateServiceOfferingInput {
   requiredResourceTypes?: ResourceType[];
   requiredTags?: string[];
   isActive?: boolean;
-  idempotencyKey: string;
+  idempotencyKey?: string;
 }
 
 export class CreateServiceOfferingUseCase {
@@ -37,9 +37,11 @@ export class CreateServiceOfferingUseCase {
   async execute(input: CreateServiceOfferingInput, ctx: UseCaseContext): Promise<ServiceOffering> {
     const tenantId = ctx.tenantId!;
 
-    const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
-    if (cached) {
-      return cached.body as ServiceOffering;
+    if (input.idempotencyKey) {
+      const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
+      if (cached) {
+        return cached.body as ServiceOffering;
+      }
     }
 
     const now = this.clock.now();
@@ -79,9 +81,11 @@ export class CreateServiceOfferingUseCase {
       payload: { serviceId: service.id },
     });
 
-    await this.idempotency.store(this.actionKey, tenantId, input.idempotencyKey, {
-      body: service,
-    });
+    if (input.idempotencyKey) {
+      await this.idempotency.store(this.actionKey, tenantId, input.idempotencyKey, {
+        body: service,
+      });
+    }
 
     return service;
   }

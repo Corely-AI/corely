@@ -1,6 +1,17 @@
 import { z } from "zod";
 import { BookingDtoSchema, BookingStatusSchema } from "./booking.types";
 
+const QueryNumberSchema = z.preprocess((value) => {
+  if (value == null || value === "") {
+    return undefined;
+  }
+  if (typeof value === "string") {
+    const numeric = Number(value);
+    return Number.isNaN(numeric) ? value : numeric;
+  }
+  return value;
+}, z.number().int().positive());
+
 // ─── Create Booking (confirm from hold OR direct) ─────────────────────────────
 
 export const CreateBookingInputSchema = z.object({
@@ -57,8 +68,8 @@ export type UpdateBookingInput = z.infer<typeof UpdateBookingInputSchema>;
 
 export const ListBookingsInputSchema = z.object({
   q: z.string().optional(),
-  page: z.number().int().positive().optional(),
-  pageSize: z.number().int().positive().optional(),
+  page: QueryNumberSchema.optional(),
+  pageSize: QueryNumberSchema.optional(),
   sort: z.string().optional(),
   status: BookingStatusSchema.optional(),
   resourceId: z.string().optional(),

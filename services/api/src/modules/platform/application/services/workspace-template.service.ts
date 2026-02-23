@@ -446,6 +446,7 @@ export class WorkspaceTemplateService {
       "platform",
       "workspaces",
       "directory",
+      "booking",
       "invoices",
       "expenses",
       "parties", // clients
@@ -465,6 +466,7 @@ export class WorkspaceTemplateService {
       "platform",
       "workspaces",
       "directory",
+      "booking",
       "invoices",
       "expenses",
       "parties", // customers
