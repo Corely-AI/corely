@@ -136,6 +136,10 @@ export class WorkspaceTemplateService {
       "crm.advanced": false,
       "marketing.basic": false,
 
+      // Booking
+      "booking.basic": true,
+      "booking.advanced": false,
+
       // POS: Optional
       "pos.basic": false,
       "pos.multiRegister": false,
@@ -236,6 +240,7 @@ export class WorkspaceTemplateService {
           "invoices",
           "expenses",
           "clients",
+          "booking",
           "portfolio",
           "website",
           "cms",
@@ -300,6 +305,10 @@ export class WorkspaceTemplateService {
       // CRM: Advanced
       "crm.advanced": true,
       "marketing.basic": false, // Can be enabled separately
+
+      // Booking
+      "booking.basic": true,
+      "booking.advanced": false,
 
       // POS: Optional
       "pos.basic": false,
@@ -391,7 +400,7 @@ export class WorkspaceTemplateService {
         labelKey: "nav.groups.sales",
         defaultLabel: "Sales",
         order: 2,
-        sectionOrder: ["invoices", "rentals", "quotes", "projects", "crm", "customers"],
+        sectionOrder: ["invoices", "booking", "rentals", "quotes", "projects", "crm", "customers"],
       },
       {
         id: "purchasing",
@@ -436,6 +445,8 @@ export class WorkspaceTemplateService {
       "core",
       "platform",
       "workspaces",
+      "directory",
+      "booking",
       "invoices",
       "expenses",
       "parties", // clients
@@ -454,6 +465,8 @@ export class WorkspaceTemplateService {
       "core",
       "platform",
       "workspaces",
+      "directory",
+      "booking",
       "invoices",
       "expenses",
       "parties", // customers

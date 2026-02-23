@@ -1,17 +1,17 @@
 model OutboxEvent {
-  id          String   @id @default(cuid())
-  tenantId    String?
-  eventType   String
-  payloadJson String
-  status      OutboxStatus @default(PENDING)
-  attempts    Int      @default(0)
-  availableAt DateTime @default(now())
-  lockedBy    String?
-  lockedUntil DateTime?
-  lastError   String?
+  id            String       @id @default(cuid())
+  tenantId      String?
+  eventType     String
+  payloadJson   String
+  status        OutboxStatus @default(PENDING)
+  attempts      Int          @default(0)
+  availableAt   DateTime     @default(now())
+  lockedBy      String?
+  lockedUntil   DateTime?
+  lastError     String?
   correlationId String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@index([tenantId, status, availableAt])
   @@index([status, availableAt, lockedUntil, createdAt])
@@ -30,14 +30,14 @@ model DomainEvent {
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  tenantId  String?
-  action    String
+  id          String   @id @default(cuid())
+  tenantId    String?
+  action      String
   actorUserId String?
-  entity    String
-  entityId  String
-  details   String?
-  createdAt DateTime @default(now())
+  entity      String
+  entityId    String
+  details     String?
+  createdAt   DateTime @default(now())
 
   @@index([tenantId, entity, entityId])
   @@index([tenantId, action])
@@ -45,19 +45,19 @@ model AuditLog {
 }
 
 model IdempotencyKey {
-  id           String   @id @default(cuid())
-  tenantId     String?
-  actionKey    String
-  key          String
-  userId       String?
-  requestHash  String?
-  status       String   @default("IN_PROGRESS")
-  responseJson String?
+  id             String    @id @default(cuid())
+  tenantId       String?
+  actionKey      String
+  key            String
+  userId         String?
+  requestHash    String?
+  status         String    @default("IN_PROGRESS")
+  responseJson   String?
   responseStatus Int?
-  statusCode   Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  expiresAt    DateTime?
+  statusCode     Int?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  expiresAt      DateTime?
 
   @@unique([tenantId, actionKey, key])
   @@index([tenantId, actionKey])
@@ -69,5 +69,6 @@ enum OutboxStatus {
   PROCESSING
   SENT
   FAILED
+
   @@schema("workflow")
 }

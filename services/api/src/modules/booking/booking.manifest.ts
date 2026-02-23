@@ -1,0 +1,51 @@
+import type { AppManifest } from "@corely/contracts";
+
+export const bookingAppManifest: AppManifest = {
+  appId: "booking",
+  name: "Booking",
+  tier: 2,
+  version: "1.0.0",
+  description: "Manage bookings",
+  dependencies: [],
+  capabilities: ["booking.basic"],
+  permissions: [],
+  entitlement: {
+    enabledFeatureKey: "app.booking.enabled",
+    defaultEnabled: true,
+  },
+  menu: [
+    {
+      id: "booking-appointments",
+      scope: "web",
+      section: "booking",
+      labelKey: "nav.booking.appointments",
+      defaultLabel: "Appointments",
+      icon: "Calendar",
+      route: "/booking/bookings",
+      order: 1,
+      requiresCapabilities: ["booking.basic"],
+    },
+    {
+      id: "booking-resources",
+      scope: "web",
+      section: "booking",
+      labelKey: "nav.booking.resources",
+      defaultLabel: "Resources",
+      icon: "DoorOpen",
+      route: "/booking/resources",
+      order: 2,
+      requiresCapabilities: ["booking.basic"],
+    },
+    {
+      id: "booking-services",
+      scope: "web",
+      section: "booking",
+      labelKey: "nav.booking.services",
+      defaultLabel: "Services",
+      icon: "BookOpen",
+      route: "/booking/services",
+      order: 3,
+      requiresCapabilities: ["booking.basic"],
+    },
+  ],
+};

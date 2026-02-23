@@ -13,6 +13,8 @@ export * from "./tax";
 export * from "./accounting";
 export * from "./reporting";
 export * from "./crm";
+export * from "./directory";
+export * from "./directory-admin";
 export * from "./cms";
 export * from "./website";
 export * from "./sales";
@@ -103,6 +105,7 @@ export * from "./copilot/collect-inputs.schema";
 export * from "./copilot/chat.schema";
 export * from "./copilot/chat-history.schema";
 export * from "./cash-management";
+export * from "./booking";
 export * from "./ai/richtext";
 
 export const CONTRACTS_HELLO = "Corely contracts loaded ✅";

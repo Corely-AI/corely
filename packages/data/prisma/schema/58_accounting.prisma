@@ -7,7 +7,7 @@ model AccountingSettings {
   id                      String   @id @default(cuid())
   tenantId                String   @unique
   baseCurrency            String   @db.VarChar(3)
-  fiscalYearStartMonthDay String   // Format: "MM-DD" e.g., "01-01"
+  fiscalYearStartMonthDay String // Format: "MM-DD" e.g., "01-01"
   periodLockingEnabled    Boolean  @default(false)
   entryNumberPrefix       String   @default("JE")
   nextEntryNumber         Int      @default(1)
@@ -20,22 +20,22 @@ model AccountingSettings {
 
 // Accounting Periods
 model AccountingPeriod {
-  id            String       @id @default(cuid())
-  tenantId      String
-  fiscalYearId  String
-  name          String       // e.g., "Jan 2025", "Q1 2025"
-  startDate     DateTime     @db.Date
-  endDate       DateTime     @db.Date
-  status        PeriodStatus @default(Open)
-  closedAt      DateTime?    @db.Timestamptz(6)
-  closedBy      String?
-  createdAt     DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime     @updatedAt @db.Timestamptz(6)
+  id           String       @id @default(cuid())
+  tenantId     String
+  fiscalYearId String
+  name         String // e.g., "Jan 2025", "Q1 2025"
+  startDate    DateTime     @db.Date
+  endDate      DateTime     @db.Date
+  status       PeriodStatus @default(Open)
+  closedAt     DateTime?    @db.Timestamptz(6)
+  closedBy     String?
+  createdAt    DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime     @updatedAt @db.Timestamptz(6)
 
+  @@unique([tenantId, fiscalYearId, name])
   @@index([tenantId, status])
   @@index([tenantId, fiscalYearId])
   @@index([tenantId, startDate])
-  @@unique([tenantId, fiscalYearId, name])
   @@schema("accounting")
 }
 
@@ -48,7 +48,7 @@ model LedgerAccount {
   type             AccountType
   isActive         Boolean     @default(true)
   description      String?
-  systemAccountKey String?     // Special keys like "Cash", "Bank", "AR", "Revenue", etc.
+  systemAccountKey String? // Special keys like "Cash", "Bank", "AR", "Revenue", etc.
   createdAt        DateTime    @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime    @updatedAt @db.Timestamptz(6)
 
@@ -63,22 +63,22 @@ model LedgerAccount {
 
 // Journal Entries
 model JournalEntry {
-  id              String      @id @default(cuid())
-  tenantId        String
-  entryNumber     String?     @unique // Allocated on post
-  status          EntryStatus @default(Draft)
-  postingDate     DateTime    @db.Date
-  memo            String
-  sourceType      SourceType?
-  sourceId        String?
-  sourceRef       String?
-  reversesEntryId String?     // Points to entry being reversed
-  reversedByEntryId String?   // Points to reversing entry
-  createdBy       String
-  createdAt       DateTime    @default(now()) @db.Timestamptz(6)
-  postedBy        String?
-  postedAt        DateTime?   @db.Timestamptz(6)
-  updatedAt       DateTime    @updatedAt @db.Timestamptz(6)
+  id                String      @id @default(cuid())
+  tenantId          String
+  entryNumber       String?     @unique // Allocated on post
+  status            EntryStatus @default(Draft)
+  postingDate       DateTime    @db.Date
+  memo              String
+  sourceType        SourceType?
+  sourceId          String?
+  sourceRef         String?
+  reversesEntryId   String? // Points to entry being reversed
+  reversedByEntryId String? // Points to reversing entry
+  createdBy         String
+  createdAt         DateTime    @default(now()) @db.Timestamptz(6)
+  postedBy          String?
+  postedAt          DateTime?   @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(6)
 
   lines JournalLine[]
 
@@ -93,18 +93,18 @@ model JournalEntry {
 
 // Journal Lines
 model JournalLine {
-  id               String        @id @default(cuid())
-  tenantId         String
-  journalEntryId   String
-  ledgerAccountId  String
-  direction        LineDirection
-  amountCents      Int
-  currency         String   @db.VarChar(3)
-  lineMemo         String?
-  reference        String?
-  tags             String?       // JSON array of tags
+  id              String        @id @default(cuid())
+  tenantId        String
+  journalEntryId  String
+  ledgerAccountId String
+  direction       LineDirection
+  amountCents     Int
+  currency        String        @db.VarChar(3)
+  lineMemo        String?
+  reference       String?
+  tags            String? // JSON array of tags
 
-  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  journalEntry  JournalEntry  @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
   ledgerAccount LedgerAccount @relation(fields: [ledgerAccountId], references: [id])
 
   @@index([journalEntryId])
@@ -115,7 +115,7 @@ model JournalLine {
 
 // AI Interaction Audit Log
 model AiInteraction {
-  id              String         @id @default(cuid())
+  id              String           @id @default(cuid())
   tenantId        String
   actorUserId     String
   contextType     AiContextType
@@ -123,9 +123,9 @@ model AiInteraction {
   outputSummary   String
   confidence      ConfidenceLevel?
   confidenceScore Float?
-  referencedData  String?        // JSON string of provenance
-  acceptedAction  AcceptedAction @default(none)
-  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  referencedData  String? // JSON string of provenance
+  acceptedAction  AcceptedAction   @default(none)
+  createdAt       DateTime         @default(now()) @db.Timestamptz(6)
 
   @@index([tenantId, contextType])
   @@index([tenantId, actorUserId])
@@ -143,6 +143,7 @@ enum AccountType {
   Equity
   Income
   Expense
+
   @@schema("accounting")
 }
 
@@ -150,18 +151,21 @@ enum EntryStatus {
   Draft
   Posted
   Reversed
+
   @@schema("accounting")
 }
 
 enum LineDirection {
   Debit
   Credit
+
   @@schema("accounting")
 }
 
 enum PeriodStatus {
   Open
   Closed
+
   @@schema("accounting")
 }
 
@@ -175,6 +179,7 @@ enum SourceType {
   Migration
   Adjustment
   CashEntry
+
   @@schema("accounting")
 }
 
@@ -186,6 +191,7 @@ enum AiContextType {
   ExplainReport
   AnomalyScan
   CloseChecklist
+
   @@schema("accounting")
 }
 
@@ -193,6 +199,7 @@ enum ConfidenceLevel {
   High
   Medium
   Low
+
   @@schema("accounting")
 }
 
@@ -201,5 +208,6 @@ enum AcceptedAction {
   savedDraft
   appliedSuggestion
   dismissed
+
   @@schema("accounting")
 }

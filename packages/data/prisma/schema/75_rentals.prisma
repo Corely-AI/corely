@@ -1,28 +1,27 @@
-
 model RentalProperty {
-  id              String         @id @default(cuid())
-  tenantId        String
-  workspaceId     String
-  status          RentalStatus   @default(DRAFT)
-  slug            String
-  name            String
-  summary         String?
-  descriptionHtml String?        @db.Text
-  checkIn         String?
-  checkOut        String?
-  offers          String[]       @default([])
-  maxGuests       Int?
+  id               String       @id @default(cuid())
+  tenantId         String
+  workspaceId      String
+  status           RentalStatus @default(DRAFT)
+  slug             String
+  name             String
+  summary          String?
+  descriptionHtml  String?      @db.Text
+  checkIn          String?
+  checkOut         String?
+  offers           String[]     @default([])
+  maxGuests        Int?
   coverImageFileId String?
-  publishedAt     DateTime?      @db.Timestamptz(6)
-  price           Decimal?       @db.Decimal(19, 4)
-  currency        String?          @db.VarChar(3)
-  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime       @updatedAt @db.Timestamptz(6)
+  publishedAt      DateTime?    @db.Timestamptz(6)
+  price            Decimal?     @db.Decimal(19, 4)
+  currency         String?      @db.VarChar(3)
+  createdAt        DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime     @updatedAt @db.Timestamptz(6)
 
   // Relations
-  categories      RentalPropertyCategory[]
-  images          RentalPropertyImage[]
-  availability    RentalAvailabilityRange[]
+  categories   RentalPropertyCategory[]
+  images       RentalPropertyImage[]
+  availability RentalAvailabilityRange[]
 
   @@unique([tenantId, workspaceId, slug])
   @@index([tenantId, workspaceId])
@@ -39,7 +38,7 @@ model RentalCategory {
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
-  properties  RentalPropertyCategory[]
+  properties RentalPropertyCategory[]
 
   @@unique([tenantId, workspaceId, slug])
   @@unique([tenantId, workspaceId, name])
@@ -51,8 +50,8 @@ model RentalPropertyCategory {
   propertyId String
   categoryId String
 
-  property   RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  category   RentalCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  property RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  category RentalCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([propertyId, categoryId])
   @@schema("content")
@@ -69,7 +68,7 @@ model RentalPropertyImage {
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
-  property    RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, workspaceId])
   @@index([propertyId, sortOrder])
@@ -88,7 +87,7 @@ model RentalAvailabilityRange {
   createdAt   DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime           @updatedAt @db.Timestamptz(6)
 
-  property    RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property RentalProperty @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, workspaceId])
   @@index([propertyId, startDate, endDate])
@@ -99,11 +98,13 @@ enum RentalStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+
   @@schema("content")
 }
 
 enum AvailabilityStatus {
   AVAILABLE
   BLOCKED
+
   @@schema("content")
 }

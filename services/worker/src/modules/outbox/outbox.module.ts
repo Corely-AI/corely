@@ -33,6 +33,8 @@ import { FormsWorkerModule } from "../forms/forms-worker.module";
 import { ClassesInvoiceReadyToSendHandler } from "../classes/handlers/classes-invoice-ready-to-send.handler";
 import { ClassesWorkerModule } from "../classes/classes-worker.module";
 import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adapters/platform-entity-deleted.handler";
+import { DirectoryWorkerModule } from "../directory/directory-worker.module";
+import { DirectoryLeadCreatedHandler } from "../directory/handlers/directory-lead-created.handler";
 
 // ... imports
 
@@ -44,6 +46,7 @@ import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adap
     TaxWorkerModule,
     FormsWorkerModule,
     ClassesWorkerModule,
+    DirectoryWorkerModule,
     NotificationsModule,
   ],
   providers: [
@@ -95,7 +98,8 @@ import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adap
         taxReportPdfHandler: TaxReportPdfRequestedHandler,
         formsHandler: FormsEventHandler,
         classesHandler: ClassesInvoiceReadyToSendHandler,
-        platformEntityDeletedHandler: PlatformEntityDeletedHandler
+        platformEntityDeletedHandler: PlatformEntityDeletedHandler,
+        directoryLeadCreatedHandler: DirectoryLeadCreatedHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           invoiceHandler,
@@ -106,6 +110,7 @@ import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adap
           formsHandler,
           classesHandler,
           platformEntityDeletedHandler,
+          directoryLeadCreatedHandler,
         ]);
       },
       inject: [
@@ -119,6 +124,7 @@ import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adap
         FormsEventHandler,
         ClassesInvoiceReadyToSendHandler,
         PlatformEntityDeletedHandler,
+        DirectoryLeadCreatedHandler,
       ],
     },
   ],

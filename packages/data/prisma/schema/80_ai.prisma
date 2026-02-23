@@ -1,17 +1,17 @@
 model AgentRun {
-  id             String   @id @default(cuid())
-  tenantId       String
+  id              String    @id @default(cuid())
+  tenantId        String
   createdByUserId String?
-  title          String?
-  status         String
-  startedAt      DateTime @default(now())
-  finishedAt     DateTime?
-  lastMessageAt  DateTime @default(now())
-  archivedAt     DateTime?
-  metadataJson   String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  traceId        String?
+  title           String?
+  status          String
+  startedAt       DateTime  @default(now())
+  finishedAt      DateTime?
+  lastMessageAt   DateTime  @default(now())
+  archivedAt      DateTime?
+  metadataJson    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  traceId         String?
 
   messages       Message[]
   toolExecutions ToolExecution[]
@@ -23,14 +23,14 @@ model AgentRun {
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  tenantId  String
-  runId     String
-  role      String
-  partsJson String
+  id          String   @id @default(cuid())
+  tenantId    String
+  runId       String
+  role        String
+  partsJson   String
   contentText String?
-  createdAt DateTime @default(now())
-  traceId   String?
+  createdAt   DateTime @default(now())
+  traceId     String?
 
   run AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 
@@ -40,18 +40,18 @@ model Message {
 }
 
 model ToolExecution {
-  id            String   @id @default(cuid())
-  tenantId      String
-  runId         String
-  toolCallId    String
-  toolName      String
-  inputJson     String
-  outputJson    String?
-  status        String
-  startedAt     DateTime @default(now())
-  finishedAt    DateTime?
-  errorJson     String?
-  traceId       String?
+  id         String    @id @default(cuid())
+  tenantId   String
+  runId      String
+  toolCallId String
+  toolName   String
+  inputJson  String
+  outputJson String?
+  status     String
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  errorJson  String?
+  traceId    String?
 
   run AgentRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 

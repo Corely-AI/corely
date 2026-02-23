@@ -90,6 +90,7 @@ import {
   TeamPage,
   TeamEditorPage,
 } from "../../modules/portfolio";
+import { directoryRoutes } from "../../modules/directory";
 import {
   TaxSettingsPage,
   TaxCenterPage,
@@ -106,6 +107,7 @@ import { RequirePermission } from "../../modules/settings/components/RequirePerm
 import { appSettingsRoutes } from "./app-settings-routes";
 import { catalogRoutes } from "./catalog-routes";
 import { capabilityRoutes } from "./app-shell-capability-routes";
+import { bookingRoutes } from "./booking-routes";
 
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
@@ -134,6 +136,17 @@ export const appShellRoutes = (
       <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
       <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
       <Route path="/rentals/categories" element={<RentalCategoriesPage />} />
+      {directoryRoutes.map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={
+            <RequirePermission permission="platform.tenants.write">
+              {route.element}
+            </RequirePermission>
+          }
+        />
+      ))}
       <Route path="/portfolio/showcases" element={<ShowcasesPage />} />
       <Route path="/portfolio/showcases/new" element={<ShowcaseEditorPage />} />
       <Route path="/portfolio/showcases/:id/edit" element={<ShowcaseEditorPage />} />
@@ -287,6 +300,7 @@ export const appShellRoutes = (
       <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
       <Route path="/accounting/reports" element={<ReportsHub />} />
       {catalogRoutes}
+      {bookingRoutes}
       <Route path="/copilot" element={<CopilotPage />} />
       <Route path="/tax" element={<TaxCenterPage />} />
       <Route path="/tax/filings" element={<FilingsListPage />} />

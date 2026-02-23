@@ -27,7 +27,12 @@ export const toHttpException = (error: UseCaseError): HttpException => {
   }
 
   return new HttpException(
-    { error: error.code, message: error.message, details: error.details },
+    {
+      code: error.code,
+      error: error.code,
+      message: error.message,
+      details: error.details,
+    },
     status
   );
 };

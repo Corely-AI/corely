@@ -127,6 +127,9 @@
     "assistant": "Trợ lý",
     "expenses": "Chi phí",
     "invoices": "Hóa đơn",
+    "directory": {
+      "restaurants": "Nhà hàng"
+    },
     "tenants": "Tổ chức",
     "groups": {
       "core": "Chính",
@@ -818,7 +821,9 @@
     "overdue_one": "quá hạn 1 ngày"
   },
   "errors": {
-    "loadMenuFailed": "Không thể tải menu"
+    "loadMenuFailed": "Không thể tải menu",
+    "pageNotFound": "Không tìm thấy trang",
+    "returnHome": "Về trang chủ"
   },
   "accounting": {
     "entryStatus": {
@@ -1169,6 +1174,7 @@
       "linkRequired": "Phải được liên kết với cơ hội hoặc khách hàng",
       "due": "Hạn: {{date}}",
       "statuses": {
+        "open": "Mở",
         "completed": "Đã hoàn thành",
         "canceled": "Đã hủy",
         "scheduled": "Đã lên lịch"

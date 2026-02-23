@@ -1,0 +1,25 @@
+import { z } from "zod";
+
+export const DIRECTORY_ERROR_CODES = {
+  RESTAURANT_NOT_FOUND: "Directory:RestaurantNotFound",
+  SLUG_ALREADY_EXISTS: "Directory:SlugAlreadyExists",
+  PUBLIC_SCOPE_NOT_CONFIGURED: "Directory:PublicScopeNotConfigured",
+  TENANT_SCOPE_REQUIRED: "Directory:TenantScopeRequired",
+  VALIDATION_FAILED: "Directory:ValidationFailed",
+  IDEMPOTENCY_KEY_REQUIRED: "Directory:IdempotencyKeyRequired",
+  IDEMPOTENCY_IN_PROGRESS: "Directory:IdempotencyInProgress",
+  IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_PAYLOAD:
+    "Directory:IdempotencyKeyReusedWithDifferentPayload",
+} as const;
+
+export const DirectoryErrorCodeSchema = z.enum([
+  DIRECTORY_ERROR_CODES.RESTAURANT_NOT_FOUND,
+  DIRECTORY_ERROR_CODES.SLUG_ALREADY_EXISTS,
+  DIRECTORY_ERROR_CODES.PUBLIC_SCOPE_NOT_CONFIGURED,
+  DIRECTORY_ERROR_CODES.TENANT_SCOPE_REQUIRED,
+  DIRECTORY_ERROR_CODES.VALIDATION_FAILED,
+  DIRECTORY_ERROR_CODES.IDEMPOTENCY_KEY_REQUIRED,
+  DIRECTORY_ERROR_CODES.IDEMPOTENCY_IN_PROGRESS,
+  DIRECTORY_ERROR_CODES.IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_PAYLOAD,
+]);
+export type DirectoryErrorCode = z.infer<typeof DirectoryErrorCodeSchema>;

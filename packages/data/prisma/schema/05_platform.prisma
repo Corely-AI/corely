@@ -8,18 +8,18 @@
 // =============================================================================
 
 model AppCatalog {
-  appId         String   @id
-  name          String
-  tier          Int      @default(0) // 0-7: app complexity tier
-  version       String   // semver
-  description   String?
-  depsJson      String   // JSON: string[] of appIds this app depends on
-  permissionsJson String // JSON: string[] of RBAC permission keys
-  capabilitiesJson String // JSON: string[] of capability strings
-  menuJson      String   // JSON: MenuContribution[]
+  appId              String   @id
+  name               String
+  tier               Int      @default(0) // 0-7: app complexity tier
+  version            String // semver
+  description        String?
+  depsJson           String // JSON: string[] of appIds this app depends on
+  permissionsJson    String // JSON: string[] of RBAC permission keys
+  capabilitiesJson   String // JSON: string[] of capability strings
+  menuJson           String // JSON: MenuContribution[]
   settingsSchemaJson String? // JSON: JSONSchema for tenant-specific app settings
-  createdAt     DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+  createdAt          DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(6)
 
   @@index([tier])
   @@index([updatedAt])
@@ -31,18 +31,18 @@ model AppCatalog {
 // =============================================================================
 
 model TenantAppInstall {
-  id               String   @id @default(cuid())
-  tenantId         String   @map("tenant_id")
-  appId            String   @map("app_id")
-  enabled          Boolean  @default(false)
-  installedVersion String   @map("installed_version")
-  configJson       String?  @map("config_json") // JSON: tenant-specific app config
+  id               String    @id @default(cuid())
+  tenantId         String    @map("tenant_id")
+  appId            String    @map("app_id")
+  enabled          Boolean   @default(false)
+  installedVersion String    @map("installed_version")
+  configJson       String?   @map("config_json") // JSON: tenant-specific app config
   enabledAt        DateTime? @map("enabled_at") @db.Timestamptz(6)
-  enabledByUserId  String?  @map("enabled_by_user_id")
+  enabledByUserId  String?   @map("enabled_by_user_id")
   disabledAt       DateTime? @map("disabled_at") @db.Timestamptz(6)
-  disabledByUserId String?  @map("disabled_by_user_id")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  disabledByUserId String?   @map("disabled_by_user_id")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -58,13 +58,13 @@ model TenantAppInstall {
 // =============================================================================
 
 model TenantFeatureOverride {
-  id          String   @id @default(cuid())
-  tenantId    String   @map("tenant_id")
-  featureKey  String   @map("feature_key")
-  valueJson   String   @map("value_json") // JSON: value (boolean, number, string, object)
-  updatedBy   String?  @map("updated_by")
-  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-  reason      String?
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  featureKey String   @map("feature_key")
+  valueJson  String   @map("value_json") // JSON: value (boolean, number, string, object)
+  updatedBy  String?  @map("updated_by")
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  reason     String?
 
   // Relations
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -82,7 +82,7 @@ model TemplateCatalog {
   templateId        String   @id @map("template_id")
   name              String
   category          String
-  version           String   // semver
+  version           String // semver
   description       String?
   requiresAppsJson  String   @map("requires_apps_json") // JSON: string[] of required appIds
   paramsSchemaJson  String   @map("params_schema_json") // JSON: JSONSchema/Zod descriptor for params
@@ -101,16 +101,16 @@ model TemplateCatalog {
 // =============================================================================
 
 model TenantTemplateInstall {
-  id              String   @id @default(cuid())
-  tenantId        String   @map("tenant_id")
-  templateId      String   @map("template_id")
-  version         String   // version that was installed
-  paramsJson      String   @map("params_json") // JSON: params used for this installation
-  appliedByUserId String?  @map("applied_by_user_id")
-  appliedAt       DateTime @map("applied_at") @db.Timestamptz(6)
-  resultSummaryJson String? @map("result_summary_json") // JSON: diff/summary of changes made
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                String   @id @default(cuid())
+  tenantId          String   @map("tenant_id")
+  templateId        String   @map("template_id")
+  version           String // version that was installed
+  paramsJson        String   @map("params_json") // JSON: params used for this installation
+  appliedByUserId   String?  @map("applied_by_user_id")
+  appliedAt         DateTime @map("applied_at") @db.Timestamptz(6)
+  resultSummaryJson String?  @map("result_summary_json") // JSON: diff/summary of changes made
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -127,7 +127,7 @@ model TenantTemplateInstall {
 model PackCatalog {
   packId         String   @id @map("pack_id")
   name           String
-  version        String   // semver
+  version        String // semver
   description    String?
   definitionJson String   @map("definition_json") // JSON: full PackDefinition
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -147,23 +147,24 @@ enum PackInstallStatus {
   RUNNING
   FAILED
   COMPLETED
+
   @@schema("platform")
 }
 
 model TenantPackInstall {
-  id          String            @id @default(cuid())
-  tenantId    String            @map("tenant_id")
-  packId      String            @map("pack_id")
-  version     String
-  status      PackInstallStatus @default(PENDING)
-  paramsJson  String?           @map("params_json") // JSON: params for pack installation
-  logJson     String            @default("[]") @map("log_json") // JSON: append-only log entries array
-  startedAt   DateTime?         @map("started_at") @db.Timestamptz(6)
-  completedAt DateTime?         @map("completed_at") @db.Timestamptz(6)
-  installedByUserId String?     @map("installed_by_user_id")
-  errorJson   String?           @map("error_json") // JSON: safe error details (no secrets)
-  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                String            @id @default(cuid())
+  tenantId          String            @map("tenant_id")
+  packId            String            @map("pack_id")
+  version           String
+  status            PackInstallStatus @default(PENDING)
+  paramsJson        String?           @map("params_json") // JSON: params for pack installation
+  logJson           String            @default("[]") @map("log_json") // JSON: append-only log entries array
+  startedAt         DateTime?         @map("started_at") @db.Timestamptz(6)
+  completedAt       DateTime?         @map("completed_at") @db.Timestamptz(6)
+  installedByUserId String?           @map("installed_by_user_id")
+  errorJson         String?           @map("error_json") // JSON: safe error details (no secrets)
+  createdAt         DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -181,17 +182,18 @@ model TenantPackInstall {
 enum MenuScope {
   WEB
   POS
+
   @@schema("platform")
 }
 
 model TenantMenuOverride {
-  id           String    @id @default(cuid())
-  tenantId     String    @map("tenant_id")
-  scope        MenuScope
-  overridesJson String   @map("overrides_json") // JSON: { hidden: string[], order: Record<string,number>, renames: Record<string,string>, pins: string[] }
-  updatedByUserId String? @map("updated_by_user_id")
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  scope           MenuScope
+  overridesJson   String    @map("overrides_json") // JSON: { hidden: string[], order: Record<string,number>, renames: Record<string,string>, pins: string[] }
+  updatedByUserId String?   @map("updated_by_user_id")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -208,17 +210,17 @@ model TenantMenuOverride {
 // =============================================================================
 
 model SeededRecordMeta {
-  id                String   @id @default(cuid())
-  tenantId          String   @map("tenant_id")
-  targetTable       String   @map("target_table") // e.g., "ChartOfAccounts", "TaxRate"
-  targetId          String   @map("target_id") // ID of the seeded record
-  sourceTemplateId  String   @map("source_template_id")
-  sourceTemplateVersion String @map("source_template_version")
-  isCustomized      Boolean  @default(false) @map("is_customized")
-  customizedAt      DateTime? @map("customized_at") @db.Timestamptz(6)
-  customizedByUserId String? @map("customized_by_user_id")
-  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                    String    @id @default(cuid())
+  tenantId              String    @map("tenant_id")
+  targetTable           String    @map("target_table") // e.g., "ChartOfAccounts", "TaxRate"
+  targetId              String    @map("target_id") // ID of the seeded record
+  sourceTemplateId      String    @map("source_template_id")
+  sourceTemplateVersion String    @map("source_template_version")
+  isCustomized          Boolean   @default(false) @map("is_customized")
+  customizedAt          DateTime? @map("customized_at") @db.Timestamptz(6)
+  customizedByUserId    String?   @map("customized_by_user_id")
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // Relations
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)

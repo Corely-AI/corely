@@ -1,0 +1,221 @@
+// ─── Booking Module — Prisma Schema ───────────────────────────────────────────
+// Domain bucket: "commerce" (already active in schema.prisma datasource)
+// Tier-1 persistence: medium module (8 models)
+//
+// Conflict prevention strategy:
+//   We rely on application-level serialisable-TX select-for-update inside the
+//   repository when confirming a hold or creating a direct booking.  A partial
+//   unique index prevents two confirmed/hold allocations from overlapping on the
+//   same resource+day boundary (best-effort guard).  Full exclusion constraints
+//   (GiST/EXCLUSION) are not supported by Prisma migrations; add them manually
+//   in a hand-rolled follow-up migration if needed for high-concurrency scenarios.
+//
+// Time zones:
+//   All DateTime columns use @db.Timestamptz(6) (UTC on the wire).
+//   The timezone field on AvailabilityRule is for display/rule evaluation only.
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum BookingResourceType {
+  STAFF
+  ROOM
+  EQUIPMENT
+
+  @@schema("commerce")
+}
+
+enum BookingStatus {
+  DRAFT
+  HOLD
+  CONFIRMED
+  CANCELLED
+  NO_SHOW
+  COMPLETED
+
+  @@schema("commerce")
+}
+
+enum BookingAllocationRole {
+  PRIMARY
+  SUPPORT
+  ROOM
+  EQUIPMENT
+
+  @@schema("commerce")
+}
+
+enum BookingHoldStatus {
+  ACTIVE
+  CONFIRMED
+  EXPIRED
+  CANCELLED
+
+  @@schema("commerce")
+}
+
+// ─── Resource ─────────────────────────────────────────────────────────────────
+
+model BookingResource {
+  id          String              @id @default(cuid())
+  tenantId    String
+  workspaceId String?
+  type        BookingResourceType
+  name        String              @db.VarChar(200)
+  description String?
+  location    String?             @db.VarChar(500)
+  capacity    Int?
+  tags        String[]
+  attributes  Json?               @db.JsonB
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime            @updatedAt @db.Timestamptz(6)
+
+  allocations      BookingAllocation[]
+  availabilityRule BookingAvailabilityRule[]
+
+  @@index([tenantId])
+  @@index([tenantId, workspaceId])
+  @@index([tenantId, type])
+  @@index([tenantId, isActive])
+  @@schema("commerce")
+}
+
+// ─── Service Offering ─────────────────────────────────────────────────────────
+
+model BookingServiceOffering {
+  id                    String   @id @default(cuid())
+  tenantId              String
+  workspaceId           String?
+  name                  String   @db.VarChar(200)
+  description           String?
+  durationMinutes       Int
+  bufferBeforeMinutes   Int      @default(0)
+  bufferAfterMinutes    Int      @default(0)
+  priceCents            Int?
+  currency              String?  @db.VarChar(3)
+  depositCents          Int?
+  requiredResourceTypes String[] // serialised enum values
+  requiredTags          String[]
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime @updatedAt @db.Timestamptz(6)
+
+  bookings Booking[]
+  holds    BookingHold[]
+
+  @@index([tenantId])
+  @@index([tenantId, workspaceId])
+  @@index([tenantId, isActive])
+  @@schema("commerce")
+}
+
+// ─── Availability Rule ────────────────────────────────────────────────────────
+
+model BookingAvailabilityRule {
+  id            String    @id @default(cuid())
+  tenantId      String
+  resourceId    String
+  timezone      String    @default("UTC") @db.VarChar(64)
+  weeklySlots   Json      @db.JsonB // WeeklyScheduleSlot[]
+  blackouts     Json      @default("[]") @db.JsonB // BlackoutInterval[]
+  effectiveFrom DateTime? @db.Timestamptz(6)
+  effectiveTo   DateTime? @db.Timestamptz(6)
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime  @updatedAt @db.Timestamptz(6)
+
+  resource BookingResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, resourceId]) // one rule set per resource per tenant
+  @@index([tenantId, resourceId])
+  @@schema("commerce")
+}
+
+// ─── Booking ──────────────────────────────────────────────────────────────────
+
+model Booking {
+  id                String        @id @default(cuid())
+  tenantId          String
+  workspaceId       String?
+  status            BookingStatus @default(DRAFT)
+  startAt           DateTime      @db.Timestamptz(6)
+  endAt             DateTime      @db.Timestamptz(6)
+  referenceNumber   String?       @db.VarChar(40)
+  serviceOfferingId String?
+  bookedByPartyId   String?
+  bookedByName      String?       @db.VarChar(200)
+  bookedByEmail     String?       @db.VarChar(320)
+  notes             String?
+  holdId            String?
+  cancelledAt       DateTime?     @db.Timestamptz(6)
+  cancelledReason   String?
+  createdByUserId   String?
+  createdAt         DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime      @updatedAt @db.Timestamptz(6)
+
+  serviceOffering BookingServiceOffering? @relation(fields: [serviceOfferingId], references: [id], onDelete: SetNull)
+  sourceHold      BookingHold?            @relation("HoldToBooking", fields: [holdId], references: [id], onDelete: SetNull)
+  allocations     BookingAllocation[]
+
+  @@index([tenantId])
+  @@index([tenantId, workspaceId])
+  @@index([tenantId, status])
+  @@index([tenantId, startAt])
+  @@index([tenantId, endAt])
+  @@index([tenantId, bookedByPartyId])
+  @@index([tenantId, serviceOfferingId])
+  @@schema("commerce")
+}
+
+// ─── Booking Allocation ───────────────────────────────────────────────────────
+// Links a Booking to the concrete Resources locked for that slot.
+// Application layer MUST check for overlapping allocations within a TX before insert.
+
+model BookingAllocation {
+  id         String                @id @default(cuid())
+  tenantId   String
+  bookingId  String
+  resourceId String
+  role       BookingAllocationRole @default(PRIMARY)
+  startAt    DateTime              @db.Timestamptz(6)
+  endAt      DateTime              @db.Timestamptz(6)
+  createdAt  DateTime              @default(now()) @db.Timestamptz(6)
+
+  booking  Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  resource BookingResource @relation(fields: [resourceId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, bookingId])
+  @@index([tenantId, resourceId])
+  // Helps detect overlaps quickly: all allocations for a resource on a given day
+  @@index([tenantId, resourceId, startAt])
+  @@schema("commerce")
+}
+
+// ─── Booking Hold ─────────────────────────────────────────────────────────────
+// Short-lived soft-lock with TTL.  Confirm converts ACTIVE hold → CONFIRMED booking.
+
+model BookingHold {
+  id                 String            @id @default(cuid())
+  tenantId           String
+  workspaceId        String?
+  status             BookingHoldStatus @default(ACTIVE)
+  startAt            DateTime          @db.Timestamptz(6)
+  endAt              DateTime          @db.Timestamptz(6)
+  serviceOfferingId  String?
+  resourceIds        String[]
+  expiresAt          DateTime          @db.Timestamptz(6)
+  bookedByPartyId    String?
+  bookedByName       String?           @db.VarChar(200)
+  bookedByEmail      String?           @db.VarChar(320)
+  notes              String?
+  confirmedBookingId String?
+  createdByUserId    String?
+  createdAt          DateTime          @default(now()) @db.Timestamptz(6)
+
+  serviceOffering   BookingServiceOffering? @relation(fields: [serviceOfferingId], references: [id], onDelete: SetNull)
+  confirmedBookings Booking[]               @relation("HoldToBooking")
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, expiresAt])
+  @@schema("commerce")
+}

@@ -81,6 +81,18 @@ export class EnvService {
     return this.config.WORKER_PORT;
   }
 
+  get DIRECTORY_PUBLIC_TENANT_ID(): string | undefined {
+    return this.config.DIRECTORY_PUBLIC_TENANT_ID;
+  }
+
+  get DIRECTORY_PUBLIC_WORKSPACE_ID(): string | undefined {
+    return this.config.DIRECTORY_PUBLIC_WORKSPACE_ID;
+  }
+
+  get DIRECTORY_LEADS_NOTIFY_EMAIL(): string | undefined {
+    return this.config.DIRECTORY_LEADS_NOTIFY_EMAIL;
+  }
+
   // ============================================================================
   // WORKER
   // ============================================================================

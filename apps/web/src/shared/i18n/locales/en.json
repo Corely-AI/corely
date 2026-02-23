@@ -131,6 +131,9 @@
     "assistant": "Assistant",
     "expenses": "Expenses",
     "invoices": "Invoices",
+    "directory": {
+      "restaurants": "Restaurants"
+    },
     "tenants": "Tenants",
     "groups": {
       "core": "Core",
@@ -138,6 +141,7 @@
       "purchasing": "Purchasing",
       "inventory": "Inventory",
       "finance": "Finance",
+      "booking": "Booking",
       "settings": "Settings",
       "platform": "Platform",
       "tax": "Tax",
@@ -187,6 +191,11 @@
     "crmActivities": "Activities",
     "crmSequences": "Sequences",
     "classes": "Classes",
+    "booking": {
+      "appointments": "Appointments",
+      "resources": "Resources",
+      "services": "Services"
+    },
     "programs": "Programs",
     "teacherDashboard": "Teacher Dashboard",
     "classSessions": "Sessions",
@@ -243,6 +252,9 @@
       },
       "rentals": {
         "enabled": "Rentals"
+      },
+      "booking": {
+        "enabled": "Booking"
       },
       "website": {
         "enabled": "Website"
@@ -828,7 +840,9 @@
     "overdue_one": "1 day overdue"
   },
   "errors": {
-    "loadMenuFailed": "Failed to load menu"
+    "loadMenuFailed": "Failed to load menu",
+    "pageNotFound": "Page not found",
+    "returnHome": "Return home"
   },
   "accounting": {
     "entryStatus": {
@@ -1179,6 +1193,7 @@
       "linkRequired": "Must be linked to either a deal or a contact",
       "due": "Due {{date}}",
       "statuses": {
+        "open": "Open",
         "completed": "Completed",
         "canceled": "Canceled",
         "scheduled": "Scheduled"

@@ -1,0 +1,23 @@
+src/modules/booking/http/availability.controller.ts(3,27): error TS2307: Cannot find module '../../../shared/http/guards/auth.guard' or its corresponding type declarations.
+src/modules/booking/http/availability.controller.ts(4,31): error TS2307: Cannot find module '../../../shared/http/guards/tenant.guard' or its corresponding type declarations.
+src/modules/booking/http/availability.controller.ts(11,35): error TS2307: Cannot find module '../../../shared/http/validation-pipe' or its corresponding type declarations.
+src/modules/booking/http/booking.controller.ts(3,27): error TS2307: Cannot find module '../../../shared/http/guards/auth.guard' or its corresponding type declarations.
+src/modules/booking/http/booking.controller.ts(4,31): error TS2307: Cannot find module '../../../shared/http/guards/tenant.guard' or its corresponding type declarations.
+src/modules/booking/http/booking.controller.ts(22,35): error TS2307: Cannot find module '../../../shared/http/validation-pipe' or its corresponding type declarations.
+src/modules/booking/http/resource.controller.ts(3,27): error TS2307: Cannot find module '../../../shared/http/guards/auth.guard' or its corresponding type declarations.
+src/modules/booking/http/resource.controller.ts(4,31): error TS2307: Cannot find module '../../../shared/http/guards/tenant.guard' or its corresponding type declarations.
+src/modules/booking/http/resource.controller.ts(15,35): error TS2307: Cannot find module '../../../shared/http/validation-pipe' or its corresponding type declarations.
+src/modules/booking/http/service.controller.ts(3,27): error TS2307: Cannot find module '../../../shared/http/guards/auth.guard' or its corresponding type declarations.
+src/modules/booking/http/service.controller.ts(4,31): error TS2307: Cannot find module '../../../shared/http/guards/tenant.guard' or its corresponding type declarations.
+src/modules/booking/http/service.controller.ts(15,35): error TS2307: Cannot find module '../../../shared/http/validation-pipe' or its corresponding type declarations.
+src/modules/booking/infrastructure/adapters/prisma-booking-repo.adapter.ts(4,49): error TS2300: Duplicate identifier 'BookingStatus'.
+src/modules/booking/infrastructure/adapters/prisma-booking-repo.adapter.ts(5,18): error TS2300: Duplicate identifier 'BookingStatus'.
+src/modules/booking/infrastructure/adapters/prisma-resource-repo.adapter.ts(35,32): error TS2552: Cannot find name 'BookingResourceType'. Did you mean 'BookingResource'?
+src/modules/booking/infrastructure/adapters/prisma-resource-repo.adapter.ts(41,9): error TS2322: Type 'Record<string, unknown> | JsonNull' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue'.
+  Type 'Record<string, unknown>' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue'.
+    Type 'Record<string, unknown>' is missing the following properties from type 'readonly InputJsonValue[]': length, concat, join, slice, and 20 more.
+src/modules/booking/infrastructure/adapters/prisma-resource-repo.adapter.ts(64,36): error TS2552: Cannot find name 'BookingResourceType'. Did you mean 'BookingResource'?
+src/modules/booking/infrastructure/adapters/prisma-resource-repo.adapter.ts(90,32): error TS2552: Cannot find name 'BookingResourceType'. Did you mean 'BookingResource'?
+src/modules/booking/infrastructure/adapters/prisma-resource-repo.adapter.ts(96,9): error TS2322: Type 'Record<string, unknown> | JsonNull' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue'.
+  Type 'Record<string, unknown>' is not assignable to type 'NullableJsonNullValueInput | InputJsonValue'.
+    Type 'Record<string, unknown>' is missing the following properties from type 'readonly InputJsonValue[]': length, concat, join, slice, and 20 more.

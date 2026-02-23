@@ -74,6 +74,7 @@ vi.mock("@/shared/utils/iconMapping", () => ({
 
 vi.mock("@/shared/lib/permissions", () => ({
   useCanReadTenants: () => ({ can: false, isLoading: false, error: null }),
+  useCanManageTenants: () => ({ can: false, isLoading: false, error: null }),
 }));
 
 describe("AppSidebar", () => {
