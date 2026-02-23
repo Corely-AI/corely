@@ -140,12 +140,13 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     // Booking Use Cases
     {
       provide: CreateHoldUseCase,
-      useFactory: (holdRepo, bookingRepo, resourceRepo, idgen, clock) =>
-        new CreateHoldUseCase(holdRepo, bookingRepo, resourceRepo, idgen, clock),
+      useFactory: (holdRepo, bookingRepo, resourceRepo, idempotency, idgen, clock) =>
+        new CreateHoldUseCase(holdRepo, bookingRepo, resourceRepo, idempotency, idgen, clock),
       inject: [
         HOLD_REPOSITORY,
         BOOKING_REPOSITORY,
         RESOURCE_REPOSITORY,
+        IDEMPOTENCY_STORAGE_PORT_TOKEN,
         ID_GENERATOR_TOKEN,
         CLOCK_PORT_TOKEN,
       ],

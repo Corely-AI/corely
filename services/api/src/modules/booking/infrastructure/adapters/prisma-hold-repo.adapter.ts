@@ -71,6 +71,27 @@ export class PrismaHoldRepoAdapter implements HoldRepositoryPort {
     return this.mapToDomain(updated);
   }
 
+  async hasActiveOverlap(
+    tenantId: string,
+    resourceId: string,
+    startAt: Date,
+    endAt: Date,
+    now: Date
+  ): Promise<boolean> {
+    const overlap = await this.prisma.bookingHold.findFirst({
+      where: {
+        tenantId,
+        status: "ACTIVE",
+        expiresAt: { gt: now },
+        resourceIds: { has: resourceId },
+        startAt: { lt: endAt },
+        endAt: { gt: startAt },
+      },
+      select: { id: true },
+    });
+    return Boolean(overlap);
+  }
+
   async expireStaleHolds(tenantId: string): Promise<number> {
     const result = await this.prisma.bookingHold.updateMany({
       where: {

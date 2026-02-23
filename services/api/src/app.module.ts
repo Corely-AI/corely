@@ -88,6 +88,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     DirectoryModule,
     CashManagementModule,
     ClassesModule,
+    BookingModule,
     PortalModule,
     PortfolioModule,
     IssuesModule,

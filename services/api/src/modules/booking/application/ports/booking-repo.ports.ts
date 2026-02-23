@@ -126,6 +126,13 @@ export interface HoldRepositoryPort {
   create(hold: BookingHold): Promise<BookingHold>;
   findById(id: string, tenantId: string): Promise<BookingHold | null>;
   update(hold: BookingHold): Promise<BookingHold>;
+  hasActiveOverlap(
+    tenantId: string,
+    resourceId: string,
+    startAt: Date,
+    endAt: Date,
+    now: Date
+  ): Promise<boolean>;
   expireStaleHolds(tenantId: string): Promise<number>;
 }
 

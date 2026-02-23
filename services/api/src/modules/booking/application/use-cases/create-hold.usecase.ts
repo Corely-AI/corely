@@ -6,6 +6,7 @@ import type {
 } from "../ports/booking-repo.ports";
 import type { IdGeneratorPort } from "../../../../shared/ports/id-generator.port";
 import type { ClockPort } from "../../../../shared/ports/clock.port";
+import type { IdempotencyStoragePort } from "../../../../shared/ports/idempotency-storage.port";
 import { BookingHold } from "../../domain/booking.entities";
 import { ConflictException, BadRequestException } from "@nestjs/common";
 
@@ -19,14 +20,17 @@ export interface CreateHoldInput {
   bookedByEmail?: string | null;
   notes?: string | null;
   ttlSeconds?: number;
-  idempotencyKey: string;
+  idempotencyKey?: string;
 }
 
 export class CreateHoldUseCase {
+  private readonly actionKey = "booking.hold.create";
+
   constructor(
     private readonly holdRepo: HoldRepositoryPort,
     private readonly bookingRepo: BookingRepositoryPort,
     private readonly resourceRepo: ResourceRepositoryPort,
+    private readonly idempotency: IdempotencyStoragePort,
     private readonly idGenerator: IdGeneratorPort,
     private readonly clock: ClockPort
   ) {}
@@ -34,6 +38,13 @@ export class CreateHoldUseCase {
   async execute(input: CreateHoldInput, ctx: UseCaseContext): Promise<BookingHold> {
     const tenantId = ctx.tenantId!;
     const now = this.clock.now();
+
+    if (input.idempotencyKey) {
+      const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
+      if (cached) {
+        return cached.body as BookingHold;
+      }
+    }
 
     if (input.startAt >= input.endAt) {
       throw new BadRequestException("startAt must be before endAt");
@@ -59,6 +70,17 @@ export class CreateHoldUseCase {
       );
       if (hasConflict) {
         throw new ConflictException(`Resource ${resId} is not available for requested time`);
+      }
+
+      const hasHoldConflict = await this.holdRepo.hasActiveOverlap(
+        tenantId,
+        resId,
+        input.startAt,
+        input.endAt,
+        now
+      );
+      if (hasHoldConflict) {
+        throw new ConflictException(`Resource ${resId} already has an active hold for this time`);
       }
     }
 
@@ -90,6 +112,14 @@ export class CreateHoldUseCase {
     // so we can be slightly eventually consistent, relying on the hard-confirm to
     // do the final rigorous check.
 
-    return this.holdRepo.create(hold);
+    const created = await this.holdRepo.create(hold);
+
+    if (input.idempotencyKey) {
+      await this.idempotency.store(this.actionKey, tenantId, input.idempotencyKey, {
+        body: created,
+      });
+    }
+
+    return created;
   }
 }

@@ -24,7 +24,7 @@ export interface CreateBookingInput {
   bookedByName?: string | null;
   bookedByEmail?: string | null;
   notes?: string | null;
-  idempotencyKey: string;
+  idempotencyKey?: string;
 }
 
 export class CreateBookingUseCase {
@@ -43,9 +43,11 @@ export class CreateBookingUseCase {
 
   async execute(input: CreateBookingInput, ctx: UseCaseContext): Promise<BookingEntity> {
     const tenantId = ctx.tenantId!;
-    const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
-    if (cached) {
-      return cached.body as BookingEntity;
+    if (input.idempotencyKey) {
+      const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
+      if (cached) {
+        return cached.body as BookingEntity;
+      }
     }
 
     const now = this.clock.now();
@@ -156,9 +158,11 @@ export class CreateBookingUseCase {
       payload: { bookingId: booking.id, status: booking.status },
     });
 
-    await this.idempotency.store(this.actionKey, tenantId, input.idempotencyKey, {
-      body: booking,
-    });
+    if (input.idempotencyKey) {
+      await this.idempotency.store(this.actionKey, tenantId, input.idempotencyKey, {
+        body: booking,
+      });
+    }
 
     return booking;
   }

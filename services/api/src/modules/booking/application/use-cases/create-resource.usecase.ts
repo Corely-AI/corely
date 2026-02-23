@@ -16,7 +16,7 @@ export interface CreateResourceInput {
   tags?: string[];
   attributes?: Record<string, unknown> | null;
   isActive?: boolean;
-  idempotencyKey: string;
+  idempotencyKey?: string;
 }
 
 export class CreateResourceUseCase {
@@ -34,9 +34,11 @@ export class CreateResourceUseCase {
   async execute(input: CreateResourceInput, ctx: UseCaseContext): Promise<BookingResource> {
     const tenantId = ctx.tenantId!;
 
-    const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
-    if (cached) {
-      return cached.body as BookingResource;
+    if (input.idempotencyKey) {
+      const cached = await this.idempotency.get(this.actionKey, tenantId, input.idempotencyKey);
+      if (cached) {
+        return cached.body as BookingResource;
+      }
     }
 
     const now = this.clock.now();
@@ -73,9 +75,11 @@ export class CreateResourceUseCase {
       payload: { resourceId: resource.id, type: resource.type },
     });
 
-    await this.idempotency.store(this.actionKey, tenantId, input.idempotencyKey, {
-      body: resource,
-    });
+    if (input.idempotencyKey) {
+      await this.idempotency.store(this.actionKey, tenantId, input.idempotencyKey, {
+        body: resource,
+      });
+    }
 
     return resource;
   }
