@@ -11,100 +11,103 @@
 // ============================================================================
 
 enum ImportShipmentStatus {
-  DRAFT             // Initial creation, not submitted
-  SUBMITTED         // Submitted for processing
-  IN_TRANSIT        // Shipped from origin port
+  DRAFT // Initial creation, not submitted
+  SUBMITTED // Submitted for processing
+  IN_TRANSIT // Shipped from origin port
   CUSTOMS_CLEARANCE // Arrived at destination, awaiting customs
-  CLEARED           // Customs cleared
-  RECEIVED          // Goods received into warehouse
-  CANCELED          // Shipment canceled
+  CLEARED // Customs cleared
+  RECEIVED // Goods received into warehouse
+  CANCELED // Shipment canceled
+
   @@schema("commerce")
 }
 
 enum ImportDocumentType {
-  BILL_OF_LADING       // BOL from carrier
-  COMMERCIAL_INVOICE   // Invoice from supplier
-  PACKING_LIST         // Packing list
+  BILL_OF_LADING // BOL from carrier
+  COMMERCIAL_INVOICE // Invoice from supplier
+  PACKING_LIST // Packing list
   CERTIFICATE_OF_ORIGIN // COO for tariff purposes
-  IMPORT_LICENSE       // Import permit/license
-  CUSTOMS_DECLARATION  // Customs entry form
-  INSPECTION_REPORT    // Pre-shipment or arrival inspection
-  OTHER                // Other supporting documents
+  IMPORT_LICENSE // Import permit/license
+  CUSTOMS_DECLARATION // Customs entry form
+  INSPECTION_REPORT // Pre-shipment or arrival inspection
+  OTHER // Other supporting documents
+
   @@schema("commerce")
 }
 
 enum ShippingMode {
-  SEA     // Ocean freight
-  AIR     // Air freight
-  LAND    // Truck/rail
+  SEA // Ocean freight
+  AIR // Air freight
+  LAND // Truck/rail
   COURIER // Express courier (DHL, FedEx, etc.)
+
   @@schema("commerce")
 }
 
 model ImportShipment {
-  id                      String                @id @default(cuid())
-  tenantId                String
-  shipmentNumber          String?               // Auto-generated or manual
-  supplierPartyId         String                // FK to Party (supplier)
-  status                  ImportShipmentStatus  @default(DRAFT)
+  id              String               @id @default(cuid())
+  tenantId        String
+  shipmentNumber  String? // Auto-generated or manual
+  supplierPartyId String // FK to Party (supplier)
+  status          ImportShipmentStatus @default(DRAFT)
 
   // Shipping details
-  shippingMode            ShippingMode          @default(SEA)
-  containerNumber         String?               // Container # for ocean freight
-  sealNumber              String?               // Container seal #
-  billOfLadingNumber      String?               // BOL/AWB #
-  carrierName             String?               // Shipping line/airline
-  vesselName              String?               // Vessel name (for ocean)
-  voyageNumber            String?               // Voyage # (for ocean)
+  shippingMode       ShippingMode @default(SEA)
+  containerNumber    String? // Container # for ocean freight
+  sealNumber         String? // Container seal #
+  billOfLadingNumber String? // BOL/AWB #
+  carrierName        String? // Shipping line/airline
+  vesselName         String? // Vessel name (for ocean)
+  voyageNumber       String? // Voyage # (for ocean)
 
   // Origin & destination
-  originCountry           String?               // ISO country code
-  originPort              String?               // Port/airport code
-  destinationCountry      String?               // ISO country code
-  destinationPort         String?               // Port/airport code
-  finalWarehouseId        String?               // Destination warehouse
+  originCountry      String? // ISO country code
+  originPort         String? // Port/airport code
+  destinationCountry String? // ISO country code
+  destinationPort    String? // Port/airport code
+  finalWarehouseId   String? // Destination warehouse
 
   // Dates
-  departureDate           DateTime?             @db.Date
-  estimatedArrivalDate    DateTime?             @db.Date
-  actualArrivalDate       DateTime?             @db.Date
-  clearanceDate           DateTime?             @db.Date
-  receivedDate            DateTime?             @db.Date
+  departureDate        DateTime? @db.Date
+  estimatedArrivalDate DateTime? @db.Date
+  actualArrivalDate    DateTime? @db.Date
+  clearanceDate        DateTime? @db.Date
+  receivedDate         DateTime? @db.Date
 
   // Customs & compliance
-  customsDeclarationNumber String?              // Entry #
-  importLicenseNumber     String?               // Import permit #
-  hsCodesPrimary          String[]              @default([]) // Primary HS codes
-  incoterm                String?               // FOB, CIF, etc.
+  customsDeclarationNumber String? // Entry #
+  importLicenseNumber      String? // Import permit #
+  hsCodesPrimary           String[] @default([]) // Primary HS codes
+  incoterm                 String? // FOB, CIF, etc.
 
   // Costs (in cents, base currency)
-  fobValueCents           Int?                  // Free on Board value
-  freightCostCents        Int?                  // Shipping cost
-  insuranceCostCents      Int?                  // Insurance cost
-  customsDutyCents        Int?                  // Import duties
-  customsTaxCents         Int?                  // VAT/GST/excise on import
-  otherCostsCents         Int?                  // Handling, storage, etc.
-  totalLandedCostCents    Int?                  // Sum of all costs (calculated)
+  fobValueCents        Int? // Free on Board value
+  freightCostCents     Int? // Shipping cost
+  insuranceCostCents   Int? // Insurance cost
+  customsDutyCents     Int? // Import duties
+  customsTaxCents      Int? // VAT/GST/excise on import
+  otherCostsCents      Int? // Handling, storage, etc.
+  totalLandedCostCents Int? // Sum of all costs (calculated)
 
   // Physical attributes
-  totalWeightKg           Float?                // Total gross weight
-  totalVolumeM3           Float?                // Total volume
-  totalPackages           Int?                  // Number of packages/cartons
+  totalWeightKg Float? // Total gross weight
+  totalVolumeM3 Float? // Total volume
+  totalPackages Int? // Number of packages/cartons
 
   // Additional info
-  notes                   String?               @db.Text
-  metadataJson            Json?                 @db.JsonB
+  notes        String? @db.Text
+  metadataJson Json?   @db.JsonB
 
   // Audit fields
-  createdByUserId         String?
-  updatedByUserId         String?
-  createdAt               DateTime              @default(now()) @db.Timestamptz(6)
-  updatedAt               DateTime              @updatedAt @db.Timestamptz(6)
-  archivedAt              DateTime?             @db.Timestamptz(6)
+  createdByUserId String?
+  updatedByUserId String?
+  createdAt       DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(6)
+  archivedAt      DateTime? @db.Timestamptz(6)
 
   // Relations
-  lines                   ImportShipmentLine[]
-  documents               ImportShipmentDocument[]
+  lines     ImportShipmentLine[]
+  documents ImportShipmentDocument[]
 
   @@unique([tenantId, shipmentNumber])
   @@index([tenantId, status])
@@ -116,34 +119,34 @@ model ImportShipment {
 }
 
 model ImportShipmentLine {
-  id                      String          @id @default(cuid())
-  shipmentId              String
-  productId               String          // FK to CatalogItem
-  hsCode                  String?         // Harmonized System code
+  id         String  @id @default(cuid())
+  shipmentId String
+  productId  String // FK to CatalogItem
+  hsCode     String? // Harmonized System code
 
   // Quantities
-  orderedQty              Int             // Expected quantity
-  receivedQty             Int             @default(0) // Actual received (updated on receipt)
+  orderedQty  Int // Expected quantity
+  receivedQty Int @default(0) // Actual received (updated on receipt)
 
   // Costs (in cents, before landed cost allocation)
-  unitFobCostCents        Int?            // Unit cost FOB
-  lineFobCostCents        Int?            // Line total FOB (orderedQty × unitFobCostCents)
+  unitFobCostCents Int? // Unit cost FOB
+  lineFobCostCents Int? // Line total FOB (orderedQty × unitFobCostCents)
 
   // Allocated costs (calculated in PR4 landed cost allocation)
-  allocatedFreightCents   Int?            // Allocated freight
-  allocatedInsuranceCents Int?            // Allocated insurance
-  allocatedDutyCents      Int?            // Allocated customs duty
-  allocatedTaxCents       Int?            // Allocated import taxes
-  allocatedOtherCents     Int?            // Allocated other costs
-  unitLandedCostCents     Int?            // Total landed cost per unit (calculated)
+  allocatedFreightCents   Int? // Allocated freight
+  allocatedInsuranceCents Int? // Allocated insurance
+  allocatedDutyCents      Int? // Allocated customs duty
+  allocatedTaxCents       Int? // Allocated import taxes
+  allocatedOtherCents     Int? // Allocated other costs
+  unitLandedCostCents     Int? // Total landed cost per unit (calculated)
 
   // Physical attributes
-  weightKg                Float?          // Line weight
-  volumeM3                Float?          // Line volume
+  weightKg Float? // Line weight
+  volumeM3 Float? // Line volume
 
-  notes                   String?
+  notes String?
 
-  shipment                ImportShipment  @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipment ImportShipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
   @@index([shipmentId])
   @@index([productId])
@@ -151,21 +154,21 @@ model ImportShipmentLine {
 }
 
 model ImportShipmentDocument {
-  id                  String              @id @default(cuid())
-  shipmentId          String
-  documentType        ImportDocumentType
-  documentNumber      String?             // Document reference number
-  documentName        String              // File name or title
-  documentUrl         String?             // URL to file storage
-  fileStorageKey      String?             // S3 key or storage path
-  mimeType            String?
-  fileSizeBytes       Int?
-  uploadedByUserId    String?
-  uploadedAt          DateTime            @default(now()) @db.Timestamptz(6)
+  id               String             @id @default(cuid())
+  shipmentId       String
+  documentType     ImportDocumentType
+  documentNumber   String? // Document reference number
+  documentName     String // File name or title
+  documentUrl      String? // URL to file storage
+  fileStorageKey   String? // S3 key or storage path
+  mimeType         String?
+  fileSizeBytes    Int?
+  uploadedByUserId String?
+  uploadedAt       DateTime           @default(now()) @db.Timestamptz(6)
 
-  notes               String?
+  notes String?
 
-  shipment            ImportShipment      @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipment ImportShipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
   @@index([shipmentId])
   @@index([documentType])
@@ -182,5 +185,6 @@ model ImportSettings {
   requireInvoiceForSubmit Boolean  @default(true) // Require commercial invoice to submit
   createdAt               DateTime @default(now()) @db.Timestamptz(6)
   updatedAt               DateTime @updatedAt @db.Timestamptz(6)
+
   @@schema("commerce")
 }

@@ -5,6 +5,7 @@ enum SalesQuoteStatus {
   REJECTED
   CONVERTED
   EXPIRED
+
   @@schema("commerce")
 }
 
@@ -14,6 +15,7 @@ enum SalesOrderStatus {
   FULFILLED
   INVOICED
   CANCELED
+
   @@schema("commerce")
 }
 
@@ -43,23 +45,23 @@ model SalesQuote {
 
   lines SalesQuoteLine[]
 
+  @@unique([tenantId, number])
   @@index([tenantId, status])
   @@index([tenantId, customerPartyId])
   @@index([tenantId, createdAt])
-  @@unique([tenantId, number])
   @@schema("commerce")
 }
 
 model SalesQuoteLine {
-  id             String @id @default(cuid())
-  quoteId        String
-  description    String
-  quantity       Int
-  unitPriceCents Int
-  discountCents  Int?
-  taxCode        String?
+  id              String  @id @default(cuid())
+  quoteId         String
+  description     String
+  quantity        Int
+  unitPriceCents  Int
+  discountCents   Int?
+  taxCode         String?
   revenueCategory String?
-  sortOrder      Int?
+  sortOrder       Int?
 
   quote SalesQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
@@ -92,15 +94,15 @@ model SalesOrder {
 
   lines SalesOrderLine[]
 
+  @@unique([tenantId, number])
   @@index([tenantId, status])
   @@index([tenantId, customerPartyId])
   @@index([tenantId, createdAt])
-  @@unique([tenantId, number])
   @@schema("commerce")
 }
 
 model SalesOrderLine {
-  id              String @id @default(cuid())
+  id              String  @id @default(cuid())
   orderId         String
   description     String
   quantity        Int
@@ -117,22 +119,23 @@ model SalesOrderLine {
 }
 
 model SalesSettings {
-  id                             String   @id @default(cuid())
-  tenantId                       String   @unique
-  defaultPaymentTerms            String?
-  defaultCurrency                String   @db.VarChar(3) @default("EUR")
-  quoteNumberPrefix              String   @default("Q-")
-  quoteNextNumber                Int      @default(1)
-  orderNumberPrefix              String   @default("SO-")
-  orderNextNumber                Int      @default(1)
-  invoiceNumberPrefix            String   @default("INV-")
-  invoiceNextNumber              Int      @default(1)
-  defaultRevenueAccountId        String?
+  id                                 String   @id @default(cuid())
+  tenantId                           String   @unique
+  defaultPaymentTerms                String?
+  defaultCurrency                    String   @default("EUR") @db.VarChar(3)
+  quoteNumberPrefix                  String   @default("Q-")
+  quoteNextNumber                    Int      @default(1)
+  orderNumberPrefix                  String   @default("SO-")
+  orderNextNumber                    Int      @default(1)
+  invoiceNumberPrefix                String   @default("INV-")
+  invoiceNextNumber                  Int      @default(1)
+  defaultRevenueAccountId            String?
   defaultAccountsReceivableAccountId String?
-  defaultBankAccountId           String?
-  autoPostOnIssue                Boolean  @default(true)
-  autoPostOnPayment              Boolean  @default(true)
-  createdAt                      DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt                      DateTime @updatedAt @db.Timestamptz(6)
+  defaultBankAccountId               String?
+  autoPostOnIssue                    Boolean  @default(true)
+  autoPostOnPayment                  Boolean  @default(true)
+  createdAt                          DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt                          DateTime @updatedAt @db.Timestamptz(6)
+
   @@schema("commerce")
 }

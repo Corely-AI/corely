@@ -3,30 +3,30 @@
 // They are reusable across different contexts (workspace, supplier, etc.)
 
 model LegalEntity {
-  id          String          @id @default(cuid())
+  id          String   @id @default(cuid())
   tenantId    String
-  kind        String          // PERSONAL, COMPANY (stored as string for now, matches WorkspaceKind enum values)
+  kind        String // PERSONAL, COMPANY (stored as string for now, matches WorkspaceKind enum values)
   legalName   String
-  countryCode String          @db.Char(2)
-  currency    String          @db.VarChar(3)
+  countryCode String   @db.Char(2)
+  currency    String   @db.VarChar(3)
   taxId       String?
   vatId       String?
   phone       String?
   email       String?
   website     String?
-  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime        @updatedAt @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
   // JSON fields for structured data
   address     Json? // LegalEntityAddress: { line1, line2?, city, postalCode, countryCode }
   bankAccount Json? // LegalEntityBankAccount: { iban?, bic?, bankName?, accountHolder?, accountNumber?, routingNumber? }
 
   // Relations
-  tenant      Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  workspaces  Workspace[]
-  bankAccounts BankAccount[]
+  tenant         Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspaces     Workspace[]
+  bankAccounts   BankAccount[]
   paymentMethods PaymentMethod[]
-  invoices    Invoice[]
+  invoices       Invoice[]
 
   @@index([tenantId])
   @@index([tenantId, kind])
@@ -56,17 +56,17 @@ model Workspace {
   invoiceSettings Json? // WorkspaceInvoiceSettings: { prefix?, nextNumber?, defaultPaymentTermsDays? }
 
   // Relations
-  tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  legalEntity LegalEntity           @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
-  memberships WorkspaceMembership[]
-  invites     WorkspaceInvite[]
-  domains     WorkspaceDomain[]
-  registers   Register[]
-  shiftSessions ShiftSession[]
+  tenant             Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  legalEntity        LegalEntity           @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  memberships        WorkspaceMembership[]
+  invites            WorkspaceInvite[]
+  domains            WorkspaceDomain[]
+  registers          Register[]
+  shiftSessions      ShiftSession[]
   posSaleIdempotency PosSaleIdempotency[]
-  cashRegisters     CashRegister[]
-  cashEntries       CashEntry[]
-  cashDayCloses     CashDayClose[]
+  cashRegisters      CashRegister[]
+  cashEntries        CashEntry[]
+  cashDayCloses      CashDayClose[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -111,16 +111,16 @@ model WorkspaceMembership {
 }
 
 model WorkspaceInvite {
-  id              String                 @id @default(cuid())
+  id              String                  @id @default(cuid())
   workspaceId     String
   email           String
   role            WorkspaceMembershipRole
-  status          WorkspaceInviteStatus  @default(PENDING)
-  token           String                 @unique
-  expiresAt       DateTime               @db.Timestamptz(6)
-  acceptedAt      DateTime?              @db.Timestamptz(6)
+  status          WorkspaceInviteStatus   @default(PENDING)
+  token           String                  @unique
+  expiresAt       DateTime                @db.Timestamptz(6)
+  acceptedAt      DateTime?               @db.Timestamptz(6)
   createdByUserId String?
-  createdAt       DateTime               @default(now()) @db.Timestamptz(6)
+  createdAt       DateTime                @default(now()) @db.Timestamptz(6)
 
   // Relations
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -141,6 +141,7 @@ enum WorkspaceMembershipRole {
   MEMBER
   ACCOUNTANT
   VIEWER
+
   @@schema("platform")
 }
 
@@ -148,6 +149,7 @@ enum WorkspaceMembershipStatus {
   ACTIVE
   INVITED
   DISABLED
+
   @@schema("platform")
 }
 
@@ -156,6 +158,7 @@ enum WorkspaceInviteStatus {
   ACCEPTED
   EXPIRED
   CANCELED
+
   @@schema("platform")
 }
 
@@ -165,5 +168,6 @@ enum WorkspaceOnboardingStatus {
   TAX
   BANK
   DONE
+
   @@schema("platform")
 }

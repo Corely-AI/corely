@@ -22,6 +22,7 @@ import { classesAppManifest } from "../../../classes/classes.manifest";
 import { catalogAppManifest } from "../../../catalog/catalog.manifest";
 import { importAppManifest } from "../../../import/import.manifest";
 import { directoryAppManifest } from "../../../directory/directory.manifest";
+import { bookingAppManifest } from "../../../booking/booking.manifest";
 
 /**
  * App Registry
@@ -111,5 +112,6 @@ export class AppRegistry implements AppRegistryPort {
     this.register(catalogAppManifest);
     this.register(importAppManifest);
     this.register(directoryAppManifest);
+    this.register(bookingAppManifest);
   }
 }

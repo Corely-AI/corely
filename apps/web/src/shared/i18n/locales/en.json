@@ -141,6 +141,7 @@
       "purchasing": "Purchasing",
       "inventory": "Inventory",
       "finance": "Finance",
+      "booking": "Booking",
       "settings": "Settings",
       "platform": "Platform",
       "tax": "Tax",
@@ -190,6 +191,11 @@
     "crmActivities": "Activities",
     "crmSequences": "Sequences",
     "classes": "Classes",
+    "booking": {
+      "appointments": "Appointments",
+      "resources": "Resources",
+      "services": "Services"
+    },
     "programs": "Programs",
     "teacherDashboard": "Teacher Dashboard",
     "classSessions": "Sessions",
@@ -246,6 +252,9 @@
       },
       "rentals": {
         "enabled": "Rentals"
+      },
+      "booking": {
+        "enabled": "Booking"
       },
       "website": {
         "enabled": "Website"

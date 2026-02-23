@@ -1,22 +1,23 @@
 enum FormPostSubmitAction {
   NONE
   CREATE_TUTORING_LEAD
+
   @@schema("platform")
 }
 
 model FormDefinition {
-  id              String               @id @default(cuid())
-  tenantId        String
-  name            String
-  description     String?
-  status          FormStatus           @default(DRAFT)
-  publicId        String?              @unique
-  publicTokenHash String?
+  id               String               @id @default(cuid())
+  tenantId         String
+  name             String
+  description      String?
+  status           FormStatus           @default(DRAFT)
+  publicId         String?              @unique
+  publicTokenHash  String?
   postSubmitAction FormPostSubmitAction @default(NONE)
-  publishedAt     DateTime?            @db.Timestamptz(6)
-  archivedAt      DateTime?            @db.Timestamptz(6)
-  createdAt       DateTime             @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime             @updatedAt @db.Timestamptz(6)
+  publishedAt      DateTime?            @db.Timestamptz(6)
+  archivedAt       DateTime?            @db.Timestamptz(6)
+  createdAt        DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime             @updatedAt @db.Timestamptz(6)
 
   fields      FormField[]
   submissions FormSubmission[]
@@ -70,6 +71,7 @@ model FormSubmission {
 enum FormStatus {
   DRAFT
   PUBLISHED
+
   @@schema("platform")
 }
 
@@ -82,11 +84,13 @@ enum FormFieldType {
   SINGLE_SELECT
   MULTI_SELECT
   EMAIL
+
   @@schema("platform")
 }
 
 enum FormSubmissionSource {
   PUBLIC
   INTERNAL
+
   @@schema("platform")
 }

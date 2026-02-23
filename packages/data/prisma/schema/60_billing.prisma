@@ -1,6 +1,6 @@
 model Invoice {
-  id          String        @id @default(cuid())
-  tenantId    String
+  id                 String        @id @default(cuid())
+  tenantId           String
   customerPartyId    String
   billToName         String?
   billToEmail        String?
@@ -10,56 +10,56 @@ model Invoice {
   billToCity         String?
   billToPostalCode   String?
   billToCountry      String?
-  number      String?
-  status      InvoiceStatus @default(DRAFT)
-  currency    String          @db.VarChar(3)
-  notes       String?
-  terms       String?
-  
+  number             String?
+  status             InvoiceStatus @default(DRAFT)
+  currency           String        @db.VarChar(3)
+  notes              String?
+  terms              String?
+
   // References
   legalEntityId   String?
   paymentMethodId String?
 
   // Snapshots (Immutable copies at time of issuance)
-  issuerSnapshot  Json?      @db.JsonB
-  taxSnapshot     Json?      @db.JsonB
-  paymentSnapshot Json?      @db.JsonB
-  
+  issuerSnapshot  Json? @db.JsonB
+  taxSnapshot     Json? @db.JsonB
+  paymentSnapshot Json? @db.JsonB
+
   // Legacy/Other
   paymentDetails Json?
-  invoiceDate DateTime?     @db.Date
-  dueDate     DateTime?     @db.Date
-  issuedAt    DateTime?     @db.Timestamptz(6)
-  sentAt      DateTime?     @db.Timestamptz(6)
-  createdAt   DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime      @updatedAt @db.Timestamptz(6)
+  invoiceDate    DateTime? @db.Date
+  dueDate        DateTime? @db.Date
+  issuedAt       DateTime? @db.Timestamptz(6)
+  sentAt         DateTime? @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
 
-  pdfStorageKey     String?
-  pdfGeneratedAt    DateTime? @db.Timestamptz(6)
-  pdfSourceVersion  String?
-  pdfStatus         PdfStatus @default(NONE)
-  pdfFailureReason  String?
-  sourceType        String?
-  sourceId          String?
+  pdfStorageKey    String?
+  pdfGeneratedAt   DateTime? @db.Timestamptz(6)
+  pdfSourceVersion String?
+  pdfStatus        PdfStatus @default(NONE)
+  pdfFailureReason String?
+  sourceType       String?
+  sourceId         String?
 
-  lines     InvoiceLine[]
-  payments  InvoicePayment[]
+  lines         InvoiceLine[]
+  payments      InvoicePayment[]
   reminderState InvoiceReminderState?
 
-  legalEntity     LegalEntity?   @relation(fields: [legalEntityId], references: [id])
-  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  legalEntity   LegalEntity?   @relation(fields: [legalEntityId], references: [id])
+  paymentMethod PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
 
+  @@unique([tenantId, number])
   @@index([tenantId, status])
   @@index([tenantId, customerPartyId])
   @@index([tenantId, createdAt])
   @@index([legalEntityId])
   @@index([paymentMethodId])
-  @@unique([tenantId, number])
   @@schema("billing")
 }
 
 model InvoiceLine {
-  id             String   @id @default(cuid())
+  id             String @id @default(cuid())
   invoiceId      String
   description    String
   qty            Int
@@ -90,21 +90,22 @@ enum InvoiceStatus {
   SENT
   PAID
   CANCELED
+
   @@schema("billing")
 }
 
 model InvoiceEmailDelivery {
-  id                 String         @id @default(cuid())
-  tenantId           String
-  invoiceId          String
-  to                 String
-  status             DeliveryStatus @default(QUEUED)
-  provider           String         @default("resend")
-  providerMessageId  String?
-  idempotencyKey     String
-  lastError          String?
-  createdAt          DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime       @updatedAt @db.Timestamptz(6)
+  id                String         @id @default(cuid())
+  tenantId          String
+  invoiceId         String
+  to                String
+  status            DeliveryStatus @default(QUEUED)
+  provider          String         @default("resend")
+  providerMessageId String?
+  idempotencyKey    String
+  lastError         String?
+  createdAt         DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @db.Timestamptz(6)
 
   @@unique([tenantId, idempotencyKey])
   @@index([tenantId, invoiceId])
@@ -140,6 +141,7 @@ enum DeliveryStatus {
   BOUNCED
   FAILED
   DELAYED
+
   @@schema("billing")
 }
 
@@ -148,5 +150,6 @@ enum PdfStatus {
   GENERATING
   READY
   FAILED
+
   @@schema("billing")
 }

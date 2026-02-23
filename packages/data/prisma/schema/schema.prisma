@@ -2,9 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   // Ensure Prisma ships engines for local dev and alpine arm64 builds
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "linux-musl"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x", "linux-musl"]
   previewFeatures = ["prismaSchemaFolder"]
 }
 
