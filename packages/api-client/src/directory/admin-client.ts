@@ -92,11 +92,24 @@ const toCorrelationId = (value?: string) =>
 const resolveAuth = (
   defaults: DirectoryAdminAuthOptions,
   overrides?: DirectoryAdminAuthOptions
-): DirectoryAdminAuthOptions => ({
-  accessToken: overrides?.accessToken ?? defaults.accessToken,
-  tenantId: overrides?.tenantId ?? defaults.tenantId,
-  workspaceId: overrides?.workspaceId ?? defaults.workspaceId,
-});
+): DirectoryAdminAuthOptions => {
+  const resolvedAccessToken = overrides?.accessToken ?? defaults.accessToken;
+  const resolvedTenantId = overrides?.tenantId ?? defaults.tenantId;
+  const resolvedWorkspaceId = overrides?.workspaceId ?? defaults.workspaceId;
+
+  const result: DirectoryAdminAuthOptions = {};
+  if (resolvedAccessToken !== undefined) {
+    result.accessToken = resolvedAccessToken;
+  }
+  if (resolvedTenantId !== undefined) {
+    result.tenantId = resolvedTenantId;
+  }
+  if (resolvedWorkspaceId !== undefined) {
+    result.workspaceId = resolvedWorkspaceId;
+  }
+
+  return result;
+};
 
 export const createAdminDirectoryClient = (options?: DirectoryAdminClientOptions) => {
   const baseUrl = resolveBaseUrl(options?.baseUrl);
