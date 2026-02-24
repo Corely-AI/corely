@@ -1,6 +1,7 @@
 "use client";
 
 export {
+  Checkbox,
   Badge,
   Button,
   Calendar,
@@ -19,11 +20,23 @@ export {
   DialogTitle,
   EmptyState,
   Input,
+  Label,
   Logo,
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+  TimezoneSelect,
   cn,
 } from "@corely/ui";
 

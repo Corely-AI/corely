@@ -44,6 +44,7 @@ export * from "./switch";
 export * from "./table";
 export * from "./tabs";
 export * from "./textarea";
+export * from "./timezone-select";
 export * from "./toast";
 export * from "./toaster";
 export * from "./toggle";

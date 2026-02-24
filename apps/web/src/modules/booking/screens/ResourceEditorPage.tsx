@@ -1,10 +1,10 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { normalizeError } from "@corely/api-client";
-import type { CreateResourceInput, ResourceType } from "@corely/contracts";
+import type { CreateResourceInput, ResourceType, WeeklyScheduleSlot } from "@corely/contracts";
 import { z } from "zod";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -13,9 +13,36 @@ import { bookingApi } from "@/lib/booking-api";
 import { bookingResourceKeys } from "../queries";
 import { mapValidationErrorsToForm } from "@/shared/lib/errors/map-validation-errors";
 import { ConfirmDeleteDialog, invalidateResourceQueries } from "@/shared/crud";
-import { Badge, Button, Card, CardContent, Checkbox, Input, Label, Textarea } from "@corely/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Input,
+  Label,
+  Textarea,
+  TimezoneSelect,
+} from "@corely/ui";
 
 const RESOURCE_TYPES: ResourceType[] = ["STAFF", "ROOM", "EQUIPMENT"];
+const WEEK_DAYS: Array<{ dayOfWeek: number; label: string }> = [
+  { dayOfWeek: 1, label: "Monday" },
+  { dayOfWeek: 2, label: "Tuesday" },
+  { dayOfWeek: 3, label: "Wednesday" },
+  { dayOfWeek: 4, label: "Thursday" },
+  { dayOfWeek: 5, label: "Friday" },
+  { dayOfWeek: 6, label: "Saturday" },
+  { dayOfWeek: 0, label: "Sunday" },
+];
+
+type DayScheduleState = {
+  enabled: boolean;
+  startTime: string;
+  endTime: string;
+};
+
+type AvailabilityFormState = Record<number, DayScheduleState>;
 
 const resourceFormSchema = z.object({
   type: z.enum(["STAFF", "ROOM", "EQUIPMENT"]),
@@ -67,6 +94,22 @@ const toOptionalInt = (value: string | undefined) => {
   return Number(value);
 };
 
+const toMinutes = (value: string): number => {
+  const [hours, minutes] = value.split(":").map((part) => Number(part));
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return Number.NaN;
+  }
+  return hours * 60 + minutes;
+};
+
+const createDefaultAvailabilityForm = (): AvailabilityFormState =>
+  Object.fromEntries(
+    WEEK_DAYS.map(({ dayOfWeek }) => [
+      dayOfWeek,
+      { enabled: false, startTime: "09:00", endTime: "17:00" },
+    ])
+  ) as AvailabilityFormState;
+
 const toPayload = (values: ResourceFormValues): CreateResourceInput => ({
   type: values.type,
   name: values.name.trim(),
@@ -103,6 +146,39 @@ export default function ResourceEditorPage() {
     enabled: isEdit,
   });
 
+  const [availabilityTimezone, setAvailabilityTimezone] = useState("UTC");
+  const [availabilityForm, setAvailabilityForm] = useState<AvailabilityFormState>(
+    createDefaultAvailabilityForm()
+  );
+
+  const availabilityRange = useMemo(() => {
+    const from = new Date();
+    from.setUTCDate(from.getUTCDate() - 1);
+    const to = new Date();
+    to.setUTCDate(to.getUTCDate() + 35);
+    return {
+      from: from.toISOString(),
+      to: to.toISOString(),
+    };
+  }, []);
+
+  const availabilityQuery = useQuery({
+    queryKey: id
+      ? ["booking/availability", id, availabilityRange.from, availabilityRange.to]
+      : ["booking/availability", "new"],
+    queryFn: () => {
+      if (!id) {
+        throw new Error("Missing resource id");
+      }
+      return bookingApi.getAvailability({
+        resourceId: id,
+        from: availabilityRange.from,
+        to: availabilityRange.to,
+      });
+    },
+    enabled: isEdit,
+  });
+
   useEffect(() => {
     if (!resourceQuery.data) {
       return;
@@ -122,6 +198,31 @@ export default function ResourceEditorPage() {
       isActive: resourceQuery.data.isActive,
     });
   }, [form, resourceQuery.data]);
+
+  useEffect(() => {
+    if (!isEdit) {
+      return;
+    }
+
+    const rule = availabilityQuery.data?.rule;
+    if (!rule) {
+      setAvailabilityTimezone("UTC");
+      setAvailabilityForm(createDefaultAvailabilityForm());
+      return;
+    }
+
+    const nextState = createDefaultAvailabilityForm();
+    rule.weeklySlots.forEach((slot) => {
+      nextState[slot.dayOfWeek] = {
+        enabled: true,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      };
+    });
+
+    setAvailabilityTimezone(rule.timezone || "UTC");
+    setAvailabilityForm(nextState);
+  }, [availabilityQuery.data, isEdit]);
 
   const saveMutation = useMutation({
     mutationFn: async (values: ResourceFormValues) => {
@@ -167,6 +268,60 @@ export default function ResourceEditorPage() {
       toast.error(normalized.detail || "Failed to delete resource");
     },
   });
+
+  const saveAvailabilityMutation = useMutation({
+    mutationFn: async () => {
+      if (!id) {
+        throw new Error("Missing resource id");
+      }
+
+      const weeklySlots: WeeklyScheduleSlot[] = WEEK_DAYS.filter(
+        ({ dayOfWeek }) => availabilityForm[dayOfWeek]?.enabled
+      ).map(({ dayOfWeek }) => ({
+        dayOfWeek,
+        startTime: availabilityForm[dayOfWeek].startTime,
+        endTime: availabilityForm[dayOfWeek].endTime,
+      }));
+
+      if (weeklySlots.length === 0) {
+        throw new Error("Select at least one day in the weekly schedule.");
+      }
+
+      for (const slot of weeklySlots) {
+        if (toMinutes(slot.endTime) <= toMinutes(slot.startTime)) {
+          throw new Error("End time must be after start time for each selected day.");
+        }
+      }
+
+      return bookingApi.upsertAvailabilityRule(id, {
+        timezone: availabilityTimezone.trim() || "UTC",
+        weeklySlots,
+        blackouts: [],
+      });
+    },
+    onSuccess: async () => {
+      toast.success("Availability updated");
+      await availabilityQuery.refetch();
+    },
+    onError: (error) => {
+      if (error instanceof Error) {
+        toast.error(error.message);
+        return;
+      }
+      const normalized = normalizeError(error);
+      toast.error(normalized.detail || "Failed to update availability");
+    },
+  });
+
+  const updateAvailabilityDay = (dayOfWeek: number, patch: Partial<DayScheduleState>) => {
+    setAvailabilityForm((previous) => ({
+      ...previous,
+      [dayOfWeek]: {
+        ...previous[dayOfWeek],
+        ...patch,
+      },
+    }));
+  };
 
   const pageTitle = useMemo(() => (isEdit ? "Edit resource" : "Create resource"), [isEdit]);
 
@@ -352,6 +507,97 @@ export default function ResourceEditorPage() {
             </CardContent>
           </Card>
         </form>
+      ) : null}
+
+      {isEdit && !resourceQuery.isError ? (
+        <Card id="availability">
+          <CardContent className="p-6 space-y-5">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <h2 className="text-lg font-semibold">Availability</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Configure weekly time windows used for public booking slots.
+                </p>
+              </div>
+              <Button
+                variant="accent"
+                onClick={() => saveAvailabilityMutation.mutate()}
+                disabled={availabilityQuery.isLoading || saveAvailabilityMutation.isPending}
+              >
+                {saveAvailabilityMutation.isPending ? "Saving..." : "Save availability"}
+              </Button>
+            </div>
+
+            {availabilityQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">Loading availability...</p>
+            ) : availabilityQuery.isError ? (
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-destructive">Failed to load availability rule.</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => void availabilityQuery.refetch()}
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="max-w-xs">
+                  <Label htmlFor="availability-timezone">Timezone</Label>
+                  <TimezoneSelect
+                    id="availability-timezone"
+                    value={availabilityTimezone}
+                    onChange={setAvailabilityTimezone}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  {WEEK_DAYS.map(({ dayOfWeek, label }) => {
+                    const row = availabilityForm[dayOfWeek];
+                    return (
+                      <div
+                        key={dayOfWeek}
+                        className="grid grid-cols-1 md:grid-cols-[180px_140px_140px] items-center gap-3 rounded-md border border-border px-3 py-2"
+                      >
+                        <label className="flex items-center gap-2">
+                          <Checkbox
+                            checked={row.enabled}
+                            onCheckedChange={(checked) =>
+                              updateAvailabilityDay(dayOfWeek, { enabled: Boolean(checked) })
+                            }
+                          />
+                          <span className="text-sm font-medium">{label}</span>
+                        </label>
+
+                        <Input
+                          type="time"
+                          value={row.startTime}
+                          disabled={!row.enabled}
+                          onChange={(event) =>
+                            updateAvailabilityDay(dayOfWeek, { startTime: event.target.value })
+                          }
+                        />
+                        <Input
+                          type="time"
+                          value={row.endTime}
+                          disabled={!row.enabled}
+                          onChange={(event) =>
+                            updateAvailabilityDay(dayOfWeek, { endTime: event.target.value })
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  Note: this editor supports one time window per day and no blackout periods.
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
       ) : null}
     </div>
   );

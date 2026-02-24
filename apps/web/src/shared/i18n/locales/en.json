@@ -194,7 +194,8 @@
     "booking": {
       "appointments": "Appointments",
       "resources": "Resources",
-      "services": "Services"
+      "services": "Services",
+      "bookingPage": "Booking Page"
     },
     "programs": "Programs",
     "teacherDashboard": "Teacher Dashboard",

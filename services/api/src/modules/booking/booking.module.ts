@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
+import { EnvService } from "@corely/config";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { IdentityModule } from "../identity"; // Assuming required for AuthGuard
 import { CrmModule } from "../crm"; // Depending on bounded boundary imports
@@ -8,12 +9,14 @@ import { BookingResourceController } from "./http/resource.controller";
 import { BookingServiceController } from "./http/service.controller";
 import { BookingController } from "./http/booking.controller";
 import { BookingAvailabilityController } from "./http/availability.controller";
+import { PublicBookingController } from "./http/public-booking.controller";
 
 import { PrismaResourceRepoAdapter } from "./infrastructure/adapters/prisma-resource-repo.adapter";
 import { PrismaServiceRepoAdapter } from "./infrastructure/adapters/prisma-service-repo.adapter";
 import { PrismaBookingRepoAdapter } from "./infrastructure/adapters/prisma-booking-repo.adapter";
 import { PrismaHoldRepoAdapter } from "./infrastructure/adapters/prisma-hold-repo.adapter";
 import { PrismaAvailabilityRuleRepoAdapter } from "./infrastructure/adapters/prisma-availability-rule-repo.adapter";
+import { ResendBookingNotificationAdapter } from "./infrastructure/adapters/resend-booking-notification.adapter";
 
 import {
   RESOURCE_REPOSITORY,
@@ -22,6 +25,7 @@ import {
   HOLD_REPOSITORY,
   AVAILABILITY_RULE_REPOSITORY,
 } from "./application/ports/booking-repo.ports";
+import { BOOKING_NOTIFICATION_PORT } from "./application/ports/booking-notification.port";
 import {
   AUDIT_PORT,
   OUTBOX_PORT,
@@ -59,6 +63,7 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     BookingServiceController,
     BookingController,
     BookingAvailabilityController,
+    PublicBookingController,
   ],
   providers: [
     { provide: RESOURCE_REPOSITORY, useClass: PrismaResourceRepoAdapter },
@@ -66,6 +71,21 @@ import { GetAvailabilityUseCase } from "./application/use-cases/get-availability
     { provide: BOOKING_REPOSITORY, useClass: PrismaBookingRepoAdapter },
     { provide: HOLD_REPOSITORY, useClass: PrismaHoldRepoAdapter },
     { provide: AVAILABILITY_RULE_REPOSITORY, useClass: PrismaAvailabilityRuleRepoAdapter },
+    {
+      provide: BOOKING_NOTIFICATION_PORT,
+      useFactory: (env: EnvService) => {
+        const provider = env.EMAIL_PROVIDER;
+        if (provider !== "resend") {
+          throw new Error(`Unsupported email provider for booking: ${provider}`);
+        }
+        return new ResendBookingNotificationAdapter(
+          env.RESEND_API_KEY,
+          env.RESEND_FROM,
+          env.RESEND_REPLY_TO
+        );
+      },
+      inject: [EnvService],
+    },
 
     // Resource Use Cases
     {

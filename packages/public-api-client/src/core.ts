@@ -1,6 +1,15 @@
 import { request } from "@corely/api-client";
 import {
   CheckAvailabilityOutputSchema,
+  PublicBookingPageOutputSchema,
+  PublicBookingServicesOutputSchema,
+  PublicBookingAvailabilityInputSchema,
+  PublicBookingAvailabilityOutputSchema,
+  PublicCreateBookingHoldInputSchema,
+  PublicCreateBookingHoldOutputSchema,
+  PublicConfirmBookingInputSchema,
+  PublicConfirmBookingOutputSchema,
+  PublicBookingSummaryOutputSchema,
   CreateWebsiteFeedbackInputSchema,
   CreateWebsiteFeedbackOutputSchema,
   GetRentalContactSettingsOutputSchema,
@@ -270,6 +279,133 @@ export const createPublicApiClient = (options?: PublicApiClientOptions) => {
         headers: mergeHeaders(clientHeaders, requestOptions?.headers),
       });
       return GetRentalContactSettingsOutputSchema.parse(data);
+    },
+
+    async getPublicBookingPage(
+      slug: string,
+      workspaceSlug?: string | null,
+      requestOptions?: { headers?: HeadersInit }
+    ) {
+      const url = buildUrl({
+        baseUrl,
+        path: `/public/booking/pages/${slug}`,
+        workspaceSlug,
+      });
+      const data = await request({
+        url,
+        headers: mergeHeaders(clientHeaders, requestOptions?.headers),
+      });
+      return PublicBookingPageOutputSchema.parse(data);
+    },
+
+    async listPublicBookingServices(
+      slug: string,
+      workspaceSlug?: string | null,
+      requestOptions?: { headers?: HeadersInit }
+    ) {
+      const url = buildUrl({
+        baseUrl,
+        path: `/public/booking/pages/${slug}/services`,
+        workspaceSlug,
+      });
+      const data = await request({
+        url,
+        headers: mergeHeaders(clientHeaders, requestOptions?.headers),
+      });
+      return PublicBookingServicesOutputSchema.parse(data);
+    },
+
+    async getPublicBookingAvailability(input: {
+      slug: string;
+      serviceId: string;
+      staffId?: string;
+      from: string;
+      to: string;
+      day?: string;
+      workspaceSlug?: string | null;
+    }) {
+      const parsed = PublicBookingAvailabilityInputSchema.parse({
+        serviceId: input.serviceId,
+        staffId: input.staffId,
+        from: input.from,
+        to: input.to,
+        day: input.day,
+      });
+      const url = buildUrl({
+        baseUrl,
+        path: `/public/booking/pages/${input.slug}/availability`,
+        params: {
+          serviceId: parsed.serviceId,
+          staffId: parsed.staffId,
+          from: parsed.from,
+          to: parsed.to,
+          day: parsed.day,
+        },
+        workspaceSlug: input.workspaceSlug,
+      });
+      const data = await request({
+        url,
+        headers: clientHeaders,
+      });
+      return PublicBookingAvailabilityOutputSchema.parse(data);
+    },
+
+    async createPublicBookingHold(
+      slug: string,
+      input: unknown,
+      requestOptions?: WorkspaceRequestOptions
+    ) {
+      const parsed = PublicCreateBookingHoldInputSchema.parse(input);
+      const url = buildUrl({
+        baseUrl,
+        path: `/public/booking/pages/${slug}/holds`,
+        workspaceSlug: requestOptions?.workspaceSlug,
+      });
+      const data = await request({
+        url,
+        method: "POST",
+        body: parsed,
+        headers: mergeHeaders(clientHeaders, requestOptions?.headers),
+      });
+      return PublicCreateBookingHoldOutputSchema.parse(data);
+    },
+
+    async confirmPublicBooking(
+      slug: string,
+      input: unknown,
+      requestOptions?: WorkspaceRequestOptions
+    ) {
+      const parsed = PublicConfirmBookingInputSchema.parse(input);
+      const url = buildUrl({
+        baseUrl,
+        path: `/public/booking/pages/${slug}/confirm`,
+        workspaceSlug: requestOptions?.workspaceSlug,
+      });
+      const data = await request({
+        url,
+        method: "POST",
+        body: parsed,
+        headers: mergeHeaders(clientHeaders, requestOptions?.headers),
+      });
+      return PublicConfirmBookingOutputSchema.parse(data);
+    },
+
+    async getPublicBookingSummary(
+      slug: string,
+      bookingId: string,
+      workspaceSlug?: string | null,
+      requestOptions?: { headers?: HeadersInit }
+    ) {
+      const url = buildUrl({
+        baseUrl,
+        path: `/public/booking/pages/${slug}/bookings/${bookingId}`,
+        workspaceSlug,
+      });
+      const data = await request({
+        url,
+        headers: mergeHeaders(clientHeaders, requestOptions?.headers),
+      });
+      return PublicBookingSummaryOutputSchema.parse(data);
     },
 
     async listBlogPosts(input: {

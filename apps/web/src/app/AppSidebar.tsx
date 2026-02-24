@@ -152,11 +152,15 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                   )}
                   {group.items.map((item) => {
                     const Icon = getIconByName(item.icon);
+                    const openInNewTab =
+                      item.id === "booking-public-page" || item.route === "/booking/public-page";
                     return (
                       <NavLink
                         key={item.id}
                         to={item.route || "#"}
                         end={item.exact || item.route === "/tax"}
+                        target={openInNewTab ? "_blank" : undefined}
+                        rel={openInNewTab ? "noreferrer" : undefined}
                         data-testid={`nav-${item.id}`}
                         className={({ isActive }) =>
                           cn(
