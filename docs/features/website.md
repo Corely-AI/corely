@@ -27,6 +27,7 @@ Website module (this module):
 - Public resolve endpoint (`/public/website/resolve`)
 - AI-assisted page generation (draft + CMS content blueprint)
 - Page content draft editing endpoints (`/website/pages/:pageId/content`)
+- External JSON content keys (draft/publish + public read), starting with `siteCopy`
 
 CMS module:
 
@@ -45,6 +46,7 @@ NestJS module:
   - `website-domains.controller.ts`
   - `website-pages.controller.ts`
   - `website-menus.controller.ts`
+  - `website-external-content.controller.ts`
   - `website-qa.controller.ts`
   - `website-wall-of-love.controller.ts`
   - `website-public.controller.ts`
@@ -136,6 +138,13 @@ Preset persistence (site-specific presets):
 - This is persisted via Website Site update flow (`PUT/PATCH /website/sites/:siteId`) and Customization adapter.
 - No direct custom-attribute DB access from web app.
 
+External content persistence (site-level, via customization adapter):
+
+- Draft key: `website.externalContentDraft`
+- Published key: `website.externalContentPublished`
+- Shape per key + locale slot (`default` slot when locale is omitted):
+  - `siteCopy`: `{ default: SiteCopy, "en-US": SiteCopy, ... }`
+
 ## How To Add New Website Structure
 
 ### Path A: No-code (recommended for most new structures)
@@ -188,6 +197,7 @@ Use this only when no-code preset composition is insufficient.
 - Website publish/unpublish writes outbox events:
   - `website.page.published`
   - `website.page.unpublished`
+  - `website.externalContent.published`
 
 ## Publish + Snapshot Strategy
 
@@ -406,6 +416,10 @@ Admin endpoints (auth required):
   - `POST /website/ai/generate-page`
   - `POST /website/ai/generate-blocks`
   - `POST /website/ai/regenerate-block`
+- External content
+  - `GET /website/sites/:siteId/external-content/draft?key=siteCopy&locale=...`
+  - `PATCH /website/sites/:siteId/external-content/draft`
+  - `POST /website/sites/:siteId/external-content/publish`
 
 Public endpoints (no auth):
 
@@ -415,11 +429,16 @@ Public endpoints (no auth):
 - `GET /public/website/qa`
 - `GET /public/website/wall-of-love`
 - `GET /public/website/slug-exists`
+- `GET /public/website/external-content`
 
 Caching notes (public endpoints):
 
 - Resolve/settings/qa/wall-of-love use `Cache-Control` headers with short public caching + stale-while-revalidate.
 - Slug-exists uses a longer cache window than resolve.
+- External-content:
+  - live mode: `Cache-Control: public, s-maxage=60, stale-while-revalidate=86400`
+  - preview mode: `Cache-Control: no-store`
+  - supports `ETag` + `If-None-Match` (`304 Not Modified`) for live reads
 
 ## Security Notes
 

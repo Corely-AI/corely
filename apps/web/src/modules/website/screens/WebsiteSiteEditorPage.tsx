@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save } from "lucide-react";
-import { Button, Card, CardContent } from "@corely/ui";
+import { Button, Card, CardContent, Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
 import {
   WebsiteSiteCommonSettingsSchema,
   WebsiteSiteThemeSettingsSchema,
@@ -19,6 +19,7 @@ import { WebsiteSiteEditorAdvancedJsonSection } from "./website-site-editor-adva
 import { WebsiteSiteEditorBrandingSection } from "./website-site-editor-branding-section";
 import { WebsiteSiteEditorCustomPropertiesSection } from "./website-site-editor-custom-properties-section";
 import { WebsiteSiteEditorDetailsSection } from "./website-site-editor-details-section";
+import { WebsiteSiteEditorExternalContentSection } from "./website-site-editor-external-content-section";
 import { WebsiteSiteEditorThemeTokensSection } from "./website-site-editor-theme-tokens-section";
 import {
   DEFAULT_COMMON_SETTINGS,
@@ -37,6 +38,7 @@ export default function WebsiteSiteEditorPage() {
   const { siteId } = useParams<{ siteId: string }>();
   const isEdit = Boolean(siteId);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   const logoInputRef = useRef<HTMLInputElement | null>(null);
@@ -49,6 +51,8 @@ export default function WebsiteSiteEditorPage() {
   });
 
   const site = data?.site;
+  const requestedTab = searchParams.get("tab");
+  const activeTab = isEdit && requestedTab === "external-content" ? "external-content" : "settings";
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -286,6 +290,19 @@ export default function WebsiteSiteEditorPage() {
     defaultLocale.trim().length > 0 &&
     !mutation.isPending;
 
+  const handleTabChange = (value: string) => {
+    if (!isEdit) {
+      return;
+    }
+
+    if (value === "external-content") {
+      setSearchParams({ tab: "external-content" }, { replace: true });
+      return;
+    }
+
+    setSearchParams({}, { replace: true });
+  };
+
   return (
     <div className="space-y-6 p-6 animate-fade-in lg:p-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -301,63 +318,85 @@ export default function WebsiteSiteEditorPage() {
             </div>
           </div>
         </div>
-        <Button variant="accent" disabled={!canSave} onClick={handleSave}>
-          <Save className="h-4 w-4" />
-          Save
-        </Button>
+        {activeTab === "settings" ? (
+          <Button variant="accent" disabled={!canSave} onClick={handleSave}>
+            <Save className="h-4 w-4" />
+            Save
+          </Button>
+        ) : null}
       </div>
 
-      <Card>
-        <CardContent className="space-y-6 p-6">
-          <WebsiteSiteEditorDetailsSection
-            name={name}
-            slug={slug}
-            defaultLocale={defaultLocale}
-            isDefault={isDefault}
-            isLockedDefault={Boolean(site?.isDefault)}
-            onNameChange={handleNameChange}
-            onSlugChange={(value) => {
-              setSlug(value);
-              setSlugTouched(true);
-            }}
-            onDefaultLocaleChange={setDefaultLocale}
-            onIsDefaultChange={setIsDefault}
-          />
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        {isEdit ? (
+          <TabsList>
+            <TabsTrigger value="settings">Site Settings</TabsTrigger>
+            <TabsTrigger value="external-content">External Content</TabsTrigger>
+          </TabsList>
+        ) : null}
 
-          <div className="space-y-4 rounded-lg border border-border/60 p-4">
-            <WebsiteSiteEditorBrandingSection
-              common={common}
-              syncCommon={syncCommon}
-              logoInputRef={logoInputRef}
-              faviconInputRef={faviconInputRef}
-              isUploadingLogo={isUploadingLogo}
-              isUploadingFavicon={isUploadingFavicon}
-              onUploadAsset={(kind, files) => {
-                void uploadAsset(kind, files);
-              }}
+        <TabsContent value="settings">
+          <Card>
+            <CardContent className="space-y-6 p-6">
+              <WebsiteSiteEditorDetailsSection
+                name={name}
+                slug={slug}
+                defaultLocale={defaultLocale}
+                isDefault={isDefault}
+                isLockedDefault={Boolean(site?.isDefault)}
+                onNameChange={handleNameChange}
+                onSlugChange={(value) => {
+                  setSlug(value);
+                  setSlugTouched(true);
+                }}
+                onDefaultLocaleChange={setDefaultLocale}
+                onIsDefaultChange={setIsDefault}
+              />
+
+              <div className="space-y-4 rounded-lg border border-border/60 p-4">
+                <WebsiteSiteEditorBrandingSection
+                  common={common}
+                  syncCommon={syncCommon}
+                  logoInputRef={logoInputRef}
+                  faviconInputRef={faviconInputRef}
+                  isUploadingLogo={isUploadingLogo}
+                  isUploadingFavicon={isUploadingFavicon}
+                  onUploadAsset={(kind, files) => {
+                    void uploadAsset(kind, files);
+                  }}
+                />
+                <WebsiteSiteEditorThemeTokensSection theme={theme} syncTheme={syncTheme} />
+              </div>
+
+              <WebsiteSiteEditorCustomPropertiesSection
+                customRows={customRows}
+                customRowErrors={customRowErrors}
+                setCustomRows={setCustomRows}
+                setCustomRowErrors={setCustomRowErrors}
+              />
+
+              <WebsiteSiteEditorAdvancedJsonSection
+                commonJson={commonJson}
+                themeJson={themeJson}
+                commonJsonError={commonJsonState.error}
+                themeJsonError={themeJsonState.error}
+                onCommonJsonChange={setCommonJson}
+                onThemeJsonChange={setThemeJson}
+                onApplyCommonJson={handleApplyCommonJson}
+                onApplyThemeJson={handleApplyThemeJson}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {isEdit && siteId ? (
+          <TabsContent value="external-content">
+            <WebsiteSiteEditorExternalContentSection
+              siteId={siteId}
+              defaultLocale={defaultLocale}
             />
-            <WebsiteSiteEditorThemeTokensSection theme={theme} syncTheme={syncTheme} />
-          </div>
-
-          <WebsiteSiteEditorCustomPropertiesSection
-            customRows={customRows}
-            customRowErrors={customRowErrors}
-            setCustomRows={setCustomRows}
-            setCustomRowErrors={setCustomRowErrors}
-          />
-
-          <WebsiteSiteEditorAdvancedJsonSection
-            commonJson={commonJson}
-            themeJson={themeJson}
-            commonJsonError={commonJsonState.error}
-            themeJsonError={themeJsonState.error}
-            onCommonJsonChange={setCommonJson}
-            onThemeJsonChange={setThemeJson}
-            onApplyCommonJson={handleApplyCommonJson}
-            onApplyThemeJson={handleApplyThemeJson}
-          />
-        </CardContent>
-      </Card>
+          </TabsContent>
+        ) : null}
+      </Tabs>
     </div>
   );
 }

@@ -23,3 +23,13 @@ export const WebsitePageUnpublishedEventSchema = z.object({
   unpublishedAt: z.string().datetime(),
 });
 export type WebsitePageUnpublishedEvent = z.infer<typeof WebsitePageUnpublishedEventSchema>;
+
+export const WebsiteExternalContentPublishedEventSchema = z.object({
+  siteId: z.string(),
+  key: z.enum(["siteCopy"]),
+  locale: z.string().optional(),
+  publishedAt: z.string().datetime(),
+});
+export type WebsiteExternalContentPublishedEvent = z.infer<
+  typeof WebsiteExternalContentPublishedEventSchema
+>;

@@ -36,6 +36,10 @@ import { GenerateWebsitePageFromPromptUseCase } from "./application/use-cases/ge
 import { WebsiteSlugExistsUseCase } from "./application/use-cases/slug-exists.usecase";
 import { GenerateWebsiteBlocksUseCase } from "./application/use-cases/generate-blocks.usecase";
 import { RegenerateWebsiteBlockUseCase } from "./application/use-cases/regenerate-block.usecase";
+import { GetWebsiteExternalContentDraftUseCase } from "./application/use-cases/external-content/get-website-external-content-draft.usecase";
+import { PatchWebsiteExternalContentDraftUseCase } from "./application/use-cases/external-content/patch-website-external-content-draft.usecase";
+import { PublishWebsiteExternalContentUseCase } from "./application/use-cases/external-content/publish-website-external-content.usecase";
+import { GetPublicWebsiteExternalContentUseCase } from "./application/use-cases/external-content/get-public-website-external-content.usecase";
 
 export const WEBSITE_APPLICATION_PROVIDER: Provider = {
   provide: WebsiteApplication,
@@ -74,6 +78,10 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     listPublicWallOfLoveItems: ListPublicWebsiteWallOfLoveItemsUseCase,
     generateBlocks: GenerateWebsiteBlocksUseCase,
     regenerateBlock: RegenerateWebsiteBlockUseCase,
+    getExternalContentDraft: GetWebsiteExternalContentDraftUseCase,
+    patchExternalContentDraft: PatchWebsiteExternalContentDraftUseCase,
+    publishExternalContent: PublishWebsiteExternalContentUseCase,
+    getPublicExternalContent: GetPublicWebsiteExternalContentUseCase,
     generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase,
     slugExists: WebsiteSlugExistsUseCase
   ) =>
@@ -112,6 +120,10 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
       listPublicWallOfLoveItems,
       generateBlocks,
       regenerateBlock,
+      getExternalContentDraft,
+      patchExternalContentDraft,
+      publishExternalContent,
+      getPublicExternalContent,
       generatePageFromPrompt,
       slugExists
     ),
@@ -150,6 +162,10 @@ export const WEBSITE_APPLICATION_PROVIDER: Provider = {
     ListPublicWebsiteWallOfLoveItemsUseCase,
     GenerateWebsiteBlocksUseCase,
     RegenerateWebsiteBlockUseCase,
+    GetWebsiteExternalContentDraftUseCase,
+    PatchWebsiteExternalContentDraftUseCase,
+    PublishWebsiteExternalContentUseCase,
+    GetPublicWebsiteExternalContentUseCase,
     GenerateWebsitePageFromPromptUseCase,
     WebsiteSlugExistsUseCase,
   ],

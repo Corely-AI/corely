@@ -34,6 +34,10 @@ import type { UnpublishWebsiteWallOfLoveItemUseCase } from "./use-cases/unpublis
 import type { ListPublicWebsiteWallOfLoveItemsUseCase } from "./use-cases/list-public-website-wall-of-love-items.usecase";
 import type { GenerateWebsiteBlocksUseCase } from "./use-cases/generate-blocks.usecase";
 import type { RegenerateWebsiteBlockUseCase } from "./use-cases/regenerate-block.usecase";
+import type { GetWebsiteExternalContentDraftUseCase } from "./use-cases/external-content/get-website-external-content-draft.usecase";
+import type { PatchWebsiteExternalContentDraftUseCase } from "./use-cases/external-content/patch-website-external-content-draft.usecase";
+import type { PublishWebsiteExternalContentUseCase } from "./use-cases/external-content/publish-website-external-content.usecase";
+import type { GetPublicWebsiteExternalContentUseCase } from "./use-cases/external-content/get-public-website-external-content.usecase";
 
 export class WebsiteApplication {
   constructor(
@@ -71,6 +75,10 @@ export class WebsiteApplication {
     public readonly listPublicWallOfLoveItems: ListPublicWebsiteWallOfLoveItemsUseCase,
     public readonly generateBlocks: GenerateWebsiteBlocksUseCase,
     public readonly regenerateBlock: RegenerateWebsiteBlockUseCase,
+    public readonly getExternalContentDraft: GetWebsiteExternalContentDraftUseCase,
+    public readonly patchExternalContentDraft: PatchWebsiteExternalContentDraftUseCase,
+    public readonly publishExternalContent: PublishWebsiteExternalContentUseCase,
+    public readonly getPublicExternalContent: GetPublicWebsiteExternalContentUseCase,
     public readonly generatePageFromPrompt: GenerateWebsitePageFromPromptUseCase,
     public readonly slugExists: WebsiteSlugExistsUseCase
   ) {}
