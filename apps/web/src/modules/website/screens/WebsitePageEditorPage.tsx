@@ -1,12 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type {
-  WebsiteBlock,
-  WebsiteBlockType,
-  WebsitePageContent,
-  WebsitePageStatus,
-} from "@corely/contracts";
+import type { WebsiteBlockType, WebsitePageContent, WebsitePageStatus } from "@corely/contracts";
 import { websiteApi } from "@/lib/website-api";
 import { cmsApi } from "@/lib/cms-api";
 import {
@@ -24,10 +19,13 @@ import {
 } from "../blocks/website-block-editor-registry";
 import {
   areContentsEqual,
+  buildDefaultContentForPreset,
   buildUniqueWebsitePath,
   buildDefaultContentForTemplate,
+  buildLocalizedPreviewPath,
   cloneContent,
   openWebsitePreviewWindow,
+  suggestPathBaseFromPreset,
   suggestPathBaseFromTemplate,
 } from "./website-page-editor.utils";
 import { WebsitePageEditorDetailsCard } from "./website-page-editor-details-card";
@@ -36,6 +34,14 @@ import { useWebsitePageEditorMutations } from "./use-website-page-editor-mutatio
 import { renderWebsitePageBlockPreview } from "./website-page-editor-preview";
 import { WebsitePageEditorHeader } from "./website-page-editor-header";
 import { createWebsitePageEditorBlockActions } from "./website-page-editor-block-actions";
+import { WebsitePageEditorPresetRegistry } from "./website-page-editor-preset-registry";
+import {
+  mergePresetDefinitions,
+  toSitePresetDefinitions,
+} from "./website-page-editor-site-presets";
+import { useWebsitePageEditorSavePreset } from "./use-website-page-editor-save-preset";
+
+const DEFAULT_PRESET = WebsitePageEditorPresetRegistry.fallback();
 
 export default function WebsitePageEditorPage() {
   const { siteId, pageId } = useParams<{ siteId: string; pageId: string }>();
@@ -92,8 +98,9 @@ export default function WebsitePageEditorPage() {
 
   const [path, setPath] = useState("");
   const [hasEditedPath, setHasEditedPath] = useState(false);
-  const [locale, setLocale] = useState("en-US");
-  const [template, setTemplate] = useState("landing.tutoring.v1");
+  const [locale, setLocale] = useState(DEFAULT_PRESET.defaultLocale);
+  const [presetKey, setPresetKey] = useState(DEFAULT_PRESET.presetKey);
+  const [template, setTemplate] = useState(DEFAULT_PRESET.templateKey);
   const [cmsEntryId, setCmsEntryId] = useState("");
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
@@ -109,6 +116,50 @@ export default function WebsitePageEditorPage() {
   const [jsonFieldDrafts, setJsonFieldDrafts] = useState<Record<string, string>>({});
   const [uploadingFieldKey, setUploadingFieldKey] = useState<string | null>(null);
 
+  const builtInPresets = useMemo(() => WebsitePageEditorPresetRegistry.all(), []);
+  const sitePresets = useMemo(
+    () => toSitePresetDefinitions(siteData?.site.settings?.custom),
+    [siteData?.site.settings?.custom]
+  );
+  const availablePresets = useMemo(
+    () => mergePresetDefinitions(builtInPresets, sitePresets),
+    [builtInPresets, sitePresets]
+  );
+
+  const resolvePreset = useCallback(
+    (candidateKey: string) =>
+      availablePresets.find((preset) => preset.presetKey === candidateKey) ??
+      WebsitePageEditorPresetRegistry.get(candidateKey) ??
+      DEFAULT_PRESET,
+    [availablePresets]
+  );
+
+  const resolveDefaultPresetForTemplate = useCallback(
+    (templateKey: string) =>
+      availablePresets.find(
+        (preset) => preset.templateKey === templateKey && preset.isTemplateDefault === true
+      ) ??
+      availablePresets.find((preset) => preset.templateKey === templateKey) ??
+      null,
+    [availablePresets]
+  );
+
+  const resolvePresetForContent = useCallback(
+    (candidateContent: WebsitePageContent): string | null => {
+      for (const preset of availablePresets) {
+        if (preset.templateKey !== candidateContent.templateKey) {
+          continue;
+        }
+        const presetContent = buildDefaultContentForPreset(preset.presetKey, availablePresets);
+        if (areContentsEqual(presetContent, candidateContent)) {
+          return preset.presetKey;
+        }
+      }
+      return null;
+    },
+    [availablePresets]
+  );
+
   useEffect(() => {
     if (!page) {
       return;
@@ -117,12 +168,15 @@ export default function WebsitePageEditorPage() {
     setHasEditedPath(true);
     setLocale(page.locale);
     setTemplate(page.template);
+    setPresetKey(
+      resolveDefaultPresetForTemplate(page.template)?.presetKey ?? DEFAULT_PRESET.presetKey
+    );
     setCmsEntryId(page.cmsEntryId);
     setSeoTitle(page.seoTitle ?? "");
     setSeoDescription(page.seoDescription ?? "");
     setSeoImageFileId(page.seoImageFileId ?? "");
     setStatus(page.status);
-  }, [page]);
+  }, [page, resolveDefaultPresetForTemplate]);
 
   useEffect(() => {
     if (!pageContentData?.content) {
@@ -130,13 +184,24 @@ export default function WebsitePageEditorPage() {
     }
 
     const next = cloneContent(pageContentData.content);
+    setTemplate(next.templateKey || page?.template || DEFAULT_PRESET.templateKey);
+    const matchedPresetKey =
+      resolvePresetForContent(next) ??
+      resolveDefaultPresetForTemplate(next.templateKey)?.presetKey ??
+      DEFAULT_PRESET.presetKey;
+    setPresetKey(matchedPresetKey);
     setContent((current) => (current && areContentsEqual(current, next) ? current : next));
     setSelectedBlockId((current) =>
       current && next.blocks.some((block) => block.id === current)
         ? current
         : (next.blocks[0]?.id ?? null)
     );
-  }, [pageContentData?.content]);
+  }, [
+    page?.template,
+    pageContentData?.content,
+    resolveDefaultPresetForTemplate,
+    resolvePresetForContent,
+  ]);
 
   useEffect(() => {
     if (pageContentData?.content) {
@@ -145,11 +210,12 @@ export default function WebsitePageEditorPage() {
     if (isEdit) {
       return;
     }
-    const next = buildDefaultContentForTemplate(template);
+    const next = buildDefaultContentForPreset(presetKey, availablePresets);
+    setTemplate(next.templateKey);
     setContent(next);
     setSelectedBlockId(next.blocks[0]?.id ?? null);
     setJsonFieldDrafts({});
-  }, [isEdit, pageContentData?.content, template]);
+  }, [isEdit, pageContentData?.content, presetKey, availablePresets]);
 
   useEffect(() => {
     if (!content) {
@@ -170,8 +236,21 @@ export default function WebsitePageEditorPage() {
         .filter((item) => item.locale.trim().toLowerCase() === localeKey)
         .map((item) => item.path)
     );
-    return buildUniqueWebsitePath(suggestPathBaseFromTemplate(template), existingPaths);
-  }, [existingPagesData?.items, locale, template]);
+    const presetDefinition = resolvePreset(presetKey);
+    const basePath =
+      !isEdit && presetDefinition && presetDefinition.templateKey === template.trim()
+        ? suggestPathBaseFromPreset(presetKey, availablePresets)
+        : suggestPathBaseFromTemplate(template);
+    return buildUniqueWebsitePath(basePath, existingPaths);
+  }, [
+    existingPagesData?.items,
+    isEdit,
+    locale,
+    presetKey,
+    resolvePreset,
+    template,
+    availablePresets,
+  ]);
 
   useEffect(() => {
     if (isEdit) {
@@ -259,13 +338,14 @@ export default function WebsitePageEditorPage() {
     if (!site || !activeWorkspace?.slug) {
       return null;
     }
+    const localizedPreviewPath = buildLocalizedPreviewPath(path, locale);
     return getPublicWebsiteUrl({
       workspaceSlug: activeWorkspace.slug,
       websiteSlug: site.slug,
       isDefault: site.isDefault,
-      path,
+      path: localizedPreviewPath,
     });
-  }, [activeWorkspace?.slug, siteData?.site, path]);
+  }, [activeWorkspace?.slug, locale, path, siteData?.site]);
 
   const openPreview = () => {
     if (!previewUrl) {
@@ -274,6 +354,17 @@ export default function WebsitePageEditorPage() {
     }
     openWebsitePreviewWindow(previewUrl);
   };
+
+  const { savePresetPending, handleSaveAsPreset } = useWebsitePageEditorSavePreset({
+    resolvedSiteId,
+    site: siteData?.site,
+    content,
+    template,
+    path,
+    locale,
+    queryClient,
+    onPresetSaved: setPresetKey,
+  });
 
   return (
     <div className="space-y-6 p-6 lg:p-8">
@@ -289,15 +380,39 @@ export default function WebsitePageEditorPage() {
       />
 
       <WebsitePageEditorDetailsCard
+        isEdit={isEdit}
         path={path}
         onPathChange={handlePathChange}
         locale={locale}
         onLocaleChange={setLocale}
+        presetKey={presetKey}
+        onPresetChange={(nextPresetKey) => {
+          const presetDefinition = resolvePreset(nextPresetKey);
+          setPresetKey(presetDefinition.presetKey);
+          setTemplate(presetDefinition.templateKey);
+          if (!isEdit) {
+            setLocale(presetDefinition.defaultLocale);
+          }
+          const next = buildDefaultContentForPreset(presetDefinition.presetKey, availablePresets);
+          setContent(next);
+          setSelectedBlockId(next.blocks[0]?.id ?? null);
+          setJsonFieldDrafts({});
+        }}
+        availablePresets={availablePresets.map((preset) => ({
+          presetKey: preset.presetKey,
+          label: preset.label,
+          templateKey: preset.templateKey,
+        }))}
         template={template}
         onTemplateChange={(nextTemplate) => {
           setTemplate(nextTemplate);
           if (!isEdit) {
-            const next = buildDefaultContentForTemplate(nextTemplate);
+            const defaultPresetForTemplate = resolveDefaultPresetForTemplate(nextTemplate);
+            const nextPresetKey = defaultPresetForTemplate?.presetKey ?? presetKey;
+            setPresetKey(nextPresetKey);
+            const next = defaultPresetForTemplate
+              ? buildDefaultContentForPreset(nextPresetKey, availablePresets)
+              : buildDefaultContentForTemplate(nextTemplate);
             setContent(next);
             setSelectedBlockId(next.blocks[0]?.id ?? null);
             setJsonFieldDrafts({});
@@ -325,6 +440,9 @@ export default function WebsitePageEditorPage() {
         previewUrl={previewUrl}
         onOpenPreview={openPreview}
         hasContent={Boolean(content)}
+        canSaveAsPreset={Boolean(resolvedSiteId) && Boolean(content)}
+        saveAsPresetPending={savePresetPending}
+        onSaveAsPreset={handleSaveAsPreset}
         saveDraftPending={saveDraftMutation.isPending}
         onSaveDraft={() => void saveDraftMutation.mutate()}
         aiBrief={aiBrief}
@@ -340,7 +458,9 @@ export default function WebsitePageEditorPage() {
         onRemoveBlock={removeBlock}
         template={template}
         onLoadTemplateDefaults={() => {
-          const next = buildDefaultContentForTemplate(template);
+          const next = isEdit
+            ? buildDefaultContentForTemplate(template)
+            : buildDefaultContentForPreset(presetKey, availablePresets);
           setContent(next);
           setSelectedBlockId(next.blocks[0]?.id ?? null);
           setJsonFieldDrafts({});

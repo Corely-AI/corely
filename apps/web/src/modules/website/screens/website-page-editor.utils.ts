@@ -8,7 +8,12 @@ import { WebsitePageContentSchema } from "@corely/contracts";
 import {
   WebsiteBlockEditorRegistry,
   WebsiteTemplateEditorRegistry,
+  type WebsiteTemplateEditorDefinition,
 } from "../blocks/website-block-editor-registry";
+import {
+  WebsitePageEditorPresetRegistry,
+  type WebsitePageEditorPresetDefinition,
+} from "./website-page-editor-preset-registry";
 
 export const statusVariant = (status: WebsitePageStatus) => {
   switch (status) {
@@ -172,6 +177,47 @@ export const buildDefaultContentForTemplate = (templateKey: string): WebsitePage
   return cloneContent(content);
 };
 
+const resolvePresetDefinition = (
+  presetKey: string,
+  presetDefinitions?: WebsitePageEditorPresetDefinition[]
+): WebsitePageEditorPresetDefinition => {
+  if (presetDefinitions && presetDefinitions.length > 0) {
+    const fromList = presetDefinitions.find((preset) => preset.presetKey === presetKey.trim());
+    if (fromList) {
+      return fromList;
+    }
+  }
+  return (
+    WebsitePageEditorPresetRegistry.get(presetKey.trim()) ??
+    WebsitePageEditorPresetRegistry.fallback()
+  );
+};
+
+const resolveTemplateDefinition = (
+  templateKey: string,
+  fallback: WebsiteTemplateEditorDefinition
+): WebsiteTemplateEditorDefinition => WebsiteTemplateEditorRegistry.get(templateKey) ?? fallback;
+
+export const buildDefaultContentForPreset = (
+  presetKey: string,
+  presetDefinitions?: WebsitePageEditorPresetDefinition[]
+): WebsitePageContent => {
+  const fallbackTemplate = WebsiteTemplateEditorRegistry.fallback();
+  const presetDefinition = resolvePresetDefinition(presetKey, presetDefinitions);
+  const templateDefinition = resolveTemplateDefinition(
+    presetDefinition.templateKey,
+    fallbackTemplate
+  );
+  const base = presetDefinition.defaultContent();
+  const content: WebsitePageContent = {
+    ...base,
+    templateKey: base.templateKey?.trim() || templateDefinition.templateKey,
+    templateVersion: base.templateVersion ?? templateDefinition.version,
+    blocks: base.blocks.map(applyTemplateBlockDefaults),
+  };
+  return cloneContent(content);
+};
+
 const normalizeTemplateSegment = (value: string): string =>
   value
     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
@@ -187,6 +233,14 @@ export const suggestPathBaseFromTemplate = (templateKey: string): string => {
     normalizeTemplateSegment(segments[0] ?? "") ||
     "page";
   return `/${candidate}`;
+};
+
+export const suggestPathBaseFromPreset = (
+  presetKey: string,
+  presetDefinitions?: WebsitePageEditorPresetDefinition[]
+): string => {
+  const presetDefinition = resolvePresetDefinition(presetKey, presetDefinitions);
+  return presetDefinition.suggestedPathBase;
 };
 
 export const buildUniqueWebsitePath = (
@@ -206,4 +260,49 @@ export const buildUniqueWebsitePath = (
   }
 
   return `${normalizedBase}-${Date.now().toString(36)}`;
+};
+
+const normalizePreviewPath = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "/";
+  }
+  const withLeadingSlash = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  if (withLeadingSlash.length > 1 && withLeadingSlash.endsWith("/")) {
+    return withLeadingSlash.slice(0, -1);
+  }
+  return withLeadingSlash;
+};
+
+const normalizePreviewLocale = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+  const withDash = trimmed.replace(/_/g, "-");
+  const [languageRaw, regionRaw] = withDash.split("-");
+  const language = languageRaw?.trim().toLowerCase() ?? "";
+  if (!language) {
+    return "";
+  }
+  const region = regionRaw?.trim().toUpperCase();
+  return region ? `${language}-${region}` : language;
+};
+
+export const buildLocalizedPreviewPath = (path: string, locale: string): string => {
+  const normalizedPath = normalizePreviewPath(path);
+  const normalizedLocale = normalizePreviewLocale(locale);
+  if (!normalizedLocale) {
+    return normalizedPath;
+  }
+
+  const firstSegment = normalizedPath.split("/").filter(Boolean)[0]?.toLowerCase();
+  if (firstSegment === normalizedLocale.toLowerCase()) {
+    return normalizedPath;
+  }
+
+  if (normalizedPath === "/") {
+    return `/${normalizedLocale}`;
+  }
+  return `/${normalizedLocale}${normalizedPath}`;
 };

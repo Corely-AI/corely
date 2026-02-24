@@ -12,6 +12,12 @@ Website rendering follows a `Templates + Blocks` model:
 - Blocks are validated JSON content edited in admin.
 - Customers no longer edit arbitrary React code per site.
 
+Website page creation now also supports `Presets`:
+
+- Presets are starter `WebsitePageContent` payloads for `/website/sites/:siteId/pages/new`.
+- Presets can be built-in (shipped by code) or site-specific (saved from admin UI).
+- Presets reduce template sprawl: most new page structures should be presets, not new template keys.
+
 ## Responsibility Split
 
 Website module (this module):
@@ -92,11 +98,16 @@ Shared contracts are defined in `packages/contracts/src/website/blocks/*` and ex
   - `blocks[]`
   - `seoOverride?`
 
-Current template:
+Current templates:
 
 - `landing.tutoring.v1` with block types:
   `stickyNav`, `hero`, `socialProof`, `pas`, `method`, `programHighlights`, `groupLearning`,
   `coursePackages`, `schedule`, `instructor`, `testimonials`, `scholarship`, `faq`, `leadForm`, `footer`
+- `landing.nailstudio.v1` with block types:
+  `stickyNav`, `hero`, `servicesGrid`, `priceMenu`, `galleryMasonry`, `signatureSets`, `team`,
+  `testimonials`, `bookingSteps`, `locationHours`, `faq`, `leadForm`, `footer`
+- Legacy alias:
+  `landing.deutschliebe.v1` -> routed to tutoring runtime template
 
 ## Site Settings Contract
 
@@ -117,6 +128,54 @@ Persistence boundaries:
 Website does not write customization tables directly from its Prisma repositories.
 
 Website settings updates call the Customization adapter port (`WebsiteCustomAttributesPort`) for `settings.custom`.
+
+Preset persistence (site-specific presets):
+
+- Site custom page presets are stored in `settings.custom` using key:
+  - `website.pagePresets`
+- This is persisted via Website Site update flow (`PUT/PATCH /website/sites/:siteId`) and Customization adapter.
+- No direct custom-attribute DB access from web app.
+
+## How To Add New Website Structure
+
+### Path A: No-code (recommended for most new structures)
+
+Use this when existing block types are enough.
+
+1. Open or create a page and arrange blocks to match the target structure.
+2. Edit copy/props until the structure is reusable.
+3. In page editor `Page blocks`, click `Save as preset`.
+4. Provide:
+   - preset name
+   - preset key (format: `a-z`, `0-9`, `.`, `_`, `-`, must start with a letter)
+   - optional description
+5. Create a new page at `/website/sites/:siteId/pages/new`.
+6. Choose the saved preset from `Preset` dropdown.
+7. The editor auto-fills:
+   - `templateKey`
+   - default blocks/content
+   - default locale
+   - suggested path base
+8. Save page and continue editing/publishing as usual.
+
+Scope:
+
+- Site-specific presets are visible for that site (stored in site custom settings).
+- This is the fastest way to launch a new page structure without deployments.
+
+### Path B: Code change required
+
+Use this only when no-code preset composition is insufficient.
+
+1. New structure using existing blocks, but needed globally:
+   - Add a built-in preset definition in web editor preset registry.
+2. New block capability needed:
+   - Add block schema/type in `packages/contracts` (`WebsiteBlockUnionSchema`).
+   - Add runtime renderer in `apps/website-runtime`.
+   - Add admin editor fields/defaults in `apps/web`.
+3. New layout/runtime behavior needed (rare):
+   - Add/extend template in runtime `TemplateRegistry`.
+   - Keep template count low; prefer presets whenever possible.
 
 ## Integration Boundaries
 

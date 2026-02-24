@@ -26,6 +26,9 @@ type WebsitePageEditorBlocksCardProps = {
   previewUrl: string | null;
   onOpenPreview: () => void;
   hasContent: boolean;
+  canSaveAsPreset: boolean;
+  saveAsPresetPending: boolean;
+  onSaveAsPreset: () => void;
   saveDraftPending: boolean;
   onSaveDraft: () => void;
   aiBrief: string;
@@ -76,6 +79,13 @@ export const WebsitePageEditorBlocksCard = (props: WebsitePageEditorBlocksCardPr
             <Button variant="outline" disabled={!props.previewUrl} onClick={props.onOpenPreview}>
               <Eye className="h-4 w-4" />
               Preview
+            </Button>
+            <Button
+              variant="outline"
+              disabled={!props.canSaveAsPreset || props.saveAsPresetPending}
+              onClick={props.onSaveAsPreset}
+            >
+              Save as preset
             </Button>
             <Button
               variant="accent"

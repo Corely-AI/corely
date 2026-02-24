@@ -6,16 +6,26 @@ type TemplateOption = {
   templateKey: string;
 };
 
+type PresetOption = {
+  presetKey: string;
+  label: string;
+  templateKey: string;
+};
+
 type CmsEntryOption = {
   id: string;
   title: string;
 };
 
 type WebsitePageEditorDetailsCardProps = {
+  isEdit: boolean;
   path: string;
   onPathChange: (value: string) => void;
   locale: string;
   onLocaleChange: (value: string) => void;
+  presetKey: string;
+  onPresetChange: (value: string) => void;
+  availablePresets: PresetOption[];
   template: string;
   onTemplateChange: (value: string) => void;
   hasUnknownTemplate: boolean;
@@ -46,6 +56,20 @@ export const WebsitePageEditorDetailsCard = (props: WebsitePageEditorDetailsCard
             value={props.locale}
             onChange={(event) => props.onLocaleChange(event.target.value)}
           />
+        </div>
+        <div className="space-y-2">
+          <Label>Preset</Label>
+          <select
+            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            value={props.presetKey}
+            onChange={(event) => props.onPresetChange(event.target.value)}
+          >
+            {props.availablePresets.map((preset) => (
+              <option key={preset.presetKey} value={preset.presetKey}>
+                {`${preset.label} (${preset.templateKey})`}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="space-y-2">
           <Label>Template key</Label>

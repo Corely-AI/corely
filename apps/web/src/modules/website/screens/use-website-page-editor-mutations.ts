@@ -58,7 +58,20 @@ export const useWebsitePageEditorMutations = (params: UseWebsitePageEditorMutati
       if (!params.siteId) {
         throw new Error("Missing siteId");
       }
-      return websiteApi.createPage(params.siteId, { ...payload, siteId: params.siteId });
+      const parsedContent = params.content
+        ? WebsitePageContentSchema.safeParse({
+            ...params.content,
+            templateKey: params.content.templateKey || params.template.trim(),
+          })
+        : null;
+      if (parsedContent && !parsedContent.success) {
+        throw new Error(parsedContent.error.issues[0]?.message || "Invalid block content");
+      }
+      return websiteApi.createPage(params.siteId, {
+        ...payload,
+        siteId: params.siteId,
+        content: parsedContent?.data,
+      });
     },
     onSuccess: (saved) => {
       void invalidateResourceQueries(params.queryClient, "website-pages");
