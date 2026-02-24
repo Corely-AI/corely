@@ -17,7 +17,7 @@ import {
   type RuntimeProps,
   normalizeMenuItems,
   resolveMenu,
-} from "./landing-tutoring-v1/components/shared";
+} from "./template-runtime-shared";
 
 export type NailStickyNavProps = CommonBlockProps &
   RuntimeProps & {

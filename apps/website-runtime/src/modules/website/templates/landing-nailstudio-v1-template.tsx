@@ -2,7 +2,8 @@ import React from "react";
 import type { WebsitePageContent } from "@corely/contracts";
 import { renderWebsiteBlock } from "../blocks/block-registry";
 import type { WebsiteRenderContext } from "../runtime.types";
-import { resolveInternalHref } from "./landing-tutoring-v1/components/shared";
+import { resolveInternalHref } from "./template-runtime-shared";
+import { commonPrimaryCta } from "./landing-nailstudio-v1.shared";
 
 export const LandingNailStudioV1Template = ({
   content,
@@ -14,7 +15,8 @@ export const LandingNailStudioV1Template = ({
   context?: WebsiteRenderContext;
 }) => {
   const blocks = content.blocks.filter((block) => block.enabled !== false);
-  const bookingHref = resolveInternalHref("#booking", context?.basePath);
+  const floatingBookingCta = commonPrimaryCta(context?.settings);
+  const bookingHref = resolveInternalHref(floatingBookingCta.href, context?.basePath);
 
   return (
     <>
@@ -32,9 +34,11 @@ export const LandingNailStudioV1Template = ({
 
       <a
         href={bookingHref}
+        suppressHydrationWarning
+        translate="no"
         className="fixed bottom-4 right-4 z-50 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background shadow-lg transition hover:opacity-90 md:bottom-6 md:right-6"
       >
-        Jetzt buchen
+        {floatingBookingCta.label}
       </a>
     </>
   );

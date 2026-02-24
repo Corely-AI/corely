@@ -171,3 +171,39 @@ export const buildDefaultContentForTemplate = (templateKey: string): WebsitePage
   };
   return cloneContent(content);
 };
+
+const normalizeTemplateSegment = (value: string): string =>
+  value
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .toLowerCase()
+    .replace(/^-+|-+$/g, "");
+
+export const suggestPathBaseFromTemplate = (templateKey: string): string => {
+  const trimmed = templateKey.trim();
+  const segments = trimmed.split(".");
+  const candidate =
+    normalizeTemplateSegment(segments[1] ?? "") ||
+    normalizeTemplateSegment(segments[0] ?? "") ||
+    "page";
+  return `/${candidate}`;
+};
+
+export const buildUniqueWebsitePath = (
+  basePath: string,
+  existingPaths: ReadonlySet<string>
+): string => {
+  const normalizedBase = basePath.startsWith("/") ? basePath : `/${basePath}`;
+  if (!existingPaths.has(normalizedBase)) {
+    return normalizedBase;
+  }
+
+  for (let index = 2; index < 5000; index += 1) {
+    const candidate = `${normalizedBase}-${index}`;
+    if (!existingPaths.has(candidate)) {
+      return candidate;
+    }
+  }
+
+  return `${normalizedBase}-${Date.now().toString(36)}`;
+};

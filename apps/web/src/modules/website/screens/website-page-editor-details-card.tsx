@@ -65,7 +65,7 @@ export const WebsitePageEditorDetailsCard = (props: WebsitePageEditorDetailsCard
           </select>
         </div>
         <div className="space-y-2">
-          <Label>CMS entry</Label>
+          <Label>CMS entry (optional)</Label>
           <select
             className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
             value={props.cmsEntryId}

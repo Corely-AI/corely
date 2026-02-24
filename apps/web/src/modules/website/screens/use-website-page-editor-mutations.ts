@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import type { NavigateFunction } from "react-router-dom";
 import type { WebsiteBlock, WebsitePageContent, WebsitePageStatus } from "@corely/contracts";
 import { WebsitePageContentSchema } from "@corely/contracts";
+import { ApiError, normalizeError } from "@corely/api-client";
 import { websiteApi } from "@/lib/website-api";
 import { invalidateResourceQueries } from "@/shared/crud";
 import { websitePageContentKeys, websitePageKeys, websitePageListKey } from "../queries";
@@ -31,6 +32,14 @@ type UseWebsitePageEditorMutationsParams = {
   setStatus: React.Dispatch<React.SetStateAction<WebsitePageStatus>>;
 };
 
+const resolveSavePageErrorMessage = (error: unknown): string => {
+  const apiError = error instanceof ApiError ? error : normalizeError(error);
+  if (apiError.code === "Website:PagePathTaken") {
+    return "Path already exists for this locale. Pick a different path and save again.";
+  }
+  return apiError.detail || "Failed to save page";
+};
+
 export const useWebsitePageEditorMutations = (params: UseWebsitePageEditorMutationsParams) => {
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -38,7 +47,7 @@ export const useWebsitePageEditorMutations = (params: UseWebsitePageEditorMutati
         path: params.path.trim(),
         locale: params.locale.trim(),
         templateKey: params.template.trim(),
-        cmsEntryId: params.cmsEntryId.trim(),
+        cmsEntryId: params.cmsEntryId.trim() || undefined,
         seoTitle: params.seoTitle.trim() || undefined,
         seoDescription: params.seoDescription.trim() || undefined,
         seoImageFileId: params.seoImageFileId.trim() || undefined,
@@ -59,7 +68,7 @@ export const useWebsitePageEditorMutations = (params: UseWebsitePageEditorMutati
       }
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Failed to save page");
+      toast.error(resolveSavePageErrorMessage(err));
     },
   });
 

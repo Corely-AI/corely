@@ -7,9 +7,19 @@ import type {
   WebsiteTeamMember,
   WebsiteTestimonialItem,
 } from "@corely/contracts";
-import { NailStudioHeroView, NailStudioStickyNavView } from "@corely/website-blocks";
+import {
+  NailStudioBookingStepsView,
+  NailStudioGalleryMasonryView,
+  NailStudioHeroView,
+  NailStudioPriceMenuView,
+  NailStudioServicesGridView,
+  NailStudioSignatureSetsView,
+  NailStudioStickyNavView,
+  NailStudioTeamView,
+  NailStudioTestimonialsView,
+} from "@corely/website-blocks";
 import { buildPublicFileUrl } from "@/lib/public-api";
-import { resolveInternalHref, sectionClass } from "./landing-tutoring-v1/components/shared";
+import { resolveInternalHref } from "./template-runtime-shared";
 import {
   type NailBookingStepsProps,
   type NailGalleryMasonryProps,
@@ -184,40 +194,15 @@ export const NailStudioServicesGrid = (props: NailServicesGridProps) => {
   const services = items.length ? items : fallbackServices;
 
   return (
-    <section id={props.anchorId ?? "services"} className={sectionClass(props, "py-14 sm:py-16")}>
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold tracking-tight">{props.heading || "Services"}</h2>
-          {props.intro ? <p className="text-muted-foreground">{props.intro}</p> : null}
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service) => (
-            <article
-              key={`${service.name}-${service.duration ?? ""}`}
-              className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <h3 className="text-base font-semibold">{service.name}</h3>
-                {service.priceFrom ? (
-                  <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
-                    {service.priceFrom}
-                  </span>
-                ) : null}
-              </div>
-              {service.description ? (
-                <p className="mt-2 text-sm text-muted-foreground">{service.description}</p>
-              ) : null}
-              {service.duration ? (
-                <p className="mt-3 text-xs uppercase tracking-wide text-muted-foreground">
-                  {service.duration}
-                </p>
-              ) : null}
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
+    <NailStudioServicesGridView
+      anchorId={props.anchorId}
+      className={props.className}
+      hiddenOn={props.hiddenOn}
+      variant={props.variant}
+      heading={props.heading || "Services"}
+      intro={props.intro}
+      services={services}
+    />
   );
 };
 
@@ -226,76 +211,32 @@ export const NailStudioPriceMenu = (props: NailPriceMenuProps) => {
   const menu = categories.length ? categories : fallbackPriceMenu;
 
   return (
-    <section
-      id={props.anchorId ?? "preise"}
-      className={sectionClass(props, "border-y border-border/60 bg-[#f9f6f2] py-14 sm:py-16")}
-    >
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold tracking-tight">{props.heading || "Preis Menu"}</h2>
-          {props.intro ? <p className="text-muted-foreground">{props.intro}</p> : null}
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          {menu.map((category) => (
-            <article
-              key={category.title}
-              className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm"
-            >
-              <h3 className="text-lg font-semibold">{category.title}</h3>
-              <div className="mt-4 space-y-3">
-                {category.items.map((item) => (
-                  <div
-                    key={`${item.name}-${item.priceFrom}`}
-                    className="flex items-start justify-between gap-4 border-b border-border/50 pb-3 last:border-none last:pb-0"
-                  >
-                    <div>
-                      <p className="text-sm font-medium">{item.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {[item.duration, item.note].filter(Boolean).join(" - ")}
-                      </p>
-                    </div>
-                    <p className="text-sm font-semibold">{item.priceFrom}</p>
-                  </div>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
+    <NailStudioPriceMenuView
+      anchorId={props.anchorId}
+      className={props.className}
+      hiddenOn={props.hiddenOn}
+      variant={props.variant}
+      heading={props.heading || "Preis Menu"}
+      intro={props.intro}
+      categories={menu}
+    />
   );
 };
 
 export const NailStudioGalleryMasonry = (props: NailGalleryMasonryProps) => {
   const imageFileIds = asStringList(props.imageFileIds);
+  const imageUrls = imageFileIds.map((fileId) => buildPublicFileUrl(fileId));
 
   return (
-    <section id={props.anchorId ?? "galerie"} className={sectionClass(props, "py-14 sm:py-16")}>
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold tracking-tight">{props.heading || "Galerie"}</h2>
-          {props.intro ? <p className="text-muted-foreground">{props.intro}</p> : null}
-        </div>
-
-        <div className="columns-2 gap-4 space-y-4 md:columns-3">
-          {imageFileIds.length > 0 ? (
-            imageFileIds.map((fileId) => (
-              <img
-                key={fileId}
-                src={buildPublicFileUrl(fileId)}
-                alt="Nail gallery"
-                className="w-full break-inside-avoid rounded-2xl border border-border/70 object-cover shadow-sm"
-              />
-            ))
-          ) : (
-            <div className="col-span-full rounded-2xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
-              Add gallery images to display this section.
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
+    <NailStudioGalleryMasonryView
+      anchorId={props.anchorId}
+      className={props.className}
+      hiddenOn={props.hiddenOn}
+      variant={props.variant}
+      heading={props.heading || "Galerie"}
+      intro={props.intro}
+      imageUrls={imageUrls}
+    />
   );
 };
 
@@ -306,98 +247,37 @@ export const NailStudioSignatureSets = (props: NailSignatureSetsProps) => {
   const ctaHref = props.ctaHref || "#booking";
 
   return (
-    <section
-      id={props.anchorId ?? "signature-sets"}
-      className={sectionClass(props, "py-14 sm:py-16")}
-    >
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold tracking-tight">
-            {props.heading || "Signature Sets"}
-          </h2>
-          {props.intro ? <p className="text-muted-foreground">{props.intro}</p> : null}
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          {list.map((set) => (
-            <article
-              key={set.name}
-              className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm"
-            >
-              {set.badge ? (
-                <p className="mb-2 inline-flex rounded-full bg-muted px-2 py-1 text-xs font-medium">
-                  {set.badge}
-                </p>
-              ) : null}
-              <h3 className="text-lg font-semibold">{set.name}</h3>
-              {set.description ? (
-                <p className="mt-2 text-sm text-muted-foreground">{set.description}</p>
-              ) : null}
-              <p className="mt-4 text-sm font-medium text-foreground">
-                {[set.duration, set.priceFrom].filter(Boolean).join(" - ")}
-              </p>
-            </article>
-          ))}
-        </div>
-
-        <a
-          href={resolveInternalHref(ctaHref, props.basePath)}
-          className="inline-flex rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background"
-        >
-          {ctaLabel}
-        </a>
-      </div>
-    </section>
+    <NailStudioSignatureSetsView
+      anchorId={props.anchorId}
+      className={props.className}
+      hiddenOn={props.hiddenOn}
+      variant={props.variant}
+      heading={props.heading || "Signature Sets"}
+      intro={props.intro}
+      sets={list}
+      ctaLabel={ctaLabel}
+      ctaHref={resolveInternalHref(ctaHref, props.basePath)}
+    />
   );
 };
 
 export const NailStudioTeam = (props: NailTeamProps) => {
   const members = toTeamMembers(props.members);
-  const list = members.length ? members : fallbackTeam;
+  const list = (members.length ? members : fallbackTeam).map((member) => ({
+    ...member,
+    imageSrc: resolveFileUrl(member.imageFileId),
+  }));
 
   return (
-    <section
-      id={props.anchorId ?? "team"}
-      className={sectionClass(props, "border-y border-border/60 bg-[#faf7f3] py-14 sm:py-16")}
-    >
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold tracking-tight">{props.heading || "Unser Team"}</h2>
-          {props.intro ? <p className="text-muted-foreground">{props.intro}</p> : null}
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          {list.map((member) => {
-            const imageUrl = resolveFileUrl(member.imageFileId);
-            return (
-              <article
-                key={member.name}
-                className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm"
-              >
-                {imageUrl ? (
-                  <img
-                    src={imageUrl}
-                    alt={member.name}
-                    className="h-48 w-full rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="flex h-48 w-full items-center justify-center rounded-xl border border-dashed border-border text-xs text-muted-foreground">
-                    Artist image
-                  </div>
-                )}
-                <h3 className="mt-4 text-lg font-semibold">{member.name}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {[member.role, member.specialty].filter(Boolean).join(" - ")}
-                </p>
-                {member.bio ? (
-                  <p className="mt-2 text-sm text-muted-foreground">{member.bio}</p>
-                ) : null}
-              </article>
-            );
-          })}
-        </div>
-      </div>
-    </section>
+    <NailStudioTeamView
+      anchorId={props.anchorId}
+      className={props.className}
+      hiddenOn={props.hiddenOn}
+      variant={props.variant}
+      heading={props.heading || "Unser Team"}
+      intro={props.intro}
+      members={list}
+    />
   );
 };
 
@@ -406,30 +286,14 @@ export const NailStudioTestimonials = (props: NailTestimonialsProps) => {
   const list = testimonials.length ? testimonials : fallbackTestimonials;
 
   return (
-    <section
-      id={props.anchorId ?? "testimonials"}
-      className={sectionClass(props, "py-14 sm:py-16")}
-    >
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
-        <h2 className="text-3xl font-semibold tracking-tight">{props.heading || "Reviews"}</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {list.map((item, index) => (
-            <blockquote
-              key={`${item.quote}-${index}`}
-              className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm"
-            >
-              <p className="text-sm text-muted-foreground">"{item.quote}"</p>
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-sm font-semibold">{item.author || "Guest"}</span>
-                <span className="text-xs text-muted-foreground">
-                  {"★".repeat(item.rating ?? 5)}
-                </span>
-              </div>
-            </blockquote>
-          ))}
-        </div>
-      </div>
-    </section>
+    <NailStudioTestimonialsView
+      anchorId={props.anchorId}
+      className={props.className}
+      hiddenOn={props.hiddenOn}
+      variant={props.variant}
+      heading={props.heading || "Reviews"}
+      items={list}
+    />
   );
 };
 
@@ -440,42 +304,16 @@ export const NailStudioBookingSteps = (props: NailBookingStepsProps) => {
   const ctaHref = props.ctaHref || commonPrimaryCta(props.settings).href;
 
   return (
-    <section
-      id={props.anchorId ?? "booking"}
-      className={sectionClass(props, "border-y border-border/60 bg-[#f8f4ef] py-14 sm:py-16")}
-    >
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-semibold tracking-tight">
-            {props.heading || "Booking in 3 steps"}
-          </h2>
-          {props.intro ? <p className="text-muted-foreground">{props.intro}</p> : null}
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          {list.map((step, index) => (
-            <article
-              key={step.title}
-              className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm"
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                Step {index + 1}
-              </p>
-              <h3 className="mt-2 text-lg font-semibold">{step.title}</h3>
-              {step.description ? (
-                <p className="mt-2 text-sm text-muted-foreground">{step.description}</p>
-              ) : null}
-            </article>
-          ))}
-        </div>
-
-        <a
-          href={resolveInternalHref(ctaHref, props.basePath)}
-          className="inline-flex rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background"
-        >
-          {ctaLabel}
-        </a>
-      </div>
-    </section>
+    <NailStudioBookingStepsView
+      anchorId={props.anchorId}
+      className={props.className}
+      hiddenOn={props.hiddenOn}
+      variant={props.variant}
+      heading={props.heading || "Booking in 3 steps"}
+      intro={props.intro}
+      steps={list}
+      ctaLabel={ctaLabel}
+      ctaHref={resolveInternalHref(ctaHref, props.basePath)}
+    />
   );
 };

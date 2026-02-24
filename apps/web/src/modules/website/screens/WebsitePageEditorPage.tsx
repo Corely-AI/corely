@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Save } from "lucide-react";
-import { Badge, Button } from "@corely/ui";
 import type {
   WebsiteBlock,
   WebsiteBlockType,
@@ -11,31 +9,33 @@ import type {
 } from "@corely/contracts";
 import { websiteApi } from "@/lib/website-api";
 import { cmsApi } from "@/lib/cms-api";
-import { websitePageContentKeys, websitePageKeys, websiteSiteKeys } from "../queries";
+import {
+  websitePageContentKeys,
+  websitePageKeys,
+  websitePageListKey,
+  websiteSiteKeys,
+} from "../queries";
 import { toast } from "sonner";
 import { getPublicWebsiteUrl } from "@/shared/lib/public-urls";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import {
   WebsiteBlockEditorRegistry,
   WebsiteTemplateEditorRegistry,
-  type WebsiteBlockEditorField,
 } from "../blocks/website-block-editor-registry";
 import {
   areContentsEqual,
+  buildUniqueWebsitePath,
   buildDefaultContentForTemplate,
   cloneContent,
-  createBlockId,
-  getValueAtPath,
-  normalizeFileIdList,
   openWebsitePreviewWindow,
-  reorderBlocks,
-  setValueAtPath,
-  statusVariant,
+  suggestPathBaseFromTemplate,
 } from "./website-page-editor.utils";
 import { WebsitePageEditorDetailsCard } from "./website-page-editor-details-card";
 import { WebsitePageEditorBlocksCard } from "./website-page-editor-blocks-card";
 import { useWebsitePageEditorMutations } from "./use-website-page-editor-mutations";
 import { renderWebsitePageBlockPreview } from "./website-page-editor-preview";
+import { WebsitePageEditorHeader } from "./website-page-editor-header";
+import { createWebsitePageEditorBlockActions } from "./website-page-editor-block-actions";
 
 export default function WebsitePageEditorPage() {
   const { siteId, pageId } = useParams<{ siteId: string; pageId: string }>();
@@ -58,6 +58,26 @@ export default function WebsitePageEditorPage() {
     queryFn: () => (resolvedSiteId ? websiteApi.getSite(resolvedSiteId) : Promise.resolve(null)),
     enabled: Boolean(resolvedSiteId),
   });
+  const { data: existingPagesData } = useQuery({
+    queryKey: websitePageListKey({
+      siteId: resolvedSiteId,
+      page: 1,
+      pageSize: 200,
+    }),
+    queryFn: () =>
+      resolvedSiteId
+        ? websiteApi.listPages(resolvedSiteId, { siteId: resolvedSiteId, page: 1, pageSize: 200 })
+        : Promise.resolve({
+            items: [],
+            pageInfo: {
+              page: 1,
+              pageSize: 200,
+              total: 0,
+              hasNextPage: false,
+            },
+          }),
+    enabled: Boolean(resolvedSiteId) && !isEdit,
+  });
 
   const { data: cmsPosts } = useQuery({
     queryKey: ["cms", "posts", "options"],
@@ -70,7 +90,8 @@ export default function WebsitePageEditorPage() {
     enabled: isEdit,
   });
 
-  const [path, setPath] = useState("/");
+  const [path, setPath] = useState("");
+  const [hasEditedPath, setHasEditedPath] = useState(false);
   const [locale, setLocale] = useState("en-US");
   const [template, setTemplate] = useState("landing.tutoring.v1");
   const [cmsEntryId, setCmsEntryId] = useState("");
@@ -93,6 +114,7 @@ export default function WebsitePageEditorPage() {
       return;
     }
     setPath(page.path);
+    setHasEditedPath(true);
     setLocale(page.locale);
     setTemplate(page.template);
     setCmsEntryId(page.cmsEntryId);
@@ -141,11 +163,32 @@ export default function WebsitePageEditorPage() {
     );
   }, [content]);
 
-  const canSave =
-    path.trim().length > 0 &&
-    locale.trim().length > 0 &&
-    template.trim().length > 0 &&
-    cmsEntryId.trim().length > 0;
+  const suggestedPath = useMemo(() => {
+    const localeKey = locale.trim().toLowerCase();
+    const existingPaths = new Set(
+      (existingPagesData?.items ?? [])
+        .filter((item) => item.locale.trim().toLowerCase() === localeKey)
+        .map((item) => item.path)
+    );
+    return buildUniqueWebsitePath(suggestPathBaseFromTemplate(template), existingPaths);
+  }, [existingPagesData?.items, locale, template]);
+
+  useEffect(() => {
+    if (isEdit) {
+      return;
+    }
+    if (hasEditedPath && path.trim().length > 0) {
+      return;
+    }
+    setPath(suggestedPath);
+  }, [hasEditedPath, isEdit, path, suggestedPath]);
+
+  const handlePathChange = (nextPath: string) => {
+    setHasEditedPath(true);
+    setPath(nextPath);
+  };
+
+  const canSave = path.trim().length > 0 && locale.trim().length > 0 && template.trim().length > 0;
 
   const templateDefinition =
     WebsiteTemplateEditorRegistry.get(template.trim()) ?? WebsiteTemplateEditorRegistry.fallback();
@@ -186,178 +229,30 @@ export default function WebsitePageEditorPage() {
     setStatus,
   });
 
-  const updateSelectedBlockField = (field: WebsiteBlockEditorField, value: unknown) => {
-    if (!content || !selectedBlock) {
-      return;
-    }
-
-    setContent({
-      ...content,
-      blocks: content.blocks.map((block) => {
-        if (block.id !== selectedBlock.id) {
-          return block;
-        }
-
-        const nextProps = setValueAtPath({ ...block.props }, field.key, value);
-        const parsed = selectedDefinition?.schema.safeParse({
-          ...block,
-          props: nextProps,
-        });
-
-        return parsed && parsed.success
-          ? parsed.data
-          : ({
-              ...block,
-              props: nextProps,
-            } as WebsiteBlock);
-      }),
-    });
-  };
-
-  const resolveFieldStateKey = (fieldKey: string): string =>
-    selectedBlock ? `${selectedBlock.id}:${fieldKey}` : fieldKey;
-
-  const commitJsonFieldDraft = (field: WebsiteBlockEditorField) => {
-    if (!selectedBlock) {
-      return;
-    }
-    const stateKey = resolveFieldStateKey(field.key);
-    const draft = jsonFieldDrafts[stateKey];
-    if (draft === undefined) {
-      return;
-    }
-    const trimmed = draft.trim();
-    if (!trimmed) {
-      updateSelectedBlockField(field, undefined);
-      setJsonFieldDrafts((current) => {
-        const next = { ...current };
-        delete next[stateKey];
-        return next;
-      });
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(trimmed) as unknown;
-      updateSelectedBlockField(field, parsed);
-      setJsonFieldDrafts((current) => {
-        const next = { ...current };
-        delete next[stateKey];
-        return next;
-      });
-    } catch {
-      toast.error("Invalid JSON for this field.");
-    }
-  };
-
-  const uploadFilesToField = async (field: WebsiteBlockEditorField, files: FileList | null) => {
-    if (!selectedBlock || !files || files.length === 0) {
-      return;
-    }
-
-    const stateKey = resolveFieldStateKey(field.key);
-    setUploadingFieldKey(stateKey);
-    try {
-      const uploads = await Promise.all(
-        Array.from(files).map((file) =>
-          cmsApi.uploadCmsAsset(file, {
-            purpose: "website-block-image",
-            category: "website",
-          })
-        )
-      );
-      const uploadedFileIds = uploads.map((item) => item.fileId);
-      if (field.type === "fileId") {
-        updateSelectedBlockField(field, uploadedFileIds[0]);
-      } else {
-        const currentValue = getValueAtPath(selectedBlock.props, field.key);
-        const merged = Array.from(
-          new Set([...normalizeFileIdList(currentValue), ...uploadedFileIds])
-        );
-        updateSelectedBlockField(field, merged);
-      }
-      toast.success("Image uploaded");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to upload image");
-    } finally {
-      setUploadingFieldKey(null);
-    }
-  };
-
-  const addBlock = () => {
-    if (!content) {
-      return;
-    }
-
-    const definition = WebsiteBlockEditorRegistry.get(newBlockType);
-    const nextBlockCandidate = {
-      id: createBlockId(newBlockType),
-      type: newBlockType,
-      enabled: true,
-      props: { ...definition.defaultProps },
-    };
-    const parsed = definition.schema.safeParse(nextBlockCandidate);
-    if (!parsed.success) {
-      toast.error("Block defaults are invalid.");
-      return;
-    }
-
-    const next = {
-      ...content,
-      blocks: [...content.blocks, parsed.data],
-    };
-    setContent(next);
-    setSelectedBlockId(parsed.data.id);
-    setIsAddBlockOpen(false);
-  };
-
-  const duplicateBlock = (block: WebsiteBlock) => {
-    if (!content) {
-      return;
-    }
-    const nextBlock: WebsiteBlock = {
-      ...block,
-      id: createBlockId(block.type),
-      props: { ...(block.props as Record<string, unknown>) },
-    };
-    setContent({
-      ...content,
-      blocks: [...content.blocks, nextBlock],
-    });
-    setSelectedBlockId(nextBlock.id);
-  };
-
-  const removeBlock = (blockId: string) => {
-    if (!content) {
-      return;
-    }
-    const nextBlocks = content.blocks.filter((block) => block.id !== blockId);
-    setContent({ ...content, blocks: nextBlocks });
-    if (selectedBlockId === blockId) {
-      setSelectedBlockId(nextBlocks[0]?.id ?? null);
-    }
-  };
-
-  const toggleBlockEnabled = (blockId: string, enabled: boolean) => {
-    if (!content) {
-      return;
-    }
-    setContent({
-      ...content,
-      blocks: content.blocks.map((block) => (block.id === blockId ? { ...block, enabled } : block)),
-    });
-  };
-
-  const handleDropBlock = (targetId: string) => {
-    if (!content || !dragBlockId) {
-      return;
-    }
-    setContent({
-      ...content,
-      blocks: reorderBlocks(content.blocks, dragBlockId, targetId),
-    });
-    setDragBlockId(null);
-  };
+  const {
+    updateSelectedBlockField,
+    commitJsonFieldDraft,
+    uploadFilesToField,
+    addBlock,
+    duplicateBlock,
+    removeBlock,
+    toggleBlockEnabled,
+    handleDropBlock,
+  } = createWebsitePageEditorBlockActions({
+    content,
+    setContent,
+    selectedBlock,
+    selectedDefinition,
+    selectedBlockId,
+    setSelectedBlockId,
+    dragBlockId,
+    setDragBlockId,
+    jsonFieldDrafts,
+    setJsonFieldDrafts,
+    setUploadingFieldKey,
+    newBlockType,
+    setIsAddBlockOpen,
+  });
 
   const previewUrl = useMemo(() => {
     const site = siteData?.site;
@@ -382,46 +277,20 @@ export default function WebsitePageEditorPage() {
 
   return (
     <div className="space-y-6 p-6 lg:p-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <div className="text-lg font-semibold">{isEdit ? "Edit page" : "Create page"}</div>
-            <div className="text-sm text-muted-foreground">
-              Define route, template, SEO, and blocks
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {isEdit ? <Badge variant={statusVariant(status)}>{status}</Badge> : null}
-          {isEdit ? (
-            status === "PUBLISHED" ? (
-              <Button variant="outline" onClick={() => void unpublishMutation.mutate()}>
-                Unpublish
-              </Button>
-            ) : (
-              <Button variant="outline" onClick={() => void publishMutation.mutate()}>
-                Publish
-              </Button>
-            )
-          ) : null}
-          <Button
-            variant="accent"
-            disabled={!canSave || saveMutation.isPending}
-            onClick={() => void saveMutation.mutate()}
-          >
-            <Save className="h-4 w-4" />
-            Save
-          </Button>
-        </div>
-      </div>
+      <WebsitePageEditorHeader
+        isEdit={isEdit}
+        status={status}
+        canSave={canSave}
+        savePending={saveMutation.isPending}
+        onBack={() => navigate(-1)}
+        onPublish={() => void publishMutation.mutate()}
+        onUnpublish={() => void unpublishMutation.mutate()}
+        onSave={() => void saveMutation.mutate()}
+      />
 
       <WebsitePageEditorDetailsCard
         path={path}
-        onPathChange={setPath}
+        onPathChange={handlePathChange}
         locale={locale}
         onLocaleChange={setLocale}
         template={template}
@@ -484,7 +353,7 @@ export default function WebsitePageEditorPage() {
         onAddBlock={addBlock}
         selectedBlock={selectedBlock}
         selectedDefinition={selectedDefinition}
-        renderSelectedBlockPreview={() => renderWebsitePageBlockPreview(selectedBlock)}
+        renderSelectedBlockPreview={() => renderWebsitePageBlockPreview(selectedBlock, template)}
         jsonFieldDrafts={jsonFieldDrafts}
         setJsonFieldDrafts={setJsonFieldDrafts}
         uploadingFieldKey={uploadingFieldKey}

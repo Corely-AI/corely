@@ -10,7 +10,7 @@ export const CreateWebsitePageInputSchema = z
     locale: z.string().min(2),
     template: z.string().min(1).optional(),
     templateKey: z.string().min(1).optional(),
-    cmsEntryId: z.string().min(1),
+    cmsEntryId: z.string().min(1).optional(),
     seoTitle: z.string().optional().nullable(),
     seoDescription: z.string().optional().nullable(),
     seoImageFileId: z.string().optional().nullable(),

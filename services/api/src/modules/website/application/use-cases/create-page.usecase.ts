@@ -52,9 +52,6 @@ export class CreateWebsitePageUseCase extends BaseUseCase<CreateWebsitePageInput
         "Website:InvalidTemplate"
       );
     }
-    if (!input.cmsEntryId?.trim()) {
-      throw new ValidationError("cmsEntryId is required", undefined, "Website:InvalidCmsEntry");
-    }
     return input;
   }
 
@@ -81,6 +78,15 @@ export class CreateWebsitePageUseCase extends BaseUseCase<CreateWebsitePageInput
 
     const now = this.deps.clock.now().toISOString();
     const templateKey = (input.templateKey ?? input.template ?? "").trim();
+    const cmsEntryId = await this.resolveCmsEntryId({
+      inputCmsEntryId: input.cmsEntryId,
+      tenantId: ctx.tenantId,
+      workspaceId: ctx.workspaceId ?? null,
+      authorUserId: ctx.userId ?? null,
+      locale,
+      path,
+      templateKey,
+    });
     const page: WebsitePage = {
       id: this.deps.idGenerator.newId(),
       tenantId: ctx.tenantId,
@@ -89,7 +95,7 @@ export class CreateWebsitePageUseCase extends BaseUseCase<CreateWebsitePageInput
       locale,
       template: templateKey,
       status: "DRAFT",
-      cmsEntryId: input.cmsEntryId,
+      cmsEntryId,
       seoTitle: input.seoTitle ?? null,
       seoDescription: input.seoDescription ?? null,
       seoImageFileId: input.seoImageFileId ?? null,
@@ -129,5 +135,52 @@ export class CreateWebsitePageUseCase extends BaseUseCase<CreateWebsitePageInput
     }
 
     return ok(created);
+  }
+
+  private async resolveCmsEntryId(params: {
+    inputCmsEntryId?: string;
+    tenantId: string;
+    workspaceId: string | null;
+    authorUserId: string | null;
+    locale: string;
+    path: string;
+    templateKey: string;
+  }): Promise<string> {
+    const candidate = params.inputCmsEntryId?.trim();
+    if (candidate) {
+      return candidate;
+    }
+
+    const created = await this.deps.cmsWrite.createDraftEntryFromBlueprint({
+      tenantId: params.tenantId,
+      workspaceId: params.workspaceId,
+      authorUserId: params.authorUserId,
+      locale: params.locale,
+      blueprint: {
+        title: this.pathToTitle(params.path),
+        excerpt: `Draft page for template ${params.templateKey}`,
+        suggestedPath: params.path,
+        contentJson: {
+          type: "doc",
+          content: [{ type: "paragraph", content: [] }],
+        },
+      },
+    });
+
+    return created.entryId;
+  }
+
+  private pathToTitle(path: string): string {
+    if (path === "/") {
+      return "Home";
+    }
+    const label = path
+      .replace(/^\/+|\/+$/g, "")
+      .split("/")
+      .filter(Boolean)
+      .join(" / ")
+      .replace(/[-_]+/g, " ")
+      .trim();
+    return label || "Page";
   }
 }
