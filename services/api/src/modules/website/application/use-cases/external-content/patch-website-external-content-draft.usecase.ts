@@ -103,10 +103,6 @@ export class PatchWebsiteExternalContentDraftUseCase extends BaseUseCase<
     });
 
     const updatedAt = this.deps.clock.now().toISOString();
-    await this.deps.siteRepo.update({
-      ...site,
-      updatedAt,
-    });
 
     return ok({
       key: input.key,
