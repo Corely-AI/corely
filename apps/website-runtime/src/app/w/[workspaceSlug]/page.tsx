@@ -24,17 +24,23 @@ const resolveMetadataFallback = (input: {
   title?: string;
   description?: string | null;
   imageFileId?: string | null;
+  ogTitle?: string;
+  ogDescription?: string | null;
+  ogImageFileId?: string | null;
 }): Metadata => {
-  const ogImage = input.imageFileId ? buildPublicFileUrl(input.imageFileId) : undefined;
+  const ogImageFileId = input.ogImageFileId ?? input.imageFileId;
+  const ogImage = ogImageFileId ? buildPublicFileUrl(ogImageFileId) : undefined;
   const description = input.description ?? undefined;
+  const ogDescription = input.ogDescription ?? description;
+  const ogTitle = input.ogTitle ?? input.title ?? "Website";
 
   return {
     title: input.title ?? "Website",
     description,
     alternates: { canonical: input.canonical },
     openGraph: {
-      title: input.title ?? "Website",
-      description,
+      title: ogTitle,
+      description: ogDescription,
       url: input.canonical,
       type: "website",
       images: ogImage ? [ogImage] : undefined,
@@ -44,22 +50,42 @@ const resolveMetadataFallback = (input: {
 
 const resolveSeoFallback = (
   output: ResolveWebsitePublicOutput
-): { title?: string; description?: string | null } => {
+): {
+  title?: string;
+  description?: string | null;
+  imageFileId?: string | null;
+  ogTitle?: string;
+  ogDescription?: string | null;
+  ogImageFileId?: string | null;
+} => {
   const meta = extractCmsPayloadMeta(output.payloadJson);
   const text = extractTextPayload(output.payloadJson);
+  const override = output.page.content.seoOverride;
   const title =
-    output.page.content.seoOverride?.title ??
+    override?.title ??
     output.seo?.title ??
     meta?.title ??
     output.settings.common.siteTitle ??
     undefined;
   const description =
-    output.page.content.seoOverride?.description ??
+    override?.description ??
     output.seo?.description ??
     meta?.excerpt ??
     output.settings.common.seoDefaults.defaultDescription ??
     (text ? text.slice(0, 155) : undefined);
-  return { title, description: description ?? null };
+  const imageFileId = override?.imageFileId ?? output.seo?.imageFileId ?? null;
+  const ogTitle = override?.ogTitle ?? override?.title ?? title;
+  const ogDescription = override?.ogDescription ?? override?.description ?? description;
+  const ogImageFileId = override?.ogImageFileId ?? override?.imageFileId ?? imageFileId;
+
+  return {
+    title,
+    description: description ?? null,
+    imageFileId,
+    ogTitle,
+    ogDescription: ogDescription ?? null,
+    ogImageFileId,
+  };
 };
 
 const buildResolveRequest = (input: { host: string | null; acceptLanguage?: string | null }) => {
@@ -126,12 +152,7 @@ export async function generateMetadata({
     });
 
     const fallback = resolveSeoFallback(output);
-    return resolveMetadataFallback({
-      canonical,
-      title: output.seo?.title ?? fallback.title,
-      description: output.seo?.description ?? fallback.description,
-      imageFileId: output.seo?.imageFileId ?? undefined,
-    });
+    return resolveMetadataFallback({ canonical, ...fallback });
   } catch (error) {
     const resolvedError = resolveWebsiteError(error);
     if (resolvedError?.kind === "not-found") {

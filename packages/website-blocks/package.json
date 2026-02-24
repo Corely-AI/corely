@@ -1,0 +1,16 @@
+{
+  "name": "@corely/website-blocks",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*",
+    "react": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

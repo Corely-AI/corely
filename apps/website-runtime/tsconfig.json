@@ -9,7 +9,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@corely/public-urls": ["../../packages/public-urls/src"]
+      "@corely/public-urls": ["../../packages/public-urls/src"],
+      "@corely/website-blocks": ["../../packages/website-blocks/src"]
     },
     "allowJs": true,
     "exactOptionalPropertyTypes": false,
@@ -27,7 +28,8 @@
     "src/lib/**/*",
     "src/modules/**/*",
     "src/middleware.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../../packages/website-blocks/src"
   ],
   "exclude": ["node_modules", "src/legacy/**"]
 }

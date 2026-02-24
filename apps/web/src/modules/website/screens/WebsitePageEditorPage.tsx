@@ -1,38 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Save, ExternalLink, Plus, GripVertical, Copy, Trash2, Eye } from "lucide-react";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Label,
-  Switch,
-  Textarea,
-} from "@corely/ui";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Save } from "lucide-react";
+import { Badge, Button } from "@corely/ui";
 import type {
   WebsiteBlock,
   WebsiteBlockType,
   WebsitePageContent,
   WebsitePageStatus,
 } from "@corely/contracts";
-import { WebsitePageContentSchema } from "@corely/contracts";
 import { websiteApi } from "@/lib/website-api";
 import { cmsApi } from "@/lib/cms-api";
-import {
-  websitePageContentKeys,
-  websitePageKeys,
-  websitePageListKey,
-  websiteSiteKeys,
-} from "../queries";
-import { invalidateResourceQueries } from "@/shared/crud";
+import { websitePageContentKeys, websitePageKeys, websiteSiteKeys } from "../queries";
 import { toast } from "sonner";
 import { getPublicWebsiteUrl } from "@/shared/lib/public-urls";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
@@ -41,99 +20,22 @@ import {
   WebsiteTemplateEditorRegistry,
   type WebsiteBlockEditorField,
 } from "../blocks/website-block-editor-registry";
-
-const statusVariant = (status: WebsitePageStatus) => {
-  switch (status) {
-    case "PUBLISHED":
-      return "success";
-    default:
-      return "warning";
-  }
-};
-
-const createBlockId = (type: WebsiteBlockType): string =>
-  `${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
-const cloneContent = (content: WebsitePageContent): WebsitePageContent => ({
-  ...content,
-  blocks: content.blocks.map((block) => ({ ...block, props: { ...block.props } })),
-});
-
-const areContentsEqual = (left: WebsitePageContent, right: WebsitePageContent): boolean =>
-  JSON.stringify(left) === JSON.stringify(right);
-
-const getValueAtPath = (source: unknown, path: string): unknown => {
-  const segments = path.split(".");
-  let cursor = source;
-  for (const segment of segments) {
-    if (!cursor || typeof cursor !== "object" || Array.isArray(cursor)) {
-      return undefined;
-    }
-    cursor = (cursor as Record<string, unknown>)[segment];
-  }
-  return cursor;
-};
-
-const setValueAtPath = (
-  source: Record<string, unknown>,
-  path: string,
-  value: unknown
-): Record<string, unknown> => {
-  const segments = path.split(".");
-  const root: Record<string, unknown> = { ...source };
-  let cursor: Record<string, unknown> = root;
-
-  for (let index = 0; index < segments.length; index += 1) {
-    const segment = segments[index]!;
-    const isLast = index === segments.length - 1;
-
-    if (isLast) {
-      if (value === undefined || value === null || value === "") {
-        delete cursor[segment];
-      } else {
-        cursor[segment] = value;
-      }
-      continue;
-    }
-
-    const existing = cursor[segment];
-    const next =
-      existing && typeof existing === "object" && !Array.isArray(existing)
-        ? { ...(existing as Record<string, unknown>) }
-        : {};
-    cursor[segment] = next;
-    cursor = next;
-  }
-
-  return root;
-};
-
-const reorderBlocks = (
-  blocks: WebsiteBlock[],
-  sourceId: string,
-  targetId: string
-): WebsiteBlock[] => {
-  if (sourceId === targetId) {
-    return blocks;
-  }
-
-  const sourceIndex = blocks.findIndex((block) => block.id === sourceId);
-  const targetIndex = blocks.findIndex((block) => block.id === targetId);
-  if (sourceIndex < 0 || targetIndex < 0) {
-    return blocks;
-  }
-
-  const next = [...blocks];
-  const [moved] = next.splice(sourceIndex, 1);
-  if (!moved) {
-    return blocks;
-  }
-  next.splice(targetIndex, 0, moved);
-  return next;
-};
-
-const buildPreviewToken = (): string =>
-  `preview_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 12)}`;
+import {
+  areContentsEqual,
+  buildDefaultContentForTemplate,
+  cloneContent,
+  createBlockId,
+  getValueAtPath,
+  normalizeFileIdList,
+  openWebsitePreviewWindow,
+  reorderBlocks,
+  setValueAtPath,
+  statusVariant,
+} from "./website-page-editor.utils";
+import { WebsitePageEditorDetailsCard } from "./website-page-editor-details-card";
+import { WebsitePageEditorBlocksCard } from "./website-page-editor-blocks-card";
+import { useWebsitePageEditorMutations } from "./use-website-page-editor-mutations";
+import { renderWebsitePageBlockPreview } from "./website-page-editor-preview";
 
 export default function WebsitePageEditorPage() {
   const { siteId, pageId } = useParams<{ siteId: string; pageId: string }>();
@@ -148,8 +50,8 @@ export default function WebsitePageEditorPage() {
     enabled: isEdit,
   });
 
-  const page = pageData?.page;
-  const resolvedSiteId = siteId ?? page?.siteId;
+  const page = pageData?.page,
+    resolvedSiteId = siteId ?? page?.siteId;
 
   const { data: siteData } = useQuery({
     queryKey: websiteSiteKeys.detail(resolvedSiteId ?? ""),
@@ -183,6 +85,8 @@ export default function WebsitePageEditorPage() {
   const [newBlockType, setNewBlockType] = useState<WebsiteBlockType>("hero");
   const [aiBrief, setAiBrief] = useState("");
   const [aiInstruction, setAiInstruction] = useState("");
+  const [jsonFieldDrafts, setJsonFieldDrafts] = useState<Record<string, string>>({});
+  const [uploadingFieldKey, setUploadingFieldKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (!page) {
@@ -216,17 +120,14 @@ export default function WebsitePageEditorPage() {
     if (pageContentData?.content) {
       return;
     }
-
-    setContent((current) => {
-      if (current) {
-        return current;
-      }
-      const templateDef =
-        WebsiteTemplateEditorRegistry.get(template.trim()) ??
-        WebsiteTemplateEditorRegistry.fallback();
-      return cloneContent(templateDef.defaultContent());
-    });
-  }, [pageContentData?.content, template]);
+    if (isEdit) {
+      return;
+    }
+    const next = buildDefaultContentForTemplate(template);
+    setContent(next);
+    setSelectedBlockId(next.blocks[0]?.id ?? null);
+    setJsonFieldDrafts({});
+  }, [isEdit, pageContentData?.content, template]);
 
   useEffect(() => {
     if (!content) {
@@ -240,174 +141,50 @@ export default function WebsitePageEditorPage() {
     );
   }, [content]);
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const payload = {
-        path: path.trim(),
-        locale: locale.trim(),
-        templateKey: template.trim(),
-        cmsEntryId: cmsEntryId.trim(),
-        seoTitle: seoTitle.trim() || undefined,
-        seoDescription: seoDescription.trim() || undefined,
-        seoImageFileId: seoImageFileId.trim() || undefined,
-      };
-      if (isEdit && pageId) {
-        return websiteApi.updatePage(pageId, payload);
-      }
-      if (!siteId) {
-        throw new Error("Missing siteId");
-      }
-      return websiteApi.createPage(siteId, { ...payload, siteId });
-    },
-    onSuccess: (saved) => {
-      void invalidateResourceQueries(queryClient, "website-pages");
-      toast.success(isEdit ? "Page updated" : "Page created");
-      if (!isEdit) {
-        navigate(`/website/pages/${saved.id}/edit`);
-      }
-    },
-    onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Failed to save page");
-    },
+  const canSave =
+    path.trim().length > 0 &&
+    locale.trim().length > 0 &&
+    template.trim().length > 0 &&
+    cmsEntryId.trim().length > 0;
+
+  const templateDefinition =
+    WebsiteTemplateEditorRegistry.get(template.trim()) ?? WebsiteTemplateEditorRegistry.fallback();
+  const availableTemplates = useMemo(() => WebsiteTemplateEditorRegistry.all(), []);
+  const hasUnknownTemplate =
+    template.trim().length > 0 &&
+    !availableTemplates.some((definition) => definition.templateKey === template.trim());
+  const blocks = content?.blocks ?? [],
+    selectedBlock = blocks.find((block) => block.id === selectedBlockId) ?? null,
+    selectedDefinition = selectedBlock ? WebsiteBlockEditorRegistry.get(selectedBlock.type) : null;
+  const {
+    saveMutation,
+    saveDraftMutation,
+    generateBlocksMutation,
+    regenerateBlockMutation,
+    publishMutation,
+    unpublishMutation,
+  } = useWebsitePageEditorMutations({
+    isEdit,
+    pageId,
+    siteId,
+    path,
+    locale,
+    template,
+    cmsEntryId,
+    seoTitle,
+    seoDescription,
+    seoImageFileId,
+    queryClient,
+    navigate,
+    resolvedSiteId,
+    content,
+    aiBrief,
+    selectedBlock,
+    aiInstruction,
+    setContent,
+    setSelectedBlockId,
+    setStatus,
   });
-
-  const saveDraftMutation = useMutation({
-    mutationFn: async () => {
-      if (!pageId || !content) {
-        throw new Error("Save the page first before editing blocks.");
-      }
-      const parsed = WebsitePageContentSchema.safeParse({
-        ...content,
-        templateKey: content.templateKey || template.trim(),
-      });
-      if (!parsed.success) {
-        throw new Error(parsed.error.issues[0]?.message || "Invalid block content");
-      }
-      return websiteApi.updatePageContent(pageId, parsed.data);
-    },
-    onSuccess: (result) => {
-      toast.success("Draft blocks saved");
-      setContent(cloneContent(result.content));
-      void queryClient.invalidateQueries({ queryKey: websitePageContentKeys.detail(pageId ?? "") });
-    },
-    onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Failed to save draft blocks");
-    },
-  });
-
-  const generateBlocksMutation = useMutation({
-    mutationFn: async () => {
-      if (!content) {
-        throw new Error("No content loaded");
-      }
-      return websiteApi.generateBlocks({
-        templateKey: content.templateKey,
-        locale: locale.trim(),
-        brief: aiBrief.trim() || "Refresh blocks",
-        existingBlocks: content.blocks,
-      });
-    },
-    onSuccess: (result) => {
-      setContent(cloneContent(result.content));
-      setSelectedBlockId(result.content.blocks[0]?.id ?? null);
-      toast.success("AI blocks generated");
-    },
-    onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Failed to generate blocks");
-    },
-  });
-
-  const regenerateBlockMutation = useMutation({
-    mutationFn: async () => {
-      if (!content || !selectedBlock) {
-        throw new Error("Select a block first");
-      }
-      return websiteApi.regenerateBlock({
-        templateKey: content.templateKey,
-        blockType: selectedBlock.type,
-        currentBlock: selectedBlock,
-        instruction: aiInstruction.trim() || "Refine this block",
-      });
-    },
-    onSuccess: (result) => {
-      if (!content || !selectedBlock) {
-        return;
-      }
-      setContent({
-        ...content,
-        blocks: content.blocks.map((block) =>
-          block.id === selectedBlock.id ? result.block : block
-        ),
-      });
-      toast.success("Block regenerated");
-    },
-    onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Failed to regenerate block");
-    },
-  });
-
-  const publishMutation = useMutation({
-    mutationFn: async () => {
-      if (!pageId) {
-        throw new Error("Missing pageId");
-      }
-      return websiteApi.publishPage(pageId);
-    },
-    onSuccess: (result) => {
-      toast.success("Page published");
-      setStatus(result.page.status);
-      void queryClient.invalidateQueries({ queryKey: websitePageKeys.detail(pageId ?? "") });
-      void queryClient.invalidateQueries({
-        queryKey: websitePageListKey({ siteId: resolvedSiteId }),
-      });
-    },
-    onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Failed to publish page");
-    },
-  });
-
-  const unpublishMutation = useMutation({
-    mutationFn: async () => {
-      if (!pageId) {
-        throw new Error("Missing pageId");
-      }
-      return websiteApi.unpublishPage(pageId);
-    },
-    onSuccess: (result) => {
-      toast.success("Page unpublished");
-      setStatus(result.page.status);
-      void queryClient.invalidateQueries({ queryKey: websitePageKeys.detail(pageId ?? "") });
-      void queryClient.invalidateQueries({
-        queryKey: websitePageListKey({ siteId: resolvedSiteId }),
-      });
-    },
-    onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Failed to unpublish page");
-    },
-  });
-
-  const canSave = useMemo(
-    () =>
-      path.trim().length > 0 &&
-      locale.trim().length > 0 &&
-      template.trim().length > 0 &&
-      cmsEntryId.trim().length > 0,
-    [path, locale, template, cmsEntryId]
-  );
-
-  const templateDefinition = useMemo(
-    () =>
-      WebsiteTemplateEditorRegistry.get(template.trim()) ??
-      WebsiteTemplateEditorRegistry.fallback(),
-    [template]
-  );
-
-  const blocks = content?.blocks ?? [];
-  const selectedBlock = blocks.find((block) => block.id === selectedBlockId) ?? null;
-  const selectedDefinition = selectedBlock
-    ? WebsiteBlockEditorRegistry.get(selectedBlock.type)
-    : null;
-  const addableTypes = templateDefinition.allowedBlockTypes;
 
   const updateSelectedBlockField = (field: WebsiteBlockEditorField, value: unknown) => {
     if (!content || !selectedBlock) {
@@ -429,12 +206,82 @@ export default function WebsitePageEditorPage() {
 
         return parsed && parsed.success
           ? parsed.data
-          : {
+          : ({
               ...block,
               props: nextProps,
-            };
+            } as WebsiteBlock);
       }),
     });
+  };
+
+  const resolveFieldStateKey = (fieldKey: string): string =>
+    selectedBlock ? `${selectedBlock.id}:${fieldKey}` : fieldKey;
+
+  const commitJsonFieldDraft = (field: WebsiteBlockEditorField) => {
+    if (!selectedBlock) {
+      return;
+    }
+    const stateKey = resolveFieldStateKey(field.key);
+    const draft = jsonFieldDrafts[stateKey];
+    if (draft === undefined) {
+      return;
+    }
+    const trimmed = draft.trim();
+    if (!trimmed) {
+      updateSelectedBlockField(field, undefined);
+      setJsonFieldDrafts((current) => {
+        const next = { ...current };
+        delete next[stateKey];
+        return next;
+      });
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(trimmed) as unknown;
+      updateSelectedBlockField(field, parsed);
+      setJsonFieldDrafts((current) => {
+        const next = { ...current };
+        delete next[stateKey];
+        return next;
+      });
+    } catch {
+      toast.error("Invalid JSON for this field.");
+    }
+  };
+
+  const uploadFilesToField = async (field: WebsiteBlockEditorField, files: FileList | null) => {
+    if (!selectedBlock || !files || files.length === 0) {
+      return;
+    }
+
+    const stateKey = resolveFieldStateKey(field.key);
+    setUploadingFieldKey(stateKey);
+    try {
+      const uploads = await Promise.all(
+        Array.from(files).map((file) =>
+          cmsApi.uploadCmsAsset(file, {
+            purpose: "website-block-image",
+            category: "website",
+          })
+        )
+      );
+      const uploadedFileIds = uploads.map((item) => item.fileId);
+      if (field.type === "fileId") {
+        updateSelectedBlockField(field, uploadedFileIds[0]);
+      } else {
+        const currentValue = getValueAtPath(selectedBlock.props, field.key);
+        const merged = Array.from(
+          new Set([...normalizeFileIdList(currentValue), ...uploadedFileIds])
+        );
+        updateSelectedBlockField(field, merged);
+      }
+      toast.success("Image uploaded");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to upload image");
+    } finally {
+      setUploadingFieldKey(null);
+    }
   };
 
   const addBlock = () => {
@@ -468,10 +315,10 @@ export default function WebsitePageEditorPage() {
     if (!content) {
       return;
     }
-    const nextBlock = {
+    const nextBlock: WebsiteBlock = {
       ...block,
       id: createBlockId(block.type),
-      props: { ...block.props },
+      props: { ...(block.props as Record<string, unknown>) },
     };
     setContent({
       ...content,
@@ -530,9 +377,7 @@ export default function WebsitePageEditorPage() {
       toast.error("Preview URL is unavailable.");
       return;
     }
-    const token = buildPreviewToken();
-    const separator = previewUrl.includes("?") ? "&" : "?";
-    window.open(`${previewUrl}${separator}preview=1&token=${encodeURIComponent(token)}`, "_blank");
+    openWebsitePreviewWindow(previewUrl);
   };
 
   return (
@@ -574,318 +419,82 @@ export default function WebsitePageEditorPage() {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="space-y-5 p-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Path</Label>
-              <Input value={path} onChange={(event) => setPath(event.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Locale</Label>
-              <Input value={locale} onChange={(event) => setLocale(event.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Template key</Label>
-              <Input value={template} onChange={(event) => setTemplate(event.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>CMS entry</Label>
-              <select
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={cmsEntryId}
-                onChange={(event) => setCmsEntryId(event.target.value)}
-              >
-                <option value="">Select a CMS entry</option>
-                {(cmsPosts?.items ?? []).map((post) => (
-                  <option key={post.id} value={post.id}>
-                    {post.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+      <WebsitePageEditorDetailsCard
+        path={path}
+        onPathChange={setPath}
+        locale={locale}
+        onLocaleChange={setLocale}
+        template={template}
+        onTemplateChange={(nextTemplate) => {
+          setTemplate(nextTemplate);
+          if (!isEdit) {
+            const next = buildDefaultContentForTemplate(nextTemplate);
+            setContent(next);
+            setSelectedBlockId(next.blocks[0]?.id ?? null);
+            setJsonFieldDrafts({});
+          }
+        }}
+        hasUnknownTemplate={hasUnknownTemplate}
+        availableTemplates={availableTemplates}
+        cmsEntryId={cmsEntryId}
+        onCmsEntryChange={setCmsEntryId}
+        cmsEntryOptions={(cmsPosts?.items ?? []).map((post) => ({
+          id: post.id,
+          title: post.title,
+        }))}
+        onEditCmsEntry={() => navigate(`/cms/posts/${cmsEntryId}/edit`)}
+        seoTitle={seoTitle}
+        onSeoTitleChange={setSeoTitle}
+        seoDescription={seoDescription}
+        onSeoDescriptionChange={setSeoDescription}
+        seoImageFileId={seoImageFileId}
+        onSeoImageFileIdChange={setSeoImageFileId}
+      />
 
-          {cmsEntryId ? (
-            <div>
-              <Button variant="outline" onClick={() => navigate(`/cms/posts/${cmsEntryId}/edit`)}>
-                <ExternalLink className="h-4 w-4" />
-                Edit CMS entry
-              </Button>
-            </div>
-          ) : null}
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>SEO title</Label>
-              <Input value={seoTitle} onChange={(event) => setSeoTitle(event.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>SEO description</Label>
-              <Textarea
-                value={seoDescription}
-                onChange={(event) => setSeoDescription(event.target.value)}
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>SEO image file ID</Label>
-              <Input
-                value={seoImageFileId}
-                onChange={(event) => setSeoImageFileId(event.target.value)}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="space-y-4 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h3 className="text-base font-semibold">Page blocks</h3>
-              <p className="text-sm text-muted-foreground">
-                Drag to reorder, toggle visibility, and edit block properties.
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" disabled={!previewUrl} onClick={openPreview}>
-                <Eye className="h-4 w-4" />
-                Preview
-              </Button>
-              <Button
-                variant="accent"
-                disabled={!isEdit || !content || saveDraftMutation.isPending}
-                onClick={() => void saveDraftMutation.mutate()}
-              >
-                <Save className="h-4 w-4" />
-                Save Draft
-              </Button>
-            </div>
-          </div>
-
-          {!isEdit ? (
-            <p className="rounded-md border border-border/60 bg-muted/20 p-4 text-sm text-muted-foreground">
-              Save the page first to enable the block editor.
-            </p>
-          ) : (
-            <>
-              <div className="flex flex-wrap items-end gap-2 rounded-md border border-border/60 p-3">
-                <div className="flex-1 min-w-[220px] space-y-1">
-                  <Label>AI brief</Label>
-                  <Textarea
-                    rows={2}
-                    placeholder="Generate a conversion-focused landing page for A1 learners"
-                    value={aiBrief}
-                    onChange={(event) => setAiBrief(event.target.value)}
-                  />
-                </div>
-                <Button variant="outline" onClick={() => void generateBlocksMutation.mutate()}>
-                  Generate blocks
-                </Button>
-              </div>
-
-              <div className="grid gap-4 lg:grid-cols-[340px_1fr]">
-                <div className="space-y-3 rounded-md border border-border/60 p-3">
-                  <div className="flex items-center justify-between">
-                    <Label>Blocks</Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsAddBlockOpen(true)}
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add block
-                    </Button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {blocks.map((block) => {
-                      const blockDef = WebsiteBlockEditorRegistry.get(block.type);
-                      return (
-                        <div
-                          key={block.id}
-                          draggable
-                          onDragStart={() => setDragBlockId(block.id)}
-                          onDragOver={(event) => event.preventDefault()}
-                          onDrop={() => handleDropBlock(block.id)}
-                          className={`rounded-md border p-2 ${
-                            selectedBlockId === block.id ? "border-primary" : "border-border/60"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              className="text-muted-foreground"
-                              onClick={() => setSelectedBlockId(block.id)}
-                            >
-                              <GripVertical className="h-4 w-4" />
-                            </button>
-                            <button
-                              type="button"
-                              className="flex-1 text-left"
-                              onClick={() => setSelectedBlockId(block.id)}
-                            >
-                              <div className="text-sm font-medium">{blockDef.displayName}</div>
-                              <div className="text-xs text-muted-foreground">{block.type}</div>
-                            </button>
-                            <Switch
-                              checked={block.enabled !== false}
-                              onCheckedChange={(checked) =>
-                                toggleBlockEnabled(block.id, Boolean(checked))
-                              }
-                            />
-                          </div>
-                          <div className="mt-2 flex items-center justify-end gap-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => duplicateBlock(block)}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeBlock(block.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="space-y-3 rounded-md border border-border/60 p-3">
-                  {selectedBlock && selectedDefinition ? (
-                    <>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-semibold">
-                            {selectedDefinition.displayName}
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {selectedDefinition.description}
-                          </p>
-                        </div>
-                        <Badge variant={selectedBlock.enabled === false ? "warning" : "success"}>
-                          {selectedBlock.enabled === false ? "Disabled" : "Enabled"}
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-2">
-                        {selectedDefinition.fields.map((field) => {
-                          const rawValue = getValueAtPath(selectedBlock.props, field.key);
-                          const boolValue = Boolean(rawValue);
-                          const textValue = typeof rawValue === "string" ? rawValue : "";
-
-                          if (field.type === "boolean") {
-                            return (
-                              <div
-                                key={field.key}
-                                className="flex items-center justify-between rounded-md border border-border/60 p-2"
-                              >
-                                <Label>{field.label}</Label>
-                                <Switch
-                                  checked={boolValue}
-                                  onCheckedChange={(checked) =>
-                                    updateSelectedBlockField(field, checked)
-                                  }
-                                />
-                              </div>
-                            );
-                          }
-
-                          return (
-                            <div key={field.key} className="space-y-1">
-                              <Label>{field.label}</Label>
-                              {field.type === "textarea" ? (
-                                <Textarea
-                                  rows={3}
-                                  value={textValue}
-                                  onChange={(event) =>
-                                    updateSelectedBlockField(field, event.target.value || undefined)
-                                  }
-                                />
-                              ) : (
-                                <Input
-                                  value={textValue}
-                                  onChange={(event) =>
-                                    updateSelectedBlockField(field, event.target.value || undefined)
-                                  }
-                                />
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <div className="space-y-2 rounded-md border border-border/60 p-3">
-                        <Label>AI instruction</Label>
-                        <Textarea
-                          rows={2}
-                          placeholder="Disable this block on mobile"
-                          value={aiInstruction}
-                          onChange={(event) => setAiInstruction(event.target.value)}
-                        />
-                        <Button
-                          variant="outline"
-                          onClick={() => void regenerateBlockMutation.mutate()}
-                        >
-                          Regenerate selected block
-                        </Button>
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Select a block to edit its properties.
-                    </p>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      <Dialog open={isAddBlockOpen} onOpenChange={setIsAddBlockOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add block</DialogTitle>
-            <DialogDescription>
-              Choose a block type allowed by this template and insert it at the end of the page.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <Label>Block type</Label>
-            <select
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              value={newBlockType}
-              onChange={(event) => setNewBlockType(event.target.value as WebsiteBlockType)}
-            >
-              {addableTypes.map((type) => {
-                const def = WebsiteBlockEditorRegistry.get(type);
-                return (
-                  <option key={type} value={type}>
-                    {def.displayName}
-                  </option>
-                );
-              })}
-            </select>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsAddBlockOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={addBlock}>Add</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <WebsitePageEditorBlocksCard
+        isEdit={isEdit}
+        previewUrl={previewUrl}
+        onOpenPreview={openPreview}
+        hasContent={Boolean(content)}
+        saveDraftPending={saveDraftMutation.isPending}
+        onSaveDraft={() => void saveDraftMutation.mutate()}
+        aiBrief={aiBrief}
+        setAiBrief={setAiBrief}
+        onGenerateBlocks={() => void generateBlocksMutation.mutate()}
+        blocks={blocks}
+        selectedBlockId={selectedBlockId}
+        setSelectedBlockId={setSelectedBlockId}
+        setDragBlockId={setDragBlockId}
+        onHandleDropBlock={handleDropBlock}
+        onToggleBlockEnabled={toggleBlockEnabled}
+        onDuplicateBlock={duplicateBlock}
+        onRemoveBlock={removeBlock}
+        template={template}
+        onLoadTemplateDefaults={() => {
+          const next = buildDefaultContentForTemplate(template);
+          setContent(next);
+          setSelectedBlockId(next.blocks[0]?.id ?? null);
+          setJsonFieldDrafts({});
+        }}
+        isAddBlockOpen={isAddBlockOpen}
+        setIsAddBlockOpen={setIsAddBlockOpen}
+        newBlockType={newBlockType}
+        setNewBlockType={setNewBlockType}
+        addableTypes={templateDefinition.allowedBlockTypes}
+        onAddBlock={addBlock}
+        selectedBlock={selectedBlock}
+        selectedDefinition={selectedDefinition}
+        renderSelectedBlockPreview={() => renderWebsitePageBlockPreview(selectedBlock)}
+        jsonFieldDrafts={jsonFieldDrafts}
+        setJsonFieldDrafts={setJsonFieldDrafts}
+        uploadingFieldKey={uploadingFieldKey}
+        onUpdateSelectedBlockField={updateSelectedBlockField}
+        onCommitJsonFieldDraft={commitJsonFieldDraft}
+        onUploadFilesToField={uploadFilesToField}
+        aiInstruction={aiInstruction}
+        setAiInstruction={setAiInstruction}
+        onRegenerateBlock={() => void regenerateBlockMutation.mutate()}
+      />
     </div>
   );
 }

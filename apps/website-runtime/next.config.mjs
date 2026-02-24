@@ -26,7 +26,12 @@ const apiHost = resolveApiHost();
 const nextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: repoRoot,
-  transpilePackages: ["@corely/contracts", "@corely/api-client", "@corely/public-api-client"],
+  transpilePackages: [
+    "@corely/contracts",
+    "@corely/api-client",
+    "@corely/public-api-client",
+    "@corely/website-blocks",
+  ],
   images: {
     remotePatterns: [
       {

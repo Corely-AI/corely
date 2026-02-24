@@ -2,6 +2,11 @@ import React from "react";
 import {
   WebsiteStickyNavBlockSchema,
   WebsiteHeroBlockSchema,
+  WebsiteServicesGridBlockSchema,
+  WebsitePriceMenuBlockSchema,
+  WebsiteGalleryMasonryBlockSchema,
+  WebsiteSignatureSetsBlockSchema,
+  WebsiteTeamBlockSchema,
   WebsiteSocialProofBlockSchema,
   WebsitePasBlockSchema,
   WebsiteMethodBlockSchema,
@@ -11,6 +16,8 @@ import {
   WebsiteScheduleBlockSchema,
   WebsiteInstructorBlockSchema,
   WebsiteTestimonialsBlockSchema,
+  WebsiteBookingStepsBlockSchema,
+  WebsiteLocationHoursBlockSchema,
   WebsiteScholarshipBlockSchema,
   WebsiteFaqBlockSchema,
   WebsiteLeadFormBlockSchema,
@@ -21,6 +28,11 @@ import {
 import {
   StickyNav,
   HeroSection,
+  ServicesGridSection,
+  PriceMenuSection,
+  GalleryMasonrySection,
+  SignatureSetsSection,
+  TeamSection,
   SocialProofStrip,
   PASSection,
   MethodSection,
@@ -30,6 +42,8 @@ import {
   ScheduleSection,
   InstructorSection,
   TestimonialsSection,
+  BookingStepsSection,
+  LocationHoursSection,
   ScholarshipSection,
   FAQSection,
   LeadForm,
@@ -120,6 +134,64 @@ const registry: Record<WebsiteBlockType, BlockDefinition> = {
       { key: "primaryCtaHref", label: "Primary CTA Link", type: "text" },
       ...toSectionCommonFields(),
     ],
+  }),
+  servicesGrid: createDefinition({
+    type: "servicesGrid",
+    schema: WebsiteServicesGridBlockSchema,
+    label: "Services Grid",
+    description: "Grid of services",
+    renderer: ({ block }) => (
+      <ServicesGridSection
+        {...toComponentProps<React.ComponentProps<typeof ServicesGridSection>>(block.props)}
+      />
+    ),
+    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
+  }),
+  priceMenu: createDefinition({
+    type: "priceMenu",
+    schema: WebsitePriceMenuBlockSchema,
+    label: "Price Menu",
+    description: "Service pricing categories",
+    renderer: ({ block }) => (
+      <PriceMenuSection
+        {...toComponentProps<React.ComponentProps<typeof PriceMenuSection>>(block.props)}
+      />
+    ),
+    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
+  }),
+  galleryMasonry: createDefinition({
+    type: "galleryMasonry",
+    schema: WebsiteGalleryMasonryBlockSchema,
+    label: "Gallery Masonry",
+    description: "Image gallery",
+    renderer: ({ block }) => (
+      <GalleryMasonrySection
+        {...toComponentProps<React.ComponentProps<typeof GalleryMasonrySection>>(block.props)}
+      />
+    ),
+    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
+  }),
+  signatureSets: createDefinition({
+    type: "signatureSets",
+    schema: WebsiteSignatureSetsBlockSchema,
+    label: "Signature Sets",
+    description: "Featured premium sets",
+    renderer: ({ block }) => (
+      <SignatureSetsSection
+        {...toComponentProps<React.ComponentProps<typeof SignatureSetsSection>>(block.props)}
+      />
+    ),
+    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
+  }),
+  team: createDefinition({
+    type: "team",
+    schema: WebsiteTeamBlockSchema,
+    label: "Team",
+    description: "Team member highlights",
+    renderer: ({ block }) => (
+      <TeamSection {...toComponentProps<React.ComponentProps<typeof TeamSection>>(block.props)} />
+    ),
+    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
   }),
   socialProof: createDefinition({
     type: "socialProof",
@@ -228,6 +300,30 @@ const registry: Record<WebsiteBlockType, BlockDefinition> = {
     renderer: ({ block }) => (
       <TestimonialsSection
         {...toComponentProps<React.ComponentProps<typeof TestimonialsSection>>(block.props)}
+      />
+    ),
+    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
+  }),
+  bookingSteps: createDefinition({
+    type: "bookingSteps",
+    schema: WebsiteBookingStepsBlockSchema,
+    label: "Booking Steps",
+    description: "How booking works",
+    renderer: ({ block }) => (
+      <BookingStepsSection
+        {...toComponentProps<React.ComponentProps<typeof BookingStepsSection>>(block.props)}
+      />
+    ),
+    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
+  }),
+  locationHours: createDefinition({
+    type: "locationHours",
+    schema: WebsiteLocationHoursBlockSchema,
+    label: "Location & Hours",
+    description: "Address and opening times",
+    renderer: ({ block }) => (
+      <LocationHoursSection
+        {...toComponentProps<React.ComponentProps<typeof LocationHoursSection>>(block.props)}
       />
     ),
     fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],

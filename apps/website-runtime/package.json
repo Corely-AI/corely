@@ -15,6 +15,7 @@
     "@corely/contracts": "workspace:*",
     "@corely/public-api-client": "workspace:*",
     "@corely/public-urls": "workspace:*",
+    "@corely/website-blocks": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.462.0",

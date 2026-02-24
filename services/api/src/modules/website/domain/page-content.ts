@@ -1,10 +1,12 @@
 import {
+  WEBSITE_TEMPLATE_KEYS,
   WebsitePageContentSchema,
   type WebsiteBlock,
   type WebsitePageContent,
 } from "@corely/contracts";
 
-const DEFAULT_TEMPLATE_KEY = "landing.tutoring.v1";
+const DEFAULT_TEMPLATE_KEY = WEBSITE_TEMPLATE_KEYS[0];
+const NAIL_STUDIO_TEMPLATE_KEY = "landing.nailstudio.v1";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -27,6 +29,22 @@ const createDefaultBlocksForLandingTutoring = (): WebsiteBlock[] => [
   { id: "footer", type: "footer", enabled: true, props: {} },
 ];
 
+const createDefaultBlocksForLandingNailStudio = (): WebsiteBlock[] => [
+  { id: "sticky-nav", type: "stickyNav", enabled: true, props: {} },
+  { id: "hero", type: "hero", enabled: true, props: {} },
+  { id: "services-grid", type: "servicesGrid", enabled: true, props: {} },
+  { id: "price-menu", type: "priceMenu", enabled: true, props: {} },
+  { id: "gallery-masonry", type: "galleryMasonry", enabled: true, props: {} },
+  { id: "signature-sets", type: "signatureSets", enabled: true, props: {} },
+  { id: "team", type: "team", enabled: true, props: {} },
+  { id: "testimonials", type: "testimonials", enabled: true, props: {} },
+  { id: "booking-steps", type: "bookingSteps", enabled: true, props: {} },
+  { id: "location-hours", type: "locationHours", enabled: true, props: {} },
+  { id: "faq", type: "faq", enabled: true, props: {} },
+  { id: "lead-form", type: "leadForm", enabled: true, props: {} },
+  { id: "footer", type: "footer", enabled: true, props: {} },
+];
+
 export const buildDefaultWebsitePageContent = (
   templateKey = DEFAULT_TEMPLATE_KEY
 ): WebsitePageContent => {
@@ -35,6 +53,14 @@ export const buildDefaultWebsitePageContent = (
       templateKey,
       templateVersion: "1",
       blocks: createDefaultBlocksForLandingTutoring(),
+    };
+  }
+
+  if (templateKey === NAIL_STUDIO_TEMPLATE_KEY) {
+    return {
+      templateKey,
+      templateVersion: "1",
+      blocks: createDefaultBlocksForLandingNailStudio(),
     };
   }
 

@@ -28,6 +28,58 @@ CMS module:
 - Draft/publish lifecycle for content entries
 - Public content rendering for CMS-owned content types
 
+## Module Composition (Current Code)
+
+NestJS module:
+
+- Module file: `services/api/src/modules/website/website.module.ts`
+- Imports: `DataModule`, `KernelModule`, `IdentityModule`, `DocumentsModule`, `PromptModule`, `CmsModule`, `CustomizationModule`
+- Controllers:
+  - `website-sites.controller.ts`
+  - `website-domains.controller.ts`
+  - `website-pages.controller.ts`
+  - `website-menus.controller.ts`
+  - `website-qa.controller.ts`
+  - `website-wall-of-love.controller.ts`
+  - `website-public.controller.ts`
+  - `website-ai.controller.ts`
+
+Application layer:
+
+- `WebsiteApplication` composes all Website use cases behind one injection point.
+- Current use-case count: 39 files under `application/use-cases`.
+- Domain logic is isolated in `domain/*` (slug/locale/path validators, page-content normalization, site-settings normalization, preview-token checks, wall-of-love URL validation).
+
+Infrastructure/adapter layer:
+
+- Prisma repositories for Website-owned entities.
+- CMS integration via ports/adapters (`CmsReadPort`, `CmsWritePort`) and `CmsWebsitePortAdapter`.
+- Document/public file URL integration via `WebsitePublicFileUrlPort`.
+- Custom settings integration via customization adapter (`WebsiteCustomAttributesPort`).
+- AI generation adapter via `AiSdkWebsitePageGenerator`.
+
+## Data Model (Current Prisma)
+
+Website module owns tables in Prisma schema `content`:
+
+- `WebsiteSite`
+- `WebsiteDomain`
+- `WebsitePage`
+- `WebsiteMenu`
+- `WebsitePageSnapshot`
+- `WebsiteFeedback`
+- `WebsiteFeedbackImage`
+- `WebsiteQa`
+- `WebsiteWallOfLoveItem`
+- `WebsiteWallOfLoveItemImage`
+
+Key constraints:
+
+- Site slug uniqueness: `@@unique([tenantId, slug])`
+- Page uniqueness: `@@unique([tenantId, siteId, path, locale])`
+- Menu uniqueness: `@@unique([tenantId, siteId, name, locale])`
+- Snapshot version uniqueness: `@@unique([tenantId, pageId, version])`
+
 ## Templates + Blocks Contracts
 
 Shared contracts are defined in `packages/contracts/src/website/blocks/*` and exported from `@corely/contracts`.
@@ -107,6 +159,17 @@ Draft blocks are stored in CMS draft content (`contentJson`) for `WebsitePage.cm
   - `site.settings` (`common`, `theme`, `custom`)
   - `page.content` (`WebsitePageContent`)
   - legacy compatibility fields (`template`, `payloadJson`, etc.)
+
+Resolution order and behavior:
+
+- Normalize host/path/locale first.
+- Try `WebsiteDomain` hostname mapping (custom domain).
+- If no custom domain match:
+  - resolve workspace context from host/path
+  - if first path segment is a non-reserved slug and matches a site slug, use that site and strip the segment from page path
+  - otherwise use workspace default site
+- Resolve page by `(tenantId, siteId, path, locale)`.
+- Locale fallback is normalized locale input or site default locale.
 
 ## Public Site Settings
 
@@ -242,6 +305,63 @@ Validation:
   - `POST /public/forms/:publicId/submissions`
 - `apps/public-web` now includes `publicApi.submitPublicForm(publicId, payload)`.
 
+## API Inventory (Current)
+
+Admin endpoints (auth required):
+
+- Sites
+  - `GET /website/sites`
+  - `POST /website/sites`
+  - `GET /website/sites/:siteId`
+  - `PUT /website/sites/:siteId`
+  - `PATCH /website/sites/:siteId`
+- Domains
+  - `GET /website/sites/:siteId/domains`
+  - `POST /website/sites/:siteId/domains`
+  - `DELETE /website/sites/:siteId/domains/:domainId`
+- Pages
+  - `GET /website/sites/:siteId/pages`
+  - `POST /website/sites/:siteId/pages`
+  - `GET /website/pages/:pageId`
+  - `PUT /website/pages/:pageId`
+  - `GET /website/pages/:pageId/content`
+  - `PATCH /website/pages/:pageId/content`
+  - `POST /website/pages/:pageId/publish`
+  - `POST /website/pages/:pageId/unpublish`
+- Menus
+  - `GET /website/sites/:siteId/menus`
+  - `PUT /website/sites/:siteId/menus`
+- QA
+  - `GET /website/sites/:siteId/qa`
+  - `POST /website/sites/:siteId/qa`
+  - `PUT /website/sites/:siteId/qa/:qaId`
+  - `DELETE /website/sites/:siteId/qa/:qaId`
+- Wall of Love
+  - `GET /website/sites/:siteId/wall-of-love/items`
+  - `POST /website/sites/:siteId/wall-of-love/items`
+  - `PATCH /website/wall-of-love/items/:itemId`
+  - `POST /website/wall-of-love/items/:itemId/publish`
+  - `POST /website/wall-of-love/items/:itemId/unpublish`
+  - `POST /website/sites/:siteId/wall-of-love/items/reorder`
+- AI
+  - `POST /website/ai/generate-page`
+  - `POST /website/ai/generate-blocks`
+  - `POST /website/ai/regenerate-block`
+
+Public endpoints (no auth):
+
+- `GET /public/website/resolve`
+- `GET /public/website/settings`
+- `POST /public/website/feedback`
+- `GET /public/website/qa`
+- `GET /public/website/wall-of-love`
+- `GET /public/website/slug-exists`
+
+Caching notes (public endpoints):
+
+- Resolve/settings/qa/wall-of-love use `Cache-Control` headers with short public caching + stale-while-revalidate.
+- Slug-exists uses a longer cache window than resolve.
+
 ## Security Notes
 
 - Public resolve preview mode requires a non-empty, validated preview token.
@@ -264,3 +384,81 @@ Additional AI block endpoints:
   - Generates validated `blocks[]` for a template.
 - `POST /website/ai/regenerate-block`
   - Regenerates one block (`blockType`) with schema validation.
+
+## Website Runtime App (`apps/website-runtime`)
+
+Purpose:
+
+- Next.js runtime for public Website pages.
+- Uses public Website API endpoints and shared contracts from `@corely/contracts`.
+- Default dev port: `8084`.
+
+Route structure:
+
+- `/__website/[[...slug]]`
+  - Internal rewritten route for host-based website rendering.
+- `/w/[workspaceSlug]`
+  - Workspace root website entry route.
+- `/w/[workspaceSlug]/[websiteSlug]/[[...slug]]`
+  - Explicit website slug route (default/non-default website handling).
+
+Middleware behavior:
+
+- Detect workspace host from `NEXT_PUBLIC_ROOT_DOMAIN`.
+- Rewrite host-style requests to `/w/<workspaceSlug>...`.
+- Redirect away redundant `/w/<workspaceSlug>` prefix on workspace host.
+- Rewrite non-internal public paths to `/__website` namespace (excluding reserved/static prefixes).
+
+Rendering pipeline:
+
+- Server component resolves request context (`host`, `protocol`, `accept-language`).
+- Calls `publicApi.resolveWebsitePage(...)`.
+- Resolves metadata (`title`, `description`, OG image) from:
+  - `page.content.seoOverride`
+  - snapshot/page SEO fields
+  - CMS payload fallback
+  - site settings fallback
+- Renders `WebsitePublicPageScreen`:
+  - uses typed `page.content` if available
+  - falls back to legacy `payloadJson` shape for compatibility
+  - renders via `TemplateRegistry` + `BlockRegistry`
+  - wraps with `PublicSiteLayout` (theme tokens + preview badge)
+
+Template/block runtime model:
+
+- Template key in production use: `landing.tutoring.v1`
+- Legacy alias supported: `landing.deutschliebe.v1`
+- Block rendering is schema-validated; invalid blocks render placeholder in preview mode, and are skipped in live mode.
+
+Runtime API client source:
+
+- `apps/website-runtime/src/lib/public-api.ts` re-exports `@corely/public-api-client`.
+- API base URL fallback order:
+  - `CORELY_API_BASE_URL`
+  - `PUBLIC_API_BASE_URL`
+  - `NEXT_PUBLIC_API_BASE_URL`
+  - `http://localhost:3000`
+
+Required environment for local runtime:
+
+- `VITE_WEBSITE_RUNTIME_BASE_URL=http://localhost:8084` (used by admin links)
+- `CORELY_API_BASE_URL` or `PUBLIC_API_BASE_URL` or `NEXT_PUBLIC_API_BASE_URL`
+- `NEXT_PUBLIC_ROOT_DOMAIN` for host/workspace resolution
+
+## End-to-End Flow (Live Request)
+
+1. Browser requests a public page URL.
+2. Runtime middleware normalizes/re-writes request path.
+3. Runtime page route calls `publicApi.resolveWebsitePage(host, path, locale, mode=live)`.
+4. API resolves site/page by domain/workspace rules.
+5. API loads latest page snapshot and returns typed payload (`settings`, `menus`, `page.content`, `seo`).
+6. Runtime renders template blocks and site theme.
+
+Preview flow differences:
+
+- Runtime enables no-store for preview requests.
+- API validates preview token and reads CMS preview render payload directly (instead of snapshots).
+
+## Known Gaps / Notes
+
+- Website runtime Lead Form component currently contains a placeholder submit handler (UI success state only); it is not yet wired to Website feedback/forms submission endpoint in this runtime app.
