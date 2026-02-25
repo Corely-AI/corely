@@ -1,177 +1,84 @@
-# Corely POS - React Native App
+# Corely POS (`apps/pos`)
 
-AI-Native, Offline-First Point of Sale application for Corely.
+Offline-first Expo POS client using shared Corely contracts and outbox sync semantics.
 
-## Features
+## What is implemented
 
-- **Offline-First**: Full POS functionality works offline with automatic background sync
-- **AI-Native**: Integrated AI Copilot for natural language product search, cart building, upsell suggestions
-- **Real-time Sync**: Background sync engine with conflict resolution
-- **Barcode Scanning**: Built-in barcode scanner for quick product lookup
-- **Shift Management**: Open/close shifts with cash reconciliation
-- **Multi-platform**: Runs on iOS, Android, and Web
+- Local-first selling:
+  - Catalog cached in SQLite (`catalog_products`)
+  - Cart + discounts + checkout + receipt from local immutable sale record
+  - Sale finalize writes local sale + outbox command in one transaction
+- Shift/register:
+  - Open shift, paid in/out, close shift with expected cash + variance
+  - Shift actions enqueue idempotent commands for later sync
+- Sync dashboard:
+  - Queue filters (`PENDING`, `FAILED`, `CONFLICT`, `SUCCEEDED`)
+  - Retry single/all failed, drop with confirmation, export logs
+  - Last sync stats + offline/online visibility
+- Adaptive shell:
+  - `Layout Mode`: `AUTO | PHONE | TABLET` in settings
+  - Tablet mode uses side tabs and two-pane selling layout
+- Hardware abstraction:
+  - `@corely/pos-hardware` manager + TSE service interfaces
+  - Mock provider for simulator/dev
+  - Android Kotlin Expo module scaffold for USB/TSE integration
 
-## Tech Stack
+## Offline command model
 
-- **Expo**: React Native framework with managed workflow
-- **Expo Router**: File-based navigation
-- **SQLite**: Local database for offline storage
-- **Zustand**: State management
-- **Zod**: Schema validation (via @corely/contracts)
+Commands are persisted to `outbox_commands` with deterministic idempotency keys:
 
-## Project Structure
+- `pos.sale.finalize` -> `sale:<saleId>:finalize:v1`
+- `pos.shift.open` -> `shift:<sessionId>:open:v1`
+- `pos.shift.close` -> `shift:<sessionId>:close:v1`
+- `pos.shift.cash-event` -> `shift-cash:<eventId>:v1`
 
-```
-apps/pos/
-├── app/                      # Expo Router screens
-│   ├── (main)/              # Main app (tabs)
-│   │   ├── index.tsx        # POS Home screen
-│   │   ├── cart.tsx         # Cart screen
-│   │   ├── sync.tsx         # Sync queue screen
-│   │   └── settings.tsx     # Settings screen
-│   ├── login.tsx            # Login screen
-│   ├── _layout.tsx          # Root layout
-│   └── index.tsx            # Entry point
-├── src/
-│   ├── stores/              # Zustand stores
-│   │   ├── authStore.ts     # Authentication state
-│   │   ├── cartStore.ts     # Shopping cart state
-│   │   ├── shiftStore.ts    # Shift session state
-│   │   └── catalogStore.ts  # Product catalog cache
-│   └── hooks/               # React hooks
-│       └── useSyncEngine.ts # Sync engine hook
-└── package.json
-```
+Every server-impacting mutation commits local domain rows and outbox insert in the same SQLite transaction.
 
-## Getting Started
+## UI system
 
-### Prerequisites
+- Theme tokens: `src/ui/theme.ts`
+  - Primary brand color: `#003399`
+  - Accent color: `#FFCC00` (sparingly for highlights/warnings)
+  - Shared spacing/radius/elevation scales are used across all screens
+- Reusable components: `src/ui/components.tsx`
+  - `AppShell`, `TopBar`, `Card`, `Button`, `TextField`, `Badge`, `SegmentedControl`
+  - `MoneyInput`, `NumericKeypad`, `EmptyState`, `ListRow`, `ModalSheet`, `Snackbar`
+- Adaptive breakpoints:
+  - `PHONE`: `< 720`
+  - `TABLET`: `>= 720`
+  - `WIDE`: `>= 1024` (for wider split panes)
+  - `Layout Mode` setting (`AUTO | PHONE | TABLET`) can override Auto
 
-- Node.js 18+
-- pnpm
-- Expo CLI (`npm install -g expo-cli`)
+## Environment
 
-### Installation
-
-```bash
-# From monorepo root
-pnpm install
-
-# Navigate to POS app
-cd apps/pos
-
-# Copy environment variables
-cp .env.example .env
-
-# Start development server
-pnpm start
-```
-
-### Running on Devices
-
-```bash
-# iOS
-pnpm ios
-
-# Android
-pnpm android
-
-# Web
-pnpm web
-```
-
-## Environment Variables
-
-Create a `.env` file based on `.env.example`:
+Copy `.env.example` to `.env`:
 
 ```env
 EXPO_PUBLIC_API_URL=http://localhost:3000/api
+EXPO_PUBLIC_POS_ENABLE_TSE=false
+EXPO_PUBLIC_POS_REQUIRE_TSE=false
+EXPO_PUBLIC_POS_HARDWARE_PROVIDER=auto
 ```
 
-## Shared Packages
-
-This app uses shared packages from the monorepo:
-
-- `@corely/contracts` - Type-safe API contracts and schemas
-- `@corely/api-client` - API client with auth
-- `@corely/offline-core` - Platform-agnostic sync engine
-- `@corely/offline-rn` - React Native SQLite adapter
-- `@corely/pos-core` - POS business logic (sale calculations, receipt formatting)
-
-## Key Features
-
-### Offline-First Architecture
-
-- All sales are created locally with local-first IDs
-- Background sync engine automatically syncs when online
-- Idempotency ensures duplicate sales are prevented
-- Failed syncs are retried with exponential backoff
-
-### AI Copilot Integration
-
-The POS app includes AI-powered features:
-
-- **Natural Language Search**: "red wine under $50"
-- **Voice-to-Cart**: "Add 2 cases of Chardonnay and 1 dozen roses"
-- **Smart Upsell**: Context-aware product suggestions
-- **Discount Guard**: Anomaly detection for unusual discounts
-- **Shift Digest**: AI-powered shift summary with insights
-
-### Shift Management
-
-- Open shift with starting cash count
-- Close shift with cash reconciliation
-- Variance detection (over/short)
-- Daily sales reports
-
-### Product Search
-
-- Text search by name, SKU, barcode
-- Barcode scanner integration
-- Offline catalog caching
-- Fast fuzzy search
-
-## Development
-
-### Type Checking
+## Run
 
 ```bash
-pnpm type-check
+pnpm install
+pnpm --filter @corely/pos start
 ```
 
-### Linting
+## Validation
 
 ```bash
-pnpm lint
+pnpm --filter @corely/pos type-check
+pnpm --filter @corely/pos lint
 ```
 
-## Architecture
+## Native hardware (Android)
 
-### State Management
+For native Kotlin module usage, run with a custom dev client/EAS build:
 
-Uses Zustand for lightweight, scalable state management:
-
-- `authStore` - JWT tokens, user session
-- `cartStore` - Current cart items, totals
-- `shiftStore` - Active shift session
-- `catalogStore` - Product catalog cache
-
-### Offline Sync
-
-Uses the `@corely/offline-core` sync engine:
-
-1. User actions create commands in local outbox
-2. Background sync processes pending commands
-3. Idempotency prevents duplicate operations
-4. Failed commands marked for retry
-5. Conflict resolution UI for user intervention
-
-## Next Steps
-
-- [ ] Implement checkout flow
-- [ ] Add receipt screen
-- [ ] Implement AI Copilot integration
-- [ ] Add shift open/close flows
-- [ ] Implement barcode scanner screen
-- [ ] Add sales history
-- [ ] Implement catalog sync
+1. Keep `@corely/pos-hardware` plugin in `app.json`.
+2. Build Android dev client.
+3. Implement vendor USB logic in:
+   - `packages/pos-hardware/android/src/main/java/com/corely/poshardware/CorelyPosHardwareModule.kt`

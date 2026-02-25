@@ -1,13 +1,26 @@
 import { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { FlatList, StyleSheet, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useEngagementService } from "@/hooks/useEngagementService";
+import { formatTime } from "@/lib/formatters";
+import { AppShell, Card, EmptyState, ListRow } from "@/ui/components";
+import { posTheme } from "@/ui/theme";
+
+type CheckInView = {
+  checkInEventId: string;
+  customerPartyId: string;
+  customerName: string;
+  checkedInAt: Date;
+  syncStatus: string;
+};
 
 export default function KioskTodayScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { engagementService } = useEngagementService();
-  const [checkIns, setCheckIns] = useState<any[]>([]);
+  const [checkIns, setCheckIns] = useState<CheckInView[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -16,8 +29,11 @@ export default function KioskTodayScreen() {
         (items ?? []).map(async (item) => {
           const customer = await engagementService?.getCustomerById(item.customerPartyId);
           return {
-            ...item,
+            checkInEventId: item.checkInEventId,
+            customerPartyId: item.customerPartyId,
             customerName: customer?.displayName ?? item.customerPartyId,
+            checkedInAt: new Date(item.checkedInAt),
+            syncStatus: item.syncStatus,
           };
         })
       );
@@ -27,90 +43,54 @@ export default function KioskTodayScreen() {
   }, [engagementService]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Today’s Check-Ins</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <FlatList
-        data={checkIns}
-        keyExtractor={(item) => item.checkInEventId}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.item}
-            onPress={() =>
-              router.push({
-                pathname: "/kiosk/customer",
-                params: { customerId: item.customerPartyId },
-              })
-            }
-          >
-            <View>
-              <Text style={styles.itemTitle}>{item.customerName}</Text>
-              <Text style={styles.itemMeta}>
-                {new Date(item.checkedInAt).toLocaleTimeString()} · {item.syncStatus}
-              </Text>
+    <AppShell
+      title={t("kiosk.todayCheckIns")}
+      subtitle={t("kiosk.checkInCount", { count: checkIns.length })}
+      onBack={() => router.back()}
+      maxWidth={960}
+    >
+      <Card>
+        <FlatList
+          data={checkIns}
+          keyExtractor={(item) => item.checkInEventId}
+          renderItem={({ item }) => (
+            <ListRow
+              title={item.customerName}
+              subtitle={`${formatTime(item.checkedInAt)} · ${item.syncStatus}`}
+              showChevron
+              onPress={() =>
+                router.push({
+                  pathname: "/kiosk/customer",
+                  params: { customerId: item.customerPartyId },
+                })
+              }
+            />
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyWrap}>
+              <EmptyState
+                icon={<Ionicons name="list-outline" size={44} color={posTheme.colors.textMuted} />}
+                title={t("kiosk.noCheckIns")}
+                description={t("kiosk.noCheckInsHint")}
+                primaryAction={{
+                  label: t("kiosk.scanQr"),
+                  onPress: () => router.push("/kiosk/scan"),
+                }}
+                secondaryAction={{
+                  label: t("kiosk.phoneLookup"),
+                  onPress: () => router.push("/kiosk/lookup"),
+                }}
+              />
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-        )}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Ionicons name="list-outline" size={48} color="#999" />
-            <Text style={styles.emptyText}>No check-ins yet today</Text>
-          </View>
-        }
-      />
-    </View>
+          }
+        />
+      </Card>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  item: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  itemTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  itemMeta: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 4,
-  },
-  emptyState: {
-    alignItems: "center",
-    padding: 40,
-  },
-  emptyText: {
-    color: "#666",
-    marginTop: 8,
+  emptyWrap: {
+    paddingVertical: posTheme.spacing.sm,
   },
 });

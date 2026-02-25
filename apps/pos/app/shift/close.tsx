@@ -1,360 +1,349 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-} from "react-native";
+import { useMemo, useState } from "react";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useShiftStore } from "@/stores/shiftStore";
 import { useTranslation } from "react-i18next";
+import { useShiftStore } from "@/stores/shiftStore";
+import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
+import { formatCurrencyFromCents, formatDateTime, formatTime } from "@/lib/formatters";
+import {
+  AppShell,
+  Button,
+  Card,
+  CenteredActions,
+  EmptyState,
+  ListRow,
+  MoneyInput,
+  NumericKeypad,
+  TextField,
+  useMoneyPad,
+} from "@/ui/components";
+import { posTheme } from "@/ui/theme";
 
 export default function CloseShiftScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
-  const { currentShift, closeShift, isLoading } = useShiftStore();
-  const [closingCash, setClosingCash] = useState("");
+  const { isTablet } = useAdaptiveLayout();
+  const { currentShift, cashEvents, closeShift, addCashEvent, isLoading } = useShiftStore();
+  const [cashEventAmount, setCashEventAmount] = useState("");
+  const [cashEventReason, setCashEventReason] = useState("");
+  const pad = useMoneyPad("");
 
   if (!currentShift) {
     return (
-      <View style={styles.container}>
-        <View style={styles.emptyState}>
-          <Ionicons name="alert-circle-outline" size={64} color="#999" />
-          <Text style={styles.emptyTitle}>{t("shift.noActiveTitle")}</Text>
-          <Text style={styles.emptyText}>{t("shift.noActiveDescription")}</Text>
-          <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-            <Text style={styles.buttonText}>{t("shift.goBack")}</Text>
-          </TouchableOpacity>
+      <AppShell
+        title={t("shift.closeTitle")}
+        subtitle={t("settings.noActiveShift")}
+        onBack={() => router.back()}
+        maxWidth={760}
+      >
+        <View style={styles.empty}>
+          <EmptyState
+            icon={
+              <Ionicons name="alert-circle-outline" size={44} color={posTheme.colors.textMuted} />
+            }
+            title={t("settings.noActiveShift")}
+            description={t("shift.noActiveDescription")}
+            primaryAction={{ label: t("common.back"), onPress: () => router.back() }}
+          />
         </View>
-      </View>
+      </AppShell>
     );
   }
 
-  const handleCloseShift = async () => {
-    const closingCashCents = closingCash ? Math.round(parseFloat(closingCash) * 100) : null;
+  const paidInCents = cashEvents
+    .filter((event) => event.eventType === "PAID_IN")
+    .reduce((sum, event) => sum + event.amountCents, 0);
+  const paidOutCents = cashEvents
+    .filter((event) => event.eventType === "PAID_OUT")
+    .reduce((sum, event) => sum + event.amountCents, 0);
 
-    if (closingCash && (isNaN(closingCashCents!) || closingCashCents! < 0)) {
-      Alert.alert(t("shift.invalidAmountTitle"), t("shift.invalidClosingAmountMessage"));
+  const expectedCashCents =
+    (currentShift.startingCashCents ?? 0) +
+    currentShift.totalCashReceivedCents +
+    paidInCents -
+    paidOutCents;
+  const closingCashCents = pad.value ? Math.round(Number(pad.value) * 100) : null;
+  const varianceCents = closingCashCents === null ? null : closingCashCents - expectedCashCents;
+  const largeVariance = varianceCents !== null && Math.abs(varianceCents) > 5000;
+
+  const sortedEvents = useMemo(
+    () => [...cashEvents].sort((a, b) => b.occurredAt.getTime() - a.occurredAt.getTime()),
+    [cashEvents]
+  );
+
+  const addCashEventHandler = async (eventType: "PAID_IN" | "PAID_OUT") => {
+    const amount = Math.round(Number(cashEventAmount) * 100);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      Alert.alert(t("shift.invalidAmountTitle"), t("shift.invalidAmountMessage"));
+      return;
+    }
+    try {
+      await addCashEvent({
+        eventType,
+        amountCents: amount,
+        reason: cashEventReason.trim() || null,
+      });
+      setCashEventAmount("");
+      setCashEventReason("");
+    } catch (error) {
+      Alert.alert(
+        t("shift.cashEventFailedTitle"),
+        error instanceof Error ? error.message : t("shift.cashEventFailedMessage")
+      );
+    }
+  };
+
+  const closeShiftHandler = async () => {
+    if (pad.value && (!Number.isFinite(Number(pad.value)) || Number(pad.value) < 0)) {
+      Alert.alert(t("shift.invalidAmountTitle"), t("shift.closeInvalidAmountMessage"));
       return;
     }
 
-    Alert.alert(t("shift.closeTitle"), t("shift.closeConfirm"), [
+    const confirmMessage = largeVariance
+      ? t("shift.largeVarianceConfirm")
+      : t("shift.closeConfirmMessage");
+    Alert.alert(t("shift.closeTitle"), confirmMessage, [
       { text: t("common.cancel"), style: "cancel" },
       {
         text: t("shift.closeShift"),
         style: "destructive",
         onPress: async () => {
           try {
-            await closeShift({ closingCashCents });
-
-            Alert.alert(t("shift.closedTitle"), t("shift.closedMessage"), [
-              {
-                text: t("common.confirm"),
-                onPress: () => router.replace("/(main)/settings"),
-              },
-            ]);
-          } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : t("shift.closeFailed");
-            Alert.alert(t("common.error"), message);
+            const payload: { closingCashCents: number | null; notes?: string } = {
+              closingCashCents,
+            };
+            if (cashEventReason.trim()) {
+              payload.notes = cashEventReason.trim();
+            }
+            await closeShift(payload);
+            router.replace("/(main)/settings");
+          } catch (error) {
+            Alert.alert(
+              t("shift.closeFailedTitle"),
+              error instanceof Error ? error.message : t("shift.closeFailedMessage")
+            );
           }
         },
       },
     ]);
   };
 
-  const startingCash = currentShift.startingCashCents ?? 0;
-  const totalSales = currentShift.totalSalesCents ?? 0;
-  const totalCashReceived = currentShift.totalCashReceivedCents ?? 0;
-  const expectedCash = startingCash + totalCashReceived;
-  const closingCashCents = closingCash ? Math.round(parseFloat(closingCash) * 100) : null;
-  const variance = closingCashCents !== null ? closingCashCents - expectedCash : null;
-
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t("shift.closeTitle")}</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <AppShell
+      title={t("shift.closeTitle")}
+      subtitle={t("shift.closeSubtitle")}
+      onBack={() => router.back()}
+      maxWidth={1120}
+    >
+      <View
+        testID="pos-shift-close-screen"
+        style={[styles.layout, isTablet && styles.layoutTablet]}
+      >
+        <ScrollView style={styles.mainPane} contentContainerStyle={styles.scrollBody}>
+          <Card>
+            <Text style={styles.sectionTitle}>{t("shift.summary")}</Text>
+            <Row label={t("shift.startedAt")} value={formatDateTime(currentShift.openedAt)} />
+            <Row
+              label={t("shift.openingCash")}
+              value={formatCurrencyFromCents(currentShift.startingCashCents ?? 0)}
+            />
+            <Row
+              label={t("shift.totalSales")}
+              value={formatCurrencyFromCents(currentShift.totalSalesCents)}
+            />
+            <Row
+              label={t("shift.cashReceived")}
+              value={formatCurrencyFromCents(currentShift.totalCashReceivedCents)}
+            />
+            <Row label={t("shift.paidIn")} value={formatCurrencyFromCents(paidInCents)} />
+            <Row label={t("shift.paidOut")} value={formatCurrencyFromCents(paidOutCents)} />
+            <Row
+              label={t("shift.expectedCash")}
+              value={formatCurrencyFromCents(expectedCashCents)}
+              emphasize
+            />
+          </Card>
 
-      <View style={styles.content}>
-        <View style={styles.shiftInfo}>
-          <Ionicons name="time-outline" size={48} color="#2196f3" />
-          <Text style={styles.shiftTitle}>{t("shift.activeShift")}</Text>
-          <Text style={styles.shiftTime}>
-            {t("shift.startedAt", {
-              date: new Date(currentShift.openedAt).toLocaleString(i18n.language, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-            })}
-          </Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t("shift.summary")}</Text>
-          <View style={styles.card}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>{t("shift.totalSales")}</Text>
-              <Text style={styles.summaryValue}>${(totalSales / 100).toFixed(2)}</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>{t("shift.startingCash")}</Text>
-              <Text style={styles.summaryValue}>${(startingCash / 100).toFixed(2)}</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>{t("shift.cashReceived")}</Text>
-              <Text style={styles.summaryValue}>${(totalCashReceived / 100).toFixed(2)}</Text>
-            </View>
-            <View style={[styles.summaryRow, styles.totalRow]}>
-              <Text style={styles.totalLabel}>{t("shift.expectedCash")}</Text>
-              <Text style={styles.totalValue}>${(expectedCash / 100).toFixed(2)}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t("shift.cashCount")}</Text>
-          <View style={styles.form}>
-            <Text style={styles.label}>{t("shift.closingCashOptional")}</Text>
-            <View style={styles.inputContainer}>
-              <Text style={styles.currencySymbol}>$</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="0.00"
-                value={closingCash}
-                onChangeText={setClosingCash}
-                keyboardType="decimal-pad"
-                editable={!isLoading}
+          <Card>
+            <Text style={styles.sectionTitle}>{t("shift.paidInOutSection")}</Text>
+            <MoneyInput
+              label={t("common.amount")}
+              value={cashEventAmount}
+              onChange={setCashEventAmount}
+              help={t("shift.cashEventHelp")}
+            />
+            <TextField
+              label={t("common.notesOptional")}
+              value={cashEventReason}
+              onChangeText={setCashEventReason}
+            />
+            <CenteredActions style={styles.actionsRow}>
+              <Button
+                label={t("shift.paidIn")}
+                variant="secondary"
+                onPress={() => addCashEventHandler("PAID_IN")}
               />
-            </View>
+              <Button
+                label={t("shift.paidOut")}
+                variant="secondary"
+                onPress={() => addCashEventHandler("PAID_OUT")}
+              />
+            </CenteredActions>
+          </Card>
 
-            {variance !== null && (
-              <View style={styles.variance}>
-                <Text style={styles.varianceLabel}>{t("shift.variance")}</Text>
-                <Text
-                  style={[
-                    styles.varianceValue,
-                    variance > 0 && styles.variancePositive,
-                    variance < 0 && styles.varianceNegative,
-                  ]}
-                >
-                  {variance >= 0 ? "+" : ""}${(variance / 100).toFixed(2)}
-                </Text>
-              </View>
+          <Card>
+            <Text style={styles.sectionTitle}>{t("shift.cashCount")}</Text>
+            <MoneyInput
+              value={pad.value}
+              onChange={pad.setValue}
+              label={t("shift.countedCash")}
+              testID="pos-shift-close-counted-cash"
+            />
+            {varianceCents !== null ? (
+              <Row
+                label={t("shift.variance")}
+                value={`${varianceCents >= 0 ? "+" : "-"}${formatCurrencyFromCents(Math.abs(varianceCents))}`}
+                emphasize
+                tone={varianceCents === 0 ? "neutral" : varianceCents > 0 ? "positive" : "negative"}
+              />
+            ) : null}
+            {largeVariance ? (
+              <Text style={styles.warningText}>{t("shift.largeVarianceWarning")}</Text>
+            ) : null}
+            <Button
+              label={isLoading ? t("shift.closing") : t("shift.closeShift")}
+              onPress={closeShiftHandler}
+              disabled={isLoading}
+              variant="destructive"
+              loading={isLoading}
+            />
+          </Card>
+        </ScrollView>
+
+        <View style={styles.rightPane}>
+          {isTablet ? (
+            <NumericKeypad onKey={pad.append} onBackspace={pad.backspace} onClear={pad.clear} />
+          ) : null}
+          <Card>
+            <Text style={styles.sectionTitle}>{t("shift.recentCashEvents")}</Text>
+            {sortedEvents.length ? (
+              sortedEvents
+                .slice(0, 8)
+                .map((event) => (
+                  <ListRow
+                    key={event.eventId}
+                    title={
+                      t(`shift.${event.eventType === "PAID_IN" ? "paidIn" : "paidOut"}`) +
+                      ` · ${formatCurrencyFromCents(event.amountCents)}`
+                    }
+                    subtitle={`${event.reason || t("shift.noReason")} · ${formatTime(event.occurredAt)}`}
+                    right={<Text style={styles.eventState}>{event.syncStatus}</Text>}
+                  />
+                ))
+            ) : (
+              <Text style={styles.emptyEvents}>{t("shift.noCashEvents")}</Text>
             )}
-
-            <Text style={styles.hint}>{t("shift.cashCountHint")}</Text>
-          </View>
+          </Card>
         </View>
-
-        <TouchableOpacity
-          style={[styles.closeButton, isLoading && styles.buttonDisabled]}
-          onPress={handleCloseShift}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
-              <Text style={styles.buttonText}>{t("shift.closeShift")}</Text>
-            </>
-          )}
-        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </AppShell>
+  );
+}
+
+function Row({
+  label,
+  value,
+  emphasize = false,
+  tone = "neutral",
+}: {
+  label: string;
+  value: string;
+  emphasize?: boolean;
+  tone?: "neutral" | "positive" | "negative";
+}) {
+  return (
+    <View style={styles.row}>
+      <Text style={[styles.rowLabel, emphasize && styles.rowLabelStrong]}>{label}</Text>
+      <Text
+        style={[
+          styles.rowValue,
+          emphasize && styles.rowValueStrong,
+          tone === "positive" && { color: posTheme.colors.success },
+          tone === "negative" && { color: posTheme.colors.danger },
+        ]}
+      >
+        {value}
+      </Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  layout: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    gap: posTheme.spacing.md,
   },
-  header: {
+  layoutTablet: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    alignItems: "stretch",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
+  scrollBody: {
+    gap: posTheme.spacing.md,
+    paddingBottom: posTheme.spacing.lg,
   },
-  content: {
-    padding: 24,
+  rightPane: {
+    flex: 1,
+    gap: posTheme.spacing.md,
   },
-  shiftInfo: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  shiftTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 16,
-    marginBottom: 4,
-  },
-  shiftTime: {
-    fontSize: 16,
-    color: "#666",
-  },
-  section: {
-    marginBottom: 24,
+  mainPane: {
+    flex: 1.35,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-    marginBottom: 8,
-    textTransform: "uppercase",
+    fontSize: 16,
+    fontWeight: "800",
+    color: posTheme.colors.text,
+    marginBottom: posTheme.spacing.sm,
   },
-  card: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 8,
-  },
-  summaryRow: {
+  row: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 8,
   },
-  summaryLabel: {
-    fontSize: 16,
-    color: "#666",
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  totalRow: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-  },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  totalValue: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2196f3",
-  },
-  form: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 8,
-  },
-  label: {
+  rowLabel: {
+    color: posTheme.colors.textMuted,
     fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-    marginBottom: 8,
-    textTransform: "uppercase",
   },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    paddingHorizontal: 16,
-    marginBottom: 16,
+  rowValue: {
+    color: posTheme.colors.text,
+    fontWeight: "700",
   },
-  currencySymbol: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#666",
-    marginRight: 8,
+  rowLabelStrong: {
+    color: posTheme.colors.text,
+    fontWeight: "700",
   },
-  input: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: "600",
-    paddingVertical: 12,
-  },
-  variance: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 12,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  varianceLabel: {
+  rowValueStrong: {
     fontSize: 16,
+  },
+  actionsRow: {
+    marginTop: posTheme.spacing.xs,
+  },
+  warningText: {
+    color: posTheme.colors.warning,
+    marginBottom: posTheme.spacing.sm,
     fontWeight: "600",
   },
-  varianceValue: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#666",
+  eventState: {
+    color: posTheme.colors.textMuted,
+    fontSize: 12,
+    fontWeight: "700",
   },
-  variancePositive: {
-    color: "#4caf50",
+  emptyEvents: {
+    color: posTheme.colors.textMuted,
+    marginTop: posTheme.spacing.sm,
   },
-  varianceNegative: {
-    color: "#d32f2f",
-  },
-  hint: {
-    fontSize: 14,
-    color: "#999",
-  },
-  closeButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#d32f2f",
-    padding: 16,
-    borderRadius: 8,
-    gap: 8,
-  },
-  buttonDisabled: {
-    backgroundColor: "#ccc",
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  emptyState: {
+  empty: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 16,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  button: {
-    backgroundColor: "#2196f3",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
   },
 });

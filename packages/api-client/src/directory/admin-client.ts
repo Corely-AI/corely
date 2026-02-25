@@ -64,7 +64,7 @@ const toHeaders = (headers?: HeadersInit): Record<string, string> => {
 
   if (headers instanceof Headers) {
     const result: Record<string, string> = {};
-    headers.forEach((value, key) => {
+    headers.forEach((value: string, key: string) => {
       result[key] = value;
     });
     return result;
