@@ -30,6 +30,8 @@ import type {
   ConfirmInventoryDocumentOutput,
   PostInventoryDocumentInput,
   PostInventoryDocumentOutput,
+  RequestInventoryPostApprovalInput,
+  RequestInventoryPostApprovalOutput,
   CancelInventoryDocumentOutput,
   GetOnHandInput,
   GetOnHandOutput,
@@ -300,6 +302,20 @@ export class InventoryApi {
     return result.document;
   }
 
+  async requestDocumentPostApproval(
+    documentId: string,
+    input?: Partial<RequestInventoryPostApprovalInput>
+  ): Promise<RequestInventoryPostApprovalOutput> {
+    return apiClient.post<RequestInventoryPostApprovalOutput>(
+      `/inventory/documents/${documentId}/request-post-approval`,
+      input ?? {},
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
   async cancelDocument(documentId: string): Promise<InventoryDocumentDto> {
     const result = await apiClient.post<CancelInventoryDocumentOutput>(
       `/inventory/documents/${documentId}/cancel`,
@@ -481,5 +497,4 @@ export class InventoryApi {
     });
   }
 }
-
 export const inventoryApi = new InventoryApi();

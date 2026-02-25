@@ -33,6 +33,7 @@ import {
   LotsPage,
   LotDetailPage,
   ExpiryDashboardPage,
+  UsageReportPage,
 } from "../../modules/inventory";
 import { ShipmentsPage, ShipmentDetailPage, NewShipmentPage } from "../../modules/import";
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
@@ -342,6 +343,14 @@ export const capabilityRoutes = (
       element={
         <RequireCapability capability="inventory.basic">
           <ExpiryDashboardPage />
+        </RequireCapability>
+      }
+    />
+    <Route
+      path="/inventory/usage"
+      element={
+        <RequireCapability capability="inventory.basic">
+          <UsageReportPage />
         </RequireCapability>
       }
     />

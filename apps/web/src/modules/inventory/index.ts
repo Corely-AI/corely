@@ -9,3 +9,4 @@ export { default as InventoryCopilotPage } from "./screens/InventoryCopilotPage"
 export { default as LotsPage } from "./screens/LotsPage";
 export { default as LotDetailPage } from "./screens/LotDetailPage";
 export { default as ExpiryDashboardPage } from "./screens/ExpiryDashboardPage";
+export { default as UsageReportPage } from "./screens/UsageReportPage";
