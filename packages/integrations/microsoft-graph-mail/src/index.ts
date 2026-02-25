@@ -55,7 +55,7 @@ export class MicrosoftGraphMailClient {
     this.client = new IntegrationsHttpClient({
       baseUrl: options?.baseUrl ?? "https://graph.microsoft.com",
       provider: "microsoft_graph_mail",
-      timeoutMs: options?.timeoutMs,
+      ...(options?.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
     });
   }
 
@@ -102,13 +102,15 @@ export class MicrosoftGraphMailClient {
       headers: {
         Authorization: `Bearer ${input.accessToken}`,
       },
-      query: input.deltaLink
-        ? undefined
-        : {
-            $top: input.top ?? 50,
-            $select:
-              "id,conversationId,subject,bodyPreview,sentDateTime,receivedDateTime,from,toRecipients,ccRecipients,bccRecipients",
-          },
+      ...(!input.deltaLink
+        ? {
+            query: {
+              $top: input.top ?? 50,
+              $select:
+                "id,conversationId,subject,bodyPreview,sentDateTime,receivedDateTime,from,toRecipients,ccRecipients,bccRecipients",
+            },
+          }
+        : {}),
     });
 
     return {

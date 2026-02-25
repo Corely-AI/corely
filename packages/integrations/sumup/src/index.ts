@@ -31,7 +31,7 @@ export class SumUpCashlessClient {
     this.client = new IntegrationsHttpClient({
       baseUrl: options.baseUrl ?? "https://api.sumup.com",
       provider: "sumup",
-      timeoutMs: options.timeoutMs,
+      ...(options.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
       defaultHeaders: {
         Authorization: `Bearer ${options.apiKey}`,
       },

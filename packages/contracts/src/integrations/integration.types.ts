@@ -3,6 +3,7 @@ import { z } from "zod";
 export const IntegrationKindSchema = z.enum([
   "sumup",
   "adyen",
+  "stripe_terminal",
   "microsoft_graph_mail",
   "google_gmail",
 ]);
@@ -38,5 +39,6 @@ export const IntegrationErrorCodeSchema = z.enum([
   "ExternalService:microsoft_graph_mail",
   "ExternalService:google_gmail",
   "ExternalService:adyen",
+  "ExternalService:stripe_terminal",
 ]);
 export type IntegrationErrorCode = z.infer<typeof IntegrationErrorCodeSchema>;

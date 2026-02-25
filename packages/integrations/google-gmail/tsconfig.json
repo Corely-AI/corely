@@ -1,4 +1,7 @@
 {
   "extends": "@corely/tsconfig/lib.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "include": ["src"]
 }

@@ -58,7 +58,7 @@ export class GoogleGmailClient {
     this.client = new IntegrationsHttpClient({
       baseUrl: options?.baseUrl ?? "https://gmail.googleapis.com",
       provider: "google_gmail",
-      timeoutMs: options?.timeoutMs,
+      ...(options?.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
     });
   }
 
@@ -93,7 +93,7 @@ export class GoogleGmailClient {
     });
 
     const messages = await Promise.all(
-      (list.messages ?? []).map(async (messageRef) => {
+      (list.messages ?? []).map(async (messageRef: { id: string; threadId: string }) => {
         const message = await this.client.request<GmailMessageResponse>({
           path: `/gmail/v1/users/me/messages/${messageRef.id}`,
           method: "GET",

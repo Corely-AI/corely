@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const CashlessProviderKindSchema = z.enum(["sumup", "adyen"]);
+export const CashlessProviderKindSchema = z.enum(["sumup", "adyen", "stripe_terminal"]);
 export type CashlessProviderKind = z.infer<typeof CashlessProviderKindSchema>;
 
 export const CashlessAttemptStatusSchema = z.enum([
@@ -25,6 +25,15 @@ export const CashlessActionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("terminal_action"),
     instruction: z.string().min(1),
+    provider: z.literal("stripe_terminal").optional(),
+    readerId: z.string().min(1).optional(),
+    paymentIntentId: z.string().min(1).optional(),
+  }),
+  z.object({
+    type: z.literal("stripe_terminal_sdk"),
+    paymentIntentClientSecret: z.string().min(1),
+    terminalLocationId: z.string().min(1).nullable().optional(),
+    paymentIntentId: z.string().min(1),
   }),
   z.object({
     type: z.literal("none"),
