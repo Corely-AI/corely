@@ -12,8 +12,8 @@ export const buildExternalServiceError = (
   message: string,
   metadata: HttpFailureMetadata,
   cause?: Error
-): ExternalServiceError =>
-  new ExternalServiceError(message, {
+): ExternalServiceError => {
+  const payload = {
     code: `ExternalService:${metadata.provider}`,
     retryable: metadata.retryable ?? (metadata.status ? metadata.status >= 500 : true),
     data: {
@@ -21,5 +21,8 @@ export const buildExternalServiceError = (
       path: metadata.path,
       body: metadata.body,
     },
-    cause,
-  });
+    ...(cause ? { cause } : {}),
+  };
+
+  return new ExternalServiceError(message, payload);
+};

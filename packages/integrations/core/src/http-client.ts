@@ -34,16 +34,17 @@ export class IntegrationsHttpClient {
 
     try {
       const url = this.buildUrl(options.path, options.query);
-      const response = await fetch(url, {
+      const requestInit: RequestInit = {
         method: options.method ?? "GET",
         headers: {
           ...this.defaultHeaders,
           ...(options.body !== undefined ? { "Content-Type": "application/json" } : {}),
           ...options.headers,
         },
-        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
         signal: controller.signal,
-      });
+        ...(options.body !== undefined ? { body: JSON.stringify(options.body) } : {}),
+      };
+      const response = await fetch(url, requestInit);
 
       if (!response.ok) {
         const body = await response.text();
