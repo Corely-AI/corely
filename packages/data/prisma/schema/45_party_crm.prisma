@@ -410,6 +410,82 @@ model CommunicationWebhookEvent {
   @@schema("crm")
 }
 
+model CrmMailbox {
+  id                      String   @id @default(cuid())
+  tenantId                String
+  workspaceId             String
+  integrationConnectionId String
+  providerKind            String   @map("provider_kind") @db.VarChar(64)
+  address                 String   @db.VarChar(320)
+  displayName             String?  @map("display_name") @db.VarChar(120)
+  status                  String   @default("ACTIVE") @db.VarChar(20)
+  syncCursor              String?  @map("sync_cursor")
+  createdAt               DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace             Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  integrationConnection IntegrationConnection @relation(fields: [integrationConnectionId], references: [id], onDelete: Restrict)
+  threads               CrmMailThread[]
+  messages              CrmMailMessage[]
+
+  @@unique([tenantId, workspaceId, address], map: "crm_mailbox_tenant_workspace_address")
+  @@index([tenantId, workspaceId, status])
+  @@index([integrationConnectionId])
+  @@schema("crm")
+}
+
+model CrmMailThread {
+  id               String    @id @default(cuid())
+  tenantId         String
+  workspaceId      String
+  mailboxId        String
+  externalThreadId String    @map("external_thread_id")
+  subject          String?
+  snippet          String?
+  lastMessageAt    DateTime? @map("last_message_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  mailbox   CrmMailbox       @relation(fields: [mailboxId], references: [id], onDelete: Cascade)
+  messages  CrmMailMessage[]
+
+  @@unique([mailboxId, externalThreadId], map: "crm_mail_thread_mailbox_external")
+  @@index([tenantId, workspaceId, lastMessageAt])
+  @@schema("crm")
+}
+
+model CrmMailMessage {
+  id                String                 @id @default(cuid())
+  tenantId          String
+  workspaceId       String
+  mailboxId         String
+  threadId          String
+  externalMessageId String                 @map("external_message_id")
+  direction         CommunicationDirection
+  subject           String?
+  fromJson          Json?                  @map("from_json")
+  toJson            Json                   @map("to_json")
+  ccJson            Json                   @map("cc_json")
+  bccJson           Json                   @map("bcc_json")
+  snippet           String?
+  bodyPreview       String?                @map("body_preview")
+  sentAt            DateTime?              @map("sent_at") @db.Timestamptz(6)
+  receivedAt        DateTime?              @map("received_at") @db.Timestamptz(6)
+  rawJson           Json?                  @map("raw_json")
+  createdAt         DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime               @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  mailbox   CrmMailbox    @relation(fields: [mailboxId], references: [id], onDelete: Cascade)
+  thread    CrmMailThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([mailboxId, externalMessageId], map: "crm_mail_message_mailbox_external")
+  @@index([tenantId, workspaceId, receivedAt])
+  @@index([tenantId, workspaceId, sentAt])
+  @@schema("crm")
+}
+
 model DealStageTransition {
   id                   String   @id @default(cuid())
   tenantId             String

@@ -11,3 +11,5 @@ export * from "./close-shift.schema";
 export * from "./get-current-shift.schema";
 export * from "./sync-pos-sale.schema";
 export * from "./get-catalog-snapshot.schema";
+export * from "./start-cashless-payment.schema";
+export * from "./get-cashless-payment-status.schema";

@@ -11,6 +11,7 @@ High-level design, boundaries, and core decisions.
 - [Architecture Overview](./architecture/architect.md)
 - [Boundaries](./architecture/BOUNDARIES.md)
 - [Overall Structure](./architecture/overall-structure.md)
+- [Integrations Capability Layer](./architecture/integrations-capability-layer.md)
 - [Ports & Adapters](./architecture/ports-adapters-migration.md)
 - [SSE Streaming](./architecture/sse-streaming.md)
 - [Offline First](./architecture/offline-first.md)

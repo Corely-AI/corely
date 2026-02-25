@@ -152,7 +152,16 @@
     "completeSale": "Hoàn tất bán hàng",
     "addPayment": "Add payment",
     "addRemaining": "Add remaining {{amount}}",
-    "cardHelp": "Record amount received from external terminal.",
+    "cardHelp": "Start a cashless payment with your terminal provider.",
+    "cashlessPendingTitle": "Cashless payment started",
+    "cashlessPendingMessage": "Complete payment on terminal/app, then refresh status. {{action}}",
+    "cashlessCheckTerminal": "Check your terminal",
+    "cashlessStartFailedTitle": "Could not start cashless payment",
+    "cashlessStartFailedMessage": "Try again or use another payment method.",
+    "cashlessRefreshFailedTitle": "Could not refresh cashless status",
+    "cashlessRefreshFailedMessage": "Check your internet connection and try again.",
+    "cashlessStatusLabel": "Cashless status",
+    "refreshCashlessStatus": "Refresh status",
     "cartEmptyMessage": "Add items before checkout.",
     "cartEmptyTitle": "Cart empty",
     "completeFailedMessage": "Unknown checkout error.",
@@ -178,7 +187,7 @@
     "subtitle": "Collect payment and finalize sale",
     "method": {
       "cash": "Tiền mặt",
-      "card": "Thẻ",
+      "card": "Cashless",
       "bank_transfer": "Chuyển khoản",
       "other": "Khác"
     }

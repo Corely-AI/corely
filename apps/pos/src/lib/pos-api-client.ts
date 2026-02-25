@@ -14,6 +14,9 @@ import type {
   SyncPosSaleOutput,
   GetCatalogSnapshotInput,
   GetCatalogSnapshotOutput,
+  StartCashlessPaymentInput,
+  StartCashlessPaymentOutput,
+  GetCashlessPaymentStatusOutput,
   SearchCustomersInput,
   SearchCustomersOutput,
   GetCustomerInput,
@@ -84,6 +87,18 @@ export class PosApiClient extends ApiClient {
     return this.post<SyncPosSaleOutput>("/pos/sales/sync", input, {
       idempotencyKey: input.idempotencyKey,
     });
+  }
+
+  async startCashlessPayment(
+    input: StartCashlessPaymentInput
+  ): Promise<StartCashlessPaymentOutput> {
+    return this.post<StartCashlessPaymentOutput>("/pos/payments/cashless/start", input, {
+      idempotencyKey: input.idempotencyKey,
+    });
+  }
+
+  async getCashlessPaymentStatus(attemptId: string): Promise<GetCashlessPaymentStatusOutput> {
+    return this.get<GetCashlessPaymentStatusOutput>(`/pos/payments/cashless/${attemptId}`);
   }
 
   // Catalog
