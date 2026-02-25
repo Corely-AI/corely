@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { Register } from "@corely/contracts";
 import { useAuthStore } from "./authStore";
-import * as SecureStore from "expo-secure-store";
+import { secureDeleteItem, secureGetItem, secureSetItem } from "@/lib/secure-store";
 
 interface RegisterState {
   registers: Register[];
@@ -24,7 +24,7 @@ export const useRegisterStore = create<RegisterState>((set, get) => ({
   initialize: async () => {
     try {
       // Load previously selected register
-      const registerId = await SecureStore.getItemAsync(SELECTED_REGISTER_KEY);
+      const registerId = await secureGetItem(SELECTED_REGISTER_KEY);
 
       if (registerId) {
         // Load registers to find the selected one
@@ -33,10 +33,10 @@ export const useRegisterStore = create<RegisterState>((set, get) => ({
         const register = get().registers.find((r) => r.registerId === registerId);
         if (register && register.status === "ACTIVE") {
           set({ selectedRegister: register });
-          console.log(`Restored register selection: ${register.name}`);
+          console.warn(`Restored register selection: ${register.name}`);
         } else {
           // Clear invalid selection
-          await SecureStore.deleteItemAsync(SELECTED_REGISTER_KEY);
+          await secureDeleteItem(SELECTED_REGISTER_KEY);
         }
       }
     } catch (error) {
@@ -70,8 +70,8 @@ export const useRegisterStore = create<RegisterState>((set, get) => ({
     }
 
     set({ selectedRegister: register });
-    await SecureStore.setItemAsync(SELECTED_REGISTER_KEY, registerId);
-    console.log(`Selected register: ${register.name}`);
+    await secureSetItem(SELECTED_REGISTER_KEY, registerId);
+    console.warn(`Selected register: ${register.name}`);
   },
 
   getSelectedRegisterId: () => {

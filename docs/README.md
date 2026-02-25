@@ -67,6 +67,7 @@ Specific feature implementation details.
 
 - [Inventory Notes](./features/INVENTORY_NOTE.md)
 - [POS Implementation](./features/POS_IMPLEMENTATION_STATUS.md)
+- [POS Offline Runtime](./features/POS_OFFLINE_RUNTIME.md)
 - [Workspace Implementation](./features/WORKSPACE_IMPLEMENTATION_SUMMARY.md)
 - [Accounting Core Status](./features/ACCOUNTING_CORE_STATUS.md)
 - [Accounting Frontend Progress](./features/ACCOUNTING_FRONTEND_PROGRESS.md)

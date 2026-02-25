@@ -131,11 +131,16 @@ export function getErrorDisplayMessage(error: unknown): {
   traceId?: string;
 } {
   const apiError = error instanceof ApiError ? error : normalizeError(error);
-
-  return {
+  const response: {
+    message: string;
+    traceId?: string;
+  } = {
     message: apiError.detail,
-    traceId: apiError.traceId,
   };
+  if (apiError.traceId) {
+    response.traceId = apiError.traceId;
+  }
+  return response;
 }
 
 /**

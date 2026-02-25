@@ -1,410 +1,370 @@
-import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { useMemo, useState } from "react";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { v4 as uuidv4 } from "@lukeed/uuid";
-import { useCartStore } from "@/stores/cartStore";
-import { useShiftStore } from "@/stores/shiftStore";
-import { useAuthStore } from "@/stores/authStore";
-import { useSalesService } from "@/hooks/useSalesService";
+import { useTranslation } from "react-i18next";
 import type { PosSalePayment } from "@corely/contracts";
+import { getHardwareManager } from "@corely/pos-hardware";
+import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
+import { formatCurrencyFromCents } from "@/lib/formatters";
+import { useSalesService } from "@/hooks/useSalesService";
+import { useSyncEngine } from "@/hooks/useSyncEngine";
+import { useAuthStore } from "@/stores/authStore";
+import { useCartStore } from "@/stores/cartStore";
+import { useRegisterStore } from "@/stores/registerStore";
+import { useSettingsStore } from "@/stores/settingsStore";
+import { useShiftStore } from "@/stores/shiftStore";
+import {
+  AppShell,
+  Badge,
+  Button,
+  Card,
+  CenteredActions,
+  MoneyInput,
+  NumericKeypad,
+  SegmentedControl,
+  TextField,
+  useMoneyPad,
+} from "@/ui/components";
+import { posTheme } from "@/ui/theme";
+import { styles } from "./checkout.styles";
 
-type PaymentMethod = "CASH" | "CARD" | "BANK_TRANSFER" | "OTHER";
+type PaymentMethod = PosSalePayment["method"];
 
 export default function CheckoutScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
-  const { items, customerId, notes, getTotals, clearCart } = useCartStore();
+  const { isTablet } = useAdaptiveLayout();
+  const { items, customerPartyId, notes, orderDiscountCents, getTotals, clearCart } =
+    useCartStore();
   const { currentShift } = useShiftStore();
+  const { selectedRegister } = useRegisterStore();
   const { user } = useAuthStore();
   const { salesService } = useSalesService();
+  const { triggerSync } = useSyncEngine();
+  const requireOpenShiftForSales = useSettingsStore((state) => state.requireOpenShiftForSales);
   const totals = getTotals();
 
   const [payments, setPayments] = useState<PosSalePayment[]>([]);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("CASH");
-  const [paymentAmount, setPaymentAmount] = useState("");
+  const [paymentReference, setPaymentReference] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showSummary, setShowSummary] = useState(isTablet);
+  const moneyPad = useMoneyPad("");
 
-  const totalPaid = payments.reduce((sum, p) => sum + p.amountCents, 0);
+  const totalPaid = useMemo(
+    () => payments.reduce((sum, payment) => sum + payment.amountCents, 0),
+    [payments]
+  );
   const remaining = totals.totalCents - totalPaid;
   const changeDue = totalPaid > totals.totalCents ? totalPaid - totals.totalCents : 0;
 
-  const handleAddPayment = () => {
-    const amountCents = Math.round(parseFloat(paymentAmount) * 100);
-    if (isNaN(amountCents) || amountCents <= 0) {
-      Alert.alert("Invalid Amount", "Please enter a valid payment amount");
+  const methodLabel = (method: PaymentMethod) => t(`checkout.method.${method.toLowerCase()}`);
+
+  const addPayment = (amountCents?: number) => {
+    const parsed = amountCents ?? Math.round(Number(moneyPad.value) * 100);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      Alert.alert(t("checkout.invalidAmountTitle"), t("checkout.invalidAmountMessage"));
       return;
     }
 
     const payment: PosSalePayment = {
       paymentId: uuidv4(),
       method: selectedMethod,
-      amountCents,
-      reference: null,
+      amountCents: parsed,
+      reference: paymentReference.trim() || null,
     };
 
-    setPayments([...payments, payment]);
-    setPaymentAmount("");
+    setPayments((prev) => [...prev, payment]);
+    moneyPad.clear();
+    setPaymentReference("");
   };
 
-  const handleRemovePayment = (paymentId: string) => {
-    setPayments(payments.filter((p) => p.paymentId !== paymentId));
+  const removePayment = (paymentId: string) => {
+    setPayments((prev) => prev.filter((payment) => payment.paymentId !== paymentId));
   };
 
-  const handleCompleteSale = async () => {
+  const quickCashAdd = (deltaDollars: number) => {
+    const target = Math.max(totals.totalCents + deltaDollars * 100, 0);
+    addPayment(target - totalPaid);
+  };
+
+  const completeSale = async () => {
+    if (!items.length) {
+      Alert.alert(t("checkout.cartEmptyTitle"), t("checkout.cartEmptyMessage"));
+      return;
+    }
     if (remaining > 0) {
-      Alert.alert("Insufficient Payment", "Please collect full payment before completing sale");
+      Alert.alert(t("checkout.paymentIncompleteTitle"), t("checkout.paymentIncompleteMessage"));
       return;
     }
-
-    if (!currentShift) {
-      Alert.alert("No Active Shift", "Please open a shift before completing sales");
+    if (requireOpenShiftForSales && !currentShift) {
+      Alert.alert(t("checkout.shiftRequiredTitle"), t("checkout.shiftRequiredMessage"));
       return;
     }
-
-    if (!salesService) {
-      Alert.alert("Error", "Sales service not initialized");
+    if (!selectedRegister && !currentShift) {
+      Alert.alert(t("checkout.registerRequiredTitle"), t("checkout.registerRequiredMessage"));
       return;
     }
-
-    if (!user) {
-      Alert.alert("Error", "User not authenticated");
+    if (!user || !salesService) {
+      Alert.alert(t("checkout.notReadyTitle"), t("checkout.notReadyMessage"));
       return;
     }
 
     setIsProcessing(true);
     try {
-      // Create POS sale and save to SQLite
-      const sale = await salesService.createSale({
+      let hardwareArtifact: unknown = null;
+      const hardwareManager = getHardwareManager();
+      const requireHardware = process.env.EXPO_PUBLIC_POS_REQUIRE_TSE === "true";
+
+      if (requireHardware || process.env.EXPO_PUBLIC_POS_ENABLE_TSE === "true") {
+        try {
+          const tse = hardwareManager.getTseService();
+          await tse.initialize();
+          const started = await tse.startTransaction({
+            registerId: currentShift?.registerId ?? "unknown",
+            amountCents: totals.totalCents,
+            saleId: null,
+          });
+          const completed = await tse.finishTransaction({
+            transactionId: started.transactionId,
+            totalCents: totals.totalCents,
+          });
+          hardwareArtifact = completed;
+        } catch (error) {
+          if (requireHardware) {
+            throw new Error(
+              error instanceof Error
+                ? `Required fiscal hardware failed: ${error.message}`
+                : "Required fiscal hardware failed"
+            );
+          }
+          hardwareArtifact = {
+            warning: error instanceof Error ? error.message : "Hardware transaction failed",
+          };
+        }
+      }
+
+      const result = await salesService.createSaleAndEnqueue({
         workspaceId: user.workspaceId,
-        sessionId: currentShift.sessionId,
-        registerId: currentShift.registerId,
-        customerId,
+        sessionId: currentShift?.sessionId ?? null,
+        registerId:
+          currentShift?.registerId ??
+          selectedRegister?.registerId ??
+          "00000000-0000-0000-0000-000000000000",
+        cashierEmployeePartyId: user.userId,
+        customerPartyId,
         lineItems: items,
         payments,
         notes,
+        cartDiscountCents: orderDiscountCents,
         taxCents: totals.taxCents,
+        hardwareArtifact: hardwareArtifact ?? undefined,
       });
 
-      // TODO: Enqueue sync command via outbox
-
+      clearCart();
+      await triggerSync();
+      router.replace(`/receipt?saleId=${result.sale.posSaleId}`);
+    } catch (error) {
       Alert.alert(
-        "Sale Complete",
-        `Receipt: ${sale.receiptNumber}\nPayment: $${(totalPaid / 100).toFixed(2)}\nChange: $${(changeDue / 100).toFixed(2)}`,
-        [
-          {
-            text: "Print Receipt",
-            onPress: () => {
-              clearCart();
-              router.replace(`/receipt?saleId=${sale.posSaleId}`);
-            },
-          },
-          {
-            text: "New Sale",
-            onPress: () => {
-              clearCart();
-              router.replace("/(main)");
-            },
-          },
-        ]
+        t("checkout.completeFailedTitle"),
+        error instanceof Error ? error.message : t("checkout.completeFailedMessage")
       );
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to complete sale");
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Checkout</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Order Summary</Text>
-        <View style={styles.card}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Items</Text>
-            <Text style={styles.summaryValue}>{items.length}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>${(totals.subtotalCents / 100).toFixed(2)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Tax</Text>
-            <Text style={styles.summaryValue}>${(totals.taxCents / 100).toFixed(2)}</Text>
-          </View>
-          <View style={[styles.summaryRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>${(totals.totalCents / 100).toFixed(2)}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Payment</Text>
-
-        <View style={styles.methodSelector}>
-          {(["CASH", "CARD", "BANK_TRANSFER", "OTHER"] as PaymentMethod[]).map((method) => (
-            <TouchableOpacity
-              key={method}
-              style={[styles.methodButton, selectedMethod === method && styles.methodButtonActive]}
-              onPress={() => setSelectedMethod(method)}
-            >
-              <Text
-                style={[
-                  styles.methodButtonText,
-                  selectedMethod === method && styles.methodButtonTextActive,
-                ]}
-              >
-                {method.replace("_", " ")}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={styles.paymentInput}>
-          <TextInput
-            style={styles.amountInput}
-            placeholder="Amount"
-            value={paymentAmount}
-            onChangeText={setPaymentAmount}
-            keyboardType="decimal-pad"
-          />
-          <TouchableOpacity style={styles.addButton} onPress={handleAddPayment}>
-            <Text style={styles.addButtonText}>Add</Text>
-          </TouchableOpacity>
-        </View>
-
-        {payments.length > 0 && (
-          <View style={styles.paymentsCard}>
-            {payments.map((payment) => (
-              <View key={payment.paymentId} style={styles.paymentItem}>
-                <View style={styles.paymentInfo}>
-                  <Text style={styles.paymentMethod}>{payment.method}</Text>
-                  <Text style={styles.paymentAmount}>
-                    ${(payment.amountCents / 100).toFixed(2)}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => handleRemovePayment(payment.paymentId)}>
-                  <Ionicons name="close-circle" size={24} color="#d32f2f" />
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.paymentSummary}>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Total Due</Text>
-            <Text style={styles.summaryValue}>${(totals.totalCents / 100).toFixed(2)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Paid</Text>
-            <Text style={styles.summaryValue}>${(totalPaid / 100).toFixed(2)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>{remaining > 0 ? "Remaining" : "Change"}</Text>
-            <Text style={[styles.summaryValue, remaining < 0 && { color: "#4caf50" }]}>
-              ${(Math.abs(remaining) / 100).toFixed(2)}
-            </Text>
-          </View>
-        </View>
-      </View>
-
-      <TouchableOpacity
-        style={[
-          styles.completeButton,
-          (remaining > 0 || isProcessing) && styles.completeButtonDisabled,
-        ]}
-        onPress={handleCompleteSale}
-        disabled={remaining > 0 || isProcessing}
+    <AppShell
+      title={t("checkout.title")}
+      subtitle={t("checkout.subtitle")}
+      onBack={() => router.back()}
+      maxWidth={1200}
+    >
+      <View
+        testID="pos-checkout-screen"
+        style={[styles.container, isTablet && styles.containerTablet]}
       >
-        {isProcessing ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.completeButtonText}>Complete Sale</Text>
-        )}
-      </TouchableOpacity>
-    </ScrollView>
+        <ScrollView style={styles.mainPane} contentContainerStyle={styles.scrollBody}>
+          {!isTablet ? (
+            <Pressable
+              style={styles.summaryToggle}
+              onPress={() => setShowSummary((value) => !value)}
+            >
+              <Text style={styles.summaryToggleText}>
+                {showSummary ? t("checkout.hideOrderSummary") : t("checkout.showOrderSummary")}
+              </Text>
+              <Ionicons
+                name={showSummary ? "chevron-up" : "chevron-down"}
+                size={18}
+                color={posTheme.colors.primary}
+              />
+            </Pressable>
+          ) : null}
+
+          {isTablet || showSummary ? (
+            <Card>
+              <Text style={styles.sectionTitle}>{t("checkout.orderSummary")}</Text>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>{t("checkout.items")}</Text>
+                <Text style={styles.summaryValue}>{items.length}</Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>{t("common.subtotal")}</Text>
+                <Text style={styles.summaryValue}>
+                  {formatCurrencyFromCents(totals.subtotalCents)}
+                </Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>{t("checkout.orderDiscount")}</Text>
+                <Text style={styles.summaryValue}>
+                  {t("cart.discountAmount", {
+                    amount: formatCurrencyFromCents(orderDiscountCents),
+                  })}
+                </Text>
+              </View>
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>{t("common.tax")}</Text>
+                <Text style={styles.summaryValue}>{formatCurrencyFromCents(totals.taxCents)}</Text>
+              </View>
+              <View style={[styles.summaryRow, styles.summaryGrand]}>
+                <Text style={styles.grandLabel}>{t("checkout.totalDue")}</Text>
+                <Text style={styles.grandValue}>{formatCurrencyFromCents(totals.totalCents)}</Text>
+              </View>
+              {customerPartyId ? (
+                <Badge
+                  label={t("checkout.customer", { id: customerPartyId.slice(0, 8) })}
+                  tone="info"
+                />
+              ) : null}
+            </Card>
+          ) : null}
+
+          <Card>
+            <Text style={styles.sectionTitle}>{t("checkout.payment")}</Text>
+            <SegmentedControl
+              value={selectedMethod}
+              onChange={setSelectedMethod}
+              options={(["CASH", "CARD", "BANK_TRANSFER", "OTHER"] as PaymentMethod[]).map(
+                (method) => ({
+                  value: method,
+                  label: methodLabel(method),
+                })
+              )}
+            />
+
+            <View style={styles.paymentState}>
+              <View>
+                <Text style={styles.stateLabel}>{t("checkout.paid")}</Text>
+                <Text style={styles.stateValue}>{formatCurrencyFromCents(totalPaid)}</Text>
+              </View>
+              <View>
+                <Text style={styles.stateLabel}>
+                  {remaining > 0 ? t("checkout.remaining") : t("receipt.changeDue")}
+                </Text>
+                <Text style={[styles.stateValue, remaining <= 0 && styles.changePositive]}>
+                  {formatCurrencyFromCents(remaining > 0 ? remaining : changeDue)}
+                </Text>
+              </View>
+            </View>
+
+            <MoneyInput
+              testID="pos-checkout-payment-amount"
+              label={t("common.amount")}
+              value={moneyPad.value}
+              onChange={moneyPad.setValue}
+              {...(selectedMethod === "CARD" ? { help: t("checkout.cardHelp") } : {})}
+            />
+            <TextField
+              testID="pos-checkout-payment-reference"
+              label={t("checkout.referenceOptional")}
+              value={paymentReference}
+              onChangeText={setPaymentReference}
+              placeholder={t("checkout.referencePlaceholder")}
+            />
+            <CenteredActions style={styles.paymentActions}>
+              <Button
+                testID="pos-checkout-payment-add"
+                label={t("checkout.addPayment")}
+                onPress={() => addPayment()}
+              />
+              {remaining > 0 ? (
+                <Button
+                  testID="pos-checkout-add-remaining"
+                  label={t("checkout.addRemaining", { amount: formatCurrencyFromCents(remaining) })}
+                  variant="secondary"
+                  onPress={() => addPayment(remaining)}
+                />
+              ) : null}
+            </CenteredActions>
+
+            {selectedMethod === "CASH" ? (
+              <View style={styles.cashQuickRow}>
+                <Pressable
+                  style={styles.quickChip}
+                  onPress={() => addPayment(remaining > 0 ? remaining : totals.totalCents)}
+                >
+                  <Text style={styles.quickChipText}>{t("checkout.exact")}</Text>
+                </Pressable>
+                <Pressable style={styles.quickChip} onPress={() => quickCashAdd(5)}>
+                  <Text style={styles.quickChipText}>+5</Text>
+                </Pressable>
+                <Pressable style={styles.quickChip} onPress={() => quickCashAdd(10)}>
+                  <Text style={styles.quickChipText}>+10</Text>
+                </Pressable>
+                <Pressable style={styles.quickChip} onPress={() => quickCashAdd(20)}>
+                  <Text style={styles.quickChipText}>+20</Text>
+                </Pressable>
+              </View>
+            ) : null}
+
+            <View style={styles.paymentList}>
+              {payments.map((payment) => (
+                <View key={payment.paymentId} style={styles.paymentRow}>
+                  <View style={styles.paymentRowMain}>
+                    <Text style={styles.paymentLabel}>{methodLabel(payment.method)}</Text>
+                    <Text style={styles.paymentSub}>
+                      {payment.reference || t("checkout.noReference")}
+                    </Text>
+                  </View>
+                  <View style={styles.paymentRight}>
+                    <Text style={styles.paymentAmount}>
+                      {formatCurrencyFromCents(payment.amountCents)}
+                    </Text>
+                    <Pressable onPress={() => removePayment(payment.paymentId)}>
+                      <Ionicons name="close-circle" size={20} color={posTheme.colors.danger} />
+                    </Pressable>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </Card>
+        </ScrollView>
+
+        <View style={styles.sidePane}>
+          {selectedMethod === "CASH" && isTablet ? (
+            <NumericKeypad
+              onKey={moneyPad.append}
+              onBackspace={moneyPad.backspace}
+              onClear={moneyPad.clear}
+            />
+          ) : null}
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <Button
+          testID="pos-checkout-complete-sale"
+          label={isProcessing ? t("common.processing") : t("checkout.completeSale")}
+          onPress={completeSale}
+          disabled={isProcessing || remaining > 0}
+          loading={isProcessing}
+          size="lg"
+          fullWidth={!isTablet}
+        />
+      </View>
+    </AppShell>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  section: {
-    marginTop: 16,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-    marginLeft: 16,
-    marginBottom: 8,
-    textTransform: "uppercase",
-  },
-  card: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  summaryLabel: {
-    fontSize: 16,
-    color: "#666",
-  },
-  summaryValue: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  totalRow: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-  },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  totalValue: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2196f3",
-  },
-  methodSelector: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 16,
-    gap: 8,
-  },
-  methodButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    backgroundColor: "#f5f5f5",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  methodButtonActive: {
-    backgroundColor: "#2196f3",
-    borderColor: "#2196f3",
-  },
-  methodButtonText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#666",
-  },
-  methodButtonTextActive: {
-    color: "#fff",
-  },
-  paymentInput: {
-    flexDirection: "row",
-    padding: 16,
-    gap: 8,
-  },
-  amountInput: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  addButton: {
-    backgroundColor: "#2196f3",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-    justifyContent: "center",
-  },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  paymentsCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 16,
-    borderRadius: 8,
-    padding: 8,
-  },
-  paymentItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 8,
-  },
-  paymentInfo: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  paymentMethod: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  paymentAmount: {
-    fontSize: 16,
-    color: "#666",
-  },
-  paymentSummary: {
-    backgroundColor: "#fff",
-    padding: 16,
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-  },
-  completeButton: {
-    backgroundColor: "#4caf50",
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  completeButtonDisabled: {
-    backgroundColor: "#ccc",
-  },
-  completeButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-});

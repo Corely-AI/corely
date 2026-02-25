@@ -77,12 +77,15 @@ export function usePosErrorHandler(options: UsePosErrorHandlerOptions) {
 
   const showError = useCallback(
     (message: string, traceId?: string, variant: "error" | "warning" | "info" = "error") => {
-      setErrorState({
+      const nextState: ErrorState = {
         message,
-        traceId,
         variant,
         visible: true,
-      });
+      };
+      if (traceId) {
+        nextState.traceId = traceId;
+      }
+      setErrorState(nextState);
     },
     []
   );

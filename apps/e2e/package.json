@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "e2e": "playwright test",
+    "e2e:pos": "playwright test --config playwright.pos.config.ts",
+    "e2e:pos:screens": "POS_CAPTURE_SCREENS=true playwright test --config playwright.pos.config.ts tests/pos/pos.screenshots.spec.ts",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
     "e2e:debug": "playwright test --debug"

@@ -1,10 +1,10 @@
 import { create } from "zustand";
-import type { CatalogProduct } from "@corely/contracts";
+import type { ProductSnapshot } from "@corely/contracts";
 import { useAuthStore } from "./authStore";
-import * as SecureStore from "expo-secure-store";
+import { getPosLocalService } from "@/hooks/usePosLocalService";
 
 interface CatalogState {
-  products: CatalogProduct[];
+  products: ProductSnapshot[];
   lastSyncAt: Date | null;
   isLoading: boolean;
   isInitialized: boolean;
@@ -12,14 +12,11 @@ interface CatalogState {
 
   initialize: () => Promise<void>;
   syncCatalog: (force?: boolean) => Promise<void>;
-  searchProducts: (query: string) => Promise<CatalogProduct[]>;
-  getProductById: (productId: string) => CatalogProduct | undefined;
-  getProductBySku: (sku: string) => CatalogProduct | undefined;
-  getProductByBarcode: (barcode: string) => CatalogProduct | undefined;
+  searchProducts: (query: string) => Promise<ProductSnapshot[]>;
+  getProductById: (productId: string) => ProductSnapshot | undefined;
+  getProductBySku: (sku: string) => ProductSnapshot | undefined;
+  getProductByBarcode: (barcode: string) => ProductSnapshot | undefined;
 }
-
-const CATALOG_STORAGE_KEY = "pos-catalog";
-const CATALOG_SYNC_KEY = "pos-catalog-sync-at";
 
 export const useCatalogStore = create<CatalogState>((set, get) => ({
   products: [],
@@ -34,25 +31,21 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
     }
 
     try {
-      // Load cached catalog from storage
-      const cachedCatalog = await SecureStore.getItemAsync(CATALOG_STORAGE_KEY);
-      const lastSyncStr = await SecureStore.getItemAsync(CATALOG_SYNC_KEY);
+      const localService = await getPosLocalService();
+      const [products, lastSyncAt] = await Promise.all([
+        localService.listCatalog(500),
+        localService.getLastCatalogSyncAt(),
+      ]);
 
-      if (cachedCatalog) {
-        const products = JSON.parse(cachedCatalog);
-        const lastSyncAt = lastSyncStr ? new Date(lastSyncStr) : null;
-        set({ products, lastSyncAt, isInitialized: true });
-        console.log(`Loaded ${products.length} products from cache`);
-      } else {
-        set({ isInitialized: true });
+      set({ products, lastSyncAt, isInitialized: true });
+
+      if (useAuthStore.getState().isAuthenticated) {
+        void get()
+          .syncCatalog(false)
+          .catch((error) => {
+            console.error("Background catalog sync failed:", error);
+          });
       }
-
-      // Trigger background sync to refresh catalog
-      get()
-        .syncCatalog(false)
-        .catch((error) => {
-          console.error("Background catalog sync failed:", error);
-        });
     } catch (error) {
       console.error("Failed to initialize catalog:", error);
       set({ isInitialized: true });
@@ -67,31 +60,51 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
 
     // Skip if already syncing
     if (get().isLoading) {
-      console.log("Catalog sync already in progress");
       return;
     }
 
     set({ isLoading: true, syncError: null });
     try {
-      const lastSyncAt = force ? null : get().lastSyncAt;
+      const localService = await getPosLocalService();
+      const previousSyncAt = force ? null : get().lastSyncAt;
+      const limit = 250;
+      let offset = 0;
+      let hasMore = true;
+      let firstPage = true;
+      let totalFetched = 0;
 
-      const data = await apiClient.getCatalogSnapshot({
-        lastSyncAt: lastSyncAt ?? undefined,
-      });
+      while (hasMore) {
+        const data = await apiClient.getCatalogSnapshot({
+          limit,
+          offset,
+          updatedSince: previousSyncAt ?? undefined,
+        });
+        if (data.products.length > 0) {
+          await localService.replaceCatalogSnapshot(data.products, {
+            resetBeforeUpsert: firstPage && (force || previousSyncAt === null),
+          });
+        } else if (firstPage && (force || previousSyncAt === null)) {
+          await localService.replaceCatalogSnapshot([], { resetBeforeUpsert: true });
+        }
 
-      // Update state
+        totalFetched += data.products.length;
+        hasMore = data.hasMore;
+        offset += limit;
+        firstPage = false;
+      }
+
+      const syncedAt = new Date();
+      await localService.updateLastCatalogSync(syncedAt);
+      const refreshedProducts = await localService.listCatalog(500);
+
       set({
-        products: data.products,
-        lastSyncAt: new Date(),
+        products: refreshedProducts,
+        lastSyncAt: syncedAt,
         isLoading: false,
         isInitialized: true,
       });
 
-      // Cache to storage
-      await SecureStore.setItemAsync(CATALOG_STORAGE_KEY, JSON.stringify(data.products));
-      await SecureStore.setItemAsync(CATALOG_SYNC_KEY, new Date().toISOString());
-
-      console.log(`Synced ${data.products.length} products from server`);
+      console.warn(`Catalog sync completed (${totalFetched} updated rows)`);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       console.error("Failed to sync catalog:", error);
@@ -101,32 +114,25 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
   },
 
   searchProducts: async (query: string) => {
-    const { products } = get();
-    const lowerQuery = query.toLowerCase();
-
-    // Search locally first
-    const results = products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(lowerQuery) ||
-        p.sku?.toLowerCase().includes(lowerQuery) ||
-        p.barcode?.toLowerCase().includes(lowerQuery)
-    );
-
-    return results;
+    const localService = await getPosLocalService();
+    if (!query.trim()) {
+      return localService.listCatalog(300);
+    }
+    return localService.searchCatalog(query);
   },
 
   getProductById: (productId: string) => {
     const { products } = get();
-    return products.find((p) => p.productId === productId);
+    return products.find((product) => product.productId === productId);
   },
 
   getProductBySku: (sku: string) => {
     const { products } = get();
-    return products.find((p) => p.sku === sku);
+    return products.find((product) => product.sku === sku);
   },
 
   getProductByBarcode: (barcode: string) => {
     const { products } = get();
-    return products.find((p) => p.barcode === barcode);
+    return products.find((product) => product.barcode === barcode);
   },
 }));

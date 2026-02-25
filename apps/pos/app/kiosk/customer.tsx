@@ -1,20 +1,32 @@
 import { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { FlatList, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { useEngagementService } from "@/hooks/useEngagementService";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
+import { AppShell, Badge, Card, EmptyState, ListRow } from "@/ui/components";
+import { posTheme } from "@/ui/theme";
+
+type LedgerEntry = {
+  entryId: string;
+  reasonCode: string;
+  pointsDelta: number;
+};
 
 export default function KioskCustomerScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { customerId } = useLocalSearchParams<{ customerId: string }>();
   const { apiClient } = useAuthStore();
   const { engagementService } = useEngagementService();
   const { isOnline } = useSyncEngine();
-  const [customerName, setCustomerName] = useState<string>(customerId ?? "Customer");
+  const [customerName, setCustomerName] = useState<string>(
+    customerId ?? t("kiosk.customerFallback")
+  );
   const [pointsBalance, setPointsBalance] = useState<number | null>(null);
-  const [ledgerItems, setLedgerItems] = useState<any[]>([]);
+  const [ledgerItems, setLedgerItems] = useState<LedgerEntry[]>([]);
 
   useEffect(() => {
     const load = async () => {
@@ -44,7 +56,13 @@ export default function KioskCustomerScreen() {
             customerPartyId: customerId,
             pageSize: 20,
           });
-          setLedgerItems(ledger.items);
+          setLedgerItems(
+            ledger.items.map((item) => ({
+              entryId: item.entryId,
+              reasonCode: item.reasonCode,
+              pointsDelta: item.pointsDelta,
+            }))
+          );
         } catch (error) {
           console.error("Failed to load loyalty data:", error);
         }
@@ -54,111 +72,76 @@ export default function KioskCustomerScreen() {
   }, [customerId, engagementService, apiClient, isOnline]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Customer Profile</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <View style={styles.summaryCard}>
-        <Ionicons name="person-circle-outline" size={56} color="#2196f3" />
-        <View>
-          <Text style={styles.customerName}>{customerName}</Text>
-          <Text style={styles.pointsText}>Points balance: {pointsBalance ?? "—"}</Text>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>Loyalty Ledger</Text>
-      <FlatList
-        data={ledgerItems}
-        keyExtractor={(item) => item.entryId}
-        renderItem={({ item }) => (
-          <View style={styles.ledgerItem}>
-            <Text style={styles.ledgerType}>{item.reasonCode}</Text>
-            <Text style={styles.ledgerPoints}>
-              {item.pointsDelta > 0 ? "+" : ""}
-              {item.pointsDelta}
+    <AppShell
+      title={t("kiosk.customerProfile")}
+      subtitle={customerName}
+      onBack={() => router.back()}
+      maxWidth={980}
+    >
+      <Card>
+        <View style={styles.summaryRow}>
+          <Ionicons name="person-circle-outline" size={56} color={posTheme.colors.primary} />
+          <View style={styles.summaryText}>
+            <Text style={styles.customerName}>{customerName}</Text>
+            <Text style={styles.pointsText}>
+              {t("kiosk.pointsBalance", { points: pointsBalance ?? "—" })}
             </Text>
           </View>
-        )}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>No ledger entries yet</Text>
-          </View>
-        }
-      />
-    </View>
+          <Badge label={`${pointsBalance ?? "—"}`} tone="info" />
+        </View>
+      </Card>
+
+      <Card>
+        <Text style={styles.sectionTitle}>{t("kiosk.loyaltyLedger")}</Text>
+        <FlatList
+          data={ledgerItems}
+          keyExtractor={(item) => item.entryId}
+          renderItem={({ item }) => (
+            <ListRow
+              title={item.reasonCode}
+              subtitle={t("kiosk.pointsDelta", { points: item.pointsDelta })}
+              right={
+                <Badge
+                  label={item.pointsDelta >= 0 ? t("kiosk.earned") : t("kiosk.used")}
+                  tone={item.pointsDelta >= 0 ? "success" : "warning"}
+                />
+              }
+            />
+          )}
+          ListEmptyComponent={
+            <EmptyState
+              icon={<Ionicons name="receipt-outline" size={42} color={posTheme.colors.textMuted} />}
+              title={t("kiosk.noLedger")}
+              description={t("kiosk.noLedgerHint")}
+            />
+          }
+        />
+      </Card>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  summaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: posTheme.spacing.sm,
+  },
+  summaryText: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  summaryCard: {
-    margin: 16,
-    padding: 16,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
   },
   customerName: {
-    fontSize: 18,
-    fontWeight: "600",
+    color: posTheme.colors.text,
+    fontSize: 20,
+    fontWeight: "900",
   },
   pointsText: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
+    color: posTheme.colors.textMuted,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-    marginLeft: 16,
-    marginBottom: 8,
-    textTransform: "uppercase",
-  },
-  ledgerItem: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  ledgerType: {
-    fontSize: 14,
-    color: "#333",
-  },
-  ledgerPoints: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  emptyState: {
-    padding: 24,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: "#666",
+    color: posTheme.colors.text,
+    fontSize: 16,
+    fontWeight: "900",
+    marginBottom: posTheme.spacing.sm,
   },
 });
