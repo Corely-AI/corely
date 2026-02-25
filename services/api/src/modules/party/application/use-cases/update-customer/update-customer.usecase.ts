@@ -76,6 +76,12 @@ export class UpdateCustomerUseCase extends BaseUseCase<UpdateCustomerInput, Upda
       const socialLinks = input.patch.socialLinks;
       const patch = {
         ...input.patch,
+        birthday:
+          input.patch.birthday === undefined
+            ? undefined
+            : input.patch.birthday === null
+              ? null
+              : new Date(`${input.patch.birthday}T00:00:00.000Z`),
         socialLinks:
           socialLinks === undefined || socialLinks === null
             ? socialLinks

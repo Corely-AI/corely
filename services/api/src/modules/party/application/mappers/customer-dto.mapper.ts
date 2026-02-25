@@ -13,6 +13,7 @@ export const toCustomerDto = (party: PartyAggregate): CustomerDto => ({
   department: party.department ?? undefined,
   industry: party.industry ?? undefined,
   website: party.website ?? undefined,
+  birthday: party.birthday ? party.birthday.toISOString().slice(0, 10) : null,
   email: party.primaryEmail,
   phone: party.primaryPhone,
   billingAddress: party.billingAddress

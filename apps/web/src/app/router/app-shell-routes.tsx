@@ -20,6 +20,7 @@ import {
   StudentsPage,
   NewStudentPage,
   StudentDetailPage,
+  BirthdayRemindersPage,
 } from "../../modules/customers";
 import { FormsPage, NewFormPage, FormDetailPage } from "../../modules/forms";
 import { IssuesListPage, IssueDetailPage, NewIssuePage } from "../../modules/issues";
@@ -236,6 +237,14 @@ export const appShellRoutes = (
         element={
           <RequirePermission permission="party.customers.manage">
             <EditCustomerPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/customers/birthdays"
+        element={
+          <RequirePermission permission="party.customers.read">
+            <BirthdayRemindersPage />
           </RequirePermission>
         }
       />

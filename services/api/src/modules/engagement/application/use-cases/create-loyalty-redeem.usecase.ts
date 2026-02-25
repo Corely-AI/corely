@@ -1,6 +1,7 @@
 import {
   type AuditPort,
   BaseUseCase,
+  ConflictError,
   type IdempotencyPort,
   type LoggerPort,
   type OutboxPort,
@@ -12,10 +13,10 @@ import {
   err,
 } from "@corely/kernel";
 import {
-  type CreateLoyaltyAdjustEntryInput,
-  type CreateLoyaltyAdjustEntryOutput,
+  type CreateLoyaltyRedeemEntryInput,
+  type CreateLoyaltyRedeemEntryOutput,
 } from "@corely/contracts";
-import { toLoyaltyLedgerEntryDto } from "../mappers/engagement-dto.mappers";
+import { toLoyaltyAccountDto, toLoyaltyLedgerEntryDto } from "../mappers/engagement-dto.mappers";
 import type { LoyaltyRepositoryPort } from "../ports/loyalty-repository.port";
 
 type Deps = {
@@ -26,28 +27,28 @@ type Deps = {
   outbox: OutboxPort;
 };
 
-export class CreateLoyaltyAdjustEntryUseCase extends BaseUseCase<
-  CreateLoyaltyAdjustEntryInput,
-  CreateLoyaltyAdjustEntryOutput
+export class CreateLoyaltyRedeemEntryUseCase extends BaseUseCase<
+  CreateLoyaltyRedeemEntryInput,
+  CreateLoyaltyRedeemEntryOutput
 > {
   constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger, idempotency: deps.idempotency });
   }
 
   protected getIdempotencyKey(
-    input: CreateLoyaltyAdjustEntryInput,
+    input: CreateLoyaltyRedeemEntryInput,
     ctx: UseCaseContext
   ): string | undefined {
     if (!input.idempotencyKey || !ctx.tenantId) {
       return undefined;
     }
-    return `engagement:loyalty:adjust:${ctx.tenantId}:${input.idempotencyKey}`;
+    return `engagement:loyalty:redeem:${ctx.tenantId}:${input.idempotencyKey}`;
   }
 
   protected async handle(
-    input: CreateLoyaltyAdjustEntryInput,
+    input: CreateLoyaltyRedeemEntryInput,
     ctx: UseCaseContext
-  ): Promise<Result<CreateLoyaltyAdjustEntryOutput, UseCaseError>> {
+  ): Promise<Result<CreateLoyaltyRedeemEntryOutput, UseCaseError>> {
     if (!ctx.tenantId) {
       return err(new ValidationError("tenantId is required"));
     }
@@ -55,34 +56,42 @@ export class CreateLoyaltyAdjustEntryUseCase extends BaseUseCase<
       return err(new ValidationError("idempotencyKey is required"));
     }
 
+    const account =
+      (await this.deps.loyalty.getAccountByCustomer(ctx.tenantId, input.customerPartyId)) ??
+      (await this.deps.loyalty.upsertAccount(ctx.tenantId, input.customerPartyId, "ACTIVE"));
+
+    if (account.currentPointsBalance < input.pointsDelta) {
+      return err(
+        new ConflictError(
+          "Insufficient loyalty points",
+          {
+            balance: account.currentPointsBalance,
+            requested: input.pointsDelta,
+          },
+          "LOYALTY_INSUFFICIENT_BALANCE"
+        )
+      );
+    }
+
     const now = new Date();
+    const pointsDelta = -Math.abs(input.pointsDelta);
     await this.deps.loyalty.createLedgerEntry({
       entryId: input.entryId,
       tenantId: ctx.tenantId,
       customerPartyId: input.customerPartyId,
-      entryType: "ADJUST",
-      pointsDelta: input.pointsDelta,
-      reasonCode: "MANUAL_ADJUSTMENT",
-      sourceType: "MANUAL",
-      sourceId: input.entryId,
+      entryType: "REDEEM",
+      pointsDelta,
+      reasonCode: "REWARD_REDEMPTION",
+      sourceType: input.sourceType ?? "REDEEM",
+      sourceId: input.sourceId ?? input.entryId,
       createdAt: now,
       createdByEmployeePartyId: input.createdByEmployeePartyId ?? null,
     });
 
-    const account =
-      (await this.deps.loyalty.getAccountByCustomer(ctx.tenantId, input.customerPartyId)) ??
-      (await this.deps.loyalty.upsertAccount(ctx.tenantId, input.customerPartyId, "ACTIVE"));
-    const lifetimeEarnedPoints =
-      input.pointsDelta > 0
-        ? account.lifetimeEarnedPoints + input.pointsDelta
-        : account.lifetimeEarnedPoints;
-
-    await this.deps.loyalty.updateAccountBalance(
-      ctx.tenantId,
-      input.customerPartyId,
-      account.currentPointsBalance + input.pointsDelta,
-      { lifetimeEarnedPoints }
-    );
+    const nextBalance = account.currentPointsBalance + pointsDelta;
+    await this.deps.loyalty.updateAccountBalance(ctx.tenantId, input.customerPartyId, nextBalance, {
+      lifetimeEarnedPoints: account.lifetimeEarnedPoints,
+    });
 
     const refreshed =
       (await this.deps.loyalty.getAccountByCustomer(ctx.tenantId, input.customerPartyId)) ??
@@ -91,24 +100,25 @@ export class CreateLoyaltyAdjustEntryUseCase extends BaseUseCase<
     await this.deps.audit.log({
       tenantId: ctx.tenantId,
       userId: ctx.userId ?? "system",
-      action: "engagement.loyalty.adjust",
+      action: "engagement.loyalty.redeem",
       entityType: "LoyaltyAccount",
       entityId: refreshed.loyaltyAccountId,
       metadata: {
         entryId: input.entryId,
-        pointsDelta: input.pointsDelta,
         customerPartyId: input.customerPartyId,
+        pointsRedeemed: input.pointsDelta,
+        balanceAfter: refreshed.currentPointsBalance,
       },
     });
 
     await this.deps.outbox.enqueue({
-      eventType: "LoyaltyPointsAdjusted",
+      eventType: "LoyaltyPointsRedeemed",
       tenantId: ctx.tenantId,
       correlationId: ctx.correlationId,
       payload: {
         entryId: input.entryId,
         customerPartyId: input.customerPartyId,
-        pointsDelta: input.pointsDelta,
+        pointsRedeemed: input.pointsDelta,
         balanceAfter: refreshed.currentPointsBalance,
       },
     });
@@ -118,14 +128,15 @@ export class CreateLoyaltyAdjustEntryUseCase extends BaseUseCase<
         entryId: input.entryId,
         tenantId: ctx.tenantId,
         customerPartyId: input.customerPartyId,
-        entryType: "ADJUST",
-        pointsDelta: input.pointsDelta,
-        reasonCode: "MANUAL_ADJUSTMENT",
-        sourceType: "MANUAL",
-        sourceId: input.entryId,
+        entryType: "REDEEM",
+        pointsDelta,
+        reasonCode: "REWARD_REDEMPTION",
+        sourceType: input.sourceType ?? "REDEEM",
+        sourceId: input.sourceId ?? input.entryId,
         createdAt: now,
         createdByEmployeePartyId: input.createdByEmployeePartyId ?? null,
       }),
+      account: toLoyaltyAccountDto(refreshed),
     });
   }
 }

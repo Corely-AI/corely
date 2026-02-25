@@ -28,6 +28,7 @@ type PartyProps = {
   department?: string | null;
   industry?: string | null;
   website?: string | null;
+  birthday?: Date | null;
   size?: string | null;
 };
 
@@ -41,6 +42,7 @@ export type CustomerPatch = {
   department?: string | null;
   industry?: string | null;
   website?: string | null;
+  birthday?: Date | null;
   size?: string | null;
   email?: string | null;
   phone?: string | null;
@@ -79,6 +81,7 @@ export class PartyAggregate {
   department: string | null;
   industry: string | null;
   website: string | null;
+  birthday: Date | null;
   size: string | null;
 
   constructor(props: PartyProps) {
@@ -107,6 +110,7 @@ export class PartyAggregate {
     this.department = props.department ?? null;
     this.industry = props.industry ?? null;
     this.website = props.website ?? null;
+    this.birthday = props.birthday ?? null;
     this.size = props.size ?? null;
   }
 
@@ -139,6 +143,7 @@ export class PartyAggregate {
     department?: string | null;
     industry?: string | null;
     website?: string | null;
+    birthday?: Date | null;
     size?: string | null;
   }) {
     if (params.roles.length === 0) {
@@ -167,6 +172,7 @@ export class PartyAggregate {
       department: params.department,
       industry: params.industry,
       website: params.website,
+      birthday: params.birthday,
       size: params.size,
     });
     aggregate.setContactPoint("EMAIL", params.email ?? null, params.generateId);
@@ -188,6 +194,7 @@ export class PartyAggregate {
     department?: string | null;
     industry?: string | null;
     website?: string | null;
+    birthday?: Date | null;
     size?: string | null;
     email?: string | null;
     phone?: string | null;
@@ -251,6 +258,9 @@ export class PartyAggregate {
     }
     if (patch.website !== undefined) {
       this.website = patch.website ?? null;
+    }
+    if (patch.birthday !== undefined) {
+      this.birthday = patch.birthday ?? null;
     }
     if (patch.size !== undefined) {
       this.size = patch.size ?? null;

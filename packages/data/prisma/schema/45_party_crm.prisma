@@ -185,6 +185,7 @@ model Party {
   department       String?
   industry         String?
   website          String?
+  birthday         DateTime?            @db.Date
   size             String?
   lifecycleStatus  PartyLifecycleStatus @default(LEAD)
   archivedAt       DateTime?            @db.Timestamptz(6)
@@ -206,6 +207,7 @@ model Party {
 
   @@index([tenantId, displayName])
   @@index([tenantId, archivedAt])
+  @@index([tenantId, birthday])
   @@index([tenantId])
   @@schema("crm")
 }

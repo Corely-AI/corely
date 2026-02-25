@@ -10,6 +10,8 @@ export const LoyaltyAccountSchema = z.object({
   customerPartyId: z.string().uuid(),
   status: LoyaltyAccountStatusSchema,
   currentPointsBalance: z.number().int(),
+  lifetimeEarnedPoints: z.number().int().nonnegative(),
+  tier: z.string().nullable().optional(),
   createdAt: utcInstantSchema,
   updatedAt: utcInstantSchema,
 });

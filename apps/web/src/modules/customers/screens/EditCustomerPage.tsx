@@ -18,20 +18,23 @@ import {
 } from "../schemas/customer-form.schema";
 import CustomerFormFields from "../components/CustomerFormFields";
 import { CustomAttributesSection, type CustomAttributesValue } from "@/shared/custom-attributes";
+import CustomerLoyaltySection from "../components/CustomerLoyaltySection";
+import CustomerPackagesSection from "../components/CustomerPackagesSection";
 
 export default function EditCustomerPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const customerId = id ?? "";
   const queryClient = useQueryClient();
   const [customAttributes, setCustomAttributes] = React.useState<CustomAttributesValue | undefined>(
     undefined
   );
 
   const { data: customer, isLoading } = useQuery({
-    queryKey: ["customers", id],
-    queryFn: () => customersApi.getCustomer(id!),
-    enabled: !!id,
+    queryKey: ["customers", customerId],
+    queryFn: () => customersApi.getCustomer(customerId),
+    enabled: Boolean(customerId),
   });
 
   const form = useForm<CustomerFormData>({
@@ -51,11 +54,11 @@ export default function EditCustomerPage() {
             }
           : {}),
       };
-      return customersApi.updateCustomer(id!, patch);
+      return customersApi.updateCustomer(customerId, patch);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["customers"] });
-      void queryClient.invalidateQueries({ queryKey: ["customers", id] });
+      void queryClient.invalidateQueries({ queryKey: ["customers", customerId] });
       toast.success("Customer updated successfully!");
       navigate("/customers");
     },
@@ -95,6 +98,9 @@ export default function EditCustomerPage() {
           <h1 className="text-h1 text-foreground">Edit Customer</h1>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate("/customers/birthdays")}>
+            Birthday reminders
+          </Button>
           <Button
             variant="outline"
             onClick={() => navigate("/customers")}
@@ -123,10 +129,13 @@ export default function EditCustomerPage() {
 
       <CustomAttributesSection
         entityType="party"
-        entityId={id}
+        entityId={customerId}
         mode="edit"
         onChange={setCustomAttributes}
       />
+
+      <CustomerLoyaltySection customerId={customerId} />
+      <CustomerPackagesSection customerId={customerId} />
     </div>
   );
 }

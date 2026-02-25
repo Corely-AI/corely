@@ -1,6 +1,9 @@
 import {
+  type AuditPort,
   BaseUseCase,
+  type IdempotencyPort,
   type LoggerPort,
+  type OutboxPort,
   type Result,
   type UseCaseContext,
   type UseCaseError,
@@ -16,14 +19,30 @@ import {
 import { toLoyaltyLedgerEntryDto } from "../mappers/engagement-dto.mappers";
 import type { LoyaltyRepositoryPort } from "../ports/loyalty-repository.port";
 
-type Deps = { logger: LoggerPort; loyalty: LoyaltyRepositoryPort };
+type Deps = {
+  logger: LoggerPort;
+  loyalty: LoyaltyRepositoryPort;
+  idempotency: IdempotencyPort;
+  audit: AuditPort;
+  outbox: OutboxPort;
+};
 
 export class CreateLoyaltyEarnEntryUseCase extends BaseUseCase<
   CreateLoyaltyEarnEntryInput,
   CreateLoyaltyEarnEntryOutput
 > {
   constructor(protected readonly deps: Deps) {
-    super({ logger: deps.logger });
+    super({ logger: deps.logger, idempotency: deps.idempotency });
+  }
+
+  protected getIdempotencyKey(
+    input: CreateLoyaltyEarnEntryInput,
+    ctx: UseCaseContext
+  ): string | undefined {
+    if (!input.idempotencyKey || !ctx.tenantId) {
+      return undefined;
+    }
+    return `engagement:loyalty:earn:${ctx.tenantId}:${input.idempotencyKey}`;
   }
 
   protected async handle(
@@ -32,6 +51,9 @@ export class CreateLoyaltyEarnEntryUseCase extends BaseUseCase<
   ): Promise<Result<CreateLoyaltyEarnEntryOutput, UseCaseError>> {
     if (!ctx.tenantId) {
       return err(new ValidationError("tenantId is required"));
+    }
+    if (!input.idempotencyKey) {
+      return err(new ValidationError("idempotencyKey is required"));
     }
 
     if (input.sourceType && input.sourceId) {
@@ -72,8 +94,40 @@ export class CreateLoyaltyEarnEntryUseCase extends BaseUseCase<
     await this.deps.loyalty.updateAccountBalance(
       ctx.tenantId,
       input.customerPartyId,
-      account.currentPointsBalance + input.pointsDelta
+      account.currentPointsBalance + input.pointsDelta,
+      {
+        lifetimeEarnedPoints: account.lifetimeEarnedPoints + input.pointsDelta,
+      }
     );
+
+    const refreshed =
+      (await this.deps.loyalty.getAccountByCustomer(ctx.tenantId, input.customerPartyId)) ??
+      account;
+
+    await this.deps.audit.log({
+      tenantId: ctx.tenantId,
+      userId: ctx.userId ?? "system",
+      action: "engagement.loyalty.earn",
+      entityType: "LoyaltyAccount",
+      entityId: refreshed.loyaltyAccountId,
+      metadata: {
+        entryId: input.entryId,
+        pointsDelta: input.pointsDelta,
+        customerPartyId: input.customerPartyId,
+      },
+    });
+
+    await this.deps.outbox.enqueue({
+      eventType: "LoyaltyPointsEarned",
+      tenantId: ctx.tenantId,
+      correlationId: ctx.correlationId,
+      payload: {
+        entryId: input.entryId,
+        customerPartyId: input.customerPartyId,
+        pointsDelta: input.pointsDelta,
+        balanceAfter: refreshed.currentPointsBalance,
+      },
+    });
 
     return ok({
       entry: toLoyaltyLedgerEntryDto({

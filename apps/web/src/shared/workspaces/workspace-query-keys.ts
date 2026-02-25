@@ -87,6 +87,10 @@ export const workspaceQueryKeys = {
   contacts: createWorkspaceQueryKeys("contacts"),
   leads: createWorkspaceQueryKeys("leads"),
   channels: createWorkspaceQueryKeys("channels"),
+  engagementLoyalty: createWorkspaceQueryKeys("engagement-loyalty"),
+  engagementPackages: createWorkspaceQueryKeys("engagement-packages"),
+  engagementPackageUsage: createWorkspaceQueryKeys("engagement-package-usage"),
+  engagementBirthdays: createWorkspaceQueryKeys("engagement-birthdays"),
 
   // Inventory
   products: createWorkspaceQueryKeys("products"),

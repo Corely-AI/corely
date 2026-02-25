@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { utcInstantSchema } from "../shared/local-date.schema";
+import { localDateSchema, utcInstantSchema } from "../shared/local-date.schema";
 import {
   PartyLifecycleStatusSchema,
   PartySocialLinksSchema,
@@ -26,6 +26,7 @@ export const CustomerDtoSchema = z.object({
   department: z.string().nullable().optional(),
   industry: z.string().nullable().optional(),
   website: z.string().nullable().optional(),
+  birthday: localDateSchema.nullable().optional(),
   email: z.string().email().optional(),
   phone: z.string().optional(),
   billingAddress: CustomerBillingAddressSchema.optional(),
