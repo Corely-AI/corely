@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bottomCartText: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontWeight: "800",
   },
 });

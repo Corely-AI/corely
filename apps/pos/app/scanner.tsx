@@ -148,7 +148,7 @@ export default function ScannerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: posTheme.colors.black,
   },
   camera: {
     flex: 1,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     gap: posTheme.spacing.xs,
   },
   title: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontSize: 18,
     fontWeight: "900",
   },
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 4,
   },
   instruction: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontSize: 15,
     marginTop: 24,
     textAlign: "center",
@@ -230,9 +230,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   processingText: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontWeight: "800",
-    backgroundColor: "rgba(0, 0, 0, 0.55)",
+    backgroundColor: posTheme.colors.overlayDark,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,

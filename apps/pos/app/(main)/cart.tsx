@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#FCE8E8",
+    backgroundColor: posTheme.colors.cartDeleteSoft,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -146,7 +146,7 @@ export default function KioskScanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
+    backgroundColor: posTheme.colors.black,
   },
   camera: {
     flex: 1,
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontSize: 18,
     fontWeight: "900",
   },
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     borderRightWidth: 4,
   },
   instruction: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontSize: 15,
     marginTop: 24,
     textAlign: "center",

@@ -266,16 +266,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   toggleOn: {
-    backgroundColor: "#9FE2C5",
+    backgroundColor: posTheme.colors.toggleOnBg,
   },
   toggleOff: {
-    backgroundColor: "#D7E0DB",
+    backgroundColor: posTheme.colors.toggleOffBg,
   },
   toggleKnob: {
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: "#fff",
+    backgroundColor: posTheme.colors.white,
   },
   toggleKnobOn: {
     alignSelf: "flex-end",

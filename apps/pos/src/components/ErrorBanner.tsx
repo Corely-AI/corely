@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import * as Clipboard from "expo-clipboard";
+import { posTheme } from "@/ui/theme";
 
 export interface ErrorBannerProps {
   message: string;
@@ -34,21 +35,21 @@ export function ErrorBanner({
   };
 
   const backgroundColor = {
-    error: "#FEE2E2", // red-100
-    warning: "#FEF3C7", // yellow-100
-    info: "#DBEAFE", // blue-100
+    error: posTheme.colors.bannerErrorBg,
+    warning: posTheme.colors.bannerWarningBg,
+    info: posTheme.colors.bannerInfoBg,
   }[variant];
 
   const textColor = {
-    error: "#991B1B", // red-800
-    warning: "#92400E", // yellow-800
-    info: "#1E40AF", // blue-800
+    error: posTheme.colors.bannerErrorText,
+    warning: posTheme.colors.bannerWarningText,
+    info: posTheme.colors.bannerInfoText,
   }[variant];
 
   const borderColor = {
-    error: "#FCA5A5", // red-300
-    warning: "#FCD34D", // yellow-300
-    info: "#93C5FD", // blue-300
+    error: posTheme.colors.bannerErrorBorder,
+    warning: posTheme.colors.bannerWarningBorder,
+    info: posTheme.colors.bannerInfoBorder,
   }[variant];
 
   return (

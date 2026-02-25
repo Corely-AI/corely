@@ -18,7 +18,16 @@ export default function KioskWelcomeScreen() {
         <Text style={styles.brand}>{t("kiosk.brand")}</Text>
         <Text style={styles.subtitle}>{t("kiosk.subtitle")}</Text>
         <View style={styles.statusRow}>
-          <View style={[styles.statusDot, { backgroundColor: isOnline ? "#1FA064" : "#D13A3A" }]} />
+          <View
+            style={[
+              styles.statusDot,
+              {
+                backgroundColor: isOnline
+                  ? posTheme.colors.kioskOnlineDot
+                  : posTheme.colors.kioskOfflineDot,
+              },
+            ]}
+          />
           <Text style={styles.statusText}>
             {isOnline ? t("status.online") : t("status.offline")} ·{" "}
             {t("kiosk.pendingSync", { count: queueCount })}
@@ -29,7 +38,7 @@ export default function KioskWelcomeScreen() {
       <View style={styles.actions}>
         <Card>
           <View style={styles.actionBody}>
-            <Ionicons name="qr-code-outline" size={28} color="#fff" />
+            <Ionicons name="qr-code-outline" size={28} color={posTheme.colors.white} />
             <View style={styles.actionText}>
               <Text style={styles.actionTitle}>{t("kiosk.checkInQr")}</Text>
               <Text style={styles.actionDesc}>{t("kiosk.qrDescription")}</Text>
@@ -81,13 +90,13 @@ const styles = StyleSheet.create({
     padding: posTheme.spacing.lg,
   },
   brand: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontSize: 30,
     fontWeight: "900",
   },
   subtitle: {
     marginTop: 6,
-    color: "#E8EEFF",
+    color: posTheme.colors.kioskSubtitle,
     fontSize: 14,
   },
   statusRow: {
@@ -102,7 +111,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   statusText: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontWeight: "700",
   },
   actions: {
@@ -122,13 +131,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   actionTitle: {
-    color: "#fff",
+    color: posTheme.colors.white,
     fontSize: 20,
     fontWeight: "900",
   },
   actionDesc: {
     marginTop: 4,
-    color: "#DBE6FF",
+    color: posTheme.colors.kioskDescription,
   },
   gridActions: {
     gap: posTheme.spacing.xs,
