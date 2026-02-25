@@ -1,4 +1,9 @@
-export type IntegrationProvider = "sumup" | "adyen" | "microsoft_graph_mail" | "google_gmail";
+export type IntegrationProvider =
+  | "sumup"
+  | "adyen"
+  | "stripe_terminal"
+  | "microsoft_graph_mail"
+  | "google_gmail";
 
 export type CashlessSessionStatus =
   | "pending"
@@ -11,7 +16,19 @@ export type CashlessSessionStatus =
 export type CashlessAction =
   | { type: "redirect_url"; url: string }
   | { type: "qr_payload"; payload: string }
-  | { type: "terminal_action"; instruction: string }
+  | {
+      type: "terminal_action";
+      instruction: string;
+      provider?: "stripe_terminal";
+      readerId?: string;
+      paymentIntentId?: string;
+    }
+  | {
+      type: "stripe_terminal_sdk";
+      paymentIntentClientSecret: string;
+      terminalLocationId?: string | null;
+      paymentIntentId: string;
+    }
   | { type: "none" };
 
 export interface CashlessSession {
