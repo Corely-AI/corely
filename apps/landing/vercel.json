@@ -1,3 +1,7 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/vi/nails", "destination": "https://nails.corely.one" },
+    { "source": "/vi/nails/(.*)", "destination": "https://nails.corely.one/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
