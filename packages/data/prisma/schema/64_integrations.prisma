@@ -1,0 +1,45 @@
+enum IntegrationKind {
+  SUMUP
+  ADYEN
+  MICROSOFT_GRAPH_MAIL
+  GOOGLE_GMAIL
+
+  @@schema("platform")
+}
+
+enum IntegrationAuthMethod {
+  API_KEY
+  OAUTH2
+
+  @@schema("platform")
+}
+
+enum IntegrationConnectionStatus {
+  ACTIVE
+  INVALID
+  DISABLED
+
+  @@schema("platform")
+}
+
+model IntegrationConnection {
+  id              String                    @id @default(cuid())
+  tenantId        String                    @map("tenant_id")
+  workspaceId     String                    @map("workspace_id")
+  kind            IntegrationKind
+  authMethod      IntegrationAuthMethod     @map("auth_method")
+  displayName     String?                   @map("display_name") @db.VarChar(120)
+  configJson      Json                      @map("config_json")
+  secretEncrypted String?                   @map("secret_encrypted")
+  status          IntegrationConnectionStatus @default(ACTIVE)
+  createdAt       DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  crmMailboxes CrmMailbox[]
+
+  @@index([tenantId, workspaceId])
+  @@index([workspaceId, kind, status])
+  @@map("integration_connections")
+  @@schema("platform")
+}

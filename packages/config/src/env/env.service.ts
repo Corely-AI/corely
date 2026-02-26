@@ -285,6 +285,14 @@ export class EnvService {
     return this.config.RESEND_WEBHOOK_SECRET;
   }
 
+  get SUMUP_WEBHOOK_SECRET(): string | undefined {
+    return this.config.SUMUP_WEBHOOK_SECRET;
+  }
+
+  get INTEGRATIONS_SECRET_KEY(): string | undefined {
+    return this.config.INTEGRATIONS_SECRET_KEY;
+  }
+
   // ============================================================================
   // OBJECT STORAGE
   // ============================================================================

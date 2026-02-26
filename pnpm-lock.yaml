@@ -1224,6 +1224,48 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.3)(jsdom@24.1.3)(lightningcss@1.30.2)(msw@2.12.4(@types/node@22.19.3)(typescript@5.9.3))(terser@5.46.0)
 
+  packages/integrations/adyen:
+    dependencies:
+      '@corely/domain':
+        specifier: workspace:*
+        version: link:../../domain
+      '@corely/integrations-core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/integrations/core:
+    dependencies:
+      '@corely/domain':
+        specifier: workspace:*
+        version: link:../../domain
+
+  packages/integrations/google-gmail:
+    dependencies:
+      '@corely/integrations-core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/integrations/microsoft-graph-mail:
+    dependencies:
+      '@corely/integrations-core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/integrations/stripe-terminal:
+    dependencies:
+      '@corely/integrations-core':
+        specifier: workspace:*
+        version: link:../core
+      stripe:
+        specifier: ^20.4.0
+        version: 20.4.0(@types/node@22.19.3)
+
+  packages/integrations/sumup:
+    dependencies:
+      '@corely/integrations-core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/kernel:
     dependencies:
       '@corely/domain':
@@ -1629,6 +1671,21 @@ importers:
       '@corely/email-templates':
         specifier: workspace:*
         version: link:../../packages/email-templates
+      '@corely/integrations-adyen':
+        specifier: workspace:*
+        version: link:../../packages/integrations/adyen
+      '@corely/integrations-core':
+        specifier: workspace:*
+        version: link:../../packages/integrations/core
+      '@corely/integrations-google-gmail':
+        specifier: workspace:*
+        version: link:../../packages/integrations/google-gmail
+      '@corely/integrations-microsoft-graph-mail':
+        specifier: workspace:*
+        version: link:../../packages/integrations/microsoft-graph-mail
+      '@corely/integrations-sumup':
+        specifier: workspace:*
+        version: link:../../packages/integrations/sumup
       '@corely/kernel':
         specifier: workspace:*
         version: link:../../packages/kernel
@@ -11530,6 +11587,15 @@ packages:
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
+
+  stripe@20.4.0:
+    resolution: {integrity: sha512-F/aN1IQ9vHmlyLNi3DkiIbyzQb6gyBG0uYFd/VrEVQSc9BLtlgknPUx0EvzZdBMRLFuRaPFIFd7Mxwtg7Pbwzw==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      '@types/node': '>=16'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
 
   strnum@1.1.2:
     resolution: {integrity: sha512-vrN+B7DBIoTTZjnPNewwhx6cBA/H+IS7rfW68n7XxC1y7uoiGQBxaKzqucGUgavX15dJgiGztLJ8vxuEzwqBdA==}
@@ -25119,6 +25185,10 @@ snapshots:
   strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
+
+  stripe@20.4.0(@types/node@22.19.3):
+    optionalDependencies:
+      '@types/node': 22.19.3
 
   strnum@1.1.2: {}
 

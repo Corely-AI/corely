@@ -40,7 +40,7 @@ export default function CheckoutScreen() {
     useCartStore();
   const { currentShift } = useShiftStore();
   const { selectedRegister } = useRegisterStore();
-  const { user } = useAuthStore();
+  const { user, apiClient } = useAuthStore();
   const { salesService } = useSalesService();
   const { triggerSync } = useSyncEngine();
   const requireOpenShiftForSales = useSettingsStore((state) => state.requireOpenShiftForSales);
@@ -51,6 +51,12 @@ export default function CheckoutScreen() {
   const [paymentReference, setPaymentReference] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSummary, setShowSummary] = useState(isTablet);
+  const [cashlessAttempt, setCashlessAttempt] = useState<{
+    attemptId: string;
+    status: string;
+    actionLabel: string;
+    amountCents: number;
+  } | null>(null);
   const moneyPad = useMoneyPad("");
 
   const totalPaid = useMemo(
@@ -62,23 +68,125 @@ export default function CheckoutScreen() {
 
   const methodLabel = (method: PaymentMethod) => t(`checkout.method.${method.toLowerCase()}`);
 
-  const addPayment = (amountCents?: number) => {
+  const appendPayment = (
+    amountCents: number,
+    reference?: string | null,
+    method: PaymentMethod = selectedMethod
+  ) => {
+    const payment: PosSalePayment = {
+      paymentId: uuidv4(),
+      method,
+      amountCents,
+      reference: reference ?? (paymentReference.trim() || null),
+    };
+
+    setPayments((prev) => [...prev, payment]);
+    moneyPad.clear();
+    setPaymentReference("");
+  };
+
+  const addPayment = async (amountCents?: number) => {
     const parsed = amountCents ?? Math.round(Number(moneyPad.value) * 100);
     if (!Number.isFinite(parsed) || parsed <= 0) {
       Alert.alert(t("checkout.invalidAmountTitle"), t("checkout.invalidAmountMessage"));
       return;
     }
 
-    const payment: PosSalePayment = {
-      paymentId: uuidv4(),
-      method: selectedMethod,
-      amountCents: parsed,
-      reference: paymentReference.trim() || null,
-    };
+    if (
+      selectedMethod === "CARD" &&
+      apiClient &&
+      user &&
+      (currentShift?.registerId || selectedRegister?.registerId)
+    ) {
+      try {
+        const registerId = currentShift?.registerId ?? selectedRegister?.registerId;
+        if (!registerId) {
+          throw new Error("Register is required for cashless payments");
+        }
 
-    setPayments((prev) => [...prev, payment]);
-    moneyPad.clear();
-    setPaymentReference("");
+        const started = await apiClient.startCashlessPayment({
+          registerId,
+          saleId: undefined,
+          amountCents: parsed,
+          currency: "USD",
+          reference: paymentReference.trim() || undefined,
+          providerHint: "sumup",
+        });
+
+        const actionLabel =
+          started.action.type === "redirect_url"
+            ? started.action.url
+            : started.action.type === "qr_payload"
+              ? started.action.payload
+              : started.action.type === "terminal_action"
+                ? started.action.instruction
+                : "";
+
+        setCashlessAttempt({
+          attemptId: started.attemptId,
+          status: started.status,
+          actionLabel,
+          amountCents: parsed,
+        });
+
+        if (started.status === "paid" || started.status === "authorized") {
+          appendPayment(parsed, started.providerRef, "CARD");
+        } else {
+          Alert.alert(
+            t("checkout.cashlessPendingTitle"),
+            t("checkout.cashlessPendingMessage", {
+              action: actionLabel || t("checkout.cashlessCheckTerminal"),
+            })
+          );
+        }
+        return;
+      } catch (error) {
+        Alert.alert(
+          t("checkout.cashlessStartFailedTitle"),
+          error instanceof Error ? error.message : t("checkout.cashlessStartFailedMessage")
+        );
+        return;
+      }
+    }
+
+    appendPayment(parsed);
+  };
+
+  const refreshCashlessStatus = async () => {
+    if (!cashlessAttempt || !apiClient) {
+      return;
+    }
+
+    try {
+      const status = await apiClient.getCashlessPaymentStatus(cashlessAttempt.attemptId);
+      const actionLabel =
+        status.action.type === "redirect_url"
+          ? status.action.url
+          : status.action.type === "qr_payload"
+            ? status.action.payload
+            : status.action.type === "terminal_action"
+              ? status.action.instruction
+              : "";
+
+      setCashlessAttempt({
+        attemptId: status.attemptId,
+        status: status.status,
+        actionLabel,
+        amountCents: cashlessAttempt.amountCents,
+      });
+
+      if (
+        (status.status === "paid" || status.status === "authorized") &&
+        !payments.some((payment) => payment.reference === status.providerRef)
+      ) {
+        appendPayment(cashlessAttempt.amountCents, status.providerRef, "CARD");
+      }
+    } catch (error) {
+      Alert.alert(
+        t("checkout.cashlessRefreshFailedTitle"),
+        error instanceof Error ? error.message : t("checkout.cashlessRefreshFailedMessage")
+      );
+    }
   };
 
   const removePayment = (paymentId: string) => {
@@ -87,7 +195,7 @@ export default function CheckoutScreen() {
 
   const quickCashAdd = (deltaDollars: number) => {
     const target = Math.max(totals.totalCents + deltaDollars * 100, 0);
-    addPayment(target - totalPaid);
+    void addPayment(target - totalPaid);
   };
 
   const completeSale = async () => {
@@ -288,17 +396,31 @@ export default function CheckoutScreen() {
               <Button
                 testID="pos-checkout-payment-add"
                 label={t("checkout.addPayment")}
-                onPress={() => addPayment()}
+                onPress={() => void addPayment()}
               />
               {remaining > 0 ? (
                 <Button
                   testID="pos-checkout-add-remaining"
                   label={t("checkout.addRemaining", { amount: formatCurrencyFromCents(remaining) })}
                   variant="secondary"
-                  onPress={() => addPayment(remaining)}
+                  onPress={() => void addPayment(remaining)}
                 />
               ) : null}
             </CenteredActions>
+
+            {cashlessAttempt ? (
+              <View style={styles.paymentState}>
+                <View>
+                  <Text style={styles.stateLabel}>{t("checkout.cashlessStatusLabel")}</Text>
+                  <Text style={styles.stateValue}>{cashlessAttempt.status.toUpperCase()}</Text>
+                </View>
+                <Button
+                  label={t("checkout.refreshCashlessStatus")}
+                  variant="secondary"
+                  onPress={() => void refreshCashlessStatus()}
+                />
+              </View>
+            ) : null}
 
             {selectedMethod === "CASH" ? (
               <View style={styles.cashQuickRow}>

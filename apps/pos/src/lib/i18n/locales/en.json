@@ -178,7 +178,7 @@
     "subtitle": "Collect payment and finalize sale",
     "method": {
       "cash": "Cash",
-      "card": "Card",
+      "card": "Cashless",
       "bank_transfer": "Bank transfer",
       "other": "Other"
     }
