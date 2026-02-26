@@ -83,19 +83,10 @@ export class GetPublicWebsiteExternalContentUseCase extends BaseUseCase<
       key: input.key,
       localeSlot,
     });
-    if (rawData === undefined) {
-      return err(
-        new NotFoundError(
-          "External content not found",
-          undefined,
-          "Website:ExternalContentNotFound"
-        )
-      );
-    }
 
     let data: WebsiteExternalContentEnvelopeByKey["data"];
     try {
-      data = parseWebsiteExternalContentData(input.key, rawData);
+      data = parseWebsiteExternalContentData(input.key, rawData ?? {});
     } catch {
       return err(
         new ValidationError(

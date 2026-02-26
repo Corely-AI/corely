@@ -202,7 +202,8 @@
     "classSessions": "Sessions",
     "classBilling": "Class Billing",
     "website": "Website",
-    "platform": "Platform"
+    "platform": "Platform",
+    "forms": "Forms"
   },
   "featureFlags": {
     "app": {
@@ -1118,6 +1119,153 @@
       "row": "Row {{index}}",
       "remove": "Remove",
       "add": "Add row"
+    },
+    "list": {
+      "title": "Forms",
+      "subtitle": "Create and manage public forms",
+      "newForm": "New form",
+      "noForms": "No forms yet",
+      "noFormsDescription": "Create your first form to collect responses.",
+      "createForm": "Create form",
+      "columns": {
+        "name": "Name",
+        "status": "Status",
+        "updated": "Updated"
+      },
+      "sort": {
+        "updatedNewest": "Updated (Newest)",
+        "updatedOldest": "Updated (Oldest)",
+        "createdNewest": "Created (Newest)",
+        "nameAz": "Name (A-Z)"
+      },
+      "filters": {
+        "status": "Status"
+      },
+      "statuses": {
+        "DRAFT": "Draft",
+        "PUBLISHED": "Published"
+      },
+      "page": "Page {{page}} of {{total}}",
+      "delete": {
+        "title": "Delete form",
+        "description": "This will archive the form and remove it from the list."
+      },
+      "errors": {
+        "loadFailed": "Failed to load forms"
+      },
+      "toast": {
+        "deleted": "Form deleted",
+        "deleteFailed": "Failed to delete form"
+      }
+    },
+    "detail": {
+      "subtitle": "Form builder and submissions",
+      "backToForms": "Back to forms",
+      "notFound": "Form not found.",
+      "tabs": {
+        "builder": "Builder",
+        "share": "Share",
+        "submissions": "Submissions"
+      },
+      "builder": {
+        "formDetails": "Form details",
+        "save": "Save",
+        "saving": "Saving...",
+        "name": "Name",
+        "description": "Description",
+        "fields": "Fields",
+        "addField": "Add field",
+        "emptyFields": "Add fields to start building your form.",
+        "columns": {
+          "label": "Label",
+          "type": "Type",
+          "required": "Required",
+          "order": "Order"
+        },
+        "required": {
+          "yes": "Yes",
+          "no": "No"
+        }
+      },
+      "share": {
+        "publishing": "Publishing",
+        "regenerateToken": "Regenerate token",
+        "unpublish": "Unpublish",
+        "publishForm": "Publish form",
+        "publishHint": "Publishing generates a public link and access token for submissions.",
+        "publicUrl": "Public URL",
+        "accessToken": "Access token (shown once)",
+        "regenerateToView": "Regenerate to view",
+        "linkCopied": "Link copied",
+        "tokenCopied": "Token copied"
+      },
+      "submissions": {
+        "title": "Submissions",
+        "empty": "No submissions yet.",
+        "columns": {
+          "submitted": "Submitted",
+          "source": "Source"
+        },
+        "view": "View",
+        "detailTitle": "Submission details",
+        "notProvided": "(not provided)",
+        "noSubmissionSelected": "No submission selected."
+      },
+      "fieldDialog": {
+        "addTitle": "Add field",
+        "editTitle": "Edit field",
+        "label": "Label",
+        "type": "Type",
+        "selectType": "Select type",
+        "options": "Options (comma separated)",
+        "required": "Required",
+        "helpText": "Help text",
+        "cancel": "Cancel",
+        "saveField": "Save field",
+        "labelRequired": "Field label is required"
+      },
+      "fieldTypes": {
+        "SHORT_TEXT": "Short text",
+        "LONG_TEXT": "Long text",
+        "NUMBER": "Number",
+        "DATE": "Date",
+        "BOOLEAN": "Boolean",
+        "SINGLE_SELECT": "Single select",
+        "MULTI_SELECT": "Multi select",
+        "EMAIL": "Email"
+      },
+      "statuses": {
+        "DRAFT": "Draft",
+        "PUBLISHED": "Published"
+      },
+      "toast": {
+        "updated": "Form updated",
+        "updateFailed": "Failed to update form",
+        "fieldAdded": "Field added",
+        "fieldAddFailed": "Failed to add field",
+        "fieldUpdated": "Field updated",
+        "fieldUpdateFailed": "Failed to update field",
+        "fieldRemoved": "Field removed",
+        "fieldRemoveFailed": "Failed to remove field",
+        "published": "Form published",
+        "publishFailed": "Failed to publish form",
+        "unpublished": "Form unpublished",
+        "unpublishFailed": "Failed to unpublish form"
+      }
+    },
+    "new": {
+      "title": "Create new form",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "createForm": "Create form",
+      "formName": "Form name",
+      "namePlaceholder": "Contact us",
+      "description": "Description",
+      "descriptionPlaceholder": "Tell respondents what this form is for",
+      "toast": {
+        "created": "Form created",
+        "createFailed": "Failed to create form"
+      }
     }
   },
   "portfolioPublic": {
