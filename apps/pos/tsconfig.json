@@ -3,16 +3,25 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "es2020",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@corely/auth-client": ["../../packages/auth-client/src/index.ts"],
+      "@corely/api-client": ["../../packages/api-client/src/index.ts"],
+      "@corely/contracts": ["../../packages/contracts/src/index.ts"],
+      "@corely/offline-core": ["../../packages/offline-core/src/index.ts"],
+      "@corely/offline-rn": ["../../packages/offline-rn/src/index.ts"],
+      "@corely/pos-core": ["../../packages/pos-core/src/index.ts"],
+      "@corely/pos-hardware": ["../../packages/pos-hardware/src/index.ts"]
     }
   },
-  "include": ["src", "app", "app.json"],
+  "include": ["src", "app", "app.json", ".expo/types/**/*.ts", "expo-env.d.ts"],
   "exclude": ["node_modules"]
 }

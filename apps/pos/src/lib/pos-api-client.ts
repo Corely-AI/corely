@@ -14,10 +14,14 @@ import type {
   SyncPosSaleOutput,
   GetCatalogSnapshotInput,
   GetCatalogSnapshotOutput,
+  StartCashlessPaymentInput,
+  StartCashlessPaymentOutput,
+  GetCashlessPaymentStatusOutput,
   SearchCustomersInput,
   SearchCustomersOutput,
   GetCustomerInput,
   CustomerDto,
+  CreateCashEntry,
   CreateCheckInEventInput,
   CreateCheckInEventOutput,
   ListCheckInEventsInput,
@@ -60,13 +64,13 @@ export class PosApiClient extends ApiClient {
   // Shift management
   async openShift(input: OpenShiftInput): Promise<OpenShiftOutput> {
     return this.post<OpenShiftOutput>("/pos/shifts/open", input, {
-      idempotencyKey: this.generateIdempotencyKey(),
+      idempotencyKey: input.sessionId,
     });
   }
 
   async closeShift(input: CloseShiftInput): Promise<CloseShiftOutput> {
     return this.post<CloseShiftOutput>("/pos/shifts/close", input, {
-      idempotencyKey: this.generateIdempotencyKey(),
+      idempotencyKey: input.sessionId,
     });
   }
 
@@ -85,11 +89,32 @@ export class PosApiClient extends ApiClient {
     });
   }
 
+  async startCashlessPayment(
+    input: StartCashlessPaymentInput
+  ): Promise<StartCashlessPaymentOutput> {
+    return this.post<StartCashlessPaymentOutput>("/pos/payments/cashless/start", input, {
+      idempotencyKey: input.idempotencyKey,
+    });
+  }
+
+  async getCashlessPaymentStatus(attemptId: string): Promise<GetCashlessPaymentStatusOutput> {
+    return this.get<GetCashlessPaymentStatusOutput>(`/pos/payments/cashless/${attemptId}`);
+  }
+
   // Catalog
   async getCatalogSnapshot(input: GetCatalogSnapshotInput): Promise<GetCatalogSnapshotOutput> {
     const params = new URLSearchParams();
-    if (input.lastSyncAt) {
-      params.append("lastSyncAt", input.lastSyncAt.toISOString());
+    if (input.warehouseId) {
+      params.append("warehouseId", input.warehouseId);
+    }
+    if (input.limit) {
+      params.append("limit", String(input.limit));
+    }
+    if (input.offset) {
+      params.append("offset", String(input.offset));
+    }
+    if (input.updatedSince) {
+      params.append("updatedSince", input.updatedSince.toISOString());
     }
 
     return this.get<GetCatalogSnapshotOutput>(
@@ -99,7 +124,13 @@ export class PosApiClient extends ApiClient {
 
   // Customers
   async searchCustomers(input: SearchCustomersInput): Promise<SearchCustomersOutput> {
-    const params = new URLSearchParams({ q: input.q });
+    const params = new URLSearchParams();
+    if (input.q) {
+      params.append("q", input.q);
+    }
+    if (input.role) {
+      params.append("role", input.role);
+    }
     if (input.cursor) {
       params.append("cursor", input.cursor);
     }
@@ -180,7 +211,7 @@ export class PosApiClient extends ApiClient {
   }
 
   async getEngagementSettings(
-    input: GetEngagementSettingsInput
+    _input: GetEngagementSettingsInput
   ): Promise<GetEngagementSettingsOutput> {
     return this.get<GetEngagementSettingsOutput>("/engagement/settings");
   }
@@ -189,5 +220,11 @@ export class PosApiClient extends ApiClient {
     input: UpdateEngagementSettingsInput
   ): Promise<UpdateEngagementSettingsOutput> {
     return this.patch<UpdateEngagementSettingsOutput>("/engagement/settings", input);
+  }
+
+  async createCashEntry(input: CreateCashEntry): Promise<{ entry: unknown }> {
+    return this.post<{ entry: unknown }>(`/cash-registers/${input.registerId}/entries`, input, {
+      idempotencyKey: this.generateIdempotencyKey(),
+    });
   }
 }

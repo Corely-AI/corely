@@ -26,7 +26,8 @@
       "@corely/domain": ["../packages/domain/src/index.ts"],
       "@corely/offline-core": ["../packages/offline-core/src/index.ts"],
       "@corely/offline-web": ["../packages/offline-web/src/index.ts"],
-      "@corely/ui": ["../packages/ui/src/index.ts"]
+      "@corely/ui": ["../packages/ui/src/index.ts"],
+      "@corely/website-blocks": ["../packages/website-blocks/src/index.ts"]
     }
   },
   "include": [
@@ -37,6 +38,7 @@
     "../../packages/domain/src",
     "../../packages/offline-core/src",
     "../../packages/offline-web/src",
-    "../../packages/ui/src"
+    "../../packages/ui/src",
+    "../../packages/website-blocks/src"
   ]
 }

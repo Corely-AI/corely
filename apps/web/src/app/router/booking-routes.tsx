@@ -9,6 +9,7 @@ import ResourceEditorPage from "../../modules/booking/screens/ResourceEditorPage
 import ServiceDetailPage from "../../modules/booking/screens/ServiceDetailPage";
 import ServiceEditorPage from "../../modules/booking/screens/ServiceEditorPage";
 import { ServicesPage } from "../../modules/booking/screens/ServicesPage";
+import BookingPublicPageRedirect from "../../modules/booking/screens/BookingPublicPageRedirect";
 
 export const bookingRoutes = (
   <>
@@ -26,5 +27,6 @@ export const bookingRoutes = (
     <Route path="/booking/services/new" element={<ServiceEditorPage />} />
     <Route path="/booking/services/:id" element={<ServiceDetailPage />} />
     <Route path="/booking/services/:id/edit" element={<ServiceEditorPage />} />
+    <Route path="/booking/public-page" element={<BookingPublicPageRedirect />} />
   </>
 );

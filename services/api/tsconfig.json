@@ -14,6 +14,8 @@
       "@/*": ["src/*"],
       "@corely/contracts": ["../../packages/contracts/src/index.ts"],
       "@corely/contracts/*": ["../../packages/contracts/src/*"],
+      "@corely/config": ["../../packages/config/src/index.ts"],
+      "@corely/config/*": ["../../packages/config/src/*"],
       "@corely/domain": ["../../packages/domain/src/index.ts"],
       "@corely/domain/*": ["../../packages/domain/src/*"],
       "@corely/data": ["../../packages/data/src/index.ts"],
@@ -24,6 +26,22 @@
       "@corely/core/*": ["../../packages/core/src/*"],
       "@corely/email": ["../../packages/email/src/index.ts"],
       "@corely/email/*": ["../../packages/email/src/*"],
+      "@corely/integrations-core": ["../../packages/integrations/core/src/index.ts"],
+      "@corely/integrations-core/*": ["../../packages/integrations/core/src/*"],
+      "@corely/integrations-sumup": ["../../packages/integrations/sumup/src/index.ts"],
+      "@corely/integrations-sumup/*": ["../../packages/integrations/sumup/src/*"],
+      "@corely/integrations-adyen": ["../../packages/integrations/adyen/src/index.ts"],
+      "@corely/integrations-adyen/*": ["../../packages/integrations/adyen/src/*"],
+      "@corely/integrations-microsoft-graph-mail": [
+        "../../packages/integrations/microsoft-graph-mail/src/index.ts"
+      ],
+      "@corely/integrations-microsoft-graph-mail/*": [
+        "../../packages/integrations/microsoft-graph-mail/src/*"
+      ],
+      "@corely/integrations-google-gmail": [
+        "../../packages/integrations/google-gmail/src/index.ts"
+      ],
+      "@corely/integrations-google-gmail/*": ["../../packages/integrations/google-gmail/src/*"],
       "@corely/public-urls": ["../../packages/public-urls/src/index.ts"],
       "@corely/storage": ["../../packages/storage/src/index.ts"],
       "@corely/storage/*": ["../../packages/storage/src/*"]

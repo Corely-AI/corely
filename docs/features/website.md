@@ -12,6 +12,12 @@ Website rendering follows a `Templates + Blocks` model:
 - Blocks are validated JSON content edited in admin.
 - Customers no longer edit arbitrary React code per site.
 
+Website page creation now also supports `Presets`:
+
+- Presets are starter `WebsitePageContent` payloads for `/website/sites/:siteId/pages/new`.
+- Presets can be built-in (shipped by code) or site-specific (saved from admin UI).
+- Presets reduce template sprawl: most new page structures should be presets, not new template keys.
+
 ## Responsibility Split
 
 Website module (this module):
@@ -21,12 +27,66 @@ Website module (this module):
 - Public resolve endpoint (`/public/website/resolve`)
 - AI-assisted page generation (draft + CMS content blueprint)
 - Page content draft editing endpoints (`/website/pages/:pageId/content`)
+- External JSON content keys (draft/publish + public read), starting with `siteCopy`
 
 CMS module:
 
 - Content entries, blocks/blueprints, rendering payloads
 - Draft/publish lifecycle for content entries
 - Public content rendering for CMS-owned content types
+
+## Module Composition (Current Code)
+
+NestJS module:
+
+- Module file: `services/api/src/modules/website/website.module.ts`
+- Imports: `DataModule`, `KernelModule`, `IdentityModule`, `DocumentsModule`, `PromptModule`, `CmsModule`, `CustomizationModule`
+- Controllers:
+  - `website-sites.controller.ts`
+  - `website-domains.controller.ts`
+  - `website-pages.controller.ts`
+  - `website-menus.controller.ts`
+  - `website-external-content.controller.ts`
+  - `website-qa.controller.ts`
+  - `website-wall-of-love.controller.ts`
+  - `website-public.controller.ts`
+  - `website-ai.controller.ts`
+
+Application layer:
+
+- `WebsiteApplication` composes all Website use cases behind one injection point.
+- Current use-case count: 39 files under `application/use-cases`.
+- Domain logic is isolated in `domain/*` (slug/locale/path validators, page-content normalization, site-settings normalization, preview-token checks, wall-of-love URL validation).
+
+Infrastructure/adapter layer:
+
+- Prisma repositories for Website-owned entities.
+- CMS integration via ports/adapters (`CmsReadPort`, `CmsWritePort`) and `CmsWebsitePortAdapter`.
+- Document/public file URL integration via `WebsitePublicFileUrlPort`.
+- Custom settings integration via customization adapter (`WebsiteCustomAttributesPort`).
+- AI generation adapter via `AiSdkWebsitePageGenerator`.
+
+## Data Model (Current Prisma)
+
+Website module owns tables in Prisma schema `content`:
+
+- `WebsiteSite`
+- `WebsiteDomain`
+- `WebsitePage`
+- `WebsiteMenu`
+- `WebsitePageSnapshot`
+- `WebsiteFeedback`
+- `WebsiteFeedbackImage`
+- `WebsiteQa`
+- `WebsiteWallOfLoveItem`
+- `WebsiteWallOfLoveItemImage`
+
+Key constraints:
+
+- Site slug uniqueness: `@@unique([tenantId, slug])`
+- Page uniqueness: `@@unique([tenantId, siteId, path, locale])`
+- Menu uniqueness: `@@unique([tenantId, siteId, name, locale])`
+- Snapshot version uniqueness: `@@unique([tenantId, pageId, version])`
 
 ## Templates + Blocks Contracts
 
@@ -40,11 +100,16 @@ Shared contracts are defined in `packages/contracts/src/website/blocks/*` and ex
   - `blocks[]`
   - `seoOverride?`
 
-Current template:
+Current templates:
 
 - `landing.tutoring.v1` with block types:
   `stickyNav`, `hero`, `socialProof`, `pas`, `method`, `programHighlights`, `groupLearning`,
   `coursePackages`, `schedule`, `instructor`, `testimonials`, `scholarship`, `faq`, `leadForm`, `footer`
+- `landing.nailstudio.v1` with block types:
+  `stickyNav`, `hero`, `servicesGrid`, `priceMenu`, `galleryMasonry`, `signatureSets`, `team`,
+  `testimonials`, `bookingSteps`, `locationHours`, `faq`, `leadForm`, `footer`
+- Legacy alias:
+  `landing.deutschliebe.v1` -> routed to tutoring runtime template
 
 ## Site Settings Contract
 
@@ -66,6 +131,61 @@ Website does not write customization tables directly from its Prisma repositorie
 
 Website settings updates call the Customization adapter port (`WebsiteCustomAttributesPort`) for `settings.custom`.
 
+Preset persistence (site-specific presets):
+
+- Site custom page presets are stored in `settings.custom` using key:
+  - `website.pagePresets`
+- This is persisted via Website Site update flow (`PUT/PATCH /website/sites/:siteId`) and Customization adapter.
+- No direct custom-attribute DB access from web app.
+
+External content persistence (site-level, via customization adapter):
+
+- Draft key: `website.externalContentDraft`
+- Published key: `website.externalContentPublished`
+- Shape per key + locale slot (`default` slot when locale is omitted):
+  - `siteCopy`: `{ default: SiteCopy, "en-US": SiteCopy, ... }`
+
+## How To Add New Website Structure
+
+### Path A: No-code (recommended for most new structures)
+
+Use this when existing block types are enough.
+
+1. Open or create a page and arrange blocks to match the target structure.
+2. Edit copy/props until the structure is reusable.
+3. In page editor `Page blocks`, click `Save as preset`.
+4. Provide:
+   - preset name
+   - preset key (format: `a-z`, `0-9`, `.`, `_`, `-`, must start with a letter)
+   - optional description
+5. Create a new page at `/website/sites/:siteId/pages/new`.
+6. Choose the saved preset from `Preset` dropdown.
+7. The editor auto-fills:
+   - `templateKey`
+   - default blocks/content
+   - default locale
+   - suggested path base
+8. Save page and continue editing/publishing as usual.
+
+Scope:
+
+- Site-specific presets are visible for that site (stored in site custom settings).
+- This is the fastest way to launch a new page structure without deployments.
+
+### Path B: Code change required
+
+Use this only when no-code preset composition is insufficient.
+
+1. New structure using existing blocks, but needed globally:
+   - Add a built-in preset definition in web editor preset registry.
+2. New block capability needed:
+   - Add block schema/type in `packages/contracts` (`WebsiteBlockUnionSchema`).
+   - Add runtime renderer in `apps/website-runtime`.
+   - Add admin editor fields/defaults in `apps/web`.
+3. New layout/runtime behavior needed (rare):
+   - Add/extend template in runtime `TemplateRegistry`.
+   - Keep template count low; prefer presets whenever possible.
+
 ## Integration Boundaries
 
 - No direct reads/writes of CMS tables from Website.
@@ -77,6 +197,7 @@ Website settings updates call the Customization adapter port (`WebsiteCustomAttr
 - Website publish/unpublish writes outbox events:
   - `website.page.published`
   - `website.page.unpublished`
+  - `website.externalContent.published`
 
 ## Publish + Snapshot Strategy
 
@@ -107,6 +228,17 @@ Draft blocks are stored in CMS draft content (`contentJson`) for `WebsitePage.cm
   - `site.settings` (`common`, `theme`, `custom`)
   - `page.content` (`WebsitePageContent`)
   - legacy compatibility fields (`template`, `payloadJson`, etc.)
+
+Resolution order and behavior:
+
+- Normalize host/path/locale first.
+- Try `WebsiteDomain` hostname mapping (custom domain).
+- If no custom domain match:
+  - resolve workspace context from host/path
+  - if first path segment is a non-reserved slug and matches a site slug, use that site and strip the segment from page path
+  - otherwise use workspace default site
+- Resolve page by `(tenantId, siteId, path, locale)`.
+- Locale fallback is normalized locale input or site default locale.
 
 ## Public Site Settings
 
@@ -242,6 +374,72 @@ Validation:
   - `POST /public/forms/:publicId/submissions`
 - `apps/public-web` now includes `publicApi.submitPublicForm(publicId, payload)`.
 
+## API Inventory (Current)
+
+Admin endpoints (auth required):
+
+- Sites
+  - `GET /website/sites`
+  - `POST /website/sites`
+  - `GET /website/sites/:siteId`
+  - `PUT /website/sites/:siteId`
+  - `PATCH /website/sites/:siteId`
+- Domains
+  - `GET /website/sites/:siteId/domains`
+  - `POST /website/sites/:siteId/domains`
+  - `DELETE /website/sites/:siteId/domains/:domainId`
+- Pages
+  - `GET /website/sites/:siteId/pages`
+  - `POST /website/sites/:siteId/pages`
+  - `GET /website/pages/:pageId`
+  - `PUT /website/pages/:pageId`
+  - `GET /website/pages/:pageId/content`
+  - `PATCH /website/pages/:pageId/content`
+  - `POST /website/pages/:pageId/publish`
+  - `POST /website/pages/:pageId/unpublish`
+- Menus
+  - `GET /website/sites/:siteId/menus`
+  - `PUT /website/sites/:siteId/menus`
+- QA
+  - `GET /website/sites/:siteId/qa`
+  - `POST /website/sites/:siteId/qa`
+  - `PUT /website/sites/:siteId/qa/:qaId`
+  - `DELETE /website/sites/:siteId/qa/:qaId`
+- Wall of Love
+  - `GET /website/sites/:siteId/wall-of-love/items`
+  - `POST /website/sites/:siteId/wall-of-love/items`
+  - `PATCH /website/wall-of-love/items/:itemId`
+  - `POST /website/wall-of-love/items/:itemId/publish`
+  - `POST /website/wall-of-love/items/:itemId/unpublish`
+  - `POST /website/sites/:siteId/wall-of-love/items/reorder`
+- AI
+  - `POST /website/ai/generate-page`
+  - `POST /website/ai/generate-blocks`
+  - `POST /website/ai/regenerate-block`
+- External content
+  - `GET /website/sites/:siteId/external-content/draft?key=siteCopy&locale=...`
+  - `PATCH /website/sites/:siteId/external-content/draft`
+  - `POST /website/sites/:siteId/external-content/publish`
+
+Public endpoints (no auth):
+
+- `GET /public/website/resolve`
+- `GET /public/website/settings`
+- `POST /public/website/feedback`
+- `GET /public/website/qa`
+- `GET /public/website/wall-of-love`
+- `GET /public/website/slug-exists`
+- `GET /public/website/external-content`
+
+Caching notes (public endpoints):
+
+- Resolve/settings/qa/wall-of-love use `Cache-Control` headers with short public caching + stale-while-revalidate.
+- Slug-exists uses a longer cache window than resolve.
+- External-content:
+  - live mode: `Cache-Control: public, s-maxage=60, stale-while-revalidate=86400`
+  - preview mode: `Cache-Control: no-store`
+  - supports `ETag` + `If-None-Match` (`304 Not Modified`) for live reads
+
 ## Security Notes
 
 - Public resolve preview mode requires a non-empty, validated preview token.
@@ -264,3 +462,81 @@ Additional AI block endpoints:
   - Generates validated `blocks[]` for a template.
 - `POST /website/ai/regenerate-block`
   - Regenerates one block (`blockType`) with schema validation.
+
+## Website Runtime App (`apps/website-runtime`)
+
+Purpose:
+
+- Next.js runtime for public Website pages.
+- Uses public Website API endpoints and shared contracts from `@corely/contracts`.
+- Default dev port: `8084`.
+
+Route structure:
+
+- `/__website/[[...slug]]`
+  - Internal rewritten route for host-based website rendering.
+- `/w/[workspaceSlug]`
+  - Workspace root website entry route.
+- `/w/[workspaceSlug]/[websiteSlug]/[[...slug]]`
+  - Explicit website slug route (default/non-default website handling).
+
+Middleware behavior:
+
+- Detect workspace host from `NEXT_PUBLIC_ROOT_DOMAIN`.
+- Rewrite host-style requests to `/w/<workspaceSlug>...`.
+- Redirect away redundant `/w/<workspaceSlug>` prefix on workspace host.
+- Rewrite non-internal public paths to `/__website` namespace (excluding reserved/static prefixes).
+
+Rendering pipeline:
+
+- Server component resolves request context (`host`, `protocol`, `accept-language`).
+- Calls `publicApi.resolveWebsitePage(...)`.
+- Resolves metadata (`title`, `description`, OG image) from:
+  - `page.content.seoOverride`
+  - snapshot/page SEO fields
+  - CMS payload fallback
+  - site settings fallback
+- Renders `WebsitePublicPageScreen`:
+  - uses typed `page.content` if available
+  - falls back to legacy `payloadJson` shape for compatibility
+  - renders via `TemplateRegistry` + `BlockRegistry`
+  - wraps with `PublicSiteLayout` (theme tokens + preview badge)
+
+Template/block runtime model:
+
+- Template key in production use: `landing.tutoring.v1`
+- Legacy alias supported: `landing.deutschliebe.v1`
+- Block rendering is schema-validated; invalid blocks render placeholder in preview mode, and are skipped in live mode.
+
+Runtime API client source:
+
+- `apps/website-runtime/src/lib/public-api.ts` re-exports `@corely/public-api-client`.
+- API base URL fallback order:
+  - `CORELY_API_BASE_URL`
+  - `PUBLIC_API_BASE_URL`
+  - `NEXT_PUBLIC_API_BASE_URL`
+  - `http://localhost:3000`
+
+Required environment for local runtime:
+
+- `VITE_WEBSITE_RUNTIME_BASE_URL=http://localhost:8084` (used by admin links)
+- `CORELY_API_BASE_URL` or `PUBLIC_API_BASE_URL` or `NEXT_PUBLIC_API_BASE_URL`
+- `NEXT_PUBLIC_ROOT_DOMAIN` for host/workspace resolution
+
+## End-to-End Flow (Live Request)
+
+1. Browser requests a public page URL.
+2. Runtime middleware normalizes/re-writes request path.
+3. Runtime page route calls `publicApi.resolveWebsitePage(host, path, locale, mode=live)`.
+4. API resolves site/page by domain/workspace rules.
+5. API loads latest page snapshot and returns typed payload (`settings`, `menus`, `page.content`, `seo`).
+6. Runtime renders template blocks and site theme.
+
+Preview flow differences:
+
+- Runtime enables no-store for preview requests.
+- API validates preview token and reads CMS preview render payload directly (instead of snapshots).
+
+## Known Gaps / Notes
+
+- Website runtime Lead Form component currently contains a placeholder submit handler (UI success state only); it is not yet wired to Website feedback/forms submission endpoint in this runtime app.

@@ -35,63 +35,23 @@ import {
   LeadForm,
   Footer,
 } from "../templates/landing-tutoring-v1.sections";
+import {
+  NailStudioStickyNav,
+  NailStudioHero,
+  NailStudioTestimonials,
+  NailStudioFaq,
+  NailStudioLeadForm,
+  NailStudioFooter,
+} from "../templates/landing-nailstudio-v1.sections";
 import type { WebsiteRenderContext } from "../runtime.types";
-
-type BlockEditorField = {
-  key: string;
-  label: string;
-  type: "text" | "textarea" | "boolean";
-};
-
-export type BlockDefinition = {
-  type: WebsiteBlockType;
-  schema: {
-    safeParse: (value: unknown) => { success: true; data: WebsiteBlock } | { success: false };
-  };
-  renderer: React.ComponentType<{ block: WebsiteBlock; context?: WebsiteRenderContext }>;
-  editor: {
-    label: string;
-    description: string;
-    defaultProps: Record<string, unknown>;
-    fields: BlockEditorField[];
-  };
-  migrations?: Array<(block: WebsiteBlock) => WebsiteBlock>;
-};
-
-const toSectionCommonFields = (): BlockEditorField[] => [
-  { key: "anchorId", label: "Anchor ID", type: "text" },
-  { key: "className", label: "Class Name", type: "text" },
-  { key: "variant", label: "Variant", type: "text" },
-  { key: "hiddenOn.mobile", label: "Hide on Mobile", type: "boolean" },
-  { key: "hiddenOn.desktop", label: "Hide on Desktop", type: "boolean" },
-];
-
-const createDefinition = (input: {
-  type: WebsiteBlockType;
-  schema: BlockDefinition["schema"];
-  label: string;
-  description: string;
-  renderer: BlockDefinition["renderer"];
-  defaultProps?: Record<string, unknown>;
-  fields?: BlockEditorField[];
-}): BlockDefinition => ({
-  type: input.type,
-  schema: input.schema,
-  renderer: input.renderer,
-  editor: {
-    label: input.label,
-    description: input.description,
-    defaultProps: input.defaultProps ?? {},
-    fields: input.fields ?? toSectionCommonFields(),
-  },
-});
-
-const toComponentProps = <T extends object>(value: unknown): T => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return {} as T;
-  }
-  return value as T;
-};
+import { nailStudioBlockRegistry } from "./block-registry-nailstudio";
+import {
+  createDefinition,
+  isNailStudioTemplate,
+  toComponentProps,
+  toSectionCommonFields,
+  type BlockDefinition,
+} from "./block-registry.shared";
 
 const registry: Record<WebsiteBlockType, BlockDefinition> = {
   stickyNav: createDefinition({
@@ -99,19 +59,34 @@ const registry: Record<WebsiteBlockType, BlockDefinition> = {
     schema: WebsiteStickyNavBlockSchema,
     label: "Sticky Nav",
     description: "Top sticky navigation section",
-    renderer: ({ block, context }) => (
-      <StickyNav
-        {...toComponentProps<React.ComponentProps<typeof StickyNav>>(block.props)}
-        menus={context?.menus}
-        settings={context?.settings}
-        host={context?.host}
-        basePath={context?.basePath}
-      />
-    ),
+    renderer: ({ block, context }) => {
+      if (isNailStudioTemplate(context)) {
+        return (
+          <NailStudioStickyNav
+            {...toComponentProps<React.ComponentProps<typeof NailStudioStickyNav>>(block.props)}
+            menus={context?.menus}
+            settings={context?.settings}
+            host={context?.host}
+            basePath={context?.basePath}
+          />
+        );
+      }
+
+      return (
+        <StickyNav
+          {...toComponentProps<React.ComponentProps<typeof StickyNav>>(block.props)}
+          menus={context?.menus}
+          settings={context?.settings}
+          host={context?.host}
+          basePath={context?.basePath}
+        />
+      );
+    },
     fields: [
       { key: "navLabel", label: "Nav Label", type: "text" },
       { key: "ctaLabel", label: "CTA Label", type: "text" },
       { key: "ctaHref", label: "CTA Link", type: "text" },
+      { key: "logoFileId", label: "Logo fileId", type: "fileId" },
       ...toSectionCommonFields(),
     ],
   }),
@@ -120,20 +95,39 @@ const registry: Record<WebsiteBlockType, BlockDefinition> = {
     schema: WebsiteHeroBlockSchema,
     label: "Hero",
     description: "Top hero section",
-    renderer: ({ block, context }) => (
-      <HeroSection
-        {...toComponentProps<React.ComponentProps<typeof HeroSection>>(block.props)}
-        menus={context?.menus}
-        settings={context?.settings}
-        host={context?.host}
-        basePath={context?.basePath}
-      />
-    ),
+    renderer: ({ block, context }) => {
+      if (isNailStudioTemplate(context)) {
+        return (
+          <NailStudioHero
+            {...toComponentProps<React.ComponentProps<typeof NailStudioHero>>(block.props)}
+            menus={context?.menus}
+            settings={context?.settings}
+            host={context?.host}
+            basePath={context?.basePath}
+          />
+        );
+      }
+
+      return (
+        <HeroSection
+          {...toComponentProps<React.ComponentProps<typeof HeroSection>>(block.props)}
+          menus={context?.menus}
+          settings={context?.settings}
+          host={context?.host}
+          basePath={context?.basePath}
+        />
+      );
+    },
     fields: [
+      { key: "eyebrow", label: "Eyebrow", type: "text" },
       { key: "headline", label: "Headline", type: "text" },
       { key: "subheadline", label: "Subheadline", type: "textarea" },
       { key: "primaryCtaLabel", label: "Primary CTA Label", type: "text" },
       { key: "primaryCtaHref", label: "Primary CTA Link", type: "text" },
+      { key: "secondaryCtaLabel", label: "Secondary CTA Label", type: "text" },
+      { key: "secondaryCtaHref", label: "Secondary CTA Link", type: "text" },
+      { key: "heroImageFileId", label: "Hero image fileId", type: "fileId" },
+      { key: "highlights", label: "Highlights (JSON)", type: "json" },
       ...toSectionCommonFields(),
     ],
   }),
@@ -274,17 +268,35 @@ const registry: Record<WebsiteBlockType, BlockDefinition> = {
     type: "testimonials",
     schema: WebsiteTestimonialsBlockSchema,
     label: "Testimonials",
-    description: "Student testimonials",
-    renderer: ({ block, context }) => (
-      <TestimonialsSection
-        {...toComponentProps<React.ComponentProps<typeof TestimonialsSection>>(block.props)}
-        menus={context?.menus}
-        settings={context?.settings}
-        host={context?.host}
-        basePath={context?.basePath}
-      />
-    ),
-    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
+    description: "Testimonials section",
+    renderer: ({ block, context }) => {
+      if (isNailStudioTemplate(context)) {
+        return (
+          <NailStudioTestimonials
+            {...toComponentProps<React.ComponentProps<typeof NailStudioTestimonials>>(block.props)}
+            menus={context?.menus}
+            settings={context?.settings}
+            host={context?.host}
+            basePath={context?.basePath}
+          />
+        );
+      }
+
+      return (
+        <TestimonialsSection
+          {...toComponentProps<React.ComponentProps<typeof TestimonialsSection>>(block.props)}
+          menus={context?.menus}
+          settings={context?.settings}
+          host={context?.host}
+          basePath={context?.basePath}
+        />
+      );
+    },
+    fields: [
+      { key: "heading", label: "Heading", type: "text" },
+      { key: "items", label: "Items (JSON)", type: "json" },
+      ...toSectionCommonFields(),
+    ],
   }),
   scholarship: createDefinition({
     type: "scholarship",
@@ -307,34 +319,68 @@ const registry: Record<WebsiteBlockType, BlockDefinition> = {
     schema: WebsiteFaqBlockSchema,
     label: "FAQ",
     description: "Frequently asked questions",
-    renderer: ({ block, context }) => (
-      <FAQSection
-        {...toComponentProps<React.ComponentProps<typeof FAQSection>>(block.props)}
-        menus={context?.menus}
-        settings={context?.settings}
-        host={context?.host}
-        basePath={context?.basePath}
-      />
-    ),
-    fields: [{ key: "heading", label: "Heading", type: "text" }, ...toSectionCommonFields()],
+    renderer: ({ block, context }) => {
+      if (isNailStudioTemplate(context)) {
+        return (
+          <NailStudioFaq
+            {...toComponentProps<React.ComponentProps<typeof NailStudioFaq>>(block.props)}
+            menus={context?.menus}
+            settings={context?.settings}
+            host={context?.host}
+            basePath={context?.basePath}
+          />
+        );
+      }
+
+      return (
+        <FAQSection
+          {...toComponentProps<React.ComponentProps<typeof FAQSection>>(block.props)}
+          menus={context?.menus}
+          settings={context?.settings}
+          host={context?.host}
+          basePath={context?.basePath}
+        />
+      );
+    },
+    fields: [
+      { key: "heading", label: "Heading", type: "text" },
+      { key: "items", label: "Items (JSON)", type: "json" },
+      ...toSectionCommonFields(),
+    ],
   }),
   leadForm: createDefinition({
     type: "leadForm",
     schema: WebsiteLeadFormBlockSchema,
     label: "Lead Form",
     description: "Lead capture form",
-    renderer: ({ block, context }) => (
-      <LeadForm
-        {...toComponentProps<React.ComponentProps<typeof LeadForm>>(block.props)}
-        menus={context?.menus}
-        settings={context?.settings}
-        host={context?.host}
-        basePath={context?.basePath}
-      />
-    ),
+    renderer: ({ block, context }) => {
+      if (isNailStudioTemplate(context)) {
+        return (
+          <NailStudioLeadForm
+            {...toComponentProps<React.ComponentProps<typeof NailStudioLeadForm>>(block.props)}
+            menus={context?.menus}
+            settings={context?.settings}
+            host={context?.host}
+            basePath={context?.basePath}
+          />
+        );
+      }
+
+      return (
+        <LeadForm
+          {...toComponentProps<React.ComponentProps<typeof LeadForm>>(block.props)}
+          menus={context?.menus}
+          settings={context?.settings}
+          host={context?.host}
+          basePath={context?.basePath}
+        />
+      );
+    },
     fields: [
       { key: "heading", label: "Heading", type: "text" },
+      { key: "formId", label: "Form ID", type: "text" },
       { key: "submitLabel", label: "Submit Label", type: "text" },
+      { key: "note", label: "Note", type: "textarea" },
       ...toSectionCommonFields(),
     ],
   }),
@@ -343,20 +389,36 @@ const registry: Record<WebsiteBlockType, BlockDefinition> = {
     schema: WebsiteFooterBlockSchema,
     label: "Footer",
     description: "Footer section",
-    renderer: ({ block, context }) => (
-      <Footer
-        {...toComponentProps<React.ComponentProps<typeof Footer>>(block.props)}
-        menus={context?.menus}
-        settings={context?.settings}
-        host={context?.host}
-        basePath={context?.basePath}
-      />
-    ),
+    renderer: ({ block, context }) => {
+      if (isNailStudioTemplate(context)) {
+        return (
+          <NailStudioFooter
+            {...toComponentProps<React.ComponentProps<typeof NailStudioFooter>>(block.props)}
+            menus={context?.menus}
+            settings={context?.settings}
+            host={context?.host}
+            basePath={context?.basePath}
+          />
+        );
+      }
+
+      return (
+        <Footer
+          {...toComponentProps<React.ComponentProps<typeof Footer>>(block.props)}
+          menus={context?.menus}
+          settings={context?.settings}
+          host={context?.host}
+          basePath={context?.basePath}
+        />
+      );
+    },
     fields: [
       { key: "copyrightText", label: "Copyright", type: "text" },
+      { key: "links", label: "Footer Links (JSON)", type: "json" },
       ...toSectionCommonFields(),
     ],
   }),
+  ...nailStudioBlockRegistry,
 };
 
 export const BlockRegistry = {

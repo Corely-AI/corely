@@ -22,6 +22,7 @@ export * from "./get-document.schema";
 export * from "./list-documents.schema";
 export * from "./confirm-document.schema";
 export * from "./post-document.schema";
+export * from "./request-post-approval.schema";
 export * from "./cancel-document.schema";
 
 export * from "./get-on-hand.schema";

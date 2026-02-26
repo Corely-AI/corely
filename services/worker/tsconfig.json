@@ -24,6 +24,8 @@
       "@corely/storage": ["../../packages/storage/src/index.ts"],
       "@corely/storage/*": ["../../packages/storage/src/*"],
       "@corely/public-urls": ["../../packages/public-urls/src/index.ts"],
+      "@corely/config": ["../../packages/config/src/index.ts"],
+      "@corely/config/*": ["../../packages/config/src/*"],
       "@corely/testkit": ["../../packages/testkit/src/index.ts"],
       "@corely/testkit/*": ["../../packages/testkit/src/*"]
     }

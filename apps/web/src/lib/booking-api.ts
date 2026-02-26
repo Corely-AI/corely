@@ -1,4 +1,6 @@
 import type {
+  GetAvailabilityInput,
+  GetAvailabilityOutput,
   BookingDto,
   BookingOutput,
   CancelBookingInput,
@@ -15,6 +17,8 @@ import type {
   ResourceDto,
   RescheduleBookingInput,
   ServiceOfferingDto,
+  UpsertAvailabilityRuleInput,
+  UpsertAvailabilityRuleOutput,
   UpdateResourceInput,
   UpdateServiceOfferingInput,
 } from "@corely/contracts";
@@ -108,6 +112,26 @@ class BookingApi {
     await apiClient.delete(`/booking/resources/${id}`, {
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  async getAvailability(input: GetAvailabilityInput): Promise<GetAvailabilityOutput> {
+    return apiClient.get<GetAvailabilityOutput>(withQuery("/booking/availability", input), {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async upsertAvailabilityRule(
+    resourceId: string,
+    input: UpsertAvailabilityRuleInput
+  ): Promise<UpsertAvailabilityRuleOutput> {
+    return apiClient.put<UpsertAvailabilityRuleOutput>(
+      `/booking/availability/${resourceId}`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
   }
 
   async listBookings(params: ListBookingsInput = {}): Promise<BookingListOutput> {

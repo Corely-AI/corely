@@ -71,6 +71,9 @@ export default function ResourceDetailPage() {
 
         <div className="flex items-center gap-2">
           <Button asChild variant="outline">
+            <Link to={`/booking/resources/${id}/edit#availability`}>Availability</Link>
+          </Button>
+          <Button asChild variant="outline">
             <Link to={`/booking/resources/${id}/edit`}>
               <Pencil className="h-4 w-4" />
               Edit

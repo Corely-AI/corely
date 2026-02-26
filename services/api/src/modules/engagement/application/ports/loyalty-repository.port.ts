@@ -10,6 +10,8 @@ export type LoyaltyAccountRecord = {
   customerPartyId: string;
   status: LoyaltyAccountStatus;
   currentPointsBalance: number;
+  lifetimeEarnedPoints: number;
+  tier?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -52,7 +54,11 @@ export interface LoyaltyRepositoryPort {
   updateAccountBalance(
     tenantId: string,
     customerPartyId: string,
-    newBalance: number
+    newBalance: number,
+    options?: {
+      lifetimeEarnedPoints?: number;
+      tier?: string | null;
+    }
   ): Promise<void>;
   createLedgerEntry(entry: LoyaltyLedgerEntryRecord): Promise<void>;
   findLedgerEntryBySource(

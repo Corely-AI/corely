@@ -1,6 +1,6 @@
 export type PublicWorkspaceResolutionMethod = "custom-domain" | "subdomain" | "path" | "query";
 
-export type PublicModuleKey = "cms" | "rentals" | "portfolio" | "marketplace";
+export type PublicModuleKey = "cms" | "rentals" | "portfolio" | "marketplace" | "booking";
 
 export type PublicWorkspaceModules = Partial<Record<PublicModuleKey, boolean>>;
 

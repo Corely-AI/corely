@@ -47,5 +47,16 @@ export const bookingAppManifest: AppManifest = {
       order: 3,
       requiresCapabilities: ["booking.basic"],
     },
+    {
+      id: "booking-public-page",
+      scope: "web",
+      section: "booking",
+      labelKey: "nav.booking.bookingPage",
+      defaultLabel: "Booking Page",
+      icon: "Home",
+      route: "/booking/public-page",
+      order: 4,
+      requiresCapabilities: ["booking.basic"],
+    },
   ],
 };

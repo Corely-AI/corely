@@ -1,6 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import type {
+  LoyaltyAccount as LoyaltyAccountModel,
+  LoyaltyLedgerEntry as LoyaltyLedgerEntryModel,
+} from "@prisma/client";
+import type {
   LoyaltyRepositoryPort,
   LoyaltyAccountRecord,
   LoyaltyLedgerEntryRecord,
@@ -36,6 +40,8 @@ export class PrismaLoyaltyRepositoryAdapter implements LoyaltyRepositoryPort {
         customerPartyId,
         status,
         currentPointsBalance: 0,
+        lifetimeEarnedPoints: 0,
+        tier: null,
       },
     });
     return this.toAccountRecord(record);
@@ -44,11 +50,21 @@ export class PrismaLoyaltyRepositoryAdapter implements LoyaltyRepositoryPort {
   async updateAccountBalance(
     tenantId: string,
     customerPartyId: string,
-    newBalance: number
+    newBalance: number,
+    options?: {
+      lifetimeEarnedPoints?: number;
+      tier?: string | null;
+    }
   ): Promise<void> {
     await this.prisma.loyaltyAccount.update({
       where: { tenantId_customerPartyId: { tenantId, customerPartyId } },
-      data: { currentPointsBalance: newBalance },
+      data: {
+        currentPointsBalance: newBalance,
+        ...(options?.lifetimeEarnedPoints !== undefined
+          ? { lifetimeEarnedPoints: options.lifetimeEarnedPoints }
+          : {}),
+        ...(options?.tier !== undefined ? { tier: options.tier } : {}),
+      },
     });
   }
 
@@ -110,19 +126,21 @@ export class PrismaLoyaltyRepositoryAdapter implements LoyaltyRepositoryPort {
     return { items, nextCursor };
   }
 
-  private toAccountRecord(row: any): LoyaltyAccountRecord {
+  private toAccountRecord(row: LoyaltyAccountModel): LoyaltyAccountRecord {
     return {
       loyaltyAccountId: row.id,
       tenantId: row.tenantId,
       customerPartyId: row.customerPartyId,
       status: row.status,
       currentPointsBalance: row.currentPointsBalance,
+      lifetimeEarnedPoints: row.lifetimeEarnedPoints,
+      tier: row.tier,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     };
   }
 
-  private toLedgerRecord(row: any): LoyaltyLedgerEntryRecord {
+  private toLedgerRecord(row: LoyaltyLedgerEntryModel): LoyaltyLedgerEntryRecord {
     return {
       entryId: row.id,
       tenantId: row.tenantId,

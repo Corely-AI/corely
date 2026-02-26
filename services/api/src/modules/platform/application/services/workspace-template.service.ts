@@ -451,6 +451,7 @@ export class WorkspaceTemplateService {
       "expenses",
       "parties", // clients
       "crm",
+      "forms",
       "tax",
       "portfolio",
       "website",
@@ -471,6 +472,7 @@ export class WorkspaceTemplateService {
       "expenses",
       "parties", // customers
       "sales", // quotes, projects
+      "forms",
       "catalog",
       "tax",
       "import",

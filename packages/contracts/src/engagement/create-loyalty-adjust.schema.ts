@@ -2,11 +2,12 @@ import { z } from "zod";
 import { LoyaltyLedgerEntrySchema } from "./loyalty-ledger-entry.types";
 
 export const CreateLoyaltyAdjustEntryInputSchema = z.object({
+  idempotencyKey: z.string().min(1).optional(),
   entryId: z.string().uuid(),
-  customerPartyId: z.string().uuid(),
+  customerPartyId: z.string().min(1),
   pointsDelta: z.number().int(),
   reason: z.string().max(500).optional().nullable(),
-  createdByEmployeePartyId: z.string().uuid(),
+  createdByEmployeePartyId: z.string().min(1).optional().nullable(),
 });
 
 export const CreateLoyaltyAdjustEntryOutputSchema = z.object({

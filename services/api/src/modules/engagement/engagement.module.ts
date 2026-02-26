@@ -1,13 +1,25 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
+import {
+  AUDIT_PORT,
+  IDEMPOTENCY_PORT,
+  OUTBOX_PORT,
+  type AuditPort,
+  type IdempotencyPort,
+  type OutboxPort,
+} from "@corely/kernel";
 import { IdentityModule } from "../identity";
 import { EngagementController } from "./adapters/http/engagement.controller";
 import { PrismaCheckInRepositoryAdapter } from "./infrastructure/adapters/prisma-checkin-repository.adapter";
 import { PrismaLoyaltyRepositoryAdapter } from "./infrastructure/adapters/prisma-loyalty-repository.adapter";
 import { PrismaEngagementSettingsRepositoryAdapter } from "./infrastructure/adapters/prisma-engagement-settings-repository.adapter";
+import { PrismaPackageRepositoryAdapter } from "./infrastructure/adapters/prisma-package-repository.adapter";
+import { PrismaBirthdayRepositoryAdapter } from "./infrastructure/adapters/prisma-birthday-repository.adapter";
 import { CHECKIN_REPOSITORY_PORT } from "./application/ports/checkin-repository.port";
 import { LOYALTY_REPOSITORY_PORT } from "./application/ports/loyalty-repository.port";
 import { ENGAGEMENT_SETTINGS_REPOSITORY_PORT } from "./application/ports/engagement-settings-repository.port";
+import { PACKAGE_REPOSITORY_PORT } from "./application/ports/package-repository.port";
+import { BIRTHDAY_REPOSITORY_PORT } from "./application/ports/birthday-repository.port";
 import { CreateCheckInEventUseCase } from "./application/use-cases/create-checkin.usecase";
 import { ListCheckInEventsUseCase } from "./application/use-cases/list-checkins.usecase";
 import { CancelCheckInEventUseCase } from "./application/use-cases/cancel-checkin.usecase";
@@ -16,8 +28,14 @@ import { GetLoyaltySummaryUseCase } from "./application/use-cases/get-loyalty-su
 import { ListLoyaltyLedgerUseCase } from "./application/use-cases/list-loyalty-ledger.usecase";
 import { CreateLoyaltyEarnEntryUseCase } from "./application/use-cases/create-loyalty-earn.usecase";
 import { CreateLoyaltyAdjustEntryUseCase } from "./application/use-cases/create-loyalty-adjust.usecase";
+import { CreateLoyaltyRedeemEntryUseCase } from "./application/use-cases/create-loyalty-redeem.usecase";
 import { GetEngagementSettingsUseCase } from "./application/use-cases/get-engagement-settings.usecase";
 import { UpdateEngagementSettingsUseCase } from "./application/use-cases/update-engagement-settings.usecase";
+import { CreateCustomerPackageUseCase } from "./application/use-cases/create-customer-package.usecase";
+import { ListCustomerPackagesUseCase } from "./application/use-cases/list-customer-packages.usecase";
+import { ConsumeCustomerPackageUseCase } from "./application/use-cases/consume-customer-package.usecase";
+import { ListPackageUsageUseCase } from "./application/use-cases/list-package-usage.usecase";
+import { ListUpcomingBirthdaysUseCase } from "./application/use-cases/list-upcoming-birthdays.usecase";
 import { EngagementApplication } from "./application/engagement.application";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 
@@ -28,6 +46,8 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
     PrismaCheckInRepositoryAdapter,
     PrismaLoyaltyRepositoryAdapter,
     PrismaEngagementSettingsRepositoryAdapter,
+    PrismaPackageRepositoryAdapter,
+    PrismaBirthdayRepositoryAdapter,
     NestLoggerAdapter,
 
     { provide: CHECKIN_REPOSITORY_PORT, useExisting: PrismaCheckInRepositoryAdapter },
@@ -36,6 +56,8 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
       provide: ENGAGEMENT_SETTINGS_REPOSITORY_PORT,
       useExisting: PrismaEngagementSettingsRepositoryAdapter,
     },
+    { provide: PACKAGE_REPOSITORY_PORT, useExisting: PrismaPackageRepositoryAdapter },
+    { provide: BIRTHDAY_REPOSITORY_PORT, useExisting: PrismaBirthdayRepositoryAdapter },
 
     {
       provide: CreateCheckInEventUseCase,
@@ -90,15 +112,54 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
     },
     {
       provide: CreateLoyaltyEarnEntryUseCase,
-      useFactory: (loyalty: PrismaLoyaltyRepositoryAdapter, logger: NestLoggerAdapter) =>
-        new CreateLoyaltyEarnEntryUseCase({ loyalty, logger }),
-      inject: [PrismaLoyaltyRepositoryAdapter, NestLoggerAdapter],
+      useFactory: (
+        loyalty: PrismaLoyaltyRepositoryAdapter,
+        logger: NestLoggerAdapter,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) => new CreateLoyaltyEarnEntryUseCase({ loyalty, logger, idempotency, audit, outbox }),
+      inject: [
+        PrismaLoyaltyRepositoryAdapter,
+        NestLoggerAdapter,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
     },
     {
       provide: CreateLoyaltyAdjustEntryUseCase,
-      useFactory: (loyalty: PrismaLoyaltyRepositoryAdapter, logger: NestLoggerAdapter) =>
-        new CreateLoyaltyAdjustEntryUseCase({ loyalty, logger }),
-      inject: [PrismaLoyaltyRepositoryAdapter, NestLoggerAdapter],
+      useFactory: (
+        loyalty: PrismaLoyaltyRepositoryAdapter,
+        logger: NestLoggerAdapter,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) => new CreateLoyaltyAdjustEntryUseCase({ loyalty, logger, idempotency, audit, outbox }),
+      inject: [
+        PrismaLoyaltyRepositoryAdapter,
+        NestLoggerAdapter,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
+    },
+    {
+      provide: CreateLoyaltyRedeemEntryUseCase,
+      useFactory: (
+        loyalty: PrismaLoyaltyRepositoryAdapter,
+        logger: NestLoggerAdapter,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) => new CreateLoyaltyRedeemEntryUseCase({ loyalty, logger, idempotency, audit, outbox }),
+      inject: [
+        PrismaLoyaltyRepositoryAdapter,
+        NestLoggerAdapter,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
     },
     {
       provide: GetEngagementSettingsUseCase,
@@ -117,6 +178,58 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
       inject: [PrismaEngagementSettingsRepositoryAdapter, NestLoggerAdapter],
     },
     {
+      provide: CreateCustomerPackageUseCase,
+      useFactory: (
+        packages: PrismaPackageRepositoryAdapter,
+        logger: NestLoggerAdapter,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) => new CreateCustomerPackageUseCase({ packages, logger, idempotency, audit, outbox }),
+      inject: [
+        PrismaPackageRepositoryAdapter,
+        NestLoggerAdapter,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
+    },
+    {
+      provide: ListCustomerPackagesUseCase,
+      useFactory: (packages: PrismaPackageRepositoryAdapter, logger: NestLoggerAdapter) =>
+        new ListCustomerPackagesUseCase({ packages, logger }),
+      inject: [PrismaPackageRepositoryAdapter, NestLoggerAdapter],
+    },
+    {
+      provide: ConsumeCustomerPackageUseCase,
+      useFactory: (
+        packages: PrismaPackageRepositoryAdapter,
+        logger: NestLoggerAdapter,
+        idempotency: IdempotencyPort,
+        audit: AuditPort,
+        outbox: OutboxPort
+      ) => new ConsumeCustomerPackageUseCase({ packages, logger, idempotency, audit, outbox }),
+      inject: [
+        PrismaPackageRepositoryAdapter,
+        NestLoggerAdapter,
+        IDEMPOTENCY_PORT,
+        AUDIT_PORT,
+        OUTBOX_PORT,
+      ],
+    },
+    {
+      provide: ListPackageUsageUseCase,
+      useFactory: (packages: PrismaPackageRepositoryAdapter, logger: NestLoggerAdapter) =>
+        new ListPackageUsageUseCase({ packages, logger }),
+      inject: [PrismaPackageRepositoryAdapter, NestLoggerAdapter],
+    },
+    {
+      provide: ListUpcomingBirthdaysUseCase,
+      useFactory: (birthdays: PrismaBirthdayRepositoryAdapter, logger: NestLoggerAdapter) =>
+        new ListUpcomingBirthdaysUseCase({ birthdays, logger }),
+      inject: [PrismaBirthdayRepositoryAdapter, NestLoggerAdapter],
+    },
+    {
       provide: EngagementApplication,
       useFactory: (
         createCheckIn: CreateCheckInEventUseCase,
@@ -127,6 +240,12 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
         listLoyaltyLedger: ListLoyaltyLedgerUseCase,
         createLoyaltyEarn: CreateLoyaltyEarnEntryUseCase,
         createLoyaltyAdjust: CreateLoyaltyAdjustEntryUseCase,
+        createLoyaltyRedeem: CreateLoyaltyRedeemEntryUseCase,
+        createCustomerPackage: CreateCustomerPackageUseCase,
+        listCustomerPackages: ListCustomerPackagesUseCase,
+        consumeCustomerPackage: ConsumeCustomerPackageUseCase,
+        listPackageUsage: ListPackageUsageUseCase,
+        listUpcomingBirthdays: ListUpcomingBirthdaysUseCase,
         getSettings: GetEngagementSettingsUseCase,
         updateSettings: UpdateEngagementSettingsUseCase
       ) =>
@@ -139,6 +258,12 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
           listLoyaltyLedger,
           createLoyaltyEarn,
           createLoyaltyAdjust,
+          createLoyaltyRedeem,
+          createCustomerPackage,
+          listCustomerPackages,
+          consumeCustomerPackage,
+          listPackageUsage,
+          listUpcomingBirthdays,
           getSettings,
           updateSettings
         ),
@@ -151,6 +276,12 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
         ListLoyaltyLedgerUseCase,
         CreateLoyaltyEarnEntryUseCase,
         CreateLoyaltyAdjustEntryUseCase,
+        CreateLoyaltyRedeemEntryUseCase,
+        CreateCustomerPackageUseCase,
+        ListCustomerPackagesUseCase,
+        ConsumeCustomerPackageUseCase,
+        ListPackageUsageUseCase,
+        ListUpcomingBirthdaysUseCase,
         GetEngagementSettingsUseCase,
         UpdateEngagementSettingsUseCase,
       ],

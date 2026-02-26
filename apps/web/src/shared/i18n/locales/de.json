@@ -189,7 +189,8 @@
     "classSessions": "Sitzungen",
     "classBilling": "Klassenabrechnung",
     "website": "Website",
-    "platform": "Plattform"
+    "platform": "Plattform",
+    "forms": "Formulare"
   },
   "featureFlags": {
     "app": {
@@ -1075,6 +1076,153 @@
       "row": "Zeile {{index}}",
       "remove": "Entfernen",
       "add": "Zeile hinzufügen"
+    },
+    "list": {
+      "title": "Formulare",
+      "subtitle": "Öffentliche Formulare erstellen und verwalten",
+      "newForm": "Neues Formular",
+      "noForms": "Noch keine Formulare",
+      "noFormsDescription": "Erstellen Sie Ihr erstes Formular zum Sammeln von Antworten.",
+      "createForm": "Formular erstellen",
+      "columns": {
+        "name": "Name",
+        "status": "Status",
+        "updated": "Aktualisiert"
+      },
+      "sort": {
+        "updatedNewest": "Aktualisiert (Neueste)",
+        "updatedOldest": "Aktualisiert (Älteste)",
+        "createdNewest": "Erstellt (Neueste)",
+        "nameAz": "Name (A-Z)"
+      },
+      "filters": {
+        "status": "Status"
+      },
+      "statuses": {
+        "DRAFT": "Entwurf",
+        "PUBLISHED": "Veröffentlicht"
+      },
+      "page": "Seite {{page}} von {{total}}",
+      "delete": {
+        "title": "Formular löschen",
+        "description": "Das Formular wird archiviert und aus der Liste entfernt."
+      },
+      "errors": {
+        "loadFailed": "Formulare konnten nicht geladen werden"
+      },
+      "toast": {
+        "deleted": "Formular gelöscht",
+        "deleteFailed": "Formular konnte nicht gelöscht werden"
+      }
+    },
+    "detail": {
+      "subtitle": "Formular-Builder und Einsendungen",
+      "backToForms": "Zurück zu Formularen",
+      "notFound": "Formular nicht gefunden.",
+      "tabs": {
+        "builder": "Builder",
+        "share": "Teilen",
+        "submissions": "Einsendungen"
+      },
+      "builder": {
+        "formDetails": "Formulardetails",
+        "save": "Speichern",
+        "saving": "Wird gespeichert...",
+        "name": "Name",
+        "description": "Beschreibung",
+        "fields": "Felder",
+        "addField": "Feld hinzufügen",
+        "emptyFields": "Felder hinzufügen, um mit dem Erstellen des Formulars zu beginnen.",
+        "columns": {
+          "label": "Bezeichnung",
+          "type": "Typ",
+          "required": "Pflichtfeld",
+          "order": "Reihenfolge"
+        },
+        "required": {
+          "yes": "Ja",
+          "no": "Nein"
+        }
+      },
+      "share": {
+        "publishing": "Veröffentlichung",
+        "regenerateToken": "Token neu generieren",
+        "unpublish": "Veröffentlichung aufheben",
+        "publishForm": "Formular veröffentlichen",
+        "publishHint": "Durch die Veröffentlichung wird ein öffentlicher Link und ein Zugriffstoken für Einsendungen generiert.",
+        "publicUrl": "Öffentliche URL",
+        "accessToken": "Zugriffstoken (einmalig angezeigt)",
+        "regenerateToView": "Neu generieren zum Anzeigen",
+        "linkCopied": "Link kopiert",
+        "tokenCopied": "Token kopiert"
+      },
+      "submissions": {
+        "title": "Einsendungen",
+        "empty": "Noch keine Einsendungen.",
+        "columns": {
+          "submitted": "Eingereicht",
+          "source": "Quelle"
+        },
+        "view": "Ansehen",
+        "detailTitle": "Einsendungsdetails",
+        "notProvided": "(nicht angegeben)",
+        "noSubmissionSelected": "Keine Einsendung ausgewählt."
+      },
+      "fieldDialog": {
+        "addTitle": "Feld hinzufügen",
+        "editTitle": "Feld bearbeiten",
+        "label": "Bezeichnung",
+        "type": "Typ",
+        "selectType": "Typ auswählen",
+        "options": "Optionen (kommagetrennt)",
+        "required": "Pflichtfeld",
+        "helpText": "Hilfetext",
+        "cancel": "Abbrechen",
+        "saveField": "Feld speichern",
+        "labelRequired": "Feldbezeichnung ist erforderlich"
+      },
+      "fieldTypes": {
+        "SHORT_TEXT": "Kurztext",
+        "LONG_TEXT": "Langtext",
+        "NUMBER": "Zahl",
+        "DATE": "Datum",
+        "BOOLEAN": "Ja/Nein",
+        "SINGLE_SELECT": "Einzelauswahl",
+        "MULTI_SELECT": "Mehrfachauswahl",
+        "EMAIL": "E-Mail"
+      },
+      "statuses": {
+        "DRAFT": "Entwurf",
+        "PUBLISHED": "Veröffentlicht"
+      },
+      "toast": {
+        "updated": "Formular aktualisiert",
+        "updateFailed": "Formular konnte nicht aktualisiert werden",
+        "fieldAdded": "Feld hinzugefügt",
+        "fieldAddFailed": "Feld konnte nicht hinzugefügt werden",
+        "fieldUpdated": "Feld aktualisiert",
+        "fieldUpdateFailed": "Feld konnte nicht aktualisiert werden",
+        "fieldRemoved": "Feld entfernt",
+        "fieldRemoveFailed": "Feld konnte nicht entfernt werden",
+        "published": "Formular veröffentlicht",
+        "publishFailed": "Formular konnte nicht veröffentlicht werden",
+        "unpublished": "Veröffentlichung aufgehoben",
+        "unpublishFailed": "Veröffentlichung konnte nicht aufgehoben werden"
+      }
+    },
+    "new": {
+      "title": "Neues Formular erstellen",
+      "cancel": "Abbrechen",
+      "creating": "Wird erstellt...",
+      "createForm": "Formular erstellen",
+      "formName": "Formularname",
+      "namePlaceholder": "Kontakt",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "Erläutern Sie den Teilnehmern, wofür dieses Formular ist",
+      "toast": {
+        "created": "Formular erstellt",
+        "createFailed": "Formular konnte nicht erstellt werden"
+      }
     }
   },
   "portfolioPublic": {

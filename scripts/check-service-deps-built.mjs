@@ -25,6 +25,8 @@ const collectWorkspacePackages = async () => {
 
   const toolingRoot = path.join(workspaceRoot, "packages", "tooling");
   packageDirs.push(...(await listDirs(toolingRoot)));
+  const integrationsRoot = path.join(workspaceRoot, "packages", "integrations");
+  packageDirs.push(...(await listDirs(integrationsRoot)));
 
   const packageMap = new Map();
 

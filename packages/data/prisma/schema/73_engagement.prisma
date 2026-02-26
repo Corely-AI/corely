@@ -38,6 +38,15 @@ enum LoyaltyReasonCode {
   @@schema("crm")
 }
 
+enum CustomerPackageStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  DEPLETED
+
+  @@schema("crm")
+}
+
 model CheckInEvent {
   id                         String        @id @default(cuid())
   tenantId                   String
@@ -68,6 +77,8 @@ model LoyaltyAccount {
   customerPartyId      String
   status               LoyaltyAccountStatus @default(ACTIVE)
   currentPointsBalance Int                  @default(0)
+  lifetimeEarnedPoints Int                  @default(0)
+  tier                 String?
   createdAt            DateTime             @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime             @updatedAt @db.Timestamptz(6)
 
@@ -95,6 +106,48 @@ model LoyaltyLedgerEntry {
   @@unique([tenantId, sourceType, sourceId, reasonCode], name: "tenantId_sourceType_sourceId_reasonCode")
   @@index([tenantId, customerPartyId, createdAt])
   @@index([tenantId, entryType])
+  @@schema("crm")
+}
+
+model CustomerPackage {
+  id                       String                @id @default(cuid())
+  tenantId                 String
+  customerPartyId          String
+  name                     String
+  status                   CustomerPackageStatus @default(ACTIVE)
+  totalUnits               Int
+  remainingUnits           Int
+  expiresOn                DateTime?             @db.Date
+  notes                    String?
+  createdByEmployeePartyId String?
+  createdAt                DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime              @updatedAt @db.Timestamptz(6)
+
+  usageEntries PackageUsage[]
+
+  @@index([tenantId, customerPartyId, status])
+  @@index([tenantId, expiresOn])
+  @@schema("crm")
+}
+
+model PackageUsage {
+  id                       String   @id @default(cuid())
+  tenantId                 String
+  customerPackageId        String
+  customerPartyId          String
+  unitsUsed                Int
+  usedAt                   DateTime @db.Timestamptz(6)
+  sourceType               String?
+  sourceId                 String?
+  notes                    String?
+  createdByEmployeePartyId String?
+  createdAt                DateTime @default(now()) @db.Timestamptz(6)
+
+  customerPackage CustomerPackage @relation(fields: [customerPackageId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sourceType, sourceId], name: "tenantId_sourceType_sourceId_package_usage")
+  @@index([tenantId, customerPackageId, usedAt])
+  @@index([tenantId, customerPartyId, usedAt])
   @@schema("crm")
 }
 

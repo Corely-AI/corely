@@ -1,6 +1,5 @@
 import React from "react";
 import type { WebsiteBlock, WebsiteBlockType, WebsitePageContent } from "@corely/contracts";
-import { WEBSITE_BLOCK_TYPES } from "@corely/contracts";
 import { renderWebsiteBlock } from "../blocks/block-registry";
 
 export type TemplateDefinition = {
@@ -29,11 +28,74 @@ const defaultLandingBlocks = (): WebsiteBlock[] => [
   { id: "footer", type: "footer", enabled: true, props: {} },
 ];
 
+const defaultNailStudioBlocks = (): WebsiteBlock[] => [
+  { id: "sticky-nav", type: "stickyNav", enabled: true, props: {} },
+  { id: "hero", type: "hero", enabled: true, props: {} },
+  { id: "services-grid", type: "servicesGrid", enabled: true, props: {} },
+  { id: "price-menu", type: "priceMenu", enabled: true, props: {} },
+  { id: "gallery-masonry", type: "galleryMasonry", enabled: true, props: {} },
+  { id: "signature-sets", type: "signatureSets", enabled: true, props: {} },
+  { id: "team", type: "team", enabled: true, props: {} },
+  { id: "testimonials", type: "testimonials", enabled: true, props: {} },
+  { id: "booking-steps", type: "bookingSteps", enabled: true, props: {} },
+  { id: "location-hours", type: "locationHours", enabled: true, props: {} },
+  { id: "faq", type: "faq", enabled: true, props: {} },
+  { id: "lead-form", type: "leadForm", enabled: true, props: {} },
+  { id: "footer", type: "footer", enabled: true, props: {} },
+];
+
 const landingTutoringTemplate: TemplateDefinition = {
   key: "landing.tutoring.v1",
   version: "1",
-  allowedBlockTypes: [...WEBSITE_BLOCK_TYPES],
+  allowedBlockTypes: [
+    "stickyNav",
+    "hero",
+    "socialProof",
+    "pas",
+    "method",
+    "programHighlights",
+    "groupLearning",
+    "coursePackages",
+    "schedule",
+    "instructor",
+    "testimonials",
+    "scholarship",
+    "faq",
+    "leadForm",
+    "footer",
+  ],
   defaultBlocks: defaultLandingBlocks,
+  render: (content) => {
+    const blocks = content.blocks.filter((block) => block.enabled !== false);
+    return (
+      <>
+        {blocks.map((block) => (
+          <React.Fragment key={block.id}>{renderWebsiteBlock(block)}</React.Fragment>
+        ))}
+      </>
+    );
+  },
+};
+
+const landingNailStudioTemplate: TemplateDefinition = {
+  key: "landing.nailstudio.v1",
+  version: "1",
+  allowedBlockTypes: [
+    "stickyNav",
+    "hero",
+    "servicesGrid",
+    "priceMenu",
+    "galleryMasonry",
+    "signatureSets",
+    "team",
+    "testimonials",
+    "bookingSteps",
+    "locationHours",
+    "faq",
+    "leadForm",
+    "footer",
+  ],
+  defaultBlocks: defaultNailStudioBlocks,
   render: (content) => {
     const blocks = content.blocks.filter((block) => block.enabled !== false);
     return (
@@ -48,6 +110,7 @@ const landingTutoringTemplate: TemplateDefinition = {
 
 const registry = new Map<string, TemplateDefinition>([
   [landingTutoringTemplate.key, landingTutoringTemplate],
+  [landingNailStudioTemplate.key, landingNailStudioTemplate],
 ]);
 
 export const TemplateRegistry = {

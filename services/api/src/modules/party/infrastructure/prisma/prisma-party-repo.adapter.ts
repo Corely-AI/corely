@@ -64,6 +64,7 @@ type PartyWithRelations = {
   department: string | null;
   industry: string | null;
   website: string | null;
+  birthday: Date | null;
   size: string | null;
 };
 
@@ -108,6 +109,7 @@ const toAggregate = (row: PartyWithRelations): PartyAggregate => {
     department: row.department,
     industry: row.industry,
     website: row.website,
+    birthday: row.birthday,
     size: row.size,
   });
 };
@@ -142,6 +144,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
           department: party.department,
           industry: party.industry,
           website: party.website,
+          birthday: party.birthday,
           size: party.size,
         } as any,
       });
@@ -213,6 +216,7 @@ export class PrismaPartyRepoAdapter implements PartyRepoPort {
           department: party.department,
           industry: party.industry,
           website: party.website,
+          birthday: party.birthday,
           size: party.size,
         } as any,
       });

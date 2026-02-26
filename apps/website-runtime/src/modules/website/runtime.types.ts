@@ -5,4 +5,5 @@ export type WebsiteRenderContext = {
   settings?: WebsiteSiteSettings;
   host?: string | null;
   basePath?: string;
+  templateKey?: string;
 };

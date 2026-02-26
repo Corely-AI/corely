@@ -147,7 +147,10 @@ export class CreateCheckInEventUseCase extends BaseUseCase<
         await this.deps.loyalty.updateAccountBalance(
           tenantId,
           input.customerPartyId,
-          account.currentPointsBalance + settings.pointsPerVisit
+          account.currentPointsBalance + settings.pointsPerVisit,
+          {
+            lifetimeEarnedPoints: account.lifetimeEarnedPoints + settings.pointsPerVisit,
+          }
         );
         pointsAwarded = settings.pointsPerVisit;
       }

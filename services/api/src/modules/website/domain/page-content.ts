@@ -1,10 +1,18 @@
 import {
+  WEBSITE_TEMPLATE_KEYS,
   WebsitePageContentSchema,
   type WebsiteBlock,
   type WebsitePageContent,
+  type WebsiteTemplateKey,
 } from "@corely/contracts";
 
-const DEFAULT_TEMPLATE_KEY = "landing.tutoring.v1";
+const DEFAULT_TEMPLATE_KEY: WebsiteTemplateKey = WEBSITE_TEMPLATE_KEYS[0];
+const NAIL_STUDIO_TEMPLATE_KEY: WebsiteTemplateKey = "landing.nailstudio.v1";
+
+const toWebsiteTemplateKey = (value: string | undefined): WebsiteTemplateKey =>
+  WEBSITE_TEMPLATE_KEYS.includes(value as WebsiteTemplateKey)
+    ? (value as WebsiteTemplateKey)
+    : DEFAULT_TEMPLATE_KEY;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -27,26 +35,49 @@ const createDefaultBlocksForLandingTutoring = (): WebsiteBlock[] => [
   { id: "footer", type: "footer", enabled: true, props: {} },
 ];
 
+const createDefaultBlocksForLandingNailStudio = (): WebsiteBlock[] => [
+  { id: "sticky-nav", type: "stickyNav", enabled: true, props: {} },
+  { id: "hero", type: "hero", enabled: true, props: {} },
+  { id: "services-grid", type: "servicesGrid", enabled: true, props: {} },
+  { id: "price-menu", type: "priceMenu", enabled: true, props: {} },
+  { id: "gallery-masonry", type: "galleryMasonry", enabled: true, props: {} },
+  { id: "signature-sets", type: "signatureSets", enabled: true, props: {} },
+  { id: "team", type: "team", enabled: true, props: {} },
+  { id: "testimonials", type: "testimonials", enabled: true, props: {} },
+  { id: "booking-steps", type: "bookingSteps", enabled: true, props: {} },
+  { id: "location-hours", type: "locationHours", enabled: true, props: {} },
+  { id: "faq", type: "faq", enabled: true, props: {} },
+  { id: "lead-form", type: "leadForm", enabled: true, props: {} },
+  { id: "footer", type: "footer", enabled: true, props: {} },
+];
+
 export const buildDefaultWebsitePageContent = (
-  templateKey = DEFAULT_TEMPLATE_KEY
+  templateKey: string = DEFAULT_TEMPLATE_KEY
 ): WebsitePageContent => {
-  if (templateKey === DEFAULT_TEMPLATE_KEY) {
+  const resolvedTemplateKey = toWebsiteTemplateKey(templateKey);
+
+  if (resolvedTemplateKey === DEFAULT_TEMPLATE_KEY) {
     return {
-      templateKey,
+      templateKey: resolvedTemplateKey,
       templateVersion: "1",
       blocks: createDefaultBlocksForLandingTutoring(),
     };
   }
 
-  return {
-    templateKey,
-    blocks: [],
-  };
+  if (resolvedTemplateKey === NAIL_STUDIO_TEMPLATE_KEY) {
+    return {
+      templateKey: resolvedTemplateKey,
+      templateVersion: "1",
+      blocks: createDefaultBlocksForLandingNailStudio(),
+    };
+  }
+
+  return buildDefaultWebsitePageContent(DEFAULT_TEMPLATE_KEY);
 };
 
 export const normalizeWebsitePageContent = (
   input: unknown,
-  templateKeyFallback = DEFAULT_TEMPLATE_KEY
+  templateKeyFallback: string = DEFAULT_TEMPLATE_KEY
 ): WebsitePageContent => {
   const direct = WebsitePageContentSchema.safeParse(input);
   if (direct.success) {
@@ -86,7 +117,7 @@ export const normalizeWebsitePageContent = (
 
 export const extractWebsitePageContentFromCmsPayload = (
   payload: unknown,
-  templateKeyFallback = DEFAULT_TEMPLATE_KEY
+  templateKeyFallback: string = DEFAULT_TEMPLATE_KEY
 ): WebsitePageContent => {
   if (isRecord(payload) && Object.prototype.hasOwnProperty.call(payload, "contentJson")) {
     return normalizeWebsitePageContent(payload.contentJson, templateKeyFallback);

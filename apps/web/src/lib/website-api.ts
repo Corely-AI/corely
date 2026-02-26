@@ -36,6 +36,10 @@ import type {
   ListWebsiteWallOfLoveItemsOutput,
   UpdateWebsiteWallOfLoveItemInput,
   WebsiteWallOfLoveUpsertOutput,
+  GetWebsiteExternalContentDraftInput,
+  PatchWebsiteExternalContentDraftInput,
+  PublishWebsiteExternalContentInput,
+  WebsiteExternalContentOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
 
@@ -346,6 +350,52 @@ export class WebsiteApi {
     return apiClient.post<ListWebsiteWallOfLoveItemsOutput>(
       `/website/sites/${siteId}/wall-of-love/items/reorder`,
       { siteId, orderedIds },
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async getExternalContentDraft(
+    siteId: string,
+    input: GetWebsiteExternalContentDraftInput
+  ): Promise<WebsiteExternalContentOutput> {
+    const query = new URLSearchParams();
+    query.append("key", input.key);
+    if (input.locale) {
+      query.append("locale", input.locale);
+    }
+
+    return apiClient.get<WebsiteExternalContentOutput>(
+      `/website/sites/${siteId}/external-content/draft?${query.toString()}`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async patchExternalContentDraft(
+    siteId: string,
+    input: PatchWebsiteExternalContentDraftInput
+  ): Promise<WebsiteExternalContentOutput> {
+    return apiClient.patch<WebsiteExternalContentOutput>(
+      `/website/sites/${siteId}/external-content/draft`,
+      input,
+      {
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async publishExternalContent(
+    siteId: string,
+    input: PublishWebsiteExternalContentInput
+  ): Promise<WebsiteExternalContentOutput> {
+    return apiClient.post<WebsiteExternalContentOutput>(
+      `/website/sites/${siteId}/external-content/publish`,
+      input,
       {
         idempotencyKey: apiClient.generateIdempotencyKey(),
         correlationId: apiClient.generateCorrelationId(),

@@ -64,9 +64,14 @@ model Workspace {
   registers          Register[]
   shiftSessions      ShiftSession[]
   posSaleIdempotency PosSaleIdempotency[]
+  paymentAttempts    PaymentAttempt[]
   cashRegisters      CashRegister[]
   cashEntries        CashEntry[]
   cashDayCloses      CashDayClose[]
+  integrationConnections IntegrationConnection[]
+  crmMailboxes      CrmMailbox[]
+  crmMailThreads    CrmMailThread[]
+  crmMailMessages   CrmMailMessage[]
 
   @@unique([tenantId, name])
   @@index([tenantId])

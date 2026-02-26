@@ -8,11 +8,14 @@ import {
   Post,
   Query,
   Req,
+  Res,
 } from "@nestjs/common";
-import type { Request } from "express";
+import { createHash } from "node:crypto";
+import type { Request, Response } from "express";
 import {
   CreateWebsiteFeedbackInputSchema,
   CreateWebsiteFeedbackOutputSchema,
+  GetPublicWebsiteExternalContentInputSchema,
   ListWebsiteQaInputSchema,
   ListWebsiteQaOutputSchema,
   ListPublicWebsiteWallOfLoveItemsInputSchema,
@@ -21,6 +24,7 @@ import {
   ResolveWebsitePublicSiteSettingsOutputSchema,
   ResolveWebsitePublicInputSchema,
   ResolveWebsitePublicOutputSchema,
+  WebsiteExternalContentOutputSchema,
   WebsiteSlugExistsInputSchema,
   WebsiteSlugExistsOutputSchema,
 } from "@corely/contracts";
@@ -88,6 +92,30 @@ const toAbsoluteUrl = (baseUrl: string, pathOrUrl: string): string =>
   /^https?:\/\//i.test(pathOrUrl)
     ? pathOrUrl
     : `${baseUrl}${pathOrUrl.startsWith("/") ? "" : "/"}${pathOrUrl}`;
+
+const createExternalContentEtag = (input: {
+  siteId: string;
+  key: string;
+  locale?: string;
+  updatedAt: string;
+}): string => {
+  const source = `${input.siteId}:${input.key}:${input.locale ?? "default"}:${input.updatedAt}`;
+  const hash = createHash("sha256").update(source).digest("hex");
+  return `"${hash}"`;
+};
+
+const hasMatchingIfNoneMatch = (req: Request, etag: string): boolean => {
+  const header = req.header("if-none-match");
+  if (!header) {
+    return false;
+  }
+  const tags = header
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+  return tags.includes(etag) || tags.includes("*");
+};
 
 @Controller("public/website")
 export class WebsitePublicController {
@@ -177,5 +205,46 @@ export class WebsitePublicController {
     const ctx = buildUseCaseContext(req);
     const result = await this.app.slugExists.execute(input, ctx);
     return WebsiteSlugExistsOutputSchema.parse(mapResultToHttp(result));
+  }
+
+  @Get("external-content")
+  async externalContent(
+    @Query() query: Record<string, unknown>,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const input = GetPublicWebsiteExternalContentInputSchema.parse({
+      siteId: query.siteId,
+      key: query.key,
+      locale: query.locale,
+      mode: query.mode ?? "live",
+      previewToken: query.previewToken,
+    });
+
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.getPublicExternalContent.execute(input, ctx);
+    const output = WebsiteExternalContentOutputSchema.parse(mapResultToHttp(result));
+
+    if (input.mode === "preview") {
+      res.setHeader("Cache-Control", "no-store");
+      return output;
+    }
+
+    res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=86400");
+
+    const etag = createExternalContentEtag({
+      siteId: input.siteId,
+      key: output.key,
+      locale: output.locale,
+      updatedAt: output.updatedAt,
+    });
+    res.setHeader("ETag", etag);
+
+    if (hasMatchingIfNoneMatch(req, etag)) {
+      res.status(304);
+      return;
+    }
+
+    return output;
   }
 }

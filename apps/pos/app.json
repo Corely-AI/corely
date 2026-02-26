@@ -37,6 +37,7 @@
     },
     "plugins": [
       "expo-router",
+      "@corely/pos-hardware",
       [
         "expo-barcode-scanner",
         {

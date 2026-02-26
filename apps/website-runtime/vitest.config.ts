@@ -9,6 +9,7 @@ export default defineConfig({
       "@corely/contracts": path.resolve(__dirname, "../../packages/contracts/src"),
       "@corely/public-api-client": path.resolve(__dirname, "../../packages/public-api-client/src"),
       "@corely/public-urls": path.resolve(__dirname, "../../packages/public-urls/src"),
+      "@corely/website-blocks": path.resolve(__dirname, "../../packages/website-blocks/src"),
     },
   },
   test: {

@@ -305,3 +305,101 @@ export const Footer = (props: {
     </div>
   </section>
 );
+
+export const ServicesGridSection = (props: {
+  anchorId?: string;
+  className?: string;
+  hiddenOn?: WebsiteBlockHiddenOn;
+  heading?: string;
+}) => (
+  <SectionShell
+    id={props.anchorId}
+    className={props.className}
+    hiddenOn={props.hiddenOn}
+    title={props.heading ?? "Services"}
+  />
+);
+
+export const PriceMenuSection = (props: {
+  anchorId?: string;
+  className?: string;
+  hiddenOn?: WebsiteBlockHiddenOn;
+  heading?: string;
+}) => (
+  <SectionShell
+    id={props.anchorId}
+    className={props.className}
+    hiddenOn={props.hiddenOn}
+    title={props.heading ?? "Price Menu"}
+  />
+);
+
+export const GalleryMasonrySection = (props: {
+  anchorId?: string;
+  className?: string;
+  hiddenOn?: WebsiteBlockHiddenOn;
+  heading?: string;
+}) => (
+  <SectionShell
+    id={props.anchorId}
+    className={props.className}
+    hiddenOn={props.hiddenOn}
+    title={props.heading ?? "Gallery"}
+  />
+);
+
+export const SignatureSetsSection = (props: {
+  anchorId?: string;
+  className?: string;
+  hiddenOn?: WebsiteBlockHiddenOn;
+  heading?: string;
+}) => (
+  <SectionShell
+    id={props.anchorId}
+    className={props.className}
+    hiddenOn={props.hiddenOn}
+    title={props.heading ?? "Signature Sets"}
+  />
+);
+
+export const TeamSection = (props: {
+  anchorId?: string;
+  className?: string;
+  hiddenOn?: WebsiteBlockHiddenOn;
+  heading?: string;
+}) => (
+  <SectionShell
+    id={props.anchorId}
+    className={props.className}
+    hiddenOn={props.hiddenOn}
+    title={props.heading ?? "Team"}
+  />
+);
+
+export const BookingStepsSection = (props: {
+  anchorId?: string;
+  className?: string;
+  hiddenOn?: WebsiteBlockHiddenOn;
+  heading?: string;
+}) => (
+  <SectionShell
+    id={props.anchorId}
+    className={props.className}
+    hiddenOn={props.hiddenOn}
+    title={props.heading ?? "Booking Steps"}
+  />
+);
+
+export const LocationHoursSection = (props: {
+  anchorId?: string;
+  className?: string;
+  hiddenOn?: WebsiteBlockHiddenOn;
+  heading?: string;
+}) => (
+  <SectionShell
+    id={props.anchorId}
+    className={props.className}
+    hiddenOn={props.hiddenOn}
+    title={props.heading ?? "Location & Hours"}
+  />
+);

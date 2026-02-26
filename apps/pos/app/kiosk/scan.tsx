@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/stores/authStore";
 import { useEngagementService } from "@/hooks/useEngagementService";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
+import { Button, EmptyState, Snackbar } from "@/ui/components";
+import { posTheme } from "@/ui/theme";
 
 const parseCustomerId = (payload: string) => {
   if (payload.startsWith("customer:")) {
@@ -18,32 +20,40 @@ const parseCustomerId = (payload: string) => {
 };
 
 export default function KioskScanScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const { apiClient } = useAuthStore();
   const { engagementService } = useEngagementService();
   const { isOnline } = useSyncEngine();
 
+  const showToast = (message: string) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 1800);
+  };
+
   if (!permission) {
     return (
-      <View style={styles.container}>
-        <Text>Requesting camera permission...</Text>
+      <View style={styles.permissionShell}>
+        <Text style={styles.permissionText}>{t("scanner.requestingPermission")}</Text>
       </View>
     );
   }
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
-        <View style={styles.permissionContainer}>
-          <Ionicons name="camera-outline" size={64} color="#999" />
-          <Text style={styles.permissionTitle}>Camera Permission Required</Text>
-          <Text style={styles.permissionText}>We need access to your camera to scan QR codes</Text>
-          <TouchableOpacity style={styles.button} onPress={requestPermission}>
-            <Text style={styles.buttonText}>Grant Permission</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.permissionShell}>
+        <EmptyState
+          title={t("scanner.scanQr")}
+          description={t("scanner.permissionTextQr")}
+          primaryAction={{
+            label: t("scanner.grantPermission"),
+            onPress: () => void requestPermission(),
+          }}
+          secondaryAction={{ label: t("common.notNow"), onPress: () => router.back() }}
+        />
       </View>
     );
   }
@@ -74,13 +84,14 @@ export default function KioskScanScreen() {
     }
 
     if (!customer) {
-      Alert.alert("Customer Not Found", "We couldn’t find that QR code.", [
+      showToast(t("kiosk.customerNotFound"));
+      Alert.alert(t("kiosk.customerNotFound"), t("kiosk.customerNotFoundQrMessage"), [
         {
-          text: "Enter Phone",
+          text: t("kiosk.enterPhone"),
           onPress: () => router.replace("/kiosk/lookup"),
         },
         {
-          text: "Try Again",
+          text: t("common.tryAgain"),
           onPress: () => setScanned(false),
         },
       ]);
@@ -95,19 +106,23 @@ export default function KioskScanScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Scan QR</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
       <CameraView
         style={styles.camera}
         onBarcodeScanned={scanned ? undefined : handleQrScanned}
         barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
       >
+        <View style={styles.topBar}>
+          <Button
+            label={t("common.back")}
+            variant="ghost"
+            onPress={() => router.back()}
+            align="stretch"
+            labelLines={1}
+          />
+          <Text style={styles.title}>{t("scanner.scanQr")}</Text>
+          <View style={styles.stub} />
+        </View>
+
         <View style={styles.overlay}>
           <View style={styles.scanArea}>
             <View style={[styles.corner, styles.topLeft]} />
@@ -115,9 +130,15 @@ export default function KioskScanScreen() {
             <View style={[styles.corner, styles.bottomLeft]} />
             <View style={[styles.corner, styles.bottomRight]} />
           </View>
-          <Text style={styles.instruction}>Position QR code within the frame</Text>
+          <Text style={styles.instruction}>{t("scanner.positionQr")}</Text>
         </View>
       </CameraView>
+
+      {toast ? (
+        <View style={styles.toast}>
+          <Snackbar message={toast} tone="warning" />
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -125,52 +146,35 @@ export default function KioskScanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  permissionContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  permissionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 16,
-    marginBottom: 8,
-    color: "#fff",
-  },
-  permissionText: {
-    fontSize: 16,
-    color: "#999",
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  button: {
-    backgroundColor: "#2196f3",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    backgroundColor: posTheme.colors.black,
   },
   camera: {
     flex: 1,
+  },
+  permissionShell: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: posTheme.colors.background,
+    paddingHorizontal: posTheme.spacing.md,
+  },
+  permissionText: {
+    color: posTheme.colors.textMuted,
+    textAlign: "center",
+  },
+  topBar: {
+    marginTop: posTheme.spacing.md,
+    marginHorizontal: posTheme.spacing.sm,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  title: {
+    color: posTheme.colors.white,
+    fontSize: 18,
+    fontWeight: "900",
+  },
+  stub: {
+    width: 70,
   },
   overlay: {
     flex: 1,
@@ -186,7 +190,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: 40,
     height: 40,
-    borderColor: "#2196f3",
+    borderColor: posTheme.colors.accent,
   },
   topLeft: {
     top: 0,
@@ -213,9 +217,15 @@ const styles = StyleSheet.create({
     borderRightWidth: 4,
   },
   instruction: {
-    color: "#fff",
-    fontSize: 16,
-    marginTop: 32,
+    color: posTheme.colors.white,
+    fontSize: 15,
+    marginTop: 24,
     textAlign: "center",
+  },
+  toast: {
+    position: "absolute",
+    left: posTheme.spacing.md,
+    right: posTheme.spacing.md,
+    bottom: posTheme.spacing.xl,
   },
 });

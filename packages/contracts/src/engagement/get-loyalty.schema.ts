@@ -2,7 +2,7 @@ import { z } from "zod";
 import { LoyaltyAccountSchema } from "./loyalty-account.types";
 
 export const GetLoyaltySummaryInputSchema = z.object({
-  customerPartyId: z.string().uuid(),
+  customerPartyId: z.string().min(1),
 });
 
 export const GetLoyaltySummaryOutputSchema = z.object({
