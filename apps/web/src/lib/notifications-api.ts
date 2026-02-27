@@ -58,7 +58,7 @@ export class NotificationsApi {
       .subscribeSse<NotificationCountChangedEvent>("/notifications/stream", {
         signal: controller.signal,
         onEvent: (event) => {
-          if (event.type === "notifications.countChanged") {
+          if (event.event === "notifications.countChanged") {
             // Verify payload shape if needed, but assuming typed
             const payload = event.data as unknown as NotificationCountChangedEvent;
             options.onCountChanged(payload.unreadCount);

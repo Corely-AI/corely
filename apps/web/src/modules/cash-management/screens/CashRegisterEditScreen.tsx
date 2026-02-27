@@ -1,18 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Checkbox,
-  Input,
-  Label,
-} from "@corely/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@corely/ui";
 import { cashManagementApi } from "@/lib/cash-management-api";
-import { cashKeys, invalidateCashRegisterQueries } from "../queries";
+import { cashKeys } from "../queries";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function CashRegisterEditScreen() {
@@ -21,7 +12,6 @@ export function CashRegisterEditScreen() {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
-  const [disallowNegativeBalance, setDisallowNegativeBalance] = useState(false);
 
   const registerQuery = useQuery({
     queryKey: id ? cashKeys.registers.detail(id) : ["cash-registers", "missing-id"],
@@ -36,13 +26,17 @@ export function CashRegisterEditScreen() {
       cashManagementApi.updateRegister(id as string, {
         name: name.trim() || undefined,
         location: location.trim() || null,
-        disallowNegativeBalance,
       }),
     onSuccess: async () => {
       if (!id) {
         return;
       }
-      await invalidateCashRegisterQueries(queryClient, id);
+      await queryClient.invalidateQueries({
+        queryKey: cashKeys.registers.detail(id),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: cashKeys.registers.list.queryKey,
+      });
       navigate(`/cash/registers/${id}`);
     },
   });
@@ -53,7 +47,6 @@ export function CashRegisterEditScreen() {
     }
     setName(register.name);
     setLocation(register.location ?? "");
-    setDisallowNegativeBalance(register.disallowNegativeBalance ?? false);
   }, [register]);
 
   if (!id) {
@@ -93,13 +86,6 @@ export function CashRegisterEditScreen() {
               placeholder="Front desk"
             />
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={disallowNegativeBalance}
-              onCheckedChange={(value) => setDisallowNegativeBalance(value === true)}
-            />
-            Disallow negative cash balance
-          </label>
           {updateMutation.isError ? (
             <p className="text-sm text-destructive">Failed to update register.</p>
           ) : null}
