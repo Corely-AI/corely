@@ -17,6 +17,7 @@ export default defineConfig(() => {
     publicDir: "assets/public",
     build: {
       ...baseConfig.build,
+      assetsDir: "landing-assets",
       rollupOptions: {
         ...baseConfig.build?.rollupOptions,
         output: {
