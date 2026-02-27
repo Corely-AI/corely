@@ -8,6 +8,7 @@
     "e2e": "playwright test",
     "e2e:pos": "playwright test --config playwright.pos.config.ts",
     "e2e:pos:screens": "POS_CAPTURE_SCREENS=true playwright test --config playwright.pos.config.ts tests/pos/pos.screenshots.spec.ts",
+    "e2e:cash:screens": "CASH_CAPTURE_SCREENS=true playwright test tests/cash-management/cash-management-screenshots.e2e.spec.ts --project=chromium",
     "e2e:ui": "playwright test --ui",
     "e2e:report": "playwright show-report",
     "e2e:debug": "playwright test --debug"
