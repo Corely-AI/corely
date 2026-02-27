@@ -1,11 +1,7 @@
 {
   "rewrites": [
-    { "source": "/vi/nails", "destination": "https://nails.corely.one" },
-    { "source": "/vi/nails/(.*)", "destination": "https://nails.corely.one/$1" },
-    { "source": "/favicon.svg", "destination": "https://nails.corely.one/favicon.svg" },
-    { "source": "/assets/(.*)", "destination": "https://nails.corely.one/assets/$1" },
-    { "source": "/content/(.*)", "destination": "https://nails.corely.one/content/$1" },
-    { "source": "/nails-assets/(.*)", "destination": "https://nails.corely.one/$1" },
+    { "source": "/vi/nails", "destination": "https://nails.corely.one/index.html" },
+    { "source": "/vi/nails/(.*)", "destination": "https://nails.corely.one/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
