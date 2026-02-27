@@ -11,7 +11,6 @@ import {
   Sse,
   UseGuards,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import type { Request } from "express";
 import type { Observable } from "rxjs";
 import {
@@ -39,8 +38,7 @@ export class NotificationsController {
     private readonly getUnreadCountUseCase: GetUnreadCountUseCase,
     private readonly markReadUseCase: MarkReadUseCase,
     private readonly markAllReadUseCase: MarkAllReadUseCase,
-    private readonly sseStreamFactory: SseStreamFactory,
-    private readonly config: ConfigService
+    private readonly sseStreamFactory: SseStreamFactory
   ) {}
 
   @Get()
