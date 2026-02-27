@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut, Users } from "lucide-react";
+import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut, Users, Store } from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
 import { Button } from "@corely/ui";
 import { useThemeStore } from "@/shared/theme/themeStore";
@@ -20,7 +20,7 @@ import { getIconByName } from "@/shared/utils/iconMapping";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 import { WorkspaceTypeBadge } from "@/shared/workspaces/WorkspaceTypeBadge";
 import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
-import { useCanReadTenants } from "@/shared/lib/permissions";
+import { useCanManageTenants, useCanReadTenants } from "@/shared/lib/permissions";
 import { NotificationBell } from "@/modules/notifications/components/notification-bell";
 
 interface SidebarProps {
@@ -35,6 +35,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
   const { user, logout } = useAuth();
   const { activeWorkspace } = useWorkspace();
   const { can: canReadTenants } = useCanReadTenants();
+  const { can: canManageTenants } = useCanManageTenants();
   const {
     isLoading: isConfigLoading,
     error: configError,
@@ -139,7 +140,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
           <div className="px-3 py-4 text-sm text-muted-foreground">
             {t("errors.loadMenuFailed")}
           </div>
-        ) : navigationGroups.length > 0 || canReadTenants ? (
+        ) : navigationGroups.length > 0 || canReadTenants || canManageTenants ? (
           /* Server-driven navigation */
           <>
             {navigationGroups.map((group) => {
@@ -152,11 +153,15 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                   )}
                   {group.items.map((item) => {
                     const Icon = getIconByName(item.icon);
+                    const openInNewTab =
+                      item.id === "booking-public-page" || item.route === "/booking/public-page";
                     return (
                       <NavLink
                         key={item.id}
                         to={item.route || "#"}
                         end={item.exact || item.route === "/tax"}
+                        target={openInNewTab ? "_blank" : undefined}
+                        rel={openInNewTab ? "noreferrer" : undefined}
                         data-testid={`nav-${item.id}`}
                         className={({ isActive }) =>
                           cn(
@@ -179,29 +184,48 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
               );
             })}
 
-            {canReadTenants && (
+            {(canReadTenants || canManageTenants) && (
               <div className="space-y-1">
                 {!collapsed && (
                   <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t("nav.groups.platform")}
                   </div>
                 )}
-                <NavLink
-                  to="/settings/tenants"
-                  end
-                  data-testid="nav-platform-tenants"
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                      isActive
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                    )
-                  }
-                >
-                  <Users className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span>{t("nav.tenants")}</span>}
-                </NavLink>
+                {canReadTenants && (
+                  <NavLink
+                    to="/settings/tenants"
+                    end
+                    data-testid="nav-platform-tenants"
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )
+                    }
+                  >
+                    <Users className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span>{t("nav.tenants")}</span>}
+                  </NavLink>
+                )}
+                {canManageTenants && (
+                  <NavLink
+                    to="/directory/restaurants"
+                    data-testid="nav-directory-restaurants"
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )
+                    }
+                  >
+                    <Store className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span>{t("nav.directory.restaurants")}</span>}
+                  </NavLink>
+                )}
               </div>
             )}
 

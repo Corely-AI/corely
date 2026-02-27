@@ -15,15 +15,22 @@ import type { WebsiteSiteRepositoryPort } from "../ports/site-repository.port";
 import type { WebsitePageRepositoryPort } from "../ports/page-repository.port";
 import type { WebsiteSnapshotRepositoryPort } from "../ports/snapshot-repository.port";
 import type { WebsiteMenuRepositoryPort } from "../ports/menu-repository.port";
+import type { WebsitePublicFileUrlPort } from "../ports/public-file-url.port";
 import type { CmsReadPort } from "../ports/cms-read.port";
+import type { WebsiteCustomAttributesPort } from "../ports/custom-attributes.port";
 import { type PublicWorkspaceResolver } from "@/shared/public";
-import { RESERVED_PUBLIC_PREFIXES } from "@corely/public-urls";
+import { buildSeo } from "../../domain/website.validators";
 import {
-  buildSeo,
-  normalizeHostname,
-  normalizeLocale,
-  normalizePath,
-} from "../../domain/website.validators";
+  buildWebsiteSiteSettings,
+  WEBSITE_SITE_SETTINGS_ENTITY_TYPE,
+} from "../../domain/site-settings";
+import {
+  extractWebsitePageContentFromCmsPayload,
+  normalizeWebsitePageContent,
+} from "../../domain/page-content";
+import { isWebsitePreviewTokenValid } from "../../domain/preview-token";
+import { withResolvedSiteAssetUrls } from "./site-settings-assets";
+import { resolvePublicWebsiteSiteRef } from "./resolve-public-site-ref";
 
 type Deps = {
   logger: LoggerPort;
@@ -32,8 +39,38 @@ type Deps = {
   pageRepo: WebsitePageRepositoryPort;
   snapshotRepo: WebsiteSnapshotRepositoryPort;
   menuRepo: WebsiteMenuRepositoryPort;
+  publicFileUrlPort: WebsitePublicFileUrlPort;
   cmsRead: CmsReadPort;
+  customAttributes: WebsiteCustomAttributesPort;
   publicWorkspaceResolver: PublicWorkspaceResolver;
+};
+
+type PublicMenu = {
+  name: string;
+  locale: string;
+  itemsJson: unknown;
+};
+
+const toPublicMenus = (menus: unknown): PublicMenu[] => {
+  if (!Array.isArray(menus)) {
+    return [];
+  }
+  return menus
+    .map((menu) => {
+      if (!menu || typeof menu !== "object") {
+        return null;
+      }
+      const candidate = menu as { name?: unknown; locale?: unknown; itemsJson?: unknown };
+      if (typeof candidate.name !== "string" || typeof candidate.locale !== "string") {
+        return null;
+      }
+      return {
+        name: candidate.name,
+        locale: candidate.locale,
+        itemsJson: candidate.itemsJson ?? [],
+      };
+    })
+    .filter((menu): menu is PublicMenu => Boolean(menu));
 };
 
 export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
@@ -42,25 +79,6 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
 > {
   constructor(protected readonly deps: Deps) {
     super({ logger: deps.logger });
-  }
-
-  private async resolveWorkspaceContext(host: string) {
-    try {
-      return await this.deps.publicWorkspaceResolver.resolveFromRequest({
-        host,
-        path: "/",
-      });
-    } catch {
-      // Ignore and attempt dev-style workspace resolution below.
-    }
-    try {
-      return await this.deps.publicWorkspaceResolver.resolveFromRequest({
-        host: null,
-        path: `/w/${host}`,
-      });
-    } catch {
-      return null;
-    }
   }
 
   protected validate(input: ResolveWebsitePublicInput): ResolveWebsitePublicInput {
@@ -77,54 +95,27 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
     input: ResolveWebsitePublicInput,
     _ctx: UseCaseContext
   ): Promise<Result<ResolveWebsitePublicOutput, UseCaseError>> {
-    const host = normalizeHostname(input.host);
-    const path = normalizePath(input.path);
-
-    const domain = await this.deps.domainRepo.findByHostname(null, host);
-    let site = domain ? await this.deps.siteRepo.findById(domain.tenantId, domain.siteId) : null;
-    let resolvedPath = path;
-
-    if (!site) {
-      const workspace = await this.resolveWorkspaceContext(host);
-      if (!workspace) {
-        return err(new NotFoundError("Page not found", undefined, "Website:PageNotFound"));
-      }
-
-      const segments = path.split("/").filter(Boolean);
-      const candidateSlug = segments[0]?.toLowerCase();
-      const isReserved = candidateSlug
-        ? RESERVED_PUBLIC_PREFIXES.includes(
-            candidateSlug as (typeof RESERVED_PUBLIC_PREFIXES)[number]
-          )
-        : false;
-
-      if (candidateSlug && !isReserved) {
-        const candidateSite = await this.deps.siteRepo.findBySlug(
-          workspace.tenantId,
-          candidateSlug
-        );
-        if (candidateSite) {
-          site = candidateSite;
-          resolvedPath = segments.length > 1 ? `/${segments.slice(1).join("/")}` : "/";
-        }
-      }
-
-      if (!site) {
-        site = await this.deps.siteRepo.findDefaultByTenant(workspace.tenantId);
-        resolvedPath = path;
-      }
-    }
-
-    if (!site) {
+    const resolved = await resolvePublicWebsiteSiteRef(this.deps, {
+      host: input.host,
+      path: input.path,
+      locale: input.locale,
+    });
+    if (!resolved || !resolved.page) {
       return err(new NotFoundError("Page not found", undefined, "Website:PageNotFound"));
     }
-
-    const locale = normalizeLocale(input.locale ?? site.defaultLocale);
-
-    const page = await this.deps.pageRepo.findByPath(site.tenantId, site.id, resolvedPath, locale);
-    if (!page) {
-      return err(new NotFoundError("Page not found", undefined, "Website:PageNotFound"));
-    }
+    const { site, page, locale } = resolved;
+    const customSettings = await this.deps.customAttributes.getAttributes({
+      tenantId: site.tenantId,
+      entityType: WEBSITE_SITE_SETTINGS_ENTITY_TYPE,
+      entityId: site.id,
+    });
+    const settings = buildWebsiteSiteSettings({
+      siteName: site.name,
+      brandingJson: site.brandingJson,
+      themeJson: site.themeJson,
+      custom: customSettings,
+    });
+    const resolvedSettings = await withResolvedSiteAssetUrls(settings, this.deps.publicFileUrlPort);
 
     const menus = await this.deps.menuRepo.listBySite(site.tenantId, site.id);
     const localeMenus = menus.filter((menu) => menu.locale === locale);
@@ -133,27 +124,45 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
       : menus.filter((menu) => menu.locale === site.defaultLocale);
 
     if (input.mode === "preview") {
+      if (!isWebsitePreviewTokenValid(input.token)) {
+        return err(
+          new ValidationError("preview token is invalid", undefined, "Website:InvalidPreviewToken")
+        );
+      }
+
       const cmsPayload = await this.deps.cmsRead.getEntryForWebsiteRender({
         tenantId: site.tenantId,
         entryId: page.cmsEntryId,
         locale,
         mode: "preview",
       });
+      const content = extractWebsitePageContentFromCmsPayload(cmsPayload, page.template);
+      const previewSeo = content.seoOverride ?? buildSeo(page);
+      const publicMenus: PublicMenu[] = resolvedMenus.map((menu) => ({
+        name: menu.name,
+        locale: menu.locale,
+        itemsJson: menu.itemsJson,
+      }));
 
       return ok({
         siteId: site.id,
         siteSlug: site.slug,
+        settings: resolvedSettings,
+        page: {
+          id: page.id,
+          path: page.path,
+          locale,
+          templateKey: content.templateKey,
+          content,
+          seo: previewSeo,
+        },
         pageId: page.id,
         path: page.path,
         locale,
-        template: page.template,
-        payloadJson: cmsPayload,
-        seo: buildSeo(page),
-        menus: resolvedMenus.map((menu) => ({
-          name: menu.name,
-          locale: menu.locale,
-          itemsJson: menu.itemsJson,
-        })),
+        template: content.templateKey,
+        payloadJson: content,
+        seo: previewSeo,
+        menus: publicMenus,
         snapshotVersion: null,
       });
     }
@@ -171,22 +180,54 @@ export class ResolveWebsitePublicPageUseCase extends BaseUseCase<
       template?: string;
       seo?: { title?: string | null; description?: string | null; imageFileId?: string | null };
       content?: unknown;
+      settings?: unknown;
+      menus?: unknown;
     };
+    const content = normalizeWebsitePageContent(snapshotPayload?.content, page.template);
+    const liveSeo = snapshotPayload?.seo ?? content.seoOverride ?? buildSeo(page);
+    const snapshotMenus = toPublicMenus(snapshotPayload?.menus);
+    const publicMenus =
+      snapshotMenus.length > 0
+        ? snapshotMenus
+        : resolvedMenus.map((menu) => ({
+            name: menu.name,
+            locale: menu.locale,
+            itemsJson: menu.itemsJson,
+          }));
+    const snapshotSettings = buildWebsiteSiteSettings({
+      siteName: site.name,
+      brandingJson:
+        (snapshotPayload?.settings as { common?: unknown } | undefined)?.common ??
+        site.brandingJson,
+      themeJson:
+        (snapshotPayload?.settings as { theme?: unknown } | undefined)?.theme ?? site.themeJson,
+      custom:
+        (snapshotPayload?.settings as { custom?: unknown } | undefined)?.custom ?? customSettings,
+    });
+    const liveSettings = await withResolvedSiteAssetUrls(
+      snapshotSettings,
+      this.deps.publicFileUrlPort
+    );
 
     return ok({
       siteId: site.id,
       siteSlug: site.slug,
+      settings: liveSettings,
+      page: {
+        id: page.id,
+        path: page.path,
+        locale,
+        templateKey: content.templateKey,
+        content,
+        seo: liveSeo,
+      },
       pageId: page.id,
       path: page.path,
       locale,
-      template: snapshotPayload?.template ?? page.template,
-      payloadJson: snapshotPayload?.content ?? snapshot.payloadJson,
-      seo: snapshotPayload?.seo ?? buildSeo(page),
-      menus: resolvedMenus.map((menu) => ({
-        name: menu.name,
-        locale: menu.locale,
-        itemsJson: menu.itemsJson,
-      })),
+      template: content.templateKey,
+      payloadJson: content,
+      seo: liveSeo,
+      menus: publicMenus,
       snapshotVersion: snapshot.version,
     });
   }

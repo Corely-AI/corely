@@ -7,7 +7,7 @@ import type { IdGeneratorPort } from "../ports/id-generator.port";
 import type { ClockPort } from "../ports/clock.port";
 import type { AuditPort } from "../ports/audit.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanClasses } from "../../policies/assert-can-classes";
+import { assertCanClasses, assertCanEnrollmentManage } from "../../policies/assert-can-classes";
 import type { ClassEnrollmentEntity } from "../../domain/entities/classes.entities";
 
 @RequireTenant()
@@ -24,6 +24,7 @@ export class UpsertEnrollmentUseCase {
 
   async execute(input: UpsertEnrollmentInput, ctx: UseCaseContext): Promise<ClassEnrollmentEntity> {
     assertCanClasses(ctx, "classes.write");
+    assertCanEnrollmentManage(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     if (!input.classGroupId || !input.studentClientId || !input.payerClientId) {
@@ -57,10 +58,21 @@ export class UpsertEnrollmentUseCase {
       classGroupId: input.classGroupId,
       studentClientId: input.studentClientId,
       payerClientId: input.payerClientId,
+      payerPartyId: input.payerPartyId ?? null,
+      status: input.status ?? "ENROLLED",
+      seatType: input.seatType ?? "LEARNER",
+      source: input.source ?? "ADMIN",
       startDate: input.startDate ? new Date(input.startDate) : null,
       endDate: input.endDate ? new Date(input.endDate) : null,
       isActive: input.isActive ?? true,
       priceOverridePerSession: input.priceOverridePerSession ?? null,
+      priceCents: input.priceCents ?? null,
+      currency: input.currency ?? null,
+      discountCents: input.discountCents ?? null,
+      discountLabel: input.discountLabel ?? null,
+      placementLevel: input.placementLevel ?? null,
+      placementGoal: input.placementGoal ?? null,
+      placementNote: input.placementNote ?? null,
       createdAt: now,
       updatedAt: now,
     };

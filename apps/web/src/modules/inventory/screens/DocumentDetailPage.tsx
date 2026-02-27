@@ -9,6 +9,7 @@ import { Label } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
+import { toast } from "sonner";
 
 export default function DocumentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -80,6 +81,21 @@ export default function DocumentDetailPage() {
       void queryClient.invalidateQueries({
         queryKey: inventoryQueryKeys.documents.detail(id || ""),
       }),
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : "Failed to post document";
+      toast.error(message);
+    },
+  });
+
+  const requestPostApproval = useMutation({
+    mutationFn: () =>
+      inventoryApi.requestDocumentPostApproval(id || "", {
+        postingDate: data?.postingDate || undefined,
+      }),
+    onError: (error: unknown) => {
+      const message = error instanceof Error ? error.message : "Failed to request posting approval";
+      toast.error(message);
+    },
   });
 
   const cancelDocument = useMutation({
@@ -95,6 +111,7 @@ export default function DocumentDetailPage() {
   }
 
   const editable = data.status === "DRAFT";
+  const approvalStatus = requestPostApproval.data?.status;
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -108,6 +125,15 @@ export default function DocumentDetailPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{data.documentNumber || "Draft"}</span>
               <Badge>{data.status}</Badge>
+              {approvalStatus === "PENDING" ? (
+                <Badge variant="outline">Approval pending</Badge>
+              ) : null}
+              {approvalStatus === "APPROVED" ? (
+                <Badge variant="accent">Approval granted</Badge>
+              ) : null}
+              {approvalStatus === "REJECTED" ? (
+                <Badge variant="outline">Approval rejected</Badge>
+              ) : null}
             </div>
           </div>
         </div>
@@ -125,10 +151,35 @@ export default function DocumentDetailPage() {
             </Button>
           )}
           {data.status === "CONFIRMED" && (
-            <Button variant="outline" onClick={() => postDocument.mutate()}>
-              <Upload className="h-4 w-4" />
-              Post
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                onClick={() => requestPostApproval.mutate()}
+                disabled={requestPostApproval.isPending}
+              >
+                <Check className="h-4 w-4" />
+                {requestPostApproval.isPending ? "Requesting..." : "Request approval"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  const approval = await requestPostApproval.mutateAsync();
+                  if (approval.status === "APPROVED") {
+                    postDocument.mutate();
+                    return;
+                  }
+                  if (approval.status === "PENDING") {
+                    toast.message("Posting approval is pending");
+                    return;
+                  }
+                  toast.error("Posting approval was rejected");
+                }}
+                disabled={postDocument.isPending}
+              >
+                <Upload className="h-4 w-4" />
+                {postDocument.isPending ? "Posting..." : "Post"}
+              </Button>
+            </>
           )}
           {data.status !== "POSTED" && data.status !== "CANCELED" && (
             <Button variant="ghost" onClick={() => cancelDocument.mutate()}>

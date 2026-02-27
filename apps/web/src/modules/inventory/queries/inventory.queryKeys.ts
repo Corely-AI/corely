@@ -6,6 +6,7 @@ import type {
   GetAvailableInput,
   ListReorderPoliciesInput,
   GetReorderSuggestionsInput,
+  GetLowStockInput,
   ListLotsInput,
   GetExpirySummaryInput,
 } from "@corely/contracts";
@@ -51,6 +52,13 @@ export const inventoryQueryKeys = {
       [...inventoryQueryKeys.all, "reorder", "policies", query] as const,
     suggestions: (query?: GetReorderSuggestionsInput) =>
       [...inventoryQueryKeys.all, "reorder", "suggestions", query] as const,
+    lowStock: (query?: GetLowStockInput) =>
+      [...inventoryQueryKeys.all, "reorder", "low-stock", query] as const,
+  },
+
+  reports: {
+    usage: (query?: { warehouseId?: string; fromDate?: string; toDate?: string }) =>
+      [...inventoryQueryKeys.all, "reports", "usage", query] as const,
   },
 
   lots: {

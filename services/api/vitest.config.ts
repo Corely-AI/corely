@@ -63,6 +63,31 @@ export default defineConfig({
       "@corely/domain": path.resolve(__dirname, "../..", "packages/domain/src"),
       "@corely/kernel": path.resolve(__dirname, "../..", "packages/kernel/src"),
       "@corely/email": path.resolve(__dirname, "../..", "packages/email/src"),
+      "@corely/integrations-core": path.resolve(
+        __dirname,
+        "../..",
+        "packages/integrations/core/src"
+      ),
+      "@corely/integrations-sumup": path.resolve(
+        __dirname,
+        "../..",
+        "packages/integrations/sumup/src"
+      ),
+      "@corely/integrations-adyen": path.resolve(
+        __dirname,
+        "../..",
+        "packages/integrations/adyen/src"
+      ),
+      "@corely/integrations-microsoft-graph-mail": path.resolve(
+        __dirname,
+        "../..",
+        "packages/integrations/microsoft-graph-mail/src"
+      ),
+      "@corely/integrations-google-gmail": path.resolve(
+        __dirname,
+        "../..",
+        "packages/integrations/google-gmail/src"
+      ),
       "@corely/storage": path.resolve(__dirname, "../..", "packages/storage/src"),
       "@corely/public-urls": path.resolve(__dirname, "../..", "packages/public-urls/src"),
       "@corely/testkit": path.resolve(__dirname, "../..", "packages/testkit/src"),

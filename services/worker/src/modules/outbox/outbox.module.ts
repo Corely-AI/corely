@@ -33,6 +33,8 @@ import { FormsWorkerModule } from "../forms/forms-worker.module";
 import { ClassesInvoiceReadyToSendHandler } from "../classes/handlers/classes-invoice-ready-to-send.handler";
 import { ClassesWorkerModule } from "../classes/classes-worker.module";
 import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adapters/platform-entity-deleted.handler";
+import { DirectoryWorkerModule } from "../directory/directory-worker.module";
+import { DirectoryLeadCreatedHandler } from "../directory/handlers/directory-lead-created.handler";
 import { NotificationIntentHandler } from "../notifications/handlers/notification-intent.handler";
 
 // ... imports
@@ -45,6 +47,7 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
     TaxWorkerModule,
     FormsWorkerModule,
     ClassesWorkerModule,
+    DirectoryWorkerModule,
     NotificationsModule,
   ],
   providers: [
@@ -97,6 +100,7 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
         formsHandler: FormsEventHandler,
         classesHandler: ClassesInvoiceReadyToSendHandler,
         platformEntityDeletedHandler: PlatformEntityDeletedHandler,
+        directoryLeadCreatedHandler: DirectoryLeadCreatedHandler,
         notificationIntentHandler: NotificationIntentHandler
       ) => {
         return new OutboxPollerService(repo, env, [
@@ -108,6 +112,7 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
           formsHandler,
           classesHandler,
           platformEntityDeletedHandler,
+          directoryLeadCreatedHandler,
           notificationIntentHandler,
         ]);
       },
@@ -122,6 +127,7 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
         FormsEventHandler,
         ClassesInvoiceReadyToSendHandler,
         PlatformEntityDeletedHandler,
+        DirectoryLeadCreatedHandler,
         NotificationIntentHandler,
       ],
     },

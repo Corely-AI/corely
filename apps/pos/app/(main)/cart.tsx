@@ -1,123 +1,163 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useCartStore } from "@/stores/cartStore";
-import { SaleBuilder } from "@corely/pos-core";
 import { useTranslation } from "react-i18next";
-
-const saleBuilder = new SaleBuilder();
+import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
+import { formatCurrencyFromCents } from "@/lib/formatters";
+import { useCartStore } from "@/stores/cartStore";
+import { Button, Card, EmptyState } from "@/ui/components";
+import { posTheme } from "@/ui/theme";
 
 export default function CartScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { items, updateQuantity, removeItem, clearCart, getTotals } = useCartStore();
+  const { isTablet } = useAdaptiveLayout();
+  const {
+    items,
+    updateQuantity,
+    updateLineDiscount,
+    removeItem,
+    clearCart,
+    getTotals,
+    orderDiscountCents,
+    setOrderDiscount,
+  } = useCartStore();
+
   const totals = getTotals();
 
-  const handleIncrement = (itemId: string) => {
-    const item = items.find((i) => i.id === itemId);
-    if (item) {
-      updateQuantity(itemId, item.quantity + 1);
-    }
+  const applyDiscountPreset = (lineItemId: string) => {
+    Alert.alert(t("cart.lineDiscountTitle"), t("cart.chooseDiscount"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: "$1.00", onPress: () => updateLineDiscount(lineItemId, 100) },
+      { text: "$2.50", onPress: () => updateLineDiscount(lineItemId, 250) },
+      { text: "$5.00", onPress: () => updateLineDiscount(lineItemId, 500) },
+      { text: t("common.remove"), onPress: () => updateLineDiscount(lineItemId, 0) },
+    ]);
   };
 
-  const handleDecrement = (itemId: string) => {
-    const item = items.find((i) => i.id === itemId);
-    if (item && item.quantity > 1) {
-      updateQuantity(itemId, item.quantity - 1);
-    }
+  const applyOrderDiscountPreset = () => {
+    Alert.alert(t("cart.orderDiscountTitle"), t("cart.chooseOrderDiscount"), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: "$2.00", onPress: () => setOrderDiscount(200) },
+      { text: "$5.00", onPress: () => setOrderDiscount(500) },
+      { text: "$10.00", onPress: () => setOrderDiscount(1000) },
+      { text: t("common.remove"), onPress: () => setOrderDiscount(0) },
+    ]);
   };
 
-  const handleCheckout = () => {
-    router.push("/checkout");
-  };
-
-  if (items.length === 0) {
+  if (!items.length) {
     return (
-      <View style={styles.container}>
-        <View style={styles.emptyState}>
-          <Ionicons name="cart-outline" size={64} color="#999" />
-          <Text style={styles.emptyTitle}>{t("cart.emptyTitle")}</Text>
-          <Text style={styles.emptyText}>{t("cart.emptyDescription")}</Text>
-        </View>
+      <View testID="pos-cart-empty" style={styles.emptyWrap}>
+        <EmptyState
+          icon={<Ionicons name="cart-outline" size={52} color={posTheme.colors.textMuted} />}
+          title={t("cart.emptyTitle")}
+          description={t("cart.emptyDescription")}
+          primaryAction={{ label: t("cart.scanItem"), onPress: () => router.push("/scanner") }}
+          secondaryAction={{
+            label: t("cart.browseProducts"),
+            onPress: () => router.push("/(main)"),
+          }}
+        />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          const lineTotal = saleBuilder.calculateLineTotal(
-            item.quantity,
-            item.unitPriceCents,
-            item.discountCents
-          );
-
-          return (
-            <View style={styles.cartItem}>
-              <View style={styles.itemInfo}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemPrice}>
-                  {t("cart.unitPriceEach", {
-                    price: `$${(item.unitPriceCents / 100).toFixed(2)}`,
-                  })}
-                </Text>
+    <View testID="pos-cart-screen" style={[styles.container, isTablet && styles.containerTablet]}>
+      <View style={styles.itemsPane}>
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.lineItemId}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => (
+            <Card>
+              <View style={styles.rowHeader}>
+                <View style={styles.rowMain}>
+                  <Text style={styles.itemName}>{item.productName}</Text>
+                  <Text style={styles.itemMeta}>{item.sku}</Text>
+                </View>
+                <Text style={styles.itemTotal}>{formatCurrencyFromCents(item.lineTotalCents)}</Text>
               </View>
 
-              <View style={styles.quantityControls}>
-                <TouchableOpacity
-                  style={styles.quantityButton}
-                  onPress={() => handleDecrement(item.id)}
-                >
-                  <Ionicons name="remove" size={20} color="#666" />
-                </TouchableOpacity>
-                <Text style={styles.quantity}>{item.quantity}</Text>
-                <TouchableOpacity
-                  style={styles.quantityButton}
-                  onPress={() => handleIncrement(item.id)}
-                >
-                  <Ionicons name="add" size={20} color="#666" />
-                </TouchableOpacity>
-              </View>
+              <View style={styles.controlsRow}>
+                <View style={styles.qtyControls}>
+                  <Pressable
+                    style={styles.qtyButton}
+                    onPress={() => updateQuantity(item.lineItemId, Math.max(1, item.quantity - 1))}
+                  >
+                    <Ionicons name="remove" size={16} color={posTheme.colors.text} />
+                  </Pressable>
+                  <Text style={styles.qtyLabel}>{item.quantity}</Text>
+                  <Pressable
+                    style={styles.qtyButton}
+                    onPress={() => updateQuantity(item.lineItemId, item.quantity + 1)}
+                  >
+                    <Ionicons name="add" size={16} color={posTheme.colors.text} />
+                  </Pressable>
+                </View>
 
-              <View style={styles.itemTotalContainer}>
-                <Text style={styles.itemTotal}>${(lineTotal / 100).toFixed(2)}</Text>
-                <TouchableOpacity onPress={() => removeItem(item.id)}>
-                  <Ionicons name="trash-outline" size={20} color="#d32f2f" />
-                </TouchableOpacity>
+                <View style={styles.actionsInline}>
+                  <Pressable
+                    style={styles.actionChip}
+                    onPress={() => applyDiscountPreset(item.lineItemId)}
+                  >
+                    <Ionicons name="pricetag-outline" size={14} color={posTheme.colors.primary} />
+                    <Text style={styles.actionChipText}>
+                      {item.discountCents
+                        ? t("cart.discountAmount", {
+                            amount: formatCurrencyFromCents(item.discountCents),
+                          })
+                        : t("cart.discount")}
+                    </Text>
+                  </Pressable>
+                  <Pressable style={styles.deleteChip} onPress={() => removeItem(item.lineItemId)}>
+                    <Ionicons name="trash-outline" size={14} color={posTheme.colors.danger} />
+                  </Pressable>
+                </View>
               </View>
-            </View>
-          );
-        }}
-        ListFooterComponent={
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.clearButton} onPress={clearCart}>
-              <Text style={styles.clearButtonText}>{t("cart.clear")}</Text>
-            </TouchableOpacity>
-          </View>
-        }
-      />
-
-      <View style={styles.totalsContainer}>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>{t("common.subtotal")}</Text>
-          <Text style={styles.totalValue}>${(totals.subtotalCents / 100).toFixed(2)}</Text>
-        </View>
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>{t("common.tax")}</Text>
-          <Text style={styles.totalValue}>${(totals.taxCents / 100).toFixed(2)}</Text>
-        </View>
-        <View style={[styles.totalRow, styles.grandTotalRow]}>
-          <Text style={styles.grandTotalLabel}>{t("common.total")}</Text>
-          <Text style={styles.grandTotalValue}>${(totals.totalCents / 100).toFixed(2)}</Text>
-        </View>
+            </Card>
+          )}
+        />
       </View>
 
-      <TouchableOpacity style={styles.checkoutButton} onPress={handleCheckout}>
-        <Text style={styles.checkoutButtonText}>{t("cart.checkout")}</Text>
-      </TouchableOpacity>
+      <View style={styles.summaryPane}>
+        <Card>
+          <Text style={styles.summaryTitle}>{t("cart.summary")}</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>{t("common.subtotal")}</Text>
+            <Text style={styles.summaryValue}>{formatCurrencyFromCents(totals.subtotalCents)}</Text>
+          </View>
+          <Pressable style={styles.summaryRow} onPress={applyOrderDiscountPreset}>
+            <Text style={styles.summaryLabel}>{t("cart.orderDiscount")}</Text>
+            <Text style={styles.summaryValue}>
+              {orderDiscountCents
+                ? t("cart.discountAmount", { amount: formatCurrencyFromCents(orderDiscountCents) })
+                : t("cart.tapToAdd")}
+            </Text>
+          </Pressable>
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>{t("common.tax")}</Text>
+            <Text style={styles.summaryValue}>{formatCurrencyFromCents(totals.taxCents)}</Text>
+          </View>
+          <View style={[styles.summaryRow, styles.summaryGrand]}>
+            <Text style={styles.grandLabel}>{t("common.total")}</Text>
+            <Text style={styles.grandValue}>{formatCurrencyFromCents(totals.totalCents)}</Text>
+          </View>
+          <View style={styles.summaryActions}>
+            <Button
+              label={t("cart.clear")}
+              variant="secondary"
+              onPress={clearCart}
+              testID="pos-cart-clear"
+            />
+            <Button
+              label={t("cart.checkout")}
+              onPress={() => router.push("/checkout")}
+              testID="pos-cart-checkout"
+            />
+          </View>
+        </Card>
+      </View>
     </View>
   );
 }
@@ -125,130 +165,142 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: posTheme.colors.background,
+    padding: posTheme.spacing.md,
+    gap: posTheme.spacing.md,
   },
-  emptyState: {
+  containerTablet: {
+    flexDirection: "row",
+    alignItems: "stretch",
+  },
+  itemsPane: {
+    flex: 1.4,
+  },
+  summaryPane: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
+    maxWidth: 460,
   },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginTop: 16,
-    marginBottom: 8,
+  listContent: {
+    gap: posTheme.spacing.sm,
+    paddingBottom: posTheme.spacing.md,
   },
-  emptyText: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-  },
-  cartItem: {
+  rowHeader: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    marginBottom: 10,
   },
-  itemInfo: {
+  rowMain: {
     flex: 1,
   },
   itemName: {
+    color: posTheme.colors.text,
     fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 4,
+    fontWeight: "700",
   },
-  itemPrice: {
-    fontSize: 14,
-    color: "#666",
-  },
-  quantityControls: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 16,
-  },
-  quantityButton: {
-    width: 32,
-    height: 32,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 4,
-  },
-  quantity: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginHorizontal: 12,
-    minWidth: 24,
-    textAlign: "center",
-  },
-  itemTotalContainer: {
-    alignItems: "flex-end",
-    minWidth: 80,
+  itemMeta: {
+    marginTop: 2,
+    color: posTheme.colors.textMuted,
+    fontSize: 13,
   },
   itemTotal: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
+    color: posTheme.colors.text,
+    fontSize: 18,
+    fontWeight: "800",
   },
-  footer: {
-    padding: 16,
-  },
-  clearButton: {
-    padding: 12,
+  controlsRow: {
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    gap: posTheme.spacing.sm,
   },
-  clearButtonText: {
-    color: "#d32f2f",
-    fontSize: 16,
-    fontWeight: "600",
+  qtyControls: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
-  totalsContainer: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
+  qtyButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: posTheme.colors.surfaceMuted,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  totalRow: {
+  qtyLabel: {
+    minWidth: 24,
+    textAlign: "center",
+    fontWeight: "700",
+    color: posTheme.colors.text,
+  },
+  actionsInline: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  actionChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: posTheme.radius.pill,
+    backgroundColor: posTheme.colors.primaryMuted,
+  },
+  actionChipText: {
+    color: posTheme.colors.primary,
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  deleteChip: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: posTheme.colors.cartDeleteSoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  summaryTitle: {
+    fontSize: 20,
+    color: posTheme.colors.text,
+    fontWeight: "900",
+    marginBottom: posTheme.spacing.sm,
+  },
+  summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 8,
   },
-  totalLabel: {
-    fontSize: 16,
-    color: "#666",
+  summaryLabel: {
+    color: posTheme.colors.textMuted,
   },
-  totalValue: {
-    fontSize: 16,
-    fontWeight: "500",
+  summaryValue: {
+    color: posTheme.colors.text,
+    fontWeight: "700",
   },
-  grandTotalRow: {
-    marginTop: 8,
-    paddingTop: 8,
+  summaryGrand: {
     borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
+    borderTopColor: posTheme.colors.border,
+    paddingTop: 10,
+    marginTop: 4,
+    marginBottom: 14,
   },
-  grandTotalLabel: {
+  grandLabel: {
+    color: posTheme.colors.text,
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "900",
   },
-  grandTotalValue: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#2196f3",
+  grandValue: {
+    color: posTheme.colors.primary,
+    fontSize: 21,
+    fontWeight: "900",
   },
-  checkoutButton: {
-    backgroundColor: "#2196f3",
-    padding: 16,
-    alignItems: "center",
-    margin: 16,
-    borderRadius: 8,
+  summaryActions: {
+    gap: posTheme.spacing.xs,
   },
-  checkoutButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
+  emptyWrap: {
+    flex: 1,
+    backgroundColor: posTheme.colors.background,
+    justifyContent: "center",
+    paddingHorizontal: posTheme.spacing.md,
   },
 });

@@ -10,10 +10,13 @@ model WebsiteSite {
   createdAt     DateTime @default(now()) @db.Timestamptz(6)
   updatedAt     DateTime @updatedAt @db.Timestamptz(6)
 
-  domains   WebsiteDomain[]
-  pages     WebsitePage[]
-  menus     WebsiteMenu[]
-  snapshots WebsitePageSnapshot[]
+  domains         WebsiteDomain[]
+  pages           WebsitePage[]
+  menus           WebsiteMenu[]
+  snapshots       WebsitePageSnapshot[]
+  feedbacks       WebsiteFeedback[]
+  qaItems         WebsiteQa[]
+  wallOfLoveItems WebsiteWallOfLoveItem[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
@@ -50,12 +53,14 @@ model WebsitePage {
   seoTitle       String?
   seoDescription String?
   seoImageFileId String?
-  publishedAt    DateTime? @db.Timestamptz(6)
-  createdAt      DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime  @updatedAt @db.Timestamptz(6)
+  publishedAt    DateTime?         @db.Timestamptz(6)
+  createdAt      DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime          @updatedAt @db.Timestamptz(6)
 
   site      WebsiteSite           @relation(fields: [siteId], references: [id], onDelete: Cascade)
   snapshots WebsitePageSnapshot[]
+  feedbacks WebsiteFeedback[]
+  qaItems   WebsiteQa[]
 
   @@unique([tenantId, siteId, path, locale])
   @@index([tenantId])
@@ -103,8 +108,133 @@ model WebsitePageSnapshot {
   @@schema("content")
 }
 
+model WebsiteFeedback {
+  id          String   @id @default(cuid())
+  tenantId    String
+  siteId      String
+  pageId      String?
+  message     String
+  email       String?
+  name        String?
+  rating      Int?
+  youtubeJson Json
+  metaJson    Json?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  site   WebsiteSite            @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  page   WebsitePage?           @relation(fields: [pageId], references: [id], onDelete: SetNull)
+  images WebsiteFeedbackImage[]
+
+  @@index([tenantId, siteId, createdAt])
+  @@index([tenantId, pageId, createdAt])
+  @@schema("content")
+}
+
+model WebsiteFeedbackImage {
+  id         String @id @default(cuid())
+  tenantId   String
+  feedbackId String
+  fileId     String
+  order      Int    @default(0)
+
+  feedback WebsiteFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, feedbackId])
+  @@index([tenantId, fileId])
+  @@schema("content")
+}
+
+model WebsiteQa {
+  id         String          @id @default(cuid())
+  tenantId   String
+  siteId     String
+  locale     String
+  scope      WebsiteQaScope
+  pageId     String?
+  status     WebsiteQaStatus @default(DRAFT)
+  order      Int             @default(0)
+  question   String
+  answerHtml String
+  createdAt  DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime        @updatedAt @db.Timestamptz(6)
+
+  site WebsiteSite  @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  page WebsitePage? @relation(fields: [pageId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, siteId, locale, status, order])
+  @@index([tenantId, siteId, pageId, locale, status, order])
+  @@schema("content")
+}
+
+model WebsiteWallOfLoveItem {
+  id          String                    @id @default(cuid())
+  tenantId    String
+  siteId      String
+  type        WebsiteWallOfLoveItemType
+  status      WebsiteWallOfLoveStatus   @default(DRAFT)
+  order       Int
+  quote       String?
+  authorName  String?
+  authorTitle String?
+  sourceLabel String?
+  linkUrl     String?
+  createdAt   DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime                  @updatedAt @db.Timestamptz(6)
+
+  site   WebsiteSite                  @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  images WebsiteWallOfLoveItemImage[]
+
+  @@index([tenantId, siteId, status, order])
+  @@index([tenantId, siteId, order])
+  @@schema("content")
+}
+
+model WebsiteWallOfLoveItemImage {
+  id       String @id @default(cuid())
+  tenantId String
+  itemId   String
+  fileId   String
+  order    Int    @default(0)
+
+  item WebsiteWallOfLoveItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, itemId, order])
+  @@index([tenantId, fileId])
+  @@schema("content")
+}
+
 enum WebsitePageStatus {
   DRAFT
   PUBLISHED
+
+  @@schema("content")
+}
+
+enum WebsiteQaScope {
+  SITE @map("site")
+  PAGE @map("page")
+
+  @@schema("content")
+}
+
+enum WebsiteQaStatus {
+  DRAFT     @map("draft")
+  PUBLISHED @map("published")
+
+  @@schema("content")
+}
+
+enum WebsiteWallOfLoveItemType {
+  IMAGE   @map("image")
+  YOUTUBE @map("youtube")
+  X       @map("x")
+
+  @@schema("content")
+}
+
+enum WebsiteWallOfLoveStatus {
+  DRAFT     @map("draft")
+  PUBLISHED @map("published")
+
   @@schema("content")
 }

@@ -5,6 +5,7 @@ import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { inventoryApi } from "@/lib/inventory-api";
+import { PartyPicker } from "@/shared/components";
 import { inventoryQueryKeys } from "../queries/inventory.queryKeys";
 import { useNavigate } from "react-router-dom";
 import type { InventoryDocumentType } from "@corely/contracts";
@@ -74,7 +75,13 @@ export default function DocumentsPage() {
             </div>
             <div className="space-y-2">
               <Label>Party Id</Label>
-              <Input value={partyId} onChange={(event) => setPartyId(event.target.value)} />
+              <PartyPicker
+                value={partyId}
+                onValueChange={setPartyId}
+                placeholder="Select party (optional)"
+                searchPlaceholder="Search party..."
+                testId="inventory-document-party-picker"
+              />
             </div>
             <div className="space-y-2">
               <Label>Posting Date</Label>

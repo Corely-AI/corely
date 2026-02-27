@@ -2,18 +2,21 @@ enum CheckInStatus {
   ACTIVE
   COMPLETED
   CANCELED
+
   @@schema("crm")
 }
 
 enum CheckInByType {
   SELF_SERVICE
   EMPLOYEE
+
   @@schema("crm")
 }
 
 enum LoyaltyAccountStatus {
   ACTIVE
   SUSPENDED
+
   @@schema("crm")
 }
 
@@ -22,6 +25,7 @@ enum LoyaltyEntryType {
   REDEEM
   ADJUST
   EXPIRE
+
   @@schema("crm")
 }
 
@@ -30,26 +34,36 @@ enum LoyaltyReasonCode {
   MANUAL_ADJUSTMENT
   REWARD_REDEMPTION
   EXPIRATION
+
+  @@schema("crm")
+}
+
+enum CustomerPackageStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  DEPLETED
+
   @@schema("crm")
 }
 
 model CheckInEvent {
-  id                         String       @id @default(cuid())
+  id                         String        @id @default(cuid())
   tenantId                   String
   customerPartyId            String
   registerId                 String
   kioskDeviceId              String?
-  checkedInAt                DateTime     @db.Timestamptz(6)
+  checkedInAt                DateTime      @db.Timestamptz(6)
   checkedInByType            CheckInByType
   checkedInByEmployeePartyId String?
   status                     CheckInStatus @default(ACTIVE)
   visitReason                String?
   assignedEmployeePartyId    String?
-  tags                       String[]     @default([])
+  tags                       String[]      @default([])
   posSaleId                  String?
   notes                      String?
-  createdAt                  DateTime     @default(now()) @db.Timestamptz(6)
-  updatedAt                  DateTime     @updatedAt @db.Timestamptz(6)
+  createdAt                  DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime      @updatedAt @db.Timestamptz(6)
 
   @@index([tenantId, customerPartyId, checkedInAt])
   @@index([tenantId, registerId, checkedInAt])
@@ -63,10 +77,12 @@ model LoyaltyAccount {
   customerPartyId      String
   status               LoyaltyAccountStatus @default(ACTIVE)
   currentPointsBalance Int                  @default(0)
+  lifetimeEarnedPoints Int                  @default(0)
+  tier                 String?
   createdAt            DateTime             @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime             @updatedAt @db.Timestamptz(6)
 
-  ledgerEntries        LoyaltyLedgerEntry[]
+  ledgerEntries LoyaltyLedgerEntry[]
 
   @@unique([tenantId, customerPartyId], name: "tenantId_customerPartyId")
   @@index([tenantId, status])
@@ -74,36 +90,79 @@ model LoyaltyAccount {
 }
 
 model LoyaltyLedgerEntry {
-  id                      String            @id @default(cuid())
-  tenantId                String
-  customerPartyId         String
-  entryType               LoyaltyEntryType
-  pointsDelta             Int
-  reasonCode              LoyaltyReasonCode
-  sourceType              String?
-  sourceId                String?
-  createdAt               DateTime          @default(now()) @db.Timestamptz(6)
+  id                       String            @id @default(cuid())
+  tenantId                 String
+  customerPartyId          String
+  entryType                LoyaltyEntryType
+  pointsDelta              Int
+  reasonCode               LoyaltyReasonCode
+  sourceType               String?
+  sourceId                 String?
+  createdAt                DateTime          @default(now()) @db.Timestamptz(6)
   createdByEmployeePartyId String?
 
-  account                 LoyaltyAccount? @relation(fields: [tenantId, customerPartyId], references: [tenantId, customerPartyId], onDelete: Cascade)
+  account LoyaltyAccount? @relation(fields: [tenantId, customerPartyId], references: [tenantId, customerPartyId], onDelete: Cascade)
 
+  @@unique([tenantId, sourceType, sourceId, reasonCode], name: "tenantId_sourceType_sourceId_reasonCode")
   @@index([tenantId, customerPartyId, createdAt])
   @@index([tenantId, entryType])
-  @@unique([tenantId, sourceType, sourceId, reasonCode], name: "tenantId_sourceType_sourceId_reasonCode")
+  @@schema("crm")
+}
+
+model CustomerPackage {
+  id                       String                @id @default(cuid())
+  tenantId                 String
+  customerPartyId          String
+  name                     String
+  status                   CustomerPackageStatus @default(ACTIVE)
+  totalUnits               Int
+  remainingUnits           Int
+  expiresOn                DateTime?             @db.Date
+  notes                    String?
+  createdByEmployeePartyId String?
+  createdAt                DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime              @updatedAt @db.Timestamptz(6)
+
+  usageEntries PackageUsage[]
+
+  @@index([tenantId, customerPartyId, status])
+  @@index([tenantId, expiresOn])
+  @@schema("crm")
+}
+
+model PackageUsage {
+  id                       String   @id @default(cuid())
+  tenantId                 String
+  customerPackageId        String
+  customerPartyId          String
+  unitsUsed                Int
+  usedAt                   DateTime @db.Timestamptz(6)
+  sourceType               String?
+  sourceId                 String?
+  notes                    String?
+  createdByEmployeePartyId String?
+  createdAt                DateTime @default(now()) @db.Timestamptz(6)
+
+  customerPackage CustomerPackage @relation(fields: [customerPackageId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sourceType, sourceId], name: "tenantId_sourceType_sourceId_package_usage")
+  @@index([tenantId, customerPackageId, usedAt])
+  @@index([tenantId, customerPartyId, usedAt])
   @@schema("crm")
 }
 
 model EngagementSettings {
-  id                          String   @id @default(cuid())
-  tenantId                    String   @unique
-  checkInModeEnabled          Boolean  @default(true)
-  checkInDuplicateWindowMinutes Int    @default(10)
-  loyaltyEnabled              Boolean  @default(true)
-  pointsPerVisit              Int      @default(1)
-  rewardRulesJson             String?
-  aiEnabled                   Boolean  @default(true)
-  kioskBrandingJson           String?
-  createdAt                   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt                   DateTime @updatedAt @db.Timestamptz(6)
+  id                            String   @id @default(cuid())
+  tenantId                      String   @unique
+  checkInModeEnabled            Boolean  @default(true)
+  checkInDuplicateWindowMinutes Int      @default(10)
+  loyaltyEnabled                Boolean  @default(true)
+  pointsPerVisit                Int      @default(1)
+  rewardRulesJson               String?
+  aiEnabled                     Boolean  @default(true)
+  kioskBrandingJson             String?
+  createdAt                     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt                     DateTime @updatedAt @db.Timestamptz(6)
+
   @@schema("crm")
 }

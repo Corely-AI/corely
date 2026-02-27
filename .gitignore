@@ -26,4 +26,6 @@ gcp-key.json
 .env*.local
 local/
 .next
+**/.next.bak*
 apps/e2e/output/
+output/playwright/

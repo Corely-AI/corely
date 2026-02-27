@@ -50,9 +50,11 @@
     "email": "Email",
     "phone": "Số điện thoại",
     "notes": "Ghi chú",
+    "details": "Chi tiết",
     "open": "Đang mở",
     "closed": "Đã đóng",
     "tags": "Thẻ",
+    "noTags": "Chưa có thẻ nào.",
     "for": "Cho",
     "draft": "Bản nháp",
     "createdAt": "Đã tạo {{date}}",
@@ -125,6 +127,9 @@
     "assistant": "Trợ lý",
     "expenses": "Chi phí",
     "invoices": "Hóa đơn",
+    "directory": {
+      "restaurants": "Nhà hàng"
+    },
     "tenants": "Tổ chức",
     "groups": {
       "core": "Chính",
@@ -181,10 +186,12 @@
     "crmActivities": "Hoạt động",
     "crmSequences": "Chuỗi",
     "classes": "Lớp học",
+    "programs": "Chương trình (Combo)",
     "classSessions": "Buổi học",
     "classBilling": "Thanh toán lớp học",
     "website": "Trang web",
-    "platform": "Nền tảng"
+    "platform": "Nền tảng",
+    "forms": "Biểu mẫu"
   },
   "featureFlags": {
     "app": {
@@ -815,7 +822,9 @@
     "overdue_one": "quá hạn 1 ngày"
   },
   "errors": {
-    "loadMenuFailed": "Không thể tải menu"
+    "loadMenuFailed": "Không thể tải menu",
+    "pageNotFound": "Không tìm thấy trang",
+    "returnHome": "Về trang chủ"
   },
   "accounting": {
     "entryStatus": {
@@ -1090,6 +1099,153 @@
       "row": "Dòng {{index}}",
       "remove": "Xóa",
       "add": "Thêm dòng"
+    },
+    "list": {
+      "title": "Biểu mẫu",
+      "subtitle": "Tạo và quản lý biểu mẫu công khai",
+      "newForm": "Biểu mẫu mới",
+      "noForms": "Chưa có biểu mẫu nào",
+      "noFormsDescription": "Tạo biểu mẫu đầu tiên để thu thập phản hồi.",
+      "createForm": "Tạo biểu mẫu",
+      "columns": {
+        "name": "Tên",
+        "status": "Trạng thái",
+        "updated": "Cập nhật"
+      },
+      "sort": {
+        "updatedNewest": "Cập nhật (Mới nhất)",
+        "updatedOldest": "Cập nhật (Cũ nhất)",
+        "createdNewest": "Tạo (Mới nhất)",
+        "nameAz": "Tên (A-Z)"
+      },
+      "filters": {
+        "status": "Trạng thái"
+      },
+      "statuses": {
+        "DRAFT": "Nháp",
+        "PUBLISHED": "Đã công bố"
+      },
+      "page": "Trang {{page}} / {{total}}",
+      "delete": {
+        "title": "Xóa biểu mẫu",
+        "description": "Biểu mẫu sẽ được lưu trữ và xóa khỏi danh sách."
+      },
+      "errors": {
+        "loadFailed": "Không thể tải danh sách biểu mẫu"
+      },
+      "toast": {
+        "deleted": "Đã xóa biểu mẫu",
+        "deleteFailed": "Không thể xóa biểu mẫu"
+      }
+    },
+    "detail": {
+      "subtitle": "Trình tạo biểu mẫu và phản hồi",
+      "backToForms": "Quay lại danh sách biểu mẫu",
+      "notFound": "Không tìm thấy biểu mẫu.",
+      "tabs": {
+        "builder": "Trình tạo",
+        "share": "Chia sẻ",
+        "submissions": "Phản hồi"
+      },
+      "builder": {
+        "formDetails": "Chi tiết biểu mẫu",
+        "save": "Lưu",
+        "saving": "Đang lưu...",
+        "name": "Tên",
+        "description": "Mô tả",
+        "fields": "Các trường",
+        "addField": "Thêm trường",
+        "emptyFields": "Thêm các trường để bắt đầu xây dựng biểu mẫu.",
+        "columns": {
+          "label": "Nhãn",
+          "type": "Loại",
+          "required": "Bắt buộc",
+          "order": "Thứ tự"
+        },
+        "required": {
+          "yes": "Có",
+          "no": "Không"
+        }
+      },
+      "share": {
+        "publishing": "Công bố",
+        "regenerateToken": "Tạo lại mã thông báo",
+        "unpublish": "Hủy công bố",
+        "publishForm": "Công bố biểu mẫu",
+        "publishHint": "Công bố sẽ tạo liên kết công khai và mã truy cập để nhận phản hồi.",
+        "publicUrl": "URL công khai",
+        "accessToken": "Mã truy cập (chỉ hiển thị một lần)",
+        "regenerateToView": "Tạo lại để xem",
+        "linkCopied": "Đã sao chép liên kết",
+        "tokenCopied": "Đã sao chép mã"
+      },
+      "submissions": {
+        "title": "Phản hồi",
+        "empty": "Chưa có phản hồi nào.",
+        "columns": {
+          "submitted": "Đã gửi",
+          "source": "Nguồn"
+        },
+        "view": "Xem",
+        "detailTitle": "Chi tiết phản hồi",
+        "notProvided": "(không có)",
+        "noSubmissionSelected": "Chưa chọn phản hồi."
+      },
+      "fieldDialog": {
+        "addTitle": "Thêm trường",
+        "editTitle": "Sửa trường",
+        "label": "Nhãn",
+        "type": "Loại",
+        "selectType": "Chọn loại",
+        "options": "Tùy chọn (cách nhau bằng dấu phẩy)",
+        "required": "Bắt buộc",
+        "helpText": "Văn bản hướng dẫn",
+        "cancel": "Hủy",
+        "saveField": "Lưu trường",
+        "labelRequired": "Nhãn trường là bắt buộc"
+      },
+      "fieldTypes": {
+        "SHORT_TEXT": "Văn bản ngắn",
+        "LONG_TEXT": "Văn bản dài",
+        "NUMBER": "Số",
+        "DATE": "Ngày",
+        "BOOLEAN": "Có/Không",
+        "SINGLE_SELECT": "Chọn một",
+        "MULTI_SELECT": "Chọn nhiều",
+        "EMAIL": "Email"
+      },
+      "statuses": {
+        "DRAFT": "Nháp",
+        "PUBLISHED": "Đã công bố"
+      },
+      "toast": {
+        "updated": "Đã cập nhật biểu mẫu",
+        "updateFailed": "Không thể cập nhật biểu mẫu",
+        "fieldAdded": "Đã thêm trường",
+        "fieldAddFailed": "Không thể thêm trường",
+        "fieldUpdated": "Đã cập nhật trường",
+        "fieldUpdateFailed": "Không thể cập nhật trường",
+        "fieldRemoved": "Đã xóa trường",
+        "fieldRemoveFailed": "Không thể xóa trường",
+        "published": "Đã công bố biểu mẫu",
+        "publishFailed": "Không thể công bố biểu mẫu",
+        "unpublished": "Đã hủy công bố",
+        "unpublishFailed": "Không thể hủy công bố"
+      }
+    },
+    "new": {
+      "title": "Tạo biểu mẫu mới",
+      "cancel": "Hủy",
+      "creating": "Đang tạo...",
+      "createForm": "Tạo biểu mẫu",
+      "formName": "Tên biểu mẫu",
+      "namePlaceholder": "Liên hệ chúng tôi",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "Mô tả cho người điền mục đích của biểu mẫu này",
+      "toast": {
+        "created": "Đã tạo biểu mẫu",
+        "createFailed": "Không thể tạo biểu mẫu"
+      }
     }
   },
   "portfolioPublic": {
@@ -1166,6 +1322,7 @@
       "linkRequired": "Phải được liên kết với cơ hội hoặc khách hàng",
       "due": "Hạn: {{date}}",
       "statuses": {
+        "open": "Mở",
         "completed": "Đã hoàn thành",
         "canceled": "Đã hủy",
         "scheduled": "Đã lên lịch"

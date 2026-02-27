@@ -101,7 +101,7 @@ export default function TeacherDashboardPage() {
   const { counts, upcomingSessions, needsAttention, attendanceMode } = summary;
 
   return (
-    <div className="p-6 lg:p-8 space-y-8 animate-fade-in">
+    <div className="p-6 lg:p-8 space-y-8 animate-fade-in" data-testid="classes-teacher-dashboard">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -120,6 +120,7 @@ export default function TeacherDashboardPage() {
                 className="h-9 w-[180px] rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 value={selectedClassGroupId || ""}
                 onChange={(e) => setSelectedClassGroupId(e.target.value || undefined)}
+                data-testid="classes-teacher-dashboard-class-group-filter"
               >
                 <option value="">{t("dashboard.teacher.allClasses", "All Classes")}</option>
                 {classGroups.map((g) => (
@@ -137,6 +138,7 @@ export default function TeacherDashboardPage() {
               size="sm"
               className="h-7 text-xs"
               onClick={() => handleRangeChange("today")}
+              data-testid="classes-teacher-dashboard-range-today"
             >
               {t("common.today", "Today")}
             </Button>
@@ -145,6 +147,7 @@ export default function TeacherDashboardPage() {
               size="sm"
               className="h-7 text-xs"
               onClick={() => handleRangeChange("week")}
+              data-testid="classes-teacher-dashboard-range-week"
             >
               {t("common.thisWeek", "This Week")}
             </Button>
@@ -164,6 +167,7 @@ export default function TeacherDashboardPage() {
         {/* Today's Sessions */}
         <Link
           to={`/sessions?dateFrom=${startOfDay(new Date()).toISOString()}&dateTo=${endOfDay(new Date()).toISOString()}`}
+          data-testid="classes-teacher-dashboard-card-sessions-today"
         >
           <Card variant="interactive" className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -179,7 +183,7 @@ export default function TeacherDashboardPage() {
         </Link>
 
         {/* This Week's Sessions */}
-        <Link to="/sessions">
+        <Link to="/sessions" data-testid="classes-teacher-dashboard-card-sessions-week">
           <Card variant="interactive" className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -195,7 +199,10 @@ export default function TeacherDashboardPage() {
 
         {/* Missing Attendance */}
         {attendanceMode === "MANUAL" ? (
-          <Link to="/sessions?status=DONE&missingAttendance=true">
+          <Link
+            to="/sessions?status=DONE&missingAttendance=true"
+            data-testid="classes-teacher-dashboard-card-missing-attendance"
+          >
             <Card variant="interactive" className="h-full">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -231,7 +238,10 @@ export default function TeacherDashboardPage() {
         )}
 
         {/* Unfinished Past Sessions */}
-        <Link to="/sessions?status=PLANNED&past=true">
+        <Link
+          to="/sessions?status=PLANNED&past=true"
+          data-testid="classes-teacher-dashboard-card-unfinished"
+        >
           <Card variant="interactive" className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -248,7 +258,10 @@ export default function TeacherDashboardPage() {
         </Link>
 
         {/* Students Missing Payer */}
-        <Link to="/classes/enrollments?missingPayer=true">
+        <Link
+          to="/classes/enrollments?missingPayer=true"
+          data-testid="classes-teacher-dashboard-card-missing-payer"
+        >
           <Card variant="interactive" className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -270,7 +283,10 @@ export default function TeacherDashboardPage() {
         </Link>
 
         {/* Unpaid Invoices */}
-        <Link to="/invoices?status=ISSUED,SENT&overdue=true">
+        <Link
+          to="/invoices?status=ISSUED,SENT&overdue=true"
+          data-testid="classes-teacher-dashboard-card-unpaid-invoices"
+        >
           <Card variant="interactive" className="h-full">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -303,7 +319,7 @@ export default function TeacherDashboardPage() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-3" data-testid="classes-teacher-dashboard-upcoming-sessions">
               {upcomingSessions.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   {t("dashboard.teacher.noUpcoming", "No upcoming sessions in this range")}
@@ -314,6 +330,7 @@ export default function TeacherDashboardPage() {
                     key={session.id}
                     to={`/sessions/${session.id}`}
                     className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-muted/50 transition-colors"
+                    data-testid={`classes-teacher-dashboard-upcoming-session-${session.id}`}
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">

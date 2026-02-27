@@ -194,6 +194,14 @@ export default function WebsiteSitesPage() {
                                 href: `/website/sites/${site.id}/menus`,
                               },
                               {
+                                label: "Feedback & Q&A",
+                                href: `/website/sites/${site.id}/feedback`,
+                              },
+                              {
+                                label: "Wall Of Love",
+                                href: `/website/sites/${site.id}/wall-of-love`,
+                              },
+                              {
                                 label: "Edit site",
                                 href: `/website/sites/${site.id}/edit`,
                               },

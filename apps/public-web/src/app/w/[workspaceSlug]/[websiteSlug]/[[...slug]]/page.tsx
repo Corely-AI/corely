@@ -48,9 +48,18 @@ const resolveSeoFallback = (
 ): { title?: string; description?: string | null } => {
   const meta = extractCmsPayloadMeta(output.payloadJson);
   const text = extractTextPayload(output.payloadJson);
-  const title = output.seo?.title ?? meta?.title ?? undefined;
+  const title =
+    output.page.content.seoOverride?.title ??
+    output.seo?.title ??
+    meta?.title ??
+    output.settings.common.siteTitle ??
+    undefined;
   const description =
-    output.seo?.description ?? meta?.excerpt ?? (text ? text.slice(0, 155) : undefined);
+    output.page.content.seoOverride?.description ??
+    output.seo?.description ??
+    meta?.excerpt ??
+    output.settings.common.seoDefaults.defaultDescription ??
+    (text ? text.slice(0, 155) : undefined);
   return { title, description: description ?? null };
 };
 
@@ -212,12 +221,24 @@ export default async function WorkspaceWebsitePage({
       token: resolvedSearchParams?.token ?? undefined,
     });
 
+    let wallOfLoveItems: Awaited<ReturnType<typeof publicApi.listWallOfLoveItems>>["items"] = [];
+    try {
+      const wallOfLove = await publicApi.listWallOfLoveItems({
+        siteId: output.siteId,
+        locale: output.locale,
+      });
+      wallOfLoveItems = wallOfLove.items;
+    } catch {
+      wallOfLoveItems = [];
+    }
+
     return (
       <WebsitePublicPageScreen
         page={output}
         host={ctx.host ?? resolved.host}
         previewMode={previewMode}
         basePath={resolved.basePath}
+        wallOfLoveItems={wallOfLoveItems}
       />
     );
   } catch (error) {

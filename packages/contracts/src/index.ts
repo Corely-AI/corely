@@ -13,6 +13,8 @@ export * from "./tax";
 export * from "./accounting";
 export * from "./reporting";
 export * from "./crm";
+export * from "./directory";
+export * from "./directory-admin";
 export * from "./cms";
 export * from "./website";
 export * from "./sales";
@@ -63,6 +65,7 @@ export * from "./import";
 export * from "./catalog";
 export * from "./portfolio";
 export * from "./issues";
+export * from "./integrations";
 // POS exports (aliased to avoid clashing with Sales PaymentMethod)
 export {
   PaymentMethod as PosPaymentMethod,
@@ -91,6 +94,8 @@ export * from "./pos/close-shift.schema";
 export * from "./pos/get-current-shift.schema";
 export * from "./pos/sync-pos-sale.schema";
 export * from "./pos/get-catalog-snapshot.schema";
+export * from "./pos/start-cashless-payment.schema";
+export * from "./pos/get-cashless-payment-status.schema";
 export * from "./pos-ai";
 export * from "./engagement";
 export * from "./engagement-ai";
@@ -103,6 +108,7 @@ export * from "./copilot/collect-inputs.schema";
 export * from "./copilot/chat.schema";
 export * from "./copilot/chat-history.schema";
 export * from "./cash-management";
+export * from "./booking";
 export * from "./ai/richtext";
 export * from "./notifications";
 

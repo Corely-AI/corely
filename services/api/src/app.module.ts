@@ -36,9 +36,14 @@ import { IssuesModule } from "./modules/issues";
 import { AiRichTextModule } from "./modules/ai-richtext";
 import { WebsiteModule } from "./modules/website";
 import { ClassesModule } from "./modules/classes";
+import { BookingModule } from "./modules/booking";
 import { PortalModule } from "./modules/portal/portal.module";
 import { CashManagementModule } from "./modules/cash-management/cash-management.module";
 import { CustomizationModule } from "./modules/customization/customization.module";
+import { DirectoryModule } from "./modules/directory";
+import { PosModule } from "./modules/pos";
+import { IntegrationsModule } from "./modules/integrations";
+import { CrmMailModule } from "./modules/crm-mail";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
@@ -84,8 +89,13 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     WebsiteModule,
     FormsModule,
     RentalsModule,
+    DirectoryModule,
     CashManagementModule,
+    PosModule,
+    IntegrationsModule,
+    CrmMailModule,
     ClassesModule,
+    BookingModule,
     PortalModule,
     PortfolioModule,
     IssuesModule,

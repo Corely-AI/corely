@@ -45,11 +45,44 @@ export function getPublicCmsUrl(postSlug: string, workspaceSlug?: string): strin
 }
 
 /**
+ * Generate a public URL for a booking page.
+ * In local development, uses path-based routing: /w/:workspaceSlug/book/:slug
+ * In production, prefers subdomain routing: https://:workspaceSlug.<rootDomain>/book/:slug
+ * Falls back to path-based routing if a root domain is not available.
+ */
+export function getPublicBookingUrl(pageSlug: string, workspaceSlug?: string): string {
+  const publicWebBaseUrl =
+    import.meta.env.VITE_PUBLIC_WEB_BASE_URL ||
+    (import.meta.env.DEV ? "http://localhost:8082" : "https://my.corely.one");
+
+  const baseUrl = new URL(publicWebBaseUrl);
+  const rootDomain = import.meta.env.VITE_PUBLIC_ROOT_DOMAIN || baseUrl.hostname;
+  const canUseSubdomain =
+    import.meta.env.PROD && Boolean(workspaceSlug) && baseUrl.hostname === rootDomain;
+
+  const origin = canUseSubdomain
+    ? `${baseUrl.protocol}//${workspaceSlug}.${rootDomain}`
+    : baseUrl.origin;
+  const path = canUseSubdomain
+    ? `/book/${pageSlug}`
+    : workspaceSlug
+      ? `/w/${workspaceSlug}/book/${pageSlug}`
+      : `/book/${pageSlug}`;
+
+  return new URL(path, origin).toString();
+}
+
+/**
  * Generate a public URL for a website page.
  * When a custom domain is provided, use it directly.
  * When no domain is provided, fall back to path-based routing:
  * - Default site root: /w/:workspaceSlug
  * - Other pages/sites: /w/:workspaceSlug/:websiteSlug
+ *
+ * Runtime host resolution:
+ * - Uses `VITE_WEBSITE_RUNTIME_BASE_URL` when provided.
+ * - In local development, defaults to `http://localhost:8084` (website runtime app).
+ * - In production, falls back to `VITE_PUBLIC_WEB_BASE_URL` for backward compatibility.
  */
 export function getPublicWebsiteUrl(input: {
   hostname?: string | null;
@@ -72,10 +105,12 @@ export function getPublicWebsiteUrl(input: {
     return null;
   }
 
-  const publicWebBaseUrl =
-    import.meta.env.VITE_PUBLIC_WEB_BASE_URL ||
-    (import.meta.env.DEV ? "http://localhost:8082" : "https://my.corely.one");
-  const baseUrl = new URL(publicWebBaseUrl);
+  const websiteRuntimeBaseUrl = import.meta.env.VITE_WEBSITE_RUNTIME_BASE_URL
+    ? import.meta.env.VITE_WEBSITE_RUNTIME_BASE_URL
+    : import.meta.env.DEV
+      ? "http://localhost:8084"
+      : import.meta.env.VITE_PUBLIC_WEB_BASE_URL || "https://my.corely.one";
+  const baseUrl = new URL(websiteRuntimeBaseUrl);
   const rootDomain = import.meta.env.VITE_PUBLIC_ROOT_DOMAIN || baseUrl.hostname;
   const canUseSubdomain =
     import.meta.env.PROD && Boolean(input.workspaceSlug) && baseUrl.hostname === rootDomain;

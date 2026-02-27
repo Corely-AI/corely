@@ -1,21 +1,21 @@
 model Expense {
-  id             String         @id @default(cuid())
-  tenantId       String
-  status         ExpenseStatus  @default(DRAFT)
-  expenseDate    DateTime       @db.Date
-  merchantName   String?
-  supplierPartyId String?
-  currency       String            @db.VarChar(3)
-  notes          String?
-  category       String?
+  id               String        @id @default(cuid())
+  tenantId         String
+  status           ExpenseStatus @default(DRAFT)
+  expenseDate      DateTime      @db.Date
+  merchantName     String?
+  supplierPartyId  String?
+  currency         String        @db.VarChar(3)
+  notes            String?
+  category         String?
   totalAmountCents Int
-  taxAmountCents Int?
-  archivedAt     DateTime?      @db.Timestamptz(6)
+  taxAmountCents   Int?
+  archivedAt       DateTime?     @db.Timestamptz(6)
   archivedByUserId String?
-  createdByUserId String?
-  custom         Json?
-  createdAt      DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime       @updatedAt @db.Timestamptz(6)
+  createdByUserId  String?
+  custom           Json?
+  createdAt        DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime      @updatedAt @db.Timestamptz(6)
 
   lines ExpenseLine[]
 
@@ -27,16 +27,16 @@ model Expense {
 }
 
 model ExpenseLine {
-  id             String        @id @default(cuid())
+  id             String   @id @default(cuid())
   tenantId       String
   expenseId      String
   description    String
-  quantity       Int           @default(1)
+  quantity       Int      @default(1)
   unitPriceCents Int
   lineTotalCents Int
   taxRate        Float?
   category       String?
-  createdAt      DateTime      @default(now()) @db.Timestamptz(6)
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
   expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
 
@@ -51,5 +51,6 @@ enum ExpenseStatus {
   APPROVED
   REJECTED
   PAID
+
   @@schema("billing")
 }

@@ -1,0 +1,28 @@
+src/app/router/booking-routes.tsx(6,39): error TS2307: Cannot find module '../../shared/components/ComingSoon' or its corresponding type declarations.
+src/modules/booking/screens/BookingsPage.tsx(2,27): error TS2307: Cannot find module '@/shared/api' or its corresponding type declarations.
+src/modules/booking/screens/BookingsPage.tsx(5,79): error TS2307: Cannot find module '@/shared/ui/table' or its corresponding type declarations.
+src/modules/booking/screens/BookingsPage.tsx(6,23): error TS2307: Cannot find module '@/shared/ui/badge' or its corresponding type declarations.
+src/modules/booking/screens/BookingsPage.tsx(7,28): error TS2307: Cannot find module '@/shared/ui/copy-button' or its corresponding type declarations.
+src/modules/booking/screens/BookingsPage.tsx(8,24): error TS2307: Cannot find module '@/shared/ui/button' or its corresponding type declarations.
+src/modules/booking/screens/BookingsPage.tsx(11,33): error TS2307: Cannot find module '@corely/contracts/src/booking' or its corresponding type declarations.
+src/modules/booking/screens/BookingsPage.tsx(14,11): error TS2339: Property 'params' does not exist on type '[CrudUrlState, (next: Partial<CrudUrlState>) => void]'.
+src/modules/booking/screens/BookingsPage.tsx(95,23): error TS2322: Type '{ basePath: string; resourceId: any; resourceName: string; onDeleteClick: () => void; }' is not assignable to type 'IntrinsicAttributes & CrudRowActionsProps'.
+  Property 'basePath' does not exist on type 'IntrinsicAttributes & CrudRowActionsProps'.
+src/modules/booking/screens/ResourcesPage.tsx(2,27): error TS2307: Cannot find module '@/shared/api' or its corresponding type declarations.
+src/modules/booking/screens/ResourcesPage.tsx(5,79): error TS2307: Cannot find module '@/shared/ui/table' or its corresponding type declarations.
+src/modules/booking/screens/ResourcesPage.tsx(6,23): error TS2307: Cannot find module '@/shared/ui/badge' or its corresponding type declarations.
+src/modules/booking/screens/ResourcesPage.tsx(7,28): error TS2307: Cannot find module '@/shared/ui/copy-button' or its corresponding type declarations.
+src/modules/booking/screens/ResourcesPage.tsx(8,24): error TS2307: Cannot find module '@/shared/ui/button' or its corresponding type declarations.
+src/modules/booking/screens/ResourcesPage.tsx(11,34): error TS2307: Cannot find module '@corely/contracts/src/booking' or its corresponding type declarations.
+src/modules/booking/screens/ResourcesPage.tsx(14,11): error TS2339: Property 'params' does not exist on type '[CrudUrlState, (next: Partial<CrudUrlState>) => void]'.
+src/modules/booking/screens/ResourcesPage.tsx(83,23): error TS2322: Type '{ basePath: string; resourceId: any; resourceName: any; onDeleteClick: () => void; }' is not assignable to type 'IntrinsicAttributes & CrudRowActionsProps'.
+  Property 'basePath' does not exist on type 'IntrinsicAttributes & CrudRowActionsProps'.
+src/modules/booking/screens/ServicesPage.tsx(2,27): error TS2307: Cannot find module '@/shared/api' or its corresponding type declarations.
+src/modules/booking/screens/ServicesPage.tsx(5,79): error TS2307: Cannot find module '@/shared/ui/table' or its corresponding type declarations.
+src/modules/booking/screens/ServicesPage.tsx(6,23): error TS2307: Cannot find module '@/shared/ui/badge' or its corresponding type declarations.
+src/modules/booking/screens/ServicesPage.tsx(7,28): error TS2307: Cannot find module '@/shared/ui/copy-button' or its corresponding type declarations.
+src/modules/booking/screens/ServicesPage.tsx(8,24): error TS2307: Cannot find module '@/shared/ui/button' or its corresponding type declarations.
+src/modules/booking/screens/ServicesPage.tsx(11,41): error TS2307: Cannot find module '@corely/contracts/src/booking' or its corresponding type declarations.
+src/modules/booking/screens/ServicesPage.tsx(14,11): error TS2339: Property 'params' does not exist on type '[CrudUrlState, (next: Partial<CrudUrlState>) => void]'.
+src/modules/booking/screens/ServicesPage.tsx(92,23): error TS2322: Type '{ basePath: string; resourceId: any; resourceName: any; onDeleteClick: () => void; }' is not assignable to type 'IntrinsicAttributes & CrudRowActionsProps'.
+  Property 'basePath' does not exist on type 'IntrinsicAttributes & CrudRowActionsProps'.

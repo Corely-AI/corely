@@ -33,9 +33,6 @@ export class CreateActivityUseCase extends BaseUseCase<CreateActivityInput, Crea
     if (!input.subject.trim()) {
       throw new ValidationError("Activity subject is required");
     }
-    if (!input.partyId && !input.dealId) {
-      throw new ValidationError("Activity must be associated with either a party or a deal");
-    }
     if (input.type === "COMMUNICATION" && !input.channelKey) {
       throw new ValidationError("Communication activity requires channelKey");
     }

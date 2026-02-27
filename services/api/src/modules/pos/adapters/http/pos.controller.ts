@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Query, Req, UseGuards } from "@nestjs/common";
+import { Controller, Post, Get, Body, Query, Req, UseGuards, Param } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import type {
   CreateRegisterInput,
@@ -15,6 +15,12 @@ import type {
   SyncPosSaleOutput,
   GetCatalogSnapshotInput,
   GetCatalogSnapshotOutput,
+  StartCashlessPaymentOutput,
+  GetCashlessPaymentStatusOutput,
+} from "@corely/contracts";
+import {
+  GetCashlessPaymentStatusInputSchema,
+  StartCashlessPaymentInputSchema,
 } from "@corely/contracts";
 import { AuthGuard } from "../../../identity";
 import { CreateRegisterUseCase } from "../../application/use-cases/create-register.usecase";
@@ -24,7 +30,10 @@ import { CloseShiftUseCase } from "../../application/use-cases/close-shift.useca
 import { GetCurrentShiftUseCase } from "../../application/use-cases/get-current-shift.usecase";
 import { SyncPosSaleUseCase } from "../../application/use-cases/sync-pos-sale.usecase";
 import { GetCatalogSnapshotUseCase } from "../../application/use-cases/get-catalog-snapshot.usecase";
+import { StartCashlessPaymentUseCase } from "../../application/use-cases/start-cashless-payment.usecase";
+import { GetCashlessPaymentStatusUseCase } from "../../application/use-cases/get-cashless-payment-status.usecase";
 import { toUseCaseContext } from "../../../../shared/request-context";
+import { resolveIdempotencyKey } from "../../../../shared/http/usecase-mappers";
 
 @ApiTags("POS")
 @ApiBearerAuth()
@@ -38,7 +47,9 @@ export class PosController {
     private closeShift: CloseShiftUseCase,
     private getCurrentShift: GetCurrentShiftUseCase,
     private syncPosSale: SyncPosSaleUseCase,
-    private getCatalogSnapshot: GetCatalogSnapshotUseCase
+    private getCatalogSnapshot: GetCatalogSnapshotUseCase,
+    private startCashlessPayment: StartCashlessPaymentUseCase,
+    private getCashlessPaymentStatus: GetCashlessPaymentStatusUseCase
   ) {}
 
   @Post("registers")
@@ -172,6 +183,57 @@ export class PosController {
       tenantId: ctx.workspaceId ?? ctx.tenantId,
       userId: ctx.userId,
       requestId: ctx.requestId,
+    });
+
+    if ("error" in result) {
+      throw result.error;
+    }
+
+    return result.value;
+  }
+
+  @Post("payments/cashless/start")
+  @ApiOperation({ summary: "Start a cashless payment attempt" })
+  async startCashlessPaymentEndpoint(
+    @Body() body: unknown,
+    @Req() req: any
+  ): Promise<StartCashlessPaymentOutput> {
+    const parsed = StartCashlessPaymentInputSchema.parse({
+      ...(body as Record<string, unknown>),
+      idempotencyKey:
+        (body as Record<string, unknown>)?.idempotencyKey ?? resolveIdempotencyKey(req),
+    });
+
+    const ctx = toUseCaseContext(req);
+    const result = await this.startCashlessPayment.execute(parsed, {
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      workspaceId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
+      correlationId: ctx.correlationId,
+    });
+
+    if ("error" in result) {
+      throw result.error;
+    }
+
+    return result.value;
+  }
+
+  @Get("payments/cashless/:attemptId")
+  @ApiOperation({ summary: "Get cashless payment attempt status" })
+  async getCashlessPaymentStatusEndpoint(
+    @Param("attemptId") attemptId: string,
+    @Req() req: any
+  ): Promise<GetCashlessPaymentStatusOutput> {
+    const parsed = GetCashlessPaymentStatusInputSchema.parse({ attemptId });
+    const ctx = toUseCaseContext(req);
+    const result = await this.getCashlessPaymentStatus.execute(parsed, {
+      tenantId: ctx.workspaceId ?? ctx.tenantId,
+      workspaceId: ctx.workspaceId ?? ctx.tenantId,
+      userId: ctx.userId,
+      requestId: ctx.requestId,
+      correlationId: ctx.correlationId,
     });
 
     if ("error" in result) {

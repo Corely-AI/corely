@@ -31,6 +31,8 @@ export * from "./update-activity.schema";
 export * from "./list-activities.schema";
 export * from "./log-message.schema";
 export * from "./communications.schema";
+export * from "./mailboxes.schema";
+export * from "./ai-crm.schema";
 
 // AI Proposals
 export * from "./ai-proposals/party-proposal.types";

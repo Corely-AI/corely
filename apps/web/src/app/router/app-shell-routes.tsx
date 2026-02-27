@@ -1,5 +1,5 @@
 import React from "react";
-import { Route } from "react-router-dom";
+import { Navigate, Route } from "react-router-dom";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
@@ -20,6 +20,7 @@ import {
   StudentsPage,
   NewStudentPage,
   StudentDetailPage,
+  BirthdayRemindersPage,
 } from "../../modules/customers";
 import { FormsPage, NewFormPage, FormDetailPage } from "../../modules/forms";
 import { IssuesListPage, IssueDetailPage, NewIssuePage } from "../../modules/issues";
@@ -27,6 +28,10 @@ import {
   ClassGroupsListPage,
   ClassGroupEditorPage,
   ClassGroupDetailPage,
+  CohortsListScreen,
+  CohortDetailScreen,
+  ProgramsListScreen,
+  ProgramDetailScreen,
   SessionsPage,
   SessionDetailPage,
   ClassesBillingPage,
@@ -65,6 +70,8 @@ import {
   WebsitePagesPage,
   WebsitePageEditorPage,
   WebsiteMenusPage,
+  WebsiteFeedbackConfigPage,
+  WebsiteWallOfLovePage,
 } from "../../modules/website";
 import {
   RentalPropertiesPage,
@@ -84,6 +91,7 @@ import {
   TeamPage,
   TeamEditorPage,
 } from "../../modules/portfolio";
+import { directoryRoutes } from "../../modules/directory";
 import {
   TaxSettingsPage,
   TaxCenterPage,
@@ -100,6 +108,7 @@ import { RequirePermission } from "../../modules/settings/components/RequirePerm
 import { appSettingsRoutes } from "./app-settings-routes";
 import { catalogRoutes } from "./catalog-routes";
 import { capabilityRoutes } from "./app-shell-capability-routes";
+import { bookingRoutes } from "./booking-routes";
 import { NotificationsPage } from "../../modules/notifications/screens/notifications-page";
 
 export const appShellRoutes = (
@@ -121,6 +130,8 @@ export const appShellRoutes = (
       <Route path="/website/sites/:siteId/edit" element={<WebsiteSiteEditorPage />} />
       <Route path="/website/sites/:siteId/domains" element={<WebsiteDomainsPage />} />
       <Route path="/website/sites/:siteId/menus" element={<WebsiteMenusPage />} />
+      <Route path="/website/sites/:siteId/feedback" element={<WebsiteFeedbackConfigPage />} />
+      <Route path="/website/sites/:siteId/wall-of-love" element={<WebsiteWallOfLovePage />} />
       <Route path="/website/sites/:siteId/pages" element={<WebsitePagesPage />} />
       <Route path="/website/sites/:siteId/pages/new" element={<WebsitePageEditorPage />} />
       <Route path="/website/pages/:pageId/edit" element={<WebsitePageEditorPage />} />
@@ -128,6 +139,17 @@ export const appShellRoutes = (
       <Route path="/rentals/properties/new" element={<RentalPropertyEditorPage />} />
       <Route path="/rentals/properties/:id/edit" element={<RentalPropertyEditorPage />} />
       <Route path="/rentals/categories" element={<RentalCategoriesPage />} />
+      {directoryRoutes.map((route) => (
+        <Route
+          key={route.path}
+          path={route.path}
+          element={
+            <RequirePermission permission="platform.tenants.write">
+              {route.element}
+            </RequirePermission>
+          }
+        />
+      ))}
       <Route path="/portfolio/showcases" element={<ShowcasesPage />} />
       <Route path="/portfolio/showcases/new" element={<ShowcaseEditorPage />} />
       <Route path="/portfolio/showcases/:id/edit" element={<ShowcaseEditorPage />} />
@@ -152,6 +174,25 @@ export const appShellRoutes = (
       <Route path="/class-groups/new" element={<ClassGroupEditorPage />} />
       <Route path="/class-groups/:id" element={<ClassGroupDetailPage />} />
       <Route path="/class-groups/:id/edit" element={<ClassGroupEditorPage />} />
+      <Route path="/classes/class-groups" element={<Navigate to="/classes/cohorts" replace />} />
+      <Route
+        path="/classes/class-groups/new"
+        element={<Navigate to="/classes/cohorts/new" replace />}
+      />
+      <Route path="/classes/class-groups/:id" element={<CohortDetailScreen />} />
+      <Route path="/classes/class-groups/:id/edit" element={<ClassGroupEditorPage />} />
+      <Route path="/classes/cohorts" element={<CohortsListScreen />} />
+      <Route path="/classes/cohorts/new" element={<ClassGroupEditorPage />} />
+      <Route path="/classes/cohorts/:id" element={<CohortDetailScreen />} />
+      <Route path="/classes/cohorts/:id/edit" element={<ClassGroupEditorPage />} />
+      <Route path="/programs" element={<ProgramsListScreen />} />
+      <Route path="/programs/new" element={<ProgramDetailScreen />} />
+      <Route path="/programs/:id" element={<ProgramDetailScreen />} />
+      <Route path="/programs/:id/edit" element={<ProgramDetailScreen />} />
+      <Route path="/classes/programs" element={<ProgramsListScreen />} />
+      <Route path="/classes/programs/new" element={<ProgramDetailScreen />} />
+      <Route path="/classes/programs/:id" element={<ProgramDetailScreen />} />
+      <Route path="/classes/programs/:id/edit" element={<ProgramDetailScreen />} />
       <Route path="/sessions" element={<SessionsPage />} />
       <Route path="/sessions/:id" element={<SessionDetailPage />} />
       <Route path="/billing" element={<ClassesBillingPage />} />
@@ -198,6 +239,14 @@ export const appShellRoutes = (
         element={
           <RequirePermission permission="party.customers.manage">
             <EditCustomerPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/customers/birthdays"
+        element={
+          <RequirePermission permission="party.customers.read">
+            <BirthdayRemindersPage />
           </RequirePermission>
         }
       />
@@ -262,6 +311,7 @@ export const appShellRoutes = (
       <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
       <Route path="/accounting/reports" element={<ReportsHub />} />
       {catalogRoutes}
+      {bookingRoutes}
       <Route path="/copilot" element={<CopilotPage />} />
       <Route path="/tax" element={<TaxCenterPage />} />
       <Route path="/tax/filings" element={<FilingsListPage />} />

@@ -21,6 +21,8 @@
       "@corely/storage/*": ["../storage/src/*"],
       "@corely/public-urls": ["../public-urls/src/index.ts"],
       "@corely/public-urls/*": ["../public-urls/src/*"],
+      "@corely/config": ["../config/src/index.ts"],
+      "@corely/config/*": ["../config/src/*"],
       "@/*": ["../../services/api/src/*"],
       "@shared/*": ["../../services/api/src/shared/*"]
     }

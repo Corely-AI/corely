@@ -261,9 +261,21 @@ export const listBillingInvoiceLinks = async (
   workspaceId: string,
   billingRunId: string
 ): Promise<ClassBillingInvoiceLinkEntity[]> => {
-  void workspaceId;
   const rows = await prisma.classBillingInvoiceLink.findMany({
-    where: { tenantId, billingRunId },
+    where: { tenantId, workspaceId, billingRunId },
+  });
+  return rows.map(toBillingInvoiceLink);
+};
+
+export const listBillingInvoiceLinksByEnrollment = async (
+  prisma: PrismaService,
+  tenantId: string,
+  workspaceId: string,
+  enrollmentId: string
+): Promise<ClassBillingInvoiceLinkEntity[]> => {
+  const rows = await prisma.classBillingInvoiceLink.findMany({
+    where: { tenantId, workspaceId, enrollmentId },
+    orderBy: { createdAt: "asc" },
   });
   return rows.map(toBillingInvoiceLink);
 };
@@ -488,9 +500,8 @@ export const findBillingInvoiceLinkByIdempotency = async (
   workspaceId: string,
   idempotencyKey: string
 ): Promise<ClassBillingInvoiceLinkEntity | null> => {
-  void workspaceId;
   const row = await prisma.classBillingInvoiceLink.findFirst({
-    where: { tenantId, idempotencyKey },
+    where: { tenantId, workspaceId, idempotencyKey },
   });
   return row ? toBillingInvoiceLink(row) : null;
 };
@@ -504,11 +515,13 @@ export const createBillingInvoiceLink = async (
       id: link.id,
       tenantId: link.tenantId,
       workspaceId: link.workspaceId,
-      billingRunId: link.billingRunId,
+      billingRunId: link.billingRunId ?? null,
+      enrollmentId: link.enrollmentId ?? null,
       payerClientId: link.payerClientId,
       classGroupId: link.classGroupId ?? null,
       invoiceId: link.invoiceId,
       idempotencyKey: link.idempotencyKey,
+      purpose: link.purpose,
       createdAt: link.createdAt,
     } as any,
   });

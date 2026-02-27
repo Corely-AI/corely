@@ -15,7 +15,7 @@ import type { ClockPort } from "../ports/clock.port";
 import type { AuditPort } from "../ports/audit.port";
 import type { ClassesSettingsRepositoryPort } from "../ports/classes-settings-repository.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanClasses } from "../../policies/assert-can-classes";
+import { assertCanClasses, assertCanSessionManage } from "../../policies/assert-can-classes";
 import type { ClassSessionEntity } from "../../domain/entities/classes.entities";
 import {
   attachBillingStatusToSessions,
@@ -43,6 +43,7 @@ export class CreateRecurringSessionsUseCase {
     ctx: UseCaseContext
   ): Promise<SessionWithBillingStatus[]> {
     assertCanClasses(ctx, "classes.write");
+    assertCanSessionManage(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     if (!input.weekdays?.length) {
@@ -86,6 +87,10 @@ export class CreateRecurringSessionsUseCase {
           topic: null,
           notes: null,
           status: "PLANNED",
+          type: "LECTURE",
+          meetingProvider: null,
+          meetingJoinUrl: null,
+          meetingExternalId: null,
           createdAt: now,
           updatedAt: now,
         });

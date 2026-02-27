@@ -73,6 +73,16 @@ export function CustomerFormFields({ form, className, afterDisplayName }: Custom
           </div>
 
           <div>
+            <Label htmlFor="birthday">Birthday</Label>
+            <Input
+              id="birthday"
+              type="date"
+              {...form.register("birthday")}
+              data-testid="customer-birthday-input"
+            />
+          </div>
+
+          <div>
             <Label htmlFor="vatId">{t("customers.vatId")}</Label>
             <Input
               id="vatId"

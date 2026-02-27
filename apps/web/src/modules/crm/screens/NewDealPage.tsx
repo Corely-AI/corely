@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Calendar as CalendarIcon, Plus } from "lucide-react";
 import { z } from "zod";
 import { DEFAULT_PIPELINE_STAGES } from "@corely/contracts";
@@ -35,6 +35,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import { Calendar } from "@corely/ui";
 import { crmApi } from "@/lib/crm-api";
 import { customersApi } from "@/lib/customers-api";
+import { PartyPicker } from "@/shared/components";
 import { cn } from "@/shared/lib/utils";
 import { toast } from "sonner";
 
@@ -71,14 +72,6 @@ export default function NewDealPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [isCreateCustomerOpen, setIsCreateCustomerOpen] = useState(false);
-  const [partyInputValue, setPartyInputValue] = useState("");
-
-  const { data: customersData, isLoading: customersLoading } = useQuery({
-    queryKey: ["customers"],
-    queryFn: () => customersApi.listCustomers(),
-  });
-
-  const customers = customersData?.customers ?? [];
 
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
@@ -94,19 +87,6 @@ export default function NewDealPage() {
       tags: "",
     },
   });
-  const selectedPartyId = form.watch("partyId");
-
-  useEffect(() => {
-    if (!selectedPartyId) {
-      return;
-    }
-
-    const matchedCustomer = customers.find((customer) => customer.id === selectedPartyId);
-    if (matchedCustomer && matchedCustomer.displayName !== partyInputValue) {
-      setPartyInputValue(matchedCustomer.displayName);
-    }
-  }, [customers, partyInputValue, selectedPartyId]);
-
   const createDealMutation = useMutation({
     mutationFn: async (values: DealFormValues) => {
       const amountValue = values.amount?.trim();
@@ -184,8 +164,8 @@ export default function NewDealPage() {
       }),
     onSuccess: (customer) => {
       void queryClient.invalidateQueries({ queryKey: ["customers"] });
+      void queryClient.invalidateQueries({ queryKey: ["party-picker"] });
       form.setValue("partyId", customer.id, { shouldValidate: true, shouldDirty: true });
-      setPartyInputValue(customer.displayName);
       newCustomerForm.reset();
       setIsCreateCustomerOpen(false);
       toast.success(t("customers.addNewCustomer"));
@@ -282,36 +262,17 @@ export default function NewDealPage() {
                         </Button>
                       </FormLabel>
                       <FormControl>
-                        <Input
+                        <PartyPicker
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          role="CUSTOMER"
                           placeholder={t("crm.deals.customerPlaceholder")}
-                          list="deal-customer-options"
-                          autoComplete="off"
-                          value={partyInputValue}
-                          onChange={(event) => {
-                            const value = event.target.value;
-                            setPartyInputValue(value);
-                            const matchedCustomer = customers.find(
-                              (customer) => customer.displayName === value || customer.id === value
-                            );
-                            field.onChange(matchedCustomer ? matchedCustomer.id : "");
-                          }}
-                          onBlur={field.onBlur}
-                          name={field.name}
-                          ref={field.ref}
-                          data-testid="crm-deal-party-id"
+                          searchPlaceholder="Search customers..."
+                          testId="crm-deal-party-id"
                         />
                       </FormControl>
-                      <FormDescription>
-                        {customersLoading
-                          ? t("crm.deals.customersLoading")
-                          : t("crm.deals.customersHint")}
-                      </FormDescription>
+                      <FormDescription>{t("crm.deals.customersHint")}</FormDescription>
                       <FormMessage />
-                      <datalist id="deal-customer-options">
-                        {customers.map((customer) => (
-                          <option key={customer.id} value={customer.displayName} />
-                        ))}
-                      </datalist>
                     </FormItem>
                   )}
                 />
@@ -462,6 +423,7 @@ export default function NewDealPage() {
                       <Textarea
                         rows={4}
                         placeholder={t("crm.deals.notesPlaceholder")}
+                        className="font-mono text-sm"
                         {...field}
                         data-testid="crm-deal-notes"
                       />

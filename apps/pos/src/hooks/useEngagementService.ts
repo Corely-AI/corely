@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import * as SQLite from "expo-sqlite";
+import { Platform } from "react-native";
+import { getPosDatabase } from "@/lib/pos-db";
 import { EngagementService } from "@/services/engagementService";
 
 let engagementServiceInstance: EngagementService | null = null;
@@ -12,14 +13,19 @@ export function useEngagementService() {
   }, []);
 
   const initializeService = async () => {
+    if (Platform.OS === "web") {
+      setInitialized(true);
+      return;
+    }
+
     if (engagementServiceInstance) {
       setInitialized(true);
       return;
     }
 
     try {
-      const db = await SQLite.openDatabaseAsync("corely-pos.db");
-      engagementServiceInstance = new EngagementService(db as any);
+      const db = await getPosDatabase();
+      engagementServiceInstance = new EngagementService(db);
       await engagementServiceInstance.initialize();
       setInitialized(true);
     } catch (error) {

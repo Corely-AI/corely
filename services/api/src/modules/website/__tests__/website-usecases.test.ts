@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { unwrap, type TransactionContext, type UnitOfWorkPort } from "@corely/kernel";
 import { PublishWebsitePageUseCase } from "../application/use-cases/publish-page.usecase";
 import { ResolveWebsitePublicPageUseCase } from "../application/use-cases/resolve-public-page.usecase";
+import { ResolveWebsitePublicSiteSettingsUseCase } from "../application/use-cases/resolve-public-site-settings.usecase";
 import { GenerateWebsitePageFromPromptUseCase } from "../application/use-cases/generate-page-from-prompt.usecase";
 import type {
   WebsitePage,
@@ -100,6 +101,9 @@ describe("Website use cases", () => {
           publishedAt: null,
         };
       },
+      async getEntryContentJson() {
+        return { templateKey: "landing", blocks: [] };
+      },
     };
 
     let outboxTx: TransactionContext | undefined;
@@ -114,6 +118,58 @@ describe("Website use cases", () => {
       pageRepo,
       snapshotRepo,
       cmsRead,
+      siteRepo: {
+        async create(site) {
+          return site;
+        },
+        async update(site) {
+          return site;
+        },
+        async findById() {
+          return {
+            id: "site-1",
+            tenantId: "tenant-1",
+            name: "Site",
+            slug: "site",
+            defaultLocale: "en-US",
+            brandingJson: null,
+            themeJson: null,
+            isDefault: true,
+            createdAt: nowIso,
+            updatedAt: nowIso,
+          };
+        },
+        async findByIdPublic() {
+          return null;
+        },
+        async findBySlug() {
+          return null;
+        },
+        async findDefaultByTenant() {
+          return null;
+        },
+        async setDefault() {},
+        async list() {
+          return { items: [], total: 0 };
+        },
+      },
+      menuRepo: {
+        async upsert(menu) {
+          return menu;
+        },
+        async listBySite() {
+          return [];
+        },
+      },
+      customAttributes: {
+        async getAttributes() {
+          return {};
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
       outbox,
       uow,
       idGenerator: { newId: () => "snap-1" } as any,
@@ -172,8 +228,22 @@ describe("Website use cases", () => {
           name: "Site",
           slug: "site",
           defaultLocale: "en-US",
-          brandingJson: null,
-          themeJson: null,
+          brandingJson: {
+            siteTitle: "Site",
+            logo: {
+              fileId: "logo-file-id",
+              url: "/public/documents/files/logo-file-id",
+            },
+            favicon: {
+              fileId: "favicon-file-id",
+              url: "/public/documents/files/favicon-file-id",
+            },
+            header: { showLogo: true },
+            footer: { links: [] },
+            socials: {},
+            seo: {},
+          },
+          themeJson: { colors: { primary: "#111827" }, typography: {}, tokens: {} },
           isDefault: true,
           createdAt: nowIso,
           updatedAt: nowIso,
@@ -190,8 +260,16 @@ describe("Website use cases", () => {
           name: "Site",
           slug: "site",
           defaultLocale: "en-US",
-          brandingJson: null,
-          themeJson: null,
+          brandingJson: {
+            siteTitle: "Site",
+            logo: {},
+            favicon: {},
+            header: { showLogo: true },
+            footer: { links: [] },
+            socials: {},
+            seo: {},
+          },
+          themeJson: { colors: { primary: "#111827" }, typography: {}, tokens: {} },
           isDefault: true,
           createdAt: nowIso,
           updatedAt: nowIso,
@@ -284,6 +362,9 @@ describe("Website use cases", () => {
       async getEntryForWebsiteRender() {
         throw new Error("not used");
       },
+      async getEntryContentJson() {
+        return null;
+      },
     };
 
     const useCase = new ResolveWebsitePublicPageUseCase({
@@ -293,7 +374,21 @@ describe("Website use cases", () => {
       pageRepo,
       snapshotRepo,
       menuRepo,
+      publicFileUrlPort: {
+        async getPublicUrl(fileId: string) {
+          return `https://cdn.example.com/${fileId}`;
+        },
+      },
       cmsRead,
+      customAttributes: {
+        async getAttributes() {
+          return { gaTrackingId: "G-1234" };
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
       publicWorkspaceResolver: {
         resolveFromRequest: async () => {
           throw new Error("not used");
@@ -306,6 +401,241 @@ describe("Website use cases", () => {
 
     expect(output.snapshotVersion).toBe(2);
     expect(output.template).toBe("landing");
+    expect(output.page.templateKey).toBe("landing");
+    expect(output.settings.common.siteTitle).toBe("Site");
+    expect(output.settings.common.logo.url).toBe("https://cdn.example.com/logo-file-id");
+    expect(output.settings.common.favicon.url).toBe("https://cdn.example.com/favicon-file-id");
+    expect(output.settings.theme.colors.primary).toBe("#111827");
+    expect(output.settings.custom.gaTrackingId).toBe("G-1234");
+  });
+
+  it("resolves public site settings by siteId", async () => {
+    const siteRepo: WebsiteSiteRepositoryPort = {
+      async create(site) {
+        return site;
+      },
+      async update(site) {
+        return site;
+      },
+      async findById() {
+        return null;
+      },
+      async findByIdPublic() {
+        const site: WebsiteSite = {
+          id: "site-1",
+          tenantId: "tenant-1",
+          name: "Site",
+          slug: "site",
+          defaultLocale: "en-US",
+          brandingJson: {
+            siteTitle: "Site",
+            logo: { fileId: "logo-file-id" },
+            favicon: { fileId: "favicon-file-id" },
+            header: { showLogo: true },
+            footer: { links: [] },
+            socials: {},
+            seo: {},
+          },
+          themeJson: { colors: {}, typography: {}, tokens: {} },
+          isDefault: true,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+        return site;
+      },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        return null;
+      },
+      async setDefault() {},
+      async list() {
+        return { items: [], total: 0 };
+      },
+    };
+
+    const useCase = new ResolveWebsitePublicSiteSettingsUseCase({
+      logger: console as any,
+      siteRepo,
+      customAttributes: {
+        async getAttributes() {
+          return { gaTrackingId: "G-1234" };
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
+      publicFileUrlPort: {
+        async getPublicUrl(fileId: string) {
+          return `https://cdn.example.com/${fileId}`;
+        },
+      },
+    });
+
+    const result = await useCase.execute({ siteId: "site-1" }, {});
+    const output = unwrap(result);
+
+    expect(output.siteId).toBe("site-1");
+    expect(output.settings.common.siteTitle).toBe("Site");
+    expect(output.settings.common.logo.url).toBe("https://cdn.example.com/logo-file-id");
+    expect(output.settings.common.favicon.url).toBe("https://cdn.example.com/favicon-file-id");
+    expect(output.settings.custom.gaTrackingId).toBe("G-1234");
+  });
+
+  it("maps legacy branding logoUrl/faviconUrl into public settings", async () => {
+    const siteRepo: WebsiteSiteRepositoryPort = {
+      async create(site) {
+        return site;
+      },
+      async update(site) {
+        return site;
+      },
+      async findById() {
+        return null;
+      },
+      async findByIdPublic() {
+        const site: WebsiteSite = {
+          id: "site-1",
+          tenantId: "tenant-1",
+          name: "Site",
+          slug: "site",
+          defaultLocale: "en-US",
+          brandingJson: {
+            brandName: "Legacy Brand",
+            logoUrl: "https://legacy.example/logo.svg",
+            logoAlt: "Legacy logo",
+            faviconUrl: "https://legacy.example/favicon.ico",
+            header: { showLogo: true },
+            footer: { links: [] },
+            socials: {},
+            seo: {},
+          },
+          themeJson: { colors: {}, typography: {}, tokens: {} },
+          isDefault: true,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+        return site;
+      },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        return null;
+      },
+      async setDefault() {},
+      async list() {
+        return { items: [], total: 0 };
+      },
+    };
+
+    const useCase = new ResolveWebsitePublicSiteSettingsUseCase({
+      logger: console as any,
+      siteRepo,
+      customAttributes: {
+        async getAttributes() {
+          return {};
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
+      publicFileUrlPort: {
+        async getPublicUrl() {
+          return null;
+        },
+      },
+    });
+
+    const result = await useCase.execute({ siteId: "site-1" }, {});
+    const output = unwrap(result);
+
+    expect(output.settings.common.siteTitle).toBe("Legacy Brand");
+    expect(output.settings.common.logo.url).toBe("https://legacy.example/logo.svg");
+    expect(output.settings.common.logo.alt).toBe("Legacy logo");
+    expect(output.settings.common.favicon.url).toBe("https://legacy.example/favicon.ico");
+  });
+
+  it("refreshes signed GCS asset URLs by inferring fileId from stored URL", async () => {
+    const siteRepo: WebsiteSiteRepositoryPort = {
+      async create(site) {
+        return site;
+      },
+      async update(site) {
+        return site;
+      },
+      async findById() {
+        return null;
+      },
+      async findByIdPublic() {
+        const site: WebsiteSite = {
+          id: "site-1",
+          tenantId: "tenant-1",
+          name: "Site",
+          slug: "site",
+          defaultLocale: "en-US",
+          brandingJson: {
+            siteTitle: "Site",
+            logo: {
+              url: "https://storage.googleapis.com/corely/tenant%2Ftenant-1%2Fdocuments%2Fdoc-1%2Ffiles%2Flogo-file-id%2Flogo.png?X-Goog-Algorithm=GOOG4-RSA-SHA256",
+            },
+            favicon: {
+              url: "https://storage.googleapis.com/corely/tenant%2Ftenant-1%2Fdocuments%2Fdoc-1%2Ffiles%2Ffavicon-file-id%2Ffavicon.ico?X-Goog-Algorithm=GOOG4-RSA-SHA256",
+            },
+            header: { showLogo: true },
+            footer: { links: [] },
+            socials: {},
+            seo: {},
+          },
+          themeJson: { colors: {}, typography: {}, tokens: {} },
+          isDefault: true,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+        };
+        return site;
+      },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        return null;
+      },
+      async setDefault() {},
+      async list() {
+        return { items: [], total: 0 };
+      },
+    };
+
+    const requestedFileIds: string[] = [];
+    const useCase = new ResolveWebsitePublicSiteSettingsUseCase({
+      logger: console as any,
+      siteRepo,
+      customAttributes: {
+        async getAttributes() {
+          return {};
+        },
+        async upsertAttributes() {
+          return {};
+        },
+        async deleteAttributes() {},
+      },
+      publicFileUrlPort: {
+        async getPublicUrl(fileId: string) {
+          requestedFileIds.push(fileId);
+          return `https://cdn.example.com/${fileId}`;
+        },
+      },
+    });
+
+    const result = await useCase.execute({ siteId: "site-1" }, {});
+    const output = unwrap(result);
+
+    expect(requestedFileIds).toEqual(["logo-file-id", "favicon-file-id"]);
+    expect(output.settings.common.logo.url).toBe("https://cdn.example.com/logo-file-id");
+    expect(output.settings.common.favicon.url).toBe("https://cdn.example.com/favicon-file-id");
   });
 
   it("AI generate creates CMS entry + page", async () => {
@@ -398,6 +728,7 @@ describe("Website use cases", () => {
         createdEntryId = "cms-1";
         return { entryId: "cms-1" };
       },
+      async updateDraftEntryContentJson() {},
     };
 
     const idempotency: IdempotencyStoragePort = {

@@ -5,6 +5,7 @@ export interface WebsiteSiteRepositoryPort {
   create(site: WebsiteSite, tx?: TransactionContext): Promise<WebsiteSite>;
   update(site: WebsiteSite, tx?: TransactionContext): Promise<WebsiteSite>;
   findById(tenantId: string, siteId: string, tx?: TransactionContext): Promise<WebsiteSite | null>;
+  findByIdPublic?(siteId: string, tx?: TransactionContext): Promise<WebsiteSite | null>;
   findBySlug(tenantId: string, slug: string, tx?: TransactionContext): Promise<WebsiteSite | null>;
   findDefaultByTenant(tenantId: string, tx?: TransactionContext): Promise<WebsiteSite | null>;
   setDefault(tenantId: string, siteId: string, tx?: TransactionContext): Promise<void>;

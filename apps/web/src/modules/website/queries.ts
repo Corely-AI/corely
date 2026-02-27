@@ -3,6 +3,9 @@ import type { ListWebsitePagesInput, ListWebsiteSitesInput } from "@corely/contr
 
 export const websiteSiteKeys = createCrudQueryKeys("website-sites");
 export const websitePageKeys = createCrudQueryKeys("website-pages");
+export const websitePageContentKeys = {
+  detail: (pageId: string) => ["website-pages", "content", pageId] as const,
+};
 
 export const websiteDomainKeys = {
   list: (siteId: string) => ["website-domains", siteId],
@@ -10,6 +13,10 @@ export const websiteDomainKeys = {
 
 export const websiteMenuKeys = {
   list: (siteId: string) => ["website-menus", siteId],
+};
+
+export const websiteWallOfLoveKeys = {
+  list: (siteId: string) => ["website-wall-of-love", siteId],
 };
 
 export const websiteSiteListKey = (params?: ListWebsiteSitesInput) => [

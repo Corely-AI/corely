@@ -1,0 +1,17 @@
+export {
+  StickyNav,
+  HeroSection,
+  SocialProofStrip,
+  PASSection,
+  MethodSection,
+  ProgramHighlights,
+  GroupLearningSection,
+  CoursePackages,
+  ScheduleSection,
+  InstructorSection,
+  TestimonialsSection,
+  ScholarshipSection,
+  FAQSection,
+  LeadForm,
+  Footer,
+} from "./landing-tutoring-v1.adapters";

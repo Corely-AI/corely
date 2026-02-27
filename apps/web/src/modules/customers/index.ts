@@ -9,6 +9,7 @@ export { default as EditSupplierPage } from "./screens/EditSupplierPage";
 export { default as StudentsPage } from "./screens/StudentsPage";
 export { default as NewStudentPage } from "./screens/NewStudentPage";
 export { default as StudentDetailPage } from "./screens/StudentDetailPage";
+export { default as BirthdayRemindersPage } from "./screens/BirthdayRemindersPage";
 export {
   customerFormSchema,
   getDefaultCustomerFormValues,
@@ -33,5 +34,13 @@ export const commandContributions = (): Command[] => [
     keywords: ["supplier", "vendor", "create"],
     group: "Create",
     run: ({ navigate }) => navigate("/suppliers/new"),
+  },
+  {
+    id: "module.customers.birthdays.list",
+    title: "Birthday Reminders",
+    subtitle: "View upcoming customer birthdays",
+    keywords: ["customers", "birthdays", "reminders"],
+    group: "Navigate",
+    run: ({ navigate }) => navigate("/customers/birthdays"),
   },
 ];

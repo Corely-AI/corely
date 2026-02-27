@@ -21,6 +21,12 @@ This inventory lists prompt assets, where they live, how they are used, and thei
 | `crm.extract_party`                  | `packages/prompts/src/prompts/crm.ts`        | Extract party from text                            | `services/api` (CRM tools)           | Internal data extraction       |
 | `crm.extract_deal`                   | `packages/prompts/src/prompts/crm.ts`        | Extract deal from text                             | `services/api` (CRM tools)           | Internal data extraction       |
 | `crm.follow_up_suggestions`          | `packages/prompts/src/prompts/crm.ts`        | Suggest follow-up activities                       | `services/api` (CRM tools)           | User-facing suggestions        |
+| `crm.ai.deal_insights`               | `packages/prompts/src/prompts/crm.ts`        | Generate structured deal insights                  | `services/api` (CRM AI)              | User-facing suggestions        |
+| `crm.ai.deal_message_draft`          | `packages/prompts/src/prompts/crm.ts`        | Draft deal follow-up message variants              | `services/api` (CRM AI)              | User-facing comms              |
+| `crm.ai.activity_parse`              | `packages/prompts/src/prompts/crm.ts`        | Parse natural language into activity draft fields  | `services/api` (CRM AI)              | User-facing drafting           |
+| `crm.ai.activity_extract`            | `packages/prompts/src/prompts/crm.ts`        | Summarize notes and extract follow-up action items | `services/api` (CRM AI)              | User-facing suggestions        |
+| `crm.ai.communication_summarize`     | `packages/prompts/src/prompts/crm.ts`        | Summarize communication and suggest follow-ups     | `services/api` (CRM AI)              | User-facing suggestions        |
+| `crm.ai.intent_sentiment`            | `packages/prompts/src/prompts/crm.ts`        | Classify inbound intent and sentiment labels       | `services/api` (CRM AI)              | Classification                 |
 | `workflow.ai_task.freeform`          | `packages/prompts/src/prompts/workflows.ts`  | Generic workflow AI task wrapper                   | `services/worker` (workflow handler) | Internal automation            |
 
 ## Reference prompts (human-run)

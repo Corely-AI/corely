@@ -145,6 +145,7 @@ export const DealQuickActions: React.FC<DealQuickActionsProps> = ({
             placeholder={t("crm.deals.noteDetails")}
             value={noteBody}
             onChange={(e) => setNoteBody(e.target.value)}
+            className="font-mono text-sm"
           />
           <Button
             variant="secondary"

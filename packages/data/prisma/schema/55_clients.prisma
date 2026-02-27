@@ -9,7 +9,7 @@ model Client {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([tenantId])
   @@unique([tenantId, email])
+  @@index([tenantId])
   @@schema("crm")
 }

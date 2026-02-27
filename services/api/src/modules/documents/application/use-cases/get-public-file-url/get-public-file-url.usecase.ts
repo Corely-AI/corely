@@ -46,6 +46,8 @@ export class GetPublicFileUrlUseCase extends BaseUseCase<
       return err(new NotFoundError("File not found"));
     }
 
+    const expiresAt = new Date(Date.now() + this.useCaseDeps.downloadTtlSeconds * 1000);
+
     const signed = await this.useCaseDeps.objectStorage.createSignedDownloadUrl({
       tenantId: file.tenantId,
       objectKey: file.objectKey,

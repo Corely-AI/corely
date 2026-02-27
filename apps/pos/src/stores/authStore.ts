@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import * as SecureStore from "expo-secure-store";
 import { AuthClient } from "@corely/auth-client";
 import { PosApiClient } from "@/lib/pos-api-client";
 import { NativeStorageAdapter } from "@/lib/storage-adapter";
+import { secureDeleteItem, secureGetItem, secureSetItem } from "@/lib/secure-store";
 import { router } from "expo-router";
 
 interface User {
@@ -58,7 +58,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Check if user is authenticated
       const accessToken = authClient.getAccessToken();
-      const userJson = await SecureStore.getItemAsync("user");
+      const userJson = await secureGetItem("user");
 
       if (accessToken && userJson) {
         const user = JSON.parse(userJson);
@@ -79,9 +79,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   login: async (email: string, password: string) => {
-    const { authClient } = get();
+    let authClient = get().authClient;
     if (!authClient) {
-      throw new Error("Auth client not initialized");
+      await get().initialize();
+      authClient = get().authClient;
+    }
+    if (!authClient) {
+      const fallbackAuthClient = new AuthClient({
+        apiUrl: API_URL,
+        storage,
+      });
+      const fallbackApiClient = new PosApiClient({
+        apiUrl: API_URL,
+        authClient: fallbackAuthClient,
+        storage,
+        onAuthError: () => {
+          void get().logout();
+        },
+      });
+      set({
+        authClient: fallbackAuthClient,
+        apiClient: fallbackApiClient,
+      });
+      authClient = fallbackAuthClient;
     }
 
     set({ isLoading: true });
@@ -94,7 +114,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         email: data.email,
       };
 
-      await SecureStore.setItemAsync("user", JSON.stringify(user));
+      await secureSetItem("user", JSON.stringify(user));
 
       set({
         user,
@@ -114,7 +134,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await authClient.signout();
     }
 
-    await SecureStore.deleteItemAsync("user");
+    await secureDeleteItem("user");
 
     set({
       user: null,
@@ -124,7 +144,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace("/login");
+      router.replace("/login" as never);
     }
   },
 }));

@@ -55,6 +55,7 @@ export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, Crea
     }
 
     const now = this.useCaseDeps.clock.now();
+    const birthday = input.birthday ? new Date(`${input.birthday}T00:00:00.000Z`) : null;
     const billingAddress = input.billingAddress
       ? (CustomerBillingAddressSchema.parse(input.billingAddress) as Address)
       : null;
@@ -93,6 +94,7 @@ export class CreateCustomerUseCase extends BaseUseCase<CreateCustomerInput, Crea
       department: input.department,
       industry: input.industry,
       website: input.website,
+      birthday,
       createdAt: now,
       generateId: () => this.useCaseDeps.idGenerator.newId(),
     });

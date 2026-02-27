@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CustomerDtoSchema, CustomerBillingAddressSchema } from "./customer.types";
+import { localDateSchema } from "../shared/local-date.schema";
 import {
   PartyRoleTypeSchema,
   PartyLifecycleStatusSchema,
@@ -21,6 +22,7 @@ export const UpdateCustomerInputSchema = z.object({
     department: z.string().nullable().optional(),
     industry: z.string().nullable().optional(),
     website: z.string().nullable().optional(),
+    birthday: localDateSchema.optional().nullable(),
     email: z.string().email().optional().nullable(),
     phone: z.string().optional().nullable(),
     billingAddress: CustomerBillingAddressSchema.nullable().optional(),

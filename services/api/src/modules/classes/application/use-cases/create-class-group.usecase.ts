@@ -7,7 +7,7 @@ import type { IdempotencyStoragePort } from "../ports/idempotency.port";
 import type { IdGeneratorPort } from "../ports/id-generator.port";
 import type { ClockPort } from "../ports/clock.port";
 import { resolveTenantScope } from "../helpers/resolve-scope";
-import { assertCanClasses } from "../../policies/assert-can-classes";
+import { assertCanCohortManage, assertCanClasses } from "../../policies/assert-can-classes";
 import type { ClassGroupEntity } from "../../domain/entities/classes.entities";
 
 @RequireTenant()
@@ -24,6 +24,7 @@ export class CreateClassGroupUseCase {
 
   async execute(input: CreateClassGroupInput, ctx: UseCaseContext): Promise<ClassGroupEntity> {
     assertCanClasses(ctx, "classes.write");
+    assertCanCohortManage(ctx);
     const { tenantId, workspaceId } = resolveTenantScope(ctx);
 
     if (!input.name?.trim()) {
@@ -51,6 +52,16 @@ export class CreateClassGroupUseCase {
       currency: input.currency ?? "EUR",
       schedulePattern: (input.schedulePattern as Record<string, unknown>) ?? null,
       status: "ACTIVE",
+      kind: input.kind ?? "COHORT",
+      lifecycle: input.lifecycle ?? "DRAFT",
+      startAt: input.startAt ? new Date(input.startAt) : null,
+      endAt: input.endAt ? new Date(input.endAt) : null,
+      timezone: input.timezone ?? "Europe/Berlin",
+      capacity: input.capacity ?? null,
+      waitlistEnabled: input.waitlistEnabled ?? false,
+      deliveryMode: input.deliveryMode ?? "ONLINE",
+      communityUrl: input.communityUrl ?? null,
+      programId: input.programId ?? null,
       createdAt: now,
       updatedAt: now,
     };

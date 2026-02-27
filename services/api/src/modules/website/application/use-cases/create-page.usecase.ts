@@ -14,14 +14,17 @@ import {
 import type { CreateWebsitePageInput, WebsitePage } from "@corely/contracts";
 import type { WebsitePageRepositoryPort } from "../ports/page-repository.port";
 import type { WebsiteSiteRepositoryPort } from "../ports/site-repository.port";
+import type { CmsWritePort } from "../ports/cms-write.port";
 import type { IdGeneratorPort } from "@shared/ports/id-generator.port";
 import type { ClockPort } from "@shared/ports/clock.port";
 import { normalizeLocale, normalizePath } from "../../domain/website.validators";
+import { normalizeWebsitePageContent } from "../../domain/page-content";
 
 type Deps = {
   logger: LoggerPort;
   pageRepo: WebsitePageRepositoryPort;
   siteRepo: WebsiteSiteRepositoryPort;
+  cmsWrite: CmsWritePort;
   idGenerator: IdGeneratorPort;
   clock: ClockPort;
 };
@@ -42,11 +45,12 @@ export class CreateWebsitePageUseCase extends BaseUseCase<CreateWebsitePageInput
     if (!input.locale?.trim()) {
       throw new ValidationError("locale is required", undefined, "Website:InvalidLocale");
     }
-    if (!input.template?.trim()) {
-      throw new ValidationError("template is required", undefined, "Website:InvalidTemplate");
-    }
-    if (!input.cmsEntryId?.trim()) {
-      throw new ValidationError("cmsEntryId is required", undefined, "Website:InvalidCmsEntry");
+    if (!input.template?.trim() && !input.templateKey?.trim()) {
+      throw new ValidationError(
+        "template or templateKey is required",
+        undefined,
+        "Website:InvalidTemplate"
+      );
     }
     return input;
   }
@@ -73,15 +77,25 @@ export class CreateWebsitePageUseCase extends BaseUseCase<CreateWebsitePageInput
     }
 
     const now = this.deps.clock.now().toISOString();
+    const templateKey = (input.templateKey ?? input.template ?? "").trim();
+    const cmsEntryId = await this.resolveCmsEntryId({
+      inputCmsEntryId: input.cmsEntryId,
+      tenantId: ctx.tenantId,
+      workspaceId: ctx.workspaceId ?? null,
+      authorUserId: ctx.userId ?? null,
+      locale,
+      path,
+      templateKey,
+    });
     const page: WebsitePage = {
       id: this.deps.idGenerator.newId(),
       tenantId: ctx.tenantId,
       siteId: input.siteId,
       path,
       locale,
-      template: input.template.trim(),
+      template: templateKey,
       status: "DRAFT",
-      cmsEntryId: input.cmsEntryId,
+      cmsEntryId,
       seoTitle: input.seoTitle ?? null,
       seoDescription: input.seoDescription ?? null,
       seoImageFileId: input.seoImageFileId ?? null,
@@ -90,7 +104,83 @@ export class CreateWebsitePageUseCase extends BaseUseCase<CreateWebsitePageInput
       updatedAt: now,
     };
 
-    const created = await this.deps.pageRepo.create(page);
+    let created = await this.deps.pageRepo.create(page);
+
+    if (input.content) {
+      if (!ctx.workspaceId) {
+        return err(
+          new ValidationError(
+            "workspaceId is required when setting page content",
+            undefined,
+            "Website:WorkspaceRequired"
+          )
+        );
+      }
+
+      const content = normalizeWebsitePageContent(input.content, templateKey);
+      await this.deps.cmsWrite.updateDraftEntryContentJson({
+        tenantId: ctx.tenantId,
+        workspaceId: ctx.workspaceId,
+        entryId: created.cmsEntryId,
+        contentJson: content,
+      });
+
+      if (created.template !== content.templateKey) {
+        created = await this.deps.pageRepo.update({
+          ...created,
+          template: content.templateKey,
+          updatedAt: this.deps.clock.now().toISOString(),
+        });
+      }
+    }
+
     return ok(created);
+  }
+
+  private async resolveCmsEntryId(params: {
+    inputCmsEntryId?: string;
+    tenantId: string;
+    workspaceId: string | null;
+    authorUserId: string | null;
+    locale: string;
+    path: string;
+    templateKey: string;
+  }): Promise<string> {
+    const candidate = params.inputCmsEntryId?.trim();
+    if (candidate) {
+      return candidate;
+    }
+
+    const created = await this.deps.cmsWrite.createDraftEntryFromBlueprint({
+      tenantId: params.tenantId,
+      workspaceId: params.workspaceId,
+      authorUserId: params.authorUserId,
+      locale: params.locale,
+      blueprint: {
+        title: this.pathToTitle(params.path),
+        excerpt: `Draft page for template ${params.templateKey}`,
+        suggestedPath: params.path,
+        contentJson: {
+          type: "doc",
+          content: [{ type: "paragraph", content: [] }],
+        },
+      },
+    });
+
+    return created.entryId;
+  }
+
+  private pathToTitle(path: string): string {
+    if (path === "/") {
+      return "Home";
+    }
+    const label = path
+      .replace(/^\/+|\/+$/g, "")
+      .split("/")
+      .filter(Boolean)
+      .join(" / ")
+      .replace(/[-_]+/g, " ")
+      .trim();
+    return label || "Page";
   }
 }

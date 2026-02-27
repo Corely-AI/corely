@@ -22,7 +22,7 @@ export class TeacherDashboardController {
   ) {}
 
   @Get("summary")
-  @RequirePermission("classes.read")
+  @RequirePermission("classes.teacher.dashboard.view")
   async getSummary(
     @Req() req: Request,
     @Query() query: unknown
@@ -33,7 +33,7 @@ export class TeacherDashboardController {
   }
 
   @Get("unpaid-invoices")
-  @RequirePermission("classes.read")
+  @RequirePermission("classes.teacher.dashboard.view")
   async getUnpaidInvoices(
     @Req() req: Request,
     @Query() query: unknown

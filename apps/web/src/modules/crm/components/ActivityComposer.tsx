@@ -6,12 +6,12 @@ import { Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@corely/ui";
 import { Input } from "@corely/ui";
-import { Textarea } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import { Calendar } from "@corely/ui";
 import { Calendar as CalendarIcon, Clock3, Plus } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
+import { RichTextEditor } from "@/shared/rich-text/rich-text-editor";
 import { useAddDealActivity } from "../hooks/useDeal";
 import { useTranslation } from "react-i18next";
 import { useCrmChannels } from "../hooks/useChannels";
@@ -403,12 +403,14 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
                 <FormItem>
                   <FormLabel>{t("common.notes")}</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={3}
-                      placeholder={t("crm.activity.notesPlaceholder")}
-                      {...field}
-                      data-testid="crm-activity-body"
-                    />
+                    <div data-testid="crm-activity-body">
+                      <RichTextEditor
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
+                        placeholder={t("crm.activity.notesPlaceholder")}
+                        className="bg-background"
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

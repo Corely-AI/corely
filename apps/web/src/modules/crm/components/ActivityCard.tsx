@@ -10,8 +10,15 @@ interface ActivityCardProps {
   onClick?: () => void;
 }
 
+const stripHtml = (value: string) =>
+  value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
   const { t, i18n } = useTranslation();
+  const bodyPreview = activity.body ? stripHtml(activity.body) : "";
   const statusColor =
     activity.status === "COMPLETED"
       ? "bg-green-100 text-green-800"
@@ -47,7 +54,7 @@ export const ActivityCard: FC<ActivityCardProps> = ({ activity, onClick }) => {
       </CardHeader>
       {activity.body && (
         <CardContent>
-          <p className="text-sm text-muted-foreground line-clamp-3 mb-2">{activity.body}</p>
+          <p className="text-sm text-muted-foreground line-clamp-3 mb-2">{bodyPreview}</p>
 
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {activity.outcome && (

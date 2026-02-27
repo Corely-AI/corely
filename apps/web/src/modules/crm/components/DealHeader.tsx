@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 interface DealHeaderProps {
   deal: DealDto;
   stages: { id: string; name: string; isClosed?: boolean }[];
+  healthBadge?: React.ReactNode;
   onEdit?: () => void;
   onChangeStage?: (stageId: string) => void;
   onMarkWon?: () => void;
@@ -28,6 +29,7 @@ interface DealHeaderProps {
 export const DealHeader: React.FC<DealHeaderProps> = ({
   deal,
   stages,
+  healthBadge,
   onEdit,
   onChangeStage,
   onMarkWon,
@@ -67,6 +69,12 @@ export const DealHeader: React.FC<DealHeaderProps> = ({
             onChange={(value) => onChangeStage?.(value)}
             showBadge
           />
+          {healthBadge ? (
+            <>
+              <span>•</span>
+              {healthBadge}
+            </>
+          ) : null}
           {deal.probability !== null && (
             <span>• {t("crm.deals.probability", { probability: deal.probability })}</span>
           )}

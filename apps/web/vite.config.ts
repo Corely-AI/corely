@@ -19,6 +19,7 @@ export default defineConfig(() => {
       "@corely/offline-core": path.resolve(__dirname, "../../packages/offline-core/src"),
       "@corely/offline-web": path.resolve(__dirname, "../../packages/offline-web/src"),
       "@corely/ui": path.resolve(__dirname, "../../packages/ui/src"),
+      "@corely/website-blocks": path.resolve(__dirname, "../../packages/website-blocks/src"),
     },
     excludeFromOptimizeDeps: ["@corely/contracts", "@corely/domain"],
     watchWorkspacePackages: ["@corely/*"],

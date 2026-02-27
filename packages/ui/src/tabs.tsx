@@ -61,6 +61,7 @@ const TabsContent = React.forwardRef<
       {...(shouldForceMount ? { forceMount: true as const } : {})}
       className={cn(
         "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        shouldForceMount && "data-[state=inactive]:hidden",
         className
       )}
       {...props}

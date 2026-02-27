@@ -81,6 +81,18 @@ export class EnvService {
     return this.config.WORKER_PORT;
   }
 
+  get DIRECTORY_PUBLIC_TENANT_ID(): string | undefined {
+    return this.config.DIRECTORY_PUBLIC_TENANT_ID;
+  }
+
+  get DIRECTORY_PUBLIC_WORKSPACE_ID(): string | undefined {
+    return this.config.DIRECTORY_PUBLIC_WORKSPACE_ID;
+  }
+
+  get DIRECTORY_LEADS_NOTIFY_EMAIL(): string | undefined {
+    return this.config.DIRECTORY_LEADS_NOTIFY_EMAIL;
+  }
+
   // ============================================================================
   // WORKER
   // ============================================================================
@@ -237,6 +249,18 @@ export class EnvService {
     return this.config.ANTHROPIC_API_KEY;
   }
 
+  get CRM_AI_ENABLED(): boolean {
+    return this.config.CRM_AI_ENABLED;
+  }
+
+  get CRM_AI_V2_ANALYTICS_ENABLED(): boolean {
+    return this.config.CRM_AI_V2_ANALYTICS_ENABLED;
+  }
+
+  get CRM_AI_INTENT_SENTIMENT_ENABLED(): boolean {
+    return this.config.CRM_AI_INTENT_SENTIMENT_ENABLED;
+  }
+
   // ============================================================================
   // EMAIL PROVIDERS
   // ============================================================================
@@ -259,6 +283,14 @@ export class EnvService {
 
   get RESEND_WEBHOOK_SECRET(): string | undefined {
     return this.config.RESEND_WEBHOOK_SECRET;
+  }
+
+  get SUMUP_WEBHOOK_SECRET(): string | undefined {
+    return this.config.SUMUP_WEBHOOK_SECRET;
+  }
+
+  get INTEGRATIONS_SECRET_KEY(): string | undefined {
+    return this.config.INTEGRATIONS_SECRET_KEY;
   }
 
   // ============================================================================

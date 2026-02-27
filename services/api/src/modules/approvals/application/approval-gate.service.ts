@@ -21,6 +21,13 @@ interface ApprovalGateRequest {
   idempotencyKey: string;
 }
 
+type ApprovalGateResult = {
+  status: "APPROVED" | "PENDING" | "REJECTED";
+  reason?: string;
+  instanceId?: string;
+  policyId?: string;
+};
+
 @Injectable()
 export class ApprovalGateService {
   constructor(
@@ -35,7 +42,7 @@ export class ApprovalGateService {
     private readonly idempotency: IdempotencyService
   ) {}
 
-  async requireApproval(input: ApprovalGateRequest) {
+  async requireApproval(input: ApprovalGateRequest): Promise<ApprovalGateResult> {
     const start = await this.idempotency.startOrReplay({
       actionKey: `approvalGate:${input.actionKey}`,
       tenantId: input.tenantId,
@@ -49,15 +56,15 @@ export class ApprovalGateService {
     });
 
     if (start.mode === "REPLAY") {
-      return start.responseBody as any;
+      return start.responseBody as ApprovalGateResult;
     }
 
     if (start.mode === "FAILED") {
-      return start.responseBody as any;
+      return start.responseBody as ApprovalGateResult;
     }
 
     if (start.mode === "IN_PROGRESS") {
-      return { status: "PENDING", retryAfterMs: start.retryAfterMs ?? 1000 };
+      return { status: "PENDING", reason: "idempotency_in_progress" };
     }
 
     if (start.mode === "MISMATCH") {
@@ -75,15 +82,16 @@ export class ApprovalGateService {
         metadata: { actionKey: input.actionKey, reason: "no_policy" },
       });
 
+      const approvedResult: ApprovalGateResult = { status: "APPROVED", reason: "no_policy" };
       await this.idempotency.complete({
         actionKey: `approvalGate:${input.actionKey}`,
         tenantId: input.tenantId,
         idempotencyKey: input.idempotencyKey,
         responseStatus: 200,
-        responseBody: { status: "APPROVED", reason: "no_policy" },
+        responseBody: approvedResult,
       });
 
-      return { status: "APPROVED", reason: "no_policy" };
+      return approvedResult;
     }
 
     const spec = JSON.parse(policy.spec) as { meta?: { policy?: ApprovalPolicyInput } };
@@ -99,15 +107,19 @@ export class ApprovalGateService {
         metadata: { actionKey: input.actionKey, reason: "rules_not_matched" },
       });
 
+      const approvedResult: ApprovalGateResult = {
+        status: "APPROVED",
+        reason: "rules_not_matched",
+      };
       await this.idempotency.complete({
         actionKey: `approvalGate:${input.actionKey}`,
         tenantId: input.tenantId,
         idempotencyKey: input.idempotencyKey,
         responseStatus: 200,
-        responseBody: { status: "APPROVED", reason: "rules_not_matched" },
+        responseBody: approvedResult,
       });
 
-      return { status: "APPROVED", reason: "rules_not_matched" };
+      return approvedResult;
     }
 
     const instance = await this.workflows.startInstance(input.tenantId, {
@@ -130,46 +142,93 @@ export class ApprovalGateService {
       },
     });
 
-    await this.audit.log({
-      tenantId: input.tenantId,
-      userId: input.userId,
-      action: "approval.requested",
-      entityType: input.entityType,
-      entityId: input.entityId,
-      metadata: { actionKey: input.actionKey, instanceId: instance.id },
-    });
-
-    await this.domainEvents.append({
-      tenantId: input.tenantId,
-      eventType: "approval.requested",
-      payload: JSON.stringify({
-        actionKey: input.actionKey,
+    const normalized = normalizeApprovalInstance(instance.status, instance.currentState ?? null);
+    if (normalized.status === "APPROVED" || normalized.status === "REJECTED") {
+      const completedResult: ApprovalGateResult = {
+        ...normalized,
         instanceId: instance.id,
-        entityId: input.entityId,
-      }),
-    });
+        policyId: policy.id,
+      };
+      await this.idempotency.complete({
+        actionKey: `approvalGate:${input.actionKey}`,
+        tenantId: input.tenantId,
+        idempotencyKey: input.idempotencyKey,
+        responseStatus: normalized.status === "APPROVED" ? 200 : 409,
+        responseBody: completedResult,
+      });
+      return completedResult;
+    }
 
-    await this.outbox.enqueue({
-      tenantId: input.tenantId,
-      eventType: "approval.requested",
-      payload: {
-        actionKey: input.actionKey,
-        instanceId: instance.id,
+    // Only emit "requested" side effects once, right after workflow creation.
+    if ((instance.currentState ?? "start") === "start") {
+      await this.audit.log({
+        tenantId: input.tenantId,
+        userId: input.userId,
+        action: "approval.requested",
+        entityType: input.entityType,
         entityId: input.entityId,
-      },
-      correlationId: instance.id,
-    });
+        metadata: { actionKey: input.actionKey, instanceId: instance.id },
+      });
+
+      await this.domainEvents.append({
+        tenantId: input.tenantId,
+        eventType: "approval.requested",
+        payload: JSON.stringify({
+          actionKey: input.actionKey,
+          instanceId: instance.id,
+          entityId: input.entityId,
+        }),
+      });
+
+      await this.outbox.enqueue({
+        tenantId: input.tenantId,
+        eventType: "approval.requested",
+        payload: {
+          actionKey: input.actionKey,
+          instanceId: instance.id,
+          entityId: input.entityId,
+        },
+        correlationId: instance.id,
+      });
+    }
+
+    const pendingResult: ApprovalGateResult = {
+      status: "PENDING",
+      instanceId: instance.id,
+      policyId: policy.id,
+    };
 
     await this.idempotency.complete({
       actionKey: `approvalGate:${input.actionKey}`,
       tenantId: input.tenantId,
       idempotencyKey: input.idempotencyKey,
       responseStatus: 202,
-      responseBody: { status: "PENDING", instanceId: instance.id },
+      responseBody: pendingResult,
     });
 
-    return { status: "PENDING", instanceId: instance.id, policyId: policy.id };
+    return pendingResult;
   }
+}
+
+function normalizeApprovalInstance(
+  workflowStatus: string,
+  currentState: string | null
+): Pick<ApprovalGateResult, "status" | "reason"> {
+  const state = (currentState ?? "").toLowerCase();
+  if (workflowStatus === "COMPLETED") {
+    if (state === "approved") {
+      return { status: "APPROVED", reason: "already_approved" };
+    }
+    if (state === "rejected") {
+      return { status: "REJECTED", reason: "already_rejected" };
+    }
+  }
+
+  if (workflowStatus === "FAILED" || workflowStatus === "CANCELLED") {
+    return { status: "REJECTED", reason: "workflow_not_active" };
+  }
+
+  return { status: "PENDING" };
 }
 
 function evaluateRules(rules: ApprovalRules, payload: Record<string, unknown>): boolean {
@@ -201,10 +260,10 @@ function matchRule(rule: ApprovalRules["all"][number], payload: Record<string, u
     case "lte":
       return typeof value === "number" && typeof rule.value === "number" && value <= rule.value;
     case "in":
-      return Array.isArray(rule.value) && rule.value.includes(value as any);
+      return Array.isArray(rule.value) && rule.value.includes(value);
     case "contains":
       if (Array.isArray(value)) {
-        return value.includes(rule.value as any);
+        return value.includes(rule.value);
       }
       if (typeof value === "string" && typeof rule.value === "string") {
         return value.includes(rule.value);

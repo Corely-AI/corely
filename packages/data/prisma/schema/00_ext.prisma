@@ -13,10 +13,10 @@
 model ExtKv {
   id        String   @id @default(cuid())
   tenantId  String
-  moduleId  String   // Namespace for module isolation
-  scope     String   // e.g., "workspace", "user", "entity"
+  moduleId  String // Namespace for module isolation
+  scope     String // e.g., "workspace", "user", "entity"
   key       String
-  value     Json     // JSONB payload
+  value     Json // JSONB payload
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
@@ -30,11 +30,11 @@ model ExtKv {
 model ExtEntityAttr {
   id         String   @id @default(cuid())
   tenantId   String
-  moduleId   String   // Namespace for module isolation
-  entityType String   // e.g., "Party", "Invoice", "Deal"
-  entityId   String   // ID of the target entity
-  attrKey    String   // Attribute name
-  attrValue  Json     // JSONB payload
+  moduleId   String // Namespace for module isolation
+  entityType String // e.g., "Party", "Invoice", "Deal"
+  entityId   String // ID of the target entity
+  attrKey    String // Attribute name
+  attrValue  Json // JSONB payload
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
 
@@ -49,13 +49,13 @@ model ExtEntityAttr {
 model ExtEntityLink {
   id             String   @id @default(cuid())
   tenantId       String
-  moduleId       String   // Namespace for module isolation
-  fromEntityType String   // Source entity type
-  fromEntityId   String   // Source entity ID
-  toEntityType   String   // Target entity type
-  toEntityId     String   // Target entity ID
-  linkType       String   // Relationship type (e.g., "related", "depends_on")
-  metadata       Json?    // Optional metadata
+  moduleId       String // Namespace for module isolation
+  fromEntityType String // Source entity type
+  fromEntityId   String // Source entity ID
+  toEntityType   String // Target entity type
+  toEntityId     String // Target entity ID
+  linkType       String // Relationship type (e.g., "related", "depends_on")
+  metadata       Json? // Optional metadata
   createdAt      DateTime @default(now()) @db.Timestamptz(6)
 
   @@unique([tenantId, moduleId, fromEntityType, fromEntityId, toEntityType, toEntityId, linkType])

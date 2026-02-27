@@ -1,25 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { v4 as uuidv4 } from "@lukeed/uuid";
+import { useTranslation } from "react-i18next";
+import { HttpError } from "@corely/api-client";
+import type { CreateCheckInEventInput } from "@corely/contracts";
 import { useAuthStore } from "@/stores/authStore";
 import { useRegisterStore } from "@/stores/registerStore";
 import { useEngagementService } from "@/hooks/useEngagementService";
 import { useSyncEngine } from "@/hooks/useSyncEngine";
 import { getOutboxStore } from "@/lib/offline/outboxStore";
 import { buildCreateCheckInCommand } from "@/offline/engagementOutbox";
-import type { CreateCheckInEventInput } from "@corely/contracts";
-import { HttpError } from "@corely/api-client";
+import { AppShell, Badge, Button, Card, CenteredActions, TextField } from "@/ui/components";
+import { posTheme } from "@/ui/theme";
 
 export default function KioskConfirmScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { customerId } = useLocalSearchParams<{ customerId: string }>();
   const { apiClient, user } = useAuthStore();
   const { selectedRegister } = useRegisterStore();
   const { engagementService } = useEngagementService();
   const { isOnline, triggerSync } = useSyncEngine();
-  const [customerName, setCustomerName] = useState<string>("Customer");
+  const [customerName, setCustomerName] = useState<string>(t("kiosk.customerFallback"));
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const checkInIdRef = useRef<string | null>(null);
@@ -46,7 +50,7 @@ export default function KioskConfirmScreen() {
 
   const handleConfirm = async (overrideDuplicate = false) => {
     if (!customerId || !selectedRegister || !user?.workspaceId) {
-      Alert.alert("Missing Info", "Customer or register not available.");
+      Alert.alert(t("kiosk.missingInfoTitle"), t("kiosk.missingInfoMessage"));
       return;
     }
 
@@ -60,8 +64,8 @@ export default function KioskConfirmScreen() {
       customerPartyId: customerId,
       registerId: selectedRegister.registerId,
       checkedInByType: "SELF_SERVICE",
-      checkedInByEmployeePartyId: user?.userId ?? null,
-      checkedInAt: new Date(),
+      checkedInByEmployeePartyId: user.userId ?? null,
+      checkedInAt: new Date().toISOString(),
       visitReason: reason || null,
       overrideDuplicate,
     };
@@ -77,7 +81,7 @@ export default function KioskConfirmScreen() {
           customerPartyId: customerId,
           registerId: selectedRegister.registerId,
           status: result.checkInEvent.status,
-          checkedInAt: result.checkInEvent.checkedInAt,
+          checkedInAt: new Date(result.checkInEvent.checkedInAt),
           visitReason: reason || null,
           assignedEmployeePartyId: result.checkInEvent.assignedEmployeePartyId ?? null,
           notes: result.checkInEvent.notes ?? null,
@@ -105,7 +109,7 @@ export default function KioskConfirmScreen() {
           customerPartyId: customerId,
           registerId: selectedRegister.registerId,
           status: "ACTIVE",
-          checkedInAt: payload.checkedInAt ?? now,
+          checkedInAt: payload.checkedInAt ? new Date(payload.checkedInAt) : now,
           visitReason: reason || null,
           assignedEmployeePartyId: null,
           notes: null,
@@ -120,16 +124,18 @@ export default function KioskConfirmScreen() {
       }
     } catch (error) {
       if (error instanceof HttpError && error.status === 409) {
-        Alert.alert("Possible Duplicate", "A recent check-in exists. Proceed anyway?", [
-          { text: "Cancel", style: "cancel", onPress: () => setSubmitting(false) },
+        Alert.alert(t("kiosk.duplicateTitle"), t("kiosk.duplicateMessage"), [
+          { text: t("common.cancel"), style: "cancel", onPress: () => setSubmitting(false) },
           {
-            text: "Proceed",
-            onPress: () => handleConfirm(true),
+            text: t("common.proceed"),
+            onPress: () => {
+              void handleConfirm(true);
+            },
           },
         ]);
         return;
       }
-      Alert.alert("Check-In Failed", "Please try again.");
+      Alert.alert(t("kiosk.checkInFailedTitle"), t("kiosk.checkInFailedMessage"));
       console.error("Check-in error:", error);
     } finally {
       setSubmitting(false);
@@ -137,122 +143,55 @@ export default function KioskConfirmScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>Confirm Check-In</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <AppShell
+      title={t("kiosk.confirmTitle")}
+      subtitle={t("kiosk.confirmSubtitle")}
+      onBack={() => router.back()}
+      maxWidth={760}
+    >
+      <Card>
+        <View style={styles.customerBlock}>
+          <Ionicons name="person-circle-outline" size={64} color={posTheme.colors.primary} />
+          <Text style={styles.customerName}>{customerName}</Text>
+          <Badge
+            label={isOnline ? t("status.online") : t("status.offline")}
+            tone={isOnline ? "success" : "warning"}
+          />
+        </View>
 
-      <View style={styles.card}>
-        <Ionicons name="person-circle-outline" size={64} color="#2196f3" />
-        <Text style={styles.customerName}>{customerName}</Text>
-      </View>
-
-      <View style={styles.form}>
-        <Text style={styles.label}>Reason for Visit (optional)</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="e.g. Repair, Consultation"
+        <TextField
+          label={t("kiosk.reasonOptional")}
           value={reason}
           onChangeText={setReason}
+          placeholder={t("kiosk.reasonPlaceholder")}
         />
-      </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.confirmButton, submitting && styles.disabledButton]}
-          onPress={() => handleConfirm()}
-          disabled={submitting}
-        >
-          <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
-          <Text style={styles.confirmText}>Confirm Check-In</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        <CenteredActions maxWidth={360} style={styles.actions}>
+          <Button
+            label={t("kiosk.confirm")}
+            onPress={() => void handleConfirm()}
+            loading={submitting}
+          />
+          <Button label={t("common.cancel")} variant="ghost" onPress={() => router.back()} />
+        </CenteredActions>
+      </Card>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  customerBlock: {
     alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  card: {
-    margin: 24,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 24,
-    alignItems: "center",
-    gap: 8,
+    gap: posTheme.spacing.xs,
+    marginBottom: posTheme.spacing.sm,
   },
   customerName: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  form: {
-    paddingHorizontal: 24,
-  },
-  label: {
-    fontSize: 12,
-    textTransform: "uppercase",
-    color: "#666",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
+    color: posTheme.colors.text,
+    fontSize: 24,
+    fontWeight: "900",
   },
   actions: {
-    marginTop: 24,
-    paddingHorizontal: 24,
-    gap: 12,
-  },
-  confirmButton: {
-    backgroundColor: "#4caf50",
-    borderRadius: 8,
-    padding: 16,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
-  confirmText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  cancelButton: {
-    padding: 12,
-    alignItems: "center",
-  },
-  cancelText: {
-    color: "#666",
-    fontSize: 16,
-  },
-  disabledButton: {
-    backgroundColor: "#a5d6a7",
+    marginTop: posTheme.spacing.md,
+    gap: posTheme.spacing.xs,
   },
 });

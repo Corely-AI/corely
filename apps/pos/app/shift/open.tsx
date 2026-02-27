@@ -1,44 +1,42 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { v4 as uuidv4 } from "@lukeed/uuid";
-import { useShiftStore } from "@/stores/shiftStore";
 import { useTranslation } from "react-i18next";
+import { useRegisterStore } from "@/stores/registerStore";
+import { useShiftStore } from "@/stores/shiftStore";
+import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
+import { AppShell, Button, Card, MoneyInput, NumericKeypad, useMoneyPad } from "@/ui/components";
+import { posTheme } from "@/ui/theme";
 
 export default function OpenShiftScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { isTablet } = useAdaptiveLayout();
   const { openShift, isLoading } = useShiftStore();
-  const [startingCash, setStartingCash] = useState("");
-  const currencySymbol = t("common.currencySymbol");
-
-  // TODO: Get actual register from settings/selection
-  const registerId = "placeholder-register-id";
+  const { selectedRegister } = useRegisterStore();
+  const [inputError, setInputError] = useState<string | null>(null);
+  const pad = useMoneyPad("");
 
   const handleOpenShift = async () => {
-    const startingCashCents = startingCash ? Math.round(parseFloat(startingCash) * 100) : null;
-
-    if (startingCash && (isNaN(startingCashCents!) || startingCashCents! < 0)) {
-      Alert.alert(t("shift.invalidAmountTitle"), t("shift.invalidAmountMessage"));
+    if (!selectedRegister) {
+      Alert.alert(t("checkout.registerRequiredTitle"), t("shift.openRegisterRequiredMessage"));
       return;
     }
 
+    const parsed = pad.value ? Number(pad.value) : null;
+    const startingCashCents = parsed === null ? null : Math.round(parsed * 100);
+    if (parsed !== null && (!Number.isFinite(parsed) || parsed < 0)) {
+      setInputError(t("shift.invalidAmountMessage"));
+      return;
+    }
+
+    setInputError(null);
     try {
       await openShift({
-        sessionId: uuidv4(),
-        registerId,
+        registerId: selectedRegister.registerId,
         startingCashCents,
       });
-
       Alert.alert(t("shift.openedTitle"), t("shift.openedMessage"), [
         {
           text: t("common.confirm"),
@@ -52,142 +50,69 @@ export default function OpenShiftScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.title}>{t("shift.openTitle")}</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="time-outline" size={64} color="#2196f3" />
-        </View>
-
-        <Text style={styles.description}>{t("shift.openDescription")}</Text>
-
-        <View style={styles.form}>
-          <Text style={styles.label}>{t("shift.startingCashOptional")}</Text>
-          <View style={styles.inputContainer}>
-            <Text style={styles.currencySymbol}>{currencySymbol}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t("common.amountPlaceholder")}
-              value={startingCash}
-              onChangeText={setStartingCash}
-              keyboardType="decimal-pad"
-              editable={!isLoading}
+    <AppShell
+      title={t("shift.openTitle")}
+      subtitle={t("shift.openDescription")}
+      onBack={() => router.back()}
+      maxWidth={980}
+    >
+      <View testID="pos-shift-open-screen" style={[styles.layout, isTablet && styles.layoutTablet]}>
+        <Card>
+          <View style={styles.cardBody}>
+            <View style={styles.iconWrap}>
+              <Ionicons name="time-outline" size={46} color={posTheme.colors.primary} />
+            </View>
+            <MoneyInput
+              testID="pos-shift-open-starting-cash"
+              label={t("shift.startingCashOptional")}
+              value={pad.value}
+              onChange={(value) => {
+                setInputError(null);
+                pad.setValue(value);
+              }}
+              help={t("shift.startingCashHint")}
+              {...(inputError ? { error: inputError } : {})}
+            />
+            <Button
+              testID="pos-shift-open-submit"
+              label={t("shift.openShift")}
+              onPress={handleOpenShift}
+              loading={isLoading}
             />
           </View>
+        </Card>
 
-          <Text style={styles.hint}>{t("shift.startingCashHint")}</Text>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.button, isLoading && styles.buttonDisabled]}
-          onPress={handleOpenShift}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
-              <Text style={styles.buttonText}>{t("shift.openShift")}</Text>
-            </>
-          )}
-        </TouchableOpacity>
+        {isTablet ? (
+          <NumericKeypad onKey={pad.append} onBackspace={pad.backspace} onClear={pad.clear} />
+        ) : (
+          <Text style={styles.mobileHint}>{t("shift.mobileHint")}</Text>
+        )}
       </View>
-    </View>
+    </AppShell>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  layout: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    gap: posTheme.spacing.md,
   },
-  header: {
+  layoutTablet: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    alignItems: "stretch",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: "600",
-  },
-  content: {
+  cardBody: {
     flex: 1,
-    padding: 24,
-  },
-  iconContainer: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  description: {
-    fontSize: 16,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 32,
-    lineHeight: 24,
-  },
-  form: {
-    marginBottom: 32,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#666",
-    marginBottom: 8,
-    textTransform: "uppercase",
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    paddingHorizontal: 16,
-  },
-  currencySymbol: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#666",
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: "600",
-    paddingVertical: 16,
-  },
-  hint: {
-    fontSize: 14,
-    color: "#999",
-    marginTop: 8,
-  },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
+    gap: posTheme.spacing.md,
     justifyContent: "center",
-    backgroundColor: "#4caf50",
-    padding: 16,
-    borderRadius: 8,
-    gap: 8,
   },
-  buttonDisabled: {
-    backgroundColor: "#ccc",
+  iconWrap: {
+    alignItems: "center",
+    marginBottom: 6,
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
+  mobileHint: {
+    color: posTheme.colors.textMuted,
+    textAlign: "center",
+    fontSize: 12,
   },
 });

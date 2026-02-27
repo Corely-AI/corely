@@ -35,6 +35,9 @@ export const envSchema = z.object({
   WEB_PORT: z.coerce.number().int().positive().default(8080),
   MOCK_PORT: z.coerce.number().int().positive().default(4000),
   WORKER_PORT: z.coerce.number().int().positive().default(3001),
+  DIRECTORY_PUBLIC_TENANT_ID: z.string().optional(),
+  DIRECTORY_PUBLIC_WORKSPACE_ID: z.string().optional(),
+  DIRECTORY_LEADS_NOTIFY_EMAIL: z.string().email().optional(),
 
   // ============================================================================
   // WORKER
@@ -114,6 +117,48 @@ export const envSchema = z.object({
   SPEECH_TO_TEXT_PROVIDER: z.enum(["openai", "google", "none"]).optional(),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+  CRM_AI_ENABLED: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) {
+          return true;
+        }
+        if (["false", "0", "no", "n"].includes(normalized)) {
+          return false;
+        }
+      }
+      return value;
+    }, z.boolean())
+    .default(false),
+  CRM_AI_V2_ANALYTICS_ENABLED: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) {
+          return true;
+        }
+        if (["false", "0", "no", "n"].includes(normalized)) {
+          return false;
+        }
+      }
+      return value;
+    }, z.boolean())
+    .default(false),
+  CRM_AI_INTENT_SENTIMENT_ENABLED: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (["true", "1", "yes", "y"].includes(normalized)) {
+          return true;
+        }
+        if (["false", "0", "no", "n"].includes(normalized)) {
+          return false;
+        }
+      }
+      return value;
+    }, z.boolean())
+    .default(false),
 
   // ============================================================================
   // EMAIL PROVIDERS
@@ -123,6 +168,8 @@ export const envSchema = z.object({
   RESEND_FROM: z.string().optional(),
   RESEND_REPLY_TO: z.string().optional(),
   RESEND_WEBHOOK_SECRET: z.string().optional(),
+  SUMUP_WEBHOOK_SECRET: z.string().optional(),
+  INTEGRATIONS_SECRET_KEY: z.string().optional(),
 
   // ============================================================================
   // OBJECT STORAGE (GCS)
@@ -181,6 +228,8 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
   "ANTHROPIC_API_KEY",
   "RESEND_API_KEY",
   "RESEND_WEBHOOK_SECRET",
+  "SUMUP_WEBHOOK_SECRET",
+  "INTEGRATIONS_SECRET_KEY",
   "JWT_SECRET",
   "GOOGLE_APPLICATION_CREDENTIALS",
   "LANGFUSE_SECRET_KEY",

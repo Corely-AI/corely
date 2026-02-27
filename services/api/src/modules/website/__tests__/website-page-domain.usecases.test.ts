@@ -71,6 +71,12 @@ describe("Website page + domain use cases", () => {
       logger: console as any,
       pageRepo,
       siteRepo,
+      cmsWrite: {
+        async createDraftEntryFromBlueprint() {
+          throw new Error("not used");
+        },
+        async updateDraftEntryContentJson() {},
+      },
       idGenerator: { newId: () => "page-1" } as any,
       clock: { now: () => new Date(nowIso) } as any,
     });
@@ -89,6 +95,94 @@ describe("Website page + domain use cases", () => {
     expect(result.ok).toBe(true);
     expect(createdPage?.path).toBe("/about");
     expect(createdPage?.locale).toBe("en-US");
+  });
+
+  it("creates a CMS entry when cmsEntryId is omitted", async () => {
+    const site: WebsiteSite = {
+      id: "site-1",
+      tenantId: "tenant-1",
+      name: "Site",
+      slug: "site",
+      defaultLocale: "en-US",
+      brandingJson: null,
+      themeJson: null,
+      isDefault: true,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+    };
+
+    let createdPage: WebsitePage | null = null;
+    let createdEntryCount = 0;
+
+    const pageRepo: WebsitePageRepositoryPort = {
+      async create(page) {
+        createdPage = page;
+        return page;
+      },
+      async update(page) {
+        return page;
+      },
+      async findById() {
+        return null;
+      },
+      async findByPath() {
+        return null;
+      },
+      async list() {
+        return { items: [], total: 0 };
+      },
+    };
+
+    const siteRepo: WebsiteSiteRepositoryPort = {
+      async create(siteInput) {
+        return siteInput;
+      },
+      async update(siteInput) {
+        return siteInput;
+      },
+      async findById() {
+        return site;
+      },
+      async findBySlug() {
+        return null;
+      },
+      async findDefaultByTenant() {
+        return site;
+      },
+      async setDefault() {},
+      async list() {
+        return { items: [], total: 0 };
+      },
+    };
+
+    const useCase = new CreateWebsitePageUseCase({
+      logger: console as any,
+      pageRepo,
+      siteRepo,
+      cmsWrite: {
+        async createDraftEntryFromBlueprint() {
+          createdEntryCount += 1;
+          return { entryId: "cms-auto-1" };
+        },
+        async updateDraftEntryContentJson() {},
+      },
+      idGenerator: { newId: () => "page-2" } as any,
+      clock: { now: () => new Date(nowIso) } as any,
+    });
+
+    const result = await useCase.execute(
+      {
+        siteId: site.id,
+        path: "/",
+        locale: "en-US",
+        templateKey: "landing.tutoring.v1",
+      },
+      { tenantId: site.tenantId }
+    );
+
+    expect(result.ok).toBe(true);
+    expect(createdEntryCount).toBe(1);
+    expect(createdPage?.cmsEntryId).toBe("cms-auto-1");
   });
 
   it("rejects page updates that collide on path + locale", async () => {
@@ -133,6 +227,12 @@ describe("Website page + domain use cases", () => {
     const useCase = new UpdateWebsitePageUseCase({
       logger: console as any,
       pageRepo,
+      cmsWrite: {
+        async createDraftEntryFromBlueprint() {
+          throw new Error("not used");
+        },
+        async updateDraftEntryContentJson() {},
+      },
       clock: { now: () => new Date(nowIso) } as any,
     });
 

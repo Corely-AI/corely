@@ -15,6 +15,7 @@ import { KernelModule } from "../../shared/kernel/kernel.module";
 import { IdentityModule } from "../identity";
 import { PlatformModule } from "../platform";
 import { CatalogModule } from "../catalog/catalog.module";
+import { ApprovalsModule } from "../approvals";
 
 import { repositoryProviders } from "./providers/repository.providers";
 import { productProviders } from "./providers/product.providers";
@@ -27,7 +28,14 @@ import { lotProviders } from "./providers/lot.providers";
 import { applicationProviders } from "./providers/application.providers";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, PlatformModule, CatalogModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    IdentityModule,
+    PlatformModule,
+    CatalogModule,
+    ApprovalsModule,
+  ],
   controllers: [
     ProductsController,
     WarehousesController,

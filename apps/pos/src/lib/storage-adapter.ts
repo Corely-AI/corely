@@ -1,5 +1,5 @@
 import type { TokenStorage } from "@corely/auth-client";
-import * as SecureStore from "expo-secure-store";
+import { secureDeleteItem, secureGetItem, secureSetItem } from "@/lib/secure-store";
 
 /**
  * Native Storage Adapter
@@ -11,36 +11,36 @@ export class NativeStorageAdapter implements TokenStorage {
   private readonly WORKSPACE_ID_KEY = "activeWorkspaceId";
 
   async setAccessToken(token: string): Promise<void> {
-    await SecureStore.setItemAsync(this.ACCESS_TOKEN_KEY, token);
+    await secureSetItem(this.ACCESS_TOKEN_KEY, token);
   }
 
   async getAccessToken(): Promise<string | null> {
-    return await SecureStore.getItemAsync(this.ACCESS_TOKEN_KEY);
+    return await secureGetItem(this.ACCESS_TOKEN_KEY);
   }
 
   async setRefreshToken(token: string): Promise<void> {
-    await SecureStore.setItemAsync(this.REFRESH_TOKEN_KEY, token);
+    await secureSetItem(this.REFRESH_TOKEN_KEY, token);
   }
 
   async getRefreshToken(): Promise<string | null> {
-    return await SecureStore.getItemAsync(this.REFRESH_TOKEN_KEY);
+    return await secureGetItem(this.REFRESH_TOKEN_KEY);
   }
 
   async setActiveWorkspaceId(workspaceId: string | null): Promise<void> {
     if (workspaceId) {
-      await SecureStore.setItemAsync(this.WORKSPACE_ID_KEY, workspaceId);
+      await secureSetItem(this.WORKSPACE_ID_KEY, workspaceId);
     } else {
-      await SecureStore.deleteItemAsync(this.WORKSPACE_ID_KEY);
+      await secureDeleteItem(this.WORKSPACE_ID_KEY);
     }
   }
 
   async getActiveWorkspaceId(): Promise<string | null> {
-    return await SecureStore.getItemAsync(this.WORKSPACE_ID_KEY);
+    return await secureGetItem(this.WORKSPACE_ID_KEY);
   }
 
   async clear(): Promise<void> {
-    await SecureStore.deleteItemAsync(this.ACCESS_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(this.REFRESH_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(this.WORKSPACE_ID_KEY);
+    await secureDeleteItem(this.ACCESS_TOKEN_KEY);
+    await secureDeleteItem(this.REFRESH_TOKEN_KEY);
+    await secureDeleteItem(this.WORKSPACE_ID_KEY);
   }
 }

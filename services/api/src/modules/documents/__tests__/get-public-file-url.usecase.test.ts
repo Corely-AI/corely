@@ -37,7 +37,7 @@ describe("GetPublicFileUrlUseCase", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("returns signed URL for public files without tenant context", async () => {
+  it("returns signed download URL for public files without tenant context", async () => {
     const fileRepo = new InMemoryFileRepo();
     const storage = new FakeObjectStoragePort();
     const useCase = new GetPublicFileUrlUseCase({
@@ -67,7 +67,7 @@ describe("GetPublicFileUrlUseCase", () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.value.url).toContain("public/file-2");
+      expect(result.value.url).toBe("https://download.test/public/file-2");
     }
   });
 });
