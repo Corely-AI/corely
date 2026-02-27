@@ -62,7 +62,9 @@ export class NotificationIntentHandler implements EventHandler {
               },
             },
           });
-          if (!retry) {throw e;} // Should not happen
+          if (!retry) {
+            throw e;
+          } // Should not happen
           notificationId = retry.id;
         } else {
           throw e;

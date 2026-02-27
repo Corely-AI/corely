@@ -10,9 +10,15 @@ import type {
 export class NotificationsApi {
   async listNotifications(params?: ListNotificationsRequest): Promise<ListNotificationsResponse> {
     const query = new URLSearchParams();
-    if (params?.page) {query.append("page", String(params.page));}
-    if (params?.pageSize) {query.append("pageSize", String(params.pageSize));}
-    if (params?.status) {query.append("status", params.status);}
+    if (params?.page) {
+      query.append("page", String(params.page));
+    }
+    if (params?.pageSize) {
+      query.append("pageSize", String(params.pageSize));
+    }
+    if (params?.status) {
+      query.append("status", params.status);
+    }
 
     return apiClient.get<ListNotificationsResponse>(`/notifications?${query.toString()}`, {
       correlationId: apiClient.generateCorrelationId(),

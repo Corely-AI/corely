@@ -25,7 +25,9 @@ export function useMarkNotificationRead() {
       queryClient.setQueriesData<ListNotificationsResponse>(
         { queryKey: notificationListKey() },
         (old) => {
-          if (!old) {return old;}
+          if (!old) {
+            return old;
+          }
           return {
             ...old,
             items: old.items.map((item) =>
@@ -66,7 +68,9 @@ export function useMarkAllNotificationsRead() {
       queryClient.setQueriesData<ListNotificationsResponse>(
         { queryKey: notificationListKey() },
         (old) => {
-          if (!old) {return old;}
+          if (!old) {
+            return old;
+          }
           return {
             ...old,
             items: old.items.map((item) => ({ ...item, readAt: new Date().toISOString() })),

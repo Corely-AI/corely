@@ -10,7 +10,9 @@ export function useNotificationsStream() {
   const mounted = !!user; // Only subscribe if user is logged in
 
   useEffect(() => {
-    if (!mounted) {return;}
+    if (!mounted) {
+      return;
+    }
 
     const unsubscribe = notificationsApi.subscribeToNotifications({
       onCountChanged: (count) => {
