@@ -5,6 +5,11 @@ fi
 
 # Run unit tests
 echo "Running unit tests..."
+APP_ENV=test \
+WORKFLOW_QUEUE_DRIVER=memory \
+WORKFLOW_CLOUDTASKS_TARGET_BASE_URL=http://localhost \
+SPEECH_TO_TEXT_PROVIDER=none \
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost \
 pnpm test:unit
 
 if [ $? -ne 0 ]; then

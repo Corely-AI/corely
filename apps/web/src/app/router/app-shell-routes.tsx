@@ -109,6 +109,7 @@ import { appSettingsRoutes } from "./app-settings-routes";
 import { catalogRoutes } from "./catalog-routes";
 import { capabilityRoutes } from "./app-shell-capability-routes";
 import { bookingRoutes } from "./booking-routes";
+import { NotificationsPage } from "../../modules/notifications/screens/notifications-page";
 
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
@@ -116,6 +117,7 @@ export const appShellRoutes = (
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/assistant" element={<AssistantPage />} />
       <Route path="/assistant/t/:threadId" element={<AssistantPage />} />
       <Route path="/cms/posts" element={<CmsPostsPage />} />

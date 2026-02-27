@@ -13,6 +13,7 @@ import { InvoicePdfService } from "./application/invoice-pdf.service";
 import { type InvoicePdfModelPort } from "./application/ports/invoice-pdf-model.port";
 import { type InvoicePdfRendererPort } from "./application/ports/invoice-pdf-renderer.port";
 import { INVOICE_PDF_MODEL_PORT, INVOICE_PDF_RENDERER_PORT } from "./tokens";
+import { NotificationsModule } from "../notifications/notifications.module";
 
 const DEFAULT_PLAYWRIGHT_LAUNCH_TIMEOUT_MS = 10_000;
 
@@ -41,7 +42,7 @@ async function launchBrowserWithTimeout(timeoutMs: number): Promise<Browser> {
 }
 
 @Module({
-  imports: [DataModule],
+  imports: [DataModule, NotificationsModule],
   providers: [
     InvoiceReminderRunnerService,
     PrismaInvoicePdfModelAdapter,

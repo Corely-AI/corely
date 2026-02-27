@@ -3,6 +3,7 @@ import { EnvService } from "@corely/config";
 import { PrismaService } from "@corely/data";
 import { Runner, RunnerReport, TickContext } from "../../application/runner.interface";
 import * as crypto from "crypto";
+import { NotificationEmitterService } from "../notifications/services/notification-emitter.service";
 
 @Injectable()
 export class InvoiceReminderRunnerService implements Runner {
@@ -14,7 +15,8 @@ export class InvoiceReminderRunnerService implements Runner {
 
   constructor(
     private readonly env: EnvService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationEmitterService
   ) {}
 
   async run(ctx: TickContext): Promise<RunnerReport> {
@@ -61,6 +63,9 @@ export class InvoiceReminderRunnerService implements Runner {
       where: { deletedAt: null },
       select: { id: true, tenantId: true },
     });
+
+    // TODO: Use this.notifications.emitIntent(...) to send InvoiceDueSoon notifications
+    // Logic: find invoices due soon, iterate, and emit intent.
 
     for (const workspace of workspaces) {
       // Check budgets
