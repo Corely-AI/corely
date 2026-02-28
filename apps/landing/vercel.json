@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/web", "destination": "https://corely-web-builder.vercel.app/" },
+    { "source": "/web/:match*", "destination": "https://corely-web-builder.vercel.app/" },
     { "source": "/assets/(.*)", "destination": "https://nails.corely.one/assets/$1" },
     { "source": "/vi/nails", "destination": "https://nails.corely.one/" },
     { "source": "/vi/nails/(.*)", "destination": "https://nails.corely.one/$1" },
