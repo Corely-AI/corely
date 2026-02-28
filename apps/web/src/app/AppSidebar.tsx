@@ -1,7 +1,17 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, ChevronLeft, Moon, Sun, Globe, LogOut, Users, Store } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronLeft,
+  Moon,
+  Sun,
+  Globe,
+  LogOut,
+  Users,
+  Store,
+  BookOpen,
+} from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
 import { Button } from "@corely/ui";
 import { useThemeStore } from "@/shared/theme/themeStore";
@@ -22,6 +32,7 @@ import { WorkspaceTypeBadge } from "@/shared/workspaces/WorkspaceTypeBadge";
 import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
 import { useCanManageTenants, useCanReadTenants } from "@/shared/lib/permissions";
 import { NotificationBell } from "@/modules/notifications/components/notification-bell";
+import { getDocsBaseUrl } from "@/shared/lib/docs-url";
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -85,6 +96,7 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
   };
 
   const unknownLabel = t("common.unknown");
+  const docsUrl = getDocsBaseUrl(i18n.language);
 
   return (
     <aside
@@ -318,6 +330,12 @@ export function AppSidebar({ collapsed = false, onToggle, variant = "desktop" }:
                 <div className="text-xs text-muted-foreground">{user.email}</div>
               </div>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <a href={docsUrl} target="_blank" rel="noreferrer">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  {t("common.docs")}
+                </a>
+              </DropdownMenuItem>
               <DropdownMenuItem
                 data-testid="logout"
                 className="text-danger"
