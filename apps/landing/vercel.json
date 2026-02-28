@@ -3,6 +3,11 @@
     { "source": "/assets/(.*)", "destination": "https://nails.corely.one/assets/$1" },
     { "source": "/vi/nails", "destination": "https://nails.corely.one/" },
     { "source": "/vi/nails/(.*)", "destination": "https://nails.corely.one/$1" },
+    { "source": "/docs", "destination": "https://corely-96b9fe9c.mintlify.dev/docs" },
+    {
+      "source": "/docs/:match*",
+      "destination": "https://corely-96b9fe9c.mintlify.dev/docs/:match*"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
