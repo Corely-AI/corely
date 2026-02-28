@@ -440,6 +440,208 @@
       "submitted": "Tagesabschluss übermittelt",
       "submitFailed": "Abschluss fehlgeschlagen",
       "enterCountedAmount": "Bitte gezählten Betrag eingeben"
+    },
+    "ui": {
+      "common": {
+        "loadingRegister": "Kasse wird geladen...",
+        "registerNotFound": "Kasse nicht gefunden.",
+        "noLocation": "Kein Standort",
+        "cancel": "Abbrechen"
+      },
+      "registers": {
+        "title": "Kassen",
+        "subtitle": "Kassen, Salden und Tagesabläufe verwalten.",
+        "newRegister": "Neue Kasse",
+        "searchPlaceholder": "Nach Kassenname suchen",
+        "locationPlaceholder": "Nach Standort filtern",
+        "currencyPlaceholder": "Währung (z. B. EUR)",
+        "loading": "Kassen werden geladen...",
+        "loadFailed": "Kassen konnten nicht geladen werden.",
+        "empty": "Keine Kassen gefunden.",
+        "open": "Öffnen",
+        "table": {
+          "name": "Name",
+          "location": "Standort",
+          "currency": "Währung",
+          "currentBalance": "Aktueller Saldo",
+          "actions": "Aktionen"
+        }
+      },
+      "registerDetail": {
+        "newCashEntry": "Neue Buchung",
+        "closeDay": "Tag abschließen (Kassensturz)",
+        "export": "Export",
+        "edit": "Bearbeiten",
+        "currentBalance": "Aktueller Saldo",
+        "lastClosedDay": "Letzter abgeschlossener Tag",
+        "noSubmittedClose": "Noch kein übermittelter Tagesabschluss",
+        "tabs": {
+          "overview": "Übersicht",
+          "entriesPreview": "Buchungsvorschau",
+          "activityAudit": "Aktivität / Audit"
+        },
+        "registerId": "Kassen-ID",
+        "negativeBalancePolicy": "Richtlinie für negativen Saldo",
+        "policyBlocked": "Gesperrt",
+        "policyAllowed": "Erlaubt",
+        "noEntriesYet": "Noch keine Buchungen.",
+        "openFullEntries": "Vollständige Buchungsliste öffnen",
+        "activityPrefix": "Audit-Logs und exportierte",
+        "auditPack": "Audit-Pakete",
+        "activitySuffix": "werden hier angezeigt, sobald verfügbar."
+      },
+      "registerForm": {
+        "newTitle": "Kasse erstellen",
+        "editTitle": "Kasse bearbeiten",
+        "name": "Name",
+        "namePlaceholder": "Hauptkasse",
+        "location": "Standort",
+        "locationPlaceholder": "Verkaufsfläche",
+        "currency": "Währung",
+        "disallowNegativeBalance": "Negativen Kassensaldo verbieten",
+        "createFailed": "Kasse konnte nicht erstellt werden.",
+        "updateFailed": "Kasse konnte nicht aktualisiert werden.",
+        "create": "Kasse erstellen",
+        "saveChanges": "Änderungen speichern"
+      },
+      "entries": {
+        "title": "Buchungen · {{register}}",
+        "subtitle": "Kassenbuch mit Filtern, Stornos und Belegverknüpfungen.",
+        "newCashEntry": "Neue Buchung",
+        "backToRegister": "Zurück zur Kasse",
+        "filters": {
+          "dayFrom": "Tag von",
+          "dayTo": "Tag bis",
+          "allTypes": "Alle Typen",
+          "allSources": "Alle Quellen",
+          "allPayments": "Alle Zahlarten",
+          "searchDescription": "Beschreibung suchen"
+        },
+        "loading": "Buchungen werden geladen...",
+        "loadFailed": "Buchungen konnten nicht geladen werden.",
+        "empty": "Keine Buchungen gefunden.",
+        "table": {
+          "dateTime": "Datum/Uhrzeit",
+          "entryNo": "Eintrag #",
+          "description": "Beschreibung",
+          "type": "Typ",
+          "direction": "EIN/AUS",
+          "amount": "Betrag",
+          "payment": "Zahlart",
+          "source": "Quelle",
+          "balanceAfter": "Saldo nach",
+          "beleg": "Beleg",
+          "actions": "Aktionen"
+        },
+        "rowActions": {
+          "viewRegister": "Kasse ansehen",
+          "reverse": "Stornieren",
+          "addBeleg": "Beleg anhängen"
+        },
+        "createDialog": {
+          "title": "Buchung erstellen",
+          "direction": "Richtung",
+          "amount": "Betrag",
+          "type": "Typ",
+          "paymentMethod": "Zahlart",
+          "description": "Beschreibung",
+          "occurredAt": "Zeitpunkt",
+          "attachBelegDocumentId": "Beleg-Dokument-ID anhängen (optional)",
+          "documentPlaceholder": "doc_...",
+          "projectedBalance": "Prognostizierter Saldo nach Speichern",
+          "failed": "Buchung konnte nicht erstellt werden.",
+          "save": "Buchung speichern"
+        },
+        "reverseDialog": {
+          "title": "Buchung stornieren",
+          "reason": "Grund",
+          "failed": "Buchung konnte nicht storniert werden.",
+          "confirm": "Storno bestätigen"
+        },
+        "attachmentDialog": {
+          "title": "Beleg zur Buchung hinzufügen",
+          "documentId": "Dokument-ID",
+          "failed": "Beleg konnte nicht angehängt werden.",
+          "attach": "Anhängen"
+        }
+      },
+      "dayClose": {
+        "title": "Tagesabschluss (Kassensturz)",
+        "backToRegister": "Zurück zur Kasse",
+        "addCorrectionEntry": "Korrekturbuchung hinzufügen",
+        "closeDayFor": "Tag abschließen für {{register}}",
+        "day": "Tag",
+        "expectedBalance": "Soll-Bestand",
+        "countedBalance": "Ist-Bestand",
+        "denomination": "Stückelung",
+        "count": "Anzahl",
+        "subtotal": "Zwischensumme",
+        "difference": "Differenz",
+        "differenceNoteRequired": "Bei einer Differenz ist eine Notiz erforderlich.",
+        "note": "Notiz",
+        "notePlaceholder": "Optional bei 0 Differenz, sonst erforderlich.",
+        "submitFailed": "Tagesabschluss konnte nicht übermittelt werden.",
+        "submitAndLock": "Abschließen und Tag sperren",
+        "lockedInfo": "Dieser Tag ist gesperrt. Nur Korrekturbuchungen sind erlaubt.",
+        "loadExistingFailed": "Vorhandener Tagesabschluss konnte nicht geladen werden."
+      },
+      "exports": {
+        "title": "Exporte · {{register}}",
+        "backToRegister": "Zurück zur Kasse",
+        "generateTitle": "Kassenbuch-Export erstellen",
+        "month": "Monat",
+        "format": "Format",
+        "includeAttachmentFiles": "Belegdateien im Audit-Paket einschließen",
+        "generating": "Wird erstellt...",
+        "generate": "Export erstellen",
+        "failed": "Export konnte nicht erstellt werden.",
+        "latestTitle": "Letzter Export",
+        "file": "Datei",
+        "type": "Typ",
+        "size": "Größe",
+        "bytes": "Bytes",
+        "download": "Export herunterladen",
+        "formatOptions": {
+          "CSV": "CSV",
+          "PDF": "PDF",
+          "DATEV": "DATEV",
+          "AUDIT_PACK": "Audit-Paket"
+        }
+      },
+      "enums": {
+        "direction": {
+          "IN": "EIN",
+          "OUT": "AUS"
+        },
+        "paymentMethod": {
+          "CASH": "Bargeld",
+          "CARD": "Karte",
+          "TRANSFER": "Überweisung",
+          "OTHER": "Sonstiges"
+        },
+        "entrySource": {
+          "MANUAL": "Manuell",
+          "SALES": "Verkauf",
+          "EXPENSE": "Ausgabe",
+          "DIFFERENCE": "Differenz",
+          "IMPORT": "Import",
+          "INTEGRATION": "Integration"
+        },
+        "entryType": {
+          "SALE_CASH": "Barverkauf",
+          "REFUND_CASH": "Barerstattung",
+          "EXPENSE_CASH": "Barausgabe",
+          "OWNER_DEPOSIT": "Einlage Inhaber",
+          "OWNER_WITHDRAWAL": "Entnahme Inhaber",
+          "BANK_DEPOSIT": "Bareinzahlung Bank",
+          "BANK_WITHDRAWAL": "Barabhebung Bank",
+          "CORRECTION": "Korrektur",
+          "OPENING_FLOAT": "Anfangsbestand",
+          "CLOSING_ADJUSTMENT": "Abschlusskorrektur",
+          "IN": "EIN",
+          "OUT": "AUS"
+        }
+      }
     }
   },
   "dashboard": {

@@ -2,50 +2,72 @@
 // Subledger for tracking cash movements in registers
 
 model CashRegister {
-  id                  String   @id @default(cuid())
-  tenantId            String
-  workspaceId         String
-  name                String
-  location            String?
-  currency            String   @default("EUR") @db.VarChar(3)
-  currentBalanceCents Int      @default(0)
-  createdAt           DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt           DateTime @updatedAt @db.Timestamptz(6)
+  id                     String    @id @default(cuid())
+  tenantId               String
+  workspaceId            String
+  name                   String
+  location               String?
+  currency               String    @default("EUR") @db.VarChar(3)
+  currentBalanceCents    Int       @default(0)
+  disallowNegativeBalance Boolean  @default(false)
+  createdAt              DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime  @updatedAt @db.Timestamptz(6)
 
-  // Relations
-  entries   CashEntry[]
-  dayCloses CashDayClose[]
+  entries         CashEntry[]
+  dayCloses       CashDayClose[]
+  entryCounter    CashEntryCounter?
+  exportArtifacts CashExportArtifact[]
 
   tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-  @@index([tenantId])
-  @@index([workspaceId])
+  @@index([tenantId, workspaceId])
+  @@index([tenantId, workspaceId, name])
   @@map("cash_registers")
   @@schema("accounting")
 }
 
 model CashEntry {
-  id              String   @id @default(cuid())
-  tenantId        String
-  workspaceId     String
-  registerId      String
-  type            String // IN, OUT
-  amountCents     Int // positive, interpretation depends on type
-  sourceType      String // MANUAL, SALES, EXPENSE, DIFFERENCE
-  description     String
-  referenceId     String? // Linked doc ID or previous entry ID
-  businessDate    String? // YYYY-MM-DD
+  id                String   @id @default(cuid())
+  tenantId          String
+  workspaceId       String
+  registerId        String
+  entryNo           Int
+  direction         String
+  entryType         String
+  source            String
+  paymentMethod     String   @default("CASH")
+  amountCents       Int
+  currency          String   @default("EUR") @db.VarChar(3)
+  description       String
+  referenceId       String?
+  occurredAt        DateTime @default(now()) @db.Timestamptz(6)
+  dayKey            String
+  balanceAfterCents Int      @default(0)
+  reversalOfEntryId String?
+  reversedByEntryId String?  @unique
+  lockedByDayCloseId String?
+
+  // Legacy compatibility fields
+  type         String
+  sourceType   String
+  businessDate String?
+
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   createdByUserId String
 
-  register  CashRegister @relation(fields: [registerId], references: [id], onDelete: Cascade)
-  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  register      CashRegister        @relation(fields: [registerId], references: [id], onDelete: Cascade)
+  lockedByClose CashDayClose?       @relation("CashDayCloseLockedEntries", fields: [lockedByDayCloseId], references: [id], onDelete: SetNull)
+  attachments   CashEntryAttachment[]
 
-  @@index([tenantId, registerId, businessDate])
-  @@index([workspaceId, registerId, businessDate])
-  @@index([tenantId, createdAt])
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, workspaceId, registerId, entryNo])
+  @@index([tenantId, workspaceId, registerId, dayKey, occurredAt])
+  @@index([tenantId, workspaceId, registerId, occurredAt])
+  @@index([tenantId, workspaceId, reversalOfEntryId])
+  @@index([tenantId, workspaceId, lockedByDayCloseId])
   @@map("cash_entries")
   @@schema("accounting")
 }
@@ -55,24 +77,111 @@ model CashDayClose {
   tenantId             String
   workspaceId          String
   registerId           String
-  businessDate         String // YYYY-MM-DD
-  status               String // OPEN, SUBMITTED, LOCKED
+  dayKey               String
+  status               String    @default("DRAFT")
   expectedBalanceCents Int
   countedBalanceCents  Int
   differenceCents      Int
-  notes                String?
-  closedAt             DateTime? @db.Timestamptz(6)
-  closedByUserId       String?
-  createdAt            DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt            DateTime  @updatedAt @db.Timestamptz(6)
+  note                 String?
+  submittedAt          DateTime? @db.Timestamptz(6)
+  submittedByUserId    String?
+  lockedAt             DateTime? @db.Timestamptz(6)
+  lockedByUserId       String?
 
-  register  CashRegister @relation(fields: [registerId], references: [id], onDelete: Cascade)
-  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  // Legacy compatibility fields
+  businessDate   String
+  notes          String?
+  closedAt       DateTime? @db.Timestamptz(6)
+  closedByUserId String?
 
-  @@unique([registerId, businessDate])
-  @@index([tenantId])
-  @@index([workspaceId])
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  register       CashRegister            @relation(fields: [registerId], references: [id], onDelete: Cascade)
+  entriesLocked  CashEntry[]             @relation("CashDayCloseLockedEntries")
+  countLines     CashDayCloseCountLine[]
+
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, workspaceId, registerId, dayKey])
+  @@index([tenantId, workspaceId, registerId, dayKey])
+  @@index([tenantId, workspaceId, registerId, submittedAt])
   @@map("cash_day_closes")
+  @@schema("accounting")
+}
+
+model CashDayCloseCountLine {
+  id               String   @id @default(cuid())
+  tenantId         String
+  workspaceId      String
+  dayCloseId       String
+  denominationCents Int
+  count            Int
+  subtotalCents    Int
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+
+  dayClose CashDayClose @relation(fields: [dayCloseId], references: [id], onDelete: Cascade)
+
+  @@unique([dayCloseId, denominationCents])
+  @@index([tenantId, workspaceId, dayCloseId])
+  @@map("cash_day_close_count_lines")
+  @@schema("accounting")
+}
+
+model CashEntryAttachment {
+  id               String   @id @default(cuid())
+  tenantId         String
+  workspaceId      String
+  entryId          String
+  documentId       String
+  uploadedByUserId String?
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+
+  entry CashEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, workspaceId, entryId, documentId])
+  @@index([tenantId, workspaceId, entryId])
+  @@index([tenantId, workspaceId, documentId])
+  @@map("cash_entry_attachments")
+  @@schema("accounting")
+}
+
+model CashEntryCounter {
+  id         String   @id @default(cuid())
+  tenantId   String
+  workspaceId String
+  registerId String @unique
+  lastEntryNo Int     @default(0)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  register CashRegister @relation(fields: [registerId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, workspaceId, registerId])
+  @@index([tenantId, workspaceId, registerId])
+  @@map("cash_entry_counters")
+  @@schema("accounting")
+}
+
+model CashExportArtifact {
+  id              String   @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  registerId      String
+  month           String
+  format          String
+  fileName        String
+  contentType     String
+  contentBase64   String
+  sizeBytes       Int
+  createdByUserId String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  expiresAt       DateTime? @db.Timestamptz(6)
+
+  register CashRegister @relation(fields: [registerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId, registerId, month, format])
+  @@index([tenantId, workspaceId, createdAt])
+  @@map("cash_export_artifacts")
   @@schema("accounting")
 }

@@ -16,7 +16,7 @@ export const cashManagementAppManifest: AppManifest = {
       section: "cash",
       labelKey: "nav.cashManagement",
       defaultLabel: "Cash Management",
-      route: "/cash-registers",
+      route: "/cash/registers",
       icon: "Coins",
       order: 60,
     },

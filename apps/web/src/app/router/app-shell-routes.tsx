@@ -9,6 +9,10 @@ import {
   CashRegistersScreen,
   CashRegisterDetailScreen,
   DailyCloseScreen,
+  CashRegisterNewScreen,
+  CashRegisterEditScreen,
+  CashEntriesScreen,
+  CashExportsScreen,
 } from "../../modules/cash-management";
 import {
   CustomersPage,
@@ -202,6 +206,13 @@ export const appShellRoutes = (
       <Route path="/expenses/new" element={<NewExpensePage />} />
       <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
       <Route path="/expenses/:id/edit" element={<NewExpensePage />} />
+      <Route path="/cash/registers" element={<CashRegistersScreen />} />
+      <Route path="/cash/registers/new" element={<CashRegisterNewScreen />} />
+      <Route path="/cash/registers/:id" element={<CashRegisterDetailScreen />} />
+      <Route path="/cash/registers/:id/edit" element={<CashRegisterEditScreen />} />
+      <Route path="/cash/registers/:id/entries" element={<CashEntriesScreen />} />
+      <Route path="/cash/registers/:id/day-close" element={<DailyCloseScreen />} />
+      <Route path="/cash/registers/:id/exports" element={<CashExportsScreen />} />
       <Route path="/cash-registers" element={<CashRegistersScreen />} />
       <Route path="/cash-registers/:id" element={<CashRegisterDetailScreen />} />
       <Route path="/cash-registers/:id/daily-close" element={<DailyCloseScreen />} />

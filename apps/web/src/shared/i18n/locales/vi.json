@@ -441,6 +441,208 @@
       "submitted": "Đã gửi chốt quỹ",
       "submitFailed": "Chốt quỹ thất bại",
       "enterCountedAmount": "Vui lòng nhập số tiền kiểm đếm"
+    },
+    "ui": {
+      "common": {
+        "loadingRegister": "Đang tải quầy thu...",
+        "registerNotFound": "Không tìm thấy quầy thu.",
+        "noLocation": "Chưa có địa điểm",
+        "cancel": "Hủy"
+      },
+      "registers": {
+        "title": "Quầy thu",
+        "subtitle": "Quản lý quầy thu, số dư và vận hành hằng ngày.",
+        "newRegister": "Quầy thu mới",
+        "searchPlaceholder": "Tìm theo tên quầy thu",
+        "locationPlaceholder": "Lọc theo địa điểm",
+        "currencyPlaceholder": "Tiền tệ (ví dụ: EUR)",
+        "loading": "Đang tải danh sách quầy thu...",
+        "loadFailed": "Không thể tải danh sách quầy thu.",
+        "empty": "Không tìm thấy quầy thu nào.",
+        "open": "Mở",
+        "table": {
+          "name": "Tên",
+          "location": "Địa điểm",
+          "currency": "Tiền tệ",
+          "currentBalance": "Số dư hiện tại",
+          "actions": "Thao tác"
+        }
+      },
+      "registerDetail": {
+        "newCashEntry": "Bút toán mới",
+        "closeDay": "Chốt ngày (Kassensturz)",
+        "export": "Xuất",
+        "edit": "Chỉnh sửa",
+        "currentBalance": "Số dư hiện tại",
+        "lastClosedDay": "Ngày chốt gần nhất",
+        "noSubmittedClose": "Chưa có chốt ngày đã gửi",
+        "tabs": {
+          "overview": "Tổng quan",
+          "entriesPreview": "Xem nhanh bút toán",
+          "activityAudit": "Hoạt động / Kiểm toán"
+        },
+        "registerId": "ID quầy thu",
+        "negativeBalancePolicy": "Chính sách số dư âm",
+        "policyBlocked": "Chặn",
+        "policyAllowed": "Cho phép",
+        "noEntriesYet": "Chưa có bút toán.",
+        "openFullEntries": "Mở danh sách bút toán đầy đủ",
+        "activityPrefix": "Nhật ký kiểm toán và các",
+        "auditPack": "gói kiểm toán",
+        "activitySuffix": "sẽ hiển thị ở đây khi có dữ liệu."
+      },
+      "registerForm": {
+        "newTitle": "Tạo quầy thu",
+        "editTitle": "Chỉnh sửa quầy thu",
+        "name": "Tên",
+        "namePlaceholder": "Quầy chính",
+        "location": "Địa điểm",
+        "locationPlaceholder": "Cửa hàng",
+        "currency": "Tiền tệ",
+        "disallowNegativeBalance": "Không cho phép số dư tiền mặt âm",
+        "createFailed": "Không thể tạo quầy thu.",
+        "updateFailed": "Không thể cập nhật quầy thu.",
+        "create": "Tạo quầy thu",
+        "saveChanges": "Lưu thay đổi"
+      },
+      "entries": {
+        "title": "Bút toán · {{register}}",
+        "subtitle": "Danh sách sổ quỹ với bộ lọc, đảo bút toán và đính kèm chứng từ.",
+        "newCashEntry": "Bút toán mới",
+        "backToRegister": "Quay lại quầy thu",
+        "filters": {
+          "dayFrom": "Từ ngày",
+          "dayTo": "Đến ngày",
+          "allTypes": "Tất cả loại",
+          "allSources": "Tất cả nguồn",
+          "allPayments": "Tất cả thanh toán",
+          "searchDescription": "Tìm mô tả"
+        },
+        "loading": "Đang tải bút toán...",
+        "loadFailed": "Không thể tải bút toán.",
+        "empty": "Không tìm thấy bút toán.",
+        "table": {
+          "dateTime": "Ngày/giờ",
+          "entryNo": "Số bút toán",
+          "description": "Mô tả",
+          "type": "Loại",
+          "direction": "THU/CHI",
+          "amount": "Số tiền",
+          "payment": "Thanh toán",
+          "source": "Nguồn",
+          "balanceAfter": "Số dư sau",
+          "beleg": "Chứng từ",
+          "actions": "Thao tác"
+        },
+        "rowActions": {
+          "viewRegister": "Xem quầy thu",
+          "reverse": "Đảo bút toán",
+          "addBeleg": "Thêm chứng từ"
+        },
+        "createDialog": {
+          "title": "Tạo bút toán tiền mặt",
+          "direction": "Hướng",
+          "amount": "Số tiền",
+          "type": "Loại",
+          "paymentMethod": "Phương thức thanh toán",
+          "description": "Mô tả",
+          "occurredAt": "Thời điểm phát sinh",
+          "attachBelegDocumentId": "Đính kèm document ID chứng từ (tùy chọn)",
+          "documentPlaceholder": "doc_...",
+          "projectedBalance": "Số dư dự kiến sau khi lưu",
+          "failed": "Không thể tạo bút toán.",
+          "save": "Lưu bút toán"
+        },
+        "reverseDialog": {
+          "title": "Đảo bút toán",
+          "reason": "Lý do",
+          "failed": "Không thể đảo bút toán.",
+          "confirm": "Xác nhận đảo"
+        },
+        "attachmentDialog": {
+          "title": "Thêm chứng từ vào bút toán",
+          "documentId": "ID tài liệu",
+          "failed": "Không thể đính kèm chứng từ.",
+          "attach": "Đính kèm"
+        }
+      },
+      "dayClose": {
+        "title": "Chốt ngày (Kassensturz)",
+        "backToRegister": "Quay lại quầy thu",
+        "addCorrectionEntry": "Thêm bút toán điều chỉnh",
+        "closeDayFor": "Chốt ngày cho {{register}}",
+        "day": "Ngày",
+        "expectedBalance": "Số dư kỳ vọng (Soll)",
+        "countedBalance": "Số dư kiểm đếm (Ist)",
+        "denomination": "Mệnh giá",
+        "count": "Số lượng",
+        "subtotal": "Thành tiền",
+        "difference": "Chênh lệch",
+        "differenceNoteRequired": "Bắt buộc nhập ghi chú khi có chênh lệch khác 0.",
+        "note": "Ghi chú",
+        "notePlaceholder": "Tùy chọn khi chênh lệch bằng 0; bắt buộc nếu khác 0.",
+        "submitFailed": "Không thể gửi chốt ngày.",
+        "submitAndLock": "Gửi và khóa ngày",
+        "lockedInfo": "Ngày này đã bị khóa. Chỉ được thêm bút toán điều chỉnh.",
+        "loadExistingFailed": "Không thể tải bản chốt ngày hiện có."
+      },
+      "exports": {
+        "title": "Xuất dữ liệu · {{register}}",
+        "backToRegister": "Quay lại quầy thu",
+        "generateTitle": "Tạo bản xuất sổ quỹ",
+        "month": "Tháng",
+        "format": "Định dạng",
+        "includeAttachmentFiles": "Bao gồm tệp đính kèm trong gói kiểm toán",
+        "generating": "Đang tạo...",
+        "generate": "Tạo bản xuất",
+        "failed": "Không thể tạo bản xuất.",
+        "latestTitle": "Bản xuất gần nhất",
+        "file": "Tệp",
+        "type": "Loại",
+        "size": "Kích thước",
+        "bytes": "byte",
+        "download": "Tải bản xuất",
+        "formatOptions": {
+          "CSV": "CSV",
+          "PDF": "PDF",
+          "DATEV": "DATEV",
+          "AUDIT_PACK": "Gói kiểm toán"
+        }
+      },
+      "enums": {
+        "direction": {
+          "IN": "THU",
+          "OUT": "CHI"
+        },
+        "paymentMethod": {
+          "CASH": "Tiền mặt",
+          "CARD": "Thẻ",
+          "TRANSFER": "Chuyển khoản",
+          "OTHER": "Khác"
+        },
+        "entrySource": {
+          "MANUAL": "Thủ công",
+          "SALES": "Bán hàng",
+          "EXPENSE": "Chi phí",
+          "DIFFERENCE": "Chênh lệch",
+          "IMPORT": "Nhập khẩu",
+          "INTEGRATION": "Tích hợp"
+        },
+        "entryType": {
+          "SALE_CASH": "Bán hàng tiền mặt",
+          "REFUND_CASH": "Hoàn tiền mặt",
+          "EXPENSE_CASH": "Chi tiền mặt",
+          "OWNER_DEPOSIT": "Chủ nộp tiền",
+          "OWNER_WITHDRAWAL": "Chủ rút tiền",
+          "BANK_DEPOSIT": "Nộp tiền vào ngân hàng",
+          "BANK_WITHDRAWAL": "Rút tiền từ ngân hàng",
+          "CORRECTION": "Điều chỉnh",
+          "OPENING_FLOAT": "Tồn quỹ đầu ngày",
+          "CLOSING_ADJUSTMENT": "Điều chỉnh cuối ngày",
+          "IN": "THU",
+          "OUT": "CHI"
+        }
+      }
     }
   },
   "dashboard": {

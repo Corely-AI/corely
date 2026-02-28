@@ -1,5 +1,8 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "@corely/data";
+import { IdentityModule } from "../identity";
+import { PlatformModule } from "../platform";
+import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { NotificationsController } from "./http/notifications.controller";
 import { ListNotificationsUseCase } from "./application/use-cases/list-notifications.usecase";
 import { GetUnreadCountUseCase } from "./application/use-cases/get-unread-count.usecase";
@@ -10,7 +13,7 @@ import { NOTIFICATION_REPOSITORY } from "./application/ports/notification.reposi
 import { SseStreamFactory } from "../../shared/sse";
 
 @Module({
-  imports: [DataModule],
+  imports: [DataModule, IdentityModule, PlatformModule, WorkspacesModule],
   controllers: [NotificationsController],
   providers: [
     SseStreamFactory,

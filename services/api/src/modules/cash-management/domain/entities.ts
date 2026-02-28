@@ -1,55 +1,96 @@
-import {
-  type CashEntryType,
-  type CashEntrySourceType,
-  type DailyCloseStatus,
+import type {
+  CashDayCloseStatus,
+  CashPaymentMethod as CashPaymentMethodType,
+  CashEntryDirection,
+  CashEntrySource,
+  CashEntryType,
 } from "@corely/contracts";
 
-export class CashRegisterEntity {
-  constructor(
-    public readonly id: string,
-    public readonly tenantId: string,
-    public readonly workspaceId: string,
-    public readonly name: string,
-    public readonly currency: string,
-    public readonly currentBalanceCents: number,
-    public readonly location: string | null,
-    public readonly createdAt: Date,
-    public readonly updatedAt: Date
-  ) {}
-}
+export type CashRegisterEntity = {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  name: string;
+  location: string | null;
+  currency: string;
+  currentBalanceCents: number;
+  disallowNegativeBalance: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
-export class CashEntryEntity {
-  constructor(
-    public readonly id: string,
-    public readonly tenantId: string,
-    public readonly workspaceId: string,
-    public readonly registerId: string,
-    public readonly type: CashEntryType,
-    public readonly amountCents: number,
-    public readonly sourceType: CashEntrySourceType,
-    public readonly description: string,
-    public readonly referenceId: string | null,
-    public readonly businessDate: string | null,
-    public readonly createdByUserId: string,
-    public readonly createdAt: Date
-  ) {}
-}
+export type CashEntryEntity = {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  registerId: string;
+  entryNo: number;
+  occurredAt: Date;
+  dayKey: string;
+  description: string;
+  type: CashEntryType;
+  direction: CashEntryDirection;
+  source: CashEntrySource;
+  paymentMethod: CashPaymentMethodType;
+  amountCents: number;
+  currency: string;
+  balanceAfterCents: number;
+  referenceId: string | null;
+  reversalOfEntryId: string | null;
+  reversedByEntryId: string | null;
+  lockedByDayCloseId: string | null;
+  createdAt: Date;
+  createdByUserId: string;
+};
 
-export class CashDayCloseEntity {
-  constructor(
-    public readonly id: string,
-    public readonly tenantId: string,
-    public readonly workspaceId: string,
-    public readonly registerId: string,
-    public readonly businessDate: string,
-    public readonly status: DailyCloseStatus,
-    public readonly expectedBalanceCents: number,
-    public readonly countedBalanceCents: number,
-    public readonly differenceCents: number,
-    public readonly notes: string | null,
-    public readonly closedAt: Date | null,
-    public readonly closedByUserId: string | null,
-    public readonly createdAt: Date,
-    public readonly updatedAt: Date
-  ) {}
-}
+export type CashDenominationCountEntity = {
+  denominationCents: number;
+  count: number;
+  subtotalCents: number;
+};
+
+export type CashDayCloseEntity = {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  registerId: string;
+  dayKey: string;
+  expectedBalanceCents: number;
+  countedBalanceCents: number;
+  differenceCents: number;
+  status: CashDayCloseStatus;
+  note: string | null;
+  submittedAt: Date | null;
+  submittedByUserId: string | null;
+  lockedAt: Date | null;
+  lockedByUserId: string | null;
+  counts: CashDenominationCountEntity[];
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type CashEntryAttachmentEntity = {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  entryId: string;
+  documentId: string;
+  uploadedByUserId: string | null;
+  createdAt: Date;
+};
+
+export type CashExportArtifactEntity = {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  registerId: string;
+  month: string;
+  format: string;
+  fileName: string;
+  contentType: string;
+  contentBase64: string;
+  sizeBytes: number;
+  createdByUserId: string | null;
+  createdAt: Date;
+  expiresAt: Date | null;
+};

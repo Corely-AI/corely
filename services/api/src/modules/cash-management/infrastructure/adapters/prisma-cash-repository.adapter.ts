@@ -1,171 +1,408 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "@corely/data";
-import { CashRegister, CashEntry, CashDayClose, Prisma } from "@prisma/client";
-import { CashRepositoryPort } from "../../application/ports/cash-repository.port";
-import { CashRegisterEntity, CashEntryEntity, CashDayCloseEntity } from "../../domain/entities";
-import { CreateCashRegister, CreateCashEntry } from "@corely/contracts";
-import { CashEntryType, CashEntrySourceType, DailyCloseStatus } from "@corely/contracts";
+import {
+  Prisma,
+  type CashDayClose,
+  type CashDayCloseCountLine,
+  type CashEntry,
+  type CashEntryAttachment,
+  type CashExportArtifact,
+  type CashRegister,
+} from "@prisma/client";
+import { PrismaService, getPrismaClient } from "@corely/data";
+import type { CashDayCloseStatus, CashEntryDirection, CashEntryType } from "@corely/contracts";
+import type { TransactionContext } from "@corely/kernel";
+import type {
+  CashAttachmentRepoPort,
+  CashDayCloseRepoPort,
+  CashEntryRepoPort,
+  CashExportRepoPort,
+  CashRegisterRepoPort,
+  CreateEntryRecord,
+  CreateRegisterRecord,
+  DayCloseListFilters,
+  EntryListFilters,
+  UpdateRegisterRecord,
+  UpsertDayCloseRecord,
+} from "../../application/ports/cash-management.ports";
+import type {
+  CashDayCloseEntity,
+  CashDenominationCountEntity,
+  CashEntryAttachmentEntity,
+  CashEntryEntity,
+  CashExportArtifactEntity,
+  CashRegisterEntity,
+} from "../../domain/entities";
+
+const monthStart = (month: string): string => `${month}-01`;
+const monthEnd = (month: string): string => {
+  const [year, monthNo] = month.split("-").map((value) => Number(value));
+  const lastDay = new Date(Date.UTC(year, monthNo, 0)).getUTCDate();
+  return `${month}-${String(lastDay).padStart(2, "0")}`;
+};
 
 @Injectable()
-export class PrismaCashRepository implements CashRepositoryPort {
+export class PrismaCashRepository
+  implements
+    CashRegisterRepoPort,
+    CashEntryRepoPort,
+    CashDayCloseRepoPort,
+    CashAttachmentRepoPort,
+    CashExportRepoPort
+{
   constructor(private readonly prisma: PrismaService) {}
 
-  // --- Registers ---
+  private client(tx?: TransactionContext): PrismaService {
+    return getPrismaClient(this.prisma, tx);
+  }
 
   async createRegister(
-    data: CreateCashRegister & { tenantId: string; workspaceId: string }
+    data: CreateRegisterRecord,
+    tx?: TransactionContext
   ): Promise<CashRegisterEntity> {
-    const res = await this.prisma.cashRegister.create({
+    const row = await this.client(tx).cashRegister.create({
       data: {
         tenantId: data.tenantId,
         workspaceId: data.workspaceId,
         name: data.name,
-        currency: data.currency,
         location: data.location,
-        currentBalanceCents: 0,
+        currency: data.currency,
+        disallowNegativeBalance: data.disallowNegativeBalance,
       },
     });
-    return this.mapRegister(res);
+
+    return this.mapRegister(row);
   }
 
-  async findById(tenantId: string, id: string): Promise<CashRegisterEntity | null> {
-    const res = await this.prisma.cashRegister.findFirst({
-      where: { id, tenantId },
+  async listRegisters(
+    tenantId: string,
+    workspaceId: string,
+    filters?: { q?: string; location?: string; currency?: string }
+  ): Promise<CashRegisterEntity[]> {
+    const where: Prisma.CashRegisterWhereInput = {
+      tenantId,
+      workspaceId,
+      ...(filters?.q
+        ? {
+            OR: [
+              { name: { contains: filters.q, mode: "insensitive" } },
+              { location: { contains: filters.q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+      ...(filters?.location
+        ? { location: { contains: filters.location, mode: "insensitive" } }
+        : {}),
+      ...(filters?.currency ? { currency: filters.currency } : {}),
+    };
+
+    const rows = await this.prisma.cashRegister.findMany({
+      where,
+      orderBy: [{ createdAt: "desc" }],
     });
-    return res ? this.mapRegister(res) : null;
+
+    return rows.map((row) => this.mapRegister(row));
   }
 
-  async findAll(tenantId: string, workspaceId: string): Promise<CashRegisterEntity[]> {
-    const res = await this.prisma.cashRegister.findMany({
-      where: { tenantId, workspaceId },
-      orderBy: { createdAt: "desc" },
+  async findRegisterById(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    tx?: TransactionContext
+  ): Promise<CashRegisterEntity | null> {
+    const row = await this.client(tx).cashRegister.findFirst({
+      where: { id: registerId, tenantId, workspaceId },
     });
-    return res.map((r) => this.mapRegister(r));
+    return row ? this.mapRegister(row) : null;
   }
 
   async updateRegister(
     tenantId: string,
-    id: string,
-    data: Partial<CashRegisterEntity>
+    workspaceId: string,
+    registerId: string,
+    data: UpdateRegisterRecord,
+    tx?: TransactionContext
   ): Promise<CashRegisterEntity> {
-    // Security: Use updateMany to ensure tenantId matches atomically during update
-    const { count } = await this.prisma.cashRegister.updateMany({
-      where: { id, tenantId },
+    const client = this.client(tx);
+    const updated = await client.cashRegister.updateMany({
+      where: { id: registerId, tenantId, workspaceId },
       data: {
-        name: data.name,
-        location: data.location,
-        currentBalanceCents: data.currentBalanceCents,
+        ...(data.name !== undefined ? { name: data.name } : {}),
+        ...(data.location !== undefined ? { location: data.location } : {}),
+        ...(data.disallowNegativeBalance !== undefined
+          ? { disallowNegativeBalance: data.disallowNegativeBalance }
+          : {}),
       },
     });
 
-    if (count === 0) {
-      throw new Error(`CashRegister with ID ${id} not found in tenant ${tenantId}`);
+    if (updated.count === 0) {
+      throw new Error("Cash register not found");
     }
 
-    const res = await this.prisma.cashRegister.findFirstOrThrow({
-      where: { id, tenantId },
+    const row = await client.cashRegister.findFirstOrThrow({
+      where: { id: registerId, tenantId, workspaceId },
     });
-    return this.mapRegister(res);
+    return this.mapRegister(row);
   }
 
-  // --- Entries ---
+  async setCurrentBalance(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    currentBalanceCents: number,
+    tx?: TransactionContext
+  ): Promise<void> {
+    await this.client(tx).cashRegister.updateMany({
+      where: { id: registerId, tenantId, workspaceId },
+      data: { currentBalanceCents },
+    });
+  }
 
-  async createEntry(
-    data: CreateCashEntry & { tenantId: string; workspaceId: string; createdByUserId: string }
-  ): Promise<CashEntryEntity> {
-    return await this.prisma.$transaction(async (tx) => {
-      // Security: Verify register belongs to tenant
-      const register = await tx.cashRegister.findFirst({
-        where: { id: data.registerId, tenantId: data.tenantId },
-        select: { id: true },
-      });
+  async nextEntryNo(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    tx?: TransactionContext
+  ): Promise<number> {
+    const client = this.client(tx);
 
-      if (!register) {
-        throw new Error(
-          `CashRegister with ID ${data.registerId} not found in tenant ${data.tenantId}`
-        );
+    const updated = await client.cashEntryCounter.updateMany({
+      where: { tenantId, workspaceId, registerId },
+      data: { lastEntryNo: { increment: 1 } },
+    });
+
+    if (updated.count === 0) {
+      try {
+        await client.cashEntryCounter.create({
+          data: {
+            tenantId,
+            workspaceId,
+            registerId,
+            lastEntryNo: 1,
+          },
+        });
+
+        return 1;
+      } catch (error: unknown) {
+        if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+          throw error;
+        }
+
+        // Another request created the counter first. Retry increment.
+        await client.cashEntryCounter.updateMany({
+          where: { tenantId, workspaceId, registerId },
+          data: { lastEntryNo: { increment: 1 } },
+        });
       }
+    }
 
-      // 1. Create Entry
-      const entry = await tx.cashEntry.create({
-        data: {
+    const counter = await client.cashEntryCounter.findFirstOrThrow({
+      where: { tenantId, workspaceId, registerId },
+      select: { lastEntryNo: true },
+    });
+
+    return counter.lastEntryNo;
+  }
+
+  async createEntry(data: CreateEntryRecord, tx?: TransactionContext): Promise<CashEntryEntity> {
+    const row = await this.client(tx).cashEntry.create({
+      data: {
+        tenantId: data.tenantId,
+        workspaceId: data.workspaceId,
+        registerId: data.registerId,
+        entryNo: data.entryNo,
+        occurredAt: data.occurredAt,
+        dayKey: data.dayKey,
+        description: data.description,
+        entryType: data.type,
+        direction: data.direction,
+        source: data.source,
+        paymentMethod: data.paymentMethod,
+        amountCents: data.amountCents,
+        currency: data.currency,
+        balanceAfterCents: data.balanceAfterCents,
+        referenceId: data.referenceId,
+        reversalOfEntryId: data.reversalOfEntryId,
+        lockedByDayCloseId: data.lockedByDayCloseId,
+        createdByUserId: data.createdByUserId,
+
+        // Legacy compatibility columns
+        type: data.direction,
+        sourceType: data.source,
+        businessDate: data.dayKey,
+      },
+    });
+
+    return this.mapEntry(row);
+  }
+
+  async listEntries(
+    tenantId: string,
+    workspaceId: string,
+    filters: EntryListFilters
+  ): Promise<CashEntryEntity[]> {
+    const where: Prisma.CashEntryWhereInput = {
+      tenantId,
+      workspaceId,
+      registerId: filters.registerId,
+      ...(filters.dayKeyFrom || filters.dayKeyTo
+        ? {
+            dayKey: {
+              ...(filters.dayKeyFrom ? { gte: filters.dayKeyFrom } : {}),
+              ...(filters.dayKeyTo ? { lte: filters.dayKeyTo } : {}),
+            },
+          }
+        : {}),
+      ...(filters.type ? { entryType: filters.type } : {}),
+      ...(filters.source ? { source: filters.source } : {}),
+      ...(filters.paymentMethod ? { paymentMethod: filters.paymentMethod } : {}),
+      ...(filters.q
+        ? {
+            OR: [
+              { description: { contains: filters.q, mode: "insensitive" } },
+              { referenceId: { contains: filters.q, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    };
+
+    const rows = await this.prisma.cashEntry.findMany({
+      where,
+      orderBy: [{ occurredAt: "desc" }, { entryNo: "desc" }],
+    });
+
+    return rows.map((row) => this.mapEntry(row));
+  }
+
+  async findEntryById(
+    tenantId: string,
+    workspaceId: string,
+    entryId: string,
+    tx?: TransactionContext
+  ): Promise<CashEntryEntity | null> {
+    const row = await this.client(tx).cashEntry.findFirst({
+      where: { id: entryId, tenantId, workspaceId },
+    });
+
+    return row ? this.mapEntry(row) : null;
+  }
+
+  async setReversedByEntryId(
+    tenantId: string,
+    workspaceId: string,
+    entryId: string,
+    reversedByEntryId: string,
+    tx?: TransactionContext
+  ): Promise<void> {
+    await this.client(tx).cashEntry.updateMany({
+      where: {
+        id: entryId,
+        tenantId,
+        workspaceId,
+      },
+      data: {
+        reversedByEntryId,
+      },
+    });
+  }
+
+  async listEntriesForMonth(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    month: string
+  ): Promise<CashEntryEntity[]> {
+    const rows = await this.prisma.cashEntry.findMany({
+      where: {
+        tenantId,
+        workspaceId,
+        registerId,
+        dayKey: {
+          gte: monthStart(month),
+          lte: monthEnd(month),
+        },
+      },
+      orderBy: [{ occurredAt: "asc" }, { entryNo: "asc" }],
+    });
+
+    return rows.map((row) => this.mapEntry(row));
+  }
+
+  async getExpectedBalanceAtDay(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    dayKey: string,
+    tx?: TransactionContext
+  ): Promise<number> {
+    const client = this.client(tx);
+    const rows = await client.$queryRaw<Array<{ balance: bigint | number | null }>>`
+      SELECT COALESCE(SUM(CASE WHEN "direction" = 'OUT' THEN -"amountCents" ELSE "amountCents" END), 0) AS balance
+      FROM "accounting"."cash_entries"
+      WHERE "tenantId" = ${tenantId}
+        AND "workspaceId" = ${workspaceId}
+        AND "registerId" = ${registerId}
+        AND "dayKey" <= ${dayKey}
+    `;
+
+    const balance = rows[0]?.balance ?? 0;
+    return typeof balance === "bigint" ? Number(balance) : balance;
+  }
+
+  async lockEntriesForDay(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    dayKey: string,
+    dayCloseId: string,
+    tx?: TransactionContext
+  ): Promise<void> {
+    await this.client(tx).cashEntry.updateMany({
+      where: {
+        tenantId,
+        workspaceId,
+        registerId,
+        dayKey,
+        lockedByDayCloseId: null,
+      },
+      data: {
+        lockedByDayCloseId: dayCloseId,
+      },
+    });
+  }
+
+  async findDayCloseByRegisterAndDay(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    dayKey: string,
+    tx?: TransactionContext
+  ): Promise<CashDayCloseEntity | null> {
+    const row = await this.client(tx).cashDayClose.findFirst({
+      where: {
+        tenantId,
+        workspaceId,
+        registerId,
+        dayKey,
+      },
+      include: {
+        countLines: true,
+      },
+    });
+
+    return row ? this.mapDayClose(row, row.countLines) : null;
+  }
+
+  async upsertDayClose(
+    data: UpsertDayCloseRecord,
+    tx?: TransactionContext
+  ): Promise<CashDayCloseEntity> {
+    const row = await this.client(tx).cashDayClose.upsert({
+      where: {
+        tenantId_workspaceId_registerId_dayKey: {
           tenantId: data.tenantId,
           workspaceId: data.workspaceId,
           registerId: data.registerId,
-          type: data.type,
-          amountCents: data.amountCents,
-          sourceType: data.sourceType,
-          description: data.description,
-          referenceId: data.referenceId,
-          businessDate: data.businessDate,
-          createdByUserId: data.createdByUserId,
-        },
-      });
-
-      // 2. Update Balance
-      const balanceChange = data.type === CashEntryType.IN ? data.amountCents : -data.amountCents;
-
-      await tx.cashRegister.update({
-        where: { id: data.registerId },
-        data: {
-          currentBalanceCents: { increment: balanceChange },
-        },
-      });
-
-      return this.mapEntry(entry);
-    });
-  }
-
-  async findEntries(
-    tenantId: string,
-    registerId: string,
-    filters?: { from?: string; to?: string }
-  ): Promise<CashEntryEntity[]> {
-    const where: Prisma.CashEntryWhereInput = { tenantId, registerId };
-    if (filters?.from || filters?.to) {
-      where.businessDate = {};
-      if (filters.from) {
-        where.businessDate.gte = filters.from;
-      }
-      if (filters.to) {
-        where.businessDate.lte = filters.to;
-      }
-    }
-
-    const res = await this.prisma.cashEntry.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-    });
-    return res.map((e) => this.mapEntry(e));
-  }
-
-  async findEntryById(tenantId: string, id: string): Promise<CashEntryEntity | null> {
-    const res = await this.prisma.cashEntry.findFirst({
-      where: { id, tenantId },
-    });
-    return res ? this.mapEntry(res) : null;
-  }
-
-  // --- Daily Close ---
-
-  async saveDailyClose(data: CashDayCloseEntity): Promise<CashDayCloseEntity> {
-    // Security: Ensure register exists and belongs to tenant
-    const register = await this.prisma.cashRegister.findFirst({
-      where: { id: data.registerId, tenantId: data.tenantId },
-      select: { id: true },
-    });
-
-    if (!register) {
-      throw new Error(
-        `CashRegister with ID ${data.registerId} not found in tenant ${data.tenantId}`
-      );
-    }
-
-    const res = await this.prisma.cashDayClose.upsert({
-      where: {
-        registerId_businessDate: {
-          registerId: data.registerId,
-          businessDate: data.businessDate,
+          dayKey: data.dayKey,
         },
       },
       update: {
@@ -173,109 +410,394 @@ export class PrismaCashRepository implements CashRepositoryPort {
         expectedBalanceCents: data.expectedBalanceCents,
         countedBalanceCents: data.countedBalanceCents,
         differenceCents: data.differenceCents,
-        notes: data.notes,
-        closedAt: data.closedAt,
-        closedByUserId: data.closedByUserId,
+        note: data.note,
+        submittedAt: data.submittedAt,
+        submittedByUserId: data.submittedByUserId,
+        lockedAt: data.lockedAt,
+        lockedByUserId: data.lockedByUserId,
+        businessDate: data.dayKey,
       },
       create: {
         tenantId: data.tenantId,
         workspaceId: data.workspaceId,
         registerId: data.registerId,
-        businessDate: data.businessDate,
+        dayKey: data.dayKey,
         status: data.status,
         expectedBalanceCents: data.expectedBalanceCents,
         countedBalanceCents: data.countedBalanceCents,
         differenceCents: data.differenceCents,
-        notes: data.notes,
-        closedAt: data.closedAt,
-        closedByUserId: data.closedByUserId,
+        note: data.note,
+        submittedAt: data.submittedAt,
+        submittedByUserId: data.submittedByUserId,
+        lockedAt: data.lockedAt,
+        lockedByUserId: data.lockedByUserId,
+        businessDate: data.dayKey,
+      },
+      include: {
+        countLines: true,
       },
     });
-    return this.mapDailyClose(res);
+
+    return this.mapDayClose(row, row.countLines);
   }
 
-  async findDailyClose(
+  async replaceCountLines(
     tenantId: string,
-    registerId: string,
-    businessDate: string
-  ): Promise<CashDayCloseEntity | null> {
-    const res = await this.prisma.cashDayClose.findUnique({
-      where: {
-        registerId_businessDate: { registerId, businessDate },
-      },
-    });
-    if (res && res.tenantId !== tenantId) {
-      return null;
-    }
-    return res ? this.mapDailyClose(res) : null;
-  }
+    workspaceId: string,
+    dayCloseId: string,
+    lines: CashDenominationCountEntity[],
+    tx?: TransactionContext
+  ): Promise<void> {
+    const client = this.client(tx);
 
-  async findDailyCloses(
-    tenantId: string,
-    registerId: string,
-    from: string,
-    to: string
-  ): Promise<CashDayCloseEntity[]> {
-    const res = await this.prisma.cashDayClose.findMany({
+    await client.cashDayCloseCountLine.deleteMany({
       where: {
         tenantId,
-        registerId,
-        businessDate: { gte: from, lte: to },
+        workspaceId,
+        dayCloseId,
       },
-      orderBy: { businessDate: "desc" },
     });
-    return res.map((c) => this.mapDailyClose(c));
+
+    if (lines.length === 0) {
+      return;
+    }
+
+    await client.cashDayCloseCountLine.createMany({
+      data: lines.map((line) => ({
+        tenantId,
+        workspaceId,
+        dayCloseId,
+        denominationCents: line.denominationCents,
+        count: line.count,
+        subtotalCents: line.subtotalCents,
+      })),
+    });
   }
 
-  // --- Mappers ---
+  async listDayCloses(
+    tenantId: string,
+    workspaceId: string,
+    filters?: DayCloseListFilters
+  ): Promise<CashDayCloseEntity[]> {
+    const where: Prisma.CashDayCloseWhereInput = {
+      tenantId,
+      workspaceId,
+      ...(filters?.registerId ? { registerId: filters.registerId } : {}),
+      ...(filters?.dayKeyFrom || filters?.dayKeyTo
+        ? {
+            dayKey: {
+              ...(filters.dayKeyFrom ? { gte: filters.dayKeyFrom } : {}),
+              ...(filters.dayKeyTo ? { lte: filters.dayKeyTo } : {}),
+            },
+          }
+        : {}),
+      ...(filters?.status ? { status: filters.status } : {}),
+    };
 
-  private mapRegister(raw: CashRegister): CashRegisterEntity {
-    return new CashRegisterEntity(
-      raw.id,
-      raw.tenantId,
-      raw.workspaceId,
-      raw.name,
-      raw.currency,
-      raw.currentBalanceCents,
-      raw.location,
-      raw.createdAt,
-      raw.updatedAt
-    );
+    const rows = await this.prisma.cashDayClose.findMany({
+      where,
+      include: {
+        countLines: true,
+      },
+      orderBy: [{ dayKey: "desc" }],
+    });
+
+    return rows.map((row) => this.mapDayClose(row, row.countLines));
   }
 
-  private mapEntry(raw: CashEntry): CashEntryEntity {
-    return new CashEntryEntity(
-      raw.id,
-      raw.tenantId,
-      raw.workspaceId,
-      raw.registerId,
-      raw.type as CashEntryType,
-      raw.amountCents,
-      raw.sourceType as CashEntrySourceType,
-      raw.description,
-      raw.referenceId,
-      raw.businessDate,
-      raw.createdByUserId,
-      raw.createdAt
-    );
+  async listDayClosesForMonth(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    month: string
+  ): Promise<CashDayCloseEntity[]> {
+    const rows = await this.prisma.cashDayClose.findMany({
+      where: {
+        tenantId,
+        workspaceId,
+        registerId,
+        dayKey: {
+          gte: monthStart(month),
+          lte: monthEnd(month),
+        },
+      },
+      include: {
+        countLines: true,
+      },
+      orderBy: [{ dayKey: "asc" }],
+    });
+
+    return rows.map((row) => this.mapDayClose(row, row.countLines));
   }
 
-  private mapDailyClose(raw: CashDayClose): CashDayCloseEntity {
-    return new CashDayCloseEntity(
-      raw.id,
-      raw.tenantId,
-      raw.workspaceId,
-      raw.registerId,
-      raw.businessDate,
-      raw.status as DailyCloseStatus,
-      raw.expectedBalanceCents,
-      raw.countedBalanceCents,
-      raw.differenceCents,
-      raw.notes,
-      raw.closedAt,
-      raw.closedByUserId,
-      raw.createdAt,
-      raw.updatedAt
-    );
+  async createAttachment(
+    data: {
+      tenantId: string;
+      workspaceId: string;
+      entryId: string;
+      documentId: string;
+      uploadedByUserId: string | null;
+    },
+    tx?: TransactionContext
+  ): Promise<CashEntryAttachmentEntity> {
+    const row = await this.client(tx).cashEntryAttachment.create({
+      data: {
+        tenantId: data.tenantId,
+        workspaceId: data.workspaceId,
+        entryId: data.entryId,
+        documentId: data.documentId,
+        uploadedByUserId: data.uploadedByUserId,
+      },
+    });
+    return this.mapAttachment(row);
+  }
+
+  async findAttachmentByEntryAndDocument(
+    tenantId: string,
+    workspaceId: string,
+    entryId: string,
+    documentId: string
+  ): Promise<CashEntryAttachmentEntity | null> {
+    const row = await this.prisma.cashEntryAttachment.findFirst({
+      where: {
+        tenantId,
+        workspaceId,
+        entryId,
+        documentId,
+      },
+    });
+
+    return row ? this.mapAttachment(row) : null;
+  }
+
+  async listAttachments(
+    tenantId: string,
+    workspaceId: string,
+    entryId: string
+  ): Promise<CashEntryAttachmentEntity[]> {
+    const rows = await this.prisma.cashEntryAttachment.findMany({
+      where: {
+        tenantId,
+        workspaceId,
+        entryId,
+      },
+      orderBy: [{ createdAt: "desc" }],
+    });
+
+    return rows.map((row) => this.mapAttachment(row));
+  }
+
+  async listAttachmentsForMonth(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    month: string
+  ): Promise<CashEntryAttachmentEntity[]> {
+    const rows = await this.prisma.cashEntryAttachment.findMany({
+      where: {
+        tenantId,
+        workspaceId,
+        entry: {
+          registerId,
+          dayKey: {
+            gte: monthStart(month),
+            lte: monthEnd(month),
+          },
+        },
+      },
+      orderBy: [{ createdAt: "asc" }],
+    });
+
+    return rows.map((row) => this.mapAttachment(row));
+  }
+
+  async createArtifact(
+    data: {
+      tenantId: string;
+      workspaceId: string;
+      registerId: string;
+      month: string;
+      format: "CSV" | "PDF" | "DATEV" | "AUDIT_PACK";
+      fileName: string;
+      contentType: string;
+      contentBase64: string;
+      sizeBytes: number;
+      createdByUserId: string | null;
+      expiresAt: Date | null;
+    },
+    tx?: TransactionContext
+  ): Promise<CashExportArtifactEntity> {
+    const row = await this.client(tx).cashExportArtifact.create({
+      data: {
+        tenantId: data.tenantId,
+        workspaceId: data.workspaceId,
+        registerId: data.registerId,
+        month: data.month,
+        format: data.format,
+        fileName: data.fileName,
+        contentType: data.contentType,
+        contentBase64: data.contentBase64,
+        sizeBytes: data.sizeBytes,
+        createdByUserId: data.createdByUserId,
+        expiresAt: data.expiresAt,
+      },
+    });
+
+    return this.mapArtifact(row);
+  }
+
+  async findArtifactById(
+    tenantId: string,
+    workspaceId: string,
+    artifactId: string
+  ): Promise<CashExportArtifactEntity | null> {
+    const row = await this.prisma.cashExportArtifact.findFirst({
+      where: {
+        id: artifactId,
+        tenantId,
+        workspaceId,
+      },
+    });
+
+    return row ? this.mapArtifact(row) : null;
+  }
+
+  async listAuditRowsForMonth(
+    tenantId: string,
+    month: string
+  ): Promise<
+    Array<{
+      action: string;
+      entity: string;
+      entityId: string;
+      actorUserId: string | null;
+      createdAt: Date;
+      details: string | null;
+    }>
+  > {
+    const start = new Date(`${month}-01T00:00:00.000Z`);
+    const end = new Date(start);
+    end.setUTCMonth(end.getUTCMonth() + 1);
+
+    const rows = await this.prisma.auditLog.findMany({
+      where: {
+        tenantId,
+        createdAt: {
+          gte: start,
+          lt: end,
+        },
+        action: {
+          startsWith: "cash.",
+        },
+      },
+      orderBy: [{ createdAt: "asc" }],
+      select: {
+        action: true,
+        entity: true,
+        entityId: true,
+        actorUserId: true,
+        createdAt: true,
+        details: true,
+      },
+    });
+
+    return rows;
+  }
+
+  private mapRegister(row: CashRegister): CashRegisterEntity {
+    return {
+      id: row.id,
+      tenantId: row.tenantId,
+      workspaceId: row.workspaceId,
+      name: row.name,
+      location: row.location,
+      currency: row.currency,
+      currentBalanceCents: row.currentBalanceCents,
+      disallowNegativeBalance: row.disallowNegativeBalance,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+    };
+  }
+
+  private mapEntry(row: CashEntry): CashEntryEntity {
+    return {
+      id: row.id,
+      tenantId: row.tenantId,
+      workspaceId: row.workspaceId,
+      registerId: row.registerId,
+      entryNo: row.entryNo,
+      occurredAt: row.occurredAt,
+      dayKey: row.dayKey,
+      description: row.description,
+      type: row.entryType as CashEntryType,
+      direction: row.direction as CashEntryDirection,
+      source: row.source,
+      paymentMethod: row.paymentMethod,
+      amountCents: row.amountCents,
+      currency: row.currency,
+      balanceAfterCents: row.balanceAfterCents,
+      referenceId: row.referenceId,
+      reversalOfEntryId: row.reversalOfEntryId,
+      reversedByEntryId: row.reversedByEntryId,
+      lockedByDayCloseId: row.lockedByDayCloseId,
+      createdAt: row.createdAt,
+      createdByUserId: row.createdByUserId,
+    };
+  }
+
+  private mapDayClose(row: CashDayClose, countLines: CashDayCloseCountLine[]): CashDayCloseEntity {
+    return {
+      id: row.id,
+      tenantId: row.tenantId,
+      workspaceId: row.workspaceId,
+      registerId: row.registerId,
+      dayKey: row.dayKey,
+      expectedBalanceCents: row.expectedBalanceCents,
+      countedBalanceCents: row.countedBalanceCents,
+      differenceCents: row.differenceCents,
+      status: row.status as CashDayCloseStatus,
+      note: row.note,
+      submittedAt: row.submittedAt,
+      submittedByUserId: row.submittedByUserId,
+      lockedAt: row.lockedAt,
+      lockedByUserId: row.lockedByUserId,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      counts: countLines.map((line) => ({
+        denominationCents: line.denominationCents,
+        count: line.count,
+        subtotalCents: line.subtotalCents,
+      })),
+    };
+  }
+
+  private mapAttachment(row: CashEntryAttachment): CashEntryAttachmentEntity {
+    return {
+      id: row.id,
+      tenantId: row.tenantId,
+      workspaceId: row.workspaceId,
+      entryId: row.entryId,
+      documentId: row.documentId,
+      uploadedByUserId: row.uploadedByUserId,
+      createdAt: row.createdAt,
+    };
+  }
+
+  private mapArtifact(row: CashExportArtifact): CashExportArtifactEntity {
+    return {
+      id: row.id,
+      tenantId: row.tenantId,
+      workspaceId: row.workspaceId,
+      registerId: row.registerId,
+      month: row.month,
+      format: row.format,
+      fileName: row.fileName,
+      contentType: row.contentType,
+      contentBase64: row.contentBase64,
+      sizeBytes: row.sizeBytes,
+      createdByUserId: row.createdByUserId,
+      createdAt: row.createdAt,
+      expiresAt: row.expiresAt,
+    };
   }
 }
