@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Corely Docs favicon">
+  <rect width="64" height="64" rx="14" fill="#2563eb"/>
+  <path d="M20 32h24" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  <path d="M32 20v24" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+</svg>

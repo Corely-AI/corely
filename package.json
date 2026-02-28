@@ -23,6 +23,8 @@
     "dev:website-runtime": "node scripts/build-deps-if-stale.mjs @corely/website-runtime && pnpm --filter @corely/website-runtime dev",
     "dev:portal": "node scripts/build-deps-if-stale.mjs @corely/portal && pnpm --filter @corely/portal dev",
     "dev:restaurant-listing": "node scripts/build-deps-if-stale.mjs @corely/restaurant-listing && pnpm --filter @corely/restaurant-listing dev",
+    "docs:dev": "cd docs-site && npx mint dev",
+    "docs:check": "cd docs-site && npx mintlify broken-links",
     "build:web": "pnpm build:packages && pnpm --filter @corely/web build",
     "dev:api": "node scripts/build-deps-if-stale.mjs @corely/api && pnpm --filter @corely/api dev:esbuild",
     "dev:api:debug": "node scripts/build-deps-if-stale.mjs @corely/api && pnpm --filter @corely/api dev:debug",

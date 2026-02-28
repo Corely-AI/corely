@@ -25,12 +25,16 @@ let navigationGroupsState = [
   },
 ];
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-    i18n: { changeLanguage: vi.fn() },
-  }),
-}));
+vi.mock("react-i18next", async () => {
+  const actual = await vi.importActual("react-i18next");
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string) => key,
+      i18n: { changeLanguage: vi.fn() },
+    }),
+  };
+});
 
 vi.mock("@/shared/theme/themeStore", () => ({
   useThemeStore: () => ({ theme: "light", setTheme: vi.fn() }),
@@ -66,6 +70,10 @@ vi.mock("@/shared/components/Logo", () => ({
 
 vi.mock("@/shared/workspaces/WorkspaceTypeBadge", () => ({
   WorkspaceTypeBadge: () => <div data-testid="workspace-type" />,
+}));
+
+vi.mock("@/modules/notifications/components/notification-bell", () => ({
+  NotificationBell: () => <div data-testid="notification-bell" />,
 }));
 
 vi.mock("@/shared/utils/iconMapping", () => ({

@@ -1,0 +1,40 @@
+// ===========================
+// NOTIFICATIONS
+// ===========================
+
+model Notification {
+  id          String   @id @default(uuid())
+  tenantId    String
+  workspaceId String
+  type        String
+  severity    String // info, warning, critical
+  title       String
+  body        String?
+  resource    Json     // NotificationResource
+  data        Json?    // Optional extra data
+  dedupeKey   String?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  expiresAt   DateTime? @db.Timestamptz(6)
+
+  recipients  NotificationRecipient[]
+
+  @@unique([tenantId, workspaceId, dedupeKey])
+  @@index([tenantId, workspaceId, createdAt(sort: Desc)])
+  @@schema("platform")
+}
+
+model NotificationRecipient {
+  id             String       @id @default(uuid())
+  tenantId       String
+  workspaceId    String
+  notificationId String
+  userId         String
+  readAt         DateTime?    @db.Timestamptz(6)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId, userId, readAt, createdAt(sort: Desc)])
+  @@unique([notificationId, userId]) // Prevent duplicate delivery to same user
+  @@schema("platform")
+}

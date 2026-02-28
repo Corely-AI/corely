@@ -9,6 +9,10 @@ import {
   CashRegistersScreen,
   CashRegisterDetailScreen,
   DailyCloseScreen,
+  CashRegisterNewScreen,
+  CashRegisterEditScreen,
+  CashEntriesScreen,
+  CashExportsScreen,
 } from "../../modules/cash-management";
 import {
   CustomersPage,
@@ -109,6 +113,7 @@ import { appSettingsRoutes } from "./app-settings-routes";
 import { catalogRoutes } from "./catalog-routes";
 import { capabilityRoutes } from "./app-shell-capability-routes";
 import { bookingRoutes } from "./booking-routes";
+import { NotificationsPage } from "../../modules/notifications/screens/notifications-page";
 
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
@@ -116,6 +121,7 @@ export const appShellRoutes = (
       <Route path="/onboarding" element={<WorkspaceOnboardingPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />
+      <Route path="/notifications" element={<NotificationsPage />} />
       <Route path="/assistant" element={<AssistantPage />} />
       <Route path="/assistant/t/:threadId" element={<AssistantPage />} />
       <Route path="/cms/posts" element={<CmsPostsPage />} />
@@ -200,6 +206,13 @@ export const appShellRoutes = (
       <Route path="/expenses/new" element={<NewExpensePage />} />
       <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
       <Route path="/expenses/:id/edit" element={<NewExpensePage />} />
+      <Route path="/cash/registers" element={<CashRegistersScreen />} />
+      <Route path="/cash/registers/new" element={<CashRegisterNewScreen />} />
+      <Route path="/cash/registers/:id" element={<CashRegisterDetailScreen />} />
+      <Route path="/cash/registers/:id/edit" element={<CashRegisterEditScreen />} />
+      <Route path="/cash/registers/:id/entries" element={<CashEntriesScreen />} />
+      <Route path="/cash/registers/:id/day-close" element={<DailyCloseScreen />} />
+      <Route path="/cash/registers/:id/exports" element={<CashExportsScreen />} />
       <Route path="/cash-registers" element={<CashRegistersScreen />} />
       <Route path="/cash-registers/:id" element={<CashRegisterDetailScreen />} />
       <Route path="/cash-registers/:id/daily-close" element={<DailyCloseScreen />} />

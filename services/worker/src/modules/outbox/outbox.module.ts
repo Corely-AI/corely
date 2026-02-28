@@ -35,6 +35,7 @@ import { ClassesWorkerModule } from "../classes/classes-worker.module";
 import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adapters/platform-entity-deleted.handler";
 import { DirectoryWorkerModule } from "../directory/directory-worker.module";
 import { DirectoryLeadCreatedHandler } from "../directory/handlers/directory-lead-created.handler";
+import { NotificationIntentHandler } from "../notifications/handlers/notification-intent.handler";
 
 // ... imports
 
@@ -99,7 +100,8 @@ import { DirectoryLeadCreatedHandler } from "../directory/handlers/directory-lea
         formsHandler: FormsEventHandler,
         classesHandler: ClassesInvoiceReadyToSendHandler,
         platformEntityDeletedHandler: PlatformEntityDeletedHandler,
-        directoryLeadCreatedHandler: DirectoryLeadCreatedHandler
+        directoryLeadCreatedHandler: DirectoryLeadCreatedHandler,
+        notificationIntentHandler: NotificationIntentHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           invoiceHandler,
@@ -111,6 +113,7 @@ import { DirectoryLeadCreatedHandler } from "../directory/handlers/directory-lea
           classesHandler,
           platformEntityDeletedHandler,
           directoryLeadCreatedHandler,
+          notificationIntentHandler,
         ]);
       },
       inject: [
@@ -125,6 +128,7 @@ import { DirectoryLeadCreatedHandler } from "../directory/handlers/directory-lea
         ClassesInvoiceReadyToSendHandler,
         PlatformEntityDeletedHandler,
         DirectoryLeadCreatedHandler,
+        NotificationIntentHandler,
       ],
     },
   ],

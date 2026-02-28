@@ -26,6 +26,7 @@
     "next": "Next",
     "confirm": "Confirm",
     "close": "Close",
+    "docs": "Docs",
     "logout": "Log out",
     "viewAll": "View all",
     "comingSoon": "Coming soon",
@@ -456,6 +457,208 @@
       "submitted": "Daily close submitted",
       "submitFailed": "Failed to close",
       "enterCountedAmount": "Please enter counted amount"
+    },
+    "ui": {
+      "common": {
+        "loadingRegister": "Loading register...",
+        "registerNotFound": "Cash register not found.",
+        "noLocation": "No location",
+        "cancel": "Cancel"
+      },
+      "registers": {
+        "title": "Cash Registers",
+        "subtitle": "Manage registers, balances, and daily operations.",
+        "newRegister": "New register",
+        "searchPlaceholder": "Search register name",
+        "locationPlaceholder": "Filter by location",
+        "currencyPlaceholder": "Currency (e.g. EUR)",
+        "loading": "Loading registers...",
+        "loadFailed": "Failed to load registers.",
+        "empty": "No cash registers found.",
+        "open": "Open",
+        "table": {
+          "name": "Name",
+          "location": "Location",
+          "currency": "Currency",
+          "currentBalance": "Current balance",
+          "actions": "Actions"
+        }
+      },
+      "registerDetail": {
+        "newCashEntry": "New cash entry",
+        "closeDay": "Close day (Kassensturz)",
+        "export": "Export",
+        "edit": "Edit",
+        "currentBalance": "Current balance",
+        "lastClosedDay": "Last closed day",
+        "noSubmittedClose": "No submitted day close yet",
+        "tabs": {
+          "overview": "Overview",
+          "entriesPreview": "Entries preview",
+          "activityAudit": "Activity / Audit"
+        },
+        "registerId": "Register ID",
+        "negativeBalancePolicy": "Negative balance policy",
+        "policyBlocked": "Blocked",
+        "policyAllowed": "Allowed",
+        "noEntriesYet": "No entries yet.",
+        "openFullEntries": "Open full entries list",
+        "activityPrefix": "Audit logs and exported",
+        "auditPack": "audit packs",
+        "activitySuffix": "appear here once available."
+      },
+      "registerForm": {
+        "newTitle": "Create cash register",
+        "editTitle": "Edit cash register",
+        "name": "Name",
+        "namePlaceholder": "Main register",
+        "location": "Location",
+        "locationPlaceholder": "Storefront",
+        "currency": "Currency",
+        "disallowNegativeBalance": "Disallow negative cash balance",
+        "createFailed": "Failed to create cash register.",
+        "updateFailed": "Failed to update cash register.",
+        "create": "Create register",
+        "saveChanges": "Save changes"
+      },
+      "entries": {
+        "title": "Entries · {{register}}",
+        "subtitle": "Cashbook list with filters, reversals, and beleg attachments.",
+        "newCashEntry": "New cash entry",
+        "backToRegister": "Back to register",
+        "filters": {
+          "dayFrom": "Day from",
+          "dayTo": "Day to",
+          "allTypes": "All types",
+          "allSources": "All sources",
+          "allPayments": "All payments",
+          "searchDescription": "Search description"
+        },
+        "loading": "Loading entries...",
+        "loadFailed": "Failed to load entries.",
+        "empty": "No entries found.",
+        "table": {
+          "dateTime": "Date/time",
+          "entryNo": "Entry #",
+          "description": "Description",
+          "type": "Type",
+          "direction": "IN/OUT",
+          "amount": "Amount",
+          "payment": "Payment",
+          "source": "Source",
+          "balanceAfter": "Balance after",
+          "beleg": "Beleg",
+          "actions": "Actions"
+        },
+        "rowActions": {
+          "viewRegister": "View register",
+          "reverse": "Reverse",
+          "addBeleg": "Add beleg"
+        },
+        "createDialog": {
+          "title": "Create cash entry",
+          "direction": "Direction",
+          "amount": "Amount",
+          "type": "Type",
+          "paymentMethod": "Payment method",
+          "description": "Description",
+          "occurredAt": "Occurred at",
+          "attachBelegDocumentId": "Attach beleg document ID (optional)",
+          "documentPlaceholder": "doc_...",
+          "projectedBalance": "Projected balance after save",
+          "failed": "Failed to create entry.",
+          "save": "Save entry"
+        },
+        "reverseDialog": {
+          "title": "Reverse entry",
+          "reason": "Reason",
+          "failed": "Failed to reverse entry.",
+          "confirm": "Confirm reversal"
+        },
+        "attachmentDialog": {
+          "title": "Add beleg to entry",
+          "documentId": "Document ID",
+          "failed": "Failed to attach beleg.",
+          "attach": "Attach"
+        }
+      },
+      "dayClose": {
+        "title": "Day close (Kassensturz)",
+        "backToRegister": "Back to register",
+        "addCorrectionEntry": "Add correction entry",
+        "closeDayFor": "Close day for {{register}}",
+        "day": "Day",
+        "expectedBalance": "Expected balance (Soll)",
+        "countedBalance": "Counted balance (Ist)",
+        "denomination": "Denomination",
+        "count": "Count",
+        "subtotal": "Subtotal",
+        "difference": "Difference",
+        "differenceNoteRequired": "A note is required when the difference is not zero.",
+        "note": "Note",
+        "notePlaceholder": "Optional for zero difference; required otherwise.",
+        "submitFailed": "Failed to submit day close.",
+        "submitAndLock": "Submit and lock day",
+        "lockedInfo": "This day is locked. Use correction entries only.",
+        "loadExistingFailed": "Failed to load existing day close."
+      },
+      "exports": {
+        "title": "Exports · {{register}}",
+        "backToRegister": "Back to register",
+        "generateTitle": "Generate cashbook export",
+        "month": "Month",
+        "format": "Format",
+        "includeAttachmentFiles": "Include attachment files in audit pack",
+        "generating": "Generating...",
+        "generate": "Generate export",
+        "failed": "Failed to generate export.",
+        "latestTitle": "Latest export",
+        "file": "File",
+        "type": "Type",
+        "size": "Size",
+        "bytes": "bytes",
+        "download": "Download export",
+        "formatOptions": {
+          "CSV": "CSV",
+          "PDF": "PDF",
+          "DATEV": "DATEV",
+          "AUDIT_PACK": "Audit pack"
+        }
+      },
+      "enums": {
+        "direction": {
+          "IN": "IN",
+          "OUT": "OUT"
+        },
+        "paymentMethod": {
+          "CASH": "Cash",
+          "CARD": "Card",
+          "TRANSFER": "Transfer",
+          "OTHER": "Other"
+        },
+        "entrySource": {
+          "MANUAL": "Manual",
+          "SALES": "Sales",
+          "EXPENSE": "Expense",
+          "DIFFERENCE": "Difference",
+          "IMPORT": "Import",
+          "INTEGRATION": "Integration"
+        },
+        "entryType": {
+          "SALE_CASH": "Cash sale",
+          "REFUND_CASH": "Cash refund",
+          "EXPENSE_CASH": "Cash expense",
+          "OWNER_DEPOSIT": "Owner deposit",
+          "OWNER_WITHDRAWAL": "Owner withdrawal",
+          "BANK_DEPOSIT": "Bank deposit",
+          "BANK_WITHDRAWAL": "Bank withdrawal",
+          "CORRECTION": "Correction",
+          "OPENING_FLOAT": "Opening float",
+          "CLOSING_ADJUSTMENT": "Closing adjustment",
+          "IN": "IN",
+          "OUT": "OUT"
+        }
+      }
     }
   },
   "dashboard": {

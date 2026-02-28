@@ -1,0 +1,120 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Corely Docs",
+  "theme": "mint",
+  "logo": {
+    "light": "/assets/logo-light.svg",
+    "dark": "/assets/logo-dark.svg"
+  },
+  "favicon": "/assets/favicon.svg",
+  "colors": {
+    "primary": "#2563eb"
+  },
+  "navigation": {
+    "global": {
+      "anchors": [
+        { "anchor": "Open Corely", "href": "https://app.corely.one" },
+        { "anchor": "Status", "href": "https://status.corely.one" }
+      ]
+    },
+    "languages": [
+      {
+        "language": "en",
+        "default": true,
+        "tabs": [
+          {
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Getting started",
+                "pages": [
+                  "index",
+                  "getting-started/overview",
+                  "getting-started/installation",
+                  "getting-started/first-steps"
+                ]
+              },
+              {
+                "group": "Using Corely",
+                "pages": ["platform/navigation", "platform/modules"]
+              }
+            ]
+          },
+          {
+            "tab": "Help",
+            "groups": [
+              {
+                "group": "Troubleshooting",
+                "pages": ["troubleshooting/common-issues"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "de",
+        "tabs": [
+          {
+            "tab": "Anleitungen",
+            "groups": [
+              {
+                "group": "Erste Schritte",
+                "pages": [
+                  "de/index",
+                  "de/getting-started/overview",
+                  "de/getting-started/installation",
+                  "de/getting-started/first-steps"
+                ]
+              },
+              {
+                "group": "Corely verwenden",
+                "pages": ["de/platform/navigation", "de/platform/modules"]
+              }
+            ]
+          },
+          {
+            "tab": "Hilfe",
+            "groups": [
+              {
+                "group": "Fehlerbehebung",
+                "pages": ["de/troubleshooting/common-issues"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "vi",
+        "tabs": [
+          {
+            "tab": "Hướng dẫn",
+            "groups": [
+              {
+                "group": "Bắt đầu",
+                "pages": [
+                  "vi/index",
+                  "vi/getting-started/overview",
+                  "vi/getting-started/installation",
+                  "vi/getting-started/first-steps"
+                ]
+              },
+              {
+                "group": "Dùng Corely",
+                "pages": ["vi/platform/navigation", "vi/platform/modules"]
+              }
+            ]
+          },
+          {
+            "tab": "Trợ giúp",
+            "groups": [
+              {
+                "group": "Khắc phục sự cố",
+                "pages": ["vi/troubleshooting/common-issues"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

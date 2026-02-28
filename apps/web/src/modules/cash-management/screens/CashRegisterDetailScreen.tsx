@@ -1,326 +1,213 @@
-import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Plus, Minus, Lock } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
-import { Button } from "@corely/ui";
-import { Badge } from "@corely/ui";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@corely/ui";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@corely/ui";
-import { Input } from "@corely/ui";
-import { Label } from "@corely/ui";
-import { Textarea } from "@corely/ui";
-import { formatMoney, formatDate } from "@/shared/lib/formatters";
+import { useQuery } from "@tanstack/react-query";
+import { Link, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@corely/ui";
+import { formatDateTime, formatMoney } from "@/shared/lib/formatters";
 import { cashManagementApi } from "@/lib/cash-management-api";
 import { cashKeys } from "../queries";
-import { toast } from "sonner";
-import { CashEntryType, CashEntrySourceType } from "@corely/contracts";
-import { useTranslation } from "react-i18next";
 
 export function CashRegisterDetailScreen() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
-  const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("entries");
 
-  // Dialog States
-  const [entryType, setEntryType] = useState<CashEntryType | null>(null); // 'IN' or 'OUT'
-  const [paramAmount, setParamAmount] = useState("");
-  const [paramDesc, setParamDesc] = useState("");
-
-  const { data: regData, isLoading: regLoading } = useQuery({
-    queryKey: id ? cashKeys.registers.detail(id) : ["cash", "registers", "none"],
-    queryFn: () => (id ? cashManagementApi.getRegister(id) : Promise.reject("No ID")),
-    enabled: !!id,
+  const registerQuery = useQuery({
+    queryKey: id ? cashKeys.registers.detail(id) : ["cash-registers", "missing-id"],
+    queryFn: () => cashManagementApi.getRegister(id as string),
+    enabled: Boolean(id),
   });
 
-  const { data: entriesData } = useQuery({
-    queryKey: id ? cashKeys.entries.list(id, {}) : ["cash", "entries", "none"],
-    queryFn: () => (id ? cashManagementApi.listEntries(id, {}) : Promise.reject("No ID")),
-    enabled: !!id,
+  const entriesQuery = useQuery({
+    queryKey: id
+      ? cashKeys.entries.list({ registerId: id, preview: true })
+      : ["cash-entries", "missing-id"],
+    queryFn: async () => {
+      const result = await cashManagementApi.listEntries(id as string);
+      return {
+        entries: result.entries.slice(0, 8),
+      };
+    },
+    enabled: Boolean(id),
   });
 
-  const { data: closesData } = useQuery({
-    queryKey: id ? cashKeys.dailyCloses.list(id, {}) : ["cash", "daily-closes", "none"],
-    queryFn: () => (id ? cashManagementApi.listDailyCloses(id, {}) : Promise.reject("No ID")),
-    enabled: !!id,
-  });
-
-  const createEntryMutation = useMutation({
-    mutationFn: (vars: { type: CashEntryType; amountCents: number; desc: string }) => {
-      if (!id) {
-        throw new Error("No register ID");
-      }
-      return cashManagementApi.createEntry(id, {
-        registerId: id,
-        type: vars.type,
-        amountCents: vars.amountCents,
-        sourceType: CashEntrySourceType.MANUAL,
-        description: vars.desc,
-      });
-    },
-    onSuccess: async () => {
-      if (!id) {
-        return;
-      }
-      await queryClient.invalidateQueries({ queryKey: cashKeys.registers.detail(id) });
-      await queryClient.invalidateQueries({ queryKey: cashKeys.entries.list(id, {}) });
-      setEntryType(null);
-      setParamAmount("");
-      setParamDesc("");
-      toast.success(t("cash.detail.entryAdded"));
-    },
-    onError: (err: any) => {
-      toast.error(
-        `${t("cash.detail.entryAddFailed")}: ${err.response?.data?.message || err.message}`
-      );
-    },
+  const closesQuery = useQuery({
+    queryKey: id
+      ? cashKeys.dayCloses.list({
+          registerId: id,
+          dayKeyFrom: "0000-01-01",
+        })
+      : ["cash-day-closes", "missing-id"],
+    queryFn: () => cashManagementApi.listDayCloses(id as string),
+    enabled: Boolean(id),
   });
 
   if (!id) {
     return null;
   }
 
-  const handleCreateEntry = () => {
-    if (!entryType || !paramAmount || !paramDesc) {
-      return;
-    }
-    const cents = Math.round(parseFloat(paramAmount) * 100);
-    if (isNaN(cents) || cents <= 0) {
-      toast.error(t("cash.detail.invalidAmount"));
-      return;
-    }
-    createEntryMutation.mutate({ type: entryType, amountCents: cents, desc: paramDesc });
-  };
-
-  const register = regData?.register;
-  const entries = entriesData?.entries ?? [];
-  const closes = closesData?.closes ?? [];
-
-  if (regLoading) {
-    return <div className="p-6">{t("common.loading")}</div>;
+  if (registerQuery.isLoading) {
+    return (
+      <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.common.loadingRegister")}</div>
+    );
   }
-  if (!register) {
-    return <div className="p-6">{t("errors.pageNotFound")}</div>;
+
+  if (!registerQuery.data?.register) {
+    return (
+      <div className="p-6 text-sm text-destructive">{t("cash.ui.common.registerNotFound")}</div>
+    );
   }
+
+  const register = registerQuery.data.register;
+  const entries = entriesQuery.data?.entries ?? [];
+  const closes = closesQuery.data?.closes ?? [];
+  const lastClosed = closes
+    .filter((close) => close.status === "SUBMITTED")
+    .sort((a, b) => (a.dayKey < b.dayKey ? 1 : -1))[0];
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center gap-4">
-        <Link to="/cash-registers">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+    <div className="space-y-6 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">{register.name}</h1>
-          <p className="text-muted-foreground">
-            {register.location || t("cash.registers.noLocation")}
+          <h1 className="text-2xl font-semibold">{register.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            {register.location ?? t("cash.ui.common.noLocation")} · {register.currency}
           </p>
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link to={`/cash-registers/${id}/daily-close`}>
-              <Lock className="mr-2 h-4 w-4" />
-              {t("cash.dailyClose.title")}
+        <div className="flex flex-wrap gap-2">
+          <Button asChild>
+            <Link to={`/cash/registers/${id}/entries`}>
+              {t("cash.ui.registerDetail.newCashEntry")}
             </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link
+              to={`/cash/registers/${id}/day-close?day=${new Date().toISOString().slice(0, 10)}`}
+            >
+              {t("cash.ui.registerDetail.closeDay")}
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to={`/cash/registers/${id}/exports`}>{t("cash.ui.registerDetail.export")}</Link>
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link to={`/cash/registers/${id}/edit`}>{t("cash.ui.registerDetail.edit")}</Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              {t("cash.registers.currentBalance")}
+          <CardHeader>
+            <CardTitle className="text-base">
+              {t("cash.ui.registerDetail.currentBalance")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {formatMoney(register.currentBalanceCents, register.currency)}
-            </div>
+          <CardContent className="text-2xl font-semibold">
+            {formatMoney(register.currentBalanceCents, undefined, register.currency)}
           </CardContent>
         </Card>
-
-        <Card className="md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              {t("dashboard.quickActions")}
-            </CardTitle>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("cash.ui.registerDetail.lastClosedDay")}</CardTitle>
           </CardHeader>
-          <CardContent className="flex gap-3">
-            <Button
-              onClick={() => setEntryType(CashEntryType.IN)}
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {t("cash.detail.cashIn")}
-            </Button>
-            <Button
-              onClick={() => setEntryType(CashEntryType.OUT)}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              <Minus className="mr-2 h-4 w-4" />
-              {t("cash.detail.cashOut")}
-            </Button>
+          <CardContent>
+            {lastClosed ? (
+              <span>{lastClosed.dayKey}</span>
+            ) : (
+              <span className="text-sm text-muted-foreground">
+                {t("cash.ui.registerDetail.noSubmittedClose")}
+              </span>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="overview">
         <TabsList>
-          <TabsTrigger value="entries">Entries</TabsTrigger>
-          <TabsTrigger value="closes">{t("cash.detail.dailyCloses")}</TabsTrigger>
+          <TabsTrigger value="overview">{t("cash.ui.registerDetail.tabs.overview")}</TabsTrigger>
+          <TabsTrigger value="entries">
+            {t("cash.ui.registerDetail.tabs.entriesPreview")}
+          </TabsTrigger>
+          <TabsTrigger value="activity">
+            {t("cash.ui.registerDetail.tabs.activityAudit")}
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="entries" className="space-y-4">
+        <TabsContent value="overview">
           <Card>
-            <div className="rounded-md border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-3 font-medium">{t("common.date")}</th>
-                    <th className="p-3 font-medium">{t("common.description")}</th>
-                    <th className="p-3 font-medium">{t("common.type")}</th>
-                    <th className="p-3 font-medium text-right">{t("common.amount")}</th>
-                    <th className="p-3 font-medium">{t("cash.detail.updatedBalance")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map((entry) => (
-                    <tr key={entry.id} className="border-b last:border-0 hover:bg-muted/10">
-                      <td className="p-3">{formatDate(entry.createdAt, "en-US")}</td>
-                      <td className="p-3">
-                        <div className="font-medium">{entry.description}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {entry.sourceType}{" "}
-                          {entry.referenceId && `Ref: ${entry.referenceId.slice(0, 8)}`}
-                        </div>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant={entry.type === "IN" ? "default" : "secondary"}>
-                          {entry.type}
-                        </Badge>
-                      </td>
-                      <td
-                        className={`p-3 text-right font-medium ${entry.type === "OUT" ? "text-red-600" : "text-green-600"}`}
-                      >
-                        {entry.type === "OUT" ? "-" : "+"}
-                        {formatMoney(entry.amountCents, register.currency)}
-                      </td>
-                      <td className="p-3 text-muted-foreground text-xs italic">
-                        {/* Running balance is hard without full history or backend support, omitting for now */}
-                        -
-                      </td>
-                    </tr>
-                  ))}
-                  {entries.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                        {t("cash.detail.noEntriesFound")}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <CardContent className="space-y-2 pt-6 text-sm">
+              <p>
+                {t("cash.ui.registerDetail.registerId")}:{" "}
+                <span className="font-mono">{register.id}</span>
+              </p>
+              <p>
+                {t("cash.ui.registerDetail.negativeBalancePolicy")}:{" "}
+                <Badge variant={register.disallowNegativeBalance ? "destructive" : "outline"}>
+                  {register.disallowNegativeBalance
+                    ? t("cash.ui.registerDetail.policyBlocked")
+                    : t("cash.ui.registerDetail.policyAllowed")}
+                </Badge>
+              </p>
+            </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="closes">
+        <TabsContent value="entries">
           <Card>
-            <div className="rounded-md border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/50 text-left">
-                    <th className="p-3">{t("cash.dailyClose.businessDate")}</th>
-                    <th className="p-3">{t("common.status")}</th>
-                    <th className="p-3 text-right">{t("cash.dailyClose.expectedBalance")}</th>
-                    <th className="p-3 text-right">{t("cash.dailyClose.countedBalance")}</th>
-                    <th className="p-3 text-right">{t("cash.dailyClose.difference")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {closes.map((close) => (
-                    <tr key={close.id} className="border-b hover:bg-muted/10">
-                      <td className="p-3 font-medium">{close.businessDate}</td>
-                      <td className="p-3">
-                        <Badge variant="outline">{close.status}</Badge>
-                      </td>
-                      <td className="p-3 text-right">
-                        {formatMoney(close.expectedBalanceCents, register.currency)}
-                      </td>
-                      <td className="p-3 text-right">
-                        {formatMoney(close.countedBalanceCents, register.currency)}
-                      </td>
-                      <td
-                        className={`p-3 text-right font-medium ${close.differenceCents !== 0 ? "text-red-600" : ""}`}
-                      >
-                        {formatMoney(close.differenceCents, register.currency)}
-                      </td>
-                    </tr>
+            <CardContent className="pt-6">
+              {entries.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("cash.ui.registerDetail.noEntriesYet")}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {entries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center justify-between rounded-md border p-3 text-sm"
+                    >
+                      <div>
+                        <p className="font-medium">{entry.description}</p>
+                        <p className="text-muted-foreground">
+                          #{entry.entryNo} · {formatDateTime(entry.occurredAt)}
+                        </p>
+                      </div>
+                      <p className={entry.direction === "OUT" ? "text-red-600" : "text-green-600"}>
+                        {entry.direction === "OUT" ? "-" : "+"}
+                        {formatMoney(entry.amount, undefined, entry.currency)}
+                      </p>
+                    </div>
                   ))}
-                  {closes.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                        {t("cash.detail.noDailyCloses")}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              )}
+              <div className="mt-4">
+                <Button variant="outline" asChild>
+                  <Link to={`/cash/registers/${id}/entries`}>
+                    {t("cash.ui.registerDetail.openFullEntries")}
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="activity">
+          <Card>
+            <CardContent className="pt-6 text-sm text-muted-foreground">
+              {t("cash.ui.registerDetail.activityPrefix")}{" "}
+              <strong>{t("cash.ui.registerDetail.auditPack")}</strong>{" "}
+              {t("cash.ui.registerDetail.activitySuffix")}
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Entry Dialog */}
-      <Dialog open={!!entryType} onOpenChange={(open) => !open && setEntryType(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {entryType === "IN" ? t("cash.detail.addCashIn") : t("cash.detail.addCashOut")}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label>
-                {t("common.amount")} ({register.currency})
-              </Label>
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={paramAmount}
-                onChange={(e) => setParamAmount(e.target.value)}
-                autoFocus
-              />
-            </div>
-            <div>
-              <Label>{t("common.description")}</Label>
-              <Textarea
-                placeholder={t("cash.detail.reasonPlaceholder")}
-                value={paramDesc}
-                onChange={(e) => setParamDesc(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEntryType(null)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateEntry}
-              className={
-                entryType === "IN"
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-red-600 hover:bg-red-700"
-              }
-              disabled={createEntryMutation.isPending}
-            >
-              {entryType === "IN" ? t("cash.detail.confirmIn") : t("cash.detail.confirmOut")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
