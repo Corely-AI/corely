@@ -37,7 +37,7 @@ export function CashRegisterEditScreen() {
         queryKey: cashKeys.registers.detail(id),
       });
       await queryClient.invalidateQueries({
-        queryKey: cashKeys.registers.list.queryKey,
+        queryKey: cashKeys.registers.list(),
       });
       navigate(`/cash/registers/${id}`);
     },

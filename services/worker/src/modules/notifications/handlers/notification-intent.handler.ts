@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
+import type { Prisma } from "@prisma/client";
 import { type EventHandler, type OutboxEvent } from "../../outbox/event-handler.interface";
 import { NOTIFICATION_EVENTS, NotificationIntentPayloadSchema } from "@corely/contracts";
 import { randomUUID } from "crypto";
@@ -45,7 +46,7 @@ export class NotificationIntentHandler implements EventHandler {
             title: data.title,
             body: data.body,
             resource: data.resource,
-            data: data.data || {},
+            data: (data.data ?? {}) as Prisma.InputJsonValue,
             createdAt: new Date(data.createdAt),
           },
         });
