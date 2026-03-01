@@ -14,6 +14,7 @@ describe("QuestionForm repeater", () => {
   it("submits repeater values", async () => {
     const request: CollectInputsToolInput = {
       title: "Collect items",
+      allowCancel: true,
       fields: [
         {
           key: "items",
@@ -62,6 +63,7 @@ describe("QuestionForm repeater", () => {
   it("adds and removes repeater rows", () => {
     const request: CollectInputsToolInput = {
       title: "Collect items",
+      allowCancel: true,
       fields: [
         {
           key: "items",
