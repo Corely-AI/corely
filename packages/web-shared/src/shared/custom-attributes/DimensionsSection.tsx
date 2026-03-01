@@ -67,8 +67,9 @@ export function DimensionsSection({
 
   const valuesByType = new Map<string, Array<{ id: string; name: string; isActive: boolean }>>();
   types.forEach((type, index) => {
-    const rows = (valueQueries[index]?.data ?? []).filter((row): row is DimensionValueDto =>
-      Boolean(row && typeof row.id === "string" && typeof row.name === "string")
+    const rows = ((valueQueries[index]?.data as DimensionValueDto[] | undefined) ?? []).filter(
+      (row): row is DimensionValueDto =>
+        Boolean(row && typeof row.id === "string" && typeof row.name === "string")
     );
     valuesByType.set(
       type.id,

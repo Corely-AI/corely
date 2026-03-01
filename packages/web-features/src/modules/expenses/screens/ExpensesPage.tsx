@@ -92,9 +92,11 @@ export default function ExpensesPage() {
     const dimensionFields = dimensionTypes
       .filter((type) => type.isActive)
       .map((type, index) => {
-        const values = (dimensionValuesQueries[index]?.data ?? []).filter(
-          (value) => value.isActive
-        );
+        const values = (
+          (dimensionValuesQueries[index]?.data as
+            | Array<{ id: string; name: string; isActive: boolean }>
+            | undefined) ?? []
+        ).filter((value) => value.isActive);
         return {
           key: `dimension:${type.id}`,
           label: `Dimension: ${type.name}`,

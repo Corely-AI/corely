@@ -1,6 +1,19 @@
 {
   "extends": "@corely/tsconfig/react.json",
   "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": false,
+    "exactOptionalPropertyTypes": false,
+    "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
       "@corely/web-shared": ["./src/index.ts"],
@@ -21,5 +34,6 @@
     "../offline-core/src",
     "../offline-web/src",
     "../ui/src"
-  ]
+  ],
+  "exclude": ["src/**/*.spec.ts", "src/**/*.spec.tsx"]
 }
