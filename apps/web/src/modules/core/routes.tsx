@@ -1,4 +1,4 @@
-import DashboardPage from "./screens/DashboardPage";
+import { DashboardPage } from "@corely/web-features/modules/core";
 
 export const coreRoutes = [
   {

@@ -1,13 +1,1 @@
-export { default as TaxSettingsPage } from "./screens/TaxSettingsPage";
-export { default as TaxesOverviewPage } from "./screens/TaxesOverviewPage";
-export { default as TaxReportsPage } from "./screens/TaxReportsPage";
-export * from "./screens/VatPeriodDetailsPage";
-export { default as ReportDetailPage } from "./screens/ReportDetailPage";
-export * from "./screens/TaxCenterPage";
-export * from "./screens/FilingsListPage";
-export * from "./screens/FilingDetailPage";
-export * from "./screens/CreateFilingPage";
-export * from "./screens/TaxPaymentsPage";
-export * from "./screens/TaxDocumentsPage";
-export * from "./hooks/useTaxMode";
-export * from "./hooks/useTaxCenterQuery";
+export * from "@corely/web-features/modules/tax";
