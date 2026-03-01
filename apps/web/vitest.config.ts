@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@/lib": path.resolve(__dirname, "../../packages/web-shared/src/lib"),
+      "@/shared": path.resolve(__dirname, "../../packages/web-shared/src/shared"),
+      "@/offline": path.resolve(__dirname, "../../packages/web-shared/src/offline"),
       "@": path.resolve(__dirname, "./src"),
       "@corely/api-client": path.resolve(__dirname, "../../packages/api-client/src"),
       "@corely/auth-client": path.resolve(__dirname, "../../packages/auth-client/src"),
