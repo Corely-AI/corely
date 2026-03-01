@@ -92,7 +92,7 @@ jobs:
           service: corely-api
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ github.sha }}
-          flags: --port=3000 --allow-unauthenticated
+          flags: --port=3000 --allow-unauthenticated --cpu=0.5 --memory=512Mi --min-instances=0 --max-instances=2 --cpu-throttling --concurrency=1
           env_vars: |
             NODE_ENV=production
             WORKFLOW_QUEUE_DRIVER=memory
@@ -135,9 +135,10 @@ jobs:
           service: corely-worker
           region: ${{ env.REGION }}
           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/worker:${{ github.sha }}
-          flags: --port=8080 --memory=1Gi --min-instances=1 --max-instances=3 --no-cpu-throttling
+          flags: --port=8080 --memory=512Mi --min-instances=0 --max-instances=3 --cpu-throttling
           env_vars: |
             NODE_ENV=production
             DATABASE_URL=${{ env.DATABASE_URL }}
             WORKFLOW_QUEUE_DRIVER=memory
             PDF_RENDER_CONCURRENCY=1
+            INVOICE_REMINDER_RUN_ENABLED=false
