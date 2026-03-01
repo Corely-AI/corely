@@ -3,13 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { PublicFormPage } from "../../modules/forms";
 import { PublicCmsListPage, PublicCmsPostPage } from "../../modules/cms";
 import { PublicRentalsListScreen, PublicRentalDetailScreen } from "../../modules/rentals";
-import NotFound from "../../shared/components/NotFound";
+import NotFound from "@corely/web-shared/shared/components/NotFound";
 import { LoginPage } from "../../routes/auth/login";
 import SignupPage from "../../routes/auth/signup";
 import ForgotPasswordPage from "../../routes/auth/forgot-password";
 import ResetPasswordPage from "../../routes/auth/reset-password";
-import { PublicWorkspaceProvider } from "../../shared/public-workspace";
-import { isCustomDomain } from "../../lib/domain-helper";
+import { PublicWorkspaceProvider } from "@corely/web-shared/shared/public-workspace";
+import { isCustomDomain } from "@corely/web-shared/lib/domain-helper";
 import {
   PublicPortfolioLayout,
   PublicShowcaseHome,

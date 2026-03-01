@@ -7,7 +7,7 @@ import {
   CatalogTaxProfilesPage,
   CatalogCategoriesPage,
 } from "../../modules/catalog";
-import { RequireCapability } from "../../shared/workspaces/RequireCapability";
+import { RequireCapability } from "@corely/web-shared/shared/workspaces/RequireCapability";
 
 export const catalogRoutes = (
   <>
