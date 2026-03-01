@@ -11,6 +11,9 @@ export default defineConfig(() => {
       react(), // tailwindcss() is handled by postcss.config.js
     ],
     aliases: {
+      "@/lib": path.resolve(__dirname, "../../packages/web-shared/src/lib"),
+      "@/shared": path.resolve(__dirname, "../../packages/web-shared/src/shared"),
+      "@/offline": path.resolve(__dirname, "../../packages/web-shared/src/offline"),
       "@": path.resolve(__dirname, "./src"),
       "@corely/api-client": path.resolve(__dirname, "../../packages/api-client/src"),
       "@corely/auth-client": path.resolve(__dirname, "../../packages/auth-client/src"),
@@ -19,6 +22,8 @@ export default defineConfig(() => {
       "@corely/offline-core": path.resolve(__dirname, "../../packages/offline-core/src"),
       "@corely/offline-web": path.resolve(__dirname, "../../packages/offline-web/src"),
       "@corely/ui": path.resolve(__dirname, "../../packages/ui/src"),
+      "@corely/web-features": path.resolve(__dirname, "../../packages/web-features/src"),
+      "@corely/web-shared": path.resolve(__dirname, "../../packages/web-shared/src"),
       "@corely/website-blocks": path.resolve(__dirname, "../../packages/website-blocks/src"),
     },
     excludeFromOptimizeDeps: ["@corely/contracts", "@corely/domain"],

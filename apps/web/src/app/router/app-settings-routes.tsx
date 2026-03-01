@@ -20,7 +20,7 @@ import { TenantsListPage } from "../../modules/platform/screens/tenant-managemen
 import CreateTenantPage from "../../modules/platform/screens/tenant-management/CreateTenantPage";
 import { TenantEntitlementsPage } from "../../modules/platform/screens/tenant-management/TenantEntitlementsPage";
 import { TaxSettingsPage } from "../../modules/tax";
-import { RequireCapability } from "../../shared/workspaces/RequireCapability";
+import { RequireCapability } from "@corely/web-shared/shared/workspaces/RequireCapability";
 import { WorkspaceMembersPage, WorkspaceSettingsPage } from "../../modules/workspaces";
 import { ClassesSettingsPage } from "../../modules/classes";
 

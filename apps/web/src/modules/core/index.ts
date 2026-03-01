@@ -1,1 +1,1 @@
-export { default as DashboardPage } from "./screens/DashboardPage";
+export { DashboardPage } from "@corely/web-features/modules/core";
