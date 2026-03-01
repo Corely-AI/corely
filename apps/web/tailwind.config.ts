@@ -9,6 +9,8 @@ export default {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
     "../../packages/ui/src/**/*.{ts,tsx}",
+    "../../packages/web-shared/src/**/*.{ts,tsx}",
+    "../../packages/web-features/src/**/*.{ts,tsx}",
     "../../packages/website-blocks/src/**/*.{ts,tsx}",
   ],
   prefix: "",

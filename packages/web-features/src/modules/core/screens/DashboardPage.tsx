@@ -17,15 +17,36 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
-import { formatMoney, formatRelativeTime } from "@/shared/lib/formatters";
-import { CardSkeleton } from "@/shared/components/Skeleton";
-import { invoicesApi } from "@/lib/invoices-api";
-import { customersApi } from "@/lib/customers-api";
-import { expensesApi } from "@/lib/expenses-api";
-import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
-import { useWorkspace } from "@/shared/workspaces/workspace-provider";
-import { workspaceQueryKeys } from "@/shared/workspaces/workspace-query-keys";
-import { getPortalUrl } from "@/shared/lib/portal-url";
+import { formatMoney, formatRelativeTime } from "@corely/web-shared/shared/lib/formatters";
+import { CardSkeleton } from "@corely/web-shared/shared/components/Skeleton";
+import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
+import { customersApi } from "@corely/web-shared/lib/customers-api";
+import { expensesApi } from "@corely/web-shared/lib/expenses-api";
+import { useWorkspaceConfig } from "@corely/web-shared/shared/workspaces/workspace-config-provider";
+import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
+import { workspaceQueryKeys } from "@corely/web-shared/shared/workspaces/workspace-query-keys";
+import { getPortalUrl } from "@corely/web-shared/shared/lib/portal-url";
+
+const invoiceStatusToBadgeVariant = (
+  status: string
+): React.ComponentProps<typeof Badge>["variant"] => {
+  switch (status) {
+    case "DRAFT":
+      return "draft";
+    case "ISSUED":
+      return "issued";
+    case "SENT":
+      return "sent";
+    case "PAID":
+      return "paid";
+    case "OVERDUE":
+      return "overdue";
+    case "CANCELLED":
+      return "outline";
+    default:
+      return "muted";
+  }
+};
 
 export default function DashboardPage() {
   const { t, i18n } = useTranslation();
@@ -47,7 +68,6 @@ export default function DashboardPage() {
     expenseLabelPlural: "Expenses",
   };
 
-  // Fetch invoices
   const { data: invoicesData, isLoading: isLoadingInvoices } = useQuery({
     queryKey: workspaceQueryKeys.invoices.list(),
     queryFn: () => invoicesApi.listInvoices(),
@@ -55,13 +75,11 @@ export default function DashboardPage() {
 
   const invoices = invoicesData?.items ?? [];
 
-  // Fetch customers
   const { data: customersData, isLoading: isLoadingCustomers } = useQuery({
     queryKey: workspaceQueryKeys.customers.list(),
     queryFn: () => customersApi.listCustomers(),
   });
 
-  // Fetch expenses
   const { data: expensesData, isLoading: isLoadingExpenses } = useQuery({
     queryKey: workspaceQueryKeys.expenses.list(),
     queryFn: () => expensesApi.listExpenses(),
@@ -71,7 +89,6 @@ export default function DashboardPage() {
   const customers = customersData?.customers || [];
   const isLoading = isLoadingInvoices || isLoadingCustomers || isLoadingExpenses;
 
-  // Calculate dashboard metrics
   const dashboard = React.useMemo(() => {
     const now = new Date();
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -104,7 +121,6 @@ export default function DashboardPage() {
       }, 0);
     };
 
-    // Revenue this month (paid invoices)
     const revenueThisMonthCents = computeRevenueForRange(thisMonthStart, nextMonthStart);
     const revenueLastMonthCents = computeRevenueForRange(lastMonthStart, thisMonthStart);
 
@@ -113,7 +129,6 @@ export default function DashboardPage() {
         ? null
         : ((revenueThisMonthCents - revenueLastMonthCents) / revenueLastMonthCents) * 100;
 
-    // Outstanding invoices (issued/sent but not paid)
     const outstandingInvoices = invoices.filter(
       (inv) => inv.status === "ISSUED" || inv.status === "SENT"
     );
@@ -122,7 +137,6 @@ export default function DashboardPage() {
       0
     );
 
-    // Expenses this month
     const expensesThisMonthCents = expenses
       .filter((exp) => {
         const expDate = new Date(exp.expenseDate || exp.createdAt);
@@ -130,12 +144,10 @@ export default function DashboardPage() {
       })
       .reduce((sum, exp) => sum + (exp.totalAmountCents || 0), 0);
 
-    // Recent invoices (last 4)
     const recentInvoices = [...invoices]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 4);
 
-    // Recent expenses (last 4)
     const recentExpenses = [...expenses]
       .sort((a, b) => {
         const dateA = new Date(a.expenseDate || a.createdAt).getTime();
@@ -416,7 +428,10 @@ export default function DashboardPage() {
                         <div className="text-sm font-medium text-foreground">
                           {formatMoney(invoice.totals?.totalCents || 0, locale)}
                         </div>
-                        <Badge variant={invoice.status.toLowerCase() as any} className="text-xs">
+                        <Badge
+                          variant={invoiceStatusToBadgeVariant(invoice.status)}
+                          className="text-xs"
+                        >
                           {invoice.status}
                         </Badge>
                       </div>
