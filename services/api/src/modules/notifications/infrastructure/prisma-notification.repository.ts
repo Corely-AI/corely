@@ -4,8 +4,8 @@ import type {
   ListNotificationsParams,
   ListNotificationsResult,
   NotificationRepositoryPort,
-} from "../../application/ports/notification.repository.port";
-import type { Notification } from "../../domain/notification.entity";
+} from "../application/ports/notification.repository.port";
+import type { Notification } from "../domain/notification.entity";
 import { NotificationSeveritySchema } from "@corely/contracts";
 
 @Injectable()

@@ -35,6 +35,14 @@ import type {
   CommunicationAiSummarizeInput,
   CommunicationAiSummarizeOutput,
   GetCrmAiSettingsOutput,
+  ListChannelTemplatesOutput,
+  CreateChannelTemplateInput,
+  CreateChannelTemplateOutput,
+  UpdateChannelTemplateInput,
+  UpdateChannelTemplateOutput,
+  DeleteChannelTemplateOutput,
+  GenerateChannelTemplateAiInput,
+  GenerateChannelTemplateAiOutput,
   UpdateCrmAiSettingsInput,
   UpdateCrmAiSettingsOutput,
 } from "@corely/contracts";
@@ -47,59 +55,9 @@ import type {
   ListChannelsOutput,
 } from "@corely/contracts";
 import { apiClient } from "./api-client";
-
-const unwrapDealResponse = (response: unknown): DealDto => {
-  if (response && typeof response === "object") {
-    if ("deal" in response) {
-      return (response as { deal: DealDto }).deal;
-    }
-    if ("data" in response) {
-      const data = (response as { data?: unknown }).data;
-      if (data && typeof data === "object") {
-        if ("deal" in data) {
-          return (data as { deal: DealDto }).deal;
-        }
-        if ("id" in data) {
-          return data as DealDto;
-        }
-      }
-    }
-    if ("id" in response) {
-      return response as DealDto;
-    }
-  }
-
-  return response as DealDto;
-};
-
-const unwrapActivityResponse = (response: unknown): ActivityDto => {
-  if (response && typeof response === "object") {
-    if ("activity" in response) {
-      return (response as { activity: ActivityDto }).activity;
-    }
-    if ("data" in response) {
-      const data = (response as { data?: unknown }).data;
-      if (data && typeof data === "object") {
-        if ("activity" in data) {
-          return (data as { activity: ActivityDto }).activity;
-        }
-        if ("id" in data) {
-          return data as ActivityDto;
-        }
-      }
-    }
-    if ("id" in response) {
-      return response as ActivityDto;
-    }
-  }
-
-  return response as ActivityDto;
-};
+import { unwrapActivityResponse, unwrapDealResponse } from "./crm-api.utils";
 
 export const crmApi = {
-  // ============================================================
-  // Deal Operations
-  // ============================================================
   async createDeal(input: CreateDealInput): Promise<DealDto> {
     const response = await apiClient.post<unknown>("/crm/deals", input);
     return unwrapDealResponse(response);
@@ -171,9 +129,6 @@ export const crmApi = {
     return { deals: response.items, nextCursor: response.nextCursor ?? undefined };
   },
 
-  // ============================================================
-  // Activity Operations
-  // ============================================================
   async createActivity(
     input: CreateActivityInput,
     options?: { idempotencyKey?: string }
@@ -254,9 +209,6 @@ export const crmApi = {
     return { activities: response.items, nextCursor: response.nextCursor ?? undefined };
   },
 
-  // ============================================================
-  // Timeline Operations
-  // ============================================================
   async getTimeline(
     entityType: "party" | "deal",
     entityId: string,
@@ -281,12 +233,72 @@ export const crmApi = {
     return { items: response.items, nextCursor: response.nextCursor };
   },
 
-  // ============================================================
-  // Channel Operations
-  // ============================================================
   async listChannels(): Promise<ChannelDefinition[]> {
     const response = await apiClient.get<ListChannelsOutput>("/crm/channels");
     return response.channels;
+  },
+
+  async listChannelTemplates(
+    workspaceId: string,
+    params?: {
+      channel?: string;
+      q?: string;
+    }
+  ): Promise<ListChannelTemplatesOutput> {
+    const query = new URLSearchParams();
+    if (params?.channel) {
+      query.append("channel", params.channel);
+    }
+    if (params?.q) {
+      query.append("q", params.q);
+    }
+
+    const suffix = query.toString();
+    const path = suffix
+      ? `/crm/workspaces/${workspaceId}/channel-templates?${suffix}`
+      : `/crm/workspaces/${workspaceId}/channel-templates`;
+
+    return apiClient.get<ListChannelTemplatesOutput>(path);
+  },
+
+  async createChannelTemplate(
+    workspaceId: string,
+    input: Omit<CreateChannelTemplateInput, "workspaceId">
+  ): Promise<CreateChannelTemplateOutput> {
+    return apiClient.post<CreateChannelTemplateOutput>(
+      `/crm/workspaces/${workspaceId}/channel-templates`,
+      input
+    );
+  },
+
+  async updateChannelTemplate(
+    workspaceId: string,
+    templateId: string,
+    input: Omit<UpdateChannelTemplateInput, "workspaceId" | "templateId">
+  ): Promise<UpdateChannelTemplateOutput> {
+    return apiClient.patch<UpdateChannelTemplateOutput>(
+      `/crm/workspaces/${workspaceId}/channel-templates/${templateId}`,
+      input
+    );
+  },
+
+  async deleteChannelTemplate(
+    workspaceId: string,
+    templateId: string
+  ): Promise<DeleteChannelTemplateOutput> {
+    return apiClient.delete<DeleteChannelTemplateOutput>(
+      `/crm/workspaces/${workspaceId}/channel-templates/${templateId}`
+    );
+  },
+
+  async generateChannelTemplateAi(
+    workspaceId: string,
+    input: Omit<GenerateChannelTemplateAiInput, "workspaceId">
+  ): Promise<GenerateChannelTemplateAiOutput> {
+    return apiClient.post<GenerateChannelTemplateAiOutput>(
+      `/crm/workspaces/${workspaceId}/channel-templates/ai/generate`,
+      input
+    );
   },
 
   async logMessage(input: LogMessageInput): Promise<ActivityDto> {
@@ -380,9 +392,6 @@ export const crmApi = {
     return apiClient.patch<UpdateCrmAiSettingsOutput>("/crm/ai/settings", input);
   },
 
-  // ============================================================
-  // Lead Operations
-  // ============================================================
   async createLead(input: CreateLeadInput): Promise<LeadDto> {
     const response = await apiClient.post<CreateLeadOutput>("/crm/leads", input);
     return response.lead;
@@ -403,9 +412,6 @@ export const crmApi = {
     return await apiClient.post<ConvertLeadOutput>(`/crm/leads/${input.leadId}/convert`, input);
   },
 
-  // ============================================================
-  // Sequence Operations
-  // ============================================================
   async listSequences(): Promise<SequenceDto[]> {
     return await apiClient.get<SequenceDto[]>("/crm/sequences");
   },
@@ -422,9 +428,6 @@ export const crmApi = {
     return await apiClient.post<{ enrollmentId: string }>("/crm/sequences/enroll", input);
   },
 
-  // ============================================================
-  // Account Operations
-  // ============================================================
   async createAccount(input: CreateAccountInput): Promise<AccountDto> {
     const response = await apiClient.post<CreateAccountOutput>("/crm/accounts", input);
     return response.account;

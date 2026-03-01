@@ -3,7 +3,10 @@ import { DataModule } from "@corely/data";
 import { PrismaService } from "@corely/data";
 import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
 import type { OutboxPort, AuditPort } from "@corely/kernel";
+import { EnvService } from "@corely/config";
+import { PromptRegistry } from "@corely/prompts";
 import { KernelModule } from "../../shared/kernel/kernel.module";
+import { PromptModule } from "../../shared/prompts/prompt.module";
 import { InvoicesHttpController } from "./adapters/http/invoices.controller";
 import { InvoicesPublicController } from "./adapters/http/invoices-public.controller";
 import { InvoicesInternalController } from "./adapters/http/invoices-internal.controller";
@@ -70,6 +73,7 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
   imports: [
     DataModule,
     KernelModule,
+    PromptModule,
     IdentityModule,
     PartyModule,
     DocumentsModule,
@@ -318,7 +322,9 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         repo: PrismaInvoiceRepoAdapter,
         aiText: AiTextPort,
         audit: AuditPort,
-        rateLimit: InvoiceCopilotRateLimitPort
+        rateLimit: InvoiceCopilotRateLimitPort,
+        promptRegistry: PromptRegistry,
+        env: EnvService
       ) =>
         new DraftInvoiceEmailUseCase({
           logger: new NestLoggerAdapter(),
@@ -326,8 +332,17 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
           aiText,
           audit,
           rateLimit,
+          promptRegistry,
+          env,
         }),
-      inject: [PrismaInvoiceRepoAdapter, AI_TEXT_PORT, AUDIT_PORT, INVOICE_COPILOT_RATE_LIMIT_PORT],
+      inject: [
+        PrismaInvoiceRepoAdapter,
+        AI_TEXT_PORT,
+        AUDIT_PORT,
+        INVOICE_COPILOT_RATE_LIMIT_PORT,
+        PromptRegistry,
+        EnvService,
+      ],
     },
     {
       provide: DraftReminderEmailUseCase,
@@ -335,7 +350,9 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
         repo: PrismaInvoiceRepoAdapter,
         aiText: AiTextPort,
         audit: AuditPort,
-        rateLimit: InvoiceCopilotRateLimitPort
+        rateLimit: InvoiceCopilotRateLimitPort,
+        promptRegistry: PromptRegistry,
+        env: EnvService
       ) =>
         new DraftReminderEmailUseCase({
           logger: new NestLoggerAdapter(),
@@ -343,8 +360,17 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
           aiText,
           audit,
           rateLimit,
+          promptRegistry,
+          env,
         }),
-      inject: [PrismaInvoiceRepoAdapter, AI_TEXT_PORT, AUDIT_PORT, INVOICE_COPILOT_RATE_LIMIT_PORT],
+      inject: [
+        PrismaInvoiceRepoAdapter,
+        AI_TEXT_PORT,
+        AUDIT_PORT,
+        INVOICE_COPILOT_RATE_LIMIT_PORT,
+        PromptRegistry,
+        EnvService,
+      ],
     },
     {
       provide: InvoicesApplication,

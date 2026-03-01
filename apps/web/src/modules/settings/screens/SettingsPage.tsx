@@ -166,6 +166,17 @@ export default function SettingsPage() {
           </div>
           <div className="flex items-center justify-between gap-4">
             <div>
+              <div className="font-medium text-foreground">Engagement Templates</div>
+              <div className="text-sm text-muted-foreground">
+                Manage reusable email and messaging templates for CRM channels.
+              </div>
+            </div>
+            <Button asChild variant="outline">
+              <Link to="/settings/engagement/templates">Open</Link>
+            </Button>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
               <div className="font-medium text-foreground">Dimensions</div>
               <div className="text-sm text-muted-foreground">
                 Manage reporting segments for expenses and parties.

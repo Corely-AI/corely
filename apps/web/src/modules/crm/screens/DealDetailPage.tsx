@@ -26,6 +26,7 @@ import {
 import { useCrmChannels } from "../hooks/useChannels";
 import { customersApi } from "@/lib/customers-api";
 import { crmApi } from "@/lib/crm-api";
+import { useWorkspace } from "@/shared/workspaces/workspace-provider";
 import type {
   ChannelDefinition,
   CommunicationAiSummarizeOutput,
@@ -77,6 +78,7 @@ export default function DealDetailPage() {
   const [pendingFollowUpToolCard, setPendingFollowUpToolCard] =
     useState<CreateActivityToolCard | null>(null);
   const queryClient = useQueryClient();
+  const { activeWorkspaceId } = useWorkspace();
 
   useEffect(() => {
     const markOnline = () => setIsOnline(true);
@@ -218,6 +220,7 @@ export default function DealDetailPage() {
     const lastName = rest.join(" ");
     const profileUrl = socialProfiles.linkedin ?? party?.website ?? undefined;
     return {
+      fullName: displayName,
       firstName,
       lastName,
       dealTitle: deal?.title,
@@ -625,6 +628,7 @@ export default function DealDetailPage() {
       <DealDetailOverlays
         deal={deal}
         selectedChannel={selectedChannel}
+        activeWorkspaceId={activeWorkspaceId}
         composerOpen={composerOpen}
         onComposerOpenChange={setComposerOpen}
         templateContext={templateContext}

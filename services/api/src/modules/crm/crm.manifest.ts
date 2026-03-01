@@ -52,5 +52,16 @@ export const crmAppManifest: AppManifest = {
       order: 37,
       // requiresPermissions: ["crm.sequences.read"], // TODO: Add permissions
     },
+    {
+      id: "crm-templates-settings",
+      scope: "web",
+      section: "settings",
+      labelKey: "nav.crmTemplates",
+      defaultLabel: "Templates",
+      route: "/settings/engagement/templates",
+      icon: "FileText",
+      order: 138,
+      requiresPermissions: ["crm.deals.manage"],
+    },
   ],
 };

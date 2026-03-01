@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import type { ChannelDefinition } from "@corely/contracts";
+import type { ChannelDefinition, SystemChannelTemplateDto } from "@corely/contracts";
 import { PrismaService } from "@corely/data";
 
 const PLACEHOLDER_WHITELIST = [
@@ -437,5 +437,19 @@ export class ChannelCatalogService {
       validateUrlTemplate(channel.action.urlTemplate);
     }
     return channels;
+  }
+
+  async listSystemTemplates(): Promise<SystemChannelTemplateDto[]> {
+    const channels = await this.getChannels();
+
+    return channels.flatMap((channel) =>
+      channel.templates.map((template) => ({
+        id: template.id,
+        channel: channel.key,
+        name: template.name,
+        subject: template.subject ?? null,
+        body: template.body,
+      }))
+    );
   }
 }

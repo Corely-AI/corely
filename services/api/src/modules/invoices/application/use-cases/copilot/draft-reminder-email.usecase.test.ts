@@ -11,6 +11,8 @@ import type {
   DraftInvoiceReminderEmailInput,
   DraftInvoiceReminderEmailOutput,
 } from "@corely/contracts";
+import type { PromptRegistry } from "@corely/prompts";
+import type { EnvService } from "@corely/config";
 import type { AuditPort } from "@/shared/ports/audit.port";
 import type { AiTextPort, AiTextRequest } from "@/shared/ai/ai-text.port";
 import { DraftReminderEmailUseCase } from "./draft-reminder-email.usecase";
@@ -72,12 +74,31 @@ const setupUseCase = (args?: {
   const rateLimit = args?.rateLimit ?? new FakeRateLimitPort();
   const audit = new FakeAudit();
 
+  const promptRegistry = {
+    render: (promptId: string, _context: unknown, variables: Record<string, unknown>) => {
+      if (promptId.endsWith(".system")) {
+        const language = String(variables.LANGUAGE ?? "en");
+        const languageLabel =
+          language === "de" ? "German" : language === "vi" ? "Vietnamese" : "English";
+        return {
+          content: `Language: ${languageLabel}\nTone: ${String(variables.TONE ?? "normal")}`,
+        };
+      }
+
+      return {
+        content: String(variables.FACTS_JSON ?? ""),
+      };
+    },
+  } as unknown as PromptRegistry;
+
   const useCase = new DraftReminderEmailUseCase({
     logger: new NoopLogger(),
     invoiceRepo: repo,
     aiText: ai,
     audit,
     rateLimit,
+    promptRegistry,
+    env: { APP_ENV: "test" } as EnvService,
   });
 
   return { useCase, repo, ai, audit, rateLimit };

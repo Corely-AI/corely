@@ -65,13 +65,15 @@ export class ParseActivityAiUseCase extends BaseUseCase<
     ]);
 
     try {
-      const prompt = this.promptRegistry.render(
-        "crm.ai.activity_parse",
-        buildPromptContext({ env: this.env, tenantId: ctx.tenantId }),
-        {
-          LANGUAGE: language,
-          USER_TEXT: input.description,
-        }
+      const promptContext = buildPromptContext({ env: this.env, tenantId: ctx.tenantId });
+      const prompt = this.promptRegistry.render("crm.ai.activity_parse", promptContext, {
+        LANGUAGE: language,
+        USER_TEXT: input.description,
+      });
+      const systemPrompt = this.promptRegistry.render(
+        "crm.ai.system.activity_parse",
+        promptContext,
+        {}
       );
       this.promptUsageLogger.logUsage({
         promptId: prompt.promptId,
@@ -85,7 +87,7 @@ export class ParseActivityAiUseCase extends BaseUseCase<
       });
 
       const aiRaw = await this.aiText.generateText({
-        systemPrompt: "Parse CRM activity descriptions. Return strict JSON only.",
+        systemPrompt: systemPrompt.content,
         userPrompt: prompt.content,
         temperature: 0.1,
         maxOutputTokens: 500,

@@ -14,6 +14,7 @@ import { SequencesInternalController } from "./adapters/http/sequences-internal.
 import { SequencesHttpController } from "./adapters/http/sequences.controller";
 import { AccountsHttpController } from "./adapters/http/accounts.controller";
 import { CrmAiHttpController } from "./adapters/http/crm-ai.controller";
+import { ChannelTemplatesHttpController } from "./adapters/http/channel-templates.controller";
 
 export const CRM_HTTP_CONTROLLERS: Type<unknown>[] = [
   DealsHttpController,
@@ -27,4 +28,5 @@ export const CRM_HTTP_CONTROLLERS: Type<unknown>[] = [
   SequencesHttpController,
   AccountsHttpController,
   CrmAiHttpController,
+  ChannelTemplatesHttpController,
 ];

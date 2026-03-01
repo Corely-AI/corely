@@ -79,27 +79,29 @@ export class DraftDealAiMessageUseCase extends BaseUseCase<
     );
 
     try {
-      const prompt = this.promptRegistry.render(
-        "crm.ai.deal_message_draft",
-        buildPromptContext({ env: this.env, tenantId: ctx.tenantId }),
-        {
-          CHANNEL: input.channel,
-          LANGUAGE: language,
-          PERSONALIZE_WITH_TIMELINE: input.personalizeWithTimeline ? "true" : "false",
-          DEAL_JSON: JSON.stringify(
-            {
-              title: healthContext.deal.title,
-              stageId: healthContext.deal.stageId,
-              amountCents: healthContext.deal.amountCents,
-              currency: healthContext.deal.currency,
-              expectedCloseDate: healthContext.deal.expectedCloseDate,
-              notes: healthContext.deal.notes,
-            },
-            null,
-            2
-          ),
-          TIMELINE_CONTEXT: buildTimelineContext(healthContext.timelineItems, 16),
-        }
+      const promptContext = buildPromptContext({ env: this.env, tenantId: ctx.tenantId });
+      const prompt = this.promptRegistry.render("crm.ai.deal_message_draft", promptContext, {
+        CHANNEL: input.channel,
+        LANGUAGE: language,
+        PERSONALIZE_WITH_TIMELINE: input.personalizeWithTimeline ? "true" : "false",
+        DEAL_JSON: JSON.stringify(
+          {
+            title: healthContext.deal.title,
+            stageId: healthContext.deal.stageId,
+            amountCents: healthContext.deal.amountCents,
+            currency: healthContext.deal.currency,
+            expectedCloseDate: healthContext.deal.expectedCloseDate,
+            notes: healthContext.deal.notes,
+          },
+          null,
+          2
+        ),
+        TIMELINE_CONTEXT: buildTimelineContext(healthContext.timelineItems, 16),
+      });
+      const systemPrompt = this.promptRegistry.render(
+        "crm.ai.system.deal_message_draft",
+        promptContext,
+        {}
       );
 
       this.promptUsageLogger.logUsage({
@@ -114,8 +116,7 @@ export class DraftDealAiMessageUseCase extends BaseUseCase<
       });
 
       const aiRaw = await this.aiText.generateText({
-        systemPrompt:
-          "You are a CRM message assistant. Return strict JSON only. Never include markdown.",
+        systemPrompt: systemPrompt.content,
         userPrompt: prompt.content,
         temperature: 0.25,
         maxOutputTokens: 850,

@@ -157,6 +157,136 @@ export const crmPrompts: PromptDefinition[] = [
     tags: ["crm", "ai", "messages"],
   },
   {
+    id: "crm.ai.system.deal_insights",
+    description: "System prompt for CRM deal insights generation.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template:
+          "You are a CRM assistant. Return strict JSON only. Never include markdown. Use null/unknown when uncertain.",
+        variablesSchema: z.object({}),
+      },
+    ],
+    tags: ["crm", "ai", "system"],
+  },
+  {
+    id: "crm.ai.system.deal_message_draft",
+    description: "System prompt for CRM message draft generation.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template:
+          "You are a CRM message assistant. Return strict JSON only. Never include markdown.",
+        variablesSchema: z.object({}),
+      },
+    ],
+    tags: ["crm", "ai", "system"],
+  },
+  {
+    id: "crm.ai.system.channel_template_generate",
+    description: "System prompt for CRM channel template generation.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template:
+          "You are a CRM template assistant. Return strict JSON only. Never include markdown.",
+        variablesSchema: z.object({}),
+      },
+    ],
+    tags: ["crm", "ai", "system"],
+  },
+  {
+    id: "crm.ai.system.activity_parse",
+    description: "System prompt for CRM activity parse.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template: "Parse CRM activity descriptions. Return strict JSON only.",
+        variablesSchema: z.object({}),
+      },
+    ],
+    tags: ["crm", "ai", "system"],
+  },
+  {
+    id: "crm.ai.system.activity_extract",
+    description: "System prompt for CRM activity extraction.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template: "Summarize CRM notes and extract follow-up action items. Return strict JSON.",
+        variablesSchema: z.object({}),
+      },
+    ],
+    tags: ["crm", "ai", "system"],
+  },
+  {
+    id: "crm.ai.system.communication_summarize",
+    description: "System prompt for CRM communication summarization.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template:
+          "Summarize CRM communication and return strict JSON with summary, actionItems[], confidence.",
+        variablesSchema: z.object({}),
+      },
+    ],
+    tags: ["crm", "ai", "system"],
+  },
+  {
+    id: "crm.ai.system.intent_sentiment",
+    description: "System prompt for CRM intent/sentiment classification.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template: "Classify intent and sentiment. Return strict JSON only.",
+        variablesSchema: z.object({}),
+      },
+    ],
+    tags: ["crm", "ai", "system"],
+  },
+  {
+    id: "crm.ai.channel_template_generate",
+    description: "Generate a reusable CRM channel template (subject/body) with placeholders.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template:
+          "Return strict JSON only.\n" +
+          "Channel: {{CHANNEL}}\n" +
+          "Language: {{LANGUAGE}}\n" +
+          "EmailMode: {{IS_EMAIL}}\n\n" +
+          "Additional Context:\n{{{CONTEXT}}}\n\n" +
+          "Allowed placeholders: {fullName}, {firstName}, {lastName}, {dealTitle}, {amount}, {currency}, {email}, {phoneE164}, {profileUrl}.\n" +
+          "Keep copy concise and practical for sales follow-up.\n" +
+          "Output keys: subject, body.\n" +
+          "If EmailMode is true, subject must be a non-empty string.\n" +
+          "If EmailMode is false, subject must be null.\n" +
+          "body must be non-empty plain text. No markdown.",
+        variablesSchema: z.object({
+          CHANNEL: z.string().min(2),
+          LANGUAGE: z.string().min(2),
+          IS_EMAIL: z.string().min(1),
+          CONTEXT: z.string().min(1),
+        }),
+        variables: [
+          { key: "CHANNEL", kind: "text" },
+          { key: "LANGUAGE", kind: "text" },
+          { key: "IS_EMAIL", kind: "text" },
+          { key: "CONTEXT", kind: "block" },
+        ],
+      },
+    ],
+    tags: ["crm", "ai", "templates"],
+  },
+  {
     id: "crm.ai.activity_parse",
     description: "Parse a natural-language activity description into structured fields.",
     defaultVersion: "v1",
