@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import archiver from "archiver";
 import { PassThrough } from "node:stream";
 import { once } from "node:events";
+import type Archiver from "archiver";
 import type * as PdfLib from "pdf-lib";
 import {
   type CashExportPayload,
@@ -200,6 +200,7 @@ export class CashExportAdapter implements ExportPort {
     const csvDayCloses = this.buildDayCloseCsv(model);
     const csvAttachments = this.buildAttachmentCsv(model);
     const csvAudit = this.buildAuditCsv(model);
+    const createArchiver = await this.loadArchiver();
 
     const manifest = {
       registerId: model.register.id,
@@ -215,7 +216,7 @@ export class CashExportAdapter implements ExportPort {
       chunks.push(chunk);
     });
 
-    const archive = archiver("zip", { zlib: { level: 9 } });
+    const archive = createArchiver("zip", { zlib: { level: 9 } });
     archive.pipe(output);
 
     archive.append(csvBook, { name: "cashbook.csv" });
@@ -237,6 +238,18 @@ export class CashExportAdapter implements ExportPort {
       contentType: "application/zip",
       data,
     };
+  }
+
+  private async loadArchiver(): Promise<typeof Archiver> {
+    try {
+      const mod = await import("archiver");
+      return mod.default;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new Error(
+        `Audit pack export is unavailable because archiver is not installed: ${reason}`
+      );
+    }
   }
 
   private buildDayCloseCsv(model: ExportModel): Buffer {
