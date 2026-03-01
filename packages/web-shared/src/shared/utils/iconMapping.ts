@@ -32,6 +32,8 @@ import {
   Cpu,
   Coins,
   Home,
+  Bot,
+  Scale,
 } from "lucide-react";
 
 /**
@@ -71,6 +73,8 @@ export const iconMap: Record<string, LucideIcon> = {
   Cpu,
   Coins,
   Home,
+  Bot,
+  Scale,
 };
 
 /**
