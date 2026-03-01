@@ -1,0 +1,15 @@
+{
+  "extends": "@corely/tsconfig/react.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@corely/web-features": ["./src/index.ts"],
+      "@corely/web-features/*": ["./src/*"],
+      "@corely/web-shared": ["../web-shared/src/index.ts"],
+      "@corely/web-shared/*": ["../web-shared/src/*"],
+      "@corely/contracts": ["../contracts/src/index.ts"],
+      "@corely/ui": ["../ui/src/index.ts"]
+    }
+  },
+  "include": ["src", "../contracts/src", "../ui/src", "../web-shared/src"]
+}

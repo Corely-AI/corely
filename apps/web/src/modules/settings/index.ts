@@ -8,9 +8,11 @@ export { default as CustomFieldsSettingsPage } from "./screens/CustomFieldsSetti
 export { default as EngagementTemplatesSettingsPage } from "./screens/EngagementTemplatesSettingsPage";
 
 // Workspace Profile Components
-export { ContactDetailsDialog } from "./components/workspace-profile/ContactDetailsDialog";
-export { TaxDetailsDialog } from "./components/workspace-profile/TaxDetailsDialog";
-export { PaymentMethodSwitcher } from "./payment-methods";
+export {
+  ContactDetailsDialog,
+  TaxDetailsDialog,
+  PaymentMethodSwitcher,
+} from "@corely/web-shared/settings";
 
 export const commandContributions = (): Command[] => [
   {

@@ -9,6 +9,8 @@
     "@corely/api-client": "workspace:*",
     "@corely/auth-client": "workspace:*",
     "@corely/contracts": "workspace:*",
+    "@corely/web-features": "workspace:*",
+    "@corely/web-shared": "workspace:*",
     "@corely/ui": "workspace:*",
     "@corely/website-blocks": "workspace:*",
     "@dnd-kit/core": "^6.3.1",

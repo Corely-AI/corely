@@ -1,0 +1,56 @@
+{
+  "extends": "@corely/tsconfig/react.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": ["./src/types/react-query"],
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting - relaxed for gradual migration */
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": false,
+    "noFallthroughCasesInSwitch": false,
+    "exactOptionalPropertyTypes": false,
+    "ignoreDeprecations": "5.0",
+
+    "baseUrl": "..",
+    "paths": {
+      "@/*": ["freelancer/src/*"],
+      "@corely/auth-client": ["../packages/auth-client/src/index.ts"],
+      "@corely/api-client": ["../packages/api-client/src/index.ts"],
+      "@corely/contracts": ["../packages/contracts/src/index.ts"],
+      "@corely/domain": ["../packages/domain/src/index.ts"],
+      "@corely/offline-core": ["../packages/offline-core/src/index.ts"],
+      "@corely/offline-web": ["../packages/offline-web/src/index.ts"],
+      "@corely/ui": ["../packages/ui/src/index.ts"],
+      "@corely/web-features": ["../packages/web-features/src/index.ts"],
+      "@corely/web-features/*": ["../packages/web-features/src/*"],
+      "@corely/web-shared": ["../packages/web-shared/src/index.ts"],
+      "@corely/web-shared/*": ["../packages/web-shared/src/*"],
+      "@corely/website-blocks": ["../packages/website-blocks/src/index.ts"]
+    }
+  },
+  "include": [
+    "src",
+    "../../packages/api-client/src",
+    "../../packages/auth-client/src",
+    "../../packages/contracts/src",
+    "../../packages/domain/src",
+    "../../packages/offline-core/src",
+    "../../packages/offline-web/src",
+    "../../packages/ui/src",
+    "../../packages/web-features/src",
+    "../../packages/web-shared/src",
+    "../../packages/website-blocks/src"
+  ],
+  "exclude": [
+    "../../packages/web-features/src/**/*.spec.ts",
+    "../../packages/web-features/src/**/*.spec.tsx",
+    "../../packages/web-shared/src/**/*.spec.ts",
+    "../../packages/web-shared/src/**/*.spec.tsx"
+  ]
+}

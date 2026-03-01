@@ -18,6 +18,7 @@
     "build:worker": "pnpm --filter @corely/worker... build && node scripts/check-service-deps-built.mjs @corely/worker",
     "typecheck": "pnpm -r typecheck",
     "dev:web": "node scripts/build-deps-if-stale.mjs @corely/web && pnpm --filter @corely/web dev",
+    "dev:freelancer": "node scripts/build-deps-if-stale.mjs @corely/freelancer && pnpm --filter @corely/freelancer dev",
     "dev:pos": "node scripts/build-deps-if-stale.mjs @corely/pos && pnpm --filter @corely/pos start",
     "dev:public": "node scripts/build-deps-if-stale.mjs @corely/public-web && pnpm --filter @corely/public-web dev",
     "dev:website-runtime": "node scripts/build-deps-if-stale.mjs @corely/website-runtime && pnpm --filter @corely/website-runtime dev",

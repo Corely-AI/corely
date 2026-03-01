@@ -1,0 +1,25 @@
+{
+  "extends": "@corely/tsconfig/react.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@corely/web-shared": ["./src/index.ts"],
+      "@corely/web-shared/*": ["./src/*"],
+      "@corely/api-client": ["../api-client/src/index.ts"],
+      "@corely/auth-client": ["../auth-client/src/index.ts"],
+      "@corely/contracts": ["../contracts/src/index.ts"],
+      "@corely/offline-core": ["../offline-core/src/index.ts"],
+      "@corely/offline-web": ["../offline-web/src/index.ts"],
+      "@corely/ui": ["../ui/src/index.ts"]
+    }
+  },
+  "include": [
+    "src",
+    "../api-client/src",
+    "../auth-client/src",
+    "../contracts/src",
+    "../offline-core/src",
+    "../offline-web/src",
+    "../ui/src"
+  ]
+}

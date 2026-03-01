@@ -1,0 +1,25 @@
+{
+  "name": "@corely/web-features",
+  "private": true,
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@corely/contracts": "workspace:*",
+    "@corely/ui": "workspace:*",
+    "@corely/web-shared": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router-dom": "^6.30.1",
+    "zod": "catalog:"
+  },
+  "author": "Ha Doan <ha@oneway8x.com>"
+}

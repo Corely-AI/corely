@@ -20,6 +20,9 @@
     "baseUrl": "..",
     "paths": {
       "@/*": ["web/src/*"],
+      "@/lib/*": ["../packages/web-shared/src/lib/*"],
+      "@/shared/*": ["../packages/web-shared/src/shared/*"],
+      "@/offline/*": ["../packages/web-shared/src/offline/*"],
       "@corely/auth-client": ["../packages/auth-client/src/index.ts"],
       "@corely/api-client": ["../packages/api-client/src/index.ts"],
       "@corely/contracts": ["../packages/contracts/src/index.ts"],
@@ -27,6 +30,10 @@
       "@corely/offline-core": ["../packages/offline-core/src/index.ts"],
       "@corely/offline-web": ["../packages/offline-web/src/index.ts"],
       "@corely/ui": ["../packages/ui/src/index.ts"],
+      "@corely/web-features": ["../packages/web-features/src/index.ts"],
+      "@corely/web-features/*": ["../packages/web-features/src/*"],
+      "@corely/web-shared": ["../packages/web-shared/src/index.ts"],
+      "@corely/web-shared/*": ["../packages/web-shared/src/*"],
       "@corely/website-blocks": ["../packages/website-blocks/src/index.ts"]
     }
   },
@@ -39,6 +46,14 @@
     "../../packages/offline-core/src",
     "../../packages/offline-web/src",
     "../../packages/ui/src",
+    "../../packages/web-features/src",
+    "../../packages/web-shared/src",
     "../../packages/website-blocks/src"
+  ],
+  "exclude": [
+    "../../packages/web-features/src/**/*.spec.ts",
+    "../../packages/web-features/src/**/*.spec.tsx",
+    "../../packages/web-shared/src/**/*.spec.ts",
+    "../../packages/web-shared/src/**/*.spec.tsx"
   ]
 }
