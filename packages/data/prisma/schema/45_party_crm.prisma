@@ -390,6 +390,26 @@ model ChannelRegistry {
   @@schema("crm")
 }
 
+model ChannelTemplate {
+  id              String   @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  channelKey      String   @db.VarChar(64)
+  name            String   @db.VarChar(120)
+  subject         String?  @db.VarChar(300)
+  body            String
+  createdByUserId String?
+  updatedByUserId String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, workspaceId, channelKey, name], map: "crm_channel_template_workspace_channel_name_key")
+  @@index([tenantId, workspaceId, channelKey, updatedAt], map: "crm_channel_template_tenant_workspace_channel_updated_idx")
+  @@schema("crm")
+}
+
 model CommunicationWebhookEvent {
   id                String   @id @default(cuid())
   tenantId          String

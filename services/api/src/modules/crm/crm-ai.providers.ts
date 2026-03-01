@@ -21,6 +21,7 @@ import { CrmAiFeatureGateService } from "./application/services/crm-ai-feature-g
 import { DealAiAnalyticsService } from "./application/services/deal-ai-analytics.service";
 import { DraftDealAiMessageUseCase } from "./application/use-cases/ai/draft-deal-ai-message.usecase";
 import { ExtractActivityAiUseCase } from "./application/use-cases/ai/extract-activity-ai.usecase";
+import { GenerateChannelTemplateAiUseCase } from "./application/use-cases/ai/generate-channel-template-ai.usecase";
 import { GetCrmAiSettingsUseCase } from "./application/use-cases/ai/get-crm-ai-settings.usecase";
 import { GetDealAiInsightsUseCase } from "./application/use-cases/ai/get-deal-ai-insights.usecase";
 import { GetDealAiRecommendationsUseCase } from "./application/use-cases/ai/get-deal-ai-recommendations.usecase";
@@ -127,6 +128,25 @@ export const CRM_AI_PROVIDERS: Provider[] = [
       PromptUsageLogger,
       EnvService,
     ],
+  },
+  {
+    provide: GenerateChannelTemplateAiUseCase,
+    useFactory: (
+      aiText: AiTextPort,
+      featureGate: CrmAiFeatureGateService,
+      promptRegistry: PromptRegistry,
+      promptUsageLogger: PromptUsageLogger,
+      env: EnvService
+    ) =>
+      new GenerateChannelTemplateAiUseCase(
+        aiText,
+        featureGate,
+        promptRegistry,
+        promptUsageLogger,
+        env,
+        new NestLoggerAdapter()
+      ),
+    inject: [AI_TEXT_PORT, CrmAiFeatureGateService, PromptRegistry, PromptUsageLogger, EnvService],
   },
   {
     provide: ParseActivityAiUseCase,

@@ -22,14 +22,17 @@ import { DEAL_REPO_PORT } from "./application/ports/deal-repository.port";
 import { ENROLLMENT_REPO_PORT } from "./application/ports/enrollment-repository.port";
 import { LEAD_REPO_PORT } from "./application/ports/lead-repository.port";
 import { SEQUENCE_REPO_PORT } from "./application/ports/sequence-repository.port";
+import { CHANNEL_TEMPLATE_REPOSITORY_PORT } from "./application/ports/channel-template-repository.port";
 import { CreateAccountUseCase } from "./application/use-cases/create-account/create-account.usecase";
 import { CreateActivityUseCase } from "./application/use-cases/create-activity/create-activity.usecase";
 import { CreateCommunicationDraftUseCase } from "./application/use-cases/create-communication-draft/create-communication-draft.usecase";
+import { CreateChannelTemplateUseCase } from "./application/use-cases/create-channel-template/create-channel-template.usecase";
 import { CreateDealUseCase } from "./application/use-cases/create-deal/create-deal.usecase";
 import { CreateLeadUseCase } from "./application/use-cases/create-lead/create-lead.usecase";
 import { CreateSequenceUseCase } from "./application/use-cases/create-sequence/create-sequence.usecase";
 import { CompleteActivityUseCase } from "./application/use-cases/complete-activity/complete-activity.usecase";
 import { ConvertLeadUseCase } from "./application/use-cases/convert-lead/convert-lead.usecase";
+import { DeleteChannelTemplateUseCase } from "./application/use-cases/delete-channel-template/delete-channel-template.usecase";
 import { EnrollEntityUseCase } from "./application/use-cases/enroll-entity/enroll-entity.usecase";
 import { GetAccountUseCase } from "./application/use-cases/get-account/get-account.usecase";
 import { GetAccountCustomAttributesUseCase } from "./application/use-cases/get-account-custom-attributes/get-account-custom-attributes.usecase";
@@ -38,6 +41,7 @@ import { GetLeadUseCase } from "./application/use-cases/get-lead/get-lead.usecas
 import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-timeline.usecase";
 import { ListAccountsUseCase } from "./application/use-cases/list-accounts/list-accounts.usecase";
 import { ListActivitiesUseCase } from "./application/use-cases/list-activities/list-activities.usecase";
+import { ListChannelTemplatesUseCase } from "./application/use-cases/list-channel-templates/list-channel-templates.usecase";
 import { ListDealsUseCase } from "./application/use-cases/list-deals/list-deals.usecase";
 import { ListLeadsUseCase } from "./application/use-cases/list-leads/list-leads.usecase";
 import { ListSequencesUseCase } from "./application/use-cases/list-sequences/list-sequences.usecase";
@@ -52,9 +56,11 @@ import { SendCommunicationUseCase } from "./application/use-cases/send-communica
 import { SetAccountCustomAttributesUseCase } from "./application/use-cases/set-account-custom-attributes/set-account-custom-attributes.usecase";
 import { UpdateAccountUseCase } from "./application/use-cases/update-account/update-account.usecase";
 import { UpdateActivityUseCase } from "./application/use-cases/update-activity/update-activity.usecase";
+import { UpdateChannelTemplateUseCase } from "./application/use-cases/update-channel-template/update-channel-template.usecase";
 import { UpdateDealUseCase } from "./application/use-cases/update-deal/update-deal.usecase";
 import { PrismaAccountRepoAdapter } from "./infrastructure/prisma/prisma-account-repo.adapter";
 import { PrismaActivityRepoAdapter } from "./infrastructure/prisma/prisma-activity-repo.adapter";
+import { PrismaChannelTemplateRepoAdapter } from "./infrastructure/prisma/prisma-channel-template-repo.adapter";
 import { PrismaDealRepoAdapter } from "./infrastructure/prisma/prisma-deal-repo.adapter";
 import { PrismaEnrollmentRepoAdapter } from "./infrastructure/prisma/prisma-enrollment-repo.adapter";
 import { PrismaLeadRepoAdapter } from "./infrastructure/prisma/prisma-lead-repo.adapter";
@@ -94,6 +100,8 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
   PrismaEnrollmentRepoAdapter,
   { provide: SEQUENCE_REPO_PORT, useExisting: PrismaSequenceRepoAdapter },
   { provide: ENROLLMENT_REPO_PORT, useExisting: PrismaEnrollmentRepoAdapter },
+  PrismaChannelTemplateRepoAdapter,
+  { provide: CHANNEL_TEMPLATE_REPOSITORY_PORT, useExisting: PrismaChannelTemplateRepoAdapter },
   PrismaAccountRepoAdapter,
   { provide: ACCOUNT_REPO_PORT, useExisting: PrismaAccountRepoAdapter },
   {
@@ -350,4 +358,8 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
       new GetTimelineUseCase(activityRepo, new NestLoggerAdapter()),
     inject: [ACTIVITY_REPO_PORT],
   },
+  ListChannelTemplatesUseCase,
+  CreateChannelTemplateUseCase,
+  UpdateChannelTemplateUseCase,
+  DeleteChannelTemplateUseCase,
 ];

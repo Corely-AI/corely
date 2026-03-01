@@ -133,28 +133,30 @@ export class GetDealAiInsightsUseCase extends BaseUseCase<
     if (featureState.aiEnabled) {
       try {
         const timelineContext = buildTimelineContext(healthContext.timelineItems, 24);
-        const prompt = this.promptRegistry.render(
-          "crm.ai.deal_insights",
-          buildPromptContext({ env: this.env, tenantId: ctx.tenantId }),
-          {
-            LANGUAGE: language,
-            DEAL_JSON: JSON.stringify(
-              {
-                id: healthContext.deal.id,
-                title: healthContext.deal.title,
-                stageId: healthContext.deal.stageId,
-                amountCents: healthContext.deal.amountCents,
-                currency: healthContext.deal.currency,
-                expectedCloseDate: healthContext.deal.expectedCloseDate,
-                notes: healthContext.deal.notes,
-                status: healthContext.deal.status,
-              },
-              null,
-              2
-            ),
-            TIMELINE_CONTEXT: timelineContext,
-            MISSING_HINTS_JSON: JSON.stringify(computedMissing, null, 2),
-          }
+        const promptContext = buildPromptContext({ env: this.env, tenantId: ctx.tenantId });
+        const prompt = this.promptRegistry.render("crm.ai.deal_insights", promptContext, {
+          LANGUAGE: language,
+          DEAL_JSON: JSON.stringify(
+            {
+              id: healthContext.deal.id,
+              title: healthContext.deal.title,
+              stageId: healthContext.deal.stageId,
+              amountCents: healthContext.deal.amountCents,
+              currency: healthContext.deal.currency,
+              expectedCloseDate: healthContext.deal.expectedCloseDate,
+              notes: healthContext.deal.notes,
+              status: healthContext.deal.status,
+            },
+            null,
+            2
+          ),
+          TIMELINE_CONTEXT: timelineContext,
+          MISSING_HINTS_JSON: JSON.stringify(computedMissing, null, 2),
+        });
+        const systemPrompt = this.promptRegistry.render(
+          "crm.ai.system.deal_insights",
+          promptContext,
+          {}
         );
 
         this.promptUsageLogger.logUsage({
@@ -169,8 +171,7 @@ export class GetDealAiInsightsUseCase extends BaseUseCase<
         });
 
         const aiRaw = await this.aiText.generateText({
-          systemPrompt:
-            "You are a CRM assistant. Return strict JSON only. Never include markdown. Use null/unknown when uncertain.",
+          systemPrompt: systemPrompt.content,
           userPrompt: prompt.content,
           temperature: 0.1,
           maxOutputTokens: 900,

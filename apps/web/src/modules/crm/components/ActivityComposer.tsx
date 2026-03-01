@@ -32,7 +32,7 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
     () =>
       z.object({
         type: z.enum(ACTIVITY_TYPES),
-        subject: z.string().min(1, t("crm.activity.subjectRequired")),
+        subject: z.string().optional(),
         body: z.string().optional(),
         dueDate: z.date().optional(),
         dueTime: z.string().optional(),
@@ -80,12 +80,26 @@ export const ActivityComposer: React.FC<ActivityComposerProps> = ({ dealId, part
       }
       dateWithTime.setSeconds(0, 0);
     }
+    const normalizedSubject = values.subject?.trim();
+    const bodyText = values.body
+      ? values.body
+          .replace(/<[^>]*>/g, " ")
+          .replace(/&nbsp;/g, " ")
+          .replace(/\s+/g, " ")
+          .trim()
+      : "";
+    const fallbackSubject =
+      bodyText.slice(0, 120) ||
+      (values.type === "COMMUNICATION"
+        ? `${values.channelKey || "message"} message`
+        : t(`crm.activity.types.${values.type.toLowerCase()}`));
+    const subject = normalizedSubject || fallbackSubject;
 
     addActivity.mutate({
       dealId,
       payload: {
         type: values.type,
-        subject: values.subject,
+        subject,
         body: values.body || undefined,
         partyId: partyId || undefined,
         channelKey: values.type === "COMMUNICATION" ? values.channelKey || undefined : undefined,

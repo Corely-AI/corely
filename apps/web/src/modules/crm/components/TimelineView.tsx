@@ -50,6 +50,16 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                 isActivity && item.metadata && "activityType" in item.metadata
                   ? (item.metadata.activityType as ActivityType | undefined)
                   : undefined;
+              const isCommunication =
+                item.type === "MESSAGE" || (isActivity && activityType === "COMMUNICATION");
+              const direction =
+                (typeof item.direction === "string"
+                  ? item.direction
+                  : typeof item.metadata?.direction === "string"
+                    ? item.metadata.direction
+                    : undefined
+                )?.toUpperCase() ?? "OUTBOUND";
+              const isOutbound = direction === "OUTBOUND";
               return (
                 <div
                   key={item.id}
@@ -71,9 +81,9 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <h4 className="font-medium text-sm">
-                          {item.type === "MESSAGE" && item.channelKey
+                          {isCommunication && item.channelKey
                             ? t("crm.timeline.channelMessage", { channel: item.channelKey })
-                            : item.subject}
+                            : item.subject || t("crm.activity.types.communication")}
                         </h4>
                         {communicationStatus ? (
                           <span className="inline-flex mt-1 text-[11px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">
@@ -83,7 +93,31 @@ export const TimelineView: FC<TimelineViewProps> = ({ items }) => {
                           </span>
                         ) : null}
                         {item.body &&
-                          (activityType === "NOTE" ? (
+                          (isCommunication ? (
+                            <div
+                              className={`mt-2 flex ${isOutbound ? "justify-end" : "justify-start"}`}
+                            >
+                              <div
+                                className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed break-words ${
+                                  isOutbound
+                                    ? "bg-emerald-100 text-emerald-950 rounded-br-md"
+                                    : "bg-slate-100 text-slate-900 rounded-bl-md"
+                                }`}
+                              >
+                                {looksLikeHtml(item.body) ? (
+                                  <div
+                                    className="prose prose-sm max-w-none dark:prose-invert"
+                                    dangerouslySetInnerHTML={{ __html: item.body }}
+                                  />
+                                ) : (
+                                  <Markdown
+                                    content={item.body}
+                                    className="text-sm leading-relaxed"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          ) : activityType === "NOTE" ? (
                             <div className="mt-1 rounded-md border bg-muted/20 px-3 py-2">
                               {looksLikeHtml(item.body) ? (
                                 <div

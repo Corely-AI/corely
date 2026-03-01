@@ -25,11 +25,13 @@ import {
   fallbackIssueSubject,
 } from "../../services/copilot/invoice-email-draft.facts";
 import {
-  buildIssueEmailDraftPrompt,
   getMissingBankDetailsFallbackLine,
   parseEmailDraftOutput,
   sanitizeEmailDraftBody,
 } from "../../services/copilot/invoice-email-draft.prompt-builder";
+import { PromptRegistry } from "@corely/prompts";
+import { buildPromptContext } from "@/shared/prompts/prompt-context";
+import { EnvService } from "@corely/config";
 
 type Deps = {
   logger: LoggerPort;
@@ -37,6 +39,8 @@ type Deps = {
   aiText: AiTextPort;
   audit: AuditPort;
   rateLimit: InvoiceCopilotRateLimitPort;
+  promptRegistry: PromptRegistry;
+  env: EnvService;
 };
 
 const RATE_LIMIT_WINDOW_MINUTES = 10;
@@ -79,17 +83,29 @@ export class DraftInvoiceEmailUseCase extends BaseUseCase<
     }
 
     const facts = buildInvoiceEmailDraftFacts(invoice, input.language);
-    const prompts = buildIssueEmailDraftPrompt({
-      language: input.language,
-      tone: input.tone,
-      facts,
-    });
+    const promptContext = buildPromptContext({ env: this.depsRef.env, tenantId: ctx.tenantId });
+    const systemPrompt = this.depsRef.promptRegistry.render(
+      "invoices.copilot.issue_email.system",
+      promptContext,
+      {
+        LANGUAGE: input.language,
+        TONE: input.tone,
+        MISSING_BANK_DETAILS_LINE: getMissingBankDetailsFallbackLine(),
+      }
+    );
+    const userPrompt = this.depsRef.promptRegistry.render(
+      "invoices.copilot.issue_email.user",
+      promptContext,
+      {
+        FACTS_JSON: JSON.stringify(facts, null, 2),
+      }
+    );
 
     let generatedText = "";
     try {
       generatedText = await this.depsRef.aiText.generateText({
-        systemPrompt: prompts.systemPrompt,
-        userPrompt: prompts.userPrompt,
+        systemPrompt: systemPrompt.content,
+        userPrompt: userPrompt.content,
         temperature: 0.2,
         maxOutputTokens: 420,
       });

@@ -6,6 +6,7 @@ import { approvalPrompts } from "./approvals";
 import { workflowPrompts } from "./workflows";
 import { cmsPrompts } from "./cms";
 import { websitePrompts } from "./website";
+import { invoicePrompts } from "./invoices";
 
 export const promptDefinitions = [
   ...copilotPrompts,
@@ -16,4 +17,5 @@ export const promptDefinitions = [
   ...workflowPrompts,
   ...cmsPrompts,
   ...websitePrompts,
+  ...invoicePrompts,
 ];

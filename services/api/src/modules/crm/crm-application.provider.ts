@@ -25,6 +25,11 @@ import { GetDealAiRecommendationsUseCase } from "./application/use-cases/ai/get-
 import { ParseActivityAiUseCase } from "./application/use-cases/ai/parse-activity-ai.usecase";
 import { SummarizeCommunicationAiUseCase } from "./application/use-cases/ai/summarize-communication-ai.usecase";
 import { UpdateCrmAiSettingsUseCase } from "./application/use-cases/ai/update-crm-ai-settings.usecase";
+import { GenerateChannelTemplateAiUseCase } from "./application/use-cases/ai/generate-channel-template-ai.usecase";
+import { ListChannelTemplatesUseCase } from "./application/use-cases/list-channel-templates/list-channel-templates.usecase";
+import { CreateChannelTemplateUseCase } from "./application/use-cases/create-channel-template/create-channel-template.usecase";
+import { UpdateChannelTemplateUseCase } from "./application/use-cases/update-channel-template/update-channel-template.usecase";
+import { DeleteChannelTemplateUseCase } from "./application/use-cases/delete-channel-template/delete-channel-template.usecase";
 
 export const CRM_APPLICATION_PROVIDER: Provider = {
   provide: CrmApplication,
@@ -53,7 +58,12 @@ export const CRM_APPLICATION_PROVIDER: Provider = {
     extractActivityAi: ExtractActivityAiUseCase,
     summarizeCommunicationAi: SummarizeCommunicationAiUseCase,
     getCrmAiSettings: GetCrmAiSettingsUseCase,
-    updateCrmAiSettings: UpdateCrmAiSettingsUseCase
+    updateCrmAiSettings: UpdateCrmAiSettingsUseCase,
+    generateChannelTemplateAi: GenerateChannelTemplateAiUseCase,
+    listChannelTemplates: ListChannelTemplatesUseCase,
+    createChannelTemplate: CreateChannelTemplateUseCase,
+    updateChannelTemplate: UpdateChannelTemplateUseCase,
+    deleteChannelTemplate: DeleteChannelTemplateUseCase
   ) =>
     new CrmApplication(
       createDeal,
@@ -80,7 +90,12 @@ export const CRM_APPLICATION_PROVIDER: Provider = {
       extractActivityAi,
       summarizeCommunicationAi,
       getCrmAiSettings,
-      updateCrmAiSettings
+      updateCrmAiSettings,
+      generateChannelTemplateAi,
+      listChannelTemplates,
+      createChannelTemplate,
+      updateChannelTemplate,
+      deleteChannelTemplate
     ),
   inject: [
     CreateDealUseCase,
@@ -108,5 +123,10 @@ export const CRM_APPLICATION_PROVIDER: Provider = {
     SummarizeCommunicationAiUseCase,
     GetCrmAiSettingsUseCase,
     UpdateCrmAiSettingsUseCase,
+    GenerateChannelTemplateAiUseCase,
+    ListChannelTemplatesUseCase,
+    CreateChannelTemplateUseCase,
+    UpdateChannelTemplateUseCase,
+    DeleteChannelTemplateUseCase,
   ],
 };

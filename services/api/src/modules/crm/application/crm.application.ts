@@ -23,6 +23,11 @@ import type { ExtractActivityAiUseCase } from "./use-cases/ai/extract-activity-a
 import type { SummarizeCommunicationAiUseCase } from "./use-cases/ai/summarize-communication-ai.usecase";
 import type { GetCrmAiSettingsUseCase } from "./use-cases/ai/get-crm-ai-settings.usecase";
 import type { UpdateCrmAiSettingsUseCase } from "./use-cases/ai/update-crm-ai-settings.usecase";
+import type { GenerateChannelTemplateAiUseCase } from "./use-cases/ai/generate-channel-template-ai.usecase";
+import type { ListChannelTemplatesUseCase } from "./use-cases/list-channel-templates/list-channel-templates.usecase";
+import type { CreateChannelTemplateUseCase } from "./use-cases/create-channel-template/create-channel-template.usecase";
+import type { UpdateChannelTemplateUseCase } from "./use-cases/update-channel-template/update-channel-template.usecase";
+import type { DeleteChannelTemplateUseCase } from "./use-cases/delete-channel-template/delete-channel-template.usecase";
 
 export class CrmApplication {
   constructor(
@@ -50,6 +55,11 @@ export class CrmApplication {
     public readonly extractActivityAi: ExtractActivityAiUseCase,
     public readonly summarizeCommunicationAi: SummarizeCommunicationAiUseCase,
     public readonly getCrmAiSettings: GetCrmAiSettingsUseCase,
-    public readonly updateCrmAiSettings: UpdateCrmAiSettingsUseCase
+    public readonly updateCrmAiSettings: UpdateCrmAiSettingsUseCase,
+    public readonly generateChannelTemplateAi: GenerateChannelTemplateAiUseCase,
+    public readonly listChannelTemplates: ListChannelTemplatesUseCase,
+    public readonly createChannelTemplate: CreateChannelTemplateUseCase,
+    public readonly updateChannelTemplate: UpdateChannelTemplateUseCase,
+    public readonly deleteChannelTemplate: DeleteChannelTemplateUseCase
   ) {}
 }

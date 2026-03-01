@@ -56,13 +56,15 @@ export class ExtractActivityAiUseCase extends BaseUseCase<
 
     let result = this.fallbackExtract(input.notes);
     try {
-      const prompt = this.promptRegistry.render(
-        "crm.ai.activity_extract",
-        buildPromptContext({ env: this.env, tenantId: ctx.tenantId }),
-        {
-          LANGUAGE: language,
-          NOTES_TEXT: input.notes,
-        }
+      const promptContext = buildPromptContext({ env: this.env, tenantId: ctx.tenantId });
+      const prompt = this.promptRegistry.render("crm.ai.activity_extract", promptContext, {
+        LANGUAGE: language,
+        NOTES_TEXT: input.notes,
+      });
+      const systemPrompt = this.promptRegistry.render(
+        "crm.ai.system.activity_extract",
+        promptContext,
+        {}
       );
       this.promptUsageLogger.logUsage({
         promptId: prompt.promptId,
@@ -75,7 +77,7 @@ export class ExtractActivityAiUseCase extends BaseUseCase<
         purpose: "crm.ai.activity_extract",
       });
       const aiRaw = await this.aiText.generateText({
-        systemPrompt: "Summarize CRM notes and extract follow-up action items. Return strict JSON.",
+        systemPrompt: systemPrompt.content,
         userPrompt: prompt.content,
         temperature: 0.1,
         maxOutputTokens: 650,

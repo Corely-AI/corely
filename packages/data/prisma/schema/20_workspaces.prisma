@@ -72,6 +72,7 @@ model Workspace {
   crmMailboxes      CrmMailbox[]
   crmMailThreads    CrmMailThread[]
   crmMailMessages   CrmMailMessage[]
+  channelTemplates  ChannelTemplate[]
 
   @@unique([tenantId, name])
   @@index([tenantId])

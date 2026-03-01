@@ -1,6 +1,11 @@
 import React from "react";
 import { Navigate, Route } from "react-router-dom";
-import { SettingsPage, RolesPage, RolePermissionsPage } from "../../modules/settings";
+import {
+  SettingsPage,
+  RolesPage,
+  RolePermissionsPage,
+  EngagementTemplatesSettingsPage,
+} from "../../modules/settings";
 import DimensionsSettingsPage from "../../modules/settings/screens/DimensionsSettingsPage";
 import CustomFieldsSettingsPage from "../../modules/settings/screens/CustomFieldsSettingsPage";
 import { RequirePermission } from "../../modules/settings/components/RequirePermission";
@@ -30,6 +35,14 @@ export const appSettingsRoutes = (
     <Route path="/settings" element={<SettingsPage />} />
     <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
     <Route path="/settings/workspace" element={<WorkspaceSettingsPage />} />
+    <Route
+      path="/settings/engagement/templates"
+      element={
+        <RequirePermission permission="crm.deals.manage">
+          <EngagementTemplatesSettingsPage />
+        </RequirePermission>
+      }
+    />
     <Route path="/settings/classes" element={<ClassesSettingsPage />} />
     <Route path="/settings/custom-attributes/dimensions" element={<DimensionsSettingsPage />} />
     <Route

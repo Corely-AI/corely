@@ -1,4 +1,5 @@
 const PLACEHOLDER_WHITELIST = [
+  "fullName",
   "firstName",
   "lastName",
   "companyName",

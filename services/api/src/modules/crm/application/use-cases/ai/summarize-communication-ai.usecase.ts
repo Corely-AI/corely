@@ -95,13 +95,15 @@ export class SummarizeCommunicationAiUseCase extends BaseUseCase<
   ): Promise<ActivityAiExtractResult> {
     const fallback = this.fallbackSummary(body);
     try {
-      const prompt = this.promptRegistry.render(
-        "crm.ai.communication_summarize",
-        buildPromptContext({ env: this.env, tenantId }),
-        {
-          LANGUAGE: language,
-          MESSAGE_BODY: body,
-        }
+      const promptContext = buildPromptContext({ env: this.env, tenantId });
+      const prompt = this.promptRegistry.render("crm.ai.communication_summarize", promptContext, {
+        LANGUAGE: language,
+        MESSAGE_BODY: body,
+      });
+      const systemPrompt = this.promptRegistry.render(
+        "crm.ai.system.communication_summarize",
+        promptContext,
+        {}
       );
       this.promptUsageLogger.logUsage({
         promptId: prompt.promptId,
@@ -115,8 +117,7 @@ export class SummarizeCommunicationAiUseCase extends BaseUseCase<
       });
 
       const aiRaw = await this.aiText.generateText({
-        systemPrompt:
-          "Summarize CRM communication and return strict JSON with summary, actionItems[], confidence.",
+        systemPrompt: systemPrompt.content,
         userPrompt: prompt.content,
         temperature: 0.15,
         maxOutputTokens: 700,
@@ -134,13 +135,15 @@ export class SummarizeCommunicationAiUseCase extends BaseUseCase<
     language: string
   ) {
     try {
-      const prompt = this.promptRegistry.render(
-        "crm.ai.intent_sentiment",
-        buildPromptContext({ env: this.env, tenantId }),
-        {
-          LANGUAGE: language,
-          MESSAGE_BODY: body,
-        }
+      const promptContext = buildPromptContext({ env: this.env, tenantId });
+      const prompt = this.promptRegistry.render("crm.ai.intent_sentiment", promptContext, {
+        LANGUAGE: language,
+        MESSAGE_BODY: body,
+      });
+      const systemPrompt = this.promptRegistry.render(
+        "crm.ai.system.intent_sentiment",
+        promptContext,
+        {}
       );
       this.promptUsageLogger.logUsage({
         promptId: prompt.promptId,
@@ -153,7 +156,7 @@ export class SummarizeCommunicationAiUseCase extends BaseUseCase<
         purpose: "crm.ai.intent_sentiment",
       });
       const aiRaw = await this.aiText.generateText({
-        systemPrompt: "Classify intent and sentiment. Return strict JSON only.",
+        systemPrompt: systemPrompt.content,
         userPrompt: prompt.content,
         temperature: 0.1,
         maxOutputTokens: 280,

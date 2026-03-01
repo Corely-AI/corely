@@ -27,6 +27,7 @@ import { DealAiMessageDraftDialog } from "./DealAiMessageDraftDialog";
 interface DealDetailOverlaysProps {
   deal: DealDto;
   selectedChannel: ChannelDefinition | null;
+  activeWorkspaceId: string | null;
   composerOpen: boolean;
   onComposerOpenChange: (open: boolean) => void;
   templateContext: Record<string, string | undefined>;
@@ -66,6 +67,7 @@ interface DealDetailOverlaysProps {
 export const DealDetailOverlays: React.FC<DealDetailOverlaysProps> = ({
   deal,
   selectedChannel,
+  activeWorkspaceId,
   composerOpen,
   onComposerOpenChange,
   templateContext,
@@ -106,6 +108,7 @@ export const DealDetailOverlays: React.FC<DealDetailOverlaysProps> = ({
         open={composerOpen}
         onOpenChange={onComposerOpenChange}
         channel={selectedChannel}
+        workspaceId={activeWorkspaceId}
         context={{
           ...templateContext,
           dealTitle: deal.title,
