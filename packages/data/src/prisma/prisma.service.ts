@@ -15,6 +15,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly pool: Pool;
   private readonly skipConnect: boolean;
   private readonly connectTimeoutMs: number;
+  private readonly connectMaxAttempts: number;
+  private readonly connectRetryDelayMs: number;
 
   constructor() {
     const url = process.env.DATABASE_URL;
@@ -24,10 +26,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
     const timeoutRaw = Number(process.env.PRISMA_CONNECT_TIMEOUT_MS ?? "15000");
     const connectTimeoutMs = Number.isFinite(timeoutRaw) && timeoutRaw > 0 ? timeoutRaw : 15000;
+    const maxAttemptsRaw = Number(process.env.PRISMA_CONNECT_MAX_ATTEMPTS ?? "5");
+    const connectMaxAttempts =
+      Number.isFinite(maxAttemptsRaw) && maxAttemptsRaw > 0 ? Math.floor(maxAttemptsRaw) : 5;
+    const retryDelayRaw = Number(process.env.PRISMA_CONNECT_RETRY_DELAY_MS ?? "2000");
+    const connectRetryDelayMs =
+      Number.isFinite(retryDelayRaw) && retryDelayRaw >= 0 ? Math.floor(retryDelayRaw) : 2000;
 
     const maskedUrl = url.replace(/\/\/([^:]+):([^@]+)@/, "//$1:***@");
     console.log(
-      `[PrismaService] constructor: url=${maskedUrl}, connectTimeoutMs=${connectTimeoutMs}, skipConnect=${process.env.SKIP_PRISMA_CONNECT === "true"}`
+      `[PrismaService] constructor: url=${maskedUrl}, connectTimeoutMs=${connectTimeoutMs}, connectMaxAttempts=${connectMaxAttempts}, connectRetryDelayMs=${connectRetryDelayMs}, skipConnect=${process.env.SKIP_PRISMA_CONNECT === "true"}`
     );
 
     const pool = new Pool({
@@ -42,6 +50,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     this.pool = pool;
     this.skipConnect = process.env.SKIP_PRISMA_CONNECT === "true";
     this.connectTimeoutMs = connectTimeoutMs;
+    this.connectMaxAttempts = connectMaxAttempts;
+    this.connectRetryDelayMs = connectRetryDelayMs;
   }
 
   async onModuleInit() {
@@ -51,29 +61,30 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       return;
     }
 
-    const t0 = Date.now();
-    console.log(`[PrismaService] Connecting to database (timeout=${this.connectTimeoutMs}ms)...`);
+    for (let attempt = 1; attempt <= this.connectMaxAttempts; attempt += 1) {
+      const t0 = Date.now();
+      console.log(
+        `[PrismaService] Connecting to database (attempt=${attempt}/${this.connectMaxAttempts}, timeout=${this.connectTimeoutMs}ms)...`
+      );
 
-    await new Promise<void>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        console.error(`[PrismaService] Connection TIMED OUT after ${this.connectTimeoutMs}ms`);
-        reject(new Error(`Prisma connection timed out after ${this.connectTimeoutMs}ms`));
-      }, this.connectTimeoutMs);
-
-      this.$connect()
-        .then(() => {
-          clearTimeout(timeout);
-          console.log(`[PrismaService] Database connected in ${Date.now() - t0}ms`);
-          resolve();
-        })
-        .catch((error) => {
-          clearTimeout(timeout);
-          console.error(
-            `[PrismaService] Connection FAILED after ${Date.now() - t0}ms: ${error instanceof Error ? error.message : error}`
-          );
-          reject(error);
-        });
-    });
+      try {
+        await this.connectWithTimeout();
+        console.log(
+          `[PrismaService] Database connected in ${Date.now() - t0}ms (attempt=${attempt}/${this.connectMaxAttempts})`
+        );
+        return;
+      } catch (error) {
+        console.error(
+          `[PrismaService] Connection FAILED after ${Date.now() - t0}ms (attempt=${attempt}/${this.connectMaxAttempts}): ${error instanceof Error ? error.message : error}`
+        );
+        if (attempt >= this.connectMaxAttempts) {
+          throw error;
+        }
+        const delayMs = this.connectRetryDelayMs * attempt;
+        console.warn(`[PrismaService] Retrying database connection in ${delayMs}ms`);
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
   }
 
   async onModuleDestroy() {
@@ -83,5 +94,24 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
     await this.pool?.end();
     this.logger.log("[destroy] Disconnected");
+  }
+
+  private async connectWithTimeout(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        console.error(`[PrismaService] Connection TIMED OUT after ${this.connectTimeoutMs}ms`);
+        reject(new Error(`Prisma connection timed out after ${this.connectTimeoutMs}ms`));
+      }, this.connectTimeoutMs);
+
+      this.$connect()
+        .then(() => {
+          clearTimeout(timeout);
+          resolve();
+        })
+        .catch((error) => {
+          clearTimeout(timeout);
+          reject(error);
+        });
+    });
   }
 }
