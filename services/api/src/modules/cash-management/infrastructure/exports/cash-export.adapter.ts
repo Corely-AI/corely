@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
-import { PDFDocument, StandardFonts } from "pdf-lib";
 import archiver from "archiver";
 import { PassThrough } from "node:stream";
 import { once } from "node:events";
+import type * as PdfLib from "pdf-lib";
 import {
   type CashExportPayload,
   type ExportModel,
@@ -129,6 +129,7 @@ export class CashExportAdapter implements ExportPort {
   }
 
   private async buildPdf(model: ExportModel): Promise<CashExportPayload> {
+    const { PDFDocument, StandardFonts } = await this.loadPdfLib();
     const entries = this.sortEntries(model);
     const pdf = await PDFDocument.create();
     const page = pdf.addPage([842, 595]);
@@ -183,6 +184,15 @@ export class CashExportAdapter implements ExportPort {
       contentType: "application/pdf",
       data: Buffer.from(data),
     };
+  }
+
+  private async loadPdfLib(): Promise<typeof PdfLib> {
+    try {
+      return await import("pdf-lib");
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new Error(`PDF export is unavailable because pdf-lib is not installed: ${reason}`);
+    }
   }
 
   private async buildAuditPack(model: ExportModel): Promise<CashExportPayload> {
