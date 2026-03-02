@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Bell } from "lucide-react";
-import { useNotificationsStream } from "../hooks/use-notifications-stream";
 import { useUnreadNotificationsCount } from "../hooks/use-notifications-queries";
 import { NotificationList } from "./notification-list";
 import { cn } from "@/shared/lib/utils";
@@ -10,9 +9,6 @@ import { cn } from "@/shared/lib/utils";
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const { data: unreadCount = 0 } = useUnreadNotificationsCount();
-
-  // Activate SSE stream
-  useNotificationsStream();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
