@@ -13,8 +13,10 @@ export type EnrollmentWithRelations = {
   currentStepOrder: number;
   status: EnrollmentStatus;
   nextExecutionAt: Date | null;
+  updatedAt: Date;
   sequence: {
     steps: {
+      id: string;
       stepOrder: number;
       type: SequenceStepType;
       dayDelay: number;
@@ -38,7 +40,7 @@ export interface EnrollmentRepoPort {
 
   findDueEnrollments(limit: number): Promise<EnrollmentWithRelations[]>;
 
-  findById(tenantId: string, id: string): Promise<EnrollmentWithRelations | null>;
+  findById(id: string): Promise<EnrollmentWithRelations | null>;
 
   findBySequenceLeadDealContext(
     tenantId: string,
@@ -50,6 +52,12 @@ export interface EnrollmentRepoPort {
   cancelById(id: string): Promise<boolean>;
 
   cancelPendingByDealContext(tenantId: string, dealId: string): Promise<number>;
+
+  tryClaimForStepExecution(input: {
+    id: string;
+    currentStepOrder: number;
+    expectedUpdatedAt: Date;
+  }): Promise<boolean>;
 
   updateStatus(
     id: string,

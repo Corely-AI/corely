@@ -54,6 +54,7 @@ import { MarkDealWonUseCase } from "./application/use-cases/mark-deal-won/mark-d
 import { MoveDealStageUseCase } from "./application/use-cases/move-deal-stage/move-deal-stage.usecase";
 import { ProcessCommunicationWebhookUseCase } from "./application/use-cases/process-communication-webhook/process-communication-webhook.usecase";
 import { ProcessResendInboundEmailUseCase } from "./application/use-cases/process-resend-inbound-email/process-resend-inbound-email.usecase";
+import { ExecuteSequenceStepUseCase } from "./application/use-cases/execute-sequence-step/execute-sequence-step.usecase";
 import { RunSequenceStepsUseCase } from "./application/use-cases/run-sequence-steps/run-sequence-steps.usecase";
 import { SendCommunicationUseCase } from "./application/use-cases/send-communication/send-communication.usecase";
 import { SetAccountCustomAttributesUseCase } from "./application/use-cases/set-account-custom-attributes/set-account-custom-attributes.usecase";
@@ -91,6 +92,7 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
     multi: true,
   } as any,
   EnrollEntityUseCase,
+  ExecuteSequenceStepUseCase,
   RunSequenceStepsUseCase,
   CreateSequenceUseCase,
   ListSequencesUseCase,

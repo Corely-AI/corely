@@ -110,6 +110,14 @@ export class EnvModule {
 function normalizeGcpStorageEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const normalized: NodeJS.ProcessEnv = { ...env };
 
+  if (normalized.GOOGLE_CLOUD_PROJECT && !normalized.GCP_PROJECT_ID) {
+    normalized.GCP_PROJECT_ID = normalized.GOOGLE_CLOUD_PROJECT;
+  }
+
+  if (normalized.GCP_PROJECT_ID && !normalized.GOOGLE_CLOUD_PROJECT) {
+    normalized.GOOGLE_CLOUD_PROJECT = normalized.GCP_PROJECT_ID;
+  }
+
   if (normalized.GCP_BUCKET_NAME && !normalized.STORAGE_BUCKET) {
     normalized.STORAGE_BUCKET = normalized.GCP_BUCKET_NAME;
   }

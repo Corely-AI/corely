@@ -30,6 +30,7 @@ import {
   type IdGeneratorPort,
 } from "../../../../../shared/ports/id-generator.port";
 import { NestLoggerAdapter } from "../../../../../shared/adapters/logger/nest-logger.adapter";
+import { scheduleCrmSequenceStep } from "@/shared/infrastructure/worker/schedule-crm-sequence-step";
 
 @Injectable()
 @RequireTenant()
@@ -160,6 +161,17 @@ export class EnrollEntityUseCase extends BaseUseCase<EnrollEntityInput, { enroll
         contextDealId: dealId ?? null,
       },
     });
+
+    if (firstStep) {
+      await scheduleCrmSequenceStep({
+        tenantId: ctx.tenantId,
+        enrollmentId,
+        stepId: firstStep.id,
+        runAt: nextExecutionAt,
+        expectedRunAt: nextExecutionAt,
+        traceId: ctx.correlationId,
+      });
+    }
 
     return ok({ enrollmentId });
   }

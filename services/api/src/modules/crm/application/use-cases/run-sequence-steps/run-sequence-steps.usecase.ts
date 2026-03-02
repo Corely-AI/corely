@@ -31,6 +31,7 @@ import {
   type IdGeneratorPort,
 } from "../../../../../shared/ports/id-generator.port";
 import { PrismaPartyRepoAdapter } from "../../../../party/infrastructure/prisma/prisma-party-repo.adapter";
+import { scheduleCrmSequenceStep } from "@/shared/infrastructure/worker/schedule-crm-sequence-step";
 
 @Injectable()
 @RequireTenant()
@@ -199,6 +200,14 @@ export class RunSequenceStepsUseCase extends BaseUseCase<{ limit: number }, { pr
             nextRun,
             nextStep.stepOrder
           );
+          await scheduleCrmSequenceStep({
+            tenantId: enrollment.tenantId,
+            enrollmentId: enrollment.id,
+            stepId: nextStep.id,
+            runAt: nextRun,
+            expectedRunAt: nextRun,
+            traceId: ctx.correlationId,
+          });
         } else {
           // No more steps
           await this.enrollmentRepo.updateStatus(

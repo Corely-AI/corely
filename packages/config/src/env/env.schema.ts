@@ -27,6 +27,12 @@ export const envSchema = z.object({
   WORKFLOW_CLOUDTASKS_TARGET_BASE_URL: z.string().url().optional(),
   WORKFLOW_CLOUDTASKS_SERVICE_ACCOUNT: z.string().optional(),
   WORKFLOW_QUEUE_SECRET: z.string().optional(),
+  JOB_SCHEDULER_DRIVER: z.enum(["noop", "cloudtasks"]).optional(),
+  GCP_PROJECT_ID: z.string().optional(),
+  GCP_LOCATION: z.string().optional(),
+  CLOUD_TASKS_QUEUE_NAME: z.string().optional(),
+  WORKER_BASE_URL: z.string().url().optional(),
+  CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL: z.string().optional(),
 
   // ============================================================================
   // PORTS

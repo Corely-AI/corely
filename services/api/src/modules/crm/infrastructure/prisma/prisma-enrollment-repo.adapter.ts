@@ -6,6 +6,7 @@ import type { EnrollmentRepoPort } from "../../application/ports/enrollment-repo
 export type EnrollmentWithRelations = SequenceEnrollment & {
   sequence: {
     steps: {
+      id: string;
       stepOrder: number;
       type: "EMAIL_AUTO" | "EMAIL_MANUAL" | "CALL" | "TASK";
       dayDelay: number;
@@ -63,9 +64,9 @@ export class PrismaEnrollmentRepoAdapter implements EnrollmentRepoPort {
     });
   }
 
-  async findById(tenantId: string, id: string): Promise<EnrollmentWithRelations | null> {
-    const row = await this.prisma.sequenceEnrollment.findFirst({
-      where: { id, tenantId },
+  async findById(id: string): Promise<EnrollmentWithRelations | null> {
+    const row = await this.prisma.sequenceEnrollment.findUnique({
+      where: { id },
       include: {
         sequence: {
           include: {
@@ -135,6 +136,25 @@ export class PrismaEnrollmentRepoAdapter implements EnrollmentRepoPort {
       },
     });
     return result.count;
+  }
+
+  async tryClaimForStepExecution(input: {
+    id: string;
+    currentStepOrder: number;
+    expectedUpdatedAt: Date;
+  }): Promise<boolean> {
+    const result = await this.prisma.sequenceEnrollment.updateMany({
+      where: {
+        id: input.id,
+        status: "ACTIVE",
+        currentStepOrder: input.currentStepOrder,
+        updatedAt: input.expectedUpdatedAt,
+      },
+      data: {
+        updatedAt: new Date(),
+      },
+    });
+    return result.count === 1;
   }
 
   async updateStatus(
