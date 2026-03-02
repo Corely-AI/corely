@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common";
+import { scheduleWorkerJob } from "./schedule-worker-job";
 
 const logger = new Logger("WorkerTickTrigger");
 
@@ -12,6 +13,28 @@ export type TriggerWorkerTickInput = {
 };
 
 export async function triggerWorkerTick(input: TriggerWorkerTickInput): Promise<void> {
+  const idempotencyKey = [
+    "worker.tick",
+    input.reason,
+    input.tenantId ?? "no-tenant",
+    input.workspaceId ?? "no-workspace",
+    input.runnerNames?.slice().sort().join(",") ?? "all",
+    input.correlationId ?? "no-correlation",
+  ].join(":");
+
+  const scheduled = await scheduleWorkerJob({
+    jobName: "worker.tick",
+    payload: {
+      runnerNames: input.runnerNames,
+    },
+    idempotencyKey,
+    traceId: input.correlationId,
+    timeoutMs: input.timeoutMs,
+  });
+  if (scheduled.scheduled) {
+    return;
+  }
+
   const workerUrl = process.env.INTERNAL_WORKER_URL?.trim();
   if (!workerUrl) {
     return;
@@ -35,10 +58,6 @@ export async function triggerWorkerTick(input: TriggerWorkerTickInput): Promise<
         ...(workerKey ? { "x-worker-key": workerKey } : {}),
       },
       body: JSON.stringify({
-        reason: input.reason,
-        correlationId: input.correlationId,
-        tenantId: input.tenantId,
-        workspaceId: input.workspaceId,
         runnerNames: input.runnerNames,
       }),
       signal: controller.signal,

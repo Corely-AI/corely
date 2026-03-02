@@ -14,6 +14,7 @@ import {
 } from "@corely/kernel";
 import type { MarkDealWonInput, MarkDealWonOutput } from "@corely/contracts";
 import type { DealRepoPort } from "../../ports/deal-repository.port";
+import type { EnrollmentRepoPort } from "../../ports/enrollment-repository.port";
 import { toDealDto } from "../../mappers/deal-dto.mapper";
 
 @RequireTenant()
@@ -21,6 +22,7 @@ import { toDealDto } from "../../mappers/deal-dto.mapper";
 export class MarkDealWonUseCase extends BaseUseCase<MarkDealWonInput, MarkDealWonOutput> {
   constructor(
     private readonly dealRepo: DealRepoPort,
+    private readonly enrollmentRepo: EnrollmentRepoPort,
     private readonly clock: ClockPort,
     logger: LoggerPort
   ) {
@@ -47,6 +49,7 @@ export class MarkDealWonUseCase extends BaseUseCase<MarkDealWonInput, MarkDealWo
     deal.markWon(now, now);
 
     await this.dealRepo.update(ctx.tenantId, deal);
+    await this.enrollmentRepo.cancelPendingByDealContext(ctx.tenantId, deal.id);
 
     return ok({ deal: toDealDto(deal) });
   }

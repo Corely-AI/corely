@@ -45,6 +45,39 @@ export class PrismaSequenceRepoAdapter implements SequenceRepoPort {
     });
   }
 
+  async update(tenantId: string, aggregate: SequenceAggregate): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.sequenceStep.deleteMany({
+        where: {
+          sequenceId: aggregate.id,
+          tenantId,
+        },
+      });
+
+      await tx.sequence.update({
+        where: { id: aggregate.id },
+        data: {
+          name: aggregate.name,
+          description: aggregate.description,
+          updatedAt: aggregate.updatedAt ?? new Date(),
+          steps: {
+            createMany: {
+              data: aggregate.steps.map((s) => ({
+                id: s.id,
+                stepOrder: s.stepOrder,
+                type: s.type,
+                dayDelay: s.dayDelay,
+                templateSubject: s.templateSubject,
+                templateBody: s.templateBody,
+                tenantId: aggregate.tenantId,
+              })),
+            },
+          },
+        },
+      });
+    });
+  }
+
   async list(tenantId: string): Promise<SequenceAggregate[]> {
     const sequences = await this.prisma.sequence.findMany({
       where: { tenantId },

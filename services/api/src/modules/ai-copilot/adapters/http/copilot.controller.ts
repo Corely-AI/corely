@@ -168,7 +168,7 @@ export class CopilotController {
       idempotencyKey,
       runId: requestedRunId,
       response: res,
-      intent: body.requestData?.activeModule,
+      intent: context.activeAppId ?? body.requestData?.activeModule,
       requestId: context.requestId,
       workspaceId: context.workspaceId,
       workspaceKind: "COMPANY",
@@ -273,7 +273,7 @@ export class CopilotController {
       idempotencyKey,
       runId: id,
       response: res,
-      intent: body.requestData?.activeModule,
+      intent: context.activeAppId ?? body.requestData?.activeModule,
       requestId: context.requestId,
       workspaceId: context.workspaceId,
       workspaceKind: "COMPANY",
@@ -291,6 +291,7 @@ export class CopilotController {
     userId: string;
     requestId: string;
     workspaceId: string;
+    activeAppId?: string;
   } {
     const ctx = toUseCaseContext(req as any);
     const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
@@ -305,6 +306,7 @@ export class CopilotController {
       userId,
       requestId,
       workspaceId,
+      activeAppId: ctx.activeAppId,
     };
   }
 

@@ -1,21 +1,68 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Save } from "lucide-react";
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@corely/ui";
+import { ArrowLeft, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Textarea,
+} from "@corely/ui";
 import type { CreateSequenceInput, SequenceStepType } from "@corely/contracts";
 import { crmApi } from "@corely/web-shared/lib/crm-api";
 import { toast } from "sonner";
+
+type EditableStep = {
+  id: string;
+  type: SequenceStepType;
+  dayDelay: string;
+  templateSubject: string;
+  templateBody: string;
+};
+
+const createStep = (overrides?: Partial<EditableStep>): EditableStep => ({
+  id: crypto.randomUUID(),
+  type: "TASK",
+  dayDelay: "0",
+  templateSubject: "",
+  templateBody: "",
+  ...overrides,
+});
+
+const NAILS_PRESET_STEPS: EditableStep[] = [
+  createStep({
+    type: "EMAIL_AUTO",
+    dayDelay: "0",
+    templateSubject: "Welcome to Corely Nails",
+    templateBody:
+      "Hi there,\n\nThanks for your interest. You can preview our demo website here: https://nails.corely.one/\n\nReply to this email if you want us to walk you through it live.",
+  }),
+  createStep({
+    type: "EMAIL_AUTO",
+    dayDelay: "3",
+    templateSubject: "Quick follow-up on your nails demo",
+    templateBody:
+      "Hi again,\n\nJust following up to see if you had time to check the demo: https://nails.corely.one/\n\nHappy to answer any questions.",
+  }),
+  createStep({
+    type: "EMAIL_AUTO",
+    dayDelay: "7",
+    templateSubject: "Final follow-up this week",
+    templateBody:
+      "Hi,\n\nFinal follow-up from our side this week. If it helps, we can tailor the setup for your business.\n\nDemo link: https://nails.corely.one/",
+  }),
+];
 
 export default function NewSequencePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [stepType, setStepType] = useState<SequenceStepType>("TASK");
-  const [dayDelay, setDayDelay] = useState("0");
-  const [templateSubject, setTemplateSubject] = useState("");
-  const [templateBody, setTemplateBody] = useState("");
+  const [steps, setSteps] = useState<EditableStep[]>([createStep()]);
 
   const createMutation = useMutation({
     mutationFn: (input: CreateSequenceInput) => crmApi.createSequence(input),
@@ -31,19 +78,56 @@ export default function NewSequencePage() {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!name.trim()) {
+      toast.error("Sequence name is required");
+      return;
+    }
+
+    if (steps.length === 0) {
+      toast.error("Add at least one step");
+      return;
+    }
+
+    const normalizedSteps = steps.map((step, index) => ({
+      stepOrder: index + 1,
+      type: step.type,
+      dayDelay: Number(step.dayDelay || "0"),
+      templateSubject: step.templateSubject.trim() || undefined,
+      templateBody: step.templateBody.trim() || undefined,
+    }));
+
     createMutation.mutate({
-      name,
-      description: description || undefined,
-      steps: [
-        {
-          stepOrder: 1,
-          type: stepType,
-          dayDelay: Number(dayDelay),
-          templateSubject: templateSubject || undefined,
-          templateBody: templateBody || undefined,
-        },
-      ],
+      name: name.trim(),
+      description: description.trim() || undefined,
+      steps: normalizedSteps,
     });
+  };
+
+  const isPresetDisabled = useMemo(
+    () =>
+      steps.length === NAILS_PRESET_STEPS.length &&
+      steps.every((step) => step.type === "EMAIL_AUTO"),
+    [steps]
+  );
+
+  const addStep = () => {
+    setSteps((prev) => [...prev, createStep()]);
+  };
+
+  const removeStep = (stepId: string) => {
+    setSteps((prev) => (prev.length === 1 ? prev : prev.filter((step) => step.id !== stepId)));
+  };
+
+  const updateStep = (stepId: string, patch: Partial<EditableStep>) => {
+    setSteps((prev) => prev.map((step) => (step.id === stepId ? { ...step, ...patch } : step)));
+  };
+
+  const applyNailsPreset = () => {
+    setName((prev) => prev || "Lead to Won - Nails");
+    setDescription(
+      (prev) => prev || "Automated day 1/day 3/day 7 email follow-up for nails leads."
+    );
+    setSteps(NAILS_PRESET_STEPS.map((step) => ({ ...step, id: crypto.randomUUID() })));
   };
 
   return (
@@ -60,7 +144,18 @@ export default function NewSequencePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Sequence Setup</CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle>Sequence Setup</CardTitle>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={applyNailsPreset}
+              disabled={createMutation.isPending || isPresetDisabled}
+            >
+              <Sparkles className="h-4 w-4" />
+              Apply Nails 3-step preset
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit} data-testid="crm-sequence-form">
@@ -83,54 +178,88 @@ export default function NewSequencePage() {
                 data-testid="crm-sequence-description"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="sequence-step-type">Step Type</Label>
-                <select
-                  id="sequence-step-type"
-                  value={stepType}
-                  onChange={(e) => setStepType(e.target.value as SequenceStepType)}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
-                  data-testid="crm-sequence-step-type"
-                >
-                  <option value="TASK">Task</option>
-                  <option value="CALL">Call</option>
-                  <option value="EMAIL_MANUAL">Email Manual</option>
-                  <option value="EMAIL_AUTO">Email Auto</option>
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="sequence-day-delay">Day Delay</Label>
-                <Input
-                  id="sequence-day-delay"
-                  type="number"
-                  min={0}
-                  value={dayDelay}
-                  onChange={(e) => setDayDelay(e.target.value)}
-                  data-testid="crm-sequence-day-delay"
-                />
-              </div>
+
+            <div className="space-y-4">
+              {steps.map((step, index) => (
+                <Card key={step.id} className="border-dashed">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="text-base">Step {index + 1}</CardTitle>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeStep(step.id)}
+                        disabled={steps.length === 1}
+                        aria-label={`Remove step ${index + 1}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`sequence-step-type-${step.id}`}>Step Type</Label>
+                        <select
+                          id={`sequence-step-type-${step.id}`}
+                          value={step.type}
+                          onChange={(event) =>
+                            updateStep(step.id, {
+                              type: event.target.value as SequenceStepType,
+                            })
+                          }
+                          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
+                        >
+                          <option value="TASK">Task</option>
+                          <option value="CALL">Call</option>
+                          <option value="EMAIL_MANUAL">Email Manual</option>
+                          <option value="EMAIL_AUTO">Email Auto</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label htmlFor={`sequence-day-delay-${step.id}`}>Day Delay</Label>
+                        <Input
+                          id={`sequence-day-delay-${step.id}`}
+                          type="number"
+                          min={0}
+                          value={step.dayDelay}
+                          onChange={(event) =>
+                            updateStep(step.id, { dayDelay: event.target.value })
+                          }
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor={`sequence-step-subject-${step.id}`}>Step Subject</Label>
+                      <Input
+                        id={`sequence-step-subject-${step.id}`}
+                        value={step.templateSubject}
+                        onChange={(event) =>
+                          updateStep(step.id, { templateSubject: event.target.value })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor={`sequence-step-body-${step.id}`}>Step Body</Label>
+                      <Textarea
+                        id={`sequence-step-body-${step.id}`}
+                        rows={4}
+                        value={step.templateBody}
+                        onChange={(event) =>
+                          updateStep(step.id, { templateBody: event.target.value })
+                        }
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-            <div>
-              <Label htmlFor="sequence-step-subject">Step Subject</Label>
-              <Input
-                id="sequence-step-subject"
-                value={templateSubject}
-                onChange={(e) => setTemplateSubject(e.target.value)}
-                data-testid="crm-sequence-step-subject"
-              />
-            </div>
-            <div>
-              <Label htmlFor="sequence-step-body">Step Body</Label>
-              <textarea
-                id="sequence-step-body"
-                value={templateBody}
-                onChange={(e) => setTemplateBody(e.target.value)}
-                rows={4}
-                className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm"
-                data-testid="crm-sequence-step-body"
-              />
-            </div>
+
+            <Button type="button" variant="outline" onClick={addStep}>
+              <Plus className="h-4 w-4" />
+              Add Step
+            </Button>
 
             <div className="flex justify-end pt-2">
               <Button

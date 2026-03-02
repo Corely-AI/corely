@@ -10,6 +10,8 @@ export interface EmailSendPort {
     subject: string;
     html?: string;
     text?: string;
+    from?: string;
+    replyTo?: string;
   }): Promise<{ providerMessageId?: string }>;
 }
 

@@ -17,6 +17,7 @@ import type {
   ConvertLeadOutput,
   SequenceDto,
   CreateSequenceInput,
+  UpdateSequenceInput,
   AccountDto,
   CreateAccountInput,
   CreateAccountOutput,
@@ -420,9 +421,17 @@ export const crmApi = {
     return await apiClient.post<SequenceDto>("/crm/sequences", input);
   },
 
+  async getSequence(id: string): Promise<SequenceDto> {
+    return await apiClient.get<SequenceDto>(`/crm/sequences/${id}`);
+  },
+
+  async updateSequence(id: string, input: UpdateSequenceInput): Promise<SequenceDto> {
+    return await apiClient.patch<SequenceDto>(`/crm/sequences/${id}`, input);
+  },
+
   async enrollEntity(input: {
     sequenceId: string;
-    entityType: "lead" | "party";
+    entityType: "lead" | "party" | "deal";
     entityId: string;
   }): Promise<{ enrollmentId: string }> {
     return await apiClient.post<{ enrollmentId: string }>("/crm/sequences/enroll", input);

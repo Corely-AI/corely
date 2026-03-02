@@ -14,6 +14,7 @@ export function buildAiTools(
     outbox: OutboxPort;
     tenantId: string;
     workspaceId?: string;
+    activeAppId?: string;
     runId: string;
     userId: string;
     observability: ObservabilityPort;
@@ -57,6 +58,12 @@ export function buildAiTools(
         );
         const startedAt = Date.now();
         try {
+          if (t.appId && t.appId !== "common" && deps.activeAppId && t.appId !== deps.activeAppId) {
+            throw new Error(
+              `Platform:ToolNotInAppScope (expected ${deps.activeAppId}, got ${t.appId})`
+            );
+          }
+
           const result = await t.execute({
             tenantId: deps.tenantId,
             workspaceId: deps.workspaceId,

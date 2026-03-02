@@ -1,10 +1,13 @@
 import { Module } from "@nestjs/common";
 import { EnvModule } from "@corely/config";
-import { SequenceRunnerService } from "./sequence-runner.service";
+import { CrmSequenceExecutorService } from "./crm-sequence-executor.service";
+import { CrmSequencesInternalController } from "./crm-sequences-internal.controller";
+import { SequencesSweeperRunnerService } from "./sequences-sweeper.runner";
 
 @Module({
   imports: [EnvModule],
-  providers: [SequenceRunnerService],
-  exports: [SequenceRunnerService],
+  controllers: [CrmSequencesInternalController],
+  providers: [CrmSequenceExecutorService, SequencesSweeperRunnerService],
+  exports: [SequencesSweeperRunnerService],
 })
 export class CrmWorkerModule {}

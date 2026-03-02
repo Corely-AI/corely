@@ -17,28 +17,35 @@ export class ToolRegistry implements ToolRegistryPort {
     private readonly entitlementsRead?: TenantEntitlementsReadPort
   ) {}
 
-  async listForTenant(tenantId: string): Promise<DomainToolPort[]> {
+  async listForTenant(tenantId: string, activeAppId?: string): Promise<DomainToolPort[]> {
     const flatTools =
       Array.isArray(this.tools) && Array.isArray(this.tools[0])
         ? (this.tools as DomainToolPort[][]).flat()
         : (this.tools as DomainToolPort[]);
 
-    if (!this.entitlementsRead) {
-      return flatTools;
-    }
+    let availableTools = flatTools;
 
-    const appEnablement = await this.entitlementsRead
-      .getAppEnablementMap(tenantId)
-      .catch(() => null);
-    if (!appEnablement) {
-      return flatTools;
-    }
+    if (this.entitlementsRead) {
+      const appEnablement = await this.entitlementsRead
+        .getAppEnablementMap(tenantId)
+        .catch(() => null);
 
-    return flatTools.filter((tool) => {
-      if (!tool.appId) {
-        return true;
+      if (appEnablement) {
+        availableTools = availableTools.filter((tool) => {
+          if (!tool.appId || tool.appId === "common") {
+            return true;
+          }
+          return appEnablement[tool.appId] === true;
+        });
       }
-      return appEnablement[tool.appId] === true;
-    });
+    }
+
+    if (activeAppId) {
+      availableTools = availableTools.filter(
+        (tool) => !tool.appId || tool.appId === "common" || tool.appId === activeAppId
+      );
+    }
+
+    return availableTools;
   }
 }

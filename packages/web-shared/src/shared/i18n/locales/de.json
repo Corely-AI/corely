@@ -183,9 +183,12 @@
     "paymentMethods": "Zahlungsmethoden",
     "taxSettings": "Steuereinstellungen",
     "issues": "Probleme",
+    "crmDashboard": "Dashboard",
     "crmDeals": "Deals",
+    "crmLeads": "Leads",
     "crmActivities": "Aktivitäten",
     "crmSequences": "Sequenzen",
+    "crmEmailSettings": "E-Mail-Einstellungen",
     "crmTemplates": "Vorlagen",
     "classes": "Klassen",
     "classSessions": "Sitzungen",
@@ -1468,6 +1471,15 @@
     }
   },
   "crm": {
+    "dashboard": {
+      "title": "CRM Dashboard",
+      "pageTitle": "CRM Dashboard",
+      "subtitle": "KI + CRM Workspace mit Fokus auf Pipeline und Beziehungen.",
+      "breadcrumb": {
+        "crm": "CRM",
+        "dashboard": "Dashboard"
+      }
+    },
     "activities": {
       "title": "Aktivitäten",
       "new": "Neue Aktivität",

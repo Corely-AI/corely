@@ -8,6 +8,7 @@ export const toUseCaseContext = (req: ContextAwareRequest): UseCaseContext => {
     tenantId: ctx.tenantId,
     workspaceId: ctx.workspaceId ?? undefined,
     userId: ctx.userId,
+    activeAppId: ctx.activeAppId,
     correlationId: ctx.correlationId ?? ctx.requestId,
     requestId: ctx.requestId,
     roles: ctx.roles,

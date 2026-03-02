@@ -42,6 +42,8 @@
         "../../packages/integrations/google-gmail/src/index.ts"
       ],
       "@corely/integrations-google-gmail/*": ["../../packages/integrations/google-gmail/src/*"],
+      "@corely/integrations-resend": ["../../packages/integrations/resend/src/index.ts"],
+      "@corely/integrations-resend/*": ["../../packages/integrations/resend/src/*"],
       "@corely/public-urls": ["../../packages/public-urls/src/index.ts"],
       "@corely/storage": ["../../packages/storage/src/index.ts"],
       "@corely/storage/*": ["../../packages/storage/src/*"]

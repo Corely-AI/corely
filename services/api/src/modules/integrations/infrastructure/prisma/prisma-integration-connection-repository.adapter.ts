@@ -142,7 +142,7 @@ export class PrismaIntegrationConnectionRepositoryAdapter implements Integration
 
   private toPrismaKind(
     kind: IntegrationKind
-  ): "SUMUP" | "ADYEN" | "MICROSOFT_GRAPH_MAIL" | "GOOGLE_GMAIL" {
+  ): "SUMUP" | "ADYEN" | "MICROSOFT_GRAPH_MAIL" | "GOOGLE_GMAIL" | "RESEND" {
     switch (kind) {
       case "sumup":
         return "SUMUP";
@@ -152,6 +152,8 @@ export class PrismaIntegrationConnectionRepositoryAdapter implements Integration
         return "MICROSOFT_GRAPH_MAIL";
       case "google_gmail":
         return "GOOGLE_GMAIL";
+      case "resend":
+        return "RESEND";
     }
   }
 
@@ -163,6 +165,8 @@ export class PrismaIntegrationConnectionRepositoryAdapter implements Integration
         return "adyen";
       case "MICROSOFT_GRAPH_MAIL":
         return "microsoft_graph_mail";
+      case "RESEND":
+        return "resend";
       default:
         return "google_gmail";
     }

@@ -4,6 +4,7 @@ import { SumUpCashlessClient } from "@corely/integrations-sumup";
 import { AdyenCashlessClient } from "@corely/integrations-adyen";
 import { MicrosoftGraphMailClient } from "@corely/integrations-microsoft-graph-mail";
 import { GoogleGmailClient } from "@corely/integrations-google-gmail";
+import { ResendMailClient } from "@corely/integrations-resend";
 import type { IntegrationConnectionEntity } from "../../domain/integration-connection.entity";
 
 @Injectable()
@@ -38,6 +39,12 @@ export class IntegrationProviderRegistryService {
       return new GoogleGmailClient();
     }
 
+    if (kind === "resend") {
+      const config = connection.toObject().config;
+      const baseUrl = this.readOptionalString(config, "baseUrl");
+      return new ResendMailClient({ baseUrl });
+    }
+
     throw new ValidationError("Connection does not support mail capabilities", { kind });
   }
 
@@ -53,6 +60,23 @@ export class IntegrationProviderRegistryService {
 
     if (!secret) {
       throw new ValidationError("OAuth access token is missing");
+    }
+
+    return secret;
+  }
+
+  getApiKey(secret: string): string {
+    try {
+      const parsed = JSON.parse(secret) as { apiKey?: string };
+      if (typeof parsed.apiKey === "string" && parsed.apiKey.length > 0) {
+        return parsed.apiKey;
+      }
+    } catch {
+      // Fall through to plain token fallback.
+    }
+
+    if (!secret) {
+      throw new ValidationError("API key is missing");
     }
 
     return secret;

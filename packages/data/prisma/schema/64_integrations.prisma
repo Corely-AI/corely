@@ -3,6 +3,7 @@ enum IntegrationKind {
   ADYEN
   MICROSOFT_GRAPH_MAIL
   GOOGLE_GMAIL
+  RESEND
 
   @@schema("platform")
 }

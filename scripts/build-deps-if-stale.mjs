@@ -42,6 +42,12 @@ async function collectWorkspacePackages() {
   return map;
 }
 
+function getWorkspaceDeps(pkg) {
+  return Object.entries(pkg?.dependencies ?? {})
+    .filter(([, v]) => typeof v === "string" && v.startsWith("workspace:"))
+    .map(([name]) => name);
+}
+
 /** Newest mtime under a directory (recursive) */
 async function newestMtime(dir) {
   let newest = 0;
@@ -126,15 +132,72 @@ if (stale.length === 0) {
   process.exit(0);
 }
 
-console.log(`[build-deps] Building ${stale.length} stale packages: ${stale.join(", ")}`);
+const staleSet = new Set(stale);
 
-const filters = stale.map((name) => `--filter '${name}'`).join(" ");
-try {
-  execSync(`pnpm ${filters} build`, {
-    cwd: workspaceRoot,
-    stdio: "inherit",
-    shell: true,
-  });
-} catch {
-  process.exit(1);
+function collectTransitiveStaleDeps(pkgName, seen = new Set()) {
+  const pkgInfo = packages.get(pkgName);
+  if (!pkgInfo) {
+    return seen;
+  }
+
+  for (const depName of getWorkspaceDeps(pkgInfo.pkg)) {
+    if (seen.has(depName)) {
+      continue;
+    }
+    seen.add(depName);
+    collectTransitiveStaleDeps(depName, seen);
+  }
+
+  return new Set(Array.from(seen).filter((depName) => staleSet.has(depName)));
+}
+
+// Build dependency graph among stale packages.
+// Edge: dep -> dependent (dep must build first).
+const indegree = new Map(stale.map((name) => [name, 0]));
+const adjacency = new Map(stale.map((name) => [name, new Set()]));
+
+for (const pkgName of stale) {
+  const transitiveStaleDeps = collectTransitiveStaleDeps(pkgName);
+  for (const depName of transitiveStaleDeps) {
+    const dependents = adjacency.get(depName);
+    if (!dependents?.has(pkgName)) {
+      dependents?.add(pkgName);
+      indegree.set(pkgName, (indegree.get(pkgName) ?? 0) + 1);
+    }
+  }
+}
+
+// Kahn topological sort (stable by original stale order).
+const queue = stale.filter((name) => (indegree.get(name) ?? 0) === 0);
+const buildOrder = [];
+
+while (queue.length > 0) {
+  const current = queue.shift();
+  if (!current) {
+    break;
+  }
+  buildOrder.push(current);
+
+  for (const dependent of adjacency.get(current) ?? []) {
+    const nextInDegree = (indegree.get(dependent) ?? 1) - 1;
+    indegree.set(dependent, nextInDegree);
+    if (nextInDegree === 0) {
+      queue.push(dependent);
+    }
+  }
+}
+
+const finalOrder = buildOrder.length === stale.length ? buildOrder : stale;
+console.log(`[build-deps] Building ${stale.length} stale packages: ${finalOrder.join(", ")}`);
+
+for (const name of finalOrder) {
+  try {
+    execSync(`pnpm --filter '${name}' build`, {
+      cwd: workspaceRoot,
+      stdio: "inherit",
+      shell: true,
+    });
+  } catch {
+    process.exit(1);
+  }
 }

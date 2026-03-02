@@ -63,6 +63,15 @@ export async function request<T = unknown>(opts: RequestOptions): Promise<T> {
     headers["X-Correlation-Id"] = opts.correlationId;
   }
 
+  if (typeof window !== "undefined" && window.location && !headers["X-App-Id"]) {
+    const segments = window.location.pathname.split("/").filter(Boolean);
+    // Usually /:workspaceSlug/:appId
+    const appId = segments.length > 1 ? segments[1] : segments[0];
+    if (appId && appId !== "login" && appId !== "signup") {
+      headers["X-App-Id"] = appId;
+    }
+  }
+
   const body =
     opts.body && typeof opts.body === "object" && !(opts.body instanceof FormData)
       ? JSON.stringify(opts.body)

@@ -23,7 +23,7 @@ import { PAYMENT_ATTEMPT_REPOSITORY_PORT } from "./application/ports/payment-att
 import { CASHLESS_GATEWAY_PORT } from "./application/ports/cashless-gateway.port";
 import { CASHLESS_PAYMENT_UPDATE_PORT } from "./application/ports/cashless-payment-update.port";
 import { CashlessPaymentUpdaterService } from "./application/services/cashless-payment-updater.service";
-import { IntegrationsCashlessGatewayService } from "../integrations";
+import { IntegrationsCashlessGatewayService } from "../integrations/infrastructure/providers/integrations-cashless-gateway.service";
 
 import { CashManagementModule } from "../cash-management/cash-management.module";
 import { IntegrationsModule } from "../integrations";

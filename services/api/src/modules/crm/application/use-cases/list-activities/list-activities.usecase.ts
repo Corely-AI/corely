@@ -33,6 +33,7 @@ export class ListActivitiesUseCase extends BaseUseCase<ListActivitiesInput, List
     ctx: UseCaseContext
   ): Promise<Result<ListActivitiesOutput, UseCaseError>> {
     const filters = {
+      leadId: input.leadId,
       partyId: input.partyId,
       dealId: input.dealId,
       type: input.type,

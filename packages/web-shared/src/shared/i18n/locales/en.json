@@ -188,9 +188,12 @@
     "taxSettings": "Tax Settings",
     "cashManagement": "Cash Management",
     "issues": "Issues",
+    "crmDashboard": "Dashboard",
     "crmDeals": "Deals",
+    "crmLeads": "Leads",
     "crmActivities": "Activities",
     "crmSequences": "Sequences",
+    "crmEmailSettings": "Email Settings",
     "crmTemplates": "Templates",
     "classes": "Classes",
     "booking": {
@@ -1511,6 +1514,15 @@
     }
   },
   "crm": {
+    "dashboard": {
+      "title": "CRM Dashboard",
+      "pageTitle": "CRM Dashboard",
+      "subtitle": "AI + CRM workspace focused on pipeline and relationships.",
+      "breadcrumb": {
+        "crm": "CRM",
+        "dashboard": "Dashboard"
+      }
+    },
     "activities": {
       "title": "Activities",
       "new": "New Activity",
