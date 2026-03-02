@@ -7,10 +7,11 @@ import type * as Contracts from "@corely/contracts";
 import { apiClient } from "./api-client";
 import { buildListQuery } from "./api-query-utils";
 
-type PdfUrlResponse = {
+export type TaxPdfResponse = {
   status: "PENDING" | "READY";
   downloadUrl?: string;
   expiresAt?: string;
+  retryAfterMs?: number;
 };
 
 export class TaxApi {
@@ -198,14 +199,14 @@ export class TaxApi {
     );
   }
 
-  async getVatPeriodPdfUrl(key: string): Promise<PdfUrlResponse> {
-    return apiClient.get<PdfUrlResponse>(`/tax/reports/vat/quarterly/${key}/pdf-url`, {
+  async getVatPeriodPdfUrl(key: string): Promise<TaxPdfResponse> {
+    return apiClient.get<TaxPdfResponse>(`/tax/reports/vat/quarterly/${key}/pdf-url`, {
       correlationId: apiClient.generateCorrelationId(),
     });
   }
 
-  async getReportPdfUrl(id: string): Promise<PdfUrlResponse> {
-    return apiClient.get<PdfUrlResponse>(`/tax/reports/${id}/pdf-url`, {
+  async getReportPdfUrl(id: string): Promise<TaxPdfResponse> {
+    return apiClient.get<TaxPdfResponse>(`/tax/reports/${id}/pdf-url`, {
       correlationId: apiClient.generateCorrelationId(),
     });
   }

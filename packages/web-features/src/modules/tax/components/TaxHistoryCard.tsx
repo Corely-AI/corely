@@ -25,6 +25,7 @@ import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
 import { Download, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { downloadTaxPdfWithPolling } from "../lib/download-tax-pdf-with-polling";
 import { PeriodList } from "./tax-history-card/period-list";
 import { ArchiveDialog, NilDialog, SubmittedDialog } from "./tax-history-card/dialogs";
 import {
@@ -138,6 +139,33 @@ export function TaxHistoryCard() {
     },
     onError: () => toast.error("Failed to archive VAT period"),
   });
+
+  const handleDownloadPdf = React.useCallback(async (periodKey: string) => {
+    const abortController = new AbortController();
+    const loadingToastId = toast.loading("Generating PDF...");
+
+    try {
+      const result = await downloadTaxPdfWithPolling(
+        (_signal) => taxApi.getVatPeriodPdfUrl(periodKey),
+        abortController.signal
+      );
+
+      if (result.status === "READY") {
+        window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
+        toast.success("Download started");
+        return;
+      }
+
+      if (result.status === "PENDING") {
+        toast.info("PDF is being prepared. Try again shortly.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to download PDF");
+    } finally {
+      toast.dismiss(loadingToastId);
+    }
+  }, []);
 
   const upcomingPeriods = orderedPeriods.filter(
     (period) => !FINAL_STATUSES.includes(period.status)
@@ -264,26 +292,7 @@ export function TaxHistoryCard() {
                         variant="ghost"
                         size="sm"
                         className="w-fit"
-                        onClick={() => {
-                          const promise = taxApi.getVatPeriodPdfUrl(selectedPeriod.periodKey);
-                          toast.promise(
-                            promise.then((res) => {
-                              if (res.status === "READY" && res.downloadUrl) {
-                                window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
-                                return;
-                              }
-                              throw new Error("PENDING");
-                            }),
-                            {
-                              loading: "Generating PDF...",
-                              success: "Download started",
-                              error: (err) =>
-                                err?.message === "PENDING"
-                                  ? "PDF is being prepared. Try again shortly."
-                                  : "Failed to download PDF",
-                            }
-                          );
-                        }}
+                        onClick={() => void handleDownloadPdf(selectedPeriod.periodKey)}
                       >
                         <Download className="mr-2 h-4 w-4" />
                         Download PDF

@@ -7,9 +7,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { formatMoney, formatDueDate } from "@corely/web-shared/shared/lib/formatters";
-import { CheckCircle2, Clock, Download, FileText, FileSignature } from "lucide-react";
+import { CheckCircle2, Clock, Download, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { AnnualReportsSection } from "../components/AnnualReportsSection";
+import { downloadTaxPdfWithPolling } from "../lib/download-tax-pdf-with-polling";
 
 export default function TaxReportsPage() {
   const [tab, setTab] = React.useState<"upcoming" | "submitted">("upcoming");
@@ -106,24 +107,29 @@ function ReportGroup({
   const navigate = useNavigate();
 
   const handleDownload = (id: string) => {
-    const promise = taxApi.getReportPdfUrl(id);
-    toast.promise(
-      promise.then((res) => {
-        if (res.status === "READY" && res.downloadUrl) {
-          window.open(res.downloadUrl, "_blank", "noopener,noreferrer");
+    void (async () => {
+      const abortController = new AbortController();
+      const loadingToastId = toast.loading("Generating PDF...");
+      try {
+        const result = await downloadTaxPdfWithPolling(
+          (_signal) => taxApi.getReportPdfUrl(id),
+          abortController.signal
+        );
+        if (result.status === "READY") {
+          window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
+          toast.success("Download started");
           return;
         }
-        throw new Error("PENDING");
-      }),
-      {
-        loading: "Generating PDF...",
-        success: "Download started",
-        error: (err) =>
-          err?.message === "PENDING"
-            ? "PDF is being prepared. Try again shortly."
-            : "Failed to download PDF",
+        if (result.status === "PENDING") {
+          toast.info("PDF is being prepared. Try again shortly.");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to download PDF");
+      } finally {
+        toast.dismiss(loadingToastId);
       }
-    );
+    })();
   };
 
   return (

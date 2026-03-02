@@ -18,6 +18,10 @@ export interface TickRunSummary {
   totalErrors: number;
 }
 
+type RunOnceOptions = {
+  runnerNames?: string[];
+};
+
 @Injectable()
 export class TickOrchestrator {
   private readonly logger = new Logger(TickOrchestrator.name);
@@ -68,16 +72,20 @@ export class TickOrchestrator {
     );
   }
 
-  private async runTick(): Promise<TickRunSummary> {
+  private async runTick(options?: RunOnceOptions): Promise<TickRunSummary> {
     const runId = uuidv4();
     const startedAt = new Date();
 
-    const enabledRunnerNames = (
+    const defaultRunnerNames = (
       this.env.WORKER_TICK_RUNNERS || "outbox,invoiceReminders,classesBilling"
     )
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
+    const enabledRunnerNames =
+      options?.runnerNames && options.runnerNames.length > 0
+        ? options.runnerNames.map((s) => s.trim()).filter(Boolean)
+        : defaultRunnerNames;
     const overallMaxMs = Number(this.env.WORKER_TICK_OVERALL_MAX_MS || 480000);
     const perRunnerMaxMs = Number(this.env.WORKER_TICK_RUNNER_MAX_MS || 60000);
     const hardRunnerTimeoutRaw = Number(
@@ -234,14 +242,14 @@ export class TickOrchestrator {
     };
   }
 
-  async runOnce(): Promise<TickRunSummary> {
+  async runOnce(options?: RunOnceOptions): Promise<TickRunSummary> {
     if (this.inFlightRun) {
       this.logger.warn("[runOnce] Tick overlap prevented — waiting for in-flight tick to complete");
       return this.inFlightRun;
     }
 
     this.logger.log("[runOnce] Starting new tick...");
-    const runPromise = this.runTick();
+    const runPromise = this.runTick(options);
     this.inFlightRun = runPromise;
     try {
       return await runPromise;

@@ -81,7 +81,7 @@ Specific feature implementation details.
 - [Classes Module](./features/CLASSES.md)
 - [Students Module](./features/STUDENTS.md)
 - [Payment Methods](./features/PAYMENT_METHODS_IMPLEMENTATION.md)
-- [Invoice PDF Download](./features/invoice-pdf-download.md)
+- [Async PDF Download & Long Jobs](./features/invoice-pdf-download.md)
 - [Invoice Copilot MVP](./features/invoice-copilot-mvp.md)
 - [Tax Snapshot](./features/TAX_SNAPSHOT_IMPLEMENTATION.md)
 - [Catalog Module](./features/catalog.md)

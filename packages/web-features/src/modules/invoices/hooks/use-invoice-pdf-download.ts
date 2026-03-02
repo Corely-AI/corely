@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { invoicesApi } from "@corely/web-shared/lib/invoices-api";
 import { paymentMethodsApi } from "@corely/web-shared/lib/payment-methods-api";
+import { pollAsyncJob } from "@corely/web-shared/shared/lib/async-poll";
 import { invoiceQueryKeys } from "../queries";
 
 type InvoiceForPdf = {
@@ -43,23 +44,6 @@ export const useInvoicePdfDownload = ({
 }: UseInvoicePdfDownloadParams) => {
   const downloadAbortRef = useRef<AbortController | null>(null);
   const downloadInFlightRef = useRef(false);
-
-  const waitWithAbort = useCallback(async (ms: number, signal: AbortSignal) => {
-    await new Promise<void>((resolve) => {
-      const timeout = setTimeout(() => {
-        signal.removeEventListener("abort", onAbort);
-        resolve();
-      }, ms);
-
-      const onAbort = () => {
-        clearTimeout(timeout);
-        signal.removeEventListener("abort", onAbort);
-        resolve();
-      };
-
-      signal.addEventListener("abort", onAbort, { once: true });
-    });
-  }, []);
 
   const logPdfDebug = useCallback(
     (message: string, meta?: Record<string, unknown>) => {
@@ -156,7 +140,6 @@ export const useInvoicePdfDownload = ({
       });
 
       try {
-        const startedAt = Date.now();
         let forceRegenerate = options?.forceRegenerate === true;
         logPdfDebug("Download flow started", {
           invoiceId,
@@ -165,49 +148,56 @@ export const useInvoicePdfDownload = ({
           forceRegenerate,
         });
 
-        while (Date.now() - startedAt < PDF_MAX_WAIT_TOTAL_MS) {
-          const elapsedMs = Date.now() - startedAt;
-          const remainingMs = PDF_MAX_WAIT_TOTAL_MS - elapsedMs;
-          const waitMs = Math.min(PDF_WAIT_PER_REQUEST_MS, remainingMs);
-          logPdfDebug("Requesting invoice PDF", { invoiceId, elapsedMs, remainingMs, waitMs });
-
-          const response = await invoicesApi.downloadInvoicePdf(invoiceId, {
-            waitMs,
-            signal: abortController.signal,
-            forceRegenerate,
-          });
-          forceRegenerate = false;
-          logPdfDebug("Received invoice PDF response", {
-            invoiceId,
-            status: response.status,
-            retryAfterMs: response.retryAfterMs,
-            hasDownloadUrl: Boolean(response.downloadUrl),
-          });
-
-          if (response.status === "READY" && response.downloadUrl) {
-            logPdfDebug("PDF is ready, opening URL", {
-              invoiceId,
-              downloadUrl: response.downloadUrl,
+        const pollResult = await pollAsyncJob({
+          maxTotalWaitMs: PDF_MAX_WAIT_TOTAL_MS,
+          perRequestWaitMs: PDF_WAIT_PER_REQUEST_MS,
+          minRetryAfterMs: PDF_RETRY_AFTER_MIN_MS,
+          maxRetryAfterMs: PDF_RETRY_AFTER_MAX_MS,
+          signal: abortController.signal,
+          request: async ({ waitMs, signal, elapsedMs }) => {
+            const remainingMs = PDF_MAX_WAIT_TOTAL_MS - elapsedMs;
+            logPdfDebug("Requesting invoice PDF", { invoiceId, elapsedMs, remainingMs, waitMs });
+            const response = await invoicesApi.downloadInvoicePdf(invoiceId, {
+              waitMs,
+              signal,
+              forceRegenerate,
             });
-            const opened = window.open(response.downloadUrl, "_blank", "noopener,noreferrer");
-            if (!opened) {
-              logPdfDebug("Popup likely blocked while opening PDF", { invoiceId });
-              toast.error(t("invoices.errors.downloadFailed"), {
-                description: "Please allow pop-ups for this site and try again.",
-              });
-            }
-            return;
-          }
+            forceRegenerate = false;
+            return response;
+          },
+          isTerminal: (response) => response.status === "READY",
+          onResponse: (response) => {
+            logPdfDebug("Received invoice PDF response", {
+              invoiceId,
+              status: response.status,
+              retryAfterMs: response.retryAfterMs,
+              hasDownloadUrl: Boolean(response.downloadUrl),
+            });
+          },
+        });
 
-          const retryAfterMs = Math.max(
-            PDF_RETRY_AFTER_MIN_MS,
-            Math.min(PDF_RETRY_AFTER_MAX_MS, response.retryAfterMs ?? 1000)
-          );
-          logPdfDebug("PDF still pending, waiting before retry", {
+        if (pollResult.status === "ABORTED") {
+          logPdfDebug("Download flow aborted", { invoiceId });
+          return;
+        }
+
+        if (pollResult.status === "TERMINAL" && pollResult.response?.downloadUrl) {
+          logPdfDebug("PDF is ready, opening URL", {
             invoiceId,
-            retryAfterMs,
+            downloadUrl: pollResult.response.downloadUrl,
           });
-          await waitWithAbort(retryAfterMs, abortController.signal);
+          const opened = window.open(
+            pollResult.response.downloadUrl,
+            "_blank",
+            "noopener,noreferrer"
+          );
+          if (!opened) {
+            logPdfDebug("Popup likely blocked while opening PDF", { invoiceId });
+            toast.error(t("invoices.errors.downloadFailed"), {
+              description: "Please allow pop-ups for this site and try again.",
+            });
+          }
+          return;
         }
 
         logPdfDebug("Download flow timed out", { invoiceId, maxWaitMs: PDF_MAX_WAIT_TOTAL_MS });
@@ -244,7 +234,7 @@ export const useInvoicePdfDownload = ({
         logPdfDebug("Download flow finished", { invoiceId });
       }
     },
-    [logPdfDebug, t, waitWithAbort]
+    [logPdfDebug, t]
   );
 
   useEffect(() => {
