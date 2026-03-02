@@ -8,6 +8,8 @@ import NewLeadPage from "./screens/NewLeadPage";
 import LeadDetailPage from "./screens/LeadDetailPage";
 import SequencesPage from "./screens/SequencesPage";
 import NewSequencePage from "./screens/NewSequencePage";
+import SequenceDetailPage from "./screens/SequenceDetailPage";
+import CrmEmailSettingsPage from "./screens/CrmEmailSettingsPage";
 import ContactsPage from "./screens/ContactsPage";
 import ContactFormPage from "./screens/ContactFormPage";
 import ContactDetailPage from "./screens/ContactDetailPage";
@@ -71,6 +73,14 @@ export const crmRoutes = [
   {
     path: "/crm/sequences/new",
     element: <NewSequencePage />,
+  },
+  {
+    path: "/crm/sequences/:id",
+    element: <SequenceDetailPage />,
+  },
+  {
+    path: "/crm/settings/email",
+    element: <CrmEmailSettingsPage />,
   },
   // ── Account routes ──
   {

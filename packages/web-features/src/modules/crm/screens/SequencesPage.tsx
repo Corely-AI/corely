@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { List, Play, Plus } from "lucide-react";
+import { List, Mail, Play, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, Button } from "@corely/ui";
 import { crmApi } from "@corely/web-shared/lib/crm-api";
@@ -20,18 +20,24 @@ export default function SequencesPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-sequences-page">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-h1 text-foreground" data-testid="crm-sequences-header">
           Sequences
         </h1>
-        <Button
-          variant="accent"
-          onClick={() => navigate("/crm/sequences/new")}
-          data-testid="crm-sequences-create"
-        >
-          <Plus className="h-4 w-4" />
-          New Sequence
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate("/crm/settings/email")}>
+            <Mail className="h-4 w-4" />
+            Email settings
+          </Button>
+          <Button
+            variant="accent"
+            onClick={() => navigate("/crm/sequences/new")}
+            data-testid="crm-sequences-create"
+          >
+            <Plus className="h-4 w-4" />
+            New Sequence
+          </Button>
+        </div>
       </div>
 
       {sequenceList.length === 0 ? (
@@ -53,7 +59,7 @@ export default function SequencesPage() {
             <Card
               key={seq.id}
               className="cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={() => {}}
+              onClick={() => navigate(`/crm/sequences/${seq.id}`)}
               data-testid={`crm-sequence-row-${seq.id}`}
             >
               <CardHeader className="flex flex-row items-center space-x-4 p-4">

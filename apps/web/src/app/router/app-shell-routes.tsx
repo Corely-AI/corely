@@ -55,6 +55,8 @@ import {
   ContactDetailPage,
   SequencesPage,
   NewSequencePage,
+  SequenceDetailPage,
+  CrmEmailSettingsPage,
   AccountsPage,
   AccountDetailPage,
   AccountFormPage,
@@ -312,6 +314,8 @@ export const appShellRoutes = (
       <Route path="/crm/contacts/:id/edit" element={<ContactFormPage />} />
       <Route path="/crm/sequences" element={<SequencesPage />} />
       <Route path="/crm/sequences/new" element={<NewSequencePage />} />
+      <Route path="/crm/sequences/:id" element={<SequenceDetailPage />} />
+      <Route path="/crm/settings/email" element={<CrmEmailSettingsPage />} />
       <Route path="/crm/accounts" element={<AccountsPage />} />
       <Route path="/crm/accounts/new" element={<AccountFormPage />} />
       <Route path="/crm/accounts/:id" element={<AccountDetailPage />} />

@@ -14,6 +14,7 @@ import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 import { COPILOT_TOOLS } from "../ai-copilot/application/ports/tool-registry.port";
 import { PartyApplication } from "../party/application/party.application";
+import { PrismaPartyRepoAdapter } from "../party/infrastructure/prisma/prisma-party-repo.adapter";
 import { ChannelCatalogService } from "./application/channel-catalog.service";
 import { CrmApplication } from "./application/crm.application";
 import { ACCOUNT_REPO_PORT } from "./application/ports/account-repository.port";
@@ -38,6 +39,7 @@ import { GetAccountUseCase } from "./application/use-cases/get-account/get-accou
 import { GetAccountCustomAttributesUseCase } from "./application/use-cases/get-account-custom-attributes/get-account-custom-attributes.usecase";
 import { GetDealByIdUseCase } from "./application/use-cases/get-deal-by-id/get-deal-by-id.usecase";
 import { GetLeadUseCase } from "./application/use-cases/get-lead/get-lead.usecase";
+import { GetSequenceByIdUseCase } from "./application/use-cases/get-sequence-by-id/get-sequence-by-id.usecase";
 import { GetTimelineUseCase } from "./application/use-cases/get-timeline/get-timeline.usecase";
 import { ListAccountsUseCase } from "./application/use-cases/list-accounts/list-accounts.usecase";
 import { ListActivitiesUseCase } from "./application/use-cases/list-activities/list-activities.usecase";
@@ -51,6 +53,7 @@ import { MarkDealLostUseCase } from "./application/use-cases/mark-deal-lost/mark
 import { MarkDealWonUseCase } from "./application/use-cases/mark-deal-won/mark-deal-won.usecase";
 import { MoveDealStageUseCase } from "./application/use-cases/move-deal-stage/move-deal-stage.usecase";
 import { ProcessCommunicationWebhookUseCase } from "./application/use-cases/process-communication-webhook/process-communication-webhook.usecase";
+import { ProcessResendInboundEmailUseCase } from "./application/use-cases/process-resend-inbound-email/process-resend-inbound-email.usecase";
 import { RunSequenceStepsUseCase } from "./application/use-cases/run-sequence-steps/run-sequence-steps.usecase";
 import { SendCommunicationUseCase } from "./application/use-cases/send-communication/send-communication.usecase";
 import { SetAccountCustomAttributesUseCase } from "./application/use-cases/set-account-custom-attributes/set-account-custom-attributes.usecase";
@@ -58,6 +61,7 @@ import { UpdateAccountUseCase } from "./application/use-cases/update-account/upd
 import { UpdateActivityUseCase } from "./application/use-cases/update-activity/update-activity.usecase";
 import { UpdateChannelTemplateUseCase } from "./application/use-cases/update-channel-template/update-channel-template.usecase";
 import { UpdateDealUseCase } from "./application/use-cases/update-deal/update-deal.usecase";
+import { UpdateSequenceUseCase } from "./application/use-cases/update-sequence/update-sequence.usecase";
 import { PrismaAccountRepoAdapter } from "./infrastructure/prisma/prisma-account-repo.adapter";
 import { PrismaActivityRepoAdapter } from "./infrastructure/prisma/prisma-activity-repo.adapter";
 import { PrismaChannelTemplateRepoAdapter } from "./infrastructure/prisma/prisma-channel-template-repo.adapter";
@@ -90,6 +94,8 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
   RunSequenceStepsUseCase,
   CreateSequenceUseCase,
   ListSequencesUseCase,
+  GetSequenceByIdUseCase,
+  UpdateSequenceUseCase,
   PrismaDealRepoAdapter,
   PrismaActivityRepoAdapter,
   { provide: DEAL_REPO_PORT, useExisting: PrismaDealRepoAdapter },
@@ -333,6 +339,31 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
     useFactory: (activityRepo: PrismaActivityRepoAdapter, clock: ClockPort) =>
       new ProcessCommunicationWebhookUseCase(activityRepo, clock, new NestLoggerAdapter()),
     inject: [ACTIVITY_REPO_PORT, CLOCK_PORT_TOKEN],
+  },
+  {
+    provide: ProcessResendInboundEmailUseCase,
+    useFactory: (
+      activityRepo: PrismaActivityRepoAdapter,
+      dealRepo: PrismaDealRepoAdapter,
+      partyRepo: PrismaPartyRepoAdapter,
+      clock: ClockPort,
+      idGen: IdGeneratorPort
+    ) =>
+      new ProcessResendInboundEmailUseCase(
+        activityRepo,
+        dealRepo,
+        partyRepo,
+        clock,
+        idGen,
+        new NestLoggerAdapter()
+      ),
+    inject: [
+      ACTIVITY_REPO_PORT,
+      DEAL_REPO_PORT,
+      PrismaPartyRepoAdapter,
+      CLOCK_PORT_TOKEN,
+      ID_GENERATOR_TOKEN,
+    ],
   },
   {
     provide: UpdateActivityUseCase,
