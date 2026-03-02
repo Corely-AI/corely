@@ -5,6 +5,7 @@ import {
   TENANT_ENTITLEMENTS_READ_PORT_TOKEN,
   type TenantEntitlementsReadPort,
 } from "@corely/kernel";
+import { isToolInActiveAppScope } from "./app-scope";
 
 @Injectable()
 export class ToolRegistry implements ToolRegistryPort {
@@ -41,8 +42,8 @@ export class ToolRegistry implements ToolRegistryPort {
     }
 
     if (activeAppId) {
-      availableTools = availableTools.filter(
-        (tool) => !tool.appId || tool.appId === "common" || tool.appId === activeAppId
+      availableTools = availableTools.filter((tool) =>
+        isToolInActiveAppScope(tool.appId, activeAppId)
       );
     }
 

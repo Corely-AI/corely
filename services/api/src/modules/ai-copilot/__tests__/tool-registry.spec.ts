@@ -69,4 +69,26 @@ describe("ToolRegistry", () => {
 
     expect(tools.map((tool) => tool.name)).toEqual(["invoice_list", "sales_createQuoteFromText"]);
   });
+
+  it("allows only freelancer-approved app scopes when active app is freelancer", async () => {
+    const registry = new ToolRegistry([
+      mockTool("invoice_list", "invoices"),
+      mockTool("expenses_list", "expenses"),
+      mockTool("assistant_helper", "assistant"),
+      mockTool("portfolio_list_showcases", "portfolio"),
+      mockTool("crm_createPartyFromText", "crm"),
+      mockTool("sales_createQuoteFromText", "sales"),
+      mockTool("collect_helper"),
+    ]);
+
+    const tools = await registry.listForTenant("tenant-1", "freelancer");
+
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "invoice_list",
+      "expenses_list",
+      "assistant_helper",
+      "portfolio_list_showcases",
+      "collect_helper",
+    ]);
+  });
 });

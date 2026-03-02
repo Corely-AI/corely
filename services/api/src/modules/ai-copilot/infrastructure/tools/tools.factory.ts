@@ -5,6 +5,7 @@ import type { ToolExecutionRepositoryPort } from "../../application/ports/tool-e
 import type { AuditPort } from "../../application/ports/audit.port";
 import type { OutboxPort } from "@corely/kernel";
 import { type ObservabilityPort, type ObservabilitySpanRef, type JsonValue } from "@corely/kernel";
+import { isToolInActiveAppScope } from "./app-scope";
 
 export function buildAiTools(
   tools: DomainToolPort[],
@@ -58,7 +59,7 @@ export function buildAiTools(
         );
         const startedAt = Date.now();
         try {
-          if (t.appId && t.appId !== "common" && deps.activeAppId && t.appId !== deps.activeAppId) {
+          if (!isToolInActiveAppScope(t.appId, deps.activeAppId)) {
             throw new Error(
               `Platform:ToolNotInAppScope (expected ${deps.activeAppId}, got ${t.appId})`
             );

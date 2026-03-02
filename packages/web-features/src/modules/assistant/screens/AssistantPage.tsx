@@ -71,7 +71,11 @@ const getThreadGroupKey = (isoDate: string): ThreadGroupKey => {
   return "older";
 };
 
-export default function AssistantPage() {
+interface AssistantPageProps {
+  activeModule?: string;
+}
+
+export default function AssistantPage({ activeModule = "assistant" }: AssistantPageProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { threadId } = useParams<{ threadId?: string }>();
@@ -333,7 +337,7 @@ export default function AssistantPage() {
           <div className="mx-auto max-w-5xl px-4 py-6" data-testid="assistant-messages">
             <Chat
               key={threadId ?? "new-thread"}
-              activeModule="assistant"
+              activeModule={activeModule}
               locale={i18n.language}
               runId={threadId}
               runIdMode="controlled"
