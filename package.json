@@ -49,6 +49,7 @@
     "check": "pnpm lint && pnpm typecheck && pnpm prompt:check",
     "prompt:check": "node scripts/check-prompts.mjs",
     "catalog:sync": "pnpm --filter @corely/api exec tsx --env-file=../../.env src/scripts/catalog-sync.ts",
+    "cloudrun:sync-worker-env": "bash scripts/sync-cloudrun-worker-env.sh",
     "e2e:api:up": "docker compose -f docker-compose.e2e.yml up -d api",
     "e2e:up": "docker compose -f docker-compose.e2e.yml up -d --build",
     "e2e:down": "docker compose -f docker-compose.e2e.yml down -v",
