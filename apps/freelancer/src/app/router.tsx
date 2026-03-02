@@ -8,6 +8,7 @@ import {
   taxFeature,
 } from "@corely/web-features";
 import { AssistantPage } from "@corely/web-features/modules/assistant";
+import { AccountDetailPage, AccountFormPage, AccountsPage } from "@corely/web-features/modules/crm";
 import { DashboardPage } from "@corely/web-features/modules/core";
 import { PaymentMethodsSettings } from "@corely/web-shared/settings";
 import NotFound from "@corely/web-shared/shared/components/NotFound";
@@ -46,6 +47,10 @@ export const Router = () => (
             path="/assistant/t/:threadId"
             element={<AssistantPage activeModule="freelancer" />}
           />
+          <Route path="/crm/accounts" element={<AccountsPage />} />
+          <Route path="/crm/accounts/new" element={<AccountFormPage />} />
+          <Route path="/crm/accounts/:id" element={<AccountDetailPage />} />
+          <Route path="/crm/accounts/:id/edit" element={<AccountFormPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
           {featureRoutes.map((route) => (
