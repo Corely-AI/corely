@@ -42,6 +42,7 @@ import {
   TeacherDashboardPage,
 } from "../../modules/classes";
 import {
+  CrmDashboardPage,
   DealsPage,
   NewDealPage,
   DealDetailPage,
@@ -299,6 +300,8 @@ export const appShellRoutes = (
       <Route path="/students/new" element={<NewStudentPage />} />
       <Route path="/students/:id" element={<StudentDetailPage />} />
       <Route path="/students/:id/edit" element={<StudentDetailPage />} />
+      <Route path="/crm" element={<CrmDashboardPage />} />
+      <Route path="/crm/overview" element={<Navigate to="/crm" replace />} />
       <Route path="/crm/deals" element={<DealsPage />} />
       <Route path="/crm/deals/new" element={<NewDealPage />} />
       <Route path="/crm/deals/:id" element={<DealDetailPage />} />

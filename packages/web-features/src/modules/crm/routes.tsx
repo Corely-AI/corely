@@ -1,3 +1,5 @@
+import { Navigate } from "react-router-dom";
+import CrmDashboardPage from "./screens/CrmDashboardPage";
 import DealsPage from "./screens/DealsPage";
 import NewDealPage from "./screens/NewDealPage";
 import DealDetailPage from "./screens/DealDetailPage";
@@ -18,6 +20,14 @@ import AccountDetailPage from "./screens/AccountDetailPage";
 import AccountFormPage from "./screens/AccountFormPage";
 
 export const crmRoutes = [
+  {
+    path: "/crm",
+    element: <CrmDashboardPage />,
+  },
+  {
+    path: "/crm/overview",
+    element: <Navigate to="/crm" replace />,
+  },
   {
     path: "/crm/deals",
     element: <DealsPage />,

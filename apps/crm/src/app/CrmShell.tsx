@@ -5,10 +5,15 @@ import { assistantFeature, crmFeature, type FeatureNavItem } from "@corely/web-f
 
 const crmSwitcherMode: WorkspaceSwitcherMode = "multi";
 
+const dashboardNavItem = crmFeature.crmManifestNavItems.find((item) => item.id === "crm-dashboard");
+const crmItemsWithoutDashboard = crmFeature.crmManifestNavItems.filter(
+  (item) => item.id !== "crm-dashboard"
+);
+
 const crmNavItems: FeatureNavItem[] = [
-  { id: "overview", label: "Overview", route: "/overview", icon: "Home" },
+  ...(dashboardNavItem ? [dashboardNavItem] : []),
   ...assistantFeature.assistantNavItems,
-  ...crmFeature.crmManifestNavItems,
+  ...crmItemsWithoutDashboard,
 ];
 
 const toWorkspaceNavigationItem = (
@@ -21,7 +26,7 @@ const toWorkspaceNavigationItem = (
   route: item.route,
   icon: item.icon ?? "HelpCircle",
   order: index + 1,
-  exact: item.route === "/overview",
+  exact: item.route === "/crm",
 });
 
 const crmNavigationGroups: WorkspaceNavigationGroup[] = [

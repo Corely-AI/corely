@@ -218,10 +218,7 @@ export default function SequenceDetailPage() {
   };
 
   return (
-    <div
-      className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-3xl mx-auto"
-      data-testid="crm-sequence-detail-page"
-    >
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-sequence-detail-page">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate("/crm/sequences")}>

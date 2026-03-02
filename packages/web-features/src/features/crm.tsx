@@ -27,6 +27,7 @@ export const crmNavItems: FeatureNavItem[] = [
 
 // Manifest-aligned CRM app menu entries (services/api/src/modules/crm/crm.manifest.ts)
 export const crmManifestNavItems: FeatureNavItem[] = [
+  { id: "crm-dashboard", label: "Dashboard", route: "/crm", icon: "LayoutDashboard" },
   { id: "crm-deals", label: "Deals", route: "/crm/deals", icon: "FolderKanban" },
   { id: "crm-leads", label: "Leads", route: "/crm/leads", icon: "Users" },
   { id: "crm-activities", label: "Activities", route: "/crm/activities", icon: "ClipboardList" },
