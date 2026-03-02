@@ -17,6 +17,7 @@ import { JobLockService } from "./infrastructure/job-lock.service";
 import { InternalWorkerController } from "./application/internal-worker.controller";
 
 import { StorageModule } from "./modules/storage/storage.module";
+import { JobSchedulerModule } from "./shared/scheduling/job-scheduler.module";
 
 @Module({
   controllers: [InternalWorkerController],
@@ -26,6 +27,7 @@ import { StorageModule } from "./modules/storage/storage.module";
     DataModule,
     OutboxModule,
     StorageModule,
+    JobSchedulerModule,
     WorkflowsModule,
     AccountingWorkerModule,
     TaxWorkerModule,

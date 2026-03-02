@@ -61,6 +61,30 @@ export class EnvService {
     return this.config.WORKFLOW_QUEUE_SECRET;
   }
 
+  get JOB_SCHEDULER_DRIVER(): "noop" | "cloudtasks" | undefined {
+    return this.config.JOB_SCHEDULER_DRIVER;
+  }
+
+  get GCP_PROJECT_ID(): string | undefined {
+    return this.config.GCP_PROJECT_ID;
+  }
+
+  get GCP_LOCATION(): string | undefined {
+    return this.config.GCP_LOCATION;
+  }
+
+  get CLOUD_TASKS_QUEUE_NAME(): string | undefined {
+    return this.config.CLOUD_TASKS_QUEUE_NAME;
+  }
+
+  get WORKER_BASE_URL(): string | undefined {
+    return this.config.WORKER_BASE_URL;
+  }
+
+  get CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL(): string | undefined {
+    return this.config.CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL;
+  }
+
   // ============================================================================
   // PORTS
   // ============================================================================
