@@ -12,8 +12,10 @@ export type EnrollmentWithRelations = {
   currentStepOrder: number;
   status: EnrollmentStatus;
   nextExecutionAt: Date | null;
+  updatedAt: Date;
   sequence: {
     steps: {
+      id: string;
       stepOrder: number;
       type: SequenceStepType;
       dayDelay: number;
@@ -35,6 +37,14 @@ export interface EnrollmentRepoPort {
   }): Promise<void>;
 
   findDueEnrollments(limit: number): Promise<EnrollmentWithRelations[]>;
+
+  findById(id: string): Promise<EnrollmentWithRelations | null>;
+
+  tryClaimForStepExecution(input: {
+    id: string;
+    currentStepOrder: number;
+    expectedUpdatedAt: Date;
+  }): Promise<boolean>;
 
   updateStatus(
     id: string,

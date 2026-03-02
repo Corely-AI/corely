@@ -16,6 +16,14 @@ function modeFromArg(arg: string | undefined): "tick" | "background" {
   return arg === "tick" ? "tick" : "background";
 }
 
+function isTruthy(value: string | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+  const normalized = value.trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "y";
+}
+
 function randomJitter(maxMs: number): number {
   const max = Math.max(0, maxMs);
   return max > 0 ? Math.floor(Math.random() * (max + 1)) : 0;
@@ -96,8 +104,12 @@ async function createWorkerApp(logger: Logger): Promise<{
   }, 5_000);
 
   try {
-    const driver = process.env.WORKFLOW_QUEUE_DRIVER;
-    const shouldListenHttp = driver === "cloudtasks" || Boolean(process.env.K_SERVICE);
+    const workflowDriver = process.env.WORKFLOW_QUEUE_DRIVER;
+    const schedulerDriver = process.env.JOB_SCHEDULER_DRIVER;
+    const shouldListenHttp =
+      workflowDriver === "cloudtasks" ||
+      schedulerDriver === "cloudtasks" ||
+      Boolean(process.env.K_SERVICE);
     if (shouldListenHttp) {
       logger.log("[bootstrap] Initializing Nest application with HTTP listener...");
       const app = await Promise.race([NestFactory.create(WorkerModule), timeoutPromise]);
@@ -186,6 +198,18 @@ async function runBackgroundLoop(logger: Logger): Promise<void> {
   try {
     logger.log("[worker] started in background mode");
     logger.log("[worker] " + CONTRACTS_HELLO);
+
+    const pollingDisabled =
+      isTruthy(env.WORKER_DISABLE_POLLING) || env.JOB_SCHEDULER_DRIVER === "cloudtasks";
+    if (pollingDisabled) {
+      logger.log(
+        "[worker] polling disabled; waiting for externally triggered work (Cloud Tasks / scheduler / HTTP)"
+      );
+      while (!shuttingDown) {
+        await sleepInterruptible(1_000, () => shuttingDown);
+      }
+      return;
+    }
 
     while (!shuttingDown) {
       if (inFlightTick) {

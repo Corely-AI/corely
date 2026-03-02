@@ -5,6 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import { InternalWorkerController } from "./internal-worker.controller";
 import { TickOrchestrator } from "./tick-orchestrator.service";
 import { InvoicePdfService } from "../modules/invoices/application/invoice-pdf.service";
+import { JOB_SCHEDULER_PORT } from "../shared/scheduling/job-scheduler.port";
 
 vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });
 
@@ -21,6 +22,10 @@ describe("InternalWorkerController (HTTP integration)", () => {
     generateAndStore: vi.fn(),
   };
 
+  const mockJobScheduler = {
+    schedule: vi.fn(),
+  };
+
   beforeAll(async () => {
     originalWorkerKey = process.env.INTERNAL_WORKER_KEY;
 
@@ -29,6 +34,7 @@ describe("InternalWorkerController (HTTP integration)", () => {
       providers: [
         { provide: TickOrchestrator, useValue: mockTickOrchestrator },
         { provide: InvoicePdfService, useValue: mockInvoicePdfService },
+        { provide: JOB_SCHEDULER_PORT, useValue: mockJobScheduler },
       ],
     }).compile();
 
@@ -120,5 +126,31 @@ describe("InternalWorkerController (HTTP integration)", () => {
       tenantId: "tenant-1",
       invoiceId: "inv-1",
     });
+  });
+
+  it("schedules a durable job through the scheduler port", async () => {
+    process.env.INTERNAL_WORKER_KEY = "worker-secret";
+    mockJobScheduler.schedule.mockResolvedValue({ externalRef: "task-123" });
+
+    const response = await request(server)
+      .post("/internal/schedule")
+      .set("x-worker-key", "worker-secret")
+      .send({
+        jobName: "worker.tick",
+        payload: { runnerNames: ["outbox"] },
+        idempotencyKey: "tick:outbox",
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      jobName: "worker.tick",
+      scheduled: true,
+      externalRef: "task-123",
+    });
+    expect(mockJobScheduler.schedule).toHaveBeenCalledWith(
+      "worker.tick",
+      { runnerNames: ["outbox"] },
+      expect.objectContaining({ idempotencyKey: "tick:outbox" })
+    );
   });
 });

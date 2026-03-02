@@ -5,7 +5,7 @@ import { Runner, RunnerReport, TickContext } from "./runner.interface";
 import { OutboxPollerService } from "../modules/outbox/outbox-poller.service";
 import { InvoiceReminderRunnerService } from "../modules/invoices/invoice-reminder-runner.service";
 import { MonthlyBillingRunnerService } from "../modules/classes/monthly-billing-runner.service";
-import { SequenceRunnerService } from "../modules/crm/sequence-runner.service";
+import { SequencesSweeperRunnerService } from "../modules/crm/sequences-sweeper.runner";
 import { v4 as uuidv4 } from "uuid";
 
 export interface TickRunSummary {
@@ -40,11 +40,11 @@ export class TickOrchestrator {
     @Inject(MonthlyBillingRunnerService)
     private readonly classesBillingRunner: MonthlyBillingRunnerService,
     @Optional()
-    @Inject(SequenceRunnerService)
-    private readonly sequenceRunner: SequenceRunnerService
+    @Inject(SequencesSweeperRunnerService)
+    private readonly sequenceSweepRunner: SequencesSweeperRunnerService
   ) {
     this.logger.log(
-      `[init] TickOrchestrator created — outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}, sequenceRunner=${!!this.sequenceRunner}`
+      `[init] TickOrchestrator created — outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}, sequenceSweepRunner=${!!this.sequenceSweepRunner}`
     );
 
     // Register available runners
@@ -52,7 +52,7 @@ export class TickOrchestrator {
       this.outboxRunner,
       this.invoiceRunner,
       this.classesBillingRunner,
-      this.sequenceRunner,
+      this.sequenceSweepRunner,
     ];
     for (const runner of candidates) {
       if (runner) {
