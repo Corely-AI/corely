@@ -114,7 +114,10 @@ export class StreamCopilotChatUseCase {
 
     let runId = params.runId || nanoid();
     const turnId = nanoid();
-    const tools = await this.toolRegistry.listForTenant(params.toolTenantId ?? tenantId);
+    const tools = await this.toolRegistry.listForTenant(
+      params.toolTenantId ?? tenantId,
+      params.intent
+    );
 
     const turnSpan = this.observability.startTurnTrace({
       traceName: `copilot.turn:${params.intent ?? "general"}`,
@@ -266,6 +269,7 @@ export class StreamCopilotChatUseCase {
               userId,
               workspaceKind: params.workspaceKind,
               environment: params.environment,
+              activeAppId: params.intent,
               observability: modelSpan,
             });
 

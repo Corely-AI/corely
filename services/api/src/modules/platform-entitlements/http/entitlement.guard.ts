@@ -56,6 +56,13 @@ export class PlatformEntitlementGuard implements CanActivate {
       if (!app || !app.enabled) {
         throw new ForbiddenException(`App ${requiredApp} is disabled for this tenant`);
       }
+
+      const activeAppId = request.activeAppId || request.headers?.["x-app-id"];
+      if (activeAppId && activeAppId !== "common" && activeAppId !== requiredApp) {
+        throw new ForbiddenException(
+          `AppScopeViolation (expected ${requiredApp}, got ${activeAppId})`
+        );
+      }
     }
 
     if (requiredFeature) {

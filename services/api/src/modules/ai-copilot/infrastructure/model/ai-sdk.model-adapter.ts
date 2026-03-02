@@ -52,6 +52,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     userId: string;
     workspaceKind?: WorkspaceKind;
     environment?: string;
+    activeAppId?: string;
     observability: ObservabilitySpanRef;
   }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }> {
     const toolTenantId = params.toolTenantId ?? params.tenantId;
@@ -61,6 +62,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       outbox: this.outbox,
       tenantId: toolTenantId,
       workspaceId: params.workspaceId,
+      activeAppId: params.activeAppId,
       runId: params.runId,
       userId: params.userId,
       observability: this.observability,
