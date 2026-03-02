@@ -1,13 +1,14 @@
 import React from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import {
-  assistantFeature,
   crmFeature,
   expensesFeature,
   invoicesFeature,
   portfolioFeature,
   taxFeature,
 } from "@corely/web-features";
+import { AssistantPage } from "@corely/web-features/modules/assistant";
+import { AccountDetailPage, AccountFormPage, AccountsPage } from "@corely/web-features/modules/crm";
 import { DashboardPage } from "@corely/web-features/modules/core";
 import { PaymentMethodsSettings } from "@corely/web-shared/settings";
 import NotFound from "@corely/web-shared/shared/components/NotFound";
@@ -17,7 +18,6 @@ import { SettingsPage } from "../screens/SettingsPage";
 import { LoginPage } from "../routes/auth/login";
 
 const featureRoutes = [
-  ...assistantFeature.assistantRoutes(),
   ...crmFeature.crmRoutes(),
   ...expensesFeature.expensesRoutes(),
   ...invoicesFeature.invoicesRoutes(),
@@ -42,6 +42,15 @@ export const Router = () => (
       <Route element={<RequireAuth />}>
         <Route element={<FreelancerShell />}>
           <Route path="/overview" element={<DashboardPage />} />
+          <Route path="/assistant" element={<AssistantPage activeModule="freelancer" />} />
+          <Route
+            path="/assistant/t/:threadId"
+            element={<AssistantPage activeModule="freelancer" />}
+          />
+          <Route path="/crm/accounts" element={<AccountsPage />} />
+          <Route path="/crm/accounts/new" element={<AccountFormPage />} />
+          <Route path="/crm/accounts/:id" element={<AccountDetailPage />} />
+          <Route path="/crm/accounts/:id/edit" element={<AccountFormPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/payment-methods" element={<PaymentMethodsSettings />} />
           {featureRoutes.map((route) => (
