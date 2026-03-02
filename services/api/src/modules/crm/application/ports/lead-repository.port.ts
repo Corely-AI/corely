@@ -9,6 +9,9 @@ export interface LeadRepoPort {
   create(tenantId: string, lead: LeadAggregate): Promise<void>;
   update(tenantId: string, lead: LeadAggregate): Promise<void>;
   findById(tenantId: string, id: string): Promise<LeadAggregate | null>;
+  findByConvertedDealId(tenantId: string, dealId: string): Promise<LeadAggregate | null>;
+  findLatestByEmail(tenantId: string, email: string): Promise<LeadAggregate | null>;
+  touchLastRepliedAt(tenantId: string, id: string, repliedAt: Date): Promise<void>;
   list(tenantId: string, filters?: ListLeadsFilters): Promise<LeadAggregate[]>;
 }
 

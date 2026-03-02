@@ -127,7 +127,18 @@ export default function LeadDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <SequenceEnrollmentCard entityType="lead" entityId={lead.id} />
+          {lead.convertedDealId ? (
+            <SequenceEnrollmentCard entityType="deal" entityId={lead.convertedDealId} />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Automation</CardTitle>
+                <CardDescription>
+                  Convert this lead to a deal first, then enroll the deal in a sequence.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
           <Card>
             <CardHeader>
               <CardTitle>Contact Info</CardTitle>

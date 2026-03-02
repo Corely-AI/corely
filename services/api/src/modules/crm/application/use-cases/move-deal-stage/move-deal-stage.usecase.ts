@@ -14,6 +14,7 @@ import {
 } from "@corely/kernel";
 import type { MoveDealStageInput, MoveDealStageOutput } from "@corely/contracts";
 import type { DealRepoPort } from "../../ports/deal-repository.port";
+import type { EnrollmentRepoPort } from "../../ports/enrollment-repository.port";
 import { toDealDto } from "../../mappers/deal-dto.mapper";
 
 @RequireTenant()
@@ -21,6 +22,7 @@ import { toDealDto } from "../../mappers/deal-dto.mapper";
 export class MoveDealStageUseCase extends BaseUseCase<MoveDealStageInput, MoveDealStageOutput> {
   constructor(
     private readonly dealRepo: DealRepoPort,
+    private readonly enrollmentRepo: EnrollmentRepoPort,
     private readonly clock: ClockPort,
     logger: LoggerPort
   ) {
@@ -60,6 +62,10 @@ export class MoveDealStageUseCase extends BaseUseCase<MoveDealStageInput, MoveDe
       transitionedByUserId: ctx.userId ?? null,
       transitionedAt: now,
     });
+
+    if (input.newStageId === "won" || input.newStageId === "lost") {
+      await this.enrollmentRepo.cancelPendingByDealContext(ctx.tenantId, deal.id);
+    }
 
     return ok({ deal: toDealDto(deal) });
   }

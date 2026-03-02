@@ -11,6 +11,7 @@ import { utcInstantSchema } from "../shared/local-date.schema";
 const CreateActivityBaseSchema = z.object({
   subject: z.string().min(1),
   body: z.string().optional(),
+  leadId: z.string().optional(),
   partyId: z.string().optional(),
   dealId: z.string().optional(),
   activityDate: utcInstantSchema.optional(),

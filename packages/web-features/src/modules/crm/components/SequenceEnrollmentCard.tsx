@@ -18,7 +18,7 @@ import { crmApi } from "@corely/web-shared/lib/crm-api";
 import { toast } from "sonner";
 
 interface SequenceEnrollmentCardProps {
-  entityType: "lead" | "party";
+  entityType: "lead" | "party" | "deal";
   entityId: string;
 }
 

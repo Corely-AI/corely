@@ -73,6 +73,7 @@ export const EnrollEntityInputSchema = z.object({
   sequenceId: z.string(),
   entityType: z.enum(["lead", "party", "deal"]),
   entityId: z.string(),
+  contextDealId: z.string().optional(),
 });
 export type EnrollEntityInput = z.infer<typeof EnrollEntityInputSchema>;
 

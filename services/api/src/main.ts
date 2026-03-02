@@ -26,8 +26,23 @@ async function bootstrap() {
     bodyParser: false,
   });
 
-  app.use(json({ limit: "50mb" }));
-  app.use(urlencoded({ limit: "50mb", extended: true }));
+  app.use(
+    json({
+      limit: "50mb",
+      verify: (req, _res, buf) => {
+        (req as any).rawBody = Buffer.from(buf);
+      },
+    })
+  );
+  app.use(
+    urlencoded({
+      limit: "50mb",
+      extended: true,
+      verify: (req, _res, buf) => {
+        (req as any).rawBody = Buffer.from(buf);
+      },
+    })
+  );
   app.use(cookieParser());
 
   logger.log(

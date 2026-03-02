@@ -6,4 +6,5 @@ export type UseCaseContext = {
   requestId?: string;
   roles?: string[];
   metadata?: Record<string, unknown>;
+  activeAppId?: string;
 };

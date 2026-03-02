@@ -3,7 +3,8 @@ export type IntegrationProvider =
   | "adyen"
   | "stripe_terminal"
   | "microsoft_graph_mail"
-  | "google_gmail";
+  | "google_gmail"
+  | "resend";
 
 export type CashlessSessionStatus =
   | "pending"

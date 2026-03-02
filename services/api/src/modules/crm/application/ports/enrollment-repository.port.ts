@@ -9,6 +9,7 @@ export type EnrollmentWithRelations = {
   sequenceId: string;
   leadId: string | null;
   partyId: string | null;
+  dealId: string | null;
   currentStepOrder: number;
   status: EnrollmentStatus;
   nextExecutionAt: Date | null;
@@ -30,11 +31,25 @@ export interface EnrollmentRepoPort {
     sequenceId: string;
     leadId?: string;
     partyId?: string;
+    dealId?: string;
     status: EnrollmentStatus;
     nextExecutionAt: Date;
   }): Promise<void>;
 
   findDueEnrollments(limit: number): Promise<EnrollmentWithRelations[]>;
+
+  findById(tenantId: string, id: string): Promise<EnrollmentWithRelations | null>;
+
+  findBySequenceLeadDealContext(
+    tenantId: string,
+    sequenceId: string,
+    leadId: string,
+    dealId: string
+  ): Promise<EnrollmentWithRelations | null>;
+
+  cancelById(id: string): Promise<boolean>;
+
+  cancelPendingByDealContext(tenantId: string, dealId: string): Promise<number>;
 
   updateStatus(
     id: string,

@@ -1,1 +1,1 @@
-export { Providers } from "@corely/web-shared/providers";
+export { Providers } from "@corely/web-shared";

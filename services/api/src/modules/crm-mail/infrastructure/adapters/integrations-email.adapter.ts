@@ -19,6 +19,8 @@ export class IntegrationsEmailAdapter implements EmailSendPort, EmailInboxPort {
     subject: string;
     html?: string;
     text?: string;
+    from?: string;
+    replyTo?: string;
   }): Promise<{ providerMessageId?: string }> {
     return this.provider.send({
       tenantId: input.tenantId,
@@ -29,6 +31,8 @@ export class IntegrationsEmailAdapter implements EmailSendPort, EmailInboxPort {
       subject: input.subject,
       html: input.html,
       text: input.text,
+      from: input.from,
+      replyTo: input.replyTo,
     });
   }
 

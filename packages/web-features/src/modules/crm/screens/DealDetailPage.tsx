@@ -7,6 +7,7 @@ import { Button } from "@corely/ui";
 import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
 import { DealDetailMainContent } from "../components/DealDetailMainContent";
 import { DealDetailOverlays } from "../components/DealDetailOverlays";
+import { SequenceEnrollmentCard } from "../components/SequenceEnrollmentCard";
 import {
   dealQueryKeys,
   type TimelineFilter,
@@ -554,6 +555,9 @@ export default function DealDetailPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-deal-detail-page">
+      <div className="max-w-md">
+        <SequenceEnrollmentCard entityType="deal" entityId={deal.id} />
+      </div>
       <DealDetailMainContent
         deal={deal}
         stages={stages}

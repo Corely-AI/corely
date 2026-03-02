@@ -261,21 +261,30 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
   },
   {
     provide: MoveDealStageUseCase,
-    useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort) =>
-      new MoveDealStageUseCase(dealRepo, clock, new NestLoggerAdapter()),
-    inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN],
+    useFactory: (
+      dealRepo: PrismaDealRepoAdapter,
+      enrollmentRepo: PrismaEnrollmentRepoAdapter,
+      clock: ClockPort
+    ) => new MoveDealStageUseCase(dealRepo, enrollmentRepo, clock, new NestLoggerAdapter()),
+    inject: [DEAL_REPO_PORT, ENROLLMENT_REPO_PORT, CLOCK_PORT_TOKEN],
   },
   {
     provide: MarkDealWonUseCase,
-    useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort) =>
-      new MarkDealWonUseCase(dealRepo, clock, new NestLoggerAdapter()),
-    inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN],
+    useFactory: (
+      dealRepo: PrismaDealRepoAdapter,
+      enrollmentRepo: PrismaEnrollmentRepoAdapter,
+      clock: ClockPort
+    ) => new MarkDealWonUseCase(dealRepo, enrollmentRepo, clock, new NestLoggerAdapter()),
+    inject: [DEAL_REPO_PORT, ENROLLMENT_REPO_PORT, CLOCK_PORT_TOKEN],
   },
   {
     provide: MarkDealLostUseCase,
-    useFactory: (dealRepo: PrismaDealRepoAdapter, clock: ClockPort) =>
-      new MarkDealLostUseCase(dealRepo, clock, new NestLoggerAdapter()),
-    inject: [DEAL_REPO_PORT, CLOCK_PORT_TOKEN],
+    useFactory: (
+      dealRepo: PrismaDealRepoAdapter,
+      enrollmentRepo: PrismaEnrollmentRepoAdapter,
+      clock: ClockPort
+    ) => new MarkDealLostUseCase(dealRepo, enrollmentRepo, clock, new NestLoggerAdapter()),
+    inject: [DEAL_REPO_PORT, ENROLLMENT_REPO_PORT, CLOCK_PORT_TOKEN],
   },
   {
     provide: ListDealsUseCase,
@@ -345,6 +354,8 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
     useFactory: (
       activityRepo: PrismaActivityRepoAdapter,
       dealRepo: PrismaDealRepoAdapter,
+      leadRepo: PrismaLeadRepoAdapter,
+      enrollmentRepo: PrismaEnrollmentRepoAdapter,
       partyRepo: PrismaPartyRepoAdapter,
       clock: ClockPort,
       idGen: IdGeneratorPort
@@ -352,6 +363,8 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
       new ProcessResendInboundEmailUseCase(
         activityRepo,
         dealRepo,
+        leadRepo,
+        enrollmentRepo,
         partyRepo,
         clock,
         idGen,
@@ -360,6 +373,8 @@ export const CRM_CORE_PROVIDERS: Provider[] = [
     inject: [
       ACTIVITY_REPO_PORT,
       DEAL_REPO_PORT,
+      LEAD_REPO_PORT,
+      ENROLLMENT_REPO_PORT,
       PrismaPartyRepoAdapter,
       CLOCK_PORT_TOKEN,
       ID_GENERATOR_TOKEN,

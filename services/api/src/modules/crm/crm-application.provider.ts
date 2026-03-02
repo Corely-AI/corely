@@ -14,6 +14,7 @@ import { MarkDealLostUseCase } from "./application/use-cases/mark-deal-lost/mark
 import { MarkDealWonUseCase } from "./application/use-cases/mark-deal-won/mark-deal-won.usecase";
 import { MoveDealStageUseCase } from "./application/use-cases/move-deal-stage/move-deal-stage.usecase";
 import { ProcessCommunicationWebhookUseCase } from "./application/use-cases/process-communication-webhook/process-communication-webhook.usecase";
+import { ProcessResendInboundEmailUseCase } from "./application/use-cases/process-resend-inbound-email/process-resend-inbound-email.usecase";
 import { SendCommunicationUseCase } from "./application/use-cases/send-communication/send-communication.usecase";
 import { UpdateActivityUseCase } from "./application/use-cases/update-activity/update-activity.usecase";
 import { UpdateDealUseCase } from "./application/use-cases/update-deal/update-deal.usecase";
@@ -51,6 +52,7 @@ export const CRM_APPLICATION_PROVIDER: Provider = {
     sendCommunication: SendCommunicationUseCase,
     logCommunication: LogCommunicationUseCase,
     processCommunicationWebhook: ProcessCommunicationWebhookUseCase,
+    processResendInboundEmail: ProcessResendInboundEmailUseCase,
     getDealAiInsights: GetDealAiInsightsUseCase,
     getDealAiRecommendations: GetDealAiRecommendationsUseCase,
     draftDealAiMessage: DraftDealAiMessageUseCase,
@@ -83,6 +85,7 @@ export const CRM_APPLICATION_PROVIDER: Provider = {
       sendCommunication,
       logCommunication,
       processCommunicationWebhook,
+      processResendInboundEmail,
       getDealAiInsights,
       getDealAiRecommendations,
       draftDealAiMessage,
@@ -115,6 +118,7 @@ export const CRM_APPLICATION_PROVIDER: Provider = {
     SendCommunicationUseCase,
     LogCommunicationUseCase,
     ProcessCommunicationWebhookUseCase,
+    ProcessResendInboundEmailUseCase,
     GetDealAiInsightsUseCase,
     GetDealAiRecommendationsUseCase,
     DraftDealAiMessageUseCase,

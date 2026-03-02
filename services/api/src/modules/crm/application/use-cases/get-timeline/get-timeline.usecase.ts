@@ -27,8 +27,8 @@ export class GetTimelineUseCase extends BaseUseCase<GetTimelineInput, GetTimelin
     if (!input.entityId) {
       throw new ValidationError("entityId is required");
     }
-    if (!input.entityType || !["party", "deal"].includes(input.entityType)) {
-      throw new ValidationError("entityType must be 'party' or 'deal'");
+    if (!input.entityType || !["lead", "party", "deal"].includes(input.entityType)) {
+      throw new ValidationError("entityType must be 'lead', 'party' or 'deal'");
     }
     return input;
   }

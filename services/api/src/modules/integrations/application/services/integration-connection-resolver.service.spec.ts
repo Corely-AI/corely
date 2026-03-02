@@ -27,7 +27,7 @@ class FakeIntegrationConnectionRepository implements IntegrationConnectionReposi
   async findActiveByKind(
     tenantId: string,
     workspaceId: string,
-    kind: "sumup" | "adyen" | "microsoft_graph_mail" | "google_gmail"
+    kind: "sumup" | "adyen" | "microsoft_graph_mail" | "google_gmail" | "resend"
   ): Promise<IntegrationConnectionEntity | null> {
     return this.activeByKind.get(`${tenantId}:${workspaceId}:${kind}`) ?? null;
   }
@@ -35,7 +35,7 @@ class FakeIntegrationConnectionRepository implements IntegrationConnectionReposi
 
 const buildConnection = (input?: {
   id?: string;
-  kind?: "sumup" | "adyen" | "microsoft_graph_mail" | "google_gmail";
+  kind?: "sumup" | "adyen" | "microsoft_graph_mail" | "google_gmail" | "resend";
   secretEncrypted?: string | null;
 }) =>
   new IntegrationConnectionEntity({

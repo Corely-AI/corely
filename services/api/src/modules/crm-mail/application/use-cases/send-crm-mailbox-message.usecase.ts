@@ -50,6 +50,7 @@ export class SendCrmMailboxMessageUseCase extends BaseUseCase<
       subject: input.subject,
       html: input.html,
       text: input.text,
+      from: mailbox.address,
     });
 
     const message = await this.repository.createOutgoingMessage({

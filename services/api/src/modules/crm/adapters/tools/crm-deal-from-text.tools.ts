@@ -24,6 +24,7 @@ export const buildCrmDealFromTextTools = (deps: CrmAiToolsContext): DomainToolPo
     description:
       "Extract deal/opportunity information from text (e.g., meeting notes, email). Returns a proposal with confidence score.",
     kind: "server",
+    appId: "crm",
     inputSchema: z.object({
       sourceText: z.string().describe("The unstructured text containing deal information"),
       partyId: z.string().optional().describe("Optional party ID to associate the deal with"),
@@ -76,6 +77,7 @@ export const buildCrmDealFromTextTools = (deps: CrmAiToolsContext): DomainToolPo
     description:
       "Extract deal information from text and create a persisted CRM deal. If partyId is not provided, the tool tries to match or create a customer from the same text.",
     kind: "server",
+    appId: "crm",
     inputSchema: z.object({
       sourceText: z.string().describe("The unstructured text containing deal information"),
       partyId: z.string().optional().describe("Optional existing party/customer ID"),

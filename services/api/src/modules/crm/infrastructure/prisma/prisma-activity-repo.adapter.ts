@@ -46,6 +46,7 @@ type ActivityRow = {
   messageDirection: string | null;
   messageTo: string | null;
   openUrl: string | null;
+  leadId: string | null;
   partyId: string | null;
   dealId: string | null;
   dueAt: Date | null;
@@ -120,6 +121,7 @@ const toEntity = (row: ActivityRow): ActivityEntity => {
     messageDirection: row.messageDirection,
     messageTo: row.messageTo,
     openUrl: row.openUrl,
+    leadId: row.leadId,
     partyId: row.partyId,
     dealId: row.dealId,
     dueAt: row.dueAt,
@@ -170,6 +172,57 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
     return row ? toEntity(row as ActivityRow) : null;
   }
 
+  async findCommunicationByExternalThreadId(
+    tenantId: string,
+    providerKey: string,
+    externalThreadId: string
+  ): Promise<ActivityEntity | null> {
+    const row = await this.prisma.activity.findFirst({
+      where: {
+        tenantId,
+        type: "COMMUNICATION",
+        providerKey,
+        externalThreadId,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return row ? toEntity(row as ActivityRow) : null;
+  }
+
+  async findLatestOutboundCommunicationByRecipient(
+    tenantId: string,
+    providerKey: string,
+    recipientEmail: string
+  ): Promise<ActivityEntity | null> {
+    const normalizedRecipient = recipientEmail.trim().toLowerCase();
+    const rows = await this.prisma.activity.findMany({
+      where: {
+        tenantId,
+        type: "COMMUNICATION",
+        providerKey,
+        direction: "OUTBOUND",
+      },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+
+    for (const raw of rows) {
+      const activity = toEntity(raw as ActivityRow);
+      const recipients = [
+        ...(activity.toRecipients ?? []),
+        ...(activity.ccRecipients ?? []),
+        ...(activity.participants ?? []),
+        ...(activity.messageTo ? [activity.messageTo] : []),
+      ].map((email) => email.trim().toLowerCase());
+
+      if (recipients.includes(normalizedRecipient)) {
+        return activity;
+      }
+    }
+
+    return null;
+  }
+
   async list(
     tenantId: string,
     filters: ListActivitiesFilters,
@@ -180,6 +233,7 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
       tenantId,
       ...(filters.partyId ? { partyId: filters.partyId } : {}),
       ...(filters.dealId ? { dealId: filters.dealId } : {}),
+      ...(filters.leadId ? { leadId: filters.leadId } : {}),
       ...(filters.type ? { type: filters.type } : {}),
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.channelKey ? { channelKey: filters.channelKey } : {}),
@@ -215,7 +269,7 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
       throw new Error("Tenant mismatch when creating activity");
     }
 
-    await this.prisma.activity.create({
+    await (this.prisma as any).activity.create({
       data: {
         id: activity.id,
         tenantId: activity.tenantId,
@@ -243,6 +297,7 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
         messageDirection: activity.messageDirection,
         messageTo: activity.messageTo,
         openUrl: activity.openUrl,
+        leadId: activity.leadId,
         partyId: activity.partyId,
         dealId: activity.dealId,
         dueAt: activity.dueAt,
@@ -266,7 +321,7 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
       throw new Error("Tenant mismatch when updating activity");
     }
 
-    await this.prisma.activity.update({
+    await (this.prisma as any).activity.update({
       where: { id: activity.id },
       data: {
         type: activity.type,
@@ -293,6 +348,7 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
         messageDirection: activity.messageDirection,
         messageTo: activity.messageTo,
         openUrl: activity.openUrl,
+        leadId: activity.leadId,
         partyId: activity.partyId,
         dealId: activity.dealId,
         dueAt: activity.dueAt,
@@ -311,7 +367,7 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
 
   async getTimeline(
     tenantId: string,
-    entityType: "party" | "deal",
+    entityType: "lead" | "party" | "deal",
     entityId: string,
     pageSize = 100,
     cursor?: string
@@ -319,7 +375,11 @@ export class PrismaActivityRepoAdapter implements ActivityRepoPort {
     const activities = await this.prisma.activity.findMany({
       where: {
         tenantId,
-        ...(entityType === "party" ? { partyId: entityId } : { dealId: entityId }),
+        ...(entityType === "lead"
+          ? { leadId: entityId }
+          : entityType === "party"
+            ? { partyId: entityId }
+            : { dealId: entityId }),
       },
       orderBy: { createdAt: "desc" },
       take: pageSize,

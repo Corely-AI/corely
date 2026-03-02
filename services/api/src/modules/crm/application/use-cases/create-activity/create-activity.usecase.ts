@@ -67,6 +67,7 @@ export class CreateActivityUseCase extends BaseUseCase<CreateActivityInput, Crea
         : (input.messageDirection ?? null),
       messageTo: input.messageTo ?? null,
       openUrl: input.openUrl ?? null,
+      leadId: input.leadId ?? null,
       partyId: input.partyId,
       dealId: input.dealId,
       activityDate: input.activityDate ? new Date(input.activityDate) : now,

@@ -19,6 +19,7 @@
     "@corely/integrations-core": "workspace:*",
     "@corely/integrations-google-gmail": "workspace:*",
     "@corely/integrations-microsoft-graph-mail": "workspace:*",
+    "@corely/integrations-resend": "workspace:*",
     "@corely/integrations-sumup": "workspace:*",
     "@corely/kernel": "workspace:*",
     "@corely/prompts": "workspace:*",
@@ -86,7 +87,8 @@
     "start": "node dist/main.js",
     "start:debug": "node --inspect=0.0.0.0:9229 dist/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "seed:directory": "tsx --env-file=../../.env src/scripts/seed-directory-restaurants.ts"
+    "seed:directory": "tsx --env-file=../../.env src/scripts/seed-directory-restaurants.ts",
+    "seed:crm:nails-sequence": "tsx --env-file=../../.env src/scripts/seed-crm-nails-sequence.ts"
   },
   "author": "Ha Doan <ha@oneway8x.com>"
 }

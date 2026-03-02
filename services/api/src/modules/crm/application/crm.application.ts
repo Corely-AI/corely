@@ -15,6 +15,7 @@ import type { CreateCommunicationDraftUseCase } from "./use-cases/create-communi
 import type { SendCommunicationUseCase } from "./use-cases/send-communication/send-communication.usecase";
 import type { LogCommunicationUseCase } from "./use-cases/log-communication/log-communication.usecase";
 import type { ProcessCommunicationWebhookUseCase } from "./use-cases/process-communication-webhook/process-communication-webhook.usecase";
+import type { ProcessResendInboundEmailUseCase } from "./use-cases/process-resend-inbound-email/process-resend-inbound-email.usecase";
 import type { GetDealAiInsightsUseCase } from "./use-cases/ai/get-deal-ai-insights.usecase";
 import type { GetDealAiRecommendationsUseCase } from "./use-cases/ai/get-deal-ai-recommendations.usecase";
 import type { DraftDealAiMessageUseCase } from "./use-cases/ai/draft-deal-ai-message.usecase";
@@ -48,6 +49,7 @@ export class CrmApplication {
     public readonly sendCommunication: SendCommunicationUseCase,
     public readonly logCommunication: LogCommunicationUseCase,
     public readonly processCommunicationWebhook: ProcessCommunicationWebhookUseCase,
+    public readonly processResendInboundEmail: ProcessResendInboundEmailUseCase,
     public readonly getDealAiInsights: GetDealAiInsightsUseCase,
     public readonly getDealAiRecommendations: GetDealAiRecommendationsUseCase,
     public readonly draftDealAiMessage: DraftDealAiMessageUseCase,
