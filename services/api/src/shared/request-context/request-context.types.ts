@@ -27,6 +27,7 @@ export interface RequestContext {
   tenantId?: string | null;
   roles?: string[];
   scopes?: string[];
+  activeAppId?: string;
   metadata?: Record<string, unknown>;
   sources: Partial<Record<keyof Omit<RequestContext, "metadata" | "sources">, ContextSource>>;
   deprecated?: {
@@ -43,6 +44,7 @@ export type ContextAwareRequest = Request & {
   workspaceId?: string | null;
   roleIds?: string[];
   traceId?: string;
+  activeAppId?: string;
   id?: string;
   publicContext?: PublicWorkspaceContext;
 };

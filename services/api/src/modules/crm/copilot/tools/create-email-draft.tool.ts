@@ -17,6 +17,7 @@ export class CreateEmailDraftTool implements DomainToolPort {
   description = "Creates a draft email activity in the CRM for later review/sending.";
   inputSchema = InputSchema;
   kind: ToolKind = "server";
+  appId = "crm";
   needsApproval = false; // Drafting is safe, sending requires approval
 
   constructor(private readonly createActivity: CreateActivityUseCase) {}

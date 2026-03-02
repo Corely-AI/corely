@@ -4,7 +4,6 @@ import { assistantFeature, crmFeature } from "@corely/web-features";
 import NotFound from "@corely/web-shared/shared/components/NotFound";
 import { CrmShell } from "./CrmShell";
 import { RequireAuth } from "./require-auth";
-import { OverviewPage } from "../screens/OverviewPage";
 import { LoginPage } from "../routes/auth/login";
 
 const featureRoutes = [...assistantFeature.assistantRoutes(), ...crmFeature.crmManifestRoutes()];
@@ -17,7 +16,7 @@ export const Router = () => (
     }}
   >
     <Routes>
-      <Route path="/" element={<Navigate to="/overview" replace />} />
+      <Route path="/" element={<Navigate to="/crm" replace />} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<Navigate to="/auth/login" replace />} />
       <Route path="/auth/forgot-password" element={<Navigate to="/auth/login" replace />} />
@@ -25,7 +24,7 @@ export const Router = () => (
 
       <Route element={<RequireAuth />}>
         <Route element={<CrmShell />}>
-          <Route path="/overview" element={<OverviewPage />} />
+          <Route path="/overview" element={<Navigate to="/crm" replace />} />
           {featureRoutes.map((route) => (
             <Route key={route.path} path={route.path} element={route.element} />
           ))}

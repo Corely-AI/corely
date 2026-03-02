@@ -6,6 +6,7 @@ export const IntegrationKindSchema = z.enum([
   "stripe_terminal",
   "microsoft_graph_mail",
   "google_gmail",
+  "resend",
 ]);
 export type IntegrationKind = z.infer<typeof IntegrationKindSchema>;
 
@@ -38,6 +39,7 @@ export const IntegrationErrorCodeSchema = z.enum([
   "ExternalService:sumup",
   "ExternalService:microsoft_graph_mail",
   "ExternalService:google_gmail",
+  "ExternalService:resend",
   "ExternalService:adyen",
   "ExternalService:stripe_terminal",
 ]);

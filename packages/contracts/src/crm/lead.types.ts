@@ -20,6 +20,7 @@ export const LeadDtoSchema = z.object({
   ownerUserId: z.string().nullable(),
   convertedDealId: z.string().nullable(),
   convertedPartyId: z.string().nullable(), // The primary contact created
+  lastRepliedAt: utcInstantSchema.nullable(),
   notes: z.string().nullable(),
   createdAt: utcInstantSchema,
   updatedAt: utcInstantSchema,

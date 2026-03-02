@@ -1,3 +1,4 @@
+export { default as CrmDashboardPage } from "./screens/CrmDashboardPage";
 export { default as DealsPage } from "./screens/DealsPage";
 export { default as DealDetailPage } from "./screens/DealDetailPage";
 export { default as NewDealPage } from "./screens/NewDealPage";
@@ -8,6 +9,8 @@ export { default as NewLeadPage } from "./screens/NewLeadPage";
 export { default as LeadDetailPage } from "./screens/LeadDetailPage";
 export { default as SequencesPage } from "./screens/SequencesPage";
 export { default as NewSequencePage } from "./screens/NewSequencePage";
+export { default as SequenceDetailPage } from "./screens/SequenceDetailPage";
+export { default as CrmEmailSettingsPage } from "./screens/CrmEmailSettingsPage";
 export { default as ContactsPage } from "./screens/ContactsPage";
 export { default as ContactFormPage } from "./screens/ContactFormPage";
 export { default as ContactDetailPage } from "./screens/ContactDetailPage";

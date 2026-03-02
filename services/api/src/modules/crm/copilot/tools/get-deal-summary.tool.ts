@@ -15,6 +15,7 @@ export class GetDealSummaryTool implements DomainToolPort {
   description = "Get a summary of a deal including details and recent timeline events.";
   inputSchema = InputSchema;
   kind: ToolKind = "server";
+  appId = "crm";
   needsApproval = false;
 
   constructor(

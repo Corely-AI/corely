@@ -7,6 +7,7 @@ import {
 } from "../../domain/activity.entity";
 
 export type ListActivitiesFilters = {
+  leadId?: string;
   partyId?: string;
   dealId?: string;
   assignedToUserId?: string;
@@ -68,7 +69,7 @@ export interface ActivityRepoPort {
   update(tenantId: string, activity: ActivityEntity): Promise<void>;
   getTimeline(
     tenantId: string,
-    entityType: "party" | "deal",
+    entityType: "lead" | "party" | "deal",
     entityId: string,
     pageSize?: number,
     cursor?: string
@@ -77,6 +78,16 @@ export interface ActivityRepoPort {
     tenantId: string,
     providerKey: string,
     externalMessageId: string
+  ): Promise<ActivityEntity | null>;
+  findCommunicationByExternalThreadId(
+    tenantId: string,
+    providerKey: string,
+    externalThreadId: string
+  ): Promise<ActivityEntity | null>;
+  findLatestOutboundCommunicationByRecipient(
+    tenantId: string,
+    providerKey: string,
+    recipientEmail: string
   ): Promise<ActivityEntity | null>;
   upsertWebhookEvent(input: UpsertWebhookEventInput): Promise<boolean>;
 }

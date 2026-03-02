@@ -15,6 +15,7 @@ export interface LanguageModelPort {
     userId: string;
     workspaceKind?: WorkspaceKind;
     environment?: string;
+    activeAppId?: string;
     observability: ObservabilitySpanRef;
   }): Promise<{ result: StreamTextResult<any, any>; usage?: LanguageModelUsage }>;
 }

@@ -10,6 +10,7 @@ import {
 import { utcInstantSchema } from "../shared/local-date.schema";
 
 export const ListActivitiesInputSchema = z.object({
+  leadId: z.string().optional(),
   partyId: z.string().optional(),
   dealId: z.string().optional(),
   type: ActivityTypeSchema.optional(),

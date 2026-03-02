@@ -26,6 +26,7 @@ export class PrismaEnrollmentRepoAdapter implements EnrollmentRepoPort {
     sequenceId: string;
     leadId?: string;
     partyId?: string;
+    dealId?: string;
     status: EnrollmentStatus;
     nextExecutionAt: Date;
   }): Promise<void> {
@@ -36,6 +37,7 @@ export class PrismaEnrollmentRepoAdapter implements EnrollmentRepoPort {
         sequenceId: data.sequenceId,
         leadId: data.leadId,
         partyId: data.partyId,
+        dealId: data.dealId,
         status: data.status,
         nextExecutionAt: data.nextExecutionAt,
       },
@@ -63,7 +65,7 @@ export class PrismaEnrollmentRepoAdapter implements EnrollmentRepoPort {
   }
 
   async findById(id: string): Promise<EnrollmentWithRelations | null> {
-    return this.prisma.sequenceEnrollment.findUnique({
+    const row = await this.prisma.sequenceEnrollment.findUnique({
       where: { id },
       include: {
         sequence: {
@@ -75,6 +77,65 @@ export class PrismaEnrollmentRepoAdapter implements EnrollmentRepoPort {
         },
       },
     });
+
+    return row as EnrollmentWithRelations | null;
+  }
+
+  async findBySequenceLeadDealContext(
+    tenantId: string,
+    sequenceId: string,
+    leadId: string,
+    dealId: string
+  ): Promise<EnrollmentWithRelations | null> {
+    const row = await this.prisma.sequenceEnrollment.findFirst({
+      where: {
+        tenantId,
+        sequenceId,
+        leadId,
+        dealId,
+      },
+      include: {
+        sequence: {
+          include: {
+            steps: {
+              orderBy: { stepOrder: "asc" },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return row as EnrollmentWithRelations | null;
+  }
+
+  async cancelById(id: string): Promise<boolean> {
+    const result = await this.prisma.sequenceEnrollment.updateMany({
+      where: {
+        id,
+        status: { in: ["ACTIVE", "PAUSED"] },
+      },
+      data: {
+        status: "CANCELED",
+        nextExecutionAt: null,
+      },
+    });
+    return result.count > 0;
+  }
+
+  async cancelPendingByDealContext(tenantId: string, dealId: string): Promise<number> {
+    const result = await this.prisma.sequenceEnrollment.updateMany({
+      where: {
+        tenantId,
+        dealId,
+        status: { in: ["ACTIVE", "PAUSED"] },
+      },
+      data: {
+        status: "CANCELED",
+        nextExecutionAt: null,
+      },
+    });
+    return result.count;
   }
 
   async tryClaimForStepExecution(input: {

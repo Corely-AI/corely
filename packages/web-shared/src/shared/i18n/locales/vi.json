@@ -183,9 +183,12 @@
     "taxSettings": "Cài đặt thuế",
     "cashManagement": "Quản lý tiền mặt",
     "issues": "Vấn đề",
+    "crmDashboard": "Bảng điều khiển",
     "crmDeals": "Cơ hội",
+    "crmLeads": "Tiềm năng",
     "crmActivities": "Hoạt động",
     "crmSequences": "Chuỗi",
+    "crmEmailSettings": "Cài đặt Email",
     "crmTemplates": "Mẫu",
     "classes": "Lớp học",
     "programs": "Chương trình (Combo)",
@@ -1491,6 +1494,15 @@
     }
   },
   "crm": {
+    "dashboard": {
+      "title": "Bảng điều khiển CRM",
+      "pageTitle": "Bảng điều khiển CRM",
+      "subtitle": "Không gian AI + CRM tập trung vào pipeline và mối quan hệ.",
+      "breadcrumb": {
+        "crm": "CRM",
+        "dashboard": "Dashboard"
+      }
+    },
     "activities": {
       "title": "Hoạt động",
       "new": "Hoạt động mới",

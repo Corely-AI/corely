@@ -64,3 +64,11 @@ export DATABASE_URL="postgresql://user:pass@host:5432/db"
 ### ESM errors (`require is not defined`)
 
 These scripts run as ESM. Use the provided commands; do not run with `node` directly.
+
+### `seed-crm-nails-sequence.ts`
+
+Creates the 3-step lead-to-won nails email sequence using the CRM `CreateSequenceUseCase`.
+
+```bash
+pnpm --filter @corely/api seed:crm:nails-sequence -- --tenant-id <tenant-id>
+```

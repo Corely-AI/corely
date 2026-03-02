@@ -13,6 +13,7 @@ export function toActivityDto(activity: ActivityEntity): ActivityDto {
     messageDirection: activity.messageDirection,
     messageTo: activity.messageTo,
     openUrl: activity.openUrl,
+    leadId: activity.leadId,
     partyId: activity.partyId,
     dealId: activity.dealId,
     activityDate: activity.activityDate ? activity.activityDate.toISOString() : null,

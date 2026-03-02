@@ -11,10 +11,7 @@ import {
   type UseCaseContext,
   type UseCaseError,
 } from "@corely/kernel";
-import {
-  ACTIVITY_REPO_PORT,
-  type ActivityRepoPort,
-} from "../../ports/activity-repository.port";
+import { ACTIVITY_REPO_PORT, type ActivityRepoPort } from "../../ports/activity-repository.port";
 import {
   ENROLLMENT_REPO_PORT,
   type EnrollmentRepoPort,

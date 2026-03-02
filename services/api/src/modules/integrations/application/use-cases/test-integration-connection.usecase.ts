@@ -54,6 +54,15 @@ export class TestIntegrationConnectionUseCase extends BaseUseCase<
       return ok({ ok: true });
     }
 
+    if (kind === "resend") {
+      if (!secret) {
+        throw new ValidationError("Connection secret is required");
+      }
+      this.providers.getMailClient(connection);
+      this.providers.getApiKey(secret);
+      return ok({ ok: true });
+    }
+
     return ok({
       ok: false,
       code: "Integrations:ProviderUnsupported",

@@ -16,6 +16,7 @@ export const buildCrmFollowUpTools = (deps: CrmAiToolsContext): DomainToolPort[]
     description:
       "Generate suggested follow-up activities (tasks, calls, emails) based on deal context and conversation history.",
     kind: "server",
+    appId: "crm",
     inputSchema: z.object({
       dealId: z.string().describe("The deal ID to generate follow-ups for"),
       context: z

@@ -12,9 +12,7 @@ export type ScheduleCrmSequenceStepInput = {
   traceId?: string;
 };
 
-export async function scheduleCrmSequenceStep(
-  input: ScheduleCrmSequenceStepInput
-): Promise<void> {
+export async function scheduleCrmSequenceStep(input: ScheduleCrmSequenceStepInput): Promise<void> {
   const idempotencyKey = [
     "crm.sequence.executeStep",
     input.enrollmentId,

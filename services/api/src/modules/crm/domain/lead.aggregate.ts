@@ -14,6 +14,7 @@ type LeadProps = {
   ownerUserId: string | null;
   convertedDealId: string | null;
   convertedPartyId: string | null;
+  lastRepliedAt: Date | null;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -32,6 +33,7 @@ export class LeadAggregate {
   ownerUserId: string | null;
   convertedDealId: string | null;
   convertedPartyId: string | null;
+  lastRepliedAt: Date | null;
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -49,6 +51,7 @@ export class LeadAggregate {
     this.ownerUserId = props.ownerUserId;
     this.convertedDealId = props.convertedDealId;
     this.convertedPartyId = props.convertedPartyId;
+    this.lastRepliedAt = props.lastRepliedAt;
     this.notes = props.notes;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
@@ -80,6 +83,7 @@ export class LeadAggregate {
       ownerUserId: params.ownerUserId ?? null,
       convertedDealId: null,
       convertedPartyId: null,
+      lastRepliedAt: null,
       notes: params.notes ?? null,
       createdAt: params.createdAt,
       updatedAt: params.createdAt,
@@ -109,6 +113,11 @@ export class LeadAggregate {
     this.status = "CONVERTED";
     this.convertedDealId = dealId;
     this.convertedPartyId = partyId;
+    this.updatedAt = now;
+  }
+
+  markReplied(now: Date) {
+    this.lastRepliedAt = now;
     this.updatedAt = now;
   }
 }

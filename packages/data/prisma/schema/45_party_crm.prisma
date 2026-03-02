@@ -290,6 +290,7 @@ model Deal {
   activities       Activity[]
   stageTransitions DealStageTransition[]
   aiSnapshots      DealAiSnapshot[]
+  enrollments      SequenceEnrollment[]
 
   @@index([tenantId, status])
   @@index([tenantId, partyId])
@@ -345,6 +346,7 @@ model Activity {
   messageDirection    String? // deprecated legacy alias
   messageTo           String?
   openUrl             String?
+  leadId              String?
   partyId             String?
   dealId              String?
   dueAt               DateTime?                     @db.Timestamptz(6)
@@ -363,10 +365,12 @@ model Activity {
   createdAt        DateTime @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime @updatedAt @db.Timestamptz(6)
 
+  lead          Lead?                       @relation(fields: [leadId], references: [id], onDelete: SetNull)
   party         Party?                      @relation(fields: [partyId], references: [id], onDelete: Cascade)
   deal          Deal?                       @relation(fields: [dealId], references: [id], onDelete: Cascade)
   webhookEvents CommunicationWebhookEvent[]
 
+  @@index([tenantId, leadId, createdAt])
   @@index([tenantId, partyId, createdAt])
   @@index([tenantId, dealId, createdAt])
   @@index([tenantId, assignedToUserId, status])
@@ -577,13 +581,16 @@ model Lead {
   ownerUserId      String?
   convertedDealId  String?
   convertedPartyId String?
+  lastRepliedAt    DateTime?  @db.Timestamptz(6)
   notes            String?
   createdAt        DateTime   @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime   @updatedAt @db.Timestamptz(6)
 
+  activities  Activity[]
   enrollments SequenceEnrollment[]
 
   @@index([tenantId, email])
+  @@index([tenantId, lastRepliedAt])
   @@schema("crm")
 }
 
@@ -652,6 +659,7 @@ model SequenceEnrollment {
   sequenceId       String
   leadId           String?
   partyId          String?
+  dealId           String?
   currentStepOrder Int              @default(1)
   status           EnrollmentStatus @default(ACTIVE)
   nextExecutionAt  DateTime?        @db.Timestamptz(6)
@@ -661,10 +669,13 @@ model SequenceEnrollment {
   sequence Sequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
   lead     Lead?    @relation(fields: [leadId], references: [id])
   party    Party?   @relation(fields: [partyId], references: [id])
+  deal     Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, sequenceId])
   @@index([tenantId, leadId])
   @@index([tenantId, partyId])
+  @@index([tenantId, dealId])
   @@index([tenantId, nextExecutionAt])
+  @@unique([tenantId, sequenceId, leadId, dealId], map: "crm_seq_enrollment_lead_deal_unique")
   @@schema("crm")
 }

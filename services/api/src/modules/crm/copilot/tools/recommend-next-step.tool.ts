@@ -15,6 +15,7 @@ export class RecommendNextStepTool implements DomainToolPort {
   description = "Analyzes deal activity to recommend the next best action.";
   inputSchema = InputSchema;
   kind: ToolKind = "server";
+  appId = "crm";
   needsApproval = false;
 
   constructor(

@@ -23,6 +23,7 @@ type ActivityProps = {
   messageDirection: string | null; // deprecated alias
   messageTo: string | null; // deprecated alias
   openUrl: string | null;
+  leadId: string | null;
   partyId: string | null;
   dealId: string | null;
   activityDate: Date | null;
@@ -66,6 +67,7 @@ export class ActivityEntity {
   messageDirection: string | null;
   messageTo: string | null;
   openUrl: string | null;
+  leadId: string | null;
   partyId: string | null;
   dealId: string | null;
   activityDate: Date | null;
@@ -100,8 +102,8 @@ export class ActivityEntity {
     if (!props.subject.trim()) {
       throw new Error("Activity subject is required");
     }
-    if (!props.partyId && !props.dealId) {
-      throw new Error("Activity must be associated with either a party or a deal");
+    if (!props.leadId && !props.partyId && !props.dealId) {
+      throw new Error("Activity must be associated with a lead, party, or deal");
     }
     if (props.type === "COMMUNICATION") {
       if (!props.channelKey) {
@@ -126,6 +128,7 @@ export class ActivityEntity {
     this.messageDirection = props.messageDirection;
     this.messageTo = props.messageTo;
     this.openUrl = props.openUrl;
+    this.leadId = props.leadId;
     this.partyId = props.partyId;
     this.dealId = props.dealId;
     this.activityDate = props.activityDate;
@@ -169,6 +172,7 @@ export class ActivityEntity {
     messageDirection?: string | null;
     messageTo?: string | null;
     openUrl?: string | null;
+    leadId?: string | null;
     partyId?: string | null;
     dealId?: string | null;
     activityDate?: Date | null;
@@ -205,6 +209,7 @@ export class ActivityEntity {
       messageDirection: params.messageDirection ?? params.direction?.toLowerCase() ?? null,
       messageTo: params.messageTo ?? params.toRecipients?.at(0) ?? null,
       openUrl: params.openUrl ?? null,
+      leadId: params.leadId ?? null,
       partyId: params.partyId ?? null,
       dealId: params.dealId ?? null,
       activityDate: params.activityDate ?? params.createdAt,

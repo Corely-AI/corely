@@ -83,7 +83,9 @@ describe("CloudTasksJobScheduler", () => {
     };
 
     expect(createTaskArgs.parent).toBe("projects/proj/locations/europe-west1/queues/worker-jobs");
-    expect(createTaskArgs.task.httpRequest.url).toBe("https://worker.example.run.app/internal/tick");
+    expect(createTaskArgs.task.httpRequest.url).toBe(
+      "https://worker.example.run.app/internal/tick"
+    );
     expect(createTaskArgs.task.httpRequest.headers["x-worker-key"]).toBe("secret");
 
     const body = JSON.parse(createTaskArgs.task.httpRequest.body.toString("utf8")) as {

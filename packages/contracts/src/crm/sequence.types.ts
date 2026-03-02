@@ -40,6 +40,7 @@ export const SequenceEnrollmentDtoSchema = z.object({
   sequenceId: z.string(),
   leadId: z.string().nullable(),
   partyId: z.string().nullable(),
+  dealId: z.string().nullable(),
   currentStepOrder: z.number().int(),
   status: EnrollmentStatusSchema,
   nextExecutionAt: utcInstantSchema.nullable(),
@@ -65,10 +66,14 @@ export const CreateSequenceInputSchema = z.object({
 });
 export type CreateSequenceInput = z.infer<typeof CreateSequenceInputSchema>;
 
+export const UpdateSequenceInputSchema = CreateSequenceInputSchema;
+export type UpdateSequenceInput = z.infer<typeof UpdateSequenceInputSchema>;
+
 export const EnrollEntityInputSchema = z.object({
   sequenceId: z.string(),
-  entityType: z.enum(["lead", "party"]),
+  entityType: z.enum(["lead", "party", "deal"]),
   entityId: z.string(),
+  contextDealId: z.string().optional(),
 });
 export type EnrollEntityInput = z.infer<typeof EnrollEntityInputSchema>;
 

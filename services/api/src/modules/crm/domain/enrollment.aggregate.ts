@@ -6,6 +6,7 @@ type EnrollmentProps = {
   sequenceId: string;
   leadId: string | null;
   partyId: string | null;
+  dealId: string | null;
   currentStepOrder: number;
   status: EnrollmentStatus;
   nextExecutionAt: Date | null;
@@ -19,6 +20,7 @@ export class EnrollmentAggregate {
   sequenceId: string;
   leadId: string | null;
   partyId: string | null;
+  dealId: string | null;
   currentStepOrder: number;
   status: EnrollmentStatus;
   nextExecutionAt: Date | null;
@@ -31,6 +33,7 @@ export class EnrollmentAggregate {
     this.sequenceId = props.sequenceId;
     this.leadId = props.leadId;
     this.partyId = props.partyId;
+    this.dealId = props.dealId;
     this.currentStepOrder = props.currentStepOrder;
     this.status = props.status;
     this.nextExecutionAt = props.nextExecutionAt;
@@ -44,12 +47,13 @@ export class EnrollmentAggregate {
     sequenceId: string;
     leadId?: string | null;
     partyId?: string | null;
+    dealId?: string | null;
     nextExecutionAt: Date;
     createdAt: Date;
   }) {
     // Validate that at least one entity is specified
-    if (!params.leadId && !params.partyId) {
-      throw new Error("Enrollment must have either leadId or partyId");
+    if (!params.leadId && !params.partyId && !params.dealId) {
+      throw new Error("Enrollment must have leadId, partyId, or dealId");
     }
 
     return new EnrollmentAggregate({
@@ -58,6 +62,7 @@ export class EnrollmentAggregate {
       sequenceId: params.sequenceId,
       leadId: params.leadId ?? null,
       partyId: params.partyId ?? null,
+      dealId: params.dealId ?? null,
       currentStepOrder: 1, // Start at step 1
       status: "ACTIVE",
       nextExecutionAt: params.nextExecutionAt,

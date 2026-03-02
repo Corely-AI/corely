@@ -11,11 +11,7 @@ export interface ScheduledJobRef {
 }
 
 export interface JobSchedulerPort {
-  schedule(
-    job: JobName,
-    payload: unknown,
-    opts?: JobScheduleOptions
-  ): Promise<ScheduledJobRef>;
+  schedule(job: JobName, payload: unknown, opts?: JobScheduleOptions): Promise<ScheduledJobRef>;
   cancel?(externalRef: string): Promise<void>;
 }
 

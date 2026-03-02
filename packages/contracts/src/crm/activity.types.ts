@@ -60,6 +60,7 @@ const ActivityBaseDtoSchema = z.object({
   messageDirection: z.string().nullable().optional(), // deprecated alias (compat)
   messageTo: z.string().nullable().optional(), // deprecated alias (compat)
   openUrl: z.string().nullable().optional(),
+  leadId: z.string().nullable(),
   partyId: z.string().nullable(),
   dealId: z.string().nullable(),
   activityDate: utcInstantSchema.nullable().optional(),

@@ -45,6 +45,7 @@ export class GetLeadUseCase extends BaseUseCase<GetLeadInput, LeadDto> {
       ownerUserId: lead.ownerUserId,
       convertedDealId: lead.convertedDealId,
       convertedPartyId: lead.convertedPartyId,
+      lastRepliedAt: lead.lastRepliedAt ? lead.lastRepliedAt.toISOString() : null,
       notes: lead.notes,
       createdAt: lead.createdAt.toISOString(),
       updatedAt: lead.updatedAt.toISOString(),

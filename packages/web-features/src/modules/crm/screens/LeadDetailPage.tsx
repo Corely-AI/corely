@@ -66,10 +66,7 @@ export default function LeadDetailPage() {
   };
 
   return (
-    <div
-      className="p-6 lg:p-8 space-y-6 animate-fade-in max-w-4xl mx-auto"
-      data-testid="crm-lead-detail-page"
-    >
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-lead-detail-page">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-h2 font-bold mb-1">
@@ -127,7 +124,18 @@ export default function LeadDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <SequenceEnrollmentCard entityType="lead" entityId={lead.id} />
+          {lead.convertedDealId ? (
+            <SequenceEnrollmentCard entityType="deal" entityId={lead.convertedDealId} />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Automation</CardTitle>
+                <CardDescription>
+                  Convert this lead to a deal first, then enroll the deal in a sequence.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
           <Card>
             <CardHeader>
               <CardTitle>Contact Info</CardTitle>

@@ -21,6 +21,7 @@ export class PrismaLeadRepoAdapter implements LeadRepoPort {
         phone: lead.phone,
         ownerUserId: lead.ownerUserId,
         notes: lead.notes,
+        lastRepliedAt: lead.lastRepliedAt,
         createdAt: lead.createdAt,
         updatedAt: lead.updatedAt,
         convertedDealId: lead.convertedDealId,
@@ -35,6 +36,7 @@ export class PrismaLeadRepoAdapter implements LeadRepoPort {
       data: {
         status: lead.status,
         ownerUserId: lead.ownerUserId,
+        lastRepliedAt: lead.lastRepliedAt,
         updatedAt: lead.updatedAt,
         convertedDealId: lead.convertedDealId,
         convertedPartyId: lead.convertedPartyId,
@@ -50,6 +52,39 @@ export class PrismaLeadRepoAdapter implements LeadRepoPort {
       return null;
     }
     return this.toAggregate(row);
+  }
+
+  async findByConvertedDealId(tenantId: string, dealId: string): Promise<LeadAggregate | null> {
+    const row = await (this.prisma as any).lead.findFirst({
+      where: { tenantId, convertedDealId: dealId },
+      orderBy: { updatedAt: "desc" },
+    });
+    return row ? this.toAggregate(row) : null;
+  }
+
+  async findLatestByEmail(tenantId: string, email: string): Promise<LeadAggregate | null> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const row = await (this.prisma as any).lead.findFirst({
+      where: {
+        tenantId,
+        email: {
+          equals: normalizedEmail,
+          mode: "insensitive",
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+    return row ? this.toAggregate(row) : null;
+  }
+
+  async touchLastRepliedAt(tenantId: string, id: string, repliedAt: Date): Promise<void> {
+    await (this.prisma as any).lead.updateMany({
+      where: { id, tenantId },
+      data: {
+        lastRepliedAt: repliedAt,
+        updatedAt: repliedAt,
+      },
+    });
   }
 
   async list(tenantId: string, filters?: ListLeadsFilters): Promise<LeadAggregate[]> {
@@ -78,6 +113,7 @@ export class PrismaLeadRepoAdapter implements LeadRepoPort {
       ownerUserId: row.ownerUserId,
       convertedDealId: row.convertedDealId,
       convertedPartyId: row.convertedPartyId,
+      lastRepliedAt: row.lastRepliedAt,
       notes: row.notes,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

@@ -154,7 +154,9 @@ export class CloudTasksJobScheduler implements JobSchedulerPort {
     }
 
     const basePayload =
-      isRecord(payload) && typeof payload.enrollmentId === "string" && typeof payload.stepId === "string"
+      isRecord(payload) &&
+      typeof payload.enrollmentId === "string" &&
+      typeof payload.stepId === "string"
         ? (payload as {
             enrollmentId: string;
             stepId: string;

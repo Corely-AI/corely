@@ -22,6 +22,7 @@ export const buildCrmPartyFromTextTools = (deps: CrmAiToolsContext): DomainToolP
     description:
       "Extract party (customer/supplier/contact/employee) information from unstructured text (e.g., email signature, business card, message). Detects duplicates and returns a proposal with confidence score.",
     kind: "server",
+    appId: "crm",
     inputSchema: z.object({
       sourceText: z.string().describe("The unstructured text containing party information"),
       suggestedRoles: z
@@ -90,6 +91,7 @@ export const buildCrmPartyFromTextTools = (deps: CrmAiToolsContext): DomainToolP
     description:
       "Extract customer information from text, then create a new customer or update an existing one (by provided id or duplicate match).",
     kind: "server",
+    appId: "crm",
     inputSchema: z.object({
       sourceText: z.string().describe("The unstructured text containing customer information"),
       customerId: z.string().optional().describe("Optional existing customer ID to force update"),

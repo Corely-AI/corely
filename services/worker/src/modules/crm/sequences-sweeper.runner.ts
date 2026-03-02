@@ -69,12 +69,9 @@ export class SequencesSweeperRunnerService implements Runner {
       }
 
       try {
-        const idempotencyKey = [
-          "crm-seq",
-          enrollment.id,
-          currentStep.id,
-          runAt.toISOString(),
-        ].join(":");
+        const idempotencyKey = ["crm-seq", enrollment.id, currentStep.id, runAt.toISOString()].join(
+          ":"
+        );
 
         await this.jobScheduler.schedule(
           "crm.sequence.executeStep",

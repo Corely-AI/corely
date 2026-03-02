@@ -5,6 +5,7 @@ import {
   HEADER_TENANT_ID,
   HEADER_TRACE_ID,
   HEADER_WORKSPACE_ID,
+  HEADER_APP_ID,
 } from "./request-context.headers";
 import type { ContextAwareRequest, RequestContext } from "./request-context.types";
 import { PUBLIC_CONTEXT_METADATA_KEY, type PublicWorkspaceContext } from "../public";
@@ -38,6 +39,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   const traceIdHeader = pickHeader(req, [HEADER_TRACE_ID]);
   const correlationHeader = pickHeader(req, [HEADER_CORRELATION_ID]);
   const traceId = req.traceId || traceIdHeader;
+  const activeAppId = pickHeader(req, [HEADER_APP_ID]);
 
   const requestId = headerRequestId || traceId || randomUUID();
   const correlationId = correlationHeader || requestId;
@@ -113,6 +115,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
     userId: finalUserId,
     tenantId,
     workspaceId,
+    activeAppId,
     roles: roleIds,
     metadata,
     sources: {
@@ -138,6 +141,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
                 ? "user"
                 : undefined
         : undefined,
+      activeAppId: activeAppId ? "header" : undefined,
     },
     deprecated: {},
   };
@@ -157,6 +161,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   req.context = ctx;
   req.tenantId = tenantId;
   req.workspaceId = workspaceId;
+  req.activeAppId = activeAppId;
   req.roleIds = roleIds;
   req.id = requestId;
 

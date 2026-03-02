@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TimelineItemSchema } from "./activity.types";
 
 export const GetTimelineInputSchema = z.object({
-  entityType: z.enum(["party", "deal"]),
+  entityType: z.enum(["party", "deal", "lead"]),
   entityId: z.string(),
   cursor: z.string().optional(),
   limit: z.number().int().positive().max(100).default(50),
