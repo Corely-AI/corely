@@ -4,7 +4,6 @@ import {
   type AppSidebarProps as SharedAppSidebarProps,
 } from "@corely/web-shared";
 import { useTaxCapabilitiesQuery } from "@/modules/tax/hooks/useTaxCapabilitiesQuery";
-import { NotificationBell } from "@/modules/notifications/components/notification-bell";
 import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
 
 export type AppSidebarProps = SharedAppSidebarProps;
@@ -28,7 +27,6 @@ export function AppSidebar(props: AppSidebarProps) {
       isConfigLoading={isConfigLoading}
       configError={configError}
       hiddenItemIds={hiddenItemIds}
-      notificationBell={<NotificationBell />}
     />
   );
 }
