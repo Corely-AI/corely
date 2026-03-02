@@ -138,6 +138,7 @@
     "tenants": "Tenants",
     "groups": {
       "core": "Core",
+      "freelancer": "Freelancer",
       "sales": "Sales",
       "purchasing": "Purchasing",
       "inventory": "Inventory",

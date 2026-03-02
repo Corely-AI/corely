@@ -134,6 +134,7 @@
     "tenants": "Tổ chức",
     "groups": {
       "core": "Chính",
+      "freelancer": "Freelancer",
       "sales": "Bán hàng",
       "purchasing": "Mua hàng",
       "inventory": "Kho",

@@ -134,6 +134,7 @@
     "tenants": "Mandanten",
     "groups": {
       "core": "Kernfunktionen",
+      "freelancer": "Freelancer",
       "sales": "Verkauf",
       "purchasing": "Einkauf",
       "inventory": "Lager",
