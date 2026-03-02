@@ -96,6 +96,8 @@ jobs:
           env_vars: |
             NODE_ENV=production
             WORKFLOW_QUEUE_DRIVER=memory
+            INTERNAL_WORKER_URL=${{ secrets.INTERNAL_WORKER_URL }}
+            INTERNAL_WORKER_KEY=${{ secrets.INTERNAL_WORKER_KEY }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -142,3 +144,4 @@ jobs:
             WORKFLOW_QUEUE_DRIVER=memory
             PDF_RENDER_CONCURRENCY=1
             INVOICE_REMINDER_RUN_ENABLED=false
+            INTERNAL_WORKER_KEY=${{ secrets.INTERNAL_WORKER_KEY }}

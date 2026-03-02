@@ -8,5 +8,6 @@ export const RequestTaxReportPdfOutputSchema = z.object({
   status: TaxReportPdfStatusSchema,
   downloadUrl: z.string().optional(),
   expiresAt: utcInstantSchema.optional(),
+  retryAfterMs: z.number().int().positive().optional(),
 });
 export type RequestTaxReportPdfOutput = z.infer<typeof RequestTaxReportPdfOutputSchema>;

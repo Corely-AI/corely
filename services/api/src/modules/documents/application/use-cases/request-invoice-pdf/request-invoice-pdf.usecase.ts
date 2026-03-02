@@ -21,6 +21,7 @@ import { type OutboxPort } from "@corely/kernel";
 import { DocumentAggregate } from "../../../domain/document.aggregate";
 import { FileEntity } from "../../../domain/file.entity";
 import { type FileKind } from "../../../domain/document.types";
+import { triggerWorkerTick } from "@/shared/infrastructure/worker/trigger-worker-tick";
 
 type Deps = {
   logger: LoggerPort;
@@ -181,6 +182,14 @@ export class RequestInvoicePdfUseCase extends BaseUseCase<
       },
       tenantId,
       correlationId: ctx.correlationId,
+    });
+
+    void triggerWorkerTick({
+      reason: EVENT_TYPE,
+      correlationId: ctx.correlationId,
+      tenantId: ctx.tenantId,
+      workspaceId: ctx.workspaceId,
+      runnerNames: ["outbox"],
     });
 
     return ok({

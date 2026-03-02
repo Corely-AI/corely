@@ -35,6 +35,24 @@ Use this for:
 
 Recommended for production low-latency async processing (for example invoice PDF generation and email delivery).
 
+## On-demand wakeup endpoint (scale-to-zero support)
+
+When worker runs with `min-instances=0`, API can wake it up immediately after enqueueing outbox work.
+
+- Endpoint: `POST /internal/tick`
+- Auth: `x-worker-key` header when `INTERNAL_WORKER_KEY` is configured
+- Body:
+  - `{ "runnerNames": ["outbox"] }` to run outbox only
+  - omit `runnerNames` to use default `WORKER_TICK_RUNNERS`
+- Response includes run summary (`runId`, `totalProcessed`, `totalErrors`, `durationMs`)
+
+API-side trigger helper:
+
+- `services/api/src/shared/infrastructure/worker/trigger-worker-tick.ts`
+- requires `INTERNAL_WORKER_URL` (worker base URL)
+- optional `INTERNAL_WORKER_KEY`
+- best-effort call: failures are logged but do not fail API request
+
 ## Outbox processing semantics
 
 Outbox delivery is durable and multi-replica safe.

@@ -20,6 +20,7 @@ import {
   useMarkPaidFilingMutation,
   useDeleteFilingMutation,
 } from "../hooks/useTaxFilingMutations";
+import { downloadTaxPdfWithPolling } from "../lib/download-tax-pdf-with-polling";
 
 export const FilingDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -71,16 +72,24 @@ export const FilingDetailPage = () => {
       return;
     }
     if (actionKey === "exportPdf") {
+      const abortController = new AbortController();
+      const loadingToastId = toast.loading("Generating PDF...");
       try {
-        const result = await taxApi.getReportPdfUrl(id);
-        if (result.status === "READY" && result.downloadUrl) {
+        const result = await downloadTaxPdfWithPolling(
+          (_signal) => taxApi.getReportPdfUrl(id),
+          abortController.signal
+        );
+        if (result.status === "READY") {
           window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
-        } else {
+          toast.success("Download started");
+        } else if (result.status === "PENDING") {
           toast.info("PDF is being prepared. Try again shortly.");
         }
       } catch (error) {
         console.error(error);
         toast.error("Failed to export PDF");
+      } finally {
+        toast.dismiss(loadingToastId);
       }
       return;
     }

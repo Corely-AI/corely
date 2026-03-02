@@ -38,6 +38,7 @@ export default defineWorkspace([
       include: dockerAvailable
         ? ["src/**/*.int.test.ts"]
         : [
+            "src/application/internal-worker.controller.int.test.ts",
             "src/modules/outbox/__tests__/outbox.int.test.ts",
             "src/infrastructure/job-lock.service.int.test.ts",
           ],
