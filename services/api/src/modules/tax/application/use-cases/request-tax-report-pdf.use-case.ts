@@ -12,6 +12,7 @@ import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 import { TaxReportRepoPort } from "../../domain/ports";
 import { GcsObjectStorageAdapter } from "@corely/storage";
 import { OUTBOX_PORT, type OutboxPort } from "@corely/kernel";
+import { triggerWorkerTick } from "@/shared/infrastructure/worker/trigger-worker-tick";
 
 export interface RequestTaxReportPdfInput {
   periodKey?: string;
@@ -86,6 +87,14 @@ export class RequestTaxReportPdfUseCase extends BaseUseCase<
       correlationId: ctx.correlationId,
     });
 
-    return ok({ status: "PENDING" });
+    void triggerWorkerTick({
+      reason: "tax.report.pdf.requested",
+      correlationId: ctx.correlationId,
+      tenantId,
+      workspaceId,
+      runnerNames: ["outbox"],
+    });
+
+    return ok({ status: "PENDING", retryAfterMs: 1000 });
   }
 }

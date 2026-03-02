@@ -1,81 +1,115 @@
-# Invoice PDF Download Wait Flow
+# Async PDF Download and Long-Job Pattern
 
-## Summary
+This document describes the current reusable async pattern used for invoice/tax PDF downloads and intended for future long-running jobs.
 
-Invoice PDF rendering stays asynchronous and worker-driven:
+## Why this exists
 
-1. API enqueues `invoice.pdf.render.requested`.
-2. Worker consumes outbox event and renders via Playwright.
-3. PDF is stored, document/file rows are marked ready.
-4. API `GET /invoices/:invoiceId/pdf` can wait for readiness and return the URL when available.
+- Worker is allowed to scale to zero (`min-instances=0`) to reduce cost.
+- API stays stateless and does not run heavy jobs inline.
+- Frontend can still provide "click and wait" UX with bounded polling.
 
-The API does not render PDFs directly.
+## Architecture
 
-## Readiness State
+1. Frontend requests a job result endpoint.
+2. API checks durable readiness state.
+3. If not ready, API enqueues outbox event (idempotent) and returns `PENDING`.
+4. API best-effort wakes worker with `POST /internal/tick` (outbox-only runner).
+5. Worker processes outbox event and updates durable state.
+6. Frontend polling sees `READY` and opens signed download URL.
 
-Readiness is stored in Documents domain tables:
+## Shared frontend polling primitive
 
-- `platform.Document`
-  - `type = INVOICE_PDF`
-  - `status = PENDING | READY | FAILED`
-  - `errorMessage` for failed renders
-  - `updatedAt` for progress timestamps
-- `platform.File`
-  - `kind = GENERATED`
-  - `objectKey` points to stored PDF object
-  - object key is deterministic per tenant+invoice, so duplicate requests reuse the same storage object path
+`packages/web-shared/src/shared/lib/async-poll.ts` provides `pollAsyncJob(...)`:
 
-## API Behavior
+- bounded by `maxTotalWaitMs`
+- per-request server wait (`perRequestWaitMs`)
+- retry delay clamped from `retryAfterMs`
+- abort-aware via `AbortSignal`
+- returns `TERMINAL | TIMEOUT | ABORTED`
 
-### `POST /invoices/:invoiceId/pdf`
+Current consumers:
 
-- Fire-and-forget request path.
-- Idempotent enqueue behavior:
-  - if PDF already `READY`, returns ready payload.
-  - if already `PENDING`, returns pending without duplicate enqueue.
+- Invoice hook: `packages/web-features/src/modules/invoices/hooks/use-invoice-pdf-download.ts`
+- Tax helper: `packages/web-features/src/modules/tax/lib/download-tax-pdf-with-polling.ts`
 
-### `GET /invoices/:invoiceId/pdf?waitMs=...`
+## API behavior
 
-- Wait-aware read path used by frontend download UX.
-- `waitMs`:
-  - default: `15000`
-  - max: `30000` (values above cap are clamped)
-- Flow:
-  1. Ensure render request exists (idempotent).
-  2. Poll readiness with capped backoff/jitter.
-  3. Stop on `READY`, `FAILED`, timeout, or client disconnect.
+### Invoice PDF
 
-Response contract:
+Endpoint: `GET /invoices/:invoiceId/pdf`
 
-- `200 OK`
-  - `{ status: "READY", documentId, fileId, downloadUrl, expiresAt }`
-- `202 Accepted`
-  - `{ status: "PENDING", documentId, fileId, retryAfterMs }`
-  - `Retry-After` header is set (seconds)
-- `422 Unprocessable Entity`
-  - `{ error: "INVOICE_PDF_RENDER_FAILED", message }`
+Query params:
 
-## Frontend UX Pattern
+- `waitMs` (optional, clamped to max `30000`)
+- `forceRegenerate=true` (optional)
 
-Invoice Detail page uses a bounded wait loop:
+Responses:
 
-1. User clicks **Download PDF**.
-2. Show loading state.
-3. Call `GET /invoices/:id/pdf?waitMs=15000`.
-4. If `202`, wait `retryAfterMs` and retry.
-5. If `200 READY`, open/download URL automatically.
-6. Stop after overall budget (90s) and show fallback toast.
+- `200`: `{ status: "READY", documentId, fileId, downloadUrl, expiresAt }`
+- `202`: `{ status: "PENDING", documentId, fileId, retryAfterMs }` + `Retry-After` header
+- `422`: `{ error: "INVOICE_PDF_RENDER_FAILED", message }`
 
-Safety rules:
+### Tax PDF
 
-- only one active download loop per page
-- duplicate clicks are ignored while in progress
-- `AbortController` cancels in-flight waits on unmount/navigation
+Endpoints:
 
-## Operational Notes
+- `GET /tax/reports/:id/pdf-url`
+- `GET /tax/reports/vat/quarterly/:key/pdf-url`
 
-- Multi-worker deployments are supported because readiness is read from durable DB/file state.
-- Repeated wait calls are safe and idempotent.
-- Keep reverse proxy / LB timeout above max wait budget plus margin:
-  - recommended: >= 35s if allowing `waitMs=30000`.
-- If infrastructure enforces lower timeout, lower `waitMs` on client calls.
+Responses:
+
+- `READY` with signed URL if PDF already exists
+- `PENDING` with `retryAfterMs` (currently `1000`) after enqueue
+
+## Worker wakeup for scale-to-zero
+
+API uses `triggerWorkerTick(...)` (`services/api/src/shared/infrastructure/worker/trigger-worker-tick.ts`) after enqueue:
+
+- target: `${INTERNAL_WORKER_URL}/internal/tick`
+- auth header: `x-worker-key: INTERNAL_WORKER_KEY` (if configured)
+- body includes optional `runnerNames` (currently `["outbox"]`)
+- best effort only; failures are logged and do not fail user request
+
+Worker endpoint:
+
+- `POST /internal/tick` in `services/worker/src/application/internal-worker.controller.ts`
+- validates `x-worker-key` when `INTERNAL_WORKER_KEY` is set
+- calls `tickOrchestrator.runOnce({ runnerNames })`
+
+## Required environment
+
+API service:
+
+- `INTERNAL_WORKER_URL` (Cloud Run URL of worker service)
+- `INTERNAL_WORKER_KEY` (shared secret)
+
+Worker service:
+
+- `INTERNAL_WORKER_KEY` (same shared secret)
+
+Deploy workflow wiring is in `.github/workflows/deploy.yml`.
+
+## Durable idempotency model
+
+- Job state is durable (DB + object storage), not in-memory.
+- Duplicate clicks/retries are safe:
+  - invoice uses deterministic object key per tenant+invoice
+  - enqueue path is idempotent on existing `READY`/`PENDING` states
+- Polling only reads durable state, so multi-replica workers are safe.
+
+## How to add a new long job
+
+1. Define a response contract with at least `status` and optional `retryAfterMs`.
+2. Add an idempotent request endpoint in API:
+   - return `READY` immediately when result exists
+   - else enqueue outbox event and return `PENDING`
+3. After enqueue, call `triggerWorkerTick({ runnerNames: ["outbox"] })`.
+4. Implement worker outbox handler to produce artifact and mark durable state `READY`/`FAILED`.
+5. Add a feature-level frontend helper around `pollAsyncJob(...)`.
+6. In UI, show loading toast/state, handle `TIMEOUT` with non-blocking message, and support abort on unmount/navigation.
+
+## Operational notes
+
+- Cold starts are expected when worker is at zero instances.
+- Wakeup is an optimization; queue-driven processing still works if wakeup call fails.
+- Keep request timeout/LB timeout above per-request wait budget (invoice path can hold request up to `waitMs`).

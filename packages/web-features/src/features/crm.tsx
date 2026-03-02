@@ -7,6 +7,7 @@ import {
   ContactDetailPage,
   ContactFormPage,
 } from "@corely/web-features/modules/crm";
+import { crmRoutes as fullCrmRoutes } from "@corely/web-features/modules/crm/routes";
 import type { FeatureNavItem, FeatureRoute } from "@corely/web-features/types";
 
 export const crmRoutes = (): FeatureRoute[] => [
@@ -23,3 +24,12 @@ export const crmRoutes = (): FeatureRoute[] => [
 export const crmNavItems: FeatureNavItem[] = [
   { id: "clients", label: "Clients", route: "/clients", icon: "Users" },
 ];
+
+// Manifest-aligned CRM app menu entries (services/api/src/modules/crm/crm.manifest.ts)
+export const crmManifestNavItems: FeatureNavItem[] = [
+  { id: "crm-deals", label: "Deals", route: "/crm/deals", icon: "FolderKanban" },
+  { id: "crm-activities", label: "Activities", route: "/crm/activities", icon: "ClipboardList" },
+  { id: "crm-sequences", label: "Sequences", route: "/crm/sequences", icon: "Zap" },
+];
+
+export const crmManifestRoutes = (): FeatureRoute[] => [...fullCrmRoutes];
