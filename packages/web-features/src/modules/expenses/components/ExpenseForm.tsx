@@ -19,6 +19,7 @@ import {
   type ExpenseFormValues,
   VAT_OPTIONS,
 } from "./expense-form.config";
+export type { ExpenseFormValues } from "./expense-form.config";
 
 type ExpenseFormProps = {
   defaultValues?: Partial<ExpenseFormValues>;
