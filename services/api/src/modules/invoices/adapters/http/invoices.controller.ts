@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  Logger,
   Optional,
   Param,
   Patch,
@@ -29,6 +30,7 @@ import {
   SendInvoiceInputSchema,
   UpdateInvoiceInputSchema,
 } from "@corely/contracts";
+import { isErr } from "@corely/kernel";
 import { EXT_KV_PORT, type ExtKvPort } from "@corely/data";
 import { parseListQuery } from "../../../../shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
@@ -49,6 +51,8 @@ const SEND_INVOICE_PDF_WAIT_MS = 90_000;
 @Controller("invoices")
 @UseGuards(AuthGuard)
 export class InvoicesHttpController {
+  private readonly logger = new Logger(InvoicesHttpController.name);
+
   constructor(
     @Inject(InvoicesApplication) @Optional() private readonly app: InvoicesApplication | null,
     @Inject(PartyApplication) @Optional() private readonly partyApp: PartyApplication | null,
@@ -78,7 +82,9 @@ export class InvoicesHttpController {
     const input = UpdateInvoiceInputSchema.parse({ ...(body as object), invoiceId });
     const ctx = buildUseCaseContext(req);
     const result = await this.app.updateInvoice.execute(input, ctx);
-    return mapResultToHttp(result).invoice;
+    const payload = mapResultToHttp(result);
+    await this.requestInvoicePdfRegeneration(invoiceId, ctx);
+    return payload.invoice;
   }
 
   @Post(":invoiceId/finalize")
@@ -355,6 +361,37 @@ export class InvoicesHttpController {
       return false;
     }
     return undefined;
+  }
+
+  private async requestInvoicePdfRegeneration(
+    invoiceId: string,
+    ctx: ReturnType<typeof buildUseCaseContext>
+  ): Promise<void> {
+    const docsApp =
+      this.documentsApp ?? this.moduleRef?.get(DocumentsApplication, { strict: false });
+    if (!docsApp) {
+      return;
+    }
+
+    try {
+      const regeneration = await docsApp.requestInvoicePdf.execute(
+        {
+          invoiceId,
+          forceRegenerate: true,
+        },
+        ctx
+      );
+      if (isErr(regeneration)) {
+        this.logger.warn(
+          `Invoice PDF regeneration request failed: invoiceId=${invoiceId} reason=${regeneration.error.message}`
+        );
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(
+        `Failed to schedule invoice PDF regeneration: invoiceId=${invoiceId} reason=${message}`
+      );
+    }
   }
 
   @Get(":invoiceId")

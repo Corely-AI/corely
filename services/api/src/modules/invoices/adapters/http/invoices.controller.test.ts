@@ -45,12 +45,15 @@ describe("InvoicesHttpController", () => {
   const updateExecute = vi.fn();
   const sendExecute = vi.fn();
   const getInvoicePdfExecute = vi.fn();
+  const requestInvoicePdfExecute = vi.fn();
 
   beforeEach(() => {
     getExecute.mockResolvedValue(ok({ invoice }));
     updateExecute.mockResolvedValue(ok({ invoice }));
     sendExecute.mockResolvedValue(ok({ invoice }));
     getInvoicePdfExecute.mockReset();
+    requestInvoicePdfExecute.mockReset();
+    requestInvoicePdfExecute.mockResolvedValue(ok({ status: "PENDING", documentId: "doc-1" }));
 
     const app = {
       getInvoiceById: { execute: getExecute },
@@ -67,6 +70,7 @@ describe("InvoicesHttpController", () => {
 
     const docsApp = {
       getInvoicePdf: { execute: getInvoicePdfExecute },
+      requestInvoicePdf: { execute: requestInvoicePdfExecute },
     } as unknown as DocumentsApplication;
 
     controller = new InvoicesHttpController(app, null, docsApp);
@@ -88,6 +92,24 @@ describe("InvoicesHttpController", () => {
     const req = { headers: { [HEADER_TENANT_ID]: "tenant-1" } } as any;
 
     await expect(controller.getInvoice("missing", req)).rejects.toBeInstanceOf(HttpException);
+  });
+
+  it("schedules invoice PDF regeneration after update", async () => {
+    const req = { headers: { [HEADER_TENANT_ID]: "tenant-1" } } as any;
+
+    await controller.update("inv-1", { headerPatch: { notes: "Updated notes" } }, req);
+
+    expect(updateExecute).toHaveBeenCalledWith(
+      expect.objectContaining({ invoiceId: "inv-1" }),
+      expect.objectContaining({ tenantId: "tenant-1" })
+    );
+    expect(requestInvoicePdfExecute).toHaveBeenCalledWith(
+      {
+        invoiceId: "inv-1",
+        forceRegenerate: true,
+      },
+      expect.objectContaining({ tenantId: "tenant-1" })
+    );
   });
 
   it("returns 202 + Retry-After for pending PDF generation", async () => {
