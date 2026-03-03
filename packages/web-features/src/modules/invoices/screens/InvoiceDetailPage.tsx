@@ -58,6 +58,7 @@ export default function InvoiceDetailPage() {
 
   const invoice = invoiceData?.invoice;
   const capabilities = invoiceData?.capabilities;
+  const isViewOnly = invoice ? invoice.status !== "DRAFT" : false;
 
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -288,6 +289,10 @@ export default function InvoiceDetailPage() {
     if (!id || !invoice) {
       return;
     }
+    if (isViewOnly) {
+      toast.info("This invoice is view-only after finalize.");
+      return;
+    }
     try {
       const createInput = toCreateInvoiceInput(data);
       const isDraft = invoice.status === "DRAFT";
@@ -425,42 +430,59 @@ export default function InvoiceDetailPage() {
         />
 
         <form onSubmit={handleSubmit(onFormSubmit)}>
+          {isViewOnly && (
+            <div className="mb-4 rounded-md border border-border bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+              This invoice is finalized and can only be viewed.
+            </div>
+          )}
           <Card>
             <CardContent className="p-8 space-y-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Customer Selection */}
-                <CustomerSelection additionalOptions={additionalCustomerOptions} />
+              <fieldset disabled={isViewOnly} className="space-y-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Customer Selection */}
+                  <CustomerSelection additionalOptions={additionalCustomerOptions} />
 
-                {/* Invoice Metadata */}
-                <InvoiceMetadata onGenerateInvoiceNumber={generateInvoiceNumber} />
-              </div>
+                  {/* Invoice Metadata */}
+                  <InvoiceMetadata onGenerateInvoiceNumber={generateInvoiceNumber} />
+                </div>
 
-              {/* Line Items */}
-              <InvoiceLineItems locale={locale} />
+                {/* Line Items */}
+                <InvoiceLineItems locale={locale} />
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Notes */}
-                <InvoiceNotes />
-                {/* Totals */}
-                <InvoiceTotals locale={locale} />
-              </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Notes */}
+                  <InvoiceNotes />
+                  {/* Totals */}
+                  <InvoiceTotals locale={locale} />
+                </div>
 
-              {/* Footer */}
-              <InvoiceFooter
-                legalEntityId={invoice.legalEntityId}
-                paymentMethodId={watch("paymentMethodId")}
-                onPaymentMethodSelect={(id) => setValue("paymentMethodId", id)}
-              />
-
-              <div className="flex justify-end pt-6 border-t border-border">
-                <Button
-                  type="submit"
-                  variant="accent"
-                  disabled={updateInvoice.isPending || isProcessing}
-                >
-                  {updateInvoice.isPending ? t("common.saving") : t("common.saveChanges")}
-                </Button>
-              </div>
+                {/* Footer */}
+                <InvoiceFooter
+                  legalEntityId={invoice.legalEntityId}
+                  paymentMethodId={watch("paymentMethodId")}
+                  onPaymentMethodSelect={(paymentMethodId) => {
+                    if (isViewOnly) {
+                      return;
+                    }
+                    setValue("paymentMethodId", paymentMethodId);
+                  }}
+                />
+              </fieldset>
+              {isViewOnly ? (
+                <div className="flex justify-end pt-6 border-t border-border text-sm text-muted-foreground">
+                  View only
+                </div>
+              ) : (
+                <div className="flex justify-end pt-6 border-t border-border">
+                  <Button
+                    type="submit"
+                    variant="accent"
+                    disabled={updateInvoice.isPending || isProcessing}
+                  >
+                    {updateInvoice.isPending ? t("common.saving") : t("common.saveChanges")}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </form>

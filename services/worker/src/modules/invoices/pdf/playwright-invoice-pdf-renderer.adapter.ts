@@ -83,7 +83,7 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
     const paymentLines: string[] = [];
     paymentLines.push(this.renderFooterLine("Method", payment?.label ?? payment?.type));
     paymentLines.push(this.renderFooterLine("Account", payment?.accountHolderName));
-    paymentLines.push(this.renderFooterLine("IBAN", payment?.iban));
+    paymentLines.push(this.renderFooterLine("IBAN", payment?.iban, { nowrap: true }));
     paymentLines.push(this.renderFooterLine("BIC", payment?.bic));
     paymentLines.push(this.renderFooterLine("Bank", payment?.bankName));
     paymentLines.push(this.renderFooterLine("Reference", payment?.referenceText));
@@ -139,129 +139,142 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
     }
     body {
       font-family: 'Helvetica', 'Arial', sans-serif;
-      font-size: 10pt;
-      line-height: 1.4;
-      color: #2b2b2b;
+      font-size: 9.5pt;
+      line-height: 1.35;
+      color: #4a4a4a;
+      background: #f1f1f1;
     }
     .container {
-      padding: 20mm 15mm;
+      position: relative;
+      padding: 18mm 20mm 14mm;
       min-height: 297mm;
-      display: flex;
-      flex-direction: column;
+      background: #f1f1f1;
+    }
+    .top-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 22mm;
+      background: #b9e9ff;
+      border-bottom-left-radius: 55% 10mm;
+      border-bottom-right-radius: 45% 8mm;
     }
     .content {
-      flex: 1;
+      margin-top: 26mm;
     }
     .company-line {
-      font-size: 9.5pt;
-      color: #444;
+      font-size: 8.8pt;
+      color: #666;
       letter-spacing: 0.2px;
-      margin-bottom: 28px;
-    }
-    .header {
-      margin-bottom: 30px;
+      margin-bottom: 18px;
     }
     .section {
-      margin-bottom: 25px;
+      margin-bottom: 16px;
     }
     .section-title {
       font-weight: 600;
-      font-size: 9pt;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 6px;
-      color: #8a8a8a;
+      font-size: 8.5pt;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+      color: #9a9a9a;
     }
     .bill-to {
-      line-height: 1.6;
+      line-height: 1.45;
     }
     .dates {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px 40px;
-      margin-top: 6px;
+      gap: 8px 26px;
+      margin-top: 4px;
     }
     .date-item {
       display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 16px;
+      grid-template-columns: 92px 1fr;
+      gap: 10px;
+      margin-bottom: 4px;
     }
     .date-label {
       font-weight: 600;
-      font-size: 9pt;
-      color: #8a8a8a;
+      font-size: 8.5pt;
+      color: #9a9a9a;
     }
     .date-value {
-      font-size: 10.5pt;
-      color: #2b2b2b;
+      font-size: 9.8pt;
+      color: #4a4a4a;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
     thead {
       display: table-header-group;
     }
     thead th {
-      padding: 8px 10px 10px;
+      padding: 6px 6px 7px;
       text-align: left;
       font-weight: 600;
-      color: #8a8a8a;
-      text-transform: uppercase;
-      font-size: 9pt;
-      border-bottom: 1px solid #33b6c4;
+      color: #9a9a9a;
+      font-size: 8.5pt;
+      border-bottom: 1px solid #b9e9ff;
     }
     tbody td {
-      padding: 8px 10px;
+      padding: 7px 6px;
       border-bottom: 1px solid #eaeaea;
     }
     tbody tr:last-child td {
       border-bottom: none;
     }
     .totals {
-      margin-top: 40px;
+      margin-top: 14px;
       margin-left: auto;
-      width: 280px;
+      width: 245px;
     }
     .total-row {
       display: flex;
       justify-content: space-between;
-      padding: 8px 0;
-      font-size: 10.5pt;
+      padding: 4px 0;
+      font-size: 9.6pt;
     }
     .total-row.grand {
-      font-weight: bold;
-      font-size: 11.5pt;
-      border-top: 1px solid #c9c9c9;
-      margin-top: 8px;
-      padding-top: 12px;
+      font-weight: 700;
+      font-size: 10.2pt;
+      border-top: 1px solid #cfd8dc;
+      margin-top: 4px;
+      padding-top: 7px;
     }
     .footer-grid {
-      margin-top: auto;
-      padding-top: 18px;
+      margin-top: 56px;
+      padding-top: 12px;
+      border-top: 1px solid #b9e9ff;
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 14px;
     }
     .footer-block {
       padding: 0;
     }
     .footer-line {
       display: grid;
-      grid-template-columns: 82px 1fr;
-      gap: 8px;
-      margin-bottom: 4px;
-      font-size: 9pt;
-      line-height: 1.45;
+      grid-template-columns: 72px 1fr;
+      gap: 6px;
+      margin-bottom: 3px;
+      font-size: 8.1pt;
+      line-height: 1.35;
     }
     .footer-label {
-      color: #8a8a8a;
+      color: #9a9a9a;
       font-weight: 600;
     }
     .footer-value {
-      color: #2b2b2b;
+      color: #4a4a4a;
       word-break: break-word;
+    }
+    .footer-value.nowrap {
+      white-space: nowrap;
+      word-break: normal;
+      overflow-wrap: normal;
     }
     .footer-value.link {
       color: #147f8a;
@@ -271,6 +284,7 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
 </head>
 <body>
   <div class="container">
+    <div class="top-accent"></div>
     <div class="content">
       ${billFromLine ? `<div class="company-line">${billFromLine}</div>` : ""}
 
@@ -292,6 +306,14 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
               <div class="date-label">Issue date</div>
               <div class="date-value">${this.escapeHtml(model.issueDate)}</div>
             </div>
+            ${
+              model.serviceDate
+                ? `<div class="date-item">
+                    <div class="date-label">Service date</div>
+                    <div class="date-value">${this.escapeHtml(model.serviceDate)}</div>
+                  </div>`
+                : ""
+            }
             ${
               model.dueDate
                 ? `<div class="date-item">
@@ -323,11 +345,19 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
 
       <div class="totals">
         <div class="total-row">
-          <span>Subtotal</span>
+          <span>Total amount (Net)</span>
           <span>${this.escapeHtml(model.totals.subtotal)}</span>
         </div>
+        ${
+          model.totals.vatRate && model.totals.vatAmount
+            ? `<div class="total-row">
+                <span>VAT ${this.escapeHtml(model.totals.vatRate)}</span>
+                <span>${this.escapeHtml(model.totals.vatAmount)}</span>
+              </div>`
+            : ""
+        }
         <div class="total-row grand">
-          <span>Total (${this.escapeHtml(model.currency)})</span>
+          <span>Total amount (Gross)</span>
           <span>${this.escapeHtml(model.totals.total)}</span>
         </div>
       </div>
@@ -348,12 +378,17 @@ export class PlaywrightInvoicePdfRendererAdapter implements InvoicePdfRendererPo
 `;
   }
 
-  private renderFooterLine(label: string, value?: string): string {
+  private renderFooterLine(label: string, value?: string, opts?: { nowrap?: boolean }): string {
     if (!value) {
       return "";
     }
 
-    return `<div class="footer-line"><span class="footer-label">${this.escapeHtml(label)}:</span><span class="footer-value">${this.escapeHtml(value)}</span></div>`;
+    const escapedValue = this.escapeHtml(value);
+    const formattedValue =
+      opts?.nowrap === true ? escapedValue.replace(/ /g, "&nbsp;") : escapedValue;
+    const valueClass = opts?.nowrap === true ? "footer-value nowrap" : "footer-value";
+
+    return `<div class="footer-line"><span class="footer-label">${this.escapeHtml(label)}:</span><span class="${valueClass}">${formattedValue}</span></div>`;
   }
 
   private renderFooterLinkLine(label: string, value?: string): string {
