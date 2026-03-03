@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { useToast } from "@corely/ui";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
+import { ArrowLeft } from "lucide-react";
 
 // Schema for the form
 const formSchema = z
@@ -89,83 +90,105 @@ export const CreateFilingPage = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">New Tax Filing</h1>
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      {/* Page Header — matches CrudListPageLayout / FilingDetailPage pattern */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+            className="-ml-2 shrink-0"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-h1 text-foreground tracking-tight">New Tax Filing</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Choose the filing type and period to create a new obligation.
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Filing</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Filing Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="vat">VAT Return</SelectItem>
-                        <SelectItem value="income-annual">Income Tax (Annual)</SelectItem>
-                        <SelectItem value="vat-annual">Annual VAT</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tax Year</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {type === "vat" && (
+      {/* Form — max-w-2xl centered for narrow form, consistent with Object Page sub-forms */}
+      <div className="max-w-2xl">
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base font-medium">Filing details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
-                  name="periodKey"
+                  name="type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Period (Quarter/Month)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. 2025-Q1" {...field} />
-                      </FormControl>
-                      <div className="text-xs text-muted-foreground">
-                        Format: YYYY-Qx (e.g. 2025-Q1) or YYYY-MM (e.g. 2025-01)
-                      </div>
+                      <FormLabel>Filing Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="vat">VAT Return</SelectItem>
+                          <SelectItem value="income-annual">Income Tax (Annual)</SelectItem>
+                          <SelectItem value="vat-annual">Annual VAT</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              )}
 
-              <div className="pt-4 flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Create Filing</Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                <FormField
+                  control={form.control}
+                  name="year"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tax Year</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {type === "vat" && (
+                  <FormField
+                    control={form.control}
+                    name="periodKey"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Period (Quarter / Month)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. 2025-Q1" {...field} />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Format: YYYY-Qx (e.g. 2025-Q1) or YYYY-MM (e.g. 2025-01)
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                  <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">Create Filing</Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
