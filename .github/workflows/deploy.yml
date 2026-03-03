@@ -12,6 +12,10 @@ env:
   GAR_LOCATION: europe-west4 # Netherlands
   REPOSITORY: corely-images # TODO: Create this Artifact Registry repository
   DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  API_BASE_URL: https://api.corely.one
+  WORKER_BASE_URL: https://worker.corely.one
+  CLOUD_TASKS_LOCATION: europe-west1
+  CLOUD_TASKS_QUEUE_NAME: corely-scheduler
 
 jobs:
   deploy:
@@ -96,8 +100,9 @@ jobs:
           env_vars: |
             NODE_ENV=production
             WORKFLOW_QUEUE_DRIVER=memory
-            INTERNAL_WORKER_URL=${{ secrets.INTERNAL_WORKER_URL }}
+            INTERNAL_WORKER_URL=${{ env.WORKER_BASE_URL }}
             INTERNAL_WORKER_KEY=${{ secrets.INTERNAL_WORKER_KEY }}
+            API_BASE_URL=${{ env.WORKER_BASE_URL }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
@@ -142,6 +147,12 @@ jobs:
             NODE_ENV=production
             DATABASE_URL=${{ env.DATABASE_URL }}
             WORKFLOW_QUEUE_DRIVER=memory
+            JOB_SCHEDULER_DRIVER=cloudtasks
+            GCP_PROJECT_ID=${{ env.PROJECT_ID }}
+            GCP_LOCATION=${{ env.CLOUD_TASKS_LOCATION }}
+            CLOUD_TASKS_QUEUE_NAME=${{ env.CLOUD_TASKS_QUEUE_NAME }}
+            WORKER_BASE_URL=${{ env.WORKER_BASE_URL }}
+            API_BASE_URL=${{ env.API_BASE_URL }}
             PDF_RENDER_CONCURRENCY=1
             INVOICE_REMINDER_RUN_ENABLED=false
             INTERNAL_WORKER_KEY=${{ secrets.INTERNAL_WORKER_KEY }}
