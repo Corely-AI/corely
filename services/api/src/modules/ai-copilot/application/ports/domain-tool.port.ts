@@ -1,4 +1,5 @@
 import { type z } from "zod";
+import { type ModelMessage } from "ai";
 
 export type ToolKind = "server" | "client-confirm" | "client-auto";
 
@@ -16,5 +17,6 @@ export interface DomainToolPort {
     input: unknown;
     toolCallId?: string;
     runId?: string;
+    messages?: ModelMessage[];
   }) => Promise<unknown>;
 }

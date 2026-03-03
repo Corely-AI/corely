@@ -26,6 +26,7 @@ import { invoiceQueryKeys } from "../queries";
 import { generateInvoiceNumber } from "../utils/invoice-generators";
 import { useSendInvoice } from "../hooks/use-send-invoice";
 import { useInvoicePdfDownload } from "../hooks/use-invoice-pdf-download";
+import { downloadInvoiceExportCsv } from "../utils/invoice-export";
 
 // Sub-components
 import {
@@ -59,6 +60,20 @@ export default function InvoiceDetailPage() {
   const invoice = invoiceData?.invoice;
   const capabilities = invoiceData?.capabilities;
   const isViewOnly = invoice ? invoice.status !== "DRAFT" : false;
+  const outstandingGrossDueCents = useMemo(() => {
+    if (!invoice) {
+      return 0;
+    }
+
+    const dueCents = Math.max(0, invoice.totals?.dueCents ?? 0);
+    const totalMinusPaidCents = Math.max(
+      0,
+      (invoice.totals?.totalCents ?? 0) - (invoice.totals?.paidCents ?? 0)
+    );
+
+    // Prefer the gross outstanding amount if backend dueCents is lower.
+    return Math.max(dueCents, totalMinusPaidCents);
+  }, [invoice]);
 
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -161,9 +176,10 @@ export default function InvoiceDetailPage() {
       lineItems: seededLines,
       paymentMethodId: invoice.paymentMethodId ?? undefined,
     });
-    const due = invoice.totals?.dueCents ?? 0;
-    setPaymentAmount(due > 0 ? (due / 100).toFixed(2) : "");
-  }, [invoice, reset]);
+    setPaymentAmount(
+      outstandingGrossDueCents > 0 ? (outstandingGrossDueCents / 100).toFixed(2) : ""
+    );
+  }, [invoice, outstandingGrossDueCents, reset]);
 
   const { downloadPdfWithWait, ensureInvoicePdfDefaults, logPdfDebug } = useInvoicePdfDownload({
     id,
@@ -261,10 +277,41 @@ export default function InvoiceDetailPage() {
             toast.success(t("invoices.notifications.canceled"));
             break;
           case "duplicate":
-            toast.info(t("invoices.notifications.duplicateSoon"));
+            if (!invoice) {
+              return;
+            }
+            try {
+              const duplicated = await invoicesApi.createInvoice({
+                customerPartyId: invoice.customerPartyId,
+                currency: invoice.currency,
+                notes: invoice.notes ?? undefined,
+                terms: invoice.terms ?? undefined,
+                invoiceDate: new Date().toISOString().slice(0, 10),
+                dueDate: invoice.dueDate
+                  ? new Date(invoice.dueDate).toISOString().slice(0, 10)
+                  : undefined,
+                lineItems: invoice.lineItems.map((item) => ({
+                  description: item.description,
+                  qty: item.qty,
+                  unitPriceCents: item.unitPriceCents,
+                })),
+                paymentMethodId: invoice.paymentMethodId ?? undefined,
+              });
+              toast.success(
+                t("invoices.notifications.duplicated", { defaultValue: "Invoice duplicated" })
+              );
+              navigate(`/invoices/${duplicated.id}`);
+            } catch (err) {
+              console.error("Duplicate failed", err);
+              toast.error(t("invoices.errors.actionFailed"));
+            }
             return;
           case "export":
-            toast.info(t("invoices.notifications.exportSoon"));
+            if (!invoice) {
+              return;
+            }
+            downloadInvoiceExportCsv(invoice, i18n.language);
+            toast.success(t("common.success"));
             return;
           case "view_audit":
             navigate(`/audit?entity=invoice&id=${id}`);
@@ -282,7 +329,17 @@ export default function InvoiceDetailPage() {
         setIsProcessing(false);
       }
     },
-    [downloadPdfWithWait, ensureInvoicePdfDefaults, id, invoice?.status, navigate, queryClient, t]
+    [
+      downloadPdfWithWait,
+      ensureInvoicePdfDefaults,
+      i18n.language,
+      id,
+      invoice,
+      invoice?.status,
+      navigate,
+      queryClient,
+      t,
+    ]
   );
 
   const onFormSubmit = async (data: InvoiceFormData) => {
@@ -417,7 +474,7 @@ export default function InvoiceDetailPage() {
           onPaymentNoteChange={setPaymentNote}
           onSave={recordPayment}
           isProcessing={isProcessing}
-          dueCents={invoice.totals?.dueCents ?? 0}
+          dueCents={outstandingGrossDueCents}
           locale={i18n.t("common.locale")}
           currency={invoice.currency}
         />

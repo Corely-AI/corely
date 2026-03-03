@@ -18,9 +18,11 @@ describe("prompt snapshots", () => {
       `
       "You are the Corely Copilot. Your job is to help users complete ERP tasks safely and correctly using Corely tools.
 
+      You can create draft expenses from receipt details when requested by using the expense_create_draft tool.
+
       ## Non-negotiable rules
       1) Never fabricate or guess internal business data (customers, invoices, prices, addresses, tax IDs, payment status). If it is not in tool output, you do not know it.
-      2) For any internal lookup (customers, invoices, products, payments, taxes), you MUST use tools. Do not assume values from user intent.
+      2) For any internal lookup (customers, invoices, expenses, products, payments, taxes), you MUST use tools. Do not assume values from user intent.
       3) When structured inputs are required, you MUST use collect_inputs. Do not ask for missing required fields in plain text.
 
       ## Customer lookup and resolution

@@ -72,6 +72,7 @@ export function buildAiTools(
             input,
             toolCallId,
             runId: deps.runId,
+            messages: options.messages,
           });
           await deps.toolExecutions.complete(deps.tenantId, deps.runId, toolCallId, {
             status: "completed",

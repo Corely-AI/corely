@@ -91,4 +91,38 @@ describe("ToolRegistry", () => {
       "collect_helper",
     ]);
   });
+
+  it("allows freelancer-scope tools in assistant context even when app entitlements are false", async () => {
+    const entitlementsRead: TenantEntitlementsReadPort = {
+      getAppEnablementMap: vi.fn(async () => ({
+        invoices: true,
+        expenses: false,
+        assistant: true,
+        portfolio: false,
+      })),
+      isAppEnabled: vi.fn(async () => true),
+    };
+
+    const registry = new ToolRegistry(
+      [
+        mockTool("invoice_list", "invoices"),
+        mockTool("expenses_list", "expenses"),
+        mockTool("assistant_helper", "assistant"),
+        mockTool("portfolio_list_showcases", "portfolio"),
+        mockTool("crm_createPartyFromText", "crm"),
+        mockTool("collect_helper"),
+      ],
+      entitlementsRead
+    );
+
+    const tools = await registry.listForTenant("tenant-1", "assistant");
+
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "invoice_list",
+      "expenses_list",
+      "assistant_helper",
+      "portfolio_list_showcases",
+      "collect_helper",
+    ]);
+  });
 });

@@ -34,7 +34,18 @@ export function resolveReferenceTemplate(
   template: string,
   invoiceNumber: string | null | undefined
 ): string {
-  return template.replace(/{invoiceNumber}/g, invoiceNumber || "DRAFT");
+  const normalizedInvoiceNumber = invoiceNumber?.trim() || "DRAFT";
+
+  return template.replace(/{invoiceNumber}/g, (_match, offset: number) => {
+    const prefix = template.slice(0, offset);
+    const hasInvPrefixBeforePlaceholder = /INV-\s*$/i.test(prefix);
+
+    if (hasInvPrefixBeforePlaceholder && /^INV-/i.test(normalizedInvoiceNumber)) {
+      return normalizedInvoiceNumber.replace(/^INV-/i, "");
+    }
+
+    return normalizedInvoiceNumber;
+  });
 }
 
 /**

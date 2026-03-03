@@ -12,6 +12,21 @@ type PaymentMethodWithBankAccount = Prisma.PaymentMethodGetPayload<{
   include: { bankAccount: true };
 }>;
 
+function resolveReferenceTemplate(template: string, invoiceNumber: string): string {
+  const normalizedInvoiceNumber = invoiceNumber.trim() || "DRAFT";
+
+  return template.replace(/{invoiceNumber}/g, (_match, offset: number) => {
+    const prefix = template.slice(0, offset);
+    const hasInvPrefixBeforePlaceholder = /INV-\s*$/i.test(prefix);
+
+    if (hasInvPrefixBeforePlaceholder && /^INV-/i.test(normalizedInvoiceNumber)) {
+      return normalizedInvoiceNumber.replace(/^INV-/i, "");
+    }
+
+    return normalizedInvoiceNumber;
+  });
+}
+
 @Injectable()
 export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
   constructor(private readonly prisma: PrismaService) {}
@@ -212,7 +227,7 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
 
     if (paymentDetailsSnapshot) {
       const referenceTemplate = paymentDetailsSnapshot.referenceTemplate || "INV-{invoiceNumber}";
-      const referenceText = referenceTemplate.replace("{invoiceNumber}", invoice.number);
+      const referenceText = resolveReferenceTemplate(referenceTemplate, invoice.number);
 
       paymentSnapshot = {
         ...paymentDetailsSnapshot,
@@ -281,7 +296,7 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
 
   private toPaymentSnapshot(paymentMethod: PaymentMethodWithBankAccount, invoiceNumber: string) {
     const referenceTemplate = paymentMethod.referenceTemplate || "INV-{invoiceNumber}";
-    const referenceText = referenceTemplate.replace("{invoiceNumber}", invoiceNumber);
+    const referenceText = resolveReferenceTemplate(referenceTemplate, invoiceNumber);
     const bankAccount = paymentMethod.bankAccount;
 
     return {

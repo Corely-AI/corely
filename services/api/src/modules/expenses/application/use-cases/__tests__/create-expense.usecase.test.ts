@@ -113,4 +113,20 @@ describe("CreateExpenseUseCase", () => {
     expect(audit.entries).toHaveLength(1);
     expect(outbox.events).toHaveLength(1);
   });
+
+  it("supports forcing DRAFT status for copilot draft flows", async () => {
+    const expense = await useCase.execute(
+      buildCreateExpenseInput({
+        idempotencyKey: "force-draft",
+        initialStatusOverride: "DRAFT",
+      }),
+      {
+        tenantId: "tenant-1",
+        userId: "user-1",
+        workspaceId: "ws-1",
+      }
+    );
+
+    expect(expense.status).toBe("DRAFT");
+  });
 });

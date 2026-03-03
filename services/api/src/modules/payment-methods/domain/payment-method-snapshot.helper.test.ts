@@ -55,6 +55,18 @@ describe("payment-method-snapshot.helper", () => {
       const result = resolveReferenceTemplate(template, "2025/Q1/001");
       expect(result).toBe("REF/2025/Q1/001");
     });
+
+    it("should avoid duplicate INV prefix when invoice number already includes INV-", () => {
+      const template = "INV-{invoiceNumber}";
+      const result = resolveReferenceTemplate(template, "INV-2026-49995");
+      expect(result).toBe("INV-2026-49995");
+    });
+
+    it("should avoid duplicate INV prefix case-insensitively", () => {
+      const template = "inv-{invoiceNumber}";
+      const result = resolveReferenceTemplate(template, "inv-001");
+      expect(result).toBe("inv-001");
+    });
   });
 
   describe("snapshotPaymentMethod", () => {

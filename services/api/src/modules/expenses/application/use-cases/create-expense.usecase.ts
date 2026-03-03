@@ -38,6 +38,7 @@ export interface CreateExpenseInput {
   customFieldValues?: Record<string, unknown>;
   dimensionAssignments?: EntityDimensionAssignment[];
   idempotencyKey: string;
+  initialStatusOverride?: "DRAFT" | "APPROVED";
 }
 
 export class CreateExpenseUseCase {
@@ -88,8 +89,10 @@ export class CreateExpenseUseCase {
       );
     }
 
-    // Determine initial status based on workspace type
-    const initialStatus = await this.determineInitialStatus(ctx.tenantId, ctx.workspaceId);
+    // Allow specific flows (e.g., copilot draft creation) to force initial status.
+    const initialStatus =
+      input.initialStatusOverride ??
+      (await this.determineInitialStatus(ctx.tenantId, ctx.workspaceId));
 
     const definitions = await this.customFieldDefinitions.listActiveByEntityType(
       input.tenantId,

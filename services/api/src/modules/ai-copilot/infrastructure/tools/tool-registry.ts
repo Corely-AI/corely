@@ -5,7 +5,7 @@ import {
   TENANT_ENTITLEMENTS_READ_PORT_TOKEN,
   type TenantEntitlementsReadPort,
 } from "@corely/kernel";
-import { isToolInActiveAppScope } from "./app-scope";
+import { isFreelancerScopedContext, isToolInActiveAppScope } from "./app-scope";
 
 @Injectable()
 export class ToolRegistry implements ToolRegistryPort {
@@ -26,7 +26,9 @@ export class ToolRegistry implements ToolRegistryPort {
 
     let availableTools = flatTools;
 
-    if (this.entitlementsRead) {
+    const shouldBypassEntitlements = isFreelancerScopedContext(activeAppId);
+
+    if (this.entitlementsRead && !shouldBypassEntitlements) {
       const appEnablement = await this.entitlementsRead
         .getAppEnablementMap(tenantId)
         .catch(() => null);

@@ -80,6 +80,8 @@
     "reason": "Grund",
     "reasonPlaceholder": "Grund eingeben...",
     "badge": "Badge",
+    "actions": "Aktionen",
+    "other": "Sonstige",
     "moreActions": "Weitere Aktionen",
     "dangerZone": "Gefahrenzone",
     "goBack": "Zurück",
@@ -705,6 +707,12 @@
     "toolCall": "Führe {{toolName}} aus...",
     "send": "Senden",
     "sending": "Wird gesendet...",
+    "attachments": {
+      "add": "Datei hinzufügen",
+      "remove": "Datei entfernen",
+      "invalidType": "{{name}} wird nicht unterstützt. Nur Bild- und PDF-Dateien sind erlaubt.",
+      "tooLarge": "{{name}} ist zu groß. Maximale Größe ist {{maxSize}}."
+    },
     "suggestions": {
       "extractReceipt": {
         "label": "Beleg extrahieren und Ausgabe erstellen",

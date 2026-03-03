@@ -21,6 +21,7 @@ export type ToolInvocationPart = {
 export type MessagePart =
   | { type: "text"; text: string; state?: string }
   | { type: "reasoning"; text: string; state?: string }
+  | { type: "file"; mediaType: string; filename?: string; url: string }
   | ToolInvocationPart
   | { type: `data-${string}`; data?: any; transient?: boolean };
 
@@ -60,6 +61,15 @@ export const renderPart = (
     return (
       <div className="rounded-lg border border-border/60 bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
         {part.text}
+      </div>
+    );
+  }
+
+  if (part.type === "file") {
+    return (
+      <div className="rounded-lg border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+        <div className="font-medium text-foreground">{part.filename ?? "Attachment"}</div>
+        <div className="mt-0.5">{part.mediaType}</div>
       </div>
     );
   }

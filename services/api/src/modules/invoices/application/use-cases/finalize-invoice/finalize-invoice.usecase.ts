@@ -116,6 +116,8 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
           `Failed to calculate tax for invoice ${invoice.id}`,
           taxError as Record<string, unknown>
         );
+
+        taxSnapshot = await this.buildFallbackTaxSnapshot(invoice, ctx, now);
       }
 
       // Update tax snapshot before finalizing
@@ -154,6 +156,98 @@ export class FinalizeInvoiceUseCase extends BaseUseCase<
     await this.useCaseDeps.invoiceRepo.save(ctx.workspaceId, invoice);
     await this.tryPostCogsFromLots(invoice, ctx);
     return ok({ invoice: toInvoiceDto(invoice) });
+  }
+
+  private async buildFallbackTaxSnapshot(
+    invoice: {
+      currency: string;
+      invoiceDate: string | null;
+      issuedAt: Date | null;
+      lineItems: Array<{ id: string; qty: number; unitPriceCents: number }>;
+    },
+    ctx: UseCaseContext,
+    now: Date
+  ) {
+    if (!ctx.workspaceId) {
+      return null;
+    }
+
+    const workspace = await this.useCaseDeps.prisma.workspace.findUnique({
+      where: { id: ctx.workspaceId },
+      include: { legalEntity: true },
+    });
+    const platformTenantId = workspace?.tenantId ?? ctx.tenantId;
+    if (!platformTenantId) {
+      return null;
+    }
+    const legalEntityCountry = workspace?.legalEntity?.countryCode ?? null;
+    const documentDate = invoice.invoiceDate
+      ? new Date(`${invoice.invoiceDate}T00:00:00.000Z`)
+      : (invoice.issuedAt ?? now);
+
+    const taxProfile = await this.useCaseDeps.prisma.taxProfile.findFirst({
+      where: { tenantId: platformTenantId },
+      orderBy: { effectiveFrom: "desc" },
+    });
+
+    let vatRateBps = 0;
+    if (taxProfile?.vatEnabled && taxProfile.regime !== "SMALL_BUSINESS") {
+      const rate = await this.useCaseDeps.prisma.taxRate.findFirst({
+        where: {
+          tenantId: platformTenantId,
+          effectiveFrom: { lte: documentDate },
+          taxCode: { kind: "STANDARD", isActive: true },
+        },
+        orderBy: { effectiveFrom: "desc" },
+      });
+      vatRateBps = rate?.rateBps ?? 0;
+    }
+
+    // Keep PDF rendering behavior: DE defaults to 19% when no explicit profile/rate blocks it.
+    if (vatRateBps === 0 && legalEntityCountry === "DE" && taxProfile?.vatEnabled !== false) {
+      vatRateBps = 1900;
+    }
+
+    const subtotalAmountCents = invoice.lineItems.reduce(
+      (sum, line) => sum + line.qty * line.unitPriceCents,
+      0
+    );
+    const lines = invoice.lineItems.map((line) => {
+      const netAmountCents = line.qty * line.unitPriceCents;
+      const taxAmountCents = Math.round((netAmountCents * vatRateBps) / 10000);
+      return {
+        lineId: line.id,
+        kind: vatRateBps > 0 ? "STANDARD" : "EXEMPT",
+        rateBps: vatRateBps,
+        netAmountCents,
+        taxAmountCents,
+        grossAmountCents: netAmountCents + taxAmountCents,
+      };
+    });
+    const taxTotalAmountCents = lines.reduce((sum, line) => sum + line.taxAmountCents, 0);
+    const totalAmountCents = subtotalAmountCents + taxTotalAmountCents;
+    const totalsByKind = {
+      [vatRateBps > 0 ? "STANDARD" : "EXEMPT"]: {
+        netAmountCents: subtotalAmountCents,
+        taxAmountCents: taxTotalAmountCents,
+        grossAmountCents: totalAmountCents,
+        rateBps: vatRateBps,
+      },
+    };
+
+    return {
+      subtotalAmountCents,
+      taxTotalAmountCents,
+      totalAmountCents,
+      roundingMode: "PER_DOCUMENT",
+      lines,
+      totalsByKind,
+      flags: {
+        needsReverseChargeNote: false,
+        isSmallBusinessNoVatCharged: vatRateBps === 0,
+      },
+      appliedAt: now.toISOString(),
+    };
   }
 
   private async tryPostCogsFromLots(

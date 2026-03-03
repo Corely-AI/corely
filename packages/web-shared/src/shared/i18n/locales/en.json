@@ -80,6 +80,8 @@
     "reason": "Reason",
     "reasonPlaceholder": "Enter reason...",
     "badge": "Badge",
+    "actions": "Actions",
+    "other": "Other",
     "moreActions": "More actions",
     "dangerZone": "Danger zone",
     "goBack": "Go back",
@@ -724,6 +726,12 @@
     "toolCall": "Running {{toolName}}...",
     "send": "Send",
     "sending": "Sending...",
+    "attachments": {
+      "add": "Add file",
+      "remove": "Remove file",
+      "invalidType": "{{name}} is not supported. Only image and PDF files are allowed.",
+      "tooLarge": "{{name}} is too large. Maximum size is {{maxSize}}."
+    },
     "suggestions": {
       "extractReceipt": {
         "label": "Extract a receipt and create an expense",

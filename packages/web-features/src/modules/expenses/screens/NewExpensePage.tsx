@@ -2,9 +2,11 @@ import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
+import type { UploadFileOutput } from "@corely/contracts";
 import { Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
 import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
+import { apiClient } from "@corely/web-shared/lib/api-client";
 import { expensesApi } from "@corely/web-shared/lib/expenses-api";
 import { ExpenseForm, type ExpenseFormValues } from "../components/ExpenseForm";
 import { expenseKeys } from "../queries";
@@ -14,6 +16,41 @@ import {
   CustomAttributesSection,
   type CustomAttributesValue,
 } from "@corely/web-shared/shared/custom-attributes";
+
+const fileToBase64 = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      const base64 = result.includes(",") ? result.split(",")[1] : result;
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+const uploadExpenseReceipt = async (file: File): Promise<string> => {
+  const base64 = await fileToBase64(file);
+  const result = await apiClient.post<UploadFileOutput>("/documents/upload-base64", {
+    filename: file.name,
+    contentType: file.type || "application/octet-stream",
+    base64,
+    purpose: "expense-receipt",
+  });
+  return result.document.id;
+};
+
+const linkDocumentToExpense = async (documentId: string, expenseId: string): Promise<void> => {
+  await apiClient.post(`/documents/${documentId}/link`, {
+    entityType: "EXPENSE",
+    entityId: expenseId,
+  });
+};
+
+type SaveExpensePayload = {
+  values: ExpenseFormValues;
+  receiptFiles: File[];
+};
 
 export default function NewExpensePage() {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +70,7 @@ export default function NewExpensePage() {
   );
 
   const mutation = useMutation({
-    mutationFn: async (values: ExpenseFormValues) => {
+    mutationFn: async ({ values, receiptFiles }: SaveExpensePayload) => {
       const totalAmountCents = Math.round(parseFloat(values.amount || "0") * 100);
       const payload = {
         merchantName: values.merchantName,
@@ -49,14 +86,35 @@ export default function NewExpensePage() {
         customFieldValues: customAttributes?.customFieldValues,
         dimensionAssignments: customAttributes?.dimensionAssignments,
       };
-      return isEdit && id
+      const savedExpense = await (isEdit && id
         ? expensesApi.updateExpense(id, payload)
-        : expensesApi.createExpense(payload);
+        : expensesApi.createExpense(payload));
+      const failedReceipts: string[] = [];
+
+      if (receiptFiles.length > 0) {
+        for (const file of receiptFiles) {
+          try {
+            const documentId = await uploadExpenseReceipt(file);
+            await linkDocumentToExpense(documentId, savedExpense.id);
+          } catch {
+            failedReceipts.push(file.name);
+          }
+        }
+      }
+
+      return { savedExpense, failedReceipts };
     },
-    onSuccess: async (saved) => {
-      toast.success(isEdit ? "Expense updated" : "Expense created");
-      await invalidateResourceQueries(queryClient, "expenses", { id: saved.id });
-      navigate(`/expenses/${saved.id}`);
+    onSuccess: async ({ savedExpense, failedReceipts }) => {
+      const successMessage = isEdit ? "Expense updated" : "Expense created";
+      if (failedReceipts.length === 0) {
+        toast.success(successMessage);
+      } else {
+        toast.warning(
+          `${successMessage}, but ${failedReceipts.length} receipt file(s) could not be attached`
+        );
+      }
+      await invalidateResourceQueries(queryClient, "expenses", { id: savedExpense.id });
+      navigate(`/expenses/${savedExpense.id}`);
     },
     onError: () => toast.error("Failed to save expense"),
   });
@@ -104,7 +162,9 @@ export default function NewExpensePage() {
         <ExpenseForm
           key={expense?.id ?? "new-expense"}
           defaultValues={defaultValues}
-          onSubmit={(values) => mutation.mutate(values)}
+          onSubmit={(values, extras) =>
+            mutation.mutate({ values, receiptFiles: extras.receiptFiles })
+          }
           onCancel={() => navigate("/expenses")}
           isSubmitting={mutation.isPending}
           submitLabel={isEdit ? "Save changes" : "Create expense"}

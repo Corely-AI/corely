@@ -80,6 +80,8 @@
     "reason": "Lý do",
     "reasonPlaceholder": "Nhập lý do...",
     "badge": "Huy hiệu",
+    "actions": "Thao tác",
+    "other": "Khác",
     "moreActions": "Thêm thao tác",
     "dangerZone": "Khu vực nguy hiểm",
     "goBack": "Quay lại",
@@ -706,6 +708,12 @@
     "toolCall": "Đang chạy {{toolName}}...",
     "send": "Gửi",
     "sending": "Đang gửi...",
+    "attachments": {
+      "add": "Thêm tệp",
+      "remove": "Xóa tệp",
+      "invalidType": "{{name}} không được hỗ trợ. Chỉ chấp nhận tệp hình ảnh và PDF.",
+      "tooLarge": "{{name}} quá lớn. Kích thước tối đa là {{maxSize}}."
+    },
     "suggestions": {
       "extractReceipt": {
         "label": "Trích xuất biên lai và tạo chi phí",

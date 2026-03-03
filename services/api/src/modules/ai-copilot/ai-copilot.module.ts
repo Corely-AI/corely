@@ -79,6 +79,11 @@ import { CopilotContextBuilder } from "./application/services/copilot-context.bu
 import { CopilotTaskStateTracker } from "./application/services/copilot-task-state.service";
 import type { DomainToolPort } from "./application/ports/domain-tool.port";
 import { PlatformEntitlementsModule } from "../platform-entitlements/platform-entitlements.module";
+import { ExpensesModule } from "../expenses";
+import { CreateExpenseUseCase } from "../expenses/application/use-cases/create-expense.usecase";
+import { buildExpenseTools } from "../expenses/adapters/tools/expense.tools";
+import { DocumentsModule } from "../documents";
+import { DocumentsApplication } from "../documents/application/documents.application";
 
 @Module({
   imports: [
@@ -92,6 +97,8 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
     InventoryModule,
     EngagementModule,
     ClassesModule,
+    ExpensesModule,
+    DocumentsModule,
     PlatformEntitlementsModule,
     PromptModule,
   ],
@@ -225,6 +232,8 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
         getClassGroup: GetClassGroupUseCase,
         updateSession: UpdateSessionUseCase,
         bulkUpsertAttendance: BulkUpsertAttendanceUseCase,
+        createExpense: CreateExpenseUseCase,
+        documentsApp: DocumentsApplication,
         env: EnvService,
         promptRegistry: PromptRegistry,
         promptUsageLogger: PromptUsageLogger
@@ -272,6 +281,7 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
               bulkUpsertAttendance,
             })
           ),
+          ...withAppId("expenses", buildExpenseTools(createExpense, documentsApp)),
         ];
       },
       inject: [
@@ -292,6 +302,8 @@ import { PlatformEntitlementsModule } from "../platform-entitlements/platform-en
         GetClassGroupUseCase,
         UpdateSessionUseCase,
         BulkUpsertAttendanceUseCase,
+        CreateExpenseUseCase,
+        DocumentsApplication,
         EnvService,
         PromptRegistry,
         PromptUsageLogger,

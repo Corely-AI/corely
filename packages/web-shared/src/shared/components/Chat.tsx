@@ -1,21 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
+import { FileText, Image as ImageIcon, Paperclip, X } from "lucide-react";
 import { Badge } from "@corely/ui";
-import { Card, CardContent } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { fetchCopilotHistory, useCopilotChatOptions } from "@corely/web-shared/lib/copilot-api";
-import { QuestionForm } from "@corely/web-shared/shared/components/QuestionForm";
-import { Markdown } from "@corely/web-shared/shared/components/Markdown";
 import { useRotatingStatusText } from "@corely/web-shared/shared/components/chat/useRotatingStatusText";
 import { type StatusPhase } from "@corely/web-shared/shared/components/chat/statusTexts";
-import { type CollectInputsToolInput, type CollectInputsToolOutput } from "@corely/contracts";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import i18n from "@corely/web-shared/shared/i18n";
 import { useTranslation } from "react-i18next";
 
 import {
-  type ToolInvocationPart,
   type MessagePart,
   isToolPart,
   hasVisiblePart,
@@ -42,6 +38,55 @@ export interface ChatProps {
   onConversationUpdated?: () => void;
   focusMessageId?: string | null;
 }
+
+const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
+const ACCEPTED_ATTACHMENT_MIME_TYPES = new Set(["application/pdf"]);
+
+const formatBytes = (bytes: number): string => {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  const kb = bytes / 1024;
+  if (kb < 1024) {
+    return `${kb.toFixed(1)} KB`;
+  }
+  return `${(kb / 1024).toFixed(1)} MB`;
+};
+
+const isSupportedAttachment = (file: File): boolean => {
+  if (file.type.startsWith("image/")) {
+    return true;
+  }
+  if (ACCEPTED_ATTACHMENT_MIME_TYPES.has(file.type)) {
+    return true;
+  }
+  return file.name.toLowerCase().endsWith(".pdf");
+};
+
+const fileToChatPart = async (
+  file: File
+): Promise<{ type: "file"; mediaType: string; filename: string; url: string }> => {
+  const url = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result === "string") {
+        resolve(result);
+        return;
+      }
+      reject(new Error("Failed to encode attachment"));
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Failed to encode attachment"));
+    reader.readAsDataURL(file);
+  });
+
+  return {
+    type: "file",
+    mediaType: file.type || "application/octet-stream",
+    filename: file.name,
+    url,
+  };
+};
 
 export function Chat({
   activeModule,
@@ -97,6 +142,9 @@ export function Chat({
   const [submittingToolIds, setSubmittingToolIds] = useState<Set<string>>(new Set());
   const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
   const [input, setInput] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // AI SDK v3 API - manage input state ourselves
   const messages = chat.messages ?? [];
@@ -140,20 +188,70 @@ export function Chat({
     setInput(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    if (selected.length === 0) {
+      return;
+    }
+
+    const validFiles: File[] = [];
+    let firstError: string | null = null;
+    for (const file of selected) {
+      if (!isSupportedAttachment(file)) {
+        firstError ??= t("assistant.attachments.invalidType", { name: file.name });
+        continue;
+      }
+      if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+        firstError ??= t("assistant.attachments.tooLarge", {
+          name: file.name,
+          maxSize: formatBytes(MAX_ATTACHMENT_SIZE_BYTES),
+        });
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length > 0) {
+      setPendingFiles((current) => [...current, ...validFiles]);
+    }
+    setAttachmentError(firstError);
+
+    e.target.value = "";
+  };
+
+  const removePendingFile = (index: number) => {
+    setPendingFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
+    setAttachmentError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !sendMessage) {
+    const trimmedInput = input.trim();
+    if ((!trimmedInput && pendingFiles.length === 0) || !sendMessage) {
       return;
     }
 
     setStreamEventStarted(false);
     setToolRequestPending(false);
-    sendMessage({
-      role: "user",
-      parts: [{ type: "text" as const, text: input }],
-    });
-    setInput("");
-    onConversationUpdated?.();
+    try {
+      const fileParts =
+        pendingFiles.length > 0
+          ? await Promise.all(pendingFiles.map((file) => fileToChatPart(file)))
+          : undefined;
+
+      await Promise.resolve(
+        sendMessage({
+          text: trimmedInput || undefined,
+          files: fileParts,
+        })
+      );
+      setInput("");
+      setPendingFiles([]);
+      setAttachmentError(null);
+      onConversationUpdated?.();
+    } catch (error) {
+      console.error("Failed to send message with attachments:", error);
+    }
   };
 
   const markSubmitting = (id: string, value: boolean) => {
@@ -446,7 +544,55 @@ export function Chat({
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,application/pdf"
+          multiple
+          className="hidden"
+          onChange={handleFileSelection}
+        />
+        {pendingFiles.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {pendingFiles.map((file, index) => {
+              const isImage = file.type.startsWith("image/");
+              return (
+                <div
+                  key={`${file.name}-${file.size}-${index}`}
+                  className="inline-flex max-w-full items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs"
+                >
+                  {isImage ? (
+                    <ImageIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  ) : (
+                    <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  )}
+                  <span className="max-w-[240px] truncate">{file.name}</span>
+                  <button
+                    type="button"
+                    className="rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                    onClick={() => removePendingFile(index)}
+                    aria-label={t("assistant.attachments.remove")}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+        {attachmentError ? <div className="text-xs text-destructive">{attachmentError}</div> : null}
         <div className="glass flex items-center gap-2 rounded-2xl p-2 shadow-[0_18px_60px_-36px_rgba(0,0,0,0.6)]">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 rounded-xl"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            aria-label={t("assistant.attachments.add")}
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
           <Input
             value={input}
             onChange={handleInputChange}
@@ -459,7 +605,7 @@ export function Chat({
             variant="accent"
             size="lg"
             className="px-6"
-            disabled={!input || !input.trim() || isLoading}
+            disabled={isLoading || (!input.trim() && pendingFiles.length === 0)}
           >
             {isLoading ? t("assistant.sending") : t("assistant.send")}
           </Button>
