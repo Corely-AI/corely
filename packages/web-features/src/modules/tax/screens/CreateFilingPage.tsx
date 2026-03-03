@@ -25,23 +25,16 @@ const formSchema = z
       }
       const trimmed = value.trim();
       return trimmed.length > 0 ? trimmed : undefined;
-    }, TaxPeriodKeySchema.optional()), // Required if VAT
+    }, TaxPeriodKeySchema.optional()),
     entityId: z.string().optional(),
   })
   .refine(
     (data) => {
-      if (data.type === "vat" && !data.periodKey) {
-        return false;
-      }
-      if (data.type !== "vat" && !data.year) {
-        return false;
-      }
+      if (data.type === "vat" && !data.periodKey) {return false;}
+      if (data.type !== "vat" && !data.year) {return false;}
       return true;
     },
-    {
-      message: "Period is required for VAT filings",
-      path: ["periodKey"],
-    }
+    { message: "Period is required for VAT filings", path: ["periodKey"] }
   )
   .refine((data) => (data.type !== "vat" ? !!data.year : true), {
     message: "Year is required for annual filings",
@@ -70,15 +63,9 @@ export const CreateFilingPage = () => {
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const payload = {
-        ...values,
-        periodKey: values.periodKey?.trim() || undefined,
-      };
+      const payload = { ...values, periodKey: values.periodKey?.trim() || undefined };
       const result = await taxApi.createFiling(payload);
-      toast({
-        title: "Filing created",
-        description: "Redirecting to filing details...",
-      });
+      toast({ title: "Filing created", description: "Redirecting to filing details..." });
       navigate(`/tax/filings/${result.id}`);
     } catch (error: any) {
       toast({
@@ -91,7 +78,7 @@ export const CreateFilingPage = () => {
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-      {/* Page Header — matches CrudListPageLayout / FilingDetailPage pattern */}
+      {/* Page Header — p-6 lg:p-8 outer padding, full width, matches all other pages */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
           <Button
@@ -112,83 +99,81 @@ export const CreateFilingPage = () => {
         </div>
       </div>
 
-      {/* Form — max-w-2xl centered for narrow form, consistent with Object Page sub-forms */}
-      <div className="max-w-2xl">
-        <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-base font-medium">Filing details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Filing Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="vat">VAT Return</SelectItem>
-                          <SelectItem value="income-annual">Income Tax (Annual)</SelectItem>
-                          <SelectItem value="vat-annual">Annual VAT</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="year"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tax Year</FormLabel>
+      {/* Form card — full width, consistent with FilingDetailPage and CrudListPageLayout */}
+      <Card>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-medium">Filing details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Filing Type</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
                       </FormControl>
+                      <SelectContent>
+                        <SelectItem value="vat">VAT Return</SelectItem>
+                        <SelectItem value="income-annual">Income Tax (Annual)</SelectItem>
+                        <SelectItem value="vat-annual">Annual VAT</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="year"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tax Year</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {type === "vat" && (
+                <FormField
+                  control={form.control}
+                  name="periodKey"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Period (Quarter / Month)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 2025-Q1" {...field} />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        Format: YYYY-Qx (e.g. 2025-Q1) or YYYY-MM (e.g. 2025-01)
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+              )}
 
-                {type === "vat" && (
-                  <FormField
-                    control={form.control}
-                    name="periodKey"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Period (Quarter / Month)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. 2025-Q1" {...field} />
-                        </FormControl>
-                        <p className="text-xs text-muted-foreground">
-                          Format: YYYY-Qx (e.g. 2025-Q1) or YYYY-MM (e.g. 2025-01)
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                  <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Create Filing</Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+              <div className="flex justify-end gap-2 pt-2 border-t border-border">
+                <Button type="button" variant="outline" onClick={() => navigate(-1)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Create Filing</Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
