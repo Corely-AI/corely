@@ -4,7 +4,12 @@ import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
 import { ExpensesPage, NewExpensePage, ExpenseDetailPage } from "../../modules/expenses";
-import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
+import {
+  InvoicesPage,
+  NewInvoicePage,
+  InvoiceDetailPage,
+  InvoiceAuditPage,
+} from "../../modules/invoices";
 import {
   CashRegistersScreen,
   CashRegisterDetailScreen,
@@ -223,6 +228,7 @@ export const appShellRoutes = (
       <Route path="/invoices/new" element={<NewInvoicePage />} />
       <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
       <Route path="/invoices/:id/edit" element={<InvoiceDetailPage />} />
+      <Route path="/audit" element={<InvoiceAuditPage />} />
       {capabilityRoutes}
       <Route
         path="/customers"
