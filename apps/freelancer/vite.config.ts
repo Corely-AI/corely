@@ -32,6 +32,10 @@ export default defineConfig(() => {
 
   return {
     ...baseConfig,
+    define: {
+      ...(baseConfig.define ?? {}),
+      "import.meta.env.VITE_DISABLE_CUSTOM_ATTRIBUTES": JSON.stringify("true"),
+    },
     build: {
       ...baseConfig.build,
       rollupOptions: {

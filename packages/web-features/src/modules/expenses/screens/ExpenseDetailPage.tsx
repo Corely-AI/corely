@@ -94,15 +94,38 @@ export const ExpenseDetailPage = () => {
     queryKey: expenseKeys.detail(id ?? ""),
     queryFn: () => (id ? expensesApi.getExpense(id) : Promise.reject(new Error(t("common.error")))),
     enabled: Boolean(id),
+    retry: false,
   });
 
   const { expense, capabilities } = queryResult || {};
   const [isProcessing] = React.useState(false);
 
+  const transitionMutation = useMutation({
+    mutationFn: ({ expenseId, to, reason }: { expenseId: string; to: string; reason?: string }) =>
+      expensesApi.transitionExpense(expenseId, to, reason),
+    onSuccess: async (_, vars) => {
+      toast.success(t("expenses.notifications.transitioned", { to: vars.to }));
+      await invalidateResourceQueries(queryClient, "expenses", { id });
+    },
+    onError: () => toast.error(t("expenses.notifications.transitionFailed")),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
+    onSuccess: async () => {
+      toast.success(t("expenses.notifications.deleted"));
+      await invalidateResourceQueries(queryClient, "expenses", { id });
+      navigate("/expenses");
+    },
+    onError: () => toast.error(t("expenses.notifications.deleteFailed")),
+  });
+
   // Handle transitions
   const handleTransition = React.useCallback(
     async (to: string, input?: Record<string, string>) => {
-      if (!id) {return;}
+      if (!id) {
+        return;
+      }
       await transitionMutation.mutateAsync({ expenseId: id, to, reason: input?.reason });
     },
     [id, transitionMutation]
@@ -125,28 +148,8 @@ export const ExpenseDetailPage = () => {
           toast.info(t("expenses.detail.actionSoon", { action: actionKey }));
       }
     },
-    [id, navigate, t]
+    [id, navigate, t, deleteMutation]
   );
-
-  const transitionMutation = useMutation({
-    mutationFn: ({ expenseId, to, reason }: { expenseId: string; to: string; reason?: string }) =>
-      expensesApi.transitionExpense(expenseId, to, reason),
-    onSuccess: async (_, vars) => {
-      toast.success(t("expenses.notifications.transitioned", { to: vars.to }));
-      await invalidateResourceQueries(queryClient, "expenses", { id });
-    },
-    onError: () => toast.error(t("expenses.notifications.transitionFailed")),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
-    onSuccess: async () => {
-      toast.success(t("expenses.notifications.deleted"));
-      await invalidateResourceQueries(queryClient, "expenses", { id });
-      navigate("/expenses");
-    },
-    onError: () => toast.error(t("expenses.notifications.deleteFailed")),
-  });
 
   if (isLoading) {
     return (

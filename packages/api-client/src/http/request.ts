@@ -63,14 +63,9 @@ export async function request<T = unknown>(opts: RequestOptions): Promise<T> {
     headers["X-Correlation-Id"] = opts.correlationId;
   }
 
-  if (typeof window !== "undefined" && window.location && !headers["X-App-Id"]) {
-    const segments = window.location.pathname.split("/").filter(Boolean);
-    // Usually /:workspaceSlug/:appId
-    const appId = segments.length > 1 ? segments[1] : segments[0];
-    if (appId && appId !== "login" && appId !== "signup") {
-      headers["X-App-Id"] = appId;
-    }
-  }
+  // Do not infer X-App-Id from pathname segments.
+  // Detail routes (e.g. /expenses/:id) can produce false values and trigger
+  // entitlement scope violations on unrelated endpoints.
 
   const body =
     opts.body && typeof opts.body === "object" && !(opts.body instanceof FormData)
