@@ -19,7 +19,6 @@ import {
 } from "../../domain/ports";
 import type { TaxProfileEntity } from "../../domain/entities";
 import type { TaxSummaryTotals } from "../../domain/ports";
-import { DEPackV1 } from "./jurisdictions/de-pack.v1";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 
 @Injectable()
@@ -39,8 +38,7 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
     private readonly reportRepo: TaxReportRepoPort,
     private readonly profileRepo: TaxProfileRepoPort,
     private readonly vatPeriodQuery: VatPeriodQueryPort,
-    private readonly vatPeriodResolver: VatPeriodResolver,
-    private readonly dePack: DEPackV1
+    private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
   async computeSummary(ctx: TaxStrategyContext): Promise<TaxSummaryDto> {
