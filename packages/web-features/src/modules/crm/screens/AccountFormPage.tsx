@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
@@ -38,6 +39,7 @@ const EMPTY_FORM: FormData = {
 };
 
 export default function AccountFormPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
   const navigate = useNavigate();
@@ -172,21 +174,23 @@ export default function AccountFormPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-h1 text-foreground">{isEdit ? "Edit Account" : "New Account"}</h1>
+        <h1 className="text-h1 text-foreground">
+          {isEdit ? t("crm.accountForm.editTitle") : t("crm.accountForm.newTitle")}
+        </h1>
       </div>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Identity Section (writes to Party) */}
         <Card>
           <CardHeader>
-            <CardTitle>Identity</CardTitle>
+            <CardTitle>{t("crm.accountForm.identityTitle")}</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Contact information stored in Party record
+              {t("crm.accountForm.identityDescription")}
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Account Name *</Label>
+              <Label htmlFor="name">{t("crm.accountForm.accountNameRequired")}</Label>
               <Input
                 id="name"
                 value={form.name}
@@ -196,7 +200,7 @@ export default function AccountFormPage() {
               />
             </div>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -206,7 +210,7 @@ export default function AccountFormPage() {
               />
             </div>
             <div>
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">{t("common.phone")}</Label>
               <Input
                 id="phone"
                 value={form.phone}
@@ -215,16 +219,16 @@ export default function AccountFormPage() {
               />
             </div>
             <div>
-              <Label htmlFor="website">Website</Label>
+              <Label htmlFor="website">{t("common.website")}</Label>
               <Input
                 id="website"
                 value={form.website}
                 onChange={(e) => setField("website", e.target.value)}
-                placeholder="https://..."
+                placeholder={t("crm.accountForm.websitePlaceholder")}
               />
             </div>
             <div>
-              <Label htmlFor="industry">Industry</Label>
+              <Label htmlFor="industry">{t("crm.accountForm.industry")}</Label>
               <Input
                 id="industry"
                 value={form.industry}
@@ -237,12 +241,14 @@ export default function AccountFormPage() {
         {/* CRM Profile Section */}
         <Card>
           <CardHeader>
-            <CardTitle>CRM Profile</CardTitle>
-            <p className="text-xs text-muted-foreground">Sales-specific fields</p>
+            <CardTitle>{t("crm.accountForm.profileTitle")}</CardTitle>
+            <p className="text-xs text-muted-foreground">
+              {t("crm.accountForm.profileDescription")}
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="accountType">Account Type</Label>
+              <Label htmlFor="accountType">{t("crm.accountForm.accountType")}</Label>
               <select
                 id="accountType"
                 value={form.accountType}
@@ -250,14 +256,14 @@ export default function AccountFormPage() {
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 data-testid="crm-account-type"
               >
-                <option value="CUSTOMER">Customer</option>
-                <option value="VENDOR">Vendor</option>
-                <option value="PARTNER">Partner</option>
-                <option value="OTHER">Other</option>
+                <option value="CUSTOMER">{t("crm.accounts.type.customer")}</option>
+                <option value="VENDOR">{t("crm.accounts.type.vendor")}</option>
+                <option value="PARTNER">{t("crm.accounts.type.partner")}</option>
+                <option value="OTHER">{t("crm.accounts.type.other")}</option>
               </select>
             </div>
             <div>
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t("common.status")}</Label>
               <select
                 id="status"
                 value={form.status}
@@ -265,13 +271,13 @@ export default function AccountFormPage() {
                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                 data-testid="crm-account-status"
               >
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-                <option value="PROSPECT">Prospect</option>
+                <option value="ACTIVE">{t("crm.accounts.status.active")}</option>
+                <option value="INACTIVE">{t("crm.accounts.status.inactive")}</option>
+                <option value="PROSPECT">{t("crm.accounts.status.prospect")}</option>
               </select>
             </div>
             <div>
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{t("common.notes")}</Label>
               <textarea
                 id="notes"
                 value={form.notes}
@@ -285,7 +291,7 @@ export default function AccountFormPage() {
 
         <div className="md:col-span-2 flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={() => navigate(-1)}>
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="submit"
@@ -294,7 +300,11 @@ export default function AccountFormPage() {
             data-testid="crm-account-save"
           >
             <Save className="h-4 w-4" />
-            {isPending ? "Saving..." : isEdit ? "Update Account" : "Create Account"}
+            {isPending
+              ? t("common.saving")
+              : isEdit
+                ? t("crm.accountForm.update")
+                : t("crm.accountForm.create")}
           </Button>
         </div>
       </form>

@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@corely/ui";
 import { customersApi } from "@corely/web-shared/lib/customers-api";
 import { toast } from "sonner";
 
 export default function ContactFormPage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -43,7 +45,7 @@ export default function ContactFormPage() {
       navigate(`/crm/contacts/${contact.id}`);
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Failed to create contact"),
+      toast.error(error instanceof Error ? error.message : t("crm.contactForm.createFailed")),
   });
 
   const updateMutation = useMutation({
@@ -63,7 +65,7 @@ export default function ContactFormPage() {
       navigate(`/crm/contacts/${contact.id}`);
     },
     onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Failed to update contact"),
+      toast.error(error instanceof Error ? error.message : t("crm.contactForm.updateFailed")),
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -74,12 +76,14 @@ export default function ContactFormPage() {
         <Button variant="ghost" size="icon" onClick={() => navigate("/crm/contacts")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-h1 text-foreground">{isEdit ? "Edit Contact" : "New Contact"}</h1>
+        <h1 className="text-h1 text-foreground">
+          {isEdit ? t("crm.contactForm.editTitle") : t("crm.contactForm.newTitle")}
+        </h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Contact Details</CardTitle>
+          <CardTitle>{t("crm.contactForm.detailsTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form
@@ -95,7 +99,7 @@ export default function ContactFormPage() {
             data-testid="crm-contact-form"
           >
             <div>
-              <Label htmlFor="contact-name">Name</Label>
+              <Label htmlFor="contact-name">{t("common.name")}</Label>
               <Input
                 id="contact-name"
                 value={name}
@@ -105,7 +109,7 @@ export default function ContactFormPage() {
               />
             </div>
             <div>
-              <Label htmlFor="contact-email">Email</Label>
+              <Label htmlFor="contact-email">{t("common.email")}</Label>
               <Input
                 id="contact-email"
                 type="email"
@@ -115,7 +119,7 @@ export default function ContactFormPage() {
               />
             </div>
             <div>
-              <Label htmlFor="contact-phone">Phone</Label>
+              <Label htmlFor="contact-phone">{t("common.phone")}</Label>
               <Input
                 id="contact-phone"
                 value={phone}
@@ -130,7 +134,11 @@ export default function ContactFormPage() {
                 disabled={isPending}
                 data-testid="crm-contact-save"
               >
-                {isPending ? "Saving..." : isEdit ? "Update Contact" : "Create Contact"}
+                {isPending
+                  ? t("common.saving")
+                  : isEdit
+                    ? t("crm.contactForm.update")
+                    : t("crm.contactForm.create")}
               </Button>
             </div>
           </form>

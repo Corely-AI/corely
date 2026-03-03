@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { UploadFileOutput } from "@corely/contracts";
 import { Button } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
@@ -53,6 +54,7 @@ type SaveExpensePayload = {
 };
 
 export default function NewExpensePage() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
@@ -72,6 +74,32 @@ export default function NewExpensePage() {
   const mutation = useMutation({
     mutationFn: async ({ values, receiptFiles }: SaveExpensePayload) => {
       const totalAmountCents = Math.round(parseFloat(values.amount || "0") * 100);
+
+      // Build DE deductibility meta from form extras
+      const deductibilityMeta: Record<string, unknown> = {};
+      if (values.participants) {
+        deductibilityMeta.participants = values.participants;
+      }
+      if (values.occasion) {
+        deductibilityMeta.occasion = values.occasion;
+      }
+      if (values.recipient) {
+        deductibilityMeta.recipient = values.recipient;
+      }
+      if (values.businessUsePercent != null) {
+        deductibilityMeta.businessUsePercent = values.businessUsePercent;
+      }
+      if (values.homeOfficeDays != null) {
+        deductibilityMeta.homeOfficeDays = values.homeOfficeDays;
+      }
+      if (values.travelDate) {
+        deductibilityMeta.travelMeta = {
+          date: values.travelDate,
+          absenceHours: values.absenceHours ?? undefined,
+          country: "DE",
+        };
+      }
+
       const payload = {
         merchantName: values.merchantName,
         expenseDate: values.expenseDate,
@@ -85,10 +113,12 @@ export default function NewExpensePage() {
         vatRate: values.vatRate ? Number(values.vatRate) : undefined,
         customFieldValues: customAttributes?.customFieldValues,
         dimensionAssignments: customAttributes?.dimensionAssignments,
+        deductibilityMeta: Object.keys(deductibilityMeta).length ? deductibilityMeta : undefined,
       };
       const savedExpense = await (isEdit && id
         ? expensesApi.updateExpense(id, payload)
         : expensesApi.createExpense(payload));
+
       const failedReceipts: string[] = [];
 
       if (receiptFiles.length > 0) {
@@ -105,18 +135,23 @@ export default function NewExpensePage() {
       return { savedExpense, failedReceipts };
     },
     onSuccess: async ({ savedExpense, failedReceipts }) => {
-      const successMessage = isEdit ? "Expense updated" : "Expense created";
+      const successMessage = isEdit
+        ? t("expenses.notifications.updated")
+        : t("expenses.notifications.created");
       if (failedReceipts.length === 0) {
         toast.success(successMessage);
       } else {
         toast.warning(
-          `${successMessage}, but ${failedReceipts.length} receipt file(s) could not be attached`
+          t("expenses.notifications.receiptAttachPartial", {
+            successMessage,
+            count: failedReceipts.length,
+          })
         );
       }
       await invalidateResourceQueries(queryClient, "expenses", { id: savedExpense.id });
       navigate(`/expenses/${savedExpense.id}`);
     },
-    onError: () => toast.error("Failed to save expense"),
+    onError: () => toast.error(t("expenses.notifications.saveFailed")),
   });
 
   const defaultValues: ExpenseFormValues | undefined = useMemo(() => {
@@ -144,10 +179,12 @@ export default function NewExpensePage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/expenses")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-h1 text-foreground">{isEdit ? "Edit expense" : "Add expense"}</h1>
+          <h1 className="text-h1 text-foreground">
+            {isEdit ? t("expenses.form.editTitle") : t("expenses.addExpense")}
+          </h1>
         </div>
         <Button variant="outline" onClick={() => navigate("/expenses")}>
-          Cancel
+          {t("common.cancel")}
         </Button>
       </div>
 
@@ -167,7 +204,7 @@ export default function NewExpensePage() {
           }
           onCancel={() => navigate("/expenses")}
           isSubmitting={mutation.isPending}
-          submitLabel={isEdit ? "Save changes" : "Create expense"}
+          submitLabel={isEdit ? t("common.saveChanges") : t("expenses.form.create")}
         />
       )}
 

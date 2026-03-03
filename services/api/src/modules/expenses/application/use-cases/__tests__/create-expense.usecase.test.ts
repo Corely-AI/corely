@@ -21,6 +21,7 @@ let templateService: any;
 let prisma: any;
 let dimensionsWritePort: any;
 let customFieldsWritePort: any;
+let giftThresholdQuery: any;
 
 beforeEach(() => {
   repo = new FakeExpenseRepository();
@@ -70,6 +71,10 @@ beforeEach(() => {
     deleteEntityValues: async () => {},
   };
 
+  giftThresholdQuery = {
+    sumGiftsByRecipientForYear: async () => 0,
+  };
+
   useCase = new CreateExpenseUseCase(
     repo,
     outbox,
@@ -83,7 +88,8 @@ beforeEach(() => {
     customFieldsWritePort,
     workspaceRepo,
     templateService,
-    prisma
+    prisma,
+    giftThresholdQuery
   );
 });
 

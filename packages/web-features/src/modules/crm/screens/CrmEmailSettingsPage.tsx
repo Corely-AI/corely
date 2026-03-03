@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle2, Loader2, Mail, Plug } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Button,
   Card,
@@ -29,6 +30,7 @@ const readConfigString = (config: Record<string, unknown>, key: string): string 
 };
 
 export default function CrmEmailSettingsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { activeWorkspaceId, isLoading: isWorkspaceLoading } = useWorkspace();
@@ -81,17 +83,17 @@ export default function CrmEmailSettingsPage() {
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!activeWorkspaceId) {
-        throw new Error("Select a workspace before saving email settings.");
+        throw new Error(t("crm.emailSettings.errors.selectWorkspace"));
       }
 
-      const normalizedDisplayName = displayName.trim() || "CRM Resend";
+      const normalizedDisplayName = displayName.trim() || t("crm.emailSettings.defaultDisplayName");
       const normalizedFrom = fromAddress.trim() || DEFAULT_FROM_ADDRESS;
       const normalizedReplyTo = replyTo.trim() || undefined;
       const normalizedApiKey = apiKey.trim();
 
       if (!activeConnection) {
         if (!normalizedApiKey) {
-          throw new Error("Resend API key is required for the first setup.");
+          throw new Error(t("crm.emailSettings.errors.apiKeyRequired"));
         }
 
         return integrationsApi.createConnection({
@@ -120,32 +122,38 @@ export default function CrmEmailSettingsPage() {
     },
     onSuccess: async () => {
       setApiKey("");
-      toast.success("CRM email settings saved");
+      toast.success(t("crm.emailSettings.saved"));
       await queryClient.invalidateQueries({
         queryKey: ["integration-connections", "resend", activeWorkspaceId],
       });
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to save settings");
+      toast.error(
+        error instanceof Error ? error.message : t("crm.emailSettings.errors.saveFailed")
+      );
     },
   });
 
   const testMutation = useMutation({
     mutationFn: async () => {
       if (!activeConnection) {
-        throw new Error("Save a Resend connection first.");
+        throw new Error(t("crm.emailSettings.errors.saveConnectionFirst"));
       }
       return integrationsApi.testConnection(activeConnection.id);
     },
     onSuccess: (result) => {
       if (result.ok) {
-        toast.success("Resend connection is valid");
+        toast.success(t("crm.emailSettings.connectionValid"));
         return;
       }
-      toast.error(result.detail ?? result.code ?? "Connection test failed");
+      toast.error(
+        result.detail ?? result.code ?? t("crm.emailSettings.errors.connectionTestFailed")
+      );
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Connection test failed");
+      toast.error(
+        error instanceof Error ? error.message : t("crm.emailSettings.errors.connectionTestFailed")
+      );
     },
   });
 
@@ -160,10 +168,8 @@ export default function CrmEmailSettingsPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-h1 text-foreground">CRM Email Settings</h1>
-          <p className="text-sm text-muted-foreground">
-            Configure Resend for automated sequence emails and inbound replies.
-          </p>
+          <h1 className="text-h1 text-foreground">{t("crm.emailSettings.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("crm.emailSettings.subtitle")}</p>
         </div>
       </div>
 
@@ -171,27 +177,26 @@ export default function CrmEmailSettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            Resend Connection
+            {t("crm.emailSettings.connectionTitle")}
           </CardTitle>
           <CardDescription>
-            Outbound messages use the configured sender. Sequence emails default to{" "}
-            <code>{DEFAULT_FROM_ADDRESS}</code>.
+            {t("crm.emailSettings.connectionDescription")} <code>{DEFAULT_FROM_ADDRESS}</code>.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="crm-resend-display-name">Connection name</Label>
+            <Label htmlFor="crm-resend-display-name">{t("crm.emailSettings.connectionName")}</Label>
             <Input
               id="crm-resend-display-name"
               value={displayName}
               onChange={(event) => setDisplayName(event.target.value)}
-              placeholder="CRM Resend"
+              placeholder={t("crm.emailSettings.defaultDisplayName")}
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="crm-resend-from">From address</Label>
+              <Label htmlFor="crm-resend-from">{t("crm.emailSettings.fromAddress")}</Label>
               <Input
                 id="crm-resend-from"
                 value={fromAddress}
@@ -200,7 +205,7 @@ export default function CrmEmailSettingsPage() {
               />
             </div>
             <div>
-              <Label htmlFor="crm-resend-reply-to">Reply-to address</Label>
+              <Label htmlFor="crm-resend-reply-to">{t("crm.emailSettings.replyToAddress")}</Label>
               <Input
                 id="crm-resend-reply-to"
                 value={replyTo}
@@ -212,14 +217,15 @@ export default function CrmEmailSettingsPage() {
 
           <div>
             <Label htmlFor="crm-resend-api-key">
-              API key {activeConnection ? "(leave blank to keep current key)" : ""}
+              {t("crm.emailSettings.apiKeyLabel")}{" "}
+              {activeConnection ? `(${t("crm.emailSettings.apiKeyLeaveBlank")})` : ""}
             </Label>
             <Input
               id="crm-resend-api-key"
               type="password"
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
-              placeholder="re_..."
+              placeholder={t("crm.emailSettings.apiKeyPlaceholder")}
             />
           </div>
 
@@ -234,7 +240,7 @@ export default function CrmEmailSettingsPage() {
               ) : (
                 <CheckCircle2 className="h-4 w-4" />
               )}
-              Save
+              {t("common.save")}
             </Button>
             <Button
               variant="outline"
@@ -252,48 +258,47 @@ export default function CrmEmailSettingsPage() {
               ) : (
                 <Plug className="h-4 w-4" />
               )}
-              Test connection
+              {t("crm.emailSettings.testConnection")}
             </Button>
           </div>
 
           {!activeWorkspaceId && (
-            <p className="text-sm text-amber-600">No active workspace selected.</p>
+            <p className="text-sm text-amber-600">{t("crm.emailSettings.noWorkspace")}</p>
           )}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Inbound Webhook</CardTitle>
-          <CardDescription>Configure this URL in Resend inbound webhook settings.</CardDescription>
+          <CardTitle>{t("crm.emailSettings.inboundWebhookTitle")}</CardTitle>
+          <CardDescription>{t("crm.emailSettings.inboundWebhookDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           <code className="block text-xs rounded bg-muted px-3 py-2 break-all">{webhookUrl}</code>
           <p className="text-xs text-muted-foreground">
-            Tenant is resolved automatically. Optional fallback: add{" "}
-            <code>?tenantId=&lt;tenant-id&gt;</code> if needed.
+            {t("crm.emailSettings.tenantResolution")} <code>?tenantId=&lt;tenant-id&gt;</code> if
+            needed.
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Resend Setup Guide</CardTitle>
-          <CardDescription>Use these exact settings for CRM reply tracking.</CardDescription>
+          <CardTitle>{t("crm.emailSettings.setupGuideTitle")}</CardTitle>
+          <CardDescription>{t("crm.emailSettings.setupGuideDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <ol className="list-decimal pl-5 space-y-1">
-            <li>Open Resend Dashboard → Webhooks → Add webhook.</li>
-            <li>Set Endpoint URL to the value above.</li>
+            <li>{t("crm.emailSettings.guide.step1")}</li>
+            <li>{t("crm.emailSettings.guide.step2")}</li>
             <li>
-              In Event types, select only <code>email.received</code>.
+              {t("crm.emailSettings.guide.step3")} <code>email.received</code>.
             </li>
-            <li>Do not select contact/domain events for this CRM webhook.</li>
+            <li>{t("crm.emailSettings.guide.step4")}</li>
           </ol>
           <p className="text-xs text-muted-foreground">
-            Localhost note: Resend cannot call <code>http://localhost</code> directly. For local
-            testing, expose your API with a public tunnel (for example ngrok or Cloudflare Tunnel)
-            and use that HTTPS URL as webhook endpoint.
+            {t("crm.emailSettings.guide.localhostNotePrefix")} <code>http://localhost</code>{" "}
+            {t("crm.emailSettings.guide.localhostNoteSuffix")}
           </p>
         </CardContent>
       </Card>

@@ -29,6 +29,10 @@ import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
 import { useWorkspaceConfig } from "@corely/web-shared/shared/workspaces/workspace-config-provider";
+import {
+  resolveNavigationGroupLabelKey,
+  resolveNavigationItemLabelKey,
+} from "@corely/web-shared/shared/workspaces/navigation-labels";
 import { WorkspaceTypeBadge } from "@corely/web-shared/shared/workspaces/WorkspaceTypeBadge";
 import { useCanManageTenants, useCanReadTenants } from "@corely/web-shared/shared/lib/permissions";
 import { getDocsBaseUrl } from "@corely/web-shared/shared/lib/docs-url";
@@ -198,13 +202,22 @@ export function AppSidebar({
                 <div key={group.id} className="space-y-1">
                   {!collapsed && (
                     <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {t(group.labelKey ?? group.defaultLabel)}
+                      {(() => {
+                        const key = resolveNavigationGroupLabelKey(group);
+                        return key
+                          ? t(key, { defaultValue: group.defaultLabel })
+                          : group.defaultLabel;
+                      })()}
                     </div>
                   )}
                   {group.items.map((item) => {
                     const Icon = getIconByName(item.icon);
                     const openInNewTab =
                       item.id === "booking-public-page" || item.route === "/booking/public-page";
+                    const itemLabelKey = resolveNavigationItemLabelKey(item);
+                    const itemLabel = itemLabelKey
+                      ? t(itemLabelKey, { defaultValue: item.label })
+                      : item.label;
                     return (
                       <NavLink
                         key={item.id}
@@ -223,7 +236,7 @@ export function AppSidebar({
                         }
                       >
                         <Icon className="h-5 w-5 shrink-0" />
-                        {!collapsed && <span>{t(item.labelKey ?? item.label)}</span>}
+                        {!collapsed && <span>{itemLabel}</span>}
                         {!collapsed && item.pinned && (
                           <span className="ml-auto text-xs text-muted-foreground">📌</span>
                         )}

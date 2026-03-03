@@ -790,6 +790,137 @@
       "hardware": "Phần cứng",
       "phone_internet": "Điện thoại/Internet",
       "other": "Khác"
+    },
+    "notifications": {
+      "created": "Đã tạo chi phí",
+      "updated": "Đã cập nhật chi phí",
+      "deleted": "Đã xóa chi phí",
+      "deleteFailed": "Không thể xóa chi phí",
+      "saveFailed": "Không thể lưu chi phí",
+      "loadFailed": "Không thể tải danh sách chi phí",
+      "receiptAttachPartial": "{{successMessage}}, nhưng {{count}} tệp biên lai không thể đính kèm"
+    },
+    "list": {
+      "subtitle": "Theo dõi và quản lý các khoản chi",
+      "noExpensesDescription": "Tạo chi phí đầu tiên để bắt đầu theo dõi.",
+      "selectedCount": "Đã chọn {{count}}",
+      "deleteSelected": "Xóa mục đã chọn",
+      "deleteSelectedTitle": "Xóa các chi phí đã chọn",
+      "deleteSelectedDescription": "Các chi phí đã chọn sẽ được lưu trữ.",
+      "selectAll": "Chọn tất cả",
+      "selectExpense": "Chọn chi phí {{id}}",
+      "deductiblePercent": "% được khấu trừ",
+      "deleteExpenseTitle": "Xóa chi phí",
+      "deleteExpenseDescription": "Chi phí sẽ được lưu trữ và gỡ khỏi danh sách.",
+      "pageInfo": "Trang {{page}} / {{totalPages}}",
+      "dimensionLabel": "Chiều dữ liệu",
+      "customLabel": "Tùy chỉnh",
+      "ruleKind": {
+        "perDiem": "phụ cấp",
+        "mixedUse": "dùng chung",
+        "gift": "quà tặng"
+      },
+      "sort": {
+        "dateNewest": "Ngày (Mới nhất)",
+        "dateOldest": "Ngày (Cũ nhất)",
+        "amountHighLow": "Số tiền (Cao-Thấp)",
+        "amountLowHigh": "Số tiền (Thấp-Cao)",
+        "createdNewest": "Tạo lúc (Mới nhất)"
+      }
+    },
+    "detail": {
+      "overview": "Tổng quan",
+      "taxDeductibility": "Khấu trừ thuế (DE)",
+      "deductiblePercentLabel": "Khấu trừ {{percent}}%",
+      "needsMoreInfo": "Cần thêm thông tin",
+      "deductible": "Được khấu trừ",
+      "nonDeductible": "Không được khấu trừ",
+      "fillRequiredFields": "Điền các trường bắt buộc khi chỉnh sửa chi phí để tính mức khấu trừ.",
+      "notComputed": "Chưa tính mức khấu trừ. Hãy sửa chi phí để kích hoạt tính toán.",
+      "attachReceipts": "Đính kèm biên lai để xem tại đây.",
+      "auditTrail": "Lịch sử thay đổi sẽ hiển thị tại đây khi sẵn sàng.",
+      "backToExpenses": "Quay lại danh sách chi phí",
+      "notFound": "Không tìm thấy chi phí.",
+      "noNotes": "Chưa có ghi chú.",
+      "transitionSoon": "Chuyển sang {{to}} sẽ sớm có",
+      "actionSoon": "Thao tác {{action}} sẽ sớm có",
+      "ruleKind": {
+        "percent": "Tỷ lệ cố định",
+        "giftThreshold": "Ngưỡng quà tặng",
+        "perDiem": "Phụ cấp",
+        "mixedUse": "Dùng chung"
+      }
+    },
+    "form": {
+      "editTitle": "Sửa chi phí",
+      "create": "Tạo chi phí",
+      "selectCategory": "Chọn danh mục",
+      "selectCategoryHint": "Chọn danh mục để xem quy tắc khấu trừ.",
+      "merchantPlaceholder": "ví dụ: Restaurant Zum Hirsch",
+      "taxDeductibilityTitle": "Khấu trừ thuế (DE)",
+      "participants": "Người tham gia",
+      "participantsPlaceholder": "ví dụ: Max Muller, Julia Schneider",
+      "participantsHint": "Bắt buộc cho khấu trừ chi phí tiếp khách (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "Mục đích công việc",
+      "businessOccasionPlaceholder": "ví dụ: họp khởi động Q1, đàm phán đối tác",
+      "clientMealsHint": "Khấu trừ thuế thu nhập 70%. Khấu trừ VAT có thể khác; vui lòng hỏi tư vấn thuế.",
+      "giftRecipient": "Người nhận quà",
+      "giftRecipientPlaceholder": "ví dụ: Acme Corp / Hans Muller",
+      "giftRecipientHint": "Quà tặng cho cùng một người nhận vượt EUR 50/năm sẽ có mức khấu trừ 0% (§4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "Tỷ lệ dùng cho công việc %",
+      "businessUsePercentPlaceholder": "ví dụ: 60",
+      "businessUsePercentHint": "% dùng cho công việc",
+      "travelDetails": "Chi tiết công tác (phụ cấp - DE 2026)",
+      "travelDate": "Ngày công tác",
+      "absenceHours": "Số giờ vắng mặt",
+      "absenceHoursPlaceholder": "ví dụ: 10",
+      "travelHint": ">=8h vắng mặt: khấu trừ EUR 14 - 24h: khấu trừ EUR 28 (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Số ngày làm việc tại nhà",
+      "homeOfficeDaysPlaceholder": "ví dụ: 30",
+      "days": "ngày",
+      "homeOfficeHint": "EUR 6/ngày - tối đa EUR 1.260/năm (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "Danh mục chi phí này có mức",
+      "nonDeductibleWarningStrong": "khấu trừ thuế thu nhập 0%",
+      "nonDeductibleWarningSuffix": "theo luật thuế Đức.",
+      "receiptOptional": "Biên lai (tùy chọn)",
+      "addReceiptFiles": "Thêm tệp biên lai",
+      "uploadReceiptHint": "Tải ảnh hoặc PDF biên lai ngay bây giờ. Chúng sẽ được đính kèm khi bạn lưu.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: chỉ cho phép ảnh và PDF",
+        "fileTooLarge": "{{name}}: vượt quá giới hạn 10MB"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "Khấu trừ {{percent}}%",
+        "mixedUse": "Khấu trừ {{percent}}% (dùng chung)",
+        "enterBusinessUse": "Nhập % dùng cho công việc",
+        "perDiemServer": "Phụ cấp (tính ở server)",
+        "homeOfficeRate": "Mức cố định EUR 6/ngày",
+        "giftThreshold": "Tối đa EUR 50/người nhận/năm - cần người nhận"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Tiếp khách - 70%",
+        "MEALS_TEAM_EMPLOYEE": "Ăn uống nhân viên - 100%",
+        "GIFTS_BUSINESS_PARTNER": "Quà tặng đối tác - tối đa EUR 50",
+        "GIFTS_PROMO_STREUARTIKEL": "Quà tặng khuyến mãi (<=EUR 10) - 100%",
+        "FINES_PENALTIES": "Phạt và chế tài - 0%",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Đồng phục/đồ bảo hộ - 100%",
+        "CLOTHING_CIVILIAN": "Trang phục dân dụng - 0%",
+        "TRAVEL_MEALS_PER_DIEM": "Phụ cấp bữa ăn công tác (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Mức cố định làm việc tại nhà (EUR 6/ngày)",
+        "PHONE_INTERNET": "Điện thoại / Internet (dùng chung)",
+        "CAR": "Ô tô (dùng chung)",
+        "HOME_INTERNET": "Internet tại nhà (dùng chung)",
+        "office_supplies": "Văn phòng phẩm - 100%",
+        "software": "Phần mềm - 100%",
+        "travel": "Du lịch - 100%",
+        "meals": "Ăn uống - 70%",
+        "home_office": "Văn phòng tại nhà - 100%",
+        "education": "Đào tạo - 100%",
+        "hardware": "Phần cứng - 100%",
+        "phone_internet": "Điện thoại/Internet (dùng chung)",
+        "other": "Khác"
+      }
     }
   },
   "invoices": {
@@ -1712,6 +1843,113 @@
       "messageLogged": "Đã ghi nhận tin nhắn",
       "createDraftFailed": "Không thể tạo bản nháp",
       "logFailed": "Không thể ghi nhận tin nhắn"
+    },
+    "accounts": {
+      "title": "Tài khoản",
+      "new": "Tài khoản mới",
+      "searchPlaceholder": "Tìm tài khoản...",
+      "emptyTitle": "Không tìm thấy tài khoản",
+      "emptyDescription": "Tạo tài khoản mới để bắt đầu.",
+      "noContactInfo": "Không có thông tin liên hệ",
+      "status": {
+        "active": "Đang hoạt động",
+        "inactive": "Không hoạt động",
+        "prospect": "Tiềm năng"
+      },
+      "type": {
+        "customer": "Khách hàng",
+        "vendor": "Nhà cung cấp",
+        "partner": "Đối tác",
+        "other": "Khác"
+      }
+    },
+    "accountForm": {
+      "newTitle": "Tài khoản mới",
+      "editTitle": "Sửa tài khoản",
+      "identityTitle": "Thông tin định danh",
+      "identityDescription": "Thông tin liên hệ được lưu trong bản ghi Party",
+      "accountNameRequired": "Tên tài khoản *",
+      "websitePlaceholder": "https://...",
+      "industry": "Ngành",
+      "profileTitle": "Hồ sơ CRM",
+      "profileDescription": "Các trường dành cho bán hàng",
+      "accountType": "Loại tài khoản",
+      "create": "Tạo tài khoản",
+      "update": "Cập nhật tài khoản"
+    },
+    "contactForm": {
+      "newTitle": "Liên hệ mới",
+      "editTitle": "Sửa liên hệ",
+      "detailsTitle": "Chi tiết liên hệ",
+      "create": "Tạo liên hệ",
+      "update": "Cập nhật liên hệ",
+      "createFailed": "Không thể tạo liên hệ",
+      "updateFailed": "Không thể cập nhật liên hệ"
+    },
+    "sequences": {
+      "new": "Chuỗi mới",
+      "setupTitle": "Thiết lập chuỗi",
+      "applyPreset": "Áp dụng preset Nails 3 bước",
+      "created": "Đã tạo chuỗi",
+      "createFailed": "Không thể tạo chuỗi",
+      "nameRequired": "Tên chuỗi là bắt buộc",
+      "addAtLeastOneStep": "Thêm ít nhất một bước",
+      "stepTitle": "Bước {{step}}",
+      "removeStep": "Xóa bước {{step}}",
+      "stepType": "Loại bước",
+      "dayDelay": "Trễ theo ngày",
+      "stepSubject": "Tiêu đề bước",
+      "stepBody": "Nội dung bước",
+      "addStep": "Thêm bước",
+      "create": "Tạo chuỗi",
+      "creating": "Đang tạo...",
+      "stepTypes": {
+        "task": "Nhiệm vụ",
+        "call": "Cuộc gọi",
+        "emailManual": "Email thủ công",
+        "emailAuto": "Email tự động"
+      },
+      "nailsPreset": {
+        "name": "Lead to Won - Nails",
+        "description": "Email follow-up tự động ngày 1/3/7 cho lead Nails."
+      }
+    },
+    "emailSettings": {
+      "title": "Cài đặt Email CRM",
+      "subtitle": "Cấu hình Resend cho email chuỗi tự động và phản hồi đến.",
+      "defaultDisplayName": "CRM Resend",
+      "saved": "Đã lưu cài đặt email CRM",
+      "connectionValid": "Kết nối Resend hợp lệ",
+      "connectionTitle": "Kết nối Resend",
+      "connectionDescription": "Email gửi đi dùng địa chỉ người gửi đã cấu hình. Email chuỗi mặc định dùng",
+      "connectionName": "Tên kết nối",
+      "fromAddress": "Địa chỉ gửi",
+      "replyToAddress": "Địa chỉ trả lời",
+      "apiKeyLabel": "API key",
+      "apiKeyLeaveBlank": "để trống để giữ key hiện tại",
+      "apiKeyPlaceholder": "re_...",
+      "testConnection": "Kiểm tra kết nối",
+      "noWorkspace": "Chưa chọn workspace đang hoạt động.",
+      "inboundWebhookTitle": "Webhook Inbound",
+      "inboundWebhookDescription": "Cấu hình URL này trong phần inbound webhook của Resend.",
+      "tenantResolution": "Tenant được nhận diện tự động. Tùy chọn fallback: thêm",
+      "setupGuideTitle": "Hướng dẫn thiết lập Resend",
+      "setupGuideDescription": "Dùng đúng các cài đặt này để theo dõi phản hồi CRM.",
+      "guide": {
+        "step1": "Mở Resend Dashboard -> Webhooks -> Add webhook.",
+        "step2": "Đặt Endpoint URL thành giá trị ở trên.",
+        "step3": "Trong Event types, chỉ chọn",
+        "step4": "Không chọn contact/domain events cho webhook CRM này.",
+        "localhostNotePrefix": "Lưu ý localhost: Resend không thể gọi trực tiếp",
+        "localhostNoteSuffix": ". Khi test local, hãy public API bằng tunnel và dùng URL HTTPS đó làm webhook endpoint."
+      },
+      "errors": {
+        "selectWorkspace": "Hãy chọn workspace trước khi lưu cài đặt email.",
+        "apiKeyRequired": "Cần API key Resend cho lần thiết lập đầu tiên.",
+        "saveFailed": "Không thể lưu cài đặt",
+        "saveConnectionFirst": "Hãy lưu kết nối Resend trước.",
+        "connectionTestFailed": "Kiểm tra kết nối thất bại"
+      }
     }
   },
   "classes": {

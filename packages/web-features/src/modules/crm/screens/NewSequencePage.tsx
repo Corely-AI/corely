@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Save, Sparkles, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Button,
   Card,
@@ -58,6 +59,7 @@ const NAILS_PRESET_STEPS: EditableStep[] = [
 ];
 
 export default function NewSequencePage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
@@ -68,23 +70,23 @@ export default function NewSequencePage() {
     mutationFn: (input: CreateSequenceInput) => crmApi.createSequence(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["sequences"] });
-      toast.success("Sequence created");
+      toast.success(t("crm.sequences.created"));
       navigate("/crm/sequences");
     },
     onError: (error) => {
-      toast.error(error instanceof Error ? error.message : "Failed to create sequence");
+      toast.error(error instanceof Error ? error.message : t("crm.sequences.createFailed"));
     },
   });
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error("Sequence name is required");
+      toast.error(t("crm.sequences.nameRequired"));
       return;
     }
 
     if (steps.length === 0) {
-      toast.error("Add at least one step");
+      toast.error(t("crm.sequences.addAtLeastOneStep"));
       return;
     }
 
@@ -123,10 +125,8 @@ export default function NewSequencePage() {
   };
 
   const applyNailsPreset = () => {
-    setName((prev) => prev || "Lead to Won - Nails");
-    setDescription(
-      (prev) => prev || "Automated day 1/day 3/day 7 email follow-up for nails leads."
-    );
+    setName((prev) => prev || t("crm.sequences.nailsPreset.name"));
+    setDescription((prev) => prev || t("crm.sequences.nailsPreset.description"));
     setSteps(NAILS_PRESET_STEPS.map((step) => ({ ...step, id: crypto.randomUUID() })));
   };
 
@@ -139,13 +139,13 @@ export default function NewSequencePage() {
         <Button variant="ghost" size="icon" onClick={() => navigate("/crm/sequences")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-h1 text-foreground">New Sequence</h1>
+        <h1 className="text-h1 text-foreground">{t("crm.sequences.new")}</h1>
       </div>
 
       <Card>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <CardTitle>Sequence Setup</CardTitle>
+            <CardTitle>{t("crm.sequences.setupTitle")}</CardTitle>
             <Button
               type="button"
               variant="outline"
@@ -153,14 +153,14 @@ export default function NewSequencePage() {
               disabled={createMutation.isPending || isPresetDisabled}
             >
               <Sparkles className="h-4 w-4" />
-              Apply Nails 3-step preset
+              {t("crm.sequences.applyPreset")}
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit} data-testid="crm-sequence-form">
             <div>
-              <Label htmlFor="sequence-name">Name</Label>
+              <Label htmlFor="sequence-name">{t("common.name")}</Label>
               <Input
                 id="sequence-name"
                 value={name}
@@ -170,7 +170,7 @@ export default function NewSequencePage() {
               />
             </div>
             <div>
-              <Label htmlFor="sequence-description">Description</Label>
+              <Label htmlFor="sequence-description">{t("common.description")}</Label>
               <Input
                 id="sequence-description"
                 value={description}
@@ -184,14 +184,16 @@ export default function NewSequencePage() {
                 <Card key={step.id} className="border-dashed">
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-base">Step {index + 1}</CardTitle>
+                      <CardTitle className="text-base">
+                        {t("crm.sequences.stepTitle", { step: index + 1 })}
+                      </CardTitle>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon"
                         onClick={() => removeStep(step.id)}
                         disabled={steps.length === 1}
-                        aria-label={`Remove step ${index + 1}`}
+                        aria-label={t("crm.sequences.removeStep", { step: index + 1 })}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -200,7 +202,9 @@ export default function NewSequencePage() {
                   <CardContent className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor={`sequence-step-type-${step.id}`}>Step Type</Label>
+                        <Label htmlFor={`sequence-step-type-${step.id}`}>
+                          {t("crm.sequences.stepType")}
+                        </Label>
                         <select
                           id={`sequence-step-type-${step.id}`}
                           value={step.type}
@@ -211,14 +215,20 @@ export default function NewSequencePage() {
                           }
                           className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm"
                         >
-                          <option value="TASK">Task</option>
-                          <option value="CALL">Call</option>
-                          <option value="EMAIL_MANUAL">Email Manual</option>
-                          <option value="EMAIL_AUTO">Email Auto</option>
+                          <option value="TASK">{t("crm.sequences.stepTypes.task")}</option>
+                          <option value="CALL">{t("crm.sequences.stepTypes.call")}</option>
+                          <option value="EMAIL_MANUAL">
+                            {t("crm.sequences.stepTypes.emailManual")}
+                          </option>
+                          <option value="EMAIL_AUTO">
+                            {t("crm.sequences.stepTypes.emailAuto")}
+                          </option>
                         </select>
                       </div>
                       <div>
-                        <Label htmlFor={`sequence-day-delay-${step.id}`}>Day Delay</Label>
+                        <Label htmlFor={`sequence-day-delay-${step.id}`}>
+                          {t("crm.sequences.dayDelay")}
+                        </Label>
                         <Input
                           id={`sequence-day-delay-${step.id}`}
                           type="number"
@@ -231,7 +241,9 @@ export default function NewSequencePage() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor={`sequence-step-subject-${step.id}`}>Step Subject</Label>
+                      <Label htmlFor={`sequence-step-subject-${step.id}`}>
+                        {t("crm.sequences.stepSubject")}
+                      </Label>
                       <Input
                         id={`sequence-step-subject-${step.id}`}
                         value={step.templateSubject}
@@ -241,7 +253,9 @@ export default function NewSequencePage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`sequence-step-body-${step.id}`}>Step Body</Label>
+                      <Label htmlFor={`sequence-step-body-${step.id}`}>
+                        {t("crm.sequences.stepBody")}
+                      </Label>
                       <Textarea
                         id={`sequence-step-body-${step.id}`}
                         rows={4}
@@ -258,7 +272,7 @@ export default function NewSequencePage() {
 
             <Button type="button" variant="outline" onClick={addStep}>
               <Plus className="h-4 w-4" />
-              Add Step
+              {t("crm.sequences.addStep")}
             </Button>
 
             <div className="flex justify-end pt-2">
@@ -269,7 +283,7 @@ export default function NewSequencePage() {
                 data-testid="crm-sequence-save"
               >
                 <Save className="h-4 w-4" />
-                {createMutation.isPending ? "Creating..." : "Create Sequence"}
+                {createMutation.isPending ? t("crm.sequences.creating") : t("crm.sequences.create")}
               </Button>
             </div>
           </form>

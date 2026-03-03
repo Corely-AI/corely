@@ -789,6 +789,137 @@
       "hardware": "Hardware",
       "phone_internet": "Telefon/Internet",
       "other": "Sonstiges"
+    },
+    "notifications": {
+      "created": "Ausgabe erstellt",
+      "updated": "Ausgabe aktualisiert",
+      "deleted": "Ausgabe gelöscht",
+      "deleteFailed": "Ausgabe konnte nicht gelöscht werden",
+      "saveFailed": "Ausgabe konnte nicht gespeichert werden",
+      "loadFailed": "Ausgaben konnten nicht geladen werden",
+      "receiptAttachPartial": "{{successMessage}}, aber {{count}} Belegdatei(en) konnten nicht angehängt werden"
+    },
+    "list": {
+      "subtitle": "Verfolgen und verwalten Sie Ihre Ausgaben",
+      "noExpensesDescription": "Erstellen Sie Ihre erste Ausgabe, um Ausgaben zu verfolgen.",
+      "selectedCount": "{{count}} ausgewählt",
+      "deleteSelected": "Ausgewählte löschen",
+      "deleteSelectedTitle": "Ausgewählte Ausgaben löschen",
+      "deleteSelectedDescription": "Dadurch werden die ausgewählten Ausgaben archiviert.",
+      "selectAll": "Alle auswählen",
+      "selectExpense": "Ausgabe {{id}} auswählen",
+      "deductiblePercent": "Abzugsfähig %",
+      "deleteExpenseTitle": "Ausgabe löschen",
+      "deleteExpenseDescription": "Dadurch wird die Ausgabe archiviert und aus der Liste entfernt.",
+      "pageInfo": "Seite {{page}} von {{totalPages}}",
+      "dimensionLabel": "Dimension",
+      "customLabel": "Benutzerdefiniert",
+      "ruleKind": {
+        "perDiem": "Pauschale",
+        "mixedUse": "Misch-Nutzung",
+        "gift": "Geschenk"
+      },
+      "sort": {
+        "dateNewest": "Datum (Neueste)",
+        "dateOldest": "Datum (Älteste)",
+        "amountHighLow": "Betrag (Hoch-Niedrig)",
+        "amountLowHigh": "Betrag (Niedrig-Hoch)",
+        "createdNewest": "Erstellt (Neueste)"
+      }
+    },
+    "detail": {
+      "overview": "Übersicht",
+      "taxDeductibility": "Steuerliche Abzugsfähigkeit (DE)",
+      "deductiblePercentLabel": "{{percent}}% abzugsfähig",
+      "needsMoreInfo": "Weitere Angaben erforderlich",
+      "deductible": "Abzugsfähig",
+      "nonDeductible": "Nicht abzugsfähig",
+      "fillRequiredFields": "Füllen Sie beim Bearbeiten dieser Ausgabe die erforderlichen Felder aus, um die Abzugsfähigkeit zu berechnen.",
+      "notComputed": "Abzugsfähigkeit noch nicht berechnet. Bearbeiten Sie diese Ausgabe, um die Berechnung auszulösen.",
+      "attachReceipts": "Hängen Sie Belege an, um sie hier zu sehen.",
+      "auditTrail": "Das Audit-Log wird hier angezeigt, sobald es verfügbar ist.",
+      "backToExpenses": "Zurück zu Ausgaben",
+      "notFound": "Ausgabe nicht gefunden.",
+      "noNotes": "Keine Notizen hinzugefügt.",
+      "transitionSoon": "Übergang zu {{to}} kommt bald",
+      "actionSoon": "Aktion {{action}} kommt bald",
+      "ruleKind": {
+        "percent": "Fester %",
+        "giftThreshold": "Geschenkgrenze",
+        "perDiem": "Pauschale",
+        "mixedUse": "Misch-Nutzung"
+      }
+    },
+    "form": {
+      "editTitle": "Ausgabe bearbeiten",
+      "create": "Ausgabe erstellen",
+      "selectCategory": "Kategorie auswählen",
+      "selectCategoryHint": "Wählen Sie eine Kategorie, um die Regeln zur Abzugsfähigkeit zu sehen.",
+      "merchantPlaceholder": "z.B. Restaurant Zum Hirsch",
+      "taxDeductibilityTitle": "Steuerliche Abzugsfähigkeit (DE)",
+      "participants": "Teilnehmer",
+      "participantsPlaceholder": "z.B. Max Muller, Julia Schneider",
+      "participantsHint": "Erforderlich für Bewirtungsabzug (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "Geschäftlicher Anlass",
+      "businessOccasionPlaceholder": "z.B. Q1 Projekt Kick-off, Partnerverhandlung",
+      "clientMealsHint": "70% einkommensteuerlich abzugsfähig. Vorsteuerabzug kann abweichen; bitte Steuerberater fragen.",
+      "giftRecipient": "Geschenkempfänger",
+      "giftRecipientPlaceholder": "z.B. Acme Corp / Hans Muller",
+      "giftRecipientHint": "Geschenke an denselben Empfänger über EUR 50 pro Kalenderjahr sind 0% abzugsfähig (§4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "Geschäftliche Nutzung %",
+      "businessUsePercentPlaceholder": "z.B. 60",
+      "businessUsePercentHint": "% geschäftliche Nutzung",
+      "travelDetails": "Reisedetails (Pauschale - DE 2026)",
+      "travelDate": "Reisedatum",
+      "absenceHours": "Abwesenheitsstunden",
+      "absenceHoursPlaceholder": "z.B. 10",
+      "travelHint": ">=8h Abwesenheit: EUR 14 abzugsfähig - 24h: EUR 28 abzugsfähig (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Homeoffice-Tage",
+      "homeOfficeDaysPlaceholder": "z.B. 30",
+      "days": "Tage",
+      "homeOfficeHint": "EUR 6/Tag - max. EUR 1.260/Jahr (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "Diese Ausgabenkategorie ist",
+      "nonDeductibleWarningStrong": "0% einkommensteuerlich abzugsfähig",
+      "nonDeductibleWarningSuffix": "nach deutschem Steuerrecht.",
+      "receiptOptional": "Beleg (optional)",
+      "addReceiptFiles": "Belegdateien hinzufügen",
+      "uploadReceiptHint": "Laden Sie jetzt Bild- oder PDF-Belege hoch. Sie werden beim Speichern angehängt.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: nur Bild und PDF sind erlaubt",
+        "fileTooLarge": "{{name}}: überschreitet 10MB Limit"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "{{percent}}% abzugsfähig",
+        "mixedUse": "{{percent}}% abzugsfähig (Misch-Nutzung)",
+        "enterBusinessUse": "Geschäftliche Nutzung % eingeben",
+        "perDiemServer": "Pauschale (serverseitig berechnet)",
+        "homeOfficeRate": "EUR 6/Tag Pauschale",
+        "giftThreshold": "Bis EUR 50/Empfänger/Jahr - Empfänger erforderlich"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Kundenbewirtung - 70%",
+        "MEALS_TEAM_EMPLOYEE": "Team-/Mitarbeiteressen - 100%",
+        "GIFTS_BUSINESS_PARTNER": "Geschäftsgeschenke - bis EUR 50",
+        "GIFTS_PROMO_STREUARTIKEL": "Werbegeschenke (<=EUR 10) - 100%",
+        "FINES_PENALTIES": "Bußgelder & Strafen - 0%",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Schutz-/Arbeitskleidung - 100%",
+        "CLOTHING_CIVILIAN": "Bürgerliche Kleidung - 0%",
+        "TRAVEL_MEALS_PER_DIEM": "Verpflegungspauschale Reise (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Homeoffice-Pauschale (EUR 6/Tag)",
+        "PHONE_INTERNET": "Telefon / Internet (Misch-Nutzung)",
+        "CAR": "Auto (Misch-Nutzung)",
+        "HOME_INTERNET": "Heim-Internet (Misch-Nutzung)",
+        "office_supplies": "Bürobedarf - 100%",
+        "software": "Software - 100%",
+        "travel": "Reise - 100%",
+        "meals": "Verpflegung - 70%",
+        "home_office": "Homeoffice - 100%",
+        "education": "Fortbildung - 100%",
+        "hardware": "Hardware - 100%",
+        "phone_internet": "Telefon/Internet (Misch-Nutzung)",
+        "other": "Sonstiges"
+      }
     }
   },
   "invoices": {
@@ -1689,6 +1820,113 @@
       "messageLogged": "Nachricht protokolliert",
       "createDraftFailed": "Entwurf konnte nicht erstellt werden",
       "logFailed": "Nachricht konnte nicht protokolliert werden"
+    },
+    "accounts": {
+      "title": "Accounts",
+      "new": "Neuer Account",
+      "searchPlaceholder": "Accounts suchen...",
+      "emptyTitle": "Keine Accounts gefunden",
+      "emptyDescription": "Erstellen Sie einen neuen Account, um loszulegen.",
+      "noContactInfo": "Keine Kontaktdaten",
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "prospect": "Interessent"
+      },
+      "type": {
+        "customer": "Kunde",
+        "vendor": "Lieferant",
+        "partner": "Partner",
+        "other": "Sonstiges"
+      }
+    },
+    "accountForm": {
+      "newTitle": "Neuer Account",
+      "editTitle": "Account bearbeiten",
+      "identityTitle": "Identität",
+      "identityDescription": "Kontaktinformationen werden im Party-Datensatz gespeichert",
+      "accountNameRequired": "Account-Name *",
+      "websitePlaceholder": "https://...",
+      "industry": "Branche",
+      "profileTitle": "CRM-Profil",
+      "profileDescription": "Vertriebsbezogene Felder",
+      "accountType": "Account-Typ",
+      "create": "Account erstellen",
+      "update": "Account aktualisieren"
+    },
+    "contactForm": {
+      "newTitle": "Neuer Kontakt",
+      "editTitle": "Kontakt bearbeiten",
+      "detailsTitle": "Kontaktdaten",
+      "create": "Kontakt erstellen",
+      "update": "Kontakt aktualisieren",
+      "createFailed": "Kontakt konnte nicht erstellt werden",
+      "updateFailed": "Kontakt konnte nicht aktualisiert werden"
+    },
+    "sequences": {
+      "new": "Neue Sequenz",
+      "setupTitle": "Sequenz-Einrichtung",
+      "applyPreset": "Nails 3-Schritte-Preset anwenden",
+      "created": "Sequenz erstellt",
+      "createFailed": "Sequenz konnte nicht erstellt werden",
+      "nameRequired": "Sequenzname ist erforderlich",
+      "addAtLeastOneStep": "Fügen Sie mindestens einen Schritt hinzu",
+      "stepTitle": "Schritt {{step}}",
+      "removeStep": "Schritt {{step}} entfernen",
+      "stepType": "Schritttyp",
+      "dayDelay": "Tage Verzögerung",
+      "stepSubject": "Schritt-Betreff",
+      "stepBody": "Schritt-Inhalt",
+      "addStep": "Schritt hinzufügen",
+      "create": "Sequenz erstellen",
+      "creating": "Wird erstellt...",
+      "stepTypes": {
+        "task": "Aufgabe",
+        "call": "Anruf",
+        "emailManual": "E-Mail manuell",
+        "emailAuto": "E-Mail automatisch"
+      },
+      "nailsPreset": {
+        "name": "Lead zu Won - Nails",
+        "description": "Automatisches E-Mail-Follow-up an Tag 1/3/7 für Nails-Leads."
+      }
+    },
+    "emailSettings": {
+      "title": "CRM E-Mail-Einstellungen",
+      "subtitle": "Konfigurieren Sie Resend für automatische Sequenz-E-Mails und eingehende Antworten.",
+      "defaultDisplayName": "CRM Resend",
+      "saved": "CRM E-Mail-Einstellungen gespeichert",
+      "connectionValid": "Resend-Verbindung ist gültig",
+      "connectionTitle": "Resend-Verbindung",
+      "connectionDescription": "Ausgehende Nachrichten verwenden den konfigurierten Absender. Sequenz-E-Mails verwenden standardmäßig",
+      "connectionName": "Verbindungsname",
+      "fromAddress": "Absenderadresse",
+      "replyToAddress": "Reply-to-Adresse",
+      "apiKeyLabel": "API-Key",
+      "apiKeyLeaveBlank": "leer lassen, um aktuellen Schlüssel zu behalten",
+      "apiKeyPlaceholder": "re_...",
+      "testConnection": "Verbindung testen",
+      "noWorkspace": "Kein aktiver Workspace ausgewählt.",
+      "inboundWebhookTitle": "Inbound Webhook",
+      "inboundWebhookDescription": "Konfigurieren Sie diese URL in den Resend Inbound Webhook-Einstellungen.",
+      "tenantResolution": "Mandant wird automatisch aufgelöst. Optionaler Fallback: hinzufügen",
+      "setupGuideTitle": "Resend Einrichtungsanleitung",
+      "setupGuideDescription": "Verwenden Sie diese Einstellungen für CRM Reply-Tracking.",
+      "guide": {
+        "step1": "Resend Dashboard öffnen -> Webhooks -> Webhook hinzufügen.",
+        "step2": "Endpoint URL auf den obigen Wert setzen.",
+        "step3": "Bei Event-Typen nur auswählen",
+        "step4": "Kontakt-/Domain-Events für diesen CRM Webhook nicht auswählen.",
+        "localhostNotePrefix": "Hinweis zu localhost: Resend kann",
+        "localhostNoteSuffix": "nicht direkt aufrufen. Für lokale Tests API über einen öffentlichen Tunnel bereitstellen und diese HTTPS-URL als Webhook-Endpoint nutzen."
+      },
+      "errors": {
+        "selectWorkspace": "Wählen Sie vor dem Speichern der E-Mail-Einstellungen einen Workspace aus.",
+        "apiKeyRequired": "Resend API-Key ist für die erste Einrichtung erforderlich.",
+        "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+        "saveConnectionFirst": "Speichern Sie zuerst eine Resend-Verbindung.",
+        "connectionTestFailed": "Verbindungstest fehlgeschlagen"
+      }
     }
   },
   "classes": {

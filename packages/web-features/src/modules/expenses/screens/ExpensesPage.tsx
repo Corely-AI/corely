@@ -8,6 +8,7 @@ import {
   useQueries,
 } from "@tanstack/react-query";
 import { Plus, Trash2, Edit } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import { Card, CardContent } from "@corely/ui";
@@ -39,24 +40,22 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@corely/ui";
-// ... imports
+import { ExpenseDeductibilityCell } from "../components/ExpenseDeductibilityCell";
 
-// ...
-
-const CATEGORY_OPTIONS = [
-  { label: "All categories", value: "" },
-  { label: "Office supplies", value: "office_supplies" },
-  { label: "Software", value: "software" },
-  { label: "Travel", value: "travel" },
-  { label: "Meals", value: "meals" },
-  { label: "Home office", value: "home_office" },
-  { label: "Education", value: "education" },
-  { label: "Hardware", value: "hardware" },
-  { label: "Phone/Internet", value: "phone_internet" },
-  { label: "Other", value: "other" },
-];
+const CATEGORY_VALUES = [
+  "office_supplies",
+  "software",
+  "travel",
+  "meals",
+  "home_office",
+  "education",
+  "hardware",
+  "phone_internet",
+  "other",
+] as const;
 
 export default function ExpensesPage() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -89,6 +88,11 @@ export default function ExpensesPage() {
   });
 
   const filterFields = useMemo<FilterFieldDef[]>(() => {
+    const categoryOptions = CATEGORY_VALUES.map((value) => ({
+      value,
+      label: t(`expenses.categories.${value}`),
+    }));
+
     const dimensionFields = dimensionTypes
       .filter((type) => type.isActive)
       .map((type, index) => {
@@ -99,7 +103,7 @@ export default function ExpensesPage() {
         ).filter((value) => value.isActive);
         return {
           key: `dimension:${type.id}`,
-          label: `Dimension: ${type.name}`,
+          label: `${t("expenses.list.dimensionLabel")}: ${type.name}`,
           type: "select" as const,
           options: values.map((value) => ({ label: value.name, value: value.id })),
         };
@@ -107,24 +111,24 @@ export default function ExpensesPage() {
 
     const customFields = indexedCustomFields.map((field) => ({
       key: `custom:${field.fieldId}`,
-      label: `Custom: ${field.label}`,
+      label: `${t("expenses.list.customLabel")}: ${field.label}`,
       type: field.type === "NUMBER" ? ("number" as const) : ("text" as const),
     }));
 
     return [
       {
         key: "category",
-        label: "Category",
+        label: t("expenses.category"),
         type: "select",
-        options: CATEGORY_OPTIONS.filter((o) => o.value),
+        options: categoryOptions,
       },
-      { key: "expenseDate", label: "Date", type: "date" },
-      { key: "merchantName", label: "Merchant", type: "text" },
-      { key: "totalAmountCents", label: "Amount", type: "number" },
+      { key: "expenseDate", label: t("expenses.date"), type: "date" },
+      { key: "merchantName", label: t("expenses.merchant"), type: "text" },
+      { key: "totalAmountCents", label: t("expenses.amount"), type: "number" },
       ...dimensionFields,
       ...customFields,
     ];
-  }, [dimensionTypes, dimensionValuesQueries, indexedCustomFields]);
+  }, [dimensionTypes, dimensionValuesQueries, indexedCustomFields, t]);
 
   const filters = useMemo(() => {
     const categoryFilter = state.filters?.find(
@@ -175,11 +179,11 @@ export default function ExpensesPage() {
       await Promise.all(ids.map((id) => expensesApi.deleteExpense(id)));
     },
     onSuccess: async () => {
-      toast.success("Expense deleted");
+      toast.success(t("expenses.notifications.deleted"));
       setSelectedIds(new Set());
       await invalidateResourceQueries(queryClient, "expenses");
     },
-    onError: () => toast.error("Failed to delete expense"),
+    onError: () => toast.error(t("expenses.notifications.deleteFailed")),
   });
 
   const toggleSelection = (id: string) => {
@@ -204,20 +208,11 @@ export default function ExpensesPage() {
     setDeleteTarget(null);
   };
 
-  const updateCategory = (val: string) => {
-    // Legacy helper, might be unused if we remove the dropdown, but keeping for safely
-    const newFilters = (state.filters ?? []).filter((f) => f.field !== "category");
-    if (val) {
-      newFilters.push({ field: "category", operator: "eq", value: val });
-    }
-    setUrlState({ filters: newFilters, page: 1 });
-  };
-
   return (
     <>
       <CrudListPageLayout
-        title="Expenses"
-        subtitle="Track and manage your spend"
+        title={t("expenses.title")}
+        subtitle={t("expenses.list.subtitle")}
         primaryAction={
           <Button
             variant="accent"
@@ -225,7 +220,7 @@ export default function ExpensesPage() {
             onClick={() => navigate("/expenses/new")}
           >
             <Plus className="h-4 w-4" />
-            Add expense
+            {t("expenses.addExpense")}
           </Button>
         }
         toolbar={
@@ -235,18 +230,18 @@ export default function ExpensesPage() {
             sort={state.sort}
             onSortChange={(v) => setUrlState({ sort: v })}
             sortOptions={[
-              { label: "Date (Newest)", value: "expenseDate:desc" },
-              { label: "Date (Oldest)", value: "expenseDate:asc" },
-              { label: "Amount (High-Low)", value: "totalCents:desc" },
-              { label: "Amount (Low-High)", value: "totalCents:asc" },
-              { label: "Created (Newest)", value: "createdAt:desc" },
+              { label: t("expenses.list.sort.dateNewest"), value: "expenseDate:desc" },
+              { label: t("expenses.list.sort.dateOldest"), value: "expenseDate:asc" },
+              { label: t("expenses.list.sort.amountHighLow"), value: "totalCents:desc" },
+              { label: t("expenses.list.sort.amountLowHigh"), value: "totalCents:asc" },
+              { label: t("expenses.list.sort.createdNewest"), value: "createdAt:desc" },
             ]}
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={state.filters?.length}
           >
             {isError ? (
               <div className="text-sm text-destructive">
-                {(error as Error)?.message || "Failed to load expenses"}
+                {(error as Error)?.message || t("expenses.notifications.loadFailed")}
               </div>
             ) : null}
           </ListToolbar>
@@ -275,11 +270,11 @@ export default function ExpensesPage() {
             ) : expenses.length === 0 ? (
               <EmptyState
                 icon={Trash2}
-                title="No expenses yet"
-                description="Create your first expense to track spending."
+                title={t("expenses.noExpenses")}
+                description={t("expenses.list.noExpensesDescription")}
                 action={
                   <Button variant="outline" onClick={() => setUrlState({ q: "", filters: [] })}>
-                    Clear filters
+                    {t("list.clearAll")}
                   </Button>
                 }
               />
@@ -287,15 +282,17 @@ export default function ExpensesPage() {
               <>
                 {selectedIds.size > 0 ? (
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/40">
-                    <div className="text-sm text-muted-foreground">{selectedIds.size} selected</div>
+                    <div className="text-sm text-muted-foreground">
+                      {t("expenses.list.selectedCount", { count: selectedIds.size })}
+                    </div>
                     <ConfirmDeleteDialog
                       trigger={
                         <Button variant="destructive" size="sm" disabled={deleteExpenses.isPending}>
-                          Delete selected
+                          {t("expenses.list.deleteSelected")}
                         </Button>
                       }
-                      title="Delete selected expenses"
-                      description="This will archive the selected expenses."
+                      title={t("expenses.list.deleteSelectedTitle")}
+                      description={t("expenses.list.deleteSelectedDescription")}
                       isLoading={deleteExpenses.isPending}
                       onConfirm={bulkDelete}
                     />
@@ -315,23 +312,26 @@ export default function ExpensesPage() {
                                 setSelectedIds(new Set());
                               }
                             }}
-                            aria-label="Select all"
+                            aria-label={t("expenses.list.selectAll")}
                           />
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Date
+                          {t("expenses.date")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Merchant
+                          {t("expenses.merchant")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          Category
+                          {t("expenses.category")}
                         </th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                          VAT
+                          {t("expenses.vat")}
+                        </th>
+                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                          {t("expenses.list.deductiblePercent")}
                         </th>
                         <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
-                          Amount
+                          {t("expenses.amount")}
                         </th>
                         <th className="w-[50px]"></th>
                       </tr>
@@ -352,43 +352,50 @@ export default function ExpensesPage() {
                               <Checkbox
                                 checked={selectedIds.has(expense.id)}
                                 onCheckedChange={() => toggleSelection(expense.id)}
-                                aria-label={`Select expense ${expense.id}`}
+                                aria-label={t("expenses.list.selectExpense", { id: expense.id })}
                               />
                             </td>
                             <td className="px-4 py-3 text-sm">
-                              {formatDate(expense.expenseDate || expense.createdAt, "en-US")}
+                              {formatDate(expense.expenseDate || expense.createdAt, i18n.language)}
                             </td>
                             <td className="px-4 py-3 text-sm font-medium">
                               {expense.merchantName || "-"}
                             </td>
                             <td className="px-4 py-3">
                               <Badge variant="muted">
-                                {expense.category ? expense.category.replace(/_/g, " ") : "-"}
+                                {expense.category
+                                  ? t(`expenses.categories.${expense.category}`, {
+                                      defaultValue: expense.category.replace(/_/g, " "),
+                                    })
+                                  : "-"}
                               </Badge>
                             </td>
                             <td className="px-4 py-3 text-sm">
                               {vatPercent != null ? `${vatPercent}%` : "-"}
                             </td>
+                            <td className="px-4 py-3">
+                              <ExpenseDeductibilityCell expense={expense} />
+                            </td>
                             <td className="px-4 py-3 text-sm text-right font-medium">
                               {formatMoney(
                                 expense.totalAmountCents ?? (expense as any).totalCents ?? 0,
-                                "en-US"
+                                i18n.language
                               )}
                             </td>
                             <td className="px-4 py-3 text-right">
                               <CrudRowActions
                                 primaryAction={{
-                                  label: "View",
+                                  label: t("common.view"),
                                   href: `/expenses/${expense.id}`,
                                 }}
                                 secondaryActions={[
                                   {
-                                    label: "Edit",
+                                    label: t("common.edit"),
                                     href: `/expenses/${expense.id}/edit`,
                                     icon: <Edit className="h-4 w-4" />,
                                   },
                                   {
-                                    label: "Delete",
+                                    label: t("common.delete"),
                                     onClick: () => setDeleteTarget(expense.id),
                                     destructive: true,
                                     icon: <Trash2 className="h-4 w-4" />,
@@ -410,7 +417,10 @@ export default function ExpensesPage() {
                     <PaginationContent>
                       <PaginationItem>
                         <span className="text-sm text-muted-foreground mr-4">
-                          Page {pageInfo.page} of {Math.ceil(pageInfo.total / pageInfo.pageSize)}
+                          {t("expenses.list.pageInfo", {
+                            page: pageInfo.page,
+                            totalPages: Math.ceil(pageInfo.total / pageInfo.pageSize),
+                          })}
                         </span>
                       </PaginationItem>
                       <PaginationItem>
@@ -445,8 +455,8 @@ export default function ExpensesPage() {
           open={deleteTarget !== null}
           onOpenChange={(open: boolean) => !open && setDeleteTarget(null)}
           trigger={null}
-          title="Delete expense"
-          description="This will archive the expense and remove it from the list."
+          title={t("expenses.list.deleteExpenseTitle")}
+          description={t("expenses.list.deleteExpenseDescription")}
           isLoading={deleteExpenses.isPending}
           onConfirm={() => {
             if (deleteTarget) {

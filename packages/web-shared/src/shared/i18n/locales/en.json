@@ -808,6 +808,137 @@
       "hardware": "Hardware",
       "phone_internet": "Phone/Internet",
       "other": "Other"
+    },
+    "notifications": {
+      "created": "Expense created",
+      "updated": "Expense updated",
+      "deleted": "Expense deleted",
+      "deleteFailed": "Failed to delete expense",
+      "saveFailed": "Failed to save expense",
+      "loadFailed": "Failed to load expenses",
+      "receiptAttachPartial": "{{successMessage}}, but {{count}} receipt file(s) could not be attached"
+    },
+    "list": {
+      "subtitle": "Track and manage your spend",
+      "noExpensesDescription": "Create your first expense to track spending.",
+      "selectedCount": "{{count}} selected",
+      "deleteSelected": "Delete selected",
+      "deleteSelectedTitle": "Delete selected expenses",
+      "deleteSelectedDescription": "This will archive the selected expenses.",
+      "selectAll": "Select all",
+      "selectExpense": "Select expense {{id}}",
+      "deductiblePercent": "Deductible %",
+      "deleteExpenseTitle": "Delete expense",
+      "deleteExpenseDescription": "This will archive the expense and remove it from the list.",
+      "pageInfo": "Page {{page}} of {{totalPages}}",
+      "dimensionLabel": "Dimension",
+      "customLabel": "Custom",
+      "ruleKind": {
+        "perDiem": "per-diem",
+        "mixedUse": "mixed-use",
+        "gift": "gift"
+      },
+      "sort": {
+        "dateNewest": "Date (Newest)",
+        "dateOldest": "Date (Oldest)",
+        "amountHighLow": "Amount (High-Low)",
+        "amountLowHigh": "Amount (Low-High)",
+        "createdNewest": "Created (Newest)"
+      }
+    },
+    "detail": {
+      "overview": "Overview",
+      "taxDeductibility": "Tax Deductibility (DE)",
+      "deductiblePercentLabel": "{{percent}}% deductible",
+      "needsMoreInfo": "Needs more info",
+      "deductible": "Deductible",
+      "nonDeductible": "Non-deductible",
+      "fillRequiredFields": "Fill in required fields when editing this expense to compute deductibility.",
+      "notComputed": "Deductibility not yet computed. Edit this expense to trigger calculation.",
+      "attachReceipts": "Attach receipts to see them here.",
+      "auditTrail": "Audit trail will appear here once available.",
+      "backToExpenses": "Back to expenses",
+      "notFound": "Expense not found.",
+      "noNotes": "No notes added.",
+      "transitionSoon": "Transition to {{to}} is coming soon",
+      "actionSoon": "Action {{action}} coming soon",
+      "ruleKind": {
+        "percent": "Fixed %",
+        "giftThreshold": "Gift threshold",
+        "perDiem": "Per-diem",
+        "mixedUse": "Mixed-use"
+      }
+    },
+    "form": {
+      "editTitle": "Edit expense",
+      "create": "Create expense",
+      "selectCategory": "Select category",
+      "selectCategoryHint": "Select a category to see deductibility rules.",
+      "merchantPlaceholder": "e.g. Restaurant Zum Hirsch",
+      "taxDeductibilityTitle": "Tax Deductibility (DE)",
+      "participants": "Participants",
+      "participantsPlaceholder": "e.g. Max Muller, Julia Schneider",
+      "participantsHint": "Required for client meal deduction (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "Business Occasion",
+      "businessOccasionPlaceholder": "e.g. Q1 project kick-off, partnership negotiation",
+      "clientMealsHint": "70% income-tax deductible. VAT deduction may differ; check with your tax advisor.",
+      "giftRecipient": "Gift Recipient",
+      "giftRecipientPlaceholder": "e.g. Acme Corp / Hans Muller",
+      "giftRecipientHint": "Gifts to the same recipient exceeding EUR 50 per calendar year become 0% deductible (§4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "Business Use %",
+      "businessUsePercentPlaceholder": "e.g. 60",
+      "businessUsePercentHint": "% of business use",
+      "travelDetails": "Travel Details (for per-diem - DE 2026)",
+      "travelDate": "Travel Date",
+      "absenceHours": "Absence Hours",
+      "absenceHoursPlaceholder": "e.g. 10",
+      "travelHint": ">=8h absence: EUR 14 deductible - 24h: EUR 28 deductible (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Home-office Days",
+      "homeOfficeDaysPlaceholder": "e.g. 30",
+      "days": "days",
+      "homeOfficeHint": "EUR 6/day - max EUR 1,260/year annual cap (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "This expense category is",
+      "nonDeductibleWarningStrong": "0% income-tax deductible",
+      "nonDeductibleWarningSuffix": "under German tax law.",
+      "receiptOptional": "Receipt (optional)",
+      "addReceiptFiles": "Add receipt files",
+      "uploadReceiptHint": "Upload image or PDF receipts now. They will be attached when you save.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: only image and PDF are allowed",
+        "fileTooLarge": "{{name}}: exceeds 10MB limit"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "{{percent}}% deductible",
+        "mixedUse": "{{percent}}% deductible (mixed-use)",
+        "enterBusinessUse": "Enter business use %",
+        "perDiemServer": "Per-diem (computed server-side)",
+        "homeOfficeRate": "EUR 6/day flat rate",
+        "giftThreshold": "Up to EUR 50/recipient/year - requires recipient"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Client meals (Bewirtung) - 70%",
+        "MEALS_TEAM_EMPLOYEE": "Team / employee meals - 100%",
+        "GIFTS_BUSINESS_PARTNER": "Business gifts - up to EUR 50",
+        "GIFTS_PROMO_STREUARTIKEL": "Promotional gifts (<=EUR 10) - 100%",
+        "FINES_PENALTIES": "Fines & penalties - 0%",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Protective / uniform clothing - 100%",
+        "CLOTHING_CIVILIAN": "Civilian clothing - 0%",
+        "TRAVEL_MEALS_PER_DIEM": "Travel meal per-diem (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Home-office flat rate (EUR 6/day)",
+        "PHONE_INTERNET": "Phone / Internet (mixed-use)",
+        "CAR": "Car (mixed-use)",
+        "HOME_INTERNET": "Home Internet (mixed-use)",
+        "office_supplies": "Office supplies - 100%",
+        "software": "Software - 100%",
+        "travel": "Travel - 100%",
+        "meals": "Meals - 70%",
+        "home_office": "Home office - 100%",
+        "education": "Education - 100%",
+        "hardware": "Hardware - 100%",
+        "phone_internet": "Phone/Internet (mixed-use)",
+        "other": "Other"
+      }
     }
   },
   "invoices": {
@@ -1732,6 +1863,113 @@
       "messageLogged": "Message logged",
       "createDraftFailed": "Failed to create draft",
       "logFailed": "Failed to log message"
+    },
+    "accounts": {
+      "title": "Accounts",
+      "new": "New Account",
+      "searchPlaceholder": "Search accounts...",
+      "emptyTitle": "No accounts found",
+      "emptyDescription": "Create a new account to get started.",
+      "noContactInfo": "No contact info",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "prospect": "Prospect"
+      },
+      "type": {
+        "customer": "Customer",
+        "vendor": "Vendor",
+        "partner": "Partner",
+        "other": "Other"
+      }
+    },
+    "accountForm": {
+      "newTitle": "New Account",
+      "editTitle": "Edit Account",
+      "identityTitle": "Identity",
+      "identityDescription": "Contact information stored in Party record",
+      "accountNameRequired": "Account Name *",
+      "websitePlaceholder": "https://...",
+      "industry": "Industry",
+      "profileTitle": "CRM Profile",
+      "profileDescription": "Sales-specific fields",
+      "accountType": "Account Type",
+      "create": "Create Account",
+      "update": "Update Account"
+    },
+    "contactForm": {
+      "newTitle": "New Contact",
+      "editTitle": "Edit Contact",
+      "detailsTitle": "Contact Details",
+      "create": "Create Contact",
+      "update": "Update Contact",
+      "createFailed": "Failed to create contact",
+      "updateFailed": "Failed to update contact"
+    },
+    "sequences": {
+      "new": "New Sequence",
+      "setupTitle": "Sequence Setup",
+      "applyPreset": "Apply Nails 3-step preset",
+      "created": "Sequence created",
+      "createFailed": "Failed to create sequence",
+      "nameRequired": "Sequence name is required",
+      "addAtLeastOneStep": "Add at least one step",
+      "stepTitle": "Step {{step}}",
+      "removeStep": "Remove step {{step}}",
+      "stepType": "Step Type",
+      "dayDelay": "Day Delay",
+      "stepSubject": "Step Subject",
+      "stepBody": "Step Body",
+      "addStep": "Add Step",
+      "create": "Create Sequence",
+      "creating": "Creating...",
+      "stepTypes": {
+        "task": "Task",
+        "call": "Call",
+        "emailManual": "Email Manual",
+        "emailAuto": "Email Auto"
+      },
+      "nailsPreset": {
+        "name": "Lead to Won - Nails",
+        "description": "Automated day 1/day 3/day 7 email follow-up for nails leads."
+      }
+    },
+    "emailSettings": {
+      "title": "CRM Email Settings",
+      "subtitle": "Configure Resend for automated sequence emails and inbound replies.",
+      "defaultDisplayName": "CRM Resend",
+      "saved": "CRM email settings saved",
+      "connectionValid": "Resend connection is valid",
+      "connectionTitle": "Resend Connection",
+      "connectionDescription": "Outbound messages use the configured sender. Sequence emails default to",
+      "connectionName": "Connection name",
+      "fromAddress": "From address",
+      "replyToAddress": "Reply-to address",
+      "apiKeyLabel": "API key",
+      "apiKeyLeaveBlank": "leave blank to keep current key",
+      "apiKeyPlaceholder": "re_...",
+      "testConnection": "Test connection",
+      "noWorkspace": "No active workspace selected.",
+      "inboundWebhookTitle": "Inbound Webhook",
+      "inboundWebhookDescription": "Configure this URL in Resend inbound webhook settings.",
+      "tenantResolution": "Tenant is resolved automatically. Optional fallback: add",
+      "setupGuideTitle": "Resend Setup Guide",
+      "setupGuideDescription": "Use these exact settings for CRM reply tracking.",
+      "guide": {
+        "step1": "Open Resend Dashboard -> Webhooks -> Add webhook.",
+        "step2": "Set Endpoint URL to the value above.",
+        "step3": "In Event types, select only",
+        "step4": "Do not select contact/domain events for this CRM webhook.",
+        "localhostNotePrefix": "Localhost note: Resend cannot call",
+        "localhostNoteSuffix": "directly. For local testing, expose your API with a public tunnel and use that HTTPS URL as webhook endpoint."
+      },
+      "errors": {
+        "selectWorkspace": "Select a workspace before saving email settings.",
+        "apiKeyRequired": "Resend API key is required for the first setup.",
+        "saveFailed": "Failed to save settings",
+        "saveConnectionFirst": "Save a Resend connection first.",
+        "connectionTestFailed": "Connection test failed"
+      }
     }
   },
   "classes": {

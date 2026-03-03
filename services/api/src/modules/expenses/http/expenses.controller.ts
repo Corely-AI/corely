@@ -44,6 +44,23 @@ const ExpenseHttpInputSchema = CreateExpenseWebInputSchema.partial().extend({
   expenseDate: z.string().optional(),
   vatRate: z.number().optional(),
   idempotencyKey: z.string().optional(),
+  deductibilityMeta: z
+    .object({
+      participants: z.string().optional(),
+      occasion: z.string().optional(),
+      recipient: z.string().optional(),
+      businessUsePercent: z.number().int().min(0).max(100).optional(),
+      travelMeta: z
+        .object({
+          date: z.string(),
+          absenceHours: z.number().optional(),
+          country: z.string().optional(),
+        })
+        .optional(),
+      homeOfficeDays: z.number().int().min(0).optional(),
+    })
+    .optional()
+    .nullable(),
 });
 
 @Controller("expenses")
@@ -108,6 +125,7 @@ export class ExpensesController {
         dimensionAssignments: input.dimensionAssignments,
         issuedAt,
         idempotencyKey: resolveIdempotencyKey(req) ?? input.idempotencyKey ?? "default",
+        deductibilityMeta: input.deductibilityMeta ?? null,
       },
       ctx
     );
@@ -194,6 +212,7 @@ export class ExpensesController {
         custom: input.custom ?? null,
         customFieldValues: input.customFieldValues ?? null,
         dimensionAssignments: input.dimensionAssignments,
+        deductibilityMeta: input.deductibilityMeta ?? null,
       },
       ctx
     );
@@ -242,6 +261,7 @@ export class ExpensesController {
       lines: [],
       receipts: [],
       custom: expense.custom ?? undefined,
+      deductibility: expense.toDeductibilityResult(),
     };
   }
 
