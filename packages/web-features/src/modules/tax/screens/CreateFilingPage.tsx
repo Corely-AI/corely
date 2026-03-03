@@ -1,6 +1,6 @@
 import React from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TaxFilingTypeSchema, TaxPeriodKeySchema } from "@corely/contracts";
@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { useToast } from "@corely/ui";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { ArrowLeft } from "lucide-react";
+import { PeriodCombobox } from "../components/PeriodCombobox";
 
 // Schema for the form
 const formSchema = z
@@ -20,9 +21,7 @@ const formSchema = z
     type: TaxFilingTypeSchema,
     year: z.coerce.number().int().optional(),
     periodKey: z.preprocess((value) => {
-      if (typeof value !== "string") {
-        return value;
-      }
+      if (typeof value !== "string") {return value;}
       const trimmed = value.trim();
       return trimmed.length > 0 ? trimmed : undefined;
     }, TaxPeriodKeySchema.optional()),
@@ -60,6 +59,7 @@ export const CreateFilingPage = () => {
   });
 
   const type = form.watch("type");
+  const year = form.watch("year");
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -78,7 +78,7 @@ export const CreateFilingPage = () => {
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
-      {/* Page Header — p-6 lg:p-8 outer padding, full width, matches all other pages */}
+      {/* Page Header */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
           <Button
@@ -99,7 +99,7 @@ export const CreateFilingPage = () => {
         </div>
       </div>
 
-      {/* Form card — full width, consistent with FilingDetailPage and CrudListPageLayout */}
+      {/* Form card — full width */}
       <Card>
         <CardHeader className="pb-4">
           <CardTitle className="text-base font-medium">Filing details</CardTitle>
@@ -107,6 +107,7 @@ export const CreateFilingPage = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Filing Type */}
               <FormField
                 control={form.control}
                 name="type"
@@ -131,6 +132,7 @@ export const CreateFilingPage = () => {
                 )}
               />
 
+              {/* Tax Year */}
               <FormField
                 control={form.control}
                 name="year"
@@ -145,19 +147,21 @@ export const CreateFilingPage = () => {
                 )}
               />
 
+              {/* Period — Combobox (VAT only) */}
               {type === "vat" && (
                 <FormField
                   control={form.control}
                   name="periodKey"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Period (Quarter / Month)</FormLabel>
+                      <FormLabel>Period</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. 2025-Q1" {...field} />
+                        <PeriodCombobox
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          year={year}
+                        />
                       </FormControl>
-                      <p className="text-xs text-muted-foreground">
-                        Format: YYYY-Qx (e.g. 2025-Q1) or YYYY-MM (e.g. 2025-01)
-                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
