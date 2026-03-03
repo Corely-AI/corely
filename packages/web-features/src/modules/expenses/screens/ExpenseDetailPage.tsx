@@ -99,12 +99,13 @@ export const ExpenseDetailPage = () => {
   const { expense, capabilities } = queryResult || {};
   const [isProcessing] = React.useState(false);
 
-  // Handle transitions (placeholder for future API)
+  // Handle transitions
   const handleTransition = React.useCallback(
-    async (to: string) => {
-      toast.info(t("expenses.detail.transitionSoon", { to }));
+    async (to: string, input?: Record<string, string>) => {
+      if (!id) {return;}
+      await transitionMutation.mutateAsync({ expenseId: id, to, reason: input?.reason });
     },
-    [t]
+    [id, transitionMutation]
   );
 
   // Handle actions
@@ -126,6 +127,16 @@ export const ExpenseDetailPage = () => {
     },
     [id, navigate, t]
   );
+
+  const transitionMutation = useMutation({
+    mutationFn: ({ expenseId, to, reason }: { expenseId: string; to: string; reason?: string }) =>
+      expensesApi.transitionExpense(expenseId, to, reason),
+    onSuccess: async (_, vars) => {
+      toast.success(t("expenses.notifications.transitioned", { to: vars.to }));
+      await invalidateResourceQueries(queryClient, "expenses", { id });
+    },
+    onError: () => toast.error(t("expenses.notifications.transitionFailed")),
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
@@ -183,7 +194,7 @@ export const ExpenseDetailPage = () => {
             onBack={() => navigate("/expenses")}
             onTransition={handleTransition}
             onAction={handleAction}
-            isLoading={isProcessing || deleteMutation.isPending}
+            isLoading={isProcessing || deleteMutation.isPending || transitionMutation.isPending}
           />
         ) : (
           <div className="flex items-center gap-3">

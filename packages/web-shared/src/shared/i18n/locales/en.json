@@ -816,6 +816,8 @@
       "deleteFailed": "Failed to delete expense",
       "saveFailed": "Failed to save expense",
       "loadFailed": "Failed to load expenses",
+      "transitioned": "Expense transitioned to {{to}}",
+      "transitionFailed": "Failed to transition expense",
       "receiptAttachPartial": "{{successMessage}}, but {{count}} receipt file(s) could not be attached"
     },
     "list": {

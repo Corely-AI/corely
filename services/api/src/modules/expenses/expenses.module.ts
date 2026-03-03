@@ -22,6 +22,7 @@ import { ListExpensesUseCase } from "./application/use-cases/list-expenses.useca
 import { GetExpenseUseCase } from "./application/use-cases/get-expense.usecase";
 import { UpdateExpenseUseCase } from "./application/use-cases/update-expense.usecase";
 import { UnarchiveExpenseUseCase } from "./application/use-cases/unarchive-expense.usecase";
+import { TransitionExpenseUseCase } from "./application/use-cases/transition-expense.usecase";
 import { PrismaExpenseRepository } from "./infrastructure/adapters/prisma-expense-repository.adapter";
 import { PrismaGiftThresholdQueryAdapter } from "./infrastructure/adapters/prisma-gift-threshold-query.adapter";
 import { KernelModule } from "../../shared/kernel/kernel.module";
@@ -130,6 +131,12 @@ import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-
       useFactory: (repo: PrismaExpenseRepository, audit: AuditPort) =>
         new UnarchiveExpenseUseCase(repo, audit),
       inject: [EXPENSE_REPOSITORY, AUDIT_PORT],
+    },
+    {
+      provide: TransitionExpenseUseCase,
+      useFactory: (repo: PrismaExpenseRepository, audit: AuditPort, outbox: OutboxPort) =>
+        new TransitionExpenseUseCase(repo, audit, outbox),
+      inject: [EXPENSE_REPOSITORY, AUDIT_PORT, OUTBOX_PORT],
     },
     {
       provide: ListExpensesUseCase,
