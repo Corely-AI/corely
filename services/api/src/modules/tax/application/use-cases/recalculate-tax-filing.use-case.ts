@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { type RecalculateTaxFilingResponse } from "@corely/contracts";
 import {
   BaseUseCase,
@@ -9,18 +9,30 @@ import {
   ok,
   err,
   RequireTenant,
+  OUTBOX_PORT,
+  type OutboxPort,
 } from "@corely/kernel";
 import { TaxReportRepoPort } from "../../domain/ports";
 import { GetTaxFilingDetailUseCase } from "./get-tax-filing-detail.use-case";
 import { PrismaService } from "@corely/data";
 
+/**
+ * RecalculateTaxFilingUseCase
+ *
+ * Backfills tax snapshots for all source documents in the filing period,
+ * emits a TaxFilingRecalculated domain event, and refreshes the detail view.
+ *
+ * Note: Direct PrismaService usage here is a known violation of module-boundary rules.
+ * Task: move these to dedicated repo port methods in a follow-up PR.
+ */
 @RequireTenant()
 @Injectable()
 export class RecalculateTaxFilingUseCase extends BaseUseCase<string, RecalculateTaxFilingResponse> {
   constructor(
     private readonly reportRepo: TaxReportRepoPort,
     private readonly detailUseCase: GetTaxFilingDetailUseCase,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort
   ) {
     super({ logger: null as any });
   }
@@ -32,10 +44,10 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
     const workspaceId = ctx.workspaceId || ctx.tenantId!;
     const report = await this.reportRepo.findById(workspaceId, filingId);
     if (!report) {
-      return err(new NotFoundError("Filing not found"));
+      return err(new NotFoundError("Filing not found", { code: "Tax:FilingNotFound" }));
     }
 
-    // 1. Snapshot Backfill for Expenses in the period
+    // 1. Backfill snapshots for Expenses in the period
     const expenses = await this.prisma.expense.findMany({
       where: {
         tenantId: workspaceId,
@@ -62,6 +74,7 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
           totalAmountCents: expense.totalAmountCents,
           currency: expense.currency,
           calculatedAt: expense.expenseDate,
+          // packId not set here — expenses don't run through the jurisdiction pack
         },
         create: {
           tenantId: workspaceId,
@@ -81,26 +94,26 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
       });
     }
 
-    // 2. Snapshot Backfill for Invoices in the period (if needed for income-annual)
+    // 2. Backfill snapshots for Invoices (for income-annual / VAT annual)
     if (report.type === "INCOME_TAX" || report.type === "VAT_ANNUAL") {
       const invoices = await this.prisma.invoice.findMany({
         where: {
           tenantId: workspaceId,
           issuedAt: { gte: report.periodStart, lte: report.periodEnd },
-          status: { in: ["ISSUED", "SENT", "PAID"] as any },
+          status: { in: ["ISSUED", "SENT", "PAID"] as any[] },
         },
         include: { lines: true },
       });
 
       for (const invoice of invoices) {
-        // Simple total calculation for now
         const totalCents = invoice.lines.reduce(
           (sum, line) => sum + line.unitPriceCents * line.qty,
           0
         );
-        const taxSnapshotMeta = invoice.taxSnapshot as any;
+        const taxSnapshotMeta = invoice.taxSnapshot as { totalTaxAmountCents?: number } | null;
         const taxCents = taxSnapshotMeta?.totalTaxAmountCents ?? 0;
         const subtotalCents = totalCents - taxCents;
+        const invoiceBreakdown = invoice.taxSnapshot ? JSON.stringify(invoice.taxSnapshot) : "{}";
 
         await this.prisma.taxSnapshot.upsert({
           where: {
@@ -129,19 +142,30 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
             subtotalAmountCents: subtotalCents,
             taxTotalAmountCents: taxCents,
             totalAmountCents: totalCents,
-            breakdownJson: JSON.stringify(invoice.taxSnapshot ?? {}),
+            breakdownJson: invoiceBreakdown,
             version: 1,
           },
         });
       }
     }
 
-    // 3. Update report meta
+    // 3. Update report meta with recalculation timestamp
     const meta = {
       ...(report.meta ?? {}),
       lastRecalculatedAt: new Date().toISOString(),
     };
     await this.reportRepo.updateMeta({ tenantId: workspaceId, reportId: filingId, meta });
+
+    // 4. Emit domain event
+    await this.outbox.enqueue({
+      eventType: "TaxFilingRecalculated",
+      payload: {
+        filingId,
+        tenantId: workspaceId,
+        recalculatedAt: meta.lastRecalculatedAt,
+      },
+      tenantId: workspaceId,
+    });
 
     const refreshed = await this.detailUseCase.execute(filingId, ctx);
     if ("error" in refreshed) {

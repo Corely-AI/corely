@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import {
   type MarkTaxFilingPaidRequest,
   type MarkTaxFilingPaidResponse,
@@ -9,15 +9,23 @@ import {
   type Result,
   type UseCaseContext,
   type UseCaseError,
-  ConflictError,
   NotFoundError,
   ok,
   err,
   RequireTenant,
+  OUTBOX_PORT,
+  AUDIT_PORT,
+  type OutboxPort,
+  type AuditPort,
 } from "@corely/kernel";
 import { TaxReportRepoPort } from "../../domain/ports";
 import { GetTaxFilingDetailUseCase } from "./get-tax-filing-detail.use-case";
 import { DocumentsApplication } from "../../../documents/application/documents.application";
+import {
+  TaxFilingStatus,
+  assertFilingTransition,
+  dbStatusToFilingStatus,
+} from "../../domain/entities/tax-filing-status";
 
 export type MarkTaxFilingPaidInput = {
   filingId: string;
@@ -33,7 +41,9 @@ export class MarkTaxFilingPaidUseCase extends BaseUseCase<
   constructor(
     private readonly reportRepo: TaxReportRepoPort,
     private readonly detailUseCase: GetTaxFilingDetailUseCase,
-    private readonly documentsApp: DocumentsApplication
+    private readonly documentsApp: DocumentsApplication,
+    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
+    @Inject(AUDIT_PORT) private readonly audit: AuditPort
   ) {
     super({ logger: null as any });
   }
@@ -45,13 +55,14 @@ export class MarkTaxFilingPaidUseCase extends BaseUseCase<
     const workspaceId = ctx.workspaceId || ctx.tenantId!;
     const report = await this.reportRepo.findById(workspaceId, input.filingId);
     if (!report) {
-      return err(new NotFoundError("Filing not found"));
+      return err(new NotFoundError("Filing not found", { code: "Tax:FilingNotFound" }));
     }
 
-    if (report.status !== "SUBMITTED") {
-      return err(new ConflictError("Filing must be submitted before marking paid"));
-    }
+    // Domain guard: validate SUBMITTED → PAID transition
+    const currentStatus = dbStatusToFilingStatus(report.status);
+    assertFilingTransition(currentStatus, TaxFilingStatus.PAID, input.filingId);
 
+    // Optionally link proof document via Documents module
     if (input.request.proofDocumentId) {
       const linkResult = await this.documentsApp.linkDocument.execute(
         {
@@ -73,6 +84,34 @@ export class MarkTaxFilingPaidUseCase extends BaseUseCase<
       amountCents: input.request.amountCents,
       method: input.request.method,
       proofDocumentId: input.request.proofDocumentId ?? null,
+    });
+
+    // Emit domain event
+    await this.outbox.enqueue({
+      eventType: "TaxFilingPaid",
+      payload: {
+        filingId: input.filingId,
+        tenantId: workspaceId,
+        paidAt: input.request.paidAt,
+        amountCents: input.request.amountCents,
+        method: input.request.method,
+        proofDocumentId: input.request.proofDocumentId ?? null,
+      },
+      tenantId: workspaceId,
+    });
+
+    // Write audit trail
+    await this.audit.log({
+      tenantId: workspaceId,
+      action: "tax_filing.paid",
+      entityType: "TAX_FILING",
+      entityId: input.filingId,
+      userId: ctx.userId ?? "system",
+      metadata: {
+        amountCents: input.request.amountCents,
+        method: input.request.method,
+        paidAt: input.request.paidAt,
+      },
     });
 
     const refreshed = await this.detailUseCase.execute(input.filingId, ctx);

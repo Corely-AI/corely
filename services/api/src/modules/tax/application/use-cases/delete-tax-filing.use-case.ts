@@ -4,13 +4,16 @@ import {
   type Result,
   type UseCaseContext,
   type UseCaseError,
-  ConflictError,
   NotFoundError,
   ok,
   err,
   RequireTenant,
 } from "@corely/kernel";
 import { TaxReportRepoPort } from "../../domain/ports";
+import {
+  assertFilingDeletable,
+  dbStatusToFilingStatus,
+} from "../../domain/entities/tax-filing-status";
 
 @RequireTenant()
 @Injectable()
@@ -26,11 +29,14 @@ export class DeleteTaxFilingUseCase extends BaseUseCase<string, { deleted: boole
     const workspaceId = ctx.workspaceId || ctx.tenantId!;
     const report = await this.reportRepo.findById(workspaceId, filingId);
     if (!report) {
-      return err(new NotFoundError("Filing not found"));
+      return err(new NotFoundError("Filing not found", { code: "Tax:FilingNotFound" }));
     }
-    if (!["OPEN", "UPCOMING"].includes(report.status)) {
-      return err(new ConflictError("Only draft filings can be deleted"));
-    }
+
+    // Domain guard: only DRAFT/NEEDS_FIX filings can be deleted.
+    // assertFilingDeletable throws TaxFilingNotDeletableError (AppError) if not allowed.
+    const currentStatus = dbStatusToFilingStatus(report.status);
+    assertFilingDeletable(currentStatus, filingId);
+
     await this.reportRepo.delete(workspaceId, filingId);
     return ok({ deleted: true });
   }

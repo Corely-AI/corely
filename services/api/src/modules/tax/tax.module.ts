@@ -49,12 +49,22 @@ import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adap
 
 // Services
 import { TaxEngineService } from "./application/services/tax-engine.service";
-import { DEPackV1 } from "./application/services/jurisdictions/de-pack.v1";
 import { TaxStrategyResolverService } from "./application/services/tax-strategy-resolver.service";
 import { PersonalTaxStrategy } from "./application/services/personal-tax-strategy";
 import { CompanyTaxStrategy } from "./application/services/company-tax-strategy";
 import { TaxCapabilitiesService } from "./application/services/tax-capabilities.service";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
+
+// Jurisdiction Pack Registry + DE Pack Adapter (NEW)
+import {
+  JurisdictionPackRegistryPort,
+  InMemoryJurisdictionPackRegistry,
+} from "./domain/ports/jurisdiction-pack-registry.port";
+import { DEPackV1Adapter } from "./infrastructure/packs/de/v1/de-pack-v1.adapter";
+
+// Payment provider
+import { NoopPaymentProviderAdapter } from "./infrastructure/payments/noop-payment-provider.adapter";
+import { PaymentProviderPort, PAYMENT_PROVIDER_PORT } from "./domain/ports/payment-provider.port";
 
 // Reporting
 import { ReportRegistry } from "./domain/reporting/report-registry";
@@ -95,7 +105,9 @@ import { DocumentsModule } from "../documents/documents.module";
   providers: [
     NestLoggerAdapter,
 
+    // --------------------------------------------------------------------------
     // Use cases
+    // --------------------------------------------------------------------------
     GetTaxProfileUseCase,
     UpsertTaxProfileUseCase,
     ListTaxCodesUseCase,
@@ -141,65 +153,67 @@ import { DocumentsModule } from "../documents/documents.module";
       inject: [NestLoggerAdapter, TaxSnapshotRepoPort, TaxReportRepoPort],
     },
 
-    // Services
-    TaxEngineService,
-    DEPackV1,
+    // --------------------------------------------------------------------------
+    // Application services
+    // --------------------------------------------------------------------------
     TaxStrategyResolverService,
     PersonalTaxStrategy,
     CompanyTaxStrategy,
     TaxCapabilitiesService,
     VatPeriodResolver,
 
+    // --------------------------------------------------------------------------
+    // Jurisdiction Pack Registry
+    // Registers DE v1 at startup. Add new packs here as they are implemented.
+    // --------------------------------------------------------------------------
+    DEPackV1Adapter,
+    {
+      provide: JurisdictionPackRegistryPort,
+      useFactory: (dePack: DEPackV1Adapter) => {
+        const registry = new InMemoryJurisdictionPackRegistry();
+        registry.register(dePack);
+        return registry;
+      },
+      inject: [DEPackV1Adapter],
+    },
+
+    // --------------------------------------------------------------------------
+    // Tax Engine (uses registry, no longer references DEPackV1 directly)
+    // --------------------------------------------------------------------------
+    TaxEngineService,
+
+    // --------------------------------------------------------------------------
+    // Payment Provider (noop — manual proof upload)
+    // --------------------------------------------------------------------------
+    NoopPaymentProviderAdapter,
+    {
+      provide: PAYMENT_PROVIDER_PORT,
+      useClass: NoopPaymentProviderAdapter,
+    },
+
+    // --------------------------------------------------------------------------
     // Reporting Registry
+    // --------------------------------------------------------------------------
     ReportRegistry,
     VatAdvanceDeStrategy,
     EuSalesListDeStrategy,
     IncomeTaxDeStrategy,
 
+    // --------------------------------------------------------------------------
     // Repository adapters bound to ports
-    {
-      provide: TaxProfileRepoPort,
-      useClass: PrismaTaxProfileRepoAdapter,
-    },
-    {
-      provide: TaxCodeRepoPort,
-      useClass: PrismaTaxCodeRepoAdapter,
-    },
-    {
-      provide: TaxRateRepoPort,
-      useClass: PrismaTaxRateRepoAdapter,
-    },
-    {
-      provide: TaxSnapshotRepoPort,
-      useClass: PrismaTaxSnapshotRepoAdapter,
-    },
-    {
-      provide: VatReportRepoPort,
-      useClass: PrismaVatReportRepoAdapter,
-    },
-    {
-      provide: TaxConsultantRepoPort,
-      useClass: PrismaTaxConsultantRepoAdapter,
-    },
-    {
-      provide: TaxReportRepoPort,
-      useClass: PrismaTaxReportRepoAdapter,
-    },
-    {
-      provide: TaxSummaryQueryPort,
-      useClass: PrismaTaxSummaryQueryAdapter,
-    },
-    {
-      provide: VatPeriodQueryPort,
-      useClass: PrismaVatPeriodQueryAdapter,
-    },
-    {
-      provide: WORKSPACE_TAX_SETTINGS_PORT,
-      useClass: PrismaWorkspaceTaxSettingsAdapter,
-    },
+    // --------------------------------------------------------------------------
+    { provide: TaxProfileRepoPort, useClass: PrismaTaxProfileRepoAdapter },
+    { provide: TaxCodeRepoPort, useClass: PrismaTaxCodeRepoAdapter },
+    { provide: TaxRateRepoPort, useClass: PrismaTaxRateRepoAdapter },
+    { provide: TaxSnapshotRepoPort, useClass: PrismaTaxSnapshotRepoAdapter },
+    { provide: VatReportRepoPort, useClass: PrismaVatReportRepoAdapter },
+    { provide: TaxConsultantRepoPort, useClass: PrismaTaxConsultantRepoAdapter },
+    { provide: TaxReportRepoPort, useClass: PrismaTaxReportRepoAdapter },
+    { provide: TaxSummaryQueryPort, useClass: PrismaTaxSummaryQueryAdapter },
+    { provide: VatPeriodQueryPort, useClass: PrismaVatPeriodQueryAdapter },
+    { provide: WORKSPACE_TAX_SETTINGS_PORT, useClass: PrismaWorkspaceTaxSettingsAdapter },
   ],
   exports: [
-    // Export use cases so other modules can use them
     CalculateTaxUseCase,
     LockTaxSnapshotUseCase,
     TaxEngineService,

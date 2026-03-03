@@ -46,7 +46,7 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     const issues = this.resolveIssues(report.meta);
     const totals = await this.computeTotals(report, workspaceId);
 
-    const capabilities = await this.capabilitiesService.getCapabilities();
+    const capabilities = await this.capabilitiesService.getCapabilities(workspaceId);
 
     const filing = {
       id: report.id,
