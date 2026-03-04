@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ForbiddenError, NotFoundError, DomainError } from "@corely/domain";
+import { ConflictError, ForbiddenError, NotFoundError } from "@corely/domain";
 import type { OutboxPort, UseCaseContext } from "@corely/kernel";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
 import type { AuditPort } from "../../../../shared/ports/audit.port";
@@ -34,7 +34,7 @@ export class TransitionExpenseUseCase {
     }
 
     if (expense.archivedAt) {
-      throw new DomainError("Cannot transition an archived expense");
+      throw new ConflictError("Cannot transition an archived expense");
     }
 
     const oldStatus = expense.status;

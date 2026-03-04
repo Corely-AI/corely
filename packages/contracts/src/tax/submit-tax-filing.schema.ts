@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { TaxFilingDetailSchema } from "./tax-filing-detail.schema";
+import { TaxFilingDetailSchema, TaxSubmissionMethodSchema } from "./tax-filing-detail.schema";
 
 export const SubmitTaxFilingRequestSchema = z.object({
-  method: z.string(),
+  method: TaxSubmissionMethodSchema,
   submissionId: z.string(),
   submittedAt: z.string().datetime(),
   notes: z.string().optional(),

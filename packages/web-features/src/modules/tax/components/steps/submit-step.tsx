@@ -7,26 +7,46 @@ import { Label } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { Textarea } from "@corely/ui";
 import { Link } from "react-router-dom";
+import type {
+  SubmitTaxFilingRequest,
+  TaxSubmissionConnectionStatus,
+  TaxSubmissionMethod,
+} from "@corely/contracts";
 
 type SubmitStepProps = {
   canSubmit: boolean;
-  onSubmit: (payload: {
-    method: string;
-    submissionId: string;
-    submittedAt: string;
-    notes?: string;
-  }) => void;
+  methods: TaxSubmissionMethod[];
+  connectionStatus: TaxSubmissionConnectionStatus;
+  onSubmit: (payload: SubmitTaxFilingRequest) => void;
   isSubmitting?: boolean;
   blockerMessage?: string;
 };
 
-const METHODS = [{ label: "Manual", value: "manual" }];
+const METHOD_LABELS: Record<TaxSubmissionMethod, string> = {
+  manual: "Manual",
+  api: "API",
+  elster: "ELSTER",
+};
 
-export function SubmitStep({ canSubmit, onSubmit, isSubmitting, blockerMessage }: SubmitStepProps) {
-  const [method, setMethod] = React.useState<string>(METHODS[0].value);
+export function SubmitStep({
+  canSubmit,
+  methods,
+  connectionStatus,
+  onSubmit,
+  isSubmitting,
+  blockerMessage,
+}: SubmitStepProps) {
+  const availableMethods = methods.length > 0 ? methods : (["manual"] as TaxSubmissionMethod[]);
+  const [method, setMethod] = React.useState<TaxSubmissionMethod>(availableMethods[0]);
   const [submissionId, setSubmissionId] = React.useState("");
   const [submittedAt, setSubmittedAt] = React.useState(() => new Date().toISOString().slice(0, 16));
   const [notes, setNotes] = React.useState("");
+
+  React.useEffect(() => {
+    if (!availableMethods.includes(method)) {
+      setMethod(availableMethods[0]);
+    }
+  }, [availableMethods, method]);
 
   const handleSubmit = () => {
     if (!submissionId.trim()) {
@@ -45,11 +65,14 @@ export function SubmitStep({ canSubmit, onSubmit, isSubmitting, blockerMessage }
       <Alert>
         <AlertTitle>Submission method</AlertTitle>
         <AlertDescription>
-          Connect your submission method in{" "}
+          {connectionStatus === "connected"
+            ? "Your automated submission connection is configured."
+            : "Submission connection is not configured."}{" "}
+          Manage submission settings in{" "}
           <Link className="underline" to="/tax/settings#submission">
             Tax Settings
           </Link>{" "}
-          to submit directly.
+          to enable direct filing.
         </AlertDescription>
       </Alert>
 
@@ -60,14 +83,17 @@ export function SubmitStep({ canSubmit, onSubmit, isSubmitting, blockerMessage }
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label>Method</Label>
-            <Select value={method} onValueChange={setMethod}>
+            <Select
+              value={method}
+              onValueChange={(value) => setMethod(value as TaxSubmissionMethod)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {METHODS.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>
-                    {m.label}
+                {availableMethods.map((value) => (
+                  <SelectItem key={value} value={value}>
+                    {METHOD_LABELS[value]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -102,7 +128,7 @@ export function SubmitStep({ canSubmit, onSubmit, isSubmitting, blockerMessage }
             onClick={handleSubmit}
             disabled={!canSubmit || !submissionId.trim() || isSubmitting}
           >
-            Submit
+            Submit filing
           </Button>
         </CardContent>
       </Card>

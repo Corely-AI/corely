@@ -1,5 +1,9 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { type SubmitTaxFilingRequest, type SubmitTaxFilingResponse } from "@corely/contracts";
+import {
+  type SubmitTaxFilingRequest,
+  type SubmitTaxFilingResponse,
+  type TaxFilingActivityEvent,
+} from "@corely/contracts";
 import {
   BaseUseCase,
   type Result,
@@ -19,8 +23,8 @@ import { TaxReportRepoPort } from "../../domain/ports";
 import { GetTaxFilingDetailUseCase } from "./get-tax-filing-detail.use-case";
 import {
   TaxFilingStatus,
-  assertFilingTransition,
   dbStatusToFilingStatus,
+  isTransitionAllowed,
 } from "../../domain/entities/tax-filing-status";
 
 export type SubmitTaxFilingInput = {
@@ -53,11 +57,10 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
       return err(new NotFoundError("Filing not found", { code: "Tax:FilingNotFound" }));
     }
 
-    // Domain guard: validate transition using state machine
-    // assertFilingTransition throws TaxFilingInvalidTransitionError (AppError)
-    // which propagates through the ProblemDetails filter automatically.
     const currentStatus = dbStatusToFilingStatus(report.status);
-    assertFilingTransition(currentStatus, TaxFilingStatus.SUBMITTED, input.filingId);
+    if (!isTransitionAllowed(currentStatus, TaxFilingStatus.SUBMITTED)) {
+      return err(new ConflictError("Filing is not in a submit-ready status"));
+    }
 
     // Check for unresolved blockers in filing issues
     const currentIssues = Array.isArray(report.meta?.issues) ? report.meta?.issues : [];
@@ -87,6 +90,17 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
         submissionId: input.request.submissionId,
         submittedAt: input.request.submittedAt,
       },
+      activity: this.appendActivity(report.meta, {
+        id: `${input.filingId}-submitted-${Date.now()}`,
+        type: "submitted",
+        timestamp: input.request.submittedAt,
+        actor: ctx.userId ? { id: ctx.userId } : undefined,
+        notes: input.request.notes ?? undefined,
+        payload: {
+          submissionId: input.request.submissionId,
+          method: input.request.method,
+        },
+      }),
     };
     await this.reportRepo.updateMeta({
       tenantId: workspaceId,
@@ -125,5 +139,22 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
       return refreshed;
     }
     return ok({ filing: refreshed.value.filing });
+  }
+
+  private appendActivity(
+    meta: Record<string, unknown> | null | undefined,
+    event: TaxFilingActivityEvent
+  ): TaxFilingActivityEvent[] {
+    const current =
+      meta && typeof meta === "object" && Array.isArray(meta.activity) ? meta.activity : [];
+    const typed = current
+      .map((item) => {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+        return item as TaxFilingActivityEvent;
+      })
+      .filter((item): item is TaxFilingActivityEvent => Boolean(item));
+    return [...typed, event];
   }
 }

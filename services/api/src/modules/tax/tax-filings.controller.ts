@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Post,
   Query,
@@ -167,6 +168,7 @@ export class TaxFilingsController {
       sourceType: query.sourceType,
       dateFrom: query.dateFrom,
       dateTo: query.dateTo,
+      vatTreatment: query.vatTreatment,
       category: query.category,
       needsAttention: query.needsAttention,
       missingMapping: query.missingMapping,
@@ -213,12 +215,14 @@ export class TaxFilingsController {
   }
 
   @Post("filings/:id/recalculate")
+  @HttpCode(200)
   async recalculateFiling(@Param("id") id: string, @Req() req: Request) {
     const ctx = buildTaxUseCaseContext(req);
     return unwrap(await this.recalculateTaxFilingUseCase.execute(id, ctx));
   }
 
   @Post("filings/:id/submit")
+  @HttpCode(200)
   async submitFiling(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildTaxUseCaseContext(req);
     const request = SubmitTaxFilingRequestSchema.parse(body);
@@ -226,6 +230,7 @@ export class TaxFilingsController {
   }
 
   @Post("filings/:id/mark-paid")
+  @HttpCode(200)
   async markFilingPaid(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildTaxUseCaseContext(req);
     const request = MarkTaxFilingPaidRequestSchema.parse(body);
@@ -233,6 +238,7 @@ export class TaxFilingsController {
   }
 
   @Post("filings/:id/payment-proof")
+  @HttpCode(200)
   async attachPaymentProof(@Param("id") id: string, @Body() body: unknown, @Req() req: Request) {
     const ctx = buildTaxUseCaseContext(req);
     const request = AttachTaxFilingPaymentProofRequestSchema.parse(body);

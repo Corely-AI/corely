@@ -72,10 +72,7 @@ export const FILING_TRANSITIONS: Readonly<Record<TaxFilingStatus, ReadonlyArray<
 /**
  * States from which a filing can be permanently deleted.
  */
-export const DELETABLE_STATUSES: ReadonlyArray<TaxFilingStatus> = [
-  TaxFilingStatus.DRAFT,
-  TaxFilingStatus.NEEDS_FIX,
-];
+export const DELETABLE_STATUSES: ReadonlyArray<TaxFilingStatus> = [TaxFilingStatus.DRAFT];
 
 /**
  * Guard: asserts that a status transition is allowed.

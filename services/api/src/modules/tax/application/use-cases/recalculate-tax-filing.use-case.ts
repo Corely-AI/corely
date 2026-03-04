@@ -15,6 +15,7 @@ import {
 import { TaxReportRepoPort } from "../../domain/ports";
 import { GetTaxFilingDetailUseCase } from "./get-tax-filing-detail.use-case";
 import { PrismaService } from "@corely/data";
+import type { TaxFilingActivityEvent } from "@corely/contracts";
 
 /**
  * RecalculateTaxFilingUseCase
@@ -150,9 +151,19 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
     }
 
     // 3. Update report meta with recalculation timestamp
+    const recalculatedAt = new Date().toISOString();
     const meta = {
       ...(report.meta ?? {}),
-      lastRecalculatedAt: new Date().toISOString(),
+      lastRecalculatedAt: recalculatedAt,
+      activity: this.appendActivity(report.meta, {
+        id: `${filingId}-recalculated-${Date.now()}`,
+        type: "recalculated",
+        timestamp: recalculatedAt,
+        actor: ctx.userId ? { id: ctx.userId } : undefined,
+        payload: {
+          lastRecalculatedAt: recalculatedAt,
+        },
+      }),
     };
     await this.reportRepo.updateMeta({ tenantId: workspaceId, reportId: filingId, meta });
 
@@ -172,5 +183,22 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
       return refreshed;
     }
     return ok({ filing: refreshed.value.filing });
+  }
+
+  private appendActivity(
+    meta: Record<string, unknown> | null | undefined,
+    event: TaxFilingActivityEvent
+  ): TaxFilingActivityEvent[] {
+    const current =
+      meta && typeof meta === "object" && Array.isArray(meta.activity) ? meta.activity : [];
+    const typed = current
+      .map((item) => {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+        return item as TaxFilingActivityEvent;
+      })
+      .filter((item): item is TaxFilingActivityEvent => Boolean(item));
+    return [...typed, event];
   }
 }

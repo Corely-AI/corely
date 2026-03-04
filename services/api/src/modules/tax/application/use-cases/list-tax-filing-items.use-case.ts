@@ -48,7 +48,7 @@ export class ListTaxFilingItemsUseCase extends BaseUseCase<
     const page = input.query.page ?? 1;
     const pageSize = input.query.pageSize ?? 20;
 
-    if (input.query.sourceType === "transaction") {
+    if (input.query.sourceType === "tx" || input.query.sourceType === "transaction") {
       return ok({
         items: [],
         pageInfo: { page, pageSize, total: 0, hasNextPage: false },
@@ -70,7 +70,8 @@ export class ListTaxFilingItemsUseCase extends BaseUseCase<
       rows = rows.filter(
         (row) =>
           row.sourceId.toLowerCase().includes(q) ||
-          (row.description ? row.description.toLowerCase().includes(q) : false) ||
+          (row.vatTreatment ? row.vatTreatment.toLowerCase().includes(q) : false) ||
+          (row.category ? row.category.toLowerCase().includes(q) : false) ||
           (row.counterparty ? row.counterparty.toLowerCase().includes(q) : false)
       );
     }
@@ -88,6 +89,28 @@ export class ListTaxFilingItemsUseCase extends BaseUseCase<
         }
         return true;
       });
+    }
+
+    if (input.query.category) {
+      const category = input.query.category.toLowerCase();
+      rows = rows.filter((row) =>
+        row.category ? row.category.toLowerCase().includes(category) : false
+      );
+    }
+
+    if (input.query.vatTreatment) {
+      const vatTreatment = input.query.vatTreatment.toLowerCase();
+      rows = rows.filter((row) =>
+        row.vatTreatment ? row.vatTreatment.toLowerCase() === vatTreatment : false
+      );
+    }
+
+    if (typeof input.query.needsAttention === "boolean") {
+      rows = rows.filter((row) => row.flags.needsAttention === input.query.needsAttention);
+    }
+
+    if (typeof input.query.missingMapping === "boolean") {
+      rows = rows.filter((row) => row.flags.missingTaxTreatment === input.query.missingMapping);
     }
 
     rows = this.sortRows(rows, input.query.sort);
@@ -113,7 +136,13 @@ export class ListTaxFilingItemsUseCase extends BaseUseCase<
     if (!sourceType) {
       return undefined;
     }
-    return sourceType === "income" ? "INVOICE" : "EXPENSE";
+    if (sourceType === "invoice" || sourceType === "income") {
+      return "INVOICE";
+    }
+    if (sourceType === "expense") {
+      return "EXPENSE";
+    }
+    return undefined;
   }
 
   private mapSnapshotToRow(snapshot: {
@@ -124,21 +153,42 @@ export class ListTaxFilingItemsUseCase extends BaseUseCase<
     subtotalAmountCents: number;
     taxTotalAmountCents: number;
     totalAmountCents: number;
+    counterparty?: string;
+    category?: string;
+    vatTreatment?: string;
+    missingCategory?: boolean;
+    missingTaxTreatment?: boolean;
   }): TaxFilingItemRow {
     const sourceType: TaxFilingItemSourceType =
-      snapshot.sourceType === "INVOICE" ? "income" : "expense";
+      snapshot.sourceType === "INVOICE" ? "invoice" : "expense";
     const deepLink =
-      sourceType === "income" ? `/invoices/${snapshot.sourceId}` : `/expenses/${snapshot.sourceId}`;
+      sourceType === "invoice"
+        ? `/invoices/${snapshot.sourceId}`
+        : `/expenses/${snapshot.sourceId}`;
+    const missingCategory = Boolean(snapshot.missingCategory);
+    const missingTaxTreatment = Boolean(snapshot.missingTaxTreatment);
+    const flags = {
+      needsAttention: missingCategory || missingTaxTreatment,
+      missingCategory,
+      missingTaxTreatment,
+    };
     return {
       id: snapshot.id,
       sourceType,
       sourceId: snapshot.sourceId,
       date: snapshot.calculatedAt.toISOString(),
-      counterparty: undefined,
-      description: undefined,
+      counterparty: snapshot.counterparty,
+      category: snapshot.category,
+      vatTreatment: snapshot.vatTreatment ?? "unknown",
       netCents: snapshot.subtotalAmountCents,
       taxCents: snapshot.taxTotalAmountCents,
       grossCents: snapshot.totalAmountCents,
+      net: snapshot.subtotalAmountCents,
+      vat: snapshot.taxTotalAmountCents,
+      gross: snapshot.totalAmountCents,
+      flags,
+      missingCategory,
+      missingTaxTreatment,
       deepLink,
     };
   }

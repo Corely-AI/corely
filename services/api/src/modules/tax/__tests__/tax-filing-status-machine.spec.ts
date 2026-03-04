@@ -79,7 +79,7 @@ describe("TaxFilingStatus state machine", () => {
       }
       expect(caughtError).toBeInstanceOf(TaxFilingInvalidTransitionError);
       expect(caughtError?.code).toBe("Tax:FilingInvalidTransition");
-      expect(caughtError?.status).toBe(422);
+      expect(caughtError?.status).toBe(409);
       expect(caughtError?.data).toMatchObject({
         from: "SUBMITTED",
         to: "DRAFT",
@@ -89,13 +89,13 @@ describe("TaxFilingStatus state machine", () => {
   });
 
   describe("assertFilingDeletable", () => {
-    it("does not throw for DRAFT and NEEDS_FIX", () => {
+    it("does not throw for DRAFT", () => {
       expect(() => assertFilingDeletable(TaxFilingStatus.DRAFT, "filing-1")).not.toThrow();
-      expect(() => assertFilingDeletable(TaxFilingStatus.NEEDS_FIX, "filing-1")).not.toThrow();
     });
 
     it("throws TaxFilingNotDeletableError for non-deletable statuses", () => {
       for (const status of [
+        TaxFilingStatus.NEEDS_FIX,
         TaxFilingStatus.READY_FOR_REVIEW,
         TaxFilingStatus.SUBMITTED,
         TaxFilingStatus.PAID,
@@ -119,9 +119,9 @@ describe("TaxFilingStatus state machine", () => {
   });
 
   describe("DELETABLE_STATUSES", () => {
-    it("contains DRAFT and NEEDS_FIX", () => {
+    it("contains only DRAFT", () => {
       expect(DELETABLE_STATUSES).toContain(TaxFilingStatus.DRAFT);
-      expect(DELETABLE_STATUSES).toContain(TaxFilingStatus.NEEDS_FIX);
+      expect(DELETABLE_STATUSES).not.toContain(TaxFilingStatus.NEEDS_FIX);
     });
 
     it("does not contain SUBMITTED or PAID", () => {

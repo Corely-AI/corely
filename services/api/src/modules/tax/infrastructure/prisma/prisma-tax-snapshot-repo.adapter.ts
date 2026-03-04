@@ -10,6 +10,25 @@ export class PrismaTaxSnapshotRepoAdapter extends TaxSnapshotRepoPort {
     super();
   }
 
+  private readonly snapshotSelect = {
+    id: true,
+    tenantId: true,
+    sourceType: true,
+    sourceId: true,
+    jurisdiction: true,
+    regime: true,
+    roundingMode: true,
+    currency: true,
+    calculatedAt: true,
+    subtotalAmountCents: true,
+    taxTotalAmountCents: true,
+    totalAmountCents: true,
+    breakdownJson: true,
+    version: true,
+    createdAt: true,
+    updatedAt: true,
+  } as const;
+
   /**
    * Lock snapshot - idempotent by (tenantId, sourceType, sourceId)
    */
@@ -40,6 +59,7 @@ export class PrismaTaxSnapshotRepoAdapter extends TaxSnapshotRepoPort {
         totalAmountCents: snapshot.totalAmountCents,
         breakdownJson: snapshot.breakdownJson,
       },
+      select: this.snapshotSelect,
     });
 
     return this.toDomain(created);
@@ -54,6 +74,7 @@ export class PrismaTaxSnapshotRepoAdapter extends TaxSnapshotRepoPort {
       where: {
         tenantId_sourceType_sourceId: { tenantId, sourceType, sourceId },
       },
+      select: this.snapshotSelect,
     });
 
     return snapshot ? this.toDomain(snapshot) : null;
@@ -72,9 +93,82 @@ export class PrismaTaxSnapshotRepoAdapter extends TaxSnapshotRepoPort {
         ...(sourceType ? { sourceType } : {}),
       },
       orderBy: { calculatedAt: "asc" },
+      select: this.snapshotSelect,
     });
 
-    return snapshots.map((s) => this.toDomain(s));
+    if (snapshots.length === 0) {
+      return [];
+    }
+
+    const invoiceIds = snapshots
+      .filter((snapshot) => snapshot.sourceType === "INVOICE")
+      .map((snapshot) => snapshot.sourceId);
+    const expenseIds = snapshots
+      .filter((snapshot) => snapshot.sourceType === "EXPENSE")
+      .map((snapshot) => snapshot.sourceId);
+
+    const [invoices, expenses] = await Promise.all([
+      invoiceIds.length > 0
+        ? this.prisma.invoice.findMany({
+            where: { tenantId, id: { in: invoiceIds } },
+            select: { id: true, billToName: true, taxSnapshot: true },
+          })
+        : Promise.resolve([]),
+      expenseIds.length > 0
+        ? this.prisma.expense.findMany({
+            where: { tenantId, id: { in: expenseIds } },
+            select: { id: true, merchantName: true, category: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    const invoiceById = new Map(invoices.map((invoice) => [invoice.id, invoice]));
+    const expenseById = new Map(expenses.map((expense) => [expense.id, expense]));
+
+    return snapshots.map((snapshot) => {
+      const base = this.toDomain(snapshot);
+      if (snapshot.sourceType === "INVOICE") {
+        const invoice = invoiceById.get(snapshot.sourceId);
+        const vatTreatment = this.resolveInvoiceVatTreatment(invoice?.taxSnapshot);
+        return {
+          ...base,
+          counterparty: invoice?.billToName ?? undefined,
+          vatTreatment,
+          missingCategory: false,
+          missingTaxTreatment: vatTreatment === "unknown",
+        };
+      }
+
+      const expense = expenseById.get(snapshot.sourceId);
+      const vatTreatment = snapshot.taxTotalAmountCents > 0 ? "standard" : "unknown";
+      const category = expense?.category ?? undefined;
+      return {
+        ...base,
+        counterparty: expense?.merchantName ?? undefined,
+        category,
+        vatTreatment,
+        missingCategory: !category,
+        missingTaxTreatment: vatTreatment === "unknown",
+      };
+    });
+  }
+
+  private resolveInvoiceVatTreatment(snapshot: unknown): string {
+    if (!snapshot || typeof snapshot !== "object") {
+      return "unknown";
+    }
+    const raw = snapshot as { totalsByKind?: unknown; totalTaxAmountCents?: unknown };
+    if (typeof raw.totalTaxAmountCents === "number" && raw.totalTaxAmountCents > 0) {
+      return "standard";
+    }
+    if (
+      raw.totalsByKind &&
+      typeof raw.totalsByKind === "object" &&
+      Object.keys(raw.totalsByKind as Record<string, unknown>).length > 0
+    ) {
+      return "standard";
+    }
+    return "unknown";
   }
 
   private toDomain(model: any): TaxSnapshotEntity {
@@ -92,6 +186,13 @@ export class PrismaTaxSnapshotRepoAdapter extends TaxSnapshotRepoPort {
       taxTotalAmountCents: model.taxTotalAmountCents,
       totalAmountCents: model.totalAmountCents,
       breakdownJson: model.breakdownJson,
+      counterparty: model.counterparty ?? undefined,
+      category: model.category ?? undefined,
+      vatTreatment: model.vatTreatment ?? undefined,
+      missingCategory:
+        typeof model.missingCategory === "boolean" ? model.missingCategory : undefined,
+      missingTaxTreatment:
+        typeof model.missingTaxTreatment === "boolean" ? model.missingTaxTreatment : undefined,
       version: model.version,
       createdAt: model.createdAt,
       updatedAt: model.updatedAt,

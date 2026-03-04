@@ -1,5 +1,6 @@
 import React from "react";
 import { useRef } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
@@ -38,13 +39,18 @@ export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Attachments</CardTitle>
-        <Button
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={attachMutation.isPending}
-        >
-          Upload attachment
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/tax/documents">Attach from tax documents</Link>
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={attachMutation.isPending}
+          >
+            Upload attachment
+          </Button>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -73,9 +79,11 @@ export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
           >
             <div>
               <p className="text-sm font-medium">{doc.title ?? "Untitled document"}</p>
-              <p className="text-xs text-muted-foreground">
-                Uploaded {formatDateTime(doc.createdAt, "en-US")}
-              </p>
+              <div className="text-xs text-muted-foreground">
+                <p>Type: {doc.type}</p>
+                <p>Uploaded {formatDateTime(doc.createdAt, "en-US")}</p>
+                <p>Uploader: —</p>
+              </div>
             </div>
             <Button
               variant="ghost"

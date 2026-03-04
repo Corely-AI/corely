@@ -30,6 +30,7 @@ export function useRecalculateFilingMutation(id: string | undefined) {
         queryClient.invalidateQueries({ queryKey: taxFilingQueryKeys.detail(id) }),
         queryClient.invalidateQueries({ queryKey: taxFilingActivityQueryKey(id) }),
         queryClient.invalidateQueries({ queryKey: taxFilingAttachmentsQueryKey(id) }),
+        queryClient.invalidateQueries({ queryKey: ["tax-filings", id, "items"] }),
       ]);
     },
   });

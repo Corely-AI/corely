@@ -1,5 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { type TaxFilingActivityResponse, type TaxFilingActivityEvent } from "@corely/contracts";
+import {
+  TaxFilingActivityEventSchema,
+  type TaxFilingActivityResponse,
+  type TaxFilingActivityEvent,
+} from "@corely/contracts";
 import {
   BaseUseCase,
   type Result,
@@ -29,48 +33,78 @@ export class ListTaxFilingActivityUseCase extends BaseUseCase<string, TaxFilingA
       return err(new NotFoundError("Filing not found"));
     }
 
-    const events: TaxFilingActivityEvent[] = [
+    const derivedEvents: TaxFilingActivityEvent[] = [
       {
         id: `${report.id}-created`,
         type: "created",
         timestamp: report.createdAt.toISOString(),
+        payload: {},
       },
     ];
 
     if (typeof report.meta?.lastRecalculatedAt === "string") {
-      events.push({
+      derivedEvents.push({
         id: `${report.id}-recalculated`,
         type: "recalculated",
         timestamp: report.meta.lastRecalculatedAt,
+        payload: {
+          lastRecalculatedAt: report.meta.lastRecalculatedAt,
+        },
       });
     }
 
     if (report.submittedAt) {
-      events.push({
+      derivedEvents.push({
         id: `${report.id}-submitted`,
         type: "submitted",
         timestamp: report.submittedAt.toISOString(),
-        submissionId: report.submissionReference ?? undefined,
-        method:
-          typeof report.meta?.submission === "object" && report.meta?.submission
-            ? String((report.meta.submission as { method?: string }).method ?? "manual")
-            : "manual",
+        payload: {
+          submissionId: report.submissionReference ?? undefined,
+          method:
+            typeof report.meta?.submission === "object" && report.meta?.submission
+              ? String((report.meta.submission as { method?: string }).method ?? "manual")
+              : "manual",
+        },
+        notes: report.submissionNotes ?? undefined,
       });
     }
 
     if (report.status === "PAID" && report.meta?.payment) {
       const amount = (report.meta.payment as { amountCents?: number }).amountCents;
-      events.push({
+      derivedEvents.push({
         id: `${report.id}-paid`,
         type: "paid",
         timestamp: String(
           (report.meta.payment as { paidAt?: string }).paidAt ?? report.updatedAt.toISOString()
         ),
-        amountCents: typeof amount === "number" ? amount : undefined,
-        method: String((report.meta.payment as { method?: string }).method ?? "manual"),
+        payload: {
+          amountCents: typeof amount === "number" ? amount : undefined,
+          method: String((report.meta.payment as { method?: string }).method ?? "manual"),
+        },
       });
     }
 
+    const storedActivity =
+      report.meta && typeof report.meta === "object" && Array.isArray(report.meta.activity)
+        ? report.meta.activity
+        : [];
+    const storedEvents = storedActivity
+      .map((item) => {
+        const parsed = TaxFilingActivityEventSchema.safeParse(item);
+        return parsed.success ? parsed.data : null;
+      })
+      .filter((item): item is TaxFilingActivityEvent => Boolean(item));
+
+    const merged = [...storedEvents, ...derivedEvents];
+    const dedupedByKey = new Map<string, TaxFilingActivityEvent>();
+    for (const event of merged) {
+      const key = `${event.type}:${event.timestamp}`;
+      if (!dedupedByKey.has(key)) {
+        dedupedByKey.set(key, event);
+      }
+    }
+
+    const events = [...dedupedByKey.values()];
     events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     return ok({ events });

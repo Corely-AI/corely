@@ -12,6 +12,9 @@ const LABELS: Record<string, string> = {
   recalculated: "Recalculated",
   submitted: "Submitted",
   paid: "Marked paid",
+  attachmentAdded: "Attachment added",
+  issuesDetected: "Issues detected",
+  issuesResolved: "Issues resolved",
   deleted: "Deleted",
 };
 
@@ -31,11 +34,24 @@ export function ActivitySection({ filingId }: ActivitySectionProps) {
           <p className="text-sm text-muted-foreground">No activity yet.</p>
         ) : null}
         {events.map((event) => (
-          <div key={event.id} className="flex items-center justify-between text-sm">
-            <span>{LABELS[event.type] ?? event.type}</span>
-            <span className="text-muted-foreground">
-              {formatDateTime(event.timestamp, "en-US")}
-            </span>
+          <div key={event.id} className="rounded-md border border-border p-3 text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium">{LABELS[event.type] ?? event.type}</span>
+              <span className="text-muted-foreground">
+                {formatDateTime(event.timestamp, "en-US")}
+              </span>
+            </div>
+            {event.actor?.name || event.actor?.email || event.actor?.id ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                By {event.actor?.name ?? event.actor?.email ?? event.actor?.id}
+              </p>
+            ) : null}
+            {event.notes ? (
+              <p className="mt-1 text-xs text-muted-foreground">{event.notes}</p>
+            ) : null}
+            {event.payload ? (
+              <p className="mt-1 text-xs text-muted-foreground">{JSON.stringify(event.payload)}</p>
+            ) : null}
           </div>
         ))}
       </CardContent>

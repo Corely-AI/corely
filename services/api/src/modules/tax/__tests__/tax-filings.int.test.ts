@@ -288,14 +288,14 @@ describe("Tax filings (API)", () => {
     });
 
     const res = await request(server)
-      .get(`/tax/filings/${report.id}/items?sourceType=income&page=1&pageSize=20`)
+      .get(`/tax/filings/${report.id}/items?sourceType=invoice&page=1&pageSize=20`)
       .set(HEADER_TENANT_ID, tenantId)
       .set(HEADER_WORKSPACE_ID, workspaceId)
       .set("x-user-id", userId);
 
     expect(res.status).toBe(200);
     expect(res.body.items.length).toBe(1);
-    expect(res.body.items[0].sourceType).toBe("income");
+    expect(res.body.items[0].sourceType).toBe("invoice");
     expect(res.body.pageInfo).toBeDefined();
   });
 });

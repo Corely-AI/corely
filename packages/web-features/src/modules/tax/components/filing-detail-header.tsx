@@ -8,6 +8,10 @@ type FilingDetailHeaderProps = {
   onBack: () => void;
   onAction: (actionKey: string) => Promise<void>;
   isLoading?: boolean;
+  periodNavigation?: {
+    hasPrevious: boolean;
+    hasNext: boolean;
+  };
 };
 
 const TYPE_LABELS: Record<TaxFilingType, string> = {
@@ -40,12 +44,25 @@ const STATUS_TONES: Record<TaxFilingStatus, string> = {
 };
 
 const resolvePrimaryAction = (filing: TaxFilingDetail) => {
-  if (["draft", "needsFix", "readyForReview"].includes(filing.status)) {
+  if (filing.status === "needsFix") {
+    return {
+      key: "review",
+      label: "Continue review",
+      placement: "primary" as const,
+      enabled: true,
+    };
+  }
+  if (["draft", "readyForReview"].includes(filing.status)) {
     return { key: "review", label: "Review", placement: "primary" as const, enabled: true };
   }
   if (filing.status === "submitted") {
     return filing.capabilities.paymentsEnabled
-      ? { key: "markPaid", label: "Mark paid", placement: "primary" as const, enabled: true }
+      ? {
+          key: "markPaid",
+          label: "Mark paid",
+          placement: "primary" as const,
+          enabled: filing.capabilities.canMarkPaid,
+        }
       : { key: "view", label: "View", placement: "primary" as const, enabled: true };
   }
   if (filing.status === "paid") {
@@ -59,9 +76,33 @@ export function FilingDetailHeader({
   onBack,
   onAction,
   isLoading,
+  periodNavigation,
 }: FilingDetailHeaderProps) {
+  const daysLeft = Math.ceil(
+    (new Date(filing.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const dueLabel =
+    daysLeft > 0
+      ? `Due ${formatDate(filing.dueDate, "en-US")} • ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`
+      : `Due ${formatDate(filing.dueDate, "en-US")}`;
   const primaryAction = resolvePrimaryAction(filing);
   const actions = [
+    ...(periodNavigation
+      ? [
+          {
+            key: "previousPeriod",
+            label: "Previous period",
+            placement: "secondary" as const,
+            enabled: periodNavigation.hasPrevious,
+          },
+          {
+            key: "nextPeriod",
+            label: "Next period",
+            placement: "secondary" as const,
+            enabled: periodNavigation.hasNext,
+          },
+        ]
+      : []),
     {
       key: "recalculate",
       label: "Recalculate",
@@ -88,7 +129,7 @@ export function FilingDetailHeader({
       label: "Delete filing",
       icon: "XCircle",
       placement: "danger" as const,
-      enabled: filing.capabilities.canDelete,
+      enabled: filing.capabilities.canDelete && filing.status === "draft",
       dangerous: true,
       confirmTitle: "Delete filing?",
       confirmMessage: "This action cannot be undone.",
@@ -99,7 +140,7 @@ export function FilingDetailHeader({
   return (
     <DetailScreenHeader
       title={`${TYPE_LABELS[filing.type]} — ${filing.periodLabel}`}
-      subtitle={`Due ${formatDate(filing.dueDate, "en-US")}`}
+      subtitle={dueLabel}
       capabilities={{
         status: {
           value: filing.status,

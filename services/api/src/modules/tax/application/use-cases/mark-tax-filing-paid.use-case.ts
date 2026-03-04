@@ -3,12 +3,14 @@ import {
   type MarkTaxFilingPaidRequest,
   type MarkTaxFilingPaidResponse,
   type DocumentLinkEntityType,
+  type TaxFilingActivityEvent,
 } from "@corely/contracts";
 import {
   BaseUseCase,
   type Result,
   type UseCaseContext,
   type UseCaseError,
+  ConflictError,
   NotFoundError,
   ok,
   err,
@@ -21,11 +23,7 @@ import {
 import { TaxReportRepoPort } from "../../domain/ports";
 import { GetTaxFilingDetailUseCase } from "./get-tax-filing-detail.use-case";
 import { DocumentsApplication } from "../../../documents/application/documents.application";
-import {
-  TaxFilingStatus,
-  assertFilingTransition,
-  dbStatusToFilingStatus,
-} from "../../domain/entities/tax-filing-status";
+import { TaxFilingStatus, dbStatusToFilingStatus } from "../../domain/entities/tax-filing-status";
 
 export type MarkTaxFilingPaidInput = {
   filingId: string;
@@ -60,7 +58,9 @@ export class MarkTaxFilingPaidUseCase extends BaseUseCase<
 
     // Domain guard: validate SUBMITTED → PAID transition
     const currentStatus = dbStatusToFilingStatus(report.status);
-    assertFilingTransition(currentStatus, TaxFilingStatus.PAID, input.filingId);
+    if (currentStatus !== TaxFilingStatus.SUBMITTED) {
+      return err(new ConflictError("Filing must be submitted before marking as paid"));
+    }
 
     // Optionally link proof document via Documents module
     if (input.request.proofDocumentId) {
@@ -84,6 +84,30 @@ export class MarkTaxFilingPaidUseCase extends BaseUseCase<
       amountCents: input.request.amountCents,
       method: input.request.method,
       proofDocumentId: input.request.proofDocumentId ?? null,
+    });
+
+    await this.reportRepo.updateMeta({
+      tenantId: workspaceId,
+      reportId: input.filingId,
+      meta: {
+        ...(report.meta ?? {}),
+        payment: {
+          paidAt: input.request.paidAt,
+          method: input.request.method,
+          amountCents: input.request.amountCents,
+          proofDocumentId: input.request.proofDocumentId ?? null,
+        },
+        activity: this.appendActivity(report.meta, {
+          id: `${input.filingId}-paid-${Date.now()}`,
+          type: "paid",
+          timestamp: input.request.paidAt,
+          actor: ctx.userId ? { id: ctx.userId } : undefined,
+          payload: {
+            amountCents: input.request.amountCents,
+            method: input.request.method,
+          },
+        }),
+      },
     });
 
     // Emit domain event
@@ -119,5 +143,22 @@ export class MarkTaxFilingPaidUseCase extends BaseUseCase<
       return refreshed;
     }
     return ok({ filing: refreshed.value.filing });
+  }
+
+  private appendActivity(
+    meta: Record<string, unknown> | null | undefined,
+    event: TaxFilingActivityEvent
+  ): TaxFilingActivityEvent[] {
+    const current =
+      meta && typeof meta === "object" && Array.isArray(meta.activity) ? meta.activity : [];
+    const typed = current
+      .map((item) => {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+        return item as TaxFilingActivityEvent;
+      })
+      .filter((item): item is TaxFilingActivityEvent => Boolean(item));
+    return [...typed, event];
   }
 }

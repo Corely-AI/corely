@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge } from "@corely/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { EmptyState } from "@corely/web-shared/shared/components/EmptyState";
 import {
   ListToolbar,
@@ -23,13 +24,20 @@ import { useTaxFilingItemsQuery } from "../hooks/useTaxFilingItemsQuery";
 
 type IncludedItemsSectionProps = {
   filingId: string;
-  presetSourceType?: TaxFilingItemSourceType;
+  presetSourceType?: "invoice" | "expense";
 };
 
 const SOURCE_OPTIONS = [
-  { label: "Income", value: "income" },
+  { label: "Invoice", value: "invoice" },
   { label: "Expense", value: "expense" },
-  { label: "Transaction", value: "transaction" },
+  { label: "Transaction", value: "tx" },
+];
+
+const VAT_TREATMENT_OPTIONS = [
+  { label: "Standard", value: "standard" },
+  { label: "Reduced", value: "reduced" },
+  { label: "Exempt", value: "exempt" },
+  { label: "Unknown", value: "unknown" },
 ];
 
 export function IncludedItemsSection({ filingId, presetSourceType }: IncludedItemsSectionProps) {
@@ -45,6 +53,12 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
     () => [
       { key: "sourceType", label: "Source type", type: "select", options: SOURCE_OPTIONS },
       { key: "date", label: "Date", type: "date" },
+      {
+        key: "vatTreatment",
+        label: "VAT treatment",
+        type: "select",
+        options: VAT_TREATMENT_OPTIONS,
+      },
       { key: "category", label: "Category", type: "text" },
       { key: "needsAttention", label: "Needs attention", type: "boolean" },
       { key: "missingMapping", label: "Missing mapping", type: "boolean" },
@@ -102,7 +116,12 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
     return typeof filter?.value === "boolean" ? filter.value : undefined;
   }, [state.filters]);
 
-  const { data, isLoading, isError } = useTaxFilingItemsQuery(filingId, {
+  const vatTreatment = useMemo<string | undefined>(() => {
+    const filter = state.filters?.find((f) => f.field === "vatTreatment");
+    return filter?.value ? String(filter.value) : undefined;
+  }, [state.filters]);
+
+  const { data, isLoading, isError, refetch } = useTaxFilingItemsQuery(filingId, {
     q: state.q,
     page: state.page,
     pageSize: state.pageSize,
@@ -111,6 +130,7 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
     sourceType: sourceTypeFilter,
     dateFrom,
     dateTo,
+    vatTreatment,
     category,
     needsAttention,
     missingMapping,
@@ -185,7 +205,10 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
                         Counterparty
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Description
+                        Category
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                        VAT treatment
                       </th>
                       <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
                         Net
@@ -195,6 +218,9 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
                       </th>
                       <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
                         Gross
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
+                        Flags
                       </th>
                     </tr>
                   </thead>
@@ -206,13 +232,18 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
                         onClick={() => navigate(item.deepLink)}
                       >
                         <td className="px-4 py-3 text-sm font-medium">
-                          {item.sourceType === "income" ? "Income" : "Expense"}
+                          {item.sourceType === "invoice"
+                            ? "Invoice"
+                            : item.sourceType === "expense"
+                              ? "Expense"
+                              : "Transaction"}
                         </td>
                         <td className="px-4 py-3 text-sm text-muted-foreground">
                           {formatDate(item.date, "en-US")}
                         </td>
                         <td className="px-4 py-3 text-sm">{item.counterparty ?? "—"}</td>
-                        <td className="px-4 py-3 text-sm">{item.description ?? "—"}</td>
+                        <td className="px-4 py-3 text-sm">{item.category ?? "—"}</td>
+                        <td className="px-4 py-3 text-sm">{item.vatTreatment ?? "—"}</td>
                         <td className="px-4 py-3 text-sm text-right">
                           {item.netCents != null ? formatMoney(item.netCents, "en-US") : "—"}
                         </td>
@@ -221,6 +252,21 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
                         </td>
                         <td className="px-4 py-3 text-sm text-right">
                           {item.grossCents != null ? formatMoney(item.grossCents, "en-US") : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <div className="flex flex-wrap gap-1">
+                            {item.flags.needsAttention ? (
+                              <Badge variant="destructive">Needs attention</Badge>
+                            ) : (
+                              <Badge variant="secondary">OK</Badge>
+                            )}
+                            {item.flags.missingCategory ? (
+                              <Badge variant="outline">No category</Badge>
+                            ) : null}
+                            {item.flags.missingTaxTreatment ? (
+                              <Badge variant="outline">No VAT treatment</Badge>
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -272,8 +318,11 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
           ) : null}
 
           {isError ? (
-            <div className="px-4 pb-4 text-sm text-destructive">
-              Failed to load included items. Please retry.
+            <div className="px-4 pb-4 text-sm text-destructive flex items-center justify-between">
+              <span>Failed to load included items.</span>
+              <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                Retry
+              </Button>
             </div>
           ) : null}
         </CardContent>

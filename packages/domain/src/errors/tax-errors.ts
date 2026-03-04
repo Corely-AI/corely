@@ -20,7 +20,7 @@ export class TaxProfileMissingError extends AppError {
 
 /**
  * Thrown when a filing state transition is not allowed by the state machine.
- * Code: Tax:FilingInvalidTransition  Status: 422
+ * Code: Tax:FilingInvalidTransition  Status: 409
  */
 export class TaxFilingInvalidTransitionError extends AppError {
   constructor(from: string, to: string, filingId?: string) {
@@ -28,7 +28,7 @@ export class TaxFilingInvalidTransitionError extends AppError {
       code: "Tax:FilingInvalidTransition",
       message: `Cannot transition filing from ${from} to ${to}`,
       publicMessage: `This action is not allowed in the current filing status (${from}).`,
-      status: 422,
+      status: 409,
       logLevel: "warn",
       data: { from, to, ...(filingId ? { filingId } : {}) },
     });
@@ -105,7 +105,7 @@ export class TaxFilingConflictError extends AppError {
 
 /**
  * Thrown when a filing cannot be deleted because it is in a non-deletable state.
- * Code: Tax:FilingNotDeletable  Status: 422
+ * Code: Tax:FilingNotDeletable  Status: 409
  */
 export class TaxFilingNotDeletableError extends AppError {
   constructor(filingId: string, status: string) {
@@ -113,7 +113,7 @@ export class TaxFilingNotDeletableError extends AppError {
       code: "Tax:FilingNotDeletable",
       message: `Filing ${filingId} in status ${status} cannot be deleted`,
       publicMessage: `Filings in status '${status}' cannot be deleted.`,
-      status: 422,
+      status: 409,
       logLevel: "warn",
       data: { filingId, status },
     });
