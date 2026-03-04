@@ -126,7 +126,7 @@
       "payments": "Thanh toán",
       "documents": "Tài liệu",
       "settings": "Cài đặt thuế",
-      "reports": "Bao cao"
+      "reports": "Báo cáo"
     },
     "assistant": "Trợ lý",
     "expenses": "Chi phí",
@@ -646,40 +646,55 @@
         "payrollTax": "Thuế tiền lương"
       },
       "eur": {
-        "title": "Bao cao EÜR (Loi nhuan va Lo)",
-        "subtitle": "Bao cao nam theo co so tien mat cho khai thue ca nhan tai Duc.",
+        "title": "Báo cáo EÜR (Lãi & Lỗ)",
+        "subtitle": "Báo cáo năm theo cơ sở tiền mặt cho khai thuế cá nhân tại Đức.",
         "status": {
-          "loadingCapabilities": "Dang tai kha nang thue...",
-          "loadingStatement": "Dang tai bao cao EÜR..."
+          "loadingCapabilities": "Đang tải khả năng thuế...",
+          "loadingStatement": "Đang tải báo cáo EÜR..."
         },
         "unsupported": {
-          "title": "Khong ho tro EÜR",
-          "description": "Bao cao nay hien chi ho tro cho workspace ca nhan tai Duc."
+          "title": "EÜR chưa khả dụng",
+          "description": "Báo cáo này hiện chỉ hỗ trợ cho workspace cá nhân tại Đức."
         },
         "errors": {
-          "capabilitiesTitle": "Khong the tai kha nang thue",
-          "capabilitiesDescription": "Vui long thu lai khi da co ngu canh workspace.",
-          "statementTitle": "Khong the tai bao cao EÜR",
-          "generic": "Tai bao cao EÜR that bai."
+          "capabilitiesTitle": "Không thể tải khả năng thuế",
+          "capabilitiesDescription": "Vui lòng thử lại khi workspace đã sẵn sàng.",
+          "statementTitle": "Không thể tải báo cáo EÜR",
+          "generic": "Tải báo cáo EÜR thất bại."
         },
         "summary": {
-          "income": "Thu nhap",
-          "expenses": "Chi phi",
-          "profit": "Loi nhuan"
+          "income": "Thu nhập",
+          "expenses": "Chi phí",
+          "profit": "Lợi nhuận"
         },
         "lines": {
-          "title": "Cac dong bao cao",
+          "title": "Các dòng báo cáo",
           "columns": {
-            "line": "Dong",
-            "group": "Nhom",
-            "amount": "So tien"
+            "line": "Dòng",
+            "group": "Nhóm",
+            "amount": "Số tiền"
           },
           "groups": {
-            "income": "Thu nhap",
-            "expense": "Chi phi"
+            "income": "Thu nhập",
+            "expense": "Chi phí"
           }
         },
-        "generatedAt": "Tao luc {{date}}"
+        "lineLabels": {
+          "income": {
+            "sales": "Doanh thu bán hàng",
+            "other": "Thu nhập hoạt động khác"
+          },
+          "expense": {
+            "rent": "Chi phí mặt bằng (thuê/tiện ích)",
+            "software": "Phần mềm và gói đăng ký",
+            "travel": "Chi phí đi lại",
+            "marketing": "Quảng cáo và tiếp thị",
+            "professional": "Dịch vụ tư vấn và thuê ngoài",
+            "taxes": "Thuế, phí và lệ phí",
+            "other": "Chi phí hoạt động được khấu trừ khác"
+          }
+        },
+        "generatedAt": "Tạo lúc {{date}}"
       }
     },
     "documents": {

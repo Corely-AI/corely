@@ -92,7 +92,7 @@ export function TaxEurReportPage() {
       </div>
 
       {isCapabilitiesLoading ? (
-        <Card>
+        <Card className="border-border/40">
           <CardContent className="py-10 text-sm text-muted-foreground">
             {t("tax.reports.eur.status.loadingCapabilities")}
           </CardContent>
@@ -107,7 +107,7 @@ export function TaxEurReportPage() {
       ) : null}
 
       {supportsEur && statementQuery.isLoading ? (
-        <Card>
+        <Card className="border-border/40">
           <CardContent className="py-10 text-sm text-muted-foreground">
             {t("tax.reports.eur.status.loadingStatement")}
           </CardContent>
@@ -131,7 +131,7 @@ export function TaxEurReportPage() {
       {supportsEur && statementQuery.data ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
+            <Card className="border-border/40">
               <CardHeader>
                 <CardTitle>{t("tax.reports.eur.summary.income")}</CardTitle>
               </CardHeader>
@@ -143,7 +143,7 @@ export function TaxEurReportPage() {
                 )}
               </CardContent>
             </Card>
-            <Card>
+            <Card className="border-border/40">
               <CardHeader>
                 <CardTitle>{t("tax.reports.eur.summary.expenses")}</CardTitle>
               </CardHeader>
@@ -155,7 +155,7 @@ export function TaxEurReportPage() {
                 )}
               </CardContent>
             </Card>
-            <Card>
+            <Card className="border-border/40">
               <CardHeader>
                 <CardTitle>{t("tax.reports.eur.summary.profit")}</CardTitle>
               </CardHeader>
@@ -169,7 +169,7 @@ export function TaxEurReportPage() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="border-border/40">
             <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
               <CardTitle>{t("tax.reports.eur.lines.title")}</CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -181,7 +181,7 @@ export function TaxEurReportPage() {
             <CardContent>
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="border-border/40">
                     <TableHead>{t("tax.reports.eur.lines.columns.line")}</TableHead>
                     <TableHead>{t("tax.reports.eur.lines.columns.group")}</TableHead>
                     <TableHead className="text-right">
@@ -191,8 +191,10 @@ export function TaxEurReportPage() {
                 </TableHeader>
                 <TableBody>
                   {statementQuery.data.lines.map((line) => (
-                    <TableRow key={line.id}>
-                      <TableCell>{line.label}</TableCell>
+                    <TableRow key={line.id} className="border-border/30">
+                      <TableCell>
+                        {t(`tax.reports.eur.lineLabels.${line.id}`, { defaultValue: line.label })}
+                      </TableCell>
                       <TableCell>
                         {line.group === "INCOME"
                           ? t("tax.reports.eur.lines.groups.income")

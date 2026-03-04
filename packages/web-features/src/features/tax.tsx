@@ -1,6 +1,7 @@
 import React from "react";
 import {
   TaxCenterPage,
+  TaxEurReportPage,
   FilingsListPage,
   FilingDetailPage,
   CreateFilingPage,
@@ -12,6 +13,7 @@ import type { FeatureNavItem, FeatureRoute } from "@corely/web-features/types";
 
 export const taxRoutes = (): FeatureRoute[] => [
   { path: "/tax", element: <TaxCenterPage /> },
+  { path: "/tax/reports/eur", element: <TaxEurReportPage /> },
   { path: "/tax/filings", element: <FilingsListPage /> },
   { path: "/tax/filings/new", element: <CreateFilingPage /> },
   { path: "/tax/filings/:id", element: <FilingDetailPage /> },
@@ -22,4 +24,5 @@ export const taxRoutes = (): FeatureRoute[] => [
 
 export const taxNavItems: FeatureNavItem[] = [
   { id: "tax", label: "Tax", route: "/tax", icon: "Scale" },
+  { id: "tax-reports", label: "Reports", route: "/tax/reports/eur", icon: "BarChart3" },
 ];

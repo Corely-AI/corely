@@ -4,9 +4,9 @@ import { Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { ensureDefaultWorkspace } from "./ensure-default-workspace";
 
-export const LoginPage = () => {
+export const SignupPage = () => {
   const navigate = useNavigate();
-  const { signin, error: authError } = useAuth();
+  const { signup, error: authError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,29 +15,37 @@ export const LoginPage = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await signin({ email, password });
+      await signup({ email, password });
       await ensureDefaultWorkspace(email);
       navigate("/overview", { replace: true });
     } catch {
-      setError("Unable to sign in or initialize workspace.");
+      setError("Unable to create account or initialize workspace.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const displayError = error || authError;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-10">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
-          <h1 className="text-2xl font-semibold">Freelancer Login</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Sign in to your workspace.</p>
+          <h1 className="text-2xl font-semibold">Create Freelancer Account</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Sign up to start your workspace.</p>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            {error || authError ? (
+            {displayError ? (
               <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {error || authError}
+                {displayError}
               </div>
             ) : null}
 
@@ -47,7 +55,7 @@ export const LoginPage = () => {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(event) => setEmail(event.target.value)}
                 required
               />
             </div>
@@ -58,19 +66,19 @@ export const LoginPage = () => {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(event) => setPassword(event.target.value)}
                 required
               />
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? "Creating account..." : "Sign up"}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
-              Need an account?{" "}
-              <Link to="/auth/signup" className="text-accent">
-                Sign up
+              Already have an account?{" "}
+              <Link to="/auth/login" className="text-accent">
+                Sign in
               </Link>
             </div>
           </form>
@@ -79,3 +87,5 @@ export const LoginPage = () => {
     </div>
   );
 };
+
+export default SignupPage;

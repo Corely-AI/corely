@@ -11,8 +11,8 @@ export class PrismaTaxSummaryQueryAdapter extends TaxSummaryQueryPort {
   async getTotals(workspaceId: string): Promise<TaxSummaryTotals> {
     const [incomeRow] = await this.prisma.$queryRaw<Array<{ total: bigint | null }>>`
       SELECT SUM(l."qty" * l."unitPriceCents") AS total
-      FROM "InvoiceLine" l
-      INNER JOIN "Invoice" i ON i."id" = l."invoiceId"
+      FROM billing."InvoiceLine" l
+      INNER JOIN billing."Invoice" i ON i."id" = l."invoiceId"
       WHERE i."tenantId" = ${workspaceId} AND i."status" IN ('ISSUED','SENT','PAID')
     `;
 

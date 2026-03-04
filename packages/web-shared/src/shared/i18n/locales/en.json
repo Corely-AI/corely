@@ -694,6 +694,21 @@
             "expense": "Expense"
           }
         },
+        "lineLabels": {
+          "income": {
+            "sales": "Sales revenue",
+            "other": "Other operating income"
+          },
+          "expense": {
+            "rent": "Premises costs (rent/utilities)",
+            "software": "Software and subscriptions",
+            "travel": "Travel expenses",
+            "marketing": "Advertising and marketing",
+            "professional": "Professional and external services",
+            "taxes": "Taxes, fees and charges",
+            "other": "Other fully deductible operating expenses"
+          }
+        },
         "generatedAt": "Generated {{date}}"
       }
     },

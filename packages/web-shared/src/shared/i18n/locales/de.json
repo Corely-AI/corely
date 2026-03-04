@@ -668,6 +668,21 @@
             "expense": "Ausgabe"
           }
         },
+        "lineLabels": {
+          "income": {
+            "sales": "Umsatzerlöse",
+            "other": "Sonstige betriebliche Erträge"
+          },
+          "expense": {
+            "rent": "Raumkosten (Miete/Nebenkosten)",
+            "software": "Software und Abonnements",
+            "travel": "Reisekosten",
+            "marketing": "Werbung und Marketing",
+            "professional": "Beratung und Fremdleistungen",
+            "taxes": "Steuern, Gebühren und Abgaben",
+            "other": "Sonstige unbeschränkt abziehbare Betriebsausgaben"
+          }
+        },
         "generatedAt": "Erstellt am {{date}}"
       }
     },
