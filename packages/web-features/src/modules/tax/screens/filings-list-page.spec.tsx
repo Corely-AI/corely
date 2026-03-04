@@ -189,6 +189,23 @@ describe("FilingsListPage", () => {
     );
   });
 
+  it("changing VAT year updates URL year when periodKey is preset", async () => {
+    const user = userEvent.setup();
+    renderPage("/tax/filings?tab=vat&year=2025&periodKey=2025-Q4");
+
+    const navigator = screen.getAllByTestId("vat-period-navigator")[0];
+    await user.click(within(navigator).getByRole("button", { name: "tax.navigator.nextYear" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getAllByTestId("location").some((node) => node.textContent?.includes("year=2026"))
+      ).toBe(true)
+    );
+    await waitFor(() =>
+      expect(listFilingsMock).toHaveBeenCalledWith(expect.objectContaining({ year: 2026 }))
+    );
+  });
+
   it("annual tab shows empty state CTA without filtering by year", async () => {
     listFilingsMock.mockResolvedValueOnce({
       items: [],

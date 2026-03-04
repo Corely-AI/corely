@@ -56,11 +56,13 @@ export class ListTaxFilingItemsUseCase extends BaseUseCase<
     }
 
     const sourceType = this.mapToSnapshotSourceType(input.query.sourceType);
+    const invoiceDateMode = report.type === "INCOME_TAX" ? "payment" : "document";
     const snapshots = await this.snapshotRepo.findByPeriod(
       workspaceId,
       report.periodStart,
       report.periodEnd,
-      sourceType
+      sourceType,
+      sourceType === "EXPENSE" ? undefined : { invoiceDateMode }
     );
 
     let rows = snapshots.map((snap) => this.mapSnapshotToRow(snap));

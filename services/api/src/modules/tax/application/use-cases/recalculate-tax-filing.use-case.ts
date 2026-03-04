@@ -95,53 +95,15 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
       });
     }
 
-    // 2. Backfill snapshots for Invoices (for income-annual / VAT annual)
-    if (report.type === "INCOME_TAX" || report.type === "VAT_ANNUAL") {
-      const invoices = await this.prisma.invoice.findMany({
-        where: {
-          tenantId: workspaceId,
-          issuedAt: { gte: report.periodStart, lte: report.periodEnd },
-          status: { in: ["ISSUED", "SENT", "PAID"] as any[] },
-        },
-        include: { lines: true },
-      });
-
-      for (const invoice of invoices) {
-        const { subtotalCents, taxCents, totalCents } = this.resolveInvoiceAmounts(invoice);
-        const invoiceBreakdown = invoice.taxSnapshot ? JSON.stringify(invoice.taxSnapshot) : "{}";
-
-        await this.prisma.taxSnapshot.upsert({
-          where: {
-            tenantId_sourceType_sourceId: {
-              tenantId: workspaceId,
-              sourceType: "INVOICE",
-              sourceId: invoice.id,
-            },
-          },
-          update: {
-            subtotalAmountCents: subtotalCents,
-            taxTotalAmountCents: taxCents,
-            totalAmountCents: totalCents,
-            currency: invoice.currency,
-            calculatedAt: invoice.issuedAt ?? invoice.createdAt,
-          },
-          create: {
-            tenantId: workspaceId,
-            sourceType: "INVOICE",
-            sourceId: invoice.id,
-            jurisdiction: "DE",
-            regime: "STANDARD_VAT",
-            roundingMode: "PER_DOCUMENT",
-            currency: invoice.currency,
-            calculatedAt: invoice.issuedAt ?? invoice.createdAt,
-            subtotalAmountCents: subtotalCents,
-            taxTotalAmountCents: taxCents,
-            totalAmountCents: totalCents,
-            breakdownJson: invoiceBreakdown,
-            version: 1,
-          },
-        });
-      }
+    // 2. Backfill snapshots for Invoices.
+    if (report.type === "INCOME_TAX") {
+      await this.recalculateIncomeInvoiceSnapshots(
+        workspaceId,
+        report.periodStart,
+        report.periodEnd
+      );
+    } else if (report.type === "VAT_ANNUAL" || report.type === "VAT_ADVANCE") {
+      await this.recalculateVatInvoiceSnapshots(workspaceId, report.periodStart, report.periodEnd);
     }
 
     // 3. Update report meta with recalculation timestamp
@@ -212,6 +174,147 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
       taxCents,
       totalCents,
     };
+  }
+
+  private resolveInvoiceTaxDate(invoice: {
+    invoiceDate: Date | null;
+    issuedAt: Date | null;
+    createdAt: Date;
+  }): Date {
+    return invoice.invoiceDate ?? invoice.issuedAt ?? invoice.createdAt;
+  }
+
+  private resolveFinalPaymentDate(payments: Array<{ paidAt: Date }>): Date | null {
+    if (payments.length === 0) {
+      return null;
+    }
+    return payments.reduce(
+      (latest, payment) => (payment.paidAt > latest ? payment.paidAt : latest),
+      payments[0].paidAt
+    );
+  }
+
+  private async upsertInvoiceSnapshot(params: {
+    workspaceId: string;
+    invoice: {
+      id: string;
+      currency: string;
+      taxSnapshot: unknown;
+      lines: Array<{ unitPriceCents: number; qty: number }>;
+    };
+    calculatedAt: Date;
+  }): Promise<void> {
+    const { subtotalCents, taxCents, totalCents } = this.resolveInvoiceAmounts(params.invoice);
+    const invoiceBreakdown = params.invoice.taxSnapshot
+      ? JSON.stringify(params.invoice.taxSnapshot)
+      : "{}";
+
+    await this.prisma.taxSnapshot.upsert({
+      where: {
+        tenantId_sourceType_sourceId: {
+          tenantId: params.workspaceId,
+          sourceType: "INVOICE",
+          sourceId: params.invoice.id,
+        },
+      },
+      update: {
+        subtotalAmountCents: subtotalCents,
+        taxTotalAmountCents: taxCents,
+        totalAmountCents: totalCents,
+        currency: params.invoice.currency,
+        calculatedAt: params.calculatedAt,
+      },
+      create: {
+        tenantId: params.workspaceId,
+        sourceType: "INVOICE",
+        sourceId: params.invoice.id,
+        jurisdiction: "DE",
+        regime: "STANDARD_VAT",
+        roundingMode: "PER_DOCUMENT",
+        currency: params.invoice.currency,
+        calculatedAt: params.calculatedAt,
+        subtotalAmountCents: subtotalCents,
+        taxTotalAmountCents: taxCents,
+        totalAmountCents: totalCents,
+        breakdownJson: invoiceBreakdown,
+        version: 1,
+      },
+    });
+  }
+
+  private async recalculateVatInvoiceSnapshots(
+    workspaceId: string,
+    periodStart: Date,
+    periodEnd: Date
+  ): Promise<void> {
+    const invoices = await this.prisma.invoice.findMany({
+      where: {
+        tenantId: workspaceId,
+        OR: [
+          {
+            invoiceDate: { gte: periodStart, lte: periodEnd },
+          },
+          {
+            invoiceDate: null,
+            issuedAt: { gte: periodStart, lte: periodEnd },
+          },
+          {
+            invoiceDate: null,
+            issuedAt: null,
+            createdAt: { gte: periodStart, lte: periodEnd },
+          },
+        ],
+        status: { in: ["ISSUED", "SENT", "PAID"] as any[] },
+      },
+      include: { lines: true },
+    });
+
+    for (const invoice of invoices) {
+      await this.upsertInvoiceSnapshot({
+        workspaceId,
+        invoice,
+        calculatedAt: this.resolveInvoiceTaxDate(invoice),
+      });
+    }
+  }
+
+  private async recalculateIncomeInvoiceSnapshots(
+    workspaceId: string,
+    periodStart: Date,
+    periodEnd: Date
+  ): Promise<void> {
+    const invoices = await this.prisma.invoice.findMany({
+      where: {
+        tenantId: workspaceId,
+        status: "PAID",
+        payments: {
+          some: {},
+        },
+      },
+      include: {
+        lines: true,
+        payments: {
+          select: {
+            paidAt: true,
+          },
+        },
+      },
+    });
+
+    for (const invoice of invoices) {
+      const finalPaymentDate = this.resolveFinalPaymentDate(invoice.payments);
+      if (!finalPaymentDate) {
+        continue;
+      }
+      if (finalPaymentDate < periodStart || finalPaymentDate > periodEnd) {
+        continue;
+      }
+      await this.upsertInvoiceSnapshot({
+        workspaceId,
+        invoice,
+        calculatedAt: finalPaymentDate,
+      });
+    }
   }
 
   private readNumber(snapshot: Record<string, unknown> | null, key: string): number | null {

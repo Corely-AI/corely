@@ -241,8 +241,11 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     report: TaxReportEntity,
     workspaceId: string
   ): Promise<TaxFilingTotals | undefined> {
+    const invoiceDateMode = report.type === "INCOME_TAX" ? "payment" : "document";
     const [invoiceSnapshots, expenseSnapshots] = await Promise.all([
-      this.snapshotRepo.findByPeriod(workspaceId, report.periodStart, report.periodEnd, "INVOICE"),
+      this.snapshotRepo.findByPeriod(workspaceId, report.periodStart, report.periodEnd, "INVOICE", {
+        invoiceDateMode,
+      }),
       this.snapshotRepo.findByPeriod(workspaceId, report.periodStart, report.periodEnd, "EXPENSE"),
     ]);
 

@@ -10,6 +10,10 @@ The Tax module (`services/api/src/modules/tax`) provides multi-jurisdiction tax 
 VAT period management, filing lifecycle, and compliance reporting for Corely workspaces.
 It currently supports **Germany (DE)** as the primary jurisdiction.
 
+Related:
+
+- [Tax Income Date Basis and Payment Invariant](./tax-income-date-basis.md)
+
 ---
 
 ## Module Layout

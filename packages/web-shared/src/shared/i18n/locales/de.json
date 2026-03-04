@@ -369,16 +369,24 @@
       "accountingMethod": "Gewinnermittlungsart",
       "taxYearStartMonth": "Beginn des Steuerjahres",
       "localTaxOffice": "Zuständiges Finanzamt",
-      "save": "Steuerprofil speichern"
+      "save": "Steuerprofil speichern",
+      "saveSuccess": "Steuerprofil gespeichert",
+      "saveFailed": "Steuerprofil konnte nicht gespeichert werden",
+      "vatExemption": "Absatz zur Mehrwertsteuerbefreiung",
+      "vatExemptionHelp": "Wählen Sie den entsprechenden Ausnahmeparagraphen für Ihr Unternehmen aus"
     },
     "countries": {
       "de": "Deutschland"
     },
     "regimes": {
-      "standardVat": "Regelbesteuerung"
+      "standardVat": "Regelbesteuerung",
+      "smallBusiness": "Kleinunternehmer",
+      "vatExempt": "Mehrwertsteuerbefreit"
     },
     "filing": {
-      "quarterly": "Vierteljährlich"
+      "quarterly": "Vierteljährlich",
+      "monthly": "Monatlich",
+      "yearly": "Jährlich"
     },
     "accounting": {
       "cashBasis": "Einnahmen-Überschuss-Rechnung (EÜR)",
@@ -389,11 +397,18 @@
     "placeholders": {
       "vatId": "Umsatzsteuer-ID eingeben (z.B. DE123456789)",
       "month": "Monat wählen",
-      "localTaxOffice": "Name Ihres Finanzamtes eingeben"
+      "localTaxOffice": "Name Ihres Finanzamtes eingeben",
+      "country": "Land auswählen",
+      "regime": "Regime auswählen",
+      "vatExemption": "Ausnahmeparagraphen auswählen",
+      "filingFrequency": "Frequenz auswählen",
+      "accountingMethod": "Methode auswählen"
     },
     "consultant": {
       "title": "Steuerberater",
-      "save": "Beraterinfo speichern"
+      "save": "Beraterinfo speichern",
+      "saveSuccess": "Beraterinformationen gespeichert",
+      "saveFailed": "Beraterinformationen konnten nicht gespeichert werden"
     },
     "submitStep": {
       "methods": {
@@ -995,7 +1010,16 @@
         "downloadFailed": "PDF-Download fehlgeschlagen"
       }
     },
-    "loading": "Steuerdaten werden geladen..."
+    "loading": "Steuerdaten werden geladen...",
+    "exemptions": {
+      "exportDeliveries": "§ 4 Nr. 1a UStG - Exportlieferungen",
+      "intraCommunityDeliveries": "§ 4 Nr. 1b UStG - Innergemeinschaftliche Lieferungen",
+      "financialServices": "§ 4 Nr. 8 UStG - Finanzdienstleistungen",
+      "insuranceServices": "§ 4 Nr. 11 UStG - Versicherungsdienstleistungen",
+      "lettingLeasing": "§ 4 Nr. 12 UStG - Vermietung und Verpachtung",
+      "medicalServices": "§ 4 Nr. 14 UStG - Medizinische Dienstleistungen",
+      "educationalServices": "§ 4 Nr. 21 UStG - Bildungsdienstleistungen"
+    }
   },
   "cashManagement": {
     "title": "Kassenbuch",

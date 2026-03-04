@@ -218,7 +218,11 @@ export class TaxApi {
   }
 
   async getCenter(input: Contracts.GetTaxCenterInput): Promise<Contracts.GetTaxCenterOutput> {
-    const params = buildListQuery({ year: input.year, entityId: input.entityId });
+    const params = buildListQuery({
+      year: input.year,
+      annualYear: input.annualYear,
+      entityId: input.entityId,
+    });
     const url = params.toString() ? `/tax/center?${params.toString()}` : "/tax/center";
 
     return apiClient.get<Contracts.GetTaxCenterOutput>(url, {

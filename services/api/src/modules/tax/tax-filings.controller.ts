@@ -18,6 +18,7 @@ import {
   AttachTaxFilingPaymentProofRequestSchema,
   CreateTaxFilingInputSchema,
   ExportTaxPaymentsInputSchema,
+  GetTaxCenterInputSchema,
   GetVatPeriodsInputSchema,
   ListTaxFilingsInputSchema,
   ListTaxPaymentsInputSchema,
@@ -79,12 +80,12 @@ export class TaxFilingsController {
   @Get("center")
   async getCenter(@Query() query: any, @Req() req: Request) {
     const ctx = buildTaxUseCaseContext(req);
-    return unwrap(
-      await this.getTaxCenterUseCase.execute(
-        { year: query.year ? Number(query.year) : undefined, entityId: query.entityId },
-        ctx
-      )
-    );
+    const input = GetTaxCenterInputSchema.parse({
+      year: query.year,
+      annualYear: query.annualYear,
+      entityId: query.entityId,
+    });
+    return unwrap(await this.getTaxCenterUseCase.execute(input, ctx));
   }
 
   @Get("capabilities")

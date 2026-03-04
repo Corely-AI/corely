@@ -1,6 +1,12 @@
 import type { TaxSnapshotEntity } from "../entities";
 import type { TaxSourceType } from "@corely/contracts";
 
+export type TaxInvoiceDateMode = "document" | "payment";
+
+export type TaxSnapshotPeriodOptions = {
+  invoiceDateMode?: TaxInvoiceDateMode;
+};
+
 export abstract class TaxSnapshotRepoPort {
   /**
    * Create immutable snapshot (idempotent by sourceType + sourceId)
@@ -25,6 +31,7 @@ export abstract class TaxSnapshotRepoPort {
     tenantId: string,
     start: Date,
     end: Date,
-    sourceType?: TaxSourceType
+    sourceType?: TaxSourceType,
+    options?: TaxSnapshotPeriodOptions
   ): Promise<TaxSnapshotEntity[]>;
 }

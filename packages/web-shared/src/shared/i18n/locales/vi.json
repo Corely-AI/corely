@@ -370,30 +370,46 @@
       "accountingMethod": "Phương pháp Kế toán",
       "taxYearStartMonth": "Tháng Bắt đầu Năm Thuế",
       "localTaxOffice": "Cơ quan Thuế Địa phương",
-      "save": "Lưu Hồ sơ Thuế"
+      "save": "Lưu Hồ sơ Thuế",
+      "saveSuccess": "Đã lưu hồ sơ thuế",
+      "saveFailed": "Không lưu được hồ sơ thuế",
+      "vatExemption": "Đoạn miễn thuế VAT",
+      "vatExemptionHelp": "Chọn đoạn miễn trừ có liên quan cho doanh nghiệp của bạn"
     },
     "countries": {
       "de": "Đức"
     },
     "regimes": {
-      "standardVat": "Thuế GTGT Chuẩn"
+      "standardVat": "Thuế GTGT Chuẩn",
+      "smallBusiness": "Doanh nghiệp nhỏ (Kleiunternehmer)",
+      "vatExempt": "Miễn thuế VAT"
     },
     "filing": {
-      "quarterly": "Hàng quý"
+      "quarterly": "Hàng quý",
+      "monthly": "hàng tháng",
+      "yearly": "Hàng năm"
     },
     "accounting": {
       "cashBasis": "Kế toán Tiền mặt",
       "cashBasisHelp": "Doanh thu được ghi nhận khi nhận được tiền mặt",
-      "accrualBasisHelp": "Doanh thu được ghi nhận khi phát sinh, bất kể khi nào nhận được tiền mặt"
+      "accrualBasisHelp": "Doanh thu được ghi nhận khi phát sinh, bất kể khi nào nhận được tiền mặt",
+      "accrualBasis": "Cơ sở dồn tích (Soll-Versteuerung)"
     },
     "placeholders": {
       "vatId": "Nhập mã số thuế của bạn (ví dụ: DE123456789)",
       "month": "Chọn tháng",
-      "localTaxOffice": "Nhập tên cơ quan thuế địa phương của bạn"
+      "localTaxOffice": "Nhập tên cơ quan thuế địa phương của bạn",
+      "country": "Chọn quốc gia",
+      "regime": "Chọn chế độ",
+      "vatExemption": "Chọn đoạn miễn trừ",
+      "filingFrequency": "Chọn tần số",
+      "accountingMethod": "Chọn phương pháp"
     },
     "consultant": {
       "title": "Cố vấn Thuế",
-      "save": "Lưu thông tin cố vấn"
+      "save": "Lưu thông tin cố vấn",
+      "saveSuccess": "Đã lưu thông tin tư vấn",
+      "saveFailed": "Không lưu được thông tin tư vấn"
     },
     "submitStep": {
       "methods": {
@@ -498,7 +514,8 @@
         "deleteConfirmMessage": "Hành động này không thể hoàn tác."
       },
       "due": "Hạn nộp {{date}}",
-      "dueWithDays": "Hạn nộp {{date}} • còn {{count}} ngày"
+      "dueWithDays": "Hạn nộp {{date}} • còn {{count}} ngày",
+      "dueWithDays_plural": "Đến hạn {{date}} • Còn {{count}} ngày"
     },
     "activity": {
       "title": "Hoạt động",
@@ -515,6 +532,493 @@
         "issuesDetected": "Đã phát hiện vấn đề",
         "issuesResolved": "Đã xử lý vấn đề",
         "deleted": "Đã xóa"
+      }
+    },
+    "loading": "Đang tải dữ liệu thuế...",
+    "exemptions": {
+      "exportDeliveries": "§ 4 Nr. 1a UStG - Giao hàng xuất khẩu",
+      "intraCommunityDeliveries": "§ 4 Nr. 1b UStG - Giao hàng trong cộng đồng",
+      "financialServices": "§ 4 Nr. 8 UStG - Dịch vụ tài chính",
+      "insuranceServices": "§ 4 Nr. 11 UStG - Dịch vụ bảo hiểm",
+      "lettingLeasing": "§ 4 Nr. 12 UStG - Cho thuê và cho thuê",
+      "medicalServices": "§ 4 Nr. 14 UStG - Dịch vụ y tế",
+      "educationalServices": "§ 4 Nr. 21 UStG - Dịch vụ giáo dục"
+    },
+    "center": {
+      "title": "Trung tâm thuế",
+      "myTaxes": "Thuế của tôi",
+      "freelancerSubtitle": "Quản lý nghĩa vụ thuế freelancer của bạn.",
+      "companySubtitle": "Tổng quan về tuân thủ và nộp thuế của công ty.",
+      "errorLoading": "Lỗi tải Trung tâm Thuế",
+      "errorDescription": "Chúng tôi không thể tải tổng quan về thuế của bạn. Vui lòng thử lại.",
+      "retry": "Thử lại",
+      "reviewNext": "Xem lại hồ sơ tiếp theo",
+      "settings": "Cài đặt",
+      "nextUp": {
+        "title": "Tiếp theo",
+        "allCaughtUp": "Bạn đã bắt kịp tất cả!",
+        "noUpcoming": "Không tìm thấy hồ sơ sắp tới.",
+        "createFiling": "Tạo hồ sơ",
+        "dueDate": "Ngày đáo hạn",
+        "estimatedAmount": "Số tiền ước tính",
+        "reviewFiling": "Xem xét hồ sơ",
+        "viewAll": "Xem tất cả hồ sơ",
+        "overdue": "QUÁ HẠN",
+        "vat": "VAT",
+        "tax": "Thuế"
+      },
+      "annual": {
+        "title": "Hồ sơ hàng năm",
+        "yearendTitle": "Hồ sơ cuối năm và hàng năm",
+        "viewAll": "Xem tất cả",
+        "createForYear": "Tạo cho {{year}}",
+        "noFilings": "Không có hồ sơ hàng năm cho {{year}}",
+        "obligations": "Nghĩa vụ hàng năm.",
+        "status": {
+          "draft": "Bản nháp",
+          "needsFix": "Cần chú ý",
+          "readyForReview": "Sẵn sàng để xem xét",
+          "submitted": "Đã gửi",
+          "paid": "Trả",
+          "archived": "Đã lưu trữ",
+          "openForSubmission": "Mở để nộp",
+          "yearInProgress": "Năm đang tiến hành"
+        },
+        "year": "Năm {{year}}",
+        "estimatedTaxToPay": "Thuế ước tính phải nộp",
+        "reviewAndSubmit": "Xem xét và gửi",
+        "preview": "Xem trước"
+      },
+      "issues": {
+        "title": "Các vấn đề mở",
+        "noIssues": "Không có vấn đề nào được phát hiện. Sổ sách kế toán của bạn có vẻ sạch sẽ!",
+        "items": "mặt hàng",
+        "affected": "ảnh hưởng",
+        "fix": "Sửa chữa",
+        "blocking": "BLOCKIEREND"
+      },
+      "shortcuts": {
+        "title": "Phím tắt",
+        "createFiling": "Tạo hồ sơ",
+        "exportReport": "Xuất báo cáo",
+        "payTaxes": "Nộp thuế",
+        "documents": "Tài liệu"
+      },
+      "snapshot": {
+        "title": "Ảnh chụp nhanh đầu năm ({{year}})",
+        "updated": "Đã cập nhật {{date}}",
+        "noData": "Chưa có dữ liệu."
+      }
+    },
+    "reports": {
+      "title": "Báo cáo thuế",
+      "subtitle": "Theo dõi các tờ khai và nội dung đệ trình sắp tới.",
+      "tabs": {
+        "upcoming": "Báo cáo sắp tới",
+        "submitted": "Đã gửi"
+      },
+      "groups": {
+        "vat": "Kê khai thuế GTGT trước",
+        "compliance": "Tuân thủ (Bán hàng tại EU & Intrastat)",
+        "submitted": "Báo cáo đã gửi"
+      },
+      "actions": {
+        "markSubmitted": "Đánh dấu là đã gửi",
+        "downloadPdf": "Tải xuống bản PDF",
+        "generatingPdf": "Đang tạo PDF...",
+        "downloadStarted": "Đã bắt đầu tải xuống",
+        "pdfPrepared": "PDF đang được chuẩn bị. Hãy thử lại ngay.",
+        "downloadFailed": "Không thể tải xuống bản PDF"
+      },
+      "status": {
+        "loading": "Đang tải báo cáo...",
+        "empty": "Không tìm thấy báo cáo nào."
+      },
+      "types": {
+        "vatAdvance": "Khai báo VAT trước",
+        "vatAnnual": "Báo cáo thuế GTGT hàng năm",
+        "incomeTax": "Thuế thu nhập",
+        "euSales": "Danh sách bán hàng tại EU (ZM)",
+        "intrastat": "Khai báo Intrastat",
+        "tradeTax": "Thuế thương mại (Gewerbesteuer)",
+        "profitLoss": "Báo cáo P&L (EÜR)",
+        "payrollTax": "Thuế tiền lương"
+      }
+    },
+    "documents": {
+      "title": "Chứng từ thuế",
+      "subtitle": "Lưu trữ tất cả các tài liệu liên quan đến thuế."
+    },
+    "payments": {
+      "title": "Thanh toán",
+      "subtitle": "Theo dõi các hồ sơ đã thanh toán và đến hạn trong năm.",
+      "exportCsv": "Xuất CSV",
+      "status": {
+        "due": "Quá hạn",
+        "overdue": "Quá hạn",
+        "paid": "Trả"
+      },
+      "types": {
+        "vat": "VAT",
+        "vatAnnual": "VAT hàng năm",
+        "incomeAnnual": "Thuế thu nhập",
+        "trade": "Thuế thương mại",
+        "payroll": "Bảng lương",
+        "corporateAnnual": "Thuế doanh nghiệp",
+        "yearEnd": "Cuối năm",
+        "other": "Khác"
+      },
+      "columns": {
+        "filing": "nộp hồ sơ",
+        "dueDate": "Ngày đến hạn",
+        "amount": "Số lượng",
+        "status": "Trạng thái",
+        "paidDate": "Ngày thanh toán",
+        "method": "Phương pháp",
+        "payable": "Phải trả",
+        "receivable": "Phải thu"
+      },
+      "actions": {
+        "markPaid": "Đánh dấu đã trả tiền",
+        "attachReceipt": "Đính kèm biên nhận",
+        "markedPaid": "Được đánh dấu là đã thanh toán",
+        "markPaidFailed": "Không thể đánh dấu là đã thanh toán",
+        "receiptAttached": "Biên lai đính kèm",
+        "attachReceiptFailed": "Không thể đính kèm biên nhận",
+        "exportFailed": "Không thể xuất thanh toán"
+      },
+      "empty": {
+        "title": "Không có khoản thanh toán nào để theo dõi",
+        "description": "Thanh toán sẽ xuất hiện ở đây sau khi hồ sơ được gửi.",
+        "goToFilings": "Đi đến hồ sơ"
+      },
+      "error": {
+        "title": "Không thể tải thanh toán",
+        "description": "Hãy kiểm tra kết nối của bạn và thử lại."
+      },
+      "sort": {
+        "dueDateSoonest": "Ngày đáo hạn (Sớm nhất)",
+        "dueDateLatest": "Ngày đáo hạn (Mới nhất)",
+        "paidDateNewest": "Ngày thanh toán (Mới nhất)",
+        "paidDateOldest": "Ngày thanh toán (Cũ nhất)",
+        "amountHighLow": "Số tiền (Cao-Thấp)",
+        "amountLowHigh": "Số tiền (Thấp-Cao)"
+      }
+    },
+    "overview": {
+      "title": "Thuế",
+      "greeting": "Chào buổi tối, {{name}}!",
+      "yourTaxes": "Thuế của bạn trong khu vực của bạn",
+      "localOffice": "Văn phòng địa phương: {{name}}",
+      "viewReports": "Xem báo cáo",
+      "taxSettings": "Cài đặt thuế",
+      "currentVatPeriod": "Kỳ VAT hiện tại: {{period}} {{year}}",
+      "estimatedVatDue": "VAT ước tính phải nộp",
+      "notConfigured": "Chưa được định cấu hình",
+      "viewDetails": "Xem chi tiết",
+      "kpis": {
+        "taxesToBePaid": "Thuế phải nộp",
+        "income": "Thu nhập",
+        "expenses": "Chi phí",
+        "vatNotApplicable": "VAT không áp dụng",
+        "completeSetup": "Hoàn tất thiết lập thuế",
+        "seeOverview": "Xem tổng quan về thuế",
+        "unpaidInvoices": "{{count}} hóa đơn chưa thanh toán",
+        "itemsToReview": "{{count}} mục cần xem lại"
+      },
+      "headsUp": "Lưu ý",
+      "settingsIncomplete": "Cài đặt thuế chưa hoàn tất",
+      "settingsIncompleteDescription": "Định cấu hình hồ sơ thuế của bạn để ước tính số tiền bạn nợ.",
+      "goToSettings": "Chuyển đến cài đặt thuế",
+      "expenseHelper": {
+        "title": "Tôi có thể chi phí những gì?",
+        "description": "Tìm hiểu những giao dịch mua nào bạn có thể phân loại là chi phí kinh doanh.",
+        "learnMore": "Tìm hiểu thêm"
+      },
+      "yourReports": "Báo cáo thuế của bạn",
+      "reportsDescription": "Dựa trên thông tin chi tiết của bạn, đây là những báo cáo bạn hiện phải gửi…",
+      "submitReports": "Gửi báo cáo",
+      "upcomingDeadline": "{{count}} thời hạn sắp tới",
+      "upcomingDeadline_plural": "{{count}} thời hạn sắp tới",
+      "noUpcoming": "Không có báo cáo sắp tới.",
+      "localTaxOffice": "Cơ quan thuế địa phương",
+      "addLocalOffice": "Thêm cơ quan thuế địa phương của bạn để giữ cho hồ sơ của bạn luôn đầy đủ.",
+      "updateSettings": "Cập nhật cài đặt",
+      "errorLoading": "Không thể tải thuế",
+      "errorDescription": "Đã xảy ra lỗi khi tìm nạp thông tin tổng quan về thuế của bạn."
+    },
+    "history": {
+      "title": "kỳ tính thuế GTGT",
+      "year": "Năm",
+      "overdueAlert": "Hành động bắt buộc: {{count}} thời gian VAT quá hạn",
+      "overdueDescription": "Khoảng thời gian quá hạn cũ nhất được chọn trước. Bạn vẫn có thể làm việc trong thời gian hiện tại.",
+      "submitOverdue": "Nộp thời gian quá hạn",
+      "noData": "Không có dữ liệu cho năm nay.",
+      "noPeriods": "Không tìm thấy khoảng thời gian nào.",
+      "quarter": "Một phần tư",
+      "selectQuarter": "Chọn quý",
+      "viewDetails": "Xem chi tiết thời gian",
+      "selectedPeriod": "Khoảng thời gian đã chọn: {{label}} ({{range}})",
+      "taxDue": "Thuế phải nộp",
+      "salesVat": "VAT bán hàng",
+      "purchaseVat": "VAT mua hàng",
+      "submittedOn": "Đã gửi vào {{date}}",
+      "reference": "Tham khảo: {{ref}}",
+      "notes": "Ghi chú: {{notes}}",
+      "archiveReason": "Lý do lưu trữ: {{reason}}",
+      "downloadPdf": "Tải xuống bản PDF",
+      "markSubmitted": "Đánh dấu là đã gửi",
+      "markNil": "Đánh dấu là không",
+      "archive": "Lưu trữ",
+      "tabs": {
+        "upcoming": "Báo cáo sắp tới",
+        "submitted": "Báo cáo đã gửi"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Đánh dấu khoảng thời gian là đã gửi",
+          "date": "Ngày nộp hồ sơ",
+          "reference": "Tài liệu tham khảo (tùy chọn)",
+          "notes": "Ghi chú (tùy chọn)",
+          "submit": "Thời gian gửi"
+        },
+        "nil": {
+          "title": "Đánh dấu dấu chấm là không",
+          "date": "Ngày nộp hồ sơ",
+          "notes": "Ghi chú (tùy chọn)",
+          "submit": "Đánh dấu con số không"
+        },
+        "archive": {
+          "title": "Thời gian lưu trữ",
+          "reason": "Lý do",
+          "notes": "Ghi chú (tùy chọn)",
+          "submit": "Thời gian lưu trữ"
+        },
+        "cancel": "Hủy bỏ"
+      },
+      "periodCombobox": {
+        "placeholder": "Chọn hoặc nhập một khoảng thời gian…",
+        "searchPlaceholder": "Tìm kiếm hoặc nhập dấu chấm…",
+        "useCustom": "Sử dụng \"{{value}}\"",
+        "customHint": "Nhấn Enter hoặc nhấp để sử dụng khoảng thời gian tùy chỉnh này",
+        "noPeriods": "Không tìm thấy khoảng thời gian nào.",
+        "customHeading": "Phong tục",
+        "customPeriod": "Thời gian tùy chỉnh",
+        "quartersHeading": "Khu",
+        "monthlyHeading": "hàng tháng",
+        "footerHint": "Nhập {{qExample}} hoặc {{mExample}} cho khoảng thời gian tùy chỉnh",
+        "quarters": {
+          "1": "Q1",
+          "2": "Q2",
+          "3": "Q3",
+          "4": "Q4"
+        },
+        "quarterMonths": {
+          "1": "Tháng 1 – Tháng 3",
+          "2": "Tháng 4 – Tháng 6",
+          "3": "Tháng 7 – tháng 9",
+          "4": "Tháng 10 – Tháng 12"
+        }
+      },
+      "navigator": {
+        "prevYear": "Năm trước",
+        "nextYear": "Năm tới",
+        "failedToLoad": "Không thể tải kỳ VAT.",
+        "retry": "Thử lại",
+        "notStarted": "Chưa bắt đầu",
+        "noFilingYet": "Chưa có hồ sơ nào cho {{period}} {{year}}.",
+        "createFiling": "Tạo hồ sơ",
+        "status": {
+          "draft": "Bản nháp",
+          "needsFix": "Cần chú ý",
+          "readyForReview": "Sẵn sàng",
+          "submitted": "Đã gửi",
+          "paid": "Trả",
+          "archived": "Đã lưu trữ"
+        }
+      },
+      "attachments": {
+        "title": "Tệp đính kèm",
+        "attachFromDocuments": "Đính kèm từ chứng từ thuế",
+        "uploadAttachment": "Tải lên tệp đính kèm",
+        "loading": "Đang tải tệp đính kèm...",
+        "error": "Không tải được tệp đính kèm.",
+        "empty": "Tải lên các tài liệu hỗ trợ như biên lai hoặc xác nhận gửi.",
+        "untitled": "Tài liệu không có tiêu đề",
+        "type": "Loại: {{type}}",
+        "uploadedAt": "Đã tải lên {{date}}",
+        "uploader": "Người tải lên: {{name}}",
+        "remove": "Di dời",
+        "dialog": {
+          "title": "Đính kèm biên nhận",
+          "description": "Tải lên bằng chứng thanh toán cho việc nộp đơn này.",
+          "replace": "Thay thế biên lai",
+          "choose": "Chọn biên nhận",
+          "noFile": "Không có tập tin nào được chọn",
+          "uploading": "Đang tải lên...",
+          "submit": "Đính kèm biên nhận"
+        },
+        "messages": {
+          "uploadSuccess": "Đã tải tệp đính kèm lên",
+          "uploadError": "Không thể tải lên tệp đính kèm",
+          "selectFile": "Chọn biên nhận để tải lên"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "Nộp thuế VAT",
+          "vat-annual": "Nộp thuế VAT hàng năm",
+          "income-annual": "Nộp thuế thu nhập",
+          "trade": "Nộp thuế thương mại",
+          "payroll": "Nộp thuế tiền lương",
+          "corporate-annual": "Khai thuế doanh nghiệp",
+          "year-end": "Nộp hồ sơ cuối năm",
+          "other": "Nộp thuế"
+        },
+        "status": {
+          "draft": "Bản nháp",
+          "needsFix": "Cần chú ý",
+          "readyForReview": "Sẵn sàng để xem xét",
+          "submitted": "Đã gửi",
+          "paid": "Trả",
+          "archived": "Đã lưu trữ"
+        },
+        "actions": {
+          "review": "Ôn tập",
+          "continueReview": "Tiếp tục xem xét",
+          "markPaid": "Đánh dấu đã trả tiền",
+          "view": "Xem",
+          "previousPeriod": "Kỳ trước",
+          "nextPeriod": "Kỳ tiếp theo",
+          "recalculate": "Tính toán lại",
+          "exportPdf": "Xuất PDF",
+          "exportCsv": "Xuất CSV",
+          "delete": "Xóa hồ sơ",
+          "deleteConfirmTitle": "Xóa hồ sơ?",
+          "deleteConfirmMessage": "Không thể hoàn tác hành động này."
+        },
+        "due": "Đến hạn {{date}}",
+        "dueWithDays": "Đến hạn {{date}} • Còn {{count}} ngày",
+        "dueWithDays_plural": "Đến hạn {{date}} • Còn {{count}} ngày"
+      },
+      "activity": {
+        "title": "Hoạt động",
+        "loading": "Đang tải hoạt động...",
+        "error": "Không thể tải hoạt động.",
+        "noActivity": "Chưa có hoạt động nào.",
+        "by": "Bởi {{name}}",
+        "types": {
+          "created": "Đã tạo hồ sơ",
+          "recalculated": "Tính toán lại",
+          "submitted": "Đã gửi",
+          "paid": "Đã đánh dấu là đã thanh toán",
+          "attachmentAdded": "Đã thêm tệp đính kèm",
+          "issuesDetected": "Đã phát hiện sự cố",
+          "issuesResolved": "Các vấn đề đã được giải quyết",
+          "deleted": "Đã xóa"
+        }
+      },
+      "createFiling": {
+        "title": "Khai thuế mới",
+        "subtitle": "Chọn loại hồ sơ và thời gian để tạo nghĩa vụ mới.",
+        "form": {
+          "details": "chi tiết nộp hồ sơ",
+          "type": "Loại hồ sơ",
+          "selectType": "Chọn loại",
+          "types": {
+            "vat": "Tờ khai thuế GTGT",
+            "income-annual": "Thuế thu nhập (Hàng năm)",
+            "vat-annual": "VAT hàng năm",
+            "other": "Khác"
+          },
+          "year": "Năm tính thuế",
+          "period": "Giai đoạn",
+          "cancel": "Hủy bỏ",
+          "submit": "Tạo hồ sơ",
+          "errors": {
+            "periodRequired": "Cần có khoảng thời gian để nộp hồ sơ VAT",
+            "yearRequired": "Năm là bắt buộc đối với hồ sơ hàng năm"
+          }
+        },
+        "messages": {
+          "successTitle": "Đã tạo hồ sơ",
+          "successDescription": "Đang chuyển hướng đến chi tiết nộp hồ sơ...",
+          "errorTitle": "Lỗi tạo hồ sơ"
+        }
+      },
+      "filingItems": {
+        "error": "Không thể tải các mục.",
+        "emptyTitle": "Không có {{type}} mục nào",
+        "emptyDescription": "Chúng tôi chưa tìm thấy bất kỳ {{type}} mục nào trong khoảng thời gian này.",
+        "table": {
+          "date": "Ngày",
+          "counterparty": "đối tác",
+          "description": "Sự miêu tả",
+          "net": "Mạng lưới",
+          "tax": "Thuế",
+          "gross": "Tổng"
+        }
+      },
+      "includedItems": {
+        "title": "Các mục đi kèm",
+        "emptyTitle": "Không có mục nào được bao gồm",
+        "emptyDescription": "Chúng tôi chưa tìm thấy bất kỳ mục nguồn nào cho hồ sơ này.",
+        "table": {
+          "type": "Kiểu",
+          "date": "Ngày",
+          "counterparty": "đối tác",
+          "category": "Loại",
+          "vatTreatment": "xử lý thuế GTGT",
+          "net": "Mạng lưới",
+          "tax": "Thuế",
+          "gross": "Tổng",
+          "flags": "Cờ"
+        },
+        "badges": {
+          "needsAttention": "Cần chú ý",
+          "ok": "ĐƯỢC RỒI",
+          "noCategory": "Không có danh mục",
+          "noVatTreatment": "Không xử lý thuế GTGT"
+        },
+        "error": "Không thể tải các mục được bao gồm.",
+        "retry": "Thử lại"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Đánh dấu là đã thanh toán",
+          "description": "Ghi lại chi tiết thanh toán và tùy ý đính kèm biên lai."
+        },
+        "form": {
+          "paidAt": "Được thanh toán tại",
+          "method": "Phương pháp",
+          "methods": {
+            "bank-transfer": "Chuyển khoản ngân hàng",
+            "direct-debit": "Ghi nợ trực tiếp",
+            "other": "Khác"
+          },
+          "amount": "Số lượng",
+          "receipt": "Biên lai",
+          "replace": "Thay thế biên lai",
+          "upload": "Tải biên nhận lên",
+          "optional": "Không bắt buộc",
+          "uploading": "Đang tải lên...",
+          "submit": "Đánh dấu đã trả tiền"
+        },
+        "messages": {
+          "uploadError": "Không thể tải lên biên nhận"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "Kỳ VAT được đánh dấu là đã nộp",
+        "submittedError": "Không thể đánh dấu kỳ VAT là đã gửi",
+        "nilSuccess": "Kỳ VAT được đánh dấu là không",
+        "nilError": "Không thể đánh dấu kỳ VAT là không",
+        "archiveSuccess": "Kỳ VAT được lưu trữ",
+        "archiveError": "Không lưu trữ được kỳ VAT",
+        "generatingPdf": "Đang tạo PDF...",
+        "downloadStarted": "Đã bắt đầu tải xuống",
+        "pdfPrepared": "PDF đang được chuẩn bị. Hãy thử lại ngay.",
+        "downloadFailed": "Không thể tải xuống bản PDF"
       }
     }
   },

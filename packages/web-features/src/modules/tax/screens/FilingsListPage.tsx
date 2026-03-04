@@ -175,10 +175,18 @@ export const FilingsListPage = () => {
   };
 
   const handleYearChange = (year: number) => {
-    updateParam("year", String(year));
-    if (tab === "vat") {
-      updateParam("periodKey");
-    }
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set("year", String(year));
+        if (tab === "vat") {
+          next.delete("periodKey");
+        }
+        next.set("page", "1");
+        return next;
+      },
+      { replace: true }
+    );
   };
 
   const handlePeriodChange = (key: string) => {
