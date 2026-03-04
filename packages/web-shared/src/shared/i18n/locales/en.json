@@ -129,7 +129,8 @@
       "filings": "Filings",
       "payments": "Payments",
       "documents": "Documents",
-      "settings": "Tax Settings"
+      "settings": "Tax Settings",
+      "reports": "Reports"
     },
     "assistant": "Assistant",
     "expenses": "Expenses",
@@ -658,6 +659,42 @@
         "tradeTax": "Trade Tax (Gewerbesteuer)",
         "profitLoss": "P&L Statement (EÜR)",
         "payrollTax": "Payroll Tax"
+      },
+      "eur": {
+        "title": "Anlage EÜR (Profit & Loss)",
+        "subtitle": "Cash-basis annual statement for DE personal tax reporting.",
+        "status": {
+          "loadingCapabilities": "Loading tax capabilities...",
+          "loadingStatement": "Loading EÜR statement..."
+        },
+        "unsupported": {
+          "title": "EÜR is not available",
+          "description": "This report is currently supported for personal DE workspaces only."
+        },
+        "errors": {
+          "capabilitiesTitle": "Unable to load tax capabilities",
+          "capabilitiesDescription": "Retry once your workspace context is available.",
+          "statementTitle": "Unable to load EÜR statement",
+          "generic": "Failed to load EÜR statement."
+        },
+        "summary": {
+          "income": "Income",
+          "expenses": "Expenses",
+          "profit": "Profit"
+        },
+        "lines": {
+          "title": "Statement lines",
+          "columns": {
+            "line": "Line",
+            "group": "Group",
+            "amount": "Amount"
+          },
+          "groups": {
+            "income": "Income",
+            "expense": "Expense"
+          }
+        },
+        "generatedAt": "Generated {{date}}"
       }
     },
     "documents": {

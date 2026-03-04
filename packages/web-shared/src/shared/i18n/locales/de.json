@@ -125,7 +125,8 @@
       "filings": "Meldungen",
       "payments": "Zahlungen",
       "documents": "Dokumente",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "reports": "Berichte"
     },
     "assistant": "Assistent",
     "expenses": "Ausgaben",
@@ -632,6 +633,42 @@
         "tradeTax": "Gewerbesteuer",
         "profitLoss": "Einnahmen-Überschuss-Rechnung (EÜR)",
         "payrollTax": "Lohnsteuer"
+      },
+      "eur": {
+        "title": "Anlage EÜR (Gewinnermittlung)",
+        "subtitle": "Jahresauswertung auf Ist-Basis für die persönliche Steuererklärung in Deutschland.",
+        "status": {
+          "loadingCapabilities": "Steuerfunktionen werden geladen...",
+          "loadingStatement": "EÜR-Auswertung wird geladen..."
+        },
+        "unsupported": {
+          "title": "EÜR ist nicht verfügbar",
+          "description": "Dieser Bericht wird derzeit nur für persönliche DE-Workspaces unterstützt."
+        },
+        "errors": {
+          "capabilitiesTitle": "Steuerfunktionen konnten nicht geladen werden",
+          "capabilitiesDescription": "Bitte erneut versuchen, sobald der Workspace-Kontext verfügbar ist.",
+          "statementTitle": "EÜR-Auswertung konnte nicht geladen werden",
+          "generic": "EÜR-Auswertung konnte nicht geladen werden."
+        },
+        "summary": {
+          "income": "Einnahmen",
+          "expenses": "Ausgaben",
+          "profit": "Gewinn"
+        },
+        "lines": {
+          "title": "Positionen",
+          "columns": {
+            "line": "Position",
+            "group": "Gruppe",
+            "amount": "Betrag"
+          },
+          "groups": {
+            "income": "Einnahme",
+            "expense": "Ausgabe"
+          }
+        },
+        "generatedAt": "Erstellt am {{date}}"
       }
     },
     "documents": {

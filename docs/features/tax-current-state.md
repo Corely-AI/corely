@@ -147,6 +147,49 @@ Capabilities are layered:
 }
 ```
 
+EÜR capability flag:
+
+- `strategy.supportsEur = true` for `PERSONAL`
+- `strategy.supportsEur = false` for `COMPANY` (not supported yet)
+
+---
+
+## Anlage EÜR (DE, PERSONAL)
+
+Tax now exposes a reports-surface endpoint for EÜR (profit/loss on cash basis), independent of filing lifecycle.
+
+### Endpoint
+
+- `GET /tax/reports/eur?year=YYYY`
+  - Returns `GetTaxEurStatementOutput` with statement lines + totals.
+  - Supported only for `PERSONAL` strategy and `DE` jurisdiction.
+  - `COMPANY` returns a typed validation error (`Tax:EurNotSupportedForStrategy`).
+
+### Data Source Contract
+
+Use case consumes an application port instead of querying foreign module tables directly:
+
+- `TaxEurSourcePort` (`application/ports/tax-eur-source.port.ts`)
+  - `getEurTotals({ workspaceId, year, basis: "cash" })`
+  - returns `incomeByCategory`, `expenseByCategory`, `currency`
+
+Current adapter: `TaxSnapshotEurSourceAdapter` (in tax infrastructure) aggregates totals through `TaxSnapshotRepoPort`.
+
+### Jurisdiction Mapping
+
+DE mapping lives in:
+
+- `application/services/jurisdictions/de-eur-mapping.v1.ts`
+- exposed through `buildEurStatement(...)` on DE jurisdiction pack.
+
+This keeps category-to-line mapping configurable and isolated from use cases.
+
+### Known Gaps
+
+- `COMPANY` strategy EÜR is intentionally unsupported for now.
+- Official annual Anlage EÜR line-code mapping by tax-year is not yet implemented; v1 uses stable internal category keys and DE labels.
+- PDF export for EÜR is not implemented in this iteration.
+
 ---
 
 ## Domain Events
@@ -202,6 +245,7 @@ Key models:
 | POST   | `/tax/calculate`               | CalculateTax           |
 | GET    | `/tax/summary`                 | GetTaxSummary          |
 | GET    | `/tax/reports`                 | ListTaxReports         |
+| GET    | `/tax/reports/eur`             | GetEurStatement        |
 | GET    | `/tax/reports/:id`             | GetTaxReport           |
 | POST   | `/tax/reports/:id/submit`      | MarkTaxReportSubmitted |
 | GET    | `/tax/vat-periods`             | ListVatPeriods         |

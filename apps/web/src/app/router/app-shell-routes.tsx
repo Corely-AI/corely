@@ -107,6 +107,7 @@ import { directoryRoutes } from "../../modules/directory";
 import {
   TaxSettingsPage,
   TaxCenterPage,
+  TaxEurReportPage,
   FilingsListPage,
   FilingDetailPage,
   CreateFilingPage,
@@ -338,6 +339,7 @@ export const appShellRoutes = (
       {bookingRoutes}
       <Route path="/copilot" element={<CopilotPage />} />
       <Route path="/tax" element={<TaxCenterPage />} />
+      <Route path="/tax/reports/eur" element={<TaxEurReportPage />} />
       <Route path="/tax/filings" element={<FilingsListPage />} />
       <Route path="/tax/filings/new" element={<CreateFilingPage />} />
       <Route path="/tax/filings/:id" element={<FilingDetailPage />} />

@@ -125,7 +125,8 @@
       "filings": "Kê khai",
       "payments": "Thanh toán",
       "documents": "Tài liệu",
-      "settings": "Cài đặt thuế"
+      "settings": "Cài đặt thuế",
+      "reports": "Bao cao"
     },
     "assistant": "Trợ lý",
     "expenses": "Chi phí",
@@ -643,6 +644,42 @@
         "tradeTax": "Thuế thương mại (Gewerbesteuer)",
         "profitLoss": "Báo cáo P&L (EÜR)",
         "payrollTax": "Thuế tiền lương"
+      },
+      "eur": {
+        "title": "Bao cao EÜR (Loi nhuan va Lo)",
+        "subtitle": "Bao cao nam theo co so tien mat cho khai thue ca nhan tai Duc.",
+        "status": {
+          "loadingCapabilities": "Dang tai kha nang thue...",
+          "loadingStatement": "Dang tai bao cao EÜR..."
+        },
+        "unsupported": {
+          "title": "Khong ho tro EÜR",
+          "description": "Bao cao nay hien chi ho tro cho workspace ca nhan tai Duc."
+        },
+        "errors": {
+          "capabilitiesTitle": "Khong the tai kha nang thue",
+          "capabilitiesDescription": "Vui long thu lai khi da co ngu canh workspace.",
+          "statementTitle": "Khong the tai bao cao EÜR",
+          "generic": "Tai bao cao EÜR that bai."
+        },
+        "summary": {
+          "income": "Thu nhap",
+          "expenses": "Chi phi",
+          "profit": "Loi nhuan"
+        },
+        "lines": {
+          "title": "Cac dong bao cao",
+          "columns": {
+            "line": "Dong",
+            "group": "Nhom",
+            "amount": "So tien"
+          },
+          "groups": {
+            "income": "Thu nhap",
+            "expense": "Chi phi"
+          }
+        },
+        "generatedAt": "Tao luc {{date}}"
       }
     },
     "documents": {

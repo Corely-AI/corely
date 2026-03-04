@@ -10,6 +10,7 @@ export const TaxStrategyCapabilitiesSchema = z.object({
   needsConsultant: z.boolean(),
   supportsReverseCharge: z.boolean(),
   supportsOss: z.boolean().default(false),
+  supportsEur: z.boolean().optional(),
   vatFilingFrequency: VatFilingFrequencySchema.optional(),
 });
 export type TaxStrategyCapabilities = z.infer<typeof TaxStrategyCapabilitiesSchema>;

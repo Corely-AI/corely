@@ -4,6 +4,7 @@ import type {
   CustomerTaxInfo,
   TaxBreakdownDto,
   TaxRegime,
+  TaxEurStatementDto,
 } from "@corely/contracts";
 
 /**
@@ -16,6 +17,15 @@ export interface ApplyRulesParams {
   customer: CustomerTaxInfo | null | undefined;
   lines: TaxLineInput[];
   tenantId: string;
+}
+
+export interface BuildEurStatementParams {
+  year: number;
+  currency: string;
+  basis: "cash";
+  incomeByCategory: Record<string, number>;
+  expenseByCategory: Record<string, number>;
+  generatedAt: Date;
 }
 
 /**
@@ -47,4 +57,9 @@ export interface JurisdictionPack {
    * Used by future smart auto-classification features.
    */
   inferKindOrCode?(customer: CustomerTaxInfo | null, lineData: unknown): TaxCodeKind | null;
+
+  /**
+   * Optional: map annual income/expense totals into a jurisdiction-specific EÜR statement.
+   */
+  buildEurStatement?(params: BuildEurStatementParams): TaxEurStatementDto;
 }

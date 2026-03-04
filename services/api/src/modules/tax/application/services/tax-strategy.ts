@@ -15,6 +15,8 @@ export interface TaxStrategyCapabilities {
   supportsReverseCharge: boolean;
   /** Supports OSS (One-Stop-Shop) EU VAT returns (future) */
   supportsOss: boolean;
+  /** Supports Anlage EÜR (cash-basis profit/loss) reporting */
+  supportsEur?: boolean;
   /** Expected VAT filing frequency (if applicable) */
   vatFilingFrequency?: "MONTHLY" | "QUARTERLY" | "YEARLY";
 }

@@ -126,6 +126,19 @@ export class TaxApi {
     });
   }
 
+  async getEurStatement(
+    input: Contracts.GetTaxEurStatementQuery
+  ): Promise<Contracts.GetTaxEurStatementOutput["statement"]> {
+    const params = buildListQuery({ year: input.year });
+    const result = await apiClient.get<Contracts.GetTaxEurStatementOutput>(
+      `/tax/reports/eur?${params.toString()}`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+    return result.statement;
+  }
+
   async getReport(id: string): Promise<Contracts.TaxReportDto> {
     const result = await apiClient.get<{ report: Contracts.TaxReportDto }>(`/tax/reports/${id}`, {
       correlationId: apiClient.generateCorrelationId(),

@@ -103,7 +103,7 @@ export default function TaxesOverviewPage() {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => navigate("/tax/reports")}>
+          <Button variant="secondary" onClick={() => navigate("/tax/reports/eur")}>
             {t("tax.overview.viewReports")}
           </Button>
           <Button variant="default" onClick={() => navigate("/tax/settings")}>
@@ -180,7 +180,7 @@ export default function TaxesOverviewPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(isMissingSettings ? "/tax/settings" : "/tax/reports")}
+              onClick={() => navigate(isMissingSettings ? "/tax/settings" : "/tax/reports/eur")}
             >
               {isMissingSettings
                 ? t("tax.overview.kpis.completeSetup")
@@ -284,7 +284,7 @@ export default function TaxesOverviewPage() {
             <CardTitle>{t("tax.overview.yourReports")}</CardTitle>
             <p className="text-sm text-muted-foreground">{t("tax.overview.reportsDescription")}</p>
           </div>
-          <Button onClick={() => navigate("/tax/reports")}>
+          <Button onClick={() => navigate("/tax/reports/eur")}>
             {t("tax.overview.submitReports")}
           </Button>
         </CardHeader>

@@ -4,14 +4,17 @@ import type {
   TaxCodeKind,
   TaxTotalsByKind,
   TaxLineResultDto,
+  TaxEurStatementDto,
 } from "@corely/contracts";
 import type {
   JurisdictionPack,
   ApplyRulesParams,
+  BuildEurStatementParams,
 } from "../../../../domain/ports/jurisdiction-pack.port";
 import { TaxCodeRepoPort, TaxRateRepoPort } from "../../../../domain/ports";
 import { TaxCode } from "../../../../domain/entities";
 import { RoundingPolicy } from "../../../../application/services/rounding.policy";
+import { buildDeEurStatement } from "../../../../application/services/jurisdictions/de-eur-mapping.v1";
 
 /**
  * Germany (DE) Tax Pack - v1 Adapter
@@ -93,6 +96,10 @@ export class DEPackV1Adapter implements JurisdictionPack {
 
     // Standard and VAT-exempt regimes use per-line VAT logic
     return this.applyStandardVat(lines, documentDate, tenantId, currency, customer);
+  }
+
+  buildEurStatement(params: BuildEurStatementParams): TaxEurStatementDto {
+    return buildDeEurStatement(params);
   }
 
   // ---------------------------------------------------------------------------

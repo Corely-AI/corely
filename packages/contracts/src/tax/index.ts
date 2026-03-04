@@ -18,6 +18,7 @@ export * from "./get-vat-period-details.schema";
 export * from "./list-vat-periods.schema";
 export * from "./export-vat-period.schema";
 export * from "./get-tax-summary.schema";
+export * from "./get-tax-eur-statement.schema";
 export * from "./list-tax-reports.schema";
 export * from "./tax-consultant.schema";
 export * from "./mark-tax-report-submitted.schema";

@@ -47,6 +47,7 @@ import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filin
 import { ExportTaxFilingElsterXmlUseCase } from "./application/use-cases/export-tax-filing-elster-xml.use-case";
 import { ExportTaxFilingKennzifferCsvUseCase } from "./application/use-cases/export-tax-filing-kennziffer-csv.use-case";
 import { GenerateExciseReportUseCase } from "./application/use-cases/generate-excise-report.usecase";
+import { GetEurStatementUseCase } from "./application/use-cases/get-eur-statement.use-case";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 
 // Services
@@ -102,6 +103,8 @@ import { PrismaWorkspaceTaxSettingsAdapter } from "./infrastructure/prisma/prism
 import { DocumentsModule } from "../documents/documents.module";
 import { DeUstvaTaxFilingExportBuilder } from "./infrastructure/exports/de/ustva/de-ustva-tax-filing-export.builder";
 import { TAX_FILING_EXPORT_BUILDER_PORT } from "./application/ports/tax-filing-export-builder.port";
+import { TAX_EUR_SOURCE_PORT } from "./application/ports/tax-eur-source.port";
+import { TaxSnapshotEurSourceAdapter } from "./infrastructure/reports/tax-snapshot-eur-source.adapter";
 
 @Module({
   imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
@@ -152,6 +155,7 @@ import { TAX_FILING_EXPORT_BUILDER_PORT } from "./application/ports/tax-filing-e
     DeleteTaxFilingUseCase,
     ExportTaxFilingElsterXmlUseCase,
     ExportTaxFilingKennzifferCsvUseCase,
+    GetEurStatementUseCase,
     {
       provide: GenerateExciseReportUseCase,
       useFactory: (logger, snapshotRepo, reportRepo) =>
@@ -219,6 +223,7 @@ import { TAX_FILING_EXPORT_BUILDER_PORT } from "./application/ports/tax-filing-e
     { provide: VatPeriodQueryPort, useClass: PrismaVatPeriodQueryAdapter },
     { provide: WORKSPACE_TAX_SETTINGS_PORT, useClass: PrismaWorkspaceTaxSettingsAdapter },
     { provide: TAX_FILING_EXPORT_BUILDER_PORT, useClass: DeUstvaTaxFilingExportBuilder },
+    { provide: TAX_EUR_SOURCE_PORT, useClass: TaxSnapshotEurSourceAdapter },
   ],
   exports: [
     CalculateTaxUseCase,

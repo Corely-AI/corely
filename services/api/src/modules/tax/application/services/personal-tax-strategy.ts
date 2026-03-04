@@ -31,6 +31,7 @@ export class PersonalTaxStrategy implements TaxComputationStrategy {
     needsConsultant: false,
     supportsReverseCharge: true,
     supportsOss: false,
+    supportsEur: true,
   };
 
   constructor(

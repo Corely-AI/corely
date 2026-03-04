@@ -28,6 +28,7 @@ export class TaxCapabilitiesService {
       needsConsultant: false,
       supportsReverseCharge: false,
       supportsOss: false,
+      supportsEur: false,
     };
 
     return {

@@ -28,7 +28,7 @@ export const ShortcutsCard = () => {
           className="h-auto py-3 flex flex-col items-center gap-2 justify-center"
           asChild
         >
-          <Link to="/tax/documents">
+          <Link to="/tax/reports/eur">
             <Download className="h-5 w-5" />
             <span className="text-xs">{t("tax.center.shortcuts.exportReport")}</span>
           </Link>

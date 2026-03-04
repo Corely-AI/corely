@@ -29,6 +29,7 @@ export class CompanyTaxStrategy implements TaxComputationStrategy {
     needsConsultant: true,
     supportsReverseCharge: true,
     supportsOss: false,
+    supportsEur: false,
   };
 
   async computeSummary(_ctx: TaxStrategyContext): Promise<TaxSummaryDto> {
