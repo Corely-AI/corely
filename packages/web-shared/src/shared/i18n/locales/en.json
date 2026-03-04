@@ -130,7 +130,8 @@
       "payments": "Payments",
       "documents": "Documents",
       "settings": "Tax Settings",
-      "reports": "Reports"
+      "reports": "Reports",
+      "annualAssistant": "Annual Assistant"
     },
     "assistant": "Assistant",
     "expenses": "Expenses",

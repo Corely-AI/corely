@@ -46,6 +46,16 @@ export const taxAppManifest: AppManifest = {
       order: 30,
     },
     {
+      id: "tax-annual-assistant",
+      scope: "web",
+      section: "tax",
+      labelKey: "nav.tax.annualAssistant",
+      defaultLabel: "Annual Assistant",
+      route: "/tax/annual",
+      icon: "MessageSquare",
+      order: 35,
+    },
+    {
       id: "tax-payments",
       scope: "web",
       section: "tax",

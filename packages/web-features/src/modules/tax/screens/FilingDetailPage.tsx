@@ -16,6 +16,7 @@ import { PayStep } from "../components/steps/pay-step";
 import { IncludedItemsSection } from "../components/included-items-section";
 import { AttachmentsSection } from "../components/attachments-section";
 import { ActivitySection } from "../components/activity-section";
+import { IncomeTaxReturnPage } from "./income-tax-return-page";
 import { useTaxFilingDetailQuery } from "../hooks/useTaxFilingDetailQuery";
 import { useTaxMode } from "../hooks/useTaxMode";
 import { useVatPeriodsQuery } from "../hooks/useVatPeriodsQuery";
@@ -235,6 +236,10 @@ export const FilingDetailPage = () => {
   }
 
   const backTo = (location.state as { from?: string } | undefined)?.from ?? "/tax/filings";
+
+  if (filing.type === "income-annual") {
+    return <IncomeTaxReturnPage />;
+  }
 
   return (
     <div className="p-6 lg:p-8 space-y-6">

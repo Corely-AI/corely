@@ -55,7 +55,7 @@ export default function TaxAnnualAssistantPage() {
 
   if (!threadId) {
     return (
-      <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+      <div className="p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
         <Card>
           <CardContent className="py-10 text-sm text-muted-foreground flex items-center gap-3">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -78,7 +78,7 @@ export default function TaxAnnualAssistantPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] lg:h-screen">
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
       <Chat
         activeModule="tax"
         runId={threadId}

@@ -250,6 +250,15 @@ import { TaxSnapshotEurSourceAdapter } from "./infrastructure/reports/tax-snapsh
     LockTaxSnapshotUseCase,
     TaxEngineService,
     GenerateTaxReportsUseCase,
+    CreateIncomeTaxDraftUseCase,
+    GetIncomeTaxDraftUseCase,
+    GenerateIncomeTaxDraftEurUseCase,
+    RecomputeIncomeTaxDraftUseCase,
+    GetIncomeTaxDraftChecklistUseCase,
+    AnswerIncomeTaxDraftInterviewUseCase,
+    StartIncomeTaxDraftPdfExportUseCase,
+    PollIncomeTaxDraftPdfExportUseCase,
+    ConfirmIncomeTaxDraftSubmissionUseCase,
   ],
 })
 export class TaxModule {

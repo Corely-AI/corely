@@ -114,6 +114,7 @@ import {
   CreateFilingPage,
   TaxPaymentsPage,
   TaxDocumentsPage,
+  taxRoutes,
 } from "../../modules/tax";
 import { CopilotPage } from "../../routes/copilot";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
@@ -349,6 +350,9 @@ export const appShellRoutes = (
       <Route path="/tax/payments" element={<TaxPaymentsPage />} />
       <Route path="/tax/documents" element={<TaxDocumentsPage />} />
       <Route path="/tax/settings" element={<TaxSettingsPage />} />
+      {taxRoutes.map((route) => (
+        <Route key={route.path} path={route.path} element={route.element} />
+      ))}
       {appSettingsRoutes}
     </Route>
   </Route>

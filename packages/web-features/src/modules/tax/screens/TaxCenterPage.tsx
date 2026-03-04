@@ -68,6 +68,11 @@ export const TaxCenterPage = () => {
               </SelectItem>
             </SelectContent>
           </Select>
+          {isFreelancer ? (
+            <Button variant="outline" asChild>
+              <Link to={`/tax/annual/${currentYear}`}>{t("tax.overview.annualAssistant")}</Link>
+            </Button>
+          ) : null}
           <Button asChild>
             <Link to="/tax/filings">{t("tax.center.reviewNext")}</Link>
           </Button>
