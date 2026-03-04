@@ -137,7 +137,7 @@ describe("Tax filings (API)", () => {
         status: "OPEN",
         currency: "EUR",
         meta: { issues: [] },
-      } as any,
+      },
     });
 
     const res = await request(server)
@@ -149,6 +149,181 @@ describe("Tax filings (API)", () => {
     expect(res.status).toBe(200);
     expect(res.body.filing.id).toBe(report.id);
     expect(res.body.filing.capabilities).toBeDefined();
+  });
+
+  it("GET /tax/filings/:id/exports/* returns attachment payloads for eligible DE VAT periodic filings", async () => {
+    await db.client.taxProfile.create({
+      data: {
+        tenantId: workspaceId,
+        country: "DE",
+        regime: "STANDARD_VAT",
+        vatEnabled: true,
+        vatId: "DE123456789",
+        currency: "EUR",
+        filingFrequency: "QUARTERLY",
+        vatAccountingMethod: "IST",
+        effectiveFrom: new Date("2025-01-01T00:00:00.000Z"),
+      },
+    });
+
+    const report = await db.client.taxReport.create({
+      data: {
+        tenantId: workspaceId,
+        type: "VAT_ADVANCE",
+        group: "ADVANCE_VAT",
+        periodLabel: "Q1 2026",
+        periodStart: new Date("2026-01-01T00:00:00.000Z"),
+        periodEnd: new Date("2026-03-31T23:59:59.999Z"),
+        dueDate: new Date("2026-04-10T00:00:00.000Z"),
+        status: "OPEN",
+        currency: "EUR",
+        meta: {
+          issues: [],
+          lastRecalculatedAt: "2026-03-15T10:00:00.000Z",
+        },
+      },
+    });
+
+    await db.client.taxSnapshot.createMany({
+      data: [
+        {
+          tenantId: workspaceId,
+          sourceType: "INVOICE",
+          sourceId: "inv-export-1",
+          jurisdiction: "DE",
+          regime: "STANDARD_VAT",
+          roundingMode: "PER_DOCUMENT",
+          currency: "EUR",
+          calculatedAt: new Date("2026-02-10T00:00:00.000Z"),
+          subtotalAmountCents: 100_000,
+          taxTotalAmountCents: 19_000,
+          totalAmountCents: 119_000,
+          breakdownJson: "{}",
+        },
+        {
+          tenantId: workspaceId,
+          sourceType: "EXPENSE",
+          sourceId: "exp-export-1",
+          jurisdiction: "DE",
+          regime: "STANDARD_VAT",
+          roundingMode: "PER_DOCUMENT",
+          currency: "EUR",
+          calculatedAt: new Date("2026-02-18T00:00:00.000Z"),
+          subtotalAmountCents: 20_000,
+          taxTotalAmountCents: 3_800,
+          totalAmountCents: 23_800,
+          breakdownJson: "{}",
+        },
+      ],
+      skipDuplicates: true,
+    });
+
+    const xmlRes = await request(server)
+      .get(`/tax/filings/${report.id}/exports/elster-xml`)
+      .set(HEADER_TENANT_ID, tenantId)
+      .set(HEADER_WORKSPACE_ID, workspaceId)
+      .set("x-user-id", userId);
+
+    expect(xmlRes.status).toBe(200);
+    expect(xmlRes.header["content-type"]).toContain("application/xml");
+    expect(xmlRes.header["content-disposition"]).toContain("attachment;");
+    expect(xmlRes.header["content-disposition"]).toContain(".xml");
+    expect(xmlRes.text).toContain("<ElsterUStVaExport");
+
+    const csvRes = await request(server)
+      .get(`/tax/filings/${report.id}/exports/kennziffer-csv`)
+      .set(HEADER_TENANT_ID, tenantId)
+      .set(HEADER_WORKSPACE_ID, workspaceId)
+      .set("x-user-id", userId);
+
+    expect(csvRes.status).toBe(200);
+    expect(csvRes.header["content-type"]).toContain("text/csv");
+    expect(csvRes.header["content-disposition"]).toContain("attachment;");
+    expect(csvRes.header["content-disposition"]).toContain(".csv");
+    expect(csvRes.text).toContain("kennziffer,label,value");
+  });
+
+  it("GET /tax/filings/:id/exports/elster-xml returns 400 when filing type is not VAT periodic", async () => {
+    await db.client.taxProfile.create({
+      data: {
+        tenantId: workspaceId,
+        country: "DE",
+        regime: "STANDARD_VAT",
+        vatEnabled: true,
+        currency: "EUR",
+        filingFrequency: "YEARLY",
+        vatAccountingMethod: "IST",
+        effectiveFrom: new Date("2025-01-01T00:00:00.000Z"),
+      },
+    });
+
+    const report = await db.client.taxReport.create({
+      data: {
+        tenantId: workspaceId,
+        type: "VAT_ANNUAL",
+        group: "ANNUAL_REPORT",
+        periodLabel: "2026",
+        periodStart: new Date("2026-01-01T00:00:00.000Z"),
+        periodEnd: new Date("2026-12-31T23:59:59.999Z"),
+        dueDate: new Date("2027-05-31T00:00:00.000Z"),
+        status: "OPEN",
+        currency: "EUR",
+        meta: {
+          issues: [],
+          lastRecalculatedAt: "2026-12-15T10:00:00.000Z",
+        },
+      },
+    });
+
+    const res = await request(server)
+      .get(`/tax/filings/${report.id}/exports/elster-xml`)
+      .set(HEADER_TENANT_ID, tenantId)
+      .set(HEADER_WORKSPACE_ID, workspaceId)
+      .set("x-user-id", userId);
+
+    expect(res.status).toBe(400);
+    expect(res.body.code).toBe("Tax:ExportNotSupported");
+  });
+
+  it("GET /tax/filings/:id/exports/elster-xml returns 409 when filing is not ready for export", async () => {
+    await db.client.taxProfile.create({
+      data: {
+        tenantId: workspaceId,
+        country: "DE",
+        regime: "STANDARD_VAT",
+        vatEnabled: true,
+        currency: "EUR",
+        filingFrequency: "QUARTERLY",
+        vatAccountingMethod: "IST",
+        effectiveFrom: new Date("2025-01-01T00:00:00.000Z"),
+      },
+    });
+
+    const report = await db.client.taxReport.create({
+      data: {
+        tenantId: workspaceId,
+        type: "VAT_ADVANCE",
+        group: "ADVANCE_VAT",
+        periodLabel: "Q1 2026",
+        periodStart: new Date("2026-01-01T00:00:00.000Z"),
+        periodEnd: new Date("2026-03-31T23:59:59.999Z"),
+        dueDate: new Date("2026-04-10T00:00:00.000Z"),
+        status: "OPEN",
+        currency: "EUR",
+        meta: {
+          issues: [],
+        },
+      },
+    });
+
+    const res = await request(server)
+      .get(`/tax/filings/${report.id}/exports/elster-xml`)
+      .set(HEADER_TENANT_ID, tenantId)
+      .set(HEADER_WORKSPACE_ID, workspaceId)
+      .set("x-user-id", userId);
+
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe("Tax:FilingNotReadyForExport");
   });
 
   it("POST /tax/filings/:id/submit blocked when blocker issues exist", async () => {

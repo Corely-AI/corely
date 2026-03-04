@@ -17,9 +17,10 @@ import {
   err,
   RequireTenant,
 } from "@corely/kernel";
-import { TaxReportRepoPort, TaxSnapshotRepoPort } from "../../domain/ports";
+import { TaxProfileRepoPort, TaxReportRepoPort, TaxSnapshotRepoPort } from "../../domain/ports";
 import type { TaxReportEntity } from "../../domain/entities";
 import { TaxCapabilitiesService } from "../services/tax-capabilities.service";
+import { resolveTaxFilingExportEligibility } from "../services/tax-filing-export-eligibility";
 
 @RequireTenant()
 @Injectable()
@@ -27,6 +28,7 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
   constructor(
     private readonly reportRepo: TaxReportRepoPort,
     private readonly snapshotRepo: TaxSnapshotRepoPort,
+    private readonly taxProfileRepo: TaxProfileRepoPort,
     private readonly capabilitiesService: TaxCapabilitiesService
   ) {
     super({ logger: null as any });
@@ -45,15 +47,22 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     const issues = this.resolveIssues(report.meta);
     const status = this.mapReportStatus(report, issues);
     const totals = await this.computeTotals(report, workspaceId);
+    const profile = await this.taxProfileRepo.getActive(workspaceId, report.periodEnd);
+    const exportEligibility = resolveTaxFilingExportEligibility({
+      filingType: this.mapReportTypeToFilingType(report.type),
+      jurisdiction: profile?.country ?? "",
+      lastRecalculatedAt: totals?.lastRecalculatedAt,
+    });
 
     const capabilities = await this.capabilitiesService.getCapabilities(workspaceId);
     const periodKey = this.resolvePeriodKey(report);
+    const filingType = this.mapReportTypeToFilingType(report.type);
     const submissionMethods: Array<"manual" | "elster" | "api"> = ["manual"];
     const submissionConnectionStatus: "connected" | "notConfigured" = "notConfigured";
 
     const filing = {
       id: report.id,
-      type: this.mapReportTypeToFilingType(report.type),
+      type: filingType,
       status,
       periodLabel: report.periodLabel,
       periodKey,
@@ -74,6 +83,7 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
           : undefined,
       payment: this.resolvePayment(report.meta),
       paymentInstructions: this.resolvePaymentInstructions(report.meta),
+      exports: exportEligibility.exports,
       capabilities: {
         canDelete: this.canDelete(status),
         canRecalculate: !["archived", "paid", "submitted"].includes(status),

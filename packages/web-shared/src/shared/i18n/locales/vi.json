@@ -394,6 +394,128 @@
     "consultant": {
       "title": "Cố vấn Thuế",
       "save": "Lưu thông tin cố vấn"
+    },
+    "submitStep": {
+      "methods": {
+        "manual": "Thủ công",
+        "api": "API",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "Xuất cho ELSTER",
+        "description": "Tải dữ liệu kê khai để tải lên Mein ELSTER. Sau khi nộp trong ELSTER, dán mã chuyển/reference ở bên dưới.",
+        "actions": {
+          "elsterXml": "Xuất ELSTER XML",
+          "kennzifferCsv": "Xuất CSV (Ánh xạ Kennziffer)",
+          "loading": "Đang xuất..."
+        },
+        "unavailable": "Không có xuất ELSTER cho tờ khai này.",
+        "success": {
+          "elsterXml": "Đã tải xuống ELSTER XML",
+          "kennzifferCsv": "Đã tải xuống Kennziffer CSV"
+        },
+        "errors": {
+          "generic": "Không thể xuất tờ khai."
+        }
+      },
+      "connection": {
+        "title": "Phương thức nộp",
+        "connected": "Kết nối nộp tự động đã được cấu hình.",
+        "notConfigured": "Kết nối nộp chưa được cấu hình.",
+        "manageIn": "Quản lý cài đặt nộp trong",
+        "settingsLink": "Cài đặt Thuế",
+        "enableDirectFiling": "để bật nộp trực tiếp."
+      },
+      "confirmation": {
+        "title": "Xác nhận nộp",
+        "method": "Phương thức",
+        "reference": "Mã tham chiếu nộp",
+        "referencePlaceholder": "Nhập mã ID/reference",
+        "submittedAt": "Thời điểm nộp",
+        "notes": "Ghi chú (tùy chọn)",
+        "notesPlaceholder": "Thêm ghi chú cho hồ sơ của bạn",
+        "submit": "Nộp tờ khai"
+      }
+    },
+    "attachments": {
+      "title": "Tài liệu đính kèm",
+      "attachFromDocuments": "Đính kèm từ tài liệu thuế",
+      "uploadAttachment": "Tải tệp đính kèm",
+      "loading": "Đang tải tệp đính kèm...",
+      "error": "Không thể tải tệp đính kèm.",
+      "empty": "Tải lên chứng từ như biên lai hoặc xác nhận nộp.",
+      "untitled": "Tài liệu không tiêu đề",
+      "type": "Loại: {{type}}",
+      "uploadedAt": "Đã tải lên {{date}}",
+      "uploader": "Người tải lên: {{name}}",
+      "remove": "Xóa",
+      "dialog": {
+        "title": "Đính kèm biên lai",
+        "description": "Tải lên chứng từ thanh toán cho tờ khai này.",
+        "replace": "Thay biên lai",
+        "choose": "Chọn biên lai",
+        "noFile": "Chưa chọn tệp",
+        "uploading": "Đang tải lên...",
+        "submit": "Đính kèm biên lai"
+      },
+      "messages": {
+        "uploadSuccess": "Đã tải lên tệp đính kèm",
+        "uploadError": "Không thể tải lên tệp đính kèm",
+        "selectFile": "Chọn biên lai để tải lên"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "Tờ khai VAT",
+        "vat-annual": "Tờ khai VAT năm",
+        "income-annual": "Tờ khai thuế thu nhập năm",
+        "trade": "Tờ khai thuế thương mại",
+        "payroll": "Tờ khai thuế lương",
+        "corporate-annual": "Tờ khai thuế doanh nghiệp năm",
+        "year-end": "Tờ khai cuối năm",
+        "other": "Tờ khai thuế"
+      },
+      "status": {
+        "draft": "Nháp",
+        "needsFix": "Cần xử lý",
+        "readyForReview": "Sẵn sàng rà soát",
+        "submitted": "Đã nộp",
+        "paid": "Đã thanh toán",
+        "archived": "Đã lưu trữ"
+      },
+      "actions": {
+        "review": "Rà soát",
+        "continueReview": "Tiếp tục rà soát",
+        "markPaid": "Đánh dấu đã thanh toán",
+        "view": "Xem",
+        "previousPeriod": "Kỳ trước",
+        "nextPeriod": "Kỳ sau",
+        "recalculate": "Tính lại",
+        "exportPdf": "Xuất PDF",
+        "exportCsv": "Xuất CSV",
+        "delete": "Xóa tờ khai",
+        "deleteConfirmTitle": "Xóa tờ khai?",
+        "deleteConfirmMessage": "Hành động này không thể hoàn tác."
+      },
+      "due": "Hạn nộp {{date}}",
+      "dueWithDays": "Hạn nộp {{date}} • còn {{count}} ngày"
+    },
+    "activity": {
+      "title": "Hoạt động",
+      "loading": "Đang tải hoạt động...",
+      "error": "Không thể tải hoạt động.",
+      "noActivity": "Chưa có hoạt động.",
+      "by": "Bởi {{name}}",
+      "types": {
+        "created": "Đã tạo tờ khai",
+        "recalculated": "Đã tính lại",
+        "submitted": "Đã nộp",
+        "paid": "Đã đánh dấu thanh toán",
+        "attachmentAdded": "Đã thêm tệp đính kèm",
+        "issuesDetected": "Đã phát hiện vấn đề",
+        "issuesResolved": "Đã xử lý vấn đề",
+        "deleted": "Đã xóa"
+      }
     }
   },
   "cashManagement": {

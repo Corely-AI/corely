@@ -43,6 +43,32 @@ export function unwrap<T>(result: Result<T, unknown>): T {
   return result.value;
 }
 
+export function unwrapWithProblemCode<T>(result: Result<T, unknown>): T {
+  if ("error" in result) {
+    const error = result.error;
+    if (error instanceof ConflictError) {
+      throw new ConflictException({ message: error.message, code: error.code });
+    }
+    if (error instanceof NotFoundError) {
+      throw new NotFoundException({ message: error.message, code: error.code });
+    }
+    if (error instanceof ValidationError) {
+      throw new BadRequestException({ message: error.message, code: error.code });
+    }
+    if (error instanceof ForbiddenError) {
+      throw new ForbiddenException({ message: error.message, code: error.code });
+    }
+    if (error instanceof UnauthorizedError) {
+      throw new UnauthorizedException({ message: error.message, code: error.code });
+    }
+    throw new InternalServerErrorException({
+      message: error instanceof Error ? error.message : "Unexpected tax module error",
+      code: "Common:UnexpectedError",
+    });
+  }
+  return result.value;
+}
+
 export function buildTaxUseCaseContext(req: Request): UseCaseContext {
   const ctx = toUseCaseContext(req as any);
 

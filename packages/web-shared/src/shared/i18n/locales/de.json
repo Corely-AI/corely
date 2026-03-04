@@ -395,6 +395,129 @@
       "title": "Steuerberater",
       "save": "Beraterinfo speichern"
     },
+    "submitStep": {
+      "methods": {
+        "manual": "Manuell",
+        "api": "API",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "Export für ELSTER",
+        "description": "Laden Sie die Meldedaten herunter, um sie in Mein ELSTER hochzuladen. Nach der Übermittlung in ELSTER fügen Sie unten die Transfer-/Referenz-ID ein.",
+        "actions": {
+          "elsterXml": "ELSTER XML exportieren",
+          "kennzifferCsv": "CSV exportieren (Kennziffern-Zuordnung)",
+          "loading": "Wird exportiert..."
+        },
+        "unavailable": "ELSTER-Export ist für diese Meldung nicht verfügbar.",
+        "success": {
+          "elsterXml": "ELSTER XML heruntergeladen",
+          "kennzifferCsv": "Kennziffern-CSV heruntergeladen"
+        },
+        "errors": {
+          "generic": "Export der Meldung fehlgeschlagen."
+        }
+      },
+      "connection": {
+        "title": "Übermittlungsart",
+        "connected": "Ihre automatische Übermittlungsverbindung ist eingerichtet.",
+        "notConfigured": "Keine Übermittlungsverbindung konfiguriert.",
+        "manageIn": "Verwalten Sie die Übermittlungseinstellungen in",
+        "settingsLink": "Steuereinstellungen",
+        "enableDirectFiling": "um die direkte Einreichung zu aktivieren."
+      },
+      "confirmation": {
+        "title": "Übermittlungsbestätigung",
+        "method": "Methode",
+        "reference": "Übermittlungsreferenz",
+        "referencePlaceholder": "Übermittlungs-ID/Referenz eingeben",
+        "submittedAt": "Übermittelt am",
+        "notes": "Notizen (optional)",
+        "notesPlaceholder": "Notiz für Ihre Unterlagen hinzufügen",
+        "submit": "Meldung übermitteln"
+      }
+    },
+    "attachments": {
+      "title": "Anhänge",
+      "attachFromDocuments": "Aus Dokumenten anhängen",
+      "uploadAttachment": "Anhang hochladen",
+      "loading": "Anhänge werden geladen...",
+      "error": "Laden der Anhänge fehlgeschlagen.",
+      "empty": "Laden Sie Belege oder Übermittlungsbestätigungen hoch.",
+      "untitled": "Unbenanntes Dokument",
+      "type": "Typ: {{type}}",
+      "uploadedAt": "Hochgeladen am {{date}}",
+      "uploader": "Uploader: {{name}}",
+      "remove": "Entfernen",
+      "dialog": {
+        "title": "Beleg anhängen",
+        "description": "Laden Sie einen Zahlungsbeleg für diese Meldung hoch.",
+        "replace": "Beleg ersetzen",
+        "choose": "Beleg auswählen",
+        "noFile": "Keine Datei ausgewählt",
+        "uploading": "Wird hochgeladen...",
+        "submit": "Beleg anhängen"
+      },
+      "messages": {
+        "uploadSuccess": "Anhang hochgeladen",
+        "uploadError": "Hochladen des Anhangs fehlgeschlagen",
+        "selectFile": "Wählen Sie einen Beleg zum Hochladen aus"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "Umsatzsteuer-Voranmeldung",
+        "vat-annual": "Umsatzsteuer-Jahreserklärung",
+        "income-annual": "Einkommensteuererklärung",
+        "trade": "Gewerbesteuererklärung",
+        "payroll": "Lohnsteuer-Anmeldung",
+        "corporate-annual": "Körperschaftsteuererklärung",
+        "year-end": "Jahresabschluss",
+        "other": "Steuermeldung"
+      },
+      "status": {
+        "draft": "Entwurf",
+        "needsFix": "Handlung erforderlich",
+        "readyForReview": "Bereit zur Prüfung",
+        "submitted": "Übermittelt",
+        "paid": "Bezahlt",
+        "archived": "Archiviert"
+      },
+      "actions": {
+        "review": "Prüfen",
+        "continueReview": "Prüfung fortsetzen",
+        "markPaid": "Als bezahlt markieren",
+        "view": "Ansehen",
+        "previousPeriod": "Vorheriger Zeitraum",
+        "nextPeriod": "Nächster Zeitraum",
+        "recalculate": "Neu berechnen",
+        "exportPdf": "PDF exportieren",
+        "exportCsv": "CSV exportieren",
+        "delete": "Meldung löschen",
+        "deleteConfirmTitle": "Meldung löschen?",
+        "deleteConfirmMessage": "Diese Aktion kann nicht rückgängig gemacht werden."
+      },
+      "due": "Fällig am {{date}}",
+      "dueWithDays": "Fällig am {{date}} • Noch {{count}} Tag",
+      "dueWithDays_plural": "Fällig am {{date}} • Noch {{count}} Tage"
+    },
+    "activity": {
+      "title": "Aktivität",
+      "loading": "Aktivität wird geladen...",
+      "error": "Laden der Aktivität fehlgeschlagen.",
+      "noActivity": "Noch keine Aktivität.",
+      "by": "Von {{name}}",
+      "types": {
+        "created": "Meldung erstellt",
+        "recalculated": "Neu berechnet",
+        "submitted": "Übermittelt",
+        "paid": "Als bezahlt markiert",
+        "attachmentAdded": "Anhang hinzugefügt",
+        "issuesDetected": "Probleme erkannt",
+        "issuesResolved": "Probleme behoben",
+        "deleted": "Gelöscht"
+      }
+    },
     "center": {
       "title": "Steuerzentrum",
       "myTaxes": "Meine Steuern",
@@ -767,6 +890,96 @@
           "issuesDetected": "Probleme erkannt",
           "issuesResolved": "Probleme behoben",
           "deleted": "Gelöscht"
+        }
+      },
+      "createFiling": {
+        "title": "Neue Steuermeldung",
+        "subtitle": "Wählen Sie den Meldungstyp und den Zeitraum aus, um eine neue Verpflichtung zu erstellen.",
+        "form": {
+          "details": "Details zur Meldung",
+          "type": "Meldungstyp",
+          "selectType": "Typ auswählen",
+          "types": {
+            "vat": "Umsatzsteuer-Voranmeldung",
+            "income-annual": "Einkommensteuer (Jährlich)",
+            "vat-annual": "Jährliche Umsatzsteuer",
+            "other": "Sonstige"
+          },
+          "year": "Steuerjahr",
+          "period": "Zeitraum",
+          "cancel": "Abbrechen",
+          "submit": "Meldung erstellen",
+          "errors": {
+            "periodRequired": "Der Zeitraum ist für Umsatzsteuer-Meldungen erforderlich",
+            "yearRequired": "Das Jahr ist für jährliche Meldungen erforderlich"
+          }
+        },
+        "messages": {
+          "successTitle": "Meldung erstellt",
+          "successDescription": "Weiterleitung zu den Details...",
+          "errorTitle": "Fehler beim Erstellen der Meldung"
+        }
+      },
+      "filingItems": {
+        "error": "Laden der Einträge fehlgeschlagen.",
+        "emptyTitle": "Keine {{type}} Einträge",
+        "emptyDescription": "Für diesen Zeitraum wurden keine {{type}} Einträge gefunden.",
+        "table": {
+          "date": "Datum",
+          "counterparty": "Geschäftspartner",
+          "description": "Beschreibung",
+          "net": "Netto",
+          "tax": "Steuer",
+          "gross": "Brutto"
+        }
+      },
+      "includedItems": {
+        "title": "Enthaltene Einträge",
+        "emptyTitle": "Keine Einträge enthalten",
+        "emptyDescription": "Bisher wurden keine Quelldaten für diese Meldung gefunden.",
+        "table": {
+          "type": "Typ",
+          "date": "Datum",
+          "counterparty": "Geschäftspartner",
+          "category": "Kategorie",
+          "vatTreatment": "USt-Behandlung",
+          "net": "Netto",
+          "tax": "Steuer",
+          "gross": "Brutto",
+          "flags": "Flags"
+        },
+        "badges": {
+          "needsAttention": "Handlung erforderlich",
+          "ok": "OK",
+          "noCategory": "Keine Kategorie",
+          "noVatTreatment": "Keine USt-Behandlung"
+        },
+        "error": "Laden der enthaltenen Einträge fehlgeschlagen.",
+        "retry": "Wiederholen"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Als bezahlt markieren",
+          "description": "Erfassen Sie die Zahlungsdetails und hängen Sie optional einen Beleg an."
+        },
+        "form": {
+          "paidAt": "Bezahlt am",
+          "method": "Methode",
+          "methods": {
+            "bank-transfer": "Banküberweisung",
+            "direct-debit": "Lastschrift",
+            "other": "Sonstiges"
+          },
+          "amount": "Betrag",
+          "receipt": "Beleg",
+          "replace": "Beleg ersetzen",
+          "upload": "Beleg hochladen",
+          "optional": "Optional",
+          "uploading": "Wird hochgeladen...",
+          "submit": "Als bezahlt markieren"
+        },
+        "messages": {
+          "uploadError": "Laden des Belegs fehlgeschlagen"
         }
       },
       "messages": {

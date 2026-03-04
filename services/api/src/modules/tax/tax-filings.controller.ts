@@ -7,11 +7,12 @@ import {
   Param,
   Post,
   Query,
+  Res,
   Req,
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 import {
   AttachTaxFilingDocumentRequestSchema,
   AttachTaxFilingPaymentProofRequestSchema,
@@ -26,7 +27,7 @@ import {
 } from "@corely/contracts";
 import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../identity/adapters/http/auth.guard";
-import { buildTaxUseCaseContext, unwrap } from "./tax-http.utils";
+import { buildTaxUseCaseContext, unwrap, unwrapWithProblemCode } from "./tax-http.utils";
 import { GetTaxCenterUseCase } from "./application/use-cases/get-tax-center.use-case";
 import { GetTaxCapabilitiesUseCase } from "./application/use-cases/get-tax-capabilities.use-case";
 import { ListTaxFilingsUseCase } from "./application/use-cases/list-tax-filings.use-case";
@@ -45,6 +46,8 @@ import { RecalculateTaxFilingUseCase } from "./application/use-cases/recalculate
 import { SubmitTaxFilingUseCase } from "./application/use-cases/submit-tax-filing.use-case";
 import { MarkTaxFilingPaidUseCase } from "./application/use-cases/mark-tax-filing-paid.use-case";
 import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filing.use-case";
+import { ExportTaxFilingElsterXmlUseCase } from "./application/use-cases/export-tax-filing-elster-xml.use-case";
+import { ExportTaxFilingKennzifferCsvUseCase } from "./application/use-cases/export-tax-filing-kennziffer-csv.use-case";
 
 @Controller("tax")
 @UseGuards(AuthGuard)
@@ -68,7 +71,9 @@ export class TaxFilingsController {
     private readonly recalculateTaxFilingUseCase: RecalculateTaxFilingUseCase,
     private readonly submitTaxFilingUseCase: SubmitTaxFilingUseCase,
     private readonly markTaxFilingPaidUseCase: MarkTaxFilingPaidUseCase,
-    private readonly deleteTaxFilingUseCase: DeleteTaxFilingUseCase
+    private readonly deleteTaxFilingUseCase: DeleteTaxFilingUseCase,
+    private readonly exportTaxFilingElsterXmlUseCase: ExportTaxFilingElsterXmlUseCase,
+    private readonly exportTaxFilingKennzifferCsvUseCase: ExportTaxFilingKennzifferCsvUseCase
   ) {}
 
   @Get("center")
@@ -154,6 +159,38 @@ export class TaxFilingsController {
   async getFiling(@Param("id") id: string, @Req() req: Request) {
     const ctx = buildTaxUseCaseContext(req);
     return unwrap(await this.getTaxFilingDetailUseCase.execute(id, ctx));
+  }
+
+  @Get("filings/:id/exports/elster-xml")
+  async exportFilingElsterXml(
+    @Param("id") id: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const ctx = buildTaxUseCaseContext(req);
+    const exported = unwrapWithProblemCode(
+      await this.exportTaxFilingElsterXmlUseCase.execute(id, ctx)
+    );
+
+    res.setHeader("Content-Type", `${exported.mimeType}; charset=${exported.encoding ?? "utf-8"}`);
+    res.setHeader("Content-Disposition", this.toAttachmentDisposition(exported.fileName));
+    return exported.content;
+  }
+
+  @Get("filings/:id/exports/kennziffer-csv")
+  async exportFilingKennzifferCsv(
+    @Param("id") id: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const ctx = buildTaxUseCaseContext(req);
+    const exported = unwrapWithProblemCode(
+      await this.exportTaxFilingKennzifferCsvUseCase.execute(id, ctx)
+    );
+
+    res.setHeader("Content-Type", `${exported.mimeType}; charset=${exported.encoding ?? "utf-8"}`);
+    res.setHeader("Content-Disposition", this.toAttachmentDisposition(exported.fileName));
+    return exported.content;
   }
 
   @Get("filings/:id/items")
@@ -268,5 +305,10 @@ export class TaxFilingsController {
       entityId: query.entityId,
     });
     return unwrap(await this.getVatFilingPeriodsUseCase.execute(input, ctx));
+  }
+
+  private toAttachmentDisposition(fileName: string): string {
+    const safeFileName = fileName.replace(/"/g, "");
+    return `attachment; filename="${safeFileName}"`;
   }
 }

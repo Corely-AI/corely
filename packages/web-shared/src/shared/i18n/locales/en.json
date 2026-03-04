@@ -436,6 +436,129 @@
       "saveSuccess": "Consultant info saved",
       "saveFailed": "Failed to save consultant info"
     },
+    "submitStep": {
+      "methods": {
+        "manual": "Manual",
+        "api": "API",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "Export for ELSTER",
+        "description": "Download the filing data to upload in Mein ELSTER. After submitting in ELSTER, paste the transfer/reference ID below.",
+        "actions": {
+          "elsterXml": "Export ELSTER XML",
+          "kennzifferCsv": "Export CSV (Kennziffer mapping)",
+          "loading": "Exporting..."
+        },
+        "unavailable": "ELSTER export is not available for this filing.",
+        "success": {
+          "elsterXml": "Downloaded ELSTER XML",
+          "kennzifferCsv": "Downloaded Kennziffer CSV"
+        },
+        "errors": {
+          "generic": "Failed to export filing."
+        }
+      },
+      "connection": {
+        "title": "Submission method",
+        "connected": "Your automated submission connection is configured.",
+        "notConfigured": "Submission connection is not configured.",
+        "manageIn": "Manage submission settings in",
+        "settingsLink": "Tax Settings",
+        "enableDirectFiling": "to enable direct filing."
+      },
+      "confirmation": {
+        "title": "Submission confirmation",
+        "method": "Method",
+        "reference": "Submission reference",
+        "referencePlaceholder": "Enter submission ID/reference",
+        "submittedAt": "Submitted at",
+        "notes": "Notes (optional)",
+        "notesPlaceholder": "Add a note for your records",
+        "submit": "Submit filing"
+      }
+    },
+    "attachments": {
+      "title": "Attachments",
+      "attachFromDocuments": "Attach from tax documents",
+      "uploadAttachment": "Upload attachment",
+      "loading": "Loading attachments...",
+      "error": "Failed to load attachments.",
+      "empty": "Upload supporting documents like receipts or submission confirmations.",
+      "untitled": "Untitled document",
+      "type": "Type: {{type}}",
+      "uploadedAt": "Uploaded {{date}}",
+      "uploader": "Uploader: {{name}}",
+      "remove": "Remove",
+      "dialog": {
+        "title": "Attach receipt",
+        "description": "Upload proof of payment for this filing.",
+        "replace": "Replace receipt",
+        "choose": "Choose receipt",
+        "noFile": "No file selected",
+        "uploading": "Uploading...",
+        "submit": "Attach receipt"
+      },
+      "messages": {
+        "uploadSuccess": "Attachment uploaded",
+        "uploadError": "Failed to upload attachment",
+        "selectFile": "Select a receipt to upload"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "VAT Filing",
+        "vat-annual": "VAT Annual Filing",
+        "income-annual": "Income Tax Filing",
+        "trade": "Trade Tax Filing",
+        "payroll": "Payroll Tax Filing",
+        "corporate-annual": "Corporate Tax Filing",
+        "year-end": "Year-End Filing",
+        "other": "Tax Filing"
+      },
+      "status": {
+        "draft": "Draft",
+        "needsFix": "Needs attention",
+        "readyForReview": "Ready for review",
+        "submitted": "Submitted",
+        "paid": "Paid",
+        "archived": "Archived"
+      },
+      "actions": {
+        "review": "Review",
+        "continueReview": "Continue review",
+        "markPaid": "Mark paid",
+        "view": "View",
+        "previousPeriod": "Previous period",
+        "nextPeriod": "Next period",
+        "recalculate": "Recalculate",
+        "exportPdf": "Export PDF",
+        "exportCsv": "Export CSV",
+        "delete": "Delete filing",
+        "deleteConfirmTitle": "Delete filing?",
+        "deleteConfirmMessage": "This action cannot be undone."
+      },
+      "due": "Due {{date}}",
+      "dueWithDays": "Due {{date}} • {{count}} day left",
+      "dueWithDays_plural": "Due {{date}} • {{count}} days left"
+    },
+    "activity": {
+      "title": "Activity",
+      "loading": "Loading activity...",
+      "error": "Failed to load activity.",
+      "noActivity": "No activity yet.",
+      "by": "By {{name}}",
+      "types": {
+        "created": "Filing created",
+        "recalculated": "Recalculated",
+        "submitted": "Submitted",
+        "paid": "Marked paid",
+        "attachmentAdded": "Attachment added",
+        "issuesDetected": "Issues detected",
+        "issuesResolved": "Issues resolved",
+        "deleted": "Deleted"
+      }
+    },
     "center": {
       "title": "Tax Center",
       "myTaxes": "My Taxes",
@@ -808,6 +931,96 @@
           "issuesDetected": "Issues detected",
           "issuesResolved": "Issues resolved",
           "deleted": "Deleted"
+        }
+      },
+      "createFiling": {
+        "title": "New Tax Filing",
+        "subtitle": "Choose the filing type and period to create a new obligation.",
+        "form": {
+          "details": "Filing details",
+          "type": "Filing Type",
+          "selectType": "Select type",
+          "types": {
+            "vat": "VAT Return",
+            "income-annual": "Income Tax (Annual)",
+            "vat-annual": "Annual VAT",
+            "other": "Other"
+          },
+          "year": "Tax Year",
+          "period": "Period",
+          "cancel": "Cancel",
+          "submit": "Create Filing",
+          "errors": {
+            "periodRequired": "Period is required for VAT filings",
+            "yearRequired": "Year is required for annual filings"
+          }
+        },
+        "messages": {
+          "successTitle": "Filing created",
+          "successDescription": "Redirecting to filing details...",
+          "errorTitle": "Error creating filing"
+        }
+      },
+      "filingItems": {
+        "error": "Failed to load items.",
+        "emptyTitle": "No {{type}} items",
+        "emptyDescription": "We haven't found any {{type}} items for this period.",
+        "table": {
+          "date": "Date",
+          "counterparty": "Counterparty",
+          "description": "Description",
+          "net": "Net",
+          "tax": "Tax",
+          "gross": "Gross"
+        }
+      },
+      "includedItems": {
+        "title": "Included items",
+        "emptyTitle": "No items included",
+        "emptyDescription": "We haven't found any source items for this filing yet.",
+        "table": {
+          "type": "Type",
+          "date": "Date",
+          "counterparty": "Counterparty",
+          "category": "Category",
+          "vatTreatment": "VAT treatment",
+          "net": "Net",
+          "tax": "Tax",
+          "gross": "Gross",
+          "flags": "Flags"
+        },
+        "badges": {
+          "needsAttention": "Needs attention",
+          "ok": "OK",
+          "noCategory": "No category",
+          "noVatTreatment": "No VAT treatment"
+        },
+        "error": "Failed to load included items.",
+        "retry": "Retry"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Mark as paid",
+          "description": "Record the payment details and optionally attach a receipt."
+        },
+        "form": {
+          "paidAt": "Paid at",
+          "method": "Method",
+          "methods": {
+            "bank-transfer": "Bank transfer",
+            "direct-debit": "Direct debit",
+            "other": "Other"
+          },
+          "amount": "Amount",
+          "receipt": "Receipt",
+          "replace": "Replace receipt",
+          "upload": "Upload receipt",
+          "optional": "Optional",
+          "uploading": "Uploading...",
+          "submit": "Mark paid"
+        },
+        "messages": {
+          "uploadError": "Failed to upload receipt"
         }
       },
       "messages": {

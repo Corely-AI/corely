@@ -44,6 +44,8 @@ import { RecalculateTaxFilingUseCase } from "./application/use-cases/recalculate
 import { SubmitTaxFilingUseCase } from "./application/use-cases/submit-tax-filing.use-case";
 import { MarkTaxFilingPaidUseCase } from "./application/use-cases/mark-tax-filing-paid.use-case";
 import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filing.use-case";
+import { ExportTaxFilingElsterXmlUseCase } from "./application/use-cases/export-tax-filing-elster-xml.use-case";
+import { ExportTaxFilingKennzifferCsvUseCase } from "./application/use-cases/export-tax-filing-kennziffer-csv.use-case";
 import { GenerateExciseReportUseCase } from "./application/use-cases/generate-excise-report.usecase";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 
@@ -98,6 +100,8 @@ import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-
 import { WORKSPACE_TAX_SETTINGS_PORT } from "./application/ports/workspace-tax-settings.port";
 import { PrismaWorkspaceTaxSettingsAdapter } from "./infrastructure/prisma/prisma-workspace-tax-settings.adapter";
 import { DocumentsModule } from "../documents/documents.module";
+import { DeUstvaTaxFilingExportBuilder } from "./infrastructure/exports/de/ustva/de-ustva-tax-filing-export.builder";
+import { TAX_FILING_EXPORT_BUILDER_PORT } from "./application/ports/tax-filing-export-builder.port";
 
 @Module({
   imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
@@ -146,6 +150,8 @@ import { DocumentsModule } from "../documents/documents.module";
     SubmitTaxFilingUseCase,
     MarkTaxFilingPaidUseCase,
     DeleteTaxFilingUseCase,
+    ExportTaxFilingElsterXmlUseCase,
+    ExportTaxFilingKennzifferCsvUseCase,
     {
       provide: GenerateExciseReportUseCase,
       useFactory: (logger, snapshotRepo, reportRepo) =>
@@ -212,6 +218,7 @@ import { DocumentsModule } from "../documents/documents.module";
     { provide: TaxSummaryQueryPort, useClass: PrismaTaxSummaryQueryAdapter },
     { provide: VatPeriodQueryPort, useClass: PrismaVatPeriodQueryAdapter },
     { provide: WORKSPACE_TAX_SETTINGS_PORT, useClass: PrismaWorkspaceTaxSettingsAdapter },
+    { provide: TAX_FILING_EXPORT_BUILDER_PORT, useClass: DeUstvaTaxFilingExportBuilder },
   ],
   exports: [
     CalculateTaxUseCase,

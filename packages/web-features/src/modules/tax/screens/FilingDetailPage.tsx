@@ -294,6 +294,8 @@ export const FilingDetailPage = () => {
         ) : null}
         {activeStep === "submit" ? (
           <SubmitStep
+            filingId={filing.id}
+            exportCapabilities={filing.exports}
             canSubmit={filing.capabilities.canSubmit && !hasBlockers}
             methods={filing.capabilities.submissionMethods}
             connectionStatus={filing.capabilities.submissionConnectionStatus}

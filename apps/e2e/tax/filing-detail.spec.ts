@@ -73,6 +73,81 @@ test.describe("Tax Filing Detail - 404 and Transitions", () => {
   });
 });
 
+test.describe("Tax Filing Detail - ELSTER Export", () => {
+  test("downloads ELSTER XML and Kennziffer CSV for VAT periodic filings from Submit step", async ({
+    page,
+    testData,
+  }) => {
+    const periodicScenario = TAX_FILING_MATRIX.find(
+      (scenario) => scenario.filingType === "VAT_PERIODIC"
+    );
+    if (!periodicScenario) {
+      throw new Error("VAT periodic test scenario is not configured");
+    }
+
+    const seeded = await seedForScenario(page, testData, periodicScenario, {
+      withBlockers: false,
+      includeSnapshots: true,
+      invoiceCount: 2,
+      expenseCount: 2,
+      status: "OPEN",
+    });
+
+    await page.goto(`/tax/filings/${seeded.filingId}`);
+    await goToFilingSubmitStep(page);
+
+    const xmlButton = page.getByTestId("tax-export-elster-xml");
+    const csvButton = page.getByTestId("tax-export-kennziffer-csv");
+    await expect(xmlButton).toBeVisible();
+    await expect(csvButton).toBeVisible();
+
+    const [xmlDownload] = await Promise.all([
+      page.waitForEvent("download", { timeout: 15_000 }),
+      xmlButton.click(),
+    ]);
+    expect(xmlDownload.suggestedFilename().toLowerCase()).toMatch(/\.xml$/u);
+
+    const [csvDownload] = await Promise.all([
+      page.waitForEvent("download", { timeout: 15_000 }),
+      csvButton.click(),
+    ]);
+    expect(csvDownload.suggestedFilename().toLowerCase()).toMatch(/\.csv$/u);
+  });
+
+  test("hides ELSTER XML and keeps Kennziffer CSV for VAT annual filings", async ({
+    page,
+    testData,
+  }) => {
+    const annualScenario = TAX_FILING_MATRIX.find(
+      (scenario) => scenario.filingType === "VAT_ANNUAL"
+    );
+    if (!annualScenario) {
+      throw new Error("VAT annual test scenario is not configured");
+    }
+
+    const seeded = await seedForScenario(page, testData, annualScenario, {
+      withBlockers: false,
+      includeSnapshots: true,
+      invoiceCount: 2,
+      expenseCount: 2,
+      status: "OPEN",
+    });
+
+    await page.goto(`/tax/filings/${seeded.filingId}`);
+    await goToFilingSubmitStep(page);
+
+    await expect(page.getByTestId("tax-export-elster-xml")).toHaveCount(0);
+    const csvButton = page.getByTestId("tax-export-kennziffer-csv");
+    await expect(csvButton).toBeVisible();
+
+    const [csvDownload] = await Promise.all([
+      page.waitForEvent("download", { timeout: 15_000 }),
+      csvButton.click(),
+    ]);
+    expect(csvDownload.suggestedFilename().toLowerCase()).toMatch(/\.csv$/u);
+  });
+});
+
 test.describe("Tax Filing Detail - Matrix", () => {
   for (const scenario of TAX_FILING_MATRIX) {
     test.describe(`${scenario.filingType}`, () => {

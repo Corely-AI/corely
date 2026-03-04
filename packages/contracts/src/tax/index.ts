@@ -1,6 +1,7 @@
 // Types and DTOs
 export * from "./tax.types";
 export * from "./tax-filing.types";
+export * from "./tax-filing-export.schema";
 
 // Operation schemas
 export * from "./get-tax-profile.schema";

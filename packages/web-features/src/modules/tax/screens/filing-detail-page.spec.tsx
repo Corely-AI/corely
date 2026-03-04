@@ -15,6 +15,8 @@ const submitFilingMock = vi.fn();
 const recalculateFilingMock = vi.fn();
 const markFilingPaidMock = vi.fn();
 const getVatFilingPeriodsMock = vi.fn();
+const downloadFilingElsterXmlMock = vi.fn();
+const downloadFilingKennzifferCsvMock = vi.fn();
 
 vi.mock("@corely/web-shared/lib/tax-api", () => ({
   taxApi: {
@@ -25,6 +27,8 @@ vi.mock("@corely/web-shared/lib/tax-api", () => ({
     submitFiling: (...args: unknown[]) => submitFilingMock(...args),
     recalculateFiling: (...args: unknown[]) => recalculateFilingMock(...args),
     markFilingPaid: (...args: unknown[]) => markFilingPaidMock(...args),
+    downloadFilingElsterXml: (...args: unknown[]) => downloadFilingElsterXmlMock(...args),
+    downloadFilingKennzifferCsv: (...args: unknown[]) => downloadFilingKennzifferCsvMock(...args),
     deleteFiling: vi.fn(),
     getReportPdfUrl: vi.fn(),
     getVatFilingPeriods: (...args: unknown[]) => getVatFilingPeriodsMock(...args),
@@ -82,6 +86,10 @@ const buildFilingResponse = (
       estimatedTaxDueCents: null,
     },
     issues: [],
+    exports: {
+      canExportElsterXml: true,
+      canExportKennzifferCsv: true,
+    },
     capabilities: {
       canDelete: true,
       canRecalculate: true,
@@ -107,6 +115,8 @@ describe("FilingDetailPage", () => {
     recalculateFilingMock.mockReset();
     markFilingPaidMock.mockReset();
     getVatFilingPeriodsMock.mockReset();
+    downloadFilingElsterXmlMock.mockReset();
+    downloadFilingKennzifferCsvMock.mockReset();
 
     getFilingDetailMock.mockResolvedValue(buildFilingResponse());
     listFilingItemsMock.mockResolvedValue({
@@ -136,6 +146,14 @@ describe("FilingDetailPage", () => {
     submitFilingMock.mockResolvedValue(buildFilingResponse({ status: "submitted" }));
     recalculateFilingMock.mockResolvedValue(buildFilingResponse());
     markFilingPaidMock.mockResolvedValue(buildFilingResponse({ status: "paid" }));
+    downloadFilingElsterXmlMock.mockResolvedValue({
+      blob: new Blob(["<xml />"], { type: "application/xml" }),
+      filename: "ustva-2026-q1-elster.xml",
+    });
+    downloadFilingKennzifferCsvMock.mockResolvedValue({
+      blob: new Blob(["kennziffer,label,value"], { type: "text/csv" }),
+      filename: "ustva-2026-q1-kennziffer.csv",
+    });
     getVatFilingPeriodsMock.mockResolvedValue({
       year: 2026,
       frequency: "quarterly",
@@ -223,6 +241,40 @@ describe("FilingDetailPage", () => {
       "filing-1",
       expect.objectContaining({ submissionId: "SUB-001", method: "manual" })
     );
+  });
+
+  it("renders ELSTER export actions in submit step when export capabilities are enabled", async () => {
+    const user = userEvent.setup();
+    renderPage("/tax/filings/filing-1");
+
+    const submitStepButton = await screen.findByRole("button", { name: /submit/i });
+    await user.click(submitStepButton);
+
+    const submitStep = await screen.findByTestId("tax-filing-submit-step");
+    expect(within(submitStep).getByTestId("tax-export-elster-xml")).toBeInTheDocument();
+    expect(within(submitStep).getByTestId("tax-export-kennziffer-csv")).toBeInTheDocument();
+  });
+
+  it("hides ELSTER XML export and keeps CSV export for VAT annual filings", async () => {
+    const user = userEvent.setup();
+    getFilingDetailMock.mockResolvedValueOnce(
+      buildFilingResponse({
+        type: "vat-annual",
+        exports: {
+          canExportElsterXml: false,
+          canExportKennzifferCsv: true,
+        },
+      })
+    );
+
+    renderPage("/tax/filings/filing-1");
+
+    const submitStepButton = await screen.findByRole("button", { name: /submit/i });
+    await user.click(submitStepButton);
+
+    const submitStep = await screen.findByTestId("tax-filing-submit-step");
+    expect(within(submitStep).queryByTestId("tax-export-elster-xml")).not.toBeInTheDocument();
+    expect(within(submitStep).getByTestId("tax-export-kennziffer-csv")).toBeInTheDocument();
   });
 
   it("supports embedded included-items presets, search, and pagination", async () => {

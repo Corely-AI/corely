@@ -4,6 +4,7 @@
  */
 
 import type * as Contracts from "@corely/contracts";
+import { normalizeError } from "@corely/api-client";
 import { apiClient } from "./api-client";
 import { buildListQuery } from "./api-query-utils";
 
@@ -12,6 +13,11 @@ export type TaxPdfResponse = {
   downloadUrl?: string;
   expiresAt?: string;
   retryAfterMs?: number;
+};
+
+export type TaxFilingDownloadResult = {
+  blob: Blob;
+  filename: string;
 };
 
 export class TaxApi {
@@ -360,6 +366,20 @@ export class TaxApi {
     });
   }
 
+  async downloadFilingElsterXml(id: string): Promise<TaxFilingDownloadResult> {
+    return this.downloadFilingExport(
+      `/tax/filings/${id}/exports/elster-xml`,
+      "VAT_Filing_Q1_2026.xml"
+    );
+  }
+
+  async downloadFilingKennzifferCsv(id: string): Promise<TaxFilingDownloadResult> {
+    return this.downloadFilingExport(
+      `/tax/filings/${id}/exports/kennziffer-csv`,
+      "VAT_Filing_Q1_2026.csv"
+    );
+  }
+
   async markFilingPaid(
     id: string,
     request: Contracts.MarkTaxFilingPaidRequest
@@ -388,6 +408,55 @@ export class TaxApi {
     return apiClient.delete<{ deleted: boolean }>(`/tax/filings/${id}`, {
       correlationId: apiClient.generateCorrelationId(),
     });
+  }
+
+  private async downloadFilingExport(
+    endpoint: string,
+    fallbackFilename: string
+  ): Promise<TaxFilingDownloadResult> {
+    try {
+      const response = await apiClient.request<Response>(
+        endpoint,
+        { method: "GET" },
+        {
+          correlationId: apiClient.generateCorrelationId(),
+          parseJson: false,
+        }
+      );
+
+      const disposition = response.headers.get("Content-Disposition");
+      const filename = this.resolveFilenameFromContentDisposition(disposition) ?? fallbackFilename;
+      const blob = await response.blob();
+
+      return {
+        blob,
+        filename,
+      };
+    } catch (error) {
+      throw normalizeError(error);
+    }
+  }
+
+  private resolveFilenameFromContentDisposition(disposition: string | null): string | null {
+    if (!disposition) {
+      return null;
+    }
+
+    const encodedMatch = disposition.match(/filename\*=UTF-8''([^;]+)/iu);
+    if (encodedMatch?.[1]) {
+      try {
+        return decodeURIComponent(encodedMatch[1]).replace(/[\\/]/g, "_");
+      } catch {
+        return encodedMatch[1].replace(/[\\/]/g, "_");
+      }
+    }
+
+    const plainMatch = disposition.match(/filename="?([^";]+)"?/iu);
+    if (plainMatch?.[1]) {
+      return plainMatch[1].replace(/[\\/]/g, "_");
+    }
+
+    return null;
   }
 
   async getConsultant(): Promise<Contracts.GetTaxConsultantOutput> {
