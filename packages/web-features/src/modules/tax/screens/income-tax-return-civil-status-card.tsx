@@ -1,6 +1,21 @@
 import React from "react";
-import { Card, CardContent, Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
-import { DeclarationType, RequiredHint, SegmentedControl, sanitizeNumeric } from "./income-tax-return-shared";
+import {
+  Card,
+  CardContent,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@corely/ui";
+import {
+  DeclarationType,
+  RequiredHint,
+  SegmentedControl,
+  sanitizeNumeric,
+} from "./income-tax-return-shared";
 
 export const IncomeTaxReturnCivilStatusCard = () => {
   const [civilStatus, setCivilStatus] = React.useState("married");
@@ -40,7 +55,10 @@ export const IncomeTaxReturnCivilStatusCard = () => {
           <legend className="text-sm font-medium text-foreground">Married since</legend>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-[120px_120px_1fr]">
             <div className="space-y-2">
-              <Label htmlFor="married-since-day" className="text-sm font-medium text-muted-foreground">
+              <Label
+                htmlFor="married-since-day"
+                className="text-sm font-medium text-muted-foreground"
+              >
                 Day
               </Label>
               <Input
@@ -53,7 +71,10 @@ export const IncomeTaxReturnCivilStatusCard = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="married-since-month" className="text-sm font-medium text-muted-foreground">
+              <Label
+                htmlFor="married-since-month"
+                className="text-sm font-medium text-muted-foreground"
+              >
                 Month
               </Label>
               <Input
@@ -66,7 +87,10 @@ export const IncomeTaxReturnCivilStatusCard = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="married-since-year" className="text-sm font-medium text-muted-foreground">
+              <Label
+                htmlFor="married-since-year"
+                className="text-sm font-medium text-muted-foreground"
+              >
                 Year
               </Label>
               <Input
@@ -101,7 +125,9 @@ export const IncomeTaxReturnCivilStatusCard = () => {
 
         {declarationType === "joint" ? (
           <div className="space-y-3 rounded-lg border border-border p-4">
-            <p className="text-sm font-medium text-foreground">Tax number for joint income tax declaration</p>
+            <p className="text-sm font-medium text-foreground">
+              Tax number for joint income tax declaration
+            </p>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="joint-tax-state" className="text-xs text-muted-foreground">
