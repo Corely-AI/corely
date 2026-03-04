@@ -61,10 +61,19 @@ const mergeMetadata = (
   if (!current && !incoming) {
     return undefined;
   }
+  const taxAnnual =
+    current?.taxAnnual || incoming?.taxAnnual
+      ? {
+          ...current?.taxAnnual,
+          ...incoming?.taxAnnual,
+        }
+      : undefined;
+
   return {
     ...current,
     ...incoming,
     taskState: incoming?.taskState ?? current?.taskState,
+    taxAnnual,
   };
 };
 

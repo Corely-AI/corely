@@ -84,6 +84,17 @@ import { CreateExpenseUseCase } from "../expenses/application/use-cases/create-e
 import { buildExpenseTools } from "../expenses/adapters/tools/expense.tools";
 import { DocumentsModule } from "../documents";
 import { DocumentsApplication } from "../documents/application/documents.application";
+import { TaxModule } from "../tax/tax.module";
+import { CreateIncomeTaxDraftUseCase } from "../tax/application/use-cases/create-income-tax-draft.use-case";
+import { GetIncomeTaxDraftUseCase } from "../tax/application/use-cases/get-income-tax-draft.use-case";
+import { GenerateIncomeTaxDraftEurUseCase } from "../tax/application/use-cases/generate-income-tax-draft-eur.use-case";
+import { RecomputeIncomeTaxDraftUseCase } from "../tax/application/use-cases/recompute-income-tax-draft.use-case";
+import { GetIncomeTaxDraftChecklistUseCase } from "../tax/application/use-cases/get-income-tax-draft-checklist.use-case";
+import { AnswerIncomeTaxDraftInterviewUseCase } from "../tax/application/use-cases/answer-income-tax-draft-interview.use-case";
+import { StartIncomeTaxDraftPdfExportUseCase } from "../tax/application/use-cases/start-income-tax-draft-pdf-export.use-case";
+import { PollIncomeTaxDraftPdfExportUseCase } from "../tax/application/use-cases/poll-income-tax-draft-pdf-export.use-case";
+import { ConfirmIncomeTaxDraftSubmissionUseCase } from "../tax/application/use-cases/confirm-income-tax-draft-submission.use-case";
+import { buildTaxAnnualFilingTools } from "../tax/adapters/tools/tax-annual-filing.tools";
 
 @Module({
   imports: [
@@ -99,6 +110,7 @@ import { DocumentsApplication } from "../documents/application/documents.applica
     ClassesModule,
     ExpensesModule,
     DocumentsModule,
+    TaxModule,
     PlatformEntitlementsModule,
     PromptModule,
   ],
@@ -234,6 +246,16 @@ import { DocumentsApplication } from "../documents/application/documents.applica
         bulkUpsertAttendance: BulkUpsertAttendanceUseCase,
         createExpense: CreateExpenseUseCase,
         documentsApp: DocumentsApplication,
+        createIncomeTaxDraft: CreateIncomeTaxDraftUseCase,
+        getIncomeTaxDraft: GetIncomeTaxDraftUseCase,
+        generateIncomeTaxDraftEur: GenerateIncomeTaxDraftEurUseCase,
+        recomputeIncomeTaxDraft: RecomputeIncomeTaxDraftUseCase,
+        getIncomeTaxDraftChecklist: GetIncomeTaxDraftChecklistUseCase,
+        answerIncomeTaxDraftInterview: AnswerIncomeTaxDraftInterviewUseCase,
+        startIncomeTaxDraftPdfExport: StartIncomeTaxDraftPdfExportUseCase,
+        pollIncomeTaxDraftPdfExport: PollIncomeTaxDraftPdfExportUseCase,
+        confirmIncomeTaxDraftSubmission: ConfirmIncomeTaxDraftSubmissionUseCase,
+        chatStore: ChatStorePort,
         env: EnvService,
         promptRegistry: PromptRegistry,
         promptUsageLogger: PromptUsageLogger
@@ -282,6 +304,21 @@ import { DocumentsApplication } from "../documents/application/documents.applica
             })
           ),
           ...withAppId("expenses", buildExpenseTools(createExpense, documentsApp)),
+          ...withAppId(
+            "tax",
+            buildTaxAnnualFilingTools({
+              createDraft: createIncomeTaxDraft,
+              getDraft: getIncomeTaxDraft,
+              generateEur: generateIncomeTaxDraftEur,
+              recomputeDraft: recomputeIncomeTaxDraft,
+              getChecklist: getIncomeTaxDraftChecklist,
+              answerInterview: answerIncomeTaxDraftInterview,
+              startPdfExport: startIncomeTaxDraftPdfExport,
+              pollExport: pollIncomeTaxDraftPdfExport,
+              confirmSubmission: confirmIncomeTaxDraftSubmission,
+              chatStore,
+            })
+          ),
         ];
       },
       inject: [
@@ -304,6 +341,16 @@ import { DocumentsApplication } from "../documents/application/documents.applica
         BulkUpsertAttendanceUseCase,
         CreateExpenseUseCase,
         DocumentsApplication,
+        CreateIncomeTaxDraftUseCase,
+        GetIncomeTaxDraftUseCase,
+        GenerateIncomeTaxDraftEurUseCase,
+        RecomputeIncomeTaxDraftUseCase,
+        GetIncomeTaxDraftChecklistUseCase,
+        AnswerIncomeTaxDraftInterviewUseCase,
+        StartIncomeTaxDraftPdfExportUseCase,
+        PollIncomeTaxDraftPdfExportUseCase,
+        ConfirmIncomeTaxDraftSubmissionUseCase,
+        CHAT_STORE_PORT,
         EnvService,
         PromptRegistry,
         PromptUsageLogger,

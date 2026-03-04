@@ -48,6 +48,15 @@ import { ExportTaxFilingElsterXmlUseCase } from "./application/use-cases/export-
 import { ExportTaxFilingKennzifferCsvUseCase } from "./application/use-cases/export-tax-filing-kennziffer-csv.use-case";
 import { GenerateExciseReportUseCase } from "./application/use-cases/generate-excise-report.usecase";
 import { GetEurStatementUseCase } from "./application/use-cases/get-eur-statement.use-case";
+import { CreateIncomeTaxDraftUseCase } from "./application/use-cases/create-income-tax-draft.use-case";
+import { GetIncomeTaxDraftUseCase } from "./application/use-cases/get-income-tax-draft.use-case";
+import { GenerateIncomeTaxDraftEurUseCase } from "./application/use-cases/generate-income-tax-draft-eur.use-case";
+import { RecomputeIncomeTaxDraftUseCase } from "./application/use-cases/recompute-income-tax-draft.use-case";
+import { GetIncomeTaxDraftChecklistUseCase } from "./application/use-cases/get-income-tax-draft-checklist.use-case";
+import { AnswerIncomeTaxDraftInterviewUseCase } from "./application/use-cases/answer-income-tax-draft-interview.use-case";
+import { StartIncomeTaxDraftPdfExportUseCase } from "./application/use-cases/start-income-tax-draft-pdf-export.use-case";
+import { PollIncomeTaxDraftPdfExportUseCase } from "./application/use-cases/poll-income-tax-draft-pdf-export.use-case";
+import { ConfirmIncomeTaxDraftSubmissionUseCase } from "./application/use-cases/confirm-income-tax-draft-submission.use-case";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 
 // Services
@@ -56,6 +65,7 @@ import { TaxStrategyResolverService } from "./application/services/tax-strategy-
 import { PersonalTaxStrategy } from "./application/services/personal-tax-strategy";
 import { CompanyTaxStrategy } from "./application/services/company-tax-strategy";
 import { TaxCapabilitiesService } from "./application/services/tax-capabilities.service";
+import { IncomeTaxDraftSupportService } from "./application/services/income-tax-draft-support.service";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 // Jurisdiction Pack Registry + DE Pack Adapter (NEW)
@@ -156,6 +166,15 @@ import { TaxSnapshotEurSourceAdapter } from "./infrastructure/reports/tax-snapsh
     ExportTaxFilingElsterXmlUseCase,
     ExportTaxFilingKennzifferCsvUseCase,
     GetEurStatementUseCase,
+    CreateIncomeTaxDraftUseCase,
+    GetIncomeTaxDraftUseCase,
+    GenerateIncomeTaxDraftEurUseCase,
+    RecomputeIncomeTaxDraftUseCase,
+    GetIncomeTaxDraftChecklistUseCase,
+    AnswerIncomeTaxDraftInterviewUseCase,
+    StartIncomeTaxDraftPdfExportUseCase,
+    PollIncomeTaxDraftPdfExportUseCase,
+    ConfirmIncomeTaxDraftSubmissionUseCase,
     {
       provide: GenerateExciseReportUseCase,
       useFactory: (logger, snapshotRepo, reportRepo) =>
@@ -170,6 +189,7 @@ import { TaxSnapshotEurSourceAdapter } from "./infrastructure/reports/tax-snapsh
     PersonalTaxStrategy,
     CompanyTaxStrategy,
     TaxCapabilitiesService,
+    IncomeTaxDraftSupportService,
     VatPeriodResolver,
 
     // --------------------------------------------------------------------------

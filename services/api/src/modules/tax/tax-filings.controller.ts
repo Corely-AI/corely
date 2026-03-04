@@ -14,11 +14,15 @@ import {
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 import {
+  AnswerIncomeTaxDraftInterviewInputSchema,
   AttachTaxFilingDocumentRequestSchema,
   AttachTaxFilingPaymentProofRequestSchema,
+  ConfirmIncomeTaxDraftSubmissionInputSchema,
   CreateTaxFilingInputSchema,
+  CreateIncomeTaxDraftInputSchema,
   ExportTaxPaymentsInputSchema,
   GetTaxCenterInputSchema,
+  PollIncomeTaxDraftPdfExportInputSchema,
   GetVatPeriodsInputSchema,
   ListTaxFilingsInputSchema,
   ListTaxPaymentsInputSchema,
@@ -49,6 +53,15 @@ import { MarkTaxFilingPaidUseCase } from "./application/use-cases/mark-tax-filin
 import { DeleteTaxFilingUseCase } from "./application/use-cases/delete-tax-filing.use-case";
 import { ExportTaxFilingElsterXmlUseCase } from "./application/use-cases/export-tax-filing-elster-xml.use-case";
 import { ExportTaxFilingKennzifferCsvUseCase } from "./application/use-cases/export-tax-filing-kennziffer-csv.use-case";
+import { CreateIncomeTaxDraftUseCase } from "./application/use-cases/create-income-tax-draft.use-case";
+import { GetIncomeTaxDraftUseCase } from "./application/use-cases/get-income-tax-draft.use-case";
+import { GenerateIncomeTaxDraftEurUseCase } from "./application/use-cases/generate-income-tax-draft-eur.use-case";
+import { RecomputeIncomeTaxDraftUseCase } from "./application/use-cases/recompute-income-tax-draft.use-case";
+import { GetIncomeTaxDraftChecklistUseCase } from "./application/use-cases/get-income-tax-draft-checklist.use-case";
+import { AnswerIncomeTaxDraftInterviewUseCase } from "./application/use-cases/answer-income-tax-draft-interview.use-case";
+import { StartIncomeTaxDraftPdfExportUseCase } from "./application/use-cases/start-income-tax-draft-pdf-export.use-case";
+import { PollIncomeTaxDraftPdfExportUseCase } from "./application/use-cases/poll-income-tax-draft-pdf-export.use-case";
+import { ConfirmIncomeTaxDraftSubmissionUseCase } from "./application/use-cases/confirm-income-tax-draft-submission.use-case";
 
 @Controller("tax")
 @UseGuards(AuthGuard)
@@ -74,7 +87,16 @@ export class TaxFilingsController {
     private readonly markTaxFilingPaidUseCase: MarkTaxFilingPaidUseCase,
     private readonly deleteTaxFilingUseCase: DeleteTaxFilingUseCase,
     private readonly exportTaxFilingElsterXmlUseCase: ExportTaxFilingElsterXmlUseCase,
-    private readonly exportTaxFilingKennzifferCsvUseCase: ExportTaxFilingKennzifferCsvUseCase
+    private readonly exportTaxFilingKennzifferCsvUseCase: ExportTaxFilingKennzifferCsvUseCase,
+    private readonly createIncomeTaxDraftUseCase: CreateIncomeTaxDraftUseCase,
+    private readonly getIncomeTaxDraftUseCase: GetIncomeTaxDraftUseCase,
+    private readonly generateIncomeTaxDraftEurUseCase: GenerateIncomeTaxDraftEurUseCase,
+    private readonly recomputeIncomeTaxDraftUseCase: RecomputeIncomeTaxDraftUseCase,
+    private readonly getIncomeTaxDraftChecklistUseCase: GetIncomeTaxDraftChecklistUseCase,
+    private readonly answerIncomeTaxDraftInterviewUseCase: AnswerIncomeTaxDraftInterviewUseCase,
+    private readonly startIncomeTaxDraftPdfExportUseCase: StartIncomeTaxDraftPdfExportUseCase,
+    private readonly pollIncomeTaxDraftPdfExportUseCase: PollIncomeTaxDraftPdfExportUseCase,
+    private readonly confirmIncomeTaxDraftSubmissionUseCase: ConfirmIncomeTaxDraftSubmissionUseCase
   ) {}
 
   @Get("center")
@@ -306,6 +328,90 @@ export class TaxFilingsController {
       entityId: query.entityId,
     });
     return unwrap(await this.getVatFilingPeriodsUseCase.execute(input, ctx));
+  }
+
+  @Post("income-tax/drafts")
+  async createIncomeTaxDraft(@Body() body: unknown, @Req() req: Request) {
+    const ctx = buildTaxUseCaseContext(req);
+    const input = CreateIncomeTaxDraftInputSchema.parse(body);
+    return unwrapWithProblemCode(await this.createIncomeTaxDraftUseCase.execute(input, ctx));
+  }
+
+  @Get("income-tax/drafts/:id")
+  async getIncomeTaxDraft(@Param("id") id: string, @Req() req: Request) {
+    const ctx = buildTaxUseCaseContext(req);
+    return unwrapWithProblemCode(await this.getIncomeTaxDraftUseCase.execute(id, ctx));
+  }
+
+  @Post("income-tax/drafts/:id/eur/generate")
+  @HttpCode(200)
+  async generateIncomeTaxDraftEur(@Param("id") id: string, @Req() req: Request) {
+    const ctx = buildTaxUseCaseContext(req);
+    return unwrapWithProblemCode(await this.generateIncomeTaxDraftEurUseCase.execute(id, ctx));
+  }
+
+  @Post("income-tax/drafts/:id/recompute")
+  @HttpCode(200)
+  async recomputeIncomeTaxDraft(@Param("id") id: string, @Req() req: Request) {
+    const ctx = buildTaxUseCaseContext(req);
+    return unwrapWithProblemCode(await this.recomputeIncomeTaxDraftUseCase.execute(id, ctx));
+  }
+
+  @Get("income-tax/drafts/:id/checklist")
+  async getIncomeTaxDraftChecklist(@Param("id") id: string, @Req() req: Request) {
+    const ctx = buildTaxUseCaseContext(req);
+    return unwrapWithProblemCode(await this.getIncomeTaxDraftChecklistUseCase.execute(id, ctx));
+  }
+
+  @Post("income-tax/drafts/:id/interview/answer")
+  @HttpCode(200)
+  async answerIncomeTaxDraftInterview(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const ctx = buildTaxUseCaseContext(req);
+    const request = AnswerIncomeTaxDraftInterviewInputSchema.parse(body);
+    return unwrapWithProblemCode(
+      await this.answerIncomeTaxDraftInterviewUseCase.execute({ draftId: id, request }, ctx)
+    );
+  }
+
+  @Post("income-tax/drafts/:id/export/pdf")
+  @HttpCode(200)
+  async startIncomeTaxDraftPdfExport(@Param("id") id: string, @Req() req: Request) {
+    const ctx = buildTaxUseCaseContext(req);
+    return unwrapWithProblemCode(await this.startIncomeTaxDraftPdfExportUseCase.execute(id, ctx));
+  }
+
+  @Get("income-tax/drafts/:id/export/pdf/:exportId")
+  async pollIncomeTaxDraftPdfExport(
+    @Param("id") id: string,
+    @Param("exportId") exportId: string,
+    @Req() req: Request
+  ) {
+    const ctx = buildTaxUseCaseContext(req);
+    const parsed = PollIncomeTaxDraftPdfExportInputSchema.parse({ exportId });
+    return unwrapWithProblemCode(
+      await this.pollIncomeTaxDraftPdfExportUseCase.execute(
+        { draftId: id, exportId: parsed.exportId },
+        ctx
+      )
+    );
+  }
+
+  @Post("income-tax/drafts/:id/submission/confirm")
+  @HttpCode(200)
+  async confirmIncomeTaxDraftSubmission(
+    @Param("id") id: string,
+    @Body() body: unknown,
+    @Req() req: Request
+  ) {
+    const ctx = buildTaxUseCaseContext(req);
+    const request = ConfirmIncomeTaxDraftSubmissionInputSchema.parse(body);
+    return unwrapWithProblemCode(
+      await this.confirmIncomeTaxDraftSubmissionUseCase.execute({ draftId: id, request }, ctx)
+    );
   }
 
   private toAttachmentDisposition(fileName: string): string {

@@ -42,6 +42,14 @@ describe("TaxFilingsController", () => {
       {} as unknown as never,
       {} as unknown as never,
       {} as unknown as never,
+      {} as unknown as never,
+      {} as unknown as never,
+      {} as unknown as never,
+      {} as unknown as never,
+      {} as unknown as never,
+      {} as unknown as never,
+      {} as unknown as never,
+      {} as unknown as never,
       {} as unknown as never
     );
   });

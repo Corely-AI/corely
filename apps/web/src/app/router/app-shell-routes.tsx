@@ -108,6 +108,7 @@ import {
   TaxSettingsPage,
   TaxCenterPage,
   TaxEurReportPage,
+  TaxAnnualAssistantPage,
   FilingsListPage,
   FilingDetailPage,
   CreateFilingPage,
@@ -340,6 +341,8 @@ export const appShellRoutes = (
       <Route path="/copilot" element={<CopilotPage />} />
       <Route path="/tax" element={<TaxCenterPage />} />
       <Route path="/tax/reports/eur" element={<TaxEurReportPage />} />
+      <Route path="/tax/annual/:year" element={<TaxAnnualAssistantPage />} />
+      <Route path="/tax/annual/:year/t/:threadId" element={<TaxAnnualAssistantPage />} />
       <Route path="/tax/filings" element={<FilingsListPage />} />
       <Route path="/tax/filings/new" element={<CreateFilingPage />} />
       <Route path="/tax/filings/:id" element={<FilingDetailPage />} />

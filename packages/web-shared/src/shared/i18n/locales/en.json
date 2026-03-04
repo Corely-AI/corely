@@ -777,6 +777,7 @@
       "greeting": "Good evening, {{name}}!",
       "yourTaxes": "Your taxes in your region",
       "localOffice": "Local office: {{name}}",
+      "annualAssistant": "Annual assistant",
       "viewReports": "View reports",
       "taxSettings": "Tax settings",
       "currentVatPeriod": "Current VAT Period: {{period}} {{year}}",
@@ -813,6 +814,31 @@
       "updateSettings": "Update settings",
       "errorLoading": "Could not load taxes",
       "errorDescription": "Something went wrong while fetching your tax overview."
+    },
+    "annualAssistant": {
+      "threadTitle": "Annual income tax {{year}}",
+      "loading": "Preparing your annual tax assistant session...",
+      "placeholder": "Ask me to create your draft, generate EÜR, or guide your next step",
+      "emptyStateTitle": "Annual Income Tax {{year}}",
+      "emptyStateDescription": "Complete your annual filing in chat: create draft, generate EÜR, answer interview questions, and export PDF.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Create annual draft",
+          "value": "Create my annual income-tax draft for {{year}}."
+        },
+        "checklist": {
+          "label": "Show checklist",
+          "value": "Show draft checklist and blockers."
+        },
+        "export": {
+          "label": "Export PDF",
+          "value": "Export my annual draft PDF."
+        }
+      },
+      "errors": {
+        "createTitle": "Unable to start annual assistant",
+        "createDescription": "The assistant thread could not be created. Retry to continue."
+      }
     },
     "history": {
       "title": "VAT periods",

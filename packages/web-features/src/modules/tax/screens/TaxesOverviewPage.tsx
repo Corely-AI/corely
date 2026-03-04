@@ -103,6 +103,9 @@ export default function TaxesOverviewPage() {
           )}
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate(`/tax/annual/${currentYear}`)}>
+            {t("tax.overview.annualAssistant")}
+          </Button>
           <Button variant="secondary" onClick={() => navigate("/tax/reports/eur")}>
             {t("tax.overview.viewReports")}
           </Button>

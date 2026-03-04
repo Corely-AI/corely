@@ -70,6 +70,7 @@ export type ListCopilotThreadMessagesResponse = z.infer<
 
 export const CreateCopilotThreadRequestSchema = z.object({
   title: z.string().trim().min(1).max(120).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type CreateCopilotThreadRequest = z.infer<typeof CreateCopilotThreadRequestSchema>;

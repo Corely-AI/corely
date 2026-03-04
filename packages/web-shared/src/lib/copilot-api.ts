@@ -426,7 +426,9 @@ export const searchCopilotThreads = async (
   return SearchCopilotThreadsResponseSchema.parse(response);
 };
 
-export const createCopilotThread = async (input: { title?: string } = {}): Promise<string> => {
+export const createCopilotThread = async (
+  input: { title?: string; metadata?: Record<string, unknown> } = {}
+): Promise<string> => {
   const response = await apiClient.post<CreateCopilotThreadResponse>("/copilot/threads", input, {
     idempotencyKey: apiClient.generateIdempotencyKey(),
     correlationId: apiClient.generateCorrelationId(),

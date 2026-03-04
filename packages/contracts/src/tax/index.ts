@@ -45,3 +45,4 @@ export * from "./mark-tax-filing-paid.schema";
 export * from "./attach-tax-filing-payment-proof.schema";
 export * from "./recalculate-tax-filing.schema";
 export * from "./tax-document-link.schema";
+export * from "./income-tax-draft.schema";

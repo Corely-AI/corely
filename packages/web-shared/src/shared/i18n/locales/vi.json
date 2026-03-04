@@ -762,6 +762,7 @@
       "greeting": "Chào buổi tối, {{name}}!",
       "yourTaxes": "Thuế của bạn trong khu vực của bạn",
       "localOffice": "Văn phòng địa phương: {{name}}",
+      "annualAssistant": "Trợ lý năm",
       "viewReports": "Xem báo cáo",
       "taxSettings": "Cài đặt thuế",
       "currentVatPeriod": "Kỳ VAT hiện tại: {{period}} {{year}}",
@@ -798,6 +799,31 @@
       "updateSettings": "Cập nhật cài đặt",
       "errorLoading": "Không thể tải thuế",
       "errorDescription": "Đã xảy ra lỗi khi tìm nạp thông tin tổng quan về thuế của bạn."
+    },
+    "annualAssistant": {
+      "threadTitle": "Thuế thu nhập năm {{year}}",
+      "loading": "Đang chuẩn bị phiên trợ lý thuế năm...",
+      "placeholder": "Hãy yêu cầu tôi tạo bản nháp, tạo EÜR hoặc hướng dẫn bước tiếp theo",
+      "emptyStateTitle": "Thuế Thu Nhập Năm {{year}}",
+      "emptyStateDescription": "Hoàn tất hồ sơ thuế năm ngay trong chat: tạo bản nháp, tạo EÜR, trả lời câu hỏi và xuất PDF.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Tạo bản nháp năm",
+          "value": "Tạo bản nháp thuế thu nhập năm {{year}} cho tôi."
+        },
+        "checklist": {
+          "label": "Xem checklist",
+          "value": "Hiển thị checklist và các blocker của bản nháp."
+        },
+        "export": {
+          "label": "Xuất PDF",
+          "value": "Xuất PDF bản nháp thuế năm của tôi."
+        }
+      },
+      "errors": {
+        "createTitle": "Không thể khởi tạo trợ lý năm",
+        "createDescription": "Không thể tạo thread trợ lý. Vui lòng thử lại."
+      }
     },
     "history": {
       "title": "kỳ tính thuế GTGT",

@@ -751,6 +751,7 @@
       "greeting": "Guten Abend, {{name}}!",
       "yourTaxes": "Ihre Steuern in Ihrer Region",
       "localOffice": "Finanzamt: {{name}}",
+      "annualAssistant": "Jahresassistent",
       "viewReports": "Berichte anzeigen",
       "taxSettings": "Steuereinstellungen",
       "currentVatPeriod": "Aktueller USt-Zeitraum: Q{{period}} {{year}}",
@@ -787,6 +788,31 @@
       "updateSettings": "Einstellungen aktualisieren",
       "errorLoading": "Steuern konnten nicht geladen werden",
       "errorDescription": "Beim Abrufen Ihrer Steuerübersicht ist ein Fehler aufgetreten."
+    },
+    "annualAssistant": {
+      "threadTitle": "Jahres-Einkommensteuer {{year}}",
+      "loading": "Ihre Jahressteuer-Assistenzsitzung wird vorbereitet...",
+      "placeholder": "Bitten Sie mich, den Entwurf zu erstellen, EÜR zu erzeugen oder den nächsten Schritt zu führen",
+      "emptyStateTitle": "Jahres-Einkommensteuer {{year}}",
+      "emptyStateDescription": "Erledigen Sie die Jahresabgabe im Chat: Entwurf erstellen, EÜR generieren, Interviewfragen beantworten und PDF exportieren.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Jahresentwurf erstellen",
+          "value": "Erstelle meinen Einkommensteuer-Jahresentwurf für {{year}}."
+        },
+        "checklist": {
+          "label": "Checkliste anzeigen",
+          "value": "Zeige die Entwurfs-Checkliste und Blocker."
+        },
+        "export": {
+          "label": "PDF exportieren",
+          "value": "Exportiere mein Jahresentwurf-PDF."
+        }
+      },
+      "errors": {
+        "createTitle": "Jahresassistent kann nicht gestartet werden",
+        "createDescription": "Der Assistenz-Thread konnte nicht erstellt werden. Bitte erneut versuchen."
+      }
     },
     "history": {
       "title": "USt-Voranmeldezeiträume",

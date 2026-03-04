@@ -106,6 +106,7 @@ export class CopilotController {
       userId: context.userId,
       title: parsed.data.title,
       traceId: context.requestId,
+      metadataJson: parsed.data.metadata ? JSON.stringify(parsed.data.metadata) : undefined,
     });
   }
 
