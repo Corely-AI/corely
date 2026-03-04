@@ -3,6 +3,8 @@ import { Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle 
 import { Input, Textarea } from "@corely/ui";
 import { formatIsoDate } from "./utils";
 
+import { useTranslation } from "react-i18next";
+
 export function SubmittedDialog({
   open,
   onOpenChange,
@@ -14,6 +16,7 @@ export function SubmittedDialog({
   onSubmit: (payload: { submissionDate?: string; reference?: string; notes?: string }) => void;
   isLoading: boolean;
 }) {
+  const { t } = useTranslation();
   const [submissionDate, setSubmissionDate] = React.useState(
     formatIsoDate(new Date().toISOString())
   );
@@ -32,11 +35,11 @@ export function SubmittedDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Mark period as submitted</DialogTitle>
+          <DialogTitle>{t("tax.history.dialogs.submitted.title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium">Submission date</div>
+            <div className="text-sm font-medium">{t("tax.history.dialogs.submitted.date")}</div>
             <Input
               type="date"
               value={submissionDate}
@@ -44,17 +47,19 @@ export function SubmittedDialog({
             />
           </div>
           <div className="space-y-2">
-            <div className="text-sm font-medium">Reference (optional)</div>
+            <div className="text-sm font-medium">
+              {t("tax.history.dialogs.submitted.reference")}
+            </div>
             <Input value={reference} onChange={(e) => setReference(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <div className="text-sm font-medium">Notes (optional)</div>
+            <div className="text-sm font-medium">{t("tax.history.dialogs.submitted.notes")}</div>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
         </div>
         <DialogFooter>
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("tax.history.dialogs.cancel")}
           </Button>
           <Button
             onClick={() =>
@@ -66,7 +71,7 @@ export function SubmittedDialog({
             }
             disabled={isLoading}
           >
-            Submit period
+            {t("tax.history.dialogs.submitted.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -85,6 +90,7 @@ export function NilDialog({
   onSubmit: (payload: { submissionDate?: string; notes?: string }) => void;
   isLoading: boolean;
 }) {
+  const { t } = useTranslation();
   const [submissionDate, setSubmissionDate] = React.useState(
     formatIsoDate(new Date().toISOString())
   );
@@ -101,11 +107,11 @@ export function NilDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Mark period as nil</DialogTitle>
+          <DialogTitle>{t("tax.history.dialogs.nil.title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium">Submission date</div>
+            <div className="text-sm font-medium">{t("tax.history.dialogs.nil.date")}</div>
             <Input
               type="date"
               value={submissionDate}
@@ -113,13 +119,13 @@ export function NilDialog({
             />
           </div>
           <div className="space-y-2">
-            <div className="text-sm font-medium">Notes (optional)</div>
+            <div className="text-sm font-medium">{t("tax.history.dialogs.nil.notes")}</div>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
         </div>
         <DialogFooter>
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("tax.history.dialogs.cancel")}
           </Button>
           <Button
             onClick={() =>
@@ -130,7 +136,7 @@ export function NilDialog({
             }
             disabled={isLoading}
           >
-            Mark nil
+            {t("tax.history.dialogs.nil.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -149,6 +155,7 @@ export function ArchiveDialog({
   onSubmit: (payload: { reason: string; notes?: string }) => void;
   isLoading: boolean;
 }) {
+  const { t } = useTranslation();
   const [reason, setReason] = React.useState("");
   const [notes, setNotes] = React.useState("");
 
@@ -163,27 +170,27 @@ export function ArchiveDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Archive period</DialogTitle>
+          <DialogTitle>{t("tax.history.dialogs.archive.title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="text-sm font-medium">Reason</div>
+            <div className="text-sm font-medium">{t("tax.history.dialogs.archive.reason")}</div>
             <Input value={reason} onChange={(e) => setReason(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <div className="text-sm font-medium">Notes (optional)</div>
+            <div className="text-sm font-medium">{t("tax.history.dialogs.archive.notes")}</div>
             <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
         </div>
         <DialogFooter>
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
-            Cancel
+            {t("tax.history.dialogs.cancel")}
           </Button>
           <Button
             onClick={() => onSubmit({ reason: reason.trim(), notes: notes.trim() || undefined })}
             disabled={!reason.trim() || isLoading}
           >
-            Archive period
+            {t("tax.history.dialogs.archive.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

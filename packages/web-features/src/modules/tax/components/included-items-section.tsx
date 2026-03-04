@@ -25,6 +25,7 @@ import { useTaxFilingItemsQuery } from "../hooks/useTaxFilingItemsQuery";
 type IncludedItemsSectionProps = {
   filingId: string;
   presetSourceType?: "invoice" | "expense";
+  onPresetSourceTypeCleared?: () => void;
 };
 
 const SOURCE_OPTIONS = [
@@ -40,7 +41,11 @@ const VAT_TREATMENT_OPTIONS = [
   { label: "Unknown", value: "unknown" },
 ];
 
-export function IncludedItemsSection({ filingId, presetSourceType }: IncludedItemsSectionProps) {
+export function IncludedItemsSection({
+  filingId,
+  presetSourceType,
+  onPresetSourceTypeCleared,
+}: IncludedItemsSectionProps) {
   const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -171,9 +176,15 @@ export function IncludedItemsSection({ filingId, presetSourceType }: IncludedIte
                 filters={state.filters ?? []}
                 onRemove={(filter) => {
                   const next = state.filters?.filter((f) => f !== filter) ?? [];
+                  if (filter.field === "sourceType") {
+                    onPresetSourceTypeCleared?.();
+                  }
                   setUrlState({ filters: next, page: 1 });
                 }}
-                onClearAll={() => setUrlState({ filters: [], page: 1 })}
+                onClearAll={() => {
+                  onPresetSourceTypeCleared?.();
+                  setUrlState({ filters: [], page: 1 });
+                }}
               />
             </div>
           ) : null}

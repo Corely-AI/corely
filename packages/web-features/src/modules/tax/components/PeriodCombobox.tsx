@@ -12,6 +12,7 @@ import {
   CommandSeparator,
 } from "@corely/ui";
 import { Popover, PopoverContent, PopoverTrigger } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,83 +21,6 @@ interface PeriodOption {
   label: string; // e.g. "Q2 2026 · Apr – Jun"
   sublabel?: string;
   group: "quarter" | "month";
-}
-
-// ─── Period Generation ────────────────────────────────────────────────────────
-
-const QUARTER_MONTHS: Record<number, { abbr: string; label: string }> = {
-  1: { abbr: "Jan – Mar", label: "Q1" },
-  2: { abbr: "Apr – Jun", label: "Q2" },
-  3: { abbr: "Jul – Sep", label: "Q3" },
-  4: { abbr: "Oct – Dec", label: "Q4" },
-};
-
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const MONTH_ABBR = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-function generateOptionsForYear(year: number): PeriodOption[] {
-  const quarters: PeriodOption[] = [1, 2, 3, 4].map((q) => ({
-    value: `${year}-Q${q}`,
-    label: `Q${q} ${year}`,
-    sublabel: QUARTER_MONTHS[q].abbr,
-    group: "quarter",
-  }));
-
-  const months: PeriodOption[] = Array.from({ length: 12 }, (_, i) => ({
-    value: `${year}-${String(i + 1).padStart(2, "0")}`,
-    label: `${MONTH_NAMES[i]} ${year}`,
-    sublabel: `${year}-${String(i + 1).padStart(2, "0")}`,
-    group: "month",
-  }));
-
-  return [...quarters, ...months];
-}
-
-/** Derive a human label from a raw periodKey like "2026-Q2" or "2026-04" */
-export function periodKeyToLabel(key: string): string {
-  if (!key) {return "";}
-  // Quarter: 2026-Q2
-  const qMatch = key.match(/^(\d{4})-Q(\d)$/);
-  if (qMatch) {
-    const [, year, q] = qMatch;
-    const qi = Number(q);
-    return `Q${qi} ${year} · ${QUARTER_MONTHS[qi]?.abbr ?? ""}`;
-  }
-  // Month: 2026-04
-  const mMatch = key.match(/^(\d{4})-(\d{2})$/);
-  if (mMatch) {
-    const [, year, month] = mMatch;
-    const idx = Number(month) - 1;
-    return `${MONTH_NAMES[idx] ?? month} ${year}`;
-  }
-  return key;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -114,28 +38,110 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
   onChange,
   year,
   disabled = false,
-  placeholder = "Select or type a period…",
+  placeholder,
 }) => {
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
 
+  const locale = i18n.language === "de" ? "de-DE" : "en-US";
+
+  const MONTH_NAMES = React.useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(locale, { month: "long" });
+    return Array.from({ length: 12 }, (_, i) => formatter.format(new Date(2026, i, 1)));
+  }, [locale]);
+
+  const QUARTER_MONTHS = React.useMemo(() => {
+    return {
+      1: {
+        abbr: t("tax.periodCombobox.quarterMonths.1"),
+        label: t("tax.periodCombobox.quarters.1"),
+      },
+      2: {
+        abbr: t("tax.periodCombobox.quarterMonths.2"),
+        label: t("tax.periodCombobox.quarters.2"),
+      },
+      3: {
+        abbr: t("tax.periodCombobox.quarterMonths.3"),
+        label: t("tax.periodCombobox.quarters.3"),
+      },
+      4: {
+        abbr: t("tax.periodCombobox.quarterMonths.4"),
+        label: t("tax.periodCombobox.quarters.4"),
+      },
+    } as Record<number, { abbr: string; label: string }>;
+  }, [t]);
+
+  const periodKeyToLabel = React.useCallback(
+    (key: string): string => {
+      if (!key) {
+        return "";
+      }
+      // Quarter: 2026-Q2
+      const qMatch = key.match(/^(\d{4})-Q(\d)$/);
+      if (qMatch) {
+        const [, year, q] = qMatch;
+        const qi = Number(q);
+        const qLabel = QUARTER_MONTHS[qi]?.label ?? `Q${qi}`;
+        const qAbbr = QUARTER_MONTHS[qi]?.abbr ?? "";
+        return `${qLabel} ${year} · ${qAbbr}`;
+      }
+      // Month: 2026-04
+      const mMatch = key.match(/^(\d{4})-(\d{2})$/);
+      if (mMatch) {
+        const [, year, month] = mMatch;
+        const idx = Number(month) - 1;
+        return `${MONTH_NAMES[idx] ?? month} ${year}`;
+      }
+      return key;
+    },
+    [MONTH_NAMES, QUARTER_MONTHS]
+  );
+
+  const generateOptionsForYear = React.useCallback(
+    (targetYear: number): PeriodOption[] => {
+      const quarters: PeriodOption[] = [1, 2, 3, 4].map((q) => ({
+        value: `${targetYear}-Q${q}`,
+        label: `${QUARTER_MONTHS[q].label} ${targetYear}`,
+        sublabel: QUARTER_MONTHS[q].abbr,
+        group: "quarter",
+      }));
+
+      const months: PeriodOption[] = Array.from({ length: 12 }, (_, i) => ({
+        value: `${targetYear}-${String(i + 1).padStart(2, "0")}`,
+        label: `${MONTH_NAMES[i]} ${targetYear}`,
+        sublabel: `${targetYear}-${String(i + 1).padStart(2, "0")}`,
+        group: "month",
+      }));
+
+      return [...quarters, ...months];
+    },
+    [MONTH_NAMES, QUARTER_MONTHS]
+  );
+
   // Derive year from value or prop
   const effectiveYear = React.useMemo(() => {
-    if (year) {return year;}
+    if (year) {
+      return year;
+    }
     const match = value?.match(/^(\d{4})/);
-    if (match) {return Number(match[1]);}
+    if (match) {
+      return Number(match[1]);
+    }
     return new Date().getFullYear();
   }, [year, value]);
 
-  const options = React.useMemo(() => generateOptionsForYear(effectiveYear), [effectiveYear]);
-
-  const quarters = options.filter((o) => o.group === "quarter");
-  const months = options.filter((o) => o.group === "month");
+  const options = React.useMemo(
+    () => generateOptionsForYear(effectiveYear),
+    [generateOptionsForYear, effectiveYear]
+  );
 
   // Filter by input
   const filtered = React.useMemo(() => {
     const q = inputValue.toLowerCase().trim();
-    if (!q) {return options;}
+    if (!q) {
+      return options;
+    }
     return options.filter(
       (o) =>
         o.value.toLowerCase().includes(q) ||
@@ -186,7 +192,7 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
                 <span className="text-xs text-muted-foreground">{value}</span>
               </span>
             ) : (
-              <span>{placeholder}</span>
+              <span>{placeholder ?? t("tax.periodCombobox.placeholder")}</span>
             )}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -196,7 +202,7 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
       <PopoverContent className="w-[340px] p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Search or type period…"
+            placeholder={t("tax.periodCombobox.searchPlaceholder")}
             value={inputValue}
             onValueChange={setInputValue}
           />
@@ -207,20 +213,24 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
                   className="flex flex-col items-center gap-1 py-4 cursor-pointer hover:bg-accent rounded-sm px-4"
                   onClick={handleCustomSelect}
                 >
-                  <span className="text-sm font-medium">Use "{inputValue.trim()}"</span>
+                  <span className="text-sm font-medium">
+                    {t("tax.periodCombobox.useCustom", { value: inputValue.trim() })}
+                  </span>
                   <span className="text-xs text-muted-foreground">
-                    Press Enter or click to use this custom period
+                    {t("tax.periodCombobox.customHint")}
                   </span>
                 </div>
               ) : (
-                <span className="text-sm text-muted-foreground px-4">No periods found.</span>
+                <span className="text-sm text-muted-foreground px-4">
+                  {t("tax.periodCombobox.noPeriods")}
+                </span>
               )}
             </CommandEmpty>
 
             {/* Custom period typed by user that matches format */}
             {typedIsCustom && (
               <>
-                <CommandGroup heading="Custom">
+                <CommandGroup heading={t("tax.periodCombobox.customHeading")}>
                   <CommandItem
                     value={inputValue.trim()}
                     onSelect={handleCustomSelect}
@@ -229,7 +239,9 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
                     <CalendarDays className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="flex flex-col">
                       <span className="text-sm font-medium">{inputValue.trim()}</span>
-                      <span className="text-xs text-muted-foreground">Custom period</span>
+                      <span className="text-xs text-muted-foreground">
+                        {t("tax.periodCombobox.customPeriod")}
+                      </span>
                     </span>
                     {value === inputValue.trim() && <Check className="ml-auto h-4 w-4 shrink-0" />}
                   </CommandItem>
@@ -240,7 +252,7 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
 
             {/* Quarters */}
             {filteredQuarters.length > 0 && (
-              <CommandGroup heading="Quarters">
+              <CommandGroup heading={t("tax.periodCombobox.quartersHeading")}>
                 {filteredQuarters.map((opt) => (
                   <CommandItem
                     key={opt.value}
@@ -262,7 +274,7 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
 
             {/* Monthly */}
             {filteredMonths.length > 0 && (
-              <CommandGroup heading="Monthly">
+              <CommandGroup heading={t("tax.periodCombobox.monthlyHeading")}>
                 {filteredMonths.map((opt) => (
                   <CommandItem
                     key={opt.value}
@@ -286,9 +298,14 @@ export const PeriodCombobox: React.FC<PeriodComboboxProps> = ({
           {/* Footer hint */}
           <div className="border-t border-border px-3 py-2">
             <p className="text-xs text-muted-foreground">
-              Type <kbd className="font-mono bg-muted px-1 rounded text-[10px]">2026-Q2</kbd> or{" "}
-              <kbd className="font-mono bg-muted px-1 rounded text-[10px]">2026-04</kbd> for a
-              custom period
+              {t("tax.periodCombobox.footerHint", {
+                qExample: (
+                  <kbd className="font-mono bg-muted px-1 rounded text-[10px]">2026-Q2</kbd>
+                ),
+                mExample: (
+                  <kbd className="font-mono bg-muted px-1 rounded text-[10px]">2026-04</kbd>
+                ),
+              })}
             </p>
           </div>
         </Command>

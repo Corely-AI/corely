@@ -21,7 +21,9 @@ const formSchema = z
     type: TaxFilingTypeSchema,
     year: z.coerce.number().int().optional(),
     periodKey: z.preprocess((value) => {
-      if (typeof value !== "string") {return value;}
+      if (typeof value !== "string") {
+        return value;
+      }
       const trimmed = value.trim();
       return trimmed.length > 0 ? trimmed : undefined;
     }, TaxPeriodKeySchema.optional()),
@@ -29,8 +31,12 @@ const formSchema = z
   })
   .refine(
     (data) => {
-      if (data.type === "vat" && !data.periodKey) {return false;}
-      if (data.type !== "vat" && !data.year) {return false;}
+      if (data.type === "vat" && !data.periodKey) {
+        return false;
+      }
+      if (data.type !== "vat" && !data.year) {
+        return false;
+      }
       return true;
     },
     { message: "Period is required for VAT filings", path: ["periodKey"] }

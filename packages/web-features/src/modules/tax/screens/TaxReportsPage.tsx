@@ -11,8 +11,10 @@ import { CheckCircle2, Clock, Download, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { AnnualReportsSection } from "../components/AnnualReportsSection";
 import { downloadTaxPdfWithPolling } from "../lib/download-tax-pdf-with-polling";
+import { useTranslation } from "react-i18next";
 
 export default function TaxReportsPage() {
+  const { t, i18n } = useTranslation();
   const [tab, setTab] = React.useState<"upcoming" | "submitted">("upcoming");
   const queryClient = useQueryClient();
 
@@ -28,40 +30,42 @@ export default function TaxReportsPage() {
     },
   });
 
-  const locale = "de-DE";
+  const locale = t("common.locale", { defaultValue: i18n.language === "de" ? "de-DE" : "en-US" });
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Tax Reports</h1>
-          <p className="text-muted-foreground">Track upcoming declarations and submissions.</p>
+          <h1 className="text-3xl font-bold">{t("tax.reports.title")}</h1>
+          <p className="text-muted-foreground">{t("tax.reports.subtitle")}</p>
         </div>
       </div>
 
       <Tabs value={tab} onValueChange={(val) => setTab(val as "upcoming" | "submitted")}>
         <TabsList>
-          <TabsTrigger value="upcoming">Upcoming reports</TabsTrigger>
-          <TabsTrigger value="submitted">Submitted</TabsTrigger>
+          <TabsTrigger value="upcoming">{t("tax.reports.tabs.upcoming")}</TabsTrigger>
+          <TabsTrigger value="submitted">{t("tax.reports.tabs.submitted")}</TabsTrigger>
         </TabsList>
         <TabsContent value="upcoming">
           <ReportGroup
-            title="Advance VAT declarations"
+            title={t("tax.reports.groups.vat")}
             icon={<Clock className="h-4 w-4 text-primary" />}
             isLoading={isLoading}
             reports={data?.reports?.filter((r) => r.group === "ADVANCE_VAT") ?? []}
             locale={locale}
             onSubmit={(id) => markSubmitted.mutate(id)}
             canSubmit
+            t={t}
           />
           <ReportGroup
-            title="Compliance (EU Sales & Intrastat)"
+            title={t("tax.reports.groups.compliance")}
             icon={<FileText className="h-4 w-4 text-blue-500" />}
             isLoading={isLoading}
             reports={data?.reports?.filter((r) => r.group === "COMPLIANCE") ?? []}
             locale={locale}
             onSubmit={(id) => markSubmitted.mutate(id)}
             canSubmit
+            t={t}
           />
           <AnnualReportsSection
             reports={data?.reports?.filter((r) => r.group === "ANNUAL_REPORT") ?? []}
@@ -71,13 +75,14 @@ export default function TaxReportsPage() {
         </TabsContent>
         <TabsContent value="submitted">
           <ReportGroup
-            title="Submitted reports"
+            title={t("tax.reports.groups.submitted")}
             icon={<CheckCircle2 className="h-4 w-4 text-success" />}
             isLoading={isLoading}
             reports={data?.reports ?? []}
             locale={locale}
             onSubmit={() => {}}
             canSubmit={false}
+            t={t}
           />
         </TabsContent>
       </Tabs>
@@ -93,6 +98,7 @@ interface ReportGroupProps {
   locale: string;
   onSubmit: (id: string) => void;
   canSubmit: boolean;
+  t: any;
 }
 
 function ReportGroup({
@@ -103,13 +109,14 @@ function ReportGroup({
   locale,
   onSubmit,
   canSubmit,
+  t,
 }: ReportGroupProps) {
   const navigate = useNavigate();
 
   const handleDownload = (id: string) => {
     void (async () => {
       const abortController = new AbortController();
-      const loadingToastId = toast.loading("Generating PDF...");
+      const loadingToastId = toast.loading(t("tax.reports.actions.generatingPdf"));
       try {
         const result = await downloadTaxPdfWithPolling(
           (_signal) => taxApi.getReportPdfUrl(id),
@@ -117,19 +124,26 @@ function ReportGroup({
         );
         if (result.status === "READY") {
           window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
-          toast.success("Download started");
+          toast.success(t("tax.reports.actions.downloadStarted"));
           return;
         }
         if (result.status === "PENDING") {
-          toast.info("PDF is being prepared. Try again shortly.");
+          toast.info(t("tax.reports.actions.pdfPrepared"));
         }
       } catch (error) {
         console.error(error);
-        toast.error("Failed to download PDF");
+        toast.error(t("tax.reports.actions.downloadFailed"));
       } finally {
         toast.dismiss(loadingToastId);
       }
     })();
+  };
+
+  const statusLabels: Record<string, string> = {
+    DRAFT: t("tax.center.annual.status.draft"),
+    SUBMITTED: t("tax.center.annual.status.submitted"),
+    PAID: t("tax.center.annual.status.paid"),
+    READY: t("tax.center.annual.status.readyForReview"),
   };
 
   return (
@@ -140,9 +154,9 @@ function ReportGroup({
       </CardHeader>
       <CardContent className="space-y-3">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading reports...</p>
+          <p className="text-sm text-muted-foreground">{t("tax.reports.status.loading")}</p>
         ) : reports.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No reports found.</p>
+          <p className="text-sm text-muted-foreground">{t("tax.reports.status.empty")}</p>
         ) : (
           reports.map((report) => (
             <div
@@ -150,10 +164,10 @@ function ReportGroup({
               className="border rounded-lg p-3 flex items-center justify-between gap-4"
             >
               <div className="space-y-1">
-                <div className="font-medium">{humanizeReportType(report.type)}</div>
+                <div className="font-medium">{humanizeReportType(report.type, t)}</div>
                 <div className="text-sm text-muted-foreground">{report.periodLabel}</div>
                 <div className="text-sm text-muted-foreground">
-                  Due {formatDueDate(report.dueDate, locale)}
+                  {t("tax.center.nextUp.dueDate")} {formatDueDate(report.dueDate, locale)}
                 </div>
               </div>
               <div className="text-right space-y-1">
@@ -165,17 +179,17 @@ function ReportGroup({
                   className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors"
                   onClick={() => navigate(`/tax/reports/${report.id}`)}
                 >
-                  {report.status}
+                  {statusLabels[report.status] ?? report.status}
                 </Badge>
                 {canSubmit && (
                   <Button size="sm" variant="ghost" onClick={() => onSubmit(report.id)}>
-                    Mark as submitted
+                    {t("tax.reports.actions.markSubmitted")}
                   </Button>
                 )}
                 {!canSubmit && (
                   <Button size="sm" variant="ghost" onClick={() => handleDownload(report.id)}>
                     <Download className="mr-2 h-4 w-4" />
-                    Download PDF
+                    {t("tax.reports.actions.downloadPdf")}
                   </Button>
                 )}
               </div>
@@ -187,24 +201,24 @@ function ReportGroup({
   );
 }
 
-function humanizeReportType(type: string) {
+function humanizeReportType(type: string, t: any) {
   switch (type) {
     case "VAT_ADVANCE":
-      return "Advance VAT declaration";
+      return t("tax.reports.types.vatAdvance");
     case "VAT_ANNUAL":
-      return "Annual VAT report";
+      return t("tax.reports.types.vatAnnual");
     case "INCOME_TAX":
-      return "Income tax";
+      return t("tax.reports.types.incomeTax");
     case "EU_SALES_LIST":
-      return "EU Sales List (ZM)";
+      return t("tax.reports.types.euSales");
     case "INTRASTAT":
-      return "Intrastat Declaration";
+      return t("tax.reports.types.intrastat");
     case "TRADE_TAX":
-      return "Trade Tax (Gewerbesteuer)";
+      return t("tax.reports.types.tradeTax");
     case "PROFIT_LOSS":
-      return "P&L Statement (EÜR)";
+      return t("tax.reports.types.profitLoss");
     case "PAYROLL_TAX":
-      return "Payroll Tax";
+      return t("tax.reports.types.payrollTax");
     default:
       return type.replace(/_/g, " ").toLowerCase();
   }

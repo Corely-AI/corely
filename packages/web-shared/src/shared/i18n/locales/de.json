@@ -382,6 +382,7 @@
     },
     "accounting": {
       "cashBasis": "Einnahmen-Überschuss-Rechnung (EÜR)",
+      "accrualBasis": "Soll-Versteuerung (Bilanzierung)",
       "cashBasisHelp": "Einnahmen werden erfasst, wenn sie zufließen",
       "accrualBasisHelp": "Einnahmen werden erfasst, wenn sie entstehen, unabhängig vom Zahlungszeitpunkt"
     },
@@ -393,7 +394,395 @@
     "consultant": {
       "title": "Steuerberater",
       "save": "Beraterinfo speichern"
-    }
+    },
+    "center": {
+      "title": "Steuerzentrum",
+      "myTaxes": "Meine Steuern",
+      "freelancerSubtitle": "Verwalten Sie Ihre freelancer-steuerlichen Verpflichtungen.",
+      "companySubtitle": "Übersicht über die Compliance und Meldungen Ihres Unternehmens.",
+      "errorLoading": "Fehler beim Laden des Steuerzentrums",
+      "errorDescription": "Wir konnten Ihre Steuerübersicht nicht laden. Bitte versuchen Sie es erneut.",
+      "retry": "Wiederholen",
+      "reviewNext": "Nächste Meldung prüfen",
+      "settings": "Einstellungen",
+      "nextUp": {
+        "title": "Nächste Schritte",
+        "allCaughtUp": "Alles erledigt!",
+        "noUpcoming": "Keine anstehenden Meldungen gefunden.",
+        "createFiling": "Meldung erstellen",
+        "dueDate": "Fälligkeitsdatum",
+        "estimatedAmount": "Voraussichtlicher Betrag",
+        "reviewFiling": "Meldung prüfen",
+        "viewAll": "Alle Meldungen ansehen",
+        "overdue": "ÜBERFÄLLIG",
+        "vat": "USt",
+        "tax": "Steuer"
+      },
+      "annual": {
+        "title": "Jährliche Meldungen",
+        "yearendTitle": "Jahresabschluss & jährliche Meldungen",
+        "viewAll": "Alle anzeigen",
+        "createForYear": "Erstellen für {{year}}",
+        "noFilings": "Keine jährlichen Meldungen für {{year}}",
+        "obligations": "Jährliche Verpflichtungen.",
+        "status": {
+          "draft": "Entwurf",
+          "needsFix": "Klärungsbedarf",
+          "readyForReview": "Bereit zur Prüfung",
+          "submitted": "Übermittelt",
+          "paid": "Bezahlt",
+          "archived": "Archiviert",
+          "openForSubmission": "Bereit zur Abgabe",
+          "yearInProgress": "Laufendes Jahr"
+        },
+        "year": "Jahr {{year}}",
+        "estimatedTaxToPay": "Voraussichtliche Zahllast",
+        "reviewAndSubmit": "Prüfen & Senden",
+        "preview": "Vorschau"
+      },
+      "issues": {
+        "title": "Offene Punkte",
+        "noIssues": "Keine Probleme erkannt. Ihre Buchhaltung sieht sauber aus!",
+        "items": "Einträge",
+        "affected": "betroffen",
+        "fix": "Beheben",
+        "blocking": "BLOCKIEREND"
+      },
+      "shortcuts": {
+        "title": "Shortcuts",
+        "createFiling": "Meldung erstellen",
+        "exportReport": "Bericht exportieren",
+        "payTaxes": "Steuern zahlen",
+        "documents": "Dokumente"
+      },
+      "snapshot": {
+        "title": "Jahresübersicht ({{year}})",
+        "updated": "Aktualisiert am {{date}}",
+        "noData": "Noch keine Daten verfügbar."
+      }
+    },
+    "reports": {
+      "title": "Steuerberichte",
+      "subtitle": "Verfolgen Sie anstehende Erklärungen und Übermittlungen.",
+      "tabs": {
+        "upcoming": "Anstehend",
+        "submitted": "Übermittelt"
+      },
+      "groups": {
+        "vat": "Umsatzsteuer-Voranmeldungen",
+        "compliance": "Compliance (ZM & Intrastat)",
+        "submitted": "Übermittelte Meldungen"
+      },
+      "actions": {
+        "markSubmitted": "Als übermittelt markieren",
+        "downloadPdf": "PDF herunterladen",
+        "generatingPdf": "PDF wird erstellt...",
+        "downloadStarted": "Download gestartet",
+        "pdfPrepared": "PDF wird vorbereitet. Bitte in Kürze erneut versuchen.",
+        "downloadFailed": "PDF-Download fehlgeschlagen"
+      },
+      "status": {
+        "loading": "Meldungen werden geladen...",
+        "empty": "Keine Meldungen gefunden."
+      },
+      "types": {
+        "vatAdvance": "USt-Voranmeldung",
+        "vatAnnual": "Umsatzsteuer-Jahreserklärung",
+        "incomeTax": "Einkommensteuer",
+        "euSales": "Zusammenfassende Meldung (ZM)",
+        "intrastat": "Intrastat-Meldung",
+        "tradeTax": "Gewerbesteuer",
+        "profitLoss": "Einnahmen-Überschuss-Rechnung (EÜR)",
+        "payrollTax": "Lohnsteuer"
+      }
+    },
+    "documents": {
+      "title": "Steuerdokumente",
+      "subtitle": "Archiv aller steuerrelevanten Dokumente."
+    },
+    "payments": {
+      "title": "Zahlungen",
+      "subtitle": "Verfolgen Sie bezahlte vs. fällige Meldungen über das Jahr.",
+      "exportCsv": "CSV exportieren",
+      "status": {
+        "due": "Fällig",
+        "overdue": "Überfällig",
+        "paid": "Bezahlt"
+      },
+      "types": {
+        "vat": "USt",
+        "vatAnnual": "USt jährlich",
+        "incomeAnnual": "Einkommensteuer",
+        "trade": "Gewerbesteuer",
+        "payroll": "Lohnsteuer",
+        "corporateAnnual": "Körperschaftsteuer",
+        "yearEnd": "Jahresabschluss",
+        "other": "Sonstige"
+      },
+      "columns": {
+        "filing": "Meldung",
+        "dueDate": "Fällig am",
+        "amount": "Betrag",
+        "status": "Status",
+        "paidDate": "Bezahlt am",
+        "method": "Methode",
+        "payable": "Zahllast",
+        "receivable": "Erstattung"
+      },
+      "actions": {
+        "markPaid": "Als bezahlt markieren",
+        "attachReceipt": "Beleg anfügen",
+        "markedPaid": "Als bezahlt markiert",
+        "markPaidFailed": "Markieren als bezahlt fehlgeschlagen",
+        "receiptAttached": "Beleg angefügt",
+        "attachReceiptFailed": "Beleg anfügen fehlgeschlagen",
+        "exportFailed": "Export der Zahlungen fehlgeschlagen"
+      },
+      "empty": {
+        "title": "Keine Zahlungen zu verfolgen",
+        "description": "Zahlungen erscheinen hier, sobald Meldungen übermittelt wurden.",
+        "goToFilings": "Zu den Meldungen"
+      },
+      "error": {
+        "title": "Zahlungen konnten nicht geladen werden",
+        "description": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+      },
+      "sort": {
+        "dueDateSoonest": "Fälligkeit (Zuerst)",
+        "dueDateLatest": "Fälligkeit (Zuletzt)",
+        "paidDateNewest": "Zahlungsdatum (Neueste)",
+        "paidDateOldest": "Zahlungsdatum (Älteste)",
+        "amountHighLow": "Betrag (Hoch-Niedrig)",
+        "amountLowHigh": "Betrag (Niedrig-Hoch)"
+      }
+    },
+    "overview": {
+      "title": "Steuern",
+      "greeting": "Guten Abend, {{name}}!",
+      "yourTaxes": "Ihre Steuern in Ihrer Region",
+      "localOffice": "Finanzamt: {{name}}",
+      "viewReports": "Berichte anzeigen",
+      "taxSettings": "Steuereinstellungen",
+      "currentVatPeriod": "Aktueller USt-Zeitraum: Q{{period}} {{year}}",
+      "estimatedVatDue": "Voraussichtliche Zahllast",
+      "notConfigured": "Nicht konfiguriert",
+      "viewDetails": "Details anzeigen",
+      "kpis": {
+        "taxesToBePaid": "Zu zahlende Steuern",
+        "income": "Einnahmen",
+        "expenses": "Ausgaben",
+        "vatNotApplicable": "USt nicht anwendbar",
+        "completeSetup": "Steuer-Setup abschließen",
+        "seeOverview": "Steuerübersicht anzeigen",
+        "unpaidInvoices": "{{count}} offene Rechnungen",
+        "itemsToReview": "{{count}} zu prüfende Belege"
+      },
+      "headsUp": "Hinweis",
+      "settingsIncomplete": "Steuereinstellungen unvollständig",
+      "settingsIncompleteDescription": "Konfigurieren Sie Ihr Steuerprofil, um Ihre Zahllast zu schätzen.",
+      "goToSettings": "Zu den Steuereinstellungen",
+      "expenseHelper": {
+        "title": "Was kann ich absetzen?",
+        "description": "Erfahren Sie, welche Käufe Sie als Geschäftsausgaben kategorisieren können.",
+        "learnMore": "Mehr erfahren"
+      },
+      "yourReports": "Ihre Steuerberichte",
+      "reportsDescription": "Basierend auf Ihren Angaben sind dies die Berichte, die Sie aktuell einreichen müssen…",
+      "submitReports": "Berichte einreichen",
+      "upcomingDeadline": "{{count}} anstehende Frist",
+      "upcomingDeadline_plural": "{{count}} anstehende Fristen",
+      "noUpcoming": "Keine anstehenden Berichte.",
+      "localTaxOffice": "Zuständiges Finanzamt",
+      "addLocalOffice": "Fügen Sie Ihr Finanzamt hinzu, um Ihre Unterlagen zu vervollständigen.",
+      "updateSettings": "Einstellungen aktualisieren",
+      "errorLoading": "Steuern konnten nicht geladen werden",
+      "errorDescription": "Beim Abrufen Ihrer Steuerübersicht ist ein Fehler aufgetreten."
+    },
+    "history": {
+      "title": "USt-Voranmeldezeiträume",
+      "year": "Jahr",
+      "overdueAlert": "Handlung erforderlich: {{count}} überfällige USt-Zeiträume",
+      "overdueDescription": "Der älteste überfällige Zeitraum ist vorausgewählt. Sie können weiterhin am aktuellen Zeitraum arbeiten.",
+      "submitOverdue": "Überfällige Zeiträume einreichen",
+      "noData": "Keine Daten für dieses Jahr.",
+      "noPeriods": "Keine Zeiträume gefunden.",
+      "quarter": "Quartal",
+      "selectQuarter": "Quartal wählen",
+      "viewDetails": "Zeitraumdetails anzeigen",
+      "selectedPeriod": "Ausgewählter Zeitraum: {{label}} ({{range}})",
+      "taxDue": "Zahllast",
+      "salesVat": "Umsatzsteuer",
+      "purchaseVat": "Vorsteuer",
+      "submittedOn": "Übermittelt am {{date}}",
+      "reference": "Referenz: {{ref}}",
+      "notes": "Notizen: {{notes}}",
+      "archiveReason": "Archivierungsgrund: {{reason}}",
+      "downloadPdf": "PDF herunterladen",
+      "markSubmitted": "Als übermittelt markieren",
+      "markNil": "Als Nullmeldung markieren",
+      "archive": "Archivieren",
+      "tabs": {
+        "upcoming": "Anstehende Berichte",
+        "submitted": "Übermittelte Berichte"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Zeitraum als übermittelt markieren",
+          "date": "Übermittlungsdatum",
+          "reference": "Referenz (optional)",
+          "notes": "Notizen (optional)",
+          "submit": "Zeitraum übermitteln"
+        },
+        "nil": {
+          "title": "Zeitraum als Nullmeldung markieren",
+          "date": "Übermittlungsdatum",
+          "notes": "Notizen (optional)",
+          "submit": "Als Nullmeldung markieren"
+        },
+        "archive": {
+          "title": "Zeitraum archivieren",
+          "reason": "Grund",
+          "notes": "Notizen (optional)",
+          "submit": "Zeitraum archivieren"
+        },
+        "cancel": "Abbrechen"
+      },
+      "periodCombobox": {
+        "placeholder": "Zeitraum wählen oder eingeben…",
+        "searchPlaceholder": "Zeitraum suchen oder eingeben…",
+        "useCustom": "\"{{value}}\" verwenden",
+        "customHint": "Eingabetaste drücken oder klicken, um diesen benutzerdefinierten Zeitraum zu verwenden",
+        "noPeriods": "Keine Zeiträume gefunden.",
+        "customHeading": "Benutzerdefiniert",
+        "customPeriod": "Benutzerdefinierter Zeitraum",
+        "quartersHeading": "Quartale",
+        "monthlyHeading": "Monatlich",
+        "footerHint": "Geben Sie {{qExample}} oder {{mExample}} für einen benutzerdefinierten Zeitraum ein",
+        "quarters": {
+          "1": "Q1",
+          "2": "Q2",
+          "3": "Q3",
+          "4": "Q4"
+        },
+        "quarterMonths": {
+          "1": "Jan – Mär",
+          "2": "Apr – Jun",
+          "3": "Jul – Sep",
+          "4": "Okt – Dez"
+        }
+      },
+      "navigator": {
+        "prevYear": "Vorheriges Jahr",
+        "nextYear": "Nächstes Jahr",
+        "failedToLoad": "Laden der USt-Zeiträume fehlgeschlagen.",
+        "retry": "Wiederholen",
+        "notStarted": "Nicht gestartet",
+        "noFilingYet": "Noch keine Meldung für {{period}} {{year}}.",
+        "createFiling": "Meldung erstellen",
+        "status": {
+          "draft": "Entwurf",
+          "needsFix": "Handlung erforderlich",
+          "readyForReview": "Bereit",
+          "submitted": "Übermittelt",
+          "paid": "Bezahlt",
+          "archived": "Archiviert"
+        }
+      },
+      "attachments": {
+        "title": "Anhänge",
+        "attachFromDocuments": "Aus Dokumenten anhängen",
+        "uploadAttachment": "Anhang hochladen",
+        "loading": "Anhänge werden geladen...",
+        "error": "Laden der Anhänge fehlgeschlagen.",
+        "empty": "Laden Sie Belege oder Übermittlungsbestätigungen hoch.",
+        "untitled": "Unbenanntes Dokument",
+        "type": "Typ: {{type}}",
+        "uploadedAt": "Hochgeladen am {{date}}",
+        "uploader": "Uploader: {{name}}",
+        "remove": "Entfernen",
+        "dialog": {
+          "title": "Beleg anhängen",
+          "description": "Laden Sie einen Zahlungsbeleg für diese Meldung hoch.",
+          "replace": "Beleg ersetzen",
+          "choose": "Beleg auswählen",
+          "noFile": "Keine Datei ausgewählt",
+          "uploading": "Wird hochgeladen...",
+          "submit": "Beleg anhängen"
+        },
+        "messages": {
+          "uploadSuccess": "Anhang hochgeladen",
+          "uploadError": "Hochladen des Anhangs fehlgeschlagen",
+          "selectFile": "Wählen Sie einen Beleg zum Hochladen aus"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "Umsatzsteuer-Voranmeldung",
+          "vat-annual": "Umsatzsteuer-Jahreserklärung",
+          "income-annual": "Einkommensteuererklärung",
+          "trade": "Gewerbesteuererklärung",
+          "payroll": "Lohnsteuer-Anmeldung",
+          "corporate-annual": "Körperschaftsteuererklärung",
+          "year-end": "Jahresabschluss",
+          "other": "Steuermeldung"
+        },
+        "status": {
+          "draft": "Entwurf",
+          "needsFix": "Handlung erforderlich",
+          "readyForReview": "Bereit zur Prüfung",
+          "submitted": "Übermittelt",
+          "paid": "Bezahlt",
+          "archived": "Archiviert"
+        },
+        "actions": {
+          "review": "Prüfen",
+          "continueReview": "Prüfung fortsetzen",
+          "markPaid": "Als bezahlt markieren",
+          "view": "Ansehen",
+          "previousPeriod": "Vorheriger Zeitraum",
+          "nextPeriod": "Nächster Zeitraum",
+          "recalculate": "Neu berechnen",
+          "exportPdf": "PDF exportieren",
+          "exportCsv": "CSV exportieren",
+          "delete": "Meldung löschen",
+          "deleteConfirmTitle": "Meldung löschen?",
+          "deleteConfirmMessage": "Diese Aktion kann nicht rückgängig gemacht werden."
+        },
+        "due": "Fällig am {{date}}",
+        "dueWithDays": "Fällig am {{date}} • Noch {{count}} Tag",
+        "dueWithDays_plural": "Fällig am {{date}} • Noch {{count}} Tage"
+      },
+      "activity": {
+        "title": "Aktivität",
+        "loading": "Aktivität wird geladen...",
+        "error": "Laden der Aktivität fehlgeschlagen.",
+        "noActivity": "Noch keine Aktivität.",
+        "by": "Von {{name}}",
+        "types": {
+          "created": "Meldung erstellt",
+          "recalculated": "Neu berechnet",
+          "submitted": "Übermittelt",
+          "paid": "Als bezahlt markiert",
+          "attachmentAdded": "Anhang hinzugefügt",
+          "issuesDetected": "Probleme erkannt",
+          "issuesResolved": "Probleme behoben",
+          "deleted": "Gelöscht"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "USt-Zeitraum als übermittelt markiert",
+        "submittedError": "Markieren als übermittelt fehlgeschlagen",
+        "nilSuccess": "USt-Zeitraum als Nullmeldung markiert",
+        "nilError": "Markieren als Nullmeldung fehlgeschlagen",
+        "archiveSuccess": "USt-Zeitraum archiviert",
+        "archiveError": "Archivierung fehlgeschlagen",
+        "generatingPdf": "PDF wird generiert...",
+        "downloadStarted": "Download gestartet",
+        "pdfPrepared": "PDF wird vorbereitet. Bitte in Kürze erneut versuchen.",
+        "downloadFailed": "PDF-Download fehlgeschlagen"
+      }
+    },
+    "loading": "Steuerdaten werden geladen..."
   },
   "cashManagement": {
     "title": "Kassenbuch",
@@ -1001,6 +1390,9 @@
       "stillGeneratingDescription": "Unter Last kann dies etwas dauern. Bitte versuchen Sie es in ein paar Sekunden erneut."
     },
     "notifications": {
+      "created": "Rechnung erstellt",
+      "updated": "Rechnung aktualisiert",
+      "deleted": "Rechnung gelöscht",
       "canceled": "Rechnung storniert",
       "duplicateSoon": "Duplizieren-Funktion kommt demnächst",
       "exportSoon": "Export-Funktion kommt demnächst",

@@ -180,6 +180,7 @@ describe("FilingDetailPage", () => {
     expect(within(stepper).getByText("Submit")).toBeInTheDocument();
     expect(within(stepper).getByText("Pay")).toBeInTheDocument();
     expect(await screen.findByText("Included items")).toBeInTheDocument();
+    expect(screen.getByText("No issues detected.")).toBeInTheDocument();
   });
 
   it("changes primary action by status", async () => {

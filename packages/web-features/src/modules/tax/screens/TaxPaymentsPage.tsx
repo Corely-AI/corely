@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Download, FileText } from "lucide-react";
@@ -37,27 +38,10 @@ import { taxFilingAttachmentsQueryKey, taxFilingQueryKeys, taxPaymentsQueryKeys 
 import { MarkPaidDialog } from "../components/mark-paid-dialog";
 import { AttachReceiptDialog } from "../components/attach-receipt-dialog";
 
-const STATUS_LABELS: Record<TaxPaymentStatus, string> = {
-  due: "Due",
-  overdue: "Overdue",
-  paid: "Paid",
-};
-
 const STATUS_STYLES: Record<TaxPaymentStatus, string> = {
   due: "bg-amber-50 text-amber-700 border-amber-200",
   overdue: "bg-red-50 text-red-700 border-red-200",
   paid: "bg-green-50 text-green-700 border-green-200",
-};
-
-const TYPE_LABELS: Record<TaxFilingType, string> = {
-  vat: "VAT",
-  "vat-annual": "VAT annual",
-  "income-annual": "Income tax",
-  trade: "Trade tax",
-  payroll: "Payroll",
-  "corporate-annual": "Corporate tax",
-  "year-end": "Year-end",
-  other: "Other",
 };
 
 const toIsoDate = (value?: string) => {
@@ -78,6 +62,7 @@ const toDateInputValue = (value?: string | null) => {
 };
 
 export const TaxPaymentsPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -147,6 +132,31 @@ export const TaxPaymentsPage = () => {
 
   const { data, isLoading, isError, refetch } = useTaxPaymentsQuery(listParams, paymentsEnabled);
 
+  const locale = t("common.locale", { defaultValue: "en-US" });
+
+  const statusLabels: Record<TaxPaymentStatus, string> = React.useMemo(
+    () => ({
+      due: t("tax.payments.status.due"),
+      overdue: t("tax.payments.status.overdue"),
+      paid: t("tax.payments.status.paid"),
+    }),
+    [t]
+  );
+
+  const typeLabels: Record<TaxFilingType, string> = React.useMemo(
+    () => ({
+      vat: t("tax.payments.types.vat"),
+      "vat-annual": t("tax.payments.types.vatAnnual"),
+      "income-annual": t("tax.payments.types.incomeAnnual"),
+      trade: t("tax.payments.types.trade"),
+      payroll: t("tax.payments.types.payroll"),
+      "corporate-annual": t("tax.payments.types.corporateAnnual"),
+      "year-end": t("tax.payments.types.yearEnd"),
+      other: t("tax.payments.types.other"),
+    }),
+    [t]
+  );
+
   const exportMutation = useMutation({
     mutationFn: () => taxApi.exportPayments(listParams),
     onSuccess: ({ csv }) => {
@@ -158,14 +168,14 @@ export const TaxPaymentsPage = () => {
       link.click();
       window.URL.revokeObjectURL(url);
     },
-    onError: () => toast.error("Failed to export payments"),
+    onError: () => toast.error(t("tax.payments.actions.exportFailed")),
   });
 
   const markPaidMutation = useMutation({
     mutationFn: ({ filingId, payload }: { filingId: string; payload: MarkTaxFilingPaidRequest }) =>
       taxApi.markFilingPaid(filingId, payload),
     onSuccess: async (_, vars) => {
-      toast.success("Marked as paid");
+      toast.success(t("tax.payments.actions.markedPaid"));
       setMarkPaidTarget(null);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: taxPaymentsQueryKeys.all() }),
@@ -173,14 +183,14 @@ export const TaxPaymentsPage = () => {
         queryClient.invalidateQueries({ queryKey: taxFilingAttachmentsQueryKey(vars.filingId) }),
       ]);
     },
-    onError: () => toast.error("Failed to mark paid"),
+    onError: () => toast.error(t("tax.payments.actions.markPaidFailed")),
   });
 
   const attachProofMutation = useMutation({
     mutationFn: ({ filingId, documentId }: { filingId: string; documentId: string }) =>
       taxApi.attachPaymentProof(filingId, { proofDocumentId: documentId }),
     onSuccess: async (_, vars) => {
-      toast.success("Receipt attached");
+      toast.success(t("tax.payments.actions.receiptAttached"));
       setAttachReceiptTarget(null);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: taxPaymentsQueryKeys.all() }),
@@ -188,7 +198,7 @@ export const TaxPaymentsPage = () => {
         queryClient.invalidateQueries({ queryKey: taxFilingAttachmentsQueryKey(vars.filingId) }),
       ]);
     },
-    onError: () => toast.error("Failed to attach receipt"),
+    onError: () => toast.error(t("tax.payments.actions.attachReceiptFailed")),
   });
 
   const filterFields = React.useMemo<FilterFieldDef[]>(() => {
@@ -201,26 +211,26 @@ export const TaxPaymentsPage = () => {
     return [
       {
         key: "status",
-        label: "Status",
+        label: t("common.status"),
         type: "select",
-        options: Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label })),
+        options: Object.entries(statusLabels).map(([value, label]) => ({ value, label })),
       },
       {
         key: "year",
-        label: "Year",
+        label: t("tax.center.annual.title"),
         type: "select",
         options: yearOptions,
       },
       {
         key: "type",
-        label: "Filing type",
+        label: t("tax.payments.columns.filing"),
         type: "select",
-        options: Object.entries(TYPE_LABELS).map(([value, label]) => ({ value, label })),
+        options: Object.entries(typeLabels).map(([value, label]) => ({ value, label })),
       },
-      { key: "dueDate", label: "Due date", type: "date" },
-      { key: "paidAt", label: "Paid date", type: "date" },
+      { key: "dueDate", label: t("tax.payments.columns.dueDate"), type: "date" },
+      { key: "paidAt", label: t("tax.payments.columns.paidDate"), type: "date" },
     ];
-  }, []);
+  }, [t, statusLabels, typeLabels]);
 
   const searchParamsKey = searchParams.toString();
   React.useEffect(() => {
@@ -338,11 +348,11 @@ export const TaxPaymentsPage = () => {
       <div className="p-6 lg:p-8">
         <EmptyState
           icon={AlertTriangle}
-          title="Unable to load payments"
-          description="Check your connection and try again."
+          title={t("tax.payments.error.title")}
+          description={t("tax.payments.error.description")}
           action={
             <Button variant="outline" onClick={() => refetchCapabilities()}>
-              Retry
+              {t("tax.center.retry")}
             </Button>
           }
         />
@@ -360,8 +370,8 @@ export const TaxPaymentsPage = () => {
   return (
     <>
       <CrudListPageLayout
-        title="Payments"
-        subtitle="Track paid vs due filings across the year."
+        title={t("tax.payments.title")}
+        subtitle={t("tax.payments.subtitle")}
         primaryAction={
           <Button
             variant="outline"
@@ -369,7 +379,7 @@ export const TaxPaymentsPage = () => {
             disabled={exportMutation.isPending}
           >
             <Download className="h-4 w-4" />
-            Export CSV
+            {t("tax.payments.exportCsv")}
           </Button>
         }
         toolbar={
@@ -379,12 +389,12 @@ export const TaxPaymentsPage = () => {
             sort={state.sort}
             onSortChange={(value) => setUrlState({ sort: value })}
             sortOptions={[
-              { label: "Due date (Soonest)", value: "dueDate:asc" },
-              { label: "Due date (Latest)", value: "dueDate:desc" },
-              { label: "Paid date (Newest)", value: "paidAt:desc" },
-              { label: "Paid date (Oldest)", value: "paidAt:asc" },
-              { label: "Amount (High-Low)", value: "amount:desc" },
-              { label: "Amount (Low-High)", value: "amount:asc" },
+              { label: t("tax.payments.sort.dueDateSoonest"), value: "dueDate:asc" },
+              { label: t("tax.payments.sort.dueDateLatest"), value: "dueDate:desc" },
+              { label: t("tax.payments.sort.paidDateNewest"), value: "paidAt:desc" },
+              { label: t("tax.payments.sort.paidDateOldest"), value: "paidAt:asc" },
+              { label: t("tax.payments.sort.amountHighLow"), value: "amount:desc" },
+              { label: t("tax.payments.sort.amountLowHigh"), value: "amount:asc" },
             ]}
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={state.filters?.length}
@@ -430,22 +440,22 @@ export const TaxPaymentsPage = () => {
           ) : isError ? (
             <EmptyState
               icon={AlertTriangle}
-              title="Unable to load payments"
-              description="Check your connection and try again."
+              title={t("tax.payments.error.title")}
+              description={t("tax.payments.error.description")}
               action={
                 <Button variant="outline" onClick={() => refetch()}>
-                  Retry
+                  {t("tax.center.retry")}
                 </Button>
               }
             />
           ) : rows.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="No payments to track"
-              description="Payments will appear here once filings are submitted."
+              title={t("tax.payments.empty.title")}
+              description={t("tax.payments.empty.description")}
               action={
                 <Button variant="outline" onClick={() => navigate("/tax/filings")}>
-                  Go to filings
+                  {t("tax.payments.empty.goToFilings")}
                 </Button>
               }
             />
@@ -454,12 +464,12 @@ export const TaxPaymentsPage = () => {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50">
-                    <TableHead>Filing</TableHead>
-                    <TableHead>Due date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Paid date</TableHead>
-                    <TableHead>Method</TableHead>
+                    <TableHead>{t("tax.payments.columns.filing")}</TableHead>
+                    <TableHead>{t("tax.payments.columns.dueDate")}</TableHead>
+                    <TableHead className="text-right">{t("tax.payments.columns.amount")}</TableHead>
+                    <TableHead>{t("common.status")}</TableHead>
+                    <TableHead>{t("tax.payments.columns.paidDate")}</TableHead>
+                    <TableHead>{t("tax.payments.columns.method")}</TableHead>
                     <TableHead className="w-[120px]" />
                   </TableRow>
                 </TableHeader>
@@ -483,39 +493,44 @@ export const TaxPaymentsPage = () => {
                         }
                       >
                         <TableCell>
-                          <div className="text-sm font-medium">{TYPE_LABELS[row.filingType]}</div>
+                          <div className="text-sm font-medium">{typeLabels[row.filingType]}</div>
                           <div className="text-xs text-muted-foreground">{row.periodLabel}</div>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {formatDate(row.dueDate, "en-US")}
+                          {formatDate(row.dueDate, locale)}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="text-sm font-medium">
-                            {formatMoney(amountCents, "en-US", row.amount.currency)}
+                            {formatMoney(amountCents, locale, row.amount.currency)}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {row.amount.direction === "payable" ? "Payable" : "Receivable"}
+                            {row.amount.direction === "payable"
+                              ? t("tax.payments.columns.payable")
+                              : t("tax.payments.columns.receivable")}
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={STATUS_STYLES[row.paymentStatus]}>
-                            {STATUS_LABELS[row.paymentStatus]}
+                            {statusLabels[row.paymentStatus]}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {row.paidAt ? formatDate(row.paidAt, "en-US") : "—"}
+                          {row.paidAt ? formatDate(row.paidAt, locale) : "—"}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {row.method ?? "—"}
                         </TableCell>
                         <TableCell onClick={(event) => event.stopPropagation()}>
                           <CrudRowActions
-                            primaryAction={{ label: "Open", href: `/tax/filings/${row.filingId}` }}
+                            primaryAction={{
+                              label: t("common.open"),
+                              href: `/tax/filings/${row.filingId}`,
+                            }}
                             secondaryActions={[
                               ...(canMarkPaid
                                 ? [
                                     {
-                                      label: "Mark paid",
+                                      label: t("tax.payments.actions.markPaid"),
                                       onClick: () => setMarkPaidTarget(row),
                                     },
                                   ]
@@ -523,7 +538,7 @@ export const TaxPaymentsPage = () => {
                               ...(canAttachReceipt
                                 ? [
                                     {
-                                      label: "Attach receipt",
+                                      label: t("tax.payments.actions.attachReceipt"),
                                       onClick: () => setAttachReceiptTarget(row),
                                     },
                                   ]

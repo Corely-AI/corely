@@ -16,7 +16,10 @@ type AttachmentsSectionProps = {
   filingId: string;
 };
 
+import { useTranslation } from "react-i18next";
+
 export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
+  const { t, i18n } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { data, isLoading, isError } = useTaxFilingAttachmentsQuery(filingId);
   const attachMutation = useAttachFilingDocumentMutation(filingId);
@@ -24,31 +27,33 @@ export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
 
   const attachments = data?.items ?? [];
 
+  const locale = t("common.locale", { defaultValue: i18n.language === "de" ? "de-DE" : "en-US" });
+
   const handleUpload = async (file: File) => {
     try {
       const documentId = await uploadTaxDocument(file);
       await attachMutation.mutateAsync({ documentId });
-      toast.success("Attachment uploaded");
+      toast.success(t("tax.attachments.messages.uploadSuccess"));
     } catch (error) {
       console.error(error);
-      toast.error("Failed to upload attachment");
+      toast.error(t("tax.attachments.messages.uploadError"));
     }
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Attachments</CardTitle>
+        <CardTitle>{t("tax.attachments.title")}</CardTitle>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link to="/tax/documents">Attach from tax documents</Link>
+            <Link to="/tax/documents">{t("tax.attachments.attachFromDocuments")}</Link>
           </Button>
           <Button
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             disabled={attachMutation.isPending}
           >
-            Upload attachment
+            {t("tax.attachments.uploadAttachment")}
           </Button>
         </div>
         <input
@@ -65,12 +70,12 @@ export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
         />
       </CardHeader>
       <CardContent className="space-y-3">
-        {isLoading ? <p className="text-sm text-muted-foreground">Loading attachments...</p> : null}
-        {isError ? <p className="text-sm text-destructive">Failed to load attachments.</p> : null}
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">{t("tax.attachments.loading")}</p>
+        ) : null}
+        {isError ? <p className="text-sm text-destructive">{t("tax.attachments.error")}</p> : null}
         {attachments.length === 0 && !isLoading ? (
-          <p className="text-sm text-muted-foreground">
-            Upload supporting documents like receipts or submission confirmations.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("tax.attachments.empty")}</p>
         ) : null}
         {attachments.map((doc) => (
           <div
@@ -78,11 +83,13 @@ export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
             className="flex items-center justify-between rounded-md border border-border p-3"
           >
             <div>
-              <p className="text-sm font-medium">{doc.title ?? "Untitled document"}</p>
+              <p className="text-sm font-medium">{doc.title ?? t("tax.attachments.untitled")}</p>
               <div className="text-xs text-muted-foreground">
-                <p>Type: {doc.type}</p>
-                <p>Uploaded {formatDateTime(doc.createdAt, "en-US")}</p>
-                <p>Uploader: —</p>
+                <p>{t("tax.attachments.type", { type: doc.type })}</p>
+                <p>
+                  {t("tax.attachments.uploadedAt", { date: formatDateTime(doc.createdAt, locale) })}
+                </p>
+                <p>{t("tax.attachments.uploader", { name: "—" })}</p>
               </div>
             </div>
             <Button
@@ -90,7 +97,7 @@ export function AttachmentsSection({ filingId }: AttachmentsSectionProps) {
               onClick={() => removeMutation.mutate(doc.id)}
               disabled={removeMutation.isPending}
             >
-              Remove
+              {t("tax.attachments.remove")}
             </Button>
           </div>
         ))}

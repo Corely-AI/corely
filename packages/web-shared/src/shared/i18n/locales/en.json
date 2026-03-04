@@ -371,6 +371,7 @@
   "tax": {
     "title": "Tax Center",
     "subtitle": "Manage your tax profile, filings, and compliance",
+    "loading": "Loading tax data...",
     "profile": {
       "title": "Tax Profile",
       "vatEnabled": "VAT/Sales Tax Registered",
@@ -385,30 +386,442 @@
       "accountingMethod": "Accounting Method",
       "taxYearStartMonth": "Tax Year Start Month",
       "localTaxOffice": "Local Tax Office",
-      "save": "Save Tax Profile"
+      "save": "Save Tax Profile",
+      "saveSuccess": "Tax profile saved",
+      "saveFailed": "Failed to save tax profile",
+      "vatExemption": "VAT Exemption Paragraph",
+      "vatExemptionHelp": "Select the relevant exemption paragraph for your business"
     },
     "countries": {
       "de": "Germany"
     },
     "regimes": {
-      "standardVat": "Standard VAT"
+      "smallBusiness": "Small Business (Kleinunternehmer)",
+      "standardVat": "Standard VAT",
+      "vatExempt": "VAT Exempt"
+    },
+    "exemptions": {
+      "exportDeliveries": "§ 4 Nr. 1a UStG - Export deliveries",
+      "intraCommunityDeliveries": "§ 4 Nr. 1b UStG - Intra-community deliveries",
+      "financialServices": "§ 4 Nr. 8 UStG - Financial services",
+      "insuranceServices": "§ 4 Nr. 11 UStG - Insurance services",
+      "lettingLeasing": "§ 4 Nr. 12 UStG - Letting and leasing",
+      "medicalServices": "§ 4 Nr. 14 UStG - Medical services",
+      "educationalServices": "§ 4 Nr. 21 UStG - Educational services"
     },
     "filing": {
-      "quarterly": "Quarterly"
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
     },
     "accounting": {
-      "cashBasis": "Cash Basis",
+      "cashBasis": "Cash Basis (Ist-Versteuerung)",
+      "accrualBasis": "Accrual Basis (Soll-Versteuerung)",
       "cashBasisHelp": "Revenue is recorded when cash is received",
       "accrualBasisHelp": "Revenue is recorded when earned, regardless of when cash is received"
     },
     "placeholders": {
+      "country": "Select country",
+      "regime": "Select regime",
+      "vatExemption": "Select exemption paragraph",
+      "filingFrequency": "Select frequency",
+      "accountingMethod": "Select method",
       "vatId": "Enter your VAT ID (e.g., DE123456789)",
       "month": "Select month",
       "localTaxOffice": "Enter your local tax office name"
     },
     "consultant": {
       "title": "Tax Consultant",
-      "save": "Save Consultant Info"
+      "save": "Save Consultant Info",
+      "saveSuccess": "Consultant info saved",
+      "saveFailed": "Failed to save consultant info"
+    },
+    "center": {
+      "title": "Tax Center",
+      "myTaxes": "My Taxes",
+      "freelancerSubtitle": "Manage your freelancer tax obligations.",
+      "companySubtitle": "Overview of company tax compliance and filings.",
+      "errorLoading": "Error loading Tax Center",
+      "errorDescription": "We couldn't load your tax overview. Please try again.",
+      "retry": "Retry",
+      "reviewNext": "Review next filing",
+      "settings": "Settings",
+      "nextUp": {
+        "title": "Next Up",
+        "allCaughtUp": "You're all caught up!",
+        "noUpcoming": "No upcoming filings found.",
+        "createFiling": "Create filing",
+        "dueDate": "Due Date",
+        "estimatedAmount": "Estimated Amount",
+        "reviewFiling": "Review filing",
+        "viewAll": "View all filings",
+        "overdue": "OVERDUE",
+        "vat": "VAT",
+        "tax": "Tax"
+      },
+      "annual": {
+        "title": "Annual Filings",
+        "yearendTitle": "Year-end & Annual Filings",
+        "viewAll": "View all",
+        "createForYear": "Create for {{year}}",
+        "noFilings": "No annual filings for {{year}}",
+        "obligations": "Annual obligations.",
+        "status": {
+          "draft": "Draft",
+          "needsFix": "Needs attention",
+          "readyForReview": "Ready for review",
+          "submitted": "Submitted",
+          "paid": "Paid",
+          "archived": "Archived",
+          "openForSubmission": "Open for submission",
+          "yearInProgress": "Year in progress"
+        },
+        "year": "Year {{year}}",
+        "estimatedTaxToPay": "Estimated tax to pay",
+        "reviewAndSubmit": "Review & Submit",
+        "preview": "Preview"
+      },
+      "issues": {
+        "title": "Open Issues",
+        "noIssues": "No issues detected. Your bookkeeping looks clean!",
+        "items": "items",
+        "affected": "affected",
+        "fix": "Fix",
+        "blocking": "BLOCKIEREND"
+      },
+      "shortcuts": {
+        "title": "Shortcuts",
+        "createFiling": "Create Filing",
+        "exportReport": "Export Report",
+        "payTaxes": "Pay Taxes",
+        "documents": "Documents"
+      },
+      "snapshot": {
+        "title": "YTD Snapshot ({{year}})",
+        "updated": "Updated {{date}}",
+        "noData": "No data available yet."
+      }
+    },
+    "reports": {
+      "title": "Tax Reports",
+      "subtitle": "Track upcoming declarations and submissions.",
+      "tabs": {
+        "upcoming": "Upcoming reports",
+        "submitted": "Submitted"
+      },
+      "groups": {
+        "vat": "Advance VAT declarations",
+        "compliance": "Compliance (EU Sales & Intrastat)",
+        "submitted": "Submitted reports"
+      },
+      "actions": {
+        "markSubmitted": "Mark as submitted",
+        "downloadPdf": "Download PDF",
+        "generatingPdf": "Generating PDF...",
+        "downloadStarted": "Download started",
+        "pdfPrepared": "PDF is being prepared. Try again shortly.",
+        "downloadFailed": "Failed to download PDF"
+      },
+      "status": {
+        "loading": "Loading reports...",
+        "empty": "No reports found."
+      },
+      "types": {
+        "vatAdvance": "Advance VAT declaration",
+        "vatAnnual": "Annual VAT report",
+        "incomeTax": "Income tax",
+        "euSales": "EU Sales List (ZM)",
+        "intrastat": "Intrastat Declaration",
+        "tradeTax": "Trade Tax (Gewerbesteuer)",
+        "profitLoss": "P&L Statement (EÜR)",
+        "payrollTax": "Payroll Tax"
+      }
+    },
+    "documents": {
+      "title": "Tax Documents",
+      "subtitle": "Repository of all tax-related documents."
+    },
+    "payments": {
+      "title": "Payments",
+      "subtitle": "Track paid vs due filings across the year.",
+      "exportCsv": "Export CSV",
+      "status": {
+        "due": "Due",
+        "overdue": "Overdue",
+        "paid": "Paid"
+      },
+      "types": {
+        "vat": "VAT",
+        "vatAnnual": "VAT annual",
+        "incomeAnnual": "Income tax",
+        "trade": "Trade tax",
+        "payroll": "Payroll",
+        "corporateAnnual": "Corporate tax",
+        "yearEnd": "Year-end",
+        "other": "Other"
+      },
+      "columns": {
+        "filing": "Filing",
+        "dueDate": "Due date",
+        "amount": "Amount",
+        "status": "Status",
+        "paidDate": "Paid date",
+        "method": "Method",
+        "payable": "Payable",
+        "receivable": "Receivable"
+      },
+      "actions": {
+        "markPaid": "Mark paid",
+        "attachReceipt": "Attach receipt",
+        "markedPaid": "Marked as paid",
+        "markPaidFailed": "Failed to mark paid",
+        "receiptAttached": "Receipt attached",
+        "attachReceiptFailed": "Failed to attach receipt",
+        "exportFailed": "Failed to export payments"
+      },
+      "empty": {
+        "title": "No payments to track",
+        "description": "Payments will appear here once filings are submitted.",
+        "goToFilings": "Go to filings"
+      },
+      "error": {
+        "title": "Unable to load payments",
+        "description": "Check your connection and try again."
+      },
+      "sort": {
+        "dueDateSoonest": "Due date (Soonest)",
+        "dueDateLatest": "Due date (Latest)",
+        "paidDateNewest": "Paid date (Newest)",
+        "paidDateOldest": "Paid date (Oldest)",
+        "amountHighLow": "Amount (High-Low)",
+        "amountLowHigh": "Amount (Low-High)"
+      }
+    },
+    "overview": {
+      "title": "Taxes",
+      "greeting": "Good evening, {{name}}!",
+      "yourTaxes": "Your taxes in your region",
+      "localOffice": "Local office: {{name}}",
+      "viewReports": "View reports",
+      "taxSettings": "Tax settings",
+      "currentVatPeriod": "Current VAT Period: {{period}} {{year}}",
+      "estimatedVatDue": "Estimated VAT due",
+      "notConfigured": "Not configured",
+      "viewDetails": "View details",
+      "kpis": {
+        "taxesToBePaid": "Taxes to be paid",
+        "income": "Income",
+        "expenses": "Expenses",
+        "vatNotApplicable": "VAT not applicable",
+        "completeSetup": "Complete tax setup",
+        "seeOverview": "See taxes overview",
+        "unpaidInvoices": "{{count}} unpaid invoices",
+        "itemsToReview": "{{count}} items to review"
+      },
+      "headsUp": "Heads up",
+      "settingsIncomplete": "Tax settings incomplete",
+      "settingsIncompleteDescription": "Configure your tax profile to estimate what you owe.",
+      "goToSettings": "Go to tax settings",
+      "expenseHelper": {
+        "title": "What can I expense?",
+        "description": "Learn which purchases you can categorize as business expenses.",
+        "learnMore": "Learn more"
+      },
+      "yourReports": "Your tax reports",
+      "reportsDescription": "Based on your details, these are the reports you are currently required to submit…",
+      "submitReports": "Submit reports",
+      "upcomingDeadline": "{{count}} upcoming deadline",
+      "upcomingDeadline_plural": "{{count}} upcoming deadlines",
+      "noUpcoming": "No upcoming reports.",
+      "localTaxOffice": "Local tax office",
+      "addLocalOffice": "Add your local tax office to keep your records complete.",
+      "updateSettings": "Update settings",
+      "errorLoading": "Could not load taxes",
+      "errorDescription": "Something went wrong while fetching your tax overview."
+    },
+    "history": {
+      "title": "VAT periods",
+      "year": "Year",
+      "overdueAlert": "Action required: {{count}} overdue VAT periods",
+      "overdueDescription": "Oldest overdue period is preselected. You can still work on the current period.",
+      "submitOverdue": "Submit overdue periods",
+      "noData": "No data for this year.",
+      "noPeriods": "No periods found.",
+      "quarter": "Quarter",
+      "selectQuarter": "Select quarter",
+      "viewDetails": "View period details",
+      "selectedPeriod": "Selected period: {{label}} ({{range}})",
+      "taxDue": "Tax due",
+      "salesVat": "Sales VAT",
+      "purchaseVat": "Purchase VAT",
+      "submittedOn": "Submitted on {{date}}",
+      "reference": "Reference: {{ref}}",
+      "notes": "Notes: {{notes}}",
+      "archiveReason": "Archive reason: {{reason}}",
+      "downloadPdf": "Download PDF",
+      "markSubmitted": "Mark as submitted",
+      "markNil": "Mark as nil",
+      "archive": "Archive",
+      "tabs": {
+        "upcoming": "Upcoming reports",
+        "submitted": "Submitted reports"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Mark period as submitted",
+          "date": "Submission date",
+          "reference": "Reference (optional)",
+          "notes": "Notes (optional)",
+          "submit": "Submit period"
+        },
+        "nil": {
+          "title": "Mark period as nil",
+          "date": "Submission date",
+          "notes": "Notes (optional)",
+          "submit": "Mark nil"
+        },
+        "archive": {
+          "title": "Archive period",
+          "reason": "Reason",
+          "notes": "Notes (optional)",
+          "submit": "Archive period"
+        },
+        "cancel": "Cancel"
+      },
+      "periodCombobox": {
+        "placeholder": "Select or type a period…",
+        "searchPlaceholder": "Search or type period…",
+        "useCustom": "Use \"{{value}}\"",
+        "customHint": "Press Enter or click to use this custom period",
+        "noPeriods": "No periods found.",
+        "customHeading": "Custom",
+        "customPeriod": "Custom period",
+        "quartersHeading": "Quarters",
+        "monthlyHeading": "Monthly",
+        "footerHint": "Type {{qExample}} or {{mExample}} for a custom period",
+        "quarters": {
+          "1": "Q1",
+          "2": "Q2",
+          "3": "Q3",
+          "4": "Q4"
+        },
+        "quarterMonths": {
+          "1": "Jan – Mar",
+          "2": "Apr – Jun",
+          "3": "Jul – Sep",
+          "4": "Oct – Dec"
+        }
+      },
+      "navigator": {
+        "prevYear": "Previous year",
+        "nextYear": "Next year",
+        "failedToLoad": "Failed to load VAT periods.",
+        "retry": "Retry",
+        "notStarted": "Not started",
+        "noFilingYet": "No filing yet for {{period}} {{year}}.",
+        "createFiling": "Create filing",
+        "status": {
+          "draft": "Draft",
+          "needsFix": "Needs attention",
+          "readyForReview": "Ready",
+          "submitted": "Submitted",
+          "paid": "Paid",
+          "archived": "Archived"
+        }
+      },
+      "attachments": {
+        "title": "Attachments",
+        "attachFromDocuments": "Attach from tax documents",
+        "uploadAttachment": "Upload attachment",
+        "loading": "Loading attachments...",
+        "error": "Failed to load attachments.",
+        "empty": "Upload supporting documents like receipts or submission confirmations.",
+        "untitled": "Untitled document",
+        "type": "Type: {{type}}",
+        "uploadedAt": "Uploaded {{date}}",
+        "uploader": "Uploader: {{name}}",
+        "remove": "Remove",
+        "dialog": {
+          "title": "Attach receipt",
+          "description": "Upload proof of payment for this filing.",
+          "replace": "Replace receipt",
+          "choose": "Choose receipt",
+          "noFile": "No file selected",
+          "uploading": "Uploading...",
+          "submit": "Attach receipt"
+        },
+        "messages": {
+          "uploadSuccess": "Attachment uploaded",
+          "uploadError": "Failed to upload attachment",
+          "selectFile": "Select a receipt to upload"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "VAT Filing",
+          "vat-annual": "VAT Annual Filing",
+          "income-annual": "Income Tax Filing",
+          "trade": "Trade Tax Filing",
+          "payroll": "Payroll Tax Filing",
+          "corporate-annual": "Corporate Tax Filing",
+          "year-end": "Year-End Filing",
+          "other": "Tax Filing"
+        },
+        "status": {
+          "draft": "Draft",
+          "needsFix": "Needs attention",
+          "readyForReview": "Ready for review",
+          "submitted": "Submitted",
+          "paid": "Paid",
+          "archived": "Archived"
+        },
+        "actions": {
+          "review": "Review",
+          "continueReview": "Continue review",
+          "markPaid": "Mark paid",
+          "view": "View",
+          "previousPeriod": "Previous period",
+          "nextPeriod": "Next period",
+          "recalculate": "Recalculate",
+          "exportPdf": "Export PDF",
+          "exportCsv": "Export CSV",
+          "delete": "Delete filing",
+          "deleteConfirmTitle": "Delete filing?",
+          "deleteConfirmMessage": "This action cannot be undone."
+        },
+        "due": "Due {{date}}",
+        "dueWithDays": "Due {{date}} • {{count}} day left",
+        "dueWithDays_plural": "Due {{date}} • {{count}} days left"
+      },
+      "activity": {
+        "title": "Activity",
+        "loading": "Loading activity...",
+        "error": "Failed to load activity.",
+        "noActivity": "No activity yet.",
+        "by": "By {{name}}",
+        "types": {
+          "created": "Filing created",
+          "recalculated": "Recalculated",
+          "submitted": "Submitted",
+          "paid": "Marked paid",
+          "attachmentAdded": "Attachment added",
+          "issuesDetected": "Issues detected",
+          "issuesResolved": "Issues resolved",
+          "deleted": "Deleted"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "VAT period marked as submitted",
+        "submittedError": "Failed to mark VAT period as submitted",
+        "nilSuccess": "VAT period marked as nil",
+        "nilError": "Failed to mark VAT period as nil",
+        "archiveSuccess": "VAT period archived",
+        "archiveError": "Failed to archive VAT period",
+        "generatingPdf": "Generating PDF...",
+        "downloadStarted": "Download started",
+        "pdfPrepared": "PDF is being prepared. Try again shortly.",
+        "downloadFailed": "Failed to download PDF"
+      }
     }
   },
   "cashManagement": {
@@ -1022,6 +1435,9 @@
       "stillGeneratingDescription": "This can take longer under load. Please try again in a few seconds."
     },
     "notifications": {
+      "created": "Invoice created",
+      "updated": "Invoice updated",
+      "deleted": "Invoice deleted",
       "canceled": "Invoice canceled",
       "duplicateSoon": "Duplicate feature coming soon",
       "exportSoon": "Export feature coming soon",

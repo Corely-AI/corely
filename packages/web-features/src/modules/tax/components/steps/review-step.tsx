@@ -80,7 +80,10 @@ export function ReviewStep({
   onViewIncludedItems,
 }: ReviewStepProps) {
   const issueList = issues.length > 0 ? issues : DEFAULT_ISSUES;
-  const blockerCount = issueList.filter((issue) => issue.severity === "blocker").length;
+  const visibleIssues = issueList.filter(
+    (issue) => typeof issue.count !== "number" || issue.count > 0
+  );
+  const blockerCount = visibleIssues.filter((issue) => issue.severity === "blocker").length;
   const formatAmount = (value: number | null | undefined) =>
     value == null ? "—" : formatMoney(value, "en-US", currency ?? "EUR");
 
@@ -165,33 +168,37 @@ export function ReviewStep({
           </Badge>
         </CardHeader>
         <CardContent className="space-y-3">
-          {issueList.map((issue) => (
-            <div
-              key={issue.id}
-              className="flex items-start justify-between gap-4 rounded-md border border-border p-3"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium">
-                    {issue.title}
-                    {typeof issue.count === "number" ? ` (${issue.count})` : ""}
-                  </p>
-                  <Badge variant={SEVERITY_VARIANTS[issue.severity]}>
-                    {SEVERITY_LABELS[issue.severity]}
-                  </Badge>
+          {visibleIssues.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No issues detected.</p>
+          ) : (
+            visibleIssues.map((issue) => (
+              <div
+                key={issue.id}
+                className="flex items-start justify-between gap-4 rounded-md border border-border p-3"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium">
+                      {issue.title}
+                      {typeof issue.count === "number" ? ` (${issue.count})` : ""}
+                    </p>
+                    <Badge variant={SEVERITY_VARIANTS[issue.severity]}>
+                      {SEVERITY_LABELS[issue.severity]}
+                    </Badge>
+                  </div>
+                  {issue.description ? (
+                    <p className="text-xs text-muted-foreground">{issue.description}</p>
+                  ) : null}
                 </div>
-                {issue.description ? (
-                  <p className="text-xs text-muted-foreground">{issue.description}</p>
+
+                {issue.deepLink ? (
+                  <Button variant="outline" asChild>
+                    <Link to={issue.deepLink}>Fix</Link>
+                  </Button>
                 ) : null}
               </div>
-
-              {issue.deepLink ? (
-                <Button variant="outline" asChild>
-                  <Link to={issue.deepLink}>Fix</Link>
-                </Button>
-              ) : null}
-            </div>
-          ))}
+            ))
+          )}
         </CardContent>
       </Card>
     </div>

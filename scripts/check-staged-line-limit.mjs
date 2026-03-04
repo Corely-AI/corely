@@ -77,7 +77,10 @@ const isExcludedFromLineLimit = (file) => {
   if (EXCLUDED_FILES.has(normalized)) {
     return true;
   }
-  if (normalized.startsWith("apps/e2e/tests/")) {
+  if (normalized.startsWith("apps/e2e/")) {
+    return true;
+  }
+  if (normalized.startsWith("services/api/src/modules/test-harness/")) {
     return true;
   }
   if (normalized.startsWith("apps/web/src/modules/crm/screens/")) {

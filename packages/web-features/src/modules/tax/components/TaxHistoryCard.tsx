@@ -36,7 +36,10 @@ import {
   statusVariant,
 } from "./tax-history-card/utils";
 
+import { useTranslation } from "react-i18next";
+
 export function TaxHistoryCard() {
+  const { t, i18n } = useTranslation();
   const [year, setYear] = React.useState<string>(new Date().getUTCFullYear().toString());
   const [selectedKey, setSelectedKey] = React.useState<string | null>(null);
   const [submittedOpen, setSubmittedOpen] = React.useState(false);
@@ -49,6 +52,8 @@ export function TaxHistoryCard() {
     queryKey: ["vat-periods", year],
     queryFn: () => taxApi.listVatPeriodsByYear(Number(year)),
   });
+
+  const locale = t("common.locale", { defaultValue: i18n.language === "de" ? "de-DE" : "en-US" });
 
   const periods = data?.periods ?? [];
   const now = new Date();
@@ -108,10 +113,10 @@ export function TaxHistoryCard() {
       void queryClient.invalidateQueries({ queryKey: ["vat-periods"] });
       void queryClient.invalidateQueries({ queryKey: ["tax-summary"] });
       void queryClient.invalidateQueries({ queryKey: ["tax-reports"] });
-      toast.success("VAT period marked as submitted");
+      toast.success(t("tax.history.messages.submittedSuccess"));
       setSubmittedOpen(false);
     },
-    onError: () => toast.error("Failed to mark VAT period as submitted"),
+    onError: () => toast.error(t("tax.history.messages.submittedError")),
   });
 
   const markNil = useMutation({
@@ -121,10 +126,10 @@ export function TaxHistoryCard() {
       void queryClient.invalidateQueries({ queryKey: ["vat-periods"] });
       void queryClient.invalidateQueries({ queryKey: ["tax-summary"] });
       void queryClient.invalidateQueries({ queryKey: ["tax-reports"] });
-      toast.success("VAT period marked as nil");
+      toast.success(t("tax.history.messages.nilSuccess"));
       setNilOpen(false);
     },
-    onError: () => toast.error("Failed to mark VAT period as nil"),
+    onError: () => toast.error(t("tax.history.messages.nilError")),
   });
 
   const archivePeriod = useMutation({
@@ -134,38 +139,41 @@ export function TaxHistoryCard() {
       void queryClient.invalidateQueries({ queryKey: ["vat-periods"] });
       void queryClient.invalidateQueries({ queryKey: ["tax-summary"] });
       void queryClient.invalidateQueries({ queryKey: ["tax-reports"] });
-      toast.success("VAT period archived");
+      toast.success(t("tax.history.messages.archiveSuccess"));
       setArchiveOpen(false);
     },
-    onError: () => toast.error("Failed to archive VAT period"),
+    onError: () => toast.error(t("tax.history.messages.archiveError")),
   });
 
-  const handleDownloadPdf = React.useCallback(async (periodKey: string) => {
-    const abortController = new AbortController();
-    const loadingToastId = toast.loading("Generating PDF...");
+  const handleDownloadPdf = React.useCallback(
+    async (periodKey: string) => {
+      const abortController = new AbortController();
+      const loadingToastId = toast.loading(t("tax.history.messages.generatingPdf"));
 
-    try {
-      const result = await downloadTaxPdfWithPolling(
-        (_signal) => taxApi.getVatPeriodPdfUrl(periodKey),
-        abortController.signal
-      );
+      try {
+        const result = await downloadTaxPdfWithPolling(
+          (_signal) => taxApi.getVatPeriodPdfUrl(periodKey),
+          abortController.signal
+        );
 
-      if (result.status === "READY") {
-        window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
-        toast.success("Download started");
-        return;
+        if (result.status === "READY") {
+          window.open(result.downloadUrl, "_blank", "noopener,noreferrer");
+          toast.success(t("tax.history.messages.downloadStarted"));
+          return;
+        }
+
+        if (result.status === "PENDING") {
+          toast.info(t("tax.history.messages.pdfPrepared"));
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error(t("tax.history.messages.downloadFailed"));
+      } finally {
+        toast.dismiss(loadingToastId);
       }
-
-      if (result.status === "PENDING") {
-        toast.info("PDF is being prepared. Try again shortly.");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to download PDF");
-    } finally {
-      toast.dismiss(loadingToastId);
-    }
-  }, []);
+    },
+    [t]
+  );
 
   const upcomingPeriods = orderedPeriods.filter(
     (period) => !FINAL_STATUSES.includes(period.status)
@@ -178,10 +186,10 @@ export function TaxHistoryCard() {
     <Card>
       <CardHeader className="flex flex-col gap-3 pb-2">
         <div className="flex flex-row items-center justify-between">
-          <CardTitle>VAT periods</CardTitle>
+          <CardTitle>{t("tax.history.title")}</CardTitle>
           <Select value={year} onValueChange={setYear}>
             <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="Year" />
+              <SelectValue placeholder={t("tax.history.year")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="2026">2026</SelectItem>
@@ -192,17 +200,17 @@ export function TaxHistoryCard() {
         </div>
         {overduePeriods.length > 0 && (
           <Alert>
-            <AlertTitle>Action required: {overduePeriods.length} overdue VAT periods</AlertTitle>
+            <AlertTitle>
+              {t("tax.history.overdueAlert", { count: overduePeriods.length })}
+            </AlertTitle>
             <AlertDescription className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <span>
-                Oldest overdue period is preselected. You can still work on the current period.
-              </span>
+              <span>{t("tax.history.overdueDescription")}</span>
               <Button
                 size="sm"
                 variant="secondary"
                 onClick={() => setSelectedKey(overduePeriods[0]?.periodKey ?? null)}
               >
-                Submit overdue periods
+                {t("tax.history.submitOverdue")}
               </Button>
             </AlertDescription>
           </Alert>
@@ -214,15 +222,17 @@ export function TaxHistoryCard() {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : periods.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No data for this year.</p>
+          <p className="text-sm text-muted-foreground">{t("tax.history.noData")}</p>
         ) : (
           <>
             <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
               <div className="space-y-2">
-                <div className="text-sm font-medium text-muted-foreground">Quarter</div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  {t("tax.history.quarter")}
+                </div>
                 <Select value={selectedKey ?? ""} onValueChange={(value) => setSelectedKey(value)}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select quarter" />
+                    <SelectValue placeholder={t("tax.history.selectQuarter")} />
                   </SelectTrigger>
                   <SelectContent>
                     {chronologicalPeriods.map((period) => (
@@ -238,7 +248,7 @@ export function TaxHistoryCard() {
                   variant="outline"
                   onClick={() => navigate(`/tax/period/${selectedPeriod.periodKey}`)}
                 >
-                  View period details
+                  {t("tax.history.viewDetails")}
                 </Button>
               ) : null}
             </div>
@@ -246,26 +256,34 @@ export function TaxHistoryCard() {
             {selectedPeriod && (
               <div className="space-y-2 rounded-lg border p-4">
                 <div className="text-sm text-muted-foreground">
-                  Selected period: {formatPeriodLabel(selectedPeriod)} (
-                  {formatDateRange(selectedPeriod.periodStart, selectedPeriod.periodEnd)})
+                  {t("tax.history.selectedPeriod", {
+                    label: formatPeriodLabel(selectedPeriod),
+                    range: formatDateRange(
+                      selectedPeriod.periodStart,
+                      selectedPeriod.periodEnd,
+                      locale
+                    ),
+                  })}
                 </div>
                 <div className="flex flex-wrap items-center gap-4">
                   <div>
-                    <div className="text-xs text-muted-foreground">Tax due</div>
+                    <div className="text-xs text-muted-foreground">{t("tax.history.taxDue")}</div>
                     <div className="text-lg font-semibold">
-                      {formatMoney(selectedPeriod.taxDueCents, "EUR")}
+                      {formatMoney(selectedPeriod.taxDueCents, locale)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-muted-foreground">Sales VAT</div>
+                    <div className="text-xs text-muted-foreground">{t("tax.history.salesVat")}</div>
                     <div className="text-sm font-medium">
-                      {formatMoney(selectedPeriod.salesVatCents, "EUR")}
+                      {formatMoney(selectedPeriod.salesVatCents, locale)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-muted-foreground">Purchase VAT</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t("tax.history.purchaseVat")}
+                    </div>
                     <div className="text-sm font-medium">
-                      {formatMoney(selectedPeriod.purchaseVatCents, "EUR")}
+                      {formatMoney(selectedPeriod.purchaseVatCents, locale)}
                     </div>
                   </div>
                   <Badge variant={statusVariant(selectedPeriod.status)}>
@@ -276,16 +294,24 @@ export function TaxHistoryCard() {
                 {FINAL_STATUSES.includes(selectedPeriod.status) ? (
                   <div className="grid gap-2 text-sm text-muted-foreground">
                     {selectedPeriod.submissionDate && (
-                      <div>Submitted on {formatIsoDate(selectedPeriod.submissionDate)}</div>
+                      <div>
+                        {t("tax.history.submittedOn", {
+                          date: formatIsoDate(selectedPeriod.submissionDate, locale),
+                        })}
+                      </div>
                     )}
                     {selectedPeriod.submissionReference && (
-                      <div>Reference: {selectedPeriod.submissionReference}</div>
+                      <div>
+                        {t("tax.history.reference", { ref: selectedPeriod.submissionReference })}
+                      </div>
                     )}
                     {selectedPeriod.submissionNotes && (
-                      <div>Notes: {selectedPeriod.submissionNotes}</div>
+                      <div>{t("tax.history.notes", { notes: selectedPeriod.submissionNotes })}</div>
                     )}
                     {selectedPeriod.archivedReason && (
-                      <div>Archive reason: {selectedPeriod.archivedReason}</div>
+                      <div>
+                        {t("tax.history.archiveReason", { reason: selectedPeriod.archivedReason })}
+                      </div>
                     )}
                     <div className="relative inline-block">
                       <Button
@@ -295,20 +321,20 @@ export function TaxHistoryCard() {
                         onClick={() => void handleDownloadPdf(selectedPeriod.periodKey)}
                       >
                         <Download className="mr-2 h-4 w-4" />
-                        Download PDF
+                        {t("tax.history.downloadPdf")}
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     <Button size="sm" onClick={() => setSubmittedOpen(true)}>
-                      Mark as submitted
+                      {t("tax.history.markSubmitted")}
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => setNilOpen(true)}>
-                      Mark as nil
+                      {t("tax.history.markNil")}
                     </Button>
                     <Button size="sm" variant="ghost" onClick={() => setArchiveOpen(true)}>
-                      Archive
+                      {t("tax.history.archive")}
                     </Button>
                   </div>
                 )}
@@ -317,14 +343,15 @@ export function TaxHistoryCard() {
 
             <Tabs defaultValue="upcoming" className="space-y-3">
               <TabsList>
-                <TabsTrigger value="upcoming">Upcoming reports</TabsTrigger>
-                <TabsTrigger value="submitted">Submitted reports</TabsTrigger>
+                <TabsTrigger value="upcoming">{t("tax.history.tabs.upcoming")}</TabsTrigger>
+                <TabsTrigger value="submitted">{t("tax.history.tabs.submitted")}</TabsTrigger>
               </TabsList>
               <TabsContent value="upcoming">
                 <PeriodList
                   periods={upcomingPeriods}
                   selectedKey={selectedKey}
                   onSelect={setSelectedKey}
+                  locale={locale}
                 />
               </TabsContent>
               <TabsContent value="submitted">
@@ -332,6 +359,7 @@ export function TaxHistoryCard() {
                   periods={submittedPeriods}
                   selectedKey={selectedKey}
                   onSelect={setSelectedKey}
+                  locale={locale}
                 />
               </TabsContent>
             </Tabs>

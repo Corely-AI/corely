@@ -222,6 +222,19 @@ test.describe("Tax Filing Detail - Matrix", () => {
           .click();
         const request = await filteredRequest;
         expect(request.ok()).toBeTruthy();
+        await expect(page.getByText(/sourceType:\s*invoice/i)).toBeVisible();
+
+        const clearAll = page.getByRole("button", { name: /^Clear all$/i });
+        await expect(clearAll).toBeVisible();
+        const clearedRequest = page.waitForResponse(
+          (response) =>
+            response.url().includes(`/tax/filings/${seeded.filingId}/items`) &&
+            !response.url().includes("sourceType=")
+        );
+        await clearAll.click();
+        const cleared = await clearedRequest;
+        expect(cleared.ok()).toBeTruthy();
+        await expect(page.getByText(/sourceType:\s*invoice/i)).toHaveCount(0);
 
         const firstRow = page.locator('[data-testid="tax-filing-included-items"] tbody tr').first();
         const rowCount = await page

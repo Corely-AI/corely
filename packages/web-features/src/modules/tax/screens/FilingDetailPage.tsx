@@ -339,7 +339,11 @@ export const FilingDetailPage = () => {
 
       <div className="space-y-6">
         <div ref={includedItemsRef}>
-          <IncludedItemsSection filingId={filing.id} presetSourceType={presetSourceType} />
+          <IncludedItemsSection
+            filingId={filing.id}
+            presetSourceType={presetSourceType}
+            onPresetSourceTypeCleared={() => setPresetSourceType(undefined)}
+          />
         </div>
         <AttachmentsSection filingId={filing.id} />
         <ActivitySection filingId={filing.id} />

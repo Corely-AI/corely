@@ -107,13 +107,7 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
       });
 
       for (const invoice of invoices) {
-        const totalCents = invoice.lines.reduce(
-          (sum, line) => sum + line.unitPriceCents * line.qty,
-          0
-        );
-        const taxSnapshotMeta = invoice.taxSnapshot as { totalTaxAmountCents?: number } | null;
-        const taxCents = taxSnapshotMeta?.totalTaxAmountCents ?? 0;
-        const subtotalCents = totalCents - taxCents;
+        const { subtotalCents, taxCents, totalCents } = this.resolveInvoiceAmounts(invoice);
         const invoiceBreakdown = invoice.taxSnapshot ? JSON.stringify(invoice.taxSnapshot) : "{}";
 
         await this.prisma.taxSnapshot.upsert({
@@ -183,6 +177,49 @@ export class RecalculateTaxFilingUseCase extends BaseUseCase<string, Recalculate
       return refreshed;
     }
     return ok({ filing: refreshed.value.filing });
+  }
+
+  private resolveInvoiceAmounts(invoice: {
+    lines: Array<{ unitPriceCents: number; qty: number }>;
+    taxSnapshot: unknown;
+  }): {
+    subtotalCents: number;
+    taxCents: number;
+    totalCents: number;
+  } {
+    const lineNetCents = invoice.lines.reduce(
+      (sum, line) => sum + line.unitPriceCents * line.qty,
+      0
+    );
+
+    const snapshot =
+      invoice.taxSnapshot && typeof invoice.taxSnapshot === "object"
+        ? (invoice.taxSnapshot as Record<string, unknown>)
+        : null;
+
+    const snapshotSubtotal = this.readNumber(snapshot, "subtotalAmountCents");
+    const snapshotTax =
+      this.readNumber(snapshot, "taxTotalAmountCents") ??
+      this.readNumber(snapshot, "totalTaxAmountCents");
+    const snapshotTotal = this.readNumber(snapshot, "totalAmountCents");
+
+    const subtotalCents = snapshotSubtotal ?? lineNetCents;
+    const taxCents = snapshotTax ?? 0;
+    const totalCents = snapshotTotal ?? subtotalCents + taxCents;
+
+    return {
+      subtotalCents,
+      taxCents,
+      totalCents,
+    };
+  }
+
+  private readNumber(snapshot: Record<string, unknown> | null, key: string): number | null {
+    if (!snapshot) {
+      return null;
+    }
+    const value = snapshot[key];
+    return typeof value === "number" ? value : null;
   }
 
   private appendActivity(
