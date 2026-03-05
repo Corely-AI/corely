@@ -228,6 +228,8 @@ model TaxReport {
   updatedAt            DateTime        @updatedAt @db.Timestamptz(6)
 
   lines TaxReportLine[]
+  sections TaxReportSection[]
+  ericJobs TaxEricJob[]
 
   @@unique([tenantId, type, periodStart, periodEnd])
   @@index([tenantId, status])
@@ -274,6 +276,22 @@ enum TaxReportGroup {
   @@schema("billing")
 }
 
+enum TaxEricJobAction {
+  VALIDATE
+  SUBMIT
+
+  @@schema("billing")
+}
+
+enum TaxEricJobStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+
+  @@schema("billing")
+}
+
 // Tax Report Lines (for ESL, Intrastat, etc.)
 model TaxReportLine {
   id       String    @id @default(cuid())
@@ -296,6 +314,51 @@ model TaxReportLine {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@index([reportId])
+  @@schema("billing")
+}
+
+model TaxReportSection {
+  id               String    @id @default(cuid())
+  tenantId         String
+  filingId         String
+  reportId         String
+  reportType       String    @db.VarChar(64)
+  sectionKey       String    @db.VarChar(64)
+  payload          Json
+  completion       Float     @default(0)
+  isComplete       Boolean   @default(false)
+  validationErrors Json      @default("[]")
+  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime  @updatedAt @db.Timestamptz(6)
+
+  report TaxReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, reportId, sectionKey])
+  @@index([tenantId, filingId])
+  @@schema("billing")
+}
+
+model TaxEricJob {
+  id              String         @id @default(cuid())
+  tenantId        String
+  filingId        String
+  reportId        String
+  reportType      String         @db.VarChar(64)
+  action          TaxEricJobAction
+  status          TaxEricJobStatus
+  requestPayload  Json?
+  responsePayload Json?
+  errorMessage    String?
+  artifacts       Json?
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  startedAt       DateTime?      @db.Timestamptz(6)
+  finishedAt      DateTime?      @db.Timestamptz(6)
+  updatedAt       DateTime       @updatedAt @db.Timestamptz(6)
+
+  report TaxReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, reportId, createdAt])
+  @@index([tenantId, status, createdAt])
   @@schema("billing")
 }
 

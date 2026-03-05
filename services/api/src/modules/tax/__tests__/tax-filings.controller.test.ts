@@ -22,36 +22,10 @@ describe("TaxFilingsController", () => {
       })
     );
 
-    controller = new TaxFilingsController(
-      { execute: getCenterExecute } as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never,
-      {} as unknown as never
-    );
+    const ControllerCtor = TaxFilingsController as unknown as new (
+      ...args: unknown[]
+    ) => TaxFilingsController;
+    controller = new ControllerCtor({ execute: getCenterExecute } as unknown as never);
   });
 
   it("passes annualYear to getTaxCenter use case", async () => {

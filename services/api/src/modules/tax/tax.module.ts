@@ -4,6 +4,7 @@ import { IdentityModule } from "../identity";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { TaxController } from "./tax.controller";
 import { TaxFilingsController } from "./tax-filings.controller";
+import { TaxFilingReportsController } from "./tax-filing-reports.controller";
 
 // Use cases
 import { GetTaxProfileUseCase } from "./application/use-cases/get-tax-profile.use-case";
@@ -57,6 +58,10 @@ import { AnswerIncomeTaxDraftInterviewUseCase } from "./application/use-cases/an
 import { StartIncomeTaxDraftPdfExportUseCase } from "./application/use-cases/start-income-tax-draft-pdf-export.use-case";
 import { PollIncomeTaxDraftPdfExportUseCase } from "./application/use-cases/poll-income-tax-draft-pdf-export.use-case";
 import { ConfirmIncomeTaxDraftSubmissionUseCase } from "./application/use-cases/confirm-income-tax-draft-submission.use-case";
+import { GetAnnualIncomeReportSectionUseCase } from "./application/use-cases/get-annual-income-report-section.use-case";
+import { UpsertAnnualIncomeReportSectionUseCase } from "./application/use-cases/upsert-annual-income-report-section.use-case";
+import { RequestTaxEricJobUseCase } from "./application/use-cases/request-tax-eric-job.use-case";
+import { GetTaxEricJobUseCase } from "./application/use-cases/get-tax-eric-job.use-case";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
 
 // Services
@@ -94,6 +99,8 @@ import {
   VatReportRepoPort,
   TaxConsultantRepoPort,
   TaxReportRepoPort,
+  TaxReportSectionRepoPort,
+  TaxEricJobRepoPort,
   TaxSummaryQueryPort,
   VatPeriodQueryPort,
 } from "./domain/ports";
@@ -106,6 +113,8 @@ import { PrismaTaxSnapshotRepoAdapter } from "./infrastructure/prisma/prisma-tax
 import { PrismaVatReportRepoAdapter } from "./infrastructure/prisma/prisma-vat-report-repo.adapter";
 import { PrismaTaxConsultantRepoAdapter } from "./infrastructure/prisma/prisma-tax-consultant-repo.adapter";
 import { PrismaTaxReportRepoAdapter } from "./infrastructure/prisma/prisma-tax-report-repo.adapter";
+import { PrismaTaxReportSectionRepoAdapter } from "./infrastructure/prisma/prisma-tax-report-section-repo.adapter";
+import { PrismaTaxEricJobRepoAdapter } from "./infrastructure/prisma/prisma-tax-eric-job-repo.adapter";
 import { PrismaTaxSummaryQueryAdapter } from "./infrastructure/prisma/prisma-tax-summary-query.adapter";
 import { PrismaVatPeriodQueryAdapter } from "./infrastructure/prisma/prisma-vat-period-query.adapter";
 import { WORKSPACE_TAX_SETTINGS_PORT } from "./application/ports/workspace-tax-settings.port";
@@ -115,10 +124,15 @@ import { DeUstvaTaxFilingExportBuilder } from "./infrastructure/exports/de/ustva
 import { TAX_FILING_EXPORT_BUILDER_PORT } from "./application/ports/tax-filing-export-builder.port";
 import { TAX_EUR_SOURCE_PORT } from "./application/ports/tax-eur-source.port";
 import { TaxSnapshotEurSourceAdapter } from "./infrastructure/reports/tax-snapshot-eur-source.adapter";
+import {
+  ERIC_PAYLOAD_MAPPER_PORT,
+  type EricPayloadMapperPort,
+} from "./application/ports/eric-payload-mapper.port";
+import { AnnualIncomeEricPayloadMapper } from "./infrastructure/eric/annual-income-eric-payload.mapper";
 
 @Module({
   imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
-  controllers: [TaxController, TaxFilingsController],
+  controllers: [TaxController, TaxFilingsController, TaxFilingReportsController],
   providers: [
     NestLoggerAdapter,
 
@@ -175,6 +189,10 @@ import { TaxSnapshotEurSourceAdapter } from "./infrastructure/reports/tax-snapsh
     StartIncomeTaxDraftPdfExportUseCase,
     PollIncomeTaxDraftPdfExportUseCase,
     ConfirmIncomeTaxDraftSubmissionUseCase,
+    GetAnnualIncomeReportSectionUseCase,
+    UpsertAnnualIncomeReportSectionUseCase,
+    RequestTaxEricJobUseCase,
+    GetTaxEricJobUseCase,
     {
       provide: GenerateExciseReportUseCase,
       useFactory: (logger, snapshotRepo, reportRepo) =>
@@ -239,11 +257,19 @@ import { TaxSnapshotEurSourceAdapter } from "./infrastructure/reports/tax-snapsh
     { provide: VatReportRepoPort, useClass: PrismaVatReportRepoAdapter },
     { provide: TaxConsultantRepoPort, useClass: PrismaTaxConsultantRepoAdapter },
     { provide: TaxReportRepoPort, useClass: PrismaTaxReportRepoAdapter },
+    { provide: TaxReportSectionRepoPort, useClass: PrismaTaxReportSectionRepoAdapter },
+    { provide: TaxEricJobRepoPort, useClass: PrismaTaxEricJobRepoAdapter },
     { provide: TaxSummaryQueryPort, useClass: PrismaTaxSummaryQueryAdapter },
     { provide: VatPeriodQueryPort, useClass: PrismaVatPeriodQueryAdapter },
     { provide: WORKSPACE_TAX_SETTINGS_PORT, useClass: PrismaWorkspaceTaxSettingsAdapter },
     { provide: TAX_FILING_EXPORT_BUILDER_PORT, useClass: DeUstvaTaxFilingExportBuilder },
     { provide: TAX_EUR_SOURCE_PORT, useClass: TaxSnapshotEurSourceAdapter },
+    AnnualIncomeEricPayloadMapper,
+    {
+      provide: ERIC_PAYLOAD_MAPPER_PORT,
+      useFactory: (mapper: AnnualIncomeEricPayloadMapper): EricPayloadMapperPort => mapper,
+      inject: [AnnualIncomeEricPayloadMapper],
+    },
   ],
   exports: [
     CalculateTaxUseCase,

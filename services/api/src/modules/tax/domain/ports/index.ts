@@ -5,6 +5,8 @@ export * from "./tax-snapshot-repo.port";
 export * from "./vat-report-repo.port";
 export * from "./tax-consultant-repo.port";
 export * from "./tax-report-repo.port";
+export * from "./tax-report-section-repo.port";
+export * from "./tax-eric-job-repo.port";
 export * from "./tax-summary-query.port";
 export * from "./vat-period-query.port";
 export * from "./jurisdiction-pack.port";

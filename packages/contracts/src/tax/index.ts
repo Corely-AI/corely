@@ -46,3 +46,6 @@ export * from "./attach-tax-filing-payment-proof.schema";
 export * from "./recalculate-tax-filing.schema";
 export * from "./tax-document-link.schema";
 export * from "./income-tax-draft.schema";
+export * from "./annual-income-report.schema";
+export * from "./tax-report-sections.schema";
+export * from "./tax-eric-jobs.schema";

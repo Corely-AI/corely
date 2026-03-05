@@ -3,6 +3,7 @@ import {
   TaxIssueSchema,
   type TaxFilingTotals,
   type TaxFilingDetailResponse,
+  type TaxFilingReportSummary,
   type TaxFilingStatus,
   type TaxFilingType,
   type TaxIssue,
@@ -18,9 +19,14 @@ import {
   RequireTenant,
 } from "@corely/kernel";
 import { TaxProfileRepoPort, TaxReportRepoPort, TaxSnapshotRepoPort } from "../../domain/ports";
+import { TaxEricJobRepoPort, TaxReportSectionRepoPort } from "../../domain/ports";
 import type { TaxReportEntity } from "../../domain/entities";
 import { TaxCapabilitiesService } from "../services/tax-capabilities.service";
 import { resolveTaxFilingExportEligibility } from "../services/tax-filing-export-eligibility";
+import {
+  ANNUAL_INCOME_SECTION_KEY,
+  buildAnnualIncomeReportSummary,
+} from "../services/annual-income-report.service";
 
 @RequireTenant()
 @Injectable()
@@ -29,7 +35,9 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     private readonly reportRepo: TaxReportRepoPort,
     private readonly snapshotRepo: TaxSnapshotRepoPort,
     private readonly taxProfileRepo: TaxProfileRepoPort,
-    private readonly capabilitiesService: TaxCapabilitiesService
+    private readonly capabilitiesService: TaxCapabilitiesService,
+    private readonly reportSectionRepo: TaxReportSectionRepoPort,
+    private readonly ericJobRepo: TaxEricJobRepoPort
   ) {
     super({ logger: null as any });
   }
@@ -55,6 +63,7 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     });
 
     const capabilities = await this.capabilitiesService.getCapabilities(workspaceId);
+    const reports = await this.resolveReportSummaries(report, workspaceId);
     const periodKey = this.resolvePeriodKey(report);
     const filingType = this.mapReportTypeToFilingType(report.type);
     const submissionMethods: Array<"manual" | "elster" | "api"> = ["manual"];
@@ -84,6 +93,7 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
       payment: this.resolvePayment(report.meta),
       paymentInstructions: this.resolvePaymentInstructions(report.meta),
       exports: exportEligibility.exports,
+      reports,
       capabilities: {
         canDelete: this.canDelete(status),
         canRecalculate: !["archived", "paid", "submitted"].includes(status),
@@ -98,6 +108,36 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     };
 
     return ok({ filing });
+  }
+
+  private async resolveReportSummaries(
+    report: TaxReportEntity,
+    workspaceId: string
+  ): Promise<TaxFilingReportSummary[] | undefined> {
+    if (report.type !== "INCOME_TAX") {
+      return undefined;
+    }
+
+    const [section, jobs] = await Promise.all([
+      this.reportSectionRepo.findByReportAndSection({
+        tenantId: workspaceId,
+        reportId: report.id,
+        sectionKey: ANNUAL_INCOME_SECTION_KEY,
+      }),
+      this.ericJobRepo.listByReport({
+        tenantId: workspaceId,
+        reportId: report.id,
+      }),
+    ]);
+
+    return [
+      buildAnnualIncomeReportSummary({
+        reportId: report.id,
+        section,
+        jobs,
+        fallbackUpdatedAt: report.updatedAt,
+      }),
+    ];
   }
 
   private resolvePeriodKey(report: TaxReportEntity): string | undefined {

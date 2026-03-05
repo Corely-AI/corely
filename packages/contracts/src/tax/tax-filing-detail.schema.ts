@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TaxFilingStatusSchema, TaxFilingTypeSchema } from "./tax-filing.types";
 import { TaxFilingExportsSchema } from "./tax-filing-export.schema";
+import { TaxFilingReportSummarySchema } from "./tax-report-sections.schema";
 
 export const TaxIssueSeveritySchema = z.enum(["blocker", "warning", "info"]);
 export type TaxIssueSeverity = z.infer<typeof TaxIssueSeveritySchema>;
@@ -106,6 +107,7 @@ export const TaxFilingDetailSchema = z.object({
   payment: TaxFilingPaymentSchema.optional(),
   paymentInstructions: TaxFilingPaymentInstructionsSchema.optional(),
   exports: TaxFilingExportsSchema.optional(),
+  reports: z.array(TaxFilingReportSummarySchema).optional(),
   capabilities: TaxFilingCapabilitiesSchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
