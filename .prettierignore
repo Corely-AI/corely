@@ -14,3 +14,4 @@ pnpm-lock.yaml
 CHANGELOG.md
 apps/pos/.expo/
 apps/pos/expo-env.d.ts
+.dotnet/
