@@ -30,3 +30,8 @@ local/
 apps/e2e/output/
 output/playwright/
 .dotnet/
+
+# .NET build artifacts
+**/bin/
+**/obj/
+TestResults/
