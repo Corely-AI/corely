@@ -10,12 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@corely/ui";
-import {
-  DeclarationType,
-  RequiredHint,
-  SegmentedControl,
-  sanitizeNumeric,
-} from "./income-tax-return-shared";
+import { RequiredHint, SegmentedControl, sanitizeNumeric } from "./income-tax-return-shared";
+import type { DeclarationType } from "./income-tax-return-shared";
 
 export const IncomeTaxReturnCivilStatusCard = () => {
   const [civilStatus, setCivilStatus] = React.useState("married");
