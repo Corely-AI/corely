@@ -49,3 +49,4 @@ export * from "./income-tax-draft.schema";
 export * from "./annual-income-report.schema";
 export * from "./tax-report-sections.schema";
 export * from "./tax-eric-jobs.schema";
+export * from "./eric-gateway.schema";
