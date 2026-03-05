@@ -28,6 +28,7 @@ import { IssueTranscriptionRequestedHandler } from "../issues/issue-transcriptio
 import { InvoicesWorkerModule } from "../invoices/invoices-worker.module";
 import { TaxWorkerModule } from "../tax/tax-worker.module";
 import { TaxReportPdfRequestedHandler } from "../tax/handlers/tax-report-pdf-requested.handler";
+import { TaxReportEricJobRequestedHandler } from "../tax/handlers/tax-report-eric-job-requested.handler";
 import { FormsEventHandler } from "../forms/forms-event.handler";
 import { FormsWorkerModule } from "../forms/forms-worker.module";
 import { ClassesInvoiceReadyToSendHandler } from "../classes/handlers/classes-invoice-ready-to-send.handler";
@@ -97,6 +98,7 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
         cashEntryHandler: CashEntryCreatedHandler,
         issueTranscriptionHandler: IssueTranscriptionRequestedHandler,
         taxReportPdfHandler: TaxReportPdfRequestedHandler,
+        taxReportEricHandler: TaxReportEricJobRequestedHandler,
         formsHandler: FormsEventHandler,
         classesHandler: ClassesInvoiceReadyToSendHandler,
         platformEntityDeletedHandler: PlatformEntityDeletedHandler,
@@ -109,6 +111,7 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
           cashEntryHandler,
           issueTranscriptionHandler,
           taxReportPdfHandler,
+          taxReportEricHandler,
           formsHandler,
           classesHandler,
           platformEntityDeletedHandler,
@@ -124,6 +127,7 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
         CashEntryCreatedHandler,
         IssueTranscriptionRequestedHandler,
         TaxReportPdfRequestedHandler,
+        TaxReportEricJobRequestedHandler,
         FormsEventHandler,
         ClassesInvoiceReadyToSendHandler,
         PlatformEntityDeletedHandler,

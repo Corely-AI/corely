@@ -1,14 +1,15 @@
 import { Module } from "@nestjs/common";
-import { EnvService } from "@corely/config";
 import { DataModule } from "@corely/data";
-import { ExpenseCreatedHandler } from "./handlers/expense-created.handler";
 import { TaxReportPdfRequestedHandler } from "./handlers/tax-report-pdf-requested.handler";
+import { TaxReportEricJobRequestedHandler } from "./handlers/tax-report-eric-job-requested.handler";
 import { TaxPdfRenderer } from "./pdf/tax-pdf-renderer";
 import { OBJECT_STORAGE_PORT, type ObjectStoragePort } from "@corely/kernel";
 import { PrismaTaxReportRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-report-repo.adapter";
 import { PrismaVatPeriodQueryAdapter } from "@/modules/tax/infrastructure/prisma/prisma-vat-period-query.adapter";
 import { PrismaTaxProfileRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-profile-repo.adapter";
+import { PrismaTaxEricJobRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-eric-job-repo.adapter";
 import { PrismaWorkspaceRepository } from "@/modules/workspaces/infrastructure/adapters/prisma-workspace-repository.adapter";
+import { PrismaDocumentRepoAdapter, PrismaFileRepoAdapter } from "@corely/data";
 
 @Module({
   imports: [DataModule],
@@ -18,6 +19,9 @@ import { PrismaWorkspaceRepository } from "@/modules/workspaces/infrastructure/a
     PrismaTaxReportRepoAdapter,
     PrismaVatPeriodQueryAdapter,
     PrismaTaxProfileRepoAdapter,
+    PrismaTaxEricJobRepoAdapter,
+    PrismaDocumentRepoAdapter,
+    PrismaFileRepoAdapter,
     PrismaWorkspaceRepository,
     TaxPdfRenderer,
     {
@@ -47,10 +51,26 @@ import { PrismaWorkspaceRepository } from "@/modules/workspaces/infrastructure/a
         PrismaWorkspaceRepository,
       ],
     },
+    {
+      provide: TaxReportEricJobRequestedHandler,
+      useFactory: (
+        ericJobRepo: PrismaTaxEricJobRepoAdapter,
+        storage: ObjectStoragePort,
+        documentRepo: PrismaDocumentRepoAdapter,
+        fileRepo: PrismaFileRepoAdapter
+      ) => new TaxReportEricJobRequestedHandler(ericJobRepo, storage, documentRepo, fileRepo),
+      inject: [
+        PrismaTaxEricJobRepoAdapter,
+        OBJECT_STORAGE_PORT,
+        PrismaDocumentRepoAdapter,
+        PrismaFileRepoAdapter,
+      ],
+    },
   ],
   exports: [
     // ExpenseCreatedHandler
     TaxReportPdfRequestedHandler,
+    TaxReportEricJobRequestedHandler,
   ],
 })
 export class TaxWorkerModule {}
