@@ -15,3 +15,9 @@ CHANGELOG.md
 apps/pos/.expo/
 apps/pos/expo-env.d.ts
 apps/e2e/
+.vercel/
+**/.vercel/
+**/.vercel/**
+**/.next.bak.*/
+**/.next.bak.*/**
+output/playwright/

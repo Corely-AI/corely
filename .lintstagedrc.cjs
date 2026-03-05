@@ -11,6 +11,5 @@ const runIfAny = (files, command) => {
 module.exports = {
   "**/*.{ts,tsx,js,jsx,json,md,yml,yaml,css,scss}": (files) =>
     runIfAny(withoutE2E(files), "prettier --write"),
-  "**/*.{ts,tsx,js,jsx}": (files) =>
-    runIfAny(withoutE2E(files), "eslint --fix --no-warn-ignored"),
+  "**/*.{ts,tsx,js,jsx}": (files) => runIfAny(withoutE2E(files), "eslint --fix --no-warn-ignored"),
 };
