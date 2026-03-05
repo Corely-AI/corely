@@ -1,10 +1,22 @@
 import React from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
+  AnnualIncomeSectionPayload,
+  TaxReportSectionValidationError,
+} from "@corely/contracts";
 import { Button, Card, CardContent, cn } from "@corely/ui";
+import { taxReportApi } from "@corely/web-shared/lib/tax-report-api";
 import type { WizardStepKey } from "./income-tax-return-shared";
 import { StepCircle, TAX_WIZARD_STEPS } from "./income-tax-return-shared";
 import { IncomeTaxReturnIncomeStep } from "./income-tax-return-income-step";
 import { IncomeTaxReturnPersonalDetailsStep } from "./income-tax-return-personal-details-step";
 import { IncomeTaxReturnHealthInsuranceStep } from "./income-tax-return-health-insurance-step";
+import { taxAnnualIncomeSectionQueryKey } from "../queries";
+
+type IncomeTaxReturnPageProps = {
+  filingId: string;
+  reportId: string;
+};
 
 const StepPlaceholder = ({ label }: { label?: string }) => (
   <Card>
@@ -18,9 +30,144 @@ const StepPlaceholder = ({ label }: { label?: string }) => (
   </Card>
 );
 
-export const IncomeTaxReturnPage = () => {
-  const [activeStep, setActiveStep] = React.useState<WizardStepKey>("personal-details");
+const DEFAULT_ANNUAL_INCOME: AnnualIncomeSectionPayload = {
+  incomeSources: [],
+  noIncomeFlag: false,
+};
+
+const formatCurrency = (value: number): string =>
+  new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(value);
+
+const computeEstimatedTax = (payload: AnnualIncomeSectionPayload): number => {
+  const totals = payload.incomeSources.reduce(
+    (acc, source) => {
+      acc.grossIncome += source.amounts.grossIncome;
+      acc.socialContributions += source.amounts.socialContributions ?? 0;
+      acc.expensesRelated += source.amounts.expensesRelated ?? 0;
+      return acc;
+    },
+    {
+      grossIncome: 0,
+      socialContributions: 0,
+      expensesRelated: 0,
+    }
+  );
+
+  const taxableIncome = Math.max(
+    0,
+    totals.grossIncome - totals.expensesRelated - totals.socialContributions
+  );
+  return taxableIncome * 0.2;
+};
+
+export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageProps) => {
+  const queryClient = useQueryClient();
+  const queryKey = taxAnnualIncomeSectionQueryKey(filingId, reportId);
+
+  const [activeStep, setActiveStep] = React.useState<WizardStepKey>("income");
+  const [annualIncome, setAnnualIncome] =
+    React.useState<AnnualIncomeSectionPayload>(DEFAULT_ANNUAL_INCOME);
+  const [lastSavedSnapshot, setLastSavedSnapshot] = React.useState<string>("");
+  const [isInitialized, setIsInitialized] = React.useState(false);
+  const [validationErrors, setValidationErrors] = React.useState<TaxReportSectionValidationError[]>(
+    []
+  );
+
+  const sectionQuery = useQuery({
+    queryKey,
+    queryFn: () => taxReportApi.getAnnualIncomeSection(filingId, reportId),
+  });
+
+  const upsertMutation = useMutation({
+    mutationFn: (payload: AnnualIncomeSectionPayload) =>
+      taxReportApi.upsertAnnualIncomeSection(filingId, reportId, {
+        payload,
+      }),
+    onSuccess: (result) => {
+      setValidationErrors(result.section.validationErrors);
+      const snapshot = JSON.stringify(result.section.payload.annualIncome);
+      setLastSavedSnapshot(snapshot);
+      queryClient.setQueryData(queryKey, result);
+    },
+  });
+
+  React.useEffect(() => {
+    if (!sectionQuery.data) {
+      return;
+    }
+
+    const payload = sectionQuery.data.section.payload.annualIncome;
+    const snapshot = JSON.stringify(payload);
+
+    if (!isInitialized) {
+      setAnnualIncome(payload);
+      setLastSavedSnapshot(snapshot);
+      setValidationErrors(sectionQuery.data.section.validationErrors);
+      setIsInitialized(true);
+      return;
+    }
+
+    if (snapshot === lastSavedSnapshot) {
+      setValidationErrors(sectionQuery.data.section.validationErrors);
+    }
+  }, [isInitialized, lastSavedSnapshot, sectionQuery.data]);
+
+  const snapshot = React.useMemo(() => JSON.stringify(annualIncome), [annualIncome]);
+  const isDirty = isInitialized && snapshot !== lastSavedSnapshot;
+
+  React.useEffect(() => {
+    if (!isInitialized || !isDirty || upsertMutation.isPending) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      upsertMutation.mutate(annualIncome);
+    }, 800);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [annualIncome, isDirty, isInitialized, upsertMutation]);
+
   const activeStepConfig = TAX_WIZARD_STEPS.find((step) => step.key === activeStep);
+  const latestSection = upsertMutation.data?.section ?? sectionQuery.data?.section;
+  const latestReport = upsertMutation.data?.report ?? sectionQuery.data?.report;
+
+  const steps = React.useMemo(
+    () =>
+      TAX_WIZARD_STEPS.map((step) =>
+        step.key === "income"
+          ? {
+              ...step,
+              done: latestSection?.isComplete ?? false,
+            }
+          : step
+      ),
+    [latestSection?.isComplete]
+  );
+
+  const saveState =
+    sectionQuery.isLoading && !isInitialized
+      ? "loading"
+      : upsertMutation.isError
+        ? "error"
+        : upsertMutation.isPending || isDirty
+          ? "saving"
+          : "saved";
+
+  const estimatedTax = computeEstimatedTax(annualIncome);
+
+  const saveLabel =
+    saveState === "loading"
+      ? "Loading…"
+      : saveState === "saving"
+        ? "Saving…"
+        : saveState === "error"
+          ? "Retry"
+          : "All changes saved";
 
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
@@ -33,12 +180,32 @@ export const IncomeTaxReturnPage = () => {
           <aside className="space-y-6">
             <Card>
               <CardContent className="space-y-5 p-6">
-                <span className="inline-flex rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white">
-                  ALL CHANGES SAVED
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn(
+                      "inline-flex rounded-md px-3 py-1.5 text-xs font-semibold",
+                      saveState === "error"
+                        ? "bg-rose-100 text-rose-700"
+                        : saveState === "saving" || saveState === "loading"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-600 text-white"
+                    )}
+                  >
+                    {saveLabel.toUpperCase()}
+                  </span>
+                  {saveState === "error" ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => upsertMutation.mutate(annualIncome)}
+                    >
+                      Retry
+                    </Button>
+                  ) : null}
+                </div>
 
                 <ul className="space-y-3.5" aria-label="Tax return steps">
-                  {TAX_WIZARD_STEPS.map((step) => (
+                  {steps.map((step) => (
                     <li key={step.step} className="flex items-center gap-3">
                       <button
                         type="button"
@@ -69,21 +236,35 @@ export const IncomeTaxReturnPage = () => {
               <CardContent className="space-y-3 p-6">
                 <div>
                   <p className="text-sm text-muted-foreground">Estimated income tax</p>
-                  <p className="text-h2 text-foreground">€5,621.00</p>
+                  <p className="text-h2 text-foreground">{formatCurrency(estimatedTax)}</p>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-auto p-0 text-sm font-medium text-sky-600 hover:bg-transparent hover:text-sky-700"
-                >
-                  How is it estimated?
-                </Button>
+                <div className="text-xs text-muted-foreground">
+                  Report status: {latestReport?.status ?? "draft"}
+                </div>
               </CardContent>
             </Card>
           </aside>
 
           <section className="space-y-6">
-            {activeStep === "income" ? <IncomeTaxReturnIncomeStep /> : null}
+            {sectionQuery.isError && !isInitialized ? (
+              <Card>
+                <CardContent className="space-y-3 p-6">
+                  <p className="text-sm text-rose-600">Failed to load annual income section.</p>
+                  <Button variant="outline" onClick={() => sectionQuery.refetch()}>
+                    Retry
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {activeStep === "income" ? (
+              <IncomeTaxReturnIncomeStep
+                value={annualIncome}
+                validationErrors={validationErrors}
+                onChange={setAnnualIncome}
+                disabled={sectionQuery.isLoading && !isInitialized}
+              />
+            ) : null}
             {activeStep === "personal-details" ? <IncomeTaxReturnPersonalDetailsStep /> : null}
             {activeStep === "health-insurance" ? <IncomeTaxReturnHealthInsuranceStep /> : null}
             {activeStep !== "income" &&

@@ -238,7 +238,12 @@ export const FilingDetailPage = () => {
   const backTo = (location.state as { from?: string } | undefined)?.from ?? "/tax/filings";
 
   if (filing.type === "income-annual") {
-    return <IncomeTaxReturnPage />;
+    const annualIncomeReport = filing.reports?.find(
+      (report) => report.type === "annual_income_report"
+    );
+    return (
+      <IncomeTaxReturnPage filingId={filing.id} reportId={annualIncomeReport?.id ?? filing.id} />
+    );
   }
 
   return (
