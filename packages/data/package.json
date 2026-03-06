@@ -26,6 +26,7 @@
     "@corely/contracts": "workspace:*",
     "@corely/domain": "workspace:*",
     "@corely/kernel": "workspace:*",
+    "@google-cloud/tasks": "^4.1.0",
     "@prisma/adapter-pg": "catalog:",
     "@prisma/client": "catalog:",
     "pg": "catalog:"

@@ -10,7 +10,7 @@ Build a workflow system that:
 2. Is **reliable** (retries, idempotency, crash-safe processing).
 3. Is **auditable** (history, states, outputs/errors).
 4. Is **AI-native** (workflow steps can include AI decisions/tools, with guardrails).
-5. Fits a **modular monolith** with a separate **worker** service.
+5. Fits a **modular monolith** with API-hosted background execution.
 6. Uses **Prisma** for persistence, **BullMQ** for execution, **XState** for state machines.
 
 ### Non-Goals
@@ -46,7 +46,7 @@ Every query and mutation must be scoped by `tenantId`. Enforce:
 
 - repository methods always require `tenantId`
 - indexes support tenant/task queries
-- worker processing is tenant-safe
+- background processing is tenant-safe
 
 ### 1.4 Reliability: Outbox-friendly
 
@@ -133,9 +133,9 @@ Example conceptual capabilities (don’t hardcode this example):
 
 # 4) Runtime Execution Model
 
-### 4.1 XState Interpreter in Worker
+### 4.1 XState Interpreter in Background Runtime
 
-- Worker loads instance snapshot (`currentState`, `context`) and definition spec
+- Background runtime loads instance snapshot (`currentState`, `context`) and definition spec
 - Rehydrates XState machine
 - Applies incoming events or task completions
 - Produces next actions (task creation, state transitions)
@@ -178,7 +178,7 @@ Implement:
 
 - idempotency key on task creation and/or per incoming trigger event
 - if the same event arrives twice, do not create duplicate instance/tasks
-- safe retry on worker crash (at-least-once execution)
+- safe retry on processor crash (at-least-once execution)
 
 ---
 
@@ -234,7 +234,7 @@ AI Task Handler requirements (AI-native guardrails):
 
 ---
 
-# 7) Worker Behavior
+# 7) Background Behavior
 
 ### 7.1 Orchestrator Job
 
@@ -270,13 +270,13 @@ Create a dedicated workflow module with clean boundaries:
 
 - `packages/contracts/workflows` (DTOs, zod schemas, types)
 - `services/api/src/modules/workflows` (controllers, services, repos)
-- `services/worker/src/modules/workflows` (processors, handlers, runners)
+- `services/api/src/modules/background/runtime/modules/workflows` (processors, handlers, runners)
 - `packages/core/workflows` (engine: xstate machine builder, orchestration logic, pure functions)
 
 Enforce:
 
 - Domain-agnostic engine in `packages/core`
-- API/worker only wire dependencies and ports
+- Request/background paths only wire dependencies and ports
 
 ---
 
@@ -301,7 +301,7 @@ Implement tests (do not skip):
   - idempotency prevents duplicates
   - instance snapshot updates atomically with history + tasks
 
-- Worker tests using BullMQ in test mode:
+- Background runtime tests using BullMQ in test mode:
   - retries/backoff behave as expected
 
 ---
@@ -311,7 +311,7 @@ Implement tests (do not skip):
 When done, ensure:
 
 - Prisma migrations created
-- Module exported and wired into API + worker
+- Module exported and wired into the API runtime
 - Queues configured with env-based redis settings
 - Example “hello workflow” fixture definition exists for testing only (not a domain use case)
 - README docs: how to define a workflow spec and how instances advance

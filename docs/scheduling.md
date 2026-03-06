@@ -1,65 +1,59 @@
 # Scheduling
 
-This repo now uses a replaceable scheduling port for delayed/background job triggers.
+This repo uses:
 
-## Job Scheduler Port
+- Cloud Scheduler for recurring work
+- Cloud Tasks for delayed and event-driven work
+- API-hosted internal endpoints for execution
 
-Worker scheduling abstractions live in:
+Background scheduling abstractions live in:
 
-- `services/worker/src/shared/scheduling/job-scheduler.port.ts`
-- `services/worker/src/shared/scheduling/job-scheduler.module.ts`
+- `services/api/src/modules/background/runtime/shared/scheduling/job-scheduler.port.ts`
+- `services/api/src/modules/background/runtime/shared/scheduling/job-scheduler.module.ts`
 
-Current supported jobs:
-
-- `worker.tick`
-- `crm.sequence.executeStep`
-
-Port contract (simplified):
-
-- `schedule(job, payload, { runAt?, idempotencyKey?, traceId? })`
-- optional `cancel(externalRef)`
+Current supported jobs include the outbox wakeup job and delayed CRM sequence-step execution.
 
 ## Drivers
 
 ### Cloud Tasks driver
 
-File: `services/worker/src/shared/scheduling/drivers/cloudtasks.job-scheduler.ts`
+File:
 
-Maps jobs to worker internal endpoints:
+- `services/api/src/modules/background/runtime/shared/scheduling/drivers/cloudtasks.job-scheduler.ts`
 
-- `worker.tick` -> `POST /internal/tick`
-- `crm.sequence.executeStep` -> `POST /internal/crm/sequences/execute-step`
+Job mapping:
 
-For `crm.sequence.executeStep`, if `runAt` is beyond Cloud Tasks horizon, the driver schedules a checkpoint delivery at ~29 days. The checkpoint payload causes worker to re-schedule at the original target time.
+- outbox wakeup -> `POST /internal/background/outbox/run`
+- CRM sequence step -> `POST /internal/crm/sequences/execute-step`
+
+For `crm.sequence.executeStep`, if `runAt` is beyond the Cloud Tasks scheduling horizon, the driver schedules a checkpoint delivery at about 29 days and re-schedules closer to the true target time.
 
 ### Noop driver
 
-File: `services/worker/src/shared/scheduling/drivers/noop.job-scheduler.ts`
+File:
+
+- `services/api/src/modules/background/runtime/shared/scheduling/drivers/noop.job-scheduler.ts`
 
 Used for local/test mode when durable scheduling is not desired.
 
-## Environment Variables
+## Environment variables
 
 Scheduler selection:
 
 - `JOB_SCHEDULER_DRIVER=cloudtasks|noop`
 
-Cloud Tasks driver config:
+Cloud Tasks config:
 
 - `GCP_PROJECT_ID`
 - `GCP_LOCATION`
 - `CLOUD_TASKS_QUEUE_NAME`
-- `WORKER_BASE_URL` (public worker base URL)
+- `API_BASE_URL` or `INTERNAL_API_URL`
 - `CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL` (optional but recommended)
-- `INTERNAL_WORKER_KEY` (optional header auth for worker internal endpoints)
+- `WORKER_API_SERVICE_TOKEN` (optional internal auth token)
 
-API -> worker trigger config (required for API-triggered ticks/scheduling):
+Compatibility fallbacks exist in code for older internal URLs/tokens, but new deployments should use the API base URL plus `WORKER_API_SERVICE_TOKEN`.
 
-- `INTERNAL_WORKER_URL` (worker base URL used by API when calling `/internal/schedule` and fallback `/internal/tick`)
-- `INTERNAL_WORKER_KEY` (must match worker value when worker auth is enabled)
-- `API_BASE_URL` (currently used by invoice PDF worker client adapter for `/internal/invoices/:invoiceId/pdf`)
-
-Workflow queue config (if enabling workflow Cloud Tasks driver):
+Workflow queue config:
 
 - `WORKFLOW_QUEUE_DRIVER=cloudtasks`
 - `GOOGLE_CLOUD_PROJECT`
@@ -68,74 +62,63 @@ Workflow queue config (if enabling workflow Cloud Tasks driver):
 - `WORKFLOW_CLOUDTASKS_QUEUE_PREFIX` (optional)
 - `WORKFLOW_CLOUDTASKS_SERVICE_ACCOUNT` (optional)
 
-## Internal Endpoints
-
-Worker:
-
-- `POST /internal/schedule`
-  - durable scheduler entrypoint used by API
-  - body: `{ jobName, payload, runAt?, idempotencyKey?, traceId? }`
-- `POST /internal/tick`
-- `POST /internal/crm/sequences/execute-step`
+## Internal endpoints
 
 API:
 
+- `POST /internal/background/outbox/run`
+- `POST /internal/invoices/:invoiceId/pdf`
 - `POST /internal/crm/sequences/execute-step`
-  - executes a single step idempotently and schedules next step
 
-## CRM Sequence Model
+## CRM sequence model
 
 Primary flow:
 
-1. Enrollment creation schedules first `crm.sequence.executeStep` job.
-2. Step execution endpoint is idempotent (safe under retries/parallel delivery).
-3. On success, next step is scheduled.
+1. Enrollment creation schedules the first `crm.sequence.executeStep` job.
+2. The step execution endpoint is idempotent.
+3. On success, the next step is scheduled.
 
 Safety net:
 
-- Worker runner `sequences_sweep` scans due enrollments and schedules missing jobs.
-- Sweeper is bounded by row/time limits.
+- Sequence sweeps scan due enrollments and schedule missing jobs.
+- The sweeper is bounded by row/time limits.
 
-## Cloud Scheduler (sweeper) example
+## Cloud Scheduler example
 
-Use Cloud Scheduler to trigger periodic sweeps:
+Use Cloud Scheduler to trigger recurring sequence sweeps:
 
 - Cron: `*/5 * * * *`
-- HTTP target: `POST https://<worker-base-url>/internal/tick`
-- Body: `{ "runnerNames": ["sequences_sweep"] }`
-- Header: `x-worker-key: <INTERNAL_WORKER_KEY>` (if configured)
+- HTTP target: `POST https://<api-base-url>/internal/crm/sequences/run`
+- Header: `x-service-token: <WORKER_API_SERVICE_TOKEN>` when configured
 
-This runner should be treated as a safety net, not the primary execution path.
+Treat this as a safety net, not the primary execution path.
 
-## Cloud Run + Cloud Tasks Production Checklist
+## Cloud Run + Cloud Tasks checklist
 
 1. Enable Cloud Tasks API:
    `gcloud services enable cloudtasks.googleapis.com`
-2. Pick a valid Cloud Tasks location for your project:
+2. Pick a valid Cloud Tasks location:
    `gcloud tasks locations list`
-   Note: Cloud Tasks location availability does not always match Cloud Run regions (for example, `europe-west4` may be unavailable while Cloud Run is in `europe-west4`).
-3. Create/verify scheduler queue:
+3. Create or verify the queue:
    `gcloud tasks queues create <queue> --location=<tasks-location>`
-4. Configure worker service env:
+4. Configure API env:
    `JOB_SCHEDULER_DRIVER=cloudtasks`
    `GCP_PROJECT_ID`, `GCP_LOCATION`, `CLOUD_TASKS_QUEUE_NAME`
-   `WORKER_BASE_URL`, `INTERNAL_WORKER_KEY`
-5. Configure API service env:
-   `INTERNAL_WORKER_URL`, `INTERNAL_WORKER_KEY`
-   `API_BASE_URL` set to worker base URL for invoice PDF internal calls
-6. Ensure worker endpoint is invokable by task/API caller:
-   If not using OIDC tokens on task HTTP requests, worker must allow invoker access and rely on `x-worker-key` for internal auth.
-7. Size worker for burst/background loads:
-   For PDF and outbox-heavy workloads, start with at least `1Gi` memory and low concurrency (`1`) to reduce OOM/`503` during task dispatch.
+   `API_BASE_URL` or `INTERNAL_API_URL`
+   `WORKER_API_SERVICE_TOKEN`
+5. Ensure API internal endpoints are invokable by Cloud Tasks:
+   use OIDC where possible; otherwise rely on `x-service-token`
+6. Size API/background capacity for burst loads:
+   for PDF/outbox-heavy workloads, start conservatively on concurrency
 
 ## Troubleshooting
 
 - Symptom: invoice PDF endpoint keeps returning `202 PENDING`
-  - Check API logs for worker scheduling warnings and missing `INTERNAL_WORKER_URL`.
-  - Check worker logs for task dispatch and OOM (`503`, malformed response, container killed).
-- Symptom: `/internal/schedule` succeeds but no job actually runs
-  - Verify `JOB_SCHEDULER_DRIVER` is not `noop`.
-  - Verify Cloud Tasks queue exists in configured `GCP_LOCATION`.
+  - Check API logs for missing `API_BASE_URL` / `INTERNAL_API_URL`
+  - Check API logs for task dispatch errors or OOMs
+- Symptom: Cloud Task is created but nothing runs
+  - Verify `JOB_SCHEDULER_DRIVER` is not `noop`
+  - Verify the queue exists in `GCP_LOCATION`
 - Symptom: Cloud Tasks dispatch returns `403`
-  - Verify Cloud Run invoker IAM and/or configure `CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL` with proper permissions.
-  - Verify `INTERNAL_WORKER_KEY` value matches between API and worker.
+  - Verify Cloud Run invoker IAM and `CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL`
+  - Verify `WORKER_API_SERVICE_TOKEN` matches between caller and API

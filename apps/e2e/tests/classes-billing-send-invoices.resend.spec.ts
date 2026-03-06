@@ -1,4 +1,3 @@
-import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadDotEnv } from "dotenv";
@@ -44,13 +43,20 @@ async function login(
 }
 
 function runOutboxTick() {
-  execSync("pnpm --filter @corely/worker start:tick", {
-    cwd: REPO_ROOT,
-    stdio: "inherit",
-    env: {
-      ...process.env,
-      WORKER_TICK_RUNNERS: "outbox",
-    },
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  const serviceToken = process.env.WORKER_API_SERVICE_TOKEN?.trim();
+  if (serviceToken) {
+    headers["x-service-token"] = serviceToken;
+  } else if (process.env.INTERNAL_WORKER_KEY?.trim()) {
+    headers["x-worker-key"] = process.env.INTERNAL_WORKER_KEY.trim();
+  }
+
+  return fetch(`${process.env.API_URL ?? "http://localhost:3000"}/internal/background/outbox/run`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ limit: 50, repoRoot: REPO_ROOT }),
   });
 }
 
@@ -181,8 +187,10 @@ test.describe("Classes Billing - Send Invoices (Resend)", () => {
     }
 
     // Process outbox with real handlers (classes.invoice.ready_to_send -> invoice.email.requested -> Resend).
-    runOutboxTick();
-    runOutboxTick();
+    const firstOutboxRun = await runOutboxTick();
+    expect(firstOutboxRun.ok).toBeTruthy();
+    const secondOutboxRun = await runOutboxTick();
+    expect(secondOutboxRun.ok).toBeTruthy();
 
     const deliveries = await waitForDeliveries(seed.tenantId, seed.invoiceIds);
     const recipientsSet = new Set(seed.recipients);

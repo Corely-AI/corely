@@ -35,14 +35,13 @@ export async function triggerWorkerTick(input: TriggerWorkerTickInput): Promise<
     return;
   }
 
-  const workerUrl = process.env.INTERNAL_WORKER_URL?.trim();
-  if (!workerUrl) {
+  const apiBaseUrl = process.env.API_BASE_URL?.trim() || process.env.INTERNAL_WORKER_URL?.trim();
+  if (!apiBaseUrl) {
     return;
   }
 
-  const normalizedUrl = workerUrl.replace(/\/$/, "");
-  const endpoint = `${normalizedUrl}/internal/tick`;
-  const workerKey = process.env.INTERNAL_WORKER_KEY?.trim();
+  const normalizedUrl = apiBaseUrl.replace(/\/$/, "");
+  const endpoint = `${normalizedUrl}/internal/background/outbox/run`;
   const timeoutMs = Number.isFinite(input.timeoutMs)
     ? Math.max(250, input.timeoutMs ?? 5000)
     : 5000;
@@ -55,23 +54,25 @@ export async function triggerWorkerTick(input: TriggerWorkerTickInput): Promise<
       method: "POST",
       headers: {
         "content-type": "application/json",
-        ...(workerKey ? { "x-worker-key": workerKey } : {}),
+        ...(process.env.WORKER_API_SERVICE_TOKEN
+          ? { "x-service-token": process.env.WORKER_API_SERVICE_TOKEN }
+          : {}),
       },
-      body: JSON.stringify({
-        runnerNames: input.runnerNames,
-      }),
+      body: JSON.stringify({}),
       signal: controller.signal,
     });
 
     if (!response.ok) {
       const body = await response.text().catch(() => "");
       logger.warn(
-        `Worker tick trigger failed: status=${response.status} reason=${input.reason} body=${body}`
+        `Background outbox trigger failed: status=${response.status} reason=${input.reason} body=${body}`
       );
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.warn(`Worker tick trigger request error: reason=${input.reason} message=${message}`);
+    logger.warn(
+      `Background outbox trigger request error: reason=${input.reason} message=${message}`
+    );
   } finally {
     clearTimeout(timeout);
   }

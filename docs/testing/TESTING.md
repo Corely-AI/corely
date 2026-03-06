@@ -5,7 +5,7 @@
 - API (HTTP): `*.api.test.ts` (Nest app + supertest)
 - Contract: `*.contract.test.ts` (validate responses against `packages/contracts`)
 - Adapter/Provider: `*.adapter.test.ts` (mock HTTP; no real provider calls)
-- Outbox/Worker: `*.outbox.int.test.ts` (DB-backed reliability checks)
+- Outbox/background processing: `*.outbox.int.test.ts` (DB-backed reliability checks)
 - Frontend components: `*.component.test.tsx`
 
 ## Commands

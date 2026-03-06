@@ -66,36 +66,6 @@ services:
     networks:
       - corely_dev
 
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
-    container_name: corely_dev_worker
-    command: ["pnpm", "--filter", "@corely/worker", "dev"]
-    env_file:
-      - .env.dev
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      NODE_ENV: ${NODE_ENV:-development}
-      DATABASE_URL: ${DATABASE_URL:-postgresql://corely:corely@postgres:5432/corely?schema=public}
-      LOG_LEVEL: ${LOG_LEVEL:-debug}
-      NODE_OPTIONS: --enable-source-maps
-      RESEND_API_KEY: ${RESEND_API_KEY:-dummy_key_for_dev}
-    volumes:
-      - ./services/worker/src:/app/services/worker/src
-      - ./services/api/src:/app/services/api/src
-      - ./packages/data/src:/app/packages/data/src
-      - ./packages/data/prisma:/app/packages/data/prisma
-      - ./packages/contracts/src:/app/packages/contracts/src
-      - ./packages/domain/src:/app/packages/domain/src
-      - ./packages/kernel/src:/app/packages/kernel/src
-      - ./packages/email-templates/src:/app/packages/email-templates/src
-    networks:
-      - corely_dev
-
   web:
     build:
       context: .

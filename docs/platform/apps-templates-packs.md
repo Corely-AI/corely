@@ -52,7 +52,7 @@ A **Pack** is a bundle that combines multiple apps and templates for easy instal
 - **Defined in code** as a `PackDefinition`
 - Installs apps in dependency order
 - Applies templates with default parameters
-- Executes via background worker for long-running installations
+- Executes via background processing for long-running installations
 
 **Example**: "Small Business Starter" pack enables invoices + expenses + customers and applies default chart of accounts
 

@@ -51,4 +51,4 @@ Session context is stored in chat metadata under `taxAnnual`:
 
 - COMPANY strategy is intentionally blocked for now.
 - EÜR line mapping is internal and not yet tied to official annual line-code catalogs by tax year.
-- PDF export uses existing tax report PDF polling pipeline; output template maturity depends on worker/report templates.
+- PDF export uses existing tax report PDF polling pipeline; output template maturity depends on background/report templates.

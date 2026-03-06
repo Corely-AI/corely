@@ -123,7 +123,7 @@ List current endpoints:
   Record:
 - route prefixes
 - DTOs/contracts used by frontend
-- whether any endpoints are used by other services or worker jobs
+- whether any endpoints are used by other services or background jobs
 
 ### B) Frontend routing + UI labels
 

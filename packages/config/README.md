@@ -12,7 +12,7 @@ pnpm add @corely/config@workspace:*
 
 ## Usage
 
-### NestJS Services (API, Worker)
+### NestJS Services (API and background runtime)
 
 ```typescript
 // main.ts or app.module.ts
@@ -148,7 +148,6 @@ JWT_SECRET=your-secret
 
 ```bash
 pnpm dev:api
-pnpm dev:worker
 ```
 
 Environment variables are automatically loaded from .env files.

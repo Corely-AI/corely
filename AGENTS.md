@@ -7,7 +7,7 @@ This document provides a set of guidelines and context for AI agents working on 
 Corely is an **AI-native modular ERP** (monolithic repo).
 
 - **Frontend**: Vite + React (`apps/web`), Expo + React Native (`apps/pos`).
-- **Backend**: NestJS (`services/api`), Worker (`services/worker`).
+- **Backend**: NestJS (`services/api`) with API-hosted background runtime under `services/api/src/modules/background`.
 - **Packages**: Shared code in `packages/`.
 - **Database**: PostgreSQL with Prisma.
 

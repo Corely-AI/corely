@@ -54,7 +54,7 @@ The Identity context owns all authentication, authorization, and user management
 #### Outbox Pattern
 
 - Domain events written to `OutboxEvent` table
-- Worker service polls and publishes events
+- Background processing polls and publishes events
 - Enables eventual consistency across bounded contexts
 - Events: user.created, user.logged_in, tenant.created, membership.created, etc.
 

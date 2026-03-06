@@ -57,11 +57,13 @@
     "nanoid": "catalog:",
     "neverthrow": "catalog:",
     "reflect-metadata": "catalog:",
+    "react": "catalog:",
     "resend": "catalog:",
     "rxjs": "catalog:",
     "sanitize-html": "^2.13.0",
     "swagger-ui-express": "^5.0.1",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "playwright": "^1.55.0"
   },
   "devDependencies": {
     "@corely/testkit": "workspace:*",

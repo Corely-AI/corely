@@ -226,7 +226,7 @@ pnpm dev
 - [ ] Add ESLint rules to prevent Symbol-based tokens
 - [ ] Add ESLint rules to catch duplicate provider patterns
 - [ ] Expand smoke tests to cover more modules
-- [ ] Document worker service DI patterns
+- [ ] Document background runtime DI patterns
 
 ### Long Term
 
@@ -240,7 +240,7 @@ pnpm dev
 All criteria from the original requirements are met:
 
 - [x] `services/api` boots with **zero** DI resolution errors
-- [x] `services/worker` boots with **zero** DI resolution errors (inherited pattern)
+- [x] API background initialization boots with **zero** DI resolution errors (inherited pattern)
 - [x] All use cases resolve dependencies reliably
 - [x] Single canonical token catalog exists
 - [x] No `Symbol(...)` DI tokens remain
@@ -289,7 +289,7 @@ Monitor:
 
 **Refactoring Lead**: Senior NestJS Architect
 **Date**: December 30, 2025
-**Scope**: Corely Backend Services (API + Worker)
+**Scope**: Corely Backend Services (API + background runtime)
 **Impact**: All 15 feature modules, 68 DI tokens, 2 centralized modules
 
 ---

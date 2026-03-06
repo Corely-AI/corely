@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { OutboxPort, TransactionContext } from "@corely/kernel";
 import { PrismaService } from "../prisma/prisma.service";
 import { getPrismaClient } from "../uow/prisma-unit-of-work.adapter";
+import { scheduleOutboxDispatch } from "../outbox-dispatch-scheduler";
 
 /**
  * Prisma implementation of OutboxPort.
@@ -32,5 +33,9 @@ export class PrismaOutboxAdapter implements OutboxPort {
         availableAt: event.availableAt ?? new Date(),
       },
     });
+
+    void scheduleOutboxDispatch({
+      runAt: event.availableAt,
+    }).catch(() => undefined);
   }
 }

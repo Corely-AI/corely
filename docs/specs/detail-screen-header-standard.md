@@ -358,7 +358,7 @@ If in future, email delivery becomes asynchronous/unreliable, consider:
 | Issue        | ≥1 line item, customer set, bill-to name | Show validation errors                             |
 | Send         | Email address on bill-to or customer     | Prompt to add email                                |
 | Cancel       | If status = PAID: blocked                | No override available                              |
-| Download PDF | PDF must be generated (worker async)     | Show generating state, poll until READY or timeout |
+| Download PDF | PDF must be generated asynchronously     | Show generating state, poll until READY or timeout |
 
 #### Approval Gating (Future):
 
