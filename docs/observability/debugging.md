@@ -25,5 +25,5 @@
 ## When missing traces
 
 - Ensure `OBSERVABILITY_PROVIDER` is not `none`.
-- Verify OTLP endpoint/headers reachable from API/worker.
+- Verify OTLP endpoint/headers reachable from the API runtime.
 - Check masking mode: `strict` may hide error stacks; switch to `standard` for debugging (not in prod).

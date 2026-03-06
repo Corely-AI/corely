@@ -1,10 +1,10 @@
 Fix NestJS DI in Corely (modules, providers, tokens) — best-practice refactor + guardrails
 
-You are a senior NestJS + DDD architect working inside the **Corely pnpm monorepo**. The current backend DI is brittle/broken (e.g., `UnknownDependenciesException` for `EnableAppUseCase` missing `ID_GENERATOR_TOKEN` in `PlatformModule` context). Your job is to **analyze the existing repo**, identify why DI breaks, and **refactor to a stable, scalable DI pattern** aligned with our architecture docs (modular monolith, bounded contexts, ports/adapters, API + worker). Keep behavior the same; fix wiring, boundaries, and conventions.
+You are a senior NestJS + DDD architect working inside the **Corely pnpm monorepo**. The current backend DI is brittle/broken (e.g., `UnknownDependenciesException` for `EnableAppUseCase` missing `ID_GENERATOR_TOKEN` in `PlatformModule` context). Your job is to **analyze the existing repo**, identify why DI breaks, and **refactor to a stable, scalable DI pattern** aligned with our architecture docs (modular monolith, bounded contexts, ports/adapters, API + background runtime). Keep behavior the same; fix wiring, boundaries, and conventions.
 
 ### Repo context you must respect
 
-- Monorepo structure: `services/api` (NestJS API), `services/worker` (NestJS worker), `packages/*` (shared libs), `apps/webs` (Vite React). See the repo structure docs (architect / overall structure).
+- Monorepo structure: `services/api` (NestJS API, including background runtime), `packages/*` (shared libs), `apps/webs` (Vite React). See the repo structure docs (architect / overall structure).
 - Architecture principles: modular monolith, DDD bounded contexts, hexagonal ports/adapters, no cross-module DB access.
 - We already use “ports” heavily; interfaces don’t exist at runtime → injection must be via **tokens or abstract classes** (runtime values). (Nest custom providers + tokens are the intended mechanism.) ([NestJS Documentation][1])
 
@@ -13,7 +13,7 @@ You are a senior NestJS + DDD architect working inside the **Corely pnpm monorep
 # Goals
 
 1. **App must boot reliably** (no UnknownDependenciesException).
-2. **Token strategy becomes consistent and safe** across API + worker and across packages (no token identity mismatch).
+2. **Token strategy becomes consistent and safe** across API + background runtime and across packages (no token identity mismatch).
 3. **Module boundaries become explicit**: providers are declared once, exported intentionally, imported intentionally.
 4. Add **guardrails** so the same DI class of bugs can’t reappear (lint + smoke tests + docs).
 
@@ -76,7 +76,7 @@ If the repo uses **`Symbol('X')`** in multiple places or compiled artifacts, DI 
 ### Preferred strategy (recommended): namespaced string tokens
 
 - Introduce a single source of truth file for backend tokens:
-  - If tokens must be shared across API + worker: put in `packages/contracts/src/di/tokens.ts`
+  - If tokens must be shared across request and background paths: put in `packages/contracts/src/di/tokens.ts`
   - If API-only: `services/api/src/shared/di/tokens.ts`
 
 - Use **namespaced strings** (easy to debug, stable across builds), e.g.:

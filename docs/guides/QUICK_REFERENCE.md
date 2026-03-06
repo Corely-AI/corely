@@ -146,8 +146,8 @@ pnpm dev:web
 # Start backend dev server
 pnpm dev:api
 
-# Start worker
-pnpm dev:worker
+# Start API background runtime
+pnpm dev:api
 
 # Start both (from root)
 pnpm dev

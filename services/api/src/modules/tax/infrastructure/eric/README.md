@@ -10,7 +10,7 @@ Default target for the gateway is a C#/.NET service that can host ERiC via nativ
 ## Why isolate ERiC
 
 - Native dependency isolation: ERiC versions and native libraries are managed in one place.
-- Operational safety: Node API/worker containers remain free of platform-specific ERiC runtime constraints.
+- Operational safety: Node API containers remain free of platform-specific ERiC runtime constraints.
 - Extensibility: additional declaration/report types can reuse the same gateway contract.
 - Upgrade control: ERiC version rollouts are decoupled from API deploy cadence.
 
@@ -18,9 +18,9 @@ Default target for the gateway is a C#/.NET service that can host ERiC via nativ
 
 - `EricPayloadMapperPort` defines `mapReportToEricPayload(reportSnapshot) -> EricRequest`.
 - `AnnualIncomeEricPayloadMapper` implements only `annual_income_report` mapping (stub payload).
-- API creates ERiC jobs (`validate`/`submit`) and enqueues worker processing.
-- Worker executes a real job lifecycle and stores artifact document references (`xml`, `protocol_pdf`, `log`) using the Documents persistence model.
+- API creates ERiC jobs (`validate`/`submit`) and enqueues background processing.
+- The background runtime executes a real job lifecycle and stores artifact document references (`xml`, `protocol_pdf`, `log`) using the Documents persistence model.
 
 ## Next implementation step
 
-Replace the stub worker behavior with an outbound call to `elster-gateway`, keep job and artifact persistence unchanged.
+Replace the stub background behavior with an outbound call to `elster-gateway`, keep job and artifact persistence unchanged.

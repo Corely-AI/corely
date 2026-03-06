@@ -40,21 +40,21 @@ This catalog lists outbox events that are treated as public API.
 
 - `invoice.pdf.render.requested`
   - Producer: documents module
-  - Consumers: `services/api` documents worker
+  - Consumers: `services/api` background documents flow
   - Payload: `services/api/src/modules/documents/application/use-cases/request-invoice-pdf/request-invoice-pdf.usecase.ts`
 
 ## Invoices
 
 - `invoice.email.requested`
   - Producer: invoices module
-  - Consumers: `services/worker` invoice email handler
+  - Consumers: API background invoice email handler
   - Payload: `services/api/src/modules/invoices/application/use-cases/send-invoice/send-invoice.usecase.ts`
 
 ## Privacy
 
 - `privacy.requested`
   - Producer: privacy module
-  - Consumers: `services/api` privacy worker
+  - Consumers: `services/api` privacy background flow
   - Payload: `services/api/src/modules/privacy/application/use-cases/request-personal-data-export/request-personal-data-export.usecase.ts`
 
 ## AI Copilot

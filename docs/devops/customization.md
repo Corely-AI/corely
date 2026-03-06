@@ -52,5 +52,5 @@
 ## Remaining gaps / follow-ups
 
 - Frontend wiring (API client, shared custom field renderers, settings UI, entity form integration) not yet implemented.
-- Worker job for index rebuild and mock-server routes still pending.
+- Background job for index rebuild and mock-server routes still pending.
 - Ensure authZ refinement for admin-only management endpoints as needed.

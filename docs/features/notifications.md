@@ -1,10 +1,10 @@
 # Notifications Module
 
-The Notifications module provides a robust system for delivering in-app alerts and updates to users. It supports both **polling** and **real-time** delivery via Server-Sent Events (SSE), backed by a persistent database storage and an asynchronous worker pipeline for scalable event processing.
+The Notifications module provides a robust system for delivering in-app alerts and updates to users. It supports both **polling** and **real-time** delivery via Server-Sent Events (SSE), backed by persistent database storage and an asynchronous background pipeline for scalable event processing.
 
 ## 1. Overview
 
-The system is designed to handle high-throughput notification generation without impacting user-facing API performance. Notifications are generated asynchronously by background workers and stored in a central `Notification` table, with per-recipient tracking in `NotificationRecipient`.
+The system is designed to handle high-throughput notification generation without impacting user-facing API performance. Notifications are generated asynchronously by background processing and stored in a central `Notification` table, with per-recipient tracking in `NotificationRecipient`.
 
 ### Key Features
 
@@ -12,7 +12,7 @@ The system is designed to handle high-throughput notification generation without
 - **Real-Time Updates**: SSE stream for instant badge count updates.
 - **Read Tracking**: Per-user read status explicitly tracked.
 - **Idempotency**: Deduplication keys prevent duplicate alerts from retried jobs.
-- **Scalability**: Decoupled generation (Worker) from consumption (API).
+- **Scalability**: Decoupled generation (background processing) from consumption (API).
 
 ---
 
@@ -22,7 +22,7 @@ The flow consists of three main stages: **Emission**, **Processing**, and **Deli
 
 ### Flow Diagram
 
-1. **Trigger**: Any service (API or Worker) emits a `NotificationIntent` event to the Outbox.
+1. **Trigger**: Any service emits a `NotificationIntent` event to the Outbox.
 2. **Processing**: The `OutboxPollerService` picks up the event.
 3. **Handler**: `NotificationIntentHandler` processes the intent:
    - Creates a unique `Notification` entry (deduplicated by `dedupeKey`).
@@ -62,9 +62,9 @@ Links a notification to a specific user and tracks read status.
 
 ## 4. Backend Implementation
 
-### Worker (Producer)
+### Background Producer
 
-The worker handles the heavy lifting of creating notifications.
+The background runtime handles the heavy lifting of creating notifications.
 
 **Emitting a Notification:**
 Inject `NotificationEmitterService` and call `emitIntent`:

@@ -11,7 +11,7 @@ You are a senior NestJS architect working inside the **Corely pnpm monorepo**. T
 ### Repo context you must respect
 
 - Repo structure includes:
-  - `services/api` (NestJS API), `services/worker` (NestJS worker),
+  - `services/api` (NestJS API + background runtime),
   - backend modules under `services/api/src/modules/*` (e.g., auth, tenants, clients, expenses, invoices, tools, workflow),
   - shared packages under `packages/*`,
   - frontend under `apps/webs`.
@@ -24,7 +24,7 @@ You are a senior NestJS architect working inside the **Corely pnpm monorepo**. T
 # Outcomes (what “done” means)
 
 1. `services/api` boots with **zero** DI resolution errors.
-2. `services/worker` boots with **zero** DI resolution errors.
+2. Background initialization boots with **zero** DI resolution errors.
 3. All use cases (starting with `EnableAppUseCase`) resolve their dependencies reliably.
 4. There is a single canonical token catalog for **cross-module** injection.
 5. No `Symbol('…')` DI tokens remain (they cause identity mismatch issues in linked/monorepo setups) ([GitHub][2]).
@@ -34,7 +34,7 @@ You are a senior NestJS architect working inside the **Corely pnpm monorepo**. T
 
 # Phase 0 — Baseline & diagnosis
 
-1. Run `services/api` and `services/worker` locally to reproduce the DI errors.
+1. Run `services/api` locally to reproduce the DI errors.
 2. For each failing provider (start with `EnableAppUseCase`):
    - List all constructor dependencies (in order).
    - For each dependency, determine:
@@ -81,7 +81,7 @@ Deliverable: `docs/di/02-token-inventory.md`
 
 ## 1.2 Choose the canonical location for **cross-module** tokens
 
-Create a backend-only canonical token package so **API and Worker share tokens** but frontend doesn’t import them accidentally.
+Create a backend-only canonical token package so request and background paths share tokens but frontend doesn’t import them accidentally.
 
 Preferred:
 
@@ -90,7 +90,7 @@ Preferred:
   - `packages/server-di/src/index.ts` re-exporting tokens
 
 - Ensure dependency direction:
-  - `services/api` and `services/worker` may import `packages/server-di`
+  - `services/api` may import `packages/server-di`
   - `apps/webs` should not depend on it
 
 Update workspace tooling (pnpm workspace, tsconfig path aliases, package.json) accordingly.
@@ -166,13 +166,13 @@ Strict rules:
 - No “grab bag” modules that export everything.
 - Avoid `@Global()` except where absolutely necessary (prefer explicit imports for clarity).
 
-## 2.3 Worker module alignment
+## 2.3 Background module alignment
 
-In `services/worker`:
+In the API background runtime:
 
 - Mirror the same token catalog (`packages/server-di`) and platform providers where relevant.
-- Create a `WorkerPlatformModule` if needed, or reuse the same patterns.
-- Ensure outbox/integrations modules import the worker platform module explicitly.
+- Create a background platform module if needed, or reuse the same patterns.
+- Ensure outbox/integrations modules import the background platform module explicitly.
 
 ---
 
@@ -204,7 +204,7 @@ Add a test in `services/api` that:
 - resolves a short allowlist of critical use cases (including `EnableAppUseCase`)
 - fails fast if DI breaks
 
-Add a similar smoke test in `services/worker` for `WorkerModule`.
+Add a similar smoke test for the API background module.
 
 ## 4.2 Lint rules
 
@@ -233,7 +233,7 @@ Add `docs/di/04-module-wiring-rules.md` with:
    - token replacements repo-wide
    - platform module + submodules
    - cleaned feature module `di/` wiring
-   - worker alignment
+   - background alignment
 
 2. New docs:
    - `docs/di/01-di-failures.md`
@@ -243,7 +243,7 @@ Add `docs/di/04-module-wiring-rules.md` with:
 
 3. Guardrails:
    - API DI smoke test
-   - Worker DI smoke test
+   - Background DI smoke test
    - ESLint rules (or equivalent)
 
 ---
@@ -251,7 +251,7 @@ Add `docs/di/04-module-wiring-rules.md` with:
 # Acceptance checklist
 
 - [ ] `pnpm -C services/api start` succeeds with no DI errors.
-- [ ] `pnpm -C services/worker start` succeeds with no DI errors.
+- [ ] `pnpm -C services/api start` succeeds with no DI errors in background wiring.
 - [ ] DI smoke tests pass in CI.
 - [ ] No `Symbol(` DI tokens remain (except possibly non-DI usage).
 - [ ] All cross-module tokens come from `packages/server-di`.

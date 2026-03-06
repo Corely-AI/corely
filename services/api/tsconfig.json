@@ -4,6 +4,7 @@
     "strict": false,
     "strictNullChecks": false,
     "exactOptionalPropertyTypes": false,
+    "jsx": "react-jsx",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "noEmit": false,

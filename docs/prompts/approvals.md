@@ -6,7 +6,7 @@ You are an expert TypeScript/NestJS architect working in the Corely monorepo. Th
 - `WorkflowInstance` (businessKey/status/currentState/context snapshots)
 - `Task` (typed tasks: HUMAN/TIMER/HTTP/EMAIL/AI/SYSTEM)
 - `WorkflowEvent/History` append-only stream
-- Worker orchestrator + task runner
+- Background orchestrator + task runner
 - Existing `OutboxEvent`, `DomainEvent`, `AuditLog`, and `IdempotencyKey` tables and patterns
 - Existing ai-copilot module using **ai-sdk.dev** with tool-cards + “Apply” actions
 
@@ -51,13 +51,13 @@ Your task is now to build a **domain capability**: **AI-Native Approvals** (make
 
 Before building approvals, inspect and document:
 
-1. How workflow definitions are stored (`key`, `version`, `spec`) and how the worker interprets XState spec.
+1. How workflow definitions are stored (`key`, `version`, `spec`) and how the background runtime interprets XState spec.
 2. How instances are started (API endpoint/service) and how `businessKey` is used for idempotency.
 3. How HUMAN tasks are represented and completed (API completion -> orchestrator event).
 4. How the history stream is appended and queried.
 5. How `IdempotencyKey` is used in API commands.
 6. How `AuditLog` is currently written and displayed.
-7. Outbox usage: how the worker processes outbox events and how correlationId is propagated.
+7. Outbox usage: how the background runtime processes outbox events and how correlationId is propagated.
 8. ai-copilot tool pattern: where tools are registered, how tool-cards are rendered, and how Apply actions invoke domain APIs.
 
 Deliverable: a short “Integration Plan” that states:

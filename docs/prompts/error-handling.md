@@ -4,7 +4,7 @@ You are an expert TypeScript/NestJS + React + React Native architect working in 
 
 ### Context (repo + runtimes)
 
-- **Backend:** `services/api` (NestJS) (+ optionally `services/worker` if needed for shared error model)
+- **Backend:** `services/api` (NestJS, including background runtime if needed for shared error model)
 - **Web:** `apps/webs` (Vite + React)
 - **POS Android:** `apps/pos` (React Native). POS already has `packages/offline-rn` for offline/queued actions.
 - **Shared:** `packages/contracts` (shared types/schemas); `packages/domain` (pure domain concepts; no framework imports)
@@ -128,7 +128,7 @@ Add a request correlation id:
 
 - Accept incoming header if present (e.g., `x-request-id`) or generate one
 - Attach to logs and return as `traceId` in ProblemDetails
-- Ensure worker jobs can reuse this traceId when triggered from an API request (optional but recommended)
+- Ensure background jobs can reuse this traceId when triggered from an API request (optional but recommended)
 
 ### 2.4 Validation normalization
 

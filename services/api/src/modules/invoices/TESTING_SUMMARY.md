@@ -144,14 +144,14 @@ Tests verify behaviors, not implementation details:
 - Delivery records updated properly
 - Idempotency enforced
 
-## Worker Handler Tests
+## Background Handler Tests
 
-**Location**: `services/worker/src/modules/invoices/__tests__/invoice-email-requested.handler.spec.ts`
+**Location**: background runtime invoice email handler tests under `services/api/src/modules/background/runtime/modules/invoices/`
 
-Note: Worker tests require different setup due to Prisma mocking. Run separately:
+Note: Background handler tests require different setup due to Prisma mocking. Run separately:
 
 ```bash
-cd services/worker
+cd services/api
 pnpm exec vitest run src/modules/invoices
 ```
 
@@ -170,7 +170,7 @@ pnpm exec vitest run src/modules/invoices
 - ⚠️ End-to-end flow with real database
 - ⚠️ Actual Resend API calls
 - ⚠️ Real webhook signature verification
-- ⚠️ Worker processing actual outbox events
+- ⚠️ Background processing of actual outbox events
 
 These require integration tests with:
 

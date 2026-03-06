@@ -45,6 +45,7 @@ import { PosModule } from "./modules/pos";
 import { IntegrationsModule } from "./modules/integrations";
 import { CrmMailModule } from "./modules/crm-mail";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
+import { BackgroundModule } from "./modules/background/background.module";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -106,6 +107,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     AiCopilotModule,
     AiRichTextModule,
     NotificationsModule,
+    BackgroundModule,
     // Conditional imports based on env
     ...(function () {
       // We need to access EnvService here, but it's not available yet

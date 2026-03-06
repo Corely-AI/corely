@@ -47,7 +47,7 @@ Services will be available at:
 - **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
 
-### 3. Run Full Profile (Real API + Worker + Frontend)
+### 3. Run Full Profile (Real API + Frontend)
 
 ```bash
 docker compose --profile full up --build
@@ -102,7 +102,6 @@ docker compose logs -f
 # Specific service
 docker compose logs -f api
 docker compose logs -f web
-docker compose logs -f worker
 
 # Follow only errors
 docker compose logs -f --tail=50 api
@@ -219,7 +218,7 @@ docker compose --profile full up
 
 - `web` (Vite frontend)
 - `api` (NestJS API)
-- `worker` (NestJS worker process)
+- API-hosted background runtime
 - `postgres` (database)
 - `redis` (cache/queue)
 
@@ -353,7 +352,7 @@ docker compose restart
 All services are configured with hot-reload in development:
 
 1. **Frontend** (Vite): Changes to `apps/web/src/**` reload automatically
-2. **API/Worker** (tsx watch): Changes to `services/*/src/**` reload automatically
+2. **API** (tsx watch): Changes to `services/*/src/**` reload automatically
 3. **Packages**: Changes to `packages/*/src/**` trigger rebuilds
 
 ### Building Packages
@@ -393,7 +392,7 @@ docker compose logs > logs.txt
 Always use `--profile full` with:
 
 - A real backend API (`api` service)
-- A worker (`worker` service)
+- Background processing inside the API service
 
 ### Build Production Images
 
@@ -404,7 +403,7 @@ Modify Dockerfiles to use `RUN pnpm build` instead of dev servers:
 RUN pnpm --filter @corely/web build
 CMD ["pnpm", "--filter", "@corely/web", "preview", "--host", "0.0.0.0"]
 
-# For api/worker:
+# For api:
 # Add build step and use `npm start` instead of dev
 ```
 
@@ -444,7 +443,7 @@ docker compose config
 docker compose run --rm api pnpm prisma:migrate
 
 # Scale a service (if stateless)
-docker compose up --scale worker=3
+docker compose up --scale api=3
 
 # Remove unused resources
 docker system prune -a
@@ -460,7 +459,6 @@ corely/
 ├── .env.example                # Example environment variables
 ├── Dockerfile.web              # Frontend container
 ├── Dockerfile.api              # API container
-├── Dockerfile.worker           # Worker container
 ├── docker/
 │   ├── postgres/init.sql       # Database initialization
 │   └── healthcheck.sh          # Generic healthcheck script
@@ -469,7 +467,6 @@ corely/
 │   └── web/                    # Vite frontend
 ├── services/
 │   ├── api/                    # NestJS API
-│   └── worker/                 # NestJS worker
 └── packages/
     ├── data/                   # Prisma schema & models
     ├── domain/                 # Domain logic

@@ -19,7 +19,7 @@ Over time, these orphaned files accumulate, increasing storage costs and clutter
 
 ## 2. Proposed Solution: Asynchronous Garbage Collection
 
-We will implement a **Scheduled Garbage Collection (GC) Worker** that runs periodically to identify and physically delete unused files. This "soft delete first, hard delete later" approach ensures data safety and keeps user operations (save/update) fast.
+We will implement a **Scheduled Garbage Collection (GC) background task** that runs periodically to identify and physically delete unused files. This "soft delete first, hard delete later" approach ensures data safety and keeps user operations (save/update) fast.
 
 ### Core Principles
 
@@ -31,9 +31,9 @@ We will implement a **Scheduled Garbage Collection (GC) Worker** that runs perio
 
 ## 3. Implementation Details
 
-### 3.1 New Worker Task: `PruneUnusedFiles`
+### 3.1 New Background Task: `PruneUnusedFiles`
 
-A new Cron-triggered task will be added to the `services/worker` module.
+A new scheduled task will be added to the API-hosted background runtime.
 
 **Schedule:** Daily (e.g., at 03:00 UTC).
 
@@ -62,7 +62,7 @@ No strict schema changes are required immediately, but for performance at scale,
 
 ### 3.3 Safety & Auditing
 
-- **Dry Run Mode:** The worker should support a `DRY_RUN=true` env flag to log what _would_ be deleted without taking action.
+- **Dry Run Mode:** The background task should support a `DRY_RUN=true` env flag to log what _would_ be deleted without taking action.
 - **Logging:** All deletions must be logged to the application logger with `fileId`, `objectKey`, and `reason="garbage_collection"`.
 
 ---
@@ -126,4 +126,4 @@ export class PruneUnusedFilesUseCase {
 
 1.  **Create Use Case:** Implement `PruneUnusedFilesUseCase` in the Documents module.
 2.  **Update Repositories:** Add `findOrphans` method to `PrismaFileRepoAdapter` implementing the conceptual SQL logic using Prisma ORM.
-3.  **Configure Worker:** Register the use case in `services/worker` and schedule it using the existing task runner infrastructure.
+3.  **Configure Background Runtime:** Register the use case in the API background module and schedule it using the existing task runner infrastructure.

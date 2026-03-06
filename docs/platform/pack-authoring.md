@@ -2,7 +2,7 @@
 
 ## Overview
 
-A **Pack** is a bundle that combines multiple apps and templates for easy installation. Packs orchestrate complex multi-step installations through a background worker, making it easy to set up complete workflows with a single action.
+A **Pack** is a bundle that combines multiple apps and templates for easy installation. Packs orchestrate complex multi-step installations through background processing, making it easy to set up complete workflows with a single action.
 
 ## Pack Structure
 
@@ -408,9 +408,9 @@ Ensure all required apps exist in the registry:
 pnpm catalog:sync
 ```
 
-## Pack Installation Worker
+## Pack Installation Runtime
 
-Packs are installed via a background worker (BullMQ) to handle long-running installations without blocking HTTP requests.
+Packs are installed via background processing (BullMQ) to handle long-running installations without blocking HTTP requests.
 
 ### Job Structure
 
@@ -427,7 +427,7 @@ interface PackInstallJob {
 
 1. Create `TenantPackInstall` record with status `PENDING`
 2. Queue background job
-3. Worker picks up job
+3. Background runtime picks up job
 4. Execute installation steps
 5. Update status to `COMPLETED` or `FAILED`
 6. Append logs at each step

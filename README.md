@@ -20,7 +20,7 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
     - [Prerequisites](#prerequisites)
     - [Quick start](#quick-start)
       - [UI-first (web + mock server)](#ui-first-web--mock-server)
-      - [Full stack (web + API + worker + Postgres/Redis)](#full-stack-web--api--worker--postgresredis)
+      - [Full stack (web + API + Postgres/Redis)](#full-stack-web--api--postgresredis)
     - [Environment files](#environment-files)
   - [Environment variables](#environment-variables)
   - [Scripts](#scripts)
@@ -39,7 +39,7 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
 - AI-native by design: contracts define tool schemas, assistant endpoints run through the API with auditable tool executions, retries are idempotent, and every action is logged for traceability.
 - Bounded contexts keep each module’s domain model, use cases, and migrations isolated so teams can own vertical packs safely.
 - Hexagonal ports/adapters let use cases stay framework-free while adapters live in NestJS, Prisma, Redis, or UI layers.
-- Outbox + Worker power reliable automations, and CQRS-lite read models keep dashboards responsive without polluting the write model.
+- Outbox + API-hosted background jobs power reliable automations, and CQRS-lite read models keep dashboards responsive without polluting the write model.
 - Idempotency keys, audit trails, and tenant scoping are defaults so even AI or POS retries stay safe.
 
 ## Key features
@@ -52,7 +52,7 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
 
 ### Reliability primitives
 
-- Outbox pattern and a dedicated worker deliver domain events, retries, and process managers for automations.
+- Outbox pattern plus API-hosted background execution deliver domain events, retries, and process managers for automations.
 - CQRS-lite read services keep dashboards fast while write use cases remain strict and transactional.
 - Every write command/tool call carries an idempotency key plus an audit log entry by default.
 
@@ -65,8 +65,8 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
 
 ### Developer experience
 
-- `pnpm` workspace orchestrates apps (`apps/web`, `apps/pos`, `apps/e2e`), services (`services/api`, `services/worker`, `services/mock-server`), and shared packages.
-- Contracts package centralizes schemas, enums, and tool cards so frontend, API, and worker speak the same language.
+- `pnpm` workspace orchestrates apps (`apps/web`, `apps/pos`, `apps/e2e`), services (`services/api`, `services/mock-server`), and shared packages.
+- Contracts package centralizes schemas, enums, and tool cards so frontend and backend speak the same language.
 - Mock server simulates latency, pagination, idempotency, and assistant-tool endpoints, enabling a UI-first workflow before the full stack is ready.
 - Prompt definitions and versioning live in `docs/prompt-management.md`.
 
@@ -79,7 +79,7 @@ A modular ERP kernel that starts with freelancer workflows (expenses, invoices, 
 
 ## Architecture at a glance
 
-DDD bounded contexts → Hexagonal ports/adapters → Outbox + Worker → CQRS-lite reads + idempotent commands + audit by default.
+DDD bounded contexts → Hexagonal ports/adapters → Outbox + Background Jobs → CQRS-lite reads + idempotent commands + audit by default.
 
 ```mermaid
 flowchart LR
@@ -94,7 +94,6 @@ flowchart LR
   end
   subgraph Backend
     API["services/api"]
-    Worker["services/worker"]
     Mock["services/mock-server"]
   end
   Web --> Contracts
@@ -104,19 +103,16 @@ flowchart LR
   API --> Contracts
   API --> Domain
   API --> Data
-  Worker --> Contracts
-  Worker --> Domain
-  Worker --> Data
   Mock --> Contracts
 ```
 
 ### Dependency direction rules
 
 - `apps/web` & `apps/pos` → `packages/contracts`, `packages/domain`
-- `services/api`, `services/worker` → `packages/contracts`, `packages/domain`, `packages/data`
+- `services/api` → `packages/contracts`, `packages/domain`, `packages/data`
 - `packages/domain` → `packages/contracts`
 - **Forbidden:** `packages/contracts` importing other workspace code, frontend importing backend internals, backend importing UI assets, or any module writing another module’s tables directly.
-- Architecture patterns: DDD bounded contexts, Hexagonal ports/adapters, Outbox + Worker for automation, CQRS-lite reads for dashboards, idempotent commands and audit trails as defaults.
+- Architecture patterns: DDD bounded contexts, Hexagonal ports/adapters, Outbox + background jobs for automation, CQRS-lite reads for dashboards, idempotent commands and audit trails as defaults.
 
 ## Modules
 
@@ -138,8 +134,7 @@ apps/
   web/                        # Vite-based admin UI
 
 services/
-  api/                        # NestJS API (RBAC, tools, workflows)
-  worker/                     # NestJS worker (outbox, jobs, integrations)
+  api/                        # NestJS API (RBAC, tools, workflows, background jobs)
   mock-server/                # Dedicated mock server for UI-first work
 
 packages/
@@ -193,11 +188,10 @@ pnpm dev:public
 
 Mock server routes live under `services/mock-server/src/routes`; latency, pagination, and idempotency middleware keep the experience close to the real API.
 
-#### Full stack (web + API + worker + Postgres/Redis)
+#### Full stack (web + API + Postgres/Redis)
 
 ```bash
 pnpm dev:api
-pnpm dev:worker
 pnpm dev:web
 pnpm dev:public
 ```
@@ -207,27 +201,27 @@ Ensure Postgres/Redis are reachable (use `docker compose -f docker-compose.dev.y
 ### Environment files
 
 - Global defaults: `.env.example`, `.env.dev.example`, `.env.e2e.example`; copy the one that matches your workflow into a `.env` file at the repo root.
-- Services and apps pick values from that `.env` (web uses `VITE_` prefixed keys, API/worker reference connection strings directly).
+- Services and apps pick values from that `.env` (web uses `VITE_` prefixed keys, API references connection strings directly).
 
 ## Environment variables
 
-| Name                                   | Used by                                         | Example                                                         | Notes                                                       |
-| -------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------- |
-| `DATABASE_URL`                         | `@corely/api`, `@corely/worker`, `@corely/data` | `postgresql://corely:corely@postgres:5432/corely?schema=public` | Prisma connection for commands, outbox, and read models.    |
-| `REDIS_URL`                            | `@corely/api`, `@corely/worker`                 | `redis://redis:6379`                                            | Queues, locks, rate limits, idempotency caches.             |
-| `VITE_API_BASE_URL`                    | `apps/web`, `apps/pos`                          | `http://localhost:4000`                                         | Switch between mock (`4000`) and real API (`3000`).         |
-| `LOG_LEVEL`                            | All services                                    | `debug`                                                         | Controls structured logging verbosity.                      |
-| `AI_MODEL_PROVIDER`                    | `@corely/api`                                   | `openai`                                                        | Selects `openai` or `anthropic` for Copilot tool runs.      |
-| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | `@corely/api`                                   | `(redacted)`                                                    | Provider credentials for assistant/tool calls; keep secret. |
-| `EMAIL_PROVIDER`                       | `@corely/api`                                   | `resend`                                                        | Controls transactional email adapter.                       |
-| `WEB_PORT`, `PORT`, `MOCK_PORT`        | Apps/services                                   | `8080`, `3000`, `4000`                                          | Override ports when composing services locally.             |
+| Name                                   | Used by                       | Example                                                         | Notes                                                       |
+| -------------------------------------- | ----------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------- |
+| `DATABASE_URL`                         | `@corely/api`, `@corely/data` | `postgresql://corely:corely@postgres:5432/corely?schema=public` | Prisma connection for commands, outbox, and read models.    |
+| `REDIS_URL`                            | `@corely/api`                 | `redis://redis:6379`                                            | Queues, locks, rate limits, idempotency caches.             |
+| `VITE_API_BASE_URL`                    | `apps/web`, `apps/pos`        | `http://localhost:4000`                                         | Switch between mock (`4000`) and real API (`3000`).         |
+| `LOG_LEVEL`                            | All services                  | `debug`                                                         | Controls structured logging verbosity.                      |
+| `AI_MODEL_PROVIDER`                    | `@corely/api`                 | `openai`                                                        | Selects `openai` or `anthropic` for Copilot tool runs.      |
+| `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | `@corely/api`                 | `(redacted)`                                                    | Provider credentials for assistant/tool calls; keep secret. |
+| `EMAIL_PROVIDER`                       | `@corely/api`                 | `resend`                                                        | Controls transactional email adapter.                       |
+| `WEB_PORT`, `PORT`, `MOCK_PORT`        | Apps/services                 | `8080`, `3000`, `4000`                                          | Override ports when composing services locally.             |
 
 ## Scripts
 
 Common scripts include:
 
 - `pnpm dev` – builds shared packages and runs all services/apps in parallel.
-- `pnpm dev:web`, `pnpm dev:mock`, `pnpm dev:api`, `pnpm dev:worker`, `pnpm dev:api:debug` – start each surface individually.
+- `pnpm dev:web`, `pnpm dev:mock`, `pnpm dev:api`, `pnpm dev:api:debug` – start each surface individually.
 - `pnpm build`, `pnpm build:web`, `pnpm build:api` – compile packages plus apps/services.
 - `pnpm typecheck`, `pnpm lint`, `pnpm format`, `pnpm format:check` – workspace-wide quality gates.
 - `pnpm check` – `lint` + `typecheck`.
@@ -236,7 +230,7 @@ Common scripts include:
 ## Development modes
 
 - **Mock-first / UI-first:** `apps/web` (and `apps/pos`) call `services/mock-server`. Mock middleware simulates latency/pagination, enforces idempotency, and exposes assistant tool endpoints, so UI work keeps moving before backend features land.
-- **Full backend stack:** `services/api` uses NestJS guards, Prisma, the outbox table, and idempotency ports; `services/worker` publishes outbox events, retries process managers, and powers integrations. `packages/data` owns the Prisma client and repositories.
+- **Full backend stack:** `services/api` uses NestJS guards, Prisma, the outbox table, idempotency ports, workflow queues, and background handlers. `packages/data` owns the Prisma client and repositories.
 
 ## Built in public
 
@@ -246,13 +240,13 @@ Common scripts include:
 
 ## How to add a new module
 
-1. **Contracts first:** add Zod schemas, enums, and tool definitions inside `packages/contracts/src/<module>` so web, POS, API, and worker share the surface.
+1. **Contracts first:** add Zod schemas, enums, and tool definitions inside `packages/contracts/src/<module>` so web, POS, and API share the surface.
 2. **Backend module:** create `services/api/src/modules/<module>` folders with domains, use cases, DTOs, and Nest controllers that depend only on ports/adapters.
 3. **Database persistence:** For small modules, use `ext.kv` or `ext.entity_attr` (no new tables). For larger modules, add models to `packages/data/prisma/schema/*.prisma` assigned to the correct domain bucket (e.g., `@@schema("crm")`) and create a repository in `packages/data/src`.
 4. **Frontend module:** mirror the module in `apps/web/src/modules/<module>` (screens, hooks, routes) and point to the shared contracts plus the HTTP client.
 5. **Mock routes:** register UI-first routes/seeds in `services/mock-server/src/routes` so the mock server stays up to date.
 
-Keep the boundaries: API modules use ports/interfaces, the worker only publishes the module’s events, and clients never import backend internals.
+Keep the boundaries: API modules use ports/interfaces, background jobs consume the module’s events, and clients never import backend internals.
 
 ## Contributing
 
@@ -276,7 +270,7 @@ Subject to change.
 - AI Copilot improvements: richer tool cards, assistant run auditing, and more deterministic apply/dismiss flows.
 - Vertical pack work: kitchen display flows, room folio billing, manufacturing BOM routing, and pack-specific migrations.
 - Observability upgrades: structured logs with trace IDs, read-model telemetry, and outbox monitoring dashboards.
-- Marketplace for connectors (webhooks, real-time adapters) that plug into the outbox/worker automation surface.
+- Marketplace for connectors (webhooks, real-time adapters) that plug into the outbox/background automation surface.
 
 ## License
 

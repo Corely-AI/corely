@@ -18,7 +18,7 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 - **Public Web (`apps/public-web`, Next.js App Router):** Public-facing UI for portfolios, rentals, blog, and CMS pages. Uses the public API surface under `/public/*` and is deployed as a server-rendered app (no SPA rewrite required).
 - **POS (`apps/pos`, Expo + React Native):** Offline-first shell wired to `@corely/offline-core`, `@corely/offline-rn`, and `@corely/pos-core`.
 - **API (`services/api`, NestJS 11):** Modules for identity, accounting, sales, purchasing, inventory, approvals, engagements, workflows, AI copilot, etc. Global env validation via `@corely/config`, Prisma-powered `DataModule`, and trace-ID middleware.
-- **Worker (`services/worker`, NestJS 11):** Two modes: background loop (default) and one-off `tick`. Background repeatedly runs the same `TickOrchestrator` path to avoid mode drift. Tick orchestrates outbox + scheduled runners; workflow orchestrator/task runners use queue adapters defined in `@corely/contracts`.
+- **Background runtime (`services/api/src/modules/background`, NestJS 11):** API-hosted internal execution path for outbox processing, scheduled runners, and workflow queue handlers. Cloud Scheduler and Cloud Tasks target internal API endpoints instead of a separate service.
 - **Mock server (`services/mock-server` dist):** Lightweight UI-first backend with latency/idempotency simulation.
 
 ---
@@ -26,7 +26,7 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 ## Monorepo layout (selected)
 
 - **apps/**: `web`, `pos`, `e2e`
-- **services/**: `api`, `worker`, `mock-server`
+- **services/**: `api`, `mock-server`
 - **packages/**:
   - `contracts`: shared schemas/enums/events/tool cards (accounting, CRM, expenses, invoices, inventory, pos, purchasing, sales, tax, workflows, AI contexts, queues)
   - `kernel`: BaseUseCase, Result helpers, DI tokens, core ports (UoW/outbox/audit/idempotency/queue/observability), time helpers, test fakes
@@ -45,8 +45,8 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 - **Composition:** `AppModule` imports modules for identity, party/CRM, workspaces, accounting, sales, purchasing, inventory, approvals, engagement, workflows, automation, reporting, documents, tax, platform, and AI copilot. `TraceIdMiddleware` applies to all routes.
 - **Data & transactions:** `@corely/data` exposes a global Prisma UnitOfWork plus outbox, audit, and idempotency adapters. Only repositories talk to Prisma.
 - **AI Copilot:** `ai-copilot` module streams chat via `StreamCopilotChatUseCase`, builds tool registries from invoices/party/sales/purchasing/inventory/approvals/engagement, and records tool executions to Prisma + outbox. Prompt registry comes from `@corely/prompts`; observability uses OTEL/Langfuse via `OtelObservabilityAdapter`.
-- **Workflows & automation:** Workflow orchestration lives in the worker (`WorkflowsModule`) with handlers for human/timer/http/email/ai/system tasks and queue adapters (memory/Cloud Tasks selectable via env). Workflow specs and transitions reuse `packages/core`.
-- **Outbox & notifications:** Worker `OutboxModule` polls Prisma outbox and triggers handlers such as invoice email delivery via Resend (provider set by env).
+- **Workflows & automation:** Workflow orchestration lives in the API-hosted background runtime (`WorkflowsModule`) with handlers for human/timer/http/email/ai/system tasks and queue adapters (memory/Cloud Tasks selectable via env). Workflow specs and transitions reuse `packages/core`.
+- **Outbox & notifications:** The background runtime polls Prisma outbox and triggers handlers such as invoice email delivery via Resend (provider set by env).
 - **Error model:** RFC 7807 Problem Details responses; domain errors in `packages/domain/src/errors` (UserFriendly/Validation/Unauthorized/Forbidden/NotFound/Conflict/ExternalService/Unexpected). Stable codes follow `Module:Meaning`.
 - **Observability:** `services/api/src/shared/observability/setup-tracing.ts` wires OTLP exporters with optional Langfuse span processor. Sampling and masking are driven by `OBSERVABILITY_*` env vars.
 - **Configuration:** `@corely/config` validates env with Zod (DB/Redis/AI/email/storage/observability/auth ports) before bootstrapping modules.
@@ -74,7 +74,7 @@ Corely is an **AI-native modular ERP** delivered as a modular monolith. The repo
 1. Domain logic stays in shared packages or module `domain/` folders (no Nest/React imports).
 2. Only repositories access Prisma; app/services depend on ports, not implementations.
 3. Modules communicate via contracts/events/outbox—not direct table writes.
-4. API enforces auth/validation/idempotency/trace IDs per request; workers reuse the same ports.
+4. API enforces auth/validation/idempotency/trace IDs per request; background handlers reuse the same ports.
 5. Web/POS consume `@corely/contracts` and clients; they never import backend internals.
 
 **Full documentation:** See `docs/architecture/error-handling.md` for complete reference, testing patterns, and troubleshooting.
@@ -212,11 +212,11 @@ Vertical packs extend the kernel and baseline modules with specialized workflows
 
 # Operational readiness
 
-**Observability:** structured logs with correlation IDs (`tenantId`, `requestId`, `traceId`), metrics (latency, error rate), and tracing across API/worker. Persist tool execution logs for Copilot runs.
+**Observability:** structured logs with correlation IDs (`tenantId`, `requestId`, `traceId`), metrics (latency, error rate), and tracing across API/background processing. Persist tool execution logs for Copilot runs.
 
 **Data safety:** backups + PITR, migration discipline (expand/contract), and strict CI checks (`prisma validate`, drift checks).
 
-**Deployments:** keep infra simple: one Postgres, one Redis, one object store. Deploy web separately from API/worker so you can scale POS traffic independently from automation workloads.
+**Deployments:** keep infra simple: one Postgres, one Redis, one object store. Deploy web separately from the API so you can scale POS traffic independently from automation workloads.
 
 | Area        | Baseline                                                                       |
 | ----------- | ------------------------------------------------------------------------------ |

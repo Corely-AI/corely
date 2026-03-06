@@ -17,28 +17,31 @@ export class WorkerPdfClientAdapter implements InvoicePdfRendererPort {
     model: InvoicePdfModel;
   }): Promise<Buffer> {
     const { tenantId, invoiceId } = args;
-    const workerUrl = this.env.API_BASE_URL;
-    const workerKey = process.env.INTERNAL_WORKER_KEY;
+    const apiBaseUrl =
+      this.env.API_BASE_URL || process.env.INTERNAL_API_URL || process.env.INTERNAL_WORKER_URL;
+    const serviceToken = process.env.WORKER_API_SERVICE_TOKEN;
+    const legacyWorkerKey = process.env.INTERNAL_WORKER_KEY;
 
-    if (!workerUrl) {
-      throw new Error("INTERNAL_WORKER_URL is not configured");
+    if (!apiBaseUrl) {
+      throw new Error("API_BASE_URL or INTERNAL_API_URL is not configured");
     }
 
-    this.logger.log(`Requesting PDF for invoice ${invoiceId} from worker...`);
+    this.logger.log(`Requesting PDF for invoice ${invoiceId} from API background endpoint...`);
 
-    const response = await fetch(`${workerUrl}/internal/invoices/${invoiceId}/pdf`, {
+    const response = await fetch(`${apiBaseUrl}/internal/invoices/${invoiceId}/pdf`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-worker-key": workerKey || "",
+        ...(serviceToken ? { "x-service-token": serviceToken } : {}),
+        ...(!serviceToken && legacyWorkerKey ? { "x-worker-key": legacyWorkerKey } : {}),
       },
       body: JSON.stringify({ tenantId }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      this.logger.error(`Worker PDF request failed: ${response.status} ${errorText}`);
-      throw new Error(`Failed to generate PDF via worker: ${response.statusText}`);
+      this.logger.error(`Background PDF request failed: ${response.status} ${errorText}`);
+      throw new Error(`Failed to generate PDF via API background endpoint: ${response.statusText}`);
     }
 
     // The worker currently returns metadata, but the port expects Buffer.
@@ -49,7 +52,7 @@ export class WorkerPdfClientAdapter implements InvoicePdfRendererPort {
     // However, Phase 4.2 says "return { objectKey... }".
 
     const result = (await response.json()) as { objectKey?: string; signedUrl?: string };
-    this.logger.log(`Worker PDF generated: ${result.objectKey}`);
+    this.logger.log(`Background PDF generated: ${result.objectKey}`);
 
     // If the API really needs the Buffer, it has to fetch it.
     if (result.signedUrl) {
@@ -61,6 +64,6 @@ export class WorkerPdfClientAdapter implements InvoicePdfRendererPort {
       return Buffer.from(arrayBuffer);
     }
 
-    throw new Error("Worker did not return a signed URL to download the PDF");
+    throw new Error("Background PDF endpoint did not return a signed URL to download the PDF");
   }
 }

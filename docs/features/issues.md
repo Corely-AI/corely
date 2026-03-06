@@ -67,14 +67,14 @@ Policies live in `services/api/src/modules/issues/policies` and rely on `ctx.rol
   - Otherwise a system comment is created.
   - A `issue.transcription.completed` outbox event is emitted.
 - **Async path**: larger audio or failed sync transcriptions enqueue `issue.transcription.requested`.
-  - Worker downloads the audio via documents storage, transcribes, updates attachment transcript fields, and emits `issue.transcription.completed`.
+  - Background processing downloads the audio via documents storage, transcribes, updates attachment transcript fields, and emits `issue.transcription.completed`.
 - **Provider selection**: set `SPEECH_TO_TEXT_PROVIDER=openai|google|none` to force a provider. If unset, OpenAI is used when `OPENAI_API_KEY` is present; otherwise Google is used when GCP credentials are available; otherwise transcription is disabled.
 
 ## Failure Modes & Retries
 
 - **Unsupported audio format / size** → request rejected with `Common:ValidationFailed`.
-- **STT provider errors** → `ExternalServiceError` with retryable flag; worker will retry outbox deliveries with backoff.
-- **Missing document/file** → worker marks transcription as FAILED on the attachment.
+- **STT provider errors** → `ExternalServiceError` with retryable flag; background processing retries outbox deliveries with backoff.
+- **Missing document/file** → background processing marks transcription as FAILED on the attachment.
 
 ## Outbox Events
 

@@ -7,9 +7,9 @@ This document describes the End-to-End (E2E) testing infrastructure for Corely, 
 The E2E testing system uses:
 
 - **Playwright**: Browser-based test automation
-- **Docker Compose**: Full-stack environment (Postgres + Redis + API + Worker)
+- **Docker Compose**: Full-stack environment (Postgres + Redis + API)
 - **Test Harness API**: Deterministic test data management (seed, reset, drain-outbox)
-- **Node.js `NODE_ENV=test`**: Special testing mode for API/Worker
+- **Node.js `NODE_ENV=test`**: Special testing mode for the API runtime
 
 ## Quick Start (Local Development)
 
@@ -24,7 +24,7 @@ This starts:
 - PostgreSQL (port 5433)
 - Redis (port 6380)
 - API service (port 3000, NODE_ENV=test)
-- Worker service (NODE_ENV=test)
+- API-hosted background runtime (NODE_ENV=test)
 
 Wait for healthchecks to pass:
 
@@ -252,11 +252,11 @@ See `utils/selectors.ts` for the complete list of test IDs.
 
 ### The Problem
 
-Tests must not depend on timing or external events. If a test creates an expense that emits an event, and the worker processes it asynchronously, the test becomes flaky.
+Tests must not depend on timing or external events. If a test creates an expense that emits an event, and background processing runs asynchronously, the test becomes flaky.
 
 ### The Solution: Drain Outbox
 
-Instead of waiting for the worker to run, tests call `/test/drain-outbox` explicitly:
+Instead of waiting for background processing to run, tests call `/test/drain-outbox` explicitly:
 
 ```typescript
 test("should create expense and update audit log", async ({ page, testData }) => {
@@ -283,7 +283,7 @@ test("should create expense and update audit log", async ({ page, testData }) =>
 3. API fetches all PENDING events and marks them SENT
 4. Test can now assert the effects (audit log, etc.)
 
-**No worker needed**. The drain endpoint handles event processing inline.
+**No separate background service needed**. The drain endpoint handles event processing inline.
 
 ---
 

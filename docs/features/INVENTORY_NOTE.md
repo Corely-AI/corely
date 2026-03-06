@@ -19,5 +19,5 @@
 3.  **Frontend**:
     - Update `TaxReportsPage` to handle new types.
     - Create generic `TaxReportDetailPage` with specific sections based on report type.
-4.  **Worker**:
+4.  **Background processing**:
     - Ensure `auto-generate` jobs cover the new types.

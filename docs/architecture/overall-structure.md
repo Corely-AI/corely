@@ -15,7 +15,7 @@ corely/
 
   services/
     api/                               # Backend API (NestJS)
-    worker/                            # Background jobs (NestJS)
+    background/                        # API-hosted background runtime
     mock-server/                       # Dedicated mock backend (for demo/dev)
 
   packages/
@@ -201,23 +201,21 @@ services/api/
 
 ---
 
-## Worker hierarchy (services/worker)
+## Background runtime hierarchy (services/api/src/modules/background)
 
 ```text
-services/worker/
-  src/
-    main.ts
-    worker.module.ts
-
-    jobs/
-    consumers/
-
+services/api/src/modules/background/
+  background.module.ts
+  background-internal.controller.ts
+  background-internal.guard.ts
+  runtime/
+    application/
+    infrastructure/
     modules/
       outbox/
-      integrations/
-
-  package.json
-  tsconfig.json
+      workflows/
+      invoices/
+      storage/
 ```
 
 ---
@@ -324,7 +322,7 @@ Allowed:
 
 - `apps/webs` → `packages/contracts`, `packages/domain`, `packages/ui`
 - `services/api` → `packages/contracts`, `packages/domain`, `packages/data`
-- `services/worker` → `packages/contracts`, `packages/domain`, `packages/data`
+- `services/api` background runtime → `packages/contracts`, `packages/domain`, `packages/data`
 - `packages/domain` → `packages/contracts`
 
 Forbidden:

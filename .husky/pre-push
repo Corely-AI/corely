@@ -66,14 +66,3 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "✅ API build succeeded."
-
-echo "Running Worker build + dependency guard..."
-pnpm build:worker
-
-if [ $? -ne 0 ]; then
-  echo "❌ Worker build failed. Fix errors and try again."
-  echo "   To skip: HUSKY=0 git push"
-  exit 1
-fi
-
-echo "✅ Worker build succeeded."

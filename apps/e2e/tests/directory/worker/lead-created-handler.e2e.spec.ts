@@ -73,7 +73,7 @@ test.describe("Directory UC-04: worker handles DirectoryLeadCreated idempotently
     await clearWorkerIdempotencyForEvent(eventId);
     await rewindOutboxEventForReplay(eventId);
 
-    runOutboxWorkerTick();
+    await runOutboxWorkerTick();
 
     await expect
       .poll(async () => {
@@ -89,7 +89,7 @@ test.describe("Directory UC-04: worker handles DirectoryLeadCreated idempotently
         outboxStatus: "SENT",
       });
 
-    runOutboxWorkerTick();
+    await runOutboxWorkerTick();
 
     await expect
       .poll(async () => {
