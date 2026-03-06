@@ -34,8 +34,8 @@ export class PrismaOutboxAdapter implements OutboxPort {
       },
     });
 
-    void scheduleOutboxDispatch({
-      runAt: event.availableAt,
-    }).catch(() => undefined);
+    void scheduleOutboxDispatch(event.availableAt ? { runAt: event.availableAt } : {}).catch(
+      () => undefined
+    );
   }
 }

@@ -115,16 +115,19 @@ function readConfig(): {
   }
 
   const tasksClient = getClient();
+  const serviceAccountEmail = process.env.CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL;
+  const serviceToken = process.env.WORKER_API_SERVICE_TOKEN;
+
   return {
     apiBaseUrl,
     queuePath: tasksClient.queuePath(projectId, location, queueName),
     locationPath: tasksClient.locationPath(projectId, location),
-    serviceAccountEmail: process.env.CLOUD_TASKS_INVOKER_SERVICE_ACCOUNT_EMAIL ?? undefined,
-    serviceToken: process.env.WORKER_API_SERVICE_TOKEN ?? undefined,
     bucketMs: readPositiveInt(process.env.OUTBOX_DISPATCH_BUCKET_MS, DEFAULT_BUCKET_MS),
     queueName,
     projectId,
     location,
+    ...(serviceAccountEmail ? { serviceAccountEmail } : {}),
+    ...(serviceToken ? { serviceToken } : {}),
   };
 }
 
