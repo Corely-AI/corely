@@ -83,7 +83,7 @@ export class InvoiceEmailRequestedHandler implements EventHandler {
     const subject = buildInvoiceEmailSubject(emailProps);
 
     // 4. Render email template
-    const { html, text } = await renderEmail(<InvoiceEmail {...emailProps} />);
+    const { html, text } = await renderEmail(React.createElement(InvoiceEmail, emailProps));
 
     try {
       let attachments: EmailAttachment[] | undefined;

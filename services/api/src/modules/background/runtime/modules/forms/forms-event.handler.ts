@@ -84,7 +84,9 @@ export class FormsEventHandler implements EventHandler {
       };
 
       const subject = buildLeadConfirmationEmailSubject(tenantName);
-      const { html, text } = await renderEmail(<LeadConfirmationEmail {...emailProps} />);
+      const { html, text } = await renderEmail(
+        React.createElement(LeadConfirmationEmail, emailProps)
+      );
 
       await this.emailSender.sendEmail({
         tenantId: event.tenantId,
