@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TaxFilingTypeSchema, TaxPeriodKeySchema } from "@corely/contracts";
@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { useToast } from "@corely/ui";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
+import { ArrowLeft } from "lucide-react";
+import { PeriodCombobox } from "../components/PeriodCombobox";
 
 // Schema for the form
 const formSchema = z
@@ -24,7 +26,7 @@ const formSchema = z
       }
       const trimmed = value.trim();
       return trimmed.length > 0 ? trimmed : undefined;
-    }, TaxPeriodKeySchema.optional()), // Required if VAT
+    }, TaxPeriodKeySchema.optional()),
     entityId: z.string().optional(),
   })
   .refine(
@@ -37,10 +39,7 @@ const formSchema = z
       }
       return true;
     },
-    {
-      message: "Period is required for VAT filings",
-      path: ["periodKey"],
-    }
+    { message: "Period is required for VAT filings", path: ["periodKey"] }
   )
   .refine((data) => (data.type !== "vat" ? !!data.year : true), {
     message: "Year is required for annual filings",
@@ -66,18 +65,13 @@ export const CreateFilingPage = () => {
   });
 
   const type = form.watch("type");
+  const year = form.watch("year");
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const payload = {
-        ...values,
-        periodKey: values.periodKey?.trim() || undefined,
-      };
+      const payload = { ...values, periodKey: values.periodKey?.trim() || undefined };
       const result = await taxApi.createFiling(payload);
-      toast({
-        title: "Filing created",
-        description: "Redirecting to filing details...",
-      });
+      toast({ title: "Filing created", description: "Redirecting to filing details..." });
       navigate(`/tax/filings/${result.id}`);
     } catch (error: any) {
       toast({
@@ -89,16 +83,37 @@ export const CreateFilingPage = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">New Tax Filing</h1>
+    <div className="p-6 lg:p-8 space-y-6 animate-fade-in">
+      {/* Page Header */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            aria-label="Go back"
+            className="-ml-2 shrink-0"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-h1 text-foreground tracking-tight">New Tax Filing</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Choose the filing type and period to create a new obligation.
+            </p>
+          </div>
+        </div>
+      </div>
 
+      {/* Form card — full width */}
       <Card>
-        <CardHeader>
-          <CardTitle>Create Filing</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-medium">Filing details</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Filing Type */}
               <FormField
                 control={form.control}
                 name="type"
@@ -123,6 +138,7 @@ export const CreateFilingPage = () => {
                 )}
               />
 
+              {/* Tax Year */}
               <FormField
                 control={form.control}
                 name="year"
@@ -137,26 +153,28 @@ export const CreateFilingPage = () => {
                 )}
               />
 
+              {/* Period — Combobox (VAT only) */}
               {type === "vat" && (
                 <FormField
                   control={form.control}
                   name="periodKey"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Period (Quarter/Month)</FormLabel>
+                      <FormLabel>Period</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. 2025-Q1" {...field} />
+                        <PeriodCombobox
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          year={year}
+                        />
                       </FormControl>
-                      <div className="text-xs text-muted-foreground">
-                        Format: YYYY-Qx (e.g. 2025-Q1) or YYYY-MM (e.g. 2025-01)
-                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               )}
 
-              <div className="pt-4 flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-border">
                 <Button type="button" variant="outline" onClick={() => navigate(-1)}>
                   Cancel
                 </Button>

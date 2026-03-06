@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import {
   TaxIssueSchema,
-  type IncomeTaxTotals,
+  type TaxFilingTotals,
   type TaxFilingDetailResponse,
+  type TaxFilingReportSummary,
   type TaxFilingStatus,
   type TaxFilingType,
   type TaxIssue,
@@ -17,9 +18,15 @@ import {
   err,
   RequireTenant,
 } from "@corely/kernel";
-import { TaxReportRepoPort, TaxSnapshotRepoPort } from "../../domain/ports";
+import { TaxProfileRepoPort, TaxReportRepoPort, TaxSnapshotRepoPort } from "../../domain/ports";
+import { TaxEricJobRepoPort, TaxReportSectionRepoPort } from "../../domain/ports";
 import type { TaxReportEntity } from "../../domain/entities";
 import { TaxCapabilitiesService } from "../services/tax-capabilities.service";
+import { resolveTaxFilingExportEligibility } from "../services/tax-filing-export-eligibility";
+import {
+  ANNUAL_INCOME_SECTION_KEY,
+  buildAnnualIncomeReportSummary,
+} from "../services/annual-income-report.service";
 
 @RequireTenant()
 @Injectable()
@@ -27,7 +34,10 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
   constructor(
     private readonly reportRepo: TaxReportRepoPort,
     private readonly snapshotRepo: TaxSnapshotRepoPort,
-    private readonly capabilitiesService: TaxCapabilitiesService
+    private readonly taxProfileRepo: TaxProfileRepoPort,
+    private readonly capabilitiesService: TaxCapabilitiesService,
+    private readonly reportSectionRepo: TaxReportSectionRepoPort,
+    private readonly ericJobRepo: TaxEricJobRepoPort
   ) {
     super({ logger: null as any });
   }
@@ -42,17 +52,29 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
       return err(new NotFoundError("Filing not found"));
     }
 
-    const status = this.mapReportStatus(report);
     const issues = this.resolveIssues(report.meta);
+    const status = this.mapReportStatus(report, issues);
     const totals = await this.computeTotals(report, workspaceId);
+    const profile = await this.taxProfileRepo.getActive(workspaceId, report.periodEnd);
+    const exportEligibility = resolveTaxFilingExportEligibility({
+      filingType: this.mapReportTypeToFilingType(report.type),
+      jurisdiction: profile?.country ?? "",
+      lastRecalculatedAt: totals?.lastRecalculatedAt,
+    });
 
-    const capabilities = await this.capabilitiesService.getCapabilities();
+    const capabilities = await this.capabilitiesService.getCapabilities(workspaceId);
+    const reports = await this.resolveReportSummaries(report, workspaceId);
+    const periodKey = this.resolvePeriodKey(report);
+    const filingType = this.mapReportTypeToFilingType(report.type);
+    const submissionMethods: Array<"manual" | "elster" | "api"> = ["manual"];
+    const submissionConnectionStatus: "connected" | "notConfigured" = "notConfigured";
 
     const filing = {
       id: report.id,
-      type: this.mapReportTypeToFilingType(report.type),
+      type: filingType,
       status,
       periodLabel: report.periodLabel,
+      periodKey,
       year: report.periodStart.getUTCFullYear(),
       periodStart: report.periodStart.toISOString(),
       periodEnd: report.periodEnd.toISOString(),
@@ -62,28 +84,88 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
       submission:
         report.submittedAt && report.submissionReference
           ? {
-              method:
-                typeof report.meta?.submission === "object" &&
-                report.meta?.submission &&
-                "method" in report.meta.submission
-                  ? String((report.meta.submission as { method?: string }).method ?? "manual")
-                  : "manual",
+              method: this.resolveSubmissionMethod(report.meta),
               submissionId: report.submissionReference,
               submittedAt: report.submittedAt.toISOString(),
               notes: report.submissionNotes ?? undefined,
             }
           : undefined,
       payment: this.resolvePayment(report.meta),
+      paymentInstructions: this.resolvePaymentInstructions(report.meta),
+      exports: exportEligibility.exports,
+      reports,
       capabilities: {
-        canDelete: this.canDelete(report),
-        canRecalculate: !["ARCHIVED", "PAID"].includes(report.status),
-        canSubmit: this.canSubmit(report, issues),
-        canMarkPaid: report.status === "SUBMITTED",
+        canDelete: this.canDelete(status),
+        canRecalculate: !["archived", "paid", "submitted"].includes(status),
+        canSubmit: this.canSubmit(status, issues),
+        canMarkPaid: status === "submitted",
         paymentsEnabled: capabilities.paymentsEnabled,
+        submissionMethods,
+        submissionConnectionStatus,
       },
+      createdAt: report.createdAt.toISOString(),
+      updatedAt: report.updatedAt.toISOString(),
     };
 
     return ok({ filing });
+  }
+
+  private async resolveReportSummaries(
+    report: TaxReportEntity,
+    workspaceId: string
+  ): Promise<TaxFilingReportSummary[] | undefined> {
+    if (report.type !== "INCOME_TAX") {
+      return undefined;
+    }
+
+    const [section, jobs] = await Promise.all([
+      this.reportSectionRepo.findByReportAndSection({
+        tenantId: workspaceId,
+        reportId: report.id,
+        sectionKey: ANNUAL_INCOME_SECTION_KEY,
+      }),
+      this.ericJobRepo.listByReport({
+        tenantId: workspaceId,
+        reportId: report.id,
+      }),
+    ]);
+
+    return [
+      buildAnnualIncomeReportSummary({
+        reportId: report.id,
+        section,
+        jobs,
+        fallbackUpdatedAt: report.updatedAt,
+      }),
+    ];
+  }
+
+  private resolvePeriodKey(report: TaxReportEntity): string | undefined {
+    const filingType = this.mapReportTypeToFilingType(report.type);
+    if (filingType !== "vat") {
+      return undefined;
+    }
+
+    const quarterMatch = report.periodLabel.match(/Q([1-4])/i);
+    if (quarterMatch) {
+      return `${report.periodStart.getUTCFullYear()}-Q${quarterMatch[1]}`;
+    }
+
+    const startMonth = report.periodStart.getUTCMonth() + 1;
+    const month = String(startMonth).padStart(2, "0");
+    return `${report.periodStart.getUTCFullYear()}-${month}`;
+  }
+
+  private resolveSubmissionMethod(meta: TaxReportEntity["meta"]): "manual" | "elster" | "api" {
+    const submissionValue =
+      typeof meta?.submission === "object" && meta?.submission
+        ? (meta.submission as { method?: unknown }).method
+        : undefined;
+
+    if (submissionValue === "elster" || submissionValue === "api") {
+      return submissionValue;
+    }
+    return "manual";
   }
 
   private mapReportTypeToFilingType(type: string): TaxFilingType {
@@ -106,7 +188,7 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     }
   }
 
-  private mapReportStatus(report: TaxReportEntity): TaxFilingStatus {
+  private mapReportStatus(report: TaxReportEntity, issues: TaxIssue[]): TaxFilingStatus {
     if (report.status === "PAID") {
       return "paid";
     }
@@ -116,17 +198,27 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     if (report.status === "ARCHIVED") {
       return "archived";
     }
-    if (report.status === "OVERDUE") {
+
+    const hasBlockers = issues.some((issue) => issue.severity === "blocker");
+    if (report.status === "OVERDUE" || new Date() > report.dueDate || hasBlockers) {
       return "needsFix";
     }
-    if (new Date() > report.dueDate) {
-      return "needsFix";
+
+    if (["OPEN", "UPCOMING"].includes(report.status)) {
+      const hasRecalculation =
+        typeof report.meta?.lastRecalculatedAt === "string" && report.meta.lastRecalculatedAt;
+      if (!hasRecalculation) {
+        return "draft";
+      }
+      return "readyForReview";
     }
+
     return "draft";
   }
 
-  private resolveIssues(meta?: Record<string, any> | null): TaxIssue[] {
-    const rawIssues = Array.isArray(meta?.issues) ? meta?.issues : [];
+  private resolveIssues(meta?: Record<string, unknown> | null): TaxIssue[] {
+    const rawIssues =
+      meta && typeof meta === "object" && Array.isArray(meta.issues) ? meta.issues : [];
     return rawIssues
       .map((issue) => {
         const parsed = TaxIssueSchema.safeParse(issue);
@@ -135,65 +227,118 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
       .filter((issue): issue is TaxIssue => Boolean(issue));
   }
 
-  private resolvePayment(meta?: Record<string, any> | null) {
+  private resolvePayment(meta?: Record<string, unknown> | null) {
     const paymentMeta = meta?.payment;
     if (!paymentMeta || typeof paymentMeta !== "object") {
       return undefined;
     }
-    const paidAt = (paymentMeta as { paidAt?: string }).paidAt;
-    if (!paidAt) {
+
+    const paidAt = (paymentMeta as { paidAt?: unknown }).paidAt;
+    if (typeof paidAt !== "string") {
       return undefined;
     }
+
+    const method = (paymentMeta as { method?: unknown }).method;
+    const normalizedMethod: "bank-transfer" | "direct-debit" | "other" | "manual" =
+      method === "bank-transfer" || method === "direct-debit" || method === "other"
+        ? method
+        : "manual";
+
+    const amountCents = (paymentMeta as { amountCents?: unknown }).amountCents;
+    const parsedAmount =
+      typeof amountCents === "number"
+        ? amountCents
+        : Number.parseInt(String(amountCents ?? "0"), 10) || 0;
+
+    const proofDocumentId = (paymentMeta as { proofDocumentId?: unknown }).proofDocumentId;
     return {
       paidAt,
-      method: String((paymentMeta as { method?: string }).method ?? "manual"),
-      amountCents: Number((paymentMeta as { amountCents?: number }).amountCents ?? 0),
-      proofDocumentId: (paymentMeta as { proofDocumentId?: string }).proofDocumentId ?? undefined,
+      method: normalizedMethod,
+      amountCents: parsedAmount,
+      proofDocumentId: typeof proofDocumentId === "string" ? proofDocumentId : undefined,
+    };
+  }
+
+  private resolvePaymentInstructions(meta?: Record<string, unknown> | null) {
+    const instructions = meta?.paymentInstructions;
+    if (!instructions || typeof instructions !== "object") {
+      return undefined;
+    }
+
+    const bankName = (instructions as { bankName?: unknown }).bankName;
+    const ibanMasked = (instructions as { ibanMasked?: unknown }).ibanMasked;
+    const bic = (instructions as { bic?: unknown }).bic;
+    const reference = (instructions as { reference?: unknown }).reference;
+    return {
+      bankName: typeof bankName === "string" ? bankName : undefined,
+      ibanMasked: typeof ibanMasked === "string" ? ibanMasked : undefined,
+      bic: typeof bic === "string" ? bic : undefined,
+      reference: typeof reference === "string" ? reference : undefined,
     };
   }
 
   private async computeTotals(
     report: TaxReportEntity,
     workspaceId: string
-  ): Promise<IncomeTaxTotals | undefined> {
-    const filingType = this.mapReportTypeToFilingType(report.type);
-    if (filingType !== "income-annual") {
-      return undefined;
-    }
-
-    const [incomeSnapshots, expenseSnapshots] = await Promise.all([
-      this.snapshotRepo.findByPeriod(workspaceId, report.periodStart, report.periodEnd, "INVOICE"),
+  ): Promise<TaxFilingTotals | undefined> {
+    const invoiceDateMode = report.type === "INCOME_TAX" ? "payment" : "document";
+    const [invoiceSnapshots, expenseSnapshots] = await Promise.all([
+      this.snapshotRepo.findByPeriod(workspaceId, report.periodStart, report.periodEnd, "INVOICE", {
+        invoiceDateMode,
+      }),
       this.snapshotRepo.findByPeriod(workspaceId, report.periodStart, report.periodEnd, "EXPENSE"),
     ]);
 
-    const grossIncomeCents = incomeSnapshots.reduce((sum, snap) => sum + snap.totalAmountCents, 0);
-    const deductibleExpensesCents = expenseSnapshots.reduce(
-      (sum, snap) => sum + snap.totalAmountCents,
+    const vatCollectedCents = invoiceSnapshots.reduce(
+      (sum, snap) => sum + snap.taxTotalAmountCents,
       0
     );
-    const netProfitCents = grossIncomeCents - deductibleExpensesCents;
+    const vatPaidCents = expenseSnapshots.reduce((sum, snap) => sum + snap.taxTotalAmountCents, 0);
+    const salesNetCents = invoiceSnapshots.reduce((sum, snap) => sum + snap.subtotalAmountCents, 0);
+    const purchaseNetCents = expenseSnapshots.reduce(
+      (sum, snap) => sum + snap.subtotalAmountCents,
+      0
+    );
 
     const lastRecalculatedAt =
-      typeof report.meta?.lastRecalculatedAt === "string"
-        ? report.meta.lastRecalculatedAt
-        : undefined;
+      typeof report.meta?.lastRecalculatedAt === "string" ? report.meta.lastRecalculatedAt : null;
 
-    return {
-      grossIncomeCents,
-      deductibleExpensesCents,
-      netProfitCents,
-      estimatedTaxDueCents: null,
+    const totals: TaxFilingTotals = {
+      vatCollectedCents,
+      vatPaidCents,
+      netPayableCents: vatCollectedCents - vatPaidCents,
       currency: report.currency,
-      lastRecalculatedAt: lastRecalculatedAt ?? undefined,
+      lastRecalculatedAt,
+      salesCount: invoiceSnapshots.length,
+      purchaseCount: expenseSnapshots.length,
+      salesNetCents,
+      purchaseNetCents,
     };
+
+    if (this.mapReportTypeToFilingType(report.type) === "income-annual") {
+      const grossIncomeCents = invoiceSnapshots.reduce(
+        (sum, snap) => sum + snap.totalAmountCents,
+        0
+      );
+      const deductibleExpensesCents = expenseSnapshots.reduce(
+        (sum, snap) => sum + snap.totalAmountCents,
+        0
+      );
+      totals.grossIncomeCents = grossIncomeCents;
+      totals.deductibleExpensesCents = deductibleExpensesCents;
+      totals.netProfitCents = grossIncomeCents - deductibleExpensesCents;
+      totals.estimatedTaxDueCents = null;
+    }
+
+    return totals;
   }
 
-  private canDelete(report: TaxReportEntity): boolean {
-    return ["OPEN", "UPCOMING"].includes(report.status);
+  private canDelete(status: TaxFilingStatus): boolean {
+    return status === "draft";
   }
 
-  private canSubmit(report: TaxReportEntity, issues: TaxIssue[]): boolean {
-    if (!["OPEN", "UPCOMING", "OVERDUE"].includes(report.status)) {
+  private canSubmit(status: TaxFilingStatus, issues: TaxIssue[]): boolean {
+    if (!["draft", "readyForReview"].includes(status)) {
       return false;
     }
     return !issues.some((issue) => issue.severity === "blocker");

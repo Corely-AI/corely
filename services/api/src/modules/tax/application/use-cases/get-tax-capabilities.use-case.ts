@@ -19,9 +19,10 @@ export class GetTaxCapabilitiesUseCase extends BaseUseCase<void, GetTaxCapabilit
 
   protected async handle(
     _: void,
-    _ctx: UseCaseContext
+    ctx: UseCaseContext
   ): Promise<Result<GetTaxCapabilitiesResponse, UseCaseError>> {
-    const capabilities = await this.capabilities.getCapabilities();
+    const workspaceId = ctx.workspaceId || ctx.tenantId!;
+    const capabilities = await this.capabilities.getCapabilities(workspaceId);
     return ok({ capabilities });
   }
 }

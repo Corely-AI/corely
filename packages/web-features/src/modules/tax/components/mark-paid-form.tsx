@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { uploadTaxDocument } from "../utils/upload-document";
 import type { MarkTaxFilingPaidRequest } from "@corely/contracts";
 
@@ -21,7 +22,7 @@ export function MarkPaidForm({
 }: MarkPaidFormProps) {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [paidAt, setPaidAt] = React.useState(() => new Date().toISOString().slice(0, 16));
-  const [method, setMethod] = React.useState("manual");
+  const [method, setMethod] = React.useState<MarkTaxFilingPaidRequest["method"]>("bank-transfer");
   const [amount, setAmount] = React.useState<string>(
     defaultAmountCents != null ? (defaultAmountCents / 100).toFixed(2) : ""
   );
@@ -70,7 +71,19 @@ export function MarkPaidForm({
       </div>
       <div className="grid gap-2">
         <Label>Method</Label>
-        <Input value={method} onChange={(event) => setMethod(event.target.value)} />
+        <Select
+          value={method}
+          onValueChange={(value) => setMethod(value as MarkTaxFilingPaidRequest["method"])}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="bank-transfer">Bank transfer</SelectItem>
+            <SelectItem value="direct-debit">Direct debit</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
       <div className="grid gap-2">
         <Label>Amount</Label>

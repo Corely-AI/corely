@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@corely/ui";
 import { badgeVariants } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 
 interface OpenIssuesPanelProps {
   issues: TaxCenterIssue[];
@@ -12,11 +13,12 @@ interface OpenIssuesPanelProps {
 }
 
 export const OpenIssuesPanel = ({ issues, isLoading }: OpenIssuesPanelProps) => {
+  const { t } = useTranslation();
   if (isLoading) {
     return (
       <Card className="col-span-1 md:col-span-2">
         <CardHeader>
-          <CardTitle>Open Issues</CardTitle>
+          <CardTitle>{t("tax.center.issues.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-24 bg-muted/20 animate-pulse rounded" />
@@ -29,12 +31,12 @@ export const OpenIssuesPanel = ({ issues, isLoading }: OpenIssuesPanelProps) => 
     return (
       <Card className="col-span-1 md:col-span-2">
         <CardHeader>
-          <CardTitle>Open Issues</CardTitle>
+          <CardTitle>{t("tax.center.issues.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4 text-muted-foreground p-4 bg-muted/10 rounded-lg border border-dashed">
             <CheckCircle2 className="h-6 w-6 text-green-500" />
-            <span>No issues detected. Your bookkeeping looks clean!</span>
+            <span>{t("tax.center.issues.noIssues")}</span>
           </div>
         </CardContent>
       </Card>
@@ -45,9 +47,9 @@ export const OpenIssuesPanel = ({ issues, isLoading }: OpenIssuesPanelProps) => 
     <Card className="col-span-1 md:col-span-2">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>Open Issues</CardTitle>
+          <CardTitle>{t("tax.center.issues.title")}</CardTitle>
           <span className="text-xs text-muted-foreground">
-            {issues.reduce((a, b) => a + b.count, 0)} items
+            {issues.reduce((a, b) => a + b.count, 0)} {t("tax.center.issues.items")}
           </span>
         </div>
       </CardHeader>
@@ -65,17 +67,19 @@ export const OpenIssuesPanel = ({ issues, isLoading }: OpenIssuesPanelProps) => 
                 <h4 className="font-medium text-sm">{issue.title}</h4>
                 {issue.blocking && (
                   <span className="text-[10px] bg-destructive text-destructive-foreground px-1.5 rounded">
-                    BLOCKING
+                    {t("tax.center.issues.blocking")}
                   </span>
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-1">{issue.description}</p>
             </div>
             <div className="text-right">
-              <div className="text-xs font-medium mb-1">{issue.count} affected</div>
+              <div className="text-xs font-medium mb-1">
+                {issue.count} {t("tax.center.issues.affected")}
+              </div>
               <Button variant="ghost" size="sm" className="h-6 text-xs" asChild>
                 <Link to={issue.deepLink}>
-                  Fix <ArrowRight className="ml-1 h-3 w-3" />
+                  {t("tax.center.issues.fix")} <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </Button>
             </div>

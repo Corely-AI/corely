@@ -107,11 +107,14 @@ import { directoryRoutes } from "../../modules/directory";
 import {
   TaxSettingsPage,
   TaxCenterPage,
+  TaxEurReportPage,
+  TaxAnnualAssistantPage,
   FilingsListPage,
   FilingDetailPage,
   CreateFilingPage,
   TaxPaymentsPage,
   TaxDocumentsPage,
+  taxRoutes,
 } from "../../modules/tax";
 import { CopilotPage } from "../../routes/copilot";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
@@ -338,12 +341,18 @@ export const appShellRoutes = (
       {bookingRoutes}
       <Route path="/copilot" element={<CopilotPage />} />
       <Route path="/tax" element={<TaxCenterPage />} />
+      <Route path="/tax/reports/eur" element={<TaxEurReportPage />} />
+      <Route path="/tax/annual/:year" element={<TaxAnnualAssistantPage />} />
+      <Route path="/tax/annual/:year/t/:threadId" element={<TaxAnnualAssistantPage />} />
       <Route path="/tax/filings" element={<FilingsListPage />} />
       <Route path="/tax/filings/new" element={<CreateFilingPage />} />
       <Route path="/tax/filings/:id" element={<FilingDetailPage />} />
       <Route path="/tax/payments" element={<TaxPaymentsPage />} />
       <Route path="/tax/documents" element={<TaxDocumentsPage />} />
       <Route path="/tax/settings" element={<TaxSettingsPage />} />
+      {taxRoutes.map((route) => (
+        <Route key={route.path} path={route.path} element={route.element} />
+      ))}
       {appSettingsRoutes}
     </Route>
   </Route>

@@ -395,11 +395,14 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               {t("expenses.form.receiptOptional")}
             </div>
             <div className="space-y-3">
-              <Button variant="outline" type="button" className="w-full justify-start" asChild>
-                <label htmlFor="expense-receipt-files" className="cursor-pointer">
-                  <Paperclip className="h-4 w-4 mr-2" />
-                  {t("expenses.form.addReceiptFiles")}
-                </label>
+              <Button
+                variant="outline"
+                type="button"
+                className="w-full justify-start"
+                onClick={() => document.getElementById("expense-receipt-files")?.click()}
+              >
+                <Paperclip className="h-4 w-4 mr-2" />
+                {t("expenses.form.addReceiptFiles")}
               </Button>
               <input
                 id="expense-receipt-files"

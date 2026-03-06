@@ -189,6 +189,9 @@ export class ListTaxFilingsUseCase extends BaseUseCase<ListTaxFilingsInput, List
     if (now > dueDate) {
       return "needsFix";
     }
+    if (status === "OPEN" || status === "UPCOMING") {
+      return "readyForReview";
+    }
     return "draft";
   }
 

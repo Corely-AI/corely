@@ -5,6 +5,13 @@ export interface CopilotChatMetadata {
   workspaceId?: string;
   userId?: string;
   taskState?: CopilotTaskState;
+  taxAnnual?: {
+    workspaceId?: string;
+    taxYear?: number;
+    draftId?: string;
+    jurisdiction?: "DE";
+    strategy?: "PERSONAL";
+  };
 }
 
 export interface ChatStorePort {

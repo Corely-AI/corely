@@ -5,6 +5,7 @@ import { InMemoryTaxProfileRepo } from "../../../testkit/fakes/in-memory-tax-pro
 import { InMemoryTaxCodeRepo } from "../../../testkit/fakes/in-memory-tax-code-repo";
 import { InMemoryTaxRateRepo } from "../../../testkit/fakes/in-memory-tax-rate-repo";
 import type { CalculateTaxInput } from "@corely/contracts";
+import { InMemoryJurisdictionPackRegistry } from "../../../domain/ports/jurisdiction-pack-registry.port";
 
 describe("TaxEngineService", () => {
   let taxEngine: TaxEngineService;
@@ -12,6 +13,7 @@ describe("TaxEngineService", () => {
   let taxCodeRepo: InMemoryTaxCodeRepo;
   let taxRateRepo: InMemoryTaxRateRepo;
   let dePack: DEPackV1;
+  let packRegistry: InMemoryJurisdictionPackRegistry;
 
   const tenantId = "tenant-1";
 
@@ -21,7 +23,9 @@ describe("TaxEngineService", () => {
     taxRateRepo = new InMemoryTaxRateRepo();
 
     dePack = new DEPackV1(taxCodeRepo, taxRateRepo);
-    taxEngine = new TaxEngineService(profileRepo, dePack);
+    packRegistry = new InMemoryJurisdictionPackRegistry();
+    packRegistry.register(dePack);
+    taxEngine = new TaxEngineService(profileRepo, packRegistry);
 
     // Setup default profile
     await profileRepo.upsert({
@@ -178,7 +182,7 @@ describe("TaxEngineService", () => {
       };
 
       await expect(taxEngine.calculate(input, tenantId)).rejects.toThrow(
-        /Jurisdiction pack not found/i
+        /No jurisdiction pack found/i
       );
     });
     it("calculates tax for multiple line items", async () => {

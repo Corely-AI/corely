@@ -8,6 +8,8 @@ import { HelpCircle, Pencil, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import { type TaxReportDto } from "@corely/contracts";
 
+import { useTranslation } from "react-i18next";
+
 interface AnnualReportsSectionProps {
   reports: TaxReportDto[];
   isLoading: boolean;
@@ -16,6 +18,7 @@ interface AnnualReportsSectionProps {
 
 export function AnnualReportsSection({ reports, isLoading, locale }: AnnualReportsSectionProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // We want to show the current year and maybe previous years if they are open
   // Or just render whatever reports come in that are "ANNUAL_REPORT" group
@@ -29,16 +32,18 @@ export function AnnualReportsSection({ reports, isLoading, locale }: AnnualRepor
       <div className="flex items-end justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-foreground/80">Annual Reports</h2>
+            <h2 className="text-xl font-semibold text-foreground/80">
+              {t("tax.center.annual.title")}
+            </h2>
             <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
           </div>
           <div>
             <Button
               variant="link"
-              className="h-auto p-0 text-xs text-muted-foreground hover:text-primary"
+              className="h-auto p-0 text-xs text-muted-foreground hover:text-primary uppercase"
               onClick={() => navigate("/tax/settings")}
             >
-              SETTINGS
+              {t("tax.center.settings")}
               <Pencil className="ml-1 h-3 w-3" />
             </Button>
           </div>
@@ -52,7 +57,9 @@ export function AnnualReportsSection({ reports, isLoading, locale }: AnnualRepor
           </Card>
         </div>
       ) : sortedReports.length === 0 ? (
-        <div className="text-sm text-muted-foreground italic">No annual reports scheduled yet.</div>
+        <div className="text-sm text-muted-foreground italic">
+          {t("tax.center.annual.noFilings", { year: new Date().getFullYear() })}
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedReports.map((report) => (
@@ -66,6 +73,7 @@ export function AnnualReportsSection({ reports, isLoading, locale }: AnnualRepor
 
 function AnnualReportCard({ report, locale }: { report: TaxReportDto; locale: string }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Determine status styling
   const status = report.status;
@@ -77,16 +85,18 @@ function AnnualReportCard({ report, locale }: { report: TaxReportDto; locale: st
   // For simplicity, map UPCOMING to "YEAR IN PROGRESS" visually if it's future/current
   // But let's stick to status text for now, maybe mapping it.
 
-  let badgeText = status.replace(/_/g, " ");
+  let badgeText = t(`tax.center.annual.status.${status.toLowerCase()}`, {
+    defaultValue: status.replace(/_/g, " "),
+  });
   let badgeVariant: "default" | "secondary" | "outline" | "destructive" | "success" | "warning" =
     "secondary";
   let badgeIcon = null;
 
   if (isOpen) {
-    badgeText = "OPEN FOR SUBMISSION";
+    badgeText = t("tax.center.annual.status.openForSubmission");
     badgeVariant = "default"; // or a specific blue 'info' style if available, default is primary
   } else if (isUpcoming) {
-    badgeText = "YEAR IN PROGRESS";
+    badgeText = t("tax.center.annual.status.yearInProgress");
     badgeVariant = "warning"; // using warning for in-progress/pending feel
     badgeIcon = <span className="mr-1">🧘</span>; // Meditating person from screenshot? Or generic icon
   } else if (isSubmitted) {
@@ -113,10 +123,12 @@ function AnnualReportCard({ report, locale }: { report: TaxReportDto; locale: st
 
       <CardContent className="flex-1 flex flex-col items-center justify-center p-6 w-full space-y-6">
         <div className="space-y-2">
-          <h3 className="text-lg text-muted-foreground font-medium">Year {year}</h3>
+          <h3 className="text-lg text-muted-foreground font-medium">
+            {t("tax.center.annual.year", { year })}
+          </h3>
           <div className="text-3xl font-bold tracking-tight">{formatMoney(amount, locale)}</div>
           <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
-            Estimated tax to pay
+            {t("tax.center.annual.estimatedTaxToPay")}
           </p>
         </div>
 
@@ -126,7 +138,7 @@ function AnnualReportCard({ report, locale }: { report: TaxReportDto; locale: st
               className="w-40 rounded-full bg-cyan-500 hover:bg-cyan-600 text-white font-medium"
               onClick={() => navigate(`/tax/reports/${report.id}`)}
             >
-              Review & Submit
+              {t("tax.center.annual.reviewAndSubmit")}
             </Button>
           ) : (
             <Button
@@ -134,7 +146,7 @@ function AnnualReportCard({ report, locale }: { report: TaxReportDto; locale: st
               className="text-cyan-500 hover:text-cyan-600"
               onClick={() => navigate(`/tax/reports/${report.id}`)}
             >
-              Preview
+              {t("tax.center.annual.preview")}
             </Button>
           )}
         </div>

@@ -224,8 +224,12 @@ export default function InvoicesPage() {
           sort={state.sort}
           onSortChange={(v) => setUrlState({ sort: v })}
           sortOptions={[
-            { label: "Date (Newest)", value: "issuedAt:desc" },
-            { label: "Date (Oldest)", value: "issuedAt:asc" },
+            { label: "Created date (Newest)", value: "createdAt:desc" },
+            { label: "Created date (Oldest)", value: "createdAt:asc" },
+            { label: "Issued date (Newest)", value: "issuedAt:desc" },
+            { label: "Issued date (Oldest)", value: "issuedAt:asc" },
+            { label: "Due date (Latest)", value: "dueDate:desc" },
+            { label: "Due date (Earliest)", value: "dueDate:asc" },
             { label: "Amount (High-Low)", value: "totalCents:desc" },
             { label: "Amount (Low-High)", value: "totalCents:asc" },
             { label: "Number", value: "number:desc" },

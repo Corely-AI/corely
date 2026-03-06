@@ -96,6 +96,14 @@ export class ExpensesApi {
       { correlationId: apiClient.generateCorrelationId() }
     );
   }
+
+  async transitionExpense(id: string, to: string, reason?: string): Promise<void> {
+    await apiClient.post(
+      `/expenses/${id}/transition`,
+      { to, reason },
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
 }
 
 export const expensesApi = new ExpensesApi();

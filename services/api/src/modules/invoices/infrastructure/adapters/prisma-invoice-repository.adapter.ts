@@ -30,6 +30,9 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
     if (workspaceId !== invoice.tenantId) {
       throw new Error("Workspace mismatch when saving invoice");
     }
+    if (invoice.status === "PAID" && invoice.payments.length === 0) {
+      throw new Error("Cannot persist PAID invoice without payment records");
+    }
 
     await this.prisma.invoice.upsert({
       where: { id: invoice.id },
@@ -131,6 +134,8 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         });
       }
     }
+
+    await this.syncPayments(invoice.id, invoice.payments);
   }
 
   async create(workspaceId: string, invoice: InvoiceAggregate): Promise<void> {
@@ -140,7 +145,12 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   async findById(workspaceId: string, id: string): Promise<InvoiceAggregate | null> {
     const data = await this.prisma.invoice.findFirst({
       where: { id, tenantId: workspaceId },
-      include: { lines: true },
+      include: {
+        lines: true,
+        payments: {
+          orderBy: { paidAt: "asc" },
+        },
+      },
     });
     if (!data) {
       return null;
@@ -151,7 +161,12 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
       qty: line.qty,
       unitPriceCents: line.unitPriceCents,
     }));
-    const payments: InvoicePayment[] = []; // payments not modeled in prisma yet
+    const payments: InvoicePayment[] = data.payments.map((payment) => ({
+      id: payment.id,
+      amountCents: payment.amountCents,
+      paidAt: payment.paidAt,
+      note: payment.note ?? undefined,
+    }));
     return new InvoiceAggregate({
       id: data.id,
       tenantId: data.tenantId,
@@ -269,7 +284,12 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         skip: cursor ? 1 : (page - 1) * pageSize,
         ...(cursor ? { cursor: { id: cursor } } : {}),
         orderBy,
-        include: { lines: true },
+        include: {
+          lines: true,
+          payments: {
+            orderBy: { paidAt: "asc" },
+          },
+        },
       }),
     ]);
 
@@ -290,7 +310,12 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         number: (row as any).number ?? null,
         status: row.status as any,
         lineItems: lines,
-        payments: [],
+        payments: row.payments.map((payment) => ({
+          id: payment.id,
+          amountCents: payment.amountCents,
+          paidAt: payment.paidAt,
+          note: payment.note ?? undefined,
+        })),
         issuedAt: row.issuedAt,
         invoiceDate: fromPrismaDate((row as any).invoiceDate ?? null),
         dueDate: fromPrismaDate((row as any).dueDate ?? null),
@@ -355,5 +380,41 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
   async isInvoiceNumberTaken(workspaceId: string, number: string): Promise<boolean> {
     const count = await this.prisma.invoice.count({ where: { tenantId: workspaceId, number } });
     return count > 0;
+  }
+
+  private async syncPayments(invoiceId: string, payments: InvoicePayment[]): Promise<void> {
+    if (payments.length === 0) {
+      await this.prisma.invoicePayment.deleteMany({ where: { invoiceId } });
+      return;
+    }
+
+    const paymentIds = payments.map((payment) => payment.id);
+    await this.prisma.invoicePayment.deleteMany({
+      where: {
+        invoiceId,
+        id: {
+          notIn: paymentIds,
+        },
+      },
+    });
+
+    for (const payment of payments) {
+      await this.prisma.invoicePayment.upsert({
+        where: { id: payment.id },
+        update: {
+          invoiceId,
+          amountCents: payment.amountCents,
+          paidAt: payment.paidAt,
+          note: payment.note ?? null,
+        },
+        create: {
+          id: payment.id,
+          invoiceId,
+          amountCents: payment.amountCents,
+          paidAt: payment.paidAt,
+          note: payment.note ?? null,
+        },
+      });
+    }
   }
 }

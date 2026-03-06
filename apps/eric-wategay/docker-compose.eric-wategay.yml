@@ -1,0 +1,19 @@
+services:
+  eric-wategay:
+    build:
+      context: ../..
+      dockerfile: apps/eric-wategay/Dockerfile
+    container_name: corely_eric_wategay
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8088
+      ERIC_LIB_PATH: ${ERIC_LIB_PATH:-}
+      ERIC_WORKDIR: ${ERIC_WORKDIR:-/tmp/eric}
+      ERIC_MODE_DEFAULT: ${ERIC_MODE_DEFAULT:-test}
+      ERIC_HERSTELLER_ID: ${ERIC_HERSTELLER_ID:-}
+      ERIC_STUB_SUCCESS: ${ERIC_STUB_SUCCESS:-true}
+      MAX_PAYLOAD_BYTES: ${MAX_PAYLOAD_BYTES:-1048576}
+      ERIC_MAX_CONCURRENT_CALLS: ${ERIC_MAX_CONCURRENT_CALLS:-4}
+      ERIC_RUNTIME_TIMEOUT_MS: ${ERIC_RUNTIME_TIMEOUT_MS:-30000}
+    ports:
+      - "8088:8088"

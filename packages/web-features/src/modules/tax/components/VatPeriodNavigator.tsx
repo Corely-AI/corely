@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@corely/ui";
@@ -8,6 +8,7 @@ import { cn } from "@corely/web-shared/shared/lib/utils";
 import { Badge } from "@corely/ui";
 import { useVatPeriodsQuery } from "../hooks/useVatPeriodsQuery";
 import type { VatPeriodItem } from "@corely/contracts";
+import { useTranslation } from "react-i18next";
 
 interface VatPeriodNavigatorProps {
   year: number;
@@ -24,6 +25,7 @@ export const VatPeriodNavigator = ({
   onSelectPeriod,
   entityId,
 }: VatPeriodNavigatorProps) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, isLoading, isError, refetch } = useVatPeriodsQuery({ year, entityId }, true);
 
@@ -33,13 +35,9 @@ export const VatPeriodNavigator = ({
       return;
     }
     if (selectedPeriodKey) {
-      // Validation: verify selected key belongs to loaded periods?
-      // Not strictly necessary, but good UX.
       return;
     }
 
-    // Find latest existing filing to select by default
-    // We reverse to find the latest chronologically that has a filing
     const existing = [...data.periods].reverse().find((p) => p.filingId);
     if (existing) {
       onSelectPeriod(existing.periodKey);
@@ -73,19 +71,6 @@ export const VatPeriodNavigator = ({
 
   const periods = data?.periods ?? [];
   const selectedPeriod = periods.find((p) => p.periodKey === selectedPeriodKey);
-
-  const statusLabel = useMemo(
-    () =>
-      ({
-        draft: "Draft",
-        needsFix: "Needs attention",
-        readyForReview: "Ready",
-        submitted: "Submitted",
-        paid: "Paid",
-        archived: "Archived",
-      }) as const,
-    []
-  );
 
   const getStatusStyles = (status: VatPeriodItem["status"]) => {
     if (status === "submitted") {
@@ -128,9 +113,9 @@ export const VatPeriodNavigator = ({
   if (isError) {
     return (
       <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-4 py-3 text-sm">
-        <span className="text-muted-foreground">Failed to load VAT periods.</span>
+        <span className="text-muted-foreground">{t("tax.navigator.failedToLoad")}</span>
         <Button size="sm" variant="outline" onClick={() => refetch()}>
-          Retry
+          {t("tax.navigator.retry")}
         </Button>
       </div>
     );
@@ -143,7 +128,7 @@ export const VatPeriodNavigator = ({
           variant="ghost"
           size="icon"
           onClick={() => onYearChange(year - 1)}
-          aria-label="Previous year"
+          aria-label={t("tax.navigator.prevYear")}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -163,7 +148,7 @@ export const VatPeriodNavigator = ({
           variant="ghost"
           size="icon"
           onClick={() => onYearChange(year + 1)}
-          aria-label="Next year"
+          aria-label={t("tax.navigator.nextYear")}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -194,10 +179,12 @@ export const VatPeriodNavigator = ({
                   variant="secondary"
                   className={cn("text-[10px] h-4 px-1 rounded-sm", getStatusStyles(status))}
                 >
-                  {statusLabel[status] ?? "Draft"}
+                  {t(`tax.navigator.status.${status}`, { defaultValue: status })}
                 </Badge>
               ) : (
-                <span className="text-[10px] text-muted-foreground">Not started</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {t("tax.navigator.notStarted")}
+                </span>
               )}
             </button>
           );
@@ -207,7 +194,7 @@ export const VatPeriodNavigator = ({
       {selectedPeriodKey && selectedPeriod && !selectedPeriod.filingId ? (
         <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-4 py-3 text-sm">
           <span className="text-muted-foreground">
-            No filing yet for {selectedPeriod.label} {year}.
+            {t("tax.navigator.noFilingYet", { period: selectedPeriod.label, year })}
           </span>
           <Button
             size="sm"
@@ -215,7 +202,7 @@ export const VatPeriodNavigator = ({
               navigate(`/tax/filings/new?type=vat&periodKey=${selectedPeriodKey}&year=${year}`)
             }
           >
-            Create filing
+            {t("tax.navigator.createFiling")}
           </Button>
         </div>
       ) : null}

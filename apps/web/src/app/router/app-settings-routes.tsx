@@ -28,7 +28,7 @@ export const appSettingsRoutes = (
   <>
     {/* Legacy Redirects */}
     <Route path="/taxes" element={<Navigate to="/tax" replace />} />
-    <Route path="/tax/reports" element={<Navigate to="/tax/filings" replace />} />
+    <Route path="/tax/reports" element={<Navigate to="/tax/reports/eur" replace />} />
     <Route path="/tax/period/:key" element={<Navigate to="/tax/filings/:key" replace />} />
     <Route path="/settings/tax" element={<Navigate to="/tax/settings" replace />} />
 

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
+import { ensureDefaultWorkspace } from "./ensure-default-workspace";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -17,9 +18,10 @@ export const LoginPage = () => {
     setIsLoading(true);
     try {
       await signin({ email, password });
+      await ensureDefaultWorkspace(email);
       navigate("/overview", { replace: true });
     } catch {
-      setError("Unable to sign in. Please check your credentials.");
+      setError("Unable to sign in or initialize workspace.");
     } finally {
       setIsLoading(false);
     }

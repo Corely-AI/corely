@@ -7,6 +7,7 @@ import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
 import { Badge } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { CalendarDays, FileText, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface AnnualFilingsPanelProps {
   items: TaxFilingSummary[];
@@ -23,18 +24,28 @@ export const AnnualFilingsPanel = ({
   isLoading,
   onYearChange,
 }: AnnualFilingsPanelProps) => {
-  const title = mode === "COMPANY" ? "Year-end & Annual Filings" : "Annual Filings";
+  const { t, i18n } = useTranslation();
+  const title =
+    mode === "COMPANY" ? t("tax.center.annual.yearendTitle") : t("tax.center.annual.title");
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) => currentYear - i); // [2026, 2025, 2024, 2023, 2022, 2021]
 
   const statusLabel = {
-    draft: "Draft",
-    needsFix: "Needs attention",
-    readyForReview: "Ready for review",
-    submitted: "Submitted",
-    paid: "Paid",
-    archived: "Archived",
+    draft: t("tax.center.annual.status.draft"),
+    needsFix: t("tax.center.annual.status.needsFix"),
+    readyForReview: t("tax.center.annual.status.readyForReview"),
+    submitted: t("tax.center.annual.status.submitted"),
+    paid: t("tax.center.annual.status.paid"),
+    archived: t("tax.center.annual.status.archived"),
   } as const;
+
+  const typeLabels: Record<string, string> = {
+    "vat-annual": t("tax.reports.types.vatAnnual"),
+    "income-tax": t("tax.reports.types.incomeTax"),
+    yearend: t("tax.center.annual.yearendTitle"),
+  };
+
+  const locale = t("common.locale", { defaultValue: i18n.language === "de" ? "de-DE" : "en-US" });
 
   if (isLoading) {
     return (
@@ -65,7 +76,7 @@ export const AnnualFilingsPanel = ({
         </SelectContent>
       </Select>
       <Button variant="link" className="h-auto p-0 text-xs" asChild>
-        <Link to={`/tax/filings?group=annual&year=${year}`}>View all</Link>
+        <Link to={`/tax/filings?group=annual&year=${year}`}>{t("tax.center.annual.viewAll")}</Link>
       </Button>
     </div>
   );
@@ -74,7 +85,7 @@ export const AnnualFilingsPanel = ({
     <div className="flex gap-2 justify-center w-full">
       <Button variant="outline" size="sm" asChild>
         <Link to={`/tax/filings/new?group=annual&year=${year}&from=tax-center`}>
-          Create for {year}
+          {t("tax.center.annual.createForYear", { year })}
         </Link>
       </Button>
     </div>
@@ -93,8 +104,8 @@ export const AnnualFilingsPanel = ({
               <CalendarDays className="h-6 w-6 text-muted-foreground" />
             </div>
             <div className="space-y-1">
-              <p className="font-medium">No annual filings for {year}</p>
-              <p className="text-sm text-muted-foreground">Annual obligations.</p>
+              <p className="font-medium">{t("tax.center.annual.noFilings", { year })}</p>
+              <p className="text-sm text-muted-foreground">{t("tax.center.annual.obligations")}</p>
             </div>
             <CreateCTA />
           </div>
@@ -122,16 +133,18 @@ export const AnnualFilingsPanel = ({
                 </div>
                 <div>
                   <div className="font-medium text-sm">
-                    {filing.type.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                    {typeLabels[filing.type] ??
+                      filing.type.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    Due {new Date(filing.dueDate).toLocaleDateString()}
+                    {t("tax.center.nextUp.dueDate")}{" "}
+                    {new Date(filing.dueDate).toLocaleDateString(locale)}
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="text-[10px] uppercase">
-                  {statusLabel[filing.status] ?? "Draft"}
+                  {statusLabel[filing.status] ?? t("tax.center.annual.status.draft")}
                 </Badge>
                 <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                   <Link to={`/tax/filings/${filing.id}`}>

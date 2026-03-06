@@ -11,6 +11,7 @@ import { DEPackV1 } from "../../../../tax/application/services/jurisdictions/de-
 import { InMemoryTaxProfileRepo } from "../../../../tax/testkit/fakes/in-memory-tax-profile-repo";
 import { InMemoryTaxCodeRepo } from "../../../../tax/testkit/fakes/in-memory-tax-code-repo";
 import { InMemoryTaxRateRepo } from "../../../../tax/testkit/fakes/in-memory-tax-rate-repo";
+import { InMemoryJurisdictionPackRegistry } from "../../../../tax/domain/ports/jurisdiction-pack-registry.port";
 import type { CogsPostingService } from "../../../../accounting/application/services/cogs-posting.service";
 import type { PrismaService } from "@corely/data";
 
@@ -27,6 +28,7 @@ describe("FinalizeInvoiceUseCase", () => {
   let taxCodeRepo: InMemoryTaxCodeRepo;
   let taxRateRepo: InMemoryTaxRateRepo;
   let dePack: DEPackV1;
+  let packRegistry: InMemoryJurisdictionPackRegistry;
   let prismaMock: Pick<
     PrismaService,
     "journalEntry" | "inventoryLot" | "catalogItem" | "$transaction"
@@ -52,7 +54,9 @@ describe("FinalizeInvoiceUseCase", () => {
     taxCodeRepo = new InMemoryTaxCodeRepo();
     taxRateRepo = new InMemoryTaxRateRepo();
     dePack = new DEPackV1(taxCodeRepo, taxRateRepo);
-    taxEngine = new TaxEngineService(profileRepo, dePack);
+    packRegistry = new InMemoryJurisdictionPackRegistry();
+    packRegistry.register(dePack);
+    taxEngine = new TaxEngineService(profileRepo, packRegistry);
 
     // Seed Tax Data
     await profileRepo.upsert({

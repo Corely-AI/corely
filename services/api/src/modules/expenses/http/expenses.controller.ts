@@ -27,6 +27,7 @@ import { UnarchiveExpenseUseCase } from "../application/use-cases/unarchive-expe
 import { ListExpensesUseCase } from "../application/use-cases/list-expenses.usecase";
 import { GetExpenseUseCase } from "../application/use-cases/get-expense.usecase";
 import { UpdateExpenseUseCase } from "../application/use-cases/update-expense.usecase";
+import { TransitionExpenseUseCase } from "../application/use-cases/transition-expense.usecase";
 import type { Expense } from "../domain/expense.entity";
 import { ExpenseCapabilitiesBuilder } from "../domain/expense-capabilities.builder";
 import {
@@ -72,6 +73,7 @@ export class ExpensesController {
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly getExpenseUseCase: GetExpenseUseCase,
     private readonly updateExpenseUseCase: UpdateExpenseUseCase,
+    private readonly transitionExpenseUseCase: TransitionExpenseUseCase,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort,
     private readonly templateService: WorkspaceTemplateService
@@ -239,6 +241,27 @@ export class ExpensesController {
     const ctx = buildUseCaseContext(req);
     await this.unarchiveExpenseUseCase.execute({ expenseId }, ctx);
     return { archived: false };
+  }
+
+  @Post(":expenseId/transition")
+  async transition(
+    @Param("expenseId") expenseId: string,
+    @Body() body: { to: ExpenseStatus; reason?: string },
+    @Req() req: Request
+  ) {
+    const ctx = buildUseCaseContext(req);
+    if (!body.to) {
+      throw new BadRequestException("Missing target status 'to'");
+    }
+    await this.transitionExpenseUseCase.execute(
+      {
+        expenseId,
+        to: body.to,
+        reason: body.reason,
+      },
+      ctx
+    );
+    return { success: true };
   }
 
   private mapExpenseDto(expense: Expense): ExpenseDto {

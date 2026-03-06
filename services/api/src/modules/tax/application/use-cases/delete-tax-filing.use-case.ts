@@ -11,6 +11,7 @@ import {
   RequireTenant,
 } from "@corely/kernel";
 import { TaxReportRepoPort } from "../../domain/ports";
+import { TaxFilingStatus, dbStatusToFilingStatus } from "../../domain/entities/tax-filing-status";
 
 @RequireTenant()
 @Injectable()
@@ -26,11 +27,15 @@ export class DeleteTaxFilingUseCase extends BaseUseCase<string, { deleted: boole
     const workspaceId = ctx.workspaceId || ctx.tenantId!;
     const report = await this.reportRepo.findById(workspaceId, filingId);
     if (!report) {
-      return err(new NotFoundError("Filing not found"));
+      return err(new NotFoundError("Filing not found", { code: "Tax:FilingNotFound" }));
     }
-    if (!["OPEN", "UPCOMING"].includes(report.status)) {
+
+    // Domain guard: only DRAFT filings can be deleted.
+    const currentStatus = dbStatusToFilingStatus(report.status);
+    if (currentStatus !== TaxFilingStatus.DRAFT) {
       return err(new ConflictError("Only draft filings can be deleted"));
     }
+
     await this.reportRepo.delete(workspaceId, filingId);
     return ok({ deleted: true });
   }

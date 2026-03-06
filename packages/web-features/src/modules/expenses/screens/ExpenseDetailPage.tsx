@@ -94,17 +94,41 @@ export const ExpenseDetailPage = () => {
     queryKey: expenseKeys.detail(id ?? ""),
     queryFn: () => (id ? expensesApi.getExpense(id) : Promise.reject(new Error(t("common.error")))),
     enabled: Boolean(id),
+    retry: false,
   });
 
   const { expense, capabilities } = queryResult || {};
   const [isProcessing] = React.useState(false);
 
-  // Handle transitions (placeholder for future API)
-  const handleTransition = React.useCallback(
-    async (to: string) => {
-      toast.info(t("expenses.detail.transitionSoon", { to }));
+  const transitionMutation = useMutation({
+    mutationFn: ({ expenseId, to, reason }: { expenseId: string; to: string; reason?: string }) =>
+      expensesApi.transitionExpense(expenseId, to, reason),
+    onSuccess: async (_, vars) => {
+      toast.success(t("expenses.notifications.transitioned", { to: vars.to }));
+      await invalidateResourceQueries(queryClient, "expenses", { id });
     },
-    [t]
+    onError: () => toast.error(t("expenses.notifications.transitionFailed")),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
+    onSuccess: async () => {
+      toast.success(t("expenses.notifications.deleted"));
+      await invalidateResourceQueries(queryClient, "expenses", { id });
+      navigate("/expenses");
+    },
+    onError: () => toast.error(t("expenses.notifications.deleteFailed")),
+  });
+
+  // Handle transitions
+  const handleTransition = React.useCallback(
+    async (to: string, input?: Record<string, string>) => {
+      if (!id) {
+        return;
+      }
+      await transitionMutation.mutateAsync({ expenseId: id, to, reason: input?.reason });
+    },
+    [id, transitionMutation]
   );
 
   // Handle actions
@@ -124,18 +148,8 @@ export const ExpenseDetailPage = () => {
           toast.info(t("expenses.detail.actionSoon", { action: actionKey }));
       }
     },
-    [id, navigate, t]
+    [id, navigate, t, deleteMutation]
   );
-
-  const deleteMutation = useMutation({
-    mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
-    onSuccess: async () => {
-      toast.success(t("expenses.notifications.deleted"));
-      await invalidateResourceQueries(queryClient, "expenses", { id });
-      navigate("/expenses");
-    },
-    onError: () => toast.error(t("expenses.notifications.deleteFailed")),
-  });
 
   if (isLoading) {
     return (
@@ -183,7 +197,7 @@ export const ExpenseDetailPage = () => {
             onBack={() => navigate("/expenses")}
             onTransition={handleTransition}
             onAction={handleAction}
-            isLoading={isProcessing || deleteMutation.isPending}
+            isLoading={isProcessing || deleteMutation.isPending || transitionMutation.isPending}
           />
         ) : (
           <div className="flex items-center gap-3">

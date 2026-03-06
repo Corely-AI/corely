@@ -9,7 +9,12 @@ import {
   Inject,
 } from "@nestjs/common";
 import { TestHarnessGuard } from "./guards/test-harness.guard";
-import { TestHarnessService } from "./test-harness.service";
+import {
+  TestHarnessService,
+  type SeedTaxFilingScenarioInput,
+  type SeedTaxFilingScenarioType,
+  type SeedTaxFilingScenarioStatus,
+} from "./test-harness.service";
 import { CrmTestHooksService } from "./crm-test-hooks.service";
 
 @Controller("test")
@@ -141,6 +146,57 @@ export class TestHarnessController {
     return {
       deliveries: await this.testHarnessService.listInvoiceEmailDeliveries(payload),
     };
+  }
+
+  /**
+   * Seed deterministic tax filing data for UI E2E scenarios.
+   */
+  @Post("tax/seed-filing-scenario")
+  @HttpCode(HttpStatus.OK)
+  async seedTaxFilingScenario(
+    @Body()
+    payload: {
+      tenantId: string;
+      workspaceId: string;
+      actorUserId: string;
+      filingType: SeedTaxFilingScenarioType;
+      year: number;
+      periodKey?: string;
+      withBlockers?: boolean;
+      includeSnapshots?: boolean;
+      invoiceCount?: number;
+      expenseCount?: number;
+      status?: SeedTaxFilingScenarioStatus;
+    }
+  ) {
+    if (!payload.tenantId || !payload.workspaceId || !payload.actorUserId) {
+      throw new BadRequestException("Missing required fields: tenantId, workspaceId, actorUserId");
+    }
+    if (!payload.filingType) {
+      throw new BadRequestException("Missing required field: filingType");
+    }
+    if (!Number.isInteger(payload.year) || payload.year < 2000 || payload.year > 2100) {
+      throw new BadRequestException("Invalid year");
+    }
+    if (payload.filingType !== "VAT_PERIODIC" && payload.filingType !== "VAT_ANNUAL") {
+      throw new BadRequestException("Invalid filingType");
+    }
+
+    const input: SeedTaxFilingScenarioInput = {
+      tenantId: payload.tenantId,
+      workspaceId: payload.workspaceId,
+      actorUserId: payload.actorUserId,
+      filingType: payload.filingType,
+      year: payload.year,
+      periodKey: payload.periodKey,
+      withBlockers: payload.withBlockers,
+      includeSnapshots: payload.includeSnapshots,
+      invoiceCount: payload.invoiceCount,
+      expenseCount: payload.expenseCount,
+      status: payload.status,
+    };
+
+    return this.testHarnessService.seedTaxFilingScenario(input);
   }
 
   /**

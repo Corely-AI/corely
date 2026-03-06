@@ -10,12 +10,12 @@ export function formatPeriodLabel(period: VatPeriodSummaryDto): string {
   return `Q${quarter} ${start.getUTCFullYear()}`;
 }
 
-export function formatDateRange(start: string, end: string): string {
-  return `${formatIsoDate(start)} to ${formatIsoDate(end)}`;
+export function formatDateRange(start: string, end: string, locale?: string): string {
+  return `${formatIsoDate(start, locale)} - ${formatIsoDate(end, locale)}`;
 }
 
-export function formatIsoDate(value: string): string {
-  return new Date(value).toISOString().split("T")[0];
+export function formatIsoDate(value: string, locale?: string): string {
+  return new Date(value).toLocaleDateString(locale);
 }
 
 export function statusVariant(status: VatPeriodStatus): VatPeriodStatusVariant {

@@ -16,6 +16,7 @@ import { FreelancerShell } from "./FreelancerShell";
 import { RequireAuth } from "./require-auth";
 import { SettingsPage } from "../screens/SettingsPage";
 import { LoginPage } from "../routes/auth/login";
+import SignupPage from "../routes/auth/signup";
 
 const featureRoutes = [
   ...crmFeature.crmRoutes(),
@@ -35,7 +36,7 @@ export const Router = () => (
     <Routes>
       <Route path="/" element={<Navigate to="/overview" replace />} />
       <Route path="/auth/login" element={<LoginPage />} />
-      <Route path="/auth/signup" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/auth/signup" element={<SignupPage />} />
       <Route path="/auth/forgot-password" element={<Navigate to="/auth/login" replace />} />
       <Route path="/auth/reset-password" element={<Navigate to="/auth/login" replace />} />
 

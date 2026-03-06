@@ -1,5 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { type SubmitTaxFilingRequest, type SubmitTaxFilingResponse } from "@corely/contracts";
+import { Injectable, Inject } from "@nestjs/common";
+import {
+  type SubmitTaxFilingRequest,
+  type SubmitTaxFilingResponse,
+  type TaxFilingActivityEvent,
+} from "@corely/contracts";
 import {
   BaseUseCase,
   type Result,
@@ -10,9 +14,18 @@ import {
   ok,
   err,
   RequireTenant,
+  OUTBOX_PORT,
+  AUDIT_PORT,
+  type OutboxPort,
+  type AuditPort,
 } from "@corely/kernel";
 import { TaxReportRepoPort } from "../../domain/ports";
 import { GetTaxFilingDetailUseCase } from "./get-tax-filing-detail.use-case";
+import {
+  TaxFilingStatus,
+  dbStatusToFilingStatus,
+  isTransitionAllowed,
+} from "../../domain/entities/tax-filing-status";
 
 export type SubmitTaxFilingInput = {
   filingId: string;
@@ -27,7 +40,9 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
 > {
   constructor(
     private readonly reportRepo: TaxReportRepoPort,
-    private readonly detailUseCase: GetTaxFilingDetailUseCase
+    private readonly detailUseCase: GetTaxFilingDetailUseCase,
+    @Inject(OUTBOX_PORT) private readonly outbox: OutboxPort,
+    @Inject(AUDIT_PORT) private readonly audit: AuditPort
   ) {
     super({ logger: null as any });
   }
@@ -39,21 +54,27 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
     const workspaceId = ctx.workspaceId || ctx.tenantId!;
     const report = await this.reportRepo.findById(workspaceId, input.filingId);
     if (!report) {
-      return err(new NotFoundError("Filing not found"));
+      return err(new NotFoundError("Filing not found", { code: "Tax:FilingNotFound" }));
     }
 
-    if (["SUBMITTED", "PAID", "ARCHIVED"].includes(report.status)) {
-      return err(new ConflictError("Filing already submitted"));
+    const currentStatus = dbStatusToFilingStatus(report.status);
+    if (!isTransitionAllowed(currentStatus, TaxFilingStatus.SUBMITTED)) {
+      return err(new ConflictError("Filing is not in a submit-ready status"));
     }
 
+    // Check for unresolved blockers in filing issues
     const currentIssues = Array.isArray(report.meta?.issues) ? report.meta?.issues : [];
     const hasBlockers = currentIssues.some(
-      (issue) => typeof issue === "object" && issue && (issue as any).severity === "blocker"
+      (issue) =>
+        typeof issue === "object" &&
+        issue !== null &&
+        (issue as { severity?: string }).severity === "blocker"
     );
     if (hasBlockers) {
       return err(new ConflictError("Submission blocked by unresolved issues"));
     }
 
+    // Persist the submission
     await this.reportRepo.submitReport({
       tenantId: workspaceId,
       reportId: input.filingId,
@@ -69,6 +90,17 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
         submissionId: input.request.submissionId,
         submittedAt: input.request.submittedAt,
       },
+      activity: this.appendActivity(report.meta, {
+        id: `${input.filingId}-submitted-${Date.now()}`,
+        type: "submitted",
+        timestamp: input.request.submittedAt,
+        actor: ctx.userId ? { id: ctx.userId } : undefined,
+        notes: input.request.notes ?? undefined,
+        payload: {
+          submissionId: input.request.submissionId,
+          method: input.request.method,
+        },
+      }),
     };
     await this.reportRepo.updateMeta({
       tenantId: workspaceId,
@@ -76,10 +108,53 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
       meta: nextMeta,
     });
 
+    // Emit domain event via outbox (fire-and-forget, non-transactional for now)
+    await this.outbox.enqueue({
+      eventType: "TaxFilingSubmitted",
+      payload: {
+        filingId: input.filingId,
+        tenantId: workspaceId,
+        submittedAt: input.request.submittedAt,
+        submissionId: input.request.submissionId,
+        method: input.request.method,
+      },
+      tenantId: workspaceId,
+    });
+
+    // Write audit trail
+    await this.audit.log({
+      tenantId: workspaceId,
+      action: "tax_filing.submitted",
+      entityType: "TAX_FILING",
+      entityId: input.filingId,
+      userId: ctx.userId ?? "system",
+      metadata: {
+        submissionId: input.request.submissionId,
+        method: input.request.method,
+      },
+    });
+
     const refreshed = await this.detailUseCase.execute(input.filingId, ctx);
     if ("error" in refreshed) {
       return refreshed;
     }
     return ok({ filing: refreshed.value.filing });
+  }
+
+  private appendActivity(
+    meta: Record<string, unknown> | null | undefined,
+    event: TaxFilingActivityEvent
+  ): TaxFilingActivityEvent[] {
+    const current =
+      meta && typeof meta === "object" && Array.isArray(meta.activity) ? meta.activity : [];
+    const typed = current
+      .map((item) => {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+        return item as TaxFilingActivityEvent;
+      })
+      .filter((item): item is TaxFilingActivityEvent => Boolean(item));
+    return [...typed, event];
   }
 }

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { TaxFilingDetailSchema } from "./tax-filing-detail.schema";
+import { TaxFilingDetailSchema, TaxPaymentMethodSchema } from "./tax-filing-detail.schema";
 
 export const MarkTaxFilingPaidRequestSchema = z.object({
   paidAt: z.string().datetime(),
-  method: z.string(),
+  method: TaxPaymentMethodSchema,
   amountCents: z.number().int(),
   proofDocumentId: z.string().optional(),
 });

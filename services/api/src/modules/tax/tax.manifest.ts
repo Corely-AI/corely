@@ -36,6 +36,26 @@ export const taxAppManifest: AppManifest = {
       order: 20,
     },
     {
+      id: "tax-reports",
+      scope: "web",
+      section: "tax",
+      labelKey: "nav.tax.reports",
+      defaultLabel: "Reports",
+      route: "/tax/reports/eur",
+      icon: "BarChart3",
+      order: 30,
+    },
+    {
+      id: "tax-annual-assistant",
+      scope: "web",
+      section: "tax",
+      labelKey: "nav.tax.annualAssistant",
+      defaultLabel: "Annual Assistant",
+      route: "/tax/annual",
+      icon: "MessageSquare",
+      order: 35,
+    },
+    {
       id: "tax-payments",
       scope: "web",
       section: "tax",
@@ -43,7 +63,7 @@ export const taxAppManifest: AppManifest = {
       defaultLabel: "Payments",
       route: "/tax/payments",
       icon: "CreditCard",
-      order: 30,
+      order: 40,
     },
     {
       id: "tax-documents",
@@ -53,7 +73,7 @@ export const taxAppManifest: AppManifest = {
       defaultLabel: "Documents",
       route: "/tax/documents",
       icon: "FileText",
-      order: 40,
+      order: 50,
     },
     {
       id: "tax-settings",
@@ -63,7 +83,7 @@ export const taxAppManifest: AppManifest = {
       defaultLabel: "Settings",
       route: "/tax/settings",
       icon: "Settings",
-      order: 50,
+      order: 60,
     },
   ],
 };
