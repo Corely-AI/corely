@@ -1,23 +1,28 @@
 import React from "react";
 import {
+  Button,
+  Calendar,
   Card,
   CardContent,
   Input,
   Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  cn,
 } from "@corely/ui";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { RequiredHint, SegmentedControl, sanitizeNumeric } from "./income-tax-return-shared";
 import type { DeclarationType } from "./income-tax-return-shared";
 
 export const IncomeTaxReturnCivilStatusCard = () => {
   const [civilStatus, setCivilStatus] = React.useState("married");
-  const [marriedSinceDay, setMarriedSinceDay] = React.useState("9");
-  const [marriedSinceMonth, setMarriedSinceMonth] = React.useState("9");
-  const [marriedSinceYear, setMarriedSinceYear] = React.useState("2010");
+  const [marriedSince, setMarriedSince] = React.useState<Date | undefined>(new Date(2010, 8, 9));
   const [declarationType, setDeclarationType] = React.useState<DeclarationType>("joint");
   const [jointTaxStateRegister, setJointTaxStateRegister] = React.useState("");
   const [jointTaxNumber, setJointTaxNumber] = React.useState("");
@@ -30,76 +35,51 @@ export const IncomeTaxReturnCivilStatusCard = () => {
       <CardContent className="space-y-5 p-6">
         <h2 className="text-h3 text-foreground">Civil status</h2>
 
-        <div className="space-y-2">
-          <Label htmlFor="civil-status" className="text-sm font-medium text-foreground">
-            What is your civil status?
-          </Label>
-          <Select value={civilStatus} onValueChange={setCivilStatus}>
-            <SelectTrigger id="civil-status" className="h-10">
-              <SelectValue placeholder="Select a status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="single">Single</SelectItem>
-              <SelectItem value="married">Married</SelectItem>
-              <SelectItem value="divorced">Divorced</SelectItem>
-              <SelectItem value="widowed">Widowed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <fieldset className="space-y-4">
-          <legend className="text-sm font-medium text-foreground">Married since</legend>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-[120px_120px_1fr]">
-            <div className="space-y-2">
-              <Label
-                htmlFor="married-since-day"
-                className="text-sm font-medium text-muted-foreground"
-              >
-                Day
-              </Label>
-              <Input
-                id="married-since-day"
-                inputMode="numeric"
-                value={marriedSinceDay}
-                onChange={(event) => setMarriedSinceDay(sanitizeNumeric(event.target.value, 2))}
-                placeholder="DD"
-                className="h-10"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="married-since-month"
-                className="text-sm font-medium text-muted-foreground"
-              >
-                Month
-              </Label>
-              <Input
-                id="married-since-month"
-                inputMode="numeric"
-                value={marriedSinceMonth}
-                onChange={(event) => setMarriedSinceMonth(sanitizeNumeric(event.target.value, 2))}
-                placeholder="MM"
-                className="h-10"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label
-                htmlFor="married-since-year"
-                className="text-sm font-medium text-muted-foreground"
-              >
-                Year
-              </Label>
-              <Input
-                id="married-since-year"
-                inputMode="numeric"
-                value={marriedSinceYear}
-                onChange={(event) => setMarriedSinceYear(sanitizeNumeric(event.target.value, 4))}
-                placeholder="YYYY"
-                className="h-10"
-              />
-            </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="civil-status" className="text-sm font-medium text-foreground">
+              What is your civil status?
+            </Label>
+            <Select value={civilStatus} onValueChange={setCivilStatus}>
+              <SelectTrigger id="civil-status" className="h-10">
+                <SelectValue placeholder="Select a status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="single">Single</SelectItem>
+                <SelectItem value="married">Married</SelectItem>
+                <SelectItem value="divorced">Divorced</SelectItem>
+                <SelectItem value="widowed">Widowed</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </fieldset>
+
+          {civilStatus === "married" && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-foreground">Married since</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "h-10 w-full justify-start text-left font-normal",
+                      !marriedSince && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {marriedSince ? (
+                      marriedSince.toLocaleDateString("de-DE")
+                    ) : (
+                      <span>Select date</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={marriedSince} onSelect={setMarriedSince} />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+        </div>
 
         <div className="space-y-3">
           <p className="text-body text-foreground">

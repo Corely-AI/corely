@@ -176,14 +176,14 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
           <h1 className="text-h1 text-foreground">Income tax return</h1>
         </header>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,35%)_minmax(0,65%)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(240px,25%)_1fr]">
           <aside className="space-y-6">
             <Card>
-              <CardContent className="space-y-5 p-6">
+              <CardContent className="space-y-4 p-5">
                 <div className="flex items-center gap-2">
                   <span
                     className={cn(
-                      "inline-flex rounded-md px-3 py-1.5 text-xs font-semibold",
+                      "inline-flex rounded-md px-2 py-1 text-[10px] font-bold tracking-wider",
                       saveState === "error"
                         ? "bg-rose-100 text-rose-700"
                         : saveState === "saving" || saveState === "loading"
@@ -204,7 +204,7 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
                   ) : null}
                 </div>
 
-                <ul className="space-y-3.5" aria-label="Tax return steps">
+                <ul className="space-y-2" aria-label="Tax return steps">
                   {steps.map((step) => (
                     <li key={step.step} className="flex items-center gap-3">
                       <button
@@ -219,7 +219,7 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
                         />
                         <span
                           className={cn(
-                            "text-body text-foreground",
+                            "text-sm text-foreground",
                             activeStep === step.key ? "font-semibold" : "font-medium"
                           )}
                         >
@@ -233,7 +233,7 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
             </Card>
 
             <Card>
-              <CardContent className="space-y-3 p-6">
+              <CardContent className="space-y-3 p-5">
                 <div>
                   <p className="text-sm text-muted-foreground">Estimated income tax</p>
                   <p className="text-h2 text-foreground">{formatCurrency(estimatedTax)}</p>
