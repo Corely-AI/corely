@@ -1,5 +1,7 @@
 import React from "react";
 import {
+  IncomeStatementChildPage,
+  IncomeStatementPayslipPage,
   TaxCenterPage,
   TaxEurReportPage,
   TaxAnnualAssistantPage,
@@ -25,6 +27,14 @@ export const taxRoutes = (): FeatureRoute[] => [
   { path: "/tax/payments", element: <TaxPaymentsPage /> },
   { path: "/tax/documents", element: <TaxDocumentsPage /> },
   { path: "/tax/settings", element: <TaxSettingsPage /> },
+  {
+    path: "/income-statement/payslip/:year/:partner",
+    element: <IncomeStatementPayslipPage />,
+  },
+  {
+    path: "/income-statement/child/:year",
+    element: <IncomeStatementChildPage />,
+  },
 ];
 
 export const taxNavItems: FeatureNavItem[] = [
