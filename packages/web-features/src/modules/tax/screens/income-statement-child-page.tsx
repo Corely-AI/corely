@@ -1,4 +1,7 @@
 import React from "react";
+import { useMutation } from "@tanstack/react-query";
+import type { ChildEntry, ChildrenSectionPayload } from "@corely/contracts";
+import { createDefaultChildrenSectionPayload } from "@corely/contracts";
 import { ArrowLeft } from "lucide-react";
 import {
   Button,
@@ -10,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@corely/ui";
+import { taxReportApi } from "@corely/web-shared/lib/tax-report-api";
 import { useNavigate, useParams } from "react-router-dom";
 import type { BinaryChoice } from "./income-tax-return-shared";
 import { SegmentedControl, sanitizeTaxId } from "./income-tax-return-shared";
@@ -28,11 +32,24 @@ import {
   type RelationshipValue,
   type SharedHouseholdValue,
 } from "./income-statement-child-shared";
+import { useIncomeAnnualReportContext } from "../hooks/useIncomeAnnualReportContext";
+import { useTaxReportSection } from "../hooks/useTaxReportSection";
+import { formatLocalDate } from "./tax-date";
 
 export const IncomeStatementChildPage = () => {
   const navigate = useNavigate();
   const params = useParams<{ year: string }>();
   const year = Number(params.year);
+  const isValidYear = Number.isFinite(year) && year >= 2000;
+  const reportContextQuery = useIncomeAnnualReportContext(year);
+  const reportContext = reportContextQuery.data;
+  const childrenSection = useTaxReportSection({
+    filingId: reportContext?.filingId ?? "",
+    reportId: reportContext?.reportId ?? "",
+    sectionKey: "children",
+    defaultValue: React.useMemo(() => createDefaultChildrenSectionPayload(), []),
+    enabled: Boolean(reportContext) && isValidYear,
+  });
 
   const [taxId, setTaxId] = React.useState("");
   const [firstName, setFirstName] = React.useState("");
@@ -74,10 +91,6 @@ export const IncomeStatementChildPage = () => {
   const [privateSchoolEndDate, setPrivateSchoolEndDate] = React.useState<Date | undefined>();
   const [privateSchoolTotalCost, setPrivateSchoolTotalCost] = React.useState("€ 0");
 
-  if (!Number.isFinite(year) || year < 2000) {
-    return null;
-  }
-
   const resetChildCareForm = () => {
     setChildCareDescription("");
     setChildCareProvider("");
@@ -100,6 +113,9 @@ export const IncomeStatementChildPage = () => {
       {
         id: `${Date.now()}-${current.length}`,
         service: childCareDescription || "Childcare service",
+        provider: childCareProvider,
+        startDate: formatLocalDate(childCareStartDate),
+        endDate: formatLocalDate(childCareEndDate),
         amount: childCareTotalCost || "€ 0",
       },
     ]);
@@ -113,12 +129,76 @@ export const IncomeStatementChildPage = () => {
       {
         id: `${Date.now()}-${current.length}`,
         schoolName: privateSchoolName || "Private school",
+        schoolAddress: privateSchoolAddress,
+        startDate: formatLocalDate(privateSchoolStartDate),
+        endDate: formatLocalDate(privateSchoolEndDate),
         amount: privateSchoolTotalCost || "€ 0",
       },
     ]);
     setPrivateSchoolDialogOpen(false);
     resetPrivateSchoolForm();
   };
+
+  const saveMutation = useMutation({
+    mutationFn: async (nextPayload: ChildrenSectionPayload) => {
+      if (!reportContext) {
+        throw new Error("Missing income tax report context");
+      }
+
+      return taxReportApi.upsertSection(
+        reportContext.filingId,
+        reportContext.reportId,
+        "children",
+        {
+          payload: nextPayload,
+        }
+      );
+    },
+    onSuccess: () => {
+      void childrenSection.refetch();
+      navigate(-1);
+    },
+  });
+
+  const handleSave = async () => {
+    if (!reportContext) {
+      return;
+    }
+
+    const entry: ChildEntry = {
+      id: `child-${Date.now()}`,
+      year,
+      taxId,
+      firstName,
+      lastName,
+      birthDate: formatLocalDate(birthDate),
+      yourRelationship: yourRelationship ?? "",
+      spouseRelationship: spouseRelationship ?? "",
+      otherParentName,
+      otherParentAddress,
+      sharedHousehold,
+      childResidence,
+      livedInGermany,
+      receivesChildBenefit,
+      familyOfficeBranch,
+      hasChildPrivateHealthInsurance,
+      childHealthBasicCoverage,
+      childHealthMandatoryNursing,
+      childHealthReimbursed,
+      childHealthAdditional,
+      childCareCosts,
+      privateSchoolCosts,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const nextEntries = [...childrenSection.value.entries, entry];
+    await saveMutation.mutateAsync({ entries: nextEntries });
+  };
+
+  if (!isValidYear) {
+    return null;
+  }
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-6 p-6 lg:p-8">
@@ -136,6 +216,9 @@ export const IncomeStatementChildPage = () => {
         <div className="space-y-4 border-b border-border/60 pb-4">
           <h1 className="text-4xl font-semibold leading-tight text-foreground">Add child</h1>
           <p className="text-sm text-muted-foreground">Tax year: {year}</p>
+          {!reportContext && !reportContextQuery.isLoading ? (
+            <p className="text-sm text-rose-600">No income tax report found for {year}.</p>
+          ) : null}
         </div>
       </div>
 
@@ -427,8 +510,16 @@ export const IncomeStatementChildPage = () => {
         ) : null}
       </ChildPageSection>
 
+      <div className="sr-only" aria-live="polite">
+        {saveMutation.isPending ? "Saving child details" : null}
+      </div>
       <div className="flex justify-end">
-        <Button type="button" className="rounded-full px-8">
+        <Button
+          type="button"
+          className="rounded-full px-8"
+          onClick={() => void handleSave()}
+          disabled={!reportContext || saveMutation.isPending}
+        >
           Save
         </Button>
       </div>

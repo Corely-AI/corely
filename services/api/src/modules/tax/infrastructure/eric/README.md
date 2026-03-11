@@ -1,4 +1,4 @@
-# ERiC Gateway Integration (Scaffold)
+# ELSTER Gateway Integration
 
 ## Decision
 
@@ -14,13 +14,21 @@ Default target for the gateway is a C#/.NET service that can host ERiC via nativ
 - Extensibility: additional declaration/report types can reuse the same gateway contract.
 - Upgrade control: ERiC version rollouts are decoupled from API deploy cadence.
 
-## Current scaffold in this repo
+## Current implementation in this repo
 
-- `EricPayloadMapperPort` defines `mapReportToEricPayload(reportSnapshot) -> EricRequest`.
-- `AnnualIncomeEricPayloadMapper` implements only `annual_income_report` mapping (stub payload).
-- API creates ERiC jobs (`validate`/`submit`) and enqueues background processing.
-- The background runtime executes a real job lifecycle and stores artifact document references (`xml`, `protocol_pdf`, `log`) using the Documents persistence model.
+- The tax module builds a normalized `TaxElsterGatewayRequest` through an application-layer submission builder port.
+- `HttpTaxElsterGatewayAdapter` encapsulates outbound transport to the external `elster-gateway`.
+- API creates ELSTER jobs (`validate`/`submit`) and enqueues background processing.
+- The background runtime calls the external gateway, maps outcomes into tax job states, and stores artifact document references (`xml`, `protocol_pdf`, `log`) using the Documents persistence model.
+- The tax module persists ELSTER evidence separately from manual bookkeeping submission metadata.
 
-## Next implementation step
+## Current supported declaration scope
 
-Replace the stub background behavior with an outbound call to `elster-gateway`, keep job and artifact persistence unchanged.
+- Supported live path: German periodic VAT advance returns (`DE UStVA` / `VAT_ADVANCE`) only.
+- Unsupported for live ELSTER transport in this repo slice: annual income tax and other declaration families.
+
+## Deliberately deferred
+
+- Native ERiC runtime hosting and version operations remain external to Node.
+- Certificate onboarding, secret custody, and rotation remain gateway/platform concerns.
+- Additional ELSTER form mappings remain future work and should be added behind the same gateway contract, not by coupling the tax module to ERiC-native payloads.

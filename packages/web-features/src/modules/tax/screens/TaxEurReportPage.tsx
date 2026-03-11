@@ -25,15 +25,21 @@ import {
   TableRow,
 } from "@corely/ui";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { useTaxCapabilitiesQuery } from "../hooks/useTaxCapabilitiesQuery";
 
 const YEAR_RANGE = 5;
 
 export function TaxEurReportPage() {
   const { t, i18n } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const locale = t("common.locale", { defaultValue: i18n.language === "de" ? "de-DE" : "en-US" });
   const currentYear = new Date().getFullYear();
-  const [year, setYear] = React.useState<number>(currentYear);
+  const yearParam = Number(searchParams.get("year"));
+  const year =
+    Number.isFinite(yearParam) && yearParam > 2000 && yearParam <= currentYear
+      ? yearParam
+      : currentYear;
 
   const {
     data: capabilities,
@@ -76,7 +82,16 @@ export function TaxEurReportPage() {
           <p className="text-muted-foreground">{t("tax.reports.eur.subtitle")}</p>
         </div>
         <div className="w-full md:w-[140px]">
-          <Select value={String(year)} onValueChange={(value) => setYear(Number(value))}>
+          <Select
+            value={String(year)}
+            onValueChange={(value) =>
+              setSearchParams((prev) => {
+                const next = new URLSearchParams(prev);
+                next.set("year", value);
+                return next;
+              })
+            }
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

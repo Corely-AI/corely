@@ -53,11 +53,20 @@ export const TaxFilingTotalsSchema = z.object({
 export type TaxFilingTotals = z.infer<typeof TaxFilingTotalsSchema>;
 export type IncomeTaxTotals = TaxFilingTotals;
 
+export const TaxFilingSubmissionEvidenceSchema = z.object({
+  transferReference: z.string().optional(),
+  gatewayVersion: z.string().optional(),
+  ericVersion: z.string().optional(),
+  certificateReferenceId: z.string().optional(),
+});
+export type TaxFilingSubmissionEvidence = z.infer<typeof TaxFilingSubmissionEvidenceSchema>;
+
 export const TaxFilingSubmissionSchema = z.object({
   method: TaxSubmissionMethodSchema,
   submissionId: z.string(),
   submittedAt: z.string().datetime(),
   notes: z.string().optional(),
+  evidence: TaxFilingSubmissionEvidenceSchema.optional(),
 });
 export type TaxFilingSubmission = z.infer<typeof TaxFilingSubmissionSchema>;
 

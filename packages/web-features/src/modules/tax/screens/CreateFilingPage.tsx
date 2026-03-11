@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { useToast } from "@corely/ui";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { PeriodCombobox } from "../components/PeriodCombobox";
 
 // Schema for the form
@@ -53,6 +54,7 @@ export const CreateFilingPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { activeWorkspace } = useWorkspace();
+  const { t } = useTranslation();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -160,7 +162,7 @@ export const CreateFilingPage = () => {
                   name="periodKey"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Period</FormLabel>
+                      <FormLabel>{t("tax.createFiling.form.period")}</FormLabel>
                       <FormControl>
                         <PeriodCombobox
                           value={field.value ?? ""}

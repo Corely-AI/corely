@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import {
   TaxIssueSchema,
   type TaxFilingTotals,
@@ -27,6 +27,10 @@ import {
   ANNUAL_INCOME_SECTION_KEY,
   buildAnnualIncomeReportSummary,
 } from "../services/annual-income-report.service";
+import {
+  TAX_ELSTER_GATEWAY_PORT,
+  type TaxElsterGatewayPort,
+} from "../ports/tax-elster-gateway.port";
 
 @RequireTenant()
 @Injectable()
@@ -37,7 +41,8 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     private readonly taxProfileRepo: TaxProfileRepoPort,
     private readonly capabilitiesService: TaxCapabilitiesService,
     private readonly reportSectionRepo: TaxReportSectionRepoPort,
-    private readonly ericJobRepo: TaxEricJobRepoPort
+    private readonly ericJobRepo: TaxEricJobRepoPort,
+    @Inject(TAX_ELSTER_GATEWAY_PORT) private readonly elsterGateway: TaxElsterGatewayPort
   ) {
     super({ logger: null as any });
   }
@@ -66,8 +71,11 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
     const reports = await this.resolveReportSummaries(report, workspaceId);
     const periodKey = this.resolvePeriodKey(report);
     const filingType = this.mapReportTypeToFilingType(report.type);
-    const submissionMethods: Array<"manual" | "elster" | "api"> = ["manual"];
-    const submissionConnectionStatus: "connected" | "notConfigured" = "notConfigured";
+    const submissionConnectionStatus = this.elsterGateway.getConnectionStatus();
+    const submissionMethods: Array<"manual" | "elster" | "api"> =
+      report.type === "VAT_ADVANCE" && submissionConnectionStatus === "connected"
+        ? ["manual", "elster"]
+        : ["manual"];
 
     const filing = {
       id: report.id,
@@ -88,6 +96,7 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
               submissionId: report.submissionReference,
               submittedAt: report.submittedAt.toISOString(),
               notes: report.submissionNotes ?? undefined,
+              evidence: this.resolveSubmissionEvidence(report.meta),
             }
           : undefined,
       payment: this.resolvePayment(report.meta),
@@ -166,6 +175,30 @@ export class GetTaxFilingDetailUseCase extends BaseUseCase<string, TaxFilingDeta
       return submissionValue;
     }
     return "manual";
+  }
+
+  private resolveSubmissionEvidence(meta: TaxReportEntity["meta"]) {
+    const submissionValue =
+      typeof meta?.submission === "object" && meta?.submission
+        ? (meta.submission as { evidence?: unknown }).evidence
+        : undefined;
+
+    if (!submissionValue || typeof submissionValue !== "object") {
+      return undefined;
+    }
+
+    const candidate = submissionValue as Record<string, unknown>;
+    return {
+      transferReference:
+        typeof candidate.transferReference === "string" ? candidate.transferReference : undefined,
+      gatewayVersion:
+        typeof candidate.gatewayVersion === "string" ? candidate.gatewayVersion : undefined,
+      ericVersion: typeof candidate.ericVersion === "string" ? candidate.ericVersion : undefined,
+      certificateReferenceId:
+        typeof candidate.certificateReferenceId === "string"
+          ? candidate.certificateReferenceId
+          : undefined,
+    };
   }
 
   private mapReportTypeToFilingType(type: string): TaxFilingType {

@@ -11,6 +11,7 @@ import {
   type UseCaseError,
   ConflictError,
   NotFoundError,
+  ValidationError,
   ok,
   err,
   RequireTenant,
@@ -74,6 +75,16 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
       return err(new ConflictError("Submission blocked by unresolved issues"));
     }
 
+    if (input.request.method !== "manual") {
+      return err(
+        new ValidationError(
+          "Manual submission endpoint accepts only manual bookkeeping submissions. Use the ELSTER job endpoint for ELSTER transport.",
+          undefined,
+          "Tax:ManualSubmissionOnly"
+        )
+      );
+    }
+
     // Persist the submission
     await this.reportRepo.submitReport({
       tenantId: workspaceId,
@@ -81,6 +92,10 @@ export class SubmitTaxFilingUseCase extends BaseUseCase<
       submittedAt: new Date(input.request.submittedAt),
       submissionReference: input.request.submissionId,
       submissionNotes: input.request.notes ?? null,
+      submissionMethod: "manual",
+      submissionMeta: {
+        channel: "manual",
+      },
     });
 
     const nextMeta = {

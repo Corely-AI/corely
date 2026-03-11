@@ -47,6 +47,7 @@ export * from "./recalculate-tax-filing.schema";
 export * from "./tax-document-link.schema";
 export * from "./income-tax-draft.schema";
 export * from "./annual-income-report.schema";
+export * from "./income-tax-return-sections.schema";
 export * from "./tax-report-sections.schema";
 export * from "./tax-eric-jobs.schema";
 export * from "./eric-gateway.schema";

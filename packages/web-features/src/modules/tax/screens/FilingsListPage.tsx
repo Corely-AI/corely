@@ -38,6 +38,7 @@ import type {
   TaxFilingSummary,
   TaxFilingType,
 } from "@corely/contracts";
+import { useTranslation } from "react-i18next";
 
 const TAB_CONFIG = [
   { value: "vat", label: "VAT" },
@@ -94,6 +95,7 @@ const getNextAction = (status: TaxFilingStatus, id: string) => {
 };
 
 export const FilingsListPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { activeWorkspace } = useWorkspace();
@@ -344,7 +346,7 @@ export const FilingsListPage = () => {
               sortOptions={[
                 { label: "Due date (Soonest)", value: "dueDate:asc" },
                 { label: "Due date (Latest)", value: "dueDate:desc" },
-                { label: "Period (A-Z)", value: "period:asc" },
+                { label: `${t("tax.createFiling.form.period")} (A-Z)`, value: "period:asc" },
                 { label: "Amount (High-Low)", value: "amountCents:desc" },
                 { label: "Amount (Low-High)", value: "amountCents:asc" },
               ]}
@@ -394,7 +396,7 @@ export const FilingsListPage = () => {
                       Type
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                      Period
+                      {t("tax.createFiling.form.period")}
                     </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                       Due date
@@ -440,7 +442,7 @@ export const FilingsListPage = () => {
                         Type
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
-                        Period
+                        {t("tax.createFiling.form.period")}
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                         Due date

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { type TaxFilingSummary, type TaxMode } from "@corely/contracts";
+import { type TaxCenterAnnualItem, type TaxMode } from "@corely/contracts";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { Skeleton } from "@corely/web-shared/shared/components/Skeleton";
@@ -10,7 +10,7 @@ import { CalendarDays, FileText, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface AnnualFilingsPanelProps {
-  items: TaxFilingSummary[];
+  items: TaxCenterAnnualItem[];
   year: number; // The selected annual year
   mode: TaxMode;
   isLoading: boolean;
@@ -41,7 +41,8 @@ export const AnnualFilingsPanel = ({
 
   const typeLabels: Record<string, string> = {
     "vat-annual": t("tax.reports.types.vatAnnual"),
-    "income-tax": t("tax.reports.types.incomeTax"),
+    "profit-loss": t("tax.reports.types.profitLoss"),
+    "income-annual": t("tax.reports.types.incomeTax"),
     yearend: t("tax.center.annual.yearendTitle"),
   };
 
@@ -147,7 +148,7 @@ export const AnnualFilingsPanel = ({
                   {statusLabel[filing.status] ?? t("tax.center.annual.status.draft")}
                 </Badge>
                 <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                  <Link to={`/tax/filings/${filing.id}`}>
+                  <Link to={filing.href}>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

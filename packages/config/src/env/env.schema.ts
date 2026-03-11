@@ -50,6 +50,10 @@ export const envSchema = z.object({
   // ============================================================================
   API_BASE_URL: z.string().url().optional(),
   WORKER_API_SERVICE_TOKEN: z.string().optional(),
+  ELSTER_GATEWAY_BASE_URL: z.string().url().optional(),
+  ELSTER_GATEWAY_API_KEY: z.string().optional(),
+  ELSTER_GATEWAY_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  ELSTER_GATEWAY_DEFAULT_CERTIFICATE_REF: z.string().optional(),
 
   // Worker Tick Configuration
   WORKER_TICK_RUNNERS: z.string().optional(),
@@ -242,6 +246,7 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
   "OTEL_EXPORTER_OTLP_HEADERS",
   "WORKFLOW_QUEUE_SECRET",
   "WORKER_API_SERVICE_TOKEN",
+  "ELSTER_GATEWAY_API_KEY",
 ]);
 
 /**

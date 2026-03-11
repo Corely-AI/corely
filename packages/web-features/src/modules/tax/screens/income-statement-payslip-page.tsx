@@ -1,4 +1,10 @@
 import React from "react";
+import { useMutation } from "@tanstack/react-query";
+import {
+  createDefaultPayslipsSectionPayload,
+  type PayslipEntry,
+  type PayslipsSectionPayload,
+} from "@corely/contracts";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import {
   Button,
@@ -20,7 +26,11 @@ import {
   TableRow,
   cn,
 } from "@corely/ui";
+import { taxReportApi } from "@corely/web-shared/lib/tax-report-api";
 import { useNavigate, useParams } from "react-router-dom";
+import { useIncomeAnnualReportContext } from "../hooks/useIncomeAnnualReportContext";
+import { useTaxReportSection } from "../hooks/useTaxReportSection";
+import { formatLocalDate, parseLocalDate } from "./tax-date";
 
 type PayslipPartner = "spouse" | "main-partner";
 type SimpleRowKind = "money" | "unsupported";
@@ -315,10 +325,10 @@ const UnsupportedCell = () => (
   </div>
 );
 
-const MoneyCell = () => (
+const MoneyCell = ({ value, onChange }: { value: string; onChange: (next: string) => void }) => (
   <Input
-    value=""
-    readOnly
+    value={value}
+    onChange={(event) => onChange(event.target.value)}
     placeholder="€ 0.00"
     className="h-16 rounded-none border-0 bg-background/70 text-xl text-foreground placeholder:text-muted-foreground shadow-none"
   />
@@ -329,16 +339,98 @@ export const IncomeStatementPayslipPage = () => {
   const params = useParams<{ year: string; partner: string }>();
   const year = Number(params.year);
   const partner = params.partner;
+  const isValidYear = Number.isFinite(year) && year >= 2000;
+  const isPartnerValid = isValidPartner(partner);
+  const reportContextQuery = useIncomeAnnualReportContext(year);
+  const reportContext = reportContextQuery.data;
+  const payslipsSection = useTaxReportSection({
+    filingId: reportContext?.filingId ?? "",
+    reportId: reportContext?.reportId ?? "",
+    sectionKey: "payslips",
+    defaultValue: React.useMemo(() => createDefaultPayslipsSectionPayload(), []),
+    enabled: Boolean(reportContext) && isValidYear && isPartnerValid,
+  });
 
   const [taxClass, setTaxClass] = React.useState("");
   const [periodStart, setPeriodStart] = React.useState<Date | undefined>();
   const [periodEnd, setPeriodEnd] = React.useState<Date | undefined>();
+  const [values, setValues] = React.useState<Record<string, string>>({});
 
-  if (!Number.isFinite(year) || year < 2000 || !isValidPartner(partner)) {
+  React.useEffect(() => {
+    if (!reportContext || !isPartnerValid || !isValidYear) {
+      return;
+    }
+
+    const existingEntry = payslipsSection.value.entries.find(
+      (entry) => entry.partner === partner && entry.year === year
+    );
+
+    if (!existingEntry) {
+      setTaxClass("");
+      setPeriodStart(undefined);
+      setPeriodEnd(undefined);
+      setValues({});
+      return;
+    }
+
+    setTaxClass(existingEntry.taxClass);
+    setPeriodStart(parseLocalDate(existingEntry.periodStart));
+    setPeriodEnd(parseLocalDate(existingEntry.periodEnd));
+    setValues(existingEntry.values);
+  }, [partner, payslipsSection.value.entries, reportContext, year]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (nextPayload: PayslipsSectionPayload) => {
+      if (!reportContext) {
+        throw new Error("Missing income tax report context");
+      }
+
+      return taxReportApi.upsertSection(
+        reportContext.filingId,
+        reportContext.reportId,
+        "payslips",
+        {
+          payload: nextPayload,
+        }
+      );
+    },
+    onSuccess: () => {
+      void payslipsSection.refetch();
+    },
+  });
+
+  if (!isValidYear || !isPartnerValid) {
     return null;
   }
 
   const ownerLabel = partner === "spouse" ? "spouse" : "main partner";
+  const updateValue = (rowId: string, next: string) =>
+    setValues((current) => ({
+      ...current,
+      [rowId]: next,
+    }));
+  const handleSave = async () => {
+    if (!reportContext) {
+      return;
+    }
+
+    const entry: PayslipEntry = {
+      id: `${partner}-${year}`,
+      year,
+      partner,
+      taxClass,
+      periodStart: formatLocalDate(periodStart),
+      periodEnd: formatLocalDate(periodEnd),
+      values,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const nextEntries = payslipsSection.value.entries.filter(
+      (existing) => !(existing.partner === partner && existing.year === year)
+    );
+    nextEntries.push(entry);
+    await saveMutation.mutateAsync({ entries: nextEntries });
+  };
 
   return (
     <div className="mx-auto max-w-[1500px] p-6 lg:p-8">
@@ -368,6 +460,9 @@ export const IncomeStatementPayslipPage = () => {
             <p className="text-sm text-muted-foreground">
               Filing year: {year} · Partner: {ownerLabel}
             </p>
+            {!reportContext && !reportContextQuery.isLoading ? (
+              <p className="text-sm text-rose-600">No income tax report found for {year}.</p>
+            ) : null}
           </div>
 
           <div className="grid gap-4 md:grid-cols-[300px_400px] md:items-center">
@@ -440,7 +535,14 @@ export const IncomeStatementPayslipPage = () => {
                       {row.rowNumber}. {row.label}
                     </TableCell>
                     <TableCell className="p-0">
-                      {row.valueType === "money" ? <MoneyCell /> : <UnsupportedCell />}
+                      {row.valueType === "money" ? (
+                        <MoneyCell
+                          value={values[row.id] ?? ""}
+                          onChange={(next) => updateValue(row.id, next)}
+                        />
+                      ) : (
+                        <UnsupportedCell />
+                      )}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -458,7 +560,14 @@ export const IncomeStatementPayslipPage = () => {
                         {child.label}
                       </TableCell>
                       <TableCell className="p-0">
-                        {child.valueType === "money" ? <MoneyCell /> : <UnsupportedCell />}
+                        {child.valueType === "money" ? (
+                          <MoneyCell
+                            value={values[child.id] ?? ""}
+                            onChange={(next) => updateValue(child.id, next)}
+                          />
+                        ) : (
+                          <UnsupportedCell />
+                        )}
                       </TableCell>
                     </TableRow>
                   ))
@@ -468,7 +577,9 @@ export const IncomeStatementPayslipPage = () => {
           </Table>
 
           <div className="flex justify-end">
-            <Button className="rounded-full px-8">Save</Button>
+            <Button className="rounded-full px-8" onClick={() => void handleSave()}>
+              Save
+            </Button>
           </div>
         </CardContent>
       </Card>

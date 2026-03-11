@@ -1,4 +1,5 @@
 import React from "react";
+import type { PersonalDetailsSectionPayload } from "@corely/contracts";
 import {
   Button,
   Calendar,
@@ -18,11 +19,11 @@ import {
 } from "@corely/ui";
 import { Calendar as CalendarIcon } from "lucide-react";
 import {
+  GERMAN_STATE_OPTIONS,
   MAX_PROFESSION_LENGTH,
-  RELIGION_OPTIONS,
+  ReligionSelect,
   RequiredHint,
   SegmentedControl,
-  sanitizeNumeric,
   sanitizeTaxId,
 } from "./income-tax-return-shared";
 import type {
@@ -31,42 +32,90 @@ import type {
   HomeAddressChoice,
   ReligionValue,
 } from "./income-tax-return-shared";
+import { formatLocalDate, parseLocalDate } from "./tax-date";
 
-export const IncomeTaxReturnPersonalDetailsStep = () => {
-  const [civilStatus, setCivilStatus] = React.useState("married");
-  const [marriedSince, setMarriedSince] = React.useState<Date | undefined>(new Date(2010, 8, 9));
-  const [declarationType, setDeclarationType] = React.useState<DeclarationType>("joint");
-  const [jointTaxStateRegister, setJointTaxStateRegister] = React.useState("");
-  const [jointTaxNumber, setJointTaxNumber] = React.useState("");
+type IncomeTaxReturnPersonalDetailsStepProps = {
+  value: PersonalDetailsSectionPayload;
+  onChange: (next: PersonalDetailsSectionPayload) => void;
+};
 
-  const [gender, setGender] = React.useState<Gender>("female");
-  const [firstName, setFirstName] = React.useState("Manh Ha");
-  const [lastName, setLastName] = React.useState("Doan");
-  const [professionInGerman, setProfessionInGerman] = React.useState("Softwareentwicklung");
-  const [birthDay, setBirthDay] = React.useState("23");
-  const [birthMonth, setBirthMonth] = React.useState("8");
-  const [birthYear, setBirthYear] = React.useState("1986");
-  const [street, setStreet] = React.useState("Wolfsberger Str.");
-  const [houseNumber, setHouseNumber] = React.useState("11");
-  const [apartmentNumber, setApartmentNumber] = React.useState("6");
-  const [additionalInfo, setAdditionalInfo] = React.useState("Mustermann o");
-  const [city, setCity] = React.useState("Berlin");
-  const [zipCode, setZipCode] = React.useState("12623");
-  const [personalTaxId, setPersonalTaxId] = React.useState("12 345 678 901");
-  const [religion, setReligion] = React.useState<ReligionValue>("not-subject-church-tax");
+export const IncomeTaxReturnPersonalDetailsStep = ({
+  value,
+  onChange,
+}: IncomeTaxReturnPersonalDetailsStepProps) => {
+  const update = (patch: Partial<PersonalDetailsSectionPayload>) =>
+    onChange({ ...value, ...patch });
 
-  const [spouseGender, setSpouseGender] = React.useState<Gender | "">("");
-  const [spouseFirstName, setSpouseFirstName] = React.useState("");
-  const [spouseLastName, setSpouseLastName] = React.useState("");
-  const [spouseProfessionInGerman, setSpouseProfessionInGerman] = React.useState("");
-  const [spouseBirthDay, setSpouseBirthDay] = React.useState("");
-  const [spouseBirthMonth, setSpouseBirthMonth] = React.useState("");
-  const [spouseBirthYear, setSpouseBirthYear] = React.useState("");
-  const [spouseDifferentHomeAddress, setSpouseDifferentHomeAddress] = React.useState<
-    HomeAddressChoice | ""
-  >("");
-  const [spousePersonalTaxId, setSpousePersonalTaxId] = React.useState("");
-  const [spouseReligion, setSpouseReligion] = React.useState<ReligionValue | "">("");
+  const civilStatus = value.civilStatus;
+  const marriedSince = parseLocalDate(value.marriedSince);
+  const setMarriedSince = (next: Date | undefined) =>
+    update({ marriedSince: formatLocalDate(next) });
+  const declarationType = value.declarationType as DeclarationType;
+  const jointTaxStateRegister = value.jointTaxStateRegister;
+  const jointTaxNumber = value.jointTaxNumber;
+
+  const gender = value.gender as Gender;
+  const firstName = value.firstName;
+  const lastName = value.lastName;
+  const professionInGerman = value.professionInGerman;
+  const birthDate = parseLocalDate(value.birthDate);
+  const setBirthDate = (next: Date | undefined) => update({ birthDate: formatLocalDate(next) });
+  const street = value.street;
+  const houseNumber = value.houseNumber;
+  const apartmentNumber = value.apartmentNumber;
+  const additionalInfo = value.additionalInfo;
+  const city = value.city;
+  const zipCode = value.zipCode;
+  const personalTaxId = value.personalTaxId;
+  const religion = value.religion as ReligionValue;
+
+  const spouseGender = value.spouseGender as Gender | "";
+  const spouseFirstName = value.spouseFirstName;
+  const spouseLastName = value.spouseLastName;
+  const spouseProfessionInGerman = value.spouseProfessionInGerman;
+  const spouseBirthDate = parseLocalDate(value.spouseBirthDate);
+  const setSpouseBirthDate = (next: Date | undefined) =>
+    update({ spouseBirthDate: formatLocalDate(next) });
+  const spouseDifferentHomeAddress = value.spouseDifferentHomeAddress as HomeAddressChoice;
+  const spouseStreet = value.spouseStreet;
+  const spouseHouseNumber = value.spouseHouseNumber;
+  const spouseApartmentNumber = value.spouseApartmentNumber;
+  const spouseAdditionalInfo = value.spouseAdditionalInfo;
+  const spouseCity = value.spouseCity;
+  const spouseZipCode = value.spouseZipCode;
+  const spousePersonalTaxId = value.spousePersonalTaxId;
+  const spouseReligion = value.spouseReligion as ReligionValue | "";
+
+  const setCivilStatus = (next: string) => update({ civilStatus: next });
+  const setDeclarationType = (next: DeclarationType) => update({ declarationType: next });
+  const setJointTaxStateRegister = (next: string) => update({ jointTaxStateRegister: next });
+  const setJointTaxNumber = (next: string) => update({ jointTaxNumber: next });
+  const setGender = (next: Gender) => update({ gender: next });
+  const setFirstName = (next: string) => update({ firstName: next });
+  const setLastName = (next: string) => update({ lastName: next });
+  const setProfessionInGerman = (next: string) => update({ professionInGerman: next });
+  const setStreet = (next: string) => update({ street: next });
+  const setHouseNumber = (next: string) => update({ houseNumber: next });
+  const setApartmentNumber = (next: string) => update({ apartmentNumber: next });
+  const setAdditionalInfo = (next: string) => update({ additionalInfo: next });
+  const setCity = (next: string) => update({ city: next });
+  const setZipCode = (next: string) => update({ zipCode: next });
+  const setPersonalTaxId = (next: string) => update({ personalTaxId: next });
+  const setReligion = (next: ReligionValue) => update({ religion: next });
+  const setSpouseGender = (next: Gender | "") => update({ spouseGender: next });
+  const setSpouseFirstName = (next: string) => update({ spouseFirstName: next });
+  const setSpouseLastName = (next: string) => update({ spouseLastName: next });
+  const setSpouseProfessionInGerman = (next: string) => update({ spouseProfessionInGerman: next });
+  const setSpouseDifferentHomeAddress = (next: HomeAddressChoice | "") =>
+    update({ spouseDifferentHomeAddress: next as HomeAddressChoice });
+  const setSpouseStreet = (next: string) => update({ spouseStreet: next });
+  const setSpouseHouseNumber = (next: string) => update({ spouseHouseNumber: next });
+  const setSpouseApartmentNumber = (next: string) => update({ spouseApartmentNumber: next });
+  const setSpouseAdditionalInfo = (next: string) => update({ spouseAdditionalInfo: next });
+  const setSpouseCity = (next: string) => update({ spouseCity: next });
+  const setSpouseZipCode = (next: string) => update({ spouseZipCode: next });
+  const setSpousePersonalTaxId = (next: string) => update({ spousePersonalTaxId: next });
+  const setSpouseReligion = (next: ReligionValue | "") => update({ spouseReligion: next });
 
   const isJointTaxNumberMissing =
     declarationType === "joint" && (!jointTaxStateRegister || jointTaxNumber.trim().length === 0);
@@ -74,8 +123,14 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
   const isSpouseFirstNameMissing = spouseFirstName.trim().length === 0;
   const isSpouseLastNameMissing = spouseLastName.trim().length === 0;
   const isSpouseProfessionMissing = spouseProfessionInGerman.trim().length === 0;
-  const isSpouseBirthDateMissing = !spouseBirthDay || !spouseBirthMonth || !spouseBirthYear;
-  const isSpouseDifferentAddressMissing = spouseDifferentHomeAddress === "";
+  const isSpouseBirthDateMissing = !spouseBirthDate;
+  const isSpouseDifferentAddressMissing = false;
+  const shouldShowSpouseAddress = spouseDifferentHomeAddress === "yes";
+  const isSpouseStreetMissing = shouldShowSpouseAddress && spouseStreet.trim().length === 0;
+  const isSpouseHouseNumberMissing =
+    shouldShowSpouseAddress && spouseHouseNumber.trim().length === 0;
+  const isSpouseCityMissing = shouldShowSpouseAddress && spouseCity.trim().length === 0;
+  const isSpouseZipCodeMissing = shouldShowSpouseAddress && spouseZipCode.trim().length === 0;
   const isSpouseReligionMissing = spouseReligion === "";
 
   return (
@@ -163,9 +218,11 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
                       <SelectValue placeholder="Select..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="berlin">Berlin</SelectItem>
-                      <SelectItem value="bayern">Bavaria</SelectItem>
-                      <SelectItem value="hamburg">Hamburg</SelectItem>
+                      {GERMAN_STATE_OPTIONS.map((state) => (
+                        <SelectItem key={state.value} value={state.value}>
+                          {state.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -253,51 +310,30 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
             <p className="text-xs text-muted-foreground">Your current profession in German</p>
           </div>
 
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-foreground">Birth date</legend>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[92px_92px_1fr]">
-              <div className="space-y-1">
-                <Label htmlFor="birth-day" className="text-xs text-muted-foreground">
-                  Day
-                </Label>
-                <Input
-                  id="birth-day"
-                  inputMode="numeric"
-                  value={birthDay}
-                  onChange={(event) => setBirthDay(sanitizeNumeric(event.target.value, 2))}
-                  className="h-10"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="birth-month" className="text-xs text-muted-foreground">
-                  Month
-                </Label>
-                <Input
-                  id="birth-month"
-                  inputMode="numeric"
-                  value={birthMonth}
-                  onChange={(event) => setBirthMonth(sanitizeNumeric(event.target.value, 2))}
-                  className="h-10"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="birth-year" className="text-xs text-muted-foreground">
-                  Year
-                </Label>
-                <Input
-                  id="birth-year"
-                  inputMode="numeric"
-                  value={birthYear}
-                  onChange={(event) => setBirthYear(sanitizeNumeric(event.target.value, 4))}
-                  className="h-10"
-                />
-              </div>
-            </div>
-          </fieldset>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">Birth date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "h-10 w-full justify-start text-left font-normal",
+                    !birthDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {birthDate ? birthDate.toLocaleDateString("de-DE") : <span>Select date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={birthDate} onSelect={setBirthDate} />
+              </PopoverContent>
+            </Popover>
+          </div>
 
           <fieldset className="space-y-3">
             <legend className="text-sm font-medium text-foreground">Home address</legend>
-            <div className="space-y-1">
+            <div className="space-y-2">
               <Label htmlFor="street" className="text-xs text-muted-foreground">
                 Street
               </Label>
@@ -309,7 +345,7 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
               />
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <Label htmlFor="house-number" className="text-xs text-muted-foreground">
                   House number
                 </Label>
@@ -320,7 +356,7 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
                   className="h-10"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <Label htmlFor="apartment-number" className="text-xs text-muted-foreground">
                   Apartment number
                 </Label>
@@ -332,7 +368,7 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
                   className="h-10"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <Label htmlFor="additional-info" className="text-xs text-muted-foreground">
                   Additional info
                 </Label>
@@ -346,7 +382,7 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
               </div>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <Label htmlFor="city" className="text-xs text-muted-foreground">
                   City
                 </Label>
@@ -357,7 +393,7 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
                   className="h-10"
                 />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <Label htmlFor="zip-code" className="text-xs text-muted-foreground">
                   Zip code
                 </Label>
@@ -365,7 +401,9 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
                   id="zip-code"
                   inputMode="numeric"
                   value={zipCode}
-                  onChange={(event) => setZipCode(sanitizeNumeric(event.target.value, 5))}
+                  onChange={(event) =>
+                    setZipCode(event.target.value.replace(/[^0-9]/g, "").slice(0, 5))
+                  }
                   className="h-10"
                 />
               </div>
@@ -395,18 +433,7 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
             <Label htmlFor="religion" className="text-sm font-medium text-foreground">
               Religion
             </Label>
-            <Select value={religion} onValueChange={(next) => setReligion(next as ReligionValue)}>
-              <SelectTrigger id="religion" className="h-10">
-                <SelectValue placeholder="Select..." />
-              </SelectTrigger>
-              <SelectContent>
-                {RELIGION_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ReligionSelect id="religion" value={religion} onValueChange={setReligion} />
             <p className="text-xs text-muted-foreground">
               The religion you are registered with and pay church tax to.
             </p>
@@ -484,51 +511,31 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
             <RequiredHint show={isSpouseProfessionMissing} />
           </div>
 
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-foreground">Birth date</legend>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[92px_92px_1fr]">
-              <div className="space-y-1">
-                <Label htmlFor="spouse-birth-day" className="text-xs text-muted-foreground">
-                  Day
-                </Label>
-                <Input
-                  id="spouse-birth-day"
-                  inputMode="numeric"
-                  value={spouseBirthDay}
-                  onChange={(event) => setSpouseBirthDay(sanitizeNumeric(event.target.value, 2))}
-                  placeholder="e.g. 28"
-                  className="h-10"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="spouse-birth-month" className="text-xs text-muted-foreground">
-                  Month
-                </Label>
-                <Input
-                  id="spouse-birth-month"
-                  inputMode="numeric"
-                  value={spouseBirthMonth}
-                  onChange={(event) => setSpouseBirthMonth(sanitizeNumeric(event.target.value, 2))}
-                  placeholder="e.g. 2"
-                  className="h-10"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="spouse-birth-year" className="text-xs text-muted-foreground">
-                  Year
-                </Label>
-                <Input
-                  id="spouse-birth-year"
-                  inputMode="numeric"
-                  value={spouseBirthYear}
-                  onChange={(event) => setSpouseBirthYear(sanitizeNumeric(event.target.value, 4))}
-                  placeholder="e.g. 1990"
-                  className="h-10"
-                />
-              </div>
-            </div>
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-foreground">Birth date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "h-10 w-full justify-start text-left font-normal",
+                    !spouseBirthDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {spouseBirthDate ? (
+                    spouseBirthDate.toLocaleDateString("de-DE")
+                  ) : (
+                    <span>Select date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar mode="single" selected={spouseBirthDate} onSelect={setSpouseBirthDate} />
+              </PopoverContent>
+            </Popover>
             <RequiredHint show={isSpouseBirthDateMissing} />
-          </fieldset>
+          </div>
 
           <div className="space-y-2">
             <Label className="text-sm font-medium text-foreground">
@@ -545,6 +552,104 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
             />
             <RequiredHint show={isSpouseDifferentAddressMissing} />
           </div>
+
+          {shouldShowSpouseAddress ? (
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-medium text-foreground">Home address</legend>
+
+              <div className="space-y-2">
+                <Label htmlFor="spouse-street" className="text-xs text-muted-foreground">
+                  Street
+                </Label>
+                <Input
+                  id="spouse-street"
+                  value={spouseStreet}
+                  onChange={(event) => setSpouseStreet(event.target.value)}
+                  placeholder="e.g. Rosa Luxemburg"
+                  className="h-10"
+                />
+                <RequiredHint show={isSpouseStreetMissing} />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="spouse-house-number" className="text-xs text-muted-foreground">
+                    House number
+                  </Label>
+                  <Input
+                    id="spouse-house-number"
+                    value={spouseHouseNumber}
+                    onChange={(event) => setSpouseHouseNumber(event.target.value)}
+                    placeholder="e.g. 28"
+                    className="h-10"
+                  />
+                  <RequiredHint show={isSpouseHouseNumberMissing} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="spouse-apartment-number"
+                    className="text-xs text-muted-foreground"
+                  >
+                    Apartment number
+                  </Label>
+                  <Input
+                    id="spouse-apartment-number"
+                    value={spouseApartmentNumber}
+                    onChange={(event) => setSpouseApartmentNumber(event.target.value)}
+                    placeholder="e.g. 6"
+                    className="h-10"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="spouse-additional-info" className="text-xs text-muted-foreground">
+                    Additional Info
+                  </Label>
+                  <Input
+                    id="spouse-additional-info"
+                    value={spouseAdditionalInfo}
+                    onChange={(event) => setSpouseAdditionalInfo(event.target.value)}
+                    placeholder="e.g. Mustermann o"
+                    className="h-10"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-[2fr_1fr]">
+                <div className="space-y-2">
+                  <Label htmlFor="spouse-city" className="text-xs text-muted-foreground">
+                    City
+                  </Label>
+                  <Input
+                    id="spouse-city"
+                    value={spouseCity}
+                    onChange={(event) => setSpouseCity(event.target.value)}
+                    placeholder="e.g. Berlin"
+                    className="h-10"
+                  />
+                  <RequiredHint show={isSpouseCityMissing} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="spouse-zip-code" className="text-xs text-muted-foreground">
+                    Zip code
+                  </Label>
+                  <Input
+                    id="spouse-zip-code"
+                    inputMode="numeric"
+                    value={spouseZipCode}
+                    onChange={(event) =>
+                      setSpouseZipCode(event.target.value.replace(/[^0-9]/g, "").slice(0, 5))
+                    }
+                    placeholder="e.g. 12345"
+                    className="h-10"
+                  />
+                  <RequiredHint show={isSpouseZipCodeMissing} />
+                </div>
+              </div>
+            </fieldset>
+          ) : null}
 
           <div className="space-y-2">
             <Label htmlFor="spouse-personal-tax-id" className="text-sm font-medium text-foreground">
@@ -566,21 +671,11 @@ export const IncomeTaxReturnPersonalDetailsStep = () => {
             <Label htmlFor="spouse-religion" className="text-sm font-medium text-foreground">
               Religion
             </Label>
-            <Select
+            <ReligionSelect
+              id="spouse-religion"
               value={spouseReligion || undefined}
-              onValueChange={(next) => setSpouseReligion(next as ReligionValue)}
-            >
-              <SelectTrigger id="spouse-religion" className="h-10">
-                <SelectValue placeholder="Select..." />
-              </SelectTrigger>
-              <SelectContent>
-                {RELIGION_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onValueChange={setSpouseReligion}
+            />
             <p className="text-xs text-muted-foreground">
               The religion you are registered with and pay church tax to.
             </p>

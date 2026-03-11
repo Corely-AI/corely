@@ -184,4 +184,17 @@ export default defineWorkspace([
       ],
     },
   },
+  {
+    extends: "./packages/web-features/vitest.config.ts",
+    root: "./packages/web-features",
+    test: {
+      exclude: [
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/*.int.test.ts",
+        "**/e2e/**",
+        "**/apps/e2e/**",
+      ],
+    },
+  },
 ]);

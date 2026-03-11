@@ -60,6 +60,9 @@ import { PollIncomeTaxDraftPdfExportUseCase } from "./application/use-cases/poll
 import { ConfirmIncomeTaxDraftSubmissionUseCase } from "./application/use-cases/confirm-income-tax-draft-submission.use-case";
 import { GetAnnualIncomeReportSectionUseCase } from "./application/use-cases/get-annual-income-report-section.use-case";
 import { UpsertAnnualIncomeReportSectionUseCase } from "./application/use-cases/upsert-annual-income-report-section.use-case";
+import { ListTaxReportSectionsUseCase } from "./application/use-cases/list-tax-report-sections.use-case";
+import { GetTaxReportSectionUseCase } from "./application/use-cases/get-tax-report-section.use-case";
+import { UpsertTaxReportSectionUseCase } from "./application/use-cases/upsert-tax-report-section.use-case";
 import { RequestTaxEricJobUseCase } from "./application/use-cases/request-tax-eric-job.use-case";
 import { GetTaxEricJobUseCase } from "./application/use-cases/get-tax-eric-job.use-case";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
@@ -87,6 +90,7 @@ import { PaymentProviderPort, PAYMENT_PROVIDER_PORT } from "./domain/ports/payme
 // Reporting
 import { ReportRegistry } from "./domain/reporting/report-registry";
 import { VatAdvanceDeStrategy } from "./domain/reporting/strategies/de/vat-advance-de.strategy";
+import { VatAnnualDeStrategy } from "./domain/reporting/strategies/de/vat-annual-de.strategy";
 import { EuSalesListDeStrategy } from "./domain/reporting/strategies/de/eu-sales-list-de.strategy";
 import { IncomeTaxDeStrategy } from "./domain/reporting/strategies/de/income-tax-de.strategy";
 
@@ -125,10 +129,15 @@ import { TAX_FILING_EXPORT_BUILDER_PORT } from "./application/ports/tax-filing-e
 import { TAX_EUR_SOURCE_PORT } from "./application/ports/tax-eur-source.port";
 import { TaxSnapshotEurSourceAdapter } from "./infrastructure/reports/tax-snapshot-eur-source.adapter";
 import {
-  ERIC_PAYLOAD_MAPPER_PORT,
-  type EricPayloadMapperPort,
-} from "./application/ports/eric-payload-mapper.port";
-import { AnnualIncomeEricPayloadMapper } from "./infrastructure/eric/annual-income-eric-payload.mapper";
+  TAX_ELSTER_GATEWAY_PORT,
+  type TaxElsterGatewayPort,
+} from "./application/ports/tax-elster-gateway.port";
+import {
+  TAX_ELSTER_SUBMISSION_BUILDER_PORT,
+  type TaxElsterSubmissionBuilderPort,
+} from "./application/ports/tax-elster-submission-builder.port";
+import { DeUstvaElsterSubmissionBuilder } from "./infrastructure/eric/de-ustva-elster-submission-builder";
+import { HttpTaxElsterGatewayAdapter } from "./infrastructure/eric/http-tax-elster-gateway.adapter";
 
 @Module({
   imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
@@ -191,6 +200,9 @@ import { AnnualIncomeEricPayloadMapper } from "./infrastructure/eric/annual-inco
     ConfirmIncomeTaxDraftSubmissionUseCase,
     GetAnnualIncomeReportSectionUseCase,
     UpsertAnnualIncomeReportSectionUseCase,
+    ListTaxReportSectionsUseCase,
+    GetTaxReportSectionUseCase,
+    UpsertTaxReportSectionUseCase,
     RequestTaxEricJobUseCase,
     GetTaxEricJobUseCase,
     {
@@ -244,6 +256,7 @@ import { AnnualIncomeEricPayloadMapper } from "./infrastructure/eric/annual-inco
     // --------------------------------------------------------------------------
     ReportRegistry,
     VatAdvanceDeStrategy,
+    VatAnnualDeStrategy,
     EuSalesListDeStrategy,
     IncomeTaxDeStrategy,
 
@@ -264,11 +277,18 @@ import { AnnualIncomeEricPayloadMapper } from "./infrastructure/eric/annual-inco
     { provide: WORKSPACE_TAX_SETTINGS_PORT, useClass: PrismaWorkspaceTaxSettingsAdapter },
     { provide: TAX_FILING_EXPORT_BUILDER_PORT, useClass: DeUstvaTaxFilingExportBuilder },
     { provide: TAX_EUR_SOURCE_PORT, useClass: TaxSnapshotEurSourceAdapter },
-    AnnualIncomeEricPayloadMapper,
+    DeUstvaElsterSubmissionBuilder,
+    HttpTaxElsterGatewayAdapter,
     {
-      provide: ERIC_PAYLOAD_MAPPER_PORT,
-      useFactory: (mapper: AnnualIncomeEricPayloadMapper): EricPayloadMapperPort => mapper,
-      inject: [AnnualIncomeEricPayloadMapper],
+      provide: TAX_ELSTER_SUBMISSION_BUILDER_PORT,
+      useFactory: (builder: DeUstvaElsterSubmissionBuilder): TaxElsterSubmissionBuilderPort =>
+        builder,
+      inject: [DeUstvaElsterSubmissionBuilder],
+    },
+    {
+      provide: TAX_ELSTER_GATEWAY_PORT,
+      useFactory: (gateway: HttpTaxElsterGatewayAdapter): TaxElsterGatewayPort => gateway,
+      inject: [HttpTaxElsterGatewayAdapter],
     },
   ],
   exports: [
@@ -291,10 +311,12 @@ export class TaxModule {
   constructor(
     @Inject(ReportRegistry) private readonly registry: ReportRegistry,
     @Inject(VatAdvanceDeStrategy) private readonly vatAdvanceDe: VatAdvanceDeStrategy,
+    @Inject(VatAnnualDeStrategy) private readonly vatAnnualDe: VatAnnualDeStrategy,
     @Inject(EuSalesListDeStrategy) private readonly euSalesDe: EuSalesListDeStrategy,
     @Inject(IncomeTaxDeStrategy) private readonly incomeTaxDe: IncomeTaxDeStrategy
   ) {
     this.registry.register(vatAdvanceDe);
+    this.registry.register(vatAnnualDe);
     this.registry.register(euSalesDe);
     this.registry.register(incomeTaxDe);
   }

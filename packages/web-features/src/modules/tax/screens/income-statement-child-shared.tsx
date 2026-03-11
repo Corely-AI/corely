@@ -1,4 +1,18 @@
 import React from "react";
+import type {
+  ChildCareCost,
+  ChildResidenceValue,
+  PrivateSchoolCost,
+  RelationshipValue,
+  SharedHouseholdValue,
+} from "@corely/contracts";
+export type {
+  ChildCareCost,
+  ChildResidenceValue,
+  PrivateSchoolCost,
+  RelationshipValue,
+  SharedHouseholdValue,
+} from "@corely/contracts";
 import { AlertCircle } from "lucide-react";
 import {
   Button,
@@ -23,28 +37,6 @@ import {
   TableRow,
   cn,
 } from "@corely/ui";
-
-export type RelationshipValue =
-  | "biological-child"
-  | "adopted-child"
-  | "step-child"
-  | "foster-child"
-  | "grandchild";
-
-export type SharedHouseholdValue = "yes-entire-year" | "no";
-export type ChildResidenceValue = "with-me" | "with-other-parent" | "somewhere-else";
-
-export type ChildCareCost = {
-  id: string;
-  service: string;
-  amount: string;
-};
-
-export type PrivateSchoolCost = {
-  id: string;
-  schoolName: string;
-  amount: string;
-};
 
 export const RELATIONSHIP_OPTIONS: Array<{ value: RelationshipValue; label: string }> = [
   { value: "biological-child", label: "Biological child" },

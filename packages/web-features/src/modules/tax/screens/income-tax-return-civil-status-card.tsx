@@ -17,7 +17,12 @@ import {
   cn,
 } from "@corely/ui";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { RequiredHint, SegmentedControl, sanitizeNumeric } from "./income-tax-return-shared";
+import {
+  GERMAN_STATE_OPTIONS,
+  RequiredHint,
+  SegmentedControl,
+  sanitizeNumeric,
+} from "./income-tax-return-shared";
 import type { DeclarationType } from "./income-tax-return-shared";
 
 export const IncomeTaxReturnCivilStatusCard = () => {
@@ -114,9 +119,11 @@ export const IncomeTaxReturnCivilStatusCard = () => {
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="berlin">Berlin</SelectItem>
-                    <SelectItem value="bayern">Bavaria</SelectItem>
-                    <SelectItem value="hamburg">Hamburg</SelectItem>
+                    {GERMAN_STATE_OPTIONS.map((state) => (
+                      <SelectItem key={state.value} value={state.value}>
+                        {state.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

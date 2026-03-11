@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { randomUUID } from "crypto";
+import type { TaxSubmissionMethod } from "@corely/contracts";
 import { PrismaService } from "@corely/data";
 import { TaxReportRepoPort } from "../../domain/ports";
 import type { TaxReportEntity } from "../../domain/entities";
@@ -55,7 +56,38 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     submittedAt: Date;
     submissionReference: string;
     submissionNotes?: string | null;
+    submissionMethod?: TaxSubmissionMethod;
+    submissionMeta?: Record<string, unknown> | null;
   }): Promise<TaxReportEntity> {
+    const current = await this.prisma.taxReport.findFirst({
+      where: { id: params.reportId, tenantId: params.tenantId },
+    });
+    if (!current) {
+      throw new Error("Report not found for tenant");
+    }
+
+    const existingMeta =
+      current.meta && typeof current.meta === "object" && !Array.isArray(current.meta)
+        ? (current.meta as Record<string, unknown>)
+        : {};
+    const existingSubmission =
+      existingMeta.submission &&
+      typeof existingMeta.submission === "object" &&
+      !Array.isArray(existingMeta.submission)
+        ? (existingMeta.submission as Record<string, unknown>)
+        : {};
+    const mergedMeta = {
+      ...existingMeta,
+      submission: {
+        ...existingSubmission,
+        method: params.submissionMethod ?? existingSubmission.method ?? "manual",
+        submittedAt: params.submittedAt.toISOString(),
+        submissionId: params.submissionReference,
+        notes: params.submissionNotes ?? null,
+        ...(params.submissionMeta ?? {}),
+      },
+    };
+
     const updated = await this.prisma.taxReport.updateMany({
       where: { id: params.reportId, tenantId: params.tenantId },
       data: {
@@ -63,6 +95,7 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
         submittedAt: params.submittedAt,
         submissionReference: params.submissionReference,
         submissionNotes: params.submissionNotes ?? null,
+        meta: mergedMeta as object,
         updatedAt: new Date(),
       },
     });
@@ -180,6 +213,40 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
     submittedAt?: Date | null;
     pdfStorageKey?: string | null;
   }): Promise<TaxReportEntity> {
+    const isAnnualReport = ["VAT_ANNUAL", "INCOME_TAX", "TRADE_TAX"].includes(input.type);
+
+    if (isAnnualReport) {
+      const existing = await this.prisma.taxReport.findFirst({
+        where: {
+          tenantId: input.tenantId,
+          type: input.type as any,
+          periodStart: input.periodStart,
+        },
+      });
+
+      if (existing) {
+        const row = await this.prisma.taxReport.update({
+          where: { id: existing.id },
+          data: {
+            group: input.group as any,
+            periodLabel: input.periodLabel,
+            periodEnd: input.periodEnd,
+            dueDate: input.dueDate,
+            status: input.status as any,
+            amountFinalCents: input.amountFinalCents ?? null,
+            submittedAt: input.submittedAt ?? null,
+            submissionReference: input.submissionReference ?? null,
+            submissionNotes: input.submissionNotes ?? null,
+            archivedReason: input.archivedReason ?? null,
+            pdfStorageKey: input.pdfStorageKey === undefined ? undefined : input.pdfStorageKey,
+            updatedAt: new Date(),
+          },
+        });
+
+        return this.toDomain(row);
+      }
+    }
+
     const row = await this.prisma.taxReport.upsert({
       where: {
         tenantId_type_periodStart_periodEnd: {
@@ -233,25 +300,29 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
   }
 
   async seedDefaultReports(tenantId: string): Promise<void> {
-    // We remove the early 'return' check so we can backfill missing reports (like past year)
-    // if the user already has some reports. skipDuplicates handles the safety.
-
     const now = new Date();
     const currentYear = now.getUTCFullYear();
-    const pastYear = currentYear - 1;
 
     // Current Quarter calculation
     const quarterStart = new Date(Date.UTC(currentYear, Math.floor(now.getUTCMonth() / 3) * 3, 1));
     const quarterEnd = new Date(
-      Date.UTC(quarterStart.getUTCFullYear(), quarterStart.getUTCMonth() + 3, 0)
+      Date.UTC(quarterStart.getUTCFullYear(), quarterStart.getUTCMonth() + 3, 0, 23, 59, 59, 999)
     );
 
-    // Calculate due date: 10 days after quarter ends
-    const quarterDue = new Date(quarterEnd);
-    quarterDue.setUTCDate(quarterDue.getUTCDate() + 10);
+    const existingQuarter = await this.prisma.taxReport.findFirst({
+      where: {
+        tenantId,
+        type: "VAT_ADVANCE",
+        periodStart: quarterStart,
+      },
+    });
 
-    const reports: any[] = [
-      {
+    if (existingQuarter) {
+      return;
+    }
+
+    await this.prisma.taxReport.create({
+      data: {
         id: randomUUID(),
         tenantId,
         type: "VAT_ADVANCE",
@@ -259,44 +330,13 @@ export class PrismaTaxReportRepoAdapter extends TaxReportRepoPort {
         periodLabel: `Q${Math.floor(now.getUTCMonth() / 3) + 1} ${currentYear}`,
         periodStart: quarterStart,
         periodEnd: quarterEnd,
-        dueDate: quarterDue,
+        dueDate: new Date(
+          Date.UTC(quarterEnd.getUTCFullYear(), quarterEnd.getUTCMonth() + 1, 10, 23, 59, 59, 999)
+        ),
         status: "OPEN",
         amountEstimatedCents: null,
         currency: "EUR",
       },
-      // Past Year (2025)
-      {
-        id: randomUUID(),
-        tenantId,
-        type: "VAT_ANNUAL",
-        group: "ANNUAL_REPORT",
-        periodLabel: `${pastYear}`,
-        periodStart: new Date(Date.UTC(pastYear, 0, 1)),
-        periodEnd: new Date(Date.UTC(pastYear, 11, 31)),
-        dueDate: new Date(Date.UTC(currentYear, 4, 31)), // May 31 of current year
-        status: "OPEN",
-        amountEstimatedCents: null,
-        currency: "EUR",
-      },
-      // Current Year (2026)
-      {
-        id: randomUUID(),
-        tenantId,
-        type: "VAT_ANNUAL",
-        group: "ANNUAL_REPORT",
-        periodLabel: `${currentYear}`,
-        periodStart: new Date(Date.UTC(currentYear, 0, 1)),
-        periodEnd: new Date(Date.UTC(currentYear, 11, 31)),
-        dueDate: new Date(Date.UTC(currentYear + 1, 4, 31)), // May 31 of next year
-        status: "UPCOMING",
-        amountEstimatedCents: null,
-        currency: "EUR",
-      },
-    ];
-
-    await this.prisma.taxReport.createMany({
-      data: reports,
-      skipDuplicates: true,
     });
   }
 

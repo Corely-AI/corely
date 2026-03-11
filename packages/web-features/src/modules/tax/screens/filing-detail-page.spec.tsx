@@ -307,7 +307,9 @@ describe("FilingDetailPage", () => {
       );
     });
 
-    const nextPage = screen.getByLabelText("Go to next page");
+    const includedItems = screen.getByTestId("tax-filing-included-items");
+    await within(includedItems).findByText("Page 1 of 2");
+    const nextPage = within(includedItems).getByLabelText("Go to next page");
     await user.click(nextPage);
     await waitFor(() => {
       expect(listFilingItemsMock).toHaveBeenLastCalledWith(

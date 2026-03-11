@@ -13,6 +13,7 @@ It currently supports **Germany (DE)** as the primary jurisdiction.
 Related:
 
 - [Tax Income Date Basis and Payment Invariant](./tax-income-date-basis.md)
+- [Tax ELSTER Architecture](./tax-elster-architecture.md)
 
 ---
 
@@ -203,6 +204,29 @@ Tax filing lifecycle events are emitted via `OutboxPort` (`kernel/outbox-port`):
 | `TaxFilingRecalculated` | `RecalculateTaxFilingUseCase` |
 
 Events are also written to the `TaxFilingEvent` table in the DB for local audit/replay.
+
+---
+
+## ELSTER Submission
+
+The tax module now contains the first production-oriented ELSTER foundation slice.
+
+- Node/Nest remains the orchestrator for filing lifecycle, ELSTER jobs, evidence persistence, and API-facing workflow state.
+- Native ERiC runtime concerns remain external behind an `elster-gateway` boundary.
+- Supported live declaration scope is currently limited to `DE UStVA` (`VAT_ADVANCE`) only.
+- Manual bookkeeping submission and ELSTER transmission are modeled separately.
+
+Current ELSTER job statuses:
+
+- `queued`
+- `running`
+- `validation_failed`
+- `submission_failed`
+- `technical_failed`
+- `succeeded`
+- `succeeded_with_warnings`
+
+Certificate handling is still reference-based only in this slice. Secret custody and onboarding remain deferred.
 
 ---
 

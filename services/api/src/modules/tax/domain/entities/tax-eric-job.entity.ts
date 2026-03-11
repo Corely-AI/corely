@@ -1,8 +1,11 @@
 import type {
   TaxEricArtifactRef,
   TaxEricJobAction,
+  TaxEricReportType,
   TaxEricJobStatus,
-  TaxFilingReportType,
+  TaxElsterDeclarationType,
+  TaxElsterGatewayMessage,
+  TaxElsterGatewayOutcome,
 } from "@corely/contracts";
 
 export interface TaxEricJobEntity {
@@ -10,11 +13,24 @@ export interface TaxEricJobEntity {
   tenantId: string;
   filingId: string;
   reportId: string;
-  reportType: TaxFilingReportType;
+  reportType: TaxEricReportType;
+  declarationType?: TaxElsterDeclarationType | null;
   action: TaxEricJobAction;
   status: TaxEricJobStatus;
+  correlationId?: string | null;
+  idempotencyKey?: string | null;
+  payloadVersion?: string | null;
+  requestHash?: string | null;
+  certificateReferenceId?: string | null;
+  gatewayVersion?: string | null;
+  ericVersion?: string | null;
+  transferReference?: string | null;
+  outcome?: TaxElsterGatewayOutcome | null;
+  resultCodes: string[];
+  messages: TaxElsterGatewayMessage[];
   requestPayload?: Record<string, unknown> | null;
   responsePayload?: Record<string, unknown> | null;
+  technicalDetails?: Record<string, unknown> | null;
   errorMessage?: string | null;
   artifacts: TaxEricArtifactRef[];
   createdAt: Date;

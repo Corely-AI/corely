@@ -43,6 +43,36 @@ export const ensureIncomeTaxReportForFiling = async (params: {
   return report;
 };
 
+export const ensureUstvaReportForFiling = async (params: {
+  reportRepo: TaxReportRepoPort;
+  workspaceId: string;
+  filingId: string;
+  reportId: string;
+}): Promise<TaxReportEntity> => {
+  if (params.reportId !== params.filingId) {
+    throw new ValidationError(
+      "ELSTER UStVA jobs currently operate on the filing report itself.",
+      undefined,
+      "Tax:UnsupportedReportType"
+    );
+  }
+
+  const report = await params.reportRepo.findById(params.workspaceId, params.filingId);
+  if (!report) {
+    throw new NotFoundError("Filing not found", { filingId: params.filingId });
+  }
+
+  if (report.type !== "VAT_ADVANCE") {
+    throw new ValidationError(
+      "ELSTER submission is currently supported only for DE periodic VAT filings (UStVA).",
+      undefined,
+      "Tax:UnsupportedReportType"
+    );
+  }
+
+  return report;
+};
+
 export const toAnnualIncomeSectionDto = (params: {
   section: Pick<
     TaxReportSectionEntity,
@@ -80,10 +110,23 @@ export const toTaxEricJobDto = (job: TaxEricJobEntity): TaxEricJob => ({
   filingId: job.filingId,
   reportId: job.reportId,
   reportType: job.reportType,
+  declarationType: job.declarationType ?? null,
   action: job.action,
   status: job.status,
+  correlationId: job.correlationId ?? null,
+  idempotencyKey: job.idempotencyKey ?? null,
+  payloadVersion: job.payloadVersion ?? null,
+  requestHash: job.requestHash ?? null,
+  certificateReferenceId: job.certificateReferenceId ?? null,
+  gatewayVersion: job.gatewayVersion ?? null,
+  ericVersion: job.ericVersion ?? null,
+  transferReference: job.transferReference ?? null,
+  outcome: job.outcome ?? null,
+  resultCodes: job.resultCodes,
+  messages: job.messages,
   requestPayload: job.requestPayload ?? null,
   responsePayload: job.responsePayload ?? null,
+  technicalDetails: job.technicalDetails ?? null,
   errorMessage: job.errorMessage ?? null,
   artifacts: job.artifacts,
   createdAt: job.createdAt.toISOString(),

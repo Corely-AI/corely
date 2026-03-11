@@ -11,7 +11,7 @@ import {
   RequireTenant,
 } from "@corely/kernel";
 import { TaxEricJobRepoPort, TaxReportRepoPort } from "../../domain/ports";
-import { ensureIncomeTaxReportForFiling, toTaxEricJobDto } from "./tax-reporting.helpers";
+import { toTaxEricJobDto } from "./tax-reporting.helpers";
 
 @RequireTenant()
 @Injectable()
@@ -31,12 +31,18 @@ export class GetTaxEricJobUseCase extends BaseUseCase<
     ctx: UseCaseContext
   ): Promise<Result<GetTaxEricJobOutput, UseCaseError>> {
     const workspaceId = ctx.workspaceId || ctx.tenantId!;
-    const report = await ensureIncomeTaxReportForFiling({
-      reportRepo: this.reportRepo,
-      workspaceId,
-      filingId: input.filingId,
-      reportId: input.reportId,
-    });
+    const filing = await this.reportRepo.findById(workspaceId, input.filingId);
+    if (!filing) {
+      return err(new NotFoundError("Filing not found", { filingId: input.filingId }));
+    }
+
+    const report =
+      input.reportId === input.filingId
+        ? filing
+        : await this.reportRepo.findById(workspaceId, input.reportId);
+    if (!report) {
+      return err(new NotFoundError("Report not found", { reportId: input.reportId }));
+    }
 
     const job = await this.ericJobRepo.findById({
       tenantId: workspaceId,

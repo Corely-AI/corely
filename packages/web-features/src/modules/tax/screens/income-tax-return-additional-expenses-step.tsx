@@ -1,4 +1,5 @@
 import React from "react";
+import type { AdditionalExpensesSectionPayload, ChildEntry } from "@corely/contracts";
 import { CircleAlert } from "lucide-react";
 import {
   Button,
@@ -18,6 +19,9 @@ import type { BinaryChoice } from "./income-tax-return-shared";
 import { SegmentedControl } from "./income-tax-return-shared";
 
 type IncomeTaxReturnAdditionalExpensesStepProps = {
+  value: AdditionalExpensesSectionPayload;
+  onChange: (next: AdditionalExpensesSectionPayload) => void;
+  childrenEntries?: ChildEntry[];
   onNext?: () => void;
 };
 
@@ -43,18 +47,22 @@ const MoneyField = ({ id, label, value, onChange }: MoneyFieldProps) => (
 );
 
 export const IncomeTaxReturnAdditionalExpensesStep = ({
+  value,
+  onChange,
+  childrenEntries = [],
   onNext,
 }: IncomeTaxReturnAdditionalExpensesStepProps) => {
   const navigate = useNavigate();
   const taxYear = new Date().getFullYear() - 1;
-  const [hasChildrenUnder18, setHasChildrenUnder18] = React.useState<BinaryChoice>("yes");
-  const [hasDonations, setHasDonations] = React.useState<BinaryChoice>("yes");
-  const [hasEmployeeExpensesOverThreshold, setHasEmployeeExpensesOverThreshold] =
-    React.useState<BinaryChoice>("yes");
-  const [donationsNationalCharities, setDonationsNationalCharities] = React.useState("€ 0");
-  const [donationsEuInstitutions, setDonationsEuInstitutions] = React.useState("€ 0");
-  const [donationsPoliticalParties, setDonationsPoliticalParties] = React.useState("€ 0");
-  const [donationsVoterUnions, setDonationsVoterUnions] = React.useState("€ 0");
+  const update = (patch: Partial<AdditionalExpensesSectionPayload>) =>
+    onChange({ ...value, ...patch });
+  const hasChildrenUnder18 = value.hasChildrenUnder18 as BinaryChoice;
+  const hasDonations = value.hasDonations as BinaryChoice;
+  const hasEmployeeExpensesOverThreshold = value.hasEmployeeExpensesOverThreshold as BinaryChoice;
+  const donationsNationalCharities = value.donationsNationalCharities;
+  const donationsEuInstitutions = value.donationsEuInstitutions;
+  const donationsPoliticalParties = value.donationsPoliticalParties;
+  const donationsVoterUnions = value.donationsVoterUnions;
 
   return (
     <div className="space-y-6">
@@ -70,7 +78,7 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
               <SegmentedControl
                 ariaLabel="Children under 18"
                 value={hasChildrenUnder18}
-                onChange={(next) => setHasChildrenUnder18(next as BinaryChoice)}
+                onChange={(next) => update({ hasChildrenUnder18: next as BinaryChoice })}
                 options={[
                   { value: "yes", label: "Yes" },
                   { value: "no", label: "No" },
@@ -101,21 +109,40 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow className="border-border/60 bg-card/30">
-                      <TableCell
-                        colSpan={3}
-                        className="py-10 text-center text-body text-foreground/75"
-                      >
-                        No children added yet.{" "}
-                        <button
-                          type="button"
-                          className="text-sky-500 hover:text-sky-400"
-                          onClick={() => navigate(`/income-statement/child/${taxYear}`)}
+                    {childrenEntries.length === 0 ? (
+                      <TableRow className="border-border/60 bg-card/30">
+                        <TableCell
+                          colSpan={3}
+                          className="py-10 text-center text-body text-foreground/75"
                         >
-                          Add child
-                        </button>
-                      </TableCell>
-                    </TableRow>
+                          No children added yet.{" "}
+                          <button
+                            type="button"
+                            className="text-sky-500 hover:text-sky-400"
+                            onClick={() => navigate(`/income-statement/child/${taxYear}`)}
+                          >
+                            Add child
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      childrenEntries.map((child) => {
+                        const birthYear = child.birthDate
+                          ? Number(child.birthDate.slice(0, 4))
+                          : undefined;
+                        const age = birthYear ? Math.max(0, taxYear - birthYear) : "—";
+                        return (
+                          <TableRow key={child.id} className="border-border/60 bg-card/30">
+                            <TableCell className="text-body text-foreground">
+                              {[child.firstName, child.lastName].filter(Boolean).join(" ") ||
+                                "Unnamed child"}
+                            </TableCell>
+                            <TableCell className="text-body text-foreground">{age}</TableCell>
+                            <TableCell />
+                          </TableRow>
+                        );
+                      })
+                    )}
                   </TableBody>
                 </Table>
               </div>
@@ -136,7 +163,7 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
               <SegmentedControl
                 ariaLabel="Donations"
                 value={hasDonations}
-                onChange={(next) => setHasDonations(next as BinaryChoice)}
+                onChange={(next) => update({ hasDonations: next as BinaryChoice })}
                 options={[
                   { value: "yes", label: "Yes" },
                   { value: "no", label: "No" },
@@ -150,25 +177,25 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
                   id="donations-national-charities"
                   label="Donations to national charities (Optional)"
                   value={donationsNationalCharities}
-                  onChange={setDonationsNationalCharities}
+                  onChange={(next) => update({ donationsNationalCharities: next })}
                 />
                 <MoneyField
                   id="donations-eu-institutions"
                   label="Donations to charitable institutions (EU/EEA) (Optional)"
                   value={donationsEuInstitutions}
-                  onChange={setDonationsEuInstitutions}
+                  onChange={(next) => update({ donationsEuInstitutions: next })}
                 />
                 <MoneyField
                   id="donations-political-parties"
                   label="Donations to political parties (Optional)"
                   value={donationsPoliticalParties}
-                  onChange={setDonationsPoliticalParties}
+                  onChange={(next) => update({ donationsPoliticalParties: next })}
                 />
                 <MoneyField
                   id="donations-voter-unions"
                   label="Donations to independent voter unions (Optional)"
                   value={donationsVoterUnions}
-                  onChange={setDonationsVoterUnions}
+                  onChange={(next) => update({ donationsVoterUnions: next })}
                 />
               </div>
             ) : null}
@@ -195,7 +222,9 @@ export const IncomeTaxReturnAdditionalExpensesStep = ({
               <SegmentedControl
                 ariaLabel="Employee expenses over threshold"
                 value={hasEmployeeExpensesOverThreshold}
-                onChange={(next) => setHasEmployeeExpensesOverThreshold(next as BinaryChoice)}
+                onChange={(next) =>
+                  update({ hasEmployeeExpensesOverThreshold: next as BinaryChoice })
+                }
                 options={[
                   { value: "yes", label: "Yes" },
                   { value: "no", label: "No" },
