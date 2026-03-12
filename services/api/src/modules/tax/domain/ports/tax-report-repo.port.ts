@@ -1,3 +1,4 @@
+import type { TaxSubmissionMethod } from "@corely/contracts";
 import type { TaxReportEntity } from "../entities";
 
 export abstract class TaxReportRepoPort {
@@ -15,6 +16,8 @@ export abstract class TaxReportRepoPort {
     submittedAt: Date;
     submissionReference: string;
     submissionNotes?: string | null;
+    submissionMethod?: TaxSubmissionMethod;
+    submissionMeta?: Record<string, unknown> | null;
   }): Promise<TaxReportEntity>;
 
   abstract markPaid(params: {

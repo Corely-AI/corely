@@ -286,8 +286,11 @@ enum TaxEricJobAction {
 enum TaxEricJobStatus {
   QUEUED
   RUNNING
+  VALIDATION_FAILED
+  SUBMISSION_FAILED
+  TECHNICAL_FAILED
   SUCCEEDED
-  FAILED
+  SUCCEEDED_WITH_WARNINGS
 
   @@schema("billing")
 }
@@ -339,26 +342,40 @@ model TaxReportSection {
 }
 
 model TaxEricJob {
-  id              String         @id @default(cuid())
-  tenantId        String
-  filingId        String
-  reportId        String
-  reportType      String         @db.VarChar(64)
-  action          TaxEricJobAction
-  status          TaxEricJobStatus
-  requestPayload  Json?
-  responsePayload Json?
-  errorMessage    String?
-  artifacts       Json?
-  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
-  startedAt       DateTime?      @db.Timestamptz(6)
-  finishedAt      DateTime?      @db.Timestamptz(6)
-  updatedAt       DateTime       @updatedAt @db.Timestamptz(6)
+  id                     String           @id @default(cuid())
+  tenantId               String
+  filingId               String
+  reportId               String
+  reportType             String           @db.VarChar(64)
+  declarationType        String?          @db.VarChar(64)
+  action                 TaxEricJobAction
+  status                 TaxEricJobStatus
+  correlationId          String?
+  idempotencyKey         String?
+  payloadVersion         String?          @db.VarChar(64)
+  requestHash            String?          @db.VarChar(128)
+  certificateReferenceId String?         @db.VarChar(128)
+  gatewayVersion         String?          @db.VarChar(64)
+  ericVersion            String?          @db.VarChar(64)
+  transferReference      String?          @db.VarChar(128)
+  outcome                String?          @db.VarChar(64)
+  requestPayload         Json?
+  responsePayload        Json?
+  resultCodes            Json?
+  messages               Json?
+  technicalDetails       Json?
+  errorMessage           String?
+  artifacts              Json?
+  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
+  startedAt              DateTime?        @db.Timestamptz(6)
+  finishedAt             DateTime?        @db.Timestamptz(6)
+  updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
 
   report TaxReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, reportId, createdAt])
   @@index([tenantId, status, createdAt])
+  @@index([tenantId, reportId, action, idempotencyKey])
   @@schema("billing")
 }
 

@@ -11,6 +11,7 @@ import { Label } from "@corely/ui";
 import { Switch } from "@corely/ui";
 import { Textarea } from "@corely/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
+import { COUNTRY_OPTIONS } from "@corely/web-shared/lib/country-options";
 import { taxApi } from "@corely/web-shared/lib/tax-api";
 import {
   taxProfileFormSchema,
@@ -122,8 +123,6 @@ export default function TaxSettingsPage() {
   const selectedRegime = form.watch("regime");
   const isVatExempt = selectedRegime === "VAT_EXEMPT";
 
-  const countryOptions = [{ value: "DE", label: t("tax.countries.de") }];
-
   const filingOptions = [
     { value: "MONTHLY", label: t("tax.filing.monthly") },
     { value: "QUARTERLY", label: t("tax.filing.quarterly") },
@@ -182,7 +181,7 @@ export default function TaxSettingsPage() {
                         <SelectValue placeholder={t("tax.placeholders.country")} />
                       </SelectTrigger>
                       <SelectContent>
-                        {countryOptions.map((opt) => (
+                        {COUNTRY_OPTIONS.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
                             {opt.label}
                           </SelectItem>

@@ -4,6 +4,8 @@ export { default as TaxReportsPage } from "./screens/TaxReportsPage";
 export { default as TaxEurReportPage } from "./screens/TaxEurReportPage";
 export { default as TaxAnnualAssistantPage } from "./screens/TaxAnnualAssistantPage";
 export { default as IncomeTaxReturnPage } from "./screens/income-tax-return-page";
+export { default as IncomeStatementChildPage } from "./screens/income-statement-child-page";
+export { default as IncomeStatementPayslipPage } from "./screens/income-statement-payslip-page";
 export * from "./screens/VatPeriodDetailsPage";
 export { default as ReportDetailPage } from "./screens/ReportDetailPage";
 export * from "./screens/TaxCenterPage";

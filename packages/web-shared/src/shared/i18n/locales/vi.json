@@ -876,16 +876,16 @@
         "cancel": "Hủy bỏ"
       },
       "periodCombobox": {
-        "placeholder": "Chọn hoặc nhập một khoảng thời gian…",
-        "searchPlaceholder": "Tìm kiếm hoặc nhập dấu chấm…",
+        "placeholder": "Chọn hoặc nhập kỳ tính thuế…",
+        "searchPlaceholder": "Tìm hoặc nhập kỳ tính thuế…",
         "useCustom": "Sử dụng \"{{value}}\"",
-        "customHint": "Nhấn Enter hoặc nhấp để sử dụng khoảng thời gian tùy chỉnh này",
-        "noPeriods": "Không tìm thấy khoảng thời gian nào.",
-        "customHeading": "Phong tục",
-        "customPeriod": "Thời gian tùy chỉnh",
-        "quartersHeading": "Khu",
-        "monthlyHeading": "hàng tháng",
-        "footerHint": "Nhập {{qExample}} hoặc {{mExample}} cho khoảng thời gian tùy chỉnh",
+        "customHint": "Nhấn Enter hoặc bấm để dùng kỳ tùy chỉnh này",
+        "noPeriods": "Không tìm thấy kỳ nào.",
+        "customHeading": "Tùy chỉnh",
+        "customPeriod": "Kỳ tùy chỉnh",
+        "quartersHeading": "Theo quý",
+        "monthlyHeading": "Theo tháng",
+        "footerHint": "Nhập {{qExample}} hoặc {{mExample}} để dùng kỳ tùy chỉnh",
         "quarters": {
           "1": "Q1",
           "2": "Q2",
@@ -1011,11 +1011,11 @@
             "other": "Khác"
           },
           "year": "Năm tính thuế",
-          "period": "Giai đoạn",
+          "period": "Kỳ tính thuế",
           "cancel": "Hủy bỏ",
           "submit": "Tạo hồ sơ",
           "errors": {
-            "periodRequired": "Cần có khoảng thời gian để nộp hồ sơ VAT",
+            "periodRequired": "Kỳ tính thuế là bắt buộc đối với tờ khai VAT",
             "yearRequired": "Năm là bắt buộc đối với hồ sơ hàng năm"
           }
         },

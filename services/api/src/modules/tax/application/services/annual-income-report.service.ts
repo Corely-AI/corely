@@ -7,6 +7,7 @@ import {
   type TaxReportSectionValidationError,
 } from "@corely/contracts";
 import type { TaxEricJobEntity } from "../../domain/entities/tax-eric-job.entity";
+import { isFailedTaxEricJobStatus } from "../../domain/entities";
 import type { TaxReportSectionEntity } from "../../domain/entities/tax-report-section.entity";
 
 export const ANNUAL_INCOME_REPORT_TYPE = "annual_income_report" as const;
@@ -249,19 +250,23 @@ export const deriveAnnualIncomeReportStatus = (params: {
   jobs: TaxEricJobEntity[];
 }): TaxFilingReportStatus => {
   const latestSubmitSuccess = params.jobs.find(
-    (job) => job.action === "submit" && job.status === "succeeded"
+    (job) =>
+      job.action === "submit" &&
+      (job.status === "succeeded" || job.status === "succeeded_with_warnings")
   );
   if (latestSubmitSuccess) {
     return "submitted";
   }
 
-  const latestFailure = params.jobs.find((job) => job.status === "failed");
+  const latestFailure = params.jobs.find((job) => isFailedTaxEricJobStatus(job.status));
   if (latestFailure) {
     return "failed";
   }
 
   const latestValidateSuccess = params.jobs.find(
-    (job) => job.action === "validate" && job.status === "succeeded"
+    (job) =>
+      job.action === "validate" &&
+      (job.status === "succeeded" || job.status === "succeeded_with_warnings")
   );
   if (latestValidateSuccess) {
     return "validated";

@@ -129,6 +129,22 @@ export class EnvService {
     return this.config.WORKER_API_SERVICE_TOKEN;
   }
 
+  get ELSTER_GATEWAY_BASE_URL(): string | undefined {
+    return this.config.ELSTER_GATEWAY_BASE_URL;
+  }
+
+  get ELSTER_GATEWAY_API_KEY(): string | undefined {
+    return this.config.ELSTER_GATEWAY_API_KEY;
+  }
+
+  get ELSTER_GATEWAY_TIMEOUT_MS(): number {
+    return this.config.ELSTER_GATEWAY_TIMEOUT_MS;
+  }
+
+  get ELSTER_GATEWAY_DEFAULT_CERTIFICATE_REF(): string | undefined {
+    return this.config.ELSTER_GATEWAY_DEFAULT_CERTIFICATE_REF;
+  }
+
   get WORKER_TICK_RUNNERS(): string | undefined {
     return this.config.WORKER_TICK_RUNNERS;
   }

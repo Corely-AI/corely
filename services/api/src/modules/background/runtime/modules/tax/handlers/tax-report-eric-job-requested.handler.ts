@@ -1,11 +1,22 @@
 import { Logger } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import { DocumentAggregate } from "@corely/domain";
-import type { ObjectStoragePort } from "@corely/kernel";
+import {
+  ExternalServiceError,
+  type AuditPort,
+  type ObjectStoragePort,
+  type OutboxPort,
+} from "@corely/kernel";
+import { TaxElsterGatewayRequestSchema, type TaxElsterGatewayResult } from "@corely/contracts";
 import { type PrismaDocumentRepoAdapter, type PrismaFileRepoAdapter } from "@corely/data";
 import type { EventHandler, OutboxEvent } from "../../outbox/event-handler.interface";
-import type { PrismaTaxEricJobRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-eric-job-repo.adapter";
-import type { TaxEricArtifactKind, TaxEricArtifactRef } from "@corely/contracts";
+import { type PrismaTaxReportRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-report-repo.adapter";
+import { type PrismaTaxEricJobRepoAdapter } from "@/modules/tax/infrastructure/prisma/prisma-tax-eric-job-repo.adapter";
+import {
+  isTerminalTaxEricJobStatus,
+  mapGatewayOutcomeToTaxEricJobStatus,
+} from "@/modules/tax/domain/entities";
+import { type TaxElsterGatewayPort } from "@/modules/tax/application/ports/tax-elster-gateway.port";
 
 type Payload = {
   tenantId: string;
@@ -21,9 +32,13 @@ export class TaxReportEricJobRequestedHandler implements EventHandler {
 
   constructor(
     private readonly ericJobRepo: PrismaTaxEricJobRepoAdapter,
+    private readonly reportRepo: PrismaTaxReportRepoAdapter,
+    private readonly gateway: TaxElsterGatewayPort,
     private readonly objectStorage: ObjectStoragePort,
     private readonly documentRepo: PrismaDocumentRepoAdapter,
-    private readonly fileRepo: PrismaFileRepoAdapter
+    private readonly fileRepo: PrismaFileRepoAdapter,
+    private readonly audit: AuditPort,
+    private readonly outbox: OutboxPort
   ) {}
 
   async handle(event: OutboxEvent): Promise<void> {
@@ -44,7 +59,23 @@ export class TaxReportEricJobRequestedHandler implements EventHandler {
       return;
     }
 
-    if (job.status === "succeeded" || job.status === "failed") {
+    if (isTerminalTaxEricJobStatus(job.status)) {
+      return;
+    }
+
+    const parsedRequest = TaxElsterGatewayRequestSchema.safeParse(job.requestPayload ?? {});
+    if (!parsedRequest.success) {
+      await this.ericJobRepo.markFailed({
+        tenantId: workspaceId,
+        jobId: job.id,
+        status: "technical_failed",
+        finishedAt: new Date(),
+        outcome: "technical_failed",
+        errorMessage: "Stored ELSTER gateway request payload is invalid.",
+        technicalDetails: {
+          issues: parsedRequest.error.issues,
+        },
+      });
       return;
     }
 
@@ -54,89 +85,254 @@ export class TaxReportEricJobRequestedHandler implements EventHandler {
       startedAt: new Date(),
     });
 
-    try {
-      const artifacts = await this.persistArtifacts({
-        workspaceId,
-        jobId: job.id,
+    await this.audit.log({
+      tenantId: workspaceId,
+      action: "tax_elster_job.started",
+      entityType: "TAX_ERIC_JOB",
+      entityId: job.id,
+      userId: "system",
+      metadata: {
+        filingId: job.filingId,
         reportId: job.reportId,
         action: job.action,
-        requestPayload: job.requestPayload ?? {},
-      });
+        correlationId: parsedRequest.data.correlationId,
+      },
+    });
 
-      await this.ericJobRepo.markSucceeded({
-        tenantId: workspaceId,
-        jobId: job.id,
-        finishedAt: new Date(),
-        artifacts,
-        responsePayload: {
-          provider: "elster-gateway",
-          status: "stubbed",
-          message: "Processed by stubbed ERiC gateway pipeline.",
-        },
-      });
-    } catch (error) {
-      this.logger.error("tax_report_eric_job.failed", {
-        tenantId,
+    try {
+      const result = await this.gateway.execute(parsedRequest.data);
+      await this.handleGatewayResult({
         workspaceId,
         jobId: job.id,
-        error,
+        filingId: job.filingId,
+        reportId: job.reportId,
+        certificateReferenceId: job.certificateReferenceId ?? null,
+        result,
       });
+    } catch (error) {
+      const details =
+        error instanceof ExternalServiceError && error.details && typeof error.details === "object"
+          ? (error.details as Record<string, unknown>)
+          : null;
+
       await this.ericJobRepo.markFailed({
         tenantId: workspaceId,
         jobId: job.id,
+        status: "technical_failed",
         finishedAt: new Date(),
-        errorMessage: error instanceof Error ? error.message : "ERiC job failed",
+        outcome: "technical_failed",
+        errorMessage: error instanceof Error ? error.message : "ELSTER gateway execution failed",
+        technicalDetails: {
+          ...(details ?? {}),
+          gatewayConfigured: this.gateway.getConnectionStatus() === "connected",
+        },
       });
-      throw error;
+
+      await this.audit.log({
+        tenantId: workspaceId,
+        action: "tax_elster_job.technical_failed",
+        entityType: "TAX_ERIC_JOB",
+        entityId: job.id,
+        userId: "system",
+        metadata: {
+          filingId: job.filingId,
+          reportId: job.reportId,
+          action: job.action,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          technicalDetails: details ?? undefined,
+        },
+      });
     }
+  }
+
+  private async handleGatewayResult(params: {
+    workspaceId: string;
+    jobId: string;
+    filingId: string;
+    reportId: string;
+    certificateReferenceId?: string | null;
+    result: TaxElsterGatewayResult;
+  }): Promise<void> {
+    const hasWarnings = params.result.messages.some((message) => message.severity === "warning");
+    const status = mapGatewayOutcomeToTaxEricJobStatus({
+      outcome: params.result.outcome,
+      hasWarnings,
+    });
+    const artifacts = await this.persistArtifacts({
+      workspaceId: params.workspaceId,
+      jobId: params.jobId,
+      reportId: params.reportId,
+      result: params.result,
+    });
+
+    const responsePayload = {
+      requestId: params.result.requestId,
+      gatewayStatus: params.result.gatewayStatus,
+      outcome: params.result.outcome,
+      rawMetadata: params.result.rawMetadata,
+    };
+
+    if (status === "succeeded" || status === "succeeded_with_warnings") {
+      if (params.result.operation === "submit") {
+        if (!params.result.transferReference) {
+          await this.ericJobRepo.markFailed({
+            tenantId: params.workspaceId,
+            jobId: params.jobId,
+            status: "technical_failed",
+            finishedAt: new Date(params.result.finishedAt),
+            outcome: "technical_failed",
+            errorMessage: "Gateway submit result did not include a transfer reference.",
+            gatewayVersion: params.result.gatewayVersion ?? null,
+            ericVersion: params.result.ericVersion ?? null,
+            resultCodes: params.result.resultCodes,
+            messages: params.result.messages,
+            responsePayload,
+            technicalDetails: {
+              gatewayStatus: params.result.gatewayStatus,
+            },
+          });
+          return;
+        }
+
+        await this.reportRepo.submitReport({
+          tenantId: params.workspaceId,
+          reportId: params.reportId,
+          submittedAt: new Date(params.result.finishedAt),
+          submissionReference: params.result.transferReference,
+          submissionNotes: `ELSTER ${params.result.operation} completed via gateway`,
+          submissionMethod: "elster",
+          submissionMeta: {
+            channel: "elster",
+            evidence: {
+              transferReference: params.result.transferReference,
+              gatewayVersion: params.result.gatewayVersion,
+              ericVersion: params.result.ericVersion,
+              certificateReferenceId: params.certificateReferenceId,
+            },
+            resultCodes: params.result.resultCodes,
+          },
+        });
+
+        await this.outbox.enqueue({
+          tenantId: params.workspaceId,
+          eventType: "TaxFilingSubmitted",
+          payload: {
+            filingId: params.filingId,
+            tenantId: params.workspaceId,
+            submittedAt: params.result.finishedAt,
+            submissionId: params.result.transferReference,
+            method: "elster",
+          },
+          correlationId: params.result.correlationId,
+        });
+      }
+
+      await this.ericJobRepo.markCompleted({
+        tenantId: params.workspaceId,
+        jobId: params.jobId,
+        status,
+        finishedAt: new Date(params.result.finishedAt),
+        artifacts,
+        outcome: params.result.outcome,
+        gatewayVersion: params.result.gatewayVersion ?? null,
+        ericVersion: params.result.ericVersion ?? null,
+        transferReference: params.result.transferReference ?? null,
+        resultCodes: params.result.resultCodes,
+        messages: params.result.messages,
+        responsePayload,
+      });
+
+      await this.audit.log({
+        tenantId: params.workspaceId,
+        action:
+          params.result.operation === "submit"
+            ? "tax_elster_job.submission_succeeded"
+            : "tax_elster_job.validation_succeeded",
+        entityType: "TAX_ERIC_JOB",
+        entityId: params.jobId,
+        userId: "system",
+        metadata: {
+          filingId: params.filingId,
+          gatewayVersion: params.result.gatewayVersion,
+          ericVersion: params.result.ericVersion,
+          transferReference: params.result.transferReference,
+          warnings: params.result.messages.filter((message) => message.severity === "warning")
+            .length,
+        },
+      });
+      return;
+    }
+
+    const failureStatus =
+      status === "validation_failed" ||
+      status === "submission_failed" ||
+      status === "technical_failed"
+        ? status
+        : "technical_failed";
+
+    await this.ericJobRepo.markFailed({
+      tenantId: params.workspaceId,
+      jobId: params.jobId,
+      status: failureStatus,
+      finishedAt: new Date(params.result.finishedAt),
+      outcome: params.result.outcome,
+      errorMessage:
+        params.result.messages.find((message) => message.severity === "error")?.text ??
+        `ELSTER ${params.result.operation} failed`,
+      gatewayVersion: params.result.gatewayVersion ?? null,
+      ericVersion: params.result.ericVersion ?? null,
+      transferReference: params.result.transferReference ?? null,
+      resultCodes: params.result.resultCodes,
+      messages: params.result.messages,
+      responsePayload,
+      technicalDetails:
+        params.result.outcome === "technical_failed"
+          ? {
+              gatewayStatus: params.result.gatewayStatus,
+            }
+          : null,
+    });
+
+    await this.audit.log({
+      tenantId: params.workspaceId,
+      action: `tax_elster_job.${failureStatus}`,
+      entityType: "TAX_ERIC_JOB",
+      entityId: params.jobId,
+      userId: "system",
+      metadata: {
+        filingId: params.filingId,
+        resultCodes: params.result.resultCodes,
+        transferReference: params.result.transferReference,
+        gatewayStatus: params.result.gatewayStatus,
+      },
+    });
   }
 
   private async persistArtifacts(params: {
     workspaceId: string;
     jobId: string;
     reportId: string;
-    action: string;
-    requestPayload: Record<string, unknown>;
-  }): Promise<TaxEricArtifactRef[]> {
-    const now = new Date();
-    const artifactDescriptors: Array<{
-      kind: TaxEricArtifactKind;
-      extension: string;
-      contentType: string;
-      content: string;
-    }> = [
-      {
-        kind: "xml",
-        extension: "xml",
-        contentType: "application/xml",
-        content: this.buildXmlContent(params),
-      },
-      {
-        kind: "protocol_pdf",
-        extension: "pdf",
-        contentType: "application/pdf",
-        content: this.buildProtocolContent(params),
-      },
-      {
-        kind: "log",
-        extension: "log",
-        contentType: "text/plain",
-        content: this.buildLogContent(params),
-      },
-    ];
+    result: TaxElsterGatewayResult;
+  }) {
+    const artifacts = [];
 
-    const artifacts: TaxEricArtifactRef[] = [];
-    for (const descriptor of artifactDescriptors) {
-      const fileName = `${descriptor.kind}-${params.jobId}.${descriptor.extension}`;
-      const objectKey = `workspaces/${params.workspaceId}/tax-reports/${params.reportId}/eric/${params.jobId}/${fileName}`;
-      const bytes = Buffer.from(descriptor.content, "utf-8");
+    for (const artifact of params.result.artifacts) {
+      const textEncoding = artifact.encoding === "base64" ? "base64" : "utf8";
+      const bytes =
+        typeof artifact.contentBase64 === "string"
+          ? Buffer.from(artifact.contentBase64, "base64")
+          : Buffer.from(artifact.textContent ?? "", textEncoding);
+      const extension = this.resolveExtension(artifact.kind, artifact.fileName);
+      const fileName = artifact.fileName ?? `${artifact.kind}-${params.jobId}.${extension}`;
+      const objectKey = `workspaces/${params.workspaceId}/tax-reports/${params.reportId}/elster/${params.jobId}/${fileName}`;
       const upload = await this.objectStorage.putObject({
         tenantId: params.workspaceId,
         objectKey,
-        contentType: descriptor.contentType,
+        contentType: artifact.contentType,
         bytes,
       });
 
+      const now = new Date();
       const document = DocumentAggregate.create({
         id: randomUUID(),
         tenantId: params.workspaceId,
@@ -150,7 +346,7 @@ export class TaxReportEricJobRequestedHandler implements EventHandler {
           storageProvider: this.objectStorage.provider(),
           bucket: this.objectStorage.bucket(),
           objectKey,
-          contentType: descriptor.contentType,
+          contentType: artifact.contentType,
           sizeBytes: upload.sizeBytes,
           createdAt: now,
         },
@@ -163,7 +359,7 @@ export class TaxReportEricJobRequestedHandler implements EventHandler {
       }
 
       artifacts.push({
-        kind: descriptor.kind,
+        kind: artifact.kind,
         documentId: document.id,
         fileName,
       });
@@ -172,53 +368,18 @@ export class TaxReportEricJobRequestedHandler implements EventHandler {
     return artifacts;
   }
 
-  private buildXmlContent(params: {
-    jobId: string;
-    reportId: string;
-    action: string;
-    requestPayload: Record<string, unknown>;
-  }): string {
-    return [
-      `<!-- Stub ERiC payload for job ${params.jobId} -->`,
-      `<elsterGatewayRequest action="${params.action}" reportId="${params.reportId}">`,
-      `  <payload>${this.escapeXml(JSON.stringify(params.requestPayload))}</payload>`,
-      "</elsterGatewayRequest>",
-    ].join("\n");
-  }
+  private resolveExtension(kind: "xml" | "protocol_pdf" | "log", fileName?: string): string {
+    if (fileName && fileName.includes(".")) {
+      return fileName.split(".").pop() ?? "dat";
+    }
 
-  private buildProtocolContent(params: {
-    jobId: string;
-    reportId: string;
-    action: string;
-  }): string {
-    return [
-      "ERiC Protocol (Stub)",
-      `Job: ${params.jobId}`,
-      `Report: ${params.reportId}`,
-      `Action: ${params.action}`,
-      "Result: SUCCESS (stubbed)",
-      "",
-      "TODO: Replace with protocol artifact produced by the external elster-gateway service.",
-    ].join("\n");
-  }
-
-  private buildLogContent(params: { jobId: string; reportId: string; action: string }): string {
-    return [
-      `[${new Date().toISOString()}] tax.report.eric.job.requested`,
-      `jobId=${params.jobId}`,
-      `reportId=${params.reportId}`,
-      `action=${params.action}`,
-      "gateway=elster-gateway",
-      "status=succeeded(stub)",
-    ].join("\n");
-  }
-
-  private escapeXml(value: string): string {
-    return value
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&apos;");
+    switch (kind) {
+      case "protocol_pdf":
+        return "pdf";
+      case "log":
+        return "log";
+      default:
+        return "xml";
+    }
   }
 }

@@ -2,16 +2,52 @@ import type * as Contracts from "@corely/contracts";
 import { apiClient } from "./api-client";
 
 export class TaxReportApi {
-  async getAnnualIncomeSection(
+  async listSections(
     filingId: string,
     reportId: string
-  ): Promise<Contracts.GetTaxReportSectionOutput> {
-    return apiClient.get<Contracts.GetTaxReportSectionOutput>(
-      `/tax/filings/${filingId}/reports/${reportId}/sections/annual-income`,
+  ): Promise<Contracts.ListTaxReportSectionsOutput> {
+    return apiClient.get<Contracts.ListTaxReportSectionsOutput>(
+      `/tax/filings/${filingId}/reports/${reportId}/sections`,
       {
         correlationId: apiClient.generateCorrelationId(),
       }
     );
+  }
+
+  async getSection(
+    filingId: string,
+    reportId: string,
+    sectionKey: Contracts.TaxReportSectionKey
+  ): Promise<Contracts.GetTaxReportSectionOutput> {
+    return apiClient.get<Contracts.GetTaxReportSectionOutput>(
+      `/tax/filings/${filingId}/reports/${reportId}/sections/${sectionKey}`,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+      }
+    );
+  }
+
+  async upsertSection(
+    filingId: string,
+    reportId: string,
+    sectionKey: Contracts.TaxReportSectionKey,
+    input: Contracts.UpsertTaxReportSectionInput
+  ): Promise<Contracts.UpsertTaxReportSectionOutput> {
+    return apiClient.put<Contracts.UpsertTaxReportSectionOutput>(
+      `/tax/filings/${filingId}/reports/${reportId}/sections/${sectionKey}`,
+      input,
+      {
+        correlationId: apiClient.generateCorrelationId(),
+        idempotencyKey: apiClient.generateIdempotencyKey(),
+      }
+    );
+  }
+
+  async getAnnualIncomeSection(
+    filingId: string,
+    reportId: string
+  ): Promise<Contracts.GetTaxReportSectionOutput> {
+    return this.getSection(filingId, reportId, "annualIncome");
   }
 
   async upsertAnnualIncomeSection(
@@ -19,14 +55,7 @@ export class TaxReportApi {
     reportId: string,
     input: Contracts.UpsertAnnualIncomeSectionInput
   ): Promise<Contracts.UpsertTaxReportSectionOutput> {
-    return apiClient.put<Contracts.UpsertTaxReportSectionOutput>(
-      `/tax/filings/${filingId}/reports/${reportId}/sections/annual-income`,
-      input,
-      {
-        correlationId: apiClient.generateCorrelationId(),
-        idempotencyKey: apiClient.generateIdempotencyKey(),
-      }
-    );
+    return this.upsertSection(filingId, reportId, "annualIncome", input);
   }
 
   async validateEricReport(

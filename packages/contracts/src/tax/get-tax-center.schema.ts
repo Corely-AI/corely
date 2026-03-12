@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TaxFilingSummarySchema } from "./tax-filing.types";
+import { TaxFilingStatusSchema, TaxFilingSummarySchema } from "./tax-filing.types";
 
 export const TaxCenterIssueSchema = z.object({
   id: z.string(),
@@ -38,9 +38,32 @@ export const TaxSnapshotSchema = z.object({
 });
 export type TaxSnapshot = z.infer<typeof TaxSnapshotSchema>;
 
+export const TaxCenterAnnualItemTypeSchema = z.enum([
+  "vat-annual",
+  "profit-loss",
+  "income-annual",
+  "year-end",
+  "corporate-annual",
+  "trade",
+]);
+export type TaxCenterAnnualItemType = z.infer<typeof TaxCenterAnnualItemTypeSchema>;
+
+export const TaxCenterAnnualItemSchema = z.object({
+  id: z.string(),
+  type: TaxCenterAnnualItemTypeSchema,
+  periodLabel: z.string(),
+  year: z.number().int(),
+  dueDate: z.string().datetime(),
+  status: TaxFilingStatusSchema,
+  amountCents: z.number().int().nullable(),
+  currency: z.string().optional(),
+  href: z.string(),
+});
+export type TaxCenterAnnualItem = z.infer<typeof TaxCenterAnnualItemSchema>;
+
 export const TaxCenterAnnualSchema = z.object({
   year: z.number().int(),
-  items: z.array(TaxFilingSummarySchema),
+  items: z.array(TaxCenterAnnualItemSchema),
   totalCount: z.number().int(),
 });
 export type TaxCenterAnnual = z.infer<typeof TaxCenterAnnualSchema>;

@@ -1,17 +1,24 @@
 import React from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type {
-  AnnualIncomeSectionPayload,
-  TaxReportSectionValidationError,
+import {
+  createDefaultAdditionalExpensesSectionPayload,
+  createDefaultChildrenSectionPayload,
+  createDefaultHealthInsuranceSectionPayload,
+  createDefaultIncomeSectionPayload,
+  createDefaultOtherInsurancesSectionPayload,
+  createDefaultPayslipsSectionPayload,
+  createDefaultPersonalDetailsSectionPayload,
+  createDefaultTaxOfficeInfoSectionPayload,
 } from "@corely/contracts";
 import { Button, Card, CardContent, cn } from "@corely/ui";
-import { taxReportApi } from "@corely/web-shared/lib/tax-report-api";
 import type { WizardStepKey } from "./income-tax-return-shared";
 import { StepCircle, TAX_WIZARD_STEPS } from "./income-tax-return-shared";
 import { IncomeTaxReturnIncomeStep } from "./income-tax-return-income-step";
 import { IncomeTaxReturnPersonalDetailsStep } from "./income-tax-return-personal-details-step";
 import { IncomeTaxReturnHealthInsuranceStep } from "./income-tax-return-health-insurance-step";
-import { taxAnnualIncomeSectionQueryKey } from "../queries";
+import { IncomeTaxReturnOtherInsurancesStep } from "./income-tax-return-other-insurances-step";
+import { IncomeTaxReturnAdditionalExpensesStep } from "./income-tax-return-additional-expenses-step";
+import { IncomeTaxReturnInfoForTaxOfficeStep } from "./income-tax-return-info-for-tax-office-step";
+import { useTaxReportSection } from "../hooks/useTaxReportSection";
 
 type IncomeTaxReturnPageProps = {
   filingId: string;
@@ -30,18 +37,15 @@ const StepPlaceholder = ({ label }: { label?: string }) => (
   </Card>
 );
 
-const DEFAULT_ANNUAL_INCOME: AnnualIncomeSectionPayload = {
-  incomeSources: [],
-  noIncomeFlag: false,
-};
-
 const formatCurrency = (value: number): string =>
   new Intl.NumberFormat("de-DE", {
     style: "currency",
     currency: "EUR",
   }).format(value);
 
-const computeEstimatedTax = (payload: AnnualIncomeSectionPayload): number => {
+const computeEstimatedTax = (
+  payload: ReturnType<typeof createDefaultIncomeSectionPayload>["annualIncome"]
+): number => {
   const totals = payload.incomeSources.reduce(
     (acc, source) => {
       acc.grossIncome += source.amounts.grossIncome;
@@ -64,101 +68,104 @@ const computeEstimatedTax = (payload: AnnualIncomeSectionPayload): number => {
 };
 
 export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageProps) => {
-  const queryClient = useQueryClient();
-  const queryKey = taxAnnualIncomeSectionQueryKey(filingId, reportId);
-
   const [activeStep, setActiveStep] = React.useState<WizardStepKey>("income");
-  const [annualIncome, setAnnualIncome] =
-    React.useState<AnnualIncomeSectionPayload>(DEFAULT_ANNUAL_INCOME);
-  const [lastSavedSnapshot, setLastSavedSnapshot] = React.useState<string>("");
-  const [isInitialized, setIsInitialized] = React.useState(false);
-  const [validationErrors, setValidationErrors] = React.useState<TaxReportSectionValidationError[]>(
-    []
-  );
-
-  const sectionQuery = useQuery({
-    queryKey,
-    queryFn: () => taxReportApi.getAnnualIncomeSection(filingId, reportId),
+  const personalDetailsSection = useTaxReportSection({
+    filingId,
+    reportId,
+    sectionKey: "personalDetails",
+    defaultValue: React.useMemo(() => createDefaultPersonalDetailsSectionPayload(), []),
+  });
+  const incomeSection = useTaxReportSection({
+    filingId,
+    reportId,
+    sectionKey: "income",
+    defaultValue: React.useMemo(() => createDefaultIncomeSectionPayload(), []),
+  });
+  const healthInsuranceSection = useTaxReportSection({
+    filingId,
+    reportId,
+    sectionKey: "healthInsurance",
+    defaultValue: React.useMemo(() => createDefaultHealthInsuranceSectionPayload(), []),
+  });
+  const otherInsurancesSection = useTaxReportSection({
+    filingId,
+    reportId,
+    sectionKey: "otherInsurances",
+    defaultValue: React.useMemo(() => createDefaultOtherInsurancesSectionPayload(), []),
+  });
+  const additionalExpensesSection = useTaxReportSection({
+    filingId,
+    reportId,
+    sectionKey: "additionalExpenses",
+    defaultValue: React.useMemo(() => createDefaultAdditionalExpensesSectionPayload(), []),
+  });
+  const taxOfficeInfoSection = useTaxReportSection({
+    filingId,
+    reportId,
+    sectionKey: "taxOfficeInfo",
+    defaultValue: React.useMemo(() => createDefaultTaxOfficeInfoSectionPayload(), []),
+  });
+  const payslipsSection = useTaxReportSection({
+    filingId,
+    reportId,
+    sectionKey: "payslips",
+    defaultValue: React.useMemo(() => createDefaultPayslipsSectionPayload(), []),
+  });
+  const childrenSection = useTaxReportSection({
+    filingId,
+    reportId,
+    sectionKey: "children",
+    defaultValue: React.useMemo(() => createDefaultChildrenSectionPayload(), []),
   });
 
-  const upsertMutation = useMutation({
-    mutationFn: (payload: AnnualIncomeSectionPayload) =>
-      taxReportApi.upsertAnnualIncomeSection(filingId, reportId, {
-        payload,
-      }),
-    onSuccess: (result) => {
-      setValidationErrors(result.section.validationErrors);
-      const snapshot = JSON.stringify(result.section.payload.annualIncome);
-      setLastSavedSnapshot(snapshot);
-      queryClient.setQueryData(queryKey, result);
-    },
-  });
-
-  React.useEffect(() => {
-    if (!sectionQuery.data) {
-      return;
+  const getSectionStateForStep = (
+    step: Exclude<WizardStepKey, "paid-add-ons" | "review-and-submit">
+  ) => {
+    switch (step) {
+      case "personal-details":
+        return personalDetailsSection;
+      case "income":
+        return incomeSection;
+      case "health-insurance":
+        return healthInsuranceSection;
+      case "other-insurances":
+        return otherInsurancesSection;
+      case "additional-expenses":
+        return additionalExpensesSection;
+      case "info-for-tax-office":
+        return taxOfficeInfoSection;
     }
-
-    const payload = sectionQuery.data.section.payload.annualIncome;
-    const snapshot = JSON.stringify(payload);
-
-    if (!isInitialized) {
-      setAnnualIncome(payload);
-      setLastSavedSnapshot(snapshot);
-      setValidationErrors(sectionQuery.data.section.validationErrors);
-      setIsInitialized(true);
-      return;
-    }
-
-    if (snapshot === lastSavedSnapshot) {
-      setValidationErrors(sectionQuery.data.section.validationErrors);
-    }
-  }, [isInitialized, lastSavedSnapshot, sectionQuery.data]);
-
-  const snapshot = React.useMemo(() => JSON.stringify(annualIncome), [annualIncome]);
-  const isDirty = isInitialized && snapshot !== lastSavedSnapshot;
-
-  React.useEffect(() => {
-    if (!isInitialized || !isDirty || upsertMutation.isPending) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      upsertMutation.mutate(annualIncome);
-    }, 800);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [annualIncome, isDirty, isInitialized, upsertMutation]);
+  };
 
   const activeStepConfig = TAX_WIZARD_STEPS.find((step) => step.key === activeStep);
-  const latestSection = upsertMutation.data?.section ?? sectionQuery.data?.section;
-  const latestReport = upsertMutation.data?.report ?? sectionQuery.data?.report;
+  const activeSectionState =
+    activeStep === "paid-add-ons" || activeStep === "review-and-submit"
+      ? null
+      : getSectionStateForStep(activeStep);
+  const latestReport = activeSectionState?.report;
 
   const steps = React.useMemo(
     () =>
       TAX_WIZARD_STEPS.map((step) =>
-        step.key === "income"
-          ? {
+        step.key === "paid-add-ons" || step.key === "review-and-submit"
+          ? step
+          : {
               ...step,
-              done: latestSection?.isComplete ?? false,
+              done: getSectionStateForStep(step.key).section?.isComplete ?? false,
             }
-          : step
       ),
-    [latestSection?.isComplete]
+    [
+      additionalExpensesSection,
+      healthInsuranceSection,
+      incomeSection,
+      otherInsurancesSection,
+      personalDetailsSection,
+      taxOfficeInfoSection,
+    ]
   );
 
-  const saveState =
-    sectionQuery.isLoading && !isInitialized
-      ? "loading"
-      : upsertMutation.isError
-        ? "error"
-        : upsertMutation.isPending || isDirty
-          ? "saving"
-          : "saved";
-
-  const estimatedTax = computeEstimatedTax(annualIncome);
+  const saveState = activeSectionState?.saveState ?? "saved";
+  const estimatedTax = computeEstimatedTax(incomeSection.value.annualIncome);
 
   const saveLabel =
     saveState === "loading"
@@ -177,7 +184,7 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
         </header>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(240px,25%)_1fr]">
-          <aside className="space-y-6">
+          <aside className="order-2 space-y-6 lg:order-1 lg:sticky lg:top-8 lg:self-start">
             <Card>
               <CardContent className="space-y-4 p-5">
                 <div className="flex items-center gap-2">
@@ -197,7 +204,7 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => upsertMutation.mutate(annualIncome)}
+                      onClick={() => activeSectionState?.retrySave()}
                     >
                       Retry
                     </Button>
@@ -210,7 +217,11 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
                       <button
                         type="button"
                         onClick={() => setActiveStep(step.key)}
-                        className="flex items-center gap-3 text-left"
+                        className={cn(
+                          "flex items-center gap-3 text-left transition-colors",
+                          activeStep === step.key ? "font-bold text-foreground" : "text-foreground"
+                        )}
+                        aria-current={activeStep === step.key ? "step" : undefined}
                       >
                         <StepCircle
                           done={Boolean(step.done)}
@@ -219,8 +230,8 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
                         />
                         <span
                           className={cn(
-                            "text-sm text-foreground",
-                            activeStep === step.key ? "font-semibold" : "font-medium"
+                            "text-sm",
+                            activeStep === step.key ? "font-bold" : "font-medium"
                           )}
                         >
                           {step.label}
@@ -245,12 +256,12 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
             </Card>
           </aside>
 
-          <section className="space-y-6">
-            {sectionQuery.isError && !isInitialized ? (
+          <section className="order-1 space-y-6 lg:order-2">
+            {activeSectionState?.isError && !activeSectionState.isInitialized ? (
               <Card>
                 <CardContent className="space-y-3 p-6">
-                  <p className="text-sm text-rose-600">Failed to load annual income section.</p>
-                  <Button variant="outline" onClick={() => sectionQuery.refetch()}>
+                  <p className="text-sm text-rose-600">Failed to load this section.</p>
+                  <Button variant="outline" onClick={() => activeSectionState.refetch()}>
                     Retry
                   </Button>
                 </CardContent>
@@ -259,17 +270,54 @@ export const IncomeTaxReturnPage = ({ filingId, reportId }: IncomeTaxReturnPageP
 
             {activeStep === "income" ? (
               <IncomeTaxReturnIncomeStep
-                value={annualIncome}
-                validationErrors={validationErrors}
-                onChange={setAnnualIncome}
-                disabled={sectionQuery.isLoading && !isInitialized}
+                filingId={filingId}
+                reportId={reportId}
+                value={incomeSection.value}
+                onChange={incomeSection.setValue}
+                payslipEntries={payslipsSection.value.entries}
+                disabled={incomeSection.isLoading}
               />
             ) : null}
-            {activeStep === "personal-details" ? <IncomeTaxReturnPersonalDetailsStep /> : null}
-            {activeStep === "health-insurance" ? <IncomeTaxReturnHealthInsuranceStep /> : null}
+            {activeStep === "personal-details" ? (
+              <IncomeTaxReturnPersonalDetailsStep
+                value={personalDetailsSection.value}
+                onChange={personalDetailsSection.setValue}
+              />
+            ) : null}
+            {activeStep === "health-insurance" ? (
+              <IncomeTaxReturnHealthInsuranceStep
+                value={healthInsuranceSection.value}
+                onChange={healthInsuranceSection.setValue}
+              />
+            ) : null}
+            {activeStep === "other-insurances" ? (
+              <IncomeTaxReturnOtherInsurancesStep
+                value={otherInsurancesSection.value}
+                onChange={otherInsurancesSection.setValue}
+                onNext={() => setActiveStep("additional-expenses")}
+              />
+            ) : null}
+            {activeStep === "additional-expenses" ? (
+              <IncomeTaxReturnAdditionalExpensesStep
+                value={additionalExpensesSection.value}
+                onChange={additionalExpensesSection.setValue}
+                childrenEntries={childrenSection.value.entries}
+                onNext={() => setActiveStep("info-for-tax-office")}
+              />
+            ) : null}
+            {activeStep === "info-for-tax-office" ? (
+              <IncomeTaxReturnInfoForTaxOfficeStep
+                value={taxOfficeInfoSection.value}
+                onChange={taxOfficeInfoSection.setValue}
+                onNext={() => setActiveStep("paid-add-ons")}
+              />
+            ) : null}
             {activeStep !== "income" &&
             activeStep !== "personal-details" &&
-            activeStep !== "health-insurance" ? (
+            activeStep !== "health-insurance" &&
+            activeStep !== "other-insurances" &&
+            activeStep !== "additional-expenses" &&
+            activeStep !== "info-for-tax-office" ? (
               <StepPlaceholder label={activeStepConfig?.label} />
             ) : null}
           </section>
