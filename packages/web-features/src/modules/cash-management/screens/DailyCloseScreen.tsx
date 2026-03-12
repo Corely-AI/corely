@@ -13,8 +13,8 @@ import {
   Label,
   Textarea,
 } from "@corely/ui";
-import { formatMoney } from "@/shared/lib/formatters";
-import { cashManagementApi } from "@/lib/cash-management-api";
+import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
+import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
 import { cashKeys, invalidateCashRegisterQueries } from "../queries";
 import { useQueryClient } from "@tanstack/react-query";
 

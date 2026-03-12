@@ -29,7 +29,7 @@ class ResizeObserverMock {
   disconnect(): void {}
 }
 
-vi.mock("@/lib/cash-management-api", () => ({
+vi.mock("@corely/web-shared/lib/cash-management-api", () => ({
   cashManagementApi: apiMocks,
 }));
 

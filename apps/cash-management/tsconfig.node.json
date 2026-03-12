@@ -1,0 +1,11 @@
+{
+  "extends": "@corely/tsconfig/lib.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023"],
+    "allowImportingTsExtensions": true,
+    "moduleDetection": "force",
+    "noEmit": true
+  },
+  "include": ["vite.config.ts"]
+}

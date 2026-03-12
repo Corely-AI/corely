@@ -4,9 +4,9 @@ import { Button, Card, CardContent, Input, Label } from "@corely/ui";
 import { ensureDefaultWorkspace } from "@corely/web-shared";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
 
-export const SignupPage = () => {
+export const LoginPage = () => {
   const navigate = useNavigate();
-  const { signup, error: authError } = useAuth();
+  const { signin, error: authError } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,37 +15,31 @@ export const SignupPage = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      await signup({ email, password });
+      await signin({ email, password });
       await ensureDefaultWorkspace(email);
-      navigate("/overview", { replace: true });
+      navigate("/cash/registers", { replace: true });
     } catch {
-      setError("Unable to create account or initialize workspace.");
+      setError("Unable to sign in or initialize workspace.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const displayError = error || authError;
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-10">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
-          <h1 className="text-2xl font-semibold">Create Freelancer Account</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Sign up to start your workspace.</p>
+          <h1 className="text-2xl font-semibold">Cash Management Login</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sign in to manage registers and daily cash operations.
+          </p>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
-            {displayError ? (
+            {error || authError ? (
               <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {displayError}
+                {error || authError}
               </div>
             ) : null}
 
@@ -72,13 +66,13 @@ export const SignupPage = () => {
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Sign up"}
+              {isLoading ? "Signing in..." : "Sign in"}
             </Button>
 
             <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link to="/auth/login" className="text-accent">
-                Sign in
+              Need an account?{" "}
+              <Link to="/auth/signup" className="text-accent">
+                Sign up
               </Link>
             </div>
           </form>
@@ -87,5 +81,3 @@ export const SignupPage = () => {
     </div>
   );
 };
-
-export default SignupPage;

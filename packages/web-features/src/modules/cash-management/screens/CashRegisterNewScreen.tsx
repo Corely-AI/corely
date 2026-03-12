@@ -12,7 +12,7 @@ import {
   Input,
   Label,
 } from "@corely/ui";
-import { cashManagementApi } from "@/lib/cash-management-api";
+import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 
 export function CashRegisterNewScreen() {
   const { t } = useTranslation();

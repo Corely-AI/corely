@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate, Route } from "react-router-dom";
+import { RequirePermission } from "@corely/web-shared/shared/permissions";
 import {
   SettingsPage,
   RolesPage,
@@ -8,7 +9,6 @@ import {
 } from "../../modules/settings";
 import DimensionsSettingsPage from "../../modules/settings/screens/DimensionsSettingsPage";
 import CustomFieldsSettingsPage from "../../modules/settings/screens/CustomFieldsSettingsPage";
-import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import {
   PlatformPage,

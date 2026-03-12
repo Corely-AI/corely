@@ -19,6 +19,7 @@
     "dev:web": "node scripts/build-deps-if-stale.mjs @corely/web && pnpm --filter @corely/web dev",
     "dev:freelancer": "node scripts/build-deps-if-stale.mjs @corely/freelancer && pnpm --filter @corely/freelancer dev",
     "dev:crm": "node scripts/build-deps-if-stale.mjs @corely/crm && pnpm --filter @corely/crm dev",
+    "dev:cash-management": "node scripts/build-deps-if-stale.mjs @corely/cash-management && pnpm --filter @corely/cash-management dev",
     "dev:pos": "node scripts/build-deps-if-stale.mjs @corely/pos && pnpm --filter @corely/pos start",
     "dev:public": "node scripts/build-deps-if-stale.mjs @corely/public-web && pnpm --filter @corely/public-web dev",
     "dev:website-runtime": "node scripts/build-deps-if-stale.mjs @corely/website-runtime && pnpm --filter @corely/website-runtime dev",

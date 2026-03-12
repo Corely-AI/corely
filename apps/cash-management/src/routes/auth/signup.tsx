@@ -25,7 +25,7 @@ export const SignupPage = () => {
     try {
       await signup({ email, password });
       await ensureDefaultWorkspace(email);
-      navigate("/overview", { replace: true });
+      navigate("/cash/registers", { replace: true });
     } catch {
       setError("Unable to create account or initialize workspace.");
     } finally {
@@ -39,8 +39,10 @@ export const SignupPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-10">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
-          <h1 className="text-2xl font-semibold">Create Freelancer Account</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Sign up to start your workspace.</p>
+          <h1 className="text-2xl font-semibold">Create Cash Management Account</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Sign up to start managing cash workflows.
+          </p>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             {displayError ? (

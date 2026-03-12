@@ -1,12 +1,12 @@
 import React from "react";
-import NotFound from "@/shared/components/NotFound";
+import NotFound from "../components/NotFound";
 import {
   hasPermission,
   isHostScopedPlatformPermission,
   useEffectivePermissions,
   useIsHostScope,
-} from "@/shared/lib/permissions";
-import { useWorkspaceConfig } from "@/shared/workspaces/workspace-config-provider";
+} from "../lib/permissions";
+import { useWorkspaceConfig } from "../workspaces/workspace-config-provider";
 
 interface RequirePermissionProps {
   permission: string;

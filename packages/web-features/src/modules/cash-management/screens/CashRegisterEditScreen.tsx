@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Label } from "@corely/ui";
-import { cashManagementApi } from "@/lib/cash-management-api";
+import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 import { cashKeys } from "../queries";
 import { useQueryClient } from "@tanstack/react-query";
 

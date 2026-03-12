@@ -4,9 +4,10 @@ import { Button, Input } from "@corely/ui";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CrudListPageLayout, CrudRowActions } from "@/shared/crud";
-import { formatMoney } from "@/shared/lib/formatters";
-import { cashManagementApi } from "@/lib/cash-management-api";
+import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
+import { CrudListPageLayout, CrudRowActions } from "@corely/web-shared/shared/crud";
+import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
+import { useCashPermissions } from "../access";
 import { cashKeys } from "../queries";
 
 type RegisterFilters = {
@@ -23,6 +24,7 @@ const defaultFilters: RegisterFilters = {
 
 export function CashRegistersScreen() {
   const { t } = useTranslation();
+  const { canManageCash } = useCashPermissions();
   const [filters, setFilters] = useState<RegisterFilters>(defaultFilters);
 
   const queryParams = useMemo(
@@ -46,12 +48,14 @@ export function CashRegistersScreen() {
       title={t("cash.ui.registers.title")}
       subtitle={t("cash.ui.registers.subtitle")}
       primaryAction={
-        <Button asChild>
-          <Link to="/cash/registers/new">
-            <Plus className="mr-2 h-4 w-4" />
-            {t("cash.ui.registers.newRegister")}
-          </Link>
-        </Button>
+        canManageCash ? (
+          <Button asChild>
+            <Link to="/cash/registers/new">
+              <Plus className="mr-2 h-4 w-4" />
+              {t("cash.ui.registers.newRegister")}
+            </Link>
+          </Button>
+        ) : undefined
       }
       filters={
         <>

@@ -13,13 +13,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@corely/ui";
-import { formatDateTime, formatMoney } from "@/shared/lib/formatters";
-import { cashManagementApi } from "@/lib/cash-management-api";
+import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
+import { formatDateTime, formatMoney } from "@corely/web-shared/shared/lib/formatters";
+import { useCashPermissions } from "../access";
 import { cashKeys } from "../queries";
 
 export function CashRegisterDetailScreen() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
+  const { canManageCash, canCloseCash, canExportCash } = useCashPermissions();
 
   const registerQuery = useQuery({
     queryKey: id ? cashKeys.registers.detail(id) : ["cash-registers", "missing-id"],
@@ -37,7 +39,7 @@ export function CashRegisterDetailScreen() {
         entries: result.entries.slice(0, 8),
       };
     },
-    enabled: Boolean(id),
+    enabled: Boolean(id) && canManageCash,
   });
 
   const closesQuery = useQuery({
@@ -48,7 +50,7 @@ export function CashRegisterDetailScreen() {
         })
       : ["cash-day-closes", "missing-id"],
     queryFn: () => cashManagementApi.listDayCloses(id as string),
-    enabled: Boolean(id),
+    enabled: Boolean(id) && canManageCash,
   });
 
   if (!id) {
@@ -84,24 +86,32 @@ export function CashRegisterDetailScreen() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild>
-            <Link to={`/cash/registers/${id}/entries`}>
-              {t("cash.ui.registerDetail.newCashEntry")}
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link
-              to={`/cash/registers/${id}/day-close?day=${new Date().toISOString().slice(0, 10)}`}
-            >
-              {t("cash.ui.registerDetail.closeDay")}
-            </Link>
-          </Button>
-          <Button variant="outline" asChild>
-            <Link to={`/cash/registers/${id}/exports`}>{t("cash.ui.registerDetail.export")}</Link>
-          </Button>
-          <Button variant="ghost" asChild>
-            <Link to={`/cash/registers/${id}/edit`}>{t("cash.ui.registerDetail.edit")}</Link>
-          </Button>
+          {canManageCash ? (
+            <Button asChild>
+              <Link to={`/cash/registers/${id}/entries`}>
+                {t("cash.ui.registerDetail.newCashEntry")}
+              </Link>
+            </Button>
+          ) : null}
+          {canCloseCash ? (
+            <Button variant="outline" asChild>
+              <Link
+                to={`/cash/registers/${id}/day-close?day=${new Date().toISOString().slice(0, 10)}`}
+              >
+                {t("cash.ui.registerDetail.closeDay")}
+              </Link>
+            </Button>
+          ) : null}
+          {canExportCash ? (
+            <Button variant="outline" asChild>
+              <Link to={`/cash/registers/${id}/exports`}>{t("cash.ui.registerDetail.export")}</Link>
+            </Button>
+          ) : null}
+          {canManageCash ? (
+            <Button variant="ghost" asChild>
+              <Link to={`/cash/registers/${id}/edit`}>{t("cash.ui.registerDetail.edit")}</Link>
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -121,7 +131,7 @@ export function CashRegisterDetailScreen() {
             <CardTitle className="text-base">{t("cash.ui.registerDetail.lastClosedDay")}</CardTitle>
           </CardHeader>
           <CardContent>
-            {lastClosed ? (
+            {canManageCash && lastClosed ? (
               <span>{lastClosed.dayKey}</span>
             ) : (
               <span className="text-sm text-muted-foreground">
@@ -135,12 +145,16 @@ export function CashRegisterDetailScreen() {
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">{t("cash.ui.registerDetail.tabs.overview")}</TabsTrigger>
-          <TabsTrigger value="entries">
-            {t("cash.ui.registerDetail.tabs.entriesPreview")}
-          </TabsTrigger>
-          <TabsTrigger value="activity">
-            {t("cash.ui.registerDetail.tabs.activityAudit")}
-          </TabsTrigger>
+          {canManageCash ? (
+            <TabsTrigger value="entries">
+              {t("cash.ui.registerDetail.tabs.entriesPreview")}
+            </TabsTrigger>
+          ) : null}
+          {canManageCash ? (
+            <TabsTrigger value="activity">
+              {t("cash.ui.registerDetail.tabs.activityAudit")}
+            </TabsTrigger>
+          ) : null}
         </TabsList>
         <TabsContent value="overview">
           <Card>
@@ -160,53 +174,59 @@ export function CashRegisterDetailScreen() {
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="entries">
-          <Card>
-            <CardContent className="pt-6">
-              {entries.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("cash.ui.registerDetail.noEntriesYet")}
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {entries.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center justify-between rounded-md border p-3 text-sm"
-                    >
-                      <div>
-                        <p className="font-medium">{entry.description}</p>
-                        <p className="text-muted-foreground">
-                          #{entry.entryNo} · {formatDateTime(entry.occurredAt)}
+        {canManageCash ? (
+          <TabsContent value="entries">
+            <Card>
+              <CardContent className="pt-6">
+                {entries.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {t("cash.ui.registerDetail.noEntriesYet")}
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {entries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center justify-between rounded-md border p-3 text-sm"
+                      >
+                        <div>
+                          <p className="font-medium">{entry.description}</p>
+                          <p className="text-muted-foreground">
+                            #{entry.entryNo} · {formatDateTime(entry.occurredAt)}
+                          </p>
+                        </div>
+                        <p
+                          className={entry.direction === "OUT" ? "text-red-600" : "text-green-600"}
+                        >
+                          {entry.direction === "OUT" ? "-" : "+"}
+                          {formatMoney(entry.amount, undefined, entry.currency)}
                         </p>
                       </div>
-                      <p className={entry.direction === "OUT" ? "text-red-600" : "text-green-600"}>
-                        {entry.direction === "OUT" ? "-" : "+"}
-                        {formatMoney(entry.amount, undefined, entry.currency)}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                )}
+                <div className="mt-4">
+                  <Button variant="outline" asChild>
+                    <Link to={`/cash/registers/${id}/entries`}>
+                      {t("cash.ui.registerDetail.openFullEntries")}
+                    </Link>
+                  </Button>
                 </div>
-              )}
-              <div className="mt-4">
-                <Button variant="outline" asChild>
-                  <Link to={`/cash/registers/${id}/entries`}>
-                    {t("cash.ui.registerDetail.openFullEntries")}
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="activity">
-          <Card>
-            <CardContent className="pt-6 text-sm text-muted-foreground">
-              {t("cash.ui.registerDetail.activityPrefix")}{" "}
-              <strong>{t("cash.ui.registerDetail.auditPack")}</strong>{" "}
-              {t("cash.ui.registerDetail.activitySuffix")}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ) : null}
+        {canManageCash ? (
+          <TabsContent value="activity">
+            <Card>
+              <CardContent className="pt-6 text-sm text-muted-foreground">
+                {t("cash.ui.registerDetail.activityPrefix")}{" "}
+                <strong>{t("cash.ui.registerDetail.auditPack")}</strong>{" "}
+                {t("cash.ui.registerDetail.activitySuffix")}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ) : null}
       </Tabs>
     </div>
   );

@@ -13,7 +13,7 @@ import {
   Label,
 } from "@corely/ui";
 import type { ExportCashBookOutput } from "@corely/contracts";
-import { cashManagementApi } from "@/lib/cash-management-api";
+import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 import { cashKeys } from "../queries";
 
 const currentMonth = () => new Date().toISOString().slice(0, 7);

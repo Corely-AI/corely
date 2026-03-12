@@ -16,7 +16,7 @@ import {
   Label,
   Textarea,
 } from "@corely/ui";
-import { formatMoney } from "@/shared/lib/formatters";
+import { formatMoney } from "@corely/web-shared/shared/lib/formatters";
 
 export type CreateEntryForm = {
   direction: CashEntryDirection;
