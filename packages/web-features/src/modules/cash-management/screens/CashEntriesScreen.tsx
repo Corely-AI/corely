@@ -9,6 +9,7 @@ import { CrudListPageLayout, CrudRowActions } from "@corely/web-shared/shared/cr
 import { formatDateTime, formatMoney } from "@corely/web-shared/shared/lib/formatters";
 import { Paperclip } from "lucide-react";
 import { cashKeys, invalidateCashRegisterQueries } from "../queries";
+import { uploadBelegDocument } from "../upload-beleg-document";
 import {
   AttachBelegDialog,
   CreateEntryDialog,
@@ -130,13 +131,14 @@ export function CashEntriesScreen() {
         direction: createForm.direction,
         source: "MANUAL",
         paymentMethod: createForm.paymentMethod,
-        description: createForm.description,
+        description: createForm.description.trim(),
         amountCents: amount,
         occurredAt,
       });
-      if (createForm.documentId.trim()) {
+      if (createForm.attachmentFile) {
+        const documentId = await uploadBelegDocument(createForm.attachmentFile);
         await cashManagementApi.attachBeleg(created.entry.id, {
-          documentId: createForm.documentId.trim(),
+          documentId,
         });
       }
     },
@@ -218,8 +220,10 @@ export function CashEntriesScreen() {
   const createAmount = Math.round(Number(createForm.amountInput || 0) * 100);
   const projectedBalance =
     register.currentBalanceCents + (createForm.direction === "OUT" ? -createAmount : createAmount);
+  const hasDescriptionOrAttachment =
+    Boolean(createForm.description.trim()) || createForm.attachmentFile !== null;
   const canSaveCreateEntry =
-    Boolean(createForm.description.trim()) && !Number.isNaN(createAmount) && createAmount > 0;
+    !Number.isNaN(createAmount) && createAmount > 0 && hasDescriptionOrAttachment;
 
   return (
     <>
@@ -227,7 +231,14 @@ export function CashEntriesScreen() {
         title={t("cash.ui.entries.title", { register: register.name })}
         subtitle={t("cash.ui.entries.subtitle")}
         primaryAction={
-          <Button onClick={() => setCreateOpen(true)}>{t("cash.ui.entries.newCashEntry")}</Button>
+          <Button
+            onClick={() => {
+              setCreateForm(defaultCreateForm());
+              setCreateOpen(true);
+            }}
+          >
+            {t("cash.ui.entries.newCashEntry")}
+          </Button>
         }
         toolbar={
           <Button variant="outline" asChild>

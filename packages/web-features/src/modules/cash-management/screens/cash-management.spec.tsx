@@ -8,7 +8,7 @@ import { CashEntriesScreen } from "./CashEntriesScreen";
 import { DailyCloseScreen } from "./DailyCloseScreen";
 import { CashExportsScreen } from "./CashExportsScreen";
 
-const { apiMocks } = vi.hoisted(() => ({
+const { apiMocks, uploadMocks } = vi.hoisted(() => ({
   apiMocks: {
     getRegister: vi.fn(),
     listEntries: vi.fn(),
@@ -21,6 +21,9 @@ const { apiMocks } = vi.hoisted(() => ({
     exportCashBook: vi.fn(),
     downloadExport: vi.fn(),
   },
+  uploadMocks: {
+    uploadBelegDocument: vi.fn(),
+  },
 }));
 
 class ResizeObserverMock {
@@ -31,6 +34,10 @@ class ResizeObserverMock {
 
 vi.mock("@corely/web-shared/lib/cash-management-api", () => ({
   cashManagementApi: apiMocks,
+}));
+
+vi.mock("../upload-beleg-document", () => ({
+  uploadBelegDocument: uploadMocks.uploadBelegDocument,
 }));
 
 const renderRoute = (path: string, element: React.ReactNode) => {
@@ -67,6 +74,7 @@ describe("cash-management screens", () => {
     }
 
     Object.values(apiMocks).forEach((fn) => fn.mockReset());
+    Object.values(uploadMocks).forEach((fn) => fn.mockReset());
     anchorClickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
   });
 
@@ -121,6 +129,44 @@ describe("cash-management screens", () => {
 
     await waitFor(() => expect(apiMocks.createEntry).toHaveBeenCalled());
     await waitFor(() => expect(screen.getByText("Opening cash")).toBeInTheDocument());
+  });
+
+  it("create entry uploads and attaches a beleg file", async () => {
+    const user = userEvent.setup();
+    const file = new File(["receipt"], "receipt.pdf", { type: "application/pdf" });
+
+    apiMocks.getRegister.mockResolvedValue({
+      register: {
+        id: "reg-1",
+        name: "Main",
+        location: null,
+        currency: "EUR",
+        currentBalanceCents: 0,
+        disallowNegativeBalance: false,
+      },
+    });
+    apiMocks.listEntries.mockResolvedValue({ entries: [] });
+    apiMocks.listAttachments.mockResolvedValue({ attachments: [] });
+    apiMocks.createEntry.mockResolvedValue({
+      entry: {
+        id: "entry-1",
+      },
+    });
+    apiMocks.attachBeleg.mockResolvedValue({ attachment: { id: "att-1" } });
+    uploadMocks.uploadBelegDocument.mockResolvedValue("doc-123");
+
+    renderRoute("/cash/registers/reg-1/entries", <CashEntriesScreen />);
+
+    await user.click(await screen.findByRole("button", { name: "New cash entry" }));
+    await user.type(screen.getByLabelText("Amount"), "10");
+    await user.type(screen.getByLabelText("Description"), "Opening cash");
+    await user.upload(screen.getByLabelText("Attach beleg (optional)"), file);
+    await user.click(screen.getByRole("button", { name: "Save entry" }));
+
+    await waitFor(() => expect(uploadMocks.uploadBelegDocument).toHaveBeenCalledWith(file));
+    await waitFor(() =>
+      expect(apiMocks.attachBeleg).toHaveBeenCalledWith("entry-1", { documentId: "doc-123" })
+    );
   });
 
   it("day close screen is locked when status is submitted", async () => {

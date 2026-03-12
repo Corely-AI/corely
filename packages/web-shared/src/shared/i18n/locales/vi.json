@@ -1260,11 +1260,14 @@
           "paymentMethod": "Phương thức thanh toán",
           "description": "Mô tả",
           "occurredAt": "Thời điểm phát sinh",
-          "attachBelegDocumentId": "Đính kèm document ID chứng từ (tùy chọn)",
-          "documentPlaceholder": "doc_...",
+          "attachBeleg": "Đính kèm chứng từ (tùy chọn)",
+          "chooseAttachment": "Chọn tệp",
+          "replaceAttachment": "Thay tệp",
+          "noAttachment": "Chưa chọn tệp",
           "projectedBalance": "Số dư dự kiến sau khi lưu",
           "failed": "Không thể tạo bút toán.",
-          "save": "Lưu bút toán"
+          "save": "Lưu bút toán",
+          "uploading": "Đang tải lên..."
         },
         "reverseDialog": {
           "title": "Đảo bút toán",

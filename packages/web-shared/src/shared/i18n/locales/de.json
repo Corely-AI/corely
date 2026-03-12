@@ -1259,11 +1259,14 @@
           "paymentMethod": "Zahlart",
           "description": "Beschreibung",
           "occurredAt": "Zeitpunkt",
-          "attachBelegDocumentId": "Beleg-Dokument-ID anhängen (optional)",
-          "documentPlaceholder": "doc_...",
+          "attachBeleg": "Beleg anhängen (optional)",
+          "chooseAttachment": "Datei auswählen",
+          "replaceAttachment": "Datei ersetzen",
+          "noAttachment": "Keine Datei ausgewählt",
           "projectedBalance": "Prognostizierter Saldo nach Speichern",
           "failed": "Buchung konnte nicht erstellt werden.",
-          "save": "Buchung speichern"
+          "save": "Buchung speichern",
+          "uploading": "Wird hochgeladen..."
         },
         "reverseDialog": {
           "title": "Buchung stornieren",

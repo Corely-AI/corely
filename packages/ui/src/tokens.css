@@ -93,9 +93,9 @@
   --foreground-subtle: 215 16% 47%;
 
   /* Borders */
-  --border: 217 33% 17%;
-  --border-strong: 217 33% 25%;
-  --input: 217 30% 22%;
+  --border: 214 24% 20%;
+  --border-strong: 214 26% 28%;
+  --input: 214 25% 24%;
   --ring: 199 89% 48%;
 
   /* Primary - Light for contrast */
@@ -147,7 +147,7 @@
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 217 33% 15%;
   --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 217 33% 17%;
+  --sidebar-border: 214 22% 18%;
   --sidebar-ring: 199 89% 48%;
 
   /* Charts */

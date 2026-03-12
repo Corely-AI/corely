@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from "react";
+import { useRef, type Dispatch, type SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 import type { CashEntryDirection, CashEntryType } from "@corely/contracts";
 import {
@@ -25,17 +25,23 @@ export type CreateEntryForm = {
   description: string;
   occurredAt: string;
   amountInput: string;
-  documentId: string;
+  attachmentFile: File | null;
 };
+
+function getCurrentDateTimeInputValue(): string {
+  const now = new Date();
+  const timezoneOffsetMs = now.getTimezoneOffset() * 60_000;
+  return new Date(now.getTime() - timezoneOffsetMs).toISOString().slice(0, 16);
+}
 
 export const defaultCreateForm = (): CreateEntryForm => ({
   direction: "IN",
   type: "SALE_CASH",
   paymentMethod: "CASH",
   description: "",
-  occurredAt: "",
+  occurredAt: getCurrentDateTimeInputValue(),
   amountInput: "",
-  documentId: "",
+  attachmentFile: null,
 });
 
 type LabelFn = (value: string) => string;
@@ -61,6 +67,7 @@ type CreateEntryDialogProps = {
 
 export function CreateEntryDialog(props: CreateEntryDialogProps) {
   const { t } = useTranslation();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const {
     open,
     onOpenChange,
@@ -82,7 +89,7 @@ export function CreateEntryDialog(props: CreateEntryDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{t("cash.ui.entries.createDialog.title")}</DialogTitle>
         </DialogHeader>
@@ -125,44 +132,46 @@ export function CreateEntryDialog(props: CreateEntryDialogProps) {
               />
             </div>
           </div>
-          <div className="space-y-1">
-            <Label htmlFor="create-entry-type">{t("cash.ui.entries.createDialog.type")}</Label>
-            <select
-              id="create-entry-type"
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
-              value={form.type}
-              onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  type: event.target.value as CashEntryType,
-                }))
-              }
-            >
-              {entryTypes.map((value) => (
-                <option key={value} value={value}>
-                  {entryTypeLabel(value)}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="create-entry-payment-method">
-              {t("cash.ui.entries.createDialog.paymentMethod")}
-            </Label>
-            <select
-              id="create-entry-payment-method"
-              className="h-9 w-full rounded-md border bg-background px-3 text-sm"
-              value={form.paymentMethod}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, paymentMethod: event.target.value }))
-              }
-            >
-              {paymentMethods.map((value) => (
-                <option key={value} value={value}>
-                  {paymentMethodLabel(value)}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="create-entry-type">{t("cash.ui.entries.createDialog.type")}</Label>
+              <select
+                id="create-entry-type"
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+                value={form.type}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    type: event.target.value as CashEntryType,
+                  }))
+                }
+              >
+                {entryTypes.map((value) => (
+                  <option key={value} value={value}>
+                    {entryTypeLabel(value)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="create-entry-payment-method">
+                {t("cash.ui.entries.createDialog.paymentMethod")}
+              </Label>
+              <select
+                id="create-entry-payment-method"
+                className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+                value={form.paymentMethod}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, paymentMethod: event.target.value }))
+                }
+              >
+                {paymentMethods.map((value) => (
+                  <option key={value} value={value}>
+                    {paymentMethodLabel(value)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="space-y-1">
             <Label htmlFor="create-entry-description">
@@ -188,14 +197,35 @@ export function CreateEntryDialog(props: CreateEntryDialogProps) {
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="create-entry-document-id">
-              {t("cash.ui.entries.createDialog.attachBelegDocumentId")}
+            <Label htmlFor="create-entry-attachment">
+              {t("cash.ui.entries.createDialog.attachBeleg")}
             </Label>
-            <Input
-              id="create-entry-document-id"
-              value={form.documentId}
-              onChange={(event) => setForm((prev) => ({ ...prev, documentId: event.target.value }))}
-              placeholder={t("cash.ui.entries.createDialog.documentPlaceholder")}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isPending}
+              >
+                {form.attachmentFile
+                  ? t("cash.ui.entries.createDialog.replaceAttachment")
+                  : t("cash.ui.entries.createDialog.chooseAttachment")}
+              </Button>
+              <span className="truncate text-sm text-muted-foreground">
+                {form.attachmentFile?.name ?? t("cash.ui.entries.createDialog.noAttachment")}
+              </span>
+            </div>
+            <input
+              ref={fileInputRef}
+              id="create-entry-attachment"
+              type="file"
+              accept="image/*,.pdf,application/pdf"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0] ?? null;
+                setForm((prev) => ({ ...prev, attachmentFile: file }));
+                event.currentTarget.value = "";
+              }}
             />
           </div>
           <Card>
@@ -217,7 +247,9 @@ export function CreateEntryDialog(props: CreateEntryDialogProps) {
             {t("cash.ui.common.cancel")}
           </Button>
           <Button onClick={onSave} disabled={isPending || !canSave}>
-            {t("cash.ui.entries.createDialog.save")}
+            {isPending && form.attachmentFile
+              ? t("cash.ui.entries.createDialog.uploading")
+              : t("cash.ui.entries.createDialog.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

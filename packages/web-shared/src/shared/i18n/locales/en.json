@@ -1275,11 +1275,14 @@
           "paymentMethod": "Payment method",
           "description": "Description",
           "occurredAt": "Occurred at",
-          "attachBelegDocumentId": "Attach beleg document ID (optional)",
-          "documentPlaceholder": "doc_...",
+          "attachBeleg": "Attach beleg (optional)",
+          "chooseAttachment": "Choose file",
+          "replaceAttachment": "Replace file",
+          "noAttachment": "No file selected",
           "projectedBalance": "Projected balance after save",
           "failed": "Failed to create entry.",
-          "save": "Save entry"
+          "save": "Save entry",
+          "uploading": "Uploading..."
         },
         "reverseDialog": {
           "title": "Reverse entry",
