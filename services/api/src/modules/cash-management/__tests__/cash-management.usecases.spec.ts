@@ -16,10 +16,14 @@ import type {
 import type { IdempotencyStoragePort } from "@/shared/ports/idempotency-storage.port";
 import { CreateCashEntryUseCase } from "../application/use-cases/create-cash-entry.usecase";
 import { ReverseCashEntryUseCase } from "../application/use-cases/reverse-cash-entry.usecase";
+import { GetCashDashboardQueryUseCase } from "../application/use-cases/get-cash-dashboard.query";
+import { SaveCashDayCountUseCase } from "../application/use-cases/save-cash-day-count.usecase";
 import { SubmitCashDayCloseUseCase } from "../application/use-cases/submit-cash-day-close.usecase";
 import type {
+  CashAttachmentRepoPort,
   CashDayCloseRepoPort,
   CashEntryRepoPort,
+  CashExportRepoPort,
   CashRegisterRepoPort,
 } from "../application/ports/cash-management.ports";
 import type { CashDayCloseEntity, CashEntryEntity, CashRegisterEntity } from "../domain/entities";
@@ -282,6 +286,99 @@ describe("cash-management use cases", () => {
     expect(persistedCounts).toEqual([{ denominationCents: 500, count: 19, subtotalCents: 9500 }]);
   });
 
+  it("saves counted cash as a draft without locking the day", async () => {
+    let persistedClose: CashDayCloseEntity | null = null;
+    let persistedCounts: Array<{
+      denominationCents: number;
+      count: number;
+      subtotalCents: number;
+    }> = [];
+
+    const registerRepo: CashRegisterRepoPort = {
+      createRegister: async () => baseRegister,
+      listRegisters: async () => [baseRegister],
+      findRegisterById: async () => baseRegister,
+      updateRegister: async () => baseRegister,
+      setCurrentBalance: async () => {},
+    };
+
+    const entryRepo: CashEntryRepoPort = {
+      nextEntryNo: async () => 2,
+      createEntry: async () => baseEntry,
+      listEntries: async () => [baseEntry],
+      findEntryById: async () => baseEntry,
+      setReversedByEntryId: async () => {},
+      listEntriesForMonth: async () => [baseEntry],
+      getExpectedBalanceAtDay: async () => 10000,
+      lockEntriesForDay: async () => {},
+    };
+
+    const dayCloseRepo: CashDayCloseRepoPort = {
+      findDayCloseByRegisterAndDay: async () => persistedClose,
+      upsertDayClose: async (data) => {
+        persistedClose = {
+          id: data.id ?? "draft-close-1",
+          tenantId: data.tenantId,
+          workspaceId: data.workspaceId,
+          registerId: data.registerId,
+          dayKey: data.dayKey,
+          expectedBalanceCents: data.expectedBalanceCents,
+          countedBalanceCents: data.countedBalanceCents,
+          differenceCents: data.differenceCents,
+          status: data.status,
+          note: data.note,
+          submittedAt: data.submittedAt,
+          submittedByUserId: data.submittedByUserId,
+          lockedAt: data.lockedAt,
+          lockedByUserId: data.lockedByUserId,
+          counts: persistedCounts.map((line) => ({
+            denominationCents: line.denominationCents,
+            count: line.count,
+            subtotalCents: line.subtotalCents,
+          })),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        return persistedClose;
+      },
+      replaceCountLines: async (_tenantId, _workspaceId, _dayCloseId, lines) => {
+        persistedCounts = lines;
+      },
+      listDayCloses: async () => (persistedClose ? [persistedClose] : []),
+      listDayClosesForMonth: async () => (persistedClose ? [persistedClose] : []),
+    };
+
+    const useCase = new SaveCashDayCountUseCase(
+      registerRepo,
+      entryRepo,
+      dayCloseRepo,
+      makeAudit(),
+      makeUnitOfWork()
+    );
+
+    const result = await useCase.execute(
+      {
+        registerId: "reg-1",
+        dayKey: "2026-02-27",
+        countedBalanceCents: 9950,
+        note: "Drawer short before recount",
+        denominationCounts: [{ denomination: 5000, count: 1, subtotal: 5000 }],
+      },
+      createCtx()
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.value.dayClose.status).toBe(CashDayCloseStatus.DRAFT);
+    expect(result.value.dayClose.countedBalance).toBe(9950);
+    expect(result.value.dayClose.difference).toBe(-50);
+    expect(result.value.dayClose.lockedAt).toBeNull();
+    expect(persistedCounts).toEqual([{ denominationCents: 5000, count: 1, subtotalCents: 5000 }]);
+  });
+
   it("blocks normal entry posting when day is already closed", async () => {
     const registerRepo: CashRegisterRepoPort = {
       createRegister: async () => baseRegister,
@@ -361,5 +458,164 @@ describe("cash-management use cases", () => {
     if (!result.ok) {
       expect(result.error.code).toBe("CashManagement:DayAlreadyClosed");
     }
+  });
+
+  it("builds a live dashboard summary from register activity", async () => {
+    const registerRepo: CashRegisterRepoPort = {
+      createRegister: async () => baseRegister,
+      listRegisters: async () => [baseRegister],
+      findRegisterById: async () => baseRegister,
+      updateRegister: async () => baseRegister,
+      setCurrentBalance: async () => {},
+    };
+
+    const todayIncome: CashEntryEntity = {
+      ...baseEntry,
+      id: "entry-income",
+      description: "Cash sale",
+      amountCents: 3000,
+      balanceAfterCents: 13000,
+    };
+
+    const todayExpense: CashEntryEntity = {
+      ...baseEntry,
+      id: "entry-expense",
+      entryNo: 2,
+      description: "Acetone refill",
+      type: CashEntryType.EXPENSE_CASH,
+      direction: CashEntryDirection.OUT,
+      amountCents: 800,
+      balanceAfterCents: 12200,
+    };
+
+    const previousMonthEntry: CashEntryEntity = {
+      ...baseEntry,
+      id: "entry-prev-month",
+      dayKey: "2026-01-31",
+      occurredAt: new Date("2026-01-31T12:00:00.000Z"),
+    };
+
+    const entryRepo: CashEntryRepoPort = {
+      nextEntryNo: async () => 3,
+      createEntry: async () => baseEntry,
+      listEntries: async (_tenantId, _workspaceId, filters) => {
+        if (filters.dayKeyFrom === "2026-02-27" && filters.dayKeyTo === "2026-02-27") {
+          return [todayIncome, todayExpense];
+        }
+        return [];
+      },
+      findEntryById: async () => null,
+      setReversedByEntryId: async () => {},
+      listEntriesForMonth: async (_tenantId, _workspaceId, _registerId, month) => {
+        if (month === "2026-02") {
+          return [todayIncome, todayExpense];
+        }
+        return [previousMonthEntry];
+      },
+      getExpectedBalanceAtDay: async () => 12200,
+      lockEntriesForDay: async () => {},
+    };
+
+    const dayCloseRepo: CashDayCloseRepoPort = {
+      findDayCloseByRegisterAndDay: async () => ({
+        id: "close-1",
+        tenantId: "tenant-1",
+        workspaceId: "ws-1",
+        registerId: "reg-1",
+        dayKey: "2026-02-27",
+        expectedBalanceCents: 12200,
+        countedBalanceCents: 12200,
+        differenceCents: 0,
+        status: CashDayCloseStatus.DRAFT,
+        note: null,
+        submittedAt: null,
+        submittedByUserId: null,
+        lockedAt: null,
+        lockedByUserId: null,
+        counts: [],
+        createdAt: new Date("2026-02-27T18:00:00.000Z"),
+        updatedAt: new Date("2026-02-27T18:00:00.000Z"),
+      }),
+      upsertDayClose: async () => {
+        throw new Error("not used");
+      },
+      replaceCountLines: async () => {},
+      listDayCloses: async () => [
+        {
+          id: "close-prev",
+          tenantId: "tenant-1",
+          workspaceId: "ws-1",
+          registerId: "reg-1",
+          dayKey: "2026-02-26",
+          expectedBalanceCents: 10000,
+          countedBalanceCents: 10000,
+          differenceCents: 0,
+          status: CashDayCloseStatus.SUBMITTED,
+          note: null,
+          submittedAt: new Date("2026-02-26T19:00:00.000Z"),
+          submittedByUserId: "user-9",
+          lockedAt: new Date("2026-02-26T19:00:00.000Z"),
+          lockedByUserId: "user-9",
+          counts: [],
+          createdAt: new Date("2026-02-26T19:00:00.000Z"),
+          updatedAt: new Date("2026-02-26T19:00:00.000Z"),
+        },
+      ],
+      listDayClosesForMonth: async () => [],
+    };
+
+    const attachmentRepo: CashAttachmentRepoPort = {
+      createAttachment: async () => {
+        throw new Error("not used");
+      },
+      findAttachmentByEntryAndDocument: async () => null,
+      listAttachments: async () => [],
+      listAttachmentsForMonth: async () => [
+        {
+          id: "attachment-1",
+          tenantId: "tenant-1",
+          workspaceId: "ws-1",
+          entryId: "entry-expense",
+          documentId: "doc-1",
+          uploadedByUserId: "user-1",
+          createdAt: new Date("2026-02-27T12:00:00.000Z"),
+        },
+      ],
+    };
+
+    const exportRepo: CashExportRepoPort = {
+      createArtifact: async () => {
+        throw new Error("not used");
+      },
+      findArtifactById: async () => null,
+      findLatestArtifact: async () => null,
+      listAuditRowsForMonth: async () => [],
+    };
+
+    const useCase = new GetCashDashboardQueryUseCase(
+      registerRepo,
+      entryRepo,
+      dayCloseRepo,
+      attachmentRepo,
+      exportRepo
+    );
+
+    const result = await useCase.execute(
+      {
+        registerId: "reg-1",
+        dayKey: "2026-02-27",
+      },
+      createCtx()
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.value.dashboard.status.dayStatus).toBe("ready-to-close");
+    expect(result.value.dashboard.status.missingReceiptsToday).toBe(0);
+    expect(result.value.dashboard.summary.expectedClosingCents).toBe(12200);
+    expect(result.value.dashboard.recentEntries).toHaveLength(2);
   });
 });

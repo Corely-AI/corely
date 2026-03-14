@@ -6,5 +6,5 @@
     "allowImportingTsExtensions": true,
     "moduleDetection": "force"
   },
-  "include": ["playwright.config.ts"]
+  "include": ["playwright.config.ts", "playwright.cash.config.ts", "playwright.pos.config.ts"]
 }

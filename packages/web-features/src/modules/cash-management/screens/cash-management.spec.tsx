@@ -17,6 +17,7 @@ const { apiMocks, uploadMocks } = vi.hoisted(() => ({
     reverseEntry: vi.fn(),
     attachBeleg: vi.fn(),
     getDayClose: vi.fn(),
+    getDashboard: vi.fn(),
     submitDayClose: vi.fn(),
     exportCashBook: vi.fn(),
     downloadExport: vi.fn(),

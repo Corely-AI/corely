@@ -14,6 +14,10 @@ export const cashKeys = {
     detail: (registerId: string, dayKey: string) =>
       ["cash-day-closes", registerId, dayKey] as const,
   },
+  dashboard: {
+    detail: (registerId: string, params: Record<string, unknown> = {}) =>
+      ["cash-dashboard", registerId, params] as const,
+  },
   exports: {
     list: (params: Record<string, unknown>) => ["cash-exports", "list", params] as const,
   },

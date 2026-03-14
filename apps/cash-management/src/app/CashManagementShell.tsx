@@ -1,12 +1,13 @@
 import React from "react";
 import type { WorkspaceNavigationGroup, WorkspaceNavigationItem } from "@corely/contracts";
 import { AppShell, type AppSidebarProps, type WorkspaceSwitcherMode } from "@corely/web-shared";
-import { cashManagementFeature, type FeatureNavItem } from "@corely/web-features";
+import { assistantFeature, cashManagementFeature, type FeatureNavItem } from "@corely/web-features";
 
 const cashManagementSwitcherMode: WorkspaceSwitcherMode = "multi";
 
 const cashManagementNavItems: FeatureNavItem[] = [
   ...cashManagementFeature.cashManagementNavItems,
+  ...assistantFeature.assistantNavItems,
   { id: "settings", label: "Settings", route: "/settings", icon: "Settings" },
 ];
 
@@ -20,7 +21,7 @@ const toWorkspaceNavigationItem = (
   route: item.route,
   icon: item.icon ?? "HelpCircle",
   order: index + 1,
-  exact: item.route === "/cash/registers",
+  exact: item.route === "/dashboard",
 });
 
 const cashManagementNavigationGroups: WorkspaceNavigationGroup[] = [

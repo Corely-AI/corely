@@ -47,6 +47,7 @@ export const LoginPage = () => {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                data-testid="login-email"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -58,6 +59,7 @@ export const LoginPage = () => {
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                data-testid="login-password"
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -65,7 +67,12 @@ export const LoginPage = () => {
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+              data-testid="login-submit"
+            >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
 

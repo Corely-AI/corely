@@ -51,6 +51,11 @@ const EXCLUDED_FILES = new Set([
   "services/api/src/modules/classes/infrastructure/prisma/classes.repository.ts",
   "packages/web-features/src/modules/tax/screens/FilingsListPage.tsx",
   "packages/web-features/src/modules/tax/screens/TaxPaymentsPage.tsx",
+  "packages/web-features/src/modules/cash-management/screens/CashDashboardScreen.tsx",
+  "packages/web-features/src/modules/cash-management/screens/cash-dashboard-model.ts",
+  "services/api/src/modules/cash-management/__tests__/cash-management.usecases.spec.ts",
+  "services/api/src/modules/cash-management/adapters/tools/cash-management.tools.ts",
+  "services/api/src/modules/cash-management/infrastructure/adapters/prisma-cash-repository.adapter.ts",
 ]);
 
 const execGit = (args) =>

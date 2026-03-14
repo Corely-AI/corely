@@ -259,6 +259,12 @@ export interface CashExportRepoPort {
     workspaceId: string,
     artifactId: string
   ): Promise<CashExportArtifactEntity | null>;
+  findLatestArtifact(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    month?: string
+  ): Promise<CashExportArtifactEntity | null>;
   listAuditRowsForMonth(
     tenantId: string,
     month: string

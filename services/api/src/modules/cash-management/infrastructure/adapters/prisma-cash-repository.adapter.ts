@@ -662,6 +662,25 @@ export class PrismaCashRepository
     return row ? this.mapArtifact(row) : null;
   }
 
+  async findLatestArtifact(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    month?: string
+  ): Promise<CashExportArtifactEntity | null> {
+    const row = await this.prisma.cashExportArtifact.findFirst({
+      where: {
+        tenantId,
+        workspaceId,
+        registerId,
+        ...(month ? { month } : {}),
+      },
+      orderBy: [{ createdAt: "desc" }],
+    });
+
+    return row ? this.mapArtifact(row) : null;
+  }
+
   async listAuditRowsForMonth(
     tenantId: string,
     month: string
