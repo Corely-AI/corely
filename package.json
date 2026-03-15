@@ -25,6 +25,7 @@
     "dev:website-runtime": "node scripts/build-deps-if-stale.mjs @corely/website-runtime && pnpm --filter @corely/website-runtime dev",
     "dev:portal": "node scripts/build-deps-if-stale.mjs @corely/portal && pnpm --filter @corely/portal dev",
     "dev:restaurant-listing": "node scripts/build-deps-if-stale.mjs @corely/restaurant-listing && pnpm --filter @corely/restaurant-listing dev",
+    "billing:stripe:cash:setup": "bash ./scripts/setup-stripe-billing-cash.sh",
     "docs:dev": "cd docs-site && npx mint dev",
     "docs:check": "cd docs-site && npx mintlify broken-links",
     "build:web": "pnpm build:packages && pnpm --filter @corely/web build",
@@ -80,6 +81,7 @@
   "author": "Ha Doan <ha@oneway8x.com>",
   "dependencies": {
     "@google-cloud/speech": "^7.2.1",
+    "@opentelemetry/context-async-hooks": "^2.2.0",
     "@types/pg": "catalog:",
     "pg": "catalog:"
   }

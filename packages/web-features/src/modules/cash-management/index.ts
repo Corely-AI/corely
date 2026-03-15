@@ -1,4 +1,5 @@
 export { CashDashboardScreen } from "./screens/CashDashboardScreen";
+export { BillingScreen } from "./screens/BillingScreen";
 export { CashRegistersScreen } from "./screens/CashRegistersScreen";
 export { CashRegisterDetailScreen } from "./screens/CashRegisterDetailScreen";
 export { DailyCloseScreen } from "./screens/DailyCloseScreen";

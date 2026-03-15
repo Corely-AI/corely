@@ -11,11 +11,13 @@ import {
 import { TestHarnessGuard } from "./guards/test-harness.guard";
 import {
   TestHarnessService,
+  type BillingInspectionResult,
   type SeedTaxFilingScenarioInput,
   type SeedTaxFilingScenarioType,
   type SeedTaxFilingScenarioStatus,
 } from "./test-harness.service";
 import { CrmTestHooksService } from "./crm-test-hooks.service";
+import type { BillingProviderTestOperation } from "../billing";
 
 @Controller("test")
 @UseGuards(TestHarnessGuard)
@@ -68,6 +70,51 @@ export class TestHarnessController {
       processedCount: result.processedCount,
       failedCount: result.failedCount,
     };
+  }
+
+  @Post("billing/provider/reset")
+  @HttpCode(HttpStatus.OK)
+  async resetBillingProviderState() {
+    this.testHarnessService.resetBillingProviderState();
+    return { success: true };
+  }
+
+  @Post("billing/provider/fail-next")
+  @HttpCode(HttpStatus.OK)
+  async failNextBillingProviderOperation(
+    @Body() payload: { operation: BillingProviderTestOperation }
+  ) {
+    if (!payload.operation) {
+      throw new BadRequestException("Missing required field: operation");
+    }
+
+    this.testHarnessService.failNextBillingProviderOperation(payload.operation);
+    return { success: true, operation: payload.operation };
+  }
+
+  @Post("billing/inspect")
+  @HttpCode(HttpStatus.OK)
+  async inspectBillingState(
+    @Body() payload: { tenantId: string; productKey?: string }
+  ): Promise<BillingInspectionResult> {
+    if (!payload.tenantId) {
+      throw new BadRequestException("Missing required field: tenantId");
+    }
+
+    return this.testHarnessService.inspectBillingState(payload);
+  }
+
+  @Post("billing/trial/set-ends-at")
+  @HttpCode(HttpStatus.OK)
+  async setBillingTrialEndsAt(
+    @Body() payload: { tenantId: string; productKey?: string; endsAt: string }
+  ) {
+    if (!payload.tenantId || !payload.endsAt) {
+      throw new BadRequestException("Missing required fields: tenantId, endsAt");
+    }
+
+    await this.testHarnessService.setBillingTrialEndsAt(payload);
+    return { success: true };
   }
 
   /**

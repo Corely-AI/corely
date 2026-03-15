@@ -30,6 +30,8 @@ import {
 } from "../ports/cash-management.ports";
 import type { CashDayCloseEntity, CashEntryEntity } from "../../domain/entities";
 import { assertCanManageCash } from "../../policies/assert-cash-policies";
+import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
+import { getCashBillingBoolean, loadCashBillingState } from "./billing-guards";
 
 const receiptRequiredTypes = new Set<string>([
   "EXPENSE_CASH",
@@ -103,7 +105,9 @@ export class GetCashDashboardQueryUseCase extends BaseUseCase<
     @Inject(CASH_ATTACHMENT_REPO)
     private readonly attachmentRepo: CashAttachmentRepoPort,
     @Inject(CASH_EXPORT_REPO)
-    private readonly exportRepo: CashExportRepoPort
+    private readonly exportRepo: CashExportRepoPort,
+    @Inject(BILLING_ACCESS_PORT)
+    private readonly billingAccess: BillingAccessPort
   ) {
     super({ logger: undefined });
   }
@@ -137,6 +141,11 @@ export class GetCashDashboardQueryUseCase extends BaseUseCase<
     const monthKey = toMonthKey(dayKey);
     const previousMonthKey = shiftMonth(monthKey, -1);
     const weekStart = startOfWeekDayKey(dayKey);
+    const billingState = await loadCashBillingState(this.billingAccess, tenantId);
+    const issueDetectionEnabled = getCashBillingBoolean(
+      billingState.entitlements,
+      "issueDetection"
+    );
 
     const [
       todayEntries,
@@ -204,8 +213,12 @@ export class GetCashDashboardQueryUseCase extends BaseUseCase<
     const missingReceiptEntriesMonth = monthEntries.filter(
       (entry) => requiresReceipt(entry) && !attachmentEntryIds.has(entry.id)
     );
-    const suspiciousEntriesToday = todayEntries.filter(isSuspiciousEntry);
-    const suspiciousEntriesMonth = monthEntries.filter(isSuspiciousEntry);
+    const suspiciousEntriesToday = issueDetectionEnabled
+      ? todayEntries.filter(isSuspiciousEntry)
+      : [];
+    const suspiciousEntriesMonth = issueDetectionEnabled
+      ? monthEntries.filter(isSuspiciousEntry)
+      : [];
     const missingNotesToday = todayEntries.filter(isMissingNote);
     const reviewItemsCount = suspiciousEntriesToday.length + missingNotesToday.length;
     const countedCashCents = todayClose?.countedBalanceCents ?? null;

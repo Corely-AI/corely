@@ -73,6 +73,19 @@ export class PrismaCashRepository
     return this.mapRegister(row);
   }
 
+  async countDistinctLocationsForTenant(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<number> {
+    const rows = await this.client(tx).cashRegister.findMany({
+      where: { tenantId },
+      distinct: ["workspaceId"],
+      select: { workspaceId: true },
+    });
+
+    return rows.length;
+  }
+
   async listRegisters(
     tenantId: string,
     workspaceId: string,
@@ -233,6 +246,23 @@ export class PrismaCashRepository
     });
 
     return this.mapEntry(row);
+  }
+
+  async countEntriesForPeriod(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    tx?: TransactionContext
+  ): Promise<number> {
+    return this.client(tx).cashEntry.count({
+      where: {
+        tenantId,
+        occurredAt: {
+          gte: periodStart,
+          lt: periodEnd,
+        },
+      },
+    });
   }
 
   async listEntries(
@@ -585,6 +615,23 @@ export class PrismaCashRepository
     });
 
     return rows.map((row) => this.mapAttachment(row));
+  }
+
+  async countAttachmentsForPeriod(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    tx?: TransactionContext
+  ): Promise<number> {
+    return this.client(tx).cashEntryAttachment.count({
+      where: {
+        tenantId,
+        createdAt: {
+          gte: periodStart,
+          lt: periodEnd,
+        },
+      },
+    });
   }
 
   async listAttachmentsForMonth(

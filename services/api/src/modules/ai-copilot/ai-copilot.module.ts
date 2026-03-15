@@ -110,6 +110,7 @@ import { AttachBelegToCashEntryUseCase } from "../cash-management/application/us
 import { ListCashEntryAttachmentsQueryUseCase } from "../cash-management/application/use-cases/list-cash-entry-attachments.query";
 import { ExportCashBookUseCase } from "../cash-management/application/use-cases/export-cash-book.usecase";
 import { buildCashManagementTools } from "../cash-management/adapters/tools/cash-management.tools";
+import { BillingModule } from "../billing/billing.module";
 
 @Module({
   imports: [
@@ -126,6 +127,7 @@ import { buildCashManagementTools } from "../cash-management/adapters/tools/cash
     ExpensesModule,
     DocumentsModule,
     CashManagementModule,
+    BillingModule,
     TaxModule,
     PlatformEntitlementsModule,
     PromptModule,

@@ -3,6 +3,7 @@ import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { DocumentsModule } from "../documents/documents.module";
+import { BillingModule } from "../billing";
 import { DocumentsApplication } from "../documents/application/documents.application";
 import { CashManagementController } from "./http/cash-management.controller";
 import {
@@ -36,7 +37,7 @@ import { GetCashExportArtifactQueryUseCase } from "./application/use-cases/get-c
 import { GetCashDashboardQueryUseCase } from "./application/use-cases/get-cash-dashboard.query";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, DocumentsModule],
+  imports: [DataModule, KernelModule, IdentityModule, DocumentsModule, BillingModule],
   controllers: [CashManagementController],
   providers: [
     PrismaCashRepository,

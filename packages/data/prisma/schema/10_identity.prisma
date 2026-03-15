@@ -27,6 +27,11 @@ model Tenant {
   cashRegisters    CashRegister[]
   cashEntries      CashEntry[]
   cashDayCloses    CashDayClose[]
+  billingAccounts       BillingAccount[]
+  billingSubscriptions  BillingSubscription[]
+  billingTrials         BillingTrial[]
+  billingUsageCounters  BillingUsageCounter[]
+  billingProviderEvents BillingProviderEvent[]
 
   @@index([createdAt])
   @@schema("identity")

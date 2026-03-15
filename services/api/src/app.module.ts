@@ -39,6 +39,7 @@ import { ClassesModule } from "./modules/classes";
 import { BookingModule } from "./modules/booking";
 import { PortalModule } from "./modules/portal/portal.module";
 import { CashManagementModule } from "./modules/cash-management/cash-management.module";
+import { BillingModule } from "./modules/billing/billing.module";
 import { CustomizationModule } from "./modules/customization/customization.module";
 import { DirectoryModule } from "./modules/directory";
 import { PosModule } from "./modules/pos";
@@ -92,6 +93,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     RentalsModule,
     DirectoryModule,
     CashManagementModule,
+    BillingModule,
     PosModule,
     IntegrationsModule,
     CrmMailModule,

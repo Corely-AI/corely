@@ -180,6 +180,14 @@ export const envSchema = z.object({
   RESEND_WEBHOOK_SECRET: z.string().optional(),
   SUMUP_WEBHOOK_SECRET: z.string().optional(),
   INTEGRATIONS_SECRET_KEY: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_BILLING_PRICE_STARTER_MONTHLY: z.string().optional(),
+  STRIPE_BILLING_PRICE_PRO_MONTHLY: z.string().optional(),
+  STRIPE_BILLING_PRICE_MULTI_LOCATION_MONTHLY: z.string().optional(),
+  STRIPE_BILLING_SUCCESS_URL: z.string().url().optional(),
+  STRIPE_BILLING_CANCEL_URL: z.string().url().optional(),
+  STRIPE_BILLING_PORTAL_RETURN_URL: z.string().url().optional(),
 
   // ============================================================================
   // OBJECT STORAGE (GCS)
@@ -240,6 +248,8 @@ export const SECRET_ENV_KEYS: ReadonlySet<keyof Env> = new Set([
   "RESEND_WEBHOOK_SECRET",
   "SUMUP_WEBHOOK_SECRET",
   "INTEGRATIONS_SECRET_KEY",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
   "JWT_SECRET",
   "GOOGLE_APPLICATION_CREDENTIALS",
   "LANGFUSE_SECRET_KEY",

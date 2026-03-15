@@ -1,6 +1,7 @@
 import React from "react";
 import { RequirePermission } from "@corely/web-shared/shared/permissions";
 import {
+  BillingScreen,
   CashDashboardScreen,
   CashEntriesScreen,
   CashExportsScreen,
@@ -18,6 +19,7 @@ const withPermission = (permission: string, element: React.ReactElement): React.
 
 export const cashManagementRoutes = (): FeatureRoute[] => [
   { path: "/dashboard", element: <CashDashboardScreen /> },
+  { path: "/billing", element: <BillingScreen /> },
   { path: "/cash/registers", element: <CashRegistersScreen /> },
   { path: "/cash/registers/new", element: withPermission("cash.write", <CashRegisterNewScreen />) },
   { path: "/cash/registers/:id", element: <CashRegisterDetailScreen /> },
@@ -41,5 +43,6 @@ export const cashManagementRoutes = (): FeatureRoute[] => [
 
 export const cashManagementNavItems: FeatureNavItem[] = [
   { id: "cash-dashboard", label: "Dashboard", route: "/dashboard", icon: "LayoutDashboard" },
+  { id: "cash-billing", label: "Billing", route: "/billing", icon: "CreditCard" },
   { id: "cash-registers", label: "Registers", route: "/cash/registers", icon: "Coins" },
 ];

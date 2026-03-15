@@ -25,7 +25,9 @@ import {
   TableRow,
   cn,
 } from "@corely/ui";
+import { CashManagementBillingFeatureKeys, CashManagementProductKey } from "@corely/contracts";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
+import { billingApi } from "@corely/web-shared/lib/billing-api";
 import {
   AlertTriangle,
   ArrowDownCircle,
@@ -40,6 +42,7 @@ import {
   Euro,
   FileBadge2,
   LayoutDashboard,
+  LockKeyhole,
   NotebookPen,
   Receipt,
   ShieldCheck,
@@ -216,6 +219,15 @@ interface ActionItem {
   description: string;
   ctaLabel: string;
   href: string;
+}
+
+interface DashboardUpgradeCopy {
+  openBilling: string;
+  upgradeToStarter: string;
+  upgradeToPro: string;
+  assistantLockedTitle: string;
+  assistantLockedDescription: string;
+  assistantLockedBadge: string;
 }
 
 const dashboardCopy: Record<LocaleKey, DashboardCopy> = {
@@ -670,6 +682,36 @@ const dashboardCopy: Record<LocaleKey, DashboardCopy> = {
       medium: "Trung binh",
       low: "Thap",
     },
+  },
+};
+
+const dashboardUpgradeCopy: Record<LocaleKey, DashboardUpgradeCopy> = {
+  en: {
+    openBilling: "Open billing",
+    upgradeToStarter: "Upgrade to Starter",
+    upgradeToPro: "Upgrade to Pro",
+    assistantLockedTitle: "AI help is locked on this plan",
+    assistantLockedDescription:
+      "Upgrade to Pro to unlock the cash assistant, multilingual explanations, and guided issue review.",
+    assistantLockedBadge: "AI locked",
+  },
+  de: {
+    openBilling: "Abrechnung oeffnen",
+    upgradeToStarter: "Auf Starter upgraden",
+    upgradeToPro: "Auf Pro upgraden",
+    assistantLockedTitle: "KI-Hilfe ist in diesem Tarif gesperrt",
+    assistantLockedDescription:
+      "Upgrade auf Pro, um den Kassenassistenten, mehrsprachige Erklaerungen und gefuehrte Pruefung freizuschalten.",
+    assistantLockedBadge: "KI gesperrt",
+  },
+  vi: {
+    openBilling: "Mo thanh toan",
+    upgradeToStarter: "Nang cap len Starter",
+    upgradeToPro: "Nang cap len Pro",
+    assistantLockedTitle: "Tro ly AI bi khoa trong goi nay",
+    assistantLockedDescription:
+      "Nang cap len Pro de mo tro ly so quy, giai thich da ngon ngu, va goi y xu ly van de.",
+    assistantLockedBadge: "AI bi khoa",
   },
 };
 
@@ -1462,10 +1504,14 @@ export function ClosingWorkflowCard({
   data,
   copy,
   locale,
+  dailyClosingEnabled,
+  upgradeCopy,
 }: {
   data: CashDashboardData;
   copy: DashboardCopy;
   locale: string;
+  dailyClosingEnabled: boolean;
+  upgradeCopy: DashboardUpgradeCopy;
 }) {
   const differenceResolved =
     typeof data.summary.differenceCents !== "number" || data.summary.differenceCents === 0;
@@ -1514,20 +1560,26 @@ export function ClosingWorkflowCard({
           label={copy.labels.missingReceipts}
           done={data.status.missingReceiptsToday === 0}
         />
-        <Button
-          variant={canClose ? "success" : "outline"}
-          disabled={!canClose}
-          asChild={canClose}
-          data-testid="cash-dashboard-close-day-button"
-        >
-          {canClose ? (
-            <Link to={getCashDashboardDayCloseHref(data.registerId, data.dayKey)}>
-              {copy.actions.closeDay}
-            </Link>
-          ) : (
-            <span>{copy.actions.closeDay}</span>
-          )}
-        </Button>
+        {!dailyClosingEnabled ? (
+          <Button variant="accent" asChild data-testid="cash-dashboard-close-day-button">
+            <Link to="/billing">{upgradeCopy.upgradeToStarter}</Link>
+          </Button>
+        ) : (
+          <Button
+            variant={canClose ? "success" : "outline"}
+            disabled={!canClose}
+            asChild={canClose}
+            data-testid="cash-dashboard-close-day-button"
+          >
+            {canClose ? (
+              <Link to={getCashDashboardDayCloseHref(data.registerId, data.dayKey)}>
+                {copy.actions.closeDay}
+              </Link>
+            ) : (
+              <span>{copy.actions.closeDay}</span>
+            )}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
@@ -1537,10 +1589,14 @@ export function ExportStatusCard({
   data,
   copy,
   locale,
+  exportEnabled,
+  upgradeCopy,
 }: {
   data: CashDashboardData;
   copy: DashboardCopy;
   locale: string;
+  exportEnabled: boolean;
+  upgradeCopy: DashboardUpgradeCopy;
 }) {
   const statusLabel = getExportStatusLabel(data.status.exportStatus, copy);
 
@@ -1590,18 +1646,26 @@ export function ExportStatusCard({
           label={copy.labels.exportChecklistReview}
           done={data.export.checklist.reviewQueueClear}
         />
-        <Button
-          variant={data.status.exportStatus === "ready" ? "accent" : "outline"}
-          disabled={data.status.exportStatus !== "ready"}
-          asChild={data.status.exportStatus === "ready"}
-          data-testid="cash-dashboard-export-button"
-        >
-          {data.status.exportStatus === "ready" ? (
-            <Link to={getCashDashboardExportHref(data.registerId)}>{copy.actions.exportMonth}</Link>
-          ) : (
-            <span>{copy.actions.exportMonth}</span>
-          )}
-        </Button>
+        {!exportEnabled ? (
+          <Button variant="accent" asChild data-testid="cash-dashboard-export-button">
+            <Link to="/billing">{upgradeCopy.upgradeToStarter}</Link>
+          </Button>
+        ) : (
+          <Button
+            variant={data.status.exportStatus === "ready" ? "accent" : "outline"}
+            disabled={data.status.exportStatus !== "ready"}
+            asChild={data.status.exportStatus === "ready"}
+            data-testid="cash-dashboard-export-button"
+          >
+            {data.status.exportStatus === "ready" ? (
+              <Link to={getCashDashboardExportHref(data.registerId)}>
+                {copy.actions.exportMonth}
+              </Link>
+            ) : (
+              <span>{copy.actions.exportMonth}</span>
+            )}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
@@ -1691,7 +1755,42 @@ export function TrendOverviewCard({
   );
 }
 
-export function AssistantHelpWidget({ copy }: { copy: DashboardCopy }) {
+export function AssistantHelpWidget({
+  copy,
+  aiAssistantEnabled,
+  upgradeCopy,
+}: {
+  copy: DashboardCopy;
+  aiAssistantEnabled: boolean;
+  upgradeCopy: DashboardUpgradeCopy;
+}) {
+  if (!aiAssistantEnabled) {
+    return (
+      <Card className="border-border/70 bg-[linear-gradient(180deg,rgba(255,247,237,0.92),rgba(255,255,255,0.98))] shadow-sm shadow-foreground/5 dark:border-border/35 dark:bg-[linear-gradient(180deg,rgba(58,37,16,0.78),rgba(17,17,18,0.92))] dark:shadow-black/20">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="rounded-2xl bg-warning/12 p-3 text-warning dark:bg-warning/18">
+              <LockKeyhole className="h-5 w-5" />
+            </div>
+            <div>
+              <CardTitle>{upgradeCopy.assistantLockedTitle}</CardTitle>
+              <CardDescription>{upgradeCopy.assistantLockedDescription}</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="warning">{upgradeCopy.assistantLockedBadge}</Badge>
+            <Badge variant="outline">Pro+</Badge>
+          </div>
+          <Button variant="accent" asChild>
+            <Link to="/billing">{upgradeCopy.upgradeToPro}</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border-border/70 bg-[linear-gradient(180deg,rgba(221,241,236,0.72),rgba(255,255,255,0.96))] shadow-sm shadow-foreground/5 dark:border-border/35 dark:bg-[linear-gradient(180deg,rgba(19,53,50,0.75),rgba(11,20,24,0.92))] dark:shadow-black/20">
       <CardHeader>
@@ -1765,6 +1864,7 @@ export function CashDashboardScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const localeKey = resolveLocaleKey(i18n.resolvedLanguage ?? i18n.language);
   const copy = dashboardCopy[localeKey];
+  const upgradeCopy = dashboardUpgradeCopy[localeKey];
   const locale = localeByLanguage[localeKey];
   const scenarioId = resolveCashDashboardScenarioId(searchParams.get("state"));
   const mode = resolveCashDashboardSurfaceMode(searchParams.get("mode"));
@@ -1785,6 +1885,11 @@ export function CashDashboardScreen() {
       : ["cash-dashboard", "missing-register"],
     queryFn: () => cashManagementApi.getDashboard(activeRegisterId as string, { dayKey }),
     enabled: !showPreview && Boolean(activeRegisterId),
+  });
+  const billingQuery = useQuery({
+    queryKey: ["billing", "overview", CashManagementProductKey],
+    queryFn: () => billingApi.getOverview(CashManagementProductKey),
+    enabled: !showPreview,
   });
 
   const data = showPreview
@@ -1837,6 +1942,11 @@ export function CashDashboardScreen() {
   }
 
   const actionItems = buildActionItems(data, copy);
+  const featureValues = billingQuery.data?.billing.entitlements.featureValues ?? {};
+  const dailyClosingEnabled =
+    featureValues[CashManagementBillingFeatureKeys.dailyClosing] !== false;
+  const exportEnabled = featureValues[CashManagementBillingFeatureKeys.canExport] !== false;
+  const aiAssistantEnabled = featureValues[CashManagementBillingFeatureKeys.aiAssistant] !== false;
 
   if (showPreview && mode === "loading") {
     return (
@@ -1988,13 +2098,29 @@ export function CashDashboardScreen() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
-        <ClosingWorkflowCard data={data} copy={copy} locale={locale} />
-        <ExportStatusCard data={data} copy={copy} locale={locale} />
+        <ClosingWorkflowCard
+          data={data}
+          copy={copy}
+          locale={locale}
+          dailyClosingEnabled={dailyClosingEnabled}
+          upgradeCopy={upgradeCopy}
+        />
+        <ExportStatusCard
+          data={data}
+          copy={copy}
+          locale={locale}
+          exportEnabled={exportEnabled}
+          upgradeCopy={upgradeCopy}
+        />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.4fr_0.8fr]">
         <TrendOverviewCard data={data} copy={copy} locale={locale} />
-        <AssistantHelpWidget copy={copy} />
+        <AssistantHelpWidget
+          copy={copy}
+          aiAssistantEnabled={aiAssistantEnabled}
+          upgradeCopy={upgradeCopy}
+        />
       </div>
     </DashboardPageFrame>
   );

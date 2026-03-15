@@ -1,4 +1,5 @@
 import type { AppManifest } from "@corely/contracts";
+import { cashManagementFeatureKeys } from "../billing/domain/billing-feature-keys";
 
 export const cashManagementAppManifest: AppManifest = {
   appId: "cash-management",
@@ -9,6 +10,96 @@ export const cashManagementAppManifest: AppManifest = {
   dependencies: [],
   capabilities: [],
   permissions: ["cash.read", "cash.write", "cash.close", "cash.export"],
+  features: [
+    {
+      key: cashManagementFeatureKeys.maxLocations,
+      type: "number",
+      defaultValue: 1,
+      title: "Max locations",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.maxEntriesPerMonth,
+      type: "number",
+      defaultValue: 30,
+      title: "Monthly cash entry limit",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.maxReceiptsPerMonth,
+      type: "number",
+      defaultValue: 10,
+      title: "Monthly receipt limit",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.canExport,
+      type: "boolean",
+      defaultValue: false,
+      title: "Monthly export",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.dailyClosing,
+      type: "boolean",
+      defaultValue: false,
+      title: "Daily closing",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.aiAssistant,
+      type: "boolean",
+      defaultValue: false,
+      title: "AI assistant",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.multilingualAiHelp,
+      type: "boolean",
+      defaultValue: false,
+      title: "Multilingual AI help",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.issueDetection,
+      type: "boolean",
+      defaultValue: false,
+      title: "Issue detection",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.closingGuidance,
+      type: "boolean",
+      defaultValue: false,
+      title: "Closing guidance",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.teamAccess,
+      type: "boolean",
+      defaultValue: false,
+      title: "Team access",
+      category: "billing",
+      tenantOverridable: true,
+    },
+    {
+      key: cashManagementFeatureKeys.consolidatedOverview,
+      type: "boolean",
+      defaultValue: false,
+      title: "Consolidated overview",
+      category: "billing",
+      tenantOverridable: true,
+    },
+  ],
   menu: [
     {
       id: "cash-management",

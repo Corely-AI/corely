@@ -3,7 +3,7 @@ import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/rea
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Badge, Button, Input } from "@corely/ui";
-import type { CashEntryDirection, CashEntryType } from "@corely/contracts";
+import type { CashEntryType } from "@corely/contracts";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 import { CrudListPageLayout, CrudRowActions } from "@corely/web-shared/shared/crud";
 import { formatDateTime, formatMoney } from "@corely/web-shared/shared/lib/formatters";

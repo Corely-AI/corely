@@ -3,6 +3,7 @@ import { DataModule } from "@corely/data";
 import { TENANT_ENTITLEMENTS_READ_PORT_TOKEN } from "@corely/kernel";
 import { IdentityModule } from "../identity/identity.module";
 import { PlatformModule } from "../platform/platform.module";
+import { BillingModule } from "../billing";
 import { FeatureCatalogService } from "./application/feature-catalog.service";
 import { TenantEntitlementsService } from "./application/tenant-entitlements.service";
 import { TenantEntitlementsController } from "./http/tenant-entitlements.controller";
@@ -10,7 +11,12 @@ import { PlatformEntitlementGuard } from "./http/entitlement.guard";
 import { TenantEntitlementsReadAdapter } from "./adapters/tenant-entitlements-read.adapter";
 
 @Module({
-  imports: [DataModule, forwardRef(() => PlatformModule), forwardRef(() => IdentityModule)],
+  imports: [
+    DataModule,
+    forwardRef(() => PlatformModule),
+    forwardRef(() => IdentityModule),
+    forwardRef(() => BillingModule),
+  ],
   controllers: [TenantEntitlementsController],
   providers: [
     FeatureCatalogService,

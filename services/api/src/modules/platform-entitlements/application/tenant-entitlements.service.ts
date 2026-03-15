@@ -1,13 +1,13 @@
-import { Injectable, Inject, ConflictException, NotFoundException } from "@nestjs/common";
+import { Injectable, Inject, ConflictException, NotFoundException, Optional } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import { FeatureCatalogService } from "./feature-catalog.service";
 import {
-  AppEntitlementDefinition,
-  FeatureDefinition,
+  type FeatureSource,
   ResolvedAppEntitlement,
   ResolvedFeatureValue,
   TenantEntitlements,
 } from "../domain/entitlement.types";
+import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../billing";
 
 @Injectable()
 export class TenantEntitlementsService {
@@ -16,7 +16,10 @@ export class TenantEntitlementsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly featureCatalog: FeatureCatalogService
+    private readonly featureCatalog: FeatureCatalogService,
+    @Optional()
+    @Inject(BILLING_ACCESS_PORT)
+    private readonly billingAccess?: BillingAccessPort
   ) {}
 
   async getEntitlements(tenantId: string): Promise<TenantEntitlements> {
@@ -36,9 +39,13 @@ export class TenantEntitlementsService {
     const overrides = await this.prisma.tenantFeatureOverride.findMany({
       where: { tenantId },
     });
-    const overrideMap = new Map<string, any>(
+    const overrideMap = new Map<string, unknown>(
       overrides.map((o) => [o.featureKey, JSON.parse(o.valueJson)])
     );
+
+    const planFeatures = this.billingAccess
+      ? await this.billingAccess.getAllPlanFeatureValues(tenantId).catch(() => ({}))
+      : {};
 
     // 2. Resolve Features
     const allFeatures = this.featureCatalog.getAllFeatures();
@@ -46,9 +53,12 @@ export class TenantEntitlementsService {
 
     for (const feat of allFeatures) {
       let value = feat.defaultValue;
-      let source: any = "default";
+      let source: FeatureSource = "default";
 
-      // TODO: Plan provider check here
+      if (Object.prototype.hasOwnProperty.call(planFeatures, feat.key)) {
+        value = planFeatures[feat.key];
+        source = "plan";
+      }
 
       if (overrideMap.has(feat.key)) {
         value = overrideMap.get(feat.key);
@@ -185,7 +195,7 @@ export class TenantEntitlementsService {
 
   async updateFeatures(
     tenantId: string,
-    updates: { key: string; value: any }[],
+    updates: { key: string; value: unknown }[],
     userId: string
   ): Promise<void> {
     // Validate
