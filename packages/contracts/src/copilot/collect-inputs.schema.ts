@@ -101,7 +101,16 @@ const RepeaterFieldSchema = BaseFieldSchema.extend({
 
 export const CollectInputFieldSchema: z.ZodTypeAny = z
   .lazy(() =>
-    z.discriminatedUnion("type", [...NonRepeaterFieldSchema.options, RepeaterFieldSchema])
+    z.discriminatedUnion("type", [
+      TextFieldSchema,
+      NumberFieldSchema,
+      SelectFieldSchema,
+      TextareaFieldSchema,
+      DateFieldSchema,
+      DateTimeFieldSchema,
+      BooleanFieldSchema,
+      RepeaterFieldSchema,
+    ])
   )
   .superRefine((value, ctx) => {
     if (value.type === "select") {
