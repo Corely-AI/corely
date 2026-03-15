@@ -17,9 +17,19 @@ export const LanguageStep = ({ config, locale, onAdvance, isSaving }: StepCompon
   const cta = config.ctaLabel?.[selected] || config.ctaLabel?.["en"] || "Continue";
 
   return (
-    <div className="mx-auto flex max-w-md flex-col p-6 lg:p-12">
-      <h1 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
-      <p className="mb-8 text-muted-foreground">{desc}</p>
+    <div
+      className="mx-auto flex max-w-md flex-col p-6 lg:p-12"
+      data-testid="onboarding-step-language"
+    >
+      <h1
+        className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl"
+        data-testid="onboarding-step-title"
+      >
+        {title}
+      </h1>
+      <p className="mb-8 text-muted-foreground" data-testid="onboarding-step-description">
+        {desc}
+      </p>
 
       <RadioGroup value={selected} onValueChange={setSelected} className="space-y-3">
         {SUPPORTED_LANGUAGES.map((lang) => (
@@ -30,6 +40,7 @@ export const LanguageStep = ({ config, locale, onAdvance, isSaving }: StepCompon
               "flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-colors hover:bg-accent",
               selected === lang.code ? "border-primary bg-primary/5" : "border-border"
             )}
+            data-testid={`onboarding-language-option-${lang.code}`}
           >
             <div className="flex items-center gap-3">
               <RadioGroupItem value={lang.code} id={`lang-${lang.code}`} className="sr-only" />
@@ -50,6 +61,7 @@ export const LanguageStep = ({ config, locale, onAdvance, isSaving }: StepCompon
           className="group gap-2"
           onClick={() => onAdvance({ locale: selected })}
           disabled={isSaving}
+          data-testid="onboarding-language-next"
         >
           <span>{cta}</span>
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

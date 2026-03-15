@@ -58,12 +58,16 @@ export const useOnboarding = ({ config, onCompleted }: UseOnboardingOptions) => 
       answers,
       meta,
       nextStepId,
+      locale,
+      workflowSource,
     }: {
       stepId: string;
       status: OnboardingStepStatus;
       answers?: Record<string, unknown>;
       meta?: Record<string, unknown>;
       nextStepId?: string;
+      locale?: string;
+      workflowSource?: string;
     }) => {
       // Optimistic logic would go here if needed, but for now just mutate
       const reachedFirstValue = config.steps.find((s) => s.id === stepId)?.isFirstValueMilestone
@@ -82,7 +86,8 @@ export const useOnboarding = ({ config, onCompleted }: UseOnboardingOptions) => 
         nextStepId,
         reachedFirstValue,
         reachedFirstClose,
-        locale: progress?.locale,
+        locale: locale ?? progress?.locale,
+        workflowSource: workflowSource ?? progress?.workflowSource,
       });
     },
     onSuccess: (data) => {

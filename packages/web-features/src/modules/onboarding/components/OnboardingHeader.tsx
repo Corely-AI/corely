@@ -1,5 +1,6 @@
 import React from "react";
 import { Button } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, X } from "lucide-react";
 import type { OnboardingJourneyConfig } from "@corely/contracts";
 
@@ -11,11 +12,21 @@ export interface OnboardingHeaderProps {
 }
 
 export const OnboardingHeader = ({ onExit, onBack, canGoBack = false }: OnboardingHeaderProps) => {
+  const { t } = useTranslation();
   return (
-    <header className="flex shrink-0 items-center justify-between border-b bg-background px-6 py-4">
+    <header
+      className="flex shrink-0 items-center justify-between border-b bg-background px-6 py-4"
+      data-testid="onboarding-header"
+    >
       <div className="flex items-center gap-4">
         {canGoBack && (
-          <Button variant="ghost" size="icon" onClick={onBack} aria-label="Go back">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            aria-label={t("onboarding.goBack")}
+            data-testid="onboarding-back"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
         )}
@@ -28,8 +39,14 @@ export const OnboardingHeader = ({ onExit, onBack, canGoBack = false }: Onboardi
 
       <div className="flex items-center gap-2">
         {onExit && (
-          <Button variant="ghost" size="sm" onClick={onExit} className="gap-2">
-            <span>Save & Exit</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onExit}
+            className="gap-2"
+            data-testid="onboarding-exit"
+          >
+            <span>{t("onboarding.saveAndExit")}</span>
             <X className="h-4 w-4" />
           </Button>
         )}

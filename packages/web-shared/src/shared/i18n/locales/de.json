@@ -97,6 +97,89 @@
     "done": "Fertig",
     "customFields": "Benutzerdefinierte Felder"
   },
+  "onboarding": {
+    "allSet": "Alles bereit!",
+    "redirectingToDashboard": "Weiterleitung zum Dashboard...",
+    "saveAndExit": "Speichern & Beenden",
+    "goBack": "Zurück",
+    "loading": "Onboarding wird geladen...",
+    "aiAssistant": "KI-Assistent",
+    "aiHelpPrompt": "Brauchen Sie Hilfe bei diesem Schritt? Fragen Sie unseren KI-Assistenten nach Erklärungen oder Vorschlägen.",
+    "askAssistant": "Assistent fragen",
+    "businessName": "Unternehmensname",
+    "businessNamePlaceholder": "z.B. Bella Beauty Studio",
+    "businessNameRequired": "Unternehmensname ist erforderlich",
+    "businessType": "Unternehmensart",
+    "selectType": "Typ wählen",
+    "businessTypeRequired": "Kategorie ist erforderlich",
+    "currency": "Währung",
+    "categories": {
+      "beauty": "Nagel- / Kosmetikstudio",
+      "hair": "Frisör / Barbier",
+      "gastronomy": "Café / Restaurant",
+      "retail": "Einzelhandel",
+      "other": "Sonstiges"
+    },
+    "workflowOptions": {
+      "paper": "Papier / Notizbuch",
+      "excel": "Excel / Tabelle",
+      "pos": "Kassensystem (POS)",
+      "software": "Andere Software"
+    },
+    "receipt": {
+      "errorUnsupported": "Nicht unterstützte Datei. Bitte laden Sie eine PDF, JPG oder PNG unter 10 MB hoch.",
+      "uploadPrompt": "Klicken Sie zum Hochladen oder per Drag & Drop",
+      "uploadHint": "PDF, JPG, PNG (max. 10MB)",
+      "skipLabel": "Ich mache das später",
+      "successTitle": "Beleg angehängt!",
+      "successDesc": "Weiter zum nächsten Schritt...",
+      "continueLabel": "Weiter"
+    },
+    "openingBalance": {
+      "errorAmount": "Gültiger Betrag erforderlich",
+      "label": "Echtes Bargeld in der Kasse",
+      "hint": "💡 Kartenzahlungen oder Banküberweisungen nicht mitzählen. Nur physisches Bargeld."
+    },
+    "entries": {
+      "errorAmount": "Gültiger Betrag erforderlich",
+      "errorNote": "Notiz ist erforderlich",
+      "ctaAdd": "Eintrag hinzufügen",
+      "successOne": "Super! Du hast deinen ersten Eintrag hinzugefügt. Machen wir noch einen.",
+      "typeLabel": "Transaktionstyp",
+      "typeIncome": "Bareinnahme",
+      "typeExpense": "Barausgabe",
+      "amountLabel": "Betrag ({{symbol}})",
+      "descLabel": "Beschreibung",
+      "descPlaceholder": "z.B. Haarschnitt oder Kaffeezubehör",
+      "skipSecond": "Zweiten Eintrag überspringen"
+    },
+    "status": {
+      "expectedLabel": "Erwarteter Kassenbestand",
+      "incomeLabel": "Heutige Einnahmen",
+      "expenseLabel": "Heutige Ausgaben",
+      "receiptMissing": "Erinnerung: Dein erster Beleg fehlt noch. Du kannst ihn später in der Liste der Bareinträge anhängen.",
+      "workflowPaper": "Da du ein Notizbuch verwendet hast, ersetzt diese Ansicht das manuelle Zusammenrechnen.",
+      "workflowExcel": "Da du Tabellen verwendet hast, hält dies deine Bargeldbestände ohne Formeln aktuell.",
+      "workflowPos": "Da du ein Kassensystem verwendest, hält dies Bargeld und Belege an einem Ort zusammen.",
+      "workflowSoftware": "Da du andere Software verwendet hast, erhältst du hier eine einzige tägliche Bargeldübersicht.",
+      "tipTitle": "Dies ist dein Kassenstatus.",
+      "tipDesc": "Dein erwarteter Saldo wird bei jedem Eintrag automatisch aktualisiert. Keine manuellen Berechnungen mehr am Ende des Tages.",
+      "cta": "Ansehen, was als Nächstes kommt"
+    },
+    "closing": {
+      "watchTutorial": "30s Tutorial ansehen",
+      "skipLabel": "Ich mache das später"
+    },
+    "postValue": {
+      "inviteTitle": "Team einladen",
+      "inviteDesc": "Gib deinen Mitarbeitern Zugriff, um Bareinträge über die Tablet-App hinzuzufügen.",
+      "inviteAction": "Mitglieder hinzufügen",
+      "categoriesTitle": "Eigene Kategorien",
+      "categoriesDesc": "Richte eigene Ausgaben- und Einnahmekategorien für bessere Berichte ein.",
+      "categoriesAction": "Kategorien bearbeiten",
+      "cta": "Zum Dashboard"
+    }
+  },
   "actions": {
     "takeAttendance": "Anwesenheit erfassen",
     "markDone": "Als erledigt markieren"

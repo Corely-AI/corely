@@ -11,8 +11,8 @@ model Register {
   createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
-  workspace     Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  shiftSessions ShiftSession[]
+  workspace       Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  shiftSessions   ShiftSession[]
   paymentAttempts PaymentAttempt[]
 
   @@unique([workspaceId, name])
@@ -84,24 +84,24 @@ model PosSaleIdempotency {
 }
 
 model PaymentAttempt {
-  id             String              @id @default(uuid()) @db.Uuid
-  tenantId       String              @map("tenant_id")
-  workspaceId    String              @map("workspace_id")
-  saleId         String?             @map("sale_id") @db.Uuid
-  registerId     String              @map("register_id") @db.Uuid
-  amountCents    Int                 @map("amount_cents")
-  currency       String              @db.VarChar(3)
+  id             String               @id @default(uuid()) @db.Uuid
+  tenantId       String               @map("tenant_id")
+  workspaceId    String               @map("workspace_id")
+  saleId         String?              @map("sale_id") @db.Uuid
+  registerId     String               @map("register_id") @db.Uuid
+  amountCents    Int                  @map("amount_cents")
+  currency       String               @db.VarChar(3)
   status         PaymentAttemptStatus @default(PENDING)
   providerKind   CashlessProviderKind @map("provider_kind")
-  providerRef    String              @map("provider_ref")
-  actionJson     Json?               @map("action_json")
-  idempotencyKey String              @map("idempotency_key") @db.VarChar(255)
-  failureReason  String?             @map("failure_reason")
-  paidAt         DateTime?           @map("paid_at") @db.Timestamptz(6)
-  expiresAt      DateTime?           @map("expires_at") @db.Timestamptz(6)
-  rawStatusJson  Json?               @map("raw_status_json")
-  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime            @updatedAt @map("updated_at") @db.Timestamptz(6)
+  providerRef    String               @map("provider_ref")
+  actionJson     Json?                @map("action_json")
+  idempotencyKey String               @map("idempotency_key") @db.VarChar(255)
+  failureReason  String?              @map("failure_reason")
+  paidAt         DateTime?            @map("paid_at") @db.Timestamptz(6)
+  expiresAt      DateTime?            @map("expires_at") @db.Timestamptz(6)
+  rawStatusJson  Json?                @map("raw_status_json")
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   register  Register  @relation(fields: [registerId], references: [id], onDelete: Restrict)

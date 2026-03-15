@@ -1,0 +1,1 @@
+Invalid receipt content for onboarding E2E tests.

@@ -24,19 +24,19 @@ enum IntegrationConnectionStatus {
 }
 
 model IntegrationConnection {
-  id              String                    @id @default(cuid())
-  tenantId        String                    @map("tenant_id")
-  workspaceId     String                    @map("workspace_id")
+  id              String                      @id @default(cuid())
+  tenantId        String                      @map("tenant_id")
+  workspaceId     String                      @map("workspace_id")
   kind            IntegrationKind
-  authMethod      IntegrationAuthMethod     @map("auth_method")
-  displayName     String?                   @map("display_name") @db.VarChar(120)
-  configJson      Json                      @map("config_json")
-  secretEncrypted String?                   @map("secret_encrypted")
+  authMethod      IntegrationAuthMethod       @map("auth_method")
+  displayName     String?                     @map("display_name") @db.VarChar(120)
+  configJson      Json                        @map("config_json")
+  secretEncrypted String?                     @map("secret_encrypted")
   status          IntegrationConnectionStatus @default(ACTIVE)
-  createdAt       DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime                  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt       DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   crmMailboxes CrmMailbox[]
 
   @@index([tenantId, workspaceId])

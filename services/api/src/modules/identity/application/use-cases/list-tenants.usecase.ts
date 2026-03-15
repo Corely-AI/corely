@@ -55,6 +55,12 @@ export class ListTenantsUseCase {
         name: tenant.getName(),
         slug: tenant.getSlug(),
         status: tenant.getStatus() as TenantStatus,
+        plan: tenant.getPlan() as any,
+        planStatus: tenant.getPlanStatus() as any,
+        billingMethod: tenant.getBillingMethod() as any,
+        billingNote: tenant.getBillingNote(),
+        planUpdatedAt: tenant.getPlanUpdatedAt()?.toISOString() ?? null,
+        planUpdatedBy: tenant.getPlanUpdatedBy(),
       })),
       pageInfo: buildPageInfo(total, page, pageSize),
     };

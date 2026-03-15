@@ -94,16 +94,16 @@ enum BillingProviderEventStatus {
 }
 
 model BillingAccount {
-  id                  String              @id @default(cuid())
-  tenantId            String              @unique
+  id                  String               @id @default(cuid())
+  tenantId            String               @unique
   provider            BillingProviderKind?
   providerCustomerRef String?
-  billingCurrency     String              @default("EUR") @db.VarChar(3)
+  billingCurrency     String               @default("EUR") @db.VarChar(3)
   email               String?
-  createdAt           DateTime            @default(now()) @db.Timestamptz(6)
-  updatedAt           DateTime            @updatedAt @db.Timestamptz(6)
+  createdAt           DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime             @updatedAt @db.Timestamptz(6)
 
-  tenant         Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant         Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   subscriptions  BillingSubscription[]
   trials         BillingTrial[]
   providerEvents BillingProviderEvent[]
@@ -113,24 +113,24 @@ model BillingAccount {
 }
 
 model BillingSubscription {
-  id                    String                    @id @default(cuid())
-  tenantId              String
-  productKey            String
-  accountId             String
-  planCode              String
-  provider              BillingProviderKind?
+  id                      String                    @id @default(cuid())
+  tenantId                String
+  productKey              String
+  accountId               String
+  planCode                String
+  provider                BillingProviderKind?
   providerSubscriptionRef String?
-  providerPriceRef      String?
-  status                BillingSubscriptionStatus @default(FREE)
-  currentPeriodStart    DateTime?                 @db.Timestamptz(6)
-  currentPeriodEnd      DateTime?                 @db.Timestamptz(6)
-  cancelAtPeriodEnd     Boolean                   @default(false)
-  canceledAt            DateTime?                 @db.Timestamptz(6)
-  trialEndsAt           DateTime?                 @db.Timestamptz(6)
-  rawSnapshotJson       Json?
-  lastSyncedAt          DateTime?                 @db.Timestamptz(6)
-  createdAt             DateTime                  @default(now()) @db.Timestamptz(6)
-  updatedAt             DateTime                  @updatedAt @db.Timestamptz(6)
+  providerPriceRef        String?
+  status                  BillingSubscriptionStatus @default(FREE)
+  currentPeriodStart      DateTime?                 @db.Timestamptz(6)
+  currentPeriodEnd        DateTime?                 @db.Timestamptz(6)
+  cancelAtPeriodEnd       Boolean                   @default(false)
+  canceledAt              DateTime?                 @db.Timestamptz(6)
+  trialEndsAt             DateTime?                 @db.Timestamptz(6)
+  rawSnapshotJson         Json?
+  lastSyncedAt            DateTime?                 @db.Timestamptz(6)
+  createdAt               DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime                  @updatedAt @db.Timestamptz(6)
 
   tenant  Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   account BillingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -143,20 +143,20 @@ model BillingSubscription {
 }
 
 model BillingTrial {
-  id             String             @id @default(cuid())
-  tenantId       String
-  productKey     String
-  accountId      String
-  planCode       String
-  status         BillingTrialStatus @default(ACTIVE)
-  startedAt      DateTime           @db.Timestamptz(6)
-  endsAt         DateTime           @db.Timestamptz(6)
-  expiredAt      DateTime?          @db.Timestamptz(6)
-  supersededAt   DateTime?          @db.Timestamptz(6)
+  id                String             @id @default(cuid())
+  tenantId          String
+  productKey        String
+  accountId         String
+  planCode          String
+  status            BillingTrialStatus @default(ACTIVE)
+  startedAt         DateTime           @db.Timestamptz(6)
+  endsAt            DateTime           @db.Timestamptz(6)
+  expiredAt         DateTime?          @db.Timestamptz(6)
+  supersededAt      DateTime?          @db.Timestamptz(6)
   activatedByUserId String?
-  source         String?
-  createdAt      DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime           @updatedAt @db.Timestamptz(6)
+  source            String?
+  createdAt         DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(6)
 
   tenant  Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   account BillingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
@@ -168,15 +168,15 @@ model BillingTrial {
 }
 
 model BillingUsageCounter {
-  id          String             @id @default(cuid())
+  id          String   @id @default(cuid())
   tenantId    String
   productKey  String
   metricKey   String
-  periodStart DateTime           @db.Timestamptz(6)
-  periodEnd   DateTime           @db.Timestamptz(6)
-  quantity    Int                @default(0)
-  createdAt   DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime           @updatedAt @db.Timestamptz(6)
+  periodStart DateTime @db.Timestamptz(6)
+  periodEnd   DateTime @db.Timestamptz(6)
+  quantity    Int      @default(0)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 

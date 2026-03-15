@@ -39,13 +39,21 @@ export const OnboardingChecklist = ({
   const locale = progress?.locale || config.defaultLocale;
 
   return (
-    <Card className={cn("overflow-hidden border-border/50 bg-card/60 shadow-sm", className)}>
+    <Card
+      className={cn("overflow-hidden border-border/50 bg-card/60 shadow-sm", className)}
+      data-testid="onboarding-checklist"
+    >
       <CardHeader className="p-4 pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold">
             {config.title[locale] || config.title[config.defaultLocale] || "Onboarding"}
           </CardTitle>
-          <span className="text-xs font-medium text-muted-foreground">{percentComplete}%</span>
+          <span
+            className="text-xs font-medium text-muted-foreground"
+            data-testid="onboarding-checklist-progress"
+          >
+            {percentComplete}%
+          </span>
         </div>
         <Progress value={percentComplete} className="h-1.5" />
       </CardHeader>
@@ -64,7 +72,12 @@ export const OnboardingChecklist = ({
               });
 
             return (
-              <li key={item.id} className="flex flex-col gap-1">
+              <li
+                key={item.id}
+                className="flex flex-col gap-1"
+                data-testid={`onboarding-checklist-item-${item.id}`}
+                data-status={isItemComplete ? "completed" : "pending"}
+              >
                 <button
                   type="button"
                   onClick={() => handleItemClick(item.deepLinkRoute)}
@@ -73,6 +86,7 @@ export const OnboardingChecklist = ({
                     !item.deepLinkRoute && "cursor-default"
                   )}
                   disabled={!item.deepLinkRoute}
+                  data-testid={`onboarding-checklist-action-${item.id}`}
                 >
                   <div className="mt-0.5 flex shrink-0 items-center justify-center">
                     {isItemComplete ? (

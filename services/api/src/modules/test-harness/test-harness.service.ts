@@ -15,6 +15,7 @@ import {
   type BillingProviderTestHooksPort,
   type BillingProviderTestOperation,
 } from "../billing";
+import { platformPermissions } from "../platform/platform.permissions";
 
 export interface SeedResult {
   tenantId: string;
@@ -290,6 +291,96 @@ export class TestHarnessService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * Seed host admin user: creates a user with membership that has no tenantId (HOST scope)
+   */
+  async seedHostAdmin(params: { email: string; password: string }): Promise<SeedResult> {
+    const passwordHash = await bcrypt.hash(params.password, 10);
+    const email = params.email.toLowerCase().trim();
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Create/Update user
+      const user = await tx.user.upsert({
+        where: { email },
+        update: {
+          name: "Host Admin",
+          passwordHash,
+          status: "ACTIVE",
+        },
+        create: {
+          email,
+          name: "Host Admin",
+          passwordHash,
+          status: "ACTIVE",
+        },
+      });
+
+      // 2. Create HOST scope role
+      const hostRole = await tx.role.create({
+        data: {
+          tenantId: null as any, // Use null for host scope
+          name: "Platform Admin",
+          systemKey: "PLATFORM_ADMIN",
+          isSystem: true,
+          scope: "HOST",
+        },
+      });
+
+      // 3. Grant all HOST permissions
+      const hostPermissionKeys = platformPermissions.flatMap((group) =>
+        group.permissions.filter((p) => p.side === "HOST" || p.side === "BOTH").map((p) => p.key)
+      );
+
+      await tx.rolePermissionGrant.createMany({
+        data: hostPermissionKeys.map((permissionKey) => ({
+          tenantId: null as any,
+          roleId: hostRole.id,
+          permissionKey,
+          effect: "ALLOW" as const,
+          createdBy: user.id,
+        })),
+      });
+
+      // 4. Create host membership
+      await tx.membership.create({
+        data: {
+          tenantId: null as any,
+          userId: user.id,
+          roleId: hostRole.id,
+        },
+      });
+
+      return {
+        tenantId: null as any,
+        tenantName: "Platform",
+        userId: user.id,
+        userName: user.name,
+        email: user.email,
+        workspaceId: null as any,
+      };
+    });
+  }
+
+  /**
+   * Seed a few tenants for platform testing
+   */
+  async seedTenantsForPlatform(count: number = 3): Promise<Array<{ id: string; name: string }>> {
+    const tenants = [];
+    for (let i = 0; i < count; i++) {
+      const name = `Platform Test Tenant ${i + 1} ${randomUUID().slice(0, 4)}`;
+      const tenant = await this.prisma.tenant.create({
+        data: {
+          name,
+          slug: `plt-test-${randomUUID().slice(0, 8)}`,
+          status: "ACTIVE",
+          plan: "free",
+        },
+      });
+      tenants.push({ id: tenant.id, name: tenant.name });
+    }
+    return tenants;
   }
 
   /**

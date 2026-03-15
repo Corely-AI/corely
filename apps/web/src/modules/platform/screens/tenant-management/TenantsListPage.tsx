@@ -5,12 +5,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@corely/ui";
 import { Badge } from "@corely/ui";
 import { Alert, AlertDescription } from "@corely/ui";
-import { Loader2, AlertCircle, Power, PowerOff } from "lucide-react";
+import { CreditCard, Loader2, AlertCircle, Power, PowerOff } from "lucide-react";
 import { useTenants } from "../../hooks/useTenants";
 import { useUpdateTenant } from "../../hooks/useUpdateTenant";
-import type { TenantDto } from "@corely/contracts";
+import type { TenantDto, UpdateTenantInput } from "@corely/contracts";
 import { useCanManageTenants } from "@/shared/lib/permissions";
 import { useTranslation } from "react-i18next";
+import { TenantPlanModal } from "./TenantPlanModal";
 import {
   ActiveFilterChips,
   FilterPanel,
@@ -50,6 +51,9 @@ export function TenantsListPage() {
   const { mutate: updateTenant, isPending: isUpdating } = useUpdateTenant();
   const { can: canManageTenants } = useCanManageTenants();
 
+  const [selectedTenantForPlan, setSelectedTenantForPlan] = useState<TenantDto | null>(null);
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+
   const filterFields = useMemo<FilterFieldDef[]>(
     () => [
       {
@@ -77,6 +81,18 @@ export function TenantsListPage() {
         input: { status: nextStatus },
       });
     }
+  };
+
+  const handleUpdatePlan = (tenantId: string, input: UpdateTenantInput) => {
+    updateTenant(
+      { tenantId, input },
+      {
+        onSuccess: () => {
+          setIsPlanModalOpen(false);
+          setSelectedTenantForPlan(null);
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -147,6 +163,7 @@ export function TenantsListPage() {
                 <TableHead>{t("common.name")}</TableHead>
                 <TableHead>{t("tenants.slug")}</TableHead>
                 <TableHead>{t("tenants.status")}</TableHead>
+                <TableHead>Plan</TableHead>
                 <TableHead>{t("tenants.tenantId")}</TableHead>
                 <TableHead className="text-right">{t("tenants.actions")}</TableHead>
               </TableRow>
@@ -160,13 +177,30 @@ export function TenantsListPage() {
                 </TableRow>
               ) : (
                 tenants.map((tenant: TenantDto) => (
-                  <TableRow key={tenant.id}>
+                  <TableRow key={tenant.id} data-testid={`tenant-row-${tenant.id}`}>
                     <TableCell className="font-medium">{tenant.name}</TableCell>
                     <TableCell className="text-muted-foreground">{tenant.slug}</TableCell>
                     <TableCell>
                       <Badge variant={tenant.status === "ACTIVE" ? "success" : "secondary"}>
                         {tenant.status === "ACTIVE" ? t("common.active") : t("common.suspended")}
                       </Badge>
+                    </TableCell>
+                    <TableCell data-testid={`tenant-plan-${tenant.id}`}>
+                      {tenant.plan ? (
+                        <div className="flex flex-col gap-0.5" data-testid="tenant-plan-details">
+                          <span
+                            className="font-medium capitalize text-sm"
+                            data-testid="tenant-plan-name"
+                          >
+                            {tenant.plan}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            {tenant.planStatus || "active"} • {tenant.billingMethod || "stripe"}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm italic">No plan</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground font-mono">
                       {tenant.id}
@@ -190,6 +224,21 @@ export function TenantsListPage() {
                             ) : (
                               <Power className="h-4 w-4 text-success" />
                             )}
+                          </Button>
+                        ) : null}
+                        {canManageTenants ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={isUpdating}
+                            onClick={() => {
+                              setSelectedTenantForPlan(tenant);
+                              setIsPlanModalOpen(true);
+                            }}
+                            title="Manage Plan"
+                            data-testid={`manage-plan-${tenant.id}`}
+                          >
+                            <CreditCard className="h-4 w-4 text-primary" />
                           </Button>
                         ) : null}
                         <Button variant="outline" size="sm" asChild>
@@ -239,6 +288,14 @@ export function TenantsListPage() {
         filters={state.filters ?? []}
         onApply={(filters) => setUrlState({ filters, page: 1 })}
         fields={filterFields}
+      />
+
+      <TenantPlanModal
+        tenant={selectedTenantForPlan}
+        isOpen={isPlanModalOpen}
+        onOpenChange={setIsPlanModalOpen}
+        onSave={handleUpdatePlan}
+        isSaving={isUpdating}
       />
     </div>
   );

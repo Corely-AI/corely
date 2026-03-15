@@ -1,17 +1,19 @@
 import React, { useState } from "react";
 import { Button, RadioGroup, RadioGroupItem, Label, cn } from "@corely/ui";
+import { useTranslation } from "react-i18next";
 import { ArrowRight, BookOpen, Calculator, Computer, LayoutDashboard } from "lucide-react";
 import type { StepComponentProps } from "../OnboardingStepRenderer";
 import { useOnboardingAnalytics } from "../../engine/use-onboarding-analytics";
 
 const WORKFLOW_OPTIONS = [
-  { id: "paper", label: "Paper / Notebook", icon: BookOpen },
-  { id: "excel", label: "Excel / Spreadsheet", icon: Calculator },
-  { id: "pos", label: "POS System", icon: Computer },
-  { id: "software", label: "Other Software", icon: LayoutDashboard },
+  { id: "paper", icon: BookOpen },
+  { id: "excel", icon: Calculator },
+  { id: "pos", icon: Computer },
+  { id: "software", icon: LayoutDashboard },
 ];
 
 export const WorkflowSourceStep = ({ config, locale, onAdvance, isSaving }: StepComponentProps) => {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<string | null>(null);
   const analytics = useOnboardingAnalytics();
 
@@ -27,9 +29,19 @@ export const WorkflowSourceStep = ({ config, locale, onAdvance, isSaving }: Step
   };
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col p-6 lg:p-12">
-      <h1 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
-      <p className="mb-8 text-muted-foreground">{desc}</p>
+    <div
+      className="mx-auto flex max-w-lg flex-col p-6 lg:p-12"
+      data-testid="onboarding-step-workflow-source"
+    >
+      <h1
+        className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl"
+        data-testid="onboarding-step-title"
+      >
+        {title}
+      </h1>
+      <p className="mb-8 text-muted-foreground" data-testid="onboarding-step-description">
+        {desc}
+      </p>
 
       <RadioGroup
         value={selected || ""}
@@ -48,10 +60,13 @@ export const WorkflowSourceStep = ({ config, locale, onAdvance, isSaving }: Step
                   ? "border-primary bg-primary/5 text-primary"
                   : "border-border text-muted-foreground hover:text-foreground"
               )}
+              data-testid={`onboarding-workflow-option-${opt.id}`}
             >
               <RadioGroupItem value={opt.id} id={`source-${opt.id}`} className="sr-only" />
               <Icon className="h-8 w-8" />
-              <span className="font-semibold text-foreground">{opt.label}</span>
+              <span className="font-semibold text-foreground">
+                {t(`onboarding.workflowOptions.${opt.id}`)}
+              </span>
             </Label>
           );
         })}
@@ -63,6 +78,7 @@ export const WorkflowSourceStep = ({ config, locale, onAdvance, isSaving }: Step
           className="group gap-2"
           onClick={handleNext}
           disabled={!selected || isSaving}
+          data-testid="onboarding-workflow-next"
         >
           <span>{cta}</span>
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

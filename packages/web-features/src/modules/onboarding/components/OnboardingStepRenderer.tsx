@@ -34,19 +34,32 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
     config,
     onCompleted,
   });
+  const [optimisticStepId, setOptimisticStepId] = React.useState<string | null>(null);
 
   if (!isLoaded || !currentStepConfig) {
     return null;
   }
 
   const locale = progress?.locale || config.defaultLocale;
+  const resolvedStepId = optimisticStepId ?? currentStepConfig.id;
+  const resolvedStepConfig =
+    config.steps.find((step) => step.id === resolvedStepId) ?? currentStepConfig;
+
+  React.useEffect(() => {
+    if (!optimisticStepId) {
+      return;
+    }
+    if (progress?.currentStepId === optimisticStepId) {
+      setOptimisticStepId(null);
+    }
+  }, [optimisticStepId, progress?.currentStepId]);
 
   // Determine the next step intelligently (handling linear vs branching)
   const determineNextStep = (answers?: Record<string, unknown>) => {
-    let nextStepId = currentStepConfig.nextStepId;
+    let nextStepId = resolvedStepConfig.nextStepId;
 
-    if (currentStepConfig.branchingRules && answers) {
-      for (const rule of currentStepConfig.branchingRules) {
+    if (resolvedStepConfig.branchingRules && answers) {
+      for (const rule of resolvedStepConfig.branchingRules) {
         if (answers[rule.field] === rule.value) {
           if (rule.nextStepId) {
             nextStepId = rule.nextStepId;
@@ -58,7 +71,7 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
 
     // Default linear fallback if not specified
     if (!nextStepId) {
-      const idx = config.steps.findIndex((s) => s.id === currentStepConfig.id);
+      const idx = config.steps.findIndex((s) => s.id === resolvedStepConfig.id);
       nextStepId = config.steps[idx + 1]?.id;
     }
 
@@ -70,32 +83,56 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
     meta?: Record<string, unknown>
   ) => {
     const nextStepId = determineNextStep(answers);
-    const existingAnswers = progress?.steps[currentStepConfig.id]?.answers || {};
+    const existingAnswers = progress?.steps[resolvedStepConfig.id]?.answers || {};
     const mergedAnswers = { ...existingAnswers, ...answers };
+    const nextLocale =
+      typeof mergedAnswers.locale === "string" ? mergedAnswers.locale : progress?.locale;
+    const workflowSource =
+      typeof mergedAnswers.workflowSource === "string"
+        ? mergedAnswers.workflowSource
+        : progress?.workflowSource;
 
-    await upsertStep({
-      stepId: currentStepConfig.id,
-      status: "completed",
-      nextStepId,
-      answers: Object.keys(mergedAnswers).length > 0 ? mergedAnswers : undefined,
-      meta,
-    });
+    if (nextStepId) {
+      setOptimisticStepId(nextStepId);
+    }
+    try {
+      await upsertStep({
+        stepId: resolvedStepConfig.id,
+        status: "completed",
+        nextStepId,
+        answers: Object.keys(mergedAnswers).length > 0 ? mergedAnswers : undefined,
+        meta,
+        locale: nextLocale,
+        workflowSource,
+      });
+    } catch (error) {
+      setOptimisticStepId(null);
+      throw error;
+    }
   };
 
   const handleSkip = async () => {
-    if (!currentStepConfig.skippable && !currentStepConfig.optional) {
+    if (!resolvedStepConfig.skippable && !resolvedStepConfig.optional) {
       return;
     }
     const nextStepId = determineNextStep();
 
-    await upsertStep({
-      stepId: currentStepConfig.id,
-      status: "skipped",
-      nextStepId,
-    });
+    if (nextStepId) {
+      setOptimisticStepId(nextStepId);
+    }
+    try {
+      await upsertStep({
+        stepId: resolvedStepConfig.id,
+        status: "skipped",
+        nextStepId,
+      });
+    } catch (error) {
+      setOptimisticStepId(null);
+      throw error;
+    }
   };
 
-  const Component = STEP_REGISTRY[currentStepConfig.type];
+  const Component = STEP_REGISTRY[resolvedStepConfig.type];
 
   if (!Component) {
     return (
@@ -109,10 +146,14 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
   }
 
   return (
-    <div className="flex w-full flex-col gap-8 lg:flex-row">
+    <div
+      className="flex w-full flex-col gap-8 lg:flex-row"
+      data-testid="onboarding-step"
+      data-step-id={resolvedStepConfig.id}
+    >
       <div className="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Component
-          config={currentStepConfig}
+          config={resolvedStepConfig}
           locale={locale}
           onAdvance={handleAdvance}
           onSkip={handleSkip}
@@ -120,9 +161,9 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
         />
       </div>
 
-      {currentStepConfig.aiHelpContext && (
+      {resolvedStepConfig.aiHelpContext && (
         <div className="w-full shrink-0 lg:w-72 lg:pt-16 xl:w-80 animate-in fade-in slide-in-from-right-8 duration-700">
-          <OnboardingAIHelper step={currentStepConfig} locale={locale} />
+          <OnboardingAIHelper step={resolvedStepConfig} locale={locale} />
         </div>
       )}
     </div>

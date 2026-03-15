@@ -45,6 +45,32 @@ export class TestHarnessController {
   }
 
   /**
+   * Seed host admin user
+   */
+  @Post("seed-host-admin")
+  @HttpCode(HttpStatus.OK)
+  async seedHostAdmin(@Body() payload: { email: string; password: string }) {
+    if (!payload.email || !payload.password) {
+      throw new BadRequestException("Missing required fields: email, password");
+    }
+
+    return this.testHarnessService.seedHostAdmin({
+      email: payload.email,
+      password: payload.password,
+    });
+  }
+
+  /**
+   * Seed platform tenants
+   */
+  @Post("seed-platform-tenants")
+  @HttpCode(HttpStatus.OK)
+  async seedPlatformTenants(@Body() payload: { count?: number }) {
+    const tenants = await this.testHarnessService.seedTenantsForPlatform(payload.count);
+    return { tenants };
+  }
+
+  /**
    * Reset tenant-scoped data: clears all test data for a tenant
    */
   @Post("reset")

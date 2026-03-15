@@ -151,10 +151,12 @@ export class AuthClient {
     }
 
     try {
+      const workspaceId = await this.storage.getActiveWorkspaceId();
       return await request<CurrentUserResponse>({
         url: `${this.apiUrl}/auth/me`,
         method: "GET",
         accessToken: this.accessToken,
+        workspaceId: workspaceId ?? undefined,
       });
     } catch (error) {
       const normalized = normalizeError(error);

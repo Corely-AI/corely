@@ -91,6 +91,7 @@ export const CashManagementShell = () => {
     ) {
       if (
         !location.pathname.startsWith("/onboarding") &&
+        !location.pathname.startsWith("/assistant") &&
         location.pathname !== "/billing" &&
         location.pathname !== "/settings"
       ) {

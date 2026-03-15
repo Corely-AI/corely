@@ -99,6 +99,89 @@
     "done": "Done",
     "customFields": "Custom fields"
   },
+  "onboarding": {
+    "allSet": "You're all set!",
+    "redirectingToDashboard": "Redirecting to your dashboard...",
+    "saveAndExit": "Save & Exit",
+    "goBack": "Go back",
+    "loading": "Loading onboarding...",
+    "aiAssistant": "AI Assistant",
+    "aiHelpPrompt": "Need help with this step? Ask our AI assistant to explain or suggest what to do next.",
+    "askAssistant": "Ask Assistant",
+    "businessName": "Business Name",
+    "businessNamePlaceholder": "e.g. Bella Beauty Studio",
+    "businessNameRequired": "Business name is required",
+    "businessType": "Business Type",
+    "selectType": "Select type",
+    "businessTypeRequired": "Category is required",
+    "currency": "Currency",
+    "categories": {
+      "beauty": "Nail / Beauty Salon",
+      "hair": "Hairdresser / Barber",
+      "gastronomy": "Café / Restaurant",
+      "retail": "Retail Shop",
+      "other": "Other"
+    },
+    "workflowOptions": {
+      "paper": "Paper / Notebook",
+      "excel": "Excel / Spreadsheet",
+      "pos": "POS System",
+      "software": "Other Software"
+    },
+    "receipt": {
+      "errorUnsupported": "Unsupported file. Please upload a PDF, JPG, or PNG under 10MB.",
+      "uploadPrompt": "Click to upload or drag & drop",
+      "uploadHint": "PDF, JPG, PNG (max 10MB)",
+      "skipLabel": "I'll do this later",
+      "successTitle": "Receipt attached!",
+      "successDesc": "Moving to next step...",
+      "continueLabel": "Continue"
+    },
+    "openingBalance": {
+      "errorAmount": "Valid amount required",
+      "label": "Real cash currently in register",
+      "hint": "💡 Do not include card payments or bank transfers. Only physical cash."
+    },
+    "entries": {
+      "errorAmount": "Valid amount required",
+      "errorNote": "Note is required",
+      "ctaAdd": "Add Entry",
+      "successOne": "Great! You added your first entry. Let's do one more.",
+      "typeLabel": "Transaction Type",
+      "typeIncome": "Cash Income",
+      "typeExpense": "Cash Expense",
+      "amountLabel": "Amount ({{symbol}})",
+      "descLabel": "Description",
+      "descPlaceholder": "e.g. Haircut or Coffee supplies",
+      "skipSecond": "Skip Second Entry"
+    },
+    "status": {
+      "expectedLabel": "Expected Cash in Drawer",
+      "incomeLabel": "Today's Income",
+      "expenseLabel": "Today's Expenses",
+      "receiptMissing": "Reminder: Your first receipt is still missing. You can attach it later from the cash entries list.",
+      "workflowPaper": "Since you used a notebook, this view replaces manual tallying.",
+      "workflowExcel": "Since you used spreadsheets, this keeps your cash totals live without formulas.",
+      "workflowPos": "Since you use a POS system, this keeps cash and receipts aligned in one place.",
+      "workflowSoftware": "Since you used other software, this gives you a single daily cash view.",
+      "tipTitle": "This is your cash status.",
+      "tipDesc": "Your expected balance is automatically updated every time you add an entry. No more manual calculations at the end of the day.",
+      "cta": "See what's next"
+    },
+    "closing": {
+      "watchTutorial": "Watch 30s tutorial",
+      "skipLabel": "I'll do this later"
+    },
+    "postValue": {
+      "inviteTitle": "Invite your team",
+      "inviteDesc": "Give your employees access to add cash entries using the tablet app.",
+      "inviteAction": "Add members",
+      "categoriesTitle": "Custom Categories",
+      "categoriesDesc": "Set up custom expense and income categories for better reporting.",
+      "categoriesAction": "Edit categories",
+      "cta": "Go to dashboard"
+    }
+  },
   "actions": {
     "takeAttendance": "Take Attendance",
     "markDone": "Mark Done",

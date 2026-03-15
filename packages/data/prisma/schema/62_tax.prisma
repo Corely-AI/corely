@@ -227,7 +227,7 @@ model TaxReport {
   createdAt            DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime        @updatedAt @db.Timestamptz(6)
 
-  lines TaxReportLine[]
+  lines    TaxReportLine[]
   sections TaxReportSection[]
   ericJobs TaxEricJob[]
 
@@ -321,18 +321,18 @@ model TaxReportLine {
 }
 
 model TaxReportSection {
-  id               String    @id @default(cuid())
+  id               String   @id @default(cuid())
   tenantId         String
   filingId         String
   reportId         String
-  reportType       String    @db.VarChar(64)
-  sectionKey       String    @db.VarChar(64)
+  reportType       String   @db.VarChar(64)
+  sectionKey       String   @db.VarChar(64)
   payload          Json
-  completion       Float     @default(0)
-  isComplete       Boolean   @default(false)
-  validationErrors Json      @default("[]")
-  createdAt        DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime  @updatedAt @db.Timestamptz(6)
+  completion       Float    @default(0)
+  isComplete       Boolean  @default(false)
+  validationErrors Json     @default("[]")
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
 
   report TaxReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
@@ -354,7 +354,7 @@ model TaxEricJob {
   idempotencyKey         String?
   payloadVersion         String?          @db.VarChar(64)
   requestHash            String?          @db.VarChar(128)
-  certificateReferenceId String?         @db.VarChar(128)
+  certificateReferenceId String?          @db.VarChar(128)
   gatewayVersion         String?          @db.VarChar(64)
   ericVersion            String?          @db.VarChar(64)
   transferReference      String?          @db.VarChar(128)
@@ -385,7 +385,7 @@ model TaxEricJob {
 // ============================================================================
 
 enum TaxDocumentLinkEntityType {
-  FILING  // Links to a TaxReport.id
+  FILING // Links to a TaxReport.id
   PAYMENT // Links to a payment record
 
   @@schema("billing")
@@ -395,11 +395,11 @@ model TaxDocumentLink {
   id         String                    @id @default(cuid())
   tenantId   String
   entityType TaxDocumentLinkEntityType
-  entityId   String                    // TaxReport.id or payment reference
-  documentId String                    // reference to the Documents module
-  label      String?                   // optional human-readable label
+  entityId   String // TaxReport.id or payment reference
+  documentId String // reference to the Documents module
+  label      String? // optional human-readable label
   createdAt  DateTime                  @default(now()) @db.Timestamptz(6)
-  createdBy  String?                   // userId or system
+  createdBy  String? // userId or system
 
   @@unique([tenantId, entityType, entityId, documentId])
   @@index([tenantId, entityType, entityId])
@@ -413,12 +413,12 @@ model TaxDocumentLink {
 // ============================================================================
 
 model TaxFilingEvent {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   tenantId    String
-  filingId    String   // TaxReport.id
-  eventType   String   // "TaxFilingSubmitted" | "TaxFilingPaid" | "TaxFilingRecalculated"
+  filingId    String // TaxReport.id
+  eventType   String // "TaxFilingSubmitted" | "TaxFilingPaid" | "TaxFilingRecalculated"
   payload     Json
-  occurredAt  DateTime @default(now()) @db.Timestamptz(6)
+  occurredAt  DateTime  @default(now()) @db.Timestamptz(6)
   processedAt DateTime? @db.Timestamptz(6)
 
   @@index([tenantId, filingId])

@@ -182,6 +182,7 @@ export const CASH_MANAGEMENT_JOURNEY: OnboardingJourneyConfig = {
     {
       id: "first-receipt",
       type: "first-receipt",
+      nextStepId: "today-status",
       title: {
         en: "Attach a receipt (Optional)",
         de: "Beleg anhängen (Optional)",
@@ -226,6 +227,11 @@ export const CASH_MANAGEMENT_JOURNEY: OnboardingJourneyConfig = {
         en: "At the end of your shift, you 'Close' the register. This locks your entries and prepares a clean slate for tomorrow.",
         de: "Am Ende Ihrer Schicht 'schließen' Sie die Kasse. Dies sperrt Ihre Eingaben und bereitet einen sauberen Start für morgen vor.",
         vi: "Vào cuối ca làm việc, bạn 'Đóng' sổ. Điều này khóa các giao dịch của bạn và chuẩn bị một khởi đầu mới cho ngày mai.",
+      },
+      ctaLabel: {
+        en: "Try closing demo",
+        de: "Tagesabschluss testen",
+        vi: "Thử đóng ca mẫu",
       },
       skippable: true,
       optional: true,

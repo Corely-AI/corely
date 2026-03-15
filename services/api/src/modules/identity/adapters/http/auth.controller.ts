@@ -36,7 +36,7 @@ import {
 
 // Guards and decorators
 import { AuthGuard } from "./auth.guard";
-import { CurrentUserId, CurrentTenantId } from "./current-user.decorator";
+import { CurrentUserId, CurrentTenantId, CurrentWorkspaceId } from "./current-user.decorator";
 import { buildRequestContext } from "../../../../shared/context/request-context";
 import type { Request } from "express";
 import {
@@ -246,7 +246,8 @@ export class AuthController {
   @ApiBearerAuth()
   async getMe(
     @CurrentUserId() userId: string,
-    @CurrentTenantId() tenantId: string | null
+    @CurrentTenantId() tenantId: string | null,
+    @CurrentWorkspaceId() workspaceId: string | null
   ): Promise<CurrentUserResponseDto> {
     if (!userId) {
       throw new BadRequestException("User not found");
@@ -282,6 +283,7 @@ export class AuthController {
       email: user.getEmail().getValue(),
       name: user.getName(),
       activeTenantId: tenantId ?? null,
+      activeWorkspaceId: workspaceId ?? undefined,
       memberships: membershipDtos,
     };
   }

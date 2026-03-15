@@ -56,23 +56,23 @@ model Workspace {
   invoiceSettings Json? // WorkspaceInvoiceSettings: { prefix?, nextNumber?, defaultPaymentTermsDays? }
 
   // Relations
-  tenant             Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  legalEntity        LegalEntity           @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
-  memberships        WorkspaceMembership[]
-  invites            WorkspaceInvite[]
-  domains            WorkspaceDomain[]
-  registers          Register[]
-  shiftSessions      ShiftSession[]
-  posSaleIdempotency PosSaleIdempotency[]
-  paymentAttempts    PaymentAttempt[]
-  cashRegisters      CashRegister[]
-  cashEntries        CashEntry[]
-  cashDayCloses      CashDayClose[]
+  tenant                 Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  legalEntity            LegalEntity             @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  memberships            WorkspaceMembership[]
+  invites                WorkspaceInvite[]
+  domains                WorkspaceDomain[]
+  registers              Register[]
+  shiftSessions          ShiftSession[]
+  posSaleIdempotency     PosSaleIdempotency[]
+  paymentAttempts        PaymentAttempt[]
+  cashRegisters          CashRegister[]
+  cashEntries            CashEntry[]
+  cashDayCloses          CashDayClose[]
   integrationConnections IntegrationConnection[]
-  crmMailboxes      CrmMailbox[]
-  crmMailThreads    CrmMailThread[]
-  crmMailMessages   CrmMailMessage[]
-  channelTemplates  ChannelTemplate[]
+  crmMailboxes           CrmMailbox[]
+  crmMailThreads         CrmMailThread[]
+  crmMailMessages        CrmMailMessage[]
+  channelTemplates       ChannelTemplate[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
