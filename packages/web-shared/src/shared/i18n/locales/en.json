@@ -2118,6 +2118,7 @@
   "auth": {
     "signin": {
       "title": "Sign in to your account",
+      "subtitle": "Sign in to manage registers and daily cash operations.",
       "rememberMe": "Remember me",
       "forgotPassword": "Forgot password?",
       "cta": "Sign in",
@@ -2126,6 +2127,7 @@
     },
     "signup": {
       "title": "Create your account",
+      "subtitle": "Sign up to start managing cash workflows.",
       "cta": "Sign up",
       "creating": "Creating account...",
       "hasAccount": "Already have an account?"
@@ -2149,10 +2151,12 @@
       "confirmLabel": "Confirm password"
     },
     "fields": {
+      "fullName": "Full name",
       "email": "Email address",
       "password": "Password"
     },
     "placeholders": {
+      "fullName": "Full name",
       "email": "Email address",
       "password": "Password",
       "passwordMin": "Minimum 6 characters"

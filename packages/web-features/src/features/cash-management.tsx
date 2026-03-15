@@ -11,6 +11,7 @@ import {
   CashRegistersScreen,
   DailyCloseScreen,
 } from "../modules/cash-management";
+export { CASH_MANAGEMENT_JOURNEY } from "../modules/cash-management/journeys/cash-management-journey";
 import type { FeatureNavItem, FeatureRoute } from "@corely/web-features/types";
 
 const withPermission = (permission: string, element: React.ReactElement): React.ReactElement => (

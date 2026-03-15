@@ -22,9 +22,15 @@ import { Link } from "react-router-dom";
 
 const cashManagementSwitcherMode: WorkspaceSwitcherMode = "multi";
 
-const cashManagementNavItems: FeatureNavItem[] = [
+const baseNavItems = [
   ...cashManagementFeature.cashManagementNavItems,
   ...assistantFeature.assistantNavItems,
+];
+
+const billingNavItem = baseNavItems.find((item) => item.id === "cash-billing");
+const cashManagementNavItems: FeatureNavItem[] = [
+  ...baseNavItems.filter((item) => item.id !== "cash-billing"),
+  ...(billingNavItem ? [billingNavItem] : []),
   { id: "settings", label: "Settings", route: "/settings", icon: "Settings" },
 ];
 
@@ -57,9 +63,48 @@ const cashManagementSidebarProps: Omit<AppSidebarProps, "variant" | "collapsed" 
   workspaceSwitcherMode: cashManagementSwitcherMode,
 };
 
+import { useNavigate, useLocation } from "react-router-dom";
+import { useOnboarding } from "@corely/web-features/modules/onboarding";
+
 export const CashManagementShell = () => {
   const [expiryModalOpen, setExpiryModalOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const {
+    isLoaded: isOnboardingLoaded,
+    progress: onboardingProgress,
+    isComplete: isOnboardingComplete,
+  } = useOnboarding({
+    config: cashManagementFeature.CASH_MANAGEMENT_JOURNEY,
+  });
+
+  // Redirect to onboarding if they haven't completed or dismissed it
+  useEffect(() => {
+    if (
+      isOnboardingLoaded &&
+      !isOnboardingComplete &&
+      !onboardingProgress?.dismissed &&
+      !onboardingProgress?.completedAt
+    ) {
+      if (
+        !location.pathname.startsWith("/onboarding") &&
+        location.pathname !== "/billing" &&
+        location.pathname !== "/settings"
+      ) {
+        navigate("/onboarding/cash-management");
+      }
+    }
+  }, [
+    isOnboardingLoaded,
+    isOnboardingComplete,
+    onboardingProgress?.dismissed,
+    onboardingProgress?.completedAt,
+    location.pathname,
+    navigate,
+  ]);
   const billingQuery = useQuery({
     queryKey: ["billing", "current", CashManagementProductKey],
     queryFn: () => billingApi.getCurrent(CashManagementProductKey),

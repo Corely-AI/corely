@@ -23,378 +23,25 @@ import {
   cn,
 } from "@corely/ui";
 import type { BillingPlanCode, BillingProductKey } from "@corely/contracts";
-import { CashManagementBillingFeatureKeys, CashManagementProductKey } from "@corely/contracts";
+import { CashManagementProductKey } from "@corely/contracts";
 import { billingApi } from "@corely/web-shared/lib/billing-api";
-import {
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  CreditCard,
-  Globe2,
-  Loader2,
-  LockKeyhole,
-  Receipt,
-  Sparkles,
-  Store,
-  Users,
-} from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-type LocaleKey = "en" | "de" | "vi";
-
-type BillingCopy = {
-  title: string;
-  subtitle: string;
-  currentPlan: string;
-  planStatus: string;
-  billingActions: string;
-  usage: string;
-  planCatalog: string;
-  manageBilling: string;
-  upgradePlan: string;
-  currentPlanBadge: string;
-  noLimit: string;
-  billedMonthly: string;
-  active: string;
-  period: string;
-  unavailable: string;
-  loading: string;
-  loadFailed: string;
-  openPortalDescription: string;
-  checkoutDescription: string;
-  featureAccess: string;
-  recommendedTitle: string;
-  recommendedDescription: string;
-  startTrial: string;
-  trialTitle: string;
-  noCardRequired: string;
-  trialDescription: string;
-  trialActive: (daysRemaining: number) => string;
-  trialExpiring: (daysRemaining: number) => string;
-  trialExpired: string;
-  trialExpiredDescription: string;
-  upgradeNow: string;
-  afterTrialTitle: string;
-  afterTrialDescription: string;
-  trialStarted: string;
-  trialStartFailed: string;
-  usageLabels: {
-    usedOf: (used: number, limit: string) => string;
-    currentPeriod: string;
-  };
-  featureLabels: {
-    maxLocations: string;
-    maxEntriesPerMonth: string;
-    maxReceiptsPerMonth: string;
-    canExport: string;
-    dailyClosing: string;
-    aiAssistant: string;
-    multilingualAiHelp: string;
-    issueDetection: string;
-    closingGuidance: string;
-    teamAccess: string;
-    consolidatedOverview: string;
-  };
-};
-
-const billingCopy: Record<LocaleKey, BillingCopy> = {
-  en: {
-    title: "Billing and subscription",
-    subtitle: "Current plan, cash-book usage, and the next upgrade path for this salon.",
-    currentPlan: "Current plan",
-    planStatus: "Plan status",
-    billingActions: "Billing actions",
-    usage: "Usage this period",
-    planCatalog: "Available plans",
-    manageBilling: "Manage billing",
-    upgradePlan: "Upgrade plan",
-    currentPlanBadge: "Current plan",
-    noLimit: "Unlimited",
-    billedMonthly: "Billed monthly",
-    active: "Active",
-    period: "Current period",
-    unavailable: "Not available on this plan",
-    loading: "Loading billing status...",
-    loadFailed: "Unable to load billing right now.",
-    openPortalDescription:
-      "Open the hosted customer portal to update payment details or manage billing.",
-    checkoutDescription:
-      "Upgrade through the hosted Stripe checkout. Corely keeps the plan and usage logic.",
-    featureAccess: "Feature access",
-    recommendedTitle: "Need more headroom?",
-    recommendedDescription:
-      "Upgrade when your salon needs export, AI help, or multiple locations. Billing stays portable inside Corely.",
-    startTrial: "Start 30-day trial",
-    trialTitle: "Start your 30-day full access trial",
-    noCardRequired: "No card required",
-    trialDescription:
-      "Your workspace gets full Multi-location access for 30 days, then falls back to Free unless you subscribe.",
-    trialActive: (daysRemaining) =>
-      `${daysRemaining} day${daysRemaining === 1 ? "" : "s"} left in your full-access trial.`,
-    trialExpiring: (daysRemaining) =>
-      `${daysRemaining} day${daysRemaining === 1 ? "" : "s"} left. Pick a plan now to avoid losing export, AI, and multi-location access.`,
-    trialExpired: "Your full-access trial has ended",
-    trialExpiredDescription:
-      "Your workspace is now on Free. Historical data stays visible, but export, AI, and extra locations are locked until you subscribe.",
-    upgradeNow: "Choose a plan",
-    afterTrialTitle: "What changes after the trial",
-    afterTrialDescription:
-      "Corely keeps all historical data. After 30 days, your workspace moves to Free and new usage follows the Free monthly limits.",
-    trialStarted: "Trial started",
-    trialStartFailed: "Unable to start the trial right now.",
-    usageLabels: {
-      usedOf: (used, limit) => `${used} used of ${limit}`,
-      currentPeriod: "Current period",
-    },
-    featureLabels: {
-      maxLocations: "Locations",
-      maxEntriesPerMonth: "Cash entries",
-      maxReceiptsPerMonth: "Receipts",
-      canExport: "Monthly export",
-      dailyClosing: "Daily closing",
-      aiAssistant: "AI assistant",
-      multilingualAiHelp: "Multilingual AI help",
-      issueDetection: "Issue detection",
-      closingGuidance: "Closing guidance",
-      teamAccess: "Team access",
-      consolidatedOverview: "Consolidated overview",
-    },
-  },
-  de: {
-    title: "Abonnement und Abrechnung",
-    subtitle: "Aktueller Tarif, Kassenbuch-Nutzung und naechster Upgrade-Schritt fuer den Salon.",
-    currentPlan: "Aktueller Tarif",
-    planStatus: "Tarifstatus",
-    billingActions: "Abrechnungsaktionen",
-    usage: "Nutzung in diesem Zeitraum",
-    planCatalog: "Verfuegbare Tarife",
-    manageBilling: "Abrechnung verwalten",
-    upgradePlan: "Tarif upgraden",
-    currentPlanBadge: "Aktueller Tarif",
-    noLimit: "Unbegrenzt",
-    billedMonthly: "Monatlich abgerechnet",
-    active: "Aktiv",
-    period: "Aktueller Zeitraum",
-    unavailable: "In diesem Tarif nicht verfuegbar",
-    loading: "Lade Abrechnungsstatus...",
-    loadFailed: "Abrechnung konnte gerade nicht geladen werden.",
-    openPortalDescription:
-      "Oeffne das gehostete Kundenportal, um Zahlungsdaten oder das Abo zu verwalten.",
-    checkoutDescription:
-      "Upgrade ueber das gehostete Stripe-Checkout. Corely behaelt Tarif- und Nutzungslogik intern.",
-    featureAccess: "Funktionszugriff",
-    recommendedTitle: "Mehr Spielraum noetig?",
-    recommendedDescription:
-      "Upgrade, wenn dein Salon Export, KI-Hilfe oder mehrere Standorte braucht.",
-    startTrial: "30-Tage-Test starten",
-    trialTitle: "Starte deine 30-taegige Vollzugriffs-Testphase",
-    noCardRequired: "Keine Karte erforderlich",
-    trialDescription:
-      "Dein Workspace erhaelt 30 Tage lang vollen Multi-Location-Zugriff und faellt danach ohne Abo auf Free zurueck.",
-    trialActive: (daysRemaining) =>
-      `Noch ${daysRemaining} Tag${daysRemaining === 1 ? "" : "e"} voller Zugriff in der Testphase.`,
-    trialExpiring: (daysRemaining) =>
-      `Noch ${daysRemaining} Tag${daysRemaining === 1 ? "" : "e"}. Waehle jetzt einen Tarif, damit Export, KI und mehrere Standorte aktiv bleiben.`,
-    trialExpired: "Deine Vollzugriffs-Testphase ist beendet",
-    trialExpiredDescription:
-      "Dein Workspace laeuft jetzt im Free-Tarif. Historische Daten bleiben sichtbar, aber Export, KI und weitere Standorte sind gesperrt, bis du abonnierst.",
-    upgradeNow: "Tarif waehlen",
-    afterTrialTitle: "Was sich nach der Testphase aendert",
-    afterTrialDescription:
-      "Corely behaelt alle historischen Daten. Nach 30 Tagen wechselt dein Workspace zu Free und neue Nutzung folgt den Free-Monatslimits.",
-    trialStarted: "Testphase gestartet",
-    trialStartFailed: "Die Testphase konnte gerade nicht gestartet werden.",
-    usageLabels: {
-      usedOf: (used, limit) => `${used} von ${limit} genutzt`,
-      currentPeriod: "Aktueller Zeitraum",
-    },
-    featureLabels: {
-      maxLocations: "Standorte",
-      maxEntriesPerMonth: "Kasseneintraege",
-      maxReceiptsPerMonth: "Belege",
-      canExport: "Monatsexport",
-      dailyClosing: "Tagesabschluss",
-      aiAssistant: "KI-Assistent",
-      multilingualAiHelp: "Mehrsprachige KI-Hilfe",
-      issueDetection: "Problemerkennung",
-      closingGuidance: "Abschluss-Hilfe",
-      teamAccess: "Teamzugriff",
-      consolidatedOverview: "Konsolidierte Uebersicht",
-    },
-  },
-  vi: {
-    title: "Goi va thanh toan",
-    subtitle: "Goi hien tai, muc su dung so quy, va huong nang cap tiep theo cho tiem.",
-    currentPlan: "Goi hien tai",
-    planStatus: "Trang thai goi",
-    billingActions: "Tac vu thanh toan",
-    usage: "Su dung trong ky nay",
-    planCatalog: "Cac goi hien co",
-    manageBilling: "Quan ly thanh toan",
-    upgradePlan: "Nang cap goi",
-    currentPlanBadge: "Goi hien tai",
-    noLimit: "Khong gioi han",
-    billedMonthly: "Tinh phi hang thang",
-    active: "Dang hoat dong",
-    period: "Ky hien tai",
-    unavailable: "Khong co trong goi nay",
-    loading: "Dang tai thong tin thanh toan...",
-    loadFailed: "Khong the tai thong tin thanh toan luc nay.",
-    openPortalDescription: "Mo cong thanh toan de cap nhat the hoac quan ly dang ky.",
-    checkoutDescription:
-      "Nang cap qua Stripe Checkout duoc luu tru. Corely van giu catalog goi va logic su dung.",
-    featureAccess: "Quyen truy cap tinh nang",
-    recommendedTitle: "Can them gioi han?",
-    recommendedDescription: "Nang cap khi tiem can xuat du lieu, tro ly AI, hoac nhieu dia diem.",
-    startTrial: "Bat dau dung thu 30 ngay",
-    trialTitle: "Bat dau 30 ngay dung thu day du",
-    noCardRequired: "Khong can the",
-    trialDescription:
-      "Workspace duoc mo day du tinh nang Multi-location trong 30 ngay, sau do se tro ve goi Free neu chua dang ky.",
-    trialActive: (daysRemaining) => `Con ${daysRemaining} ngay trong dung thu day du tinh nang.`,
-    trialExpiring: (daysRemaining) =>
-      `Con ${daysRemaining} ngay. Hay chon goi ngay bay gio de giu xuat du lieu, AI, va nhieu dia diem.`,
-    trialExpired: "Dung thu day du da ket thuc",
-    trialExpiredDescription:
-      "Workspace hien da tro ve goi Free. Du lieu cu van duoc giu, nhung xuat du lieu, AI va dia diem bo sung da bi khoa cho toi khi dang ky.",
-    upgradeNow: "Chon goi",
-    afterTrialTitle: "Sau dung thu se thay doi gi",
-    afterTrialDescription:
-      "Corely van giu toan bo du lieu cu. Sau 30 ngay, workspace chuyen ve Free va muc su dung moi theo gioi han thang cua Free.",
-    trialStarted: "Da bat dau dung thu",
-    trialStartFailed: "Khong the bat dau dung thu luc nay.",
-    usageLabels: {
-      usedOf: (used, limit) => `Da dung ${used} / ${limit}`,
-      currentPeriod: "Ky hien tai",
-    },
-    featureLabels: {
-      maxLocations: "Dia diem",
-      maxEntriesPerMonth: "But to tien mat",
-      maxReceiptsPerMonth: "Hoa don",
-      canExport: "Xuat thang",
-      dailyClosing: "Dong so hang ngay",
-      aiAssistant: "Tro ly AI",
-      multilingualAiHelp: "AI da ngon ngu",
-      issueDetection: "Phat hien van de",
-      closingGuidance: "Huong dan dong ngay",
-      teamAccess: "Truy cap nhom",
-      consolidatedOverview: "Tong quan hop nhat",
-    },
-  },
-};
+import { billingCopy } from "./billing-copy";
+import { BillingPlanCatalog } from "./billing-plan-catalog";
+import { BillingTrialAlerts } from "./billing-trial-alerts";
+import {
+  featureIconMap,
+  featureOrder,
+  featureValueToText,
+  formatPeriod,
+  formatPrice,
+  isPaidPlan,
+  planOrder,
+} from "./billing-utils";
 
 const billingProductKey: BillingProductKey = CashManagementProductKey;
-
-const planOrder: BillingPlanCode[] = [
-  "free",
-  "starter-monthly",
-  "pro-monthly",
-  "multi-location-monthly",
-];
-
-const featureIconMap = {
-  [CashManagementBillingFeatureKeys.maxLocations]: Store,
-  [CashManagementBillingFeatureKeys.maxEntriesPerMonth]: CreditCard,
-  [CashManagementBillingFeatureKeys.maxReceiptsPerMonth]: Receipt,
-  [CashManagementBillingFeatureKeys.canExport]: CheckCircle2,
-  [CashManagementBillingFeatureKeys.dailyClosing]: CheckCircle2,
-  [CashManagementBillingFeatureKeys.aiAssistant]: Sparkles,
-  [CashManagementBillingFeatureKeys.multilingualAiHelp]: Globe2,
-  [CashManagementBillingFeatureKeys.issueDetection]: AlertTriangle,
-  [CashManagementBillingFeatureKeys.closingGuidance]: LockKeyhole,
-  [CashManagementBillingFeatureKeys.teamAccess]: Users,
-  [CashManagementBillingFeatureKeys.consolidatedOverview]: Store,
-} as const;
-
-const featureOrder = [
-  {
-    key: CashManagementBillingFeatureKeys.maxLocations,
-    labelKey: "maxLocations",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.maxEntriesPerMonth,
-    labelKey: "maxEntriesPerMonth",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.maxReceiptsPerMonth,
-    labelKey: "maxReceiptsPerMonth",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.canExport,
-    labelKey: "canExport",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.dailyClosing,
-    labelKey: "dailyClosing",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.aiAssistant,
-    labelKey: "aiAssistant",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.multilingualAiHelp,
-    labelKey: "multilingualAiHelp",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.issueDetection,
-    labelKey: "issueDetection",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.closingGuidance,
-    labelKey: "closingGuidance",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.teamAccess,
-    labelKey: "teamAccess",
-  },
-  {
-    key: CashManagementBillingFeatureKeys.consolidatedOverview,
-    labelKey: "consolidatedOverview",
-  },
-] as const;
-
-const formatPeriod = (start: string | null, end: string | null): string => {
-  if (!start || !end) {
-    return " - ";
-  }
-
-  const formatter = new Intl.DateTimeFormat(undefined, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-  return `${formatter.format(new Date(start))} - ${formatter.format(new Date(end))}`;
-};
-
-const isPaidPlan = (planCode: BillingPlanCode): planCode is Exclude<BillingPlanCode, "free"> =>
-  planCode !== "free";
-
-const formatPrice = (priceCents: number, currency: string): string =>
-  new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(priceCents / 100);
-
-const featureValueToText = (
-  value: boolean | number | string | null | undefined,
-  noLimitLabel: string
-): string => {
-  if (typeof value === "boolean") {
-    return value ? "Included" : "Not included";
-  }
-
-  if (typeof value === "string") {
-    return value;
-  }
-
-  if (value === null || value === undefined) {
-    return noLimitLabel;
-  }
-
-  return String(value);
-};
 
 export function BillingScreen() {
   const { i18n } = useTranslation();
@@ -504,12 +151,16 @@ export function BillingScreen() {
     labelKey: feature.labelKey,
     value: billing.entitlements.featureValues[feature.key],
   }));
+  const featuredPlan =
+    orderedPlans.find((plan) => plan.code === "pro-monthly") ??
+    orderedPlans.find((plan) => plan.code !== "free");
+  const isFreePlan = billing.subscription.planCode === "free";
 
   return (
     <div className="min-h-full bg-[radial-gradient(circle_at_top_left,rgba(235,207,160,0.18),transparent_32%),radial-gradient(circle_at_top_right,rgba(130,160,196,0.16),transparent_28%)] p-6 md:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
         <section className="rounded-3xl border border-border/60 bg-card/95 p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-2">
               <Badge variant="outline" className="rounded-full px-3 py-1 text-xs">
                 {copy.currentPlan}
@@ -517,59 +168,129 @@ export function BillingScreen() {
               <h1 className="text-3xl font-semibold tracking-tight">{copy.title}</h1>
               <p className="max-w-2xl text-sm text-muted-foreground">{copy.subtitle}</p>
             </div>
-            <div className="rounded-2xl border border-border/60 bg-muted/30 px-4 py-3 text-sm">
-              <div className="text-muted-foreground">{copy.period}</div>
-              <div className="mt-1 font-medium">
-                {formatPeriod(
-                  billing.subscription.currentPeriodStart,
-                  billing.subscription.currentPeriodEnd
-                )}
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+              <div className="rounded-2xl border border-border/60 bg-muted/30 px-4 py-3 text-sm">
+                <div className="text-muted-foreground">{copy.period}</div>
+                <div className="mt-1 font-medium">
+                  {formatPeriod(
+                    billing.subscription.currentPeriodStart,
+                    billing.subscription.currentPeriodEnd
+                  )}
+                </div>
               </div>
+              {billing.management.canManageBilling ? (
+                <Button
+                  variant="outline"
+                  onClick={() => portalMutation.mutate()}
+                  disabled={portalMutation.isPending}
+                >
+                  {portalMutation.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  {copy.manageBilling}
+                </Button>
+              ) : null}
             </div>
           </div>
         </section>
 
-        {trial.status === "active" ? (
-          <Alert
-            className={cn(
-              "border-emerald-500/35 bg-emerald-500/8",
-              trial.isExpiringSoon && "border-amber-500/35 bg-amber-500/10"
-            )}
-          >
-            <Sparkles className="h-4 w-4" />
-            <AlertTitle>
-              {trial.isExpiringSoon
-                ? copy.trialExpiring(trial.daysRemaining)
-                : copy.trialActive(trial.daysRemaining)}
-            </AlertTitle>
-            <AlertDescription className="flex flex-wrap items-center gap-3">
-              <span>{copy.afterTrialDescription}</span>
-              <Button size="sm" asChild>
-                <a href="#plan-catalog">{copy.upgradeNow}</a>
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : null}
+        <BillingTrialAlerts trial={trial} copy={copy} />
 
-        {trial.status === "expired" ? (
-          <Alert className="border-amber-500/35 bg-amber-500/10">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>{copy.trialExpired}</AlertTitle>
-            <AlertDescription className="flex flex-wrap items-center gap-3">
-              <span>{copy.trialExpiredDescription}</span>
-              <Button size="sm" asChild>
-                <a href="#plan-catalog">{copy.upgradeNow}</a>
-              </Button>
-            </AlertDescription>
-          </Alert>
-        ) : null}
+        <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+          <Card className="rounded-3xl border border-emerald-400/25 bg-gradient-to-r from-emerald-500/12 via-sky-500/8 to-transparent shadow-[0_20px_50px_-30px_rgba(0,0,0,0.8)]">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Badge className="rounded-full bg-emerald-500/20 text-emerald-100">
+                  {featuredPlan?.name ?? "Upgrade"}
+                </Badge>
+                <Badge variant="secondary" className="rounded-full">
+                  {copy.recommendedTitle}
+                </Badge>
+              </div>
+              <CardTitle className="mt-3 text-3xl font-semibold">
+                {isFreePlan
+                  ? "Upgrade to unlock exports, AI, and unlimited receipts"
+                  : "Stay ahead with full features"}
+              </CardTitle>
+              <CardDescription className="text-base text-muted-foreground">
+                {featuredPlan?.summary ??
+                  "Full cash-control with exports, AI assistance, and multi-location support."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex flex-wrap items-center gap-4 text-2xl font-semibold">
+                {featuredPlan ? (
+                  <>
+                    {featuredPlan.priceCents === 0
+                      ? "€0"
+                      : `${formatPrice(featuredPlan.priceCents, featuredPlan.currency)} / mo`}
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {copy.billedMonthly}
+                    </span>
+                  </>
+                ) : null}
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {(featuredPlan?.highlights ?? []).slice(0, 5).map((highlight) => (
+                  <div
+                    key={highlight}
+                    className="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/8 px-3 py-2 text-sm"
+                  >
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <span>{highlight}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {billing.management.canStartTrial ? (
+                  <Button
+                    size="lg"
+                    className="min-w-[180px] shadow-[0_20px_60px_-35px_rgba(16,185,129,0.8)]"
+                    onClick={() => startTrialMutation.mutate()}
+                    disabled={startTrialMutation.isPending}
+                  >
+                    {startTrialMutation.isPending ? (
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-5 w-5" />
+                    )}
+                    {copy.startTrial}
+                  </Button>
+                ) : null}
+                {billing.management.canUpgrade ? (
+                  <Button
+                    size="lg"
+                    variant={billing.management.canStartTrial ? "outline" : "default"}
+                    onClick={() =>
+                      checkoutMutation.mutate(
+                        (featuredPlan?.code as Exclude<BillingPlanCode, "free">) ??
+                          "starter-monthly"
+                      )
+                    }
+                    disabled={checkoutMutation.isPending}
+                  >
+                    {checkoutMutation.isPending ? (
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    ) : (
+                      <ArrowRight className="mr-2 h-5 w-5" />
+                    )}
+                    {copy.upgradePlan}
+                  </Button>
+                ) : null}
+                <div className="flex flex-col justify-center text-sm text-muted-foreground">
+                  {isFreePlan
+                    ? "Unlimited entries and receipts, exports, AI assistant, and multi-location."
+                    : "Keep exports, AI, and multi-location ready for your team."}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
-          <Card className="rounded-3xl border-border/60 shadow-sm">
-            <CardHeader className="pb-4">
+          <Card className="rounded-3xl border-border/60 bg-card/80 shadow-sm">
+            <CardHeader className="pb-3">
               <CardDescription>{copy.currentPlan}</CardDescription>
-              <div className="flex flex-wrap items-center gap-3">
-                <CardTitle className="text-2xl">
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-xl">
                   {currentPlan?.name ?? billing.subscription.planCode}
                 </CardTitle>
                 <Badge className="rounded-full px-3 py-1">
@@ -578,140 +299,90 @@ export function BillingScreen() {
                     : billing.subscription.status}
                 </Badge>
               </div>
+              <CardDescription className="text-sm text-muted-foreground">
+                {currentPlan?.summary}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-border/60 bg-muted/30 p-4">
-                  <div className="text-sm text-muted-foreground">{copy.planStatus}</div>
-                  <div className="mt-2 text-lg font-semibold capitalize">
-                    {billing.subscription.status.replace(/_/g, " ")}
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-border/60 bg-muted/30 p-4">
-                  <div className="text-sm text-muted-foreground">{copy.currentPlan}</div>
-                  <div className="mt-2 text-lg font-semibold">
-                    {currentPlan
-                      ? `${formatPrice(currentPlan.priceCents, currentPlan.currency)} / ${copy.billedMonthly}`
-                      : copy.unavailable}
-                  </div>
+            <CardContent className="space-y-4 text-sm">
+              <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
+                <div className="text-muted-foreground">{copy.planStatus}</div>
+                <div className="mt-1 text-lg font-semibold capitalize">
+                  {billing.subscription.status.replace(/_/g, " ")}
                 </div>
               </div>
-
               {currentPlan ? (
-                <div className="rounded-2xl border border-border/60 p-4">
-                  <div className="text-sm font-medium">{currentPlan.summary}</div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {currentPlan.highlights.map((highlight) => (
-                      <Badge key={highlight} variant="secondary" className="rounded-full">
-                        {highlight}
-                      </Badge>
-                    ))}
+                <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
+                  <div className="text-muted-foreground">{copy.currentPlan}</div>
+                  <div className="mt-1 text-lg font-semibold">
+                    {currentPlan.priceCents === 0
+                      ? "€0"
+                      : `${formatPrice(currentPlan.priceCents, currentPlan.currency)} / ${copy.billedMonthly}`}
                   </div>
                 </div>
               ) : null}
-
-              <div className="space-y-3">
-                <div className="text-sm font-medium">{copy.billingActions}</div>
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    onClick={() => portalMutation.mutate()}
-                    disabled={!billing.management.canManageBilling || portalMutation.isPending}
-                  >
-                    {portalMutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    {copy.manageBilling}
-                  </Button>
-                  {billing.management.canUpgrade ? (
-                    <Button
-                      variant="outline"
-                      onClick={() => checkoutMutation.mutate("pro-monthly")}
-                      disabled={checkoutMutation.isPending}
-                    >
-                      {checkoutMutation.isPending ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <ArrowRight className="mr-2 h-4 w-4" />
-                      )}
-                      {copy.upgradePlan}
-                    </Button>
-                  ) : null}
-                  {billing.management.canStartTrial ? (
-                    <Button
-                      variant="outline"
-                      onClick={() => startTrialMutation.mutate()}
-                      disabled={startTrialMutation.isPending}
-                    >
-                      {startTrialMutation.isPending ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="mr-2 h-4 w-4" />
-                      )}
-                      {copy.startTrial}
-                    </Button>
-                  ) : null}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {billing.management.canManageBilling
-                    ? copy.openPortalDescription
-                    : copy.checkoutDescription}
-                </p>
+              <div className="flex flex-wrap gap-2">
+                {(currentPlan?.highlights ?? []).slice(0, 3).map((highlight) => (
+                  <Badge key={highlight} variant="secondary" className="rounded-full">
+                    {highlight}
+                  </Badge>
+                ))}
               </div>
-
-              {billing.management.canStartTrial ? (
-                <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/8 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-medium">{copy.trialTitle}</div>
-                      <div className="mt-1 text-sm text-muted-foreground">
-                        {copy.trialDescription}
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="rounded-full">
-                      {copy.noCardRequired}
-                    </Badge>
-                  </div>
-                </div>
-              ) : null}
             </CardContent>
           </Card>
+        </div>
 
+        <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <Card className="rounded-3xl border-border/60 shadow-sm">
             <CardHeader className="pb-4">
               <CardDescription>{copy.usage}</CardDescription>
               <CardTitle className="text-2xl">{copy.usage}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {billing.usage.map((metric) => (
-                <div key={metric.key} className="rounded-2xl border border-border/60 p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="font-medium">{metric.label}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {copy.usageLabels.usedOf(
-                          metric.used,
-                          metric.limit === null ? copy.noLimit : String(metric.limit)
-                        )}
+              {billing.usage.map((metric) => {
+                const percent =
+                  metric.percentUsed === null ? 0 : Math.round(metric.percentUsed * 100);
+                const nudge =
+                  isFreePlan &&
+                  (metric.limit === null ? false : percent >= 60 || metric.remaining === 0);
+                return (
+                  <div
+                    key={metric.key}
+                    className={cn(
+                      "rounded-2xl border p-4",
+                      nudge ? "border-amber-500/35 bg-amber-500/8" : "border-border/60 bg-muted/20"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="font-medium">{metric.label}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {copy.usageLabels.usedOf(
+                            metric.used,
+                            metric.limit === null ? copy.noLimit : String(metric.limit)
+                          )}
+                        </div>
                       </div>
+                      <Badge variant="secondary" className="rounded-full">
+                        {metric.remaining === null ? copy.noLimit : `${metric.remaining} left`}
+                      </Badge>
                     </div>
-                    <Badge variant="secondary" className="rounded-full">
-                      {metric.remaining === null ? copy.noLimit : `${metric.remaining} left`}
-                    </Badge>
+                    <Progress className="mt-4 h-2" value={percent} />
+                    <div className="mt-3 text-xs text-muted-foreground">
+                      {copy.usageLabels.currentPeriod}:{" "}
+                      {formatPeriod(metric.periodStart, metric.periodEnd)}
+                    </div>
+                    {nudge ? (
+                      <div className="mt-3 text-sm text-amber-200">
+                        Upgrade for unlimited {metric.label.toLowerCase()} and exports.
+                      </div>
+                    ) : null}
                   </div>
-                  <Progress
-                    className="mt-4 h-2"
-                    value={metric.percentUsed === null ? 0 : Math.round(metric.percentUsed * 100)}
-                  />
-                  <div className="mt-3 text-xs text-muted-foreground">
-                    {copy.usageLabels.currentPeriod}:{" "}
-                    {formatPeriod(metric.periodStart, metric.periodEnd)}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
 
-              <div className="rounded-2xl border border-amber-500/25 bg-amber-500/8 p-4">
+              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/8 p-4">
                 <div className="flex items-start gap-3">
-                  <Sparkles className="mt-0.5 h-4 w-4 text-amber-600" />
+                  <Sparkles className="mt-0.5 h-4 w-4 text-emerald-300" />
                   <div>
                     <div className="font-medium">
                       {upgradeContext.isOverEntitlement ? copy.trialExpired : copy.recommendedTitle}
@@ -776,64 +447,14 @@ export function BillingScreen() {
             </CardContent>
           </Card>
 
-          <Card id="plan-catalog" className="rounded-3xl border-border/60 shadow-sm">
-            <CardHeader className="pb-4">
-              <CardDescription>{copy.planCatalog}</CardDescription>
-              <CardTitle className="text-2xl">{copy.planCatalog}</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-              {orderedPlans.map((plan) => {
-                const isCurrent = plan.code === billing.subscription.planCode;
-                const canUpgrade = !isCurrent && plan.code !== "free";
-                const paidPlanCode = isPaidPlan(plan.code) ? plan.code : null;
-
-                return (
-                  <div
-                    key={plan.code}
-                    className={cn(
-                      "rounded-2xl border p-5",
-                      isCurrent
-                        ? "border-emerald-500/30 bg-emerald-500/8"
-                        : "border-border/60 bg-muted/20"
-                    )}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-lg font-semibold">{plan.name}</div>
-                        <div className="mt-1 text-sm text-muted-foreground">{plan.summary}</div>
-                      </div>
-                      {isCurrent ? (
-                        <Badge className="rounded-full">{copy.currentPlanBadge}</Badge>
-                      ) : null}
-                    </div>
-                    <div className="mt-4 text-2xl font-semibold">
-                      {plan.priceCents === 0
-                        ? "€0"
-                        : `${formatPrice(plan.priceCents, plan.currency)} / mo`}
-                    </div>
-                    <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                      {plan.highlights.map((highlight) => (
-                        <div key={highlight} className="flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                          <span>{highlight}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {canUpgrade && paidPlanCode ? (
-                      <Button
-                        className="mt-5 w-full"
-                        variant={plan.code === "pro-monthly" ? "default" : "outline"}
-                        onClick={() => checkoutMutation.mutate(paidPlanCode)}
-                        disabled={checkoutMutation.isPending}
-                      >
-                        {copy.upgradePlan}
-                      </Button>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+          <BillingPlanCatalog
+            orderedPlans={orderedPlans}
+            currentPlanCode={billing.subscription.planCode}
+            featuredPlanCode={featuredPlan?.code}
+            copy={copy}
+            onUpgrade={(planCode) => checkoutMutation.mutate(planCode)}
+            isPending={checkoutMutation.isPending}
+          />
         </div>
       </div>
 

@@ -346,7 +346,7 @@ export function CashEntriesScreen() {
               </thead>
               <tbody>
                 {entries.map((entry) => (
-                  <tr key={entry.id} className="border-t">
+                  <tr key={entry.id} className="border-t border-border/40">
                     <td className="px-4 py-3">{formatDateTime(entry.occurredAt)}</td>
                     <td className="px-4 py-3">{entry.entryNo}</td>
                     <td className="px-4 py-3">{entry.description}</td>

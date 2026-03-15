@@ -8,7 +8,9 @@ import { CashManagementShell } from "./CashManagementShell";
 import { RequireAuth } from "./require-auth";
 import { LoginPage } from "../routes/auth/login";
 import SignupPage from "../routes/auth/signup";
+import ForgotPasswordPage from "../routes/auth/forgot-password";
 import { SettingsPage } from "../screens/SettingsPage";
+import { CashManagementOnboardingRoute } from "../routes/onboarding";
 
 export const Router = () => (
   <BrowserRouter
@@ -21,10 +23,19 @@ export const Router = () => (
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/signup" element={<SignupPage />} />
-      <Route path="/auth/forgot-password" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/auth/reset-password" element={<Navigate to="/auth/login" replace />} />
 
       <Route element={<RequireAuth />}>
+        {/* Onboarding Shell (no nav sidebar) */}
+        <Route path="/onboarding/cash-management" element={<CashManagementOnboardingRoute />} />
+        <Route
+          path="/onboarding/cash-management/resume"
+          element={<CashManagementOnboardingRoute />}
+        />
+        <Route path="/onboarding" element={<Navigate to="/onboarding/cash-management" replace />} />
+
+        {/* Main App Shell */}
         <Route element={<CashManagementShell />}>
           <Route path="/assistant" element={<AssistantPage activeModule="cash-management" />} />
           <Route

@@ -2095,6 +2095,7 @@
   "auth": {
     "signin": {
       "title": "In Ihr Konto einloggen",
+      "subtitle": "Melden Sie sich an, um Kassen und Tagesabschluesse zu verwalten.",
       "rememberMe": "An mich erinnern",
       "forgotPassword": "Passwort vergessen?",
       "cta": "Anmelden",
@@ -2103,15 +2104,26 @@
     },
     "signup": {
       "title": "Konto erstellen",
+      "subtitle": "Registrieren Sie sich, um Ihre Kassenablaeufe zu verwalten.",
       "cta": "Registrieren",
       "creating": "Konto wird erstellt...",
       "hasAccount": "Haben Sie bereits ein Konto?"
     },
+    "forgot": {
+      "title": "Passwort zuruecksetzen",
+      "subtitle": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link.",
+      "cta": "Reset-Link senden",
+      "sending": "Link wird gesendet...",
+      "successMessage": "Wenn ein Konto fuer {{email}} existiert, haben wir einen Reset-Link gesendet.",
+      "backToLogin": "Zurueck zur Anmeldung"
+    },
     "fields": {
+      "fullName": "Vollstaendiger Name",
       "email": "E-Mail-Adresse",
       "password": "Passwort"
     },
     "placeholders": {
+      "fullName": "Vollstaendiger Name",
       "email": "E-Mail-Adresse",
       "password": "Passwort",
       "passwordMin": "Mindestens 6 Zeichen"
@@ -2122,6 +2134,7 @@
     "errors": {
       "loginFailed": "Ungültige E-Mail-Adresse oder Passwort",
       "passwordLength": "Passwort muss mindestens 6 Zeichen lang sein",
+      "requestFailed": "Reset-Link konnte nicht gesendet werden",
       "signupFailed": "Konto konnte nicht erstellt werden",
       "networkError": "Netzwerkfehler. Bitte überprüfen Sie, ob der Server läuft."
     }

@@ -64,6 +64,8 @@ import {
   resolveCashDashboardScenarioId,
   resolveCashDashboardSurfaceMode,
 } from "./cash-dashboard-model";
+import { OnboardingChecklist } from "../../onboarding/components/OnboardingChecklist";
+import { CASH_MANAGEMENT_JOURNEY } from "../journeys/cash-management-journey";
 import { cashKeys } from "../queries";
 
 type LocaleKey = "en" | "de" | "vi";
@@ -2026,6 +2028,10 @@ export function CashDashboardScreen() {
         locale={locale}
         previewControls={previewControls}
       />
+
+      <div className="mb-6">
+        <OnboardingChecklist config={CASH_MANAGEMENT_JOURNEY} />
+      </div>
 
       <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
         <SummaryCard

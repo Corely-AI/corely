@@ -1,23 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { FileText, Image as ImageIcon, Paperclip, X } from "lucide-react";
-import { Badge } from "@corely/ui";
-import { Input } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { fetchCopilotHistory, useCopilotChatOptions } from "@corely/web-shared/lib/copilot-api";
 import { useRotatingStatusText } from "@corely/web-shared/shared/components/chat/useRotatingStatusText";
 import { type StatusPhase } from "@corely/web-shared/shared/components/chat/statusTexts";
-import { cn } from "@corely/web-shared/shared/lib/utils";
 import i18n from "@corely/web-shared/shared/i18n";
 import { useTranslation } from "react-i18next";
 
+import { type MessagePart, hasVisiblePart, hasVisibleText } from "./chat/ChatParts";
+import { ChatComposer } from "./chat/chat-composer";
+import { ChatMessageList, type ChatMessage, type RoleStyle } from "./chat/chat-message-list";
 import {
-  type MessagePart,
-  isToolPart,
-  hasVisiblePart,
-  hasVisibleText,
-  renderPart,
-} from "./chat/ChatParts";
+  fileToChatPart,
+  formatBytes,
+  isSupportedAttachment,
+  MAX_ATTACHMENT_SIZE_BYTES,
+} from "./chat/chat-utils";
 
 export interface Suggestion {
   icon: React.ComponentType<{ className?: string }>;
@@ -32,61 +30,14 @@ export interface ChatProps {
   suggestions?: Suggestion[];
   emptyStateTitle?: string;
   emptyStateDescription?: string;
+  canSend?: boolean;
+  onSendBlocked?: () => void;
   runId?: string;
   runIdMode?: "persisted" | "controlled";
   onRunIdResolved?: (runId: string) => void;
   onConversationUpdated?: () => void;
   focusMessageId?: string | null;
 }
-
-const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
-const ACCEPTED_ATTACHMENT_MIME_TYPES = new Set(["application/pdf"]);
-
-const formatBytes = (bytes: number): string => {
-  if (bytes < 1024) {
-    return `${bytes} B`;
-  }
-  const kb = bytes / 1024;
-  if (kb < 1024) {
-    return `${kb.toFixed(1)} KB`;
-  }
-  return `${(kb / 1024).toFixed(1)} MB`;
-};
-
-const isSupportedAttachment = (file: File): boolean => {
-  if (file.type.startsWith("image/")) {
-    return true;
-  }
-  if (ACCEPTED_ATTACHMENT_MIME_TYPES.has(file.type)) {
-    return true;
-  }
-  return file.name.toLowerCase().endsWith(".pdf");
-};
-
-const fileToChatPart = async (
-  file: File
-): Promise<{ type: "file"; mediaType: string; filename: string; url: string }> => {
-  const url = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result === "string") {
-        resolve(result);
-        return;
-      }
-      reject(new Error("Failed to encode attachment"));
-    };
-    reader.onerror = () => reject(reader.error ?? new Error("Failed to encode attachment"));
-    reader.readAsDataURL(file);
-  });
-
-  return {
-    type: "file",
-    mediaType: file.type || "application/octet-stream",
-    filename: file.name,
-    url,
-  };
-};
 
 export function Chat({
   activeModule,
@@ -95,6 +46,8 @@ export function Chat({
   suggestions = [],
   emptyStateTitle,
   emptyStateDescription,
+  canSend = true,
+  onSendBlocked,
   runId: controlledRunId,
   runIdMode = "persisted",
   onRunIdResolved,
@@ -147,14 +100,14 @@ export function Chat({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // AI SDK v3 API - manage input state ourselves
-  const messages = chat.messages ?? [];
+  const messages = (chat.messages ?? []) as ChatMessage[];
   const sendMessage = (chat as any).sendMessage;
   const addToolResult = (chat as any).addToolResult;
   const addToolApprovalResponse = (chat as any).addToolApprovalResponse;
   const setMessages = chat.setMessages;
   const status = (chat as any).status;
   const isLoading = status === "streaming" || status === "submitted";
-  const roleConfig = {
+  const roleConfig: Record<string, RoleStyle> = {
     user: {
       label: i18n.t("assistant.userRole"),
       align: "items-end",
@@ -228,6 +181,10 @@ export function Chat({
     e.preventDefault();
     const trimmedInput = input.trim();
     if ((!trimmedInput && pendingFiles.length === 0) || !sendMessage) {
+      return;
+    }
+    if (!canSend) {
+      onSendBlocked?.();
       return;
     }
 
@@ -449,168 +406,39 @@ export function Chat({
             </div>
           ) : null}
 
-          <div className="space-y-6">
-            {messages.map((m) => {
-              const roleStyle = getRoleStyle(m.role);
-              const normalizedParts = (
-                m.parts?.length
-                  ? (m.parts as MessagePart[])
-                  : m.content
-                    ? [{ type: "text", text: String(m.content) } as MessagePart]
-                    : []
-              ).filter(Boolean);
-              const visibleParts = normalizedParts.filter((part) => !part.type.startsWith("data-"));
-
-              if (visibleParts.length === 0) {
-                return null;
-              }
-
-              return (
-                <div
-                  key={m.id}
-                  data-message-id={m.id}
-                  className={cn(
-                    "flex flex-col gap-2 rounded-2xl p-2 transition-colors",
-                    roleStyle.align,
-                    highlightedMessageId === m.id ? "bg-accent/10" : ""
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "flex items-center gap-2",
-                      m.role === "user" ? "flex-row-reverse" : "flex-row"
-                    )}
-                  >
-                    <Badge
-                      variant={roleStyle.badge}
-                      className="uppercase tracking-[0.2em] text-[10px]"
-                    >
-                      {roleStyle.label}
-                    </Badge>
-                  </div>
-                  <div className={cn("flex flex-col gap-2", roleStyle.align)}>
-                    {visibleParts.map((p, idx) => {
-                      const rendered = renderPart(p, {
-                        addToolResult: addToolResult ? addToolResultWithTracking : undefined,
-                        addToolApprovalResponse: addToolApprovalResponse
-                          ? addToolApprovalResponseWithTracking
-                          : undefined,
-                        submittingToolIds,
-                        markSubmitting,
-                      });
-                      if (!rendered) {
-                        return null;
-                      }
-                      if (isToolPart(p)) {
-                        return (
-                          <div key={`${m.id}-${idx}`} className="w-full max-w-[min(720px,100%)]">
-                            {rendered}
-                          </div>
-                        );
-                      }
-                      return (
-                        <div
-                          key={`${m.id}-${idx}`}
-                          className={cn(
-                            "max-w-[min(720px,100%)] rounded-2xl px-4 py-3 text-sm leading-relaxed backdrop-blur",
-                            roleStyle.bubble,
-                            roleStyle.tail
-                          )}
-                        >
-                          {rendered}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-
-            {showWaitingStatus && statusText ? (
-              <div className="flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
-                  <span
-                    aria-hidden="true"
-                    className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent"
-                  />
-                  <span aria-live="polite" aria-atomic="true">
-                    {statusText}
-                  </span>
-                </div>
-              </div>
-            ) : null}
-          </div>
+          <ChatMessageList
+            messages={messages}
+            highlightedMessageId={highlightedMessageId}
+            getRoleStyle={getRoleStyle}
+            submittingToolIds={submittingToolIds}
+            markSubmitting={markSubmitting}
+            addToolResult={addToolResult ? addToolResultWithTracking : undefined}
+            addToolApprovalResponse={
+              addToolApprovalResponse ? addToolApprovalResponseWithTracking : undefined
+            }
+            showWaitingStatus={showWaitingStatus}
+            statusText={statusText}
+          />
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,application/pdf"
-          multiple
-          className="hidden"
-          onChange={handleFileSelection}
-        />
-        {pendingFiles.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {pendingFiles.map((file, index) => {
-              const isImage = file.type.startsWith("image/");
-              return (
-                <div
-                  key={`${file.name}-${file.size}-${index}`}
-                  className="inline-flex max-w-full items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1 text-xs"
-                >
-                  {isImage ? (
-                    <ImageIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  ) : (
-                    <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  )}
-                  <span className="max-w-[240px] truncate">{file.name}</span>
-                  <button
-                    type="button"
-                    className="rounded p-0.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                    onClick={() => removePendingFile(index)}
-                    aria-label={t("assistant.attachments.remove")}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-        {attachmentError ? <div className="text-xs text-destructive">{attachmentError}</div> : null}
-        <div className="glass flex items-center gap-2 rounded-2xl p-2 shadow-[0_18px_60px_-36px_rgba(0,0,0,0.6)]">
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-10 w-10 rounded-xl"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading}
-            aria-label={t("assistant.attachments.add")}
-          >
-            <Paperclip className="h-4 w-4" />
-          </Button>
-          <Input
-            value={input}
-            onChange={handleInputChange}
-            placeholder={placeholder}
-            className="h-12 flex-1 border-transparent bg-transparent text-base shadow-none focus:border-transparent focus:ring-0"
-            disabled={isLoading}
-          />
-          <Button
-            type="submit"
-            variant="accent"
-            size="lg"
-            className="px-6"
-            disabled={isLoading || (!input.trim() && pendingFiles.length === 0)}
-          >
-            {isLoading ? t("assistant.sending") : t("assistant.send")}
-          </Button>
-        </div>
-      </form>
+      <ChatComposer
+        input={input}
+        placeholder={placeholder}
+        isLoading={isLoading}
+        pendingFiles={pendingFiles}
+        attachmentError={attachmentError}
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+        onFileSelection={handleFileSelection}
+        removePendingFile={removePendingFile}
+        fileInputRef={fileInputRef}
+        sendLabel={t("assistant.send")}
+        sendingLabel={t("assistant.sending")}
+        canSubmit={Boolean(input.trim()) || pendingFiles.length > 0}
+        addAttachmentLabel={t("assistant.attachments.add")}
+        removeAttachmentLabel={t("assistant.attachments.remove")}
+      />
     </div>
   );
 }

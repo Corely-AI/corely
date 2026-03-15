@@ -2093,6 +2093,7 @@
   "auth": {
     "signin": {
       "title": "Đăng nhập vào tài khoản của bạn",
+      "subtitle": "Đăng nhập để quản lý sổ quỹ và các thao tác trong ngày.",
       "rememberMe": "Ghi nhớ tôi",
       "forgotPassword": "Quên mật khẩu?",
       "cta": "Đăng nhập",
@@ -2101,6 +2102,7 @@
     },
     "signup": {
       "title": "Tạo tài khoản của bạn",
+      "subtitle": "Đăng ký để bắt đầu quản lý quy trình tiền mặt.",
       "cta": "Đăng ký",
       "creating": "Đang tạo tài khoản...",
       "hasAccount": "Đã có tài khoản?"
@@ -2124,10 +2126,12 @@
       "confirmLabel": "Xác nhận mật khẩu"
     },
     "fields": {
+      "fullName": "Họ và tên",
       "email": "Địa chỉ email",
       "password": "Mật khẩu"
     },
     "placeholders": {
+      "fullName": "Họ và tên",
       "email": "Địa chỉ email",
       "password": "Mật khẩu",
       "passwordMin": "Tối thiểu 6 ký tự"
