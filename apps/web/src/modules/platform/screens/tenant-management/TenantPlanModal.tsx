@@ -75,7 +75,9 @@ export function TenantPlanModal({
   }, [tenant, form]);
 
   const onSubmit = (data: PlanSettingsFormValues) => {
-    if (!tenant) {return;}
+    if (!tenant) {
+      return;
+    }
     onSave(tenant.id, {
       ...data,
       plan: data.plan || null,
@@ -85,7 +87,9 @@ export function TenantPlanModal({
     });
   };
 
-  if (!tenant) {return null;}
+  if (!tenant) {
+    return null;
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

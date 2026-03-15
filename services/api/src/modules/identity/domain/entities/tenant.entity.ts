@@ -130,9 +130,15 @@ export class Tenant {
   }
 
   updateDetails(name?: string, slug?: string, status?: string) {
-    if (name) {this.name = name.trim();}
-    if (slug) {this.slug = Tenant.normalizeSlug(slug);}
-    if (status) {this.status = status;}
+    if (name) {
+      this.name = name.trim();
+    }
+    if (slug) {
+      this.slug = Tenant.normalizeSlug(slug);
+    }
+    if (status) {
+      this.status = status;
+    }
   }
 
   updateManualPlan(
