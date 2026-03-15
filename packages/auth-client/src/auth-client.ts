@@ -6,6 +6,7 @@ export interface SignUpData {
   password: string;
   tenantName?: string;
   userName?: string;
+  fullName?: string;
 }
 
 export interface SignInData {
@@ -106,7 +107,10 @@ export class AuthClient {
       const result = await request<AuthResponse>({
         url: `${this.apiUrl}/auth/signup`,
         method: "POST",
-        body: data,
+        body: {
+          ...data,
+          userName: data.userName ?? data.fullName,
+        },
         idempotencyKey: createIdempotencyKey(),
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
