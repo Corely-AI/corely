@@ -1,4 +1,4 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, Inject, Optional } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
 import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
@@ -10,6 +10,12 @@ import { TOKEN_SERVICE_TOKEN } from "../identity/application/ports/token-service
 import type { TokenServicePort } from "../identity/application/ports/token-service.port";
 import { randomUUID, createHash } from "crypto";
 import { seedPortalTestData, type SeedPortalTestDataResult } from "./seed-portal-test-data";
+import {
+  BILLING_PROVIDER_TEST_HOOKS,
+  type BillingProviderTestHooksPort,
+  type BillingProviderTestOperation,
+} from "../billing";
+import { platformPermissions } from "../platform/platform.permissions";
 
 export interface SeedResult {
   tenantId: string;
@@ -86,6 +92,33 @@ export interface SeedTaxFilingScenarioResult {
   blockerIssueCount: number;
 }
 
+export interface BillingInspectionResult {
+  accounts: Array<{
+    tenantId: string;
+    provider: string | null;
+    providerCustomerRef: string | null;
+  }>;
+  subscriptions: Array<{
+    productKey: string;
+    planCode: string;
+    status: string;
+    providerSubscriptionRef: string | null;
+    providerPriceRef: string | null;
+    cancelAtPeriodEnd: boolean;
+  }>;
+  usageCounters: Array<{
+    productKey: string;
+    metricKey: string;
+    quantity: number;
+    periodStart: string;
+    periodEnd: string;
+  }>;
+  providerEventCount: number;
+  providerEventTypes: string[];
+  outboxEventTypes: string[];
+  auditActions: string[];
+}
+
 @Injectable()
 export class TestHarnessService {
   constructor(
@@ -94,8 +127,123 @@ export class TestHarnessService {
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort,
     @Inject(TOKEN_SERVICE_TOKEN)
-    private readonly tokenService: TokenServicePort
+    private readonly tokenService: TokenServicePort,
+    @Optional()
+    @Inject(BILLING_PROVIDER_TEST_HOOKS)
+    private readonly billingProviderTestHooks?: BillingProviderTestHooksPort | null
   ) {}
+
+  resetBillingProviderState(): void {
+    this.billingProviderTestHooks?.reset();
+  }
+
+  failNextBillingProviderOperation(operation: BillingProviderTestOperation): void {
+    this.billingProviderTestHooks?.failNext(operation);
+  }
+
+  async inspectBillingState(params: {
+    tenantId: string;
+    productKey?: string;
+  }): Promise<BillingInspectionResult> {
+    const [accounts, subscriptions, usageCounters, providerEvents, outboxEvents, auditLogs] =
+      await Promise.all([
+        this.prisma.billingAccount.findMany({
+          where: { tenantId: params.tenantId },
+          select: {
+            tenantId: true,
+            provider: true,
+            providerCustomerRef: true,
+          },
+        }),
+        this.prisma.billingSubscription.findMany({
+          where: {
+            tenantId: params.tenantId,
+            ...(params.productKey ? { productKey: params.productKey } : {}),
+          },
+          orderBy: [{ createdAt: "asc" }],
+          select: {
+            productKey: true,
+            planCode: true,
+            status: true,
+            providerSubscriptionRef: true,
+            providerPriceRef: true,
+            cancelAtPeriodEnd: true,
+          },
+        }),
+        this.prisma.billingUsageCounter.findMany({
+          where: {
+            tenantId: params.tenantId,
+            ...(params.productKey ? { productKey: params.productKey } : {}),
+          },
+          orderBy: [{ periodStart: "asc" }, { metricKey: "asc" }],
+          select: {
+            productKey: true,
+            metricKey: true,
+            quantity: true,
+            periodStart: true,
+            periodEnd: true,
+          },
+        }),
+        this.prisma.billingProviderEvent.findMany({
+          where: { tenantId: params.tenantId },
+          orderBy: [{ createdAt: "asc" }],
+          select: { eventType: true },
+        }),
+        this.prisma.outboxEvent.findMany({
+          where: { tenantId: params.tenantId, eventType: { startsWith: "billing." } },
+          orderBy: [{ createdAt: "asc" }],
+          select: { eventType: true },
+        }),
+        this.prisma.auditLog.findMany({
+          where: { tenantId: params.tenantId, action: { startsWith: "billing." } },
+          orderBy: [{ createdAt: "asc" }],
+          select: { action: true },
+        }),
+      ]);
+
+    return {
+      accounts: accounts.map((account) => ({
+        tenantId: account.tenantId,
+        provider: account.provider,
+        providerCustomerRef: account.providerCustomerRef,
+      })),
+      subscriptions: subscriptions.map((subscription) => ({
+        productKey: subscription.productKey,
+        planCode: subscription.planCode,
+        status: subscription.status,
+        providerSubscriptionRef: subscription.providerSubscriptionRef,
+        providerPriceRef: subscription.providerPriceRef,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+      })),
+      usageCounters: usageCounters.map((counter) => ({
+        productKey: counter.productKey,
+        metricKey: counter.metricKey,
+        quantity: counter.quantity,
+        periodStart: counter.periodStart.toISOString(),
+        periodEnd: counter.periodEnd.toISOString(),
+      })),
+      providerEventCount: providerEvents.length,
+      providerEventTypes: providerEvents.map((event) => event.eventType),
+      outboxEventTypes: outboxEvents.map((event) => event.eventType),
+      auditActions: auditLogs.map((log) => log.action),
+    };
+  }
+
+  async setBillingTrialEndsAt(params: {
+    tenantId: string;
+    productKey?: string;
+    endsAt: string;
+  }): Promise<void> {
+    await this.prisma.billingTrial.updateMany({
+      where: {
+        tenantId: params.tenantId,
+        ...(params.productKey ? { productKey: params.productKey } : {}),
+      },
+      data: {
+        endsAt: new Date(params.endsAt),
+      },
+    });
+  }
 
   async loginAsPortalUser(params: {
     email: string;
@@ -143,6 +291,96 @@ export class TestHarnessService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * Seed host admin user: creates a user with membership that has no tenantId (HOST scope)
+   */
+  async seedHostAdmin(params: { email: string; password: string }): Promise<SeedResult> {
+    const passwordHash = await bcrypt.hash(params.password, 10);
+    const email = params.email.toLowerCase().trim();
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Create/Update user
+      const user = await tx.user.upsert({
+        where: { email },
+        update: {
+          name: "Host Admin",
+          passwordHash,
+          status: "ACTIVE",
+        },
+        create: {
+          email,
+          name: "Host Admin",
+          passwordHash,
+          status: "ACTIVE",
+        },
+      });
+
+      // 2. Create HOST scope role
+      const hostRole = await tx.role.create({
+        data: {
+          tenantId: null as any, // Use null for host scope
+          name: "Platform Admin",
+          systemKey: "PLATFORM_ADMIN",
+          isSystem: true,
+          scope: "HOST",
+        },
+      });
+
+      // 3. Grant all HOST permissions
+      const hostPermissionKeys = platformPermissions.flatMap((group) =>
+        group.permissions.filter((p) => p.side === "HOST" || p.side === "BOTH").map((p) => p.key)
+      );
+
+      await tx.rolePermissionGrant.createMany({
+        data: hostPermissionKeys.map((permissionKey) => ({
+          tenantId: null as any,
+          roleId: hostRole.id,
+          permissionKey,
+          effect: "ALLOW" as const,
+          createdBy: user.id,
+        })),
+      });
+
+      // 4. Create host membership
+      await tx.membership.create({
+        data: {
+          tenantId: null as any,
+          userId: user.id,
+          roleId: hostRole.id,
+        },
+      });
+
+      return {
+        tenantId: null as any,
+        tenantName: "Platform",
+        userId: user.id,
+        userName: user.name,
+        email: user.email,
+        workspaceId: null as any,
+      };
+    });
+  }
+
+  /**
+   * Seed a few tenants for platform testing
+   */
+  async seedTenantsForPlatform(count: number = 3): Promise<Array<{ id: string; name: string }>> {
+    const tenants = [];
+    for (let i = 0; i < count; i++) {
+      const name = `Platform Test Tenant ${i + 1} ${randomUUID().slice(0, 4)}`;
+      const tenant = await this.prisma.tenant.create({
+        data: {
+          name,
+          slug: `plt-test-${randomUUID().slice(0, 8)}`,
+          status: "ACTIVE",
+          plan: "free",
+        },
+      });
+      tenants.push({ id: tenant.id, name: tenant.name });
+    }
+    return tenants;
   }
 
   /**
@@ -249,7 +487,7 @@ export class TestHarnessService {
           },
         });
 
-        const _adminRole = await tx.role.create({
+        await tx.role.create({
           data: {
             tenantId: tenant.id,
             name: "Admin",
@@ -258,7 +496,7 @@ export class TestHarnessService {
           },
         });
 
-        const _memberRole = await tx.role.create({
+        await tx.role.create({
           data: {
             tenantId: tenant.id,
             name: "Member",
@@ -646,8 +884,6 @@ export class TestHarnessService {
     const expenseCount = Math.max(1, params.expenseCount ?? 6);
     const includeSnapshots = params.includeSnapshots ?? false;
     const withBlockers = params.withBlockers ?? false;
-    const now = new Date();
-
     const invoiceIds: string[] = [];
     const expenseIds: string[] = [];
     let vatCollectedCents = 0;
@@ -935,6 +1171,15 @@ export class TestHarnessService {
       () => this.prisma.file.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
       () => this.prisma.document.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
       () =>
+        this.prisma.billingProviderEvent.deleteMany({
+          where: { tenantId: { in: scopeTenantIds } },
+        }),
+      () =>
+        this.prisma.billingUsageCounter.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () =>
+        this.prisma.billingSubscription.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.billingAccount.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () =>
         this.prisma.invoicePayment.deleteMany({
           where: { invoice: { tenantId: { in: scopeTenantIds } } },
         }),
@@ -970,6 +1215,8 @@ export class TestHarnessService {
         }
       }
     }
+
+    this.billingProviderTestHooks?.reset();
   }
 
   /**
@@ -1001,7 +1248,7 @@ export class TestHarnessService {
           },
         });
         processedCount++;
-      } catch (_error) {
+      } catch {
         // Mark as failed if processing errors
         await this.prisma.outboxEvent.update({
           where: { id: event.id },

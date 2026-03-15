@@ -39,6 +39,7 @@ import { ClassesModule } from "./modules/classes";
 import { BookingModule } from "./modules/booking";
 import { PortalModule } from "./modules/portal/portal.module";
 import { CashManagementModule } from "./modules/cash-management/cash-management.module";
+import { BillingModule } from "./modules/billing/billing.module";
 import { CustomizationModule } from "./modules/customization/customization.module";
 import { DirectoryModule } from "./modules/directory";
 import { PosModule } from "./modules/pos";
@@ -46,6 +47,7 @@ import { IntegrationsModule } from "./modules/integrations";
 import { CrmMailModule } from "./modules/crm-mail";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { BackgroundModule } from "./modules/background/background.module";
+import { OnboardingModule } from "./modules/onboarding";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -92,6 +94,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     RentalsModule,
     DirectoryModule,
     CashManagementModule,
+    BillingModule,
     PosModule,
     IntegrationsModule,
     CrmMailModule,
@@ -108,6 +111,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     AiRichTextModule,
     NotificationsModule,
     BackgroundModule,
+    OnboardingModule,
     // Conditional imports based on env
     ...(function () {
       // We need to access EnvService here, but it's not available yet

@@ -1,5 +1,6 @@
 import React from "react";
 import { Route } from "react-router-dom";
+import { RequirePermission } from "@corely/web-shared/shared/permissions";
 import {
   QuotesPage as SalesQuotesPage,
   NewQuotePage,
@@ -38,7 +39,6 @@ import {
 import { ShipmentsPage, ShipmentDetailPage, NewShipmentPage } from "../../modules/import";
 import { InvoicesPage, NewInvoicePage, InvoiceDetailPage } from "../../modules/invoices";
 import { RequireCapability } from "@corely/web-shared/shared/workspaces/RequireCapability";
-import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 
 export const capabilityRoutes = (
   <>

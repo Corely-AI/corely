@@ -15,6 +15,12 @@ export interface GetTenantOutput {
   slug: string;
   status: string;
   createdAt: Date;
+  plan?: string | null;
+  planStatus?: string | null;
+  billingMethod?: string | null;
+  billingNote?: string | null;
+  planUpdatedAt?: Date | null;
+  planUpdatedBy?: string | null;
 }
 
 @Injectable()
@@ -37,6 +43,12 @@ export class GetTenantUseCase {
       slug: tenant.getSlug(),
       status: tenant.getStatus(),
       createdAt: tenant.getCreatedAt(),
+      plan: tenant.getPlan(),
+      planStatus: tenant.getPlanStatus(),
+      billingMethod: tenant.getBillingMethod(),
+      billingNote: tenant.getBillingNote(),
+      planUpdatedAt: tenant.getPlanUpdatedAt(),
+      planUpdatedBy: tenant.getPlanUpdatedBy(),
     };
   }
 }

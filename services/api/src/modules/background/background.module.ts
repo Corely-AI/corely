@@ -4,6 +4,7 @@ import { StorageModule as BackgroundStorageModule } from "./runtime/modules/stor
 import { OutboxModule as BackgroundOutboxModule } from "./runtime/modules/outbox/outbox.module";
 import { WorkflowsModule as BackgroundWorkflowsModule } from "./runtime/modules/workflows/workflows.module";
 import { InvoicesWorkerModule as BackgroundInvoicesModule } from "./runtime/modules/invoices/invoices-worker.module";
+import { BillingWorkerModule as BackgroundBillingModule } from "./runtime/modules/billing/billing-worker.module";
 import { BackgroundInternalController } from "./background-internal.controller";
 import { BackgroundInternalGuard } from "./background-internal.guard";
 
@@ -14,6 +15,7 @@ import { BackgroundInternalGuard } from "./background-internal.guard";
     BackgroundOutboxModule,
     BackgroundWorkflowsModule,
     BackgroundInvoicesModule,
+    BackgroundBillingModule,
   ],
   controllers: [BackgroundInternalController],
   providers: [BackgroundInternalGuard],

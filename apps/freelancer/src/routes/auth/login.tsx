@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, CardContent, Input, Label } from "@corely/ui";
+import { ensureDefaultWorkspace } from "@corely/web-shared";
 import { useAuth } from "@corely/web-shared/lib/auth-provider";
-import { ensureDefaultWorkspace } from "./ensure-default-workspace";
 
 export const LoginPage = () => {
   const navigate = useNavigate();

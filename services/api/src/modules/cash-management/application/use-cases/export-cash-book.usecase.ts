@@ -5,6 +5,7 @@ import {
   BaseUseCase,
   OUTBOX_PORT,
   UNIT_OF_WORK,
+  ForbiddenError,
   NotFoundError,
   ValidationError,
   type AuditPort,
@@ -36,6 +37,8 @@ import {
 } from "@/shared/ports/idempotency-storage.port";
 import { getIdempotentBody, storeIdempotentBody } from "./idempotency";
 import { assertCanExportCash } from "../../policies/assert-cash-policies";
+import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
+import { getCashBillingBoolean, loadCashBillingState } from "./billing-guards";
 
 const ACTION_KEY = "cash-management.export.generate";
 
@@ -58,6 +61,8 @@ export class ExportCashBookUseCase extends BaseUseCase<
     private readonly exportRepo: CashExportRepoPort,
     @Inject(CASH_EXPORT_PORT)
     private readonly exportPort: ExportPort,
+    @Inject(BILLING_ACCESS_PORT)
+    private readonly billingAccess: BillingAccessPort,
     @Inject(AUDIT_PORT)
     private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT)
@@ -90,6 +95,17 @@ export class ExportCashBookUseCase extends BaseUseCase<
     });
     if (cached) {
       return ok(cached);
+    }
+
+    const billingState = await loadCashBillingState(this.billingAccess, tenantId);
+    if (!getCashBillingBoolean(billingState.entitlements, "canExport")) {
+      throw new ForbiddenError(
+        "Monthly export is available on Starter and higher plans",
+        {
+          planCode: billingState.subscription.planCode,
+        },
+        "CashManagement:ExportUnavailable"
+      );
     }
 
     const register = await this.registerRepo.findRegisterById(

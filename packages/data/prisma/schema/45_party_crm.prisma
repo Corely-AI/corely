@@ -671,11 +671,11 @@ model SequenceEnrollment {
   party    Party?   @relation(fields: [partyId], references: [id])
   deal     Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
 
+  @@unique([tenantId, sequenceId, leadId, dealId], map: "crm_seq_enrollment_lead_deal_unique")
   @@index([tenantId, sequenceId])
   @@index([tenantId, leadId])
   @@index([tenantId, partyId])
   @@index([tenantId, dealId])
   @@index([tenantId, nextExecutionAt])
-  @@unique([tenantId, sequenceId, leadId, dealId], map: "crm_seq_enrollment_lead_deal_unique")
   @@schema("crm")
 }

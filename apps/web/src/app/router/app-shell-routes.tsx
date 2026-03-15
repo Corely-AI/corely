@@ -1,5 +1,7 @@
 import React from "react";
-import { Navigate, Route } from "react-router-dom";
+import { Navigate, Route, useLocation, useParams } from "react-router-dom";
+import { cashManagementFeature } from "@corely/web-features";
+import { RequirePermission } from "@corely/web-shared/shared/permissions";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
@@ -10,15 +12,6 @@ import {
   InvoiceDetailPage,
   InvoiceAuditPage,
 } from "../../modules/invoices";
-import {
-  CashRegistersScreen,
-  CashRegisterDetailScreen,
-  DailyCloseScreen,
-  CashRegisterNewScreen,
-  CashRegisterEditScreen,
-  CashEntriesScreen,
-  CashExportsScreen,
-} from "../../modules/cash-management";
 import {
   CustomersPage,
   NewCustomerPage,
@@ -119,12 +112,36 @@ import {
 import { CopilotPage } from "../../routes/copilot";
 import { WorkspaceOnboardingPage } from "../../modules/workspaces";
 import { RequireAuth } from "./require-auth";
-import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { appSettingsRoutes } from "./app-settings-routes";
 import { catalogRoutes } from "./catalog-routes";
 import { capabilityRoutes } from "./app-shell-capability-routes";
 import { bookingRoutes } from "./booking-routes";
 import { NotificationsPage } from "../../modules/notifications/screens/notifications-page";
+
+const CashLegacyRedirect = () => {
+  const { id } = useParams<{ id?: string }>();
+  const location = useLocation();
+
+  return (
+    <Navigate to={id ? `/cash/registers/${id}${location.search}` : "/cash/registers"} replace />
+  );
+};
+
+const CashLegacyDayCloseRedirect = () => {
+  const { id } = useParams<{ id?: string }>();
+  const location = useLocation();
+
+  return (
+    <Navigate
+      to={
+        id
+          ? `/cash/registers/${id}/day-close${location.search}`
+          : `/cash/registers${location.search}`
+      }
+      replace
+    />
+  );
+};
 
 export const appShellRoutes = (
   <Route element={<RequireAuth />}>
@@ -217,16 +234,12 @@ export const appShellRoutes = (
       <Route path="/expenses/new" element={<NewExpensePage />} />
       <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
       <Route path="/expenses/:id/edit" element={<NewExpensePage />} />
-      <Route path="/cash/registers" element={<CashRegistersScreen />} />
-      <Route path="/cash/registers/new" element={<CashRegisterNewScreen />} />
-      <Route path="/cash/registers/:id" element={<CashRegisterDetailScreen />} />
-      <Route path="/cash/registers/:id/edit" element={<CashRegisterEditScreen />} />
-      <Route path="/cash/registers/:id/entries" element={<CashEntriesScreen />} />
-      <Route path="/cash/registers/:id/day-close" element={<DailyCloseScreen />} />
-      <Route path="/cash/registers/:id/exports" element={<CashExportsScreen />} />
-      <Route path="/cash-registers" element={<CashRegistersScreen />} />
-      <Route path="/cash-registers/:id" element={<CashRegisterDetailScreen />} />
-      <Route path="/cash-registers/:id/daily-close" element={<DailyCloseScreen />} />
+      {cashManagementFeature.cashManagementRoutes().map((route) => (
+        <Route key={route.path} path={route.path} element={route.element} />
+      ))}
+      <Route path="/cash-registers" element={<CashLegacyRedirect />} />
+      <Route path="/cash-registers/:id" element={<CashLegacyRedirect />} />
+      <Route path="/cash-registers/:id/daily-close" element={<CashLegacyDayCloseRedirect />} />
       <Route path="/invoices" element={<InvoicesPage />} />
       <Route path="/invoices/new" element={<NewInvoicePage />} />
       <Route path="/invoices/:id" element={<InvoiceDetailPage />} />

@@ -2,17 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { format, isToday, isYesterday, startOfWeek } from "date-fns";
-import {
-  AlertCircle,
-  ChevronDown,
-  FileText,
-  Loader2,
-  Plus,
-  Receipt,
-  Search,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
+import { ChevronDown, Loader2, Plus, Search, Sparkles } from "lucide-react";
 import {
   Button,
   Collapsible,
@@ -31,9 +21,13 @@ import {
   createCopilotThread,
   type CopilotThreadSearchResult,
 } from "@corely/web-shared/lib/copilot-api";
-import { Chat, type Suggestion } from "@corely/web-shared/shared/components/Chat";
+import { Chat } from "@corely/web-shared/shared/components/Chat";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import { useTranslation } from "react-i18next";
+import { useToast } from "@corely/ui";
+import { billingApi } from "@corely/web-shared/lib/billing-api";
+import { CashManagementProductKey } from "@corely/contracts";
+import { getAssistantSuggestions } from "./assistant-suggestions";
 
 type ThreadGroupKey = "today" | "yesterday" | "week" | "older";
 
@@ -77,6 +71,7 @@ interface AssistantPageProps {
 
 export default function AssistantPage({ activeModule = "assistant" }: AssistantPageProps) {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const { threadId } = useParams<{ threadId?: string }>();
   const [searchParams] = useSearchParams();
@@ -103,28 +98,10 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     };
   }, [searchText]);
 
-  const suggestions: Suggestion[] = [
-    {
-      icon: Receipt,
-      label: t("assistant.suggestions.extractReceipt.label"),
-      value: t("assistant.suggestions.extractReceipt.value"),
-    },
-    {
-      icon: FileText,
-      label: t("assistant.suggestions.invoiceDraft.label"),
-      value: t("assistant.suggestions.invoiceDraft.value"),
-    },
-    {
-      icon: TrendingUp,
-      label: t("assistant.suggestions.summarizeExpenses.label"),
-      value: t("assistant.suggestions.summarizeExpenses.value"),
-    },
-    {
-      icon: AlertCircle,
-      label: t("assistant.suggestions.taxGuidance.label"),
-      value: t("assistant.suggestions.taxGuidance.value"),
-    },
-  ];
+  const suggestions = useMemo(() => {
+    const locale = i18n.resolvedLanguage ?? i18n.language ?? "en";
+    return getAssistantSuggestions({ activeModule, locale, t });
+  }, [activeModule, i18n.language, i18n.resolvedLanguage, t]);
 
   const threadsQuery = useQuery({
     queryKey: THREAD_LIST_QUERY_KEY,
@@ -136,6 +113,18 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     queryFn: async () => getCopilotThread(threadId || ""),
     enabled: Boolean(threadId),
   });
+
+  const billingProductKey =
+    activeModule === "cash-management" ? CashManagementProductKey : undefined;
+
+  const billingQuery = useQuery({
+    queryKey: ["billing", "current", billingProductKey],
+    queryFn: () => billingApi.getCurrent(billingProductKey!),
+    enabled: Boolean(billingProductKey),
+  });
+
+  const canChat =
+    !billingProductKey || Boolean(billingQuery.data?.entitlements?.featureValues?.aiAssistant);
 
   const searchQuery = useQuery({
     queryKey: ["assistant", "thread-search", debouncedSearchText],
@@ -212,6 +201,20 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     void queryClient.invalidateQueries({ queryKey: THREAD_LIST_QUERY_KEY });
     if (threadId) {
       void queryClient.invalidateQueries({ queryKey: ["assistant", "thread", threadId] });
+    }
+  };
+
+  const handleChatBlocked = () => {
+    toast({
+      title: t("assistant.upgradeRequiredTitle", "Upgrade required for AI chat"),
+      description: t(
+        "assistant.upgradeRequiredDescription",
+        "Upgrade to the Pro plan to chat with the assistant."
+      ),
+      variant: "destructive",
+    });
+    if (billingProductKey) {
+      navigate("/billing");
     }
   };
 
@@ -301,7 +304,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4">
+          <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
               <Sparkles className="h-5 w-5 text-accent" />
             </div>
@@ -334,13 +337,18 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-5xl px-4 py-6" data-testid="assistant-messages">
+          <div
+            className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8"
+            data-testid="assistant-messages"
+          >
             <Chat
               key={threadId ?? "new-thread"}
               activeModule={activeModule}
               locale={i18n.language}
               runId={threadId}
               runIdMode="controlled"
+              canSend={canChat}
+              onSendBlocked={handleChatBlocked}
               onRunIdResolved={handleRunResolved}
               onConversationUpdated={handleConversationUpdated}
               focusMessageId={focusedMessageId}

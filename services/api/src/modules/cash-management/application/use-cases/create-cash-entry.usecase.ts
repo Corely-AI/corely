@@ -5,6 +5,7 @@ import {
   BaseUseCase,
   OUTBOX_PORT,
   UNIT_OF_WORK,
+  ForbiddenError,
   NotFoundError,
   ValidationError,
   type AuditPort,
@@ -33,6 +34,9 @@ import { getIdempotentBody, storeIdempotentBody } from "./idempotency";
 import { assertCanManageCash } from "../../policies/assert-cash-policies";
 import { CashBalanceCalculator } from "../../domain/cash-balance-calculator";
 import { canPostIntoClosedDay, normalizeCashEntryInput } from "../../domain/cash-entry-rules";
+import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
+import { getCashBillingNumber, loadCashBillingState } from "./billing-guards";
+import { CashManagementBillingMetricKeys, CashManagementProductKey } from "@corely/contracts";
 
 const ACTION_KEY = "cash-management.entry.create";
 
@@ -53,6 +57,8 @@ export class CreateCashEntryUseCase extends BaseUseCase<
     private readonly entryRepo: CashEntryRepoPort,
     @Inject(CASH_DAY_CLOSE_REPO)
     private readonly dayCloseRepo: CashDayCloseRepoPort,
+    @Inject(BILLING_ACCESS_PORT)
+    private readonly billingAccess: BillingAccessPort,
     @Inject(AUDIT_PORT)
     private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT)
@@ -108,6 +114,30 @@ export class CreateCashEntryUseCase extends BaseUseCase<
         "Cash register not found",
         undefined,
         "CashManagement:RegisterNotFound"
+      );
+    }
+
+    const billingState = await loadCashBillingState(this.billingAccess, tenantId);
+    const entriesUsed = await this.entryRepo.countEntriesForPeriod(
+      tenantId,
+      billingState.periodStart,
+      billingState.periodEnd
+    );
+    const maxEntriesPerMonth = getCashBillingNumber(
+      billingState.entitlements,
+      "maxEntriesPerMonth"
+    );
+    if (maxEntriesPerMonth !== null && entriesUsed >= maxEntriesPerMonth) {
+      throw new ForbiddenError(
+        "Your current plan has reached the monthly cash entry limit",
+        {
+          limit: maxEntriesPerMonth,
+          used: entriesUsed,
+          planCode: billingState.subscription.planCode,
+          periodStart: billingState.periodStart.toISOString(),
+          periodEnd: billingState.periodEnd.toISOString(),
+        },
+        "CashManagement:EntryLimitReached"
       );
     }
 
@@ -218,6 +248,14 @@ export class CreateCashEntryUseCase extends BaseUseCase<
           },
           correlationId: ctx.correlationId,
         },
+        tx
+      );
+
+      await this.billingAccess.recordUsage(
+        tenantId,
+        CashManagementProductKey,
+        CashManagementBillingMetricKeys.entries,
+        1,
         tx
       );
 

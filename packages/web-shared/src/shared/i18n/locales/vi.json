@@ -97,6 +97,89 @@
     "done": "Xong",
     "customFields": "Trường tùy chỉnh"
   },
+  "onboarding": {
+    "allSet": "Tất cả đã sẵn sàng!",
+    "redirectingToDashboard": "Đang chuyển hướng đến bảng điều khiển...",
+    "saveAndExit": "Lưu & Thoát",
+    "goBack": "Quay lại",
+    "loading": "Đang tải quá trình thiết lập...",
+    "aiAssistant": "Trợ lý AI",
+    "aiHelpPrompt": "Cần trợ giúp với bước này? Hãy hỏi trợ lý AI của chúng tôi để giải thích hoặc gợi ý bước tiếp theo.",
+    "askAssistant": "Hỏi trợ lý",
+    "businessName": "Tên doanh nghiệp",
+    "businessNamePlaceholder": "v.đ. Bella Beauty Studio",
+    "businessNameRequired": "Tên doanh nghiệp là bắt buộc",
+    "businessType": "Loại hình kinh doanh",
+    "selectType": "Chọn loại hình",
+    "businessTypeRequired": "Danh mục là bắt buộc",
+    "currency": "Tiền tệ",
+    "categories": {
+      "beauty": "Tiệm Nail / Thẩm mỹ",
+      "hair": "Tiệm tóc / Barber",
+      "gastronomy": "Cà phê / Nhà hàng",
+      "retail": "Tiệm bán lẻ",
+      "other": "Khác"
+    },
+    "workflowOptions": {
+      "paper": "Giấy / Sổ tay",
+      "excel": "Excel / Bảng tính",
+      "pos": "Hệ thống POS",
+      "software": "Phần mềm khác"
+    },
+    "receipt": {
+      "errorUnsupported": "Tệp không được hỗ trợ. Vui lòng tải lên PDF, JPG hoặc PNG dưới 10MB.",
+      "uploadPrompt": "Nhấp để tải lên hoặc kéo & thả",
+      "uploadHint": "PDF, JPG, PNG (tối đa 10MB)",
+      "skipLabel": "Tôi sẽ thực hiện sau",
+      "successTitle": "Đã đính kèm biên lai!",
+      "successDesc": "Chuyển sang bước tiếp theo...",
+      "continueLabel": "Tiếp tục"
+    },
+    "openingBalance": {
+      "errorAmount": "Vui lòng nhập số tiền hợp lệ",
+      "label": "Số tiền mặt thực tế hiện có trong két",
+      "hint": "💡 Không bao gồm thanh toán thẻ hoặc chuyển khoản ngân hàng. Chỉ tính tiền mặt vật lý."
+    },
+    "entries": {
+      "errorAmount": "Vui lòng nhập số tiền hợp lệ",
+      "errorNote": "Vui lòng nhập ghi chú",
+      "ctaAdd": "Thêm mục mới",
+      "successOne": "Tuyệt vời! Bạn đã thêm mục đầu tiên. Hãy thêm một mục nữa nhé.",
+      "typeLabel": "Loại giao dịch",
+      "typeIncome": "Doanh thu tiền mặt",
+      "typeExpense": "Chi phí tiền mặt",
+      "amountLabel": "Số tiền ({{symbol}})",
+      "descLabel": "Mô tả",
+      "descPlaceholder": "v.đ. Cắt tóc hoặc Mua cà phê",
+      "skipSecond": "Bỏ qua mục thứ hai"
+    },
+    "status": {
+      "expectedLabel": "Tiền mặt dự kiến trong két",
+      "incomeLabel": "Thu nhập hôm nay",
+      "expenseLabel": "Chi phí hôm nay",
+      "receiptMissing": "Nhắc nhở: Bạn vẫn chưa đính kèm biên lai đầu tiên. Bạn có thể đính kèm sau trong danh sách giao dịch tiền mặt.",
+      "workflowPaper": "Vì bạn đã dùng sổ tay, chế độ xem này sẽ thay thế việc tính toán thủ công.",
+      "workflowExcel": "Vì bạn đã dùng bảng tính, chế độ xem này giúp cập nhật tổng tiền mặt trực tiếp mà không cần công thức.",
+      "workflowPos": "Vì bạn dùng hệ thống POS, chế độ xem này giúp quản lý tiền mặt và biên lai tập trung tại một nơi.",
+      "workflowSoftware": "Vì bạn đã dùng phần mềm khác, chế độ xem này mang lại cái nhìn tổng quan hàng ngày về tiền mặt.",
+      "tipTitle": "Đây là trạng thái tiền mặt của bạn.",
+      "tipDesc": "Số dư dự kiến của bạn được tự động cập nhật mỗi khi bạn thêm một mục mới. Không còn phải tính toán thủ công vào cuối ngày.",
+      "cta": "Xem bước tiếp theo"
+    },
+    "closing": {
+      "watchTutorial": "Xem hướng dẫn 30 giây",
+      "skipLabel": "Tôi sẽ làm sau"
+    },
+    "postValue": {
+      "inviteTitle": "Mời nhóm của bạn",
+      "inviteDesc": "Cấp quyền cho nhân viên để thêm các giao dịch tiền mặt bằng ứng dụng máy tính bảng.",
+      "inviteAction": "Thêm thành viên",
+      "categoriesTitle": "Danh mục tùy chỉnh",
+      "categoriesDesc": "Thiết lập các danh mục thu chi tùy chỉnh để báo cáo tốt hơn.",
+      "categoriesAction": "Sửa danh mục",
+      "cta": "Chuyển đến bảng điều khiển"
+    }
+  },
   "actions": {
     "takeAttendance": "Điểm danh",
     "markDone": "Đánh dấu hoàn tất"
@@ -1260,11 +1343,14 @@
           "paymentMethod": "Phương thức thanh toán",
           "description": "Mô tả",
           "occurredAt": "Thời điểm phát sinh",
-          "attachBelegDocumentId": "Đính kèm document ID chứng từ (tùy chọn)",
-          "documentPlaceholder": "doc_...",
+          "attachBeleg": "Đính kèm chứng từ (tùy chọn)",
+          "chooseAttachment": "Chọn tệp",
+          "replaceAttachment": "Thay tệp",
+          "noAttachment": "Chưa chọn tệp",
           "projectedBalance": "Số dư dự kiến sau khi lưu",
           "failed": "Không thể tạo bút toán.",
-          "save": "Lưu bút toán"
+          "save": "Lưu bút toán",
+          "uploading": "Đang tải lên..."
         },
         "reverseDialog": {
           "title": "Đảo bút toán",
@@ -2090,6 +2176,7 @@
   "auth": {
     "signin": {
       "title": "Đăng nhập vào tài khoản của bạn",
+      "subtitle": "Đăng nhập để quản lý sổ quỹ và các thao tác trong ngày.",
       "rememberMe": "Ghi nhớ tôi",
       "forgotPassword": "Quên mật khẩu?",
       "cta": "Đăng nhập",
@@ -2098,6 +2185,7 @@
     },
     "signup": {
       "title": "Tạo tài khoản của bạn",
+      "subtitle": "Đăng ký để bắt đầu quản lý quy trình tiền mặt.",
       "cta": "Đăng ký",
       "creating": "Đang tạo tài khoản...",
       "hasAccount": "Đã có tài khoản?"
@@ -2121,10 +2209,12 @@
       "confirmLabel": "Xác nhận mật khẩu"
     },
     "fields": {
+      "fullName": "Họ và tên",
       "email": "Địa chỉ email",
       "password": "Mật khẩu"
     },
     "placeholders": {
+      "fullName": "Họ và tên",
       "email": "Địa chỉ email",
       "password": "Mật khẩu",
       "passwordMin": "Tối thiểu 6 ký tự"

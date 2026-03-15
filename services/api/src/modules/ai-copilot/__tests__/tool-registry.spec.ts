@@ -125,4 +125,21 @@ describe("ToolRegistry", () => {
       "collect_helper",
     ]);
   });
+
+  it("returns only cash-management and common tools in cash-management context", async () => {
+    const registry = new ToolRegistry([
+      mockTool("cash_get_status", "cash-management"),
+      mockTool("cash_close_day", "cash-management"),
+      mockTool("invoice_list", "invoices"),
+      mockTool("collect_helper"),
+    ]);
+
+    const tools = await registry.listForTenant("tenant-1", "cash-management");
+
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "cash_get_status",
+      "cash_close_day",
+      "collect_helper",
+    ]);
+  });
 });

@@ -73,6 +73,19 @@ export class PrismaCashRepository
     return this.mapRegister(row);
   }
 
+  async countDistinctLocationsForTenant(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<number> {
+    const rows = await this.client(tx).cashRegister.findMany({
+      where: { tenantId },
+      distinct: ["workspaceId"],
+      select: { workspaceId: true },
+    });
+
+    return rows.length;
+  }
+
   async listRegisters(
     tenantId: string,
     workspaceId: string,
@@ -233,6 +246,23 @@ export class PrismaCashRepository
     });
 
     return this.mapEntry(row);
+  }
+
+  async countEntriesForPeriod(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    tx?: TransactionContext
+  ): Promise<number> {
+    return this.client(tx).cashEntry.count({
+      where: {
+        tenantId,
+        occurredAt: {
+          gte: periodStart,
+          lt: periodEnd,
+        },
+      },
+    });
   }
 
   async listEntries(
@@ -587,6 +617,23 @@ export class PrismaCashRepository
     return rows.map((row) => this.mapAttachment(row));
   }
 
+  async countAttachmentsForPeriod(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    tx?: TransactionContext
+  ): Promise<number> {
+    return this.client(tx).cashEntryAttachment.count({
+      where: {
+        tenantId,
+        createdAt: {
+          gte: periodStart,
+          lt: periodEnd,
+        },
+      },
+    });
+  }
+
   async listAttachmentsForMonth(
     tenantId: string,
     workspaceId: string,
@@ -657,6 +704,25 @@ export class PrismaCashRepository
         tenantId,
         workspaceId,
       },
+    });
+
+    return row ? this.mapArtifact(row) : null;
+  }
+
+  async findLatestArtifact(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    month?: string
+  ): Promise<CashExportArtifactEntity | null> {
+    const row = await this.prisma.cashExportArtifact.findFirst({
+      where: {
+        tenantId,
+        workspaceId,
+        registerId,
+        ...(month ? { month } : {}),
+      },
+      orderBy: [{ createdAt: "desc" }],
     });
 
     return row ? this.mapArtifact(row) : null;

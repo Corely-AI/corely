@@ -1,8 +1,9 @@
 import { test as base, expect } from "@playwright/test";
-import { seedTestData, resetTestData, type TestData } from "../utils/testData";
+import { seedTestData, resetTestData, seedHostAdminData, type TestData } from "../utils/testData";
 
 type TestFixtures = {
   testData: TestData;
+  hostAdminData: TestData;
 };
 
 export const test = base.extend<TestFixtures>({
@@ -23,6 +24,14 @@ export const test = base.extend<TestFixtures>({
     } catch (error) {
       console.warn("Failed to reset test data:", error);
     }
+  },
+  hostAdminData: async ({ page: _page }, use) => {
+    const data = await seedHostAdminData();
+    if (!data) {
+      throw new Error("Failed to seed host admin data");
+    }
+    await use(data);
+    // Note: host admin doesn't have a single tenant to reset normally
   },
 });
 

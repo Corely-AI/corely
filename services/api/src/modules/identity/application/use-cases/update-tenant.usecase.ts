@@ -39,22 +39,42 @@ export class UpdateTenantUseCase {
       throw new NotFoundError(`Tenant with ID ${command.tenantId} not found`);
     }
 
-    const updatedTenant = Tenant.restore({
+    if (command.input.status) {
+      tenant.updateDetails(undefined, undefined, command.input.status);
+    }
+
+    if (
+      command.input.plan !== undefined ||
+      command.input.planStatus !== undefined ||
+      command.input.billingMethod !== undefined ||
+      command.input.billingNote !== undefined
+    ) {
+      tenant.updateManualPlan(
+        command.input.plan !== undefined ? command.input.plan : tenant.getPlan(),
+        command.input.planStatus !== undefined ? command.input.planStatus : tenant.getPlanStatus(),
+        command.input.billingMethod !== undefined
+          ? command.input.billingMethod
+          : tenant.getBillingMethod(),
+        command.input.billingNote !== undefined
+          ? command.input.billingNote
+          : tenant.getBillingNote(),
+        ctx.userId!
+      );
+    }
+
+    await this.tenantRepo.update(tenant);
+
+    return {
       id: tenant.getId(),
       name: tenant.getName(),
       slug: tenant.getSlug(),
-      status: command.input.status,
-      createdAt: tenant.getCreatedAt(),
-      timeZone: tenant.getTimeZone(),
-    });
-
-    await this.tenantRepo.update(updatedTenant);
-
-    return {
-      id: updatedTenant.getId(),
-      name: updatedTenant.getName(),
-      slug: updatedTenant.getSlug(),
-      status: updatedTenant.getStatus() as TenantStatus,
+      status: tenant.getStatus() as TenantStatus,
+      plan: tenant.getPlan() as any,
+      planStatus: tenant.getPlanStatus() as any,
+      billingMethod: tenant.getBillingMethod() as any,
+      billingNote: tenant.getBillingNote(),
+      planUpdatedAt: tenant.getPlanUpdatedAt()?.toISOString() ?? null,
+      planUpdatedBy: tenant.getPlanUpdatedBy(),
     };
   }
 }

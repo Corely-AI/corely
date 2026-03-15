@@ -95,6 +95,22 @@ import { StartIncomeTaxDraftPdfExportUseCase } from "../tax/application/use-case
 import { PollIncomeTaxDraftPdfExportUseCase } from "../tax/application/use-cases/poll-income-tax-draft-pdf-export.use-case";
 import { ConfirmIncomeTaxDraftSubmissionUseCase } from "../tax/application/use-cases/confirm-income-tax-draft-submission.use-case";
 import { buildTaxAnnualFilingTools } from "../tax/adapters/tools/tax-annual-filing.tools";
+import { CashManagementModule } from "../cash-management/cash-management.module";
+import { ListCashRegistersQueryUseCase } from "../cash-management/application/use-cases/list-cash-registers.query";
+import { GetCashRegisterQueryUseCase } from "../cash-management/application/use-cases/get-cash-register.query";
+import { ListCashEntriesQueryUseCase } from "../cash-management/application/use-cases/list-cash-entries.query";
+import { GetCashEntryQueryUseCase } from "../cash-management/application/use-cases/get-cash-entry.query";
+import { CreateCashEntryUseCase } from "../cash-management/application/use-cases/create-cash-entry.usecase";
+import { ReverseCashEntryUseCase } from "../cash-management/application/use-cases/reverse-cash-entry.usecase";
+import { GetCashDayCloseQueryUseCase } from "../cash-management/application/use-cases/get-cash-day-close.query";
+import { SaveCashDayCountUseCase } from "../cash-management/application/use-cases/save-cash-day-count.usecase";
+import { SubmitCashDayCloseUseCase } from "../cash-management/application/use-cases/submit-cash-day-close.usecase";
+import { ListCashDayClosesQueryUseCase } from "../cash-management/application/use-cases/list-cash-day-closes.query";
+import { AttachBelegToCashEntryUseCase } from "../cash-management/application/use-cases/attach-beleg-to-cash-entry.usecase";
+import { ListCashEntryAttachmentsQueryUseCase } from "../cash-management/application/use-cases/list-cash-entry-attachments.query";
+import { ExportCashBookUseCase } from "../cash-management/application/use-cases/export-cash-book.usecase";
+import { buildCashManagementTools } from "../cash-management/adapters/tools/cash-management.tools";
+import { BillingModule } from "../billing/billing.module";
 
 @Module({
   imports: [
@@ -110,6 +126,8 @@ import { buildTaxAnnualFilingTools } from "../tax/adapters/tools/tax-annual-fili
     ClassesModule,
     ExpensesModule,
     DocumentsModule,
+    CashManagementModule,
+    BillingModule,
     TaxModule,
     PlatformEntitlementsModule,
     PromptModule,
@@ -246,6 +264,19 @@ import { buildTaxAnnualFilingTools } from "../tax/adapters/tools/tax-annual-fili
         bulkUpsertAttendance: BulkUpsertAttendanceUseCase,
         createExpense: CreateExpenseUseCase,
         documentsApp: DocumentsApplication,
+        listCashRegisters: ListCashRegistersQueryUseCase,
+        getCashRegister: GetCashRegisterQueryUseCase,
+        listCashEntries: ListCashEntriesQueryUseCase,
+        getCashEntry: GetCashEntryQueryUseCase,
+        createCashEntry: CreateCashEntryUseCase,
+        reverseCashEntry: ReverseCashEntryUseCase,
+        getCashDayClose: GetCashDayCloseQueryUseCase,
+        saveCashDayCount: SaveCashDayCountUseCase,
+        submitCashDayClose: SubmitCashDayCloseUseCase,
+        listCashDayCloses: ListCashDayClosesQueryUseCase,
+        attachCashBeleg: AttachBelegToCashEntryUseCase,
+        listCashEntryAttachments: ListCashEntryAttachmentsQueryUseCase,
+        exportCashBook: ExportCashBookUseCase,
         createIncomeTaxDraft: CreateIncomeTaxDraftUseCase,
         getIncomeTaxDraft: GetIncomeTaxDraftUseCase,
         generateIncomeTaxDraftEur: GenerateIncomeTaxDraftEurUseCase,
@@ -305,6 +336,25 @@ import { buildTaxAnnualFilingTools } from "../tax/adapters/tools/tax-annual-fili
           ),
           ...withAppId("expenses", buildExpenseTools(createExpense, documentsApp)),
           ...withAppId(
+            "cash-management",
+            buildCashManagementTools({
+              listRegisters: listCashRegisters,
+              getRegister: getCashRegister,
+              listEntries: listCashEntries,
+              getEntry: getCashEntry,
+              createEntry: createCashEntry,
+              reverseEntry: reverseCashEntry,
+              getDayClose: getCashDayClose,
+              saveDayCount: saveCashDayCount,
+              submitDayClose: submitCashDayClose,
+              listDayCloses: listCashDayCloses,
+              attachBeleg: attachCashBeleg,
+              listAttachments: listCashEntryAttachments,
+              exportCashBook,
+              documentsApp,
+            })
+          ),
+          ...withAppId(
             "tax",
             buildTaxAnnualFilingTools({
               createDraft: createIncomeTaxDraft,
@@ -341,6 +391,19 @@ import { buildTaxAnnualFilingTools } from "../tax/adapters/tools/tax-annual-fili
         BulkUpsertAttendanceUseCase,
         CreateExpenseUseCase,
         DocumentsApplication,
+        ListCashRegistersQueryUseCase,
+        GetCashRegisterQueryUseCase,
+        ListCashEntriesQueryUseCase,
+        GetCashEntryQueryUseCase,
+        CreateCashEntryUseCase,
+        ReverseCashEntryUseCase,
+        GetCashDayCloseQueryUseCase,
+        SaveCashDayCountUseCase,
+        SubmitCashDayCloseUseCase,
+        ListCashDayClosesQueryUseCase,
+        AttachBelegToCashEntryUseCase,
+        ListCashEntryAttachmentsQueryUseCase,
+        ExportCashBookUseCase,
         CreateIncomeTaxDraftUseCase,
         GetIncomeTaxDraftUseCase,
         GenerateIncomeTaxDraftEurUseCase,

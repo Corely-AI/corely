@@ -87,6 +87,59 @@ export async function seedTestData(): Promise<TestData | null> {
 }
 
 /**
+ * Seeds a host admin user for platform management testing
+ */
+export async function seedHostAdminData(): Promise<TestData | null> {
+  const email = buildTestEmail();
+
+  try {
+    const response = await apiClient.post<SeedResponse>("/test/seed-host-admin", {
+      email,
+      password: TEST_PASSWORD,
+    });
+
+    return {
+      tenant: {
+        id: "", // Host admin has no tenantId
+        name: "Platform",
+      },
+      workspace: {
+        id: "",
+      },
+      user: {
+        id: response.userId,
+        email,
+        password: TEST_PASSWORD,
+        name: response.userName,
+      },
+    };
+  } catch (error) {
+    console.error("Failed to seed host admin data:", error);
+    return null;
+  }
+}
+
+/**
+ * Seeds multiple platform tenants for list testing
+ */
+export async function seedPlatformTenants(
+  count: number = 3
+): Promise<Array<{ id: string; name: string }>> {
+  try {
+    const response = await apiClient.post<{ tenants: Array<{ id: string; name: string }> }>(
+      "/test/seed-platform-tenants",
+      {
+        count,
+      }
+    );
+    return response.tenants;
+  } catch (error) {
+    console.error("Failed to seed platform tenants:", error);
+    return [];
+  }
+}
+
+/**
  * Resets tenant-scoped test data (called before each test)
  */
 export async function resetTestData(tenantId: string): Promise<void> {

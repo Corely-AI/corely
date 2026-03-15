@@ -18,11 +18,11 @@ model Expense {
   updatedAt        DateTime      @updatedAt @db.Timestamptz(6)
 
   // DE income-tax deductibility (computed on create/update)
-  deductiblePercent         Int?
-  deductibleAmountCents     Int?
-  nonDeductibleAmountCents  Int?
-  deductibilityRuleKind     String?
-  deductibilityMeta         Json?
+  deductiblePercent        Int?
+  deductibleAmountCents    Int?
+  nonDeductibleAmountCents Int?
+  deductibilityRuleKind    String?
+  deductibilityMeta        Json?
 
   lines ExpenseLine[]
 
@@ -32,7 +32,6 @@ model Expense {
   @@index([tenantId, archivedAt])
   @@schema("billing")
 }
-
 
 model ExpenseLine {
   id             String   @id @default(cuid())

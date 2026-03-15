@@ -6,6 +6,7 @@ import { OutboxPollerService } from "../modules/outbox/outbox-poller.service";
 import { InvoiceReminderRunnerService } from "../modules/invoices/invoice-reminder-runner.service";
 import { MonthlyBillingRunnerService } from "../modules/classes/monthly-billing-runner.service";
 import { SequencesSweeperRunnerService } from "../modules/crm/sequences-sweeper.runner";
+import { TrialExpiryRunnerService } from "../modules/billing/trial-expiry-runner.service";
 import { v4 as uuidv4 } from "uuid";
 
 export interface TickRunSummary {
@@ -41,10 +42,13 @@ export class TickOrchestrator {
     private readonly classesBillingRunner: MonthlyBillingRunnerService,
     @Optional()
     @Inject(SequencesSweeperRunnerService)
-    private readonly sequenceSweepRunner: SequencesSweeperRunnerService
+    private readonly sequenceSweepRunner: SequencesSweeperRunnerService,
+    @Optional()
+    @Inject(TrialExpiryRunnerService)
+    private readonly trialExpiryRunner: TrialExpiryRunnerService
   ) {
     this.logger.log(
-      `[init] TickOrchestrator created — outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}, sequenceSweepRunner=${!!this.sequenceSweepRunner}`
+      `[init] TickOrchestrator created — outboxRunner=${!!this.outboxRunner}, invoiceRunner=${!!this.invoiceRunner}, classesBillingRunner=${!!this.classesBillingRunner}, sequenceSweepRunner=${!!this.sequenceSweepRunner}, trialExpiryRunner=${!!this.trialExpiryRunner}`
     );
 
     // Register available runners
@@ -53,6 +57,7 @@ export class TickOrchestrator {
       this.invoiceRunner,
       this.classesBillingRunner,
       this.sequenceSweepRunner,
+      this.trialExpiryRunner,
     ];
     for (const runner of candidates) {
       if (runner) {
@@ -77,7 +82,7 @@ export class TickOrchestrator {
     const startedAt = new Date();
 
     const defaultRunnerNames = (
-      this.env.WORKER_TICK_RUNNERS || "outbox,invoiceReminders,classesBilling"
+      this.env.WORKER_TICK_RUNNERS || "outbox,invoiceReminders,classesBilling,billingTrials"
     )
       .split(",")
       .map((s) => s.trim())

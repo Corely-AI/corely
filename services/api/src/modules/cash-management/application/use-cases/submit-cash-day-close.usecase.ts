@@ -10,6 +10,7 @@ import {
   BaseUseCase,
   OUTBOX_PORT,
   UNIT_OF_WORK,
+  ForbiddenError,
   NotFoundError,
   ValidationError,
   type AuditPort,
@@ -36,6 +37,8 @@ import {
 } from "@/shared/ports/idempotency-storage.port";
 import { getIdempotentBody, storeIdempotentBody } from "./idempotency";
 import { assertCanCloseCash } from "../../policies/assert-cash-policies";
+import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
+import { getCashBillingBoolean, loadCashBillingState } from "./billing-guards";
 
 const ACTION_KEY = "cash-management.day-close.submit";
 
@@ -52,6 +55,8 @@ export class SubmitCashDayCloseUseCase extends BaseUseCase<
     private readonly entryRepo: CashEntryRepoPort,
     @Inject(CASH_DAY_CLOSE_REPO)
     private readonly dayCloseRepo: CashDayCloseRepoPort,
+    @Inject(BILLING_ACCESS_PORT)
+    private readonly billingAccess: BillingAccessPort,
     @Inject(AUDIT_PORT)
     private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT)
@@ -89,6 +94,17 @@ export class SubmitCashDayCloseUseCase extends BaseUseCase<
     });
     if (cached) {
       return ok(cached);
+    }
+
+    const billingState = await loadCashBillingState(this.billingAccess, tenantId);
+    if (!getCashBillingBoolean(billingState.entitlements, "dailyClosing")) {
+      throw new ForbiddenError(
+        "Daily closing is available on Starter and higher plans",
+        {
+          planCode: billingState.subscription.planCode,
+        },
+        "CashManagement:DailyClosingUnavailable"
+      );
     }
 
     const register = await this.registerRepo.findRegisterById(

@@ -26,5 +26,12 @@
       "@corely/ui": ["../ui/src/index.ts"]
     }
   },
-  "include": ["src", "../api-client/src", "../auth-client/src", "../contracts/src", "../ui/src"]
+  "include": [
+    "src",
+    "../api-client/src",
+    "../auth-client/src",
+    "../contracts/src",
+    "../ui/src",
+    "../web-shared/src"
+  ]
 }

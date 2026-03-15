@@ -6,6 +6,7 @@ export interface SignUpData {
   password: string;
   tenantName?: string;
   userName?: string;
+  fullName?: string;
 }
 
 export interface SignInData {
@@ -106,7 +107,10 @@ export class AuthClient {
       const result = await request<AuthResponse>({
         url: `${this.apiUrl}/auth/signup`,
         method: "POST",
-        body: data,
+        body: {
+          ...data,
+          userName: data.userName ?? data.fullName,
+        },
         idempotencyKey: createIdempotencyKey(),
       });
       await this.storeTokens(result.accessToken, result.refreshToken);
@@ -151,10 +155,12 @@ export class AuthClient {
     }
 
     try {
+      const workspaceId = await this.storage.getActiveWorkspaceId();
       return await request<CurrentUserResponse>({
         url: `${this.apiUrl}/auth/me`,
         method: "GET",
         accessToken: this.accessToken,
+        workspaceId: workspaceId ?? undefined,
       });
     } catch (error) {
       const normalized = normalizeError(error);

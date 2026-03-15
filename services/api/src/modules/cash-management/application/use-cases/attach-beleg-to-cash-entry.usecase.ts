@@ -5,6 +5,7 @@ import {
   BaseUseCase,
   OUTBOX_PORT,
   UNIT_OF_WORK,
+  ForbiddenError,
   NotFoundError,
   ValidationError,
   type AuditPort,
@@ -31,6 +32,9 @@ import {
 } from "@/shared/ports/idempotency-storage.port";
 import { getIdempotentBody, storeIdempotentBody } from "./idempotency";
 import { assertCanManageCash } from "../../policies/assert-cash-policies";
+import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
+import { getCashBillingNumber, loadCashBillingState } from "./billing-guards";
+import { CashManagementBillingMetricKeys, CashManagementProductKey } from "@corely/contracts";
 
 const ACTION_KEY = "cash-management.entry.attach-beleg";
 
@@ -47,6 +51,8 @@ export class AttachBelegToCashEntryUseCase extends BaseUseCase<
     private readonly attachmentRepo: CashAttachmentRepoPort,
     @Inject(CASH_DOCUMENTS_PORT)
     private readonly documentsPort: DocumentsPort,
+    @Inject(BILLING_ACCESS_PORT)
+    private readonly billingAccess: BillingAccessPort,
     @Inject(AUDIT_PORT)
     private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT)
@@ -116,6 +122,30 @@ export class AttachBelegToCashEntryUseCase extends BaseUseCase<
       return ok(response);
     }
 
+    const billingState = await loadCashBillingState(this.billingAccess, tenantId);
+    const receiptsUsed = await this.attachmentRepo.countAttachmentsForPeriod(
+      tenantId,
+      billingState.periodStart,
+      billingState.periodEnd
+    );
+    const maxReceiptsPerMonth = getCashBillingNumber(
+      billingState.entitlements,
+      "maxReceiptsPerMonth"
+    );
+    if (maxReceiptsPerMonth !== null && receiptsUsed >= maxReceiptsPerMonth) {
+      throw new ForbiddenError(
+        "Your current plan has reached the monthly receipt limit",
+        {
+          limit: maxReceiptsPerMonth,
+          used: receiptsUsed,
+          planCode: billingState.subscription.planCode,
+          periodStart: billingState.periodStart.toISOString(),
+          periodEnd: billingState.periodEnd.toISOString(),
+        },
+        "CashManagement:ReceiptLimitReached"
+      );
+    }
+
     const attachment = await this.unitOfWork.withinTransaction(async (tx) => {
       const created = await this.attachmentRepo.createAttachment(
         {
@@ -154,6 +184,14 @@ export class AttachBelegToCashEntryUseCase extends BaseUseCase<
           },
           correlationId: ctx.correlationId,
         },
+        tx
+      );
+
+      await this.billingAccess.recordUsage(
+        tenantId,
+        CashManagementProductKey,
+        CashManagementBillingMetricKeys.receipts,
+        1,
         tx
       );
 

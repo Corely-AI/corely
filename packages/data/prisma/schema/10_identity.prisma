@@ -8,6 +8,14 @@ model Tenant {
   timeZone  String   @default("UTC")
   createdAt DateTime @default(now()) @db.Timestamptz(6)
 
+  // Manual Plan/Billing
+  plan          String?
+  planStatus    String?
+  billingMethod String?
+  billingNote   String?
+  planUpdatedAt DateTime? @db.Timestamptz(6)
+  planUpdatedBy String?
+
   // Relations
   memberships          Membership[]
   roles                Role[]
@@ -18,15 +26,20 @@ model Tenant {
   rolePermissionGrants RolePermissionGrant[]
 
   // Platform (Apps + Templates + Packs) relations
-  appInstalls      TenantAppInstall[]
-  templateInstalls TenantTemplateInstall[]
-  packInstalls     TenantPackInstall[]
-  menuOverrides    TenantMenuOverride[]
-  featureOverrides TenantFeatureOverride[]
-  seededRecordMeta SeededRecordMeta[]
-  cashRegisters    CashRegister[]
-  cashEntries      CashEntry[]
-  cashDayCloses    CashDayClose[]
+  appInstalls           TenantAppInstall[]
+  templateInstalls      TenantTemplateInstall[]
+  packInstalls          TenantPackInstall[]
+  menuOverrides         TenantMenuOverride[]
+  featureOverrides      TenantFeatureOverride[]
+  seededRecordMeta      SeededRecordMeta[]
+  cashRegisters         CashRegister[]
+  cashEntries           CashEntry[]
+  cashDayCloses         CashDayClose[]
+  billingAccounts       BillingAccount[]
+  billingSubscriptions  BillingSubscription[]
+  billingTrials         BillingTrial[]
+  billingUsageCounters  BillingUsageCounter[]
+  billingProviderEvents BillingProviderEvent[]
 
   @@index([createdAt])
   @@schema("identity")

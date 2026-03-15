@@ -19,6 +19,7 @@ import {
   CreateCashEntryInputSchema,
   CreateCashRegisterSchema,
   ExportCashBookInputSchema,
+  GetCashDashboardQuerySchema,
   ListCashDayClosesQuerySchema,
   ListCashEntriesQuerySchema,
   ListCashRegistersQuerySchema,
@@ -47,6 +48,7 @@ import { ListCashEntryAttachmentsQueryUseCase } from "../application/use-cases/l
 import { ExportCashBookUseCase } from "../application/use-cases/export-cash-book.usecase";
 import { ListCashDayClosesQueryUseCase } from "../application/use-cases/list-cash-day-closes.query";
 import { GetCashExportArtifactQueryUseCase } from "../application/use-cases/get-cash-export-artifact.query";
+import { GetCashDashboardQueryUseCase } from "../application/use-cases/get-cash-dashboard.query";
 
 @Controller()
 @UseGuards(AuthGuard)
@@ -65,7 +67,8 @@ export class CashManagementController {
     private readonly attachBelegUseCase: AttachBelegToCashEntryUseCase,
     private readonly listAttachmentsQuery: ListCashEntryAttachmentsQueryUseCase,
     private readonly exportCashBookUseCase: ExportCashBookUseCase,
-    private readonly getExportArtifactQuery: GetCashExportArtifactQueryUseCase
+    private readonly getExportArtifactQuery: GetCashExportArtifactQueryUseCase,
+    private readonly getCashDashboardQuery: GetCashDashboardQueryUseCase
   ) {}
 
   @Get("cash-registers")
@@ -183,6 +186,18 @@ export class CashManagementController {
   ) {
     const ctx = buildUseCaseContext(req);
     const result = await this.getDayCloseQuery.execute({ registerId, dayKey }, ctx);
+    return mapResultToHttp(result);
+  }
+
+  @Get("cash-registers/:id/dashboard")
+  async getCashDashboard(
+    @Req() req: ContextAwareRequest,
+    @Param("id") registerId: string,
+    @Query() query: Record<string, unknown>
+  ) {
+    const ctx = buildUseCaseContext(req);
+    const parsed = GetCashDashboardQuerySchema.parse({ ...query, registerId });
+    const result = await this.getCashDashboardQuery.execute(parsed, ctx);
     return mapResultToHttp(result);
   }
 

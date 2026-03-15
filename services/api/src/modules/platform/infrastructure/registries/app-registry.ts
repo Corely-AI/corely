@@ -13,6 +13,7 @@ import { partyAppManifest } from "../../../party/party.manifest";
 import { aiCopilotAppManifest } from "../../../ai-copilot/ai-copilot.manifest";
 import { taxAppManifest } from "../../../tax/tax.manifest";
 import { cashManagementAppManifest } from "../../../cash-management/cash-management.manifest";
+import { billingAppManifest } from "../../../billing/billing.manifest";
 import { salesAppManifest } from "../../../sales/sales.manifest";
 import { workspacesAppManifest } from "../../../workspaces/workspaces.manifest";
 import { purchasingAppManifest } from "../../../purchasing/purchasing.manifest";
@@ -104,6 +105,7 @@ export class AppRegistry implements AppRegistryPort {
     this.register(aiCopilotAppManifest);
     this.register(taxAppManifest);
     this.register(cashManagementAppManifest);
+    this.register(billingAppManifest);
     this.register(salesAppManifest);
     this.register(workspacesAppManifest);
     this.register(purchasingAppManifest);

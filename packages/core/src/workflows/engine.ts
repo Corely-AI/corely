@@ -197,7 +197,9 @@ export function applyWorkflowEvents(
     }
 
     if (eventActions.length) {
-      actions.push(...eventActions);
+      for (const action of eventActions) {
+        actions.push(action);
+      }
     }
 
     current = {
