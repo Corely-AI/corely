@@ -17,7 +17,7 @@ import {
   CreateBillingPortalSessionInputSchema,
   StartBillingTrialInputSchema,
 } from "@corely/contracts";
-import { AuthGuard } from "../../identity";
+import { AuthGuard } from "../../identity/adapters/http/auth.guard";
 import { buildUseCaseContext, mapResultToHttp } from "@/shared/http/usecase-mappers";
 import type { ContextAwareRequest } from "@/shared/request-context";
 import { GetBillingCurrentQueryUseCase } from "../application/use-cases/get-billing-current.query";
