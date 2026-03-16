@@ -6,6 +6,7 @@ import { Button } from "@corely/ui";
 import { Input } from "@corely/ui";
 import { Label } from "@corely/ui";
 import { Card, CardContent } from "@corely/ui";
+import { normalizeError } from "@corely/api-client";
 
 /**
  * Login Page
@@ -13,7 +14,7 @@ import { Card, CardContent } from "@corely/ui";
 export const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { signin, error: authError } = useAuth();
+  const { signin } = useAuth();
   const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState("");
@@ -90,19 +91,17 @@ export const LoginPage: React.FC = () => {
 
       navigate("/");
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      if (message === "Failed to fetch") {
-        setError(t("auth.errors.networkError"));
-      } else {
-        setError(t("auth.errors.loginFailed"));
-      }
+      const apiError = normalizeError(err);
+      const message = apiError.isNetworkError
+        ? t("auth.errors.networkError")
+        : apiError.detail || t("auth.errors.loginFailed");
+      setError(message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const displayError =
-    error || (authError === "Failed to fetch" ? t("auth.errors.networkError") : authError);
+  const displayError = error;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 py-12 px-4 sm:px-6 lg:px-8">

@@ -48,7 +48,7 @@
     },
     "reset": "Đặt lại",
     "name": "Tên",
-    "email": "Email",
+    "email": "Địa chỉ email",
     "phone": "Số điện thoại",
     "notes": "Ghi chú",
     "details": "Chi tiết",
@@ -87,7 +87,7 @@
     "goBack": "Quay lại",
     "phoneShort": "SĐT",
     "emailShort": "Email",
-    "website": "Website",
+    "website": "Trang web",
     "bank": "Ngân hàng",
     "iban": "IBAN",
     "default": "Mặc định",
@@ -95,7 +95,20 @@
     "updated": "Đã cập nhật",
     "notSet": "Chưa thiết lập",
     "done": "Xong",
-    "customFields": "Trường tùy chỉnh"
+    "customFields": "Trường tùy chỉnh",
+    "trial": {
+      "activeTitle": "Dùng thử toàn quyền đang hoạt động: còn {{days}} ngày",
+      "expiringTitle": "Còn {{days}} ngày trong bản dùng thử toàn quyền của bạn",
+      "description": "Không cần thẻ. Chọn gói trả phí trước khi kết thúc dùng thử để duy trì quyền xuất dữ liệu, AI và truy cập nhiều địa điểm.",
+      "cta": "Mở thanh toán",
+      "expiredTitle": "Bản dùng thử 30 ngày của bạn đã kết thúc",
+      "expiredDescription": "Nâng cấp ngay để tiếp tục sử dụng tất cả các tính năng.",
+      "dismiss": "Đóng",
+      "modalTitle": "Bản dùng thử 30 ngày toàn quyền của bạn đã kết thúc",
+      "modalDescription": "Không gian làm việc của bạn hiện sử dụng gói Miễn phí. Dữ liệu lịch sử vẫn khả dụng, nhưng các tính năng xuất dữ liệu, AI và đa địa điểm sẽ bị khóa cho đến khi bạn đăng ký.",
+      "modalLater": "Để sau",
+      "choosePlan": "Chọn gói"
+    }
   },
   "onboarding": {
     "allSet": "Tất cả đã sẵn sàng!",
@@ -104,6 +117,8 @@
     "goBack": "Quay lại",
     "loading": "Đang tải quá trình thiết lập...",
     "aiAssistant": "Trợ lý AI",
+    "aiTipTitle": "Trợ lý hỗ trợ",
+    "aiHelpTitle": "Bạn cần trợ giúp?",
     "aiHelpPrompt": "Cần trợ giúp với bước này? Hãy hỏi trợ lý AI của chúng tôi để giải thích hoặc gợi ý bước tiếp theo.",
     "askAssistant": "Hỏi trợ lý",
     "businessName": "Tên doanh nghiệp",
@@ -122,9 +137,21 @@
     },
     "workflowOptions": {
       "paper": "Giấy / Sổ tay",
+      "paperDesc": "Chuyển từ sổ tay thủ công sang kỹ thuật số.",
       "excel": "Excel / Bảng tính",
+      "excelDesc": "Không còn các công thức phức tạp hay ô lỗi.",
       "pos": "Hệ thống POS",
-      "software": "Phần mềm khác"
+      "posDesc": "Kết nối liền mạch POS và sổ quỹ tiền mặt của bạn.",
+      "software": "Phần mềm khác",
+      "softwareDesc": "Nâng cấp lên giải pháp tiền mặt hiện đại hơn."
+    },
+    "workflow": {
+      "insightTitle": "Thông tin cá nhân hóa",
+      "selectHint": "Chọn quy trình trước đây của bạn"
+    },
+    "welcome": {
+      "badge": "Trải nghiệm mới",
+      "footer": "Hỗ trợ bởi Corely AI"
     },
     "receipt": {
       "errorUnsupported": "Tệp không được hỗ trợ. Vui lòng tải lên PDF, JPG hoặc PNG dưới 10MB.",
@@ -138,12 +165,14 @@
     "openingBalance": {
       "errorAmount": "Vui lòng nhập số tiền hợp lệ",
       "label": "Số tiền mặt thực tế hiện có trong két",
-      "hint": "💡 Không bao gồm thanh toán thẻ hoặc chuyển khoản ngân hàng. Chỉ tính tiền mặt vật lý."
+      "hint": "💡 Không bao gồm thanh toán thẻ hoặc chuyển khoản ngân hàng. Chỉ tính tiền mặt vật lý.",
+      "importantTip": "Mẹo quan trọng"
     },
     "entries": {
       "errorAmount": "Vui lòng nhập số tiền hợp lệ",
       "errorNote": "Vui lòng nhập ghi chú",
       "ctaAdd": "Thêm mục mới",
+      "successTitle": "Giao dịch đã lưu",
       "successOne": "Tuyệt vời! Bạn đã thêm mục đầu tiên. Hãy thêm một mục nữa nhé.",
       "typeLabel": "Loại giao dịch",
       "typeIncome": "Doanh thu tiền mặt",
@@ -162,6 +191,7 @@
       "workflowExcel": "Vì bạn đã dùng bảng tính, chế độ xem này giúp cập nhật tổng tiền mặt trực tiếp mà không cần công thức.",
       "workflowPos": "Vì bạn dùng hệ thống POS, chế độ xem này giúp quản lý tiền mặt và biên lai tập trung tại một nơi.",
       "workflowSoftware": "Vì bạn đã dùng phần mềm khác, chế độ xem này mang lại cái nhìn tổng quan hàng ngày về tiền mặt.",
+      "receiptReminder": "Nhắc nhở hóa đơn",
       "tipTitle": "Đây là trạng thái tiền mặt của bạn.",
       "tipDesc": "Số dư dự kiến của bạn được tự động cập nhật mỗi khi bạn thêm một mục mới. Không còn phải tính toán thủ công vào cuối ngày.",
       "cta": "Xem bước tiếp theo"
@@ -2980,5 +3010,228 @@
     "manage": "Quản lý",
     "confirmDeactivate": "Bạn có chắc chắn muốn hủy kích hoạt tổ chức này không? Người dùng sẽ không thể đăng nhập được nữa.",
     "confirmActivate": "Bạn có chắc chắn muốn kích hoạt tổ chức này không?"
+  },
+  "billing": {
+    "title": "Gói và thanh toán",
+    "subtitle": "Gói hiện tại, mức sử dụng sổ quỹ, và hướng nâng cấp tiếp theo cho tiệm.",
+    "currentPlan": "Gói hiện tại",
+    "planStatus": "Trạng thái gói",
+    "billingActions": "Tác vụ thanh toán",
+    "usage": "Sử dụng trong kỳ này",
+    "planCatalog": "Các gói hiện có",
+    "manageBilling": "Quản lý thanh toán",
+    "upgradePlan": "Nâng cấp gói",
+    "currentPlanBadge": "Gói hiện tại",
+    "noLimit": "Không giới hạn",
+    "billedMonthly": "Tính phí hàng tháng",
+    "active": "Đang hoạt động",
+    "period": "Kỳ hiện tại",
+    "unavailable": "Không có trong gói này",
+    "loading": "Đang tải thông tin thanh toán...",
+    "loadFailed": "Không thể tải thông tin thanh toán lúc này.",
+    "openPortalDescription": "Mở cổng thanh toán để cập nhật thẻ hoặc quản lý đăng ký.",
+    "checkoutDescription": "Nâng cấp qua Stripe Checkout được lưu trữ. Corely vẫn giữ catalog gói và logic sử dụng.",
+    "featureAccess": "Quyền truy cập tính năng",
+    "recommendedTitle": "Cần thêm giới hạn?",
+    "recommendedDescription": "Nâng cấp khi tiệm cần xuất dữ liệu, trợ lý AI, hoặc nhiều địa điểm.",
+    "startTrial": "Bắt đầu dùng thử 30 ngày",
+    "trialTitle": "Bắt đầu 30 ngày dùng thử đầy đủ",
+    "noCardRequired": "Không cần thẻ",
+    "trialDescription": "Workspace được mở đầy đủ tính năng Multi-location trong 30 ngày, sau đó sẽ trở về gói Free nếu chưa đăng ký.",
+    "trialActive": "Còn {{daysRemaining}} ngày trong dùng thử đầy đủ tính năng.",
+    "trialExpiring": "Còn {{daysRemaining}} ngày. Hãy chọn gói ngay bây giờ để giữ xuất dữ liệu, AI, và nhiều địa điểm.",
+    "trialExpired": "Dùng thử đầy đủ đã kết thúc",
+    "trialExpiredDescription": "Workspace hiện đã trở về gói Free. Dữ liệu cũ vẫn được giữ, nhưng xuất dữ liệu, AI và địa điểm bổ sung đã bị khóa cho tới khi đăng ký.",
+    "upgradeNow": "Chọn gói",
+    "afterTrialTitle": "Sau dùng thử sẽ thay đổi gì",
+    "afterTrialDescription": "Corely vẫn giữ toàn bộ dữ liệu cũ. Sau 30 ngày, workspace chuyển về Free và mức sử dụng mới theo giới hạn tháng của Free.",
+    "trialStarted": "Đã bắt đầu dùng thử",
+    "trialStartFailed": "Không thể bắt đầu dùng thử lúc này.",
+    "usageLabels": {
+      "usedOf": "Đã dùng {{used}} / {{limit}}",
+      "currentPeriod": "Kỳ hiện tại"
+    },
+    "featureLabels": {
+      "maxLocations": "Địa điểm",
+      "maxEntriesPerMonth": "Bút toán tiền mặt",
+      "maxReceiptsPerMonth": "Hóa đơn",
+      "canExport": "Xuất tháng",
+      "dailyClosing": "Đóng sổ hàng ngày",
+      "aiAssistant": "Trợ lý AI",
+      "multilingualAiHelp": "AI đa ngôn ngữ",
+      "issueDetection": "Phát hiện vấn đề",
+      "closingGuidance": "Hướng dẫn đóng ngày",
+      "teamAccess": "Truy cập nhóm",
+      "consolidatedOverview": "Tổng quan hợp nhất"
+    }
+  },
+  "cashDashboard": {
+    "headerTitle": "Bảng điều khiển tiền mặt",
+    "headerSubtitle": "Kiểm soát tiền mặt và hóa đơn hàng ngày cho salon.",
+    "previewLabel": "Trạng thái mẫu",
+    "previewStates": {
+      "open": "Ngày đang mở",
+      "ready": "Sẵn sàng đóng ngày",
+      "closed": "Đã đóng và sẵn sàng xuất"
+    },
+    "banner": {
+      "open": "Sổ quỹ hôm nay vẫn đang mở",
+      "receiptsMissing": "Còn thiếu {{count}} hóa đơn",
+      "closeNow": "Bạn có thể đóng ngay bây giờ",
+      "monthReady": "Tháng này đã sẵn sàng để xuất",
+      "closedToday": "Hôm nay đã được đóng",
+      "staleTitle": "Đang hiển thị dữ liệu đồng bộ gần nhất",
+      "staleDescription": "Hệ thống vẫn đang đồng bộ. Hãy kiểm tra các giao dịch mới nhất trước khi đóng ngày."
+    },
+    "actions": {
+      "addEntry": "Thêm giao dịch tiền mặt",
+      "openEntries": "Mở danh sách giao dịch",
+      "closeDay": "Đóng sổ quỹ hôm nay",
+      "exportMonth": "Xuất cho kế toán",
+      "openRegister": "Mở quỹ",
+      "attachReceipt": "Gắn hóa đơn",
+      "reviewEntries": "Kiểm tra giao dịch",
+      "seeAll": "Xem tất cả",
+      "edit": "Sửa",
+      "reverse": "Đảo giao dịch",
+      "viewDetails": "Chi tiết",
+      "attachNow": "Gắn ngay",
+      "createFirstEntry": "Tạo giao dịch đầu tiên",
+      "openBilling": "Mở thanh toán",
+      "upgradeToStarter": "Nâng cấp lên Starter",
+      "upgradeToPro": "Nâng cấp lên Pro"
+    },
+    "labels": {
+      "openingBalance": "Số dư đầu ngày",
+      "cashInToday": "Tiền vào hôm nay",
+      "cashOutToday": "Tiền ra hôm nay",
+      "expectedBalance": "Số dư dự kiến",
+      "countedCash": "Tiền đếm thực tế",
+      "difference": "Chênh lệch",
+      "missingReceipts": "Hóa đơn thiếu",
+      "dailyClosing": "Trạng thái đóng ngày",
+      "todaysCashStatus": "Tình trạng tiền mặt hôm nay",
+      "actionRequired": "Việc cần làm",
+      "recentEntries": "Giao dịch gần đây",
+      "receiptStatus": "Tình trạng hóa đơn",
+      "closingWorkflow": "Quy trình đóng ngày",
+      "exportStatus": "Tình trạng xuất tháng",
+      "trendOverview": "Tổng quan vận hành",
+      "privateDeposits": "Nộp tiền cá nhân",
+      "privateWithdrawals": "Rút tiền cá nhân",
+      "lastClosedDate": "Ngày đóng gần nhất",
+      "closedBy": "Người đóng quỹ",
+      "responsibleToday": "Người phụ trách hôm nay",
+      "currentMonth": "Tháng hiện tự",
+      "entriesCompleted": "Giao dịch đã hoàn tất",
+      "lastExport": "Lần xuất gần nhất",
+      "status": "Trạng thái",
+      "time": "Giờ",
+      "type": "Loại",
+      "amount": "Số tiền",
+      "note": "Ghi chú",
+      "receipt": "Hóa đơn",
+      "rowActions": "Thao tác",
+      "attachedToday": "Đã gắn hôm nay",
+      "missingToday": "Thiếu hôm nay",
+      "missingThisMonth": "Thiếu trong tháng",
+      "weekIncome": "Tiền vào tuần nay",
+      "weekExpenses": "Tiền ra tuần nay",
+      "openDays": "Ngày chưa đóng",
+      "monthVsLastMonth": "Tháng này so với tháng trước",
+      "exportChecklistDays": "Tất cả ngày cần thiết đã đóng",
+      "exportChecklistReceipts": "Tất cả hóa đơn cần thiết đã được gắn",
+      "exportChecklistReview": "Không còn mục quan trọng cần kiểm tra",
+      "helperWidget": "Cần hỗ trợ?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "Bao gồm {{deposit}} nộp tiền cá nhân và {{withdrawal}} rút tiền cá nhân.",
+      "countNotEntered": "Chưa nhập",
+      "differenceBalanced": "Không có chênh lệch",
+      "differenceOver": "Thừa {{amount}}",
+      "differenceShort": "Thiếu {{amount}}",
+      "statusOpen": "Đang mở",
+      "statusNeedsReview": "Cần kiểm tra",
+      "statusReadyToClose": "Sẵn sàng đóng",
+      "statusClosed": "Đã đóng",
+      "monthExportReady": "Sẵn sàng xuất",
+      "exportBlockedReceipts": "Bị chặn do thiếu hóa đơn",
+      "exportBlockedDays": "Bị chặn do còn ngày chưa đóng",
+      "exportBlockedReview": "Bị chặn do còn mục cần kiểm tra",
+      "exportAlreadyGenerated": "Đã xuất rồi",
+      "receiptsComplete": "Kiểm tra hóa đơn hôm nay đã hoàn tất.",
+      "receiptsIncomplete": "Hôm nay vẫn còn {{count}} mục hóa đơn cần xử lý.",
+      "noActionNeeded": "Hiện tại không có việc gấp",
+      "noActionDescription": "Sổ quỹ hôm nay đã ổn. Bạn có thể tiếp tục ghi giao dịch hoặc xuất tháng.",
+      "noEntriesTitle": "Hôm nay chưa có giao dịch tiền mặt",
+      "noEntriesDescription": "Bắt đầu bằng số dư đầu ngày hoặc ghi giao dịch tiền mặt đầu tiên của salon.",
+      "loadingTitle": "Đang chuẩn bị tổng quan hôm nay",
+      "loadingDescription": "Đang lấy giao dịch, hóa đơn và tín hiệu đóng ngày."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "{{count}} giao dịch đang thiếu hóa đơn",
+      "missingReceiptsDescription": "Gắn hóa đơn trước khi đóng ngày hoặc xuất dữ liệu cho kế toán.",
+      "closeDayTitle": "Sổ quỹ hôm nay chưa đóng",
+      "closeDayDescription": "Đếm tiền trong ngăn kéo và xác nhận số dư cuối ngày để hoàn tất hôm nay.",
+      "missingNotesTitle": "{{count}} chi tiêu tiền mặt thiếu ghi chú",
+      "missingNotesDescription": "Thêm ghi chú ngắn gọn để sau này vẫn dễ hiểu giao dịch đã dùng vào việc gì.",
+      "openDaysTitle": "Còn {{count}} ngày chưa đóng trong tuần nay",
+      "openDaysDescription": "Đóng các ngày còn mở để có thể xuất tháng mà không cần sửa lại.",
+      "reviewTitle": "{{count}} giao dịch cần kiểm tra",
+      "reviewDescription": "Kiểm tra các giao dịch bất thường trước khi đóng quỹ.",
+      "exportTitle": "Xuất tháng hiện vẫn bị chặn",
+      "exportDescription": "Xử lý các mục còn thiếu trước khi gửi dữ liệu cho kế toán.",
+      "exportReadyTitle": "Xuất tháng đã sẵn sàng",
+      "exportReadyDescription": "Tháng này có thể xuất ngay mà không thiếu chứng từ."
+    },
+    "entryTypes": {
+      "income": "Thu",
+      "expense": "Chi",
+      "private-deposit": "Nộp cá nhân",
+      "private-withdrawal": "Rút cá nhân"
+    },
+    "entryStatus": {
+      "attached": "Đã gắn",
+      "missing": "Còn thiếu",
+      "review": "Cần kiểm tra",
+      "ok": "OK"
+    },
+    "assistant": {
+      "title": "Cần hỗ trợ?",
+      "description": "Chỉ dùng trợ lý khi cần giải thích, không thay thế quy trình chính.",
+      "prompts": [
+        "Vì sao hôm nay chưa sẵn sàng để đóng?",
+        "Giao dịch nào còn thiếu hóa đơn?",
+        "Vì sao số dư bị thiếu?",
+        "Privateinlage là gì?"
+      ],
+      "suggestions": [
+        {
+          "label": "Tìm hóa đơn thiếu",
+          "value": "Hôm nay giao dịch nào còn thiếu hóa đơn?"
+        },
+        {
+          "label": "Trạng thái quỹ hôm nay",
+          "value": "Cho tôi biết tình trạng quỹ hôm nay và có đóng ngày được chưa."
+        },
+        {
+          "label": "Đóng ngày",
+          "value": "Điều gì đang chặn việc đóng sổ quỹ hôm nay?"
+        },
+        {
+          "label": "Giải thích thuật ngữ",
+          "value": "Privateinlage có nghĩa là gì?"
+        }
+      ],
+      "languages": "Tiếng Đức, Tiếng Anh, Tiếng Việt",
+      "lockedTitle": "Trợ lý AI bị khóa trong gói này",
+      "lockedDescription": "Nâng cấp lên Pro để mở trợ lý sổ quỹ, giải thích đa ngôn ngữ, và gợi ý xử lý vấn đề.",
+      "lockedBadge": "AI bị khóa"
+    },
+    "severity": {
+      "high": "Cao",
+      "medium": "Trung bình",
+      "low": "Thấp"
+    }
   }
 }

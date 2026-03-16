@@ -14,78 +14,14 @@ export const getAssistantSuggestions = ({
   t,
 }: SuggestionOptions): Suggestion[] => {
   if (activeModule === "cash-management") {
-    if (locale.startsWith("de")) {
-      return [
-        {
-          icon: Receipt,
-          label: "Fehlende Belege finden",
-          value: "Welche Bareintraege von heute brauchen noch einen Beleg?",
-        },
-        {
-          icon: FileText,
-          label: "Kassenstatus heute",
-          value: "Zeig mir den heutigen Kassenstatus und ob ich abschliessen kann.",
-        },
-        {
-          icon: TrendingUp,
-          label: "Tag abschliessen",
-          value: "Was blockiert den heutigen Tagesabschluss?",
-        },
-        {
-          icon: AlertCircle,
-          label: "Begriff erklaeren",
-          value: "Was bedeutet Privateinlage im Kassenbuch?",
-        },
-      ];
+    const suggestions = t("cashDashboard.assistant.suggestions", { returnObjects: true });
+    if (Array.isArray(suggestions)) {
+      const icons = [Receipt, FileText, TrendingUp, AlertCircle];
+      return suggestions.map((s: any, i: number) => ({
+        ...s,
+        icon: icons[i] || AlertCircle,
+      }));
     }
-
-    if (locale.startsWith("vi")) {
-      return [
-        {
-          icon: Receipt,
-          label: "Tim hoa don thieu",
-          value: "Hom nay giao dich nao con thieu hoa don?",
-        },
-        {
-          icon: FileText,
-          label: "Trang thai quy hom nay",
-          value: "Cho toi biet tinh trang quy hom nay va co dong ngay duoc chua.",
-        },
-        {
-          icon: TrendingUp,
-          label: "Dong ngay",
-          value: "Dieu gi dang chan viec dong so quy hom nay?",
-        },
-        {
-          icon: AlertCircle,
-          label: "Giai thich thuat ngu",
-          value: "Privateinlage co nghia la gi?",
-        },
-      ];
-    }
-
-    return [
-      {
-        icon: Receipt,
-        label: "Find missing receipts",
-        value: "Which cash entries from today still need receipts?",
-      },
-      {
-        icon: FileText,
-        label: "Today's cash status",
-        value: "Show me today's cash status and whether the day is ready to close.",
-      },
-      {
-        icon: TrendingUp,
-        label: "Close the day",
-        value: "What is blocking today's cash close?",
-      },
-      {
-        icon: AlertCircle,
-        label: "Explain a term",
-        value: "What does Privateinlage mean in the cash book?",
-      },
-    ];
   }
 
   return [

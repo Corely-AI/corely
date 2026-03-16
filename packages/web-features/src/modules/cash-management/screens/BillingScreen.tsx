@@ -28,7 +28,7 @@ import { billingApi } from "@corely/web-shared/lib/billing-api";
 import { AlertTriangle, ArrowRight, CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
-import { billingCopy } from "./billing-copy";
+import { useBillingCopy } from "./billing-copy";
 import { BillingPlanCatalog } from "./billing-plan-catalog";
 import { BillingTrialAlerts } from "./billing-trial-alerts";
 import {
@@ -44,14 +44,8 @@ import {
 const billingProductKey: BillingProductKey = CashManagementProductKey;
 
 export function BillingScreen() {
-  const { i18n } = useTranslation();
   const queryClient = useQueryClient();
-  const locale = (i18n.resolvedLanguage ?? i18n.language ?? "en").startsWith("de")
-    ? "de"
-    : (i18n.resolvedLanguage ?? i18n.language ?? "en").startsWith("vi")
-      ? "vi"
-      : "en";
-  const copy = billingCopy[locale];
+  const copy = useBillingCopy();
 
   const overviewQuery = useQuery({
     queryKey: ["billing", "overview", billingProductKey],

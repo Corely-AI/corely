@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, Button, cn } from "@corely/ui";
 import { useTranslation } from "react-i18next";
-import { Bot, Sparkles } from "lucide-react";
+import { Bot, Sparkles, MessageCircleQuestion } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { OnboardingStepConfig } from "@corely/contracts";
 import { useOnboardingAnalytics } from "../engine/use-onboarding-analytics";
@@ -23,33 +23,50 @@ export const OnboardingAIHelper = ({ step, locale, className }: OnboardingAIHelp
 
   const handleOpenHelp = () => {
     analytics.track("onboarding.ai_helper_opened", { stepId: step.id, type: step.type });
-    // Navigate to the assistant page since there's no drawer hook available
     navigate("/assistant");
   };
 
   return (
-    <Card
-      className={cn("overflow-hidden border-border/50 bg-card/60 shadow-sm", className)}
+    <div
+      className={cn(
+        "group relative overflow-hidden rounded-2xl border border-white/5 bg-white/[0.03] p-6 transition-all duration-300 hover:bg-white/[0.05]",
+        className
+      )}
       data-testid="onboarding-ai-helper"
     >
-      <CardHeader className="p-4 pb-2">
-        <div className="flex items-center gap-2">
-          <Bot className="h-4 w-4 text-primary" />
-          <CardTitle className="text-sm font-semibold">{t("onboarding.aiAssistant")}</CardTitle>
+      <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+        <Bot className="h-12 w-12" />
+      </div>
+
+      <div className="relative flex flex-col gap-4">
+        <div className="flex items-center gap-2 text-accent">
+          <Sparkles className="h-4 w-4" />
+          <span className="text-[10px] font-bold uppercase tracking-wider">
+            {t("onboarding.aiTipTitle") || "Helpful Assistant"}
+          </span>
         </div>
-      </CardHeader>
-      <CardContent className="p-4 pt-2">
-        <p className="mb-3 text-sm text-muted-foreground">{t("onboarding.aiHelpPrompt")}</p>
+
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-foreground/90 leading-tight">
+            {t("onboarding.aiHelpTitle") || "Need help with this step?"}
+          </h4>
+          <p className="text-xs text-muted-foreground/80 leading-relaxed">
+            {t("onboarding.aiHelpPrompt") ||
+              "Ask our AI to explain what to enter or how this impacts your setup."}
+          </p>
+        </div>
+
         <Button
-          variant="secondary"
-          className="w-full justify-start gap-2"
+          variant="ghost"
+          size="sm"
+          className="w-full justify-center gap-2 bg-white/5 border border-white/5 hover:bg-accent/10 hover:border-accent/20 hover:text-accent transition-all duration-300 rounded-xl py-5"
           onClick={handleOpenHelp}
           data-testid="onboarding-ai-helper-open"
         >
-          <Sparkles className="h-4 w-4 text-amber-500" />
-          {t("onboarding.askAssistant")}
+          <MessageCircleQuestion className="h-4 w-4" />
+          <span className="text-sm font-medium">{t("onboarding.askAssistant")}</span>
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

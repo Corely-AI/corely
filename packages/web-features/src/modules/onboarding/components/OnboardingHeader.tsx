@@ -2,51 +2,70 @@ import React from "react";
 import { Button } from "@corely/ui";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, X } from "lucide-react";
+import { LanguageSelector, Logo } from "@corely/web-shared";
 import type { OnboardingJourneyConfig } from "@corely/contracts";
+import { cn } from "@corely/web-shared/shared/lib/utils";
 
 export interface OnboardingHeaderProps {
   config: OnboardingJourneyConfig;
   onExit?: () => void;
   onBack?: () => void;
   canGoBack?: boolean;
+  className?: string;
 }
 
-export const OnboardingHeader = ({ onExit, onBack, canGoBack = false }: OnboardingHeaderProps) => {
+export const OnboardingHeader = ({
+  onExit,
+  onBack,
+  canGoBack = false,
+  className,
+}: OnboardingHeaderProps) => {
   const { t } = useTranslation();
   return (
     <header
-      className="flex shrink-0 items-center justify-between border-b bg-background px-6 py-4"
+      className={cn(
+        "flex shrink-0 items-center justify-between border-b bg-background/80 px-6 py-4 backdrop-blur-md sticky top-0 z-50",
+        className
+      )}
       data-testid="onboarding-header"
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 border-r pr-6 border-border/50">
+          <Logo size="sm" showText={false} />
+          <span className="text-sm font-semibold tracking-tight text-foreground/90 uppercase">
+            Onboarding
+          </span>
+        </div>
+
         {canGoBack && (
           <Button
             variant="ghost"
-            size="icon"
+            size="sm"
             onClick={onBack}
+            className="text-muted-foreground hover:text-foreground gap-2"
             aria-label={t("onboarding.goBack")}
             data-testid="onboarding-back"
           >
             <ArrowLeft className="h-4 w-4" />
+            <span className="text-xs font-medium uppercase tracking-wider hidden sm:inline">
+              {t("onboarding.back")}
+            </span>
           </Button>
         )}
-        <div className="flex items-center gap-2">
-          {/* Typically replace with the actual Corely logo */}
-          <div className="h-6 w-6 rounded-md bg-primary" />
-          <span className="font-semibold tracking-tight text-foreground">Corely</span>
-        </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
+        <LanguageSelector className="text-foreground/70 hover:text-foreground hover:bg-white/5 transition-colors" />
+
         {onExit && (
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             onClick={onExit}
-            className="gap-2"
+            className="gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-foreground transition-all"
             data-testid="onboarding-exit"
           >
-            <span>{t("onboarding.saveAndExit")}</span>
+            <span className="hidden sm:inline">{t("onboarding.saveAndExit")}</span>
             <X className="h-4 w-4" />
           </Button>
         )}

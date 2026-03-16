@@ -1,6 +1,7 @@
 import React from "react";
 import type {
   OnboardingJourneyConfig,
+  OnboardingProgress,
   OnboardingStepConfig,
   OnboardingStepType,
 } from "@corely/contracts";
@@ -12,14 +13,13 @@ import { cn } from "@corely/ui";
 export interface StepComponentProps {
   config: OnboardingStepConfig;
   locale: string;
+  progress: OnboardingProgress | undefined;
   onAdvance: (answers?: Record<string, unknown>, meta?: Record<string, unknown>) => void;
   onSkip: () => void;
   isSaving: boolean;
   className?: string;
 }
 
-// Registry to lazily map step types to React components
-// (In a real app, this might use React.lazy or be injected to avoid circular deps)
 export const STEP_REGISTRY: Partial<
   Record<OnboardingStepType, React.ComponentType<StepComponentProps>>
 > = {};
@@ -54,7 +54,6 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
     }
   }, [optimisticStepId, progress?.currentStepId]);
 
-  // Determine the next step intelligently (handling linear vs branching)
   const determineNextStep = (answers?: Record<string, unknown>) => {
     let nextStepId = resolvedStepConfig.nextStepId;
 
@@ -69,7 +68,6 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
       }
     }
 
-    // Default linear fallback if not specified
     if (!nextStepId) {
       const idx = config.steps.findIndex((s) => s.id === resolvedStepConfig.id);
       nextStepId = config.steps[idx + 1]?.id;
@@ -136,9 +134,9 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
 
   if (!Component) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground">
+      <div className="flex flex-col items-center justify-center p-12 text-center text-muted-foreground animate-in fade-in duration-500">
         <p>Step component not found for type: {currentStepConfig.type}</p>
-        <button className="mt-4 text-primary underline" onClick={() => handleSkip()}>
+        <button className="mt-4 text-accent underline" onClick={() => handleSkip()}>
           Skip for now
         </button>
       </div>
@@ -147,25 +145,33 @@ export const OnboardingStepRenderer = ({ config, onCompleted }: OnboardingStepRe
 
   return (
     <div
-      className="flex w-full flex-col gap-8 lg:flex-row"
+      className="grid w-full grid-cols-1 gap-12 lg:grid-cols-12 xl:gap-24"
       data-testid="onboarding-step"
       data-step-id={resolvedStepConfig.id}
     >
-      <div className="flex-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <Component
-          config={resolvedStepConfig}
-          locale={locale}
-          onAdvance={handleAdvance}
-          onSkip={handleSkip}
-          isSaving={isSaving}
-        />
+      <div className="order-2 lg:col-span-8 lg:order-1 lg:max-w-2xl">
+        <div
+          key={resolvedStepConfig.id}
+          className="animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both"
+        >
+          <Component
+            config={resolvedStepConfig}
+            locale={locale}
+            progress={progress}
+            onAdvance={handleAdvance}
+            onSkip={handleSkip}
+            isSaving={isSaving}
+          />
+        </div>
       </div>
 
-      {resolvedStepConfig.aiHelpContext && (
-        <div className="w-full shrink-0 lg:w-72 lg:pt-16 xl:w-80 animate-in fade-in slide-in-from-right-8 duration-700">
-          <OnboardingAIHelper step={resolvedStepConfig} locale={locale} />
-        </div>
-      )}
+      <div className="order-1 lg:col-span-4 lg:order-2">
+        {resolvedStepConfig.aiHelpContext && (
+          <div className="sticky top-24 pt-4 animate-in fade-in slide-in-from-right-8 duration-700 delay-150 ease-out fill-mode-both">
+            <OnboardingAIHelper step={resolvedStepConfig} locale={locale} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -14,11 +14,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@corely/ui";
-import { AppShell, type AppSidebarProps, type WorkspaceSwitcherMode } from "@corely/web-shared";
+import {
+  AppShell,
+  AppSidebar,
+  type AppSidebarProps,
+  type WorkspaceSwitcherMode,
+} from "@corely/web-shared";
 import { billingApi } from "@corely/web-shared/lib/billing-api";
 import { assistantFeature, cashManagementFeature, type FeatureNavItem } from "@corely/web-features";
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { AlertTriangle, Sparkles, X } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { cn } from "@corely/web-shared/shared/lib/utils";
 
 const cashManagementSwitcherMode: WorkspaceSwitcherMode = "multi";
 
@@ -65,10 +72,14 @@ const cashManagementSidebarProps: Omit<AppSidebarProps, "variant" | "collapsed" 
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useOnboarding } from "@corely/web-features/modules/onboarding";
+import logoFull from "@/assets/logo-full.svg";
+import logoMark from "@/assets/logo-mark.svg";
 
 export const CashManagementShell = () => {
+  const { t } = useTranslation();
   const [expiryModalOpen, setExpiryModalOpen] = useState(false);
   const [bannerDismissed, setBannerDismissed] = useState(false);
+  const [activeBannerDismissed, setActiveBannerDismissed] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -129,7 +140,20 @@ export const CashManagementShell = () => {
       window.sessionStorage.setItem(modalKey, "seen");
     }
     setBannerDismissed(window.sessionStorage.getItem(bannerKey) === "dismissed");
+
+    const activeBannerKey = `cash-management.trial-active-banner:${trialMarker}`;
+    setActiveBannerDismissed(window.sessionStorage.getItem(activeBannerKey) === "dismissed");
   }, [trial?.status, trialMarker]);
+
+  const dismissActiveBanner = () => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(
+        `cash-management.trial-active-banner:${trialMarker}`,
+        "dismissed"
+      );
+    }
+    setActiveBannerDismissed(true);
+  };
 
   const dismissBanner = () => {
     if (typeof window !== "undefined") {
@@ -143,30 +167,37 @@ export const CashManagementShell = () => {
 
   return (
     <>
-      {trial?.status === "active" ? (
+      {trial?.status === "active" && !activeBannerDismissed ? (
         <div className="fixed inset-x-0 top-0 z-50 px-4 pt-3 lg:left-[17rem] lg:pr-6">
           <Alert
-            className={
+            className={cn(
+              "relative flex flex-col gap-1 pr-12",
               trial.isExpiringSoon
                 ? "border-amber-500/40 bg-amber-500/10 shadow-lg"
                 : "border-emerald-500/35 bg-emerald-500/10 shadow-lg"
-            }
+            )}
           >
             <Sparkles className="h-4 w-4" />
             <AlertTitle>
               {trial.isExpiringSoon
-                ? `${trial.daysRemaining} days left in your full-access trial`
-                : `Full-access trial active: ${trial.daysRemaining} days remaining`}
+                ? t("common.trial.expiringTitle", { days: trial.daysRemaining })
+                : t("common.trial.activeTitle", { days: trial.daysRemaining })}
             </AlertTitle>
             <AlertDescription className="flex flex-wrap items-center gap-3">
-              <span>
-                No card required. Choose a paid plan before the trial ends to keep export, AI, and
-                multi-location access.
-              </span>
+              <span>{t("common.trial.description")}</span>
               <Button asChild size="sm">
-                <Link to="/billing">Open billing</Link>
+                <Link to="/billing">{t("common.trial.cta")}</Link>
               </Button>
             </AlertDescription>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-2 h-8 w-8 text-muted-foreground hover:text-foreground"
+              onClick={dismissActiveBanner}
+              aria-label={t("common.trial.dismiss")}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </Alert>
         </div>
       ) : null}
@@ -175,17 +206,14 @@ export const CashManagementShell = () => {
         <div className="fixed inset-x-0 top-0 z-50 px-4 pt-3 lg:left-[17rem] lg:pr-6">
           <Alert className="border-amber-500/45 bg-amber-500/12 shadow-lg">
             <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Your 30-day trial has ended</AlertTitle>
+            <AlertTitle>{t("common.trial.expiredTitle")}</AlertTitle>
             <AlertDescription className="flex flex-wrap items-center gap-3">
-              <span>
-                Your workspace is now on Free. Historical data stays visible, but export, AI, and
-                extra locations are locked until you subscribe.
-              </span>
+              <span>{t("common.trial.expiredDescription")}</span>
               <Button asChild size="sm">
-                <Link to="/billing">Choose a plan</Link>
+                <Link to="/billing">{t("common.trial.cta")}</Link>
               </Button>
               <Button variant="ghost" size="sm" onClick={dismissBanner}>
-                Dismiss
+                {t("common.trial.dismiss")}
               </Button>
             </AlertDescription>
           </Alert>
@@ -194,26 +222,39 @@ export const CashManagementShell = () => {
 
       <AppShell
         navigationGroups={cashManagementNavigationGroups}
-        sidebarProps={cashManagementSidebarProps}
+        sidebarProps={{
+          ...cashManagementSidebarProps,
+        }}
+        renderSidebar={(props) => (
+          <AppSidebar
+            {...props}
+            logo={
+              <div className="flex items-center gap-2">
+                <img
+                  src={props.collapsed ? logoMark : logoFull}
+                  alt="Corely Cash"
+                  className={props.collapsed ? "h-8 w-8" : "h-8"}
+                />
+              </div>
+            }
+          />
+        )}
         includeWorkspaceQuickActions={false}
       />
 
       <Dialog open={expiryModalOpen} onOpenChange={setExpiryModalOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Your 30-day full-access trial has ended</DialogTitle>
-            <DialogDescription>
-              Your workspace now uses the Free plan. Historical data is still available, but export,
-              AI, and multi-location features are locked until you subscribe.
-            </DialogDescription>
+            <DialogTitle>{t("common.trial.modalTitle")}</DialogTitle>
+            <DialogDescription>{t("common.trial.modalDescription")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setExpiryModalOpen(false)}>
-              Later
+              {t("common.trial.modalLater")}
             </Button>
             <Button asChild>
               <Link to="/billing" onClick={() => setExpiryModalOpen(false)}>
-                Choose a plan
+                {t("common.trial.choosePlan")}
               </Link>
             </Button>
           </DialogFooter>

@@ -97,7 +97,20 @@
     "updated": "Updated",
     "notSet": "Not set",
     "done": "Done",
-    "customFields": "Custom fields"
+    "customFields": "Custom fields",
+    "trial": {
+      "activeTitle": "Full-access trial active: {{days}} days remaining",
+      "expiringTitle": "{{days}} days left in your full-access trial",
+      "description": "No card required. Choose a paid plan before the trial ends to keep export, AI, and multi-location access.",
+      "cta": "Open billing",
+      "expiredTitle": "Your 30-day trial has ended",
+      "expiredDescription": "Upgrade now to keep using all features.",
+      "dismiss": "Dismiss",
+      "modalTitle": "Your 30-day full-access trial has ended",
+      "modalDescription": "Your workspace now uses the Free plan. Historical data is still available, but export, AI, and multi-location features are locked until you subscribe.",
+      "modalLater": "Later",
+      "choosePlan": "Choose a plan"
+    }
   },
   "onboarding": {
     "allSet": "You're all set!",
@@ -106,6 +119,8 @@
     "goBack": "Go back",
     "loading": "Loading onboarding...",
     "aiAssistant": "AI Assistant",
+    "aiTipTitle": "Helpful Assistant",
+    "aiHelpTitle": "Need help with this step?",
     "aiHelpPrompt": "Need help with this step? Ask our AI assistant to explain or suggest what to do next.",
     "askAssistant": "Ask Assistant",
     "businessName": "Business Name",
@@ -124,9 +139,21 @@
     },
     "workflowOptions": {
       "paper": "Paper / Notebook",
+      "paperDesc": "Transition from manual notebooks to digital.",
       "excel": "Excel / Spreadsheet",
+      "excelDesc": "No more complex formulas or broken cells.",
       "pos": "POS System",
-      "software": "Other Software"
+      "posDesc": "Seamlessly unite your POS and cash ledger.",
+      "software": "Other Software",
+      "softwareDesc": "Upgrade to a more modern cash solution."
+    },
+    "workflow": {
+      "insightTitle": "Personalized Insight",
+      "selectHint": "Select your previous flow"
+    },
+    "welcome": {
+      "badge": "New Experience",
+      "footer": "Powered by Corely AI"
     },
     "receipt": {
       "errorUnsupported": "Unsupported file. Please upload a PDF, JPG, or PNG under 10MB.",
@@ -140,12 +167,14 @@
     "openingBalance": {
       "errorAmount": "Valid amount required",
       "label": "Real cash currently in register",
-      "hint": "💡 Do not include card payments or bank transfers. Only physical cash."
+      "hint": "💡 Do not include card payments or bank transfers. Only physical cash.",
+      "importantTip": "Important Tip"
     },
     "entries": {
       "errorAmount": "Valid amount required",
       "errorNote": "Note is required",
       "ctaAdd": "Add Entry",
+      "successTitle": "Entry Saved",
       "successOne": "Great! You added your first entry. Let's do one more.",
       "typeLabel": "Transaction Type",
       "typeIncome": "Cash Income",
@@ -164,6 +193,7 @@
       "workflowExcel": "Since you used spreadsheets, this keeps your cash totals live without formulas.",
       "workflowPos": "Since you use a POS system, this keeps cash and receipts aligned in one place.",
       "workflowSoftware": "Since you used other software, this gives you a single daily cash view.",
+      "receiptReminder": "Receipt Reminder",
       "tipTitle": "This is your cash status.",
       "tipDesc": "Your expected balance is automatically updated every time you add an entry. No more manual calculations at the end of the day.",
       "cta": "See what's next"
@@ -3020,7 +3050,229 @@
     "tenantId": "Tenant ID",
     "actions": "Actions",
     "manage": "Manage",
-    "confirmDeactivate": "Are you sure you want to deactivate this tenant? Users will no longer be able to log in.",
-    "confirmActivate": "Are you sure you want to activate this tenant?"
+    "confirmDeactivate": "Are you sure you want to deactivate this tenant? Users will no longer be able to log in."
+  },
+  "billing": {
+    "title": "Plans and billing",
+    "subtitle": "Current plan, cash flow usage, and next upgrade options for your salon.",
+    "currentPlan": "Current plan",
+    "planStatus": "Plan status",
+    "billingActions": "Billing actions",
+    "usage": "Usage this period",
+    "planCatalog": "Available plans",
+    "manageBilling": "Manage billing",
+    "upgradePlan": "Upgrade plan",
+    "currentPlanBadge": "Current plan",
+    "noLimit": "No limit",
+    "billedMonthly": "Billed monthly",
+    "active": "Active",
+    "period": "Current period",
+    "unavailable": "Not available in this plan",
+    "loading": "Loading billing information...",
+    "loadFailed": "Unable to load billing right now.",
+    "openPortalDescription": "Open the hosted customer portal to update payment details or manage billing.",
+    "checkoutDescription": "Upgrade through hosted Stripe Checkout. Corely maintains the plan catalog and usage logic.",
+    "featureAccess": "Feature access",
+    "recommendedTitle": "Need more limits?",
+    "recommendedDescription": "Upgrade when your salon needs export, AI help, or multiple locations.",
+    "startTrial": "Start 30-day trial",
+    "trialTitle": "Start 30-day full access trial",
+    "noCardRequired": "No card required",
+    "trialDescription": "Workspace gets full Multi-location features for 30 days, then returns to Free if not subscribed.",
+    "trialActive": "{{daysRemaining}} days remaining in full access trial.",
+    "trialExpiring": "{{daysRemaining}} days left. Choose a plan now to keep export, AI, and additional locations.",
+    "trialExpired": "Full access trial ended",
+    "trialExpiredDescription": "Workspace has returned to Free plan. Old data is preserved, but export, AI and additional locations are locked until subscription.",
+    "upgradeNow": "Choose plan",
+    "afterTrialTitle": "What changes after trial",
+    "afterTrialDescription": "Corely keeps all old data. After 30 days, workspace switches to Free and new usage follows Free's monthly limits.",
+    "trialStarted": "Trial started",
+    "trialStartFailed": "Unable to start trial right now.",
+    "usageLabels": {
+      "usedOf": "Used {{used}} / {{limit}}",
+      "currentPeriod": "Current period"
+    },
+    "featureLabels": {
+      "maxLocations": "Locations",
+      "maxEntriesPerMonth": "Cash entries",
+      "maxReceiptsPerMonth": "Receipts",
+      "canExport": "Monthly export",
+      "dailyClosing": "Daily closing",
+      "aiAssistant": "AI assistant",
+      "multilingualAiHelp": "Multilingual AI help",
+      "issueDetection": "Issue detection",
+      "closingGuidance": "Closing guidance",
+      "teamAccess": "Team access",
+      "consolidatedOverview": "Consolidated overview"
+    }
+  },
+  "cashDashboard": {
+    "headerTitle": "Cash control dashboard",
+    "headerSubtitle": "Daily cash and receipt control for the salon floor.",
+    "previewLabel": "Preview state",
+    "previewStates": {
+      "open": "Day open",
+      "ready": "Ready to close",
+      "closed": "Closed and export ready"
+    },
+    "banner": {
+      "open": "Today's cash book is still open",
+      "receiptsMissing": "{{count}} receipts are missing",
+      "closeNow": "You can close the day now",
+      "monthReady": "This month is ready to export",
+      "closedToday": "Today has been closed",
+      "staleTitle": "Showing the last synced cash snapshot",
+      "staleDescription": "A fresh sync is still running. Review the latest entries before you close the day."
+    },
+    "actions": {
+      "addEntry": "New cash entry",
+      "openEntries": "Open entries",
+      "closeDay": "Close today's cash book",
+      "exportMonth": "Export for Steuerberater",
+      "openRegister": "Open register",
+      "attachReceipt": "Attach receipt",
+      "reviewEntries": "Review entries",
+      "seeAll": "See all entries",
+      "edit": "Edit",
+      "reverse": "Reverse",
+      "viewDetails": "Details",
+      "attachNow": "Attach now",
+      "createFirstEntry": "Create first entry",
+      "openBilling": "Open billing",
+      "upgradeToStarter": "Upgrade to Starter",
+      "upgradeToPro": "Upgrade to Pro"
+    },
+    "labels": {
+      "openingBalance": "Opening balance",
+      "cashInToday": "Cash in today",
+      "cashOutToday": "Cash out today",
+      "expectedBalance": "Expected balance",
+      "countedCash": "Counted cash",
+      "difference": "Difference",
+      "missingReceipts": "Missing receipts",
+      "dailyClosing": "Daily closing status",
+      "todaysCashStatus": "Today's cash status",
+      "actionRequired": "Action required",
+      "recentEntries": "Recent entries",
+      "receiptStatus": "Receipt status",
+      "closingWorkflow": "Closing workflow",
+      "exportStatus": "Monthly export status",
+      "trendOverview": "Operational overview",
+      "privateDeposits": "Private deposits",
+      "privateWithdrawals": "Private withdrawals",
+      "lastClosedDate": "Last closed date",
+      "closedBy": "Closed by",
+      "responsibleToday": "Responsible today",
+      "currentMonth": "Current month",
+      "entriesCompleted": "Entries completed",
+      "lastExport": "Last export",
+      "status": "Status",
+      "time": "Time",
+      "type": "Type",
+      "amount": "Amount",
+      "note": "Note",
+      "receipt": "Receipt",
+      "rowActions": "Actions",
+      "attachedToday": "Attached today",
+      "missingToday": "Missing today",
+      "missingThisMonth": "Missing this month",
+      "weekIncome": "Cash income this week",
+      "weekExpenses": "Cash expenses this week",
+      "openDays": "Open days",
+      "monthVsLastMonth": "This month vs last month",
+      "exportChecklistDays": "All required days are closed",
+      "exportChecklistReceipts": "All required receipts are attached",
+      "exportChecklistReview": "No critical review items remain",
+      "helperWidget": "Need help?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "Includes {{deposit}} private deposits and {{withdrawal}} private withdrawals.",
+      "countNotEntered": "Not entered yet",
+      "differenceBalanced": "No difference",
+      "differenceOver": "{{amount}} over",
+      "differenceShort": "{{amount}} short",
+      "statusOpen": "Open",
+      "statusNeedsReview": "Needs review",
+      "statusReadyToClose": "Ready to close",
+      "statusClosed": "Closed",
+      "monthExportReady": "Export ready",
+      "exportBlockedReceipts": "Blocked by missing receipts",
+      "exportBlockedDays": "Blocked by unclosed days",
+      "exportBlockedReview": "Blocked by review items",
+      "exportAlreadyGenerated": "Already exported",
+      "receiptsComplete": "Receipt check is complete for today.",
+      "receiptsIncomplete": "{{count}} receipt items still need attention today.",
+      "noActionNeeded": "No urgent action right now",
+      "noActionDescription": "Today's cash book is in order. You can keep recording entries or export the month.",
+      "noEntriesTitle": "No cash activity yet today",
+      "noEntriesDescription": "Start with the opening balance or record the first cash movement from the salon.",
+      "loadingTitle": "Preparing today's cash overview",
+      "loadingDescription": "Collecting receipts, entries, and closing signals."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "{{count}} entries are missing receipts",
+      "missingReceiptsDescription": "Attach receipts before the day can be trusted or exported.",
+      "closeDayTitle": "Today's cash book is not closed yet",
+      "closeDayDescription": "Count the drawer and confirm the closing balance to finish today.",
+      "missingNotesTitle": "{{count}} cash expenses are missing notes",
+      "missingNotesDescription": "Add a short note so each expense can be understood later.",
+      "openDaysTitle": "{{count}} days are still open this week",
+      "openDaysDescription": "Close open days so the month can be exported without follow-up work.",
+      "reviewTitle": "{{count}} entries need review",
+      "reviewDescription": "Check unusual cash movements before you close the book.",
+      "exportTitle": "Monthly export is still blocked",
+      "exportDescription": "Resolve the remaining blockers before sending data to the tax advisor.",
+      "exportReadyTitle": "Monthly export is ready",
+      "exportReadyDescription": "The month can be exported now without missing documents."
+    },
+    "entryTypes": {
+      "income": "Income",
+      "expense": "Expense",
+      "private-deposit": "Private deposit",
+      "private-withdrawal": "Private withdrawal"
+    },
+    "entryStatus": {
+      "attached": "Attached",
+      "missing": "Missing",
+      "review": "Needs review",
+      "ok": "OK"
+    },
+    "assistant": {
+      "title": "Need help?",
+      "description": "Use the assistant when something is unclear, not as the main workflow.",
+      "prompts": [
+        "Why is today not ready to close?",
+        "Which entries still need receipts?",
+        "Why is my balance short?",
+        "What does Privateinlage mean?"
+      ],
+      "suggestions": [
+        {
+          "label": "Find missing receipts",
+          "value": "Which cash entries from today still need receipts?"
+        },
+        {
+          "label": "Today's cash status",
+          "value": "Show me today's cash status and whether the day is ready to close."
+        },
+        {
+          "label": "Close the day",
+          "value": "What is blocking today's cash close?"
+        },
+        {
+          "label": "Explain a term",
+          "value": "What does Privateinlage mean in the cash book?"
+        }
+      ],
+      "languages": "German, English, Vietnamese",
+      "lockedTitle": "AI help is locked on this plan",
+      "lockedDescription": "Upgrade to Pro to unlock the cash assistant, multilingual explanations, and guided issue review.",
+      "lockedBadge": "AI locked"
+    },
+    "severity": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    }
   }
 }

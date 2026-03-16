@@ -95,7 +95,20 @@
     "updated": "Aktualisiert",
     "notSet": "Nicht festgelegt",
     "done": "Fertig",
-    "customFields": "Benutzerdefinierte Felder"
+    "customFields": "Benutzerdefinierte Felder",
+    "trial": {
+      "activeTitle": "Testphase mit vollem Zugriff: noch {{days}} Tage",
+      "expiringTitle": "Noch {{days}} Tage Ihrer Testphase mit vollem Zugriff",
+      "description": "Keine Kreditkarte erforderlich. Wählen Sie vor Ende der Testphase einen kostenpflichtigen Plan, um Export, KI und Zugriff auf mehrere Standorte zu behalten.",
+      "cta": "Abrechnung öffnen",
+      "expiredTitle": "Ihre 30-tägige Testphase ist abgelaufen",
+      "expiredDescription": "Upgrade jetzt durchführen, um alle Funktionen weiterhin zu nutzen.",
+      "dismiss": "Schließen",
+      "modalTitle": "Ihre 30-tägige Testphase mit vollem Zugriff ist abgelaufen",
+      "modalDescription": "Ihr Arbeitsbereich nutzt nun den kostenlosen Plan. Historische Daten sind weiterhin verfügbar, aber Export-, KI- und Multi-Standort-Funktionen sind gesperrt, bis Sie ein Abonnement abschließen.",
+      "modalLater": "Später",
+      "choosePlan": "Plan wählen"
+    }
   },
   "onboarding": {
     "allSet": "Alles bereit!",
@@ -104,6 +117,8 @@
     "goBack": "Zurück",
     "loading": "Onboarding wird geladen...",
     "aiAssistant": "KI-Assistent",
+    "aiTipTitle": "Hilfreicher Assistent",
+    "aiHelpTitle": "Brauchen Sie Hilfe?",
     "aiHelpPrompt": "Brauchen Sie Hilfe bei diesem Schritt? Fragen Sie unseren KI-Assistenten nach Erklärungen oder Vorschlägen.",
     "askAssistant": "Assistent fragen",
     "businessName": "Unternehmensname",
@@ -122,9 +137,21 @@
     },
     "workflowOptions": {
       "paper": "Papier / Notizbuch",
+      "paperDesc": "Wechseln Sie von manuellen Notizbüchern zu digital.",
       "excel": "Excel / Tabelle",
+      "excelDesc": "Keine komplexen Formeln oder kaputten Zellen mehr.",
       "pos": "Kassensystem (POS)",
-      "software": "Andere Software"
+      "posDesc": "Vereinen Sie Ihr Kassensystem und Ihr Kassenbuch nahtlos.",
+      "software": "Andere Software",
+      "softwareDesc": "Upgrade auf eine modernere Kassenlösung."
+    },
+    "workflow": {
+      "insightTitle": "Personalisierter Einblick",
+      "selectHint": "Wählen Sie Ihren bisherigen Ablauf"
+    },
+    "welcome": {
+      "badge": "Neue Erfahrung",
+      "footer": "Bereitgestellt von Corely KI"
     },
     "receipt": {
       "errorUnsupported": "Nicht unterstützte Datei. Bitte laden Sie eine PDF, JPG oder PNG unter 10 MB hoch.",
@@ -138,12 +165,14 @@
     "openingBalance": {
       "errorAmount": "Gültiger Betrag erforderlich",
       "label": "Echtes Bargeld in der Kasse",
-      "hint": "💡 Kartenzahlungen oder Banküberweisungen nicht mitzählen. Nur physisches Bargeld."
+      "hint": "💡 Kartenzahlungen oder Banküberweisungen nicht mitzählen. Nur physisches Bargeld.",
+      "importantTip": "Wichtiger Tipp"
     },
     "entries": {
       "errorAmount": "Gültiger Betrag erforderlich",
       "errorNote": "Notiz ist erforderlich",
       "ctaAdd": "Eintrag hinzufügen",
+      "successTitle": "Eintrag gespeichert",
       "successOne": "Super! Du hast deinen ersten Eintrag hinzugefügt. Machen wir noch einen.",
       "typeLabel": "Transaktionstyp",
       "typeIncome": "Bareinnahme",
@@ -161,7 +190,8 @@
       "workflowPaper": "Da du ein Notizbuch verwendet hast, ersetzt diese Ansicht das manuelle Zusammenrechnen.",
       "workflowExcel": "Da du Tabellen verwendet hast, hält dies deine Bargeldbestände ohne Formeln aktuell.",
       "workflowPos": "Da du ein Kassensystem verwendest, hält dies Bargeld und Belege an einem Ort zusammen.",
-      "workflowSoftware": "Da du andere Software verwendet hast, erhältst du hier eine einzige tägliche Bargeldübersicht.",
+      "workflowSoftware": "Da Sie eine andere Software verwendet haben, erhalten Sie hier eine zentrale tägliche Kassenübersicht.",
+      "receiptReminder": "Quittungserinnerung",
       "tipTitle": "Dies ist dein Kassenstatus.",
       "tipDesc": "Dein erwarteter Saldo wird bei jedem Eintrag automatisch aktualisiert. Keine manuellen Berechnungen mehr am Ende des Tages.",
       "cta": "Ansehen, was als Nächstes kommt"
@@ -2967,7 +2997,229 @@
     "tenantId": "Mandanten-ID",
     "actions": "Aktionen",
     "manage": "Verwalten",
-    "confirmDeactivate": "Sind Sie sicher, dass Sie diesen Mandanten deaktivieren möchten? Benutzer können sich nicht mehr anmelden.",
-    "confirmActivate": "Sind Sie sicher, dass Sie diesen Mandanten aktivieren möchten?"
+    "confirmDeactivate": "Sind Sie sicher, dass Sie diesen Mandanten deaktivieren möchten? Benutzer können sich nicht mehr anmelden."
+  },
+  "billing": {
+    "title": "Pläne und Abrechnung",
+    "subtitle": "Aktueller Plan, Cashflow-Nutzung und nächste Upgrade-Optionen für Ihren Salon.",
+    "currentPlan": "Aktueller Plan",
+    "planStatus": "Plan-Status",
+    "billingActions": "Abrechnungsaktionen",
+    "usage": "Nutzung in dieser Periode",
+    "planCatalog": "Verfügbare Pläne",
+    "manageBilling": "Abrechnung verwalten",
+    "upgradePlan": "Plan upgraden",
+    "currentPlanBadge": "Aktueller Plan",
+    "noLimit": "Kein Limit",
+    "billedMonthly": "Monatlich abgerechnet",
+    "active": "Aktiv",
+    "period": "Aktuelle Periode",
+    "unavailable": "Nicht verfügbar in diesem Plan",
+    "loading": "Abrechnungsinformationen werden geladen...",
+    "loadFailed": "Abrechnung kann derzeit nicht geladen werden.",
+    "openPortalDescription": "Öffnen Sie das gehostete Kundenportal, um Zahlungsdetails zu aktualisieren oder die Abrechnung zu verwalten.",
+    "checkoutDescription": "Upgraden Sie über gehosteten Stripe Checkout. Corely verwaltet den Plankatalog und die Nutzungslogik.",
+    "featureAccess": "Feature-Zugang",
+    "recommendedTitle": "Brauchen Sie mehr Limits?",
+    "recommendedDescription": "Upgraden Sie, wenn Ihr Salon Export, KI-Hilfe oder mehrere Standorte benötigt.",
+    "startTrial": "30-Tage-Testversion starten",
+    "trialTitle": "30-Tage-Vollzugriff-Testversion starten",
+    "noCardRequired": "Keine Karte erforderlich",
+    "trialDescription": "Workspace erhält volle Multi-Location-Funktionen für 30 Tage, kehrt dann zu Free zurück, falls nicht abonniert.",
+    "trialActive": "{{daysRemaining}} Tage verbleibend in der Vollzugriff-Testversion.",
+    "trialExpiring": "{{daysRemaining}} Tage übrig. Wählen Sie jetzt einen Plan, um Export, KI und zusätzliche Standorte zu behalten.",
+    "trialExpired": "Vollzugriff-Testversion beendet",
+    "trialExpiredDescription": "Workspace ist zum Free-Plan zurückgekehrt. Alte Daten bleiben erhalten, aber Export, KI und zusätzliche Standorte sind bis zum Abonnement gesperrt.",
+    "upgradeNow": "Plan wählen",
+    "afterTrialTitle": "Was ändert sich nach der Testversion",
+    "afterTrialDescription": "Corely behält alle alten Daten. Nach 30 Tagen wechselt der Workspace zu Free und neue Nutzung folgt den monatlichen Limits von Free.",
+    "trialStarted": "Testversion gestartet",
+    "trialStartFailed": "Testversion kann derzeit nicht gestartet werden.",
+    "usageLabels": {
+      "usedOf": "Verwendet {{used}} / {{limit}}",
+      "currentPeriod": "Aktuelle Periode"
+    },
+    "featureLabels": {
+      "maxLocations": "Standorte",
+      "maxEntriesPerMonth": "Bareingänge",
+      "maxReceiptsPerMonth": "Belege",
+      "canExport": "Monatlicher Export",
+      "dailyClosing": "Tägliche Schließung",
+      "aiAssistant": "KI-Assistent",
+      "multilingualAiHelp": "Mehrsprachige KI-Hilfe",
+      "issueDetection": "Problemerkennung",
+      "closingGuidance": "Schließungsanleitung",
+      "teamAccess": "Team-Zugang",
+      "consolidatedOverview": "Konsolidierte Übersicht"
+    }
+  },
+  "cashDashboard": {
+    "headerTitle": "Dashboard Kassenkontrolle",
+    "headerSubtitle": "Tägliche Kontrolle für Bargeld und Belege im Salon.",
+    "previewLabel": "Vorschaustatus",
+    "previewStates": {
+      "open": "Tag offen",
+      "ready": "Abschluss bereit",
+      "closed": "Abgeschlossen und exportbereit"
+    },
+    "banner": {
+      "open": "Das Kassenbuch von heute ist noch offen",
+      "receiptsMissing": "{{count}} Belege fehlen",
+      "closeNow": "Du kannst den Tag jetzt abschließen",
+      "monthReady": "Dieser Monat ist exportbereit",
+      "closedToday": "Heute wurde abgeschlossen",
+      "staleTitle": "Letzter synchronisierter Kassenstand",
+      "staleDescription": "Eine neue Synchronisierung läuft noch. Bitte prüfe die letzten Einträge vor dem Tagesabschluss."
+    },
+    "actions": {
+      "addEntry": "Neuer Bareintrag",
+      "openEntries": "Einträge öffnen",
+      "closeDay": "Heutiges Kassenbuch schließen",
+      "exportMonth": "Export für Steuerberater",
+      "openRegister": "Kasse öffnen",
+      "attachReceipt": "Beleg anhängen",
+      "reviewEntries": "Einträge prüfen",
+      "seeAll": "Alle Einträge",
+      "edit": "Bearbeiten",
+      "reverse": "Stornieren",
+      "viewDetails": "Details",
+      "attachNow": "Jetzt anhängen",
+      "createFirstEntry": "Ersten Eintrag anlegen",
+      "openBilling": "Abrechnung öffnen",
+      "upgradeToStarter": "Auf Starter upgraden",
+      "upgradeToPro": "Auf Pro upgraden"
+    },
+    "labels": {
+      "openingBalance": "Anfangsbestand",
+      "cashInToday": "Bareinnahmen heute",
+      "cashOutToday": "Barausgaben heute",
+      "expectedBalance": "Sollbestand",
+      "countedCash": "Gezähltes Bargeld",
+      "difference": "Differenz",
+      "missingReceipts": "Fehlende Belege",
+      "dailyClosing": "Tagesabschluss",
+      "todaysCashStatus": "Kassenstatus heute",
+      "actionRequired": "Jetzt erledigen",
+      "recentEntries": "Letzte Einträge",
+      "receiptStatus": "Belegstatus",
+      "closingWorkflow": "Abschlussablauf",
+      "exportStatus": "Monatsexport",
+      "trendOverview": "Operativer Überblick",
+      "privateDeposits": "Privateinlagen",
+      "privateWithdrawals": "Privatentnahmen",
+      "lastClosedDate": "Zuletzt abgeschlossen",
+      "closedBy": "Abgeschlossen von",
+      "responsibleToday": "Verantwortlich heute",
+      "currentMonth": "Aktueller Monat",
+      "entriesCompleted": "Einträge abgeschlossen",
+      "lastExport": "Letzter Export",
+      "status": "Status",
+      "time": "Zeit",
+      "type": "Art",
+      "amount": "Betrag",
+      "note": "Notiz",
+      "receipt": "Beleg",
+      "rowActions": "Aktionen",
+      "attachedToday": "Heute angehängt",
+      "missingToday": "Heute fehlend",
+      "missingThisMonth": "Diesen Monat fehlend",
+      "weekIncome": "Bareinnahmen diese Woche",
+      "weekExpenses": "Barausgaben diese Woche",
+      "openDays": "Offene Tage",
+      "monthVsLastMonth": "Dieser Monat vs. letzter Monat",
+      "exportChecklistDays": "Alle erforderlichen Tage sind abgeschlossen",
+      "exportChecklistReceipts": "Alle erforderlichen Belege sind angehängt",
+      "exportChecklistReview": "Keine kritischen Prüfpunkte mehr offen",
+      "helperWidget": "Hilfe?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "Enthält {{deposit}} Privateinlagen und {{withdrawal}} Privatentnahmen.",
+      "countNotEntered": "Noch nicht erfasst",
+      "differenceBalanced": "Keine Differenz",
+      "differenceOver": "{{amount}} zu viel",
+      "differenceShort": "{{amount}} zu wenig",
+      "statusOpen": "Offen",
+      "statusNeedsReview": "Prüfung nötig",
+      "statusReadyToClose": "Bereit zum Abschluss",
+      "statusClosed": "Abgeschlossen",
+      "monthExportReady": "Export bereit",
+      "exportBlockedReceipts": "Durch fehlende Belege blockiert",
+      "exportBlockedDays": "Durch offene Tage blockiert",
+      "exportBlockedReview": "Durch Prüfpunkte blockiert",
+      "exportAlreadyGenerated": "Bereits exportiert",
+      "receiptsComplete": "Die Belegprüfung für heute ist vollständig.",
+      "receiptsIncomplete": "{{count} Belegpositionen brauchen heute noch Aufmerksamkeit.",
+      "noActionNeeded": "Im Moment ist nichts Dringendes offen",
+      "noActionDescription": "Das heutige Kassenbuch ist in Ordnung. Du kannst weitere Einträge erfassen oder den Monat exportieren.",
+      "noEntriesTitle": "Heute gibt es noch keine Kassenbewegung",
+      "noEntriesDescription": "Starte mit dem Anfangsbestand oder buche die erste Barbewegung aus dem Salon.",
+      "loadingTitle": "Tagesüberblick wird vorbereitet",
+      "loadingDescription": "Belege, Einträge und Abschlussstatus werden geladen."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "{{count}} Einträge ohne Beleg",
+      "missingReceiptsDescription": "Hänge die Belege an, bevor der Tag vertraut oder exportiert werden kann.",
+      "closeDayTitle": "Das Kassenbuch von heute ist noch nicht abgeschlossen",
+      "closeDayDescription": "Zähle die Kasse und bestätige den Endbestand, um den Tag abzuschließen.",
+      "missingNotesTitle": "{{count}} Barausgaben ohne Notiz",
+      "missingNotesDescription": "Ergänze eine kurze Notiz, damit die Ausgabe später klar bleibt.",
+      "openDaysTitle": "{{count}} Tage sind diese Woche noch offen",
+      "openDaysDescription": "Schließe offene Tage, damit der Monat ohne Nacharbeit exportiert werden kann.",
+      "reviewTitle": "{{count}} Einträge müssen geprüft werden",
+      "reviewDescription": "Prüfe ungewöhnliche Kassenbewegungen vor dem Abschluss.",
+      "exportTitle": "Der Monatsexport ist noch blockiert",
+      "exportDescription": "Beseitige die restlichen Blocker, bevor du an den Steuerberater sendest.",
+      "exportReadyTitle": "Der Monatsexport ist bereit",
+      "exportReadyDescription": "Der Monat kann jetzt ohne fehlende Unterlagen exportiert werden."
+    },
+    "entryTypes": {
+      "income": "Einnahme",
+      "expense": "Ausgabe",
+      "private-deposit": "Privateinlage",
+      "private-withdrawal": "Privatentnahme"
+    },
+    "entryStatus": {
+      "attached": "Vorhanden",
+      "missing": "Fehlt",
+      "review": "Prüfen",
+      "ok": "OK"
+    },
+    "assistant": {
+      "title": "Brauchst du Hilfe?",
+      "description": "Nutze den Assistenten nur bei Unklarheiten, nicht als Hauptworkflow.",
+      "prompts": [
+        "Warum ist heute nicht bereit zum Abschluss?",
+        "Welche Einträge brauchen noch Belege?",
+        "Warum fehlt mir Bargeld?",
+        "Was bedeutet Privateinlage?"
+      ],
+      "suggestions": [
+        {
+          "label": "Fehlende Belege finden",
+          "value": "Welche Bareinträge von heute brauchen noch einen Beleg?"
+        },
+        {
+          "label": "Kassenstatus heute",
+          "value": "Zeig mir den heutigen Kassenstatus und ob ich abschließen kann."
+        },
+        {
+          "label": "Tag abschließen",
+          "value": "Was blockiert den heutigen Tagesabschluss?"
+        },
+        {
+          "label": "Begriff erklären",
+          "value": "Was bedeutet Privateinlage im Kassenbuch?"
+        }
+      ],
+      "languages": "Deutsch, Englisch, Vietnamesisch",
+      "lockedTitle": "KI-Hilfe ist in diesem Tarif gesperrt",
+      "lockedDescription": "Upgrade auf Pro, um den Kassenassistenten, mehrsprachige Erklärungen und geführte Prüfung freizuschalten.",
+      "lockedBadge": "KI gesperrt"
+    },
+    "severity": {
+      "high": "Hoch",
+      "medium": "Mittel",
+      "low": "Niedrig"
+    }
   }
 }

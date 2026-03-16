@@ -13,7 +13,7 @@ import {
   Store,
   BookOpen,
 } from "lucide-react";
-import { Logo } from "@corely/web-shared/shared/components/Logo";
+import { Logo, LanguageSelector } from "@corely/web-shared/shared/components";
 import { useThemeStore } from "@corely/web-shared/shared/theme/themeStore";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import { WorkspaceSwitcher } from "@corely/web-shared/shared/workspaces/WorkspaceSwitcher";
@@ -51,6 +51,7 @@ export interface AppSidebarProps {
   showWorkspaceTypeBadge?: boolean;
   workspaceSwitcherMode?: WorkspaceSwitcherMode;
   notificationBell?: React.ReactNode;
+  logo?: React.ReactNode;
 }
 
 const isWorkspaceSwitcherVisible = (mode: WorkspaceSwitcherMode, workspaceCount: number) => {
@@ -94,6 +95,7 @@ export function AppSidebar({
   showWorkspaceTypeBadge = true,
   workspaceSwitcherMode = "always",
   notificationBell,
+  logo,
 }: AppSidebarProps) {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useThemeStore();
@@ -132,11 +134,6 @@ export function AppSidebar({
       .filter((group) => group.items.length > 0);
   }, [hiddenItemIds, isHostScope, navigationGroups, workspaceNavigationGroups]);
 
-  const changeLanguage = (lang: string) => {
-    void i18n.changeLanguage(lang);
-    localStorage.setItem("Corely One ERP-language", lang);
-  };
-
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
@@ -163,7 +160,7 @@ export function AppSidebar({
           </Button>
         ) : (
           <>
-            <Logo size="md" showText={!collapsed} />
+            {logo ?? <Logo size="md" showText={!collapsed} />}
             <Button
               variant="ghost"
               size="icon-sm"
@@ -310,30 +307,7 @@ export function AppSidebar({
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <span className="text-lg leading-none">
-                  {i18n.language === "de" ? "🇩🇪" : i18n.language === "vi" ? "🇻🇳" : "🇬🇧"}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32">
-              <DropdownMenuItem onClick={() => changeLanguage("de")}>
-                🇩🇪 {t("settings.languages.de")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("en")}>
-                🇬🇧 {t("settings.languages.en")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("vi")}>
-                🇻🇳 {t("settings.languages.vi")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <LanguageSelector />
 
           {!collapsed ? (
             <Button variant="ghost" size="icon-sm" asChild>
