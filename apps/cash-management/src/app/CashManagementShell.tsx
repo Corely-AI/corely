@@ -165,61 +165,60 @@ export const CashManagementShell = () => {
     setBannerDismissed(true);
   };
 
+  const trialBanner =
+    trial?.status === "active" && !activeBannerDismissed ? (
+      <div className="sticky top-0 z-20 px-4 pt-3 lg:px-6">
+        <Alert
+          className={cn(
+            "relative flex flex-col gap-1 pr-12",
+            trial.isExpiringSoon
+              ? "border-amber-500/40 bg-amber-500/10 shadow-lg"
+              : "border-emerald-500/35 bg-emerald-500/10 shadow-lg"
+          )}
+        >
+          <Sparkles className="h-4 w-4" />
+          <AlertTitle>
+            {trial.isExpiringSoon
+              ? t("common.trial.expiringTitle", { days: trial.daysRemaining })
+              : t("common.trial.activeTitle", { days: trial.daysRemaining })}
+          </AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center gap-3">
+            <span>{t("common.trial.description")}</span>
+            <Button asChild size="sm">
+              <Link to="/billing">{t("common.trial.cta")}</Link>
+            </Button>
+          </AlertDescription>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-2 top-2 h-8 w-8 text-muted-foreground hover:text-foreground"
+            onClick={dismissActiveBanner}
+            aria-label={t("common.trial.dismiss")}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </Alert>
+      </div>
+    ) : trial?.status === "expired" && !bannerDismissed ? (
+      <div className="sticky top-0 z-20 px-4 pt-3 lg:px-6">
+        <Alert className="border-amber-500/45 bg-amber-500/12 shadow-lg">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{t("common.trial.expiredTitle")}</AlertTitle>
+          <AlertDescription className="flex flex-wrap items-center gap-3">
+            <span>{t("common.trial.expiredDescription")}</span>
+            <Button asChild size="sm">
+              <Link to="/billing">{t("common.trial.cta")}</Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={dismissBanner}>
+              {t("common.trial.dismiss")}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    ) : null;
+
   return (
     <>
-      {trial?.status === "active" && !activeBannerDismissed ? (
-        <div className="fixed inset-x-0 top-0 z-50 px-4 pt-3 lg:left-[17rem] lg:pr-6">
-          <Alert
-            className={cn(
-              "relative flex flex-col gap-1 pr-12",
-              trial.isExpiringSoon
-                ? "border-amber-500/40 bg-amber-500/10 shadow-lg"
-                : "border-emerald-500/35 bg-emerald-500/10 shadow-lg"
-            )}
-          >
-            <Sparkles className="h-4 w-4" />
-            <AlertTitle>
-              {trial.isExpiringSoon
-                ? t("common.trial.expiringTitle", { days: trial.daysRemaining })
-                : t("common.trial.activeTitle", { days: trial.daysRemaining })}
-            </AlertTitle>
-            <AlertDescription className="flex flex-wrap items-center gap-3">
-              <span>{t("common.trial.description")}</span>
-              <Button asChild size="sm">
-                <Link to="/billing">{t("common.trial.cta")}</Link>
-              </Button>
-            </AlertDescription>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-2 h-8 w-8 text-muted-foreground hover:text-foreground"
-              onClick={dismissActiveBanner}
-              aria-label={t("common.trial.dismiss")}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </Alert>
-        </div>
-      ) : null}
-
-      {trial?.status === "expired" && !bannerDismissed ? (
-        <div className="fixed inset-x-0 top-0 z-50 px-4 pt-3 lg:left-[17rem] lg:pr-6">
-          <Alert className="border-amber-500/45 bg-amber-500/12 shadow-lg">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>{t("common.trial.expiredTitle")}</AlertTitle>
-            <AlertDescription className="flex flex-wrap items-center gap-3">
-              <span>{t("common.trial.expiredDescription")}</span>
-              <Button asChild size="sm">
-                <Link to="/billing">{t("common.trial.cta")}</Link>
-              </Button>
-              <Button variant="ghost" size="sm" onClick={dismissBanner}>
-                {t("common.trial.dismiss")}
-              </Button>
-            </AlertDescription>
-          </Alert>
-        </div>
-      ) : null}
-
       <AppShell
         navigationGroups={cashManagementNavigationGroups}
         sidebarProps={{
@@ -240,6 +239,7 @@ export const CashManagementShell = () => {
           />
         )}
         includeWorkspaceQuickActions={false}
+        topContent={trialBanner}
       />
 
       <Dialog open={expiryModalOpen} onOpenChange={setExpiryModalOpen}>

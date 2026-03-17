@@ -11,6 +11,7 @@ import { GetTaxProfileUseCase } from "./application/use-cases/get-tax-profile.us
 import { UpsertTaxProfileUseCase } from "./application/use-cases/upsert-tax-profile.use-case";
 import { ListTaxCodesUseCase } from "./application/use-cases/list-tax-codes.use-case";
 import { CreateTaxCodeUseCase } from "./application/use-cases/create-tax-code.use-case";
+import { CreateTaxRateUseCase } from "./application/use-cases/create-tax-rate.use-case";
 import { CalculateTaxUseCase } from "./application/use-cases/calculate-tax.use-case";
 import { LockTaxSnapshotUseCase } from "./application/use-cases/lock-tax-snapshot.use-case";
 import { GetTaxSummaryUseCase } from "./application/use-cases/get-tax-summary.use-case";
@@ -20,6 +21,7 @@ import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-
 import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
 import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
 import { ListVatPeriodsUseCase } from "./application/use-cases/list-vat-periods.use-case";
+import { ListTaxRatesUseCase } from "./application/use-cases/list-tax-rates.use-case";
 import { GetVatPeriodSummaryUseCase } from "./application/use-cases/get-vat-period-summary.use-case";
 import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-period-details.use-case";
 import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
@@ -152,6 +154,8 @@ import { HttpTaxElsterGatewayAdapter } from "./infrastructure/eric/http-tax-elst
     UpsertTaxProfileUseCase,
     ListTaxCodesUseCase,
     CreateTaxCodeUseCase,
+    ListTaxRatesUseCase,
+    CreateTaxRateUseCase,
     CalculateTaxUseCase,
     LockTaxSnapshotUseCase,
     GetTaxSummaryUseCase,
@@ -295,6 +299,9 @@ import { HttpTaxElsterGatewayAdapter } from "./infrastructure/eric/http-tax-elst
     CalculateTaxUseCase,
     LockTaxSnapshotUseCase,
     TaxEngineService,
+    TaxProfileRepoPort,
+    TaxCodeRepoPort,
+    TaxRateRepoPort,
     GenerateTaxReportsUseCase,
     CreateIncomeTaxDraftUseCase,
     GetIncomeTaxDraftUseCase,

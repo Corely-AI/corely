@@ -72,6 +72,13 @@ export type CashPaymentMethod =
 export const PaymentMethod = CashPaymentMethod;
 export type PaymentMethod = CashPaymentMethod;
 
+export const CashEntryTaxMode = {
+  NONE: "NONE",
+  OUTPUT_VAT: "OUTPUT_VAT",
+  INPUT_VAT: "INPUT_VAT",
+} as const;
+export type CashEntryTaxMode = (typeof CashEntryTaxMode)[keyof typeof CashEntryTaxMode];
+
 export const CashDayCloseStatus = {
   DRAFT: "DRAFT",
   SUBMITTED: "SUBMITTED",

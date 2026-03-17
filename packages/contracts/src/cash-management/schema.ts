@@ -4,6 +4,7 @@ import {
   CashDayCloseStatus,
   CashEntryDirection,
   CashEntrySource,
+  CashEntryTaxMode,
   CashEntryType,
   DailyCloseStatus,
 } from "./constants";
@@ -40,6 +41,11 @@ const paymentMethodValues = [
   CashPaymentMethod.TRANSFER,
   CashPaymentMethod.OTHER,
 ] as const;
+const cashEntryTaxModeValues = [
+  CashEntryTaxMode.NONE,
+  CashEntryTaxMode.OUTPUT_VAT,
+  CashEntryTaxMode.INPUT_VAT,
+] as const;
 const cashDayCloseStatusValues = [
   CashDayCloseStatus.DRAFT,
   CashDayCloseStatus.SUBMITTED,
@@ -52,7 +58,27 @@ export const CashEntrySourceSchema = z.union([KnownCashEntrySourceSchema, z.stri
 export const CashEntryTypeSchema = z.enum(cashEntryTypeValues);
 export const KnownCashPaymentMethodSchema = z.enum(paymentMethodValues);
 export const CashPaymentMethodSchema = z.union([KnownCashPaymentMethodSchema, z.string().min(1)]);
+export const CashEntryTaxModeSchema = z.enum(cashEntryTaxModeValues);
 export const CashDayCloseStatusSchema = z.enum(cashDayCloseStatusValues);
+
+export const CashEntryTaxSnapshotSchema = z.object({
+  mode: CashEntryTaxModeSchema,
+  taxCodeId: z.string().nullable().optional(),
+  taxCode: z.string().nullable().optional(),
+  taxRateBps: z.number().int().min(0).max(10000).nullable().optional(),
+  taxLabel: z.string().nullable().optional(),
+  grossAmountCents: z.number().int().positive(),
+  netAmountCents: z.number().int().nonnegative(),
+  taxAmountCents: z.number().int().nonnegative(),
+});
+export type CashEntryTaxSnapshot = z.infer<typeof CashEntryTaxSnapshotSchema>;
+
+export const CashEntrySourceDocumentSchema = z.object({
+  documentId: z.string().nullable().optional(),
+  reference: z.string().nullable().optional(),
+  kind: z.string().nullable().optional(),
+});
+export type CashEntrySourceDocument = z.infer<typeof CashEntrySourceDocumentSchema>;
 
 export const CashRegisterSchema = z.object({
   id: z.string(),
@@ -80,9 +106,22 @@ export const CashEntrySchema = z.object({
   direction: CashEntryDirectionSchema,
   source: CashEntrySourceSchema,
   paymentMethod: CashPaymentMethodSchema.default(CashPaymentMethod.CASH),
+  grossAmountCents: z.number().int().positive(),
+  netAmountCents: z.number().int().nonnegative().nullable().optional(),
+  taxAmountCents: z.number().int().nonnegative().nullable().optional(),
+  taxMode: CashEntryTaxModeSchema.nullable().optional(),
+  taxCodeId: z.string().nullable().optional(),
+  taxCode: z.string().nullable().optional(),
+  taxRateBps: z.number().int().min(0).max(10000).nullable().optional(),
+  taxLabel: z.string().nullable().optional(),
+  tax: CashEntryTaxSnapshotSchema.nullable().optional(),
   amount: z.number().int().positive(),
   currency: z.string().length(3).default("EUR"),
   dayKey: DayKeySchema,
+  sourceDocumentId: z.string().nullable().optional(),
+  sourceDocumentRef: z.string().nullable().optional(),
+  sourceDocumentKind: z.string().nullable().optional(),
+  sourceDocument: CashEntrySourceDocumentSchema.nullable().optional(),
   reversalOfEntryId: z.string().optional().nullable(),
   reversedByEntryId: z.string().optional().nullable(),
   lockedByDayCloseId: z.string().optional().nullable(),
@@ -174,22 +213,42 @@ export const CreateCashEntryInputSchema = z
     sourceType: CashEntrySourceSchema.optional(),
     description: z.string().min(1),
     paymentMethod: CashPaymentMethodSchema.optional().default(CashPaymentMethod.CASH),
+    grossAmountCents: z.number().int().positive().optional(),
     amount: z.number().int().positive().optional(),
     amountCents: z.number().int().positive().optional(),
+    tax: z
+      .object({
+        mode: CashEntryTaxModeSchema.optional(),
+        taxCodeId: z.string().optional().nullable(),
+      })
+      .optional(),
     currency: z.string().length(3).optional().default("EUR"),
     occurredAt: z.string().optional(),
     dayKey: DayKeySchema.optional(),
     businessDate: DayKeySchema.optional(),
+    sourceDocument: CashEntrySourceDocumentSchema.optional(),
     referenceId: z.string().optional().nullable(),
     reversalOfEntryId: z.string().optional().nullable(),
     idempotencyKey: z.string().optional(),
   })
   .superRefine((value, ctx) => {
-    if (value.amount === undefined && value.amountCents === undefined) {
+    if (
+      value.grossAmountCents === undefined &&
+      value.amount === undefined &&
+      value.amountCents === undefined
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "amount or amountCents is required",
+        message: "grossAmountCents, amount, or amountCents is required",
         path: ["amount"],
+      });
+    }
+
+    if (value.tax?.mode && value.tax.mode !== CashEntryTaxMode.NONE && !value.tax.taxCodeId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "tax.taxCodeId is required when tax mode is taxable",
+        path: ["tax", "taxCodeId"],
       });
     }
   });

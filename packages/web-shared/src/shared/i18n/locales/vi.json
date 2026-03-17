@@ -243,8 +243,10 @@
       "annualAssistant": "Trợ lý năm"
     },
     "assistant": "Trợ lý",
+    "billing": "Thanh toán",
     "expenses": "Chi phí",
     "invoices": "Hóa đơn",
+    "registers": "Quầy thu",
     "directory": {
       "restaurants": "Nhà hàng"
     },
@@ -1354,7 +1356,7 @@
           "type": "Loại",
           "direction": "THU/CHI",
           "amount": "Số tiền",
-          "payment": "Thanh toán",
+          "tax": "VAT",
           "source": "Nguồn",
           "balanceAfter": "Số dư sau",
           "beleg": "Chứng từ",
@@ -1363,18 +1365,45 @@
         "rowActions": {
           "viewRegister": "Xem quầy thu",
           "reverse": "Đảo bút toán",
-          "addBeleg": "Thêm chứng từ"
+          "addBeleg": "Thêm chứng từ",
+          "downloadBeleg": "Tải chứng từ"
+        },
+        "camera": {
+          "title": "Máy ảnh",
+          "description": "Dùng camera của thiết bị để chụp chứng từ trực tiếp.",
+          "capture": "Chụp ảnh",
+          "switchCamera": "Đổi camera",
+          "unavailable": "Trình duyệt này không hỗ trợ camera.",
+          "permissionDenied": "Quyền truy cập camera đã bị từ chối."
         },
         "createDialog": {
           "title": "Tạo bút toán tiền mặt",
-          "direction": "Hướng",
-          "amount": "Số tiền",
+          "description": "Ghi nhận một bút toán Kassenbuch chỉ dùng tiền mặt với số tiền gộp, chứng từ và VAT khi cần.",
+          "grossAmount": "Số tiền gộp",
           "type": "Loại",
-          "paymentMethod": "Phương thức thanh toán",
-          "description": "Mô tả",
+          "taxCodeRequired": "Mã VAT",
+          "taxCodeOptional": "Mã VAT (tùy chọn)",
+          "noVat": "Không VAT",
+          "taxProfileRequiredTitle": "Cần thiết lập thuế",
+          "taxProfileRequiredDescription": "Hãy chọn cách Kassenbuch này xử lý VAT trước khi ghi nhận các giao dịch bán tiền mặt chịu thuế.",
+          "setupStandardVat": "Dùng VAT chuẩn của Đức",
+          "setupSmallBusiness": "Dùng Kleinunternehmer (không VAT)",
+          "taxSummary": "Tóm tắt VAT",
+          "netAmount": "Số tiền thuần",
+          "taxAmount": "Tiền VAT",
+          "outputVat": "VAT đầu ra",
+          "inputVat": "VAT đầu vào",
+          "salesVatRequiredHint": "Chọn mã VAT dùng cho giao dịch bán tiền mặt này.",
+          "salesVatOptionalHint": "Chọn mã VAT khi giao dịch bán tiền mặt này chịu thuế.",
+          "expenseVatHint": "Chỉ chọn mã VAT đầu vào khi chi phí này có chứng từ hợp lệ để khấu trừ.",
+          "bookingText": "Nội dung bút toán",
+          "documentReference": "Tham chiếu chứng từ / Eigenbeleg",
+          "documentReferencePlaceholder": "Số chứng từ, số hóa đơn hoặc lý do",
+          "documentReferenceHint": "Nhập tham chiếu chứng từ hoặc tải lên chứng từ. Chỉ số dư đầu ngày mới có thể để trống.",
           "occurredAt": "Thời điểm phát sinh",
           "attachBeleg": "Đính kèm chứng từ (tùy chọn)",
           "chooseAttachment": "Chọn tệp",
+          "takePicture": "Chụp ảnh",
           "replaceAttachment": "Thay tệp",
           "noAttachment": "Chưa chọn tệp",
           "projectedBalance": "Số dư dự kiến sau khi lưu",
@@ -1384,13 +1413,19 @@
         },
         "reverseDialog": {
           "title": "Đảo bút toán",
+          "description": "Đảo bút toán tiền mặt đã ghi sổ này với một lý do có thể kiểm toán được.",
           "reason": "Lý do",
           "failed": "Không thể đảo bút toán.",
           "confirm": "Xác nhận đảo"
         },
         "attachmentDialog": {
           "title": "Thêm chứng từ vào bút toán",
-          "documentId": "ID tài liệu",
+          "description": "Tải lên tệp chứng từ hoặc chụp ảnh để đính kèm chứng từ hỗ trợ cho bút toán tiền mặt này.",
+          "file": "Tệp chứng từ",
+          "uploadFile": "Tải tệp lên",
+          "replaceFile": "Thay tệp",
+          "takePicture": "Chụp ảnh",
+          "noFile": "Chưa chọn tệp",
           "failed": "Không thể đính kèm chứng từ.",
           "attach": "Đính kèm"
         }
@@ -3047,6 +3082,77 @@
     "afterTrialDescription": "Corely vẫn giữ toàn bộ dữ liệu cũ. Sau 30 ngày, workspace chuyển về Free và mức sử dụng mới theo giới hạn tháng của Free.",
     "trialStarted": "Đã bắt đầu dùng thử",
     "trialStartFailed": "Không thể bắt đầu dùng thử lúc này.",
+    "pricePerMonth": "{{price}} / tháng",
+    "remaining": "Còn {{count}}",
+    "featuredPlanNameFallback": "Nâng cấp",
+    "featuredTitleFree": "Nâng cấp để mở xuất dữ liệu, AI và hóa đơn không giới hạn",
+    "featuredTitlePaid": "Duy trì đầy đủ tính năng",
+    "featuredDescriptionFallback": "Kiểm soát sổ quỹ toàn diện với xuất dữ liệu, trợ lý AI và hỗ trợ nhiều địa điểm.",
+    "featuredFootnoteFree": "Bút toán và hóa đơn không giới hạn, kèm xuất dữ liệu, trợ lý AI và nhiều địa điểm.",
+    "featuredFootnotePaid": "Giữ xuất dữ liệu, AI và nhiều địa điểm luôn sẵn sàng cho nhóm của bạn.",
+    "statusLabels": {
+      "free": "Miễn phí",
+      "active": "Đang hoạt động",
+      "trialing": "Đang dùng thử",
+      "past_due": "Quá hạn",
+      "canceled": "Đã hủy",
+      "incomplete": "Chưa hoàn tất",
+      "incomplete_expired": "Hết hạn khi chưa hoàn tất",
+      "unpaid": "Chưa thanh toán"
+    },
+    "usageMetrics": {
+      "entries": "Bút toán tiền mặt trong kỳ này",
+      "receipts": "Hóa đơn trong kỳ này"
+    },
+    "usageNudges": {
+      "entries": "Nâng cấp để có bút toán tiền mặt không giới hạn và xuất dữ liệu.",
+      "receipts": "Nâng cấp để có hóa đơn không giới hạn và xuất dữ liệu."
+    },
+    "plans": {
+      "free": {
+        "name": "Miễn phí",
+        "summary": "Dành cho một địa điểm salon đang bắt đầu với kiểm soát tiền mặt cơ bản hằng ngày.",
+        "highlights": {
+          "0": "1 địa điểm",
+          "1": "30 bút toán mỗi tháng",
+          "2": "10 hóa đơn mỗi tháng",
+          "3": "Không xuất dữ liệu",
+          "4": "Không có trợ lý AI"
+        }
+      },
+      "starter-monthly": {
+        "name": "Starter",
+        "summary": "Vận hành sổ quỹ hằng ngày không giới hạn cho một địa điểm.",
+        "highlights": {
+          "0": "1 địa điểm",
+          "1": "Bút toán không giới hạn",
+          "2": "Hóa đơn không giới hạn",
+          "3": "Đóng sổ hằng ngày",
+          "4": "Xuất dữ liệu theo tháng"
+        }
+      },
+      "pro-monthly": {
+        "name": "Pro",
+        "summary": "Bổ sung trợ lý AI và phát hiện vấn đề nâng cao cho một địa điểm.",
+        "highlights": {
+          "0": "Bao gồm mọi thứ trong Starter",
+          "1": "Trợ lý AI",
+          "2": "AI đa ngôn ngữ",
+          "3": "Phát hiện vấn đề",
+          "4": "Hướng dẫn đóng sổ"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Nhiều địa điểm",
+        "summary": "Dành cho chuỗi salon quản lý nhiều địa điểm và nhiều nhóm.",
+        "highlights": {
+          "0": "Bao gồm mọi thứ trong Pro",
+          "1": "Nhiều địa điểm",
+          "2": "Truy cập theo nhóm",
+          "3": "Tổng quan hợp nhất"
+        }
+      }
+    },
     "usageLabels": {
       "usedOf": "Đã dùng {{used}} / {{limit}}",
       "currentPeriod": "Kỳ hiện tại"

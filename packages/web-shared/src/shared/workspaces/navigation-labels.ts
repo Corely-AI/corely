@@ -17,6 +17,9 @@ const NAV_GROUP_KEY_BY_ID: Record<string, string> = {
 
 const NAV_ITEM_KEY_BY_ID: Record<string, string> = {
   dashboard: "nav.dashboard",
+  "cash-dashboard": "nav.dashboard",
+  "cash-billing": "nav.billing",
+  "cash-registers": "nav.registers",
   "crm-dashboard": "nav.crmDashboard",
   "crm-deals": "nav.crmDeals",
   "crm-leads": "nav.crmLeads",
@@ -43,6 +46,7 @@ const NAV_ITEM_KEY_BY_ID: Record<string, string> = {
   "cash-management": "nav.cashManagement",
   "purchase-orders": "nav.purchaseOrders",
   "purchasing-settings": "nav.purchasingSettings",
+  settings: "nav.settings",
   "workspace-settings": "nav.workspace",
   "workspace-profile": "nav.profile",
   "workspace-members": "nav.members",
@@ -64,6 +68,8 @@ const NAV_ITEM_KEY_BY_ID: Record<string, string> = {
 const NAV_ITEM_KEY_BY_ROUTE_PREFIX: Array<[prefix: string, key: string]> = [
   ["/dashboard", "nav.dashboard"],
   ["/assistant", "nav.assistant"],
+  ["/billing", "nav.billing"],
+  ["/cash/registers", "nav.registers"],
   ["/expenses", "nav.expenses"],
   ["/invoices", "nav.invoices"],
   ["/crm/deals", "nav.crmDeals"],
@@ -89,6 +95,7 @@ const NAV_ITEM_KEY_BY_ROUTE_PREFIX: Array<[prefix: string, key: string]> = [
   ["/settings/members", "nav.members"],
   ["/settings/roles", "nav.roles"],
   ["/settings/payment-methods", "nav.paymentMethods"],
+  ["/settings", "nav.settings"],
   ["/classes/sessions", "nav.classSessions"],
   ["/classes/billing", "nav.classBilling"],
   ["/classes", "nav.classes"],
@@ -105,6 +112,9 @@ const NAV_ITEM_KEY_BY_ROUTE_PREFIX: Array<[prefix: string, key: string]> = [
 const NAV_ITEM_KEY_BY_ENGLISH_LABEL: Record<string, string> = {
   dashboard: "nav.dashboard",
   assistant: "nav.assistant",
+  billing: "nav.billing",
+  registers: "nav.registers",
+  settings: "nav.settings",
   expenses: "nav.expenses",
   invoices: "nav.invoices",
   clients: "nav.clients",

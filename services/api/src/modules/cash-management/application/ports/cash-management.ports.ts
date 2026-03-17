@@ -3,6 +3,7 @@ import type {
   CashPaymentMethod as CashPaymentMethodType,
   CashEntryDirection,
   CashEntrySource,
+  CashEntryTaxMode as CashEntryTaxModeType,
   CashEntryType,
   ExportCashBookFormat,
 } from "@corely/contracts";
@@ -105,8 +106,19 @@ export type CreateEntryRecord = {
   source: CashEntrySource;
   paymentMethod: CashPaymentMethodType;
   amountCents: number;
+  grossAmountCents: number;
+  netAmountCents: number | null;
+  taxAmountCents: number | null;
+  taxMode: CashEntryTaxModeType | null;
+  taxCodeId: string | null;
+  taxCode: string | null;
+  taxRateBps: number | null;
+  taxLabel: string | null;
   currency: string;
   balanceAfterCents: number;
+  sourceDocumentId: string | null;
+  sourceDocumentRef: string | null;
+  sourceDocumentKind: string | null;
   referenceId: string | null;
   reversalOfEntryId: string | null;
   lockedByDayCloseId: string | null;

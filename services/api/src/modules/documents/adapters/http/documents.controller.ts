@@ -60,6 +60,24 @@ export class DocumentsController {
     return mapResultToHttp(result);
   }
 
+  @Get(":documentId/download")
+  async getDocumentDownload(
+    @Param("documentId") documentId: string,
+    @Req() req: Request,
+    @Res() res: Response
+  ) {
+    const input = GetDownloadUrlInputSchema.parse({ documentId });
+    const ctx = buildUseCaseContext(req);
+    const result = await this.app.proxyDownload.execute(input, ctx);
+    if (isErr(result)) {
+      return mapResultToHttp(result);
+    }
+    const { buffer, filename, contentType } = result.value;
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return res.send(buffer);
+  }
+
   @Post(":documentId/link")
   async linkDocument(
     @Param("documentId") documentId: string,

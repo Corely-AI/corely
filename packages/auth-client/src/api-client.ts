@@ -65,6 +65,10 @@ export class ApiClient {
       signal?: AbortSignal;
     }
   ): Promise<T> {
+    if (!opts?.skipTokenRefresh) {
+      await this.authClient.ensureValidAccessToken();
+    }
+
     const accessToken = this.authClient.getAccessToken();
     const workspaceId = await this.storage.getActiveWorkspaceId();
     const parseJson = opts?.parseJson ?? true;
@@ -191,6 +195,8 @@ export class ApiClient {
     endpoint: string,
     options: ApiClientSseOptions<TData>
   ): Promise<() => void> {
+    await this.authClient.ensureValidAccessToken();
+
     const accessToken = this.authClient.getAccessToken();
     const workspaceId = await this.storage.getActiveWorkspaceId();
 

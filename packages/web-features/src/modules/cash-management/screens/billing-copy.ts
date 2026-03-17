@@ -38,6 +38,20 @@ export type BillingCopy = {
   afterTrialDescription: string;
   trialStarted: string;
   trialStartFailed: string;
+  pricePerMonth: (price: string) => string;
+  remaining: (count: number) => string;
+  featuredPlanNameFallback: string;
+  featuredTitleFree: string;
+  featuredTitlePaid: string;
+  featuredDescriptionFallback: string;
+  featuredFootnoteFree: string;
+  featuredFootnotePaid: string;
+  planName: (planCode: string, fallback: string) => string;
+  planSummary: (planCode: string, fallback: string) => string;
+  planHighlight: (planCode: string, index: number, fallback: string) => string;
+  usageMetricLabel: (metricKey: string, fallback: string) => string;
+  usageNudge: (metricKey: string, fallback: string) => string;
+  statusLabel: (status: string) => string;
   usageLabels: {
     usedOf: (used: number, limit: string) => string;
     currentPeriod: string;
@@ -57,8 +71,10 @@ export type BillingCopy = {
   };
 };
 
+const humanizeStatus = (status: string) => status.replace(/_/g, " ");
+
 export const useBillingCopy = (): BillingCopy => {
-  const { t } = useTranslation("billing");
+  const { t } = useTranslation(undefined, { keyPrefix: "billing" });
 
   return {
     title: t("title"),
@@ -96,6 +112,22 @@ export const useBillingCopy = (): BillingCopy => {
     afterTrialDescription: t("afterTrialDescription"),
     trialStarted: t("trialStarted"),
     trialStartFailed: t("trialStartFailed"),
+    pricePerMonth: (price) => t("pricePerMonth", { price }),
+    remaining: (count) => t("remaining", { count }),
+    featuredPlanNameFallback: t("featuredPlanNameFallback"),
+    featuredTitleFree: t("featuredTitleFree"),
+    featuredTitlePaid: t("featuredTitlePaid"),
+    featuredDescriptionFallback: t("featuredDescriptionFallback"),
+    featuredFootnoteFree: t("featuredFootnoteFree"),
+    featuredFootnotePaid: t("featuredFootnotePaid"),
+    planName: (planCode, fallback) => t(`plans.${planCode}.name`, { defaultValue: fallback }),
+    planSummary: (planCode, fallback) => t(`plans.${planCode}.summary`, { defaultValue: fallback }),
+    planHighlight: (planCode, index, fallback) =>
+      t(`plans.${planCode}.highlights.${index}`, { defaultValue: fallback }),
+    usageMetricLabel: (metricKey, fallback) =>
+      t(`usageMetrics.${metricKey}`, { defaultValue: fallback }),
+    usageNudge: (metricKey, fallback) => t(`usageNudges.${metricKey}`, { defaultValue: fallback }),
+    statusLabel: (status) => t(`statusLabels.${status}`, { defaultValue: humanizeStatus(status) }),
     usageLabels: {
       usedOf: (used, limit) => t("usageLabels.usedOf", { used, limit }),
       currentPeriod: t("usageLabels.currentPeriod"),

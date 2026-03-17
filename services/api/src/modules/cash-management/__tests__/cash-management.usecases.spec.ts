@@ -18,6 +18,9 @@ import type {
   UseCaseContext,
 } from "@corely/kernel";
 import type { IdempotencyStoragePort } from "@/shared/ports/idempotency-storage.port";
+import type { TaxCodeRepoPort } from "../../tax/domain/ports/tax-code-repo.port";
+import type { TaxProfileRepoPort } from "../../tax/domain/ports/tax-profile-repo.port";
+import type { TaxRateRepoPort } from "../../tax/domain/ports/tax-rate-repo.port";
 import { CreateCashEntryUseCase } from "../application/use-cases/create-cash-entry.usecase";
 import { ReverseCashEntryUseCase } from "../application/use-cases/reverse-cash-entry.usecase";
 import { GetCashDashboardQueryUseCase } from "../application/use-cases/get-cash-dashboard.query";
@@ -51,6 +54,82 @@ const makeAudit = (): AuditPort => ({
 
 const makeOutbox = (): OutboxPort => ({
   enqueue: vi.fn(async () => {}),
+});
+
+const makeTaxProfileRepo = (
+  regime: "SMALL_BUSINESS" | "STANDARD_VAT" | "VAT_EXEMPT" | null = "SMALL_BUSINESS"
+): TaxProfileRepoPort => ({
+  getActive: async () =>
+    regime
+      ? {
+          id: "tax-profile-1",
+          tenantId: "tenant-1",
+          country: "DE",
+          regime,
+          vatEnabled: true,
+          vatId: "DE123456789",
+          currency: "EUR",
+          filingFrequency: "MONTHLY",
+          vatAccountingMethod: "IST",
+          taxYearStartMonth: 1,
+          localTaxOfficeName: null,
+          vatExemptionParagraph: null,
+          euB2BSales: false,
+          hasEmployees: false,
+          usesTaxAdvisor: false,
+          effectiveFrom: new Date("2026-01-01T00:00:00.000Z"),
+          effectiveTo: null,
+          createdAt: new Date("2026-01-01T00:00:00.000Z"),
+          updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+        }
+      : null,
+  create: async () => {
+    throw new Error("not used");
+  },
+  findById: async () => null,
+});
+
+const makeTaxCodeRepo = (): TaxCodeRepoPort => ({
+  create: async () => {
+    throw new Error("not used");
+  },
+  findById: async (id) => ({
+    id,
+    tenantId: "tenant-1",
+    code: "DE_STD_19",
+    kind: "STANDARD",
+    label: "USt 19%",
+    isActive: true,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  }),
+  findByCode: async () => null,
+  findByKind: async () => [],
+  findAll: async () => [],
+  update: async () => {
+    throw new Error("not used");
+  },
+  delete: async () => {},
+});
+
+const makeTaxRateRepo = (): TaxRateRepoPort => ({
+  create: async () => {
+    throw new Error("not used");
+  },
+  findEffectiveRate: async () => ({
+    id: "tax-rate-1",
+    tenantId: "tenant-1",
+    taxCodeId: "tax-code-1",
+    rateBps: 1900,
+    effectiveFrom: new Date("2026-01-01T00:00:00.000Z"),
+    effectiveTo: null,
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+  }),
+  findByTaxCode: async () => [],
+  update: async () => {
+    throw new Error("not used");
+  },
 });
 
 const baseSubscription: BillingSubscription = {
@@ -208,8 +287,19 @@ const baseEntry: CashEntryEntity = {
   source: CashEntrySource.MANUAL,
   paymentMethod: CashPaymentMethod.CASH,
   amountCents: 2500,
+  grossAmountCents: 2500,
+  netAmountCents: 2500,
+  taxAmountCents: 0,
+  taxMode: "NONE",
+  taxCodeId: null,
+  taxCode: null,
+  taxRateBps: null,
+  taxLabel: null,
   currency: "EUR",
   balanceAfterCents: 10000,
+  sourceDocumentId: null,
+  sourceDocumentRef: null,
+  sourceDocumentKind: null,
   referenceId: null,
   reversalOfEntryId: null,
   reversedByEntryId: null,
@@ -559,6 +649,9 @@ describe("cash-management use cases", () => {
       entryRepo,
       dayCloseRepo,
       makeBillingAccess(),
+      makeTaxProfileRepo(),
+      makeTaxCodeRepo(),
+      makeTaxRateRepo(),
       makeAudit(),
       makeOutbox(),
       makeUnitOfWork(),
@@ -632,6 +725,9 @@ describe("cash-management use cases", () => {
           [CashManagementBillingFeatureKeys.dailyClosing]: false,
         },
       }),
+      makeTaxProfileRepo(),
+      makeTaxCodeRepo(),
+      makeTaxRateRepo(),
       makeAudit(),
       makeOutbox(),
       makeUnitOfWork(),
@@ -656,6 +752,82 @@ describe("cash-management use cases", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.code).toBe("CashManagement:EntryLimitReached");
+    }
+  });
+
+  it("rejects cash sales when no tax profile is configured", async () => {
+    const registerRepo: CashRegisterRepoPort = {
+      createRegister: async () => baseRegister,
+      countDistinctLocationsForTenant: async () => 1,
+      listRegisters: async () => [baseRegister],
+      findRegisterById: async () => baseRegister,
+      updateRegister: async () => baseRegister,
+      setCurrentBalance: async () => {},
+    };
+
+    const entryRepo: CashEntryRepoPort = {
+      nextEntryNo: async () => 1,
+      createEntry: async () => {
+        throw new Error("should not be called");
+      },
+      countEntriesForPeriod: async () => 0,
+      listEntries: async () => [],
+      findEntryById: async () => null,
+      setReversedByEntryId: async () => {},
+      listEntriesForMonth: async () => [],
+      getExpectedBalanceAtDay: async () => 0,
+      lockEntriesForDay: async () => {},
+    };
+
+    const dayCloseRepo: CashDayCloseRepoPort = {
+      findDayCloseByRegisterAndDay: async () => null,
+      upsertDayClose: async () => {
+        throw new Error("not used");
+      },
+      replaceCountLines: async () => {},
+      listDayCloses: async () => [],
+      listDayClosesForMonth: async () => [],
+    };
+
+    const useCase = new CreateCashEntryUseCase(
+      registerRepo,
+      entryRepo,
+      dayCloseRepo,
+      makeBillingAccess(),
+      makeTaxProfileRepo(null),
+      makeTaxCodeRepo(),
+      makeTaxRateRepo(),
+      makeAudit(),
+      makeOutbox(),
+      makeUnitOfWork(),
+      new InMemoryIdempotencyStore()
+    );
+
+    const result = await useCase.execute(
+      {
+        registerId: "reg-1",
+        type: CashEntryType.SALE_CASH,
+        direction: CashEntryDirection.IN,
+        amountCents: 1000,
+        description: "Walk-in sale",
+        paymentMethod: CashPaymentMethod.CASH,
+        source: CashEntrySource.MANUAL,
+        dayKey: "2026-02-27",
+        sourceDocument: {
+          reference: "EV-1",
+          kind: "REFERENCE",
+        },
+        idempotencyKey: "entry-tax-profile-required",
+      },
+      createCtx()
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe("CashManagement:InvalidTaxInput");
+      expect(result.error.details).toEqual(
+        expect.objectContaining({ reason: "CashManagement:TaxProfileRequired" })
+      );
     }
   });
 

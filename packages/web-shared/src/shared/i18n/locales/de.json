@@ -243,8 +243,10 @@
       "annualAssistant": "Jahresassistent"
     },
     "assistant": "Assistent",
+    "billing": "Abrechnung",
     "expenses": "Ausgaben",
     "invoices": "Rechnungen",
+    "registers": "Kassen",
     "directory": {
       "restaurants": "Restaurants"
     },
@@ -1353,7 +1355,7 @@
           "type": "Typ",
           "direction": "EIN/AUS",
           "amount": "Betrag",
-          "payment": "Zahlart",
+          "tax": "USt",
           "source": "Quelle",
           "balanceAfter": "Saldo nach",
           "beleg": "Beleg",
@@ -1362,18 +1364,45 @@
         "rowActions": {
           "viewRegister": "Kasse ansehen",
           "reverse": "Stornieren",
-          "addBeleg": "Beleg anhängen"
+          "addBeleg": "Beleg anhängen",
+          "downloadBeleg": "Beleg herunterladen"
+        },
+        "camera": {
+          "title": "Kamera",
+          "description": "Nutzen Sie die Gerätekamera, um den Beleg direkt aufzunehmen.",
+          "capture": "Foto aufnehmen",
+          "switchCamera": "Kamera wechseln",
+          "unavailable": "Die Kamera ist in diesem Browser nicht verfügbar.",
+          "permissionDenied": "Der Kamerazugriff wurde verweigert."
         },
         "createDialog": {
           "title": "Buchung erstellen",
-          "direction": "Richtung",
-          "amount": "Betrag",
+          "description": "Erfassen Sie eine reine Kassenbuchbewegung mit Bruttobetrag, Nachweis und bei Bedarf USt.",
+          "grossAmount": "Bruttobetrag",
           "type": "Typ",
-          "paymentMethod": "Zahlart",
-          "description": "Beschreibung",
+          "taxCodeRequired": "USt-Code",
+          "taxCodeOptional": "USt-Code (optional)",
+          "noVat": "Keine USt",
+          "taxProfileRequiredTitle": "Steuer-Setup erforderlich",
+          "taxProfileRequiredDescription": "Legen Sie fest, wie dieses Kassenbuch steuerlich behandelt wird, bevor Sie steuerpflichtige Barverkäufe erfassen.",
+          "setupStandardVat": "Deutsche Standard-USt verwenden",
+          "setupSmallBusiness": "Kleinunternehmer verwenden (keine USt)",
+          "taxSummary": "USt-Zusammenfassung",
+          "netAmount": "Nettobetrag",
+          "taxAmount": "USt-Betrag",
+          "outputVat": "Umsatzsteuer",
+          "inputVat": "Vorsteuer",
+          "salesVatRequiredHint": "Wählen Sie den USt-Code für diesen Barverkauf.",
+          "salesVatOptionalHint": "Wählen Sie einen USt-Code, wenn dieser Barverkauf steuerpflichtig ist.",
+          "expenseVatHint": "Wählen Sie nur dann einen Vorsteuer-Code, wenn ein abzugsfähiger Beleg vorliegt.",
+          "bookingText": "Buchungstext",
+          "documentReference": "Belegreferenz / Eigenbeleg",
+          "documentReferencePlaceholder": "Belegnr., Rechnungsnr. oder Grund",
+          "documentReferenceHint": "Hinterlegen Sie eine Belegreferenz oder laden Sie einen Beleg hoch. Nur der Anfangsbestand darf ohne Nachweis bleiben.",
           "occurredAt": "Zeitpunkt",
           "attachBeleg": "Beleg anhängen (optional)",
           "chooseAttachment": "Datei auswählen",
+          "takePicture": "Foto aufnehmen",
           "replaceAttachment": "Datei ersetzen",
           "noAttachment": "Keine Datei ausgewählt",
           "projectedBalance": "Prognostizierter Saldo nach Speichern",
@@ -1383,13 +1412,19 @@
         },
         "reverseDialog": {
           "title": "Buchung stornieren",
+          "description": "Stornieren Sie diese gebuchte Kassenbewegung mit einem nachvollziehbaren Grund.",
           "reason": "Grund",
           "failed": "Buchung konnte nicht storniert werden.",
           "confirm": "Storno bestätigen"
         },
         "attachmentDialog": {
           "title": "Beleg zur Buchung hinzufügen",
-          "documentId": "Dokument-ID",
+          "description": "Laden Sie eine Belegdatei hoch oder nehmen Sie ein Foto auf, um diese Kassenbuchung zu belegen.",
+          "file": "Belegdatei",
+          "uploadFile": "Datei hochladen",
+          "replaceFile": "Datei ersetzen",
+          "takePicture": "Foto aufnehmen",
+          "noFile": "Keine Datei ausgewählt",
           "failed": "Beleg konnte nicht angehängt werden.",
           "attach": "Anhängen"
         }
@@ -3035,6 +3070,77 @@
     "afterTrialDescription": "Corely behält alle alten Daten. Nach 30 Tagen wechselt der Workspace zu Free und neue Nutzung folgt den monatlichen Limits von Free.",
     "trialStarted": "Testversion gestartet",
     "trialStartFailed": "Testversion kann derzeit nicht gestartet werden.",
+    "pricePerMonth": "{{price}} / Monat",
+    "remaining": "{{count}} übrig",
+    "featuredPlanNameFallback": "Upgrade",
+    "featuredTitleFree": "Upgrade für Export, KI und unbegrenzte Belege",
+    "featuredTitlePaid": "Mit allen Funktionen voraus bleiben",
+    "featuredDescriptionFallback": "Volle Kassenkontrolle mit Exporten, KI-Unterstützung und mehreren Standorten.",
+    "featuredFootnoteFree": "Unbegrenzte Buchungen und Belege sowie Export, KI-Assistent und mehrere Standorte.",
+    "featuredFootnotePaid": "Halten Sie Export, KI und mehrere Standorte für Ihr Team bereit.",
+    "statusLabels": {
+      "free": "Free",
+      "active": "Aktiv",
+      "trialing": "In Testversion",
+      "past_due": "Überfällig",
+      "canceled": "Gekündigt",
+      "incomplete": "Unvollständig",
+      "incomplete_expired": "Unvollständig abgelaufen",
+      "unpaid": "Unbezahlt"
+    },
+    "usageMetrics": {
+      "entries": "Kassenbuchungen in dieser Periode",
+      "receipts": "Belege in dieser Periode"
+    },
+    "usageNudges": {
+      "entries": "Upgrade für unbegrenzte Kassenbuchungen und Exporte.",
+      "receipts": "Upgrade für unbegrenzte Belege und Exporte."
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "summary": "Für einen Salonstandort mit einfachem täglichem Cash-Controlling.",
+        "highlights": {
+          "0": "1 Standort",
+          "1": "30 Buchungen pro Monat",
+          "2": "10 Belege pro Monat",
+          "3": "Kein Export",
+          "4": "Kein KI-Assistent"
+        }
+      },
+      "starter-monthly": {
+        "name": "Starter",
+        "summary": "Unbegrenzte tägliche Kassenbucharbeit für einen Standort.",
+        "highlights": {
+          "0": "1 Standort",
+          "1": "Unbegrenzte Buchungen",
+          "2": "Unbegrenzte Belege",
+          "3": "Tagesabschluss",
+          "4": "Monatsexport"
+        }
+      },
+      "pro-monthly": {
+        "name": "Pro",
+        "summary": "Erweitert einen Standort um KI-Hilfe und erweiterte Problemerkennung.",
+        "highlights": {
+          "0": "Alles aus Starter",
+          "1": "KI-Assistent",
+          "2": "Mehrsprachige KI-Hilfe",
+          "3": "Problemerkennung",
+          "4": "Abschluss-Hinweise"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Mehrere Standorte",
+        "summary": "Für Salongruppen mit mehreren Standorten und Teams.",
+        "highlights": {
+          "0": "Alles aus Pro",
+          "1": "Mehrere Standorte",
+          "2": "Team-Zugang",
+          "3": "Konsolidierte Übersicht"
+        }
+      }
+    },
     "usageLabels": {
       "usedOf": "Verwendet {{used}} / {{limit}}",
       "currentPeriod": "Aktuelle Periode"

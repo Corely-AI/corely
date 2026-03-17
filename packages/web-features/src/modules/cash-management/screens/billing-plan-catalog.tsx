@@ -58,8 +58,10 @@ export function BillingPlanCatalog({
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-lg font-semibold">{plan.name}</div>
-                  <div className="mt-1 text-sm text-muted-foreground">{plan.summary}</div>
+                  <div className="text-lg font-semibold">{copy.planName(plan.code, plan.name)}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    {copy.planSummary(plan.code, plan.summary)}
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   {isFeatured ? (
@@ -73,15 +75,15 @@ export function BillingPlanCatalog({
                 </div>
               </div>
               <div className="mt-4 text-2xl font-semibold">
-                {plan.priceCents === 0
-                  ? "€0"
-                  : `${formatPrice(plan.priceCents, plan.currency)} / mo`}
+                {copy.pricePerMonth(
+                  plan.priceCents === 0 ? "€0" : formatPrice(plan.priceCents, plan.currency)
+                )}
               </div>
               <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                {plan.highlights.map((highlight) => (
+                {plan.highlights.map((highlight, index) => (
                   <div key={highlight} className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                    <span>{highlight}</span>
+                    <span>{copy.planHighlight(plan.code, index, highlight)}</span>
                   </div>
                 ))}
               </div>

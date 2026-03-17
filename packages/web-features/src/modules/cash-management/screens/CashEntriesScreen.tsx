@@ -3,8 +3,16 @@ import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/rea
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Badge, Button, Input } from "@corely/ui";
-import type { CashEntryType } from "@corely/contracts";
+import type {
+  CashEntryAttachment,
+  CashEntryTaxMode,
+  CashEntryType,
+  TaxProfileDto,
+  TaxRateDto,
+  UpsertTaxProfileInput,
+} from "@corely/contracts";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
+import { taxApi } from "@corely/web-shared/lib/tax-api";
 import { CrudListPageLayout, CrudRowActions } from "@corely/web-shared/shared/crud";
 import { formatDateTime, formatMoney } from "@corely/web-shared/shared/lib/formatters";
 import { Paperclip } from "lucide-react";
@@ -12,6 +20,7 @@ import { cashKeys, invalidateCashRegisterQueries } from "../queries";
 import { uploadBelegDocument } from "../upload-beleg-document";
 import {
   AttachBelegDialog,
+  type AttachBelegForm,
   CreateEntryDialog,
   defaultCreateForm,
   type CreateEntryForm,
@@ -23,11 +32,9 @@ type Filters = {
   dayKeyTo: string;
   type: string;
   source: string;
-  paymentMethod: string;
   q: string;
 };
 
-const entryDirections = ["IN", "OUT"] as const;
 const entryTypes = [
   "SALE_CASH",
   "REFUND_CASH",
@@ -36,22 +43,94 @@ const entryTypes = [
   "OWNER_WITHDRAWAL",
   "BANK_DEPOSIT",
   "BANK_WITHDRAWAL",
-  "CORRECTION",
   "OPENING_FLOAT",
-  "CLOSING_ADJUSTMENT",
-  "IN",
-  "OUT",
 ] as const;
 const entrySources = ["MANUAL", "SALES", "EXPENSE", "DIFFERENCE", "IMPORT", "INTEGRATION"] as const;
-const paymentMethods = ["CASH", "CARD", "TRANSFER", "OTHER"] as const;
 
 const defaultFilters: Filters = {
   dayKeyFrom: "",
   dayKeyTo: "",
   type: "",
   source: "",
-  paymentMethod: "",
   q: "",
+};
+
+const defaultAttachBelegForm = (): AttachBelegForm => ({
+  attachmentFile: null,
+});
+
+const deriveDirectionFromType = (type: CashEntryType): "IN" | "OUT" => {
+  switch (type) {
+    case "REFUND_CASH":
+    case "EXPENSE_CASH":
+    case "OWNER_WITHDRAWAL":
+    case "BANK_DEPOSIT":
+      return "OUT";
+    default:
+      return "IN";
+  }
+};
+
+const isTaxRelevantType = (type: CashEntryType): boolean => {
+  return type === "SALE_CASH" || type === "REFUND_CASH" || type === "EXPENSE_CASH";
+};
+
+const deriveTaxModeFromType = (type: CashEntryType): CashEntryTaxMode => {
+  return type === "EXPENSE_CASH" ? "INPUT_VAT" : "OUTPUT_VAT";
+};
+
+const requiresSupportingDocument = (type: CashEntryType): boolean => {
+  return type !== "OPENING_FLOAT";
+};
+
+const requiresTaxCodeForType = (type: CashEntryType, profile: TaxProfileDto | null | undefined) => {
+  return (type === "SALE_CASH" || type === "REFUND_CASH") && profile?.regime === "STANDARD_VAT";
+};
+
+const requiresTaxProfileForType = (type: CashEntryType): boolean => {
+  return type === "SALE_CASH" || type === "REFUND_CASH";
+};
+
+const createDefaultGermanTaxProfile = (regime: TaxProfileDto["regime"]): UpsertTaxProfileInput => ({
+  country: "DE",
+  regime,
+  vatEnabled: regime === "STANDARD_VAT",
+  currency: "EUR",
+  filingFrequency: "MONTHLY",
+  taxYearStartMonth: 1,
+  vatAccountingMethod: "IST",
+  effectiveFrom: new Date().toISOString(),
+});
+
+const resolveEffectiveRate = (rates: TaxRateDto[] | undefined, at: Date): number | null => {
+  if (!rates || rates.length === 0) {
+    return null;
+  }
+
+  const match = rates.find((rate) => {
+    const start = new Date(rate.effectiveFrom);
+    const end = rate.effectiveTo ? new Date(rate.effectiveTo) : null;
+    return start <= at && (!end || at <= end);
+  });
+
+  return match?.rateBps ?? rates[0]?.rateBps ?? null;
+};
+
+const calculateGrossFirstBreakdown = (grossAmountCents: number, rateBps: number | null) => {
+  if (!rateBps || rateBps <= 0) {
+    return {
+      grossAmountCents,
+      netAmountCents: grossAmountCents,
+      taxAmountCents: 0,
+    };
+  }
+
+  const netAmountCents = Math.round((grossAmountCents * 10_000) / (10_000 + rateBps));
+  return {
+    grossAmountCents,
+    netAmountCents,
+    taxAmountCents: grossAmountCents - netAmountCents,
+  };
 };
 
 export function CashEntriesScreen() {
@@ -64,7 +143,7 @@ export function CashEntriesScreen() {
   const [reverseTargetId, setReverseTargetId] = useState<string | null>(null);
   const [reverseReason, setReverseReason] = useState("");
   const [belegEntryId, setBelegEntryId] = useState<string | null>(null);
-  const [belegDocumentId, setBelegDocumentId] = useState("");
+  const [attachBelegForm, setAttachBelegForm] = useState<AttachBelegForm>(defaultAttachBelegForm);
 
   const registerQuery = useQuery({
     queryKey: id ? cashKeys.registers.detail(id) : ["cash-registers", "missing-id"],
@@ -79,7 +158,6 @@ export function CashEntriesScreen() {
       dayKeyTo: filters.dayKeyTo || undefined,
       type: (filters.type as CashEntryType | "") || undefined,
       source: filters.source || undefined,
-      paymentMethod: filters.paymentMethod || undefined,
       q: filters.q || undefined,
     }),
     [filters, id]
@@ -93,10 +171,26 @@ export function CashEntriesScreen() {
         dayKeyTo: queryParams.dayKeyTo,
         type: queryParams.type,
         source: queryParams.source,
-        paymentMethod: queryParams.paymentMethod,
         q: queryParams.q,
       }),
     enabled: Boolean(id),
+  });
+
+  const taxProfileQuery = useQuery({
+    queryKey: ["tax-profile"],
+    queryFn: () => taxApi.getProfile(),
+  });
+
+  const taxCodesQuery = useQuery({
+    queryKey: ["tax-codes"],
+    queryFn: () => taxApi.listTaxCodes(),
+    enabled: createOpen,
+  });
+
+  const selectedTaxRateQuery = useQuery({
+    queryKey: ["tax-rates", createForm.taxCodeId],
+    queryFn: () => taxApi.listTaxRates(createForm.taxCodeId),
+    enabled: createOpen && createForm.taxCodeId.length > 0,
   });
 
   const entries = useMemo(() => entriesQuery.data?.entries ?? [], [entriesQuery.data?.entries]);
@@ -117,28 +211,51 @@ export function CashEntriesScreen() {
     return counts;
   }, [attachmentQueries, entries]);
 
+  const attachmentsByEntryId = useMemo(() => {
+    const attachments = new Map<string, CashEntryAttachment[]>();
+    entries.slice(0, 50).forEach((entry, index) => {
+      attachments.set(entry.id, attachmentQueries[index]?.data?.attachments ?? []);
+    });
+    return attachments;
+  }, [attachmentQueries, entries]);
+
   const createMutation = useMutation({
     mutationFn: async () => {
       if (!id) {
         throw new Error("Missing register id");
       }
-      const amount = Math.round(Number(createForm.amountInput) * 100);
+      const grossAmountCents = Math.round(Number(createForm.grossAmountInput) * 100);
       const occurredAt = createForm.occurredAt
         ? new Date(createForm.occurredAt).toISOString()
         : new Date().toISOString();
+      const uploadedDocumentId = createForm.attachmentFile
+        ? await uploadBelegDocument(createForm.attachmentFile)
+        : null;
       const created = await cashManagementApi.createEntry(id, {
         type: createForm.type,
-        direction: createForm.direction,
+        direction: deriveDirectionFromType(createForm.type),
         source: "MANUAL",
-        paymentMethod: createForm.paymentMethod,
         description: createForm.description.trim(),
-        amountCents: amount,
+        grossAmountCents,
         occurredAt,
+        tax: isTaxRelevantType(createForm.type)
+          ? {
+              mode: createForm.taxCodeId ? deriveTaxModeFromType(createForm.type) : "NONE",
+              taxCodeId: createForm.taxCodeId || undefined,
+            }
+          : { mode: "NONE" },
+        sourceDocument:
+          uploadedDocumentId || createForm.documentReference.trim()
+            ? {
+                documentId: uploadedDocumentId ?? undefined,
+                reference: createForm.documentReference.trim() || undefined,
+                kind: uploadedDocumentId ? "ATTACHMENT" : "REFERENCE",
+              }
+            : undefined,
       });
-      if (createForm.attachmentFile) {
-        const documentId = await uploadBelegDocument(createForm.attachmentFile);
+      if (uploadedDocumentId) {
         await cashManagementApi.attachBeleg(created.entry.id, {
-          documentId,
+          documentId: uploadedDocumentId,
         });
       }
     },
@@ -149,6 +266,17 @@ export function CashEntriesScreen() {
       await invalidateCashRegisterQueries(queryClient, id);
       setCreateOpen(false);
       setCreateForm(defaultCreateForm());
+    },
+  });
+
+  const configureTaxProfileMutation = useMutation({
+    mutationFn: async (regime: TaxProfileDto["regime"]) => {
+      await taxApi.upsertProfile(createDefaultGermanTaxProfile(regime));
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["tax-profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["tax-codes"] });
+      await queryClient.invalidateQueries({ queryKey: ["tax-rates"] });
     },
   });
 
@@ -176,8 +304,12 @@ export function CashEntriesScreen() {
       if (!belegEntryId) {
         throw new Error("Missing entry id");
       }
+      if (!attachBelegForm.attachmentFile) {
+        throw new Error("Missing beleg file");
+      }
+      const documentId = await uploadBelegDocument(attachBelegForm.attachmentFile);
       await cashManagementApi.attachBeleg(belegEntryId, {
-        documentId: belegDocumentId.trim(),
+        documentId,
       });
     },
     onSuccess: async () => {
@@ -187,7 +319,25 @@ export function CashEntriesScreen() {
       await invalidateCashRegisterQueries(queryClient, id);
       await queryClient.invalidateQueries({ queryKey: cashKeys.entries.attachments(belegEntryId) });
       setBelegEntryId(null);
-      setBelegDocumentId("");
+      setAttachBelegForm(defaultAttachBelegForm());
+    },
+  });
+
+  const downloadAttachmentsMutation = useMutation({
+    mutationFn: async (entryId: string) => {
+      const attachments = attachmentsByEntryId.get(entryId) ?? [];
+      for (const [index, attachment] of attachments.entries()) {
+        const blob = await cashManagementApi.downloadDocument(attachment.documentId);
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download =
+          attachments.length > 1 ? `cash-beleg-${entryId}-${index + 1}` : `cash-beleg-${entryId}`;
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+      }
     },
   });
 
@@ -212,18 +362,53 @@ export function CashEntriesScreen() {
     t(`cash.ui.enums.entryType.${value}`, { defaultValue: value });
   const entrySourceLabel = (value: string): string =>
     t(`cash.ui.enums.entrySource.${value}`, { defaultValue: value });
-  const paymentMethodLabel = (value: string): string =>
-    t(`cash.ui.enums.paymentMethod.${value}`, { defaultValue: value });
   const directionLabel = (value: string): string =>
     t(`cash.ui.enums.direction.${value}`, { defaultValue: value });
 
-  const createAmount = Math.round(Number(createForm.amountInput || 0) * 100);
+  const createAmount = Math.round(Number(createForm.grossAmountInput || 0) * 100);
+  const createDirection = deriveDirectionFromType(createForm.type);
   const projectedBalance =
-    register.currentBalanceCents + (createForm.direction === "OUT" ? -createAmount : createAmount);
-  const hasDescriptionOrAttachment =
-    Boolean(createForm.description.trim()) || createForm.attachmentFile !== null;
+    register.currentBalanceCents + (createDirection === "OUT" ? -createAmount : createAmount);
+  const hasBookingText = Boolean(createForm.description.trim());
+  const hasSupportingDocument =
+    createForm.attachmentFile !== null || Boolean(createForm.documentReference.trim());
+  const taxProfileMissing = !taxProfileQuery.data;
+  const requiresTaxProfileSetup = requiresTaxProfileForType(createForm.type) && taxProfileMissing;
+  const taxCodeRequired = requiresTaxCodeForType(createForm.type, taxProfileQuery.data);
+  const expenseTaxRequiresAttachment =
+    createForm.type === "EXPENSE_CASH" && createForm.taxCodeId.length > 0 && !hasSupportingDocument;
   const canSaveCreateEntry =
-    !Number.isNaN(createAmount) && createAmount > 0 && hasDescriptionOrAttachment;
+    !Number.isNaN(createAmount) &&
+    createAmount > 0 &&
+    hasBookingText &&
+    !requiresTaxProfileSetup &&
+    (!requiresSupportingDocument(createForm.type) || hasSupportingDocument) &&
+    (!taxCodeRequired || createForm.taxCodeId.length > 0) &&
+    !expenseTaxRequiresAttachment;
+
+  const createOccurredAt = createForm.occurredAt ? new Date(createForm.occurredAt) : new Date();
+  const selectedRateBps = resolveEffectiveRate(selectedTaxRateQuery.data, createOccurredAt);
+  const taxRelevant = isTaxRelevantType(createForm.type);
+  const taxSummary =
+    taxRelevant && !requiresTaxProfileSetup
+      ? calculateGrossFirstBreakdown(createAmount > 0 ? createAmount : 0, selectedRateBps)
+      : null;
+  const taxCodeOptions = (taxCodesQuery.data ?? [])
+    .filter((code) => code.isActive)
+    .map((code) => ({
+      id: code.id,
+      label: `${code.code} - ${code.label}`,
+    }));
+  const taxCodeLabel =
+    createForm.type === "EXPENSE_CASH"
+      ? t("cash.ui.entries.createDialog.inputVat")
+      : t("cash.ui.entries.createDialog.outputVat");
+  const taxHint =
+    createForm.type === "EXPENSE_CASH"
+      ? t("cash.ui.entries.createDialog.expenseVatHint")
+      : taxCodeRequired
+        ? t("cash.ui.entries.createDialog.salesVatRequiredHint")
+        : t("cash.ui.entries.createDialog.salesVatOptionalHint");
 
   return (
     <>
@@ -287,20 +472,6 @@ export function CashEntriesScreen() {
                 </option>
               ))}
             </select>
-            <select
-              className="h-9 rounded-md border bg-background px-3 text-sm"
-              value={filters.paymentMethod}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, paymentMethod: event.target.value }))
-              }
-            >
-              <option value="">{t("cash.ui.entries.filters.allPayments")}</option>
-              {paymentMethods.map((value) => (
-                <option key={value} value={value}>
-                  {paymentMethodLabel(value)}
-                </option>
-              ))}
-            </select>
             <Input
               value={filters.q}
               onChange={(event) => setFilters((prev) => ({ ...prev, q: event.target.value }))}
@@ -331,7 +502,7 @@ export function CashEntriesScreen() {
                   <th className="px-4 py-3 font-medium text-right">
                     {t("cash.ui.entries.table.amount")}
                   </th>
-                  <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.payment")}</th>
+                  <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.tax")}</th>
                   <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.source")}</th>
                   <th className="px-4 py-3 font-medium text-right">
                     {t("cash.ui.entries.table.balanceAfter")}
@@ -356,16 +527,34 @@ export function CashEntriesScreen() {
                     <td className="px-4 py-3">{directionLabel(entry.direction)}</td>
                     <td className="px-4 py-3 text-right">
                       {entry.direction === "OUT" ? "-" : "+"}
-                      {formatMoney(entry.amount, undefined, entry.currency)}
+                      {formatMoney(entry.grossAmountCents, undefined, entry.currency)}
                     </td>
-                    <td className="px-4 py-3">{paymentMethodLabel(entry.paymentMethod)}</td>
+                    <td className="px-4 py-3">
+                      {entry.taxMode && entry.taxMode !== "NONE"
+                        ? `${entry.taxLabel ?? entry.taxCode ?? t("cash.ui.entries.table.tax")} (${formatMoney(
+                            entry.taxAmountCents ?? 0,
+                            undefined,
+                            entry.currency
+                          )})`
+                        : t("cash.ui.entries.createDialog.noVat")}
+                    </td>
                     <td className="px-4 py-3">{entrySourceLabel(entry.source)}</td>
                     <td className="px-4 py-3 text-right">
                       {formatMoney(entry.balanceAfterCents, undefined, entry.currency)}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {attachmentCountByEntryId.get(entry.id) ? (
-                        <Paperclip className="mx-auto h-4 w-4" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="mx-auto h-8 px-2"
+                          aria-label={t("cash.ui.entries.rowActions.downloadBeleg")}
+                          disabled={downloadAttachmentsMutation.isPending}
+                          onClick={() => downloadAttachmentsMutation.mutate(entry.id)}
+                        >
+                          <Paperclip className="h-4 w-4" />
+                          <span className="ml-1">{attachmentCountByEntryId.get(entry.id)}</span>
+                        </Button>
                       ) : (
                         "-"
                       )}
@@ -389,7 +578,7 @@ export function CashEntriesScreen() {
                             label: t("cash.ui.entries.rowActions.addBeleg"),
                             onClick: () => {
                               setBelegEntryId(entry.id);
-                              setBelegDocumentId("");
+                              setAttachBelegForm(defaultAttachBelegForm());
                             },
                           },
                         ]}
@@ -408,12 +597,18 @@ export function CashEntriesScreen() {
         onOpenChange={setCreateOpen}
         form={createForm}
         setForm={setCreateForm}
-        entryDirections={entryDirections}
         entryTypes={entryTypes}
-        paymentMethods={paymentMethods}
-        directionLabel={directionLabel}
         entryTypeLabel={entryTypeLabel}
-        paymentMethodLabel={paymentMethodLabel}
+        taxCodeOptions={taxCodeOptions}
+        taxRelevant={taxRelevant}
+        requiresTaxProfileSetup={requiresTaxProfileSetup}
+        isTaxProfileSetupPending={configureTaxProfileMutation.isPending}
+        onUseStandardVat={() => configureTaxProfileMutation.mutate("STANDARD_VAT")}
+        onUseSmallBusiness={() => configureTaxProfileMutation.mutate("SMALL_BUSINESS")}
+        taxCodeRequired={taxCodeRequired}
+        taxCodeLabel={taxCodeLabel}
+        taxHint={taxHint}
+        taxSummary={taxSummary}
         registerCurrency={register.currency}
         projectedBalance={projectedBalance}
         isPending={createMutation.isPending}
@@ -441,10 +636,11 @@ export function CashEntriesScreen() {
         onOpenChange={(open) => {
           if (!open) {
             setBelegEntryId(null);
+            setAttachBelegForm(defaultAttachBelegForm());
           }
         }}
-        documentId={belegDocumentId}
-        setDocumentId={setBelegDocumentId}
+        form={attachBelegForm}
+        setForm={setAttachBelegForm}
         isPending={attachMutation.isPending}
         isError={attachMutation.isError}
         onAttach={() => attachMutation.mutate()}

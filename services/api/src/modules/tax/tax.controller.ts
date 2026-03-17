@@ -15,6 +15,7 @@ import {
   ArchiveVatPeriodInputSchema,
   CalculateTaxInputSchema,
   CreateTaxCodeInputSchema,
+  CreateTaxRateInputSchema,
   GenerateExciseReportInputSchema,
   GetTaxEurStatementQuerySchema,
   ListTaxReportsInputSchema,
@@ -26,12 +27,14 @@ import {
   UpsertTaxProfileInputSchema,
   type CalculateTaxOutput,
   type CreateTaxCodeOutput,
+  type CreateTaxRateOutput,
   type GenerateExciseReportOutput,
   type GetTaxEurStatementOutput,
   type GetTaxConsultantOutput,
   type GetTaxProfileOutput,
   type GetTaxSummaryOutput,
   type ListTaxCodesOutput,
+  type ListTaxRatesOutput,
   type ListTaxReportsOutput,
   type LockTaxSnapshotOutput,
   type TaxCodeDto,
@@ -46,6 +49,7 @@ import { GetTaxProfileUseCase } from "./application/use-cases/get-tax-profile.us
 import { UpsertTaxProfileUseCase } from "./application/use-cases/upsert-tax-profile.use-case";
 import { ListTaxCodesUseCase } from "./application/use-cases/list-tax-codes.use-case";
 import { CreateTaxCodeUseCase } from "./application/use-cases/create-tax-code.use-case";
+import { CreateTaxRateUseCase } from "./application/use-cases/create-tax-rate.use-case";
 import { CalculateTaxUseCase } from "./application/use-cases/calculate-tax.use-case";
 import { LockTaxSnapshotUseCase } from "./application/use-cases/lock-tax-snapshot.use-case";
 import { GetTaxSummaryUseCase } from "./application/use-cases/get-tax-summary.use-case";
@@ -55,6 +59,7 @@ import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-
 import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
 import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
 import { ListVatPeriodsUseCase } from "./application/use-cases/list-vat-periods.use-case";
+import { ListTaxRatesUseCase } from "./application/use-cases/list-tax-rates.use-case";
 import { GetVatPeriodSummaryUseCase } from "./application/use-cases/get-vat-period-summary.use-case";
 import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-period-details.use-case";
 import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
@@ -74,6 +79,8 @@ export class TaxController {
     private readonly upsertTaxProfileUseCase: UpsertTaxProfileUseCase,
     private readonly listTaxCodesUseCase: ListTaxCodesUseCase,
     private readonly createTaxCodeUseCase: CreateTaxCodeUseCase,
+    private readonly listTaxRatesUseCase: ListTaxRatesUseCase,
+    private readonly createTaxRateUseCase: CreateTaxRateUseCase,
     private readonly calculateTaxUseCase: CalculateTaxUseCase,
     private readonly lockTaxSnapshotUseCase: LockTaxSnapshotUseCase,
     private readonly getTaxSummaryUseCase: GetTaxSummaryUseCase,
@@ -135,6 +142,46 @@ export class TaxController {
 
     return {
       code: this.codeToDto(code),
+    };
+  }
+
+  @Get("rates")
+  async listRates(
+    @Query("taxCodeId") taxCodeId: string,
+    @Req() req: Request
+  ): Promise<ListTaxRatesOutput> {
+    const ctx = buildTaxUseCaseContext(req);
+    const rates = unwrap(await this.listTaxRatesUseCase.execute({ taxCodeId }, ctx));
+    return {
+      rates: rates.map((rate) => ({
+        id: rate.id,
+        tenantId: rate.tenantId,
+        taxCodeId: rate.taxCodeId,
+        rateBps: rate.rateBps,
+        effectiveFrom: rate.effectiveFrom.toISOString(),
+        effectiveTo: rate.effectiveTo?.toISOString() ?? null,
+        createdAt: rate.createdAt.toISOString(),
+        updatedAt: rate.updatedAt.toISOString(),
+      })),
+    };
+  }
+
+  @Post("rates")
+  async createRate(@Body() body: unknown, @Req() req: Request): Promise<CreateTaxRateOutput> {
+    const input = CreateTaxRateInputSchema.parse(body);
+    const ctx = buildTaxUseCaseContext(req);
+    const rate = unwrap(await this.createTaxRateUseCase.execute(input, ctx));
+    return {
+      rate: {
+        id: rate.id,
+        tenantId: rate.tenantId,
+        taxCodeId: rate.taxCodeId,
+        rateBps: rate.rateBps,
+        effectiveFrom: rate.effectiveFrom.toISOString(),
+        effectiveTo: rate.effectiveTo?.toISOString() ?? null,
+        createdAt: rate.createdAt.toISOString(),
+        updatedAt: rate.updatedAt.toISOString(),
+      },
     };
   }
 

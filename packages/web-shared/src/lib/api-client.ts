@@ -21,7 +21,7 @@ const sharedApiClient = new ApiClient({
   storage,
   onAuthError: () => {
     if (typeof window !== "undefined") {
-      window.location.href = "/login";
+      window.location.href = "/auth/login";
     }
   },
 });

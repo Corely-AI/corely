@@ -186,6 +186,12 @@ export class CashManagementApi {
       correlationId: apiClient.generateCorrelationId(),
     });
   }
+
+  async downloadDocument(documentId: string): Promise<Blob> {
+    return apiClient.getBlob(`/documents/${documentId}/download`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
 }
 
 export const cashManagementApi = new CashManagementApi();

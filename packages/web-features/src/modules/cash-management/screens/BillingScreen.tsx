@@ -149,6 +149,15 @@ export function BillingScreen() {
     orderedPlans.find((plan) => plan.code === "pro-monthly") ??
     orderedPlans.find((plan) => plan.code !== "free");
   const isFreePlan = billing.subscription.planCode === "free";
+  const featuredPlanName = featuredPlan
+    ? copy.planName(featuredPlan.code, featuredPlan.name)
+    : copy.featuredPlanNameFallback;
+  const currentPlanName = currentPlan
+    ? copy.planName(currentPlan.code, currentPlan.name)
+    : billing.subscription.planCode;
+  const currentPlanSummary = currentPlan
+    ? copy.planSummary(currentPlan.code, currentPlan.summary)
+    : undefined;
 
   return (
     <div className="min-h-full bg-[radial-gradient(circle_at_top_left,rgba(235,207,160,0.18),transparent_32%),radial-gradient(circle_at_top_right,rgba(130,160,196,0.16),transparent_28%)] p-6 md:p-8">
@@ -195,29 +204,30 @@ export function BillingScreen() {
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
                 <Badge className="rounded-full bg-emerald-500/20 text-emerald-100">
-                  {featuredPlan?.name ?? "Upgrade"}
+                  {featuredPlanName}
                 </Badge>
                 <Badge variant="secondary" className="rounded-full">
                   {copy.recommendedTitle}
                 </Badge>
               </div>
               <CardTitle className="mt-3 text-3xl font-semibold">
-                {isFreePlan
-                  ? "Upgrade to unlock exports, AI, and unlimited receipts"
-                  : "Stay ahead with full features"}
+                {isFreePlan ? copy.featuredTitleFree : copy.featuredTitlePaid}
               </CardTitle>
               <CardDescription className="text-base text-muted-foreground">
-                {featuredPlan?.summary ??
-                  "Full cash-control with exports, AI assistance, and multi-location support."}
+                {featuredPlan
+                  ? copy.planSummary(featuredPlan.code, featuredPlan.summary)
+                  : copy.featuredDescriptionFallback}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-wrap items-center gap-4 text-2xl font-semibold">
                 {featuredPlan ? (
                   <>
-                    {featuredPlan.priceCents === 0
-                      ? "€0"
-                      : `${formatPrice(featuredPlan.priceCents, featuredPlan.currency)} / mo`}
+                    {copy.pricePerMonth(
+                      featuredPlan.priceCents === 0
+                        ? "€0"
+                        : formatPrice(featuredPlan.priceCents, featuredPlan.currency)
+                    )}
                     <span className="text-sm font-normal text-muted-foreground">
                       {copy.billedMonthly}
                     </span>
@@ -225,13 +235,17 @@ export function BillingScreen() {
                 ) : null}
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
-                {(featuredPlan?.highlights ?? []).slice(0, 5).map((highlight) => (
+                {(featuredPlan?.highlights ?? []).slice(0, 5).map((highlight, index) => (
                   <div
                     key={highlight}
                     className="flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-500/8 px-3 py-2 text-sm"
                   >
                     <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                    <span>{highlight}</span>
+                    <span>
+                      {featuredPlan
+                        ? copy.planHighlight(featuredPlan.code, index, highlight)
+                        : highlight}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -272,9 +286,7 @@ export function BillingScreen() {
                   </Button>
                 ) : null}
                 <div className="flex flex-col justify-center text-sm text-muted-foreground">
-                  {isFreePlan
-                    ? "Unlimited entries and receipts, exports, AI assistant, and multi-location."
-                    : "Keep exports, AI, and multi-location ready for your team."}
+                  {isFreePlan ? copy.featuredFootnoteFree : copy.featuredFootnotePaid}
                 </div>
               </div>
             </CardContent>
@@ -284,40 +296,40 @@ export function BillingScreen() {
             <CardHeader className="pb-3">
               <CardDescription>{copy.currentPlan}</CardDescription>
               <div className="flex items-center gap-3">
-                <CardTitle className="text-xl">
-                  {currentPlan?.name ?? billing.subscription.planCode}
-                </CardTitle>
+                <CardTitle className="text-xl">{currentPlanName}</CardTitle>
                 <Badge className="rounded-full px-3 py-1">
-                  {billing.subscription.status === "active"
-                    ? copy.active
-                    : billing.subscription.status}
+                  {copy.statusLabel(billing.subscription.status)}
                 </Badge>
               </div>
               <CardDescription className="text-sm text-muted-foreground">
-                {currentPlan?.summary}
+                {currentPlanSummary}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
                 <div className="text-muted-foreground">{copy.planStatus}</div>
                 <div className="mt-1 text-lg font-semibold capitalize">
-                  {billing.subscription.status.replace(/_/g, " ")}
+                  {copy.statusLabel(billing.subscription.status)}
                 </div>
               </div>
               {currentPlan ? (
                 <div className="rounded-2xl border border-border/60 bg-muted/20 p-4">
                   <div className="text-muted-foreground">{copy.currentPlan}</div>
                   <div className="mt-1 text-lg font-semibold">
-                    {currentPlan.priceCents === 0
-                      ? "€0"
-                      : `${formatPrice(currentPlan.priceCents, currentPlan.currency)} / ${copy.billedMonthly}`}
+                    {copy.pricePerMonth(
+                      currentPlan.priceCents === 0
+                        ? "€0"
+                        : formatPrice(currentPlan.priceCents, currentPlan.currency)
+                    )}
                   </div>
                 </div>
               ) : null}
               <div className="flex flex-wrap gap-2">
-                {(currentPlan?.highlights ?? []).slice(0, 3).map((highlight) => (
+                {(currentPlan?.highlights ?? []).slice(0, 3).map((highlight, index) => (
                   <Badge key={highlight} variant="secondary" className="rounded-full">
-                    {highlight}
+                    {currentPlan
+                      ? copy.planHighlight(currentPlan.code, index, highlight)
+                      : highlight}
                   </Badge>
                 ))}
               </div>
@@ -348,7 +360,9 @@ export function BillingScreen() {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="font-medium">{metric.label}</div>
+                        <div className="font-medium">
+                          {copy.usageMetricLabel(metric.key, metric.label)}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           {copy.usageLabels.usedOf(
                             metric.used,
@@ -357,7 +371,9 @@ export function BillingScreen() {
                         </div>
                       </div>
                       <Badge variant="secondary" className="rounded-full">
-                        {metric.remaining === null ? copy.noLimit : `${metric.remaining} left`}
+                        {metric.remaining === null
+                          ? copy.noLimit
+                          : copy.remaining(metric.remaining)}
                       </Badge>
                     </div>
                     <Progress className="mt-4 h-2" value={percent} />
@@ -367,7 +383,10 @@ export function BillingScreen() {
                     </div>
                     {nudge ? (
                       <div className="mt-3 text-sm text-amber-200">
-                        Upgrade for unlimited {metric.label.toLowerCase()} and exports.
+                        {copy.usageNudge(
+                          metric.key,
+                          copy.usageMetricLabel(metric.key, metric.label)
+                        )}
                       </div>
                     ) : null}
                   </div>

@@ -38,6 +38,7 @@ export interface AppShellProps {
   sidebarProps?: Omit<AppSidebarProps, "variant" | "collapsed" | "onToggle">;
   includeWorkspaceQuickActions?: boolean;
   renderSidebar?: (props: SidebarRenderProps) => React.ReactNode;
+  topContent?: React.ReactNode;
 }
 
 const normalizeLabel = (value: string) =>
@@ -123,6 +124,7 @@ export function AppShell({
   sidebarProps,
   includeWorkspaceQuickActions = true,
   renderSidebar,
+  topContent,
 }: AppShellProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -291,6 +293,7 @@ export function AppShell({
           </header>
 
           <div className="flex-1 overflow-y-auto">
+            {topContent}
             <Outlet />
           </div>
         </main>

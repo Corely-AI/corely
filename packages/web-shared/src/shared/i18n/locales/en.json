@@ -247,8 +247,10 @@
       "annualAssistant": "Annual Assistant"
     },
     "assistant": "Assistant",
+    "billing": "Billing",
     "expenses": "Expenses",
     "invoices": "Invoices",
+    "registers": "Registers",
     "directory": {
       "restaurants": "Restaurants"
     },
@@ -1369,7 +1371,7 @@
           "type": "Type",
           "direction": "IN/OUT",
           "amount": "Amount",
-          "payment": "Payment",
+          "tax": "VAT",
           "source": "Source",
           "balanceAfter": "Balance after",
           "beleg": "Beleg",
@@ -1378,18 +1380,45 @@
         "rowActions": {
           "viewRegister": "View register",
           "reverse": "Reverse",
-          "addBeleg": "Add beleg"
+          "addBeleg": "Add beleg",
+          "downloadBeleg": "Download beleg"
+        },
+        "camera": {
+          "title": "Camera",
+          "description": "Use your device camera to capture the receipt directly.",
+          "capture": "Capture photo",
+          "switchCamera": "Switch camera",
+          "unavailable": "Camera is not available in this browser.",
+          "permissionDenied": "Camera access was denied."
         },
         "createDialog": {
           "title": "Create cash entry",
-          "direction": "Direction",
-          "amount": "Amount",
+          "description": "Record a cash-only Kassenbuch movement with gross amount, evidence, and VAT where applicable.",
+          "grossAmount": "Gross amount",
           "type": "Type",
-          "paymentMethod": "Payment method",
-          "description": "Description",
+          "taxCodeRequired": "VAT code",
+          "taxCodeOptional": "VAT code (optional)",
+          "noVat": "No VAT",
+          "taxProfileRequiredTitle": "Tax setup required",
+          "taxProfileRequiredDescription": "Choose how this cashbook should treat VAT before recording taxable cash sales.",
+          "setupStandardVat": "Use standard German VAT",
+          "setupSmallBusiness": "Use Kleinunternehmer (No VAT)",
+          "taxSummary": "VAT summary",
+          "netAmount": "Net amount",
+          "taxAmount": "VAT amount",
+          "outputVat": "Output VAT",
+          "inputVat": "Input VAT",
+          "salesVatRequiredHint": "Select the VAT code used for this cash sale.",
+          "salesVatOptionalHint": "Select a VAT code when this cash sale is taxable.",
+          "expenseVatHint": "Select an input VAT code only when this expense has a deductible receipt.",
+          "bookingText": "Booking text",
+          "documentReference": "Receipt reference / Eigenbeleg",
+          "documentReferencePlaceholder": "Receipt no., invoice no., or reason",
+          "documentReferenceHint": "Add either a receipt reference or upload a beleg. Opening float may stay without one.",
           "occurredAt": "Occurred at",
           "attachBeleg": "Attach beleg (optional)",
           "chooseAttachment": "Choose file",
+          "takePicture": "Take picture",
           "replaceAttachment": "Replace file",
           "noAttachment": "No file selected",
           "projectedBalance": "Projected balance after save",
@@ -1399,13 +1428,19 @@
         },
         "reverseDialog": {
           "title": "Reverse entry",
+          "description": "Reverse this posted cash entry with an audit-safe reason.",
           "reason": "Reason",
           "failed": "Failed to reverse entry.",
           "confirm": "Confirm reversal"
         },
         "attachmentDialog": {
           "title": "Add beleg to entry",
-          "documentId": "Document ID",
+          "description": "Upload a receipt file or take a picture to attach supporting evidence to this cash entry.",
+          "file": "Receipt file",
+          "uploadFile": "Upload file",
+          "replaceFile": "Replace file",
+          "takePicture": "Take picture",
+          "noFile": "No file selected",
           "failed": "Failed to attach beleg.",
           "attach": "Attach"
         }
@@ -3088,6 +3123,77 @@
     "afterTrialDescription": "Corely keeps all old data. After 30 days, workspace switches to Free and new usage follows Free's monthly limits.",
     "trialStarted": "Trial started",
     "trialStartFailed": "Unable to start trial right now.",
+    "pricePerMonth": "{{price}} / month",
+    "remaining": "{{count}} left",
+    "featuredPlanNameFallback": "Upgrade",
+    "featuredTitleFree": "Upgrade to unlock exports, AI, and unlimited receipts",
+    "featuredTitlePaid": "Stay ahead with full features",
+    "featuredDescriptionFallback": "Full cash-control with exports, AI assistance, and multi-location support.",
+    "featuredFootnoteFree": "Unlimited entries and receipts, exports, AI assistant, and multi-location.",
+    "featuredFootnotePaid": "Keep exports, AI, and multi-location ready for your team.",
+    "statusLabels": {
+      "free": "Free",
+      "active": "Active",
+      "trialing": "Trialing",
+      "past_due": "Past due",
+      "canceled": "Canceled",
+      "incomplete": "Incomplete",
+      "incomplete_expired": "Incomplete expired",
+      "unpaid": "Unpaid"
+    },
+    "usageMetrics": {
+      "entries": "Cash entries this period",
+      "receipts": "Receipts this period"
+    },
+    "usageNudges": {
+      "entries": "Upgrade for unlimited cash entries and exports.",
+      "receipts": "Upgrade for unlimited receipts and exports."
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "summary": "For one salon location getting started with basic daily cash control.",
+        "highlights": {
+          "0": "1 location",
+          "1": "30 entries per month",
+          "2": "10 receipts per month",
+          "3": "No export",
+          "4": "No AI assistant"
+        }
+      },
+      "starter-monthly": {
+        "name": "Starter",
+        "summary": "Unlimited daily cash book operations for one location.",
+        "highlights": {
+          "0": "1 location",
+          "1": "Unlimited entries",
+          "2": "Unlimited receipts",
+          "3": "Daily closing",
+          "4": "Monthly export"
+        }
+      },
+      "pro-monthly": {
+        "name": "Pro",
+        "summary": "Adds AI help and advanced issue detection for one location.",
+        "highlights": {
+          "0": "Everything in Starter",
+          "1": "AI assistant",
+          "2": "Multilingual AI help",
+          "3": "Issue detection",
+          "4": "Closing guidance"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Multi-location",
+        "summary": "For salon groups managing multiple locations and teams.",
+        "highlights": {
+          "0": "Everything in Pro",
+          "1": "Multiple locations",
+          "2": "Team access",
+          "3": "Consolidated overview"
+        }
+      }
+    },
     "usageLabels": {
       "usedOf": "Used {{used}} / {{limit}}",
       "currentPeriod": "Current period"

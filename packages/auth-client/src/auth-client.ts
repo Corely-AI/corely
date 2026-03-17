@@ -1,6 +1,53 @@
 import { request, createIdempotencyKey, normalizeError } from "@corely/api-client";
 import type { TokenStorage } from "./storage/storage.interface";
 
+const ACCESS_TOKEN_REFRESH_SKEW_MS = 30_000;
+
+function decodeBase64Url(value: string): string | null {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized.padEnd(
+    normalized.length + ((4 - (normalized.length % 4 || 4)) % 4),
+    "="
+  );
+
+  try {
+    if (typeof atob === "function") {
+      return atob(padded);
+    }
+  } catch {
+    return null;
+  }
+
+  try {
+    if (typeof Buffer !== "undefined") {
+      return Buffer.from(padded, "base64").toString("utf8");
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function getJwtExpiryMs(token: string): number | null {
+  const parts = token.split(".");
+  if (parts.length < 2) {
+    return null;
+  }
+
+  const decoded = decodeBase64Url(parts[1]);
+  if (!decoded) {
+    return null;
+  }
+
+  try {
+    const payload = JSON.parse(decoded) as { exp?: unknown };
+    return typeof payload.exp === "number" ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
 export interface SignUpData {
   email: string;
   password: string;
@@ -99,6 +146,31 @@ export class AuthClient {
     return this.refreshToken;
   }
 
+  private shouldRefreshAccessToken(bufferMs: number = ACCESS_TOKEN_REFRESH_SKEW_MS): boolean {
+    if (!this.accessToken) {
+      return !!this.refreshToken;
+    }
+
+    const expiryMs = getJwtExpiryMs(this.accessToken);
+    if (expiryMs === null) {
+      return true;
+    }
+
+    return expiryMs <= Date.now() + bufferMs;
+  }
+
+  async ensureValidAccessToken(bufferMs?: number): Promise<void> {
+    if (!this.shouldRefreshAccessToken(bufferMs)) {
+      return;
+    }
+
+    if (!this.refreshToken) {
+      return;
+    }
+
+    await this.refreshAccessToken();
+  }
+
   /**
    * Sign up
    */
@@ -150,6 +222,8 @@ export class AuthClient {
    * Get current user
    */
   async getCurrentUser(): Promise<CurrentUserResponse> {
+    await this.ensureValidAccessToken();
+
     if (!this.accessToken) {
       throw new Error("No access token");
     }

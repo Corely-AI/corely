@@ -38,8 +38,19 @@ model CashEntry {
   source             String
   paymentMethod      String   @default("CASH")
   amountCents        Int
+  grossAmountCents   Int
+  netAmountCents     Int?
+  taxAmountCents     Int?
+  taxMode            String?
+  taxCodeId          String?
+  taxCode            String?
+  taxRateBps         Int?
+  taxLabel           String?
   currency           String   @default("EUR") @db.VarChar(3)
   description        String
+  sourceDocumentId   String?
+  sourceDocumentRef  String?
+  sourceDocumentKind String?
   referenceId        String?
   occurredAt         DateTime @default(now()) @db.Timestamptz(6)
   dayKey             String

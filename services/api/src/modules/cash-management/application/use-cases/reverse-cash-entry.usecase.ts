@@ -131,7 +131,7 @@ export class ReverseCashEntryUseCase extends BaseUseCase<
       amountCents: original.amountCents,
     });
 
-    if (register.disallowNegativeBalance && original.paymentMethod === "CASH" && nextBalance < 0) {
+    if (register.disallowNegativeBalance && nextBalance < 0) {
       throw new ValidationError(
         "Negative cash balance is not allowed",
         {
@@ -161,8 +161,19 @@ export class ReverseCashEntryUseCase extends BaseUseCase<
           source: "MANUAL",
           paymentMethod: original.paymentMethod,
           amountCents: original.amountCents,
+          grossAmountCents: original.grossAmountCents,
+          netAmountCents: original.netAmountCents,
+          taxAmountCents: original.taxAmountCents,
+          taxMode: original.taxMode,
+          taxCodeId: original.taxCodeId,
+          taxCode: original.taxCode,
+          taxRateBps: original.taxRateBps,
+          taxLabel: original.taxLabel,
           currency: original.currency,
           balanceAfterCents: nextBalance,
+          sourceDocumentId: original.sourceDocumentId,
+          sourceDocumentRef: original.sourceDocumentRef,
+          sourceDocumentKind: original.sourceDocumentKind,
           referenceId: original.referenceId,
           reversalOfEntryId: original.id,
           lockedByDayCloseId: dayClose?.id ?? null,

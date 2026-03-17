@@ -37,11 +37,20 @@ import { canPostIntoClosedDay, normalizeCashEntryInput } from "../../domain/cash
 import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
 import { getCashBillingNumber, loadCashBillingState } from "./billing-guards";
 import { CashManagementBillingMetricKeys, CashManagementProductKey } from "@corely/contracts";
+import { TaxCodeRepoPort } from "../../../tax/domain/ports/tax-code-repo.port";
+import { TaxProfileRepoPort } from "../../../tax/domain/ports/tax-profile-repo.port";
+import { TaxRateRepoPort } from "../../../tax/domain/ports/tax-rate-repo.port";
+import { resolveCashEntryTax, type CashEntryTaxSnapshot } from "../../domain/cash-entry-tax";
+import type { NormalizedCashEntryCommand } from "../../domain/cash-entry-rules";
 
 const ACTION_KEY = "cash-management.entry.create";
 
 const isClosedStatus = (status: string): boolean => {
   return status === "SUBMITTED" || status === "LOCKED";
+};
+
+const requiresSupportingDocument = (entryType: string): boolean => {
+  return entryType !== "OPENING_FLOAT";
 };
 
 @RequireTenant()
@@ -59,6 +68,12 @@ export class CreateCashEntryUseCase extends BaseUseCase<
     private readonly dayCloseRepo: CashDayCloseRepoPort,
     @Inject(BILLING_ACCESS_PORT)
     private readonly billingAccess: BillingAccessPort,
+    @Inject(TaxProfileRepoPort)
+    private readonly taxProfileRepo: TaxProfileRepoPort,
+    @Inject(TaxCodeRepoPort)
+    private readonly taxCodeRepo: TaxCodeRepoPort,
+    @Inject(TaxRateRepoPort)
+    private readonly taxRateRepo: TaxRateRepoPort,
     @Inject(AUDIT_PORT)
     private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT)
@@ -93,7 +108,7 @@ export class CreateCashEntryUseCase extends BaseUseCase<
       return ok(cached);
     }
 
-    let normalized;
+    let normalized: NormalizedCashEntryCommand;
     try {
       normalized = normalizeCashEntryInput(input);
     } catch (error) {
@@ -161,11 +176,7 @@ export class CreateCashEntryUseCase extends BaseUseCase<
       amountCents: normalized.amountCents,
     });
 
-    if (
-      register.disallowNegativeBalance &&
-      normalized.paymentMethod === "CASH" &&
-      nextBalance < 0
-    ) {
+    if (register.disallowNegativeBalance && nextBalance < 0) {
       throw new ValidationError(
         "Negative cash balance is not allowed",
         {
@@ -174,6 +185,38 @@ export class CreateCashEntryUseCase extends BaseUseCase<
           currentBalanceCents: register.currentBalanceCents,
         },
         "CashManagement:NegativeBalance"
+      );
+    }
+
+    let taxSnapshot: CashEntryTaxSnapshot;
+    try {
+      taxSnapshot = await resolveCashEntryTax({
+        tenantId: workspaceId,
+        occurredAt: normalized.occurredAt,
+        entryType: normalized.type,
+        grossAmountCents: normalized.amountCents,
+        input,
+        taxProfileRepo: this.taxProfileRepo,
+        taxCodeRepo: this.taxCodeRepo,
+        taxRateRepo: this.taxRateRepo,
+      });
+    } catch (error) {
+      throw new ValidationError(
+        "Invalid VAT/tax configuration for cash entry",
+        { reason: error instanceof Error ? error.message : "UNKNOWN" },
+        "CashManagement:InvalidTaxInput"
+      );
+    }
+
+    const sourceDocumentId = input.sourceDocument?.documentId?.trim() || null;
+    const sourceDocumentRef = input.sourceDocument?.reference?.trim() || null;
+    const sourceDocumentKind = input.sourceDocument?.kind?.trim() || null;
+
+    if (requiresSupportingDocument(normalized.type) && !sourceDocumentId && !sourceDocumentRef) {
+      throw new ValidationError(
+        "A receipt reference or linked beleg is required",
+        { entryType: normalized.type },
+        "CashManagement:SupportingDocumentRequired"
       );
     }
 
@@ -194,8 +237,19 @@ export class CreateCashEntryUseCase extends BaseUseCase<
           source: normalized.source,
           paymentMethod: normalized.paymentMethod,
           amountCents: normalized.amountCents,
+          grossAmountCents: taxSnapshot.grossAmountCents,
+          netAmountCents: taxSnapshot.netAmountCents,
+          taxAmountCents: taxSnapshot.taxAmountCents,
+          taxMode: taxSnapshot.taxMode,
+          taxCodeId: taxSnapshot.taxCodeId,
+          taxCode: taxSnapshot.taxCode,
+          taxRateBps: taxSnapshot.taxRateBps,
+          taxLabel: taxSnapshot.taxLabel,
           currency: normalized.currency,
           balanceAfterCents: nextBalance,
+          sourceDocumentId,
+          sourceDocumentRef,
+          sourceDocumentKind,
           referenceId: normalized.referenceId,
           reversalOfEntryId: normalized.reversalOfEntryId,
           lockedByDayCloseId: dayClose && isClosedStatus(dayClose.status) ? dayClose.id : null,
@@ -223,6 +277,9 @@ export class CreateCashEntryUseCase extends BaseUseCase<
             registerId: created.registerId,
             dayKey: created.dayKey,
             amountCents: created.amountCents,
+            taxMode: created.taxMode,
+            taxCode: created.taxCode,
+            taxAmountCents: created.taxAmountCents,
             direction: created.direction,
             entryType: created.type,
             source: created.source,
@@ -241,6 +298,9 @@ export class CreateCashEntryUseCase extends BaseUseCase<
             registerId: created.registerId,
             entryNo: created.entryNo,
             amountCents: created.amountCents,
+            grossAmountCents: created.grossAmountCents,
+            taxAmountCents: created.taxAmountCents,
+            taxMode: created.taxMode,
             type: created.direction,
             direction: created.direction,
             sourceType: created.source,

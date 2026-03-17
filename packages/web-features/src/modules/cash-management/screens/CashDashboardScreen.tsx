@@ -233,7 +233,7 @@ interface DashboardUpgradeCopy {
 }
 
 function useDashboardCopy(): DashboardCopy {
-  const { t } = useTranslation("cashDashboard");
+  const { t } = useTranslation(undefined, { keyPrefix: "cashDashboard" });
   const previewStates = t("previewStates", {
     returnObjects: true,
   }) as DashboardCopy["previewStates"];
@@ -248,7 +248,9 @@ function useDashboardCopy(): DashboardCopy {
   >;
   const entryTypes = t("entryTypes", { returnObjects: true }) as DashboardCopy["entryTypes"];
   const entryStatus = t("entryStatus", { returnObjects: true }) as DashboardCopy["entryStatus"];
-  const assistant = t("assistant", { returnObjects: true }) as DashboardCopy["assistant"];
+  const assistantStrings = t("assistant", { returnObjects: true }) as Partial<
+    DashboardCopy["assistant"]
+  >;
   const severity = t("severity", { returnObjects: true }) as DashboardCopy["severity"];
 
   return {
@@ -298,13 +300,18 @@ function useDashboardCopy(): DashboardCopy {
     },
     entryTypes,
     entryStatus,
-    assistant,
+    assistant: {
+      title: assistantStrings.title ?? "",
+      description: assistantStrings.description ?? "",
+      prompts: Array.isArray(assistantStrings.prompts) ? assistantStrings.prompts : [],
+      languages: assistantStrings.languages ?? "",
+    },
     severity,
   };
 }
 
 function useDashboardUpgradeCopy(): DashboardUpgradeCopy {
-  const { t } = useTranslation("cashDashboard");
+  const { t } = useTranslation(undefined, { keyPrefix: "cashDashboard" });
 
   return {
     openBilling: t("actions.openBilling"),
@@ -1467,6 +1474,10 @@ export function CashDashboardScreen() {
   const copy = useDashboardCopy();
   const upgradeCopy = useDashboardUpgradeCopy();
   const locale = localeByLanguage[localeKey];
+  const missingThisMonthHelperLabel =
+    copy.labels.missingThisMonth?.toLocaleLowerCase(locale) ??
+    copy.labels.missingReceipts?.toLocaleLowerCase(locale) ??
+    "missing this month";
   const scenarioId = resolveCashDashboardScenarioId(searchParams.get("state"));
   const mode = resolveCashDashboardSurfaceMode(searchParams.get("mode"));
   const showPreview = searchParams.get("preview") === "1";
@@ -1671,7 +1682,7 @@ export function CashDashboardScreen() {
         <SummaryCard
           title={copy.labels.missingReceipts}
           value={String(data.status.missingReceiptsToday)}
-          helper={`${data.status.missingReceiptsThisMonth} ${copy.labels.missingThisMonth.toLowerCase()}`}
+          helper={`${data.status.missingReceiptsThisMonth} ${missingThisMonthHelperLabel}`}
           icon={Receipt}
           tone={data.status.missingReceiptsToday > 0 ? "warning" : "success"}
           testId="cash-dashboard-summary-missing-receipts"

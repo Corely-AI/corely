@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Input } from "@corely/ui";
 import { Plus } from "lucide-react";
@@ -25,6 +25,7 @@ const defaultFilters: RegisterFilters = {
 export function CashRegistersScreen() {
   const { t } = useTranslation();
   const { canManageCash } = useCashPermissions();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<RegisterFilters>(defaultFilters);
 
   const queryParams = useMemo(
@@ -107,14 +108,29 @@ export function CashRegistersScreen() {
             </thead>
             <tbody>
               {registers.map((register) => (
-                <tr key={register.id} className="border-t">
+                <tr
+                  key={register.id}
+                  className="cursor-pointer border-t transition-colors hover:bg-muted/20 focus-visible:bg-muted/20"
+                  onClick={() => navigate(`/cash/registers/${register.id}`)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      navigate(`/cash/registers/${register.id}`);
+                    }
+                  }}
+                  tabIndex={0}
+                >
                   <td className="px-4 py-3 font-medium">{register.name}</td>
                   <td className="px-4 py-3">{register.location ?? "-"}</td>
                   <td className="px-4 py-3">{register.currency}</td>
                   <td className="px-4 py-3 text-right">
                     {formatMoney(register.currentBalanceCents, undefined, register.currency)}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td
+                    className="px-4 py-3 text-right"
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                  >
                     <CrudRowActions
                       primaryAction={{
                         label: t("cash.ui.registers.open"),
