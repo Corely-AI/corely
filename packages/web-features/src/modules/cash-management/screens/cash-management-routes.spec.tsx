@@ -348,7 +348,7 @@ describe("cash management route guards", () => {
     renderAt("/billing");
 
     expect(screen.queryByTestId("permission-gate")).not.toBeInTheDocument();
-    expect(await screen.findByText("Billing and subscription")).toBeInTheDocument();
+    expect(await screen.findByText("Plans and billing")).toBeInTheDocument();
     expect(await screen.findByRole("button", { name: "Start 30-day trial" })).toBeInTheDocument();
   });
 
@@ -443,9 +443,7 @@ describe("cash management route guards", () => {
 
     renderAt("/billing");
 
-    expect((await screen.findAllByText("Your full-access trial has ended")).length).toBeGreaterThan(
-      0
-    );
+    expect((await screen.findAllByText("Full access trial ended")).length).toBeGreaterThan(0);
   });
 
   it("guards register creation and entries with cash.write", async () => {
