@@ -38,6 +38,9 @@ export class ToolRegistry implements ToolRegistryPort {
           if (!tool.appId || tool.appId === "common") {
             return true;
           }
+          if (activeAppId && tool.appId === activeAppId) {
+            return true;
+          }
           return appEnablement[tool.appId] === true;
         });
       }

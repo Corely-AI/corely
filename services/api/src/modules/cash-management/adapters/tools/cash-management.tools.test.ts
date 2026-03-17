@@ -246,6 +246,45 @@ describe("cash-management tools", () => {
     );
   });
 
+  it("treats CashManagement:DayCloseNotFound as an open day instead of a hard error", async () => {
+    listEntriesExecute.mockResolvedValue(
+      ok({
+        entries: [
+          baseEntry({
+            id: "entry-income",
+            dayKey: "2026-03-14",
+            businessDate: "2026-03-14",
+            amount: 15000,
+            amountCents: 15000,
+            balanceAfterCents: 15000,
+          }),
+        ],
+      })
+    );
+    getDayCloseExecute.mockResolvedValue(
+      err(new NotFoundError("Day close not found", undefined, "CashManagement:DayCloseNotFound"))
+    );
+
+    const tool = buildCashManagementTools(deps).find(
+      (item) => item.name === "get_today_cash_status"
+    );
+    const result = await tool?.execute?.({
+      tenantId: "tenant-1",
+      workspaceId: "ws-1",
+      userId: "user-1",
+      input: {},
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        countedCashCents: null,
+        readyToClose: false,
+        status: "NEEDS_REVIEW",
+      })
+    );
+  });
+
   it("marks counted cash draft as ready when no blockers remain", async () => {
     listEntriesExecute.mockResolvedValue(
       ok({

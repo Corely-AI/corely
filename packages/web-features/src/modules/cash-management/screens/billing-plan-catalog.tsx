@@ -32,7 +32,7 @@ export function BillingPlanCatalog({
   isPending,
 }: BillingPlanCatalogProps) {
   return (
-    <Card id="plan-catalog" className="rounded-3xl border-border/60 shadow-sm">
+    <Card id="plan-catalog" className="border-border/60 shadow-sm">
       <CardHeader className="pb-4">
         <CardDescription>{copy.planCatalog}</CardDescription>
         <CardTitle className="text-2xl">{copy.planCatalog}</CardTitle>
@@ -48,9 +48,9 @@ export function BillingPlanCatalog({
             <div
               key={plan.code}
               className={cn(
-                "rounded-2xl border p-5 transition-shadow",
+                "rounded-lg border p-5 transition-shadow",
                 isFeatured
-                  ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_25px_70px_-45px_rgba(16,185,129,0.8)]"
+                  ? "border-emerald-400/40 bg-emerald-500/8"
                   : isCurrent
                     ? "border-emerald-500/30 bg-emerald-500/8"
                     : "border-border/60 bg-muted/20"

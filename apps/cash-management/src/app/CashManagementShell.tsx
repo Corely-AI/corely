@@ -72,8 +72,7 @@ const cashManagementSidebarProps: Omit<AppSidebarProps, "variant" | "collapsed" 
 
 import { useNavigate, useLocation } from "react-router-dom";
 import { useOnboarding } from "@corely/web-features/modules/onboarding";
-import logoFull from "@/assets/logo-full.svg";
-import logoMark from "@/assets/logo-mark.svg";
+import corelyBrandMark from "../../../../assets/corely_brand_images/corely_128x128.png";
 
 export const CashManagementShell = () => {
   const { t } = useTranslation();
@@ -232,12 +231,15 @@ export const CashManagementShell = () => {
           <AppSidebar
             {...props}
             logo={
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-3">
                 <img
-                  src={props.collapsed ? logoMark : logoFull}
-                  alt="Corely Cash"
-                  className={props.collapsed ? "h-8 w-8" : "h-8"}
+                  src={corelyBrandMark}
+                  alt="Corely"
+                  className="h-9 w-9 shrink-0 object-contain"
                 />
+                <span className="truncate text-[1.7rem] font-semibold tracking-[-0.05em] text-foreground">
+                  Corely
+                </span>
               </div>
             }
           />

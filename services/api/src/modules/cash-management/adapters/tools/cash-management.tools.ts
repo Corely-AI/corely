@@ -366,7 +366,10 @@ const getDayCloseOrNull = async (
 ): Promise<CashDayClose | null | ToolFailure> => {
   const result = await deps.getDayClose.execute({ registerId, dayKey }, getCtx(params));
   if (isErr(result)) {
-    if (result.error.code === "NOT_FOUND") {
+    if (
+      result.error.code === "NOT_FOUND" ||
+      result.error.code === "CashManagement:DayCloseNotFound"
+    ) {
       return null;
     }
     return failure(
