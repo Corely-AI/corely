@@ -9,6 +9,7 @@ import { InMemoryTaxRateRepo } from "../../../testkit/fakes/in-memory-tax-rate-r
 import type { LockTaxSnapshotInput } from "@corely/contracts";
 import type { UseCaseContext } from "../use-case-context";
 import { isErr, type Result } from "@corely/kernel";
+import { InMemoryJurisdictionPackRegistry } from "../../../domain/ports/jurisdiction-pack-registry.port";
 
 const unwrap = <T>(result: Result<T, any>): T => {
   if (isErr(result)) throw result.error;
@@ -23,6 +24,7 @@ describe("LockTaxSnapshotUseCase", () => {
   let taxRateRepo: InMemoryTaxRateRepo;
   let taxEngine: TaxEngineService;
   let dePack: DEPackV1;
+  let packRegistry: InMemoryJurisdictionPackRegistry;
 
   const tenantId = "tenant-1";
   const userId = "user-1";
@@ -43,7 +45,9 @@ describe("LockTaxSnapshotUseCase", () => {
     taxRateRepo = new InMemoryTaxRateRepo();
 
     dePack = new DEPackV1(taxCodeRepo, taxRateRepo);
-    taxEngine = new TaxEngineService(profileRepo, dePack);
+    packRegistry = new InMemoryJurisdictionPackRegistry();
+    packRegistry.register(dePack);
+    taxEngine = new TaxEngineService(profileRepo, packRegistry);
 
     useCase = new LockTaxSnapshotUseCase(snapshotRepo, profileRepo, taxEngine);
 

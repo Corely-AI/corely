@@ -67,7 +67,7 @@ This creates:
 
 1. **User action**: HTTP `POST /invoices/:id/send` or AI tool calls `invoice.send`
 2. **Use case**: `SendInvoiceUseCase` validates, creates delivery record with status `QUEUED`, writes to outbox
-3. **Worker**: `InvoiceEmailRequestedHandler` picks up outbox event, sends email via Resend, updates status to `SENT`
+3. **Background runtime**: `InvoiceEmailRequestedHandler` picks up outbox event, sends email via Resend, updates status to `SENT`
 4. **Webhook**: Resend sends delivery updates → `ResendWebhookController` updates delivery status
 
 ### Components
@@ -93,7 +93,7 @@ This creates:
   - Maps Resend events to delivery statuses
   - Updates `InvoiceEmailDelivery` by `providerMessageId`
 
-#### Worker Service
+#### Background Runtime
 
 - **Handler**: `InvoiceEmailRequestedHandler`
   - Processes `invoice.email.requested` outbox events
@@ -149,14 +149,14 @@ Resend also respects idempotency keys, so retrying a failed outbox event won't s
 
 ## Delivery Statuses
 
-| Status      | Description                                     |
-| ----------- | ----------------------------------------------- |
-| `QUEUED`    | Delivery record created, waiting for worker     |
-| `SENT`      | Email sent to Resend successfully               |
-| `DELIVERED` | Email delivered to recipient (webhook update)   |
-| `BOUNCED`   | Email bounced or recipient complained (webhook) |
-| `DELAYED`   | Delivery delayed (webhook update)               |
-| `FAILED`    | Failed to send (worker error)                   |
+| Status      | Description                                                |
+| ----------- | ---------------------------------------------------------- |
+| `QUEUED`    | Delivery record created, waiting for background processing |
+| `SENT`      | Email sent to Resend successfully                          |
+| `DELIVERED` | Email delivered to recipient (webhook update)              |
+| `BOUNCED`   | Email bounced or recipient complained (webhook)            |
+| `DELAYED`   | Delivery delayed (webhook update)                          |
+| `FAILED`    | Failed to send (background handler error)                  |
 
 ## Monitoring
 
@@ -171,9 +171,9 @@ WHERE invoice_id = 'inv_123'
 ORDER BY created_at DESC;
 ```
 
-### Worker logs
+### Background runtime logs
 
-The worker logs outbox event processing:
+The API background runtime logs outbox event processing:
 
 ```
 Publishing outbox event: invoice.email.requested {...}
@@ -193,9 +193,9 @@ Updated delivery status for email re_abc123 to DELIVERED
 ### Manual testing (without database)
 
 1. Start the API service: `cd services/api && pnpm dev`
-2. Start the worker service: `cd services/worker && pnpm dev`
+2. Start the API service: `cd services/api && pnpm dev`
 3. Send a test invoice (requires valid invoice in DB)
-4. Check worker logs for email sending
+4. Check API/background logs for email sending
 5. Use Resend dashboard to see sent emails
 
 ### Webhook testing
@@ -212,7 +212,7 @@ ngrok http 3000
 
 ### Email not sending
 
-1. Check worker is running and processing outbox events
+1. Check API background processing is enabled and processing outbox events
 2. Check `RESEND_API_KEY` is set correctly
 3. Check outbox events: `SELECT * FROM "OutboxEvent" WHERE status = 'FAILED'`
 4. Check delivery records: `SELECT * FROM "InvoiceEmailDelivery" WHERE status = 'FAILED'`

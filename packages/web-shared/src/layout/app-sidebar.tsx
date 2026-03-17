@@ -13,7 +13,7 @@ import {
   Store,
   BookOpen,
 } from "lucide-react";
-import { Logo } from "@corely/web-shared/shared/components/Logo";
+import { Logo, LanguageSelector } from "@corely/web-shared/shared/components";
 import { useThemeStore } from "@corely/web-shared/shared/theme/themeStore";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import { WorkspaceSwitcher } from "@corely/web-shared/shared/workspaces/WorkspaceSwitcher";
@@ -29,6 +29,10 @@ import { useAuth } from "@corely/web-shared/lib/auth-provider";
 import { useWorkspace } from "@corely/web-shared/shared/workspaces/workspace-provider";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
 import { useWorkspaceConfig } from "@corely/web-shared/shared/workspaces/workspace-config-provider";
+import {
+  resolveNavigationGroupLabelKey,
+  resolveNavigationItemLabelKey,
+} from "@corely/web-shared/shared/workspaces/navigation-labels";
 import { WorkspaceTypeBadge } from "@corely/web-shared/shared/workspaces/WorkspaceTypeBadge";
 import { useCanManageTenants, useCanReadTenants } from "@corely/web-shared/shared/lib/permissions";
 import { getDocsBaseUrl } from "@corely/web-shared/shared/lib/docs-url";
@@ -47,6 +51,7 @@ export interface AppSidebarProps {
   showWorkspaceTypeBadge?: boolean;
   workspaceSwitcherMode?: WorkspaceSwitcherMode;
   notificationBell?: React.ReactNode;
+  logo?: React.ReactNode;
 }
 
 const isWorkspaceSwitcherVisible = (mode: WorkspaceSwitcherMode, workspaceCount: number) => {
@@ -90,6 +95,7 @@ export function AppSidebar({
   showWorkspaceTypeBadge = true,
   workspaceSwitcherMode = "always",
   notificationBell,
+  logo,
 }: AppSidebarProps) {
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useThemeStore();
@@ -128,11 +134,6 @@ export function AppSidebar({
       .filter((group) => group.items.length > 0);
   }, [hiddenItemIds, isHostScope, navigationGroups, workspaceNavigationGroups]);
 
-  const changeLanguage = (lang: string) => {
-    void i18n.changeLanguage(lang);
-    localStorage.setItem("Corely One ERP-language", lang);
-  };
-
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
   };
@@ -159,7 +160,7 @@ export function AppSidebar({
           </Button>
         ) : (
           <>
-            <Logo size="md" showText={!collapsed} />
+            {logo ?? <Logo size="md" showText={!collapsed} />}
             <Button
               variant="ghost"
               size="icon-sm"
@@ -198,13 +199,22 @@ export function AppSidebar({
                 <div key={group.id} className="space-y-1">
                   {!collapsed && (
                     <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      {t(group.labelKey ?? group.defaultLabel)}
+                      {(() => {
+                        const key = resolveNavigationGroupLabelKey(group);
+                        return key
+                          ? t(key, { defaultValue: group.defaultLabel })
+                          : group.defaultLabel;
+                      })()}
                     </div>
                   )}
                   {group.items.map((item) => {
                     const Icon = getIconByName(item.icon);
                     const openInNewTab =
                       item.id === "booking-public-page" || item.route === "/booking/public-page";
+                    const itemLabelKey = resolveNavigationItemLabelKey(item);
+                    const itemLabel = itemLabelKey
+                      ? t(itemLabelKey, { defaultValue: item.label })
+                      : item.label;
                     return (
                       <NavLink
                         key={item.id}
@@ -223,7 +233,7 @@ export function AppSidebar({
                         }
                       >
                         <Icon className="h-5 w-5 shrink-0" />
-                        {!collapsed && <span>{t(item.labelKey ?? item.label)}</span>}
+                        {!collapsed && <span>{itemLabel}</span>}
                         {!collapsed && item.pinned && (
                           <span className="ml-auto text-xs text-muted-foreground">📌</span>
                         )}
@@ -297,30 +307,7 @@ export function AppSidebar({
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <span className="text-lg leading-none">
-                  {i18n.language === "de" ? "🇩🇪" : i18n.language === "vi" ? "🇻🇳" : "🇬🇧"}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32">
-              <DropdownMenuItem onClick={() => changeLanguage("de")}>
-                🇩🇪 {t("settings.languages.de")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("en")}>
-                🇬🇧 {t("settings.languages.en")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => changeLanguage("vi")}>
-                🇻🇳 {t("settings.languages.vi")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <LanguageSelector />
 
           {!collapsed ? (
             <Button variant="ghost" size="icon-sm" asChild>

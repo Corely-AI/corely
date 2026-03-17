@@ -4,6 +4,35 @@ Automated scripts for running DI integration tests with external infrastructure.
 
 ## Available Scripts
 
+### `setup-stripe-billing-cash.sh` - Create Stripe Prices For Cash Management
+
+Creates the Stripe products and recurring monthly prices used by the
+cash-management billing module, then prints the `.env` values you need for
+local development.
+
+**Usage:**
+
+```bash
+pnpm billing:stripe:cash:setup
+```
+
+**What it prints:**
+
+- `STRIPE_BILLING_PRICE_STARTER_MONTHLY`
+- `STRIPE_BILLING_PRICE_PRO_MONTHLY`
+- `STRIPE_BILLING_PRICE_MULTI_LOCATION_MONTHLY`
+- local billing success/cancel/portal return URLs
+- the `stripe listen` command for `POST /billing/webhooks/stripe`
+
+**Notes:**
+
+- Requires `stripe login` first.
+- Uses `http://localhost:3000` for the API and `http://localhost:8088` for the
+  frontend by default.
+- Override with `API_BASE_URL` and `FRONTEND_BASE_URL` if needed.
+
+---
+
 ### `test-di-full.sh` - Full Test Suite with Cleanup
 
 Runs complete DI integration tests and cleans up afterward.

@@ -118,4 +118,58 @@ describe("Invoices API (HTTP + Postgres)", () => {
 
     expect(fetchAsOtherTenant.status).toBe(404);
   });
+
+  it("persists invoice payment rows and returns them after marking invoice paid", async () => {
+    const authHeader = buildAuthHeader(tenantAId);
+    const createRes = await request(server)
+      .post("/invoices")
+      .set("authorization", authHeader)
+      .send({
+        tenantId: tenantAId,
+        customerPartyId: customerAId,
+        currency: "EUR",
+        lineItems: [{ description: "Consulting", qty: 1, unitPriceCents: 10000 }],
+        idempotencyKey: "inv-api-payment-1",
+        actorUserId: "user-tenant-a",
+      });
+
+    expect([200, 201]).toContain(createRes.status);
+    const invoiceId: string = createRes.body.id;
+
+    const finalizeRes = await request(server)
+      .post(`/invoices/${invoiceId}/finalize`)
+      .set("authorization", authHeader)
+      .send({});
+    expect(finalizeRes.status).toBe(201);
+
+    const paidAt = "2025-12-20T00:00:00.000Z";
+    const paymentRes = await request(server)
+      .post(`/invoices/${invoiceId}/payments`)
+      .set("authorization", authHeader)
+      .send({
+        amountCents: 10000,
+        paidAt,
+        note: "Bank transfer",
+      });
+
+    expect(paymentRes.status).toBe(201);
+    expect(paymentRes.body.status).toBe("PAID");
+    expect(Array.isArray(paymentRes.body.payments)).toBe(true);
+    expect(paymentRes.body.payments.length).toBe(1);
+    expect(paymentRes.body.payments[0].paidAt).toBe(paidAt);
+
+    const getRes = await request(server)
+      .get(`/invoices/${invoiceId}`)
+      .set("authorization", authHeader);
+
+    expect(getRes.status).toBe(200);
+    expect(getRes.body.invoice.status).toBe("PAID");
+    expect(getRes.body.invoice.payments).toHaveLength(1);
+    expect(getRes.body.invoice.payments[0]).toEqual(
+      expect.objectContaining({
+        amountCents: 10000,
+        paidAt,
+      })
+    );
+  });
 });

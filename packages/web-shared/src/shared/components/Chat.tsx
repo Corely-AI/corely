@@ -1,41 +1,39 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Badge } from "@corely/ui";
-import { Card, CardContent } from "@corely/ui";
-import { Input } from "@corely/ui";
-import { Button } from "@corely/ui";
 import { fetchCopilotHistory, useCopilotChatOptions } from "@corely/web-shared/lib/copilot-api";
-import { QuestionForm } from "@corely/web-shared/shared/components/QuestionForm";
-import { Markdown } from "@corely/web-shared/shared/components/Markdown";
 import { useRotatingStatusText } from "@corely/web-shared/shared/components/chat/useRotatingStatusText";
 import { type StatusPhase } from "@corely/web-shared/shared/components/chat/statusTexts";
-import { type CollectInputsToolInput, type CollectInputsToolOutput } from "@corely/contracts";
-import { cn } from "@corely/web-shared/shared/lib/utils";
 import i18n from "@corely/web-shared/shared/i18n";
 import { useTranslation } from "react-i18next";
 
+import { type MessagePart, hasVisiblePart, hasVisibleText } from "./chat/ChatParts";
+import { ChatComposer } from "./chat/chat-composer";
 import {
-  type ToolInvocationPart,
-  type MessagePart,
-  isToolPart,
-  hasVisiblePart,
-  hasVisibleText,
-  renderPart,
-} from "./chat/ChatParts";
-
-export interface Suggestion {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}
+  ChatEmptyState,
+  type CapabilityAction,
+  type CapabilityGroup,
+  type Suggestion,
+} from "./chat/chat-empty-state";
+import { ChatMessageList, type ChatMessage, type RoleStyle } from "./chat/chat-message-list";
+import {
+  fileToChatPart,
+  formatBytes,
+  isSupportedAttachment,
+  MAX_ATTACHMENT_SIZE_BYTES,
+} from "./chat/chat-utils";
 
 export interface ChatProps {
   activeModule: string;
   locale?: string;
   placeholder?: string;
   suggestions?: Suggestion[];
+  capabilityGroups?: CapabilityGroup[];
+  capabilityCatalogTitle?: string;
+  capabilityCatalogDescription?: string;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
+  canSend?: boolean;
+  onSendBlocked?: () => void;
   runId?: string;
   runIdMode?: "persisted" | "controlled";
   onRunIdResolved?: (runId: string) => void;
@@ -43,13 +41,20 @@ export interface ChatProps {
   focusMessageId?: string | null;
 }
 
+export type { CapabilityAction, CapabilityGroup, Suggestion };
+
 export function Chat({
   activeModule,
   locale = "en",
   placeholder = "Type your message",
   suggestions = [],
+  capabilityGroups = [],
+  capabilityCatalogTitle,
+  capabilityCatalogDescription,
   emptyStateTitle,
   emptyStateDescription,
+  canSend = true,
+  onSendBlocked,
   runId: controlledRunId,
   runIdMode = "persisted",
   onRunIdResolved,
@@ -97,16 +102,21 @@ export function Chat({
   const [submittingToolIds, setSubmittingToolIds] = useState<Set<string>>(new Set());
   const [hydratedRunId, setHydratedRunId] = useState<string | null>(null);
   const [input, setInput] = useState("");
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const composerRef = useRef<HTMLFormElement | null>(null);
+  const composerInputRef = useRef<HTMLInputElement | null>(null);
 
   // AI SDK v3 API - manage input state ourselves
-  const messages = chat.messages ?? [];
+  const messages = (chat.messages ?? []) as ChatMessage[];
   const sendMessage = (chat as any).sendMessage;
   const addToolResult = (chat as any).addToolResult;
   const addToolApprovalResponse = (chat as any).addToolApprovalResponse;
   const setMessages = chat.setMessages;
   const status = (chat as any).status;
   const isLoading = status === "streaming" || status === "submitted";
-  const roleConfig = {
+  const roleConfig: Record<string, RoleStyle> = {
     user: {
       label: i18n.t("assistant.userRole"),
       align: "items-end",
@@ -140,20 +150,87 @@ export function Chat({
     setInput(e.target.value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const focusComposer = useCallback((value: string) => {
+    setInput(value);
+    window.requestAnimationFrame(() => {
+      composerRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+      window.setTimeout(() => {
+        composerInputRef.current?.focus();
+      }, 180);
+    });
+  }, []);
+
+  const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    if (selected.length === 0) {
+      return;
+    }
+
+    const validFiles: File[] = [];
+    let firstError: string | null = null;
+    for (const file of selected) {
+      if (!isSupportedAttachment(file)) {
+        firstError ??= t("assistant.attachments.invalidType", { name: file.name });
+        continue;
+      }
+      if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+        firstError ??= t("assistant.attachments.tooLarge", {
+          name: file.name,
+          maxSize: formatBytes(MAX_ATTACHMENT_SIZE_BYTES),
+        });
+        continue;
+      }
+      validFiles.push(file);
+    }
+
+    if (validFiles.length > 0) {
+      setPendingFiles((current) => [...current, ...validFiles]);
+    }
+    setAttachmentError(firstError);
+
+    e.target.value = "";
+  };
+
+  const removePendingFile = (index: number) => {
+    setPendingFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
+    setAttachmentError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !sendMessage) {
+    const trimmedInput = input.trim();
+    if ((!trimmedInput && pendingFiles.length === 0) || !sendMessage) {
+      return;
+    }
+    if (!canSend) {
+      onSendBlocked?.();
       return;
     }
 
     setStreamEventStarted(false);
     setToolRequestPending(false);
-    sendMessage({
-      role: "user",
-      parts: [{ type: "text" as const, text: input }],
-    });
-    setInput("");
-    onConversationUpdated?.();
+    try {
+      const fileParts =
+        pendingFiles.length > 0
+          ? await Promise.all(pendingFiles.map((file) => fileToChatPart(file)))
+          : undefined;
+
+      await Promise.resolve(
+        sendMessage({
+          text: trimmedInput || undefined,
+          files: fileParts,
+        })
+      );
+      setInput("");
+      setPendingFiles([]);
+      setAttachmentError(null);
+      onConversationUpdated?.();
+    } catch (error) {
+      console.error("Failed to send message with attachments:", error);
+    }
   };
 
   const markSubmitting = (id: string, value: boolean) => {
@@ -314,157 +391,53 @@ export function Chat({
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/70 to-transparent" />
         </div>
         <div className="relative space-y-6">
-          {messages.length === 0 && suggestions.length > 0 ? (
-            <div className="rounded-2xl border border-dashed border-border/60 bg-background/60 p-6 text-center space-y-4">
-              <div className="mx-auto h-1 w-12 rounded-full bg-gradient-to-r from-accent to-warning" />
-              {emptyStateTitle && (
-                <h3 className="text-xl font-semibold text-foreground">{emptyStateTitle}</h3>
-              )}
-              {emptyStateDescription && (
-                <p className="text-sm text-muted-foreground">{emptyStateDescription}</p>
-              )}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {suggestions.map((suggestion) => (
-                  <Button
-                    key={suggestion.label}
-                    variant="outline"
-                    size="lg"
-                    className="h-auto w-full justify-start gap-3 rounded-2xl border-border/60 bg-background/70 px-4 py-3 text-left shadow-[0_12px_30px_-24px_rgba(0,0,0,0.5)] hover:border-border-strong"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: suggestion.value },
-                      } as React.ChangeEvent<HTMLInputElement>)
-                    }
-                  >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                      <suggestion.icon className="h-4 w-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-sm font-semibold text-foreground">
-                        {suggestion.label}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{suggestion.value}</div>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </div>
+          {messages.length === 0 ? (
+            <ChatEmptyState
+              suggestions={suggestions}
+              capabilityGroups={capabilityGroups}
+              capabilityCatalogTitle={capabilityCatalogTitle}
+              capabilityCatalogDescription={capabilityCatalogDescription}
+              emptyStateTitle={emptyStateTitle}
+              emptyStateDescription={emptyStateDescription}
+              onSelectPrompt={focusComposer}
+            />
           ) : null}
 
-          <div className="space-y-6">
-            {messages.map((m) => {
-              const roleStyle = getRoleStyle(m.role);
-              const normalizedParts = (
-                m.parts?.length
-                  ? (m.parts as MessagePart[])
-                  : m.content
-                    ? [{ type: "text", text: String(m.content) } as MessagePart]
-                    : []
-              ).filter(Boolean);
-              const visibleParts = normalizedParts.filter((part) => !part.type.startsWith("data-"));
-
-              if (visibleParts.length === 0) {
-                return null;
-              }
-
-              return (
-                <div
-                  key={m.id}
-                  data-message-id={m.id}
-                  className={cn(
-                    "flex flex-col gap-2 rounded-2xl p-2 transition-colors",
-                    roleStyle.align,
-                    highlightedMessageId === m.id ? "bg-accent/10" : ""
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "flex items-center gap-2",
-                      m.role === "user" ? "flex-row-reverse" : "flex-row"
-                    )}
-                  >
-                    <Badge
-                      variant={roleStyle.badge}
-                      className="uppercase tracking-[0.2em] text-[10px]"
-                    >
-                      {roleStyle.label}
-                    </Badge>
-                  </div>
-                  <div className={cn("flex flex-col gap-2", roleStyle.align)}>
-                    {visibleParts.map((p, idx) => {
-                      const rendered = renderPart(p, {
-                        addToolResult: addToolResult ? addToolResultWithTracking : undefined,
-                        addToolApprovalResponse: addToolApprovalResponse
-                          ? addToolApprovalResponseWithTracking
-                          : undefined,
-                        submittingToolIds,
-                        markSubmitting,
-                      });
-                      if (!rendered) {
-                        return null;
-                      }
-                      if (isToolPart(p)) {
-                        return (
-                          <div key={`${m.id}-${idx}`} className="w-full max-w-[min(720px,100%)]">
-                            {rendered}
-                          </div>
-                        );
-                      }
-                      return (
-                        <div
-                          key={`${m.id}-${idx}`}
-                          className={cn(
-                            "max-w-[min(720px,100%)] rounded-2xl px-4 py-3 text-sm leading-relaxed backdrop-blur",
-                            roleStyle.bubble,
-                            roleStyle.tail
-                          )}
-                        >
-                          {rendered}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-
-            {showWaitingStatus && statusText ? (
-              <div className="flex items-center justify-center">
-                <div className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
-                  <span
-                    aria-hidden="true"
-                    className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent"
-                  />
-                  <span aria-live="polite" aria-atomic="true">
-                    {statusText}
-                  </span>
-                </div>
-              </div>
-            ) : null}
-          </div>
+          <ChatMessageList
+            messages={messages}
+            highlightedMessageId={highlightedMessageId}
+            getRoleStyle={getRoleStyle}
+            submittingToolIds={submittingToolIds}
+            markSubmitting={markSubmitting}
+            addToolResult={addToolResult ? addToolResultWithTracking : undefined}
+            addToolApprovalResponse={
+              addToolApprovalResponse ? addToolApprovalResponseWithTracking : undefined
+            }
+            showWaitingStatus={showWaitingStatus}
+            statusText={statusText}
+          />
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <div className="glass flex items-center gap-2 rounded-2xl p-2 shadow-[0_18px_60px_-36px_rgba(0,0,0,0.6)]">
-          <Input
-            value={input}
-            onChange={handleInputChange}
-            placeholder={placeholder}
-            className="h-12 flex-1 border-transparent bg-transparent text-base shadow-none focus:border-transparent focus:ring-0"
-            disabled={isLoading}
-          />
-          <Button
-            type="submit"
-            variant="accent"
-            size="lg"
-            className="px-6"
-            disabled={!input || !input.trim() || isLoading}
-          >
-            {isLoading ? t("assistant.sending") : t("assistant.send")}
-          </Button>
-        </div>
-      </form>
+      <ChatComposer
+        input={input}
+        placeholder={placeholder}
+        isLoading={isLoading}
+        pendingFiles={pendingFiles}
+        attachmentError={attachmentError}
+        onInputChange={handleInputChange}
+        onSubmit={handleSubmit}
+        onFileSelection={handleFileSelection}
+        removePendingFile={removePendingFile}
+        fileInputRef={fileInputRef}
+        composerRef={composerRef}
+        inputRef={composerInputRef}
+        sendLabel={t("assistant.send")}
+        sendingLabel={t("assistant.sending")}
+        canSubmit={Boolean(input.trim()) || pendingFiles.length > 0}
+        addAttachmentLabel={t("assistant.attachments.add")}
+        removeAttachmentLabel={t("assistant.attachments.remove")}
+      />
     </div>
   );
 }

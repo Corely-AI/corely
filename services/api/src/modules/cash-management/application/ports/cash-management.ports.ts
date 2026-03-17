@@ -3,6 +3,7 @@ import type {
   CashPaymentMethod as CashPaymentMethodType,
   CashEntryDirection,
   CashEntrySource,
+  CashEntryTaxMode as CashEntryTaxModeType,
   CashEntryType,
   ExportCashBookFormat,
 } from "@corely/contracts";
@@ -64,6 +65,7 @@ export type UpdateRegisterRecord = {
 
 export interface CashRegisterRepoPort {
   createRegister(data: CreateRegisterRecord, tx?: TransactionContext): Promise<CashRegisterEntity>;
+  countDistinctLocationsForTenant(tenantId: string, tx?: TransactionContext): Promise<number>;
   listRegisters(
     tenantId: string,
     workspaceId: string,
@@ -104,8 +106,19 @@ export type CreateEntryRecord = {
   source: CashEntrySource;
   paymentMethod: CashPaymentMethodType;
   amountCents: number;
+  grossAmountCents: number;
+  netAmountCents: number | null;
+  taxAmountCents: number | null;
+  taxMode: CashEntryTaxModeType | null;
+  taxCodeId: string | null;
+  taxCode: string | null;
+  taxRateBps: number | null;
+  taxLabel: string | null;
   currency: string;
   balanceAfterCents: number;
+  sourceDocumentId: string | null;
+  sourceDocumentRef: string | null;
+  sourceDocumentKind: string | null;
   referenceId: string | null;
   reversalOfEntryId: string | null;
   lockedByDayCloseId: string | null;
@@ -120,6 +133,12 @@ export interface CashEntryRepoPort {
     tx?: TransactionContext
   ): Promise<number>;
   createEntry(data: CreateEntryRecord, tx?: TransactionContext): Promise<CashEntryEntity>;
+  countEntriesForPeriod(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    tx?: TransactionContext
+  ): Promise<number>;
   listEntries(
     tenantId: string,
     workspaceId: string,
@@ -229,6 +248,12 @@ export interface CashAttachmentRepoPort {
     workspaceId: string,
     entryId: string
   ): Promise<CashEntryAttachmentEntity[]>;
+  countAttachmentsForPeriod(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    tx?: TransactionContext
+  ): Promise<number>;
   listAttachmentsForMonth(
     tenantId: string,
     workspaceId: string,
@@ -258,6 +283,12 @@ export interface CashExportRepoPort {
     tenantId: string,
     workspaceId: string,
     artifactId: string
+  ): Promise<CashExportArtifactEntity | null>;
+  findLatestArtifact(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    month?: string
   ): Promise<CashExportArtifactEntity | null>;
   listAuditRowsForMonth(
     tenantId: string,

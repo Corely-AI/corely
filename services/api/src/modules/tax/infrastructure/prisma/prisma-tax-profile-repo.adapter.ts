@@ -10,7 +10,32 @@ export class PrismaTaxProfileRepoAdapter extends TaxProfileRepoPort {
   }
 
   async getActive(tenantId: string, at: Date): Promise<TaxProfileEntity | null> {
-    const profile = await this.prisma.taxProfile.findFirst({
+    const profile = await this.findActiveByScope(tenantId, at);
+    if (profile) {
+      return this.toDomain(profile);
+    }
+
+    // Backward-compatibility fallback:
+    // some legacy tenants stored tax profiles under tenantId instead of workspaceId.
+    const workspace = await this.prisma.workspace.findUnique({
+      where: { id: tenantId },
+      select: { tenantId: true },
+    });
+
+    if (!workspace || workspace.tenantId === tenantId) {
+      return null;
+    }
+
+    const legacyProfile = await this.findActiveByScope(workspace.tenantId, at);
+    if (!legacyProfile) {
+      return null;
+    }
+
+    return this.toDomain(legacyProfile);
+  }
+
+  private async findActiveByScope(tenantId: string, at: Date) {
+    return this.prisma.taxProfile.findFirst({
       where: {
         tenantId,
         effectiveFrom: { lte: at },
@@ -18,8 +43,6 @@ export class PrismaTaxProfileRepoAdapter extends TaxProfileRepoPort {
       },
       orderBy: { effectiveFrom: "desc" },
     });
-
-    return profile ? this.toDomain(profile) : null;
   }
 
   async upsert(

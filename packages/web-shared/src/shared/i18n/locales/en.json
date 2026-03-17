@@ -80,6 +80,8 @@
     "reason": "Reason",
     "reasonPlaceholder": "Enter reason...",
     "badge": "Badge",
+    "actions": "Actions",
+    "other": "Other",
     "moreActions": "More actions",
     "dangerZone": "Danger zone",
     "goBack": "Go back",
@@ -95,7 +97,120 @@
     "updated": "Updated",
     "notSet": "Not set",
     "done": "Done",
-    "customFields": "Custom fields"
+    "customFields": "Custom fields",
+    "trial": {
+      "activeTitle": "Full-access trial active: {{days}} days remaining",
+      "expiringTitle": "{{days}} days left in your full-access trial",
+      "description": "No card required. Choose a paid plan before the trial ends to keep export, AI, and multi-location access.",
+      "cta": "Open billing",
+      "expiredTitle": "Your 30-day trial has ended",
+      "expiredDescription": "Upgrade now to keep using all features.",
+      "dismiss": "Dismiss",
+      "modalTitle": "Your 30-day full-access trial has ended",
+      "modalDescription": "Your workspace now uses the Free plan. Historical data is still available, but export, AI, and multi-location features are locked until you subscribe.",
+      "modalLater": "Later",
+      "choosePlan": "Choose a plan"
+    }
+  },
+  "onboarding": {
+    "allSet": "You're all set!",
+    "redirectingToDashboard": "Redirecting to your dashboard...",
+    "saveAndExit": "Save & Exit",
+    "goBack": "Go back",
+    "loading": "Loading onboarding...",
+    "aiAssistant": "AI Assistant",
+    "aiTipTitle": "Helpful Assistant",
+    "aiHelpTitle": "Need help with this step?",
+    "aiHelpPrompt": "Need help with this step? Ask our AI assistant to explain or suggest what to do next.",
+    "askAssistant": "Ask Assistant",
+    "businessName": "Business Name",
+    "businessNamePlaceholder": "e.g. Bella Beauty Studio",
+    "businessNameRequired": "Business name is required",
+    "businessType": "Business Type",
+    "selectType": "Select type",
+    "businessTypeRequired": "Category is required",
+    "currency": "Currency",
+    "categories": {
+      "beauty": "Nail / Beauty Salon",
+      "hair": "Hairdresser / Barber",
+      "gastronomy": "Café / Restaurant",
+      "retail": "Retail Shop",
+      "other": "Other"
+    },
+    "workflowOptions": {
+      "paper": "Paper / Notebook",
+      "paperDesc": "Transition from manual notebooks to digital.",
+      "excel": "Excel / Spreadsheet",
+      "excelDesc": "No more complex formulas or broken cells.",
+      "pos": "POS System",
+      "posDesc": "Seamlessly unite your POS and cash ledger.",
+      "software": "Other Software",
+      "softwareDesc": "Upgrade to a more modern cash solution."
+    },
+    "workflow": {
+      "insightTitle": "Personalized Insight",
+      "selectHint": "Select your previous flow"
+    },
+    "welcome": {
+      "badge": "New Experience",
+      "footer": "Powered by Corely AI"
+    },
+    "receipt": {
+      "errorUnsupported": "Unsupported file. Please upload a PDF, JPG, or PNG under 10MB.",
+      "uploadPrompt": "Click to upload or drag & drop",
+      "uploadHint": "PDF, JPG, PNG (max 10MB)",
+      "skipLabel": "I'll do this later",
+      "successTitle": "Receipt attached!",
+      "successDesc": "Moving to next step...",
+      "continueLabel": "Continue"
+    },
+    "openingBalance": {
+      "errorAmount": "Valid amount required",
+      "label": "Real cash currently in register",
+      "hint": "💡 Do not include card payments or bank transfers. Only physical cash.",
+      "importantTip": "Important Tip"
+    },
+    "entries": {
+      "errorAmount": "Valid amount required",
+      "errorNote": "Note is required",
+      "ctaAdd": "Add Entry",
+      "successTitle": "Entry Saved",
+      "successOne": "Great! You added your first entry. Let's do one more.",
+      "typeLabel": "Transaction Type",
+      "typeIncome": "Cash Income",
+      "typeExpense": "Cash Expense",
+      "amountLabel": "Amount ({{symbol}})",
+      "descLabel": "Description",
+      "descPlaceholder": "e.g. Haircut or Coffee supplies",
+      "skipSecond": "Skip Second Entry"
+    },
+    "status": {
+      "expectedLabel": "Expected Cash in Drawer",
+      "incomeLabel": "Today's Income",
+      "expenseLabel": "Today's Expenses",
+      "receiptMissing": "Reminder: Your first receipt is still missing. You can attach it later from the cash entries list.",
+      "workflowPaper": "Since you used a notebook, this view replaces manual tallying.",
+      "workflowExcel": "Since you used spreadsheets, this keeps your cash totals live without formulas.",
+      "workflowPos": "Since you use a POS system, this keeps cash and receipts aligned in one place.",
+      "workflowSoftware": "Since you used other software, this gives you a single daily cash view.",
+      "receiptReminder": "Receipt Reminder",
+      "tipTitle": "This is your cash status.",
+      "tipDesc": "Your expected balance is automatically updated every time you add an entry. No more manual calculations at the end of the day.",
+      "cta": "See what's next"
+    },
+    "closing": {
+      "watchTutorial": "Watch 30s tutorial",
+      "skipLabel": "I'll do this later"
+    },
+    "postValue": {
+      "inviteTitle": "Invite your team",
+      "inviteDesc": "Give your employees access to add cash entries using the tablet app.",
+      "inviteAction": "Add members",
+      "categoriesTitle": "Custom Categories",
+      "categoriesDesc": "Set up custom expense and income categories for better reporting.",
+      "categoriesAction": "Edit categories",
+      "cta": "Go to dashboard"
+    }
   },
   "actions": {
     "takeAttendance": "Take Attendance",
@@ -127,11 +242,15 @@
       "filings": "Filings",
       "payments": "Payments",
       "documents": "Documents",
-      "settings": "Tax Settings"
+      "settings": "Tax Settings",
+      "reports": "Reports",
+      "annualAssistant": "Annual Assistant"
     },
     "assistant": "Assistant",
+    "billing": "Billing",
     "expenses": "Expenses",
     "invoices": "Invoices",
+    "registers": "Registers",
     "directory": {
       "restaurants": "Restaurants"
     },
@@ -369,6 +488,7 @@
   "tax": {
     "title": "Tax Center",
     "subtitle": "Manage your tax profile, filings, and compliance",
+    "loading": "Loading tax data...",
     "profile": {
       "title": "Tax Profile",
       "vatEnabled": "VAT/Sales Tax Registered",
@@ -383,30 +503,732 @@
       "accountingMethod": "Accounting Method",
       "taxYearStartMonth": "Tax Year Start Month",
       "localTaxOffice": "Local Tax Office",
-      "save": "Save Tax Profile"
+      "save": "Save Tax Profile",
+      "saveSuccess": "Tax profile saved",
+      "saveFailed": "Failed to save tax profile",
+      "vatExemption": "VAT Exemption Paragraph",
+      "vatExemptionHelp": "Select the relevant exemption paragraph for your business"
     },
     "countries": {
       "de": "Germany"
     },
     "regimes": {
-      "standardVat": "Standard VAT"
+      "smallBusiness": "Small Business (Kleinunternehmer)",
+      "standardVat": "Standard VAT",
+      "vatExempt": "VAT Exempt"
+    },
+    "exemptions": {
+      "exportDeliveries": "§ 4 Nr. 1a UStG - Export deliveries",
+      "intraCommunityDeliveries": "§ 4 Nr. 1b UStG - Intra-community deliveries",
+      "financialServices": "§ 4 Nr. 8 UStG - Financial services",
+      "insuranceServices": "§ 4 Nr. 11 UStG - Insurance services",
+      "lettingLeasing": "§ 4 Nr. 12 UStG - Letting and leasing",
+      "medicalServices": "§ 4 Nr. 14 UStG - Medical services",
+      "educationalServices": "§ 4 Nr. 21 UStG - Educational services"
     },
     "filing": {
-      "quarterly": "Quarterly"
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
     },
     "accounting": {
-      "cashBasis": "Cash Basis",
+      "cashBasis": "Cash Basis (Ist-Versteuerung)",
+      "accrualBasis": "Accrual Basis (Soll-Versteuerung)",
       "cashBasisHelp": "Revenue is recorded when cash is received",
       "accrualBasisHelp": "Revenue is recorded when earned, regardless of when cash is received"
     },
     "placeholders": {
+      "country": "Select country",
+      "regime": "Select regime",
+      "vatExemption": "Select exemption paragraph",
+      "filingFrequency": "Select frequency",
+      "accountingMethod": "Select method",
       "vatId": "Enter your VAT ID (e.g., DE123456789)",
       "month": "Select month",
       "localTaxOffice": "Enter your local tax office name"
     },
     "consultant": {
       "title": "Tax Consultant",
-      "save": "Save Consultant Info"
+      "save": "Save Consultant Info",
+      "saveSuccess": "Consultant info saved",
+      "saveFailed": "Failed to save consultant info"
+    },
+    "submitStep": {
+      "methods": {
+        "manual": "Manual",
+        "api": "API",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "Export for ELSTER",
+        "description": "Download the filing data to upload in Mein ELSTER. After submitting in ELSTER, paste the transfer/reference ID below.",
+        "actions": {
+          "elsterXml": "Export ELSTER XML",
+          "kennzifferCsv": "Export CSV (Kennziffer mapping)",
+          "loading": "Exporting..."
+        },
+        "unavailable": "ELSTER export is not available for this filing.",
+        "success": {
+          "elsterXml": "Downloaded ELSTER XML",
+          "kennzifferCsv": "Downloaded Kennziffer CSV"
+        },
+        "errors": {
+          "generic": "Failed to export filing."
+        }
+      },
+      "connection": {
+        "title": "Submission method",
+        "connected": "Your automated submission connection is configured.",
+        "notConfigured": "Submission connection is not configured.",
+        "manageIn": "Manage submission settings in",
+        "settingsLink": "Tax Settings",
+        "enableDirectFiling": "to enable direct filing."
+      },
+      "confirmation": {
+        "title": "Submission confirmation",
+        "method": "Method",
+        "reference": "Submission reference",
+        "referencePlaceholder": "Enter submission ID/reference",
+        "submittedAt": "Submitted at",
+        "notes": "Notes (optional)",
+        "notesPlaceholder": "Add a note for your records",
+        "submit": "Submit filing"
+      }
+    },
+    "attachments": {
+      "title": "Attachments",
+      "attachFromDocuments": "Attach from tax documents",
+      "uploadAttachment": "Upload attachment",
+      "loading": "Loading attachments...",
+      "error": "Failed to load attachments.",
+      "empty": "Upload supporting documents like receipts or submission confirmations.",
+      "untitled": "Untitled document",
+      "type": "Type: {{type}}",
+      "uploadedAt": "Uploaded {{date}}",
+      "uploader": "Uploader: {{name}}",
+      "remove": "Remove",
+      "dialog": {
+        "title": "Attach receipt",
+        "description": "Upload proof of payment for this filing.",
+        "replace": "Replace receipt",
+        "choose": "Choose receipt",
+        "noFile": "No file selected",
+        "uploading": "Uploading...",
+        "submit": "Attach receipt"
+      },
+      "messages": {
+        "uploadSuccess": "Attachment uploaded",
+        "uploadError": "Failed to upload attachment",
+        "selectFile": "Select a receipt to upload"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "VAT Filing",
+        "vat-annual": "VAT Annual Filing",
+        "income-annual": "Income Tax Filing",
+        "trade": "Trade Tax Filing",
+        "payroll": "Payroll Tax Filing",
+        "corporate-annual": "Corporate Tax Filing",
+        "year-end": "Year-End Filing",
+        "other": "Tax Filing"
+      },
+      "status": {
+        "draft": "Draft",
+        "needsFix": "Needs attention",
+        "readyForReview": "Ready for review",
+        "submitted": "Submitted",
+        "paid": "Paid",
+        "archived": "Archived"
+      },
+      "actions": {
+        "review": "Review",
+        "continueReview": "Continue review",
+        "markPaid": "Mark paid",
+        "view": "View",
+        "previousPeriod": "Previous period",
+        "nextPeriod": "Next period",
+        "recalculate": "Recalculate",
+        "exportPdf": "Export PDF",
+        "exportCsv": "Export CSV",
+        "delete": "Delete filing",
+        "deleteConfirmTitle": "Delete filing?",
+        "deleteConfirmMessage": "This action cannot be undone."
+      },
+      "due": "Due {{date}}",
+      "dueWithDays": "Due {{date}} • {{count}} day left",
+      "dueWithDays_plural": "Due {{date}} • {{count}} days left"
+    },
+    "activity": {
+      "title": "Activity",
+      "loading": "Loading activity...",
+      "error": "Failed to load activity.",
+      "noActivity": "No activity yet.",
+      "by": "By {{name}}",
+      "types": {
+        "created": "Filing created",
+        "recalculated": "Recalculated",
+        "submitted": "Submitted",
+        "paid": "Marked paid",
+        "attachmentAdded": "Attachment added",
+        "issuesDetected": "Issues detected",
+        "issuesResolved": "Issues resolved",
+        "deleted": "Deleted"
+      }
+    },
+    "center": {
+      "title": "Tax Center",
+      "myTaxes": "My Taxes",
+      "freelancerSubtitle": "Manage your freelancer tax obligations.",
+      "companySubtitle": "Overview of company tax compliance and filings.",
+      "errorLoading": "Error loading Tax Center",
+      "errorDescription": "We couldn't load your tax overview. Please try again.",
+      "retry": "Retry",
+      "reviewNext": "Review next filing",
+      "settings": "Settings",
+      "nextUp": {
+        "title": "Next Up",
+        "allCaughtUp": "You're all caught up!",
+        "noUpcoming": "No upcoming filings found.",
+        "createFiling": "Create filing",
+        "dueDate": "Due Date",
+        "estimatedAmount": "Estimated Amount",
+        "reviewFiling": "Review filing",
+        "viewAll": "View all filings",
+        "overdue": "OVERDUE",
+        "vat": "VAT",
+        "tax": "Tax"
+      },
+      "annual": {
+        "title": "Annual Filings",
+        "yearendTitle": "Year-end & Annual Filings",
+        "viewAll": "View all",
+        "createForYear": "Create for {{year}}",
+        "noFilings": "No annual filings for {{year}}",
+        "obligations": "Annual obligations.",
+        "status": {
+          "draft": "Draft",
+          "needsFix": "Needs attention",
+          "readyForReview": "Ready for review",
+          "submitted": "Submitted",
+          "paid": "Paid",
+          "archived": "Archived",
+          "openForSubmission": "Open for submission",
+          "yearInProgress": "Year in progress"
+        },
+        "year": "Year {{year}}",
+        "estimatedTaxToPay": "Estimated tax to pay",
+        "reviewAndSubmit": "Review & Submit",
+        "preview": "Preview"
+      },
+      "issues": {
+        "title": "Open Issues",
+        "noIssues": "No issues detected. Your bookkeeping looks clean!",
+        "items": "items",
+        "affected": "affected",
+        "fix": "Fix",
+        "blocking": "BLOCKIEREND"
+      },
+      "shortcuts": {
+        "title": "Shortcuts",
+        "createFiling": "Create Filing",
+        "exportReport": "Export Report",
+        "payTaxes": "Pay Taxes",
+        "documents": "Documents"
+      },
+      "snapshot": {
+        "title": "YTD Snapshot ({{year}})",
+        "updated": "Updated {{date}}",
+        "noData": "No data available yet."
+      }
+    },
+    "reports": {
+      "title": "Tax Reports",
+      "subtitle": "Track upcoming declarations and submissions.",
+      "tabs": {
+        "upcoming": "Upcoming reports",
+        "submitted": "Submitted"
+      },
+      "groups": {
+        "vat": "Advance VAT declarations",
+        "compliance": "Compliance (EU Sales & Intrastat)",
+        "submitted": "Submitted reports"
+      },
+      "actions": {
+        "markSubmitted": "Mark as submitted",
+        "downloadPdf": "Download PDF",
+        "generatingPdf": "Generating PDF...",
+        "downloadStarted": "Download started",
+        "pdfPrepared": "PDF is being prepared. Try again shortly.",
+        "downloadFailed": "Failed to download PDF"
+      },
+      "status": {
+        "loading": "Loading reports...",
+        "empty": "No reports found."
+      },
+      "types": {
+        "vatAdvance": "Advance VAT declaration",
+        "vatAnnual": "Annual VAT report",
+        "incomeTax": "Income tax",
+        "euSales": "EU Sales List (ZM)",
+        "intrastat": "Intrastat Declaration",
+        "tradeTax": "Trade Tax (Gewerbesteuer)",
+        "profitLoss": "P&L Statement (EÜR)",
+        "payrollTax": "Payroll Tax"
+      },
+      "eur": {
+        "title": "Anlage EÜR (Profit & Loss)",
+        "subtitle": "Cash-basis annual statement for DE personal tax reporting.",
+        "status": {
+          "loadingCapabilities": "Loading tax capabilities...",
+          "loadingStatement": "Loading EÜR statement..."
+        },
+        "unsupported": {
+          "title": "EÜR is not available",
+          "description": "This report is currently supported for personal DE workspaces only."
+        },
+        "errors": {
+          "capabilitiesTitle": "Unable to load tax capabilities",
+          "capabilitiesDescription": "Retry once your workspace context is available.",
+          "statementTitle": "Unable to load EÜR statement",
+          "generic": "Failed to load EÜR statement."
+        },
+        "summary": {
+          "income": "Income",
+          "expenses": "Expenses",
+          "profit": "Profit"
+        },
+        "lines": {
+          "title": "Statement lines",
+          "columns": {
+            "line": "Line",
+            "group": "Group",
+            "amount": "Amount"
+          },
+          "groups": {
+            "income": "Income",
+            "expense": "Expense"
+          }
+        },
+        "lineLabels": {
+          "income": {
+            "sales": "Sales revenue",
+            "other": "Other operating income"
+          },
+          "expense": {
+            "rent": "Premises costs (rent/utilities)",
+            "software": "Software and subscriptions",
+            "travel": "Travel expenses",
+            "marketing": "Advertising and marketing",
+            "professional": "Professional and external services",
+            "taxes": "Taxes, fees and charges",
+            "other": "Other fully deductible operating expenses"
+          }
+        },
+        "generatedAt": "Generated {{date}}"
+      }
+    },
+    "documents": {
+      "title": "Tax Documents",
+      "subtitle": "Repository of all tax-related documents."
+    },
+    "payments": {
+      "title": "Payments",
+      "subtitle": "Track paid vs due filings across the year.",
+      "exportCsv": "Export CSV",
+      "status": {
+        "due": "Due",
+        "overdue": "Overdue",
+        "paid": "Paid"
+      },
+      "types": {
+        "vat": "VAT",
+        "vatAnnual": "VAT annual",
+        "incomeAnnual": "Income tax",
+        "trade": "Trade tax",
+        "payroll": "Payroll",
+        "corporateAnnual": "Corporate tax",
+        "yearEnd": "Year-end",
+        "other": "Other"
+      },
+      "columns": {
+        "filing": "Filing",
+        "dueDate": "Due date",
+        "amount": "Amount",
+        "status": "Status",
+        "paidDate": "Paid date",
+        "method": "Method",
+        "payable": "Payable",
+        "receivable": "Receivable"
+      },
+      "actions": {
+        "markPaid": "Mark paid",
+        "attachReceipt": "Attach receipt",
+        "markedPaid": "Marked as paid",
+        "markPaidFailed": "Failed to mark paid",
+        "receiptAttached": "Receipt attached",
+        "attachReceiptFailed": "Failed to attach receipt",
+        "exportFailed": "Failed to export payments"
+      },
+      "empty": {
+        "title": "No payments to track",
+        "description": "Payments will appear here once filings are submitted.",
+        "goToFilings": "Go to filings"
+      },
+      "error": {
+        "title": "Unable to load payments",
+        "description": "Check your connection and try again."
+      },
+      "sort": {
+        "dueDateSoonest": "Due date (Soonest)",
+        "dueDateLatest": "Due date (Latest)",
+        "paidDateNewest": "Paid date (Newest)",
+        "paidDateOldest": "Paid date (Oldest)",
+        "amountHighLow": "Amount (High-Low)",
+        "amountLowHigh": "Amount (Low-High)"
+      }
+    },
+    "overview": {
+      "title": "Taxes",
+      "greeting": "Good evening, {{name}}!",
+      "yourTaxes": "Your taxes in your region",
+      "localOffice": "Local office: {{name}}",
+      "annualAssistant": "Annual assistant",
+      "viewReports": "View reports",
+      "taxSettings": "Tax settings",
+      "currentVatPeriod": "Current VAT Period: {{period}} {{year}}",
+      "estimatedVatDue": "Estimated VAT due",
+      "notConfigured": "Not configured",
+      "viewDetails": "View details",
+      "kpis": {
+        "taxesToBePaid": "Taxes to be paid",
+        "income": "Income",
+        "expenses": "Expenses",
+        "vatNotApplicable": "VAT not applicable",
+        "completeSetup": "Complete tax setup",
+        "seeOverview": "See taxes overview",
+        "unpaidInvoices": "{{count}} unpaid invoices",
+        "itemsToReview": "{{count}} items to review"
+      },
+      "headsUp": "Heads up",
+      "settingsIncomplete": "Tax settings incomplete",
+      "settingsIncompleteDescription": "Configure your tax profile to estimate what you owe.",
+      "goToSettings": "Go to tax settings",
+      "expenseHelper": {
+        "title": "What can I expense?",
+        "description": "Learn which purchases you can categorize as business expenses.",
+        "learnMore": "Learn more"
+      },
+      "yourReports": "Your tax reports",
+      "reportsDescription": "Based on your details, these are the reports you are currently required to submit…",
+      "submitReports": "Submit reports",
+      "upcomingDeadline": "{{count}} upcoming deadline",
+      "upcomingDeadline_plural": "{{count}} upcoming deadlines",
+      "noUpcoming": "No upcoming reports.",
+      "localTaxOffice": "Local tax office",
+      "addLocalOffice": "Add your local tax office to keep your records complete.",
+      "updateSettings": "Update settings",
+      "errorLoading": "Could not load taxes",
+      "errorDescription": "Something went wrong while fetching your tax overview."
+    },
+    "annualAssistant": {
+      "threadTitle": "Annual income tax {{year}}",
+      "loading": "Preparing your annual tax assistant session...",
+      "placeholder": "Ask me to create your draft, generate EÜR, or guide your next step",
+      "emptyStateTitle": "Annual Income Tax {{year}}",
+      "emptyStateDescription": "Complete your annual filing in chat: create draft, generate EÜR, answer interview questions, and export PDF.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Create annual draft",
+          "value": "Create my annual income-tax draft for {{year}}."
+        },
+        "checklist": {
+          "label": "Show checklist",
+          "value": "Show draft checklist and blockers."
+        },
+        "export": {
+          "label": "Export PDF",
+          "value": "Export my annual draft PDF."
+        }
+      },
+      "errors": {
+        "createTitle": "Unable to start annual assistant",
+        "createDescription": "The assistant thread could not be created. Retry to continue."
+      }
+    },
+    "history": {
+      "title": "VAT periods",
+      "year": "Year",
+      "overdueAlert": "Action required: {{count}} overdue VAT periods",
+      "overdueDescription": "Oldest overdue period is preselected. You can still work on the current period.",
+      "submitOverdue": "Submit overdue periods",
+      "noData": "No data for this year.",
+      "noPeriods": "No periods found.",
+      "quarter": "Quarter",
+      "selectQuarter": "Select quarter",
+      "viewDetails": "View period details",
+      "selectedPeriod": "Selected period: {{label}} ({{range}})",
+      "taxDue": "Tax due",
+      "salesVat": "Sales VAT",
+      "purchaseVat": "Purchase VAT",
+      "submittedOn": "Submitted on {{date}}",
+      "reference": "Reference: {{ref}}",
+      "notes": "Notes: {{notes}}",
+      "archiveReason": "Archive reason: {{reason}}",
+      "downloadPdf": "Download PDF",
+      "markSubmitted": "Mark as submitted",
+      "markNil": "Mark as nil",
+      "archive": "Archive",
+      "tabs": {
+        "upcoming": "Upcoming reports",
+        "submitted": "Submitted reports"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Mark period as submitted",
+          "date": "Submission date",
+          "reference": "Reference (optional)",
+          "notes": "Notes (optional)",
+          "submit": "Submit period"
+        },
+        "nil": {
+          "title": "Mark period as nil",
+          "date": "Submission date",
+          "notes": "Notes (optional)",
+          "submit": "Mark nil"
+        },
+        "archive": {
+          "title": "Archive period",
+          "reason": "Reason",
+          "notes": "Notes (optional)",
+          "submit": "Archive period"
+        },
+        "cancel": "Cancel"
+      },
+      "periodCombobox": {
+        "placeholder": "Select or type a period…",
+        "searchPlaceholder": "Search or type period…",
+        "useCustom": "Use \"{{value}}\"",
+        "customHint": "Press Enter or click to use this custom period",
+        "noPeriods": "No periods found.",
+        "customHeading": "Custom",
+        "customPeriod": "Custom period",
+        "quartersHeading": "Quarters",
+        "monthlyHeading": "Monthly",
+        "footerHint": "Type {{qExample}} or {{mExample}} for a custom period",
+        "quarters": {
+          "1": "Q1",
+          "2": "Q2",
+          "3": "Q3",
+          "4": "Q4"
+        },
+        "quarterMonths": {
+          "1": "Jan – Mar",
+          "2": "Apr – Jun",
+          "3": "Jul – Sep",
+          "4": "Oct – Dec"
+        }
+      },
+      "navigator": {
+        "prevYear": "Previous year",
+        "nextYear": "Next year",
+        "failedToLoad": "Failed to load VAT periods.",
+        "retry": "Retry",
+        "notStarted": "Not started",
+        "noFilingYet": "No filing yet for {{period}} {{year}}.",
+        "createFiling": "Create filing",
+        "status": {
+          "draft": "Draft",
+          "needsFix": "Needs attention",
+          "readyForReview": "Ready",
+          "submitted": "Submitted",
+          "paid": "Paid",
+          "archived": "Archived"
+        }
+      },
+      "attachments": {
+        "title": "Attachments",
+        "attachFromDocuments": "Attach from tax documents",
+        "uploadAttachment": "Upload attachment",
+        "loading": "Loading attachments...",
+        "error": "Failed to load attachments.",
+        "empty": "Upload supporting documents like receipts or submission confirmations.",
+        "untitled": "Untitled document",
+        "type": "Type: {{type}}",
+        "uploadedAt": "Uploaded {{date}}",
+        "uploader": "Uploader: {{name}}",
+        "remove": "Remove",
+        "dialog": {
+          "title": "Attach receipt",
+          "description": "Upload proof of payment for this filing.",
+          "replace": "Replace receipt",
+          "choose": "Choose receipt",
+          "noFile": "No file selected",
+          "uploading": "Uploading...",
+          "submit": "Attach receipt"
+        },
+        "messages": {
+          "uploadSuccess": "Attachment uploaded",
+          "uploadError": "Failed to upload attachment",
+          "selectFile": "Select a receipt to upload"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "VAT Filing",
+          "vat-annual": "VAT Annual Filing",
+          "income-annual": "Income Tax Filing",
+          "trade": "Trade Tax Filing",
+          "payroll": "Payroll Tax Filing",
+          "corporate-annual": "Corporate Tax Filing",
+          "year-end": "Year-End Filing",
+          "other": "Tax Filing"
+        },
+        "status": {
+          "draft": "Draft",
+          "needsFix": "Needs attention",
+          "readyForReview": "Ready for review",
+          "submitted": "Submitted",
+          "paid": "Paid",
+          "archived": "Archived"
+        },
+        "actions": {
+          "review": "Review",
+          "continueReview": "Continue review",
+          "markPaid": "Mark paid",
+          "view": "View",
+          "previousPeriod": "Previous period",
+          "nextPeriod": "Next period",
+          "recalculate": "Recalculate",
+          "exportPdf": "Export PDF",
+          "exportCsv": "Export CSV",
+          "delete": "Delete filing",
+          "deleteConfirmTitle": "Delete filing?",
+          "deleteConfirmMessage": "This action cannot be undone."
+        },
+        "due": "Due {{date}}",
+        "dueWithDays": "Due {{date}} • {{count}} day left",
+        "dueWithDays_plural": "Due {{date}} • {{count}} days left"
+      },
+      "activity": {
+        "title": "Activity",
+        "loading": "Loading activity...",
+        "error": "Failed to load activity.",
+        "noActivity": "No activity yet.",
+        "by": "By {{name}}",
+        "types": {
+          "created": "Filing created",
+          "recalculated": "Recalculated",
+          "submitted": "Submitted",
+          "paid": "Marked paid",
+          "attachmentAdded": "Attachment added",
+          "issuesDetected": "Issues detected",
+          "issuesResolved": "Issues resolved",
+          "deleted": "Deleted"
+        }
+      },
+      "createFiling": {
+        "title": "New Tax Filing",
+        "subtitle": "Choose the filing type and period to create a new obligation.",
+        "form": {
+          "details": "Filing details",
+          "type": "Filing Type",
+          "selectType": "Select type",
+          "types": {
+            "vat": "VAT Return",
+            "income-annual": "Income Tax (Annual)",
+            "vat-annual": "Annual VAT",
+            "other": "Other"
+          },
+          "year": "Tax Year",
+          "period": "Period",
+          "cancel": "Cancel",
+          "submit": "Create Filing",
+          "errors": {
+            "periodRequired": "Period is required for VAT filings",
+            "yearRequired": "Year is required for annual filings"
+          }
+        },
+        "messages": {
+          "successTitle": "Filing created",
+          "successDescription": "Redirecting to filing details...",
+          "errorTitle": "Error creating filing"
+        }
+      },
+      "filingItems": {
+        "error": "Failed to load items.",
+        "emptyTitle": "No {{type}} items",
+        "emptyDescription": "We haven't found any {{type}} items for this period.",
+        "table": {
+          "date": "Date",
+          "counterparty": "Counterparty",
+          "description": "Description",
+          "net": "Net",
+          "tax": "Tax",
+          "gross": "Gross"
+        }
+      },
+      "includedItems": {
+        "title": "Included items",
+        "emptyTitle": "No items included",
+        "emptyDescription": "We haven't found any source items for this filing yet.",
+        "table": {
+          "type": "Type",
+          "date": "Date",
+          "counterparty": "Counterparty",
+          "category": "Category",
+          "vatTreatment": "VAT treatment",
+          "net": "Net",
+          "tax": "Tax",
+          "gross": "Gross",
+          "flags": "Flags"
+        },
+        "badges": {
+          "needsAttention": "Needs attention",
+          "ok": "OK",
+          "noCategory": "No category",
+          "noVatTreatment": "No VAT treatment"
+        },
+        "error": "Failed to load included items.",
+        "retry": "Retry"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Mark as paid",
+          "description": "Record the payment details and optionally attach a receipt."
+        },
+        "form": {
+          "paidAt": "Paid at",
+          "method": "Method",
+          "methods": {
+            "bank-transfer": "Bank transfer",
+            "direct-debit": "Direct debit",
+            "other": "Other"
+          },
+          "amount": "Amount",
+          "receipt": "Receipt",
+          "replace": "Replace receipt",
+          "upload": "Upload receipt",
+          "optional": "Optional",
+          "uploading": "Uploading...",
+          "submit": "Mark paid"
+        },
+        "messages": {
+          "uploadError": "Failed to upload receipt"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "VAT period marked as submitted",
+        "submittedError": "Failed to mark VAT period as submitted",
+        "nilSuccess": "VAT period marked as nil",
+        "nilError": "Failed to mark VAT period as nil",
+        "archiveSuccess": "VAT period archived",
+        "archiveError": "Failed to archive VAT period",
+        "generatingPdf": "Generating PDF...",
+        "downloadStarted": "Download started",
+        "pdfPrepared": "PDF is being prepared. Try again shortly.",
+        "downloadFailed": "Failed to download PDF"
+      }
     }
   },
   "cashManagement": {
@@ -549,7 +1371,7 @@
           "type": "Type",
           "direction": "IN/OUT",
           "amount": "Amount",
-          "payment": "Payment",
+          "tax": "VAT",
           "source": "Source",
           "balanceAfter": "Balance after",
           "beleg": "Beleg",
@@ -558,31 +1380,67 @@
         "rowActions": {
           "viewRegister": "View register",
           "reverse": "Reverse",
-          "addBeleg": "Add beleg"
+          "addBeleg": "Add beleg",
+          "downloadBeleg": "Download beleg"
+        },
+        "camera": {
+          "title": "Camera",
+          "description": "Use your device camera to capture the receipt directly.",
+          "capture": "Capture photo",
+          "switchCamera": "Switch camera",
+          "unavailable": "Camera is not available in this browser.",
+          "permissionDenied": "Camera access was denied."
         },
         "createDialog": {
           "title": "Create cash entry",
-          "direction": "Direction",
-          "amount": "Amount",
+          "description": "Record a cash-only Kassenbuch movement with gross amount, evidence, and VAT where applicable.",
+          "grossAmount": "Gross amount",
           "type": "Type",
-          "paymentMethod": "Payment method",
-          "description": "Description",
+          "taxCodeRequired": "VAT code",
+          "taxCodeOptional": "VAT code (optional)",
+          "noVat": "No VAT",
+          "taxProfileRequiredTitle": "Tax setup required",
+          "taxProfileRequiredDescription": "Choose how this cashbook should treat VAT before recording taxable cash sales.",
+          "setupStandardVat": "Use standard German VAT",
+          "setupSmallBusiness": "Use Kleinunternehmer (No VAT)",
+          "taxSummary": "VAT summary",
+          "netAmount": "Net amount",
+          "taxAmount": "VAT amount",
+          "outputVat": "Output VAT",
+          "inputVat": "Input VAT",
+          "salesVatRequiredHint": "Select the VAT code used for this cash sale.",
+          "salesVatOptionalHint": "Select a VAT code when this cash sale is taxable.",
+          "expenseVatHint": "Select an input VAT code only when this expense has a deductible receipt.",
+          "bookingText": "Booking text",
+          "documentReference": "Receipt reference / Eigenbeleg",
+          "documentReferencePlaceholder": "Receipt no., invoice no., or reason",
+          "documentReferenceHint": "Add either a receipt reference or upload a beleg. Opening float may stay without one.",
           "occurredAt": "Occurred at",
-          "attachBelegDocumentId": "Attach beleg document ID (optional)",
-          "documentPlaceholder": "doc_...",
+          "attachBeleg": "Attach beleg (optional)",
+          "chooseAttachment": "Choose file",
+          "takePicture": "Take picture",
+          "replaceAttachment": "Replace file",
+          "noAttachment": "No file selected",
           "projectedBalance": "Projected balance after save",
           "failed": "Failed to create entry.",
-          "save": "Save entry"
+          "save": "Save entry",
+          "uploading": "Uploading..."
         },
         "reverseDialog": {
           "title": "Reverse entry",
+          "description": "Reverse this posted cash entry with an audit-safe reason.",
           "reason": "Reason",
           "failed": "Failed to reverse entry.",
           "confirm": "Confirm reversal"
         },
         "attachmentDialog": {
           "title": "Add beleg to entry",
-          "documentId": "Document ID",
+          "description": "Upload a receipt file or take a picture to attach supporting evidence to this cash entry.",
+          "file": "Receipt file",
+          "uploadFile": "Upload file",
+          "replaceFile": "Replace file",
+          "takePicture": "Take picture",
+          "noFile": "No file selected",
           "failed": "Failed to attach beleg.",
           "attach": "Attach"
         }
@@ -724,6 +1582,12 @@
     "toolCall": "Running {{toolName}}...",
     "send": "Send",
     "sending": "Sending...",
+    "attachments": {
+      "add": "Add file",
+      "remove": "Remove file",
+      "invalidType": "{{name}} is not supported. Only image and PDF files are allowed.",
+      "tooLarge": "{{name}} is too large. Maximum size is {{maxSize}}."
+    },
     "suggestions": {
       "extractReceipt": {
         "label": "Extract a receipt and create an expense",
@@ -800,6 +1664,139 @@
       "hardware": "Hardware",
       "phone_internet": "Phone/Internet",
       "other": "Other"
+    },
+    "notifications": {
+      "created": "Expense created",
+      "updated": "Expense updated",
+      "deleted": "Expense deleted",
+      "deleteFailed": "Failed to delete expense",
+      "saveFailed": "Failed to save expense",
+      "loadFailed": "Failed to load expenses",
+      "transitioned": "Expense transitioned to {{to}}",
+      "transitionFailed": "Failed to transition expense",
+      "receiptAttachPartial": "{{successMessage}}, but {{count}} receipt file(s) could not be attached"
+    },
+    "list": {
+      "subtitle": "Track and manage your spend",
+      "noExpensesDescription": "Create your first expense to track spending.",
+      "selectedCount": "{{count}} selected",
+      "deleteSelected": "Delete selected",
+      "deleteSelectedTitle": "Delete selected expenses",
+      "deleteSelectedDescription": "This will archive the selected expenses.",
+      "selectAll": "Select all",
+      "selectExpense": "Select expense {{id}}",
+      "deductiblePercent": "Deductible %",
+      "deleteExpenseTitle": "Delete expense",
+      "deleteExpenseDescription": "This will archive the expense and remove it from the list.",
+      "pageInfo": "Page {{page}} of {{totalPages}}",
+      "dimensionLabel": "Dimension",
+      "customLabel": "Custom",
+      "ruleKind": {
+        "perDiem": "per-diem",
+        "mixedUse": "mixed-use",
+        "gift": "gift"
+      },
+      "sort": {
+        "dateNewest": "Date (Newest)",
+        "dateOldest": "Date (Oldest)",
+        "amountHighLow": "Amount (High-Low)",
+        "amountLowHigh": "Amount (Low-High)",
+        "createdNewest": "Created (Newest)"
+      }
+    },
+    "detail": {
+      "overview": "Overview",
+      "taxDeductibility": "Tax Deductibility (DE)",
+      "deductiblePercentLabel": "{{percent}}% deductible",
+      "needsMoreInfo": "Needs more info",
+      "deductible": "Deductible",
+      "nonDeductible": "Non-deductible",
+      "fillRequiredFields": "Fill in required fields when editing this expense to compute deductibility.",
+      "notComputed": "Deductibility not yet computed. Edit this expense to trigger calculation.",
+      "attachReceipts": "Attach receipts to see them here.",
+      "auditTrail": "Audit trail will appear here once available.",
+      "backToExpenses": "Back to expenses",
+      "notFound": "Expense not found.",
+      "noNotes": "No notes added.",
+      "transitionSoon": "Transition to {{to}} is coming soon",
+      "actionSoon": "Action {{action}} coming soon",
+      "ruleKind": {
+        "percent": "Fixed %",
+        "giftThreshold": "Gift threshold",
+        "perDiem": "Per-diem",
+        "mixedUse": "Mixed-use"
+      }
+    },
+    "form": {
+      "editTitle": "Edit expense",
+      "create": "Create expense",
+      "selectCategory": "Select category",
+      "selectCategoryHint": "Select a category to see deductibility rules.",
+      "merchantPlaceholder": "e.g. Restaurant Zum Hirsch",
+      "taxDeductibilityTitle": "Tax Deductibility (DE)",
+      "participants": "Participants",
+      "participantsPlaceholder": "e.g. Max Muller, Julia Schneider",
+      "participantsHint": "Required for client meal deduction (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "Business Occasion",
+      "businessOccasionPlaceholder": "e.g. Q1 project kick-off, partnership negotiation",
+      "clientMealsHint": "70% income-tax deductible. VAT deduction may differ; check with your tax advisor.",
+      "giftRecipient": "Gift Recipient",
+      "giftRecipientPlaceholder": "e.g. Acme Corp / Hans Muller",
+      "giftRecipientHint": "Gifts to the same recipient exceeding EUR 50 per calendar year become 0% deductible (§4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "Business Use %",
+      "businessUsePercentPlaceholder": "e.g. 60",
+      "businessUsePercentHint": "% of business use",
+      "travelDetails": "Travel Details (for per-diem - DE 2026)",
+      "travelDate": "Travel Date",
+      "absenceHours": "Absence Hours",
+      "absenceHoursPlaceholder": "e.g. 10",
+      "travelHint": ">=8h absence: EUR 14 deductible - 24h: EUR 28 deductible (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Home-office Days",
+      "homeOfficeDaysPlaceholder": "e.g. 30",
+      "days": "days",
+      "homeOfficeHint": "EUR 6/day - max EUR 1,260/year annual cap (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "This expense category is",
+      "nonDeductibleWarningStrong": "0% income-tax deductible",
+      "nonDeductibleWarningSuffix": "under German tax law.",
+      "receiptOptional": "Receipt (optional)",
+      "addReceiptFiles": "Add receipt files",
+      "uploadReceiptHint": "Upload image or PDF receipts now. They will be attached when you save.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: only image and PDF are allowed",
+        "fileTooLarge": "{{name}}: exceeds 10MB limit"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "{{percent}}% deductible",
+        "mixedUse": "{{percent}}% deductible (mixed-use)",
+        "enterBusinessUse": "Enter business use %",
+        "perDiemServer": "Per-diem (computed server-side)",
+        "homeOfficeRate": "EUR 6/day flat rate",
+        "giftThreshold": "Up to EUR 50/recipient/year - requires recipient"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Client meals (Bewirtung) - 70%",
+        "MEALS_TEAM_EMPLOYEE": "Team / employee meals - 100%",
+        "GIFTS_BUSINESS_PARTNER": "Business gifts - up to EUR 50",
+        "GIFTS_PROMO_STREUARTIKEL": "Promotional gifts (<=EUR 10) - 100%",
+        "FINES_PENALTIES": "Fines & penalties - 0%",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Protective / uniform clothing - 100%",
+        "CLOTHING_CIVILIAN": "Civilian clothing - 0%",
+        "TRAVEL_MEALS_PER_DIEM": "Travel meal per-diem (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Home-office flat rate (EUR 6/day)",
+        "PHONE_INTERNET": "Phone / Internet (mixed-use)",
+        "CAR": "Car (mixed-use)",
+        "HOME_INTERNET": "Home Internet (mixed-use)",
+        "office_supplies": "Office supplies - 100%",
+        "software": "Software - 100%",
+        "travel": "Travel - 100%",
+        "meals": "Meals - 70%",
+        "home_office": "Home office - 100%",
+        "education": "Education - 100%",
+        "hardware": "Hardware - 100%",
+        "phone_internet": "Phone/Internet (mixed-use)",
+        "other": "Other"
+      }
     }
   },
   "invoices": {
@@ -881,6 +1878,9 @@
       "stillGeneratingDescription": "This can take longer under load. Please try again in a few seconds."
     },
     "notifications": {
+      "created": "Invoice created",
+      "updated": "Invoice updated",
+      "deleted": "Invoice deleted",
       "canceled": "Invoice canceled",
       "duplicateSoon": "Duplicate feature coming soon",
       "exportSoon": "Export feature coming soon",
@@ -1266,6 +2266,7 @@
   "auth": {
     "signin": {
       "title": "Sign in to your account",
+      "subtitle": "Sign in to manage registers and daily cash operations.",
       "rememberMe": "Remember me",
       "forgotPassword": "Forgot password?",
       "cta": "Sign in",
@@ -1274,6 +2275,7 @@
     },
     "signup": {
       "title": "Create your account",
+      "subtitle": "Sign up to start managing cash workflows.",
       "cta": "Sign up",
       "creating": "Creating account...",
       "hasAccount": "Already have an account?"
@@ -1297,10 +2299,12 @@
       "confirmLabel": "Confirm password"
     },
     "fields": {
+      "fullName": "Full name",
       "email": "Email address",
       "password": "Password"
     },
     "placeholders": {
+      "fullName": "Full name",
       "email": "Email address",
       "password": "Password",
       "passwordMin": "Minimum 6 characters"
@@ -1724,6 +2728,113 @@
       "messageLogged": "Message logged",
       "createDraftFailed": "Failed to create draft",
       "logFailed": "Failed to log message"
+    },
+    "accounts": {
+      "title": "Accounts",
+      "new": "New Account",
+      "searchPlaceholder": "Search accounts...",
+      "emptyTitle": "No accounts found",
+      "emptyDescription": "Create a new account to get started.",
+      "noContactInfo": "No contact info",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "prospect": "Prospect"
+      },
+      "type": {
+        "customer": "Customer",
+        "vendor": "Vendor",
+        "partner": "Partner",
+        "other": "Other"
+      }
+    },
+    "accountForm": {
+      "newTitle": "New Account",
+      "editTitle": "Edit Account",
+      "identityTitle": "Identity",
+      "identityDescription": "Contact information stored in Party record",
+      "accountNameRequired": "Account Name *",
+      "websitePlaceholder": "https://...",
+      "industry": "Industry",
+      "profileTitle": "CRM Profile",
+      "profileDescription": "Sales-specific fields",
+      "accountType": "Account Type",
+      "create": "Create Account",
+      "update": "Update Account"
+    },
+    "contactForm": {
+      "newTitle": "New Contact",
+      "editTitle": "Edit Contact",
+      "detailsTitle": "Contact Details",
+      "create": "Create Contact",
+      "update": "Update Contact",
+      "createFailed": "Failed to create contact",
+      "updateFailed": "Failed to update contact"
+    },
+    "sequences": {
+      "new": "New Sequence",
+      "setupTitle": "Sequence Setup",
+      "applyPreset": "Apply Nails 3-step preset",
+      "created": "Sequence created",
+      "createFailed": "Failed to create sequence",
+      "nameRequired": "Sequence name is required",
+      "addAtLeastOneStep": "Add at least one step",
+      "stepTitle": "Step {{step}}",
+      "removeStep": "Remove step {{step}}",
+      "stepType": "Step Type",
+      "dayDelay": "Day Delay",
+      "stepSubject": "Step Subject",
+      "stepBody": "Step Body",
+      "addStep": "Add Step",
+      "create": "Create Sequence",
+      "creating": "Creating...",
+      "stepTypes": {
+        "task": "Task",
+        "call": "Call",
+        "emailManual": "Email Manual",
+        "emailAuto": "Email Auto"
+      },
+      "nailsPreset": {
+        "name": "Lead to Won - Nails",
+        "description": "Automated day 1/day 3/day 7 email follow-up for nails leads."
+      }
+    },
+    "emailSettings": {
+      "title": "CRM Email Settings",
+      "subtitle": "Configure Resend for automated sequence emails and inbound replies.",
+      "defaultDisplayName": "CRM Resend",
+      "saved": "CRM email settings saved",
+      "connectionValid": "Resend connection is valid",
+      "connectionTitle": "Resend Connection",
+      "connectionDescription": "Outbound messages use the configured sender. Sequence emails default to",
+      "connectionName": "Connection name",
+      "fromAddress": "From address",
+      "replyToAddress": "Reply-to address",
+      "apiKeyLabel": "API key",
+      "apiKeyLeaveBlank": "leave blank to keep current key",
+      "apiKeyPlaceholder": "re_...",
+      "testConnection": "Test connection",
+      "noWorkspace": "No active workspace selected.",
+      "inboundWebhookTitle": "Inbound Webhook",
+      "inboundWebhookDescription": "Configure this URL in Resend inbound webhook settings.",
+      "tenantResolution": "Tenant is resolved automatically. Optional fallback: add",
+      "setupGuideTitle": "Resend Setup Guide",
+      "setupGuideDescription": "Use these exact settings for CRM reply tracking.",
+      "guide": {
+        "step1": "Open Resend Dashboard -> Webhooks -> Add webhook.",
+        "step2": "Set Endpoint URL to the value above.",
+        "step3": "In Event types, select only",
+        "step4": "Do not select contact/domain events for this CRM webhook.",
+        "localhostNotePrefix": "Localhost note: Resend cannot call",
+        "localhostNoteSuffix": "directly. For local testing, expose your API with a public tunnel and use that HTTPS URL as webhook endpoint."
+      },
+      "errors": {
+        "selectWorkspace": "Select a workspace before saving email settings.",
+        "apiKeyRequired": "Resend API key is required for the first setup.",
+        "saveFailed": "Failed to save settings",
+        "saveConnectionFirst": "Save a Resend connection first.",
+        "connectionTestFailed": "Connection test failed"
+      }
     }
   },
   "classes": {
@@ -1974,7 +3085,409 @@
     "tenantId": "Tenant ID",
     "actions": "Actions",
     "manage": "Manage",
-    "confirmDeactivate": "Are you sure you want to deactivate this tenant? Users will no longer be able to log in.",
-    "confirmActivate": "Are you sure you want to activate this tenant?"
+    "confirmDeactivate": "Are you sure you want to deactivate this tenant? Users will no longer be able to log in."
+  },
+  "billing": {
+    "title": "Plans and billing",
+    "subtitle": "Current plan, cash flow usage, and next upgrade options for your salon.",
+    "currentPlan": "Current plan",
+    "planStatus": "Plan status",
+    "billingActions": "Billing actions",
+    "usage": "Usage this period",
+    "planCatalog": "Available plans",
+    "manageBilling": "Manage billing",
+    "upgradePlan": "Upgrade plan",
+    "currentPlanBadge": "Current plan",
+    "noLimit": "No limit",
+    "billedMonthly": "Billed monthly",
+    "active": "Active",
+    "period": "Current period",
+    "unavailable": "Not available in this plan",
+    "loading": "Loading billing information...",
+    "loadFailed": "Unable to load billing right now.",
+    "openPortalDescription": "Open the hosted customer portal to update payment details or manage billing.",
+    "checkoutDescription": "Upgrade through hosted Stripe Checkout. Corely maintains the plan catalog and usage logic.",
+    "featureAccess": "Feature access",
+    "recommendedTitle": "Need more limits?",
+    "recommendedDescription": "Upgrade when your salon needs export, AI help, or multiple locations.",
+    "startTrial": "Start 30-day trial",
+    "trialTitle": "Start 30-day full access trial",
+    "noCardRequired": "No card required",
+    "trialDescription": "Workspace gets full Multi-location features for 30 days, then returns to Free if not subscribed.",
+    "trialActive": "{{daysRemaining}} days remaining in full access trial.",
+    "trialExpiring": "{{daysRemaining}} days left. Choose a plan now to keep export, AI, and additional locations.",
+    "trialExpired": "Full access trial ended",
+    "trialExpiredDescription": "Workspace has returned to Free plan. Old data is preserved, but export, AI and additional locations are locked until subscription.",
+    "upgradeNow": "Choose plan",
+    "afterTrialTitle": "What changes after trial",
+    "afterTrialDescription": "Corely keeps all old data. After 30 days, workspace switches to Free and new usage follows Free's monthly limits.",
+    "trialStarted": "Trial started",
+    "trialStartFailed": "Unable to start trial right now.",
+    "pricePerMonth": "{{price}} / month",
+    "remaining": "{{count}} left",
+    "featuredPlanNameFallback": "Upgrade",
+    "featuredTitleFree": "Upgrade to unlock exports, AI, and unlimited receipts",
+    "featuredTitlePaid": "Stay ahead with full features",
+    "featuredDescriptionFallback": "Full cash-control with exports, AI assistance, and multi-location support.",
+    "featuredFootnoteFree": "Unlimited entries and receipts, exports, AI assistant, and multi-location.",
+    "featuredFootnotePaid": "Keep exports, AI, and multi-location ready for your team.",
+    "statusLabels": {
+      "free": "Free",
+      "active": "Active",
+      "trialing": "Trialing",
+      "past_due": "Past due",
+      "canceled": "Canceled",
+      "incomplete": "Incomplete",
+      "incomplete_expired": "Incomplete expired",
+      "unpaid": "Unpaid"
+    },
+    "usageMetrics": {
+      "entries": "Cash entries this period",
+      "receipts": "Receipts this period"
+    },
+    "usageNudges": {
+      "entries": "Upgrade for unlimited cash entries and exports.",
+      "receipts": "Upgrade for unlimited receipts and exports."
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "summary": "For one salon location getting started with basic daily cash control.",
+        "highlights": {
+          "0": "1 location",
+          "1": "30 entries per month",
+          "2": "10 receipts per month",
+          "3": "No export",
+          "4": "No AI assistant"
+        }
+      },
+      "starter-monthly": {
+        "name": "Starter",
+        "summary": "Unlimited daily cash book operations for one location.",
+        "highlights": {
+          "0": "1 location",
+          "1": "Unlimited entries",
+          "2": "Unlimited receipts",
+          "3": "Daily closing",
+          "4": "Monthly export"
+        }
+      },
+      "pro-monthly": {
+        "name": "Pro",
+        "summary": "Adds AI help and advanced issue detection for one location.",
+        "highlights": {
+          "0": "Everything in Starter",
+          "1": "AI assistant",
+          "2": "Multilingual AI help",
+          "3": "Issue detection",
+          "4": "Closing guidance"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Multi-location",
+        "summary": "For salon groups managing multiple locations and teams.",
+        "highlights": {
+          "0": "Everything in Pro",
+          "1": "Multiple locations",
+          "2": "Team access",
+          "3": "Consolidated overview"
+        }
+      }
+    },
+    "usageLabels": {
+      "usedOf": "Used {{used}} / {{limit}}",
+      "currentPeriod": "Current period"
+    },
+    "featureLabels": {
+      "maxLocations": "Locations",
+      "maxEntriesPerMonth": "Cash entries",
+      "maxReceiptsPerMonth": "Receipts",
+      "canExport": "Monthly export",
+      "dailyClosing": "Daily closing",
+      "aiAssistant": "AI assistant",
+      "multilingualAiHelp": "Multilingual AI help",
+      "issueDetection": "Issue detection",
+      "closingGuidance": "Closing guidance",
+      "teamAccess": "Team access",
+      "consolidatedOverview": "Consolidated overview"
+    }
+  },
+  "cashDashboard": {
+    "headerTitle": "Cash control dashboard",
+    "headerSubtitle": "Daily cash and receipt control for the salon floor.",
+    "previewLabel": "Preview state",
+    "previewStates": {
+      "open": "Day open",
+      "ready": "Ready to close",
+      "closed": "Closed and export ready"
+    },
+    "banner": {
+      "open": "Today's cash book is still open",
+      "receiptsMissing": "{{count}} receipts are missing",
+      "closeNow": "You can close the day now",
+      "monthReady": "This month is ready to export",
+      "closedToday": "Today has been closed",
+      "staleTitle": "Showing the last synced cash snapshot",
+      "staleDescription": "A fresh sync is still running. Review the latest entries before you close the day."
+    },
+    "actions": {
+      "addEntry": "New cash entry",
+      "openEntries": "Open entries",
+      "closeDay": "Close today's cash book",
+      "exportMonth": "Export for Steuerberater",
+      "openRegister": "Open register",
+      "attachReceipt": "Attach receipt",
+      "reviewEntries": "Review entries",
+      "seeAll": "See all entries",
+      "edit": "Edit",
+      "reverse": "Reverse",
+      "viewDetails": "Details",
+      "attachNow": "Attach now",
+      "createFirstEntry": "Create first entry",
+      "openBilling": "Open billing",
+      "upgradeToStarter": "Upgrade to Starter",
+      "upgradeToPro": "Upgrade to Pro"
+    },
+    "labels": {
+      "openingBalance": "Opening balance",
+      "cashInToday": "Cash in today",
+      "cashOutToday": "Cash out today",
+      "expectedBalance": "Expected balance",
+      "countedCash": "Counted cash",
+      "difference": "Difference",
+      "missingReceipts": "Missing receipts",
+      "dailyClosing": "Daily closing status",
+      "todaysCashStatus": "Today's cash status",
+      "actionRequired": "Action required",
+      "recentEntries": "Recent entries",
+      "receiptStatus": "Receipt status",
+      "closingWorkflow": "Closing workflow",
+      "exportStatus": "Monthly export status",
+      "trendOverview": "Operational overview",
+      "privateDeposits": "Private deposits",
+      "privateWithdrawals": "Private withdrawals",
+      "lastClosedDate": "Last closed date",
+      "closedBy": "Closed by",
+      "responsibleToday": "Responsible today",
+      "currentMonth": "Current month",
+      "entriesCompleted": "Entries completed",
+      "lastExport": "Last export",
+      "status": "Status",
+      "time": "Time",
+      "type": "Type",
+      "amount": "Amount",
+      "note": "Note",
+      "receipt": "Receipt",
+      "rowActions": "Actions",
+      "attachedToday": "Attached today",
+      "missingToday": "Missing today",
+      "missingThisMonth": "Missing this month",
+      "weekIncome": "Cash income this week",
+      "weekExpenses": "Cash expenses this week",
+      "openDays": "Open days",
+      "monthVsLastMonth": "This month vs last month",
+      "exportChecklistDays": "All required days are closed",
+      "exportChecklistReceipts": "All required receipts are attached",
+      "exportChecklistReview": "No critical review items remain",
+      "helperWidget": "Need help?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "Includes {{deposit}} private deposits and {{withdrawal}} private withdrawals.",
+      "countNotEntered": "Not entered yet",
+      "differenceBalanced": "No difference",
+      "differenceOver": "{{amount}} over",
+      "differenceShort": "{{amount}} short",
+      "statusOpen": "Open",
+      "statusNeedsReview": "Needs review",
+      "statusReadyToClose": "Ready to close",
+      "statusClosed": "Closed",
+      "monthExportReady": "Export ready",
+      "exportBlockedReceipts": "Blocked by missing receipts",
+      "exportBlockedDays": "Blocked by unclosed days",
+      "exportBlockedReview": "Blocked by review items",
+      "exportAlreadyGenerated": "Already exported",
+      "receiptsComplete": "Receipt check is complete for today.",
+      "receiptsIncomplete": "{{count}} receipt items still need attention today.",
+      "noActionNeeded": "No urgent action right now",
+      "noActionDescription": "Today's cash book is in order. You can keep recording entries or export the month.",
+      "noEntriesTitle": "No cash activity yet today",
+      "noEntriesDescription": "Start with the opening balance or record the first cash movement from the salon.",
+      "loadingTitle": "Preparing today's cash overview",
+      "loadingDescription": "Collecting receipts, entries, and closing signals."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "{{count}} entries are missing receipts",
+      "missingReceiptsDescription": "Attach receipts before the day can be trusted or exported.",
+      "closeDayTitle": "Today's cash book is not closed yet",
+      "closeDayDescription": "Count the drawer and confirm the closing balance to finish today.",
+      "missingNotesTitle": "{{count}} cash expenses are missing notes",
+      "missingNotesDescription": "Add a short note so each expense can be understood later.",
+      "openDaysTitle": "{{count}} days are still open this week",
+      "openDaysDescription": "Close open days so the month can be exported without follow-up work.",
+      "reviewTitle": "{{count}} entries need review",
+      "reviewDescription": "Check unusual cash movements before you close the book.",
+      "exportTitle": "Monthly export is still blocked",
+      "exportDescription": "Resolve the remaining blockers before sending data to the tax advisor.",
+      "exportReadyTitle": "Monthly export is ready",
+      "exportReadyDescription": "The month can be exported now without missing documents."
+    },
+    "entryTypes": {
+      "income": "Income",
+      "expense": "Expense",
+      "private-deposit": "Private deposit",
+      "private-withdrawal": "Private withdrawal"
+    },
+    "entryStatus": {
+      "attached": "Attached",
+      "missing": "Missing",
+      "review": "Needs review",
+      "ok": "OK"
+    },
+    "assistant": {
+      "title": "Need help?",
+      "description": "Use the assistant when something is unclear, not as the main workflow.",
+      "prompts": [
+        "Why is today not ready to close?",
+        "Which entries still need receipts?",
+        "Why is my balance short?",
+        "What does Privateinlage mean?"
+      ],
+      "suggestions": [
+        {
+          "label": "Find missing receipts",
+          "value": "Which cash entries from today still need receipts?"
+        },
+        {
+          "label": "Today's cash status",
+          "value": "Show me today's cash status and whether the day is ready to close."
+        },
+        {
+          "label": "Close the day",
+          "value": "What is blocking today's cash close?"
+        },
+        {
+          "label": "Explain a term",
+          "value": "What does Privateinlage mean in the cash book?"
+        }
+      ],
+      "capabilityCatalogTitle": "Cash management tasks",
+      "capabilityCatalogDescription": "This is the full list of what the cash assistant can help you do. Pick a task to prefill the request and get started faster.",
+      "capabilityGroups": [
+        {
+          "title": "Cash entries",
+          "description": "Create, correct, and review cash-book entries for the current register.",
+          "items": [
+            {
+              "title": "Create a cash entry",
+              "description": "Start a new cash in or cash out entry with the required details.",
+              "prompt": "Create a cash entry for the current register."
+            },
+            {
+              "title": "Correct an open entry",
+              "description": "Reverse an open entry and create the corrected replacement entry.",
+              "prompt": "Correct an open cash entry for me."
+            },
+            {
+              "title": "List cash entries",
+              "description": "Review entries by date range, type, source, or description.",
+              "prompt": "List the cash entries for this register."
+            }
+          ]
+        },
+        {
+          "title": "Receipts and attachments",
+          "description": "Upload receipts, attach them to entries, and find missing documents.",
+          "items": [
+            {
+              "title": "Upload a receipt",
+              "description": "Upload one or more receipt files from this chat.",
+              "prompt": "Upload the receipt files from this chat."
+            },
+            {
+              "title": "Attach a receipt to an entry",
+              "description": "Link uploaded receipt documents to the correct cash entry.",
+              "prompt": "Attach the uploaded receipt to the correct cash entry."
+            },
+            {
+              "title": "Find missing receipts",
+              "description": "Show entries that still require a receipt before review or export.",
+              "prompt": "Find the cash entries that are still missing receipts."
+            }
+          ]
+        },
+        {
+          "title": "Day closing",
+          "description": "Check readiness, save counted cash, and close the day correctly.",
+          "items": [
+            {
+              "title": "Today's cash status",
+              "description": "See expected balance, receipt gaps, and whether closing is ready.",
+              "prompt": "Show me today's cash status and whether the day is ready to close."
+            },
+            {
+              "title": "Submit counted cash",
+              "description": "Save the counted cash or denomination counts before final close.",
+              "prompt": "Submit today's counted cash for the current register."
+            },
+            {
+              "title": "Close the day",
+              "description": "Finalize today's cash day once all blockers are cleared.",
+              "prompt": "Close today's cash day for the current register."
+            },
+            {
+              "title": "List unclosed days",
+              "description": "Find open or draft days that still need closing.",
+              "prompt": "List the days that are still unclosed for this register."
+            }
+          ]
+        },
+        {
+          "title": "Dashboard and export",
+          "description": "Monitor operational status and prepare the monthly export package.",
+          "items": [
+            {
+              "title": "Dashboard summary",
+              "description": "View the operational summary for cash, receipts, close status, and export readiness.",
+              "prompt": "Show me the dashboard summary for this cash register."
+            },
+            {
+              "title": "Actions required",
+              "description": "See the next operational actions the owner should take.",
+              "prompt": "What actions do I need to take next in cash management?"
+            },
+            {
+              "title": "Generate monthly export",
+              "description": "Prepare the monthly export package for the tax advisor.",
+              "prompt": "Generate the monthly cash export package for this register."
+            }
+          ]
+        },
+        {
+          "title": "Guidance and terms",
+          "description": "Get workflow guidance and plain-language explanations of cash-book terms.",
+          "items": [
+            {
+              "title": "Explain a cash-book term",
+              "description": "Get a plain-language explanation of a term such as Privateinlage.",
+              "prompt": "Explain a cash-book term for me."
+            },
+            {
+              "title": "Workflow help",
+              "description": "Get step-by-step guidance for day close, missing receipts, or monthly export.",
+              "prompt": "Show me the workflow help for cash management."
+            }
+          ]
+        }
+      ],
+      "languages": "German, English, Vietnamese",
+      "lockedTitle": "AI help is locked on this plan",
+      "lockedDescription": "Upgrade to Pro to unlock the cash assistant, multilingual explanations, and guided issue review.",
+      "lockedBadge": "AI locked"
+    },
+    "severity": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    }
   }
 }

@@ -42,10 +42,41 @@ export const toEntryDto = (entry: CashEntryEntity): CashEntry => ({
   direction: entry.direction,
   source: entry.source,
   paymentMethod: entry.paymentMethod,
+  grossAmountCents: entry.grossAmountCents,
+  netAmountCents: entry.netAmountCents,
+  taxAmountCents: entry.taxAmountCents,
+  taxMode: entry.taxMode,
+  taxCodeId: entry.taxCodeId,
+  taxCode: entry.taxCode,
+  taxRateBps: entry.taxRateBps,
+  taxLabel: entry.taxLabel,
+  tax: entry.taxMode
+    ? {
+        mode: entry.taxMode,
+        taxCodeId: entry.taxCodeId,
+        taxCode: entry.taxCode,
+        taxRateBps: entry.taxRateBps,
+        taxLabel: entry.taxLabel,
+        grossAmountCents: entry.grossAmountCents,
+        netAmountCents: entry.netAmountCents ?? entry.grossAmountCents,
+        taxAmountCents: entry.taxAmountCents ?? 0,
+      }
+    : null,
   amount: entry.amountCents,
   amountCents: entry.amountCents,
   currency: entry.currency,
   balanceAfterCents: entry.balanceAfterCents,
+  sourceDocumentId: entry.sourceDocumentId,
+  sourceDocumentRef: entry.sourceDocumentRef,
+  sourceDocumentKind: entry.sourceDocumentKind,
+  sourceDocument:
+    entry.sourceDocumentId || entry.sourceDocumentRef || entry.sourceDocumentKind
+      ? {
+          documentId: entry.sourceDocumentId,
+          reference: entry.sourceDocumentRef,
+          kind: entry.sourceDocumentKind,
+        }
+      : null,
   referenceId: entry.referenceId,
   reversalOfEntryId: entry.reversalOfEntryId,
   reversedByEntryId: entry.reversedByEntryId,

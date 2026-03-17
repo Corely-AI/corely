@@ -1,5 +1,6 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, Inject, Optional } from "@nestjs/common";
 import { PrismaService } from "@corely/data";
+import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import { CreateWorkspaceUseCase } from "../workspaces/application/use-cases/create-workspace.usecase";
 import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/workspace-repository.port";
@@ -9,6 +10,12 @@ import { TOKEN_SERVICE_TOKEN } from "../identity/application/ports/token-service
 import type { TokenServicePort } from "../identity/application/ports/token-service.port";
 import { randomUUID, createHash } from "crypto";
 import { seedPortalTestData, type SeedPortalTestDataResult } from "./seed-portal-test-data";
+import {
+  BILLING_PROVIDER_TEST_HOOKS,
+  type BillingProviderTestHooksPort,
+  type BillingProviderTestOperation,
+} from "../billing";
+import { platformPermissions } from "../platform/platform.permissions";
 
 export interface SeedResult {
   tenantId: string;
@@ -47,6 +54,71 @@ export interface InvoiceEmailDeliveryLookup {
   lastError: string | null;
 }
 
+export type SeedTaxFilingScenarioType = "VAT_PERIODIC" | "VAT_ANNUAL";
+export type SeedTaxFilingScenarioStatus = "OPEN" | "SUBMITTED" | "PAID";
+
+export interface SeedTaxFilingScenarioInput {
+  tenantId: string;
+  workspaceId: string;
+  actorUserId: string;
+  filingType: SeedTaxFilingScenarioType;
+  year: number;
+  periodKey?: string;
+  withBlockers?: boolean;
+  includeSnapshots?: boolean;
+  invoiceCount?: number;
+  expenseCount?: number;
+  status?: SeedTaxFilingScenarioStatus;
+}
+
+export interface SeedTaxFilingScenarioResult {
+  filingId: string;
+  filingType: SeedTaxFilingScenarioType;
+  filingApiType: "vat" | "vat-annual";
+  periodLabel: string;
+  periodKey?: string;
+  year: number;
+  invoiceIds: string[];
+  expenseIds: string[];
+  expectedTotals: {
+    vatCollectedCents: number;
+    vatPaidCents: number;
+    netPayableCents: number;
+    salesCount: number;
+    purchaseCount: number;
+    salesNetCents: number;
+    purchaseNetCents: number;
+  };
+  blockerIssueCount: number;
+}
+
+export interface BillingInspectionResult {
+  accounts: Array<{
+    tenantId: string;
+    provider: string | null;
+    providerCustomerRef: string | null;
+  }>;
+  subscriptions: Array<{
+    productKey: string;
+    planCode: string;
+    status: string;
+    providerSubscriptionRef: string | null;
+    providerPriceRef: string | null;
+    cancelAtPeriodEnd: boolean;
+  }>;
+  usageCounters: Array<{
+    productKey: string;
+    metricKey: string;
+    quantity: number;
+    periodStart: string;
+    periodEnd: string;
+  }>;
+  providerEventCount: number;
+  providerEventTypes: string[];
+  outboxEventTypes: string[];
+  auditActions: string[];
+}
+
 @Injectable()
 export class TestHarnessService {
   constructor(
@@ -55,8 +127,123 @@ export class TestHarnessService {
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort,
     @Inject(TOKEN_SERVICE_TOKEN)
-    private readonly tokenService: TokenServicePort
+    private readonly tokenService: TokenServicePort,
+    @Optional()
+    @Inject(BILLING_PROVIDER_TEST_HOOKS)
+    private readonly billingProviderTestHooks?: BillingProviderTestHooksPort | null
   ) {}
+
+  resetBillingProviderState(): void {
+    this.billingProviderTestHooks?.reset();
+  }
+
+  failNextBillingProviderOperation(operation: BillingProviderTestOperation): void {
+    this.billingProviderTestHooks?.failNext(operation);
+  }
+
+  async inspectBillingState(params: {
+    tenantId: string;
+    productKey?: string;
+  }): Promise<BillingInspectionResult> {
+    const [accounts, subscriptions, usageCounters, providerEvents, outboxEvents, auditLogs] =
+      await Promise.all([
+        this.prisma.billingAccount.findMany({
+          where: { tenantId: params.tenantId },
+          select: {
+            tenantId: true,
+            provider: true,
+            providerCustomerRef: true,
+          },
+        }),
+        this.prisma.billingSubscription.findMany({
+          where: {
+            tenantId: params.tenantId,
+            ...(params.productKey ? { productKey: params.productKey } : {}),
+          },
+          orderBy: [{ createdAt: "asc" }],
+          select: {
+            productKey: true,
+            planCode: true,
+            status: true,
+            providerSubscriptionRef: true,
+            providerPriceRef: true,
+            cancelAtPeriodEnd: true,
+          },
+        }),
+        this.prisma.billingUsageCounter.findMany({
+          where: {
+            tenantId: params.tenantId,
+            ...(params.productKey ? { productKey: params.productKey } : {}),
+          },
+          orderBy: [{ periodStart: "asc" }, { metricKey: "asc" }],
+          select: {
+            productKey: true,
+            metricKey: true,
+            quantity: true,
+            periodStart: true,
+            periodEnd: true,
+          },
+        }),
+        this.prisma.billingProviderEvent.findMany({
+          where: { tenantId: params.tenantId },
+          orderBy: [{ createdAt: "asc" }],
+          select: { eventType: true },
+        }),
+        this.prisma.outboxEvent.findMany({
+          where: { tenantId: params.tenantId, eventType: { startsWith: "billing." } },
+          orderBy: [{ createdAt: "asc" }],
+          select: { eventType: true },
+        }),
+        this.prisma.auditLog.findMany({
+          where: { tenantId: params.tenantId, action: { startsWith: "billing." } },
+          orderBy: [{ createdAt: "asc" }],
+          select: { action: true },
+        }),
+      ]);
+
+    return {
+      accounts: accounts.map((account) => ({
+        tenantId: account.tenantId,
+        provider: account.provider,
+        providerCustomerRef: account.providerCustomerRef,
+      })),
+      subscriptions: subscriptions.map((subscription) => ({
+        productKey: subscription.productKey,
+        planCode: subscription.planCode,
+        status: subscription.status,
+        providerSubscriptionRef: subscription.providerSubscriptionRef,
+        providerPriceRef: subscription.providerPriceRef,
+        cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+      })),
+      usageCounters: usageCounters.map((counter) => ({
+        productKey: counter.productKey,
+        metricKey: counter.metricKey,
+        quantity: counter.quantity,
+        periodStart: counter.periodStart.toISOString(),
+        periodEnd: counter.periodEnd.toISOString(),
+      })),
+      providerEventCount: providerEvents.length,
+      providerEventTypes: providerEvents.map((event) => event.eventType),
+      outboxEventTypes: outboxEvents.map((event) => event.eventType),
+      auditActions: auditLogs.map((log) => log.action),
+    };
+  }
+
+  async setBillingTrialEndsAt(params: {
+    tenantId: string;
+    productKey?: string;
+    endsAt: string;
+  }): Promise<void> {
+    await this.prisma.billingTrial.updateMany({
+      where: {
+        tenantId: params.tenantId,
+        ...(params.productKey ? { productKey: params.productKey } : {}),
+      },
+      data: {
+        endsAt: new Date(params.endsAt),
+      },
+    });
+  }
 
   async loginAsPortalUser(params: {
     email: string;
@@ -104,6 +291,96 @@ export class TestHarnessService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * Seed host admin user: creates a user with membership that has no tenantId (HOST scope)
+   */
+  async seedHostAdmin(params: { email: string; password: string }): Promise<SeedResult> {
+    const passwordHash = await bcrypt.hash(params.password, 10);
+    const email = params.email.toLowerCase().trim();
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Create/Update user
+      const user = await tx.user.upsert({
+        where: { email },
+        update: {
+          name: "Host Admin",
+          passwordHash,
+          status: "ACTIVE",
+        },
+        create: {
+          email,
+          name: "Host Admin",
+          passwordHash,
+          status: "ACTIVE",
+        },
+      });
+
+      // 2. Create HOST scope role
+      const hostRole = await tx.role.create({
+        data: {
+          tenantId: null as any, // Use null for host scope
+          name: "Platform Admin",
+          systemKey: "PLATFORM_ADMIN",
+          isSystem: true,
+          scope: "HOST",
+        },
+      });
+
+      // 3. Grant all HOST permissions
+      const hostPermissionKeys = platformPermissions.flatMap((group) =>
+        group.permissions.filter((p) => p.side === "HOST" || p.side === "BOTH").map((p) => p.key)
+      );
+
+      await tx.rolePermissionGrant.createMany({
+        data: hostPermissionKeys.map((permissionKey) => ({
+          tenantId: null as any,
+          roleId: hostRole.id,
+          permissionKey,
+          effect: "ALLOW" as const,
+          createdBy: user.id,
+        })),
+      });
+
+      // 4. Create host membership
+      await tx.membership.create({
+        data: {
+          tenantId: null as any,
+          userId: user.id,
+          roleId: hostRole.id,
+        },
+      });
+
+      return {
+        tenantId: null as any,
+        tenantName: "Platform",
+        userId: user.id,
+        userName: user.name,
+        email: user.email,
+        workspaceId: null as any,
+      };
+    });
+  }
+
+  /**
+   * Seed a few tenants for platform testing
+   */
+  async seedTenantsForPlatform(count: number = 3): Promise<Array<{ id: string; name: string }>> {
+    const tenants = [];
+    for (let i = 0; i < count; i++) {
+      const name = `Platform Test Tenant ${i + 1} ${randomUUID().slice(0, 4)}`;
+      const tenant = await this.prisma.tenant.create({
+        data: {
+          name,
+          slug: `plt-test-${randomUUID().slice(0, 8)}`,
+          status: "ACTIVE",
+          plan: "free",
+        },
+      });
+      tenants.push({ id: tenant.id, name: tenant.name });
+    }
+    return tenants;
   }
 
   /**
@@ -210,7 +487,7 @@ export class TestHarnessService {
           },
         });
 
-        const _adminRole = await tx.role.create({
+        await tx.role.create({
           data: {
             tenantId: tenant.id,
             name: "Admin",
@@ -219,7 +496,7 @@ export class TestHarnessService {
           },
         });
 
-        const _memberRole = await tx.role.create({
+        await tx.role.create({
           data: {
             tenantId: tenant.id,
             name: "Member",
@@ -284,7 +561,8 @@ export class TestHarnessService {
       });
 
       // 7. Create workspace with completed onboarding using use case
-      const uniqueWorkspaceName = `Default Workspace ${result.tenantId.slice(0, 8)}`;
+      const workspaceNameSuffix = randomUUID().slice(0, 8);
+      const uniqueWorkspaceName = `Default Workspace ${workspaceNameSuffix}`;
       const workspaceResult = await this.createWorkspaceUseCase.execute({
         tenantId: result.tenantId,
         userId: result.userId,
@@ -595,6 +873,242 @@ export class TestHarnessService {
     };
   }
 
+  async seedTaxFilingScenario(
+    params: SeedTaxFilingScenarioInput
+  ): Promise<SeedTaxFilingScenarioResult> {
+    const workspaceTenantId = params.workspaceId;
+    const period = this.resolveTaxPeriod(params.filingType, params.year, params.periodKey);
+    await this.ensureTaxProfile(workspaceTenantId, period.start);
+
+    const invoiceCount = Math.max(1, params.invoiceCount ?? 12);
+    const expenseCount = Math.max(1, params.expenseCount ?? 6);
+    const includeSnapshots = params.includeSnapshots ?? false;
+    const withBlockers = params.withBlockers ?? false;
+    const invoiceIds: string[] = [];
+    const expenseIds: string[] = [];
+    let vatCollectedCents = 0;
+    let vatPaidCents = 0;
+    let salesNetCents = 0;
+    let purchaseNetCents = 0;
+
+    for (let index = 0; index < invoiceCount; index += 1) {
+      const net = 12_000 + index * 650;
+      const tax = Math.round(net * 0.19);
+      const gross = net + tax;
+      const issuedAt = this.dayInPeriod(period.start, period.end, index, 9);
+      const hasMissingVatTreatment = withBlockers && index === 0;
+      const invoice = await this.prisma.invoice.create({
+        data: {
+          tenantId: workspaceTenantId,
+          customerPartyId: `party-tax-invoice-${index + 1}`,
+          billToName: `Tax Test Customer ${index + 1}`,
+          billToEmail: `tax-customer-${index + 1}@example.com`,
+          number: `E2E-TAX-${params.year}-${index + 1}`,
+          status: "ISSUED",
+          currency: "EUR",
+          invoiceDate: issuedAt,
+          dueDate: this.addDays(issuedAt, 14),
+          issuedAt,
+          taxSnapshot: hasMissingVatTreatment
+            ? null
+            : {
+                subtotalAmountCents: net,
+                totalTaxAmountCents: tax,
+                totalAmountCents: gross,
+              },
+          lines: {
+            create: [
+              {
+                description: `Tax invoice line ${index + 1}`,
+                qty: 1,
+                unitPriceCents: gross,
+              },
+            ],
+          },
+        },
+      });
+
+      invoiceIds.push(invoice.id);
+      vatCollectedCents += tax;
+      salesNetCents += net;
+
+      if (includeSnapshots) {
+        await this.createTaxSnapshotIfSupported({
+          tenantId: workspaceTenantId,
+          sourceType: "INVOICE",
+          sourceId: invoice.id,
+          jurisdiction: "DE",
+          regime: "STANDARD_VAT",
+          roundingMode: "PER_DOCUMENT",
+          currency: "EUR",
+          calculatedAt: issuedAt,
+          subtotalAmountCents: net,
+          taxTotalAmountCents: tax,
+          totalAmountCents: gross,
+          breakdownJson: JSON.stringify({
+            sourceType: "INVOICE",
+            net,
+            tax,
+            gross,
+          }),
+        });
+      }
+    }
+
+    for (let index = 0; index < expenseCount; index += 1) {
+      const net = 5_000 + index * 240;
+      const tax = Math.round(net * 0.19);
+      const gross = net + tax;
+      const expenseDate = this.dayInPeriod(period.start, period.end, index, 14);
+      const missingCategory = withBlockers && index === 0;
+      const expense = await this.prisma.expense.create({
+        data: {
+          tenantId: workspaceTenantId,
+          status: "APPROVED",
+          expenseDate,
+          merchantName: `Tax Supplier ${index + 1}`,
+          currency: "EUR",
+          notes: `E2E tax expense ${index + 1}`,
+          category: missingCategory ? null : "office_supplies",
+          totalAmountCents: gross,
+          taxAmountCents: tax,
+          createdByUserId: params.actorUserId,
+        },
+      });
+
+      expenseIds.push(expense.id);
+      vatPaidCents += tax;
+      purchaseNetCents += net;
+
+      if (includeSnapshots) {
+        await this.createTaxSnapshotIfSupported({
+          tenantId: workspaceTenantId,
+          sourceType: "EXPENSE",
+          sourceId: expense.id,
+          jurisdiction: "DE",
+          regime: "STANDARD_VAT",
+          roundingMode: "PER_DOCUMENT",
+          currency: "EUR",
+          calculatedAt: expenseDate,
+          subtotalAmountCents: net,
+          taxTotalAmountCents: tax,
+          totalAmountCents: gross,
+          breakdownJson: JSON.stringify({
+            sourceType: "EXPENSE",
+            net,
+            tax,
+            gross,
+          }),
+        });
+      }
+    }
+
+    const baseStatus: SeedTaxFilingScenarioStatus = params.status ?? "OPEN";
+    const submissionTime = this.dayInPeriod(period.start, period.end, 3, 10);
+    const paidTime = this.addDays(submissionTime, 5);
+
+    const issues = withBlockers
+      ? [
+          {
+            id: `tax-issue-missing-category-${randomUUID()}`,
+            type: "uncategorized-expenses",
+            severity: "blocker",
+            title: "Uncategorized expenses",
+            count: 1,
+            description: "Some expenses are missing categories.",
+            deepLink:
+              "/expenses?filters=%5B%7B%22field%22%3A%22category%22%2C%22operator%22%3A%22isNull%22%7D%5D",
+          },
+          {
+            id: `tax-issue-missing-vat-${randomUUID()}`,
+            type: "missing-vat-treatment",
+            severity: "blocker",
+            title: "Missing VAT treatment / tax code",
+            count: 1,
+            description: "Some records are missing VAT treatment and need review.",
+            deepLink:
+              "/invoices?filters=%5B%7B%22field%22%3A%22taxTreatment%22%2C%22operator%22%3A%22isNull%22%7D%5D",
+          },
+        ]
+      : [];
+
+    const meta: Record<string, unknown> = {
+      issues,
+      lastRecalculatedAt: new Date(Date.UTC(params.year, 0, 15, 9, 30, 0)).toISOString(),
+      paymentInstructions: {
+        bankName: "Bundesbank",
+        ibanMasked: "DE12 **** **** 3456",
+        bic: "MARKDEF1100",
+        reference: `VAT-${params.year}-${period.periodLabel}`,
+      },
+    };
+
+    let reportStatus: "OPEN" | "SUBMITTED" | "PAID" = "OPEN";
+    if (baseStatus === "SUBMITTED") {
+      reportStatus = "SUBMITTED";
+      meta.submission = {
+        method: "manual",
+        submissionId: `SUB-${params.year}-${period.periodLabel}`,
+        submittedAt: submissionTime.toISOString(),
+      };
+    }
+    if (baseStatus === "PAID") {
+      reportStatus = "PAID";
+      meta.submission = {
+        method: "manual",
+        submissionId: `SUB-${params.year}-${period.periodLabel}`,
+        submittedAt: submissionTime.toISOString(),
+      };
+      meta.payment = {
+        paidAt: paidTime.toISOString(),
+        method: "bank-transfer",
+        amountCents: vatCollectedCents - vatPaidCents,
+      };
+    }
+
+    const netPayableCents = vatCollectedCents - vatPaidCents;
+    const report = await this.prisma.taxReport.create({
+      data: {
+        tenantId: workspaceTenantId,
+        type: period.reportType,
+        group: period.reportGroup,
+        periodLabel: period.periodLabel,
+        periodStart: period.start,
+        periodEnd: period.end,
+        dueDate: period.dueDate,
+        status: reportStatus,
+        amountEstimatedCents: netPayableCents,
+        amountFinalCents: reportStatus === "PAID" ? netPayableCents : null,
+        currency: "EUR",
+        submittedAt: reportStatus === "OPEN" ? null : submissionTime,
+        submissionReference:
+          reportStatus === "OPEN" ? null : `SUB-${params.year}-${period.periodLabel}`,
+        submissionNotes: reportStatus === "OPEN" ? null : "Seeded by test harness",
+        meta: meta as Prisma.InputJsonValue,
+      },
+    });
+    return {
+      filingId: report.id,
+      filingType: params.filingType,
+      filingApiType: params.filingType === "VAT_PERIODIC" ? "vat" : "vat-annual",
+      periodLabel: period.periodLabel,
+      periodKey: period.periodKey,
+      year: params.year,
+      invoiceIds,
+      expenseIds,
+      expectedTotals: {
+        vatCollectedCents,
+        vatPaidCents,
+        netPayableCents,
+        salesCount: invoiceIds.length,
+        purchaseCount: expenseIds.length,
+        salesNetCents,
+        purchaseNetCents,
+      },
+      blockerIssueCount: issues.length,
+    };
+  }
+
   async listInvoiceEmailDeliveries(params: {
     tenantId: string;
     invoiceIds: string[];
@@ -631,26 +1145,78 @@ export class TestHarnessService {
    * Reset tenant-scoped data: clear all business entities, keep tenant/user/roles
    */
   async resetTenantData(tenantId: string): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      // Delete in reverse order of foreign key dependencies
-      await tx.outboxEvent.deleteMany({ where: { tenantId } });
-      await tx.domainEvent.deleteMany({ where: { tenantId } });
-      await tx.auditLog.deleteMany({ where: { tenantId } });
-      await tx.idempotencyKey.deleteMany({ where: { tenantId } });
-      await tx.invoicePayment.deleteMany({ where: { invoice: { tenantId } } });
-      await tx.invoiceLine.deleteMany({ where: { invoice: { tenantId } } });
-      await tx.invoice.deleteMany({ where: { tenantId } });
-      await tx.expense.deleteMany({ where: { tenantId } });
-      await tx.workflowInstance.deleteMany({
-        where: { definition: { tenantId } },
-      });
-      await tx.workflowDefinition.deleteMany({ where: { tenantId } });
-      // Delete party-related data (customers/suppliers)
-      await tx.partyRole.deleteMany({ where: { tenantId } });
-      await tx.contactPoint.deleteMany({ where: { party: { tenantId } } });
-      await tx.address.deleteMany({ where: { party: { tenantId } } });
-      await tx.party.deleteMany({ where: { tenantId } });
+    const workspaceRows = await this.prisma.workspace.findMany({
+      where: { tenantId },
+      select: { id: true },
     });
+    const scopeTenantIds = Array.from(new Set([tenantId, ...workspaceRows.map((row) => row.id)]));
+    // Keep deletes non-transactional so one missing legacy table/column does not abort all cleanup.
+    const deleteOperations: Array<() => Promise<unknown>> = [
+      () => this.prisma.outboxEvent.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.domainEvent.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.auditLog.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.idempotencyKey.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxDocumentLink.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxFilingEvent.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxReportLine.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxReport.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () =>
+        this.prisma.vatPeriodSummary.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxSnapshot.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxRate.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxCode.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxConsultant.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.taxProfile.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.documentLink.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.file.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.document.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () =>
+        this.prisma.billingProviderEvent.deleteMany({
+          where: { tenantId: { in: scopeTenantIds } },
+        }),
+      () =>
+        this.prisma.billingUsageCounter.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () =>
+        this.prisma.billingSubscription.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.billingAccount.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () =>
+        this.prisma.invoicePayment.deleteMany({
+          where: { invoice: { tenantId: { in: scopeTenantIds } } },
+        }),
+      () =>
+        this.prisma.invoiceLine.deleteMany({
+          where: { invoice: { tenantId: { in: scopeTenantIds } } },
+        }),
+      () => this.prisma.invoice.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.expenseLine.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.expense.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () =>
+        this.prisma.workflowInstance.deleteMany({
+          where: { definition: { tenantId: { in: scopeTenantIds } } },
+        }),
+      () =>
+        this.prisma.workflowDefinition.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () => this.prisma.partyRole.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+      () =>
+        this.prisma.contactPoint.deleteMany({
+          where: { party: { tenantId: { in: scopeTenantIds } } },
+        }),
+      () =>
+        this.prisma.address.deleteMany({ where: { party: { tenantId: { in: scopeTenantIds } } } }),
+      () => this.prisma.party.deleteMany({ where: { tenantId: { in: scopeTenantIds } } }),
+    ];
+
+    for (const deleteOperation of deleteOperations) {
+      try {
+        await deleteOperation();
+      } catch (error) {
+        if (!this.isMissingSchemaError(error)) {
+          throw error;
+        }
+      }
+    }
+
+    this.billingProviderTestHooks?.reset();
   }
 
   /**
@@ -682,7 +1248,7 @@ export class TestHarnessService {
           },
         });
         processedCount++;
-      } catch (_error) {
+      } catch {
         // Mark as failed if processing errors
         await this.prisma.outboxEvent.update({
           where: { id: event.id },
@@ -697,5 +1263,122 @@ export class TestHarnessService {
     }
 
     return { processedCount, failedCount };
+  }
+
+  private resolveTaxPeriod(
+    filingType: SeedTaxFilingScenarioType,
+    year: number,
+    periodKey?: string
+  ): {
+    reportType: "VAT_ADVANCE" | "VAT_ANNUAL";
+    reportGroup: "ADVANCE_VAT" | "ANNUAL_REPORT";
+    periodLabel: string;
+    periodKey?: string;
+    start: Date;
+    end: Date;
+    dueDate: Date;
+  } {
+    if (filingType === "VAT_PERIODIC") {
+      const key = periodKey ?? `${year}-Q1`;
+      const quarterMatch = key.match(/^(\d{4})-Q([1-4])$/u);
+      if (!quarterMatch) {
+        throw new Error(`Invalid VAT periodic periodKey: ${key}`);
+      }
+      const quarter = Number(quarterMatch[2]);
+      const startMonth = (quarter - 1) * 3;
+      const start = new Date(Date.UTC(year, startMonth, 1, 0, 0, 0, 0));
+      const end = new Date(Date.UTC(year, startMonth + 3, 1, 0, 0, 0, 0));
+      const dueDate = new Date(Date.UTC(year, startMonth + 3, 10, 0, 0, 0, 0));
+      return {
+        reportType: "VAT_ADVANCE",
+        reportGroup: "ADVANCE_VAT",
+        periodLabel: `Q${quarter} ${year}`,
+        periodKey: key,
+        start,
+        end,
+        dueDate,
+      };
+    }
+
+    const start = new Date(Date.UTC(year, 0, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(year, 11, 31, 23, 59, 59, 0));
+    const dueDate = new Date(Date.UTC(year, 11, 10, 0, 0, 0, 0));
+    return {
+      reportType: "VAT_ANNUAL",
+      reportGroup: "ANNUAL_REPORT",
+      periodLabel: String(year),
+      start,
+      end,
+      dueDate,
+    };
+  }
+
+  private dayInPeriod(start: Date, end: Date, index: number, hourUtc: number): Date {
+    const rangeDays = Math.max(
+      1,
+      Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) - 1
+    );
+    const dayOffset = index % rangeDays;
+    return new Date(
+      Date.UTC(
+        start.getUTCFullYear(),
+        start.getUTCMonth(),
+        start.getUTCDate() + dayOffset,
+        hourUtc,
+        0,
+        0,
+        0
+      )
+    );
+  }
+
+  private addDays(date: Date, days: number): Date {
+    return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
+  }
+
+  private async ensureTaxProfile(tenantId: string, effectiveFrom: Date): Promise<void> {
+    const existing = await this.prisma.taxProfile.findFirst({
+      where: { tenantId },
+      orderBy: { effectiveFrom: "desc" },
+      select: { id: true },
+    });
+    if (existing) {
+      return;
+    }
+
+    await this.prisma.taxProfile.create({
+      data: {
+        tenantId,
+        country: "DE",
+        regime: "STANDARD_VAT",
+        vatEnabled: true,
+        vatId: "DE999999999",
+        currency: "EUR",
+        filingFrequency: "QUARTERLY",
+        vatAccountingMethod: "IST",
+        taxYearStartMonth: 1,
+        localTaxOfficeName: "Finanzamt Berlin",
+        usesTaxAdvisor: false,
+        effectiveFrom,
+      },
+    });
+  }
+
+  private async createTaxSnapshotIfSupported(data: Prisma.TaxSnapshotCreateInput): Promise<void> {
+    try {
+      await this.prisma.taxSnapshot.create({ data });
+    } catch (error) {
+      if (!this.isMissingSchemaError(error)) {
+        throw error;
+      }
+    }
+  }
+
+  private isMissingSchemaError(error: unknown): boolean {
+    if (!error || typeof error !== "object") {
+      return false;
+    }
+    const maybeCode = "code" in error ? (error as { code?: string }).code : undefined;
+    return maybeCode === "P2021" || maybeCode === "P2022";
   }
 }

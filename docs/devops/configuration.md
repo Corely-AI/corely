@@ -77,8 +77,8 @@ Edit `.env.dev` and provide values for:
 # Start API
 pnpm dev:api
 
-# Start Worker
-pnpm dev:worker
+# Start API background runtime
+pnpm dev:api
 ```
 
 The services will automatically:
@@ -342,8 +342,8 @@ packages/config/
 
 services/api/src/main.ts          # Calls loadEnv() on startup
 services/api/src/app.module.ts    # Imports EnvModule.forRoot()
-services/worker/src/main.ts       # Calls loadEnv() on startup
-services/worker/src/worker.module.ts  # Imports EnvModule.forRoot()
+services/api/src/main.ts          # Calls loadEnv() on startup
+services/api/src/app.module.ts    # Imports EnvModule.forRoot()
 ```
 
 ## FAQ

@@ -1,9 +1,11 @@
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react"; // Used in error state
+import { ArrowLeft, ShieldCheck, ShieldOff, ShieldAlert } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@corely/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@corely/ui";
+import { Badge } from "@corely/ui";
 import { Separator } from "@corely/ui";
 import { expensesApi } from "@corely/web-shared/lib/expenses-api";
 import { expenseKeys } from "../queries";
@@ -13,8 +15,73 @@ import { invalidateResourceQueries } from "@corely/web-shared/shared/crud";
 import { toast } from "sonner";
 import { DetailScreenHeader } from "@corely/web-shared/shared/components/DetailScreenHeader";
 import { CustomAttributesSection } from "@corely/web-shared/shared/custom-attributes";
+import type { ExpenseDeductibilityResult } from "@corely/contracts";
+
+// ---------------------------------------------------------------------------
+// Deductibility summary sub-component
+// ---------------------------------------------------------------------------
+
+const RULE_KIND_LABEL: Record<string, string> = {
+  PERCENT: "expenses.detail.ruleKind.percent",
+  GIFT_THRESHOLD_PER_RECIPIENT_YEAR: "expenses.detail.ruleKind.giftThreshold",
+  PER_DIEM: "expenses.detail.ruleKind.perDiem",
+  MIXED_USE: "expenses.detail.ruleKind.mixedUse",
+};
+
+function DeductibilitySummary({ d, locale }: { d: ExpenseDeductibilityResult; locale: string }) {
+  const { t } = useTranslation();
+  const { deductiblePercent, deductibleAmountCents, nonDeductibleAmountCents, ruleKind } = d;
+
+  const isKnown = deductiblePercent != null;
+  const Icon = !isKnown ? ShieldAlert : deductiblePercent === 0 ? ShieldOff : ShieldCheck;
+  const iconClass = !isKnown
+    ? "text-amber-500"
+    : deductiblePercent === 0
+      ? "text-red-500"
+      : deductiblePercent === 100
+        ? "text-green-600"
+        : "text-amber-500";
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Icon className={`h-5 w-5 ${iconClass}`} />
+        <span className="font-semibold text-sm">
+          {isKnown
+            ? t("expenses.detail.deductiblePercentLabel", { percent: deductiblePercent })
+            : t("expenses.detail.needsMoreInfo")}
+        </span>
+        {ruleKind ? (
+          <Badge variant="muted" className="text-xs">
+            {t(RULE_KIND_LABEL[ruleKind] ?? ruleKind)}
+          </Badge>
+        ) : null}
+      </div>
+
+      {isKnown ? (
+        <div className="grid grid-cols-2 gap-3 text-sm">
+          <div>
+            <p className="text-muted-foreground">{t("expenses.detail.deductible")}</p>
+            <p className="font-medium text-green-700">
+              {formatMoney(deductibleAmountCents ?? 0, locale)}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">{t("expenses.detail.nonDeductible")}</p>
+            <p className="font-medium text-red-600">
+              {formatMoney(nonDeductibleAmountCents ?? 0, locale)}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">{t("expenses.detail.fillRequiredFields")}</p>
+      )}
+    </div>
+  );
+}
 
 export const ExpenseDetailPage = () => {
+  const { t, i18n } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -25,17 +92,44 @@ export const ExpenseDetailPage = () => {
     isError,
   } = useQuery({
     queryKey: expenseKeys.detail(id ?? ""),
-    queryFn: () => (id ? expensesApi.getExpense(id) : Promise.reject(new Error("Missing id"))),
+    queryFn: () => (id ? expensesApi.getExpense(id) : Promise.reject(new Error(t("common.error")))),
     enabled: Boolean(id),
+    retry: false,
   });
 
   const { expense, capabilities } = queryResult || {};
   const [isProcessing] = React.useState(false);
 
-  // Handle transitions (placeholder for future API)
-  const handleTransition = React.useCallback(async (to: string) => {
-    toast.info(`Transition to ${to} is coming soon`);
-  }, []);
+  const transitionMutation = useMutation({
+    mutationFn: ({ expenseId, to, reason }: { expenseId: string; to: string; reason?: string }) =>
+      expensesApi.transitionExpense(expenseId, to, reason),
+    onSuccess: async (_, vars) => {
+      toast.success(t("expenses.notifications.transitioned", { to: vars.to }));
+      await invalidateResourceQueries(queryClient, "expenses", { id });
+    },
+    onError: () => toast.error(t("expenses.notifications.transitionFailed")),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
+    onSuccess: async () => {
+      toast.success(t("expenses.notifications.deleted"));
+      await invalidateResourceQueries(queryClient, "expenses", { id });
+      navigate("/expenses");
+    },
+    onError: () => toast.error(t("expenses.notifications.deleteFailed")),
+  });
+
+  // Handle transitions
+  const handleTransition = React.useCallback(
+    async (to: string, input?: Record<string, string>) => {
+      if (!id) {
+        return;
+      }
+      await transitionMutation.mutateAsync({ expenseId: id, to, reason: input?.reason });
+    },
+    [id, transitionMutation]
+  );
 
   // Handle actions
   const handleAction = React.useCallback(
@@ -51,21 +145,11 @@ export const ExpenseDetailPage = () => {
           deleteMutation.mutate(id);
           break;
         default:
-          toast.info(`Action ${actionKey} coming soon`);
+          toast.info(t("expenses.detail.actionSoon", { action: actionKey }));
       }
     },
-    [id, navigate]
+    [id, navigate, t, deleteMutation]
   );
-
-  const deleteMutation = useMutation({
-    mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
-    onSuccess: async () => {
-      toast.success("Expense deleted");
-      await invalidateResourceQueries(queryClient, "expenses", { id });
-      navigate("/expenses");
-    },
-    onError: () => toast.error("Failed to delete expense"),
-  });
 
   if (isLoading) {
     return (
@@ -81,11 +165,11 @@ export const ExpenseDetailPage = () => {
       <div className="p-6 lg:p-8 space-y-4">
         <Button variant="ghost" onClick={() => navigate("/expenses")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to expenses
+          {t("expenses.detail.backToExpenses")}
         </Button>
         <Card>
           <CardContent className="p-6">
-            <p className="text-destructive">Expense not found.</p>
+            <p className="text-destructive">{t("expenses.detail.notFound")}</p>
           </CardContent>
         </Card>
       </div>
@@ -97,25 +181,32 @@ export const ExpenseDetailPage = () => {
       ? Math.round((expense.taxAmountCents / expense.totalAmountCents) * 100)
       : null;
 
+  const deductibility = (expense as any).deductibility as
+    | ExpenseDeductibilityResult
+    | null
+    | undefined;
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="mb-6">
         {capabilities ? (
           <DetailScreenHeader
-            title={expense.merchantName || "Expense"}
-            subtitle={formatDate(expense.expenseDate || expense.createdAt, "en-US")}
+            title={expense.merchantName || t("expenses.title")}
+            subtitle={formatDate(expense.expenseDate || expense.createdAt, i18n.language)}
             capabilities={capabilities}
             onBack={() => navigate("/expenses")}
             onTransition={handleTransition}
             onAction={handleAction}
-            isLoading={isProcessing || deleteMutation.isPending}
+            isLoading={isProcessing || deleteMutation.isPending || transitionMutation.isPending}
           />
         ) : (
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate("/expenses")}>
               <span className="text-lg">←</span>
             </Button>
-            <h1 className="text-h1 text-foreground">{expense.merchantName || "Expense"}</h1>
+            <h1 className="text-h1 text-foreground">
+              {expense.merchantName || t("expenses.title")}
+            </h1>
           </div>
         )}
       </div>
@@ -123,51 +214,75 @@ export const ExpenseDetailPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Overview</CardTitle>
+            <CardTitle>{t("expenses.detail.overview")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Merchant</p>
+                <p className="text-sm text-muted-foreground">{t("expenses.merchant")}</p>
                 <p className="font-medium">{expense.merchantName ?? "—"}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Category</p>
-                <p className="font-medium">{expense.category ?? "—"}</p>
+                <p className="text-sm text-muted-foreground">{t("expenses.category")}</p>
+                <p className="font-medium">
+                  {expense.category
+                    ? t(`expenses.categories.${expense.category}`, {
+                        defaultValue: expense.category,
+                      })
+                    : "—"}
+                </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Amount</p>
-                <p className="font-medium">{formatMoney(expense.totalAmountCents ?? 0, "en-US")}</p>
+                <p className="text-sm text-muted-foreground">{t("expenses.amount")}</p>
+                <p className="font-medium">
+                  {formatMoney(expense.totalAmountCents ?? 0, i18n.language)}
+                </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">VAT</p>
+                <p className="text-sm text-muted-foreground">{t("expenses.vat")}</p>
                 <p className="font-medium">{vatPercent != null ? `${vatPercent}%` : "—"}</p>
               </div>
             </div>
             <Separator />
             <div>
-              <p className="text-sm text-muted-foreground">Notes</p>
-              <p className="text-sm mt-1">{expense.notes ?? "No notes added."}</p>
+              <p className="text-sm text-muted-foreground">{t("common.notes")}</p>
+              <p className="text-sm mt-1">{expense.notes ?? t("expenses.detail.noNotes")}</p>
             </div>
           </CardContent>
         </Card>
 
         <div className="space-y-4">
+          {/* DE Tax Deductibility Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold">
+                {t("expenses.detail.taxDeductibility")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              {deductibility ? (
+                <DeductibilitySummary d={deductibility} locale={i18n.language} />
+              ) : (
+                <p className="text-sm text-muted-foreground">{t("expenses.detail.notComputed")}</p>
+              )}
+            </CardContent>
+          </Card>
+
           <CustomAttributesSection entityType="expense" entityId={expense.id} mode="read" />
           <Card>
             <CardHeader>
-              <CardTitle>Receipts</CardTitle>
+              <CardTitle>{t("expenses.receipt")}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Attach receipts to see them here.
+              {t("expenses.detail.attachReceipts")}
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Activity</CardTitle>
+              <CardTitle>{t("crm.activities.title")}</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Audit trail will appear here once available.
+              {t("expenses.detail.auditTrail")}
             </CardContent>
           </Card>
         </div>

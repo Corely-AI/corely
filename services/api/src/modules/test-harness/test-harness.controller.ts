@@ -9,8 +9,15 @@ import {
   Inject,
 } from "@nestjs/common";
 import { TestHarnessGuard } from "./guards/test-harness.guard";
-import { TestHarnessService } from "./test-harness.service";
+import {
+  TestHarnessService,
+  type BillingInspectionResult,
+  type SeedTaxFilingScenarioInput,
+  type SeedTaxFilingScenarioType,
+  type SeedTaxFilingScenarioStatus,
+} from "./test-harness.service";
 import { CrmTestHooksService } from "./crm-test-hooks.service";
+import type { BillingProviderTestOperation } from "../billing";
 
 @Controller("test")
 @UseGuards(TestHarnessGuard)
@@ -35,6 +42,32 @@ export class TestHarnessController {
       password: payload.password,
       tenantName: payload.tenantName,
     });
+  }
+
+  /**
+   * Seed host admin user
+   */
+  @Post("seed-host-admin")
+  @HttpCode(HttpStatus.OK)
+  async seedHostAdmin(@Body() payload: { email: string; password: string }) {
+    if (!payload.email || !payload.password) {
+      throw new BadRequestException("Missing required fields: email, password");
+    }
+
+    return this.testHarnessService.seedHostAdmin({
+      email: payload.email,
+      password: payload.password,
+    });
+  }
+
+  /**
+   * Seed platform tenants
+   */
+  @Post("seed-platform-tenants")
+  @HttpCode(HttpStatus.OK)
+  async seedPlatformTenants(@Body() payload: { count?: number }) {
+    const tenants = await this.testHarnessService.seedTenantsForPlatform(payload.count);
+    return { tenants };
   }
 
   /**
@@ -63,6 +96,51 @@ export class TestHarnessController {
       processedCount: result.processedCount,
       failedCount: result.failedCount,
     };
+  }
+
+  @Post("billing/provider/reset")
+  @HttpCode(HttpStatus.OK)
+  async resetBillingProviderState() {
+    this.testHarnessService.resetBillingProviderState();
+    return { success: true };
+  }
+
+  @Post("billing/provider/fail-next")
+  @HttpCode(HttpStatus.OK)
+  async failNextBillingProviderOperation(
+    @Body() payload: { operation: BillingProviderTestOperation }
+  ) {
+    if (!payload.operation) {
+      throw new BadRequestException("Missing required field: operation");
+    }
+
+    this.testHarnessService.failNextBillingProviderOperation(payload.operation);
+    return { success: true, operation: payload.operation };
+  }
+
+  @Post("billing/inspect")
+  @HttpCode(HttpStatus.OK)
+  async inspectBillingState(
+    @Body() payload: { tenantId: string; productKey?: string }
+  ): Promise<BillingInspectionResult> {
+    if (!payload.tenantId) {
+      throw new BadRequestException("Missing required field: tenantId");
+    }
+
+    return this.testHarnessService.inspectBillingState(payload);
+  }
+
+  @Post("billing/trial/set-ends-at")
+  @HttpCode(HttpStatus.OK)
+  async setBillingTrialEndsAt(
+    @Body() payload: { tenantId: string; productKey?: string; endsAt: string }
+  ) {
+    if (!payload.tenantId || !payload.endsAt) {
+      throw new BadRequestException("Missing required fields: tenantId, endsAt");
+    }
+
+    await this.testHarnessService.setBillingTrialEndsAt(payload);
+    return { success: true };
   }
 
   /**
@@ -141,6 +219,57 @@ export class TestHarnessController {
     return {
       deliveries: await this.testHarnessService.listInvoiceEmailDeliveries(payload),
     };
+  }
+
+  /**
+   * Seed deterministic tax filing data for UI E2E scenarios.
+   */
+  @Post("tax/seed-filing-scenario")
+  @HttpCode(HttpStatus.OK)
+  async seedTaxFilingScenario(
+    @Body()
+    payload: {
+      tenantId: string;
+      workspaceId: string;
+      actorUserId: string;
+      filingType: SeedTaxFilingScenarioType;
+      year: number;
+      periodKey?: string;
+      withBlockers?: boolean;
+      includeSnapshots?: boolean;
+      invoiceCount?: number;
+      expenseCount?: number;
+      status?: SeedTaxFilingScenarioStatus;
+    }
+  ) {
+    if (!payload.tenantId || !payload.workspaceId || !payload.actorUserId) {
+      throw new BadRequestException("Missing required fields: tenantId, workspaceId, actorUserId");
+    }
+    if (!payload.filingType) {
+      throw new BadRequestException("Missing required field: filingType");
+    }
+    if (!Number.isInteger(payload.year) || payload.year < 2000 || payload.year > 2100) {
+      throw new BadRequestException("Invalid year");
+    }
+    if (payload.filingType !== "VAT_PERIODIC" && payload.filingType !== "VAT_ANNUAL") {
+      throw new BadRequestException("Invalid filingType");
+    }
+
+    const input: SeedTaxFilingScenarioInput = {
+      tenantId: payload.tenantId,
+      workspaceId: payload.workspaceId,
+      actorUserId: payload.actorUserId,
+      filingType: payload.filingType,
+      year: payload.year,
+      periodKey: payload.periodKey,
+      withBlockers: payload.withBlockers,
+      includeSnapshots: payload.includeSnapshots,
+      invoiceCount: payload.invoiceCount,
+      expenseCount: payload.expenseCount,
+      status: payload.status,
+    };
+
+    return this.testHarnessService.seedTaxFilingScenario(input);
   }
 
   /**

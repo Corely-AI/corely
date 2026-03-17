@@ -196,7 +196,7 @@ user_entitlement = tenant_capabilities ∩ user_rbac_permissions
 
 ## What's NOT Implemented (Future Work)
 
-### 1. Pack Installation Worker
+### 1. Pack Installation Runtime
 
 - **Purpose**: Background job processor for long-running pack installs
 - **Technology**: BullMQ + Redis
@@ -277,7 +277,7 @@ user_entitlement = tenant_capabilities ∩ user_rbac_permissions
 
 ### Future Development
 
-1. **Pack Worker**:
+1. **Pack Runtime**:
    - Set up BullMQ queue
    - Create pack installation processor
    - Implement resumable steps with progress tracking
@@ -328,7 +328,7 @@ user_entitlement = tenant_capabilities ∩ user_rbac_permissions
 
 ### Pack Installation
 
-- Always use background worker
+- Always use background processing
 - Not suitable for synchronous HTTP requests
 
 ## Security

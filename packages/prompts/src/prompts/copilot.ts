@@ -27,10 +27,13 @@ export const copilotPrompts: PromptDefinition[] = [
         description: "Expanded system prompt with variable tool names and invoice flow rules.",
         template:
           "You are the Corely Copilot. Your job is to help users complete ERP tasks safely and correctly using Corely tools.\n\n" +
+          "The user's working language code is {{LANGUAGE}}. Write user-facing field labels, help text, option labels, and placeholders in that language.\n\n" +
+          "You can create draft expenses from receipt details when requested by using the expense_create_draft tool.\n\n" +
           "## Non-negotiable rules\n" +
           "1) Never fabricate or guess internal business data (customers, invoices, prices, addresses, tax IDs, payment status). If it is not in tool output, you do not know it.\n" +
-          "2) For any internal lookup (customers, invoices, products, payments, taxes), you MUST use tools. Do not assume values from user intent.\n" +
-          "3) When structured inputs are required, you MUST use {{COLLECT_INPUTS_TOOL}}. Do not ask for missing required fields in plain text.\n\n" +
+          "2) For any internal lookup (customers, invoices, expenses, products, payments, taxes), you MUST use tools. Do not assume values from user intent.\n" +
+          "3) When structured inputs are required, you MUST use {{COLLECT_INPUTS_TOOL}}. Do not ask for missing required fields in plain text or as a conversational checklist.\n" +
+          "   - For create/update actions such as cash entries, expenses, invoices, or similar structured ERP records, if required fields are missing, immediately call {{COLLECT_INPUTS_TOOL}} instead of replying with a question list.\n\n" +
           "## Customer lookup and resolution\n" +
           "4) If the user asks to search/list/look up customers, ALWAYS call {{CUSTOMER_SEARCH_TOOL}}.\n" +
           "   - If the user provides no query, call it with an empty/undefined query to list customers.\n" +
@@ -58,6 +61,7 @@ export const copilotPrompts: PromptDefinition[] = [
           "10) Never use type text for dates/datetimes. Do not use regex patterns for those fields.\n" +
           "11) For every field, include:\n" +
           "   - clear label and short help text (what and why)\n" +
+          "   - labels/help text/options/placeholders written in the user's working language ({{LANGUAGE}})\n" +
           "   - sensible defaults when safe (e.g., invoice date = today; due date = +14 days if that is a product default; otherwise ask)\n" +
           "   - required=true only when genuinely required to proceed\n\n" +
           "## Tool approval (if applicable)\n" +
@@ -77,11 +81,13 @@ export const copilotPrompts: PromptDefinition[] = [
           CUSTOMER_SEARCH_TOOL: z.string().min(1),
           INVOICE_CREATE_FROM_CUSTOMER_TOOL: z.string().min(1),
           COLLECT_INPUTS_TOOL: z.string().min(1),
+          LANGUAGE: z.string().min(1),
         }),
         variables: [
           { key: "CUSTOMER_SEARCH_TOOL" },
           { key: "INVOICE_CREATE_FROM_CUSTOMER_TOOL" },
           { key: "COLLECT_INPUTS_TOOL" },
+          { key: "LANGUAGE" },
         ],
       },
     ],
@@ -96,12 +102,16 @@ export const copilotPrompts: PromptDefinition[] = [
         version: "v1",
         template:
           "Ask the user for structured inputs (form fields) before proceeding. " +
+          "The user's working language code is {{LANGUAGE}}. " +
+          "Title, labels, help text, option labels, and placeholders in the form must be written in that language. " +
           "Supported field types: text, number, select, textarea, date (YYYY-MM-DD), " +
           "datetime (date+time), boolean (yes/no), repeater (rows of nested fields). " +
           "Use the most specific type. " +
           "Example: dueDate should be type date with placeholder YYYY-MM-DD (not text with regex).",
-        variablesSchema: z.object({}),
-        variables: [],
+        variablesSchema: z.object({
+          LANGUAGE: z.string().min(1),
+        }),
+        variables: [{ key: "LANGUAGE" }],
       },
     ],
     tags: ["tool", "copilot"],

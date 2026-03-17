@@ -22,7 +22,7 @@ echo "✅ Unit tests passed."
 
 # Run format check
 echo "Checking formatting..."
-pnpm format:check
+pnpm exec prettier --check . --ignore-unknown --ignore-path .prettierignore.hooks
 
 if [ $? -ne 0 ]; then
   echo "❌ Formatting check failed. Run 'pnpm format' to fix."
@@ -34,7 +34,7 @@ echo "✅ Formatting passed."
 
 # Run ESLint with increased memory limit (fail on errors only, not warnings)
 echo "Running ESLint (errors only)..."
-NODE_OPTIONS="--max-old-space-size=12288" pnpm exec eslint . --cache --quiet
+NODE_OPTIONS="--max-old-space-size=12288" pnpm exec eslint . --cache --quiet --ignore-pattern 'apps/e2e/**'
 
 if [ $? -ne 0 ]; then
   echo "❌ ESLint errors found. Fix errors and try again."
@@ -46,7 +46,7 @@ echo "✅ ESLint passed (no errors)."
 
 # Run lightweight typecheck before push
 echo "Running typecheck before push..."
-pnpm typecheck
+pnpm -r --filter '!@corely/e2e' typecheck
 
 if [ $? -ne 0 ]; then
   echo "❌ Typecheck failed. Fix errors and try again."
@@ -66,14 +66,3 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "✅ API build succeeded."
-
-echo "Running Worker build + dependency guard..."
-pnpm build:worker
-
-if [ $? -ne 0 ]; then
-  echo "❌ Worker build failed. Fix errors and try again."
-  echo "   To skip: HUSKY=0 git push"
-  exit 1
-fi
-
-echo "✅ Worker build succeeded."

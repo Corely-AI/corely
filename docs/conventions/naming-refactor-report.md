@@ -27,7 +27,7 @@ This report documents the successful implementation of consistent naming convent
 | **Folders Renamed**  | 4                               |
 | **Imports Updated**  | 300+                            |
 | **Modules Affected** | 10                              |
-| **Services Touched** | API + Worker                    |
+| **Services Touched** | API + background runtime        |
 | **Packages Updated** | domain, data, kernel, contracts |
 
 ---
@@ -36,7 +36,7 @@ This report documents the successful implementation of consistent naming convent
 
 ### Phase 1: Analysis and Documentation (Completed)
 
-1. **Inventory Scan**: Used automated agents to scan 304 TypeScript files in services/api, 12 in services/worker, and 100+ in packages
+1. **Inventory Scan**: Used automated agents to scan API/background files and 100+ in packages
 2. **Pattern Analysis**: Identified inconsistencies across 7 major categories (PascalCase, abbreviations, test suffixes, folder naming)
 3. **Convention Definition**: Created comprehensive [naming-conventions.md](./naming-conventions.md) with taxonomy for all architectural layers
 4. **Rename Mapping**: Generated detailed [rename-mapping.md](./rename-mapping.md) with before/after paths for every file
@@ -79,7 +79,7 @@ This report documents the successful implementation of consistent naming convent
 
 - `CompleteUploadUseCase.ts` → `complete-upload.usecase.ts`
 - `CreateUploadIntentUseCase.ts` → `create-upload-intent.usecase.ts`
-- `GenerateInvoicePdfWorker.ts` → `generate-invoice-pdf.worker.ts`
+- `GenerateInvoicePdfProcessor.ts` → `generate-invoice-pdf.processor.ts`
 - `GetDownloadUrlUseCase.ts` → `get-download-url.usecase.ts`
 - `LinkDocumentUseCase.ts` → `link-document.usecase.ts`
 - `RequestInvoicePdfUseCase.ts` → `request-invoice-pdf.usecase.ts`
@@ -200,7 +200,7 @@ This report documents the successful implementation of consistent naming convent
 - `persistence/prisma.message.repo.ts` → `adapters/prisma-message-repository.adapter.ts`
 - `persistence/prisma.tool-execution.repo.ts` → `adapters/prisma-tool-execution-repository.adapter.ts`
 
-### 8. Worker Service
+### 8. Background Runtime
 
 **Files Renamed: 2**
 

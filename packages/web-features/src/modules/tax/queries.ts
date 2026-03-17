@@ -25,3 +25,31 @@ export const taxFilingActivityQueryKey = (
   filingId: string,
   workspaceId?: string | null
 ): QueryKey => withWorkspace(["tax-filings", filingId, "activity"], workspaceId);
+
+export const taxAnnualIncomeSectionQueryKey = (
+  filingId: string,
+  reportId: string,
+  workspaceId?: string | null
+): QueryKey =>
+  withWorkspace(
+    ["tax-filings", filingId, "reports", reportId, "sections", "annual-income"],
+    workspaceId
+  );
+
+export const taxReportSectionsQueryKey = (
+  filingId: string,
+  reportId: string,
+  workspaceId?: string | null
+): QueryKey =>
+  withWorkspace(["tax-filings", filingId, "reports", reportId, "sections"], workspaceId);
+
+export const taxReportSectionQueryKey = (
+  filingId: string,
+  reportId: string,
+  sectionKey: string,
+  workspaceId?: string | null
+): QueryKey =>
+  withWorkspace(
+    ["tax-filings", filingId, "reports", reportId, "sections", sectionKey],
+    workspaceId
+  );

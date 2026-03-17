@@ -9,7 +9,7 @@
   - `LANGFUSE_SECRET_KEY=...`
   - Optional: `OTEL_EXPORTER_OTLP_ENDPOINT` (overrides base URL)
   - Optional: `OBSERVABILITY_SAMPLE_RATIO=1` (0–1)
-- Run API/worker; tracing starts during bootstrap (`setupTracing`).
+- Run the API; tracing starts during bootstrap (`setupTracing`).
 
 ## How it works
 

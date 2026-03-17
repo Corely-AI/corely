@@ -5,10 +5,11 @@ import { CrmTestHooksService } from "./crm-test-hooks.service";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity/identity.module";
+import { BillingModule } from "../billing/billing.module";
 
 @Global()
 @Module({
-  imports: [DataModule, WorkspacesModule, IdentityModule],
+  imports: [DataModule, WorkspacesModule, IdentityModule, BillingModule],
   controllers: [TestHarnessController],
   providers: [
     TestHarnessService,

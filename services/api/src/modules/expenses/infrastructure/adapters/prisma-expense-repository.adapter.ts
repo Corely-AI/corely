@@ -29,6 +29,11 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
         archivedByUserId: expense.archivedByUserId ?? undefined,
         createdByUserId: expense.createdByUserId ?? undefined,
         custom: expense.custom as any,
+        deductiblePercent: expense.deductiblePercent ?? undefined,
+        deductibleAmountCents: expense.deductibleAmountCents ?? undefined,
+        nonDeductibleAmountCents: expense.nonDeductibleAmountCents ?? undefined,
+        deductibilityRuleKind: expense.deductibilityRuleKind ?? undefined,
+        deductibilityMeta: (expense.deductibilityMeta as any) ?? undefined,
       } as any,
     });
   }
@@ -48,7 +53,12 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
         archivedAt: expense.archivedAt ?? undefined,
         archivedByUserId: expense.archivedByUserId ?? undefined,
         custom: expense.custom as any,
-      },
+        deductiblePercent: expense.deductiblePercent ?? null,
+        deductibleAmountCents: expense.deductibleAmountCents ?? null,
+        nonDeductibleAmountCents: expense.nonDeductibleAmountCents ?? null,
+        deductibilityRuleKind: expense.deductibilityRuleKind ?? null,
+        deductibilityMeta: (expense.deductibilityMeta as any) ?? null,
+      } as any,
     });
   }
 
@@ -183,7 +193,12 @@ export class PrismaExpenseRepository implements ExpenseRepositoryPort {
       new Date(data.createdAt),
       data.archivedAt ? new Date(data.archivedAt) : null,
       data.archivedByUserId ?? null,
-      data.custom as any
+      data.custom as any,
+      data.deductiblePercent ?? null,
+      data.deductibleAmountCents ?? null,
+      data.nonDeductibleAmountCents ?? null,
+      data.deductibilityRuleKind ?? null,
+      (data.deductibilityMeta as any) ?? null
     );
   }
 }

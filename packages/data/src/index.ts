@@ -34,3 +34,4 @@ export * from "./adapters/prisma-document-link.adapter";
 export * from "./adapters/prisma-invoice-email-delivery.adapter";
 export * from "./adapters/prisma-invoice-reminder-state.adapter";
 export * from "./adapters/prisma-invoice-reminder-settings.adapter";
+export * from "./outbox-dispatch-scheduler";

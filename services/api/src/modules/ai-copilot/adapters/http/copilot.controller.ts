@@ -1,4 +1,5 @@
 import {
+  Inject,
   Body,
   Controller,
   Headers,
@@ -9,11 +10,15 @@ import {
   Res,
   UseGuards,
   BadRequestException,
+  ForbiddenException,
   Logger,
+  Optional,
 } from "@nestjs/common";
 import type { Response, Request } from "express";
 import {
   CreateCopilotThreadRequestSchema,
+  CashManagementBillingFeatureKeys,
+  CashManagementProductKey,
   ListCopilotThreadMessagesRequestSchema,
   ListCopilotThreadsRequestSchema,
   SearchCopilotThreadsRequestSchema,
@@ -29,11 +34,13 @@ import { EnvService } from "@corely/config";
 import { type CopilotMessage } from "../../domain/entities/message.entity";
 import { type CopilotUIMessage } from "../../domain/types/ui-message";
 import { toUseCaseContext } from "../../../../shared/request-context";
+import type { ContextAwareRequest } from "../../../../shared/request-context";
 import { ListCopilotThreadsUseCase } from "../../application/use-cases/list-copilot-threads.usecase";
 import { GetCopilotThreadUseCase } from "../../application/use-cases/get-copilot-thread.usecase";
 import { ListCopilotThreadMessagesUseCase } from "../../application/use-cases/list-copilot-thread-messages.usecase";
 import { SearchCopilotMessagesUseCase } from "../../application/use-cases/search-copilot-messages.usecase";
 import { CreateCopilotThreadUseCase } from "../../application/use-cases/create-copilot-thread.usecase";
+import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
 
 type AuthedRequest = Request & { tenantId?: string; user?: { userId?: string }; traceId?: string };
 
@@ -51,7 +58,10 @@ export class CopilotController {
     private readonly listThreadMessagesUseCase: ListCopilotThreadMessagesUseCase,
     private readonly searchMessagesUseCase: SearchCopilotMessagesUseCase,
     private readonly createThreadUseCase: CreateCopilotThreadUseCase,
-    private readonly env: EnvService
+    private readonly env: EnvService,
+    @Optional()
+    @Inject(BILLING_ACCESS_PORT)
+    private readonly billingAccess?: BillingAccessPort
   ) {
     this.logger.debug("CopilotController instantiated");
   }
@@ -106,6 +116,7 @@ export class CopilotController {
       userId: context.userId,
       title: parsed.data.title,
       traceId: context.requestId,
+      metadataJson: parsed.data.metadata ? JSON.stringify(parsed.data.metadata) : undefined,
     });
   }
 
@@ -151,6 +162,10 @@ export class CopilotController {
     }
 
     const context = this.resolveContext(req);
+    await this.assertAssistantAccess(
+      context.toolTenantId,
+      context.activeAppId ?? body.requestData?.activeModule
+    );
     const requestedRunId = body.threadId ?? body.id;
     if (requestedRunId) {
       await this.getThreadUseCase.execute({
@@ -165,6 +180,7 @@ export class CopilotController {
       message: body.message,
       tenantId: context.tenantId,
       userId: context.userId,
+      locale: body.requestData?.locale,
       idempotencyKey,
       runId: requestedRunId,
       response: res,
@@ -191,6 +207,10 @@ export class CopilotController {
       throw new BadRequestException("Missing X-Idempotency-Key");
     }
     const context = this.resolveContext(req);
+    await this.assertAssistantAccess(
+      context.toolTenantId,
+      context.activeAppId ?? body.requestData?.activeModule
+    );
 
     const { runId } = await this.createRun.execute({
       runId: body.id,
@@ -264,6 +284,10 @@ export class CopilotController {
       userId: context.userId,
       threadId: id,
     });
+    await this.assertAssistantAccess(
+      context.toolTenantId,
+      context.activeAppId ?? body.requestData?.activeModule
+    );
 
     await this.streamCopilotChat.execute({
       messages: body.messages || [],
@@ -293,7 +317,7 @@ export class CopilotController {
     workspaceId: string;
     activeAppId?: string;
   } {
-    const ctx = toUseCaseContext(req as any);
+    const ctx = toUseCaseContext(req as ContextAwareRequest);
     const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
     const toolTenantId = ctx.tenantId ?? tenantId;
     const userId = ctx.userId || "unknown";
@@ -308,6 +332,23 @@ export class CopilotController {
       workspaceId,
       activeAppId: ctx.activeAppId,
     };
+  }
+
+  private async assertAssistantAccess(
+    tenantId: string,
+    activeAppId: string | undefined
+  ): Promise<void> {
+    if (!this.billingAccess || activeAppId !== "cash-management") {
+      return;
+    }
+
+    const entitlements = await this.billingAccess.getEntitlements(
+      tenantId,
+      CashManagementProductKey
+    );
+    if (entitlements.featureValues[CashManagementBillingFeatureKeys.aiAssistant] !== true) {
+      throw new ForbiddenException("Cash management AI assistant is available on Pro and higher");
+    }
   }
 
   private mapToUiMessage(message: CopilotMessage): CopilotUIMessage {

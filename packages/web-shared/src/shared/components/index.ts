@@ -8,3 +8,4 @@ export { QuestionForm } from "./QuestionForm";
 export { DetailScreenHeader } from "./DetailScreenHeader";
 export { Skeleton } from "./Skeleton";
 export { PartyPicker } from "./PartyPicker";
+export { LanguageSelector } from "./LanguageSelector";

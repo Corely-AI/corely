@@ -22,7 +22,7 @@ This document defines the **single, authoritative naming taxonomy** for all code
 2. **Searchability over brevity**: Prefer explicit names (`repository` over `repo`)
 3. **Layer clarity**: File suffixes must reveal architectural layer (port/adapter/usecase/controller)
 4. **No PascalCase filenames**: All files use `kebab-case` only
-5. **Consistency across surfaces**: Same patterns apply to API, worker, and packages
+5. **Consistency across surfaces**: Same patterns apply to API, background runtime, and packages
 
 ---
 
@@ -94,7 +94,7 @@ This table defines the **canonical suffix** for every architectural layer. All f
 | `.decorator.ts`   | Metadata                      | Custom TypeScript decorators             | `current-user.decorator.ts`            | `CurrentUser`                    |
 | `.tool.ts`        | AI Copilot                    | AI tool definition for LLM               | `invoice.tool.ts`                      | `createInvoiceTool`              |
 | `.handler.ts`     | Event processing              | Domain event handler                     | `invoice-created.handler.ts`           | `InvoiceCreatedHandler`          |
-| `.consumer.ts`    | Message queue                 | Queue consumer (worker)                  | `invoice-email.consumer.ts`            | `InvoiceEmailConsumer`           |
+| `.consumer.ts`    | Message queue                 | Queue consumer (background runtime)      | `invoice-email.consumer.ts`            | `InvoiceEmailConsumer`           |
 | `.job.ts`         | Background task               | Scheduled job definition                 | `cleanup-expired-tokens.job.ts`        | `CleanupExpiredTokensJob`        |
 
 ### Test File Suffixes

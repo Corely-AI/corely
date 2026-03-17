@@ -11,7 +11,7 @@
     - `MISMATCH` when the same key is reused with a different `requestHash` (400 `IDEMPOTENCY_MISMATCH`).
     - `FAILED` echoes stored failure.
   - `complete(...)` stores response status/body and marks `COMPLETED`; `fail(...)` stores failure and marks `FAILED`.
-  - Lock timeout: 2 minutes before another worker can take over an `IN_PROGRESS` key.
+  - Lock timeout: 2 minutes before another processor can take over an `IN_PROGRESS` key.
 - **Copilot streaming**
   - Endpoint `/copilot/chat` now uses `startOrReplay`:
     - Duplicate matching key returns stored success with `Idempotency-Replayed: true`.

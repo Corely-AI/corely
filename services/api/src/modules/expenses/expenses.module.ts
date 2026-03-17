@@ -22,7 +22,9 @@ import { ListExpensesUseCase } from "./application/use-cases/list-expenses.useca
 import { GetExpenseUseCase } from "./application/use-cases/get-expense.usecase";
 import { UpdateExpenseUseCase } from "./application/use-cases/update-expense.usecase";
 import { UnarchiveExpenseUseCase } from "./application/use-cases/unarchive-expense.usecase";
+import { TransitionExpenseUseCase } from "./application/use-cases/transition-expense.usecase";
 import { PrismaExpenseRepository } from "./infrastructure/adapters/prisma-expense-repository.adapter";
+import { PrismaGiftThresholdQueryAdapter } from "./infrastructure/adapters/prisma-gift-threshold-query.adapter";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { PlatformModule } from "../platform/platform.module";
 import { WORKSPACE_REPOSITORY_PORT } from "../workspaces/application/ports/workspace-repository.port";
@@ -37,6 +39,8 @@ import {
   ResolveEntityIdsByDimensionFiltersUseCase,
 } from "../platform-custom-attributes";
 import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/workspace-repository.port";
+import { GIFT_THRESHOLD_QUERY_PORT } from "./application/ports/gift-threshold-query.port";
+import type { GiftThresholdQueryPort } from "./application/ports/gift-threshold-query.port";
 
 @Module({
   imports: [DataModule, KernelModule, PlatformModule, PlatformCustomAttributesModule],
@@ -45,6 +49,10 @@ import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/wo
     // Repository
     PrismaExpenseRepository,
     { provide: EXPENSE_REPOSITORY, useExisting: PrismaExpenseRepository },
+
+    // Gift threshold query (DE deductibility)
+    PrismaGiftThresholdQueryAdapter,
+    { provide: GIFT_THRESHOLD_QUERY_PORT, useExisting: PrismaGiftThresholdQueryAdapter },
 
     // Use Cases
     {
@@ -62,7 +70,8 @@ import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/wo
         customFieldsWritePort: CustomFieldsWritePort,
         workspaceRepo: WorkspaceRepositoryPort,
         templateService: WorkspaceTemplateService,
-        prisma: PrismaService
+        prisma: PrismaService,
+        giftThresholdQuery: GiftThresholdQueryPort
       ) =>
         new CreateExpenseUseCase(
           repo,
@@ -77,7 +86,8 @@ import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/wo
           customFieldsWritePort,
           workspaceRepo,
           templateService,
-          prisma
+          prisma,
+          giftThresholdQuery
         ),
 
       inject: [
@@ -94,6 +104,7 @@ import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/wo
         WORKSPACE_REPOSITORY_PORT,
         WorkspaceTemplateService,
         PrismaService,
+        GIFT_THRESHOLD_QUERY_PORT,
       ],
     },
     {
@@ -120,6 +131,12 @@ import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/wo
       useFactory: (repo: PrismaExpenseRepository, audit: AuditPort) =>
         new UnarchiveExpenseUseCase(repo, audit),
       inject: [EXPENSE_REPOSITORY, AUDIT_PORT],
+    },
+    {
+      provide: TransitionExpenseUseCase,
+      useFactory: (repo: PrismaExpenseRepository, audit: AuditPort, outbox: OutboxPort) =>
+        new TransitionExpenseUseCase(repo, audit, outbox),
+      inject: [EXPENSE_REPOSITORY, AUDIT_PORT, OUTBOX_PORT],
     },
     {
       provide: ListExpensesUseCase,
@@ -149,7 +166,8 @@ import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/wo
         customDefs: CustomFieldDefinitionRepository,
         customIndexes: CustomFieldIndexRepository,
         dims: DimensionsWritePort,
-        customs: CustomFieldsWritePort
+        customs: CustomFieldsWritePort,
+        giftThresholdQuery: GiftThresholdQueryPort
       ) =>
         new UpdateExpenseUseCase(
           repo,
@@ -159,7 +177,8 @@ import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/wo
           customDefs,
           customIndexes,
           dims,
-          customs
+          customs,
+          giftThresholdQuery
         ),
       inject: [
         EXPENSE_REPOSITORY,
@@ -170,6 +189,7 @@ import type { WorkspaceRepositoryPort } from "../workspaces/application/ports/wo
         CustomFieldIndexRepository,
         DIMENSIONS_WRITE_PORT,
         CUSTOM_FIELDS_WRITE_PORT,
+        GIFT_THRESHOLD_QUERY_PORT,
       ],
     },
   ],

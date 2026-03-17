@@ -11,7 +11,7 @@ import {
 } from "@corely/kernel";
 import { CASH_DAY_CLOSE_REPO, type CashDayCloseRepoPort } from "../ports/cash-management.ports";
 import { toDayCloseDto } from "../cash-management.mapper";
-import { assertCanManageCash } from "../../policies/assert-cash-policies";
+import { assertCanCloseCash } from "../../policies/assert-cash-policies";
 
 @RequireTenant()
 @Injectable()
@@ -30,7 +30,7 @@ export class GetCashDayCloseQueryUseCase extends BaseUseCase<
     input: { registerId: string; dayKey: string },
     ctx: UseCaseContext
   ): Promise<Result<{ dayClose: ReturnType<typeof toDayCloseDto> }, UseCaseError>> {
-    assertCanManageCash(ctx, input.registerId);
+    assertCanCloseCash(ctx, input.registerId);
 
     const tenantId = ctx.tenantId;
     const workspaceId = ctx.workspaceId;

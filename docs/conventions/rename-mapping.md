@@ -87,11 +87,11 @@ NEW: modules/documents/application/use-cases/create-upload-intent/create-upload-
 OLD: modules/documents/application/use-cases/create-upload-intent/CreateUploadIntentUseCase.test.ts
 NEW: modules/documents/application/use-cases/create-upload-intent/create-upload-intent.usecase.test.ts
 
-OLD: modules/documents/application/use-cases/generate-invoice-pdf-worker/GenerateInvoicePdfWorker.ts
-NEW: modules/documents/application/use-cases/generate-invoice-pdf-worker/generate-invoice-pdf.worker.ts
+OLD: modules/documents/application/use-cases/generate-invoice-pdf-processor/GenerateInvoicePdfProcessor.ts
+NEW: modules/documents/application/use-cases/generate-invoice-pdf-processor/generate-invoice-pdf.processor.ts
 
-OLD: modules/documents/application/use-cases/generate-invoice-pdf-worker/GenerateInvoicePdfWorker.test.ts
-NEW: modules/documents/application/use-cases/generate-invoice-pdf-worker/generate-invoice-pdf.worker.test.ts
+OLD: modules/documents/application/use-cases/generate-invoice-pdf-processor/GenerateInvoicePdfProcessor.test.ts
+NEW: modules/documents/application/use-cases/generate-invoice-pdf-processor/generate-invoice-pdf.processor.test.ts
 
 OLD: modules/documents/application/use-cases/get-download-url/GetDownloadUrlUseCase.ts
 NEW: modules/documents/application/use-cases/get-download-url/get-download-url.usecase.ts
@@ -430,7 +430,7 @@ NEW: modules/tax/application/ports/vat-report-repository.port.ts
 
 ---
 
-## 2. Worker Service Renames (services/worker/src/modules/)
+## 2. Background Runtime Renames
 
 ### 2.1 Outbox Module
 
@@ -469,7 +469,7 @@ OLD: modules/notifications/infra/
 NEW: modules/notifications/infrastructure/
 ```
 
-### 2.4 Invoices Module (Worker)
+### 2.4 Invoices Module (Background Runtime)
 
 #### Test Suffix Alignment
 
@@ -544,8 +544,8 @@ NEW: services/api/src/modules/party-crm/infrastructure/
 OLD: services/api/src/modules/privacy/infra/
 NEW: services/api/src/modules/privacy/infrastructure/
 
-OLD: services/worker/src/modules/notifications/infra/
-NEW: services/worker/src/modules/notifications/infrastructure/
+OLD: services/api/src/modules/background/runtime/modules/notifications/infra/
+NEW: services/api/src/modules/background/runtime/modules/notifications/infrastructure/
 ```
 
 ### persistence vs adapters

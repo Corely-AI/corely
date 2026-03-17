@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate, Route } from "react-router-dom";
+import { RequirePermission } from "@corely/web-shared/shared/permissions";
 import {
   SettingsPage,
   RolesPage,
@@ -8,7 +9,6 @@ import {
 } from "../../modules/settings";
 import DimensionsSettingsPage from "../../modules/settings/screens/DimensionsSettingsPage";
 import CustomFieldsSettingsPage from "../../modules/settings/screens/CustomFieldsSettingsPage";
-import { RequirePermission } from "../../modules/settings/components/RequirePermission";
 import { PaymentMethodsSettings } from "../../modules/settings/payment-methods";
 import {
   PlatformPage,
@@ -28,7 +28,7 @@ export const appSettingsRoutes = (
   <>
     {/* Legacy Redirects */}
     <Route path="/taxes" element={<Navigate to="/tax" replace />} />
-    <Route path="/tax/reports" element={<Navigate to="/tax/filings" replace />} />
+    <Route path="/tax/reports" element={<Navigate to="/tax/reports/eur" replace />} />
     <Route path="/tax/period/:key" element={<Navigate to="/tax/filings/:key" replace />} />
     <Route path="/settings/tax" element={<Navigate to="/tax/settings" replace />} />
 

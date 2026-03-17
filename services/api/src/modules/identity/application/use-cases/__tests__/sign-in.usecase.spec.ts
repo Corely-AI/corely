@@ -16,7 +16,7 @@ import { User } from "../../../domain/entities/user.entity";
 import { Email } from "../../../domain/value-objects/email.vo";
 import { Membership } from "../../../domain/entities/membership.entity";
 import { Tenant } from "../../../domain/entities/tenant.entity";
-import { ForbiddenError } from "@shared/errors/domain-errors";
+import { UnauthorizedError } from "@shared/errors/domain-errors";
 
 let useCase: SignInUseCase;
 let userRepo: FakeUserRepository;
@@ -73,7 +73,7 @@ describe("SignInUseCase", () => {
 
   it("fails on wrong password", async () => {
     await expect(useCase.execute(buildSignInInput({ password: "wrong" }))).rejects.toBeInstanceOf(
-      ForbiddenError
+      UnauthorizedError
     );
     expect(refreshTokenRepo.tokens).toHaveLength(0);
   });

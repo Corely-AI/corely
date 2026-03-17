@@ -6,7 +6,11 @@ import type {
   TaxReportType,
   TaxReportGroup,
 } from "@corely/contracts";
-import { TaxComputationStrategy, type TaxStrategyContext } from "./tax-strategy";
+import {
+  TaxComputationStrategy,
+  type TaxStrategyContext,
+  type TaxStrategyCapabilities,
+} from "./tax-strategy";
 import {
   TaxSummaryQueryPort,
   TaxReportRepoPort,
@@ -15,18 +19,27 @@ import {
 } from "../../domain/ports";
 import type { TaxProfileEntity } from "../../domain/entities";
 import type { TaxSummaryTotals } from "../../domain/ports";
-import { DEPackV1 } from "./jurisdictions/de-pack.v1";
 import { VatPeriodResolver } from "../../domain/services/vat-period.resolver";
 
 @Injectable()
 export class PersonalTaxStrategy implements TaxComputationStrategy {
+  readonly strategyId = "PERSONAL";
+
+  readonly capabilities: TaxStrategyCapabilities = {
+    canFileVat: true,
+    canPayVat: true,
+    needsConsultant: false,
+    supportsReverseCharge: true,
+    supportsOss: false,
+    supportsEur: true,
+  };
+
   constructor(
     private readonly summaryQuery: TaxSummaryQueryPort,
     private readonly reportRepo: TaxReportRepoPort,
     private readonly profileRepo: TaxProfileRepoPort,
     private readonly vatPeriodQuery: VatPeriodQueryPort,
-    private readonly vatPeriodResolver: VatPeriodResolver,
-    private readonly dePack: DEPackV1
+    private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
   async computeSummary(ctx: TaxStrategyContext): Promise<TaxSummaryDto> {

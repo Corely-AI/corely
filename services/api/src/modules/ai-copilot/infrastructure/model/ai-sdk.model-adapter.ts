@@ -19,6 +19,19 @@ import { PromptUsageLogger } from "../../../../shared/prompts/prompt-usage.logge
 import { buildPromptContext } from "../../../../shared/prompts/prompt-context";
 import { copilotMessageMetadataSchema } from "../../application/validation/copilot-message-metadata.schema";
 
+const normalizePromptLanguage = (locale?: string): string => {
+  const normalized = locale?.trim().toLowerCase();
+
+  if (normalized?.startsWith("vi")) {
+    return "vi";
+  }
+  if (normalized?.startsWith("de")) {
+    return "de";
+  }
+
+  return "en";
+};
+
 @Injectable()
 export class AiSdkModelAdapter implements LanguageModelPort {
   private readonly openai: ReturnType<typeof createOpenAI>;
@@ -45,6 +58,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
   async streamChat(params: {
     messages: CopilotUIMessage[];
     tools: DomainToolPort[];
+    locale?: string;
     runId: string;
     tenantId: string;
     toolTenantId?: string;
@@ -60,6 +74,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       toolExecutions: this.toolExecutions,
       audit: this.audit,
       outbox: this.outbox,
+      locale: params.locale,
       tenantId: toolTenantId,
       workspaceId: params.workspaceId,
       activeAppId: params.activeAppId,
@@ -85,6 +100,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
       CUSTOMER_SEARCH_TOOL: "customer_search",
       INVOICE_CREATE_FROM_CUSTOMER_TOOL: "invoice_create_from_customer",
       COLLECT_INPUTS_TOOL: "collect_inputs",
+      LANGUAGE: normalizePromptLanguage(params.locale),
     });
     this.observability.setAttributes(params.observability, {
       "prompt.id": systemPrompt.promptId,
@@ -106,7 +122,7 @@ export class AiSdkModelAdapter implements LanguageModelPort {
     const collectInputsDescription = this.promptRegistry.render(
       "copilot.collect_inputs.description",
       promptContext,
-      {}
+      { LANGUAGE: normalizePromptLanguage(params.locale) }
     );
     this.promptUsageLogger.logUsage({
       promptId: collectInputsDescription.promptId,

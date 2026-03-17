@@ -31,18 +31,4 @@ export default defineWorkspace([
       exclude: [],
     },
   },
-  {
-    extends: "./services/worker/vitest.config.ts",
-    root: "./services/worker",
-    test: {
-      include: dockerAvailable
-        ? ["src/**/*.int.test.ts"]
-        : [
-            "src/application/internal-worker.controller.int.test.ts",
-            "src/modules/outbox/__tests__/outbox.int.test.ts",
-            "src/infrastructure/job-lock.service.int.test.ts",
-          ],
-      exclude: [],
-    },
-  },
 ]);

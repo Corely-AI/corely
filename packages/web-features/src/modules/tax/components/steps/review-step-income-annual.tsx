@@ -68,7 +68,10 @@ export function ReviewStepIncomeAnnual({
   ];
 
   const issueList = issues.length > 0 ? issues : defaultIssues;
-  const blockers = issueList.filter((issue) => issue.severity === "blocker");
+  const visibleIssues = issueList.filter(
+    (issue) => typeof issue.count !== "number" || issue.count > 0
+  );
+  const blockers = visibleIssues.filter((issue) => issue.severity === "blocker");
 
   return (
     <div className="space-y-6">
@@ -145,10 +148,10 @@ export function ReviewStepIncomeAnnual({
           )}
         </CardHeader>
         <CardContent className="space-y-3">
-          {issueList.length === 0 ? (
+          {visibleIssues.length === 0 ? (
             <p className="text-sm text-muted-foreground">No issues detected.</p>
           ) : (
-            issueList.map((issue) => (
+            visibleIssues.map((issue) => (
               <div
                 key={issue.id}
                 className="flex items-center justify-between rounded-md border border-border p-3"

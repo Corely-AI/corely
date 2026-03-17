@@ -14,7 +14,7 @@ You are an expert TypeScript/NestJS + Prisma + React (Vite) architect working in
    - All tenant-scoped data must include `tenantId` and be filtered by it.
 
 4. **Idempotency**
-   - Enabling an app, applying a template, installing a pack must be safe to retry (important for worker retries).
+   - Enabling an app, applying a template, installing a pack must be safe to retry (important for background retries).
 
 5. **Template upgrades must not overwrite tenant customizations by default**
    - Follow a “do not update customized records” concept similar to the way systems preserve user-edited seeded records. ([Odoo][2])
@@ -238,7 +238,7 @@ Create a platform module in `services/api/src/modules/catalog/` (or `platform/en
 5. `PackInstallService`
 
 - Validates pack definition
-- Creates `TenantPackInstall` record and enqueues a worker job
+- Creates `TenantPackInstall` record and enqueues a background job
 
 ### B) Guards / interceptors
 
@@ -300,9 +300,9 @@ Invalidate when:
 
 ---
 
-## 5) Worker: Pack installation orchestration (BullMQ)
+## 5) Background runtime: pack installation orchestration (BullMQ)
 
-In `services/worker`:
+In the API background runtime:
 
 - Add queue `pack-install`
 - Job payload: `{ tenantId, packId, installId, requestedByUserId }`

@@ -27,6 +27,7 @@ import { UnarchiveExpenseUseCase } from "../application/use-cases/unarchive-expe
 import { ListExpensesUseCase } from "../application/use-cases/list-expenses.usecase";
 import { GetExpenseUseCase } from "../application/use-cases/get-expense.usecase";
 import { UpdateExpenseUseCase } from "../application/use-cases/update-expense.usecase";
+import { TransitionExpenseUseCase } from "../application/use-cases/transition-expense.usecase";
 import type { Expense } from "../domain/expense.entity";
 import { ExpenseCapabilitiesBuilder } from "../domain/expense-capabilities.builder";
 import {
@@ -44,6 +45,23 @@ const ExpenseHttpInputSchema = CreateExpenseWebInputSchema.partial().extend({
   expenseDate: z.string().optional(),
   vatRate: z.number().optional(),
   idempotencyKey: z.string().optional(),
+  deductibilityMeta: z
+    .object({
+      participants: z.string().optional(),
+      occasion: z.string().optional(),
+      recipient: z.string().optional(),
+      businessUsePercent: z.number().int().min(0).max(100).optional(),
+      travelMeta: z
+        .object({
+          date: z.string(),
+          absenceHours: z.number().optional(),
+          country: z.string().optional(),
+        })
+        .optional(),
+      homeOfficeDays: z.number().int().min(0).optional(),
+    })
+    .optional()
+    .nullable(),
 });
 
 @Controller("expenses")
@@ -55,6 +73,7 @@ export class ExpensesController {
     private readonly listExpensesUseCase: ListExpensesUseCase,
     private readonly getExpenseUseCase: GetExpenseUseCase,
     private readonly updateExpenseUseCase: UpdateExpenseUseCase,
+    private readonly transitionExpenseUseCase: TransitionExpenseUseCase,
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort,
     private readonly templateService: WorkspaceTemplateService
@@ -108,6 +127,7 @@ export class ExpensesController {
         dimensionAssignments: input.dimensionAssignments,
         issuedAt,
         idempotencyKey: resolveIdempotencyKey(req) ?? input.idempotencyKey ?? "default",
+        deductibilityMeta: input.deductibilityMeta ?? null,
       },
       ctx
     );
@@ -194,6 +214,7 @@ export class ExpensesController {
         custom: input.custom ?? null,
         customFieldValues: input.customFieldValues ?? null,
         dimensionAssignments: input.dimensionAssignments,
+        deductibilityMeta: input.deductibilityMeta ?? null,
       },
       ctx
     );
@@ -222,6 +243,27 @@ export class ExpensesController {
     return { archived: false };
   }
 
+  @Post(":expenseId/transition")
+  async transition(
+    @Param("expenseId") expenseId: string,
+    @Body() body: { to: ExpenseStatus; reason?: string },
+    @Req() req: Request
+  ) {
+    const ctx = buildUseCaseContext(req);
+    if (!body.to) {
+      throw new BadRequestException("Missing target status 'to'");
+    }
+    await this.transitionExpenseUseCase.execute(
+      {
+        expenseId,
+        to: body.to,
+        reason: body.reason,
+      },
+      ctx
+    );
+    return { success: true };
+  }
+
   private mapExpenseDto(expense: Expense): ExpenseDto {
     const taxAmountCents = expense.taxAmountCents ?? null;
     return {
@@ -242,6 +284,7 @@ export class ExpensesController {
       lines: [],
       receipts: [],
       custom: expense.custom ?? undefined,
+      deductibility: expense.toDeductibilityResult(),
     };
   }
 

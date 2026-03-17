@@ -1,3 +1,5 @@
+import type { ExpenseDeductibilityResult, ExpenseDeductibilityMeta } from "@corely/contracts";
+
 export type ExpenseStatus = "DRAFT" | "SUBMITTED" | "APPROVED" | "REJECTED" | "PAID";
 
 export class Expense {
@@ -15,7 +17,13 @@ export class Expense {
     public readonly createdAt: Date,
     public archivedAt: Date | null = null,
     public archivedByUserId: string | null = null,
-    public custom: Record<string, unknown> | null = null
+    public custom: Record<string, unknown> | null = null,
+    // DE deductibility (computed on create/update)
+    public deductiblePercent: number | null = null,
+    public deductibleAmountCents: number | null = null,
+    public nonDeductibleAmountCents: number | null = null,
+    public deductibilityRuleKind: string | null = null,
+    public deductibilityMeta: Record<string, unknown> | null = null
   ) {}
 
   archive(now: Date, userId: string) {
@@ -65,5 +73,39 @@ export class Expense {
 
   updateStatus(newStatus: ExpenseStatus) {
     this.status = newStatus;
+  }
+
+  /** Apply computed DE deductibility result to this entity. */
+  applyDeductibility(result: ExpenseDeductibilityResult) {
+    this.deductiblePercent = result.deductiblePercent;
+    this.deductibleAmountCents = result.deductibleAmountCents;
+    this.nonDeductibleAmountCents = result.nonDeductibleAmountCents;
+    this.deductibilityRuleKind = result.ruleKind ?? null;
+    this.deductibilityMeta = (result.meta as Record<string, unknown> | null) ?? null;
+  }
+
+  /** Expose deductibility as a contract DTO slice. */
+  toDeductibilityResult(): ExpenseDeductibilityResult {
+    return {
+      deductiblePercent: this.deductiblePercent,
+      deductibleAmountCents: this.deductibleAmountCents,
+      nonDeductibleAmountCents: this.nonDeductibleAmountCents,
+      ruleKind: (this.deductibilityRuleKind as ExpenseDeductibilityResult["ruleKind"]) ?? null,
+      meta: (this.deductibilityMeta as Record<string, unknown> | null) ?? null,
+    };
+  }
+
+  /** Extract ExpenseDeductibilityMeta stored in custom JSON. */
+  static extractDeductibilityMeta(
+    custom: Record<string, unknown> | null
+  ): ExpenseDeductibilityMeta | null {
+    if (!custom) {
+      return null;
+    }
+    const dm = custom.deductibilityMeta;
+    if (!dm || typeof dm !== "object") {
+      return null;
+    }
+    return dm as ExpenseDeductibilityMeta;
   }
 }

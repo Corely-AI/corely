@@ -48,7 +48,7 @@
     },
     "reset": "Đặt lại",
     "name": "Tên",
-    "email": "Email",
+    "email": "Địa chỉ email",
     "phone": "Số điện thoại",
     "notes": "Ghi chú",
     "details": "Chi tiết",
@@ -80,12 +80,14 @@
     "reason": "Lý do",
     "reasonPlaceholder": "Nhập lý do...",
     "badge": "Huy hiệu",
+    "actions": "Thao tác",
+    "other": "Khác",
     "moreActions": "Thêm thao tác",
     "dangerZone": "Khu vực nguy hiểm",
     "goBack": "Quay lại",
     "phoneShort": "SĐT",
     "emailShort": "Email",
-    "website": "Website",
+    "website": "Trang web",
     "bank": "Ngân hàng",
     "iban": "IBAN",
     "default": "Mặc định",
@@ -93,7 +95,120 @@
     "updated": "Đã cập nhật",
     "notSet": "Chưa thiết lập",
     "done": "Xong",
-    "customFields": "Trường tùy chỉnh"
+    "customFields": "Trường tùy chỉnh",
+    "trial": {
+      "activeTitle": "Dùng thử toàn quyền đang hoạt động: còn {{days}} ngày",
+      "expiringTitle": "Còn {{days}} ngày trong bản dùng thử toàn quyền của bạn",
+      "description": "Không cần thẻ. Chọn gói trả phí trước khi kết thúc dùng thử để duy trì quyền xuất dữ liệu, AI và truy cập nhiều địa điểm.",
+      "cta": "Mở thanh toán",
+      "expiredTitle": "Bản dùng thử 30 ngày của bạn đã kết thúc",
+      "expiredDescription": "Nâng cấp ngay để tiếp tục sử dụng tất cả các tính năng.",
+      "dismiss": "Đóng",
+      "modalTitle": "Bản dùng thử 30 ngày toàn quyền của bạn đã kết thúc",
+      "modalDescription": "Không gian làm việc của bạn hiện sử dụng gói Miễn phí. Dữ liệu lịch sử vẫn khả dụng, nhưng các tính năng xuất dữ liệu, AI và đa địa điểm sẽ bị khóa cho đến khi bạn đăng ký.",
+      "modalLater": "Để sau",
+      "choosePlan": "Chọn gói"
+    }
+  },
+  "onboarding": {
+    "allSet": "Tất cả đã sẵn sàng!",
+    "redirectingToDashboard": "Đang chuyển hướng đến bảng điều khiển...",
+    "saveAndExit": "Lưu & Thoát",
+    "goBack": "Quay lại",
+    "loading": "Đang tải quá trình thiết lập...",
+    "aiAssistant": "Trợ lý AI",
+    "aiTipTitle": "Trợ lý hỗ trợ",
+    "aiHelpTitle": "Bạn cần trợ giúp?",
+    "aiHelpPrompt": "Cần trợ giúp với bước này? Hãy hỏi trợ lý AI của chúng tôi để giải thích hoặc gợi ý bước tiếp theo.",
+    "askAssistant": "Hỏi trợ lý",
+    "businessName": "Tên doanh nghiệp",
+    "businessNamePlaceholder": "v.đ. Bella Beauty Studio",
+    "businessNameRequired": "Tên doanh nghiệp là bắt buộc",
+    "businessType": "Loại hình kinh doanh",
+    "selectType": "Chọn loại hình",
+    "businessTypeRequired": "Danh mục là bắt buộc",
+    "currency": "Tiền tệ",
+    "categories": {
+      "beauty": "Tiệm Nail / Thẩm mỹ",
+      "hair": "Tiệm tóc / Barber",
+      "gastronomy": "Cà phê / Nhà hàng",
+      "retail": "Tiệm bán lẻ",
+      "other": "Khác"
+    },
+    "workflowOptions": {
+      "paper": "Giấy / Sổ tay",
+      "paperDesc": "Chuyển từ sổ tay thủ công sang kỹ thuật số.",
+      "excel": "Excel / Bảng tính",
+      "excelDesc": "Không còn các công thức phức tạp hay ô lỗi.",
+      "pos": "Hệ thống POS",
+      "posDesc": "Kết nối liền mạch POS và sổ quỹ tiền mặt của bạn.",
+      "software": "Phần mềm khác",
+      "softwareDesc": "Nâng cấp lên giải pháp tiền mặt hiện đại hơn."
+    },
+    "workflow": {
+      "insightTitle": "Thông tin cá nhân hóa",
+      "selectHint": "Chọn quy trình trước đây của bạn"
+    },
+    "welcome": {
+      "badge": "Trải nghiệm mới",
+      "footer": "Hỗ trợ bởi Corely AI"
+    },
+    "receipt": {
+      "errorUnsupported": "Tệp không được hỗ trợ. Vui lòng tải lên PDF, JPG hoặc PNG dưới 10MB.",
+      "uploadPrompt": "Nhấp để tải lên hoặc kéo & thả",
+      "uploadHint": "PDF, JPG, PNG (tối đa 10MB)",
+      "skipLabel": "Tôi sẽ thực hiện sau",
+      "successTitle": "Đã đính kèm biên lai!",
+      "successDesc": "Chuyển sang bước tiếp theo...",
+      "continueLabel": "Tiếp tục"
+    },
+    "openingBalance": {
+      "errorAmount": "Vui lòng nhập số tiền hợp lệ",
+      "label": "Số tiền mặt thực tế hiện có trong két",
+      "hint": "💡 Không bao gồm thanh toán thẻ hoặc chuyển khoản ngân hàng. Chỉ tính tiền mặt vật lý.",
+      "importantTip": "Mẹo quan trọng"
+    },
+    "entries": {
+      "errorAmount": "Vui lòng nhập số tiền hợp lệ",
+      "errorNote": "Vui lòng nhập ghi chú",
+      "ctaAdd": "Thêm mục mới",
+      "successTitle": "Giao dịch đã lưu",
+      "successOne": "Tuyệt vời! Bạn đã thêm mục đầu tiên. Hãy thêm một mục nữa nhé.",
+      "typeLabel": "Loại giao dịch",
+      "typeIncome": "Doanh thu tiền mặt",
+      "typeExpense": "Chi phí tiền mặt",
+      "amountLabel": "Số tiền ({{symbol}})",
+      "descLabel": "Mô tả",
+      "descPlaceholder": "v.đ. Cắt tóc hoặc Mua cà phê",
+      "skipSecond": "Bỏ qua mục thứ hai"
+    },
+    "status": {
+      "expectedLabel": "Tiền mặt dự kiến trong két",
+      "incomeLabel": "Thu nhập hôm nay",
+      "expenseLabel": "Chi phí hôm nay",
+      "receiptMissing": "Nhắc nhở: Bạn vẫn chưa đính kèm biên lai đầu tiên. Bạn có thể đính kèm sau trong danh sách giao dịch tiền mặt.",
+      "workflowPaper": "Vì bạn đã dùng sổ tay, chế độ xem này sẽ thay thế việc tính toán thủ công.",
+      "workflowExcel": "Vì bạn đã dùng bảng tính, chế độ xem này giúp cập nhật tổng tiền mặt trực tiếp mà không cần công thức.",
+      "workflowPos": "Vì bạn dùng hệ thống POS, chế độ xem này giúp quản lý tiền mặt và biên lai tập trung tại một nơi.",
+      "workflowSoftware": "Vì bạn đã dùng phần mềm khác, chế độ xem này mang lại cái nhìn tổng quan hàng ngày về tiền mặt.",
+      "receiptReminder": "Nhắc nhở hóa đơn",
+      "tipTitle": "Đây là trạng thái tiền mặt của bạn.",
+      "tipDesc": "Số dư dự kiến của bạn được tự động cập nhật mỗi khi bạn thêm một mục mới. Không còn phải tính toán thủ công vào cuối ngày.",
+      "cta": "Xem bước tiếp theo"
+    },
+    "closing": {
+      "watchTutorial": "Xem hướng dẫn 30 giây",
+      "skipLabel": "Tôi sẽ làm sau"
+    },
+    "postValue": {
+      "inviteTitle": "Mời nhóm của bạn",
+      "inviteDesc": "Cấp quyền cho nhân viên để thêm các giao dịch tiền mặt bằng ứng dụng máy tính bảng.",
+      "inviteAction": "Thêm thành viên",
+      "categoriesTitle": "Danh mục tùy chỉnh",
+      "categoriesDesc": "Thiết lập các danh mục thu chi tùy chỉnh để báo cáo tốt hơn.",
+      "categoriesAction": "Sửa danh mục",
+      "cta": "Chuyển đến bảng điều khiển"
+    }
   },
   "actions": {
     "takeAttendance": "Điểm danh",
@@ -123,11 +238,15 @@
       "filings": "Kê khai",
       "payments": "Thanh toán",
       "documents": "Tài liệu",
-      "settings": "Cài đặt thuế"
+      "settings": "Cài đặt thuế",
+      "reports": "Báo cáo",
+      "annualAssistant": "Trợ lý năm"
     },
     "assistant": "Trợ lý",
+    "billing": "Thanh toán",
     "expenses": "Chi phí",
     "invoices": "Hóa đơn",
+    "registers": "Quầy thu",
     "directory": {
       "restaurants": "Nhà hàng"
     },
@@ -368,30 +487,733 @@
       "accountingMethod": "Phương pháp Kế toán",
       "taxYearStartMonth": "Tháng Bắt đầu Năm Thuế",
       "localTaxOffice": "Cơ quan Thuế Địa phương",
-      "save": "Lưu Hồ sơ Thuế"
+      "save": "Lưu Hồ sơ Thuế",
+      "saveSuccess": "Đã lưu hồ sơ thuế",
+      "saveFailed": "Không lưu được hồ sơ thuế",
+      "vatExemption": "Đoạn miễn thuế VAT",
+      "vatExemptionHelp": "Chọn đoạn miễn trừ có liên quan cho doanh nghiệp của bạn"
     },
     "countries": {
       "de": "Đức"
     },
     "regimes": {
-      "standardVat": "Thuế GTGT Chuẩn"
+      "standardVat": "Thuế GTGT Chuẩn",
+      "smallBusiness": "Doanh nghiệp nhỏ (Kleiunternehmer)",
+      "vatExempt": "Miễn thuế VAT"
     },
     "filing": {
-      "quarterly": "Hàng quý"
+      "quarterly": "Hàng quý",
+      "monthly": "hàng tháng",
+      "yearly": "Hàng năm"
     },
     "accounting": {
       "cashBasis": "Kế toán Tiền mặt",
       "cashBasisHelp": "Doanh thu được ghi nhận khi nhận được tiền mặt",
-      "accrualBasisHelp": "Doanh thu được ghi nhận khi phát sinh, bất kể khi nào nhận được tiền mặt"
+      "accrualBasisHelp": "Doanh thu được ghi nhận khi phát sinh, bất kể khi nào nhận được tiền mặt",
+      "accrualBasis": "Cơ sở dồn tích (Soll-Versteuerung)"
     },
     "placeholders": {
       "vatId": "Nhập mã số thuế của bạn (ví dụ: DE123456789)",
       "month": "Chọn tháng",
-      "localTaxOffice": "Nhập tên cơ quan thuế địa phương của bạn"
+      "localTaxOffice": "Nhập tên cơ quan thuế địa phương của bạn",
+      "country": "Chọn quốc gia",
+      "regime": "Chọn chế độ",
+      "vatExemption": "Chọn đoạn miễn trừ",
+      "filingFrequency": "Chọn tần số",
+      "accountingMethod": "Chọn phương pháp"
     },
     "consultant": {
       "title": "Cố vấn Thuế",
-      "save": "Lưu thông tin cố vấn"
+      "save": "Lưu thông tin cố vấn",
+      "saveSuccess": "Đã lưu thông tin tư vấn",
+      "saveFailed": "Không lưu được thông tin tư vấn"
+    },
+    "submitStep": {
+      "methods": {
+        "manual": "Thủ công",
+        "api": "API",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "Xuất cho ELSTER",
+        "description": "Tải dữ liệu kê khai để tải lên Mein ELSTER. Sau khi nộp trong ELSTER, dán mã chuyển/reference ở bên dưới.",
+        "actions": {
+          "elsterXml": "Xuất ELSTER XML",
+          "kennzifferCsv": "Xuất CSV (Ánh xạ Kennziffer)",
+          "loading": "Đang xuất..."
+        },
+        "unavailable": "Không có xuất ELSTER cho tờ khai này.",
+        "success": {
+          "elsterXml": "Đã tải xuống ELSTER XML",
+          "kennzifferCsv": "Đã tải xuống Kennziffer CSV"
+        },
+        "errors": {
+          "generic": "Không thể xuất tờ khai."
+        }
+      },
+      "connection": {
+        "title": "Phương thức nộp",
+        "connected": "Kết nối nộp tự động đã được cấu hình.",
+        "notConfigured": "Kết nối nộp chưa được cấu hình.",
+        "manageIn": "Quản lý cài đặt nộp trong",
+        "settingsLink": "Cài đặt Thuế",
+        "enableDirectFiling": "để bật nộp trực tiếp."
+      },
+      "confirmation": {
+        "title": "Xác nhận nộp",
+        "method": "Phương thức",
+        "reference": "Mã tham chiếu nộp",
+        "referencePlaceholder": "Nhập mã ID/reference",
+        "submittedAt": "Thời điểm nộp",
+        "notes": "Ghi chú (tùy chọn)",
+        "notesPlaceholder": "Thêm ghi chú cho hồ sơ của bạn",
+        "submit": "Nộp tờ khai"
+      }
+    },
+    "attachments": {
+      "title": "Tài liệu đính kèm",
+      "attachFromDocuments": "Đính kèm từ tài liệu thuế",
+      "uploadAttachment": "Tải tệp đính kèm",
+      "loading": "Đang tải tệp đính kèm...",
+      "error": "Không thể tải tệp đính kèm.",
+      "empty": "Tải lên chứng từ như biên lai hoặc xác nhận nộp.",
+      "untitled": "Tài liệu không tiêu đề",
+      "type": "Loại: {{type}}",
+      "uploadedAt": "Đã tải lên {{date}}",
+      "uploader": "Người tải lên: {{name}}",
+      "remove": "Xóa",
+      "dialog": {
+        "title": "Đính kèm biên lai",
+        "description": "Tải lên chứng từ thanh toán cho tờ khai này.",
+        "replace": "Thay biên lai",
+        "choose": "Chọn biên lai",
+        "noFile": "Chưa chọn tệp",
+        "uploading": "Đang tải lên...",
+        "submit": "Đính kèm biên lai"
+      },
+      "messages": {
+        "uploadSuccess": "Đã tải lên tệp đính kèm",
+        "uploadError": "Không thể tải lên tệp đính kèm",
+        "selectFile": "Chọn biên lai để tải lên"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "Tờ khai VAT",
+        "vat-annual": "Tờ khai VAT năm",
+        "income-annual": "Tờ khai thuế thu nhập năm",
+        "trade": "Tờ khai thuế thương mại",
+        "payroll": "Tờ khai thuế lương",
+        "corporate-annual": "Tờ khai thuế doanh nghiệp năm",
+        "year-end": "Tờ khai cuối năm",
+        "other": "Tờ khai thuế"
+      },
+      "status": {
+        "draft": "Nháp",
+        "needsFix": "Cần xử lý",
+        "readyForReview": "Sẵn sàng rà soát",
+        "submitted": "Đã nộp",
+        "paid": "Đã thanh toán",
+        "archived": "Đã lưu trữ"
+      },
+      "actions": {
+        "review": "Rà soát",
+        "continueReview": "Tiếp tục rà soát",
+        "markPaid": "Đánh dấu đã thanh toán",
+        "view": "Xem",
+        "previousPeriod": "Kỳ trước",
+        "nextPeriod": "Kỳ sau",
+        "recalculate": "Tính lại",
+        "exportPdf": "Xuất PDF",
+        "exportCsv": "Xuất CSV",
+        "delete": "Xóa tờ khai",
+        "deleteConfirmTitle": "Xóa tờ khai?",
+        "deleteConfirmMessage": "Hành động này không thể hoàn tác."
+      },
+      "due": "Hạn nộp {{date}}",
+      "dueWithDays": "Hạn nộp {{date}} • còn {{count}} ngày",
+      "dueWithDays_plural": "Đến hạn {{date}} • Còn {{count}} ngày"
+    },
+    "activity": {
+      "title": "Hoạt động",
+      "loading": "Đang tải hoạt động...",
+      "error": "Không thể tải hoạt động.",
+      "noActivity": "Chưa có hoạt động.",
+      "by": "Bởi {{name}}",
+      "types": {
+        "created": "Đã tạo tờ khai",
+        "recalculated": "Đã tính lại",
+        "submitted": "Đã nộp",
+        "paid": "Đã đánh dấu thanh toán",
+        "attachmentAdded": "Đã thêm tệp đính kèm",
+        "issuesDetected": "Đã phát hiện vấn đề",
+        "issuesResolved": "Đã xử lý vấn đề",
+        "deleted": "Đã xóa"
+      }
+    },
+    "loading": "Đang tải dữ liệu thuế...",
+    "exemptions": {
+      "exportDeliveries": "§ 4 Nr. 1a UStG - Giao hàng xuất khẩu",
+      "intraCommunityDeliveries": "§ 4 Nr. 1b UStG - Giao hàng trong cộng đồng",
+      "financialServices": "§ 4 Nr. 8 UStG - Dịch vụ tài chính",
+      "insuranceServices": "§ 4 Nr. 11 UStG - Dịch vụ bảo hiểm",
+      "lettingLeasing": "§ 4 Nr. 12 UStG - Cho thuê và cho thuê",
+      "medicalServices": "§ 4 Nr. 14 UStG - Dịch vụ y tế",
+      "educationalServices": "§ 4 Nr. 21 UStG - Dịch vụ giáo dục"
+    },
+    "center": {
+      "title": "Trung tâm thuế",
+      "myTaxes": "Thuế của tôi",
+      "freelancerSubtitle": "Quản lý nghĩa vụ thuế freelancer của bạn.",
+      "companySubtitle": "Tổng quan về tuân thủ và nộp thuế của công ty.",
+      "errorLoading": "Lỗi tải Trung tâm Thuế",
+      "errorDescription": "Chúng tôi không thể tải tổng quan về thuế của bạn. Vui lòng thử lại.",
+      "retry": "Thử lại",
+      "reviewNext": "Xem lại hồ sơ tiếp theo",
+      "settings": "Cài đặt",
+      "nextUp": {
+        "title": "Tiếp theo",
+        "allCaughtUp": "Bạn đã bắt kịp tất cả!",
+        "noUpcoming": "Không tìm thấy hồ sơ sắp tới.",
+        "createFiling": "Tạo hồ sơ",
+        "dueDate": "Ngày đáo hạn",
+        "estimatedAmount": "Số tiền ước tính",
+        "reviewFiling": "Xem xét hồ sơ",
+        "viewAll": "Xem tất cả hồ sơ",
+        "overdue": "QUÁ HẠN",
+        "vat": "VAT",
+        "tax": "Thuế"
+      },
+      "annual": {
+        "title": "Hồ sơ hàng năm",
+        "yearendTitle": "Hồ sơ cuối năm và hàng năm",
+        "viewAll": "Xem tất cả",
+        "createForYear": "Tạo cho {{year}}",
+        "noFilings": "Không có hồ sơ hàng năm cho {{year}}",
+        "obligations": "Nghĩa vụ hàng năm.",
+        "status": {
+          "draft": "Bản nháp",
+          "needsFix": "Cần chú ý",
+          "readyForReview": "Sẵn sàng để xem xét",
+          "submitted": "Đã gửi",
+          "paid": "Trả",
+          "archived": "Đã lưu trữ",
+          "openForSubmission": "Mở để nộp",
+          "yearInProgress": "Năm đang tiến hành"
+        },
+        "year": "Năm {{year}}",
+        "estimatedTaxToPay": "Thuế ước tính phải nộp",
+        "reviewAndSubmit": "Xem xét và gửi",
+        "preview": "Xem trước"
+      },
+      "issues": {
+        "title": "Các vấn đề mở",
+        "noIssues": "Không có vấn đề nào được phát hiện. Sổ sách kế toán của bạn có vẻ sạch sẽ!",
+        "items": "mặt hàng",
+        "affected": "ảnh hưởng",
+        "fix": "Sửa chữa",
+        "blocking": "BLOCKIEREND"
+      },
+      "shortcuts": {
+        "title": "Phím tắt",
+        "createFiling": "Tạo hồ sơ",
+        "exportReport": "Xuất báo cáo",
+        "payTaxes": "Nộp thuế",
+        "documents": "Tài liệu"
+      },
+      "snapshot": {
+        "title": "Ảnh chụp nhanh đầu năm ({{year}})",
+        "updated": "Đã cập nhật {{date}}",
+        "noData": "Chưa có dữ liệu."
+      }
+    },
+    "reports": {
+      "title": "Báo cáo thuế",
+      "subtitle": "Theo dõi các tờ khai và nội dung đệ trình sắp tới.",
+      "tabs": {
+        "upcoming": "Báo cáo sắp tới",
+        "submitted": "Đã gửi"
+      },
+      "groups": {
+        "vat": "Kê khai thuế GTGT trước",
+        "compliance": "Tuân thủ (Bán hàng tại EU & Intrastat)",
+        "submitted": "Báo cáo đã gửi"
+      },
+      "actions": {
+        "markSubmitted": "Đánh dấu là đã gửi",
+        "downloadPdf": "Tải xuống bản PDF",
+        "generatingPdf": "Đang tạo PDF...",
+        "downloadStarted": "Đã bắt đầu tải xuống",
+        "pdfPrepared": "PDF đang được chuẩn bị. Hãy thử lại ngay.",
+        "downloadFailed": "Không thể tải xuống bản PDF"
+      },
+      "status": {
+        "loading": "Đang tải báo cáo...",
+        "empty": "Không tìm thấy báo cáo nào."
+      },
+      "types": {
+        "vatAdvance": "Khai báo VAT trước",
+        "vatAnnual": "Báo cáo thuế GTGT hàng năm",
+        "incomeTax": "Thuế thu nhập",
+        "euSales": "Danh sách bán hàng tại EU (ZM)",
+        "intrastat": "Khai báo Intrastat",
+        "tradeTax": "Thuế thương mại (Gewerbesteuer)",
+        "profitLoss": "Báo cáo P&L (EÜR)",
+        "payrollTax": "Thuế tiền lương"
+      },
+      "eur": {
+        "title": "Báo cáo EÜR (Lãi & Lỗ)",
+        "subtitle": "Báo cáo năm theo cơ sở tiền mặt cho khai thuế cá nhân tại Đức.",
+        "status": {
+          "loadingCapabilities": "Đang tải khả năng thuế...",
+          "loadingStatement": "Đang tải báo cáo EÜR..."
+        },
+        "unsupported": {
+          "title": "EÜR chưa khả dụng",
+          "description": "Báo cáo này hiện chỉ hỗ trợ cho workspace cá nhân tại Đức."
+        },
+        "errors": {
+          "capabilitiesTitle": "Không thể tải khả năng thuế",
+          "capabilitiesDescription": "Vui lòng thử lại khi workspace đã sẵn sàng.",
+          "statementTitle": "Không thể tải báo cáo EÜR",
+          "generic": "Tải báo cáo EÜR thất bại."
+        },
+        "summary": {
+          "income": "Thu nhập",
+          "expenses": "Chi phí",
+          "profit": "Lợi nhuận"
+        },
+        "lines": {
+          "title": "Các dòng báo cáo",
+          "columns": {
+            "line": "Dòng",
+            "group": "Nhóm",
+            "amount": "Số tiền"
+          },
+          "groups": {
+            "income": "Thu nhập",
+            "expense": "Chi phí"
+          }
+        },
+        "lineLabels": {
+          "income": {
+            "sales": "Doanh thu bán hàng",
+            "other": "Thu nhập hoạt động khác"
+          },
+          "expense": {
+            "rent": "Chi phí mặt bằng (thuê/tiện ích)",
+            "software": "Phần mềm và gói đăng ký",
+            "travel": "Chi phí đi lại",
+            "marketing": "Quảng cáo và tiếp thị",
+            "professional": "Dịch vụ tư vấn và thuê ngoài",
+            "taxes": "Thuế, phí và lệ phí",
+            "other": "Chi phí hoạt động được khấu trừ khác"
+          }
+        },
+        "generatedAt": "Tạo lúc {{date}}"
+      }
+    },
+    "documents": {
+      "title": "Chứng từ thuế",
+      "subtitle": "Lưu trữ tất cả các tài liệu liên quan đến thuế."
+    },
+    "payments": {
+      "title": "Thanh toán",
+      "subtitle": "Theo dõi các hồ sơ đã thanh toán và đến hạn trong năm.",
+      "exportCsv": "Xuất CSV",
+      "status": {
+        "due": "Quá hạn",
+        "overdue": "Quá hạn",
+        "paid": "Trả"
+      },
+      "types": {
+        "vat": "VAT",
+        "vatAnnual": "VAT hàng năm",
+        "incomeAnnual": "Thuế thu nhập",
+        "trade": "Thuế thương mại",
+        "payroll": "Bảng lương",
+        "corporateAnnual": "Thuế doanh nghiệp",
+        "yearEnd": "Cuối năm",
+        "other": "Khác"
+      },
+      "columns": {
+        "filing": "nộp hồ sơ",
+        "dueDate": "Ngày đến hạn",
+        "amount": "Số lượng",
+        "status": "Trạng thái",
+        "paidDate": "Ngày thanh toán",
+        "method": "Phương pháp",
+        "payable": "Phải trả",
+        "receivable": "Phải thu"
+      },
+      "actions": {
+        "markPaid": "Đánh dấu đã trả tiền",
+        "attachReceipt": "Đính kèm biên nhận",
+        "markedPaid": "Được đánh dấu là đã thanh toán",
+        "markPaidFailed": "Không thể đánh dấu là đã thanh toán",
+        "receiptAttached": "Biên lai đính kèm",
+        "attachReceiptFailed": "Không thể đính kèm biên nhận",
+        "exportFailed": "Không thể xuất thanh toán"
+      },
+      "empty": {
+        "title": "Không có khoản thanh toán nào để theo dõi",
+        "description": "Thanh toán sẽ xuất hiện ở đây sau khi hồ sơ được gửi.",
+        "goToFilings": "Đi đến hồ sơ"
+      },
+      "error": {
+        "title": "Không thể tải thanh toán",
+        "description": "Hãy kiểm tra kết nối của bạn và thử lại."
+      },
+      "sort": {
+        "dueDateSoonest": "Ngày đáo hạn (Sớm nhất)",
+        "dueDateLatest": "Ngày đáo hạn (Mới nhất)",
+        "paidDateNewest": "Ngày thanh toán (Mới nhất)",
+        "paidDateOldest": "Ngày thanh toán (Cũ nhất)",
+        "amountHighLow": "Số tiền (Cao-Thấp)",
+        "amountLowHigh": "Số tiền (Thấp-Cao)"
+      }
+    },
+    "overview": {
+      "title": "Thuế",
+      "greeting": "Chào buổi tối, {{name}}!",
+      "yourTaxes": "Thuế của bạn trong khu vực của bạn",
+      "localOffice": "Văn phòng địa phương: {{name}}",
+      "annualAssistant": "Trợ lý năm",
+      "viewReports": "Xem báo cáo",
+      "taxSettings": "Cài đặt thuế",
+      "currentVatPeriod": "Kỳ VAT hiện tại: {{period}} {{year}}",
+      "estimatedVatDue": "VAT ước tính phải nộp",
+      "notConfigured": "Chưa được định cấu hình",
+      "viewDetails": "Xem chi tiết",
+      "kpis": {
+        "taxesToBePaid": "Thuế phải nộp",
+        "income": "Thu nhập",
+        "expenses": "Chi phí",
+        "vatNotApplicable": "VAT không áp dụng",
+        "completeSetup": "Hoàn tất thiết lập thuế",
+        "seeOverview": "Xem tổng quan về thuế",
+        "unpaidInvoices": "{{count}} hóa đơn chưa thanh toán",
+        "itemsToReview": "{{count}} mục cần xem lại"
+      },
+      "headsUp": "Lưu ý",
+      "settingsIncomplete": "Cài đặt thuế chưa hoàn tất",
+      "settingsIncompleteDescription": "Định cấu hình hồ sơ thuế của bạn để ước tính số tiền bạn nợ.",
+      "goToSettings": "Chuyển đến cài đặt thuế",
+      "expenseHelper": {
+        "title": "Tôi có thể chi phí những gì?",
+        "description": "Tìm hiểu những giao dịch mua nào bạn có thể phân loại là chi phí kinh doanh.",
+        "learnMore": "Tìm hiểu thêm"
+      },
+      "yourReports": "Báo cáo thuế của bạn",
+      "reportsDescription": "Dựa trên thông tin chi tiết của bạn, đây là những báo cáo bạn hiện phải gửi…",
+      "submitReports": "Gửi báo cáo",
+      "upcomingDeadline": "{{count}} thời hạn sắp tới",
+      "upcomingDeadline_plural": "{{count}} thời hạn sắp tới",
+      "noUpcoming": "Không có báo cáo sắp tới.",
+      "localTaxOffice": "Cơ quan thuế địa phương",
+      "addLocalOffice": "Thêm cơ quan thuế địa phương của bạn để giữ cho hồ sơ của bạn luôn đầy đủ.",
+      "updateSettings": "Cập nhật cài đặt",
+      "errorLoading": "Không thể tải thuế",
+      "errorDescription": "Đã xảy ra lỗi khi tìm nạp thông tin tổng quan về thuế của bạn."
+    },
+    "annualAssistant": {
+      "threadTitle": "Thuế thu nhập năm {{year}}",
+      "loading": "Đang chuẩn bị phiên trợ lý thuế năm...",
+      "placeholder": "Hãy yêu cầu tôi tạo bản nháp, tạo EÜR hoặc hướng dẫn bước tiếp theo",
+      "emptyStateTitle": "Thuế Thu Nhập Năm {{year}}",
+      "emptyStateDescription": "Hoàn tất hồ sơ thuế năm ngay trong chat: tạo bản nháp, tạo EÜR, trả lời câu hỏi và xuất PDF.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Tạo bản nháp năm",
+          "value": "Tạo bản nháp thuế thu nhập năm {{year}} cho tôi."
+        },
+        "checklist": {
+          "label": "Xem checklist",
+          "value": "Hiển thị checklist và các blocker của bản nháp."
+        },
+        "export": {
+          "label": "Xuất PDF",
+          "value": "Xuất PDF bản nháp thuế năm của tôi."
+        }
+      },
+      "errors": {
+        "createTitle": "Không thể khởi tạo trợ lý năm",
+        "createDescription": "Không thể tạo thread trợ lý. Vui lòng thử lại."
+      }
+    },
+    "history": {
+      "title": "kỳ tính thuế GTGT",
+      "year": "Năm",
+      "overdueAlert": "Hành động bắt buộc: {{count}} thời gian VAT quá hạn",
+      "overdueDescription": "Khoảng thời gian quá hạn cũ nhất được chọn trước. Bạn vẫn có thể làm việc trong thời gian hiện tại.",
+      "submitOverdue": "Nộp thời gian quá hạn",
+      "noData": "Không có dữ liệu cho năm nay.",
+      "noPeriods": "Không tìm thấy khoảng thời gian nào.",
+      "quarter": "Một phần tư",
+      "selectQuarter": "Chọn quý",
+      "viewDetails": "Xem chi tiết thời gian",
+      "selectedPeriod": "Khoảng thời gian đã chọn: {{label}} ({{range}})",
+      "taxDue": "Thuế phải nộp",
+      "salesVat": "VAT bán hàng",
+      "purchaseVat": "VAT mua hàng",
+      "submittedOn": "Đã gửi vào {{date}}",
+      "reference": "Tham khảo: {{ref}}",
+      "notes": "Ghi chú: {{notes}}",
+      "archiveReason": "Lý do lưu trữ: {{reason}}",
+      "downloadPdf": "Tải xuống bản PDF",
+      "markSubmitted": "Đánh dấu là đã gửi",
+      "markNil": "Đánh dấu là không",
+      "archive": "Lưu trữ",
+      "tabs": {
+        "upcoming": "Báo cáo sắp tới",
+        "submitted": "Báo cáo đã gửi"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Đánh dấu khoảng thời gian là đã gửi",
+          "date": "Ngày nộp hồ sơ",
+          "reference": "Tài liệu tham khảo (tùy chọn)",
+          "notes": "Ghi chú (tùy chọn)",
+          "submit": "Thời gian gửi"
+        },
+        "nil": {
+          "title": "Đánh dấu dấu chấm là không",
+          "date": "Ngày nộp hồ sơ",
+          "notes": "Ghi chú (tùy chọn)",
+          "submit": "Đánh dấu con số không"
+        },
+        "archive": {
+          "title": "Thời gian lưu trữ",
+          "reason": "Lý do",
+          "notes": "Ghi chú (tùy chọn)",
+          "submit": "Thời gian lưu trữ"
+        },
+        "cancel": "Hủy bỏ"
+      },
+      "periodCombobox": {
+        "placeholder": "Chọn hoặc nhập kỳ tính thuế…",
+        "searchPlaceholder": "Tìm hoặc nhập kỳ tính thuế…",
+        "useCustom": "Sử dụng \"{{value}}\"",
+        "customHint": "Nhấn Enter hoặc bấm để dùng kỳ tùy chỉnh này",
+        "noPeriods": "Không tìm thấy kỳ nào.",
+        "customHeading": "Tùy chỉnh",
+        "customPeriod": "Kỳ tùy chỉnh",
+        "quartersHeading": "Theo quý",
+        "monthlyHeading": "Theo tháng",
+        "footerHint": "Nhập {{qExample}} hoặc {{mExample}} để dùng kỳ tùy chỉnh",
+        "quarters": {
+          "1": "Q1",
+          "2": "Q2",
+          "3": "Q3",
+          "4": "Q4"
+        },
+        "quarterMonths": {
+          "1": "Tháng 1 – Tháng 3",
+          "2": "Tháng 4 – Tháng 6",
+          "3": "Tháng 7 – tháng 9",
+          "4": "Tháng 10 – Tháng 12"
+        }
+      },
+      "navigator": {
+        "prevYear": "Năm trước",
+        "nextYear": "Năm tới",
+        "failedToLoad": "Không thể tải kỳ VAT.",
+        "retry": "Thử lại",
+        "notStarted": "Chưa bắt đầu",
+        "noFilingYet": "Chưa có hồ sơ nào cho {{period}} {{year}}.",
+        "createFiling": "Tạo hồ sơ",
+        "status": {
+          "draft": "Bản nháp",
+          "needsFix": "Cần chú ý",
+          "readyForReview": "Sẵn sàng",
+          "submitted": "Đã gửi",
+          "paid": "Trả",
+          "archived": "Đã lưu trữ"
+        }
+      },
+      "attachments": {
+        "title": "Tệp đính kèm",
+        "attachFromDocuments": "Đính kèm từ chứng từ thuế",
+        "uploadAttachment": "Tải lên tệp đính kèm",
+        "loading": "Đang tải tệp đính kèm...",
+        "error": "Không tải được tệp đính kèm.",
+        "empty": "Tải lên các tài liệu hỗ trợ như biên lai hoặc xác nhận gửi.",
+        "untitled": "Tài liệu không có tiêu đề",
+        "type": "Loại: {{type}}",
+        "uploadedAt": "Đã tải lên {{date}}",
+        "uploader": "Người tải lên: {{name}}",
+        "remove": "Di dời",
+        "dialog": {
+          "title": "Đính kèm biên nhận",
+          "description": "Tải lên bằng chứng thanh toán cho việc nộp đơn này.",
+          "replace": "Thay thế biên lai",
+          "choose": "Chọn biên nhận",
+          "noFile": "Không có tập tin nào được chọn",
+          "uploading": "Đang tải lên...",
+          "submit": "Đính kèm biên nhận"
+        },
+        "messages": {
+          "uploadSuccess": "Đã tải tệp đính kèm lên",
+          "uploadError": "Không thể tải lên tệp đính kèm",
+          "selectFile": "Chọn biên nhận để tải lên"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "Nộp thuế VAT",
+          "vat-annual": "Nộp thuế VAT hàng năm",
+          "income-annual": "Nộp thuế thu nhập",
+          "trade": "Nộp thuế thương mại",
+          "payroll": "Nộp thuế tiền lương",
+          "corporate-annual": "Khai thuế doanh nghiệp",
+          "year-end": "Nộp hồ sơ cuối năm",
+          "other": "Nộp thuế"
+        },
+        "status": {
+          "draft": "Bản nháp",
+          "needsFix": "Cần chú ý",
+          "readyForReview": "Sẵn sàng để xem xét",
+          "submitted": "Đã gửi",
+          "paid": "Trả",
+          "archived": "Đã lưu trữ"
+        },
+        "actions": {
+          "review": "Ôn tập",
+          "continueReview": "Tiếp tục xem xét",
+          "markPaid": "Đánh dấu đã trả tiền",
+          "view": "Xem",
+          "previousPeriod": "Kỳ trước",
+          "nextPeriod": "Kỳ tiếp theo",
+          "recalculate": "Tính toán lại",
+          "exportPdf": "Xuất PDF",
+          "exportCsv": "Xuất CSV",
+          "delete": "Xóa hồ sơ",
+          "deleteConfirmTitle": "Xóa hồ sơ?",
+          "deleteConfirmMessage": "Không thể hoàn tác hành động này."
+        },
+        "due": "Đến hạn {{date}}",
+        "dueWithDays": "Đến hạn {{date}} • Còn {{count}} ngày",
+        "dueWithDays_plural": "Đến hạn {{date}} • Còn {{count}} ngày"
+      },
+      "activity": {
+        "title": "Hoạt động",
+        "loading": "Đang tải hoạt động...",
+        "error": "Không thể tải hoạt động.",
+        "noActivity": "Chưa có hoạt động nào.",
+        "by": "Bởi {{name}}",
+        "types": {
+          "created": "Đã tạo hồ sơ",
+          "recalculated": "Tính toán lại",
+          "submitted": "Đã gửi",
+          "paid": "Đã đánh dấu là đã thanh toán",
+          "attachmentAdded": "Đã thêm tệp đính kèm",
+          "issuesDetected": "Đã phát hiện sự cố",
+          "issuesResolved": "Các vấn đề đã được giải quyết",
+          "deleted": "Đã xóa"
+        }
+      },
+      "createFiling": {
+        "title": "Khai thuế mới",
+        "subtitle": "Chọn loại hồ sơ và thời gian để tạo nghĩa vụ mới.",
+        "form": {
+          "details": "chi tiết nộp hồ sơ",
+          "type": "Loại hồ sơ",
+          "selectType": "Chọn loại",
+          "types": {
+            "vat": "Tờ khai thuế GTGT",
+            "income-annual": "Thuế thu nhập (Hàng năm)",
+            "vat-annual": "VAT hàng năm",
+            "other": "Khác"
+          },
+          "year": "Năm tính thuế",
+          "period": "Kỳ tính thuế",
+          "cancel": "Hủy bỏ",
+          "submit": "Tạo hồ sơ",
+          "errors": {
+            "periodRequired": "Kỳ tính thuế là bắt buộc đối với tờ khai VAT",
+            "yearRequired": "Năm là bắt buộc đối với hồ sơ hàng năm"
+          }
+        },
+        "messages": {
+          "successTitle": "Đã tạo hồ sơ",
+          "successDescription": "Đang chuyển hướng đến chi tiết nộp hồ sơ...",
+          "errorTitle": "Lỗi tạo hồ sơ"
+        }
+      },
+      "filingItems": {
+        "error": "Không thể tải các mục.",
+        "emptyTitle": "Không có {{type}} mục nào",
+        "emptyDescription": "Chúng tôi chưa tìm thấy bất kỳ {{type}} mục nào trong khoảng thời gian này.",
+        "table": {
+          "date": "Ngày",
+          "counterparty": "đối tác",
+          "description": "Sự miêu tả",
+          "net": "Mạng lưới",
+          "tax": "Thuế",
+          "gross": "Tổng"
+        }
+      },
+      "includedItems": {
+        "title": "Các mục đi kèm",
+        "emptyTitle": "Không có mục nào được bao gồm",
+        "emptyDescription": "Chúng tôi chưa tìm thấy bất kỳ mục nguồn nào cho hồ sơ này.",
+        "table": {
+          "type": "Kiểu",
+          "date": "Ngày",
+          "counterparty": "đối tác",
+          "category": "Loại",
+          "vatTreatment": "xử lý thuế GTGT",
+          "net": "Mạng lưới",
+          "tax": "Thuế",
+          "gross": "Tổng",
+          "flags": "Cờ"
+        },
+        "badges": {
+          "needsAttention": "Cần chú ý",
+          "ok": "ĐƯỢC RỒI",
+          "noCategory": "Không có danh mục",
+          "noVatTreatment": "Không xử lý thuế GTGT"
+        },
+        "error": "Không thể tải các mục được bao gồm.",
+        "retry": "Thử lại"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Đánh dấu là đã thanh toán",
+          "description": "Ghi lại chi tiết thanh toán và tùy ý đính kèm biên lai."
+        },
+        "form": {
+          "paidAt": "Được thanh toán tại",
+          "method": "Phương pháp",
+          "methods": {
+            "bank-transfer": "Chuyển khoản ngân hàng",
+            "direct-debit": "Ghi nợ trực tiếp",
+            "other": "Khác"
+          },
+          "amount": "Số lượng",
+          "receipt": "Biên lai",
+          "replace": "Thay thế biên lai",
+          "upload": "Tải biên nhận lên",
+          "optional": "Không bắt buộc",
+          "uploading": "Đang tải lên...",
+          "submit": "Đánh dấu đã trả tiền"
+        },
+        "messages": {
+          "uploadError": "Không thể tải lên biên nhận"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "Kỳ VAT được đánh dấu là đã nộp",
+        "submittedError": "Không thể đánh dấu kỳ VAT là đã gửi",
+        "nilSuccess": "Kỳ VAT được đánh dấu là không",
+        "nilError": "Không thể đánh dấu kỳ VAT là không",
+        "archiveSuccess": "Kỳ VAT được lưu trữ",
+        "archiveError": "Không lưu trữ được kỳ VAT",
+        "generatingPdf": "Đang tạo PDF...",
+        "downloadStarted": "Đã bắt đầu tải xuống",
+        "pdfPrepared": "PDF đang được chuẩn bị. Hãy thử lại ngay.",
+        "downloadFailed": "Không thể tải xuống bản PDF"
+      }
     }
   },
   "cashManagement": {
@@ -534,7 +1356,7 @@
           "type": "Loại",
           "direction": "THU/CHI",
           "amount": "Số tiền",
-          "payment": "Thanh toán",
+          "tax": "VAT",
           "source": "Nguồn",
           "balanceAfter": "Số dư sau",
           "beleg": "Chứng từ",
@@ -543,31 +1365,67 @@
         "rowActions": {
           "viewRegister": "Xem quầy thu",
           "reverse": "Đảo bút toán",
-          "addBeleg": "Thêm chứng từ"
+          "addBeleg": "Thêm chứng từ",
+          "downloadBeleg": "Tải chứng từ"
+        },
+        "camera": {
+          "title": "Máy ảnh",
+          "description": "Dùng camera của thiết bị để chụp chứng từ trực tiếp.",
+          "capture": "Chụp ảnh",
+          "switchCamera": "Đổi camera",
+          "unavailable": "Trình duyệt này không hỗ trợ camera.",
+          "permissionDenied": "Quyền truy cập camera đã bị từ chối."
         },
         "createDialog": {
           "title": "Tạo bút toán tiền mặt",
-          "direction": "Hướng",
-          "amount": "Số tiền",
+          "description": "Ghi nhận một bút toán Kassenbuch chỉ dùng tiền mặt với số tiền gộp, chứng từ và VAT khi cần.",
+          "grossAmount": "Số tiền gộp",
           "type": "Loại",
-          "paymentMethod": "Phương thức thanh toán",
-          "description": "Mô tả",
+          "taxCodeRequired": "Mã VAT",
+          "taxCodeOptional": "Mã VAT (tùy chọn)",
+          "noVat": "Không VAT",
+          "taxProfileRequiredTitle": "Cần thiết lập thuế",
+          "taxProfileRequiredDescription": "Hãy chọn cách Kassenbuch này xử lý VAT trước khi ghi nhận các giao dịch bán tiền mặt chịu thuế.",
+          "setupStandardVat": "Dùng VAT chuẩn của Đức",
+          "setupSmallBusiness": "Dùng Kleinunternehmer (không VAT)",
+          "taxSummary": "Tóm tắt VAT",
+          "netAmount": "Số tiền thuần",
+          "taxAmount": "Tiền VAT",
+          "outputVat": "VAT đầu ra",
+          "inputVat": "VAT đầu vào",
+          "salesVatRequiredHint": "Chọn mã VAT dùng cho giao dịch bán tiền mặt này.",
+          "salesVatOptionalHint": "Chọn mã VAT khi giao dịch bán tiền mặt này chịu thuế.",
+          "expenseVatHint": "Chỉ chọn mã VAT đầu vào khi chi phí này có chứng từ hợp lệ để khấu trừ.",
+          "bookingText": "Nội dung bút toán",
+          "documentReference": "Tham chiếu chứng từ / Eigenbeleg",
+          "documentReferencePlaceholder": "Số chứng từ, số hóa đơn hoặc lý do",
+          "documentReferenceHint": "Nhập tham chiếu chứng từ hoặc tải lên chứng từ. Chỉ số dư đầu ngày mới có thể để trống.",
           "occurredAt": "Thời điểm phát sinh",
-          "attachBelegDocumentId": "Đính kèm document ID chứng từ (tùy chọn)",
-          "documentPlaceholder": "doc_...",
+          "attachBeleg": "Đính kèm chứng từ (tùy chọn)",
+          "chooseAttachment": "Chọn tệp",
+          "takePicture": "Chụp ảnh",
+          "replaceAttachment": "Thay tệp",
+          "noAttachment": "Chưa chọn tệp",
           "projectedBalance": "Số dư dự kiến sau khi lưu",
           "failed": "Không thể tạo bút toán.",
-          "save": "Lưu bút toán"
+          "save": "Lưu bút toán",
+          "uploading": "Đang tải lên..."
         },
         "reverseDialog": {
           "title": "Đảo bút toán",
+          "description": "Đảo bút toán tiền mặt đã ghi sổ này với một lý do có thể kiểm toán được.",
           "reason": "Lý do",
           "failed": "Không thể đảo bút toán.",
           "confirm": "Xác nhận đảo"
         },
         "attachmentDialog": {
           "title": "Thêm chứng từ vào bút toán",
-          "documentId": "ID tài liệu",
+          "description": "Tải lên tệp chứng từ hoặc chụp ảnh để đính kèm chứng từ hỗ trợ cho bút toán tiền mặt này.",
+          "file": "Tệp chứng từ",
+          "uploadFile": "Tải tệp lên",
+          "replaceFile": "Thay tệp",
+          "takePicture": "Chụp ảnh",
+          "noFile": "Chưa chọn tệp",
           "failed": "Không thể đính kèm chứng từ.",
           "attach": "Đính kèm"
         }
@@ -706,6 +1564,12 @@
     "toolCall": "Đang chạy {{toolName}}...",
     "send": "Gửi",
     "sending": "Đang gửi...",
+    "attachments": {
+      "add": "Thêm tệp",
+      "remove": "Xóa tệp",
+      "invalidType": "{{name}} không được hỗ trợ. Chỉ chấp nhận tệp hình ảnh và PDF.",
+      "tooLarge": "{{name}} quá lớn. Kích thước tối đa là {{maxSize}}."
+    },
     "suggestions": {
       "extractReceipt": {
         "label": "Trích xuất biên lai và tạo chi phí",
@@ -782,6 +1646,137 @@
       "hardware": "Phần cứng",
       "phone_internet": "Điện thoại/Internet",
       "other": "Khác"
+    },
+    "notifications": {
+      "created": "Đã tạo chi phí",
+      "updated": "Đã cập nhật chi phí",
+      "deleted": "Đã xóa chi phí",
+      "deleteFailed": "Không thể xóa chi phí",
+      "saveFailed": "Không thể lưu chi phí",
+      "loadFailed": "Không thể tải danh sách chi phí",
+      "receiptAttachPartial": "{{successMessage}}, nhưng {{count}} tệp biên lai không thể đính kèm"
+    },
+    "list": {
+      "subtitle": "Theo dõi và quản lý các khoản chi",
+      "noExpensesDescription": "Tạo chi phí đầu tiên để bắt đầu theo dõi.",
+      "selectedCount": "Đã chọn {{count}}",
+      "deleteSelected": "Xóa mục đã chọn",
+      "deleteSelectedTitle": "Xóa các chi phí đã chọn",
+      "deleteSelectedDescription": "Các chi phí đã chọn sẽ được lưu trữ.",
+      "selectAll": "Chọn tất cả",
+      "selectExpense": "Chọn chi phí {{id}}",
+      "deductiblePercent": "% được khấu trừ",
+      "deleteExpenseTitle": "Xóa chi phí",
+      "deleteExpenseDescription": "Chi phí sẽ được lưu trữ và gỡ khỏi danh sách.",
+      "pageInfo": "Trang {{page}} / {{totalPages}}",
+      "dimensionLabel": "Chiều dữ liệu",
+      "customLabel": "Tùy chỉnh",
+      "ruleKind": {
+        "perDiem": "phụ cấp",
+        "mixedUse": "dùng chung",
+        "gift": "quà tặng"
+      },
+      "sort": {
+        "dateNewest": "Ngày (Mới nhất)",
+        "dateOldest": "Ngày (Cũ nhất)",
+        "amountHighLow": "Số tiền (Cao-Thấp)",
+        "amountLowHigh": "Số tiền (Thấp-Cao)",
+        "createdNewest": "Tạo lúc (Mới nhất)"
+      }
+    },
+    "detail": {
+      "overview": "Tổng quan",
+      "taxDeductibility": "Khấu trừ thuế (DE)",
+      "deductiblePercentLabel": "Khấu trừ {{percent}}%",
+      "needsMoreInfo": "Cần thêm thông tin",
+      "deductible": "Được khấu trừ",
+      "nonDeductible": "Không được khấu trừ",
+      "fillRequiredFields": "Điền các trường bắt buộc khi chỉnh sửa chi phí để tính mức khấu trừ.",
+      "notComputed": "Chưa tính mức khấu trừ. Hãy sửa chi phí để kích hoạt tính toán.",
+      "attachReceipts": "Đính kèm biên lai để xem tại đây.",
+      "auditTrail": "Lịch sử thay đổi sẽ hiển thị tại đây khi sẵn sàng.",
+      "backToExpenses": "Quay lại danh sách chi phí",
+      "notFound": "Không tìm thấy chi phí.",
+      "noNotes": "Chưa có ghi chú.",
+      "transitionSoon": "Chuyển sang {{to}} sẽ sớm có",
+      "actionSoon": "Thao tác {{action}} sẽ sớm có",
+      "ruleKind": {
+        "percent": "Tỷ lệ cố định",
+        "giftThreshold": "Ngưỡng quà tặng",
+        "perDiem": "Phụ cấp",
+        "mixedUse": "Dùng chung"
+      }
+    },
+    "form": {
+      "editTitle": "Sửa chi phí",
+      "create": "Tạo chi phí",
+      "selectCategory": "Chọn danh mục",
+      "selectCategoryHint": "Chọn danh mục để xem quy tắc khấu trừ.",
+      "merchantPlaceholder": "ví dụ: Restaurant Zum Hirsch",
+      "taxDeductibilityTitle": "Khấu trừ thuế (DE)",
+      "participants": "Người tham gia",
+      "participantsPlaceholder": "ví dụ: Max Muller, Julia Schneider",
+      "participantsHint": "Bắt buộc cho khấu trừ chi phí tiếp khách (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "Mục đích công việc",
+      "businessOccasionPlaceholder": "ví dụ: họp khởi động Q1, đàm phán đối tác",
+      "clientMealsHint": "Khấu trừ thuế thu nhập 70%. Khấu trừ VAT có thể khác; vui lòng hỏi tư vấn thuế.",
+      "giftRecipient": "Người nhận quà",
+      "giftRecipientPlaceholder": "ví dụ: Acme Corp / Hans Muller",
+      "giftRecipientHint": "Quà tặng cho cùng một người nhận vượt EUR 50/năm sẽ có mức khấu trừ 0% (§4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "Tỷ lệ dùng cho công việc %",
+      "businessUsePercentPlaceholder": "ví dụ: 60",
+      "businessUsePercentHint": "% dùng cho công việc",
+      "travelDetails": "Chi tiết công tác (phụ cấp - DE 2026)",
+      "travelDate": "Ngày công tác",
+      "absenceHours": "Số giờ vắng mặt",
+      "absenceHoursPlaceholder": "ví dụ: 10",
+      "travelHint": ">=8h vắng mặt: khấu trừ EUR 14 - 24h: khấu trừ EUR 28 (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Số ngày làm việc tại nhà",
+      "homeOfficeDaysPlaceholder": "ví dụ: 30",
+      "days": "ngày",
+      "homeOfficeHint": "EUR 6/ngày - tối đa EUR 1.260/năm (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "Danh mục chi phí này có mức",
+      "nonDeductibleWarningStrong": "khấu trừ thuế thu nhập 0%",
+      "nonDeductibleWarningSuffix": "theo luật thuế Đức.",
+      "receiptOptional": "Biên lai (tùy chọn)",
+      "addReceiptFiles": "Thêm tệp biên lai",
+      "uploadReceiptHint": "Tải ảnh hoặc PDF biên lai ngay bây giờ. Chúng sẽ được đính kèm khi bạn lưu.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: chỉ cho phép ảnh và PDF",
+        "fileTooLarge": "{{name}}: vượt quá giới hạn 10MB"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "Khấu trừ {{percent}}%",
+        "mixedUse": "Khấu trừ {{percent}}% (dùng chung)",
+        "enterBusinessUse": "Nhập % dùng cho công việc",
+        "perDiemServer": "Phụ cấp (tính ở server)",
+        "homeOfficeRate": "Mức cố định EUR 6/ngày",
+        "giftThreshold": "Tối đa EUR 50/người nhận/năm - cần người nhận"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Tiếp khách - 70%",
+        "MEALS_TEAM_EMPLOYEE": "Ăn uống nhân viên - 100%",
+        "GIFTS_BUSINESS_PARTNER": "Quà tặng đối tác - tối đa EUR 50",
+        "GIFTS_PROMO_STREUARTIKEL": "Quà tặng khuyến mãi (<=EUR 10) - 100%",
+        "FINES_PENALTIES": "Phạt và chế tài - 0%",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Đồng phục/đồ bảo hộ - 100%",
+        "CLOTHING_CIVILIAN": "Trang phục dân dụng - 0%",
+        "TRAVEL_MEALS_PER_DIEM": "Phụ cấp bữa ăn công tác (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Mức cố định làm việc tại nhà (EUR 6/ngày)",
+        "PHONE_INTERNET": "Điện thoại / Internet (dùng chung)",
+        "CAR": "Ô tô (dùng chung)",
+        "HOME_INTERNET": "Internet tại nhà (dùng chung)",
+        "office_supplies": "Văn phòng phẩm - 100%",
+        "software": "Phần mềm - 100%",
+        "travel": "Du lịch - 100%",
+        "meals": "Ăn uống - 70%",
+        "home_office": "Văn phòng tại nhà - 100%",
+        "education": "Đào tạo - 100%",
+        "hardware": "Phần cứng - 100%",
+        "phone_internet": "Điện thoại/Internet (dùng chung)",
+        "other": "Khác"
+      }
     }
   },
   "invoices": {
@@ -1246,6 +2241,7 @@
   "auth": {
     "signin": {
       "title": "Đăng nhập vào tài khoản của bạn",
+      "subtitle": "Đăng nhập để quản lý sổ quỹ và các thao tác trong ngày.",
       "rememberMe": "Ghi nhớ tôi",
       "forgotPassword": "Quên mật khẩu?",
       "cta": "Đăng nhập",
@@ -1254,6 +2250,7 @@
     },
     "signup": {
       "title": "Tạo tài khoản của bạn",
+      "subtitle": "Đăng ký để bắt đầu quản lý quy trình tiền mặt.",
       "cta": "Đăng ký",
       "creating": "Đang tạo tài khoản...",
       "hasAccount": "Đã có tài khoản?"
@@ -1277,10 +2274,12 @@
       "confirmLabel": "Xác nhận mật khẩu"
     },
     "fields": {
+      "fullName": "Họ và tên",
       "email": "Địa chỉ email",
       "password": "Mật khẩu"
     },
     "placeholders": {
+      "fullName": "Họ và tên",
       "email": "Địa chỉ email",
       "password": "Mật khẩu",
       "passwordMin": "Tối thiểu 6 ký tự"
@@ -1704,6 +2703,113 @@
       "messageLogged": "Đã ghi nhận tin nhắn",
       "createDraftFailed": "Không thể tạo bản nháp",
       "logFailed": "Không thể ghi nhận tin nhắn"
+    },
+    "accounts": {
+      "title": "Tài khoản",
+      "new": "Tài khoản mới",
+      "searchPlaceholder": "Tìm tài khoản...",
+      "emptyTitle": "Không tìm thấy tài khoản",
+      "emptyDescription": "Tạo tài khoản mới để bắt đầu.",
+      "noContactInfo": "Không có thông tin liên hệ",
+      "status": {
+        "active": "Đang hoạt động",
+        "inactive": "Không hoạt động",
+        "prospect": "Tiềm năng"
+      },
+      "type": {
+        "customer": "Khách hàng",
+        "vendor": "Nhà cung cấp",
+        "partner": "Đối tác",
+        "other": "Khác"
+      }
+    },
+    "accountForm": {
+      "newTitle": "Tài khoản mới",
+      "editTitle": "Sửa tài khoản",
+      "identityTitle": "Thông tin định danh",
+      "identityDescription": "Thông tin liên hệ được lưu trong bản ghi Party",
+      "accountNameRequired": "Tên tài khoản *",
+      "websitePlaceholder": "https://...",
+      "industry": "Ngành",
+      "profileTitle": "Hồ sơ CRM",
+      "profileDescription": "Các trường dành cho bán hàng",
+      "accountType": "Loại tài khoản",
+      "create": "Tạo tài khoản",
+      "update": "Cập nhật tài khoản"
+    },
+    "contactForm": {
+      "newTitle": "Liên hệ mới",
+      "editTitle": "Sửa liên hệ",
+      "detailsTitle": "Chi tiết liên hệ",
+      "create": "Tạo liên hệ",
+      "update": "Cập nhật liên hệ",
+      "createFailed": "Không thể tạo liên hệ",
+      "updateFailed": "Không thể cập nhật liên hệ"
+    },
+    "sequences": {
+      "new": "Chuỗi mới",
+      "setupTitle": "Thiết lập chuỗi",
+      "applyPreset": "Áp dụng preset Nails 3 bước",
+      "created": "Đã tạo chuỗi",
+      "createFailed": "Không thể tạo chuỗi",
+      "nameRequired": "Tên chuỗi là bắt buộc",
+      "addAtLeastOneStep": "Thêm ít nhất một bước",
+      "stepTitle": "Bước {{step}}",
+      "removeStep": "Xóa bước {{step}}",
+      "stepType": "Loại bước",
+      "dayDelay": "Trễ theo ngày",
+      "stepSubject": "Tiêu đề bước",
+      "stepBody": "Nội dung bước",
+      "addStep": "Thêm bước",
+      "create": "Tạo chuỗi",
+      "creating": "Đang tạo...",
+      "stepTypes": {
+        "task": "Nhiệm vụ",
+        "call": "Cuộc gọi",
+        "emailManual": "Email thủ công",
+        "emailAuto": "Email tự động"
+      },
+      "nailsPreset": {
+        "name": "Lead to Won - Nails",
+        "description": "Email follow-up tự động ngày 1/3/7 cho lead Nails."
+      }
+    },
+    "emailSettings": {
+      "title": "Cài đặt Email CRM",
+      "subtitle": "Cấu hình Resend cho email chuỗi tự động và phản hồi đến.",
+      "defaultDisplayName": "CRM Resend",
+      "saved": "Đã lưu cài đặt email CRM",
+      "connectionValid": "Kết nối Resend hợp lệ",
+      "connectionTitle": "Kết nối Resend",
+      "connectionDescription": "Email gửi đi dùng địa chỉ người gửi đã cấu hình. Email chuỗi mặc định dùng",
+      "connectionName": "Tên kết nối",
+      "fromAddress": "Địa chỉ gửi",
+      "replyToAddress": "Địa chỉ trả lời",
+      "apiKeyLabel": "API key",
+      "apiKeyLeaveBlank": "để trống để giữ key hiện tại",
+      "apiKeyPlaceholder": "re_...",
+      "testConnection": "Kiểm tra kết nối",
+      "noWorkspace": "Chưa chọn workspace đang hoạt động.",
+      "inboundWebhookTitle": "Webhook Inbound",
+      "inboundWebhookDescription": "Cấu hình URL này trong phần inbound webhook của Resend.",
+      "tenantResolution": "Tenant được nhận diện tự động. Tùy chọn fallback: thêm",
+      "setupGuideTitle": "Hướng dẫn thiết lập Resend",
+      "setupGuideDescription": "Dùng đúng các cài đặt này để theo dõi phản hồi CRM.",
+      "guide": {
+        "step1": "Mở Resend Dashboard -> Webhooks -> Add webhook.",
+        "step2": "Đặt Endpoint URL thành giá trị ở trên.",
+        "step3": "Trong Event types, chỉ chọn",
+        "step4": "Không chọn contact/domain events cho webhook CRM này.",
+        "localhostNotePrefix": "Lưu ý localhost: Resend không thể gọi trực tiếp",
+        "localhostNoteSuffix": ". Khi test local, hãy public API bằng tunnel và dùng URL HTTPS đó làm webhook endpoint."
+      },
+      "errors": {
+        "selectWorkspace": "Hãy chọn workspace trước khi lưu cài đặt email.",
+        "apiKeyRequired": "Cần API key Resend cho lần thiết lập đầu tiên.",
+        "saveFailed": "Không thể lưu cài đặt",
+        "saveConnectionFirst": "Hãy lưu kết nối Resend trước.",
+        "connectionTestFailed": "Kiểm tra kết nối thất bại"
+      }
     }
   },
   "classes": {
@@ -1939,5 +3045,408 @@
     "manage": "Quản lý",
     "confirmDeactivate": "Bạn có chắc chắn muốn hủy kích hoạt tổ chức này không? Người dùng sẽ không thể đăng nhập được nữa.",
     "confirmActivate": "Bạn có chắc chắn muốn kích hoạt tổ chức này không?"
+  },
+  "billing": {
+    "title": "Gói và thanh toán",
+    "subtitle": "Gói hiện tại, mức sử dụng sổ quỹ, và hướng nâng cấp tiếp theo cho tiệm.",
+    "currentPlan": "Gói hiện tại",
+    "planStatus": "Trạng thái gói",
+    "billingActions": "Tác vụ thanh toán",
+    "usage": "Sử dụng trong kỳ này",
+    "planCatalog": "Các gói hiện có",
+    "manageBilling": "Quản lý thanh toán",
+    "upgradePlan": "Nâng cấp gói",
+    "currentPlanBadge": "Gói hiện tại",
+    "noLimit": "Không giới hạn",
+    "billedMonthly": "Tính phí hàng tháng",
+    "active": "Đang hoạt động",
+    "period": "Kỳ hiện tại",
+    "unavailable": "Không có trong gói này",
+    "loading": "Đang tải thông tin thanh toán...",
+    "loadFailed": "Không thể tải thông tin thanh toán lúc này.",
+    "openPortalDescription": "Mở cổng thanh toán để cập nhật thẻ hoặc quản lý đăng ký.",
+    "checkoutDescription": "Nâng cấp qua Stripe Checkout được lưu trữ. Corely vẫn giữ catalog gói và logic sử dụng.",
+    "featureAccess": "Quyền truy cập tính năng",
+    "recommendedTitle": "Cần thêm giới hạn?",
+    "recommendedDescription": "Nâng cấp khi tiệm cần xuất dữ liệu, trợ lý AI, hoặc nhiều địa điểm.",
+    "startTrial": "Bắt đầu dùng thử 30 ngày",
+    "trialTitle": "Bắt đầu 30 ngày dùng thử đầy đủ",
+    "noCardRequired": "Không cần thẻ",
+    "trialDescription": "Workspace được mở đầy đủ tính năng Multi-location trong 30 ngày, sau đó sẽ trở về gói Free nếu chưa đăng ký.",
+    "trialActive": "Còn {{daysRemaining}} ngày trong dùng thử đầy đủ tính năng.",
+    "trialExpiring": "Còn {{daysRemaining}} ngày. Hãy chọn gói ngay bây giờ để giữ xuất dữ liệu, AI, và nhiều địa điểm.",
+    "trialExpired": "Dùng thử đầy đủ đã kết thúc",
+    "trialExpiredDescription": "Workspace hiện đã trở về gói Free. Dữ liệu cũ vẫn được giữ, nhưng xuất dữ liệu, AI và địa điểm bổ sung đã bị khóa cho tới khi đăng ký.",
+    "upgradeNow": "Chọn gói",
+    "afterTrialTitle": "Sau dùng thử sẽ thay đổi gì",
+    "afterTrialDescription": "Corely vẫn giữ toàn bộ dữ liệu cũ. Sau 30 ngày, workspace chuyển về Free và mức sử dụng mới theo giới hạn tháng của Free.",
+    "trialStarted": "Đã bắt đầu dùng thử",
+    "trialStartFailed": "Không thể bắt đầu dùng thử lúc này.",
+    "pricePerMonth": "{{price}} / tháng",
+    "remaining": "Còn {{count}}",
+    "featuredPlanNameFallback": "Nâng cấp",
+    "featuredTitleFree": "Nâng cấp để mở xuất dữ liệu, AI và hóa đơn không giới hạn",
+    "featuredTitlePaid": "Duy trì đầy đủ tính năng",
+    "featuredDescriptionFallback": "Kiểm soát sổ quỹ toàn diện với xuất dữ liệu, trợ lý AI và hỗ trợ nhiều địa điểm.",
+    "featuredFootnoteFree": "Bút toán và hóa đơn không giới hạn, kèm xuất dữ liệu, trợ lý AI và nhiều địa điểm.",
+    "featuredFootnotePaid": "Giữ xuất dữ liệu, AI và nhiều địa điểm luôn sẵn sàng cho nhóm của bạn.",
+    "statusLabels": {
+      "free": "Miễn phí",
+      "active": "Đang hoạt động",
+      "trialing": "Đang dùng thử",
+      "past_due": "Quá hạn",
+      "canceled": "Đã hủy",
+      "incomplete": "Chưa hoàn tất",
+      "incomplete_expired": "Hết hạn khi chưa hoàn tất",
+      "unpaid": "Chưa thanh toán"
+    },
+    "usageMetrics": {
+      "entries": "Bút toán tiền mặt trong kỳ này",
+      "receipts": "Hóa đơn trong kỳ này"
+    },
+    "usageNudges": {
+      "entries": "Nâng cấp để có bút toán tiền mặt không giới hạn và xuất dữ liệu.",
+      "receipts": "Nâng cấp để có hóa đơn không giới hạn và xuất dữ liệu."
+    },
+    "plans": {
+      "free": {
+        "name": "Miễn phí",
+        "summary": "Dành cho một địa điểm salon đang bắt đầu với kiểm soát tiền mặt cơ bản hằng ngày.",
+        "highlights": {
+          "0": "1 địa điểm",
+          "1": "30 bút toán mỗi tháng",
+          "2": "10 hóa đơn mỗi tháng",
+          "3": "Không xuất dữ liệu",
+          "4": "Không có trợ lý AI"
+        }
+      },
+      "starter-monthly": {
+        "name": "Starter",
+        "summary": "Vận hành sổ quỹ hằng ngày không giới hạn cho một địa điểm.",
+        "highlights": {
+          "0": "1 địa điểm",
+          "1": "Bút toán không giới hạn",
+          "2": "Hóa đơn không giới hạn",
+          "3": "Đóng sổ hằng ngày",
+          "4": "Xuất dữ liệu theo tháng"
+        }
+      },
+      "pro-monthly": {
+        "name": "Pro",
+        "summary": "Bổ sung trợ lý AI và phát hiện vấn đề nâng cao cho một địa điểm.",
+        "highlights": {
+          "0": "Bao gồm mọi thứ trong Starter",
+          "1": "Trợ lý AI",
+          "2": "AI đa ngôn ngữ",
+          "3": "Phát hiện vấn đề",
+          "4": "Hướng dẫn đóng sổ"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Nhiều địa điểm",
+        "summary": "Dành cho chuỗi salon quản lý nhiều địa điểm và nhiều nhóm.",
+        "highlights": {
+          "0": "Bao gồm mọi thứ trong Pro",
+          "1": "Nhiều địa điểm",
+          "2": "Truy cập theo nhóm",
+          "3": "Tổng quan hợp nhất"
+        }
+      }
+    },
+    "usageLabels": {
+      "usedOf": "Đã dùng {{used}} / {{limit}}",
+      "currentPeriod": "Kỳ hiện tại"
+    },
+    "featureLabels": {
+      "maxLocations": "Địa điểm",
+      "maxEntriesPerMonth": "Bút toán tiền mặt",
+      "maxReceiptsPerMonth": "Hóa đơn",
+      "canExport": "Xuất tháng",
+      "dailyClosing": "Đóng sổ hàng ngày",
+      "aiAssistant": "Trợ lý AI",
+      "multilingualAiHelp": "AI đa ngôn ngữ",
+      "issueDetection": "Phát hiện vấn đề",
+      "closingGuidance": "Hướng dẫn đóng ngày",
+      "teamAccess": "Truy cập nhóm",
+      "consolidatedOverview": "Tổng quan hợp nhất"
+    }
+  },
+  "cashDashboard": {
+    "headerTitle": "Bảng điều khiển tiền mặt",
+    "headerSubtitle": "Kiểm soát tiền mặt và hóa đơn hàng ngày cho salon.",
+    "previewLabel": "Trạng thái mẫu",
+    "previewStates": {
+      "open": "Ngày đang mở",
+      "ready": "Sẵn sàng đóng ngày",
+      "closed": "Đã đóng và sẵn sàng xuất"
+    },
+    "banner": {
+      "open": "Sổ quỹ hôm nay vẫn đang mở",
+      "receiptsMissing": "Còn thiếu {{count}} hóa đơn",
+      "closeNow": "Bạn có thể đóng ngay bây giờ",
+      "monthReady": "Tháng này đã sẵn sàng để xuất",
+      "closedToday": "Hôm nay đã được đóng",
+      "staleTitle": "Đang hiển thị dữ liệu đồng bộ gần nhất",
+      "staleDescription": "Hệ thống vẫn đang đồng bộ. Hãy kiểm tra các giao dịch mới nhất trước khi đóng ngày."
+    },
+    "actions": {
+      "addEntry": "Thêm giao dịch tiền mặt",
+      "openEntries": "Mở danh sách giao dịch",
+      "closeDay": "Đóng sổ quỹ hôm nay",
+      "exportMonth": "Xuất cho kế toán",
+      "openRegister": "Mở quỹ",
+      "attachReceipt": "Gắn hóa đơn",
+      "reviewEntries": "Kiểm tra giao dịch",
+      "seeAll": "Xem tất cả",
+      "edit": "Sửa",
+      "reverse": "Đảo giao dịch",
+      "viewDetails": "Chi tiết",
+      "attachNow": "Gắn ngay",
+      "createFirstEntry": "Tạo giao dịch đầu tiên",
+      "openBilling": "Mở thanh toán",
+      "upgradeToStarter": "Nâng cấp lên Starter",
+      "upgradeToPro": "Nâng cấp lên Pro"
+    },
+    "labels": {
+      "openingBalance": "Số dư đầu ngày",
+      "cashInToday": "Tiền vào hôm nay",
+      "cashOutToday": "Tiền ra hôm nay",
+      "expectedBalance": "Số dư dự kiến",
+      "countedCash": "Tiền đếm thực tế",
+      "difference": "Chênh lệch",
+      "missingReceipts": "Hóa đơn thiếu",
+      "dailyClosing": "Trạng thái đóng ngày",
+      "todaysCashStatus": "Tình trạng tiền mặt hôm nay",
+      "actionRequired": "Việc cần làm",
+      "recentEntries": "Giao dịch gần đây",
+      "receiptStatus": "Tình trạng hóa đơn",
+      "closingWorkflow": "Quy trình đóng ngày",
+      "exportStatus": "Tình trạng xuất tháng",
+      "trendOverview": "Tổng quan vận hành",
+      "privateDeposits": "Nộp tiền cá nhân",
+      "privateWithdrawals": "Rút tiền cá nhân",
+      "lastClosedDate": "Ngày đóng gần nhất",
+      "closedBy": "Người đóng quỹ",
+      "responsibleToday": "Người phụ trách hôm nay",
+      "currentMonth": "Tháng hiện tự",
+      "entriesCompleted": "Giao dịch đã hoàn tất",
+      "lastExport": "Lần xuất gần nhất",
+      "status": "Trạng thái",
+      "time": "Giờ",
+      "type": "Loại",
+      "amount": "Số tiền",
+      "note": "Ghi chú",
+      "receipt": "Hóa đơn",
+      "rowActions": "Thao tác",
+      "attachedToday": "Đã gắn hôm nay",
+      "missingToday": "Thiếu hôm nay",
+      "missingThisMonth": "Thiếu trong tháng",
+      "weekIncome": "Tiền vào tuần nay",
+      "weekExpenses": "Tiền ra tuần nay",
+      "openDays": "Ngày chưa đóng",
+      "monthVsLastMonth": "Tháng này so với tháng trước",
+      "exportChecklistDays": "Tất cả ngày cần thiết đã đóng",
+      "exportChecklistReceipts": "Tất cả hóa đơn cần thiết đã được gắn",
+      "exportChecklistReview": "Không còn mục quan trọng cần kiểm tra",
+      "helperWidget": "Cần hỗ trợ?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "Bao gồm {{deposit}} nộp tiền cá nhân và {{withdrawal}} rút tiền cá nhân.",
+      "countNotEntered": "Chưa nhập",
+      "differenceBalanced": "Không có chênh lệch",
+      "differenceOver": "Thừa {{amount}}",
+      "differenceShort": "Thiếu {{amount}}",
+      "statusOpen": "Đang mở",
+      "statusNeedsReview": "Cần kiểm tra",
+      "statusReadyToClose": "Sẵn sàng đóng",
+      "statusClosed": "Đã đóng",
+      "monthExportReady": "Sẵn sàng xuất",
+      "exportBlockedReceipts": "Bị chặn do thiếu hóa đơn",
+      "exportBlockedDays": "Bị chặn do còn ngày chưa đóng",
+      "exportBlockedReview": "Bị chặn do còn mục cần kiểm tra",
+      "exportAlreadyGenerated": "Đã xuất rồi",
+      "receiptsComplete": "Kiểm tra hóa đơn hôm nay đã hoàn tất.",
+      "receiptsIncomplete": "Hôm nay vẫn còn {{count}} mục hóa đơn cần xử lý.",
+      "noActionNeeded": "Hiện tại không có việc gấp",
+      "noActionDescription": "Sổ quỹ hôm nay đã ổn. Bạn có thể tiếp tục ghi giao dịch hoặc xuất tháng.",
+      "noEntriesTitle": "Hôm nay chưa có giao dịch tiền mặt",
+      "noEntriesDescription": "Bắt đầu bằng số dư đầu ngày hoặc ghi giao dịch tiền mặt đầu tiên của salon.",
+      "loadingTitle": "Đang chuẩn bị tổng quan hôm nay",
+      "loadingDescription": "Đang lấy giao dịch, hóa đơn và tín hiệu đóng ngày."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "{{count}} giao dịch đang thiếu hóa đơn",
+      "missingReceiptsDescription": "Gắn hóa đơn trước khi đóng ngày hoặc xuất dữ liệu cho kế toán.",
+      "closeDayTitle": "Sổ quỹ hôm nay chưa đóng",
+      "closeDayDescription": "Đếm tiền trong ngăn kéo và xác nhận số dư cuối ngày để hoàn tất hôm nay.",
+      "missingNotesTitle": "{{count}} chi tiêu tiền mặt thiếu ghi chú",
+      "missingNotesDescription": "Thêm ghi chú ngắn gọn để sau này vẫn dễ hiểu giao dịch đã dùng vào việc gì.",
+      "openDaysTitle": "Còn {{count}} ngày chưa đóng trong tuần nay",
+      "openDaysDescription": "Đóng các ngày còn mở để có thể xuất tháng mà không cần sửa lại.",
+      "reviewTitle": "{{count}} giao dịch cần kiểm tra",
+      "reviewDescription": "Kiểm tra các giao dịch bất thường trước khi đóng quỹ.",
+      "exportTitle": "Xuất tháng hiện vẫn bị chặn",
+      "exportDescription": "Xử lý các mục còn thiếu trước khi gửi dữ liệu cho kế toán.",
+      "exportReadyTitle": "Xuất tháng đã sẵn sàng",
+      "exportReadyDescription": "Tháng này có thể xuất ngay mà không thiếu chứng từ."
+    },
+    "entryTypes": {
+      "income": "Thu",
+      "expense": "Chi",
+      "private-deposit": "Nộp cá nhân",
+      "private-withdrawal": "Rút cá nhân"
+    },
+    "entryStatus": {
+      "attached": "Đã gắn",
+      "missing": "Còn thiếu",
+      "review": "Cần kiểm tra",
+      "ok": "OK"
+    },
+    "assistant": {
+      "title": "Cần hỗ trợ?",
+      "description": "Chỉ dùng trợ lý khi cần giải thích, không thay thế quy trình chính.",
+      "prompts": [
+        "Vì sao hôm nay chưa sẵn sàng để đóng?",
+        "Giao dịch nào còn thiếu hóa đơn?",
+        "Vì sao số dư bị thiếu?",
+        "Privateinlage là gì?"
+      ],
+      "suggestions": [
+        {
+          "label": "Tìm hóa đơn thiếu",
+          "value": "Hôm nay giao dịch nào còn thiếu hóa đơn?"
+        },
+        {
+          "label": "Trạng thái quỹ hôm nay",
+          "value": "Cho tôi biết tình trạng quỹ hôm nay và có đóng ngày được chưa."
+        },
+        {
+          "label": "Đóng ngày",
+          "value": "Điều gì đang chặn việc đóng sổ quỹ hôm nay?"
+        },
+        {
+          "label": "Giải thích thuật ngữ",
+          "value": "Privateinlage có nghĩa là gì?"
+        }
+      ],
+      "capabilityCatalogTitle": "Tác vụ quản lý quỹ",
+      "capabilityCatalogDescription": "Đây là danh sách đầy đủ những gì trợ lý quản lý quỹ có thể làm cho bạn. Chọn một tác vụ để điền sẵn yêu cầu và bắt đầu nhanh hơn.",
+      "capabilityGroups": [
+        {
+          "title": "Giao dịch sổ quỹ",
+          "description": "Tạo, chỉnh sửa và rà soát các giao dịch sổ quỹ cho két sắt hiện tại.",
+          "items": [
+            {
+              "title": "Tạo giao dịch sổ quỹ",
+              "description": "Bắt đầu một giao dịch thu hoặc chi tiền với đầy đủ thông tin cần thiết.",
+              "prompt": "Tạo một giao dịch sổ quỹ cho két sắt hiện tại."
+            },
+            {
+              "title": "Sửa giao dịch đang mở",
+              "description": "Đảo một giao dịch đang mở và tạo giao dịch thay thế đã chỉnh sửa.",
+              "prompt": "Hãy sửa một giao dịch sổ quỹ đang mở cho tôi."
+            },
+            {
+              "title": "Xem danh sách giao dịch",
+              "description": "Xem giao dịch theo khoảng ngày, loại, nguồn hoặc nội dung diễn giải.",
+              "prompt": "Hiển thị danh sách giao dịch sổ quỹ của két sắt này."
+            }
+          ]
+        },
+        {
+          "title": "Hóa đơn và chứng từ",
+          "description": "Tải hóa đơn lên, gắn vào giao dịch và tìm các chứng từ còn thiếu.",
+          "items": [
+            {
+              "title": "Tải hóa đơn lên",
+              "description": "Tải lên một hoặc nhiều tệp hóa đơn trực tiếp từ cuộc trò chuyện này.",
+              "prompt": "Tải lên các tệp hóa đơn từ cuộc trò chuyện này."
+            },
+            {
+              "title": "Gắn hóa đơn vào giao dịch",
+              "description": "Liên kết chứng từ đã tải lên với đúng giao dịch sổ quỹ.",
+              "prompt": "Gắn hóa đơn đã tải lên vào đúng giao dịch sổ quỹ."
+            },
+            {
+              "title": "Tìm giao dịch thiếu hóa đơn",
+              "description": "Hiển thị các giao dịch vẫn cần hóa đơn trước khi kiểm tra hoặc xuất dữ liệu.",
+              "prompt": "Tìm các giao dịch sổ quỹ vẫn còn thiếu hóa đơn."
+            }
+          ]
+        },
+        {
+          "title": "Đóng ngày",
+          "description": "Kiểm tra mức sẵn sàng, lưu tiền đã kiểm đếm và đóng ngày đúng quy trình.",
+          "items": [
+            {
+              "title": "Trạng thái quỹ hôm nay",
+              "description": "Xem số dư dự kiến, hóa đơn thiếu và hôm nay đã sẵn sàng đóng ngày chưa.",
+              "prompt": "Cho tôi biết tình trạng quỹ hôm nay và có đóng ngày được chưa."
+            },
+            {
+              "title": "Nhập tiền đã kiểm đếm",
+              "description": "Lưu số tiền mặt hoặc số lượng mệnh giá trước khi đóng ngày chính thức.",
+              "prompt": "Nhập số tiền đã kiểm đếm hôm nay cho két sắt hiện tại."
+            },
+            {
+              "title": "Đóng ngày",
+              "description": "Hoàn tất việc đóng ngày sau khi mọi điểm chặn đã được xử lý.",
+              "prompt": "Đóng ngày hôm nay cho két sắt hiện tại."
+            },
+            {
+              "title": "Xem các ngày chưa đóng",
+              "description": "Tìm các ngày vẫn đang mở hoặc mới lưu nháp và chưa đóng.",
+              "prompt": "Liệt kê các ngày vẫn chưa đóng của két sắt này."
+            }
+          ]
+        },
+        {
+          "title": "Tổng quan và xuất dữ liệu",
+          "description": "Theo dõi tình trạng vận hành và chuẩn bị gói xuất dữ liệu theo tháng.",
+          "items": [
+            {
+              "title": "Tổng quan dashboard",
+              "description": "Xem tổng quan về tiền mặt, hóa đơn, trạng thái đóng ngày và mức sẵn sàng xuất dữ liệu.",
+              "prompt": "Hiển thị tổng quan dashboard của két sắt này."
+            },
+            {
+              "title": "Việc cần làm tiếp theo",
+              "description": "Xem các hành động vận hành tiếp theo mà chủ cửa hàng cần xử lý.",
+              "prompt": "Trong quản lý quỹ, tôi cần làm gì tiếp theo?"
+            },
+            {
+              "title": "Xuất dữ liệu tháng",
+              "description": "Tạo gói xuất dữ liệu sổ quỹ hằng tháng cho kế toán hoặc tư vấn thuế.",
+              "prompt": "Tạo gói xuất dữ liệu sổ quỹ theo tháng cho két sắt này."
+            }
+          ]
+        },
+        {
+          "title": "Hướng dẫn và thuật ngữ",
+          "description": "Nhận hướng dẫn quy trình và giải thích dễ hiểu cho các thuật ngữ sổ quỹ.",
+          "items": [
+            {
+              "title": "Giải thích thuật ngữ sổ quỹ",
+              "description": "Giải thích dễ hiểu cho thuật ngữ như Privateinlage.",
+              "prompt": "Giải thích cho tôi một thuật ngữ trong sổ quỹ."
+            },
+            {
+              "title": "Hướng dẫn quy trình",
+              "description": "Nhận hướng dẫn từng bước cho đóng ngày, hóa đơn thiếu hoặc xuất dữ liệu tháng.",
+              "prompt": "Hiển thị hướng dẫn quy trình cho quản lý quỹ."
+            }
+          ]
+        }
+      ],
+      "languages": "Tiếng Đức, Tiếng Anh, Tiếng Việt",
+      "lockedTitle": "Trợ lý AI bị khóa trong gói này",
+      "lockedDescription": "Nâng cấp lên Pro để mở trợ lý sổ quỹ, giải thích đa ngôn ngữ, và gợi ý xử lý vấn đề.",
+      "lockedBadge": "AI bị khóa"
+    },
+    "severity": {
+      "high": "Cao",
+      "medium": "Trung bình",
+      "low": "Thấp"
+    }
   }
 }

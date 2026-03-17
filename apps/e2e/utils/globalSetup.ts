@@ -1,12 +1,18 @@
 import { chromium, type FullConfig } from "@playwright/test";
 
-async function globalSetup(_config: FullConfig) {
+async function globalSetup(config: FullConfig) {
   // Global setup for test infrastructure
   // Note: Each test creates its own isolated test data via fixtures
   // and handles authentication independently for better test isolation
 
   // Verify API is reachable
-  const baseURL = process.env.BASE_URL || "http://localhost:8080";
+  const projectBaseURL =
+    typeof config.projects[0]?.use?.baseURL === "string" ? config.projects[0].use.baseURL : null;
+  const webServerBaseURL = Array.isArray(config.webServer)
+    ? config.webServer[0]?.url
+    : config.webServer?.url;
+  const baseURL =
+    process.env.BASE_URL || projectBaseURL || webServerBaseURL || "http://localhost:8080";
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();

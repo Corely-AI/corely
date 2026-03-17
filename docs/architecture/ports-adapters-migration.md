@@ -666,7 +666,7 @@ Examples:
 
 2. **Transactional outbox pattern**
    - Ensures events are enqueued atomically with domain changes
-   - Worker polls outbox table for guaranteed delivery
+   - Background processing polls or is woken against the outbox table for guaranteed delivery
 
 3. **Complex aggregates**
    - When saving multiple related entities that must succeed/fail together
@@ -719,12 +719,12 @@ private mapToDomainWithRelations(data: any): FooWithBar {
 }
 ```
 
-### Q: What about worker services that poll the database?
+### Q: What about background processors that poll the database?
 
-**A:** Workers import `DataModule` and inject repositories normally:
+**A:** Background runtime modules import `DataModule` and inject repositories normally:
 
 ```typescript
-// services/worker/src/modules/outbox/OutboxPollerService.ts
+// services/api/src/modules/background/runtime/modules/outbox/outbox-poller.service.ts
 @Injectable()
 export class OutboxPollerService implements OnModuleInit {
   constructor(
@@ -738,7 +738,7 @@ export class OutboxPollerService implements OnModuleInit {
 }
 ```
 
-Worker module:
+Background module:
 
 ```typescript
 import { Module } from "@nestjs/common";

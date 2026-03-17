@@ -1,6 +1,7 @@
 import type { TaxSourceType } from "@corely/contracts";
 import { TaxSnapshotRepoPort } from "../../domain/ports";
 import type { TaxSnapshotEntity } from "../../domain/entities";
+import type { TaxSnapshotPeriodOptions } from "../../domain/ports/tax-snapshot-repo.port";
 
 export class InMemoryTaxSnapshotRepo extends TaxSnapshotRepoPort {
   private snapshots: TaxSnapshotEntity[] = [];
@@ -46,7 +47,8 @@ export class InMemoryTaxSnapshotRepo extends TaxSnapshotRepoPort {
     tenantId: string,
     start: Date,
     end: Date,
-    sourceType?: TaxSourceType
+    sourceType?: TaxSourceType,
+    _options?: TaxSnapshotPeriodOptions
   ): Promise<TaxSnapshotEntity[]> {
     return this.snapshots.filter(
       (s) =>

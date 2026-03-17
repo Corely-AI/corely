@@ -10,6 +10,7 @@ import {
 } from "@corely/ui";
 import { Button } from "@corely/ui";
 import { uploadTaxDocument } from "../utils/upload-document";
+import { useTranslation } from "react-i18next";
 
 type AttachReceiptDialogProps = {
   open: boolean;
@@ -24,6 +25,7 @@ export function AttachReceiptDialog({
   onAttach,
   isSubmitting,
 }: AttachReceiptDialogProps) {
+  const { t } = useTranslation();
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
   const [isUploading, setIsUploading] = React.useState(false);
@@ -36,7 +38,7 @@ export function AttachReceiptDialog({
 
   const handleAttach = async () => {
     if (!receiptFile) {
-      toast.error("Select a receipt to upload");
+      toast.error(t("tax.attachments.messages.selectFile"));
       return;
     }
 
@@ -47,7 +49,7 @@ export function AttachReceiptDialog({
       setReceiptFile(null);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to upload receipt");
+      toast.error(t("tax.attachments.messages.uploadError"));
     } finally {
       setIsUploading(false);
     }
@@ -57,8 +59,8 @@ export function AttachReceiptDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>Attach receipt</DialogTitle>
-          <DialogDescription>Upload proof of payment for this filing.</DialogDescription>
+          <DialogTitle>{t("tax.attachments.dialog.title")}</DialogTitle>
+          <DialogDescription>{t("tax.attachments.dialog.description")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
@@ -68,12 +70,16 @@ export function AttachReceiptDialog({
               onClick={() => fileInputRef.current?.click()}
               disabled={isSubmitting || isUploading}
             >
-              {receiptFile ? "Replace receipt" : "Choose receipt"}
+              {receiptFile
+                ? t("tax.attachments.dialog.replace")
+                : t("tax.attachments.dialog.choose")}
             </Button>
             {receiptFile ? (
               <span className="text-sm text-muted-foreground truncate">{receiptFile.name}</span>
             ) : (
-              <span className="text-sm text-muted-foreground">No file selected</span>
+              <span className="text-sm text-muted-foreground">
+                {t("tax.attachments.dialog.noFile")}
+              </span>
             )}
           </div>
           <input
@@ -96,10 +102,12 @@ export function AttachReceiptDialog({
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting || isUploading}
           >
-            Cancel
+            {t("tax.history.cancel")}
           </Button>
           <Button onClick={handleAttach} disabled={isSubmitting || isUploading}>
-            {isUploading ? "Uploading..." : "Attach receipt"}
+            {isUploading
+              ? t("tax.attachments.dialog.uploading")
+              : t("tax.attachments.dialog.submit")}
           </Button>
         </DialogFooter>
       </DialogContent>

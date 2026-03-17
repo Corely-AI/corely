@@ -49,6 +49,7 @@ export class StreamCopilotChatUseCase {
     message?: CopilotUIMessage;
     tenantId: string;
     userId: string;
+    locale?: string;
     idempotencyKey: string;
     runId?: string;
     response: Response;
@@ -262,6 +263,7 @@ export class StreamCopilotChatUseCase {
             const { result, usage } = await this.languageModel.streamChat({
               messages: modelContext,
               tools,
+              locale: params.locale,
               runId,
               tenantId,
               toolTenantId: params.toolTenantId,

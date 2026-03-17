@@ -9,6 +9,10 @@ import { type Env, SECRET_ENV_KEYS } from "./env.schema";
 export class EnvService {
   constructor(private readonly config: Env) {}
 
+  getValue<K extends keyof Env>(key: K): Env[K] {
+    return this.config[key];
+  }
+
   // ============================================================================
   // COMMON SETTINGS
   // ============================================================================
@@ -127,6 +131,22 @@ export class EnvService {
 
   get WORKER_API_SERVICE_TOKEN(): string | undefined {
     return this.config.WORKER_API_SERVICE_TOKEN;
+  }
+
+  get ELSTER_GATEWAY_BASE_URL(): string | undefined {
+    return this.config.ELSTER_GATEWAY_BASE_URL;
+  }
+
+  get ELSTER_GATEWAY_API_KEY(): string | undefined {
+    return this.config.ELSTER_GATEWAY_API_KEY;
+  }
+
+  get ELSTER_GATEWAY_TIMEOUT_MS(): number {
+    return this.config.ELSTER_GATEWAY_TIMEOUT_MS;
+  }
+
+  get ELSTER_GATEWAY_DEFAULT_CERTIFICATE_REF(): string | undefined {
+    return this.config.ELSTER_GATEWAY_DEFAULT_CERTIFICATE_REF;
   }
 
   get WORKER_TICK_RUNNERS(): string | undefined {
@@ -315,6 +335,38 @@ export class EnvService {
 
   get INTEGRATIONS_SECRET_KEY(): string | undefined {
     return this.config.INTEGRATIONS_SECRET_KEY;
+  }
+
+  get STRIPE_SECRET_KEY(): string | undefined {
+    return this.config.STRIPE_SECRET_KEY;
+  }
+
+  get STRIPE_WEBHOOK_SECRET(): string | undefined {
+    return this.config.STRIPE_WEBHOOK_SECRET;
+  }
+
+  get STRIPE_BILLING_PRICE_STARTER_MONTHLY(): string | undefined {
+    return this.config.STRIPE_BILLING_PRICE_STARTER_MONTHLY;
+  }
+
+  get STRIPE_BILLING_PRICE_PRO_MONTHLY(): string | undefined {
+    return this.config.STRIPE_BILLING_PRICE_PRO_MONTHLY;
+  }
+
+  get STRIPE_BILLING_PRICE_MULTI_LOCATION_MONTHLY(): string | undefined {
+    return this.config.STRIPE_BILLING_PRICE_MULTI_LOCATION_MONTHLY;
+  }
+
+  get STRIPE_BILLING_SUCCESS_URL(): string | undefined {
+    return this.config.STRIPE_BILLING_SUCCESS_URL;
+  }
+
+  get STRIPE_BILLING_CANCEL_URL(): string | undefined {
+    return this.config.STRIPE_BILLING_CANCEL_URL;
+  }
+
+  get STRIPE_BILLING_PORTAL_RETURN_URL(): string | undefined {
+    return this.config.STRIPE_BILLING_PORTAL_RETURN_URL;
   }
 
   // ============================================================================

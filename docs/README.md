@@ -31,6 +31,7 @@ Design and implementation of the AI features.
 Backend specific documentation.
 
 - [Auth](./backend/AUTH.md)
+- [Background Module](./backend/background.md)
 - [Events](./backend/EVENTS.md)
 - [Dependency Injection](./di/)
 - [Observability](./observability/)
@@ -51,7 +52,7 @@ Deployment, configuration, and infrastructure.
 
 - [Docker](./devops/DOCKER.md)
 - [Configuration](./devops/configuration.md)
-- [Worker Runtime Modes](./devops/worker-tick-job.md)
+- [Background Runtime](./devops/background-runtime.md)
 - [Customization](./devops/customization.md)
 - [Licensing](./devops/licensing.md)
 

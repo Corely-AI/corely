@@ -3,6 +3,7 @@ import type { CreateCashRegister } from "@corely/contracts";
 import {
   AUDIT_PORT,
   BaseUseCase,
+  ForbiddenError,
   OUTBOX_PORT,
   UNIT_OF_WORK,
   type AuditPort,
@@ -23,6 +24,8 @@ import {
 } from "@/shared/ports/idempotency-storage.port";
 import { storeIdempotentBody, getIdempotentBody } from "./idempotency";
 import { assertCanManageCash } from "../../policies/assert-cash-policies";
+import { BILLING_ACCESS_PORT, type BillingAccessPort } from "../../../billing";
+import { getCashBillingNumber, loadCashBillingState } from "./billing-guards";
 
 const ACTION_KEY = "cash-management.register.create";
 
@@ -35,6 +38,8 @@ export class CreateCashRegisterUseCase extends BaseUseCase<
   constructor(
     @Inject(CASH_REGISTER_REPO)
     private readonly registerRepo: CashRegisterRepoPort,
+    @Inject(BILLING_ACCESS_PORT)
+    private readonly billingAccess: BillingAccessPort,
     @Inject(AUDIT_PORT)
     private readonly audit: AuditPort,
     @Inject(OUTBOX_PORT)
@@ -67,6 +72,27 @@ export class CreateCashRegisterUseCase extends BaseUseCase<
     });
     if (cached) {
       return ok(cached);
+    }
+
+    const [billingState, locationCount, workspaceRegisters] = await Promise.all([
+      loadCashBillingState(this.billingAccess, tenantId),
+      this.registerRepo.countDistinctLocationsForTenant(tenantId),
+      this.registerRepo.listRegisters(tenantId, workspaceId),
+    ]);
+
+    const createsNewLocation = workspaceRegisters.length === 0;
+    const maxLocations = getCashBillingNumber(billingState.entitlements, "maxLocations");
+    if (createsNewLocation && maxLocations !== null && locationCount >= maxLocations) {
+      throw new ForbiddenError(
+        "Your current plan does not allow another salon location",
+        {
+          limit: maxLocations,
+          used: locationCount,
+          planCode: billingState.subscription.planCode,
+          workspaceId,
+        },
+        "CashManagement:LocationLimitReached"
+      );
     }
 
     const register = await this.unitOfWork.withinTransaction(async (tx) => {

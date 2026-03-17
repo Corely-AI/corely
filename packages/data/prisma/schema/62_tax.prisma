@@ -125,6 +125,10 @@ model TaxSnapshot {
   // Full breakdown stored as JSON
   breakdownJson String @db.Text // stringified TaxBreakdownDto
 
+  // Jurisdiction pack version — enables reproducible recalculation
+  // e.g., "de-v1". Null for snapshots created before this field was added.
+  packId String?
+
   version   Int      @default(1)
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
@@ -223,7 +227,9 @@ model TaxReport {
   createdAt            DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime        @updatedAt @db.Timestamptz(6)
 
-  lines TaxReportLine[]
+  lines    TaxReportLine[]
+  sections TaxReportSection[]
+  ericJobs TaxEricJob[]
 
   @@unique([tenantId, type, periodStart, periodEnd])
   @@index([tenantId, status])
@@ -270,6 +276,25 @@ enum TaxReportGroup {
   @@schema("billing")
 }
 
+enum TaxEricJobAction {
+  VALIDATE
+  SUBMIT
+
+  @@schema("billing")
+}
+
+enum TaxEricJobStatus {
+  QUEUED
+  RUNNING
+  VALIDATION_FAILED
+  SUBMISSION_FAILED
+  TECHNICAL_FAILED
+  SUCCEEDED
+  SUCCEEDED_WITH_WARNINGS
+
+  @@schema("billing")
+}
+
 // Tax Report Lines (for ESL, Intrastat, etc.)
 model TaxReportLine {
   id       String    @id @default(cuid())
@@ -292,5 +317,111 @@ model TaxReportLine {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 
   @@index([reportId])
+  @@schema("billing")
+}
+
+model TaxReportSection {
+  id               String   @id @default(cuid())
+  tenantId         String
+  filingId         String
+  reportId         String
+  reportType       String   @db.VarChar(64)
+  sectionKey       String   @db.VarChar(64)
+  payload          Json
+  completion       Float    @default(0)
+  isComplete       Boolean  @default(false)
+  validationErrors Json     @default("[]")
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
+
+  report TaxReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, reportId, sectionKey])
+  @@index([tenantId, filingId])
+  @@schema("billing")
+}
+
+model TaxEricJob {
+  id                     String           @id @default(cuid())
+  tenantId               String
+  filingId               String
+  reportId               String
+  reportType             String           @db.VarChar(64)
+  declarationType        String?          @db.VarChar(64)
+  action                 TaxEricJobAction
+  status                 TaxEricJobStatus
+  correlationId          String?
+  idempotencyKey         String?
+  payloadVersion         String?          @db.VarChar(64)
+  requestHash            String?          @db.VarChar(128)
+  certificateReferenceId String?          @db.VarChar(128)
+  gatewayVersion         String?          @db.VarChar(64)
+  ericVersion            String?          @db.VarChar(64)
+  transferReference      String?          @db.VarChar(128)
+  outcome                String?          @db.VarChar(64)
+  requestPayload         Json?
+  responsePayload        Json?
+  resultCodes            Json?
+  messages               Json?
+  technicalDetails       Json?
+  errorMessage           String?
+  artifacts              Json?
+  createdAt              DateTime         @default(now()) @db.Timestamptz(6)
+  startedAt              DateTime?        @db.Timestamptz(6)
+  finishedAt             DateTime?        @db.Timestamptz(6)
+  updatedAt              DateTime         @updatedAt @db.Timestamptz(6)
+
+  report TaxReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, reportId, createdAt])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, reportId, action, idempotencyKey])
+  @@schema("billing")
+}
+
+// ============================================================================
+// Tax Document Links
+// Tax module does NOT own file storage; it links existing documents to filings.
+// ============================================================================
+
+enum TaxDocumentLinkEntityType {
+  FILING // Links to a TaxReport.id
+  PAYMENT // Links to a payment record
+
+  @@schema("billing")
+}
+
+model TaxDocumentLink {
+  id         String                    @id @default(cuid())
+  tenantId   String
+  entityType TaxDocumentLinkEntityType
+  entityId   String // TaxReport.id or payment reference
+  documentId String // reference to the Documents module
+  label      String? // optional human-readable label
+  createdAt  DateTime                  @default(now()) @db.Timestamptz(6)
+  createdBy  String? // userId or system
+
+  @@unique([tenantId, entityType, entityId, documentId])
+  @@index([tenantId, entityType, entityId])
+  @@schema("billing")
+}
+
+// ============================================================================
+// Tax Filing Events
+// Domain event log for filing lifecycle transitions.
+// Used for audit trail and outbox-style event publishing.
+// ============================================================================
+
+model TaxFilingEvent {
+  id          String    @id @default(cuid())
+  tenantId    String
+  filingId    String // TaxReport.id
+  eventType   String // "TaxFilingSubmitted" | "TaxFilingPaid" | "TaxFilingRecalculated"
+  payload     Json
+  occurredAt  DateTime  @default(now()) @db.Timestamptz(6)
+  processedAt DateTime? @db.Timestamptz(6)
+
+  @@index([tenantId, filingId])
+  @@index([processedAt])
   @@schema("billing")
 }

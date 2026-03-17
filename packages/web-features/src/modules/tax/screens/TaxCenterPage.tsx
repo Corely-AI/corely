@@ -8,12 +8,13 @@ import { OpenIssuesPanel } from "../components/OpenIssuesPanel";
 import { SnapshotKPIs } from "../components/SnapshotKPIs";
 import { ShortcutsCard } from "../components/ShortcutsCard";
 import { Button } from "@corely/ui";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { Alert, AlertDescription, AlertTitle } from "@corely/ui";
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@corely/ui";
 import { AnnualFilingsPanel } from "../components/AnnualFilingsPanel";
+import { useTranslation } from "react-i18next";
 
 export const TaxCenterPage = () => {
+  const { t } = useTranslation();
   const { activeWorkspace } = useWorkspace();
   const { isFreelancer, mode } = useTaxMode();
   const currentYear = new Date().getFullYear();
@@ -33,10 +34,10 @@ export const TaxCenterPage = () => {
     return (
       <div className="p-8 space-y-4">
         <Alert variant="destructive">
-          <AlertTitle>Error loading Tax Center</AlertTitle>
-          <AlertDescription>We couldn't load your tax overview. Please try again.</AlertDescription>
+          <AlertTitle>{t("tax.center.errorLoading")}</AlertTitle>
+          <AlertDescription>{t("tax.center.errorDescription")}</AlertDescription>
         </Alert>
-        <Button onClick={() => refetch()}>Retry</Button>
+        <Button onClick={() => refetch()}>{t("tax.center.retry")}</Button>
       </div>
     );
   }
@@ -47,12 +48,10 @@ export const TaxCenterPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
-            {isFreelancer ? "My Taxes" : "Tax Center"}
+            {isFreelancer ? t("tax.center.myTaxes") : t("tax.center.title")}
           </h1>
           <p className="text-muted-foreground">
-            {isFreelancer
-              ? "Manage your freelancer tax obligations."
-              : "Overview of company tax compliance and filings."}
+            {isFreelancer ? t("tax.center.freelancerSubtitle") : t("tax.center.companySubtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -69,11 +68,16 @@ export const TaxCenterPage = () => {
               </SelectItem>
             </SelectContent>
           </Select>
+          {isFreelancer ? (
+            <Button variant="outline" asChild>
+              <Link to={`/tax/annual/${currentYear}`}>{t("tax.overview.annualAssistant")}</Link>
+            </Button>
+          ) : null}
           <Button asChild>
-            <Link to="/tax/filings">Review next filing</Link>
+            <Link to="/tax/filings">{t("tax.center.reviewNext")}</Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/tax/settings">Settings</Link>
+            <Link to="/tax/settings">{t("tax.center.settings")}</Link>
           </Button>
         </div>
       </div>

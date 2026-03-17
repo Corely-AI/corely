@@ -29,7 +29,11 @@ import {
   ID_GENERATOR_TOKEN,
 } from "../../../../shared/ports/id-generator.port";
 import { type RequestContext } from "../../../../shared/context/request-context";
-import { ForbiddenError, ValidationError } from "../../../../shared/errors/domain-errors";
+import {
+  ForbiddenError,
+  ValidationError,
+  UnauthorizedError,
+} from "../../../../shared/errors/domain-errors";
 
 export interface SignInInput {
   email: string;
@@ -84,12 +88,12 @@ export class SignInUseCase {
     const email = Email.create(input.email);
     const user = await this.userRepo.findByEmail(email.getValue());
     if (!user) {
-      throw new ForbiddenError("Invalid email or password");
+      throw new UnauthorizedError("Invalid email or password");
     }
 
     const passwordValid = await this.passwordHasher.verify(input.password, user.getPasswordHash());
     if (!passwordValid) {
-      throw new ForbiddenError("Invalid email or password");
+      throw new UnauthorizedError("Invalid email or password");
     }
 
     const memberships = await this.membershipRepo.findByUserId(user.getId());

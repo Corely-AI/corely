@@ -10,7 +10,7 @@ It is domain-agnostic and designed for multi-tenant usage with BullMQ, XState, a
 - Tasks represent executable steps (`Task`)
 - Audit events are appended in `WorkflowEvent`
 
-Workers run two queues:
+The background runtime processes two queues:
 
 - `workflow-orchestrator` advances instances using XState
 - `workflow-task-runner` executes tasks via handler registry
@@ -81,7 +81,7 @@ mechanism changes.
 
 - BullMQ: workers subscribe to Redis queues in `onModuleInit()` and BullMQ
   invokes `handleJob` for each job.
-- Cloud Tasks: Cloud Tasks pushes HTTP requests to the worker, the controller
+- Cloud Tasks: Cloud Tasks pushes HTTP requests to the API background runtime, the controller
   builds a `QueueJob`, and calls `handleJob` directly.
 
 ## AI Tasks
@@ -89,7 +89,7 @@ mechanism changes.
 AI task handler enforces policy guardrails:
 
 - `policy.allowedEvents` allowlists events the AI can emit
-- `policy.allowDirectEmit` must be true for the worker to emit those events
+- `policy.allowDirectEmit` must be true for the background runtime to emit those events
 - decisions are always stored in task output for auditability
 
 ## Queue Drivers
@@ -113,25 +113,25 @@ unit tests and single-process runs.
 
 - `WORKFLOW_QUEUE_DRIVER=memory`
 
-Do not use this when API and worker run in separate processes; they will not
+Do not use this when queue producers and consumers run in separate processes; they will not
 share queues.
 
 ### GCP Cloud Tasks
 
 Cloud Tasks removes the Redis dependency and provides durable scheduling.
-It delivers jobs over HTTP to the worker service.
+It delivers jobs over HTTP to the API service.
 
 Set:
 
 - `WORKFLOW_QUEUE_DRIVER=cloudtasks`
 - `GOOGLE_CLOUD_PROJECT=<project-id>`
 - `WORKFLOW_CLOUDTASKS_LOCATION=<region>` (e.g. `us-central1`)
-- `WORKFLOW_CLOUDTASKS_TARGET_BASE_URL=https://<worker-host>`
+- `WORKFLOW_CLOUDTASKS_TARGET_BASE_URL=https://<api-host>`
 - Optional: `WORKFLOW_CLOUDTASKS_QUEUE_PREFIX=<prefix>` (defaults to `${APP_ENV}-`)
 - Optional: `WORKFLOW_CLOUDTASKS_SERVICE_ACCOUNT=<service-account-email>` (for OIDC auth)
 - Optional: `WORKFLOW_QUEUE_SECRET=<shared-secret>` (sent as `X-Queue-Secret`)
 
-Note: Cloud Tasks requires the worker to run an HTTP server and expose the
+Note: Cloud Tasks requires the API to expose the
 workflow queue routes under `internal/queues/*`.
 
 ## Fixtures

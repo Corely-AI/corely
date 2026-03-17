@@ -304,7 +304,7 @@ Zod Schemas Added:
 - ✅ Outbox pattern for events
 - ✅ Event-driven architecture
 - ✅ Idempotent operations
-- ✅ Worker service ready for event publishing
+- ✅ Background event publishing runtime ready
 
 ---
 

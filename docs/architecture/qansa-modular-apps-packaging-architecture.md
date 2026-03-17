@@ -259,7 +259,7 @@ Events (examples):
 ### Option B — Event-driven via outbox (cleanest for scale)
 
 - `invoices` emits `InvoiceSubmittedForApproval` into outbox
-- subscriber/worker in `workflow` creates tasks/instance
+- subscriber/background runtime in `workflow` creates tasks/instance
 - `workflow` emits `ApprovalApproved`
 - `invoices` consumes and transitions state
 

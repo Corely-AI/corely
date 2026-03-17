@@ -60,6 +60,7 @@ export class CurrentUserResponseDto {
   email: string;
   name: string | null;
   activeTenantId: string | null;
+  activeWorkspaceId?: string;
   memberships: Array<{
     tenantId: string | null;
     tenantName: string | null;

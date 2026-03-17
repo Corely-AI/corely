@@ -4,7 +4,7 @@ This document describes the current reusable async pattern used for invoice/tax 
 
 ## Why this exists
 
-- Worker is allowed to scale to zero (`min-instances=0`) to reduce cost.
+- The API can scale independently while background PDF work is triggered asynchronously.
 - API stays stateless and does not run heavy jobs inline.
 - Frontend can still provide "click and wait" UX with bounded polling.
 
@@ -13,8 +13,8 @@ This document describes the current reusable async pattern used for invoice/tax 
 1. Frontend requests a job result endpoint.
 2. API checks durable readiness state.
 3. If not ready, API enqueues outbox event (idempotent) and returns `PENDING`.
-4. API best-effort wakes worker with `POST /internal/tick` (outbox-only runner).
-5. Worker processes outbox event and updates durable state.
+4. API best-effort wakes background processing with `POST /internal/background/outbox/run`.
+5. Background processing handles the outbox event and updates durable state.
 6. Frontend polling sees `READY` and opens signed download URL.
 
 ## Shared frontend polling primitive
@@ -61,31 +61,25 @@ Responses:
 - `READY` with signed URL if PDF already exists
 - `PENDING` with `retryAfterMs` (currently `1000`) after enqueue
 
-## Worker wakeup for scale-to-zero
+## Background wakeup for queued PDF generation
 
-API uses `triggerWorkerTick(...)` (`services/api/src/shared/infrastructure/worker/trigger-worker-tick.ts`) after enqueue:
+API uses a background wakeup helper after enqueue:
 
-- target: `${INTERNAL_WORKER_URL}/internal/tick`
-- auth header: `x-worker-key: INTERNAL_WORKER_KEY` (if configured)
-- body includes optional `runnerNames` (currently `["outbox"]`)
+- target: `${API_BASE_URL}/internal/background/outbox/run`
+- auth header: `x-service-token: WORKER_API_SERVICE_TOKEN` (if configured)
 - best effort only; failures are logged and do not fail user request
 
-Worker endpoint:
+Background endpoint:
 
-- `POST /internal/tick` in `services/worker/src/application/internal-worker.controller.ts`
-- validates `x-worker-key` when `INTERNAL_WORKER_KEY` is set
-- calls `tickOrchestrator.runOnce({ runnerNames })`
+- `POST /internal/background/outbox/run`
+- processes due outbox work once
 
 ## Required environment
 
 API service:
 
-- `INTERNAL_WORKER_URL` (Cloud Run URL of worker service)
-- `INTERNAL_WORKER_KEY` (shared secret)
-
-Worker service:
-
-- `INTERNAL_WORKER_KEY` (same shared secret)
+- `API_BASE_URL` or `INTERNAL_API_URL`
+- `WORKER_API_SERVICE_TOKEN`
 
 Deploy workflow wiring is in `.github/workflows/deploy.yml`.
 
@@ -95,7 +89,7 @@ Deploy workflow wiring is in `.github/workflows/deploy.yml`.
 - Duplicate clicks/retries are safe:
   - invoice uses deterministic object key per tenant+invoice
   - enqueue path is idempotent on existing `READY`/`PENDING` states
-- Polling only reads durable state, so multi-replica workers are safe.
+- Polling only reads durable state, so multi-replica processing is safe.
 
 ## How to add a new long job
 
@@ -103,13 +97,13 @@ Deploy workflow wiring is in `.github/workflows/deploy.yml`.
 2. Add an idempotent request endpoint in API:
    - return `READY` immediately when result exists
    - else enqueue outbox event and return `PENDING`
-3. After enqueue, call `triggerWorkerTick({ runnerNames: ["outbox"] })`.
-4. Implement worker outbox handler to produce artifact and mark durable state `READY`/`FAILED`.
+3. After enqueue, trigger `/internal/background/outbox/run` or schedule a Cloud Task.
+4. Implement a background outbox handler to produce the artifact and mark durable state `READY`/`FAILED`.
 5. Add a feature-level frontend helper around `pollAsyncJob(...)`.
 6. In UI, show loading toast/state, handle `TIMEOUT` with non-blocking message, and support abort on unmount/navigation.
 
 ## Operational notes
 
-- Cold starts are expected when worker is at zero instances.
+- Cold starts are possible when the API/background capacity is scaled down.
 - Wakeup is an optimization; queue-driven processing still works if wakeup call fails.
 - Keep request timeout/LB timeout above per-request wait budget (invoice path can hold request up to `waitMs`).

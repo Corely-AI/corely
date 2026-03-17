@@ -56,9 +56,13 @@ const inferSource = (input: CreateCashEntryInput): CashEntrySource => {
 export const normalizeCashEntryInput = (
   input: CreateCashEntryInput
 ): NormalizedCashEntryCommand => {
-  const amountCents = input.amount ?? input.amountCents;
+  const amountCents = input.grossAmountCents ?? input.amount ?? input.amountCents;
   if (!amountCents || amountCents <= 0) {
     throw new Error("CashManagement:InvalidAmount");
+  }
+
+  if (input.paymentMethod && input.paymentMethod !== "CASH") {
+    throw new Error("CashManagement:NonCashPaymentMethodNotAllowed");
   }
 
   const occurredAt = input.occurredAt ? new Date(input.occurredAt) : new Date();
@@ -73,7 +77,11 @@ export const normalizeCashEntryInput = (
     type = inferTypeFromDirection(rawType);
   } else if (rawType) {
     type = rawType;
-    direction = direction ?? inferDirectionFromType(rawType);
+    const inferredDirection = inferDirectionFromType(rawType);
+    if (direction && direction !== inferredDirection) {
+      throw new Error("CashManagement:DirectionTypeMismatch");
+    }
+    direction = direction ?? inferredDirection;
   } else {
     direction = direction ?? CashEntryDirection.IN;
     type = inferTypeFromDirection(direction);
@@ -87,7 +95,7 @@ export const normalizeCashEntryInput = (
     type,
     direction,
     source: inferSource(input),
-    paymentMethod: input.paymentMethod ?? "CASH",
+    paymentMethod: "CASH",
     currency: input.currency ?? "EUR",
     referenceId: input.referenceId ?? null,
     reversalOfEntryId: input.reversalOfEntryId ?? null,

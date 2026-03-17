@@ -17,6 +17,13 @@ model Expense {
   createdAt        DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime      @updatedAt @db.Timestamptz(6)
 
+  // DE income-tax deductibility (computed on create/update)
+  deductiblePercent        Int?
+  deductibleAmountCents    Int?
+  nonDeductibleAmountCents Int?
+  deductibilityRuleKind    String?
+  deductibilityMeta        Json?
+
   lines ExpenseLine[]
 
   @@index([tenantId])

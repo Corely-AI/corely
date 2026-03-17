@@ -73,6 +73,19 @@ export class PrismaCashRepository
     return this.mapRegister(row);
   }
 
+  async countDistinctLocationsForTenant(
+    tenantId: string,
+    tx?: TransactionContext
+  ): Promise<number> {
+    const rows = await this.client(tx).cashRegister.findMany({
+      where: { tenantId },
+      distinct: ["workspaceId"],
+      select: { workspaceId: true },
+    });
+
+    return rows.length;
+  }
+
   async listRegisters(
     tenantId: string,
     workspaceId: string,
@@ -218,8 +231,19 @@ export class PrismaCashRepository
         source: data.source,
         paymentMethod: data.paymentMethod,
         amountCents: data.amountCents,
+        grossAmountCents: data.grossAmountCents,
+        netAmountCents: data.netAmountCents,
+        taxAmountCents: data.taxAmountCents,
+        taxMode: data.taxMode,
+        taxCodeId: data.taxCodeId,
+        taxCode: data.taxCode,
+        taxRateBps: data.taxRateBps,
+        taxLabel: data.taxLabel,
         currency: data.currency,
         balanceAfterCents: data.balanceAfterCents,
+        sourceDocumentId: data.sourceDocumentId,
+        sourceDocumentRef: data.sourceDocumentRef,
+        sourceDocumentKind: data.sourceDocumentKind,
         referenceId: data.referenceId,
         reversalOfEntryId: data.reversalOfEntryId,
         lockedByDayCloseId: data.lockedByDayCloseId,
@@ -233,6 +257,23 @@ export class PrismaCashRepository
     });
 
     return this.mapEntry(row);
+  }
+
+  async countEntriesForPeriod(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    tx?: TransactionContext
+  ): Promise<number> {
+    return this.client(tx).cashEntry.count({
+      where: {
+        tenantId,
+        occurredAt: {
+          gte: periodStart,
+          lt: periodEnd,
+        },
+      },
+    });
   }
 
   async listEntries(
@@ -587,6 +628,23 @@ export class PrismaCashRepository
     return rows.map((row) => this.mapAttachment(row));
   }
 
+  async countAttachmentsForPeriod(
+    tenantId: string,
+    periodStart: Date,
+    periodEnd: Date,
+    tx?: TransactionContext
+  ): Promise<number> {
+    return this.client(tx).cashEntryAttachment.count({
+      where: {
+        tenantId,
+        createdAt: {
+          gte: periodStart,
+          lt: periodEnd,
+        },
+      },
+    });
+  }
+
   async listAttachmentsForMonth(
     tenantId: string,
     workspaceId: string,
@@ -657,6 +715,25 @@ export class PrismaCashRepository
         tenantId,
         workspaceId,
       },
+    });
+
+    return row ? this.mapArtifact(row) : null;
+  }
+
+  async findLatestArtifact(
+    tenantId: string,
+    workspaceId: string,
+    registerId: string,
+    month?: string
+  ): Promise<CashExportArtifactEntity | null> {
+    const row = await this.prisma.cashExportArtifact.findFirst({
+      where: {
+        tenantId,
+        workspaceId,
+        registerId,
+        ...(month ? { month } : {}),
+      },
+      orderBy: [{ createdAt: "desc" }],
     });
 
     return row ? this.mapArtifact(row) : null;
@@ -734,8 +811,19 @@ export class PrismaCashRepository
       source: row.source,
       paymentMethod: row.paymentMethod,
       amountCents: row.amountCents,
+      grossAmountCents: row.grossAmountCents,
+      netAmountCents: row.netAmountCents,
+      taxAmountCents: row.taxAmountCents,
+      taxMode: row.taxMode as CashEntryEntity["taxMode"],
+      taxCodeId: row.taxCodeId,
+      taxCode: row.taxCode,
+      taxRateBps: row.taxRateBps,
+      taxLabel: row.taxLabel,
       currency: row.currency,
       balanceAfterCents: row.balanceAfterCents,
+      sourceDocumentId: row.sourceDocumentId,
+      sourceDocumentRef: row.sourceDocumentRef,
+      sourceDocumentKind: row.sourceDocumentKind,
       referenceId: row.referenceId,
       reversalOfEntryId: row.reversalOfEntryId,
       reversedByEntryId: row.reversedByEntryId,

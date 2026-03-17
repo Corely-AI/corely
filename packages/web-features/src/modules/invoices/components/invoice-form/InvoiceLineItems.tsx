@@ -14,6 +14,15 @@ interface InvoiceLineItemsProps {
   locale: string;
 }
 
+const parseRateToCents = (raw: string): number => {
+  const normalized = raw.trim().replace(",", ".");
+  const parsed = Number.parseFloat(normalized);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+  return Math.round(parsed * 100);
+};
+
 export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
   const { t } = useTranslation();
   const {
@@ -111,15 +120,14 @@ export function InvoiceLineItems({ locale }: InvoiceLineItemsProps) {
                         render={({ field: { value, onChange } }) => (
                           <Input
                             data-testid={`invoice-line-rate-${index}`}
-                            type="number"
+                            type="text"
+                            inputMode="decimal"
                             value={value / 100}
                             onChange={(e) => {
-                              const val = parseFloat(e.target.value) || 0;
-                              onChange(Math.round(val * 100));
+                              onChange(parseRateToCents(e.target.value));
                             }}
                             className="border-0 focus-visible:ring-0 px-0"
-                            min="0"
-                            step="0.01"
+                            placeholder="0.00"
                           />
                         )}
                       />

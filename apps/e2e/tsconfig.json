@@ -8,7 +8,9 @@
   },
   "include": [
     "playwright.config.ts",
+    "playwright.cash.config.ts",
     "playwright.pos.config.ts",
+    "tax/**/*.ts",
     "tests/**/*.ts",
     "utils/**/*.ts",
     "helpers/**/*.ts"

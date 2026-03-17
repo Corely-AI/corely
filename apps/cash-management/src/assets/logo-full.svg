@@ -1,0 +1,16 @@
+<svg width="160" height="40" viewBox="0 0 160 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Icon -->
+  <g>
+    <!-- Rounded square container -->
+    <rect x="2" y="2" width="36" height="36" rx="10" fill="currentColor" fill-opacity="0.15"/>
+    <rect x="2" y="2" width="36" height="36" rx="10" stroke="currentColor" stroke-width="2"/>
+
+    <!-- Corely "C" lettermark -->
+    <path d="M 26 12 C 22 10 16 10 12 14 C 8 18 8 24 12 28 C 16 32 22 32 26 30" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <circle cx="28" cy="12" r="2" fill="currentColor"/>
+    <circle cx="28" cy="30" r="2" fill="currentColor"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="50" y="28" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="700" fill="currentColor">Corely</text>
+</svg>

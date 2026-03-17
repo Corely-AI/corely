@@ -1,0 +1,383 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  CashDayCloseStatus,
+  CashEntryDirection,
+  CashEntrySource,
+  CashEntryType,
+  CashPaymentMethod,
+  type CashDayClose,
+  type CashEntry,
+  type CashRegister,
+} from "@corely/contracts";
+import { err, NotFoundError, ok } from "@corely/kernel";
+import { buildCashManagementTools } from "./cash-management.tools";
+import { type DocumentsApplication } from "../../../documents/application/documents.application";
+
+const register: CashRegister = {
+  id: "reg-1",
+  tenantId: "tenant-1",
+  workspaceId: "ws-1",
+  name: "Front Desk",
+  location: "Berlin",
+  currency: "EUR",
+  currentBalanceCents: 42000,
+  disallowNegativeBalance: false,
+  createdAt: new Date("2026-03-14T08:00:00.000Z").toISOString(),
+  updatedAt: new Date("2026-03-14T08:00:00.000Z").toISOString(),
+};
+
+const baseEntry = (overrides: Partial<CashEntry> = {}): CashEntry => ({
+  id: "entry-1",
+  tenantId: "tenant-1",
+  workspaceId: "ws-1",
+  registerId: "reg-1",
+  entryNo: 1,
+  occurredAt: "2026-03-14T09:00:00.000Z",
+  description: "Cash sale",
+  type: CashEntryType.SALE_CASH,
+  direction: CashEntryDirection.IN,
+  source: CashEntrySource.MANUAL,
+  paymentMethod: CashPaymentMethod.CASH,
+  grossAmountCents: 12000,
+  netAmountCents: 12000,
+  taxAmountCents: 0,
+  taxMode: "NONE",
+  taxCodeId: null,
+  taxCode: null,
+  taxRateBps: null,
+  taxLabel: null,
+  tax: {
+    mode: "NONE",
+    grossAmountCents: 12000,
+    netAmountCents: 12000,
+    taxAmountCents: 0,
+    taxCodeId: null,
+    taxCode: null,
+    taxRateBps: null,
+    taxLabel: null,
+  },
+  amount: 12000,
+  amountCents: 12000,
+  currency: "EUR",
+  dayKey: "2026-03-14",
+  sourceDocumentId: null,
+  sourceDocumentRef: null,
+  sourceDocumentKind: null,
+  sourceDocument: null,
+  reversalOfEntryId: null,
+  reversedByEntryId: null,
+  lockedByDayCloseId: null,
+  balanceAfterCents: 12000,
+  referenceId: null,
+  createdAt: "2026-03-14T09:00:00.000Z",
+  createdByUserId: "user-1",
+  sourceType: CashEntrySource.MANUAL,
+  businessDate: "2026-03-14",
+  ...overrides,
+});
+
+const draftDayClose: CashDayClose = {
+  id: "close-1",
+  tenantId: "tenant-1",
+  workspaceId: "ws-1",
+  registerId: "reg-1",
+  dayKey: "2026-03-14",
+  expectedBalance: 15000,
+  countedBalance: 15000,
+  difference: 0,
+  submittedAt: null,
+  submittedBy: null,
+  status: CashDayCloseStatus.DRAFT,
+  note: null,
+  lockedAt: null,
+  lockedByUserId: null,
+  denominationCounts: [],
+  createdAt: "2026-03-14T19:00:00.000Z",
+  updatedAt: "2026-03-14T19:00:00.000Z",
+  businessDate: "2026-03-14",
+  expectedBalanceCents: 15000,
+  countedBalanceCents: 15000,
+  differenceCents: 0,
+  closedAt: null,
+  closedByUserId: null,
+};
+
+describe("cash-management tools", () => {
+  const listRegistersExecute = vi.fn();
+  const getRegisterExecute = vi.fn();
+  const listEntriesExecute = vi.fn();
+  const getEntryExecute = vi.fn();
+  const createEntryExecute = vi.fn();
+  const reverseEntryExecute = vi.fn();
+  const getDayCloseExecute = vi.fn();
+  const saveDayCountExecute = vi.fn();
+  const submitDayCloseExecute = vi.fn();
+  const listDayClosesExecute = vi.fn();
+  const attachBelegExecute = vi.fn();
+  const listAttachmentsExecute = vi.fn();
+  const exportCashBookExecute = vi.fn();
+  const uploadFileExecute = vi.fn();
+
+  const documentsApp = {
+    uploadFile: { execute: uploadFileExecute },
+  } as unknown as DocumentsApplication;
+
+  const deps = {
+    listRegisters: { execute: listRegistersExecute },
+    getRegister: { execute: getRegisterExecute },
+    listEntries: { execute: listEntriesExecute },
+    getEntry: { execute: getEntryExecute },
+    createEntry: { execute: createEntryExecute },
+    reverseEntry: { execute: reverseEntryExecute },
+    getDayClose: { execute: getDayCloseExecute },
+    saveDayCount: { execute: saveDayCountExecute },
+    submitDayClose: { execute: submitDayCloseExecute },
+    listDayCloses: { execute: listDayClosesExecute },
+    attachBeleg: { execute: attachBelegExecute },
+    listAttachments: { execute: listAttachmentsExecute },
+    exportCashBook: { execute: exportCashBookExecute },
+    documentsApp,
+  } as const;
+
+  beforeEach(() => {
+    listRegistersExecute.mockReset();
+    getRegisterExecute.mockReset();
+    listEntriesExecute.mockReset();
+    getEntryExecute.mockReset();
+    createEntryExecute.mockReset();
+    reverseEntryExecute.mockReset();
+    getDayCloseExecute.mockReset();
+    saveDayCountExecute.mockReset();
+    submitDayCloseExecute.mockReset();
+    listDayClosesExecute.mockReset();
+    attachBelegExecute.mockReset();
+    listAttachmentsExecute.mockReset();
+    exportCashBookExecute.mockReset();
+    uploadFileExecute.mockReset();
+
+    listRegistersExecute.mockResolvedValue(ok({ registers: [register] }));
+    getRegisterExecute.mockResolvedValue(ok({ register }));
+    listDayClosesExecute.mockResolvedValue(ok({ closes: [] }));
+    getDayCloseExecute.mockResolvedValue(err(new NotFoundError("missing")));
+    listAttachmentsExecute.mockResolvedValue(ok({ attachments: [] }));
+  });
+
+  it("uploads the latest attached receipt file", async () => {
+    uploadFileExecute.mockResolvedValue(
+      ok({
+        document: { id: "doc-1", title: "receipt.jpg" },
+        file: { id: "file-1" },
+      })
+    );
+
+    const tool = buildCashManagementTools(deps).find((item) => item.name === "upload_receipt");
+    const result = await tool?.execute?.({
+      tenantId: "tenant-1",
+      workspaceId: "ws-1",
+      userId: "user-1",
+      input: {},
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "file",
+              data: "data:image/jpeg;base64,aGVsbG8=",
+              mediaType: "image/jpeg",
+              filename: "receipt.jpg",
+            },
+          ],
+        },
+      ] as any,
+    });
+
+    expect(uploadFileExecute).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        total: 1,
+        documents: [expect.objectContaining({ id: "doc-1" })],
+      })
+    );
+  });
+
+  it("returns today's cash status with missing receipt blockers", async () => {
+    listEntriesExecute.mockResolvedValue(
+      ok({
+        entries: [
+          baseEntry({
+            id: "entry-income",
+            amount: 15000,
+            amountCents: 15000,
+            balanceAfterCents: 15000,
+          }),
+          baseEntry({
+            id: "entry-expense",
+            entryNo: 2,
+            occurredAt: "2026-03-14T13:00:00.000Z",
+            description: "Acetone refill",
+            type: CashEntryType.EXPENSE_CASH,
+            direction: CashEntryDirection.OUT,
+            amount: 2000,
+            amountCents: 2000,
+            balanceAfterCents: 13000,
+          }),
+        ],
+      })
+    );
+
+    const tool = buildCashManagementTools(deps).find(
+      (item) => item.name === "get_today_cash_status"
+    );
+    const result = await tool?.execute?.({
+      tenantId: "tenant-1",
+      workspaceId: "ws-1",
+      userId: "user-1",
+      input: {},
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        status: "NEEDS_REVIEW",
+        missingReceiptsCount: 1,
+        blockers: expect.arrayContaining(["1 entries are missing receipts"]),
+      })
+    );
+  });
+
+  it("treats CashManagement:DayCloseNotFound as an open day instead of a hard error", async () => {
+    listEntriesExecute.mockResolvedValue(
+      ok({
+        entries: [
+          baseEntry({
+            id: "entry-income",
+            dayKey: "2026-03-14",
+            businessDate: "2026-03-14",
+            amount: 15000,
+            amountCents: 15000,
+            balanceAfterCents: 15000,
+          }),
+        ],
+      })
+    );
+    getDayCloseExecute.mockResolvedValue(
+      err(new NotFoundError("Day close not found", undefined, "CashManagement:DayCloseNotFound"))
+    );
+
+    const tool = buildCashManagementTools(deps).find(
+      (item) => item.name === "get_today_cash_status"
+    );
+    const result = await tool?.execute?.({
+      tenantId: "tenant-1",
+      workspaceId: "ws-1",
+      userId: "user-1",
+      input: {},
+    });
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        countedCashCents: null,
+        readyToClose: false,
+        status: "NEEDS_REVIEW",
+      })
+    );
+  });
+
+  it("marks counted cash draft as ready when no blockers remain", async () => {
+    listEntriesExecute.mockResolvedValue(
+      ok({
+        entries: [
+          baseEntry({
+            id: "entry-income",
+            amount: 15000,
+            amountCents: 15000,
+            balanceAfterCents: 15000,
+          }),
+        ],
+      })
+    );
+    saveDayCountExecute.mockResolvedValue(ok({ dayClose: draftDayClose }));
+    getDayCloseExecute.mockResolvedValue(ok({ dayClose: draftDayClose }));
+
+    const tool = buildCashManagementTools(deps).find((item) => item.name === "submit_counted_cash");
+    const result = await tool?.execute?.({
+      tenantId: "tenant-1",
+      workspaceId: "ws-1",
+      userId: "user-1",
+      input: {
+        countedBalanceCents: 15000,
+      },
+    });
+
+    expect(saveDayCountExecute).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        readyToClose: true,
+        blockers: [],
+      })
+    );
+  });
+
+  it("updates an open entry by reversing and recreating it", async () => {
+    const originalEntry = baseEntry({
+      id: "entry-1",
+      description: "Tip entered as sale",
+      amount: 3000,
+      amountCents: 3000,
+      balanceAfterCents: 3000,
+    });
+    getEntryExecute.mockResolvedValue(ok({ entry: originalEntry }));
+    reverseEntryExecute.mockResolvedValue(
+      ok({
+        entry: baseEntry({
+          id: "entry-reversal-1",
+          description: "Reversal",
+          type: CashEntryType.CORRECTION,
+          direction: CashEntryDirection.OUT,
+          amount: 3000,
+          amountCents: 3000,
+          reversalOfEntryId: "entry-1",
+        }),
+      })
+    );
+    createEntryExecute.mockResolvedValue(
+      ok({
+        entry: baseEntry({
+          id: "entry-2",
+          description: "Tip payout",
+          type: CashEntryType.OWNER_WITHDRAWAL,
+          direction: CashEntryDirection.OUT,
+          amount: 3000,
+          amountCents: 3000,
+        }),
+      })
+    );
+
+    const tool = buildCashManagementTools(deps).find((item) => item.name === "update_cash_entry");
+    const result = await tool?.execute?.({
+      tenantId: "tenant-1",
+      workspaceId: "ws-1",
+      userId: "user-1",
+      input: {
+        entryId: "entry-1",
+        reason: "Wrong classification",
+        description: "Tip payout",
+        type: CashEntryType.OWNER_WITHDRAWAL,
+        direction: CashEntryDirection.OUT,
+      },
+    });
+
+    expect(reverseEntryExecute).toHaveBeenCalledTimes(1);
+    expect(createEntryExecute).toHaveBeenCalledTimes(1);
+    expect(result).toEqual(
+      expect.objectContaining({
+        ok: true,
+        reversalEntry: expect.objectContaining({ id: "entry-reversal-1" }),
+        replacementEntry: expect.objectContaining({ id: "entry-2" }),
+      })
+    );
+  });
+});

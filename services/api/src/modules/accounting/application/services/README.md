@@ -155,9 +155,9 @@ await this.outboxRepo.save({
   },
 });
 
-// In accounting module - Outbox Worker
+// In accounting module - Outbox processor
 @Injectable()
-export class CogsOutboxWorker {
+export class CogsOutboxProcessor {
   @Cron("*/5 * * * *") // Every 5 minutes
   async processInvoiceEvents() {
     const events = await this.outboxRepo.findUnprocessed("invoice.issued");

@@ -3,7 +3,7 @@ import { TaxReportRepoPort } from "../../domain/ports/tax-report-repo.port";
 import { ReportRegistry } from "../../domain/reporting/report-registry";
 import { TaxProfileRepoPort } from "../../domain/ports/tax-profile-repo.port";
 import { ReportGenerationContext } from "../../domain/reporting/report-strategy.interface";
-import { TaxReportType, TaxReportGroup } from "@corely/contracts";
+import { TaxReportType, TaxReportGroup, TaxProfileDto } from "@corely/contracts";
 
 @Injectable()
 export class GenerateTaxReportsUseCase {
@@ -19,6 +19,7 @@ export class GenerateTaxReportsUseCase {
     periodEnd: Date;
     periodLabel: string;
     dryRun?: boolean;
+    types?: TaxReportType[];
   }): Promise<void> {
     const { tenantId, periodStart, periodEnd, periodLabel } = params;
 
@@ -31,18 +32,12 @@ export class GenerateTaxReportsUseCase {
       tenantId,
       periodStart,
       periodEnd,
-      profile: {
-        ...profile,
-        country: profile.country as "DE", // Constraint from contracts
-        vatAccountingMethod: profile.vatAccountingMethod ?? "IST",
-        effectiveFrom: profile.effectiveFrom.toISOString(),
-        effectiveTo: profile.effectiveTo?.toISOString(),
-        createdAt: profile.createdAt.toISOString(),
-        updatedAt: profile.updatedAt.toISOString(),
-      },
+      profile: this.toProfileDto(profile),
     };
 
-    const strategies = this.registry.getStrategiesForCountry(profile.country);
+    const strategies = this.registry
+      .getStrategiesForCountry(profile.country)
+      .filter((strategy) => !params.types || params.types.includes(strategy.type));
 
     for (const strategy of strategies) {
       if (await strategy.isRequired(ctx)) {
@@ -80,5 +75,20 @@ export class GenerateTaxReportsUseCase {
         }
       }
     }
+  }
+
+  private toProfileDto(
+    profile: Awaited<ReturnType<TaxProfileRepoPort["getActive"]>>
+  ): TaxProfileDto {
+    const entity = profile!;
+    return {
+      ...entity,
+      country: entity.country as "DE",
+      vatAccountingMethod: entity.vatAccountingMethod ?? "IST",
+      effectiveFrom: entity.effectiveFrom.toISOString(),
+      effectiveTo: entity.effectiveTo?.toISOString() ?? null,
+      createdAt: entity.createdAt.toISOString(),
+      updatedAt: entity.updatedAt.toISOString(),
+    };
   }
 }

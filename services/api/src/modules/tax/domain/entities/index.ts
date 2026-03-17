@@ -5,3 +5,7 @@ export * from "./tax-snapshot.entity";
 export * from "./vat-period-summary.entity";
 export * from "./tax-consultant.entity";
 export * from "./tax-report.entity";
+export * from "./tax-report-section.entity";
+export * from "./tax-eric-job.entity";
+export * from "./tax-eric-job-status";
+export * from "./tax-filing-status";

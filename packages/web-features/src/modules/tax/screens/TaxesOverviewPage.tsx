@@ -26,6 +26,7 @@ import { AnnualReportsSection } from "../components/AnnualReportsSection";
 export default function TaxesOverviewPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["tax-summary"],
     queryFn: () => taxApi.getSummary(),
@@ -38,7 +39,7 @@ export default function TaxesOverviewPage() {
 
   const firstName = user?.name?.split(" ")[0] ?? "there";
 
-  const locale = "de-DE";
+  const locale = t("common.locale", { defaultValue: "de-DE" });
 
   if (isLoading) {
     return (
@@ -59,12 +60,10 @@ export default function TaxesOverviewPage() {
     return (
       <div className="p-6 lg:p-8 space-y-4">
         <Alert variant="destructive">
-          <AlertTitle>Could not load taxes</AlertTitle>
-          <AlertDescription>
-            Something went wrong while fetching your tax overview.
-          </AlertDescription>
+          <AlertTitle>{t("tax.overview.errorLoading")}</AlertTitle>
+          <AlertDescription>{t("tax.overview.errorDescription")}</AlertDescription>
         </Alert>
-        <Button onClick={() => refetch()}>Retry</Button>
+        <Button onClick={() => refetch()}>{t("tax.center.retry")}</Button>
       </div>
     );
   }
@@ -90,22 +89,28 @@ export default function TaxesOverviewPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <p className="text-sm text-muted-foreground">Good evening, {firstName}!</p>
-          <h1 className="text-3xl font-bold">Taxes</h1>
+          <p className="text-sm text-muted-foreground">
+            {t("tax.overview.greeting", { name: firstName })}
+          </p>
+          <h1 className="text-3xl font-bold">{t("tax.overview.title")}</h1>
           {summary.localTaxOfficeName ? (
             <p className="text-muted-foreground">
-              Your taxes in your region · Local office: {summary.localTaxOfficeName}
+              {t("tax.overview.yourTaxes")} ·{" "}
+              {t("tax.overview.localOffice", { name: summary.localTaxOfficeName })}
             </p>
           ) : (
-            <p className="text-muted-foreground">Your taxes in your region</p>
+            <p className="text-muted-foreground">{t("tax.overview.yourTaxes")}</p>
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => navigate("/tax/reports")}>
-            View reports
+          <Button variant="outline" onClick={() => navigate(`/tax/annual/${currentYear}`)}>
+            {t("tax.overview.annualAssistant")}
+          </Button>
+          <Button variant="secondary" onClick={() => navigate("/tax/reports/eur")}>
+            {t("tax.overview.viewReports")}
           </Button>
           <Button variant="default" onClick={() => navigate("/tax/settings")}>
-            Tax settings
+            {t("tax.overview.taxSettings")}
           </Button>
         </div>
       </div>
@@ -118,7 +123,10 @@ export default function TaxesOverviewPage() {
               <div className="flex items-center gap-2">
                 <CalendarClock className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold">
-                  Current VAT Period: Q{currentQuarter} {currentYear}
+                  {t("tax.overview.currentVatPeriod", {
+                    period: currentQuarter,
+                    year: currentYear,
+                  })}
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -128,17 +136,21 @@ export default function TaxesOverviewPage() {
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <div className="text-sm text-muted-foreground">Estimated VAT due</div>
+                <div className="text-sm text-muted-foreground">
+                  {t("tax.overview.estimatedVatDue")}
+                </div>
                 <div className="text-2xl font-bold text-primary">
                   {isMissingSettings ? (
-                    <span className="text-muted-foreground text-base">Not configured</span>
+                    <span className="text-muted-foreground text-base">
+                      {t("tax.overview.notConfigured")}
+                    </span>
                   ) : (
                     formatCents(summary.taxesToBePaidEstimatedCents || 0)
                   )}
                 </div>
               </div>
               <Button variant="default" onClick={() => navigate(`/tax/period/${currentPeriodKey}`)}>
-                View details
+                {t("tax.overview.viewDetails")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -150,28 +162,32 @@ export default function TaxesOverviewPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card variant="elevated" className="relative overflow-hidden">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm text-muted-foreground">Taxes to be paid</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">
+              {t("tax.overview.kpis.taxesToBePaid")}
+            </CardTitle>
             <Home className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-2xl font-semibold">
               {isMissingSettings ? (
-                <span className="text-muted-foreground">Not configured</span>
+                <span className="text-muted-foreground">{t("tax.overview.notConfigured")}</span>
               ) : (
                 formatCents(summary.taxesToBePaidEstimatedCents || 0)
               )}
             </div>
             {isNotApplicable && (
               <Badge variant="secondary" className="mt-1">
-                VAT not applicable
+                {t("tax.overview.kpis.vatNotApplicable")}
               </Badge>
             )}
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(isMissingSettings ? "/tax/settings" : "/tax/reports")}
+              onClick={() => navigate(isMissingSettings ? "/tax/settings" : "/tax/reports/eur")}
             >
-              {isMissingSettings ? "Complete tax setup" : "See taxes overview"}
+              {isMissingSettings
+                ? t("tax.overview.kpis.completeSetup")
+                : t("tax.overview.kpis.seeOverview")}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </CardContent>
@@ -179,20 +195,26 @@ export default function TaxesOverviewPage() {
 
         <Card variant="elevated" className="relative overflow-hidden">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm text-muted-foreground">Income</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">
+              {t("tax.overview.kpis.income")}
+            </CardTitle>
             <PiggyBank className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="text-2xl font-semibold">{formatCents(summary.incomeTotalCents)}</div>
             {summary.unpaidInvoicesCount > 0 && (
-              <Badge variant="warning">{summary.unpaidInvoicesCount} unpaid invoices</Badge>
+              <Badge variant="warning">
+                {t("tax.overview.kpis.unpaidInvoices", { count: summary.unpaidInvoicesCount })}
+              </Badge>
             )}
           </CardContent>
         </Card>
 
         <Card variant="elevated" className="relative overflow-hidden">
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm text-muted-foreground">Expenses</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">
+              {t("tax.overview.kpis.expenses")}
+            </CardTitle>
             <FileText className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent className="space-y-2">
@@ -200,7 +222,9 @@ export default function TaxesOverviewPage() {
               {formatCents(summary.expensesTotalCents ?? 0)}
             </div>
             {summary.expenseItemsToReviewCount > 0 && (
-              <Badge variant="secondary">{summary.expenseItemsToReviewCount} items to review</Badge>
+              <Badge variant="secondary">
+                {t("tax.overview.kpis.itemsToReview", { count: summary.expenseItemsToReviewCount })}
+              </Badge>
             )}
           </CardContent>
         </Card>
@@ -208,7 +232,7 @@ export default function TaxesOverviewPage() {
 
       {summary.warnings?.length ? (
         <Alert>
-          <AlertTitle>Heads up</AlertTitle>
+          <AlertTitle>{t("tax.overview.headsUp")}</AlertTitle>
           <AlertDescription>
             <ul className="list-disc list-inside space-y-1">
               {summary.warnings.map((w) => (
@@ -221,11 +245,11 @@ export default function TaxesOverviewPage() {
 
       {isMissingSettings && (
         <Alert>
-          <AlertTitle>Tax settings incomplete</AlertTitle>
+          <AlertTitle>{t("tax.overview.settingsIncomplete")}</AlertTitle>
           <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <span>Configure your tax profile to estimate what you owe.</span>
+            <span>{t("tax.overview.settingsIncompleteDescription")}</span>
             <Button size="sm" onClick={() => navigate("/tax/settings")}>
-              Go to tax settings
+              {t("tax.overview.goToSettings")}
             </Button>
           </AlertDescription>
         </Alert>
@@ -237,14 +261,14 @@ export default function TaxesOverviewPage() {
           <div className="flex items-center gap-3">
             <HelpCircle className="h-5 w-5 text-primary" />
             <div>
-              <div className="font-medium">What can I expense?</div>
+              <div className="font-medium">{t("tax.overview.expenseHelper.title")}</div>
               <p className="text-sm text-muted-foreground">
-                Learn which purchases you can categorize as business expenses.
+                {t("tax.overview.expenseHelper.description")}
               </p>
             </div>
           </div>
           <Button variant="outline" onClick={() => navigate("/assistant")}>
-            Learn more
+            {t("tax.overview.expenseHelper.learnMore")}
           </Button>
         </CardContent>
       </Card>
@@ -260,20 +284,22 @@ export default function TaxesOverviewPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Your tax reports</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Based on your details, these are the reports you are currently required to submit…
-            </p>
+            <CardTitle>{t("tax.overview.yourReports")}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t("tax.overview.reportsDescription")}</p>
           </div>
-          <Button onClick={() => navigate("/tax/reports")}>Submit reports</Button>
+          <Button onClick={() => navigate("/tax/reports/eur")}>
+            {t("tax.overview.submitReports")}
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2 text-sm">
             <CalendarClock className="h-4 w-4 text-muted-foreground" />
-            <span>{summary.upcomingReportCount} upcoming deadline</span>
+            <span>
+              {t("tax.overview.upcomingDeadline", { count: summary.upcomingReportCount })}
+            </span>
           </div>
           {summary.upcomingReportsPreview.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No upcoming reports.</p>
+            <p className="text-sm text-muted-foreground">{t("tax.overview.noUpcoming")}</p>
           ) : (
             <div className="space-y-2">
               {summary.upcomingReportsPreview.map((report) => (
@@ -282,12 +308,12 @@ export default function TaxesOverviewPage() {
                   className="rounded-lg border p-3 flex items-center justify-between"
                 >
                   <div className="space-y-1">
-                    <div className="font-medium">{humanizeReportType(report.type)}</div>
+                    <div className="font-medium">{humanizeReportType(report.type, t)}</div>
                     <div className="text-sm text-muted-foreground">{report.periodLabel}</div>
                   </div>
                   <div className="text-right space-y-1">
                     <div className="text-sm text-muted-foreground">
-                      Due {formatDueDate(report.dueDate, locale)}
+                      {t("tax.center.nextUp.dueDate")} {formatDueDate(report.dueDate, locale)}
                     </div>
                     <div className="font-semibold">
                       {formatCents(report.amountEstimatedCents ?? report.amountFinalCents ?? 0)}
@@ -305,7 +331,7 @@ export default function TaxesOverviewPage() {
       {/* Local tax office */}
       <Card>
         <CardHeader>
-          <CardTitle>Local tax office</CardTitle>
+          <CardTitle>{t("tax.overview.localTaxOffice")}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-between">
           {summary.localTaxOfficeName ? (
@@ -314,12 +340,10 @@ export default function TaxesOverviewPage() {
               <span>{summary.localTaxOfficeName}</span>
             </div>
           ) : (
-            <div className="text-sm text-muted-foreground">
-              Add your local tax office to keep your records complete.
-            </div>
+            <div className="text-sm text-muted-foreground">{t("tax.overview.addLocalOffice")}</div>
           )}
           <Button variant="outline" onClick={() => navigate("/tax/settings")}>
-            Update settings
+            {t("tax.overview.updateSettings")}
           </Button>
         </CardContent>
       </Card>
@@ -327,15 +351,15 @@ export default function TaxesOverviewPage() {
   );
 }
 
-function humanizeReportType(type: string) {
+function humanizeReportType(type: string, t: any) {
   switch (type) {
     case "VAT_ADVANCE":
-      return "Advance VAT declaration";
+      return t("tax.reports.types.vatAdvance");
     case "VAT_ANNUAL":
-      return "Annual VAT report";
+      return t("tax.reports.types.vatAnnual");
     case "INCOME_TAX":
-      return "Income tax";
+      return t("tax.reports.types.incomeTax");
     default:
-      return "Tax report";
+      return t("tax.reports.types.other", { defaultValue: "Tax report" });
   }
 }

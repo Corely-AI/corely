@@ -31,16 +31,16 @@ export class IncomeTaxDeStrategy implements ReportStrategy {
 
   getDueDate(periodEnd: Date, ctx?: ReportGenerationContext): Date {
     // DE: July 31st of following year (standard) or Feb 28th of year after next (advisor)
-    const year = periodEnd.getFullYear();
+    const year = periodEnd.getUTCFullYear();
     const nextYear = year + 1;
 
     if (ctx?.profile.usesTaxAdvisor) {
       // 28.02 of year+2
       // e.g. 2025 -> 28.02.2027
-      return new Date(year + 2, 1, 28);
+      return new Date(Date.UTC(year + 2, 1, 28, 23, 59, 59, 999));
     }
 
     // 31.07 of year+1
-    return new Date(nextYear, 6, 31);
+    return new Date(Date.UTC(nextYear, 6, 31, 23, 59, 59, 999));
   }
 }

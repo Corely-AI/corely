@@ -74,7 +74,7 @@ These are available in customer forms and customer DTOs under `socialLinks`.
 
 ## Cleanup
 
-When entities are deleted/archived and emit `platform.entity.deleted`, worker cleanup removes:
+When entities are deleted/archived and emit `platform.entity.deleted`, background cleanup removes:
 
 - `platform.EntityDimension` rows
 - `platform.CustomFieldIndex` rows

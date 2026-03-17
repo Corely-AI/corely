@@ -107,6 +107,12 @@ export class PrismaTenantRepository implements TenantRepositoryPort {
         name: tenant.getName(),
         slug: tenant.getSlug(),
         status: tenant.getStatus(),
+        plan: tenant.getPlan(),
+        planStatus: tenant.getPlanStatus(),
+        billingMethod: tenant.getBillingMethod(),
+        billingNote: tenant.getBillingNote(),
+        planUpdatedAt: tenant.getPlanUpdatedAt(),
+        planUpdatedBy: tenant.getPlanUpdatedBy(),
       },
     });
 

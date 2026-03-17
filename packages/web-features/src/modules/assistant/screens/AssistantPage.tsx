@@ -2,17 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { format, isToday, isYesterday, startOfWeek } from "date-fns";
-import {
-  AlertCircle,
-  ChevronDown,
-  FileText,
-  Loader2,
-  Plus,
-  Receipt,
-  Search,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
+import { ChevronDown, Loader2, Plus, Search, Sparkles } from "lucide-react";
 import {
   Button,
   Collapsible,
@@ -31,9 +21,13 @@ import {
   createCopilotThread,
   type CopilotThreadSearchResult,
 } from "@corely/web-shared/lib/copilot-api";
-import { Chat, type Suggestion } from "@corely/web-shared/shared/components/Chat";
+import { Chat } from "@corely/web-shared/shared/components/Chat";
 import { cn } from "@corely/web-shared/shared/lib/utils";
 import { useTranslation } from "react-i18next";
+import { useToast } from "@corely/ui";
+import { billingApi } from "@corely/web-shared/lib/billing-api";
+import { CashManagementBillingFeatureKeys, CashManagementProductKey } from "@corely/contracts";
+import { getAssistantCapabilityGroups, getAssistantSuggestions } from "./assistant-suggestions";
 
 type ThreadGroupKey = "today" | "yesterday" | "week" | "older";
 
@@ -77,6 +71,7 @@ interface AssistantPageProps {
 
 export default function AssistantPage({ activeModule = "assistant" }: AssistantPageProps) {
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const { threadId } = useParams<{ threadId?: string }>();
   const [searchParams] = useSearchParams();
@@ -103,28 +98,15 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     };
   }, [searchText]);
 
-  const suggestions: Suggestion[] = [
-    {
-      icon: Receipt,
-      label: t("assistant.suggestions.extractReceipt.label"),
-      value: t("assistant.suggestions.extractReceipt.value"),
-    },
-    {
-      icon: FileText,
-      label: t("assistant.suggestions.invoiceDraft.label"),
-      value: t("assistant.suggestions.invoiceDraft.value"),
-    },
-    {
-      icon: TrendingUp,
-      label: t("assistant.suggestions.summarizeExpenses.label"),
-      value: t("assistant.suggestions.summarizeExpenses.value"),
-    },
-    {
-      icon: AlertCircle,
-      label: t("assistant.suggestions.taxGuidance.label"),
-      value: t("assistant.suggestions.taxGuidance.value"),
-    },
-  ];
+  const suggestions = useMemo(() => {
+    const locale = i18n.resolvedLanguage ?? i18n.language ?? "en";
+    return getAssistantSuggestions({ activeModule, locale, t });
+  }, [activeModule, i18n.language, i18n.resolvedLanguage, t]);
+
+  const capabilityGroups = useMemo(
+    () => getAssistantCapabilityGroups({ activeModule, t }),
+    [activeModule, t]
+  );
 
   const threadsQuery = useQuery({
     queryKey: THREAD_LIST_QUERY_KEY,
@@ -136,6 +118,21 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     queryFn: async () => getCopilotThread(threadId || ""),
     enabled: Boolean(threadId),
   });
+
+  const billingProductKey =
+    activeModule === "cash-management" ? CashManagementProductKey : undefined;
+
+  const billingQuery = useQuery({
+    queryKey: ["billing", "current", billingProductKey],
+    queryFn: () => billingApi.getCurrent(billingProductKey!),
+    enabled: Boolean(billingProductKey),
+  });
+
+  const canChat =
+    !billingProductKey ||
+    billingQuery.data?.entitlements?.featureValues?.[
+      CashManagementBillingFeatureKeys.aiAssistant
+    ] === true;
 
   const searchQuery = useQuery({
     queryKey: ["assistant", "thread-search", debouncedSearchText],
@@ -215,19 +212,36 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     }
   };
 
+  const handleChatBlocked = () => {
+    toast({
+      title: t("assistant.upgradeRequiredTitle", "Upgrade required for AI chat"),
+      description: t(
+        "assistant.upgradeRequiredDescription",
+        "Upgrade to the Pro plan to chat with the assistant."
+      ),
+      variant: "destructive",
+    });
+    if (billingProductKey) {
+      navigate("/billing");
+    }
+  };
+
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] lg:h-screen" data-testid="assistant-chat">
-      <aside className="hidden w-80 shrink-0 border-r border-border bg-background/80 md:flex md:flex-col">
-        <div className="border-b border-border px-4 py-4">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="text-sm font-semibold text-foreground">Recent chats</div>
-            <Button variant="outline" size="sm" onClick={() => setSearchOpen(true)}>
-              <Search className="mr-2 h-4 w-4" />
-              Search
-            </Button>
-          </div>
+    <div
+      className="flex h-[calc(100vh-3.5rem)] min-h-0 flex-col gap-6 p-6 lg:h-screen lg:p-8"
+      data-testid="assistant-chat"
+    >
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 className="text-h1 text-foreground">{t("assistant.title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("assistant.subtitle")}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setSearchOpen(true)}>
+            <Search className="mr-2 h-4 w-4" />
+            Search
+          </Button>
           <Button
-            className="w-full"
             onClick={() => createThreadMutation.mutate()}
             disabled={createThreadMutation.isPending}
           >
@@ -239,118 +253,142 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
             New chat
           </Button>
         </div>
+      </div>
 
-        <div className="flex-1 overflow-y-auto px-2 py-3">
-          {threadsQuery.isLoading ? (
-            <div className="px-3 py-2 text-sm text-muted-foreground">Loading chats...</div>
-          ) : null}
-
-          {!threadsQuery.isLoading && groupedThreads.length === 0 ? (
-            <div className="space-y-1 px-3 py-2">
-              <div className="text-sm font-medium text-foreground">No chats yet</div>
-              <div className="text-xs text-muted-foreground">
-                Start a conversation and it will appear here.
+      <div className="min-h-0 flex-1 overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        <div className="grid h-full min-h-0 md:grid-cols-[20rem_minmax(0,1fr)]">
+          <aside className="hidden min-h-0 border-r border-border bg-background/40 md:flex md:flex-col">
+            <div className="border-b border-border px-6 py-4 lg:px-8">
+              <div className="text-sm font-semibold text-foreground">Recent chats</div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                Browse previous conversations or start a new one.
               </div>
             </div>
-          ) : null}
 
-          {groupedThreads.map((group) => (
-            <Collapsible
-              key={group.key}
-              open={openGroups[group.key]}
-              onOpenChange={(open) => {
-                setOpenGroups((current) => ({
-                  ...current,
-                  [group.key]: open,
-                }));
-              }}
-            >
-              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground hover:bg-muted/50">
-                {group.label}
-                <ChevronDown
-                  className={cn(
-                    "h-4 w-4 transition-transform",
-                    openGroups[group.key] ? "" : "-rotate-90"
-                  )}
-                />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-1 pb-2">
-                {group.items.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => openThread(item.id)}
-                    className={cn(
-                      "flex w-full flex-col rounded-lg px-2 py-2 text-left transition-colors",
-                      threadId === item.id ? "bg-accent/15" : "hover:bg-muted/60"
-                    )}
-                  >
-                    <span className="truncate text-sm font-medium text-foreground">
-                      {item.title}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(item.lastMessageAt), "p")}
-                    </span>
-                  </button>
-                ))}
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
-        </div>
-      </aside>
+            <div className="border-b border-border px-6 py-4 lg:px-8">
+              <Button
+                className="w-full"
+                onClick={() => createThreadMutation.mutate()}
+                disabled={createThreadMutation.isPending}
+              >
+                {createThreadMutation.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                New chat
+              </Button>
+            </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
-              <Sparkles className="h-5 w-5 text-accent" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="truncate text-lg font-semibold text-foreground">
-                {activeThreadTitle}
-              </h1>
-              <p className="text-sm text-muted-foreground">{t("assistant.subtitle")}</p>
-            </div>
-            <div className="ml-auto md:hidden">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => createThreadMutation.mutate()}
-                  disabled={createThreadMutation.isPending}
+            <div className="flex-1 overflow-y-auto px-6 py-4 lg:px-8">
+              {threadsQuery.isLoading ? (
+                <div className="py-2 text-sm text-muted-foreground">Loading chats...</div>
+              ) : null}
+
+              {!threadsQuery.isLoading && groupedThreads.length === 0 ? (
+                <div className="space-y-1 py-2">
+                  <div className="text-sm font-medium text-foreground">No chats yet</div>
+                  <div className="text-xs text-muted-foreground">
+                    Start a conversation and it will appear here.
+                  </div>
+                </div>
+              ) : null}
+
+              {groupedThreads.map((group) => (
+                <Collapsible
+                  key={group.key}
+                  open={openGroups[group.key]}
+                  onOpenChange={(open) => {
+                    setOpenGroups((current) => ({
+                      ...current,
+                      [group.key]: open,
+                    }));
+                  }}
                 >
-                  {createThreadMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setSearchOpen(true)}>
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
+                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg py-2 text-left text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground">
+                    {group.label}
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform",
+                        openGroups[group.key] ? "" : "-rotate-90"
+                      )}
+                    />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-1 pb-2">
+                    {group.items.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => openThread(item.id)}
+                        className={cn(
+                          "flex w-full flex-col rounded-lg px-3 py-2 text-left transition-colors",
+                          threadId === item.id ? "bg-accent/10" : "hover:bg-muted/60"
+                        )}
+                      >
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {item.title}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(item.lastMessageAt), "p")}
+                        </span>
+                      </button>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
             </div>
-          </div>
-        </header>
+          </aside>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-5xl px-4 py-6" data-testid="assistant-messages">
-            <Chat
-              key={threadId ?? "new-thread"}
-              activeModule={activeModule}
-              locale={i18n.language}
-              runId={threadId}
-              runIdMode="controlled"
-              onRunIdResolved={handleRunResolved}
-              onConversationUpdated={handleConversationUpdated}
-              focusMessageId={focusedMessageId}
-              placeholder={t("assistant.placeholder")}
-              suggestions={suggestions}
-              emptyStateTitle={t("assistant.emptyStateTitle")}
-              emptyStateDescription={t("assistant.emptyStateDescription")}
-            />
+          <div className="flex min-w-0 min-h-0 flex-1 flex-col">
+            <header className="flex-shrink-0 border-b border-border bg-background/40">
+              <div className="flex items-center gap-3 px-6 py-4 lg:px-8">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
+                  <Sparkles className="h-5 w-5 text-accent" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="truncate text-lg font-semibold text-foreground">
+                    {activeThreadTitle}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {threadId
+                      ? t(
+                          "assistant.threadHeaderDescription",
+                          "Continue the conversation or start a new task."
+                        )
+                      : t("assistant.emptyStateDescription")}
+                  </p>
+                </div>
+              </div>
+            </header>
+
+            <main className="min-h-0 flex-1 overflow-y-auto">
+              <div className="px-6 py-6 lg:px-8 lg:py-8" data-testid="assistant-messages">
+                <Chat
+                  key={threadId ?? "new-thread"}
+                  activeModule={activeModule}
+                  locale={i18n.language}
+                  runId={threadId}
+                  runIdMode="controlled"
+                  canSend={canChat}
+                  onSendBlocked={handleChatBlocked}
+                  onRunIdResolved={handleRunResolved}
+                  onConversationUpdated={handleConversationUpdated}
+                  focusMessageId={focusedMessageId}
+                  placeholder={t("assistant.placeholder")}
+                  suggestions={suggestions}
+                  capabilityGroups={capabilityGroups}
+                  capabilityCatalogTitle={t("cashDashboard.assistant.capabilityCatalogTitle", "")}
+                  capabilityCatalogDescription={t(
+                    "cashDashboard.assistant.capabilityCatalogDescription",
+                    ""
+                  )}
+                  emptyStateTitle={t("assistant.emptyStateTitle")}
+                  emptyStateDescription={t("assistant.emptyStateDescription")}
+                />
+              </div>
+            </main>
           </div>
-        </main>
+        </div>
       </div>
 
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>

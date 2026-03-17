@@ -46,20 +46,19 @@ Rules:
   - domain events via outbox
   - explicit ports (rare; document when used)
 
-## Worker (services/worker)
+## Background Runtime
 
 Rules:
 
-- Consume outbox events only.
+- Consume outbox events and delayed internal jobs only.
 - Any DB access should be encapsulated in infrastructure adapters.
 - Deliveries are idempotent (handlers must guard against re-sends).
-- Tick is the single source of truth for scheduled work.
-- Background mode must repeatedly call tick; no duplicated scheduler logic outside tick runners.
+- Scheduled work should be driven by Cloud Scheduler or Cloud Tasks against API internal endpoints.
 
 ## Outbox & Idempotency
 
 - All domain events are written to outbox in the same transaction as state change.
-- Worker retries outbox with backoff (default 3 attempts).
+- Background processing retries outbox with backoff (default 3 attempts).
 - Command endpoints require idempotency keys and deterministic retries.
 
 ## Kernel (packages/kernel)

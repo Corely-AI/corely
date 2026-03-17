@@ -1,5 +1,6 @@
 import type {
   AttachBelegInput,
+  CashDashboardResponse,
   CashDayClose,
   CashEntry,
   CashEntryAttachment,
@@ -8,6 +9,7 @@ import type {
   CreateCashRegister,
   ExportCashBookInput,
   ExportCashBookOutput,
+  GetCashDashboardQuery,
   ListCashDayClosesQuery,
   ListCashEntriesQuery,
   ListCashRegistersQuery,
@@ -29,6 +31,7 @@ type SubmitDayCloseInput = Omit<
 >;
 type AttachBelegRequest = Omit<AttachBelegInput, "tenantId" | "workspaceId" | "entryId">;
 type ExportRequest = Omit<ExportCashBookInput, "tenantId" | "workspaceId" | "registerId">;
+type DashboardRequest = Omit<GetCashDashboardQuery, "registerId">;
 
 const toQueryString = (params: Record<string, unknown>): string => {
   const query = new URLSearchParams();
@@ -116,6 +119,16 @@ export class CashManagementApi {
     );
   }
 
+  async getDashboard(
+    registerId: string,
+    params: DashboardRequest = {}
+  ): Promise<{ dashboard: CashDashboardResponse }> {
+    return apiClient.get<{ dashboard: CashDashboardResponse }>(
+      `/cash-registers/${registerId}/dashboard${toQueryString(params as Record<string, unknown>)}`,
+      { correlationId: apiClient.generateCorrelationId() }
+    );
+  }
+
   async submitDayClose(
     registerId: string,
     dayKey: string,
@@ -170,6 +183,12 @@ export class CashManagementApi {
 
   async downloadExport(fileToken: string): Promise<Blob> {
     return apiClient.getBlob(`/cash-exports/${fileToken}`, {
+      correlationId: apiClient.generateCorrelationId(),
+    });
+  }
+
+  async downloadDocument(documentId: string): Promise<Blob> {
+    return apiClient.getBlob(`/documents/${documentId}/download`, {
       correlationId: apiClient.generateCorrelationId(),
     });
   }

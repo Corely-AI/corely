@@ -21,6 +21,7 @@ let templateService: any;
 let prisma: any;
 let dimensionsWritePort: any;
 let customFieldsWritePort: any;
+let giftThresholdQuery: any;
 
 beforeEach(() => {
   repo = new FakeExpenseRepository();
@@ -70,6 +71,10 @@ beforeEach(() => {
     deleteEntityValues: async () => {},
   };
 
+  giftThresholdQuery = {
+    sumGiftsByRecipientForYear: async () => 0,
+  };
+
   useCase = new CreateExpenseUseCase(
     repo,
     outbox,
@@ -83,7 +88,8 @@ beforeEach(() => {
     customFieldsWritePort,
     workspaceRepo,
     templateService,
-    prisma
+    prisma,
+    giftThresholdQuery
   );
 });
 
@@ -112,5 +118,21 @@ describe("CreateExpenseUseCase", () => {
     expect(repo.expenses).toHaveLength(1);
     expect(audit.entries).toHaveLength(1);
     expect(outbox.events).toHaveLength(1);
+  });
+
+  it("supports forcing DRAFT status for copilot draft flows", async () => {
+    const expense = await useCase.execute(
+      buildCreateExpenseInput({
+        idempotencyKey: "force-draft",
+        initialStatusOverride: "DRAFT",
+      }),
+      {
+        tenantId: "tenant-1",
+        userId: "user-1",
+        workspaceId: "ws-1",
+      }
+    );
+
+    expect(expense.status).toBe("DRAFT");
   });
 });

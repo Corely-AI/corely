@@ -15,7 +15,9 @@ import {
   ArchiveVatPeriodInputSchema,
   CalculateTaxInputSchema,
   CreateTaxCodeInputSchema,
+  CreateTaxRateInputSchema,
   GenerateExciseReportInputSchema,
+  GetTaxEurStatementQuerySchema,
   ListTaxReportsInputSchema,
   ListVatPeriodsInputSchema,
   LockTaxSnapshotInputSchema,
@@ -25,11 +27,14 @@ import {
   UpsertTaxProfileInputSchema,
   type CalculateTaxOutput,
   type CreateTaxCodeOutput,
+  type CreateTaxRateOutput,
   type GenerateExciseReportOutput,
+  type GetTaxEurStatementOutput,
   type GetTaxConsultantOutput,
   type GetTaxProfileOutput,
   type GetTaxSummaryOutput,
   type ListTaxCodesOutput,
+  type ListTaxRatesOutput,
   type ListTaxReportsOutput,
   type LockTaxSnapshotOutput,
   type TaxCodeDto,
@@ -39,11 +44,12 @@ import {
 } from "@corely/contracts";
 import { IdempotencyInterceptor } from "../../shared/infrastructure/idempotency/IdempotencyInterceptor";
 import { AuthGuard } from "../identity/adapters/http/auth.guard";
-import { buildTaxUseCaseContext, unwrap } from "./tax-http.utils";
+import { buildTaxUseCaseContext, unwrap, unwrapWithProblemCode } from "./tax-http.utils";
 import { GetTaxProfileUseCase } from "./application/use-cases/get-tax-profile.use-case";
 import { UpsertTaxProfileUseCase } from "./application/use-cases/upsert-tax-profile.use-case";
 import { ListTaxCodesUseCase } from "./application/use-cases/list-tax-codes.use-case";
 import { CreateTaxCodeUseCase } from "./application/use-cases/create-tax-code.use-case";
+import { CreateTaxRateUseCase } from "./application/use-cases/create-tax-rate.use-case";
 import { CalculateTaxUseCase } from "./application/use-cases/calculate-tax.use-case";
 import { LockTaxSnapshotUseCase } from "./application/use-cases/lock-tax-snapshot.use-case";
 import { GetTaxSummaryUseCase } from "./application/use-cases/get-tax-summary.use-case";
@@ -53,6 +59,7 @@ import { MarkTaxReportSubmittedUseCase } from "./application/use-cases/mark-tax-
 import { GetTaxConsultantUseCase } from "./application/use-cases/get-tax-consultant.use-case";
 import { UpsertTaxConsultantUseCase } from "./application/use-cases/upsert-tax-consultant.use-case";
 import { ListVatPeriodsUseCase } from "./application/use-cases/list-vat-periods.use-case";
+import { ListTaxRatesUseCase } from "./application/use-cases/list-tax-rates.use-case";
 import { GetVatPeriodSummaryUseCase } from "./application/use-cases/get-vat-period-summary.use-case";
 import { GetVatPeriodDetailsUseCase } from "./application/use-cases/get-vat-period-details.use-case";
 import { MarkVatPeriodSubmittedUseCase } from "./application/use-cases/mark-vat-period-submitted.use-case";
@@ -60,6 +67,7 @@ import { MarkVatPeriodNilUseCase } from "./application/use-cases/mark-vat-period
 import { ArchiveVatPeriodUseCase } from "./application/use-cases/archive-vat-period.use-case";
 import { RequestTaxReportPdfUseCase } from "./application/use-cases/request-tax-report-pdf.use-case";
 import { GenerateExciseReportUseCase } from "./application/use-cases/generate-excise-report.usecase";
+import { GetEurStatementUseCase } from "./application/use-cases/get-eur-statement.use-case";
 import { VatPeriodResolver } from "./domain/services/vat-period.resolver";
 
 @Controller("tax")
@@ -71,6 +79,8 @@ export class TaxController {
     private readonly upsertTaxProfileUseCase: UpsertTaxProfileUseCase,
     private readonly listTaxCodesUseCase: ListTaxCodesUseCase,
     private readonly createTaxCodeUseCase: CreateTaxCodeUseCase,
+    private readonly listTaxRatesUseCase: ListTaxRatesUseCase,
+    private readonly createTaxRateUseCase: CreateTaxRateUseCase,
     private readonly calculateTaxUseCase: CalculateTaxUseCase,
     private readonly lockTaxSnapshotUseCase: LockTaxSnapshotUseCase,
     private readonly getTaxSummaryUseCase: GetTaxSummaryUseCase,
@@ -87,6 +97,7 @@ export class TaxController {
     private readonly archiveVatPeriodUseCase: ArchiveVatPeriodUseCase,
     private readonly requestTaxReportPdfUseCase: RequestTaxReportPdfUseCase,
     private readonly generateExciseReportUseCase: GenerateExciseReportUseCase,
+    private readonly getEurStatementUseCase: GetEurStatementUseCase,
     private readonly vatPeriodResolver: VatPeriodResolver
   ) {}
 
@@ -134,6 +145,46 @@ export class TaxController {
     };
   }
 
+  @Get("rates")
+  async listRates(
+    @Query("taxCodeId") taxCodeId: string,
+    @Req() req: Request
+  ): Promise<ListTaxRatesOutput> {
+    const ctx = buildTaxUseCaseContext(req);
+    const rates = unwrap(await this.listTaxRatesUseCase.execute({ taxCodeId }, ctx));
+    return {
+      rates: rates.map((rate) => ({
+        id: rate.id,
+        tenantId: rate.tenantId,
+        taxCodeId: rate.taxCodeId,
+        rateBps: rate.rateBps,
+        effectiveFrom: rate.effectiveFrom.toISOString(),
+        effectiveTo: rate.effectiveTo?.toISOString() ?? null,
+        createdAt: rate.createdAt.toISOString(),
+        updatedAt: rate.updatedAt.toISOString(),
+      })),
+    };
+  }
+
+  @Post("rates")
+  async createRate(@Body() body: unknown, @Req() req: Request): Promise<CreateTaxRateOutput> {
+    const input = CreateTaxRateInputSchema.parse(body);
+    const ctx = buildTaxUseCaseContext(req);
+    const rate = unwrap(await this.createTaxRateUseCase.execute(input, ctx));
+    return {
+      rate: {
+        id: rate.id,
+        tenantId: rate.tenantId,
+        taxCodeId: rate.taxCodeId,
+        rateBps: rate.rateBps,
+        effectiveFrom: rate.effectiveFrom.toISOString(),
+        effectiveTo: rate.effectiveTo?.toISOString() ?? null,
+        createdAt: rate.createdAt.toISOString(),
+        updatedAt: rate.updatedAt.toISOString(),
+      },
+    };
+  }
+
   @Post("calculate")
   async calculate(@Body() body: unknown, @Req() req: Request): Promise<CalculateTaxOutput> {
     const input = CalculateTaxInputSchema.parse(body);
@@ -161,7 +212,10 @@ export class TaxController {
   }
 
   @Get("reports")
-  async listReports(@Query() query: any, @Req() req: Request): Promise<ListTaxReportsOutput> {
+  async listReports(
+    @Query() query: Record<string, unknown>,
+    @Req() req: Request
+  ): Promise<ListTaxReportsOutput> {
     const parsed = ListTaxReportsInputSchema.parse({
       status: query.status,
       group: query.group,
@@ -179,6 +233,18 @@ export class TaxController {
         ctx
       )
     );
+  }
+
+  @Get("reports/eur")
+  async getEurStatement(
+    @Query() query: Record<string, unknown>,
+    @Req() req: Request
+  ): Promise<GetTaxEurStatementOutput> {
+    const input = GetTaxEurStatementQuerySchema.parse({
+      year: query.year,
+    });
+    const ctx = buildTaxUseCaseContext(req);
+    return unwrapWithProblemCode(await this.getEurStatementUseCase.execute(input, ctx));
   }
 
   @Get("reports/:id")

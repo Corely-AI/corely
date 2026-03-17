@@ -80,6 +80,8 @@
     "reason": "Grund",
     "reasonPlaceholder": "Grund eingeben...",
     "badge": "Badge",
+    "actions": "Aktionen",
+    "other": "Sonstige",
     "moreActions": "Weitere Aktionen",
     "dangerZone": "Gefahrenzone",
     "goBack": "Zurück",
@@ -93,7 +95,120 @@
     "updated": "Aktualisiert",
     "notSet": "Nicht festgelegt",
     "done": "Fertig",
-    "customFields": "Benutzerdefinierte Felder"
+    "customFields": "Benutzerdefinierte Felder",
+    "trial": {
+      "activeTitle": "Testphase mit vollem Zugriff: noch {{days}} Tage",
+      "expiringTitle": "Noch {{days}} Tage Ihrer Testphase mit vollem Zugriff",
+      "description": "Keine Kreditkarte erforderlich. Wählen Sie vor Ende der Testphase einen kostenpflichtigen Plan, um Export, KI und Zugriff auf mehrere Standorte zu behalten.",
+      "cta": "Abrechnung öffnen",
+      "expiredTitle": "Ihre 30-tägige Testphase ist abgelaufen",
+      "expiredDescription": "Upgrade jetzt durchführen, um alle Funktionen weiterhin zu nutzen.",
+      "dismiss": "Schließen",
+      "modalTitle": "Ihre 30-tägige Testphase mit vollem Zugriff ist abgelaufen",
+      "modalDescription": "Ihr Arbeitsbereich nutzt nun den kostenlosen Plan. Historische Daten sind weiterhin verfügbar, aber Export-, KI- und Multi-Standort-Funktionen sind gesperrt, bis Sie ein Abonnement abschließen.",
+      "modalLater": "Später",
+      "choosePlan": "Plan wählen"
+    }
+  },
+  "onboarding": {
+    "allSet": "Alles bereit!",
+    "redirectingToDashboard": "Weiterleitung zum Dashboard...",
+    "saveAndExit": "Speichern & Beenden",
+    "goBack": "Zurück",
+    "loading": "Onboarding wird geladen...",
+    "aiAssistant": "KI-Assistent",
+    "aiTipTitle": "Hilfreicher Assistent",
+    "aiHelpTitle": "Brauchen Sie Hilfe?",
+    "aiHelpPrompt": "Brauchen Sie Hilfe bei diesem Schritt? Fragen Sie unseren KI-Assistenten nach Erklärungen oder Vorschlägen.",
+    "askAssistant": "Assistent fragen",
+    "businessName": "Unternehmensname",
+    "businessNamePlaceholder": "z.B. Bella Beauty Studio",
+    "businessNameRequired": "Unternehmensname ist erforderlich",
+    "businessType": "Unternehmensart",
+    "selectType": "Typ wählen",
+    "businessTypeRequired": "Kategorie ist erforderlich",
+    "currency": "Währung",
+    "categories": {
+      "beauty": "Nagel- / Kosmetikstudio",
+      "hair": "Frisör / Barbier",
+      "gastronomy": "Café / Restaurant",
+      "retail": "Einzelhandel",
+      "other": "Sonstiges"
+    },
+    "workflowOptions": {
+      "paper": "Papier / Notizbuch",
+      "paperDesc": "Wechseln Sie von manuellen Notizbüchern zu digital.",
+      "excel": "Excel / Tabelle",
+      "excelDesc": "Keine komplexen Formeln oder kaputten Zellen mehr.",
+      "pos": "Kassensystem (POS)",
+      "posDesc": "Vereinen Sie Ihr Kassensystem und Ihr Kassenbuch nahtlos.",
+      "software": "Andere Software",
+      "softwareDesc": "Upgrade auf eine modernere Kassenlösung."
+    },
+    "workflow": {
+      "insightTitle": "Personalisierter Einblick",
+      "selectHint": "Wählen Sie Ihren bisherigen Ablauf"
+    },
+    "welcome": {
+      "badge": "Neue Erfahrung",
+      "footer": "Bereitgestellt von Corely KI"
+    },
+    "receipt": {
+      "errorUnsupported": "Nicht unterstützte Datei. Bitte laden Sie eine PDF, JPG oder PNG unter 10 MB hoch.",
+      "uploadPrompt": "Klicken Sie zum Hochladen oder per Drag & Drop",
+      "uploadHint": "PDF, JPG, PNG (max. 10MB)",
+      "skipLabel": "Ich mache das später",
+      "successTitle": "Beleg angehängt!",
+      "successDesc": "Weiter zum nächsten Schritt...",
+      "continueLabel": "Weiter"
+    },
+    "openingBalance": {
+      "errorAmount": "Gültiger Betrag erforderlich",
+      "label": "Echtes Bargeld in der Kasse",
+      "hint": "💡 Kartenzahlungen oder Banküberweisungen nicht mitzählen. Nur physisches Bargeld.",
+      "importantTip": "Wichtiger Tipp"
+    },
+    "entries": {
+      "errorAmount": "Gültiger Betrag erforderlich",
+      "errorNote": "Notiz ist erforderlich",
+      "ctaAdd": "Eintrag hinzufügen",
+      "successTitle": "Eintrag gespeichert",
+      "successOne": "Super! Du hast deinen ersten Eintrag hinzugefügt. Machen wir noch einen.",
+      "typeLabel": "Transaktionstyp",
+      "typeIncome": "Bareinnahme",
+      "typeExpense": "Barausgabe",
+      "amountLabel": "Betrag ({{symbol}})",
+      "descLabel": "Beschreibung",
+      "descPlaceholder": "z.B. Haarschnitt oder Kaffeezubehör",
+      "skipSecond": "Zweiten Eintrag überspringen"
+    },
+    "status": {
+      "expectedLabel": "Erwarteter Kassenbestand",
+      "incomeLabel": "Heutige Einnahmen",
+      "expenseLabel": "Heutige Ausgaben",
+      "receiptMissing": "Erinnerung: Dein erster Beleg fehlt noch. Du kannst ihn später in der Liste der Bareinträge anhängen.",
+      "workflowPaper": "Da du ein Notizbuch verwendet hast, ersetzt diese Ansicht das manuelle Zusammenrechnen.",
+      "workflowExcel": "Da du Tabellen verwendet hast, hält dies deine Bargeldbestände ohne Formeln aktuell.",
+      "workflowPos": "Da du ein Kassensystem verwendest, hält dies Bargeld und Belege an einem Ort zusammen.",
+      "workflowSoftware": "Da Sie eine andere Software verwendet haben, erhalten Sie hier eine zentrale tägliche Kassenübersicht.",
+      "receiptReminder": "Quittungserinnerung",
+      "tipTitle": "Dies ist dein Kassenstatus.",
+      "tipDesc": "Dein erwarteter Saldo wird bei jedem Eintrag automatisch aktualisiert. Keine manuellen Berechnungen mehr am Ende des Tages.",
+      "cta": "Ansehen, was als Nächstes kommt"
+    },
+    "closing": {
+      "watchTutorial": "30s Tutorial ansehen",
+      "skipLabel": "Ich mache das später"
+    },
+    "postValue": {
+      "inviteTitle": "Team einladen",
+      "inviteDesc": "Gib deinen Mitarbeitern Zugriff, um Bareinträge über die Tablet-App hinzuzufügen.",
+      "inviteAction": "Mitglieder hinzufügen",
+      "categoriesTitle": "Eigene Kategorien",
+      "categoriesDesc": "Richte eigene Ausgaben- und Einnahmekategorien für bessere Berichte ein.",
+      "categoriesAction": "Kategorien bearbeiten",
+      "cta": "Zum Dashboard"
+    }
   },
   "actions": {
     "takeAttendance": "Anwesenheit erfassen",
@@ -123,11 +238,15 @@
       "filings": "Meldungen",
       "payments": "Zahlungen",
       "documents": "Dokumente",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "reports": "Berichte",
+      "annualAssistant": "Jahresassistent"
     },
     "assistant": "Assistent",
+    "billing": "Abrechnung",
     "expenses": "Ausgaben",
     "invoices": "Rechnungen",
+    "registers": "Kassen",
     "directory": {
       "restaurants": "Restaurants"
     },
@@ -367,30 +486,733 @@
       "accountingMethod": "Gewinnermittlungsart",
       "taxYearStartMonth": "Beginn des Steuerjahres",
       "localTaxOffice": "Zuständiges Finanzamt",
-      "save": "Steuerprofil speichern"
+      "save": "Steuerprofil speichern",
+      "saveSuccess": "Steuerprofil gespeichert",
+      "saveFailed": "Steuerprofil konnte nicht gespeichert werden",
+      "vatExemption": "Absatz zur Mehrwertsteuerbefreiung",
+      "vatExemptionHelp": "Wählen Sie den entsprechenden Ausnahmeparagraphen für Ihr Unternehmen aus"
     },
     "countries": {
       "de": "Deutschland"
     },
     "regimes": {
-      "standardVat": "Regelbesteuerung"
+      "standardVat": "Regelbesteuerung",
+      "smallBusiness": "Kleinunternehmer",
+      "vatExempt": "Mehrwertsteuerbefreit"
     },
     "filing": {
-      "quarterly": "Vierteljährlich"
+      "quarterly": "Vierteljährlich",
+      "monthly": "Monatlich",
+      "yearly": "Jährlich"
     },
     "accounting": {
       "cashBasis": "Einnahmen-Überschuss-Rechnung (EÜR)",
+      "accrualBasis": "Soll-Versteuerung (Bilanzierung)",
       "cashBasisHelp": "Einnahmen werden erfasst, wenn sie zufließen",
       "accrualBasisHelp": "Einnahmen werden erfasst, wenn sie entstehen, unabhängig vom Zahlungszeitpunkt"
     },
     "placeholders": {
       "vatId": "Umsatzsteuer-ID eingeben (z.B. DE123456789)",
       "month": "Monat wählen",
-      "localTaxOffice": "Name Ihres Finanzamtes eingeben"
+      "localTaxOffice": "Name Ihres Finanzamtes eingeben",
+      "country": "Land auswählen",
+      "regime": "Regime auswählen",
+      "vatExemption": "Ausnahmeparagraphen auswählen",
+      "filingFrequency": "Frequenz auswählen",
+      "accountingMethod": "Methode auswählen"
     },
     "consultant": {
       "title": "Steuerberater",
-      "save": "Beraterinfo speichern"
+      "save": "Beraterinfo speichern",
+      "saveSuccess": "Beraterinformationen gespeichert",
+      "saveFailed": "Beraterinformationen konnten nicht gespeichert werden"
+    },
+    "submitStep": {
+      "methods": {
+        "manual": "Manuell",
+        "api": "API",
+        "elster": "ELSTER"
+      },
+      "export": {
+        "title": "Export für ELSTER",
+        "description": "Laden Sie die Meldedaten herunter, um sie in Mein ELSTER hochzuladen. Nach der Übermittlung in ELSTER fügen Sie unten die Transfer-/Referenz-ID ein.",
+        "actions": {
+          "elsterXml": "ELSTER XML exportieren",
+          "kennzifferCsv": "CSV exportieren (Kennziffern-Zuordnung)",
+          "loading": "Wird exportiert..."
+        },
+        "unavailable": "ELSTER-Export ist für diese Meldung nicht verfügbar.",
+        "success": {
+          "elsterXml": "ELSTER XML heruntergeladen",
+          "kennzifferCsv": "Kennziffern-CSV heruntergeladen"
+        },
+        "errors": {
+          "generic": "Export der Meldung fehlgeschlagen."
+        }
+      },
+      "connection": {
+        "title": "Übermittlungsart",
+        "connected": "Ihre automatische Übermittlungsverbindung ist eingerichtet.",
+        "notConfigured": "Keine Übermittlungsverbindung konfiguriert.",
+        "manageIn": "Verwalten Sie die Übermittlungseinstellungen in",
+        "settingsLink": "Steuereinstellungen",
+        "enableDirectFiling": "um die direkte Einreichung zu aktivieren."
+      },
+      "confirmation": {
+        "title": "Übermittlungsbestätigung",
+        "method": "Methode",
+        "reference": "Übermittlungsreferenz",
+        "referencePlaceholder": "Übermittlungs-ID/Referenz eingeben",
+        "submittedAt": "Übermittelt am",
+        "notes": "Notizen (optional)",
+        "notesPlaceholder": "Notiz für Ihre Unterlagen hinzufügen",
+        "submit": "Meldung übermitteln"
+      }
+    },
+    "attachments": {
+      "title": "Anhänge",
+      "attachFromDocuments": "Aus Dokumenten anhängen",
+      "uploadAttachment": "Anhang hochladen",
+      "loading": "Anhänge werden geladen...",
+      "error": "Laden der Anhänge fehlgeschlagen.",
+      "empty": "Laden Sie Belege oder Übermittlungsbestätigungen hoch.",
+      "untitled": "Unbenanntes Dokument",
+      "type": "Typ: {{type}}",
+      "uploadedAt": "Hochgeladen am {{date}}",
+      "uploader": "Uploader: {{name}}",
+      "remove": "Entfernen",
+      "dialog": {
+        "title": "Beleg anhängen",
+        "description": "Laden Sie einen Zahlungsbeleg für diese Meldung hoch.",
+        "replace": "Beleg ersetzen",
+        "choose": "Beleg auswählen",
+        "noFile": "Keine Datei ausgewählt",
+        "uploading": "Wird hochgeladen...",
+        "submit": "Beleg anhängen"
+      },
+      "messages": {
+        "uploadSuccess": "Anhang hochgeladen",
+        "uploadError": "Hochladen des Anhangs fehlgeschlagen",
+        "selectFile": "Wählen Sie einen Beleg zum Hochladen aus"
+      }
+    },
+    "filingDetail": {
+      "types": {
+        "vat": "Umsatzsteuer-Voranmeldung",
+        "vat-annual": "Umsatzsteuer-Jahreserklärung",
+        "income-annual": "Einkommensteuererklärung",
+        "trade": "Gewerbesteuererklärung",
+        "payroll": "Lohnsteuer-Anmeldung",
+        "corporate-annual": "Körperschaftsteuererklärung",
+        "year-end": "Jahresabschluss",
+        "other": "Steuermeldung"
+      },
+      "status": {
+        "draft": "Entwurf",
+        "needsFix": "Handlung erforderlich",
+        "readyForReview": "Bereit zur Prüfung",
+        "submitted": "Übermittelt",
+        "paid": "Bezahlt",
+        "archived": "Archiviert"
+      },
+      "actions": {
+        "review": "Prüfen",
+        "continueReview": "Prüfung fortsetzen",
+        "markPaid": "Als bezahlt markieren",
+        "view": "Ansehen",
+        "previousPeriod": "Vorheriger Zeitraum",
+        "nextPeriod": "Nächster Zeitraum",
+        "recalculate": "Neu berechnen",
+        "exportPdf": "PDF exportieren",
+        "exportCsv": "CSV exportieren",
+        "delete": "Meldung löschen",
+        "deleteConfirmTitle": "Meldung löschen?",
+        "deleteConfirmMessage": "Diese Aktion kann nicht rückgängig gemacht werden."
+      },
+      "due": "Fällig am {{date}}",
+      "dueWithDays": "Fällig am {{date}} • Noch {{count}} Tag",
+      "dueWithDays_plural": "Fällig am {{date}} • Noch {{count}} Tage"
+    },
+    "activity": {
+      "title": "Aktivität",
+      "loading": "Aktivität wird geladen...",
+      "error": "Laden der Aktivität fehlgeschlagen.",
+      "noActivity": "Noch keine Aktivität.",
+      "by": "Von {{name}}",
+      "types": {
+        "created": "Meldung erstellt",
+        "recalculated": "Neu berechnet",
+        "submitted": "Übermittelt",
+        "paid": "Als bezahlt markiert",
+        "attachmentAdded": "Anhang hinzugefügt",
+        "issuesDetected": "Probleme erkannt",
+        "issuesResolved": "Probleme behoben",
+        "deleted": "Gelöscht"
+      }
+    },
+    "center": {
+      "title": "Steuerzentrum",
+      "myTaxes": "Meine Steuern",
+      "freelancerSubtitle": "Verwalten Sie Ihre freelancer-steuerlichen Verpflichtungen.",
+      "companySubtitle": "Übersicht über die Compliance und Meldungen Ihres Unternehmens.",
+      "errorLoading": "Fehler beim Laden des Steuerzentrums",
+      "errorDescription": "Wir konnten Ihre Steuerübersicht nicht laden. Bitte versuchen Sie es erneut.",
+      "retry": "Wiederholen",
+      "reviewNext": "Nächste Meldung prüfen",
+      "settings": "Einstellungen",
+      "nextUp": {
+        "title": "Nächste Schritte",
+        "allCaughtUp": "Alles erledigt!",
+        "noUpcoming": "Keine anstehenden Meldungen gefunden.",
+        "createFiling": "Meldung erstellen",
+        "dueDate": "Fälligkeitsdatum",
+        "estimatedAmount": "Voraussichtlicher Betrag",
+        "reviewFiling": "Meldung prüfen",
+        "viewAll": "Alle Meldungen ansehen",
+        "overdue": "ÜBERFÄLLIG",
+        "vat": "USt",
+        "tax": "Steuer"
+      },
+      "annual": {
+        "title": "Jährliche Meldungen",
+        "yearendTitle": "Jahresabschluss & jährliche Meldungen",
+        "viewAll": "Alle anzeigen",
+        "createForYear": "Erstellen für {{year}}",
+        "noFilings": "Keine jährlichen Meldungen für {{year}}",
+        "obligations": "Jährliche Verpflichtungen.",
+        "status": {
+          "draft": "Entwurf",
+          "needsFix": "Klärungsbedarf",
+          "readyForReview": "Bereit zur Prüfung",
+          "submitted": "Übermittelt",
+          "paid": "Bezahlt",
+          "archived": "Archiviert",
+          "openForSubmission": "Bereit zur Abgabe",
+          "yearInProgress": "Laufendes Jahr"
+        },
+        "year": "Jahr {{year}}",
+        "estimatedTaxToPay": "Voraussichtliche Zahllast",
+        "reviewAndSubmit": "Prüfen & Senden",
+        "preview": "Vorschau"
+      },
+      "issues": {
+        "title": "Offene Punkte",
+        "noIssues": "Keine Probleme erkannt. Ihre Buchhaltung sieht sauber aus!",
+        "items": "Einträge",
+        "affected": "betroffen",
+        "fix": "Beheben",
+        "blocking": "BLOCKIEREND"
+      },
+      "shortcuts": {
+        "title": "Shortcuts",
+        "createFiling": "Meldung erstellen",
+        "exportReport": "Bericht exportieren",
+        "payTaxes": "Steuern zahlen",
+        "documents": "Dokumente"
+      },
+      "snapshot": {
+        "title": "Jahresübersicht ({{year}})",
+        "updated": "Aktualisiert am {{date}}",
+        "noData": "Noch keine Daten verfügbar."
+      }
+    },
+    "reports": {
+      "title": "Steuerberichte",
+      "subtitle": "Verfolgen Sie anstehende Erklärungen und Übermittlungen.",
+      "tabs": {
+        "upcoming": "Anstehend",
+        "submitted": "Übermittelt"
+      },
+      "groups": {
+        "vat": "Umsatzsteuer-Voranmeldungen",
+        "compliance": "Compliance (ZM & Intrastat)",
+        "submitted": "Übermittelte Meldungen"
+      },
+      "actions": {
+        "markSubmitted": "Als übermittelt markieren",
+        "downloadPdf": "PDF herunterladen",
+        "generatingPdf": "PDF wird erstellt...",
+        "downloadStarted": "Download gestartet",
+        "pdfPrepared": "PDF wird vorbereitet. Bitte in Kürze erneut versuchen.",
+        "downloadFailed": "PDF-Download fehlgeschlagen"
+      },
+      "status": {
+        "loading": "Meldungen werden geladen...",
+        "empty": "Keine Meldungen gefunden."
+      },
+      "types": {
+        "vatAdvance": "USt-Voranmeldung",
+        "vatAnnual": "Umsatzsteuer-Jahreserklärung",
+        "incomeTax": "Einkommensteuer",
+        "euSales": "Zusammenfassende Meldung (ZM)",
+        "intrastat": "Intrastat-Meldung",
+        "tradeTax": "Gewerbesteuer",
+        "profitLoss": "Einnahmen-Überschuss-Rechnung (EÜR)",
+        "payrollTax": "Lohnsteuer"
+      },
+      "eur": {
+        "title": "Anlage EÜR (Gewinnermittlung)",
+        "subtitle": "Jahresauswertung auf Ist-Basis für die persönliche Steuererklärung in Deutschland.",
+        "status": {
+          "loadingCapabilities": "Steuerfunktionen werden geladen...",
+          "loadingStatement": "EÜR-Auswertung wird geladen..."
+        },
+        "unsupported": {
+          "title": "EÜR ist nicht verfügbar",
+          "description": "Dieser Bericht wird derzeit nur für persönliche DE-Workspaces unterstützt."
+        },
+        "errors": {
+          "capabilitiesTitle": "Steuerfunktionen konnten nicht geladen werden",
+          "capabilitiesDescription": "Bitte erneut versuchen, sobald der Workspace-Kontext verfügbar ist.",
+          "statementTitle": "EÜR-Auswertung konnte nicht geladen werden",
+          "generic": "EÜR-Auswertung konnte nicht geladen werden."
+        },
+        "summary": {
+          "income": "Einnahmen",
+          "expenses": "Ausgaben",
+          "profit": "Gewinn"
+        },
+        "lines": {
+          "title": "Positionen",
+          "columns": {
+            "line": "Position",
+            "group": "Gruppe",
+            "amount": "Betrag"
+          },
+          "groups": {
+            "income": "Einnahme",
+            "expense": "Ausgabe"
+          }
+        },
+        "lineLabels": {
+          "income": {
+            "sales": "Umsatzerlöse",
+            "other": "Sonstige betriebliche Erträge"
+          },
+          "expense": {
+            "rent": "Raumkosten (Miete/Nebenkosten)",
+            "software": "Software und Abonnements",
+            "travel": "Reisekosten",
+            "marketing": "Werbung und Marketing",
+            "professional": "Beratung und Fremdleistungen",
+            "taxes": "Steuern, Gebühren und Abgaben",
+            "other": "Sonstige unbeschränkt abziehbare Betriebsausgaben"
+          }
+        },
+        "generatedAt": "Erstellt am {{date}}"
+      }
+    },
+    "documents": {
+      "title": "Steuerdokumente",
+      "subtitle": "Archiv aller steuerrelevanten Dokumente."
+    },
+    "payments": {
+      "title": "Zahlungen",
+      "subtitle": "Verfolgen Sie bezahlte vs. fällige Meldungen über das Jahr.",
+      "exportCsv": "CSV exportieren",
+      "status": {
+        "due": "Fällig",
+        "overdue": "Überfällig",
+        "paid": "Bezahlt"
+      },
+      "types": {
+        "vat": "USt",
+        "vatAnnual": "USt jährlich",
+        "incomeAnnual": "Einkommensteuer",
+        "trade": "Gewerbesteuer",
+        "payroll": "Lohnsteuer",
+        "corporateAnnual": "Körperschaftsteuer",
+        "yearEnd": "Jahresabschluss",
+        "other": "Sonstige"
+      },
+      "columns": {
+        "filing": "Meldung",
+        "dueDate": "Fällig am",
+        "amount": "Betrag",
+        "status": "Status",
+        "paidDate": "Bezahlt am",
+        "method": "Methode",
+        "payable": "Zahllast",
+        "receivable": "Erstattung"
+      },
+      "actions": {
+        "markPaid": "Als bezahlt markieren",
+        "attachReceipt": "Beleg anfügen",
+        "markedPaid": "Als bezahlt markiert",
+        "markPaidFailed": "Markieren als bezahlt fehlgeschlagen",
+        "receiptAttached": "Beleg angefügt",
+        "attachReceiptFailed": "Beleg anfügen fehlgeschlagen",
+        "exportFailed": "Export der Zahlungen fehlgeschlagen"
+      },
+      "empty": {
+        "title": "Keine Zahlungen zu verfolgen",
+        "description": "Zahlungen erscheinen hier, sobald Meldungen übermittelt wurden.",
+        "goToFilings": "Zu den Meldungen"
+      },
+      "error": {
+        "title": "Zahlungen konnten nicht geladen werden",
+        "description": "Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
+      },
+      "sort": {
+        "dueDateSoonest": "Fälligkeit (Zuerst)",
+        "dueDateLatest": "Fälligkeit (Zuletzt)",
+        "paidDateNewest": "Zahlungsdatum (Neueste)",
+        "paidDateOldest": "Zahlungsdatum (Älteste)",
+        "amountHighLow": "Betrag (Hoch-Niedrig)",
+        "amountLowHigh": "Betrag (Niedrig-Hoch)"
+      }
+    },
+    "overview": {
+      "title": "Steuern",
+      "greeting": "Guten Abend, {{name}}!",
+      "yourTaxes": "Ihre Steuern in Ihrer Region",
+      "localOffice": "Finanzamt: {{name}}",
+      "annualAssistant": "Jahresassistent",
+      "viewReports": "Berichte anzeigen",
+      "taxSettings": "Steuereinstellungen",
+      "currentVatPeriod": "Aktueller USt-Zeitraum: Q{{period}} {{year}}",
+      "estimatedVatDue": "Voraussichtliche Zahllast",
+      "notConfigured": "Nicht konfiguriert",
+      "viewDetails": "Details anzeigen",
+      "kpis": {
+        "taxesToBePaid": "Zu zahlende Steuern",
+        "income": "Einnahmen",
+        "expenses": "Ausgaben",
+        "vatNotApplicable": "USt nicht anwendbar",
+        "completeSetup": "Steuer-Setup abschließen",
+        "seeOverview": "Steuerübersicht anzeigen",
+        "unpaidInvoices": "{{count}} offene Rechnungen",
+        "itemsToReview": "{{count}} zu prüfende Belege"
+      },
+      "headsUp": "Hinweis",
+      "settingsIncomplete": "Steuereinstellungen unvollständig",
+      "settingsIncompleteDescription": "Konfigurieren Sie Ihr Steuerprofil, um Ihre Zahllast zu schätzen.",
+      "goToSettings": "Zu den Steuereinstellungen",
+      "expenseHelper": {
+        "title": "Was kann ich absetzen?",
+        "description": "Erfahren Sie, welche Käufe Sie als Geschäftsausgaben kategorisieren können.",
+        "learnMore": "Mehr erfahren"
+      },
+      "yourReports": "Ihre Steuerberichte",
+      "reportsDescription": "Basierend auf Ihren Angaben sind dies die Berichte, die Sie aktuell einreichen müssen…",
+      "submitReports": "Berichte einreichen",
+      "upcomingDeadline": "{{count}} anstehende Frist",
+      "upcomingDeadline_plural": "{{count}} anstehende Fristen",
+      "noUpcoming": "Keine anstehenden Berichte.",
+      "localTaxOffice": "Zuständiges Finanzamt",
+      "addLocalOffice": "Fügen Sie Ihr Finanzamt hinzu, um Ihre Unterlagen zu vervollständigen.",
+      "updateSettings": "Einstellungen aktualisieren",
+      "errorLoading": "Steuern konnten nicht geladen werden",
+      "errorDescription": "Beim Abrufen Ihrer Steuerübersicht ist ein Fehler aufgetreten."
+    },
+    "annualAssistant": {
+      "threadTitle": "Jahres-Einkommensteuer {{year}}",
+      "loading": "Ihre Jahressteuer-Assistenzsitzung wird vorbereitet...",
+      "placeholder": "Bitten Sie mich, den Entwurf zu erstellen, EÜR zu erzeugen oder den nächsten Schritt zu führen",
+      "emptyStateTitle": "Jahres-Einkommensteuer {{year}}",
+      "emptyStateDescription": "Erledigen Sie die Jahresabgabe im Chat: Entwurf erstellen, EÜR generieren, Interviewfragen beantworten und PDF exportieren.",
+      "suggestions": {
+        "createDraft": {
+          "label": "Jahresentwurf erstellen",
+          "value": "Erstelle meinen Einkommensteuer-Jahresentwurf für {{year}}."
+        },
+        "checklist": {
+          "label": "Checkliste anzeigen",
+          "value": "Zeige die Entwurfs-Checkliste und Blocker."
+        },
+        "export": {
+          "label": "PDF exportieren",
+          "value": "Exportiere mein Jahresentwurf-PDF."
+        }
+      },
+      "errors": {
+        "createTitle": "Jahresassistent kann nicht gestartet werden",
+        "createDescription": "Der Assistenz-Thread konnte nicht erstellt werden. Bitte erneut versuchen."
+      }
+    },
+    "history": {
+      "title": "USt-Voranmeldezeiträume",
+      "year": "Jahr",
+      "overdueAlert": "Handlung erforderlich: {{count}} überfällige USt-Zeiträume",
+      "overdueDescription": "Der älteste überfällige Zeitraum ist vorausgewählt. Sie können weiterhin am aktuellen Zeitraum arbeiten.",
+      "submitOverdue": "Überfällige Zeiträume einreichen",
+      "noData": "Keine Daten für dieses Jahr.",
+      "noPeriods": "Keine Zeiträume gefunden.",
+      "quarter": "Quartal",
+      "selectQuarter": "Quartal wählen",
+      "viewDetails": "Zeitraumdetails anzeigen",
+      "selectedPeriod": "Ausgewählter Zeitraum: {{label}} ({{range}})",
+      "taxDue": "Zahllast",
+      "salesVat": "Umsatzsteuer",
+      "purchaseVat": "Vorsteuer",
+      "submittedOn": "Übermittelt am {{date}}",
+      "reference": "Referenz: {{ref}}",
+      "notes": "Notizen: {{notes}}",
+      "archiveReason": "Archivierungsgrund: {{reason}}",
+      "downloadPdf": "PDF herunterladen",
+      "markSubmitted": "Als übermittelt markieren",
+      "markNil": "Als Nullmeldung markieren",
+      "archive": "Archivieren",
+      "tabs": {
+        "upcoming": "Anstehende Berichte",
+        "submitted": "Übermittelte Berichte"
+      },
+      "dialogs": {
+        "submitted": {
+          "title": "Zeitraum als übermittelt markieren",
+          "date": "Übermittlungsdatum",
+          "reference": "Referenz (optional)",
+          "notes": "Notizen (optional)",
+          "submit": "Zeitraum übermitteln"
+        },
+        "nil": {
+          "title": "Zeitraum als Nullmeldung markieren",
+          "date": "Übermittlungsdatum",
+          "notes": "Notizen (optional)",
+          "submit": "Als Nullmeldung markieren"
+        },
+        "archive": {
+          "title": "Zeitraum archivieren",
+          "reason": "Grund",
+          "notes": "Notizen (optional)",
+          "submit": "Zeitraum archivieren"
+        },
+        "cancel": "Abbrechen"
+      },
+      "periodCombobox": {
+        "placeholder": "Zeitraum wählen oder eingeben…",
+        "searchPlaceholder": "Zeitraum suchen oder eingeben…",
+        "useCustom": "\"{{value}}\" verwenden",
+        "customHint": "Eingabetaste drücken oder klicken, um diesen benutzerdefinierten Zeitraum zu verwenden",
+        "noPeriods": "Keine Zeiträume gefunden.",
+        "customHeading": "Benutzerdefiniert",
+        "customPeriod": "Benutzerdefinierter Zeitraum",
+        "quartersHeading": "Quartale",
+        "monthlyHeading": "Monatlich",
+        "footerHint": "Geben Sie {{qExample}} oder {{mExample}} für einen benutzerdefinierten Zeitraum ein",
+        "quarters": {
+          "1": "Q1",
+          "2": "Q2",
+          "3": "Q3",
+          "4": "Q4"
+        },
+        "quarterMonths": {
+          "1": "Jan – Mär",
+          "2": "Apr – Jun",
+          "3": "Jul – Sep",
+          "4": "Okt – Dez"
+        }
+      },
+      "navigator": {
+        "prevYear": "Vorheriges Jahr",
+        "nextYear": "Nächstes Jahr",
+        "failedToLoad": "Laden der USt-Zeiträume fehlgeschlagen.",
+        "retry": "Wiederholen",
+        "notStarted": "Nicht gestartet",
+        "noFilingYet": "Noch keine Meldung für {{period}} {{year}}.",
+        "createFiling": "Meldung erstellen",
+        "status": {
+          "draft": "Entwurf",
+          "needsFix": "Handlung erforderlich",
+          "readyForReview": "Bereit",
+          "submitted": "Übermittelt",
+          "paid": "Bezahlt",
+          "archived": "Archiviert"
+        }
+      },
+      "attachments": {
+        "title": "Anhänge",
+        "attachFromDocuments": "Aus Dokumenten anhängen",
+        "uploadAttachment": "Anhang hochladen",
+        "loading": "Anhänge werden geladen...",
+        "error": "Laden der Anhänge fehlgeschlagen.",
+        "empty": "Laden Sie Belege oder Übermittlungsbestätigungen hoch.",
+        "untitled": "Unbenanntes Dokument",
+        "type": "Typ: {{type}}",
+        "uploadedAt": "Hochgeladen am {{date}}",
+        "uploader": "Uploader: {{name}}",
+        "remove": "Entfernen",
+        "dialog": {
+          "title": "Beleg anhängen",
+          "description": "Laden Sie einen Zahlungsbeleg für diese Meldung hoch.",
+          "replace": "Beleg ersetzen",
+          "choose": "Beleg auswählen",
+          "noFile": "Keine Datei ausgewählt",
+          "uploading": "Wird hochgeladen...",
+          "submit": "Beleg anhängen"
+        },
+        "messages": {
+          "uploadSuccess": "Anhang hochgeladen",
+          "uploadError": "Hochladen des Anhangs fehlgeschlagen",
+          "selectFile": "Wählen Sie einen Beleg zum Hochladen aus"
+        }
+      },
+      "filingDetail": {
+        "types": {
+          "vat": "Umsatzsteuer-Voranmeldung",
+          "vat-annual": "Umsatzsteuer-Jahreserklärung",
+          "income-annual": "Einkommensteuererklärung",
+          "trade": "Gewerbesteuererklärung",
+          "payroll": "Lohnsteuer-Anmeldung",
+          "corporate-annual": "Körperschaftsteuererklärung",
+          "year-end": "Jahresabschluss",
+          "other": "Steuermeldung"
+        },
+        "status": {
+          "draft": "Entwurf",
+          "needsFix": "Handlung erforderlich",
+          "readyForReview": "Bereit zur Prüfung",
+          "submitted": "Übermittelt",
+          "paid": "Bezahlt",
+          "archived": "Archiviert"
+        },
+        "actions": {
+          "review": "Prüfen",
+          "continueReview": "Prüfung fortsetzen",
+          "markPaid": "Als bezahlt markieren",
+          "view": "Ansehen",
+          "previousPeriod": "Vorheriger Zeitraum",
+          "nextPeriod": "Nächster Zeitraum",
+          "recalculate": "Neu berechnen",
+          "exportPdf": "PDF exportieren",
+          "exportCsv": "CSV exportieren",
+          "delete": "Meldung löschen",
+          "deleteConfirmTitle": "Meldung löschen?",
+          "deleteConfirmMessage": "Diese Aktion kann nicht rückgängig gemacht werden."
+        },
+        "due": "Fällig am {{date}}",
+        "dueWithDays": "Fällig am {{date}} • Noch {{count}} Tag",
+        "dueWithDays_plural": "Fällig am {{date}} • Noch {{count}} Tage"
+      },
+      "activity": {
+        "title": "Aktivität",
+        "loading": "Aktivität wird geladen...",
+        "error": "Laden der Aktivität fehlgeschlagen.",
+        "noActivity": "Noch keine Aktivität.",
+        "by": "Von {{name}}",
+        "types": {
+          "created": "Meldung erstellt",
+          "recalculated": "Neu berechnet",
+          "submitted": "Übermittelt",
+          "paid": "Als bezahlt markiert",
+          "attachmentAdded": "Anhang hinzugefügt",
+          "issuesDetected": "Probleme erkannt",
+          "issuesResolved": "Probleme behoben",
+          "deleted": "Gelöscht"
+        }
+      },
+      "createFiling": {
+        "title": "Neue Steuermeldung",
+        "subtitle": "Wählen Sie den Meldungstyp und den Zeitraum aus, um eine neue Verpflichtung zu erstellen.",
+        "form": {
+          "details": "Details zur Meldung",
+          "type": "Meldungstyp",
+          "selectType": "Typ auswählen",
+          "types": {
+            "vat": "Umsatzsteuer-Voranmeldung",
+            "income-annual": "Einkommensteuer (Jährlich)",
+            "vat-annual": "Jährliche Umsatzsteuer",
+            "other": "Sonstige"
+          },
+          "year": "Steuerjahr",
+          "period": "Zeitraum",
+          "cancel": "Abbrechen",
+          "submit": "Meldung erstellen",
+          "errors": {
+            "periodRequired": "Der Zeitraum ist für Umsatzsteuer-Meldungen erforderlich",
+            "yearRequired": "Das Jahr ist für jährliche Meldungen erforderlich"
+          }
+        },
+        "messages": {
+          "successTitle": "Meldung erstellt",
+          "successDescription": "Weiterleitung zu den Details...",
+          "errorTitle": "Fehler beim Erstellen der Meldung"
+        }
+      },
+      "filingItems": {
+        "error": "Laden der Einträge fehlgeschlagen.",
+        "emptyTitle": "Keine {{type}} Einträge",
+        "emptyDescription": "Für diesen Zeitraum wurden keine {{type}} Einträge gefunden.",
+        "table": {
+          "date": "Datum",
+          "counterparty": "Geschäftspartner",
+          "description": "Beschreibung",
+          "net": "Netto",
+          "tax": "Steuer",
+          "gross": "Brutto"
+        }
+      },
+      "includedItems": {
+        "title": "Enthaltene Einträge",
+        "emptyTitle": "Keine Einträge enthalten",
+        "emptyDescription": "Bisher wurden keine Quelldaten für diese Meldung gefunden.",
+        "table": {
+          "type": "Typ",
+          "date": "Datum",
+          "counterparty": "Geschäftspartner",
+          "category": "Kategorie",
+          "vatTreatment": "USt-Behandlung",
+          "net": "Netto",
+          "tax": "Steuer",
+          "gross": "Brutto",
+          "flags": "Flags"
+        },
+        "badges": {
+          "needsAttention": "Handlung erforderlich",
+          "ok": "OK",
+          "noCategory": "Keine Kategorie",
+          "noVatTreatment": "Keine USt-Behandlung"
+        },
+        "error": "Laden der enthaltenen Einträge fehlgeschlagen.",
+        "retry": "Wiederholen"
+      },
+      "markPaid": {
+        "dialog": {
+          "title": "Als bezahlt markieren",
+          "description": "Erfassen Sie die Zahlungsdetails und hängen Sie optional einen Beleg an."
+        },
+        "form": {
+          "paidAt": "Bezahlt am",
+          "method": "Methode",
+          "methods": {
+            "bank-transfer": "Banküberweisung",
+            "direct-debit": "Lastschrift",
+            "other": "Sonstiges"
+          },
+          "amount": "Betrag",
+          "receipt": "Beleg",
+          "replace": "Beleg ersetzen",
+          "upload": "Beleg hochladen",
+          "optional": "Optional",
+          "uploading": "Wird hochgeladen...",
+          "submit": "Als bezahlt markieren"
+        },
+        "messages": {
+          "uploadError": "Laden des Belegs fehlgeschlagen"
+        }
+      },
+      "messages": {
+        "submittedSuccess": "USt-Zeitraum als übermittelt markiert",
+        "submittedError": "Markieren als übermittelt fehlgeschlagen",
+        "nilSuccess": "USt-Zeitraum als Nullmeldung markiert",
+        "nilError": "Markieren als Nullmeldung fehlgeschlagen",
+        "archiveSuccess": "USt-Zeitraum archiviert",
+        "archiveError": "Archivierung fehlgeschlagen",
+        "generatingPdf": "PDF wird generiert...",
+        "downloadStarted": "Download gestartet",
+        "pdfPrepared": "PDF wird vorbereitet. Bitte in Kürze erneut versuchen.",
+        "downloadFailed": "PDF-Download fehlgeschlagen"
+      }
+    },
+    "loading": "Steuerdaten werden geladen...",
+    "exemptions": {
+      "exportDeliveries": "§ 4 Nr. 1a UStG - Exportlieferungen",
+      "intraCommunityDeliveries": "§ 4 Nr. 1b UStG - Innergemeinschaftliche Lieferungen",
+      "financialServices": "§ 4 Nr. 8 UStG - Finanzdienstleistungen",
+      "insuranceServices": "§ 4 Nr. 11 UStG - Versicherungsdienstleistungen",
+      "lettingLeasing": "§ 4 Nr. 12 UStG - Vermietung und Verpachtung",
+      "medicalServices": "§ 4 Nr. 14 UStG - Medizinische Dienstleistungen",
+      "educationalServices": "§ 4 Nr. 21 UStG - Bildungsdienstleistungen"
     }
   },
   "cashManagement": {
@@ -533,7 +1355,7 @@
           "type": "Typ",
           "direction": "EIN/AUS",
           "amount": "Betrag",
-          "payment": "Zahlart",
+          "tax": "USt",
           "source": "Quelle",
           "balanceAfter": "Saldo nach",
           "beleg": "Beleg",
@@ -542,31 +1364,67 @@
         "rowActions": {
           "viewRegister": "Kasse ansehen",
           "reverse": "Stornieren",
-          "addBeleg": "Beleg anhängen"
+          "addBeleg": "Beleg anhängen",
+          "downloadBeleg": "Beleg herunterladen"
+        },
+        "camera": {
+          "title": "Kamera",
+          "description": "Nutzen Sie die Gerätekamera, um den Beleg direkt aufzunehmen.",
+          "capture": "Foto aufnehmen",
+          "switchCamera": "Kamera wechseln",
+          "unavailable": "Die Kamera ist in diesem Browser nicht verfügbar.",
+          "permissionDenied": "Der Kamerazugriff wurde verweigert."
         },
         "createDialog": {
           "title": "Buchung erstellen",
-          "direction": "Richtung",
-          "amount": "Betrag",
+          "description": "Erfassen Sie eine reine Kassenbuchbewegung mit Bruttobetrag, Nachweis und bei Bedarf USt.",
+          "grossAmount": "Bruttobetrag",
           "type": "Typ",
-          "paymentMethod": "Zahlart",
-          "description": "Beschreibung",
+          "taxCodeRequired": "USt-Code",
+          "taxCodeOptional": "USt-Code (optional)",
+          "noVat": "Keine USt",
+          "taxProfileRequiredTitle": "Steuer-Setup erforderlich",
+          "taxProfileRequiredDescription": "Legen Sie fest, wie dieses Kassenbuch steuerlich behandelt wird, bevor Sie steuerpflichtige Barverkäufe erfassen.",
+          "setupStandardVat": "Deutsche Standard-USt verwenden",
+          "setupSmallBusiness": "Kleinunternehmer verwenden (keine USt)",
+          "taxSummary": "USt-Zusammenfassung",
+          "netAmount": "Nettobetrag",
+          "taxAmount": "USt-Betrag",
+          "outputVat": "Umsatzsteuer",
+          "inputVat": "Vorsteuer",
+          "salesVatRequiredHint": "Wählen Sie den USt-Code für diesen Barverkauf.",
+          "salesVatOptionalHint": "Wählen Sie einen USt-Code, wenn dieser Barverkauf steuerpflichtig ist.",
+          "expenseVatHint": "Wählen Sie nur dann einen Vorsteuer-Code, wenn ein abzugsfähiger Beleg vorliegt.",
+          "bookingText": "Buchungstext",
+          "documentReference": "Belegreferenz / Eigenbeleg",
+          "documentReferencePlaceholder": "Belegnr., Rechnungsnr. oder Grund",
+          "documentReferenceHint": "Hinterlegen Sie eine Belegreferenz oder laden Sie einen Beleg hoch. Nur der Anfangsbestand darf ohne Nachweis bleiben.",
           "occurredAt": "Zeitpunkt",
-          "attachBelegDocumentId": "Beleg-Dokument-ID anhängen (optional)",
-          "documentPlaceholder": "doc_...",
+          "attachBeleg": "Beleg anhängen (optional)",
+          "chooseAttachment": "Datei auswählen",
+          "takePicture": "Foto aufnehmen",
+          "replaceAttachment": "Datei ersetzen",
+          "noAttachment": "Keine Datei ausgewählt",
           "projectedBalance": "Prognostizierter Saldo nach Speichern",
           "failed": "Buchung konnte nicht erstellt werden.",
-          "save": "Buchung speichern"
+          "save": "Buchung speichern",
+          "uploading": "Wird hochgeladen..."
         },
         "reverseDialog": {
           "title": "Buchung stornieren",
+          "description": "Stornieren Sie diese gebuchte Kassenbewegung mit einem nachvollziehbaren Grund.",
           "reason": "Grund",
           "failed": "Buchung konnte nicht storniert werden.",
           "confirm": "Storno bestätigen"
         },
         "attachmentDialog": {
           "title": "Beleg zur Buchung hinzufügen",
-          "documentId": "Dokument-ID",
+          "description": "Laden Sie eine Belegdatei hoch oder nehmen Sie ein Foto auf, um diese Kassenbuchung zu belegen.",
+          "file": "Belegdatei",
+          "uploadFile": "Datei hochladen",
+          "replaceFile": "Datei ersetzen",
+          "takePicture": "Foto aufnehmen",
+          "noFile": "Keine Datei ausgewählt",
           "failed": "Beleg konnte nicht angehängt werden.",
           "attach": "Anhängen"
         }
@@ -705,6 +1563,12 @@
     "toolCall": "Führe {{toolName}} aus...",
     "send": "Senden",
     "sending": "Wird gesendet...",
+    "attachments": {
+      "add": "Datei hinzufügen",
+      "remove": "Datei entfernen",
+      "invalidType": "{{name}} wird nicht unterstützt. Nur Bild- und PDF-Dateien sind erlaubt.",
+      "tooLarge": "{{name}} ist zu groß. Maximale Größe ist {{maxSize}}."
+    },
     "suggestions": {
       "extractReceipt": {
         "label": "Beleg extrahieren und Ausgabe erstellen",
@@ -781,6 +1645,137 @@
       "hardware": "Hardware",
       "phone_internet": "Telefon/Internet",
       "other": "Sonstiges"
+    },
+    "notifications": {
+      "created": "Ausgabe erstellt",
+      "updated": "Ausgabe aktualisiert",
+      "deleted": "Ausgabe gelöscht",
+      "deleteFailed": "Ausgabe konnte nicht gelöscht werden",
+      "saveFailed": "Ausgabe konnte nicht gespeichert werden",
+      "loadFailed": "Ausgaben konnten nicht geladen werden",
+      "receiptAttachPartial": "{{successMessage}}, aber {{count}} Belegdatei(en) konnten nicht angehängt werden"
+    },
+    "list": {
+      "subtitle": "Verfolgen und verwalten Sie Ihre Ausgaben",
+      "noExpensesDescription": "Erstellen Sie Ihre erste Ausgabe, um Ausgaben zu verfolgen.",
+      "selectedCount": "{{count}} ausgewählt",
+      "deleteSelected": "Ausgewählte löschen",
+      "deleteSelectedTitle": "Ausgewählte Ausgaben löschen",
+      "deleteSelectedDescription": "Dadurch werden die ausgewählten Ausgaben archiviert.",
+      "selectAll": "Alle auswählen",
+      "selectExpense": "Ausgabe {{id}} auswählen",
+      "deductiblePercent": "Abzugsfähig %",
+      "deleteExpenseTitle": "Ausgabe löschen",
+      "deleteExpenseDescription": "Dadurch wird die Ausgabe archiviert und aus der Liste entfernt.",
+      "pageInfo": "Seite {{page}} von {{totalPages}}",
+      "dimensionLabel": "Dimension",
+      "customLabel": "Benutzerdefiniert",
+      "ruleKind": {
+        "perDiem": "Pauschale",
+        "mixedUse": "Misch-Nutzung",
+        "gift": "Geschenk"
+      },
+      "sort": {
+        "dateNewest": "Datum (Neueste)",
+        "dateOldest": "Datum (Älteste)",
+        "amountHighLow": "Betrag (Hoch-Niedrig)",
+        "amountLowHigh": "Betrag (Niedrig-Hoch)",
+        "createdNewest": "Erstellt (Neueste)"
+      }
+    },
+    "detail": {
+      "overview": "Übersicht",
+      "taxDeductibility": "Steuerliche Abzugsfähigkeit (DE)",
+      "deductiblePercentLabel": "{{percent}}% abzugsfähig",
+      "needsMoreInfo": "Weitere Angaben erforderlich",
+      "deductible": "Abzugsfähig",
+      "nonDeductible": "Nicht abzugsfähig",
+      "fillRequiredFields": "Füllen Sie beim Bearbeiten dieser Ausgabe die erforderlichen Felder aus, um die Abzugsfähigkeit zu berechnen.",
+      "notComputed": "Abzugsfähigkeit noch nicht berechnet. Bearbeiten Sie diese Ausgabe, um die Berechnung auszulösen.",
+      "attachReceipts": "Hängen Sie Belege an, um sie hier zu sehen.",
+      "auditTrail": "Das Audit-Log wird hier angezeigt, sobald es verfügbar ist.",
+      "backToExpenses": "Zurück zu Ausgaben",
+      "notFound": "Ausgabe nicht gefunden.",
+      "noNotes": "Keine Notizen hinzugefügt.",
+      "transitionSoon": "Übergang zu {{to}} kommt bald",
+      "actionSoon": "Aktion {{action}} kommt bald",
+      "ruleKind": {
+        "percent": "Fester %",
+        "giftThreshold": "Geschenkgrenze",
+        "perDiem": "Pauschale",
+        "mixedUse": "Misch-Nutzung"
+      }
+    },
+    "form": {
+      "editTitle": "Ausgabe bearbeiten",
+      "create": "Ausgabe erstellen",
+      "selectCategory": "Kategorie auswählen",
+      "selectCategoryHint": "Wählen Sie eine Kategorie, um die Regeln zur Abzugsfähigkeit zu sehen.",
+      "merchantPlaceholder": "z.B. Restaurant Zum Hirsch",
+      "taxDeductibilityTitle": "Steuerliche Abzugsfähigkeit (DE)",
+      "participants": "Teilnehmer",
+      "participantsPlaceholder": "z.B. Max Muller, Julia Schneider",
+      "participantsHint": "Erforderlich für Bewirtungsabzug (§4 Abs. 5 Nr. 2 EStG)",
+      "businessOccasion": "Geschäftlicher Anlass",
+      "businessOccasionPlaceholder": "z.B. Q1 Projekt Kick-off, Partnerverhandlung",
+      "clientMealsHint": "70% einkommensteuerlich abzugsfähig. Vorsteuerabzug kann abweichen; bitte Steuerberater fragen.",
+      "giftRecipient": "Geschenkempfänger",
+      "giftRecipientPlaceholder": "z.B. Acme Corp / Hans Muller",
+      "giftRecipientHint": "Geschenke an denselben Empfänger über EUR 50 pro Kalenderjahr sind 0% abzugsfähig (§4 Abs. 5 Nr. 1 EStG).",
+      "businessUsePercent": "Geschäftliche Nutzung %",
+      "businessUsePercentPlaceholder": "z.B. 60",
+      "businessUsePercentHint": "% geschäftliche Nutzung",
+      "travelDetails": "Reisedetails (Pauschale - DE 2026)",
+      "travelDate": "Reisedatum",
+      "absenceHours": "Abwesenheitsstunden",
+      "absenceHoursPlaceholder": "z.B. 10",
+      "travelHint": ">=8h Abwesenheit: EUR 14 abzugsfähig - 24h: EUR 28 abzugsfähig (§9 Abs. 4a EStG, DE 2026)",
+      "homeOfficeDays": "Homeoffice-Tage",
+      "homeOfficeDaysPlaceholder": "z.B. 30",
+      "days": "Tage",
+      "homeOfficeHint": "EUR 6/Tag - max. EUR 1.260/Jahr (§4 Abs. 5 Nr. 6b EStG)",
+      "nonDeductibleWarningPrefix": "Diese Ausgabenkategorie ist",
+      "nonDeductibleWarningStrong": "0% einkommensteuerlich abzugsfähig",
+      "nonDeductibleWarningSuffix": "nach deutschem Steuerrecht.",
+      "receiptOptional": "Beleg (optional)",
+      "addReceiptFiles": "Belegdateien hinzufügen",
+      "uploadReceiptHint": "Laden Sie jetzt Bild- oder PDF-Belege hoch. Sie werden beim Speichern angehängt.",
+      "receiptErrors": {
+        "unsupportedType": "{{name}}: nur Bild und PDF sind erlaubt",
+        "fileTooLarge": "{{name}}: überschreitet 10MB Limit"
+      },
+      "preview": {
+        "empty": "-",
+        "deductiblePercent": "{{percent}}% abzugsfähig",
+        "mixedUse": "{{percent}}% abzugsfähig (Misch-Nutzung)",
+        "enterBusinessUse": "Geschäftliche Nutzung % eingeben",
+        "perDiemServer": "Pauschale (serverseitig berechnet)",
+        "homeOfficeRate": "EUR 6/Tag Pauschale",
+        "giftThreshold": "Bis EUR 50/Empfänger/Jahr - Empfänger erforderlich"
+      },
+      "categories": {
+        "MEALS_CLIENT_ENTERTAINMENT": "Kundenbewirtung - 70%",
+        "MEALS_TEAM_EMPLOYEE": "Team-/Mitarbeiteressen - 100%",
+        "GIFTS_BUSINESS_PARTNER": "Geschäftsgeschenke - bis EUR 50",
+        "GIFTS_PROMO_STREUARTIKEL": "Werbegeschenke (<=EUR 10) - 100%",
+        "FINES_PENALTIES": "Bußgelder & Strafen - 0%",
+        "CLOTHING_PROTECTIVE_UNIFORM": "Schutz-/Arbeitskleidung - 100%",
+        "CLOTHING_CIVILIAN": "Bürgerliche Kleidung - 0%",
+        "TRAVEL_MEALS_PER_DIEM": "Verpflegungspauschale Reise (DE 2026)",
+        "HOME_OFFICE_FLAT_RATE": "Homeoffice-Pauschale (EUR 6/Tag)",
+        "PHONE_INTERNET": "Telefon / Internet (Misch-Nutzung)",
+        "CAR": "Auto (Misch-Nutzung)",
+        "HOME_INTERNET": "Heim-Internet (Misch-Nutzung)",
+        "office_supplies": "Bürobedarf - 100%",
+        "software": "Software - 100%",
+        "travel": "Reise - 100%",
+        "meals": "Verpflegung - 70%",
+        "home_office": "Homeoffice - 100%",
+        "education": "Fortbildung - 100%",
+        "hardware": "Hardware - 100%",
+        "phone_internet": "Telefon/Internet (Misch-Nutzung)",
+        "other": "Sonstiges"
+      }
     }
   },
   "invoices": {
@@ -862,6 +1857,9 @@
       "stillGeneratingDescription": "Unter Last kann dies etwas dauern. Bitte versuchen Sie es in ein paar Sekunden erneut."
     },
     "notifications": {
+      "created": "Rechnung erstellt",
+      "updated": "Rechnung aktualisiert",
+      "deleted": "Rechnung gelöscht",
       "canceled": "Rechnung storniert",
       "duplicateSoon": "Duplizieren-Funktion kommt demnächst",
       "exportSoon": "Export-Funktion kommt demnächst",
@@ -1245,6 +2243,7 @@
   "auth": {
     "signin": {
       "title": "In Ihr Konto einloggen",
+      "subtitle": "Melden Sie sich an, um Kassen und Tagesabschluesse zu verwalten.",
       "rememberMe": "An mich erinnern",
       "forgotPassword": "Passwort vergessen?",
       "cta": "Anmelden",
@@ -1253,15 +2252,26 @@
     },
     "signup": {
       "title": "Konto erstellen",
+      "subtitle": "Registrieren Sie sich, um Ihre Kassenablaeufe zu verwalten.",
       "cta": "Registrieren",
       "creating": "Konto wird erstellt...",
       "hasAccount": "Haben Sie bereits ein Konto?"
     },
+    "forgot": {
+      "title": "Passwort zuruecksetzen",
+      "subtitle": "Geben Sie Ihre E-Mail-Adresse ein und wir senden Ihnen einen Link.",
+      "cta": "Reset-Link senden",
+      "sending": "Link wird gesendet...",
+      "successMessage": "Wenn ein Konto fuer {{email}} existiert, haben wir einen Reset-Link gesendet.",
+      "backToLogin": "Zurueck zur Anmeldung"
+    },
     "fields": {
+      "fullName": "Vollstaendiger Name",
       "email": "E-Mail-Adresse",
       "password": "Passwort"
     },
     "placeholders": {
+      "fullName": "Vollstaendiger Name",
       "email": "E-Mail-Adresse",
       "password": "Passwort",
       "passwordMin": "Mindestens 6 Zeichen"
@@ -1272,6 +2282,7 @@
     "errors": {
       "loginFailed": "Ungültige E-Mail-Adresse oder Passwort",
       "passwordLength": "Passwort muss mindestens 6 Zeichen lang sein",
+      "requestFailed": "Reset-Link konnte nicht gesendet werden",
       "signupFailed": "Konto konnte nicht erstellt werden",
       "networkError": "Netzwerkfehler. Bitte überprüfen Sie, ob der Server läuft."
     }
@@ -1681,6 +2692,113 @@
       "messageLogged": "Nachricht protokolliert",
       "createDraftFailed": "Entwurf konnte nicht erstellt werden",
       "logFailed": "Nachricht konnte nicht protokolliert werden"
+    },
+    "accounts": {
+      "title": "Accounts",
+      "new": "Neuer Account",
+      "searchPlaceholder": "Accounts suchen...",
+      "emptyTitle": "Keine Accounts gefunden",
+      "emptyDescription": "Erstellen Sie einen neuen Account, um loszulegen.",
+      "noContactInfo": "Keine Kontaktdaten",
+      "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "prospect": "Interessent"
+      },
+      "type": {
+        "customer": "Kunde",
+        "vendor": "Lieferant",
+        "partner": "Partner",
+        "other": "Sonstiges"
+      }
+    },
+    "accountForm": {
+      "newTitle": "Neuer Account",
+      "editTitle": "Account bearbeiten",
+      "identityTitle": "Identität",
+      "identityDescription": "Kontaktinformationen werden im Party-Datensatz gespeichert",
+      "accountNameRequired": "Account-Name *",
+      "websitePlaceholder": "https://...",
+      "industry": "Branche",
+      "profileTitle": "CRM-Profil",
+      "profileDescription": "Vertriebsbezogene Felder",
+      "accountType": "Account-Typ",
+      "create": "Account erstellen",
+      "update": "Account aktualisieren"
+    },
+    "contactForm": {
+      "newTitle": "Neuer Kontakt",
+      "editTitle": "Kontakt bearbeiten",
+      "detailsTitle": "Kontaktdaten",
+      "create": "Kontakt erstellen",
+      "update": "Kontakt aktualisieren",
+      "createFailed": "Kontakt konnte nicht erstellt werden",
+      "updateFailed": "Kontakt konnte nicht aktualisiert werden"
+    },
+    "sequences": {
+      "new": "Neue Sequenz",
+      "setupTitle": "Sequenz-Einrichtung",
+      "applyPreset": "Nails 3-Schritte-Preset anwenden",
+      "created": "Sequenz erstellt",
+      "createFailed": "Sequenz konnte nicht erstellt werden",
+      "nameRequired": "Sequenzname ist erforderlich",
+      "addAtLeastOneStep": "Fügen Sie mindestens einen Schritt hinzu",
+      "stepTitle": "Schritt {{step}}",
+      "removeStep": "Schritt {{step}} entfernen",
+      "stepType": "Schritttyp",
+      "dayDelay": "Tage Verzögerung",
+      "stepSubject": "Schritt-Betreff",
+      "stepBody": "Schritt-Inhalt",
+      "addStep": "Schritt hinzufügen",
+      "create": "Sequenz erstellen",
+      "creating": "Wird erstellt...",
+      "stepTypes": {
+        "task": "Aufgabe",
+        "call": "Anruf",
+        "emailManual": "E-Mail manuell",
+        "emailAuto": "E-Mail automatisch"
+      },
+      "nailsPreset": {
+        "name": "Lead zu Won - Nails",
+        "description": "Automatisches E-Mail-Follow-up an Tag 1/3/7 für Nails-Leads."
+      }
+    },
+    "emailSettings": {
+      "title": "CRM E-Mail-Einstellungen",
+      "subtitle": "Konfigurieren Sie Resend für automatische Sequenz-E-Mails und eingehende Antworten.",
+      "defaultDisplayName": "CRM Resend",
+      "saved": "CRM E-Mail-Einstellungen gespeichert",
+      "connectionValid": "Resend-Verbindung ist gültig",
+      "connectionTitle": "Resend-Verbindung",
+      "connectionDescription": "Ausgehende Nachrichten verwenden den konfigurierten Absender. Sequenz-E-Mails verwenden standardmäßig",
+      "connectionName": "Verbindungsname",
+      "fromAddress": "Absenderadresse",
+      "replyToAddress": "Reply-to-Adresse",
+      "apiKeyLabel": "API-Key",
+      "apiKeyLeaveBlank": "leer lassen, um aktuellen Schlüssel zu behalten",
+      "apiKeyPlaceholder": "re_...",
+      "testConnection": "Verbindung testen",
+      "noWorkspace": "Kein aktiver Workspace ausgewählt.",
+      "inboundWebhookTitle": "Inbound Webhook",
+      "inboundWebhookDescription": "Konfigurieren Sie diese URL in den Resend Inbound Webhook-Einstellungen.",
+      "tenantResolution": "Mandant wird automatisch aufgelöst. Optionaler Fallback: hinzufügen",
+      "setupGuideTitle": "Resend Einrichtungsanleitung",
+      "setupGuideDescription": "Verwenden Sie diese Einstellungen für CRM Reply-Tracking.",
+      "guide": {
+        "step1": "Resend Dashboard öffnen -> Webhooks -> Webhook hinzufügen.",
+        "step2": "Endpoint URL auf den obigen Wert setzen.",
+        "step3": "Bei Event-Typen nur auswählen",
+        "step4": "Kontakt-/Domain-Events für diesen CRM Webhook nicht auswählen.",
+        "localhostNotePrefix": "Hinweis zu localhost: Resend kann",
+        "localhostNoteSuffix": "nicht direkt aufrufen. Für lokale Tests API über einen öffentlichen Tunnel bereitstellen und diese HTTPS-URL als Webhook-Endpoint nutzen."
+      },
+      "errors": {
+        "selectWorkspace": "Wählen Sie vor dem Speichern der E-Mail-Einstellungen einen Workspace aus.",
+        "apiKeyRequired": "Resend API-Key ist für die erste Einrichtung erforderlich.",
+        "saveFailed": "Einstellungen konnten nicht gespeichert werden",
+        "saveConnectionFirst": "Speichern Sie zuerst eine Resend-Verbindung.",
+        "connectionTestFailed": "Verbindungstest fehlgeschlagen"
+      }
     }
   },
   "classes": {
@@ -1914,7 +3032,409 @@
     "tenantId": "Mandanten-ID",
     "actions": "Aktionen",
     "manage": "Verwalten",
-    "confirmDeactivate": "Sind Sie sicher, dass Sie diesen Mandanten deaktivieren möchten? Benutzer können sich nicht mehr anmelden.",
-    "confirmActivate": "Sind Sie sicher, dass Sie diesen Mandanten aktivieren möchten?"
+    "confirmDeactivate": "Sind Sie sicher, dass Sie diesen Mandanten deaktivieren möchten? Benutzer können sich nicht mehr anmelden."
+  },
+  "billing": {
+    "title": "Pläne und Abrechnung",
+    "subtitle": "Aktueller Plan, Cashflow-Nutzung und nächste Upgrade-Optionen für Ihren Salon.",
+    "currentPlan": "Aktueller Plan",
+    "planStatus": "Plan-Status",
+    "billingActions": "Abrechnungsaktionen",
+    "usage": "Nutzung in dieser Periode",
+    "planCatalog": "Verfügbare Pläne",
+    "manageBilling": "Abrechnung verwalten",
+    "upgradePlan": "Plan upgraden",
+    "currentPlanBadge": "Aktueller Plan",
+    "noLimit": "Kein Limit",
+    "billedMonthly": "Monatlich abgerechnet",
+    "active": "Aktiv",
+    "period": "Aktuelle Periode",
+    "unavailable": "Nicht verfügbar in diesem Plan",
+    "loading": "Abrechnungsinformationen werden geladen...",
+    "loadFailed": "Abrechnung kann derzeit nicht geladen werden.",
+    "openPortalDescription": "Öffnen Sie das gehostete Kundenportal, um Zahlungsdetails zu aktualisieren oder die Abrechnung zu verwalten.",
+    "checkoutDescription": "Upgraden Sie über gehosteten Stripe Checkout. Corely verwaltet den Plankatalog und die Nutzungslogik.",
+    "featureAccess": "Feature-Zugang",
+    "recommendedTitle": "Brauchen Sie mehr Limits?",
+    "recommendedDescription": "Upgraden Sie, wenn Ihr Salon Export, KI-Hilfe oder mehrere Standorte benötigt.",
+    "startTrial": "30-Tage-Testversion starten",
+    "trialTitle": "30-Tage-Vollzugriff-Testversion starten",
+    "noCardRequired": "Keine Karte erforderlich",
+    "trialDescription": "Workspace erhält volle Multi-Location-Funktionen für 30 Tage, kehrt dann zu Free zurück, falls nicht abonniert.",
+    "trialActive": "{{daysRemaining}} Tage verbleibend in der Vollzugriff-Testversion.",
+    "trialExpiring": "{{daysRemaining}} Tage übrig. Wählen Sie jetzt einen Plan, um Export, KI und zusätzliche Standorte zu behalten.",
+    "trialExpired": "Vollzugriff-Testversion beendet",
+    "trialExpiredDescription": "Workspace ist zum Free-Plan zurückgekehrt. Alte Daten bleiben erhalten, aber Export, KI und zusätzliche Standorte sind bis zum Abonnement gesperrt.",
+    "upgradeNow": "Plan wählen",
+    "afterTrialTitle": "Was ändert sich nach der Testversion",
+    "afterTrialDescription": "Corely behält alle alten Daten. Nach 30 Tagen wechselt der Workspace zu Free und neue Nutzung folgt den monatlichen Limits von Free.",
+    "trialStarted": "Testversion gestartet",
+    "trialStartFailed": "Testversion kann derzeit nicht gestartet werden.",
+    "pricePerMonth": "{{price}} / Monat",
+    "remaining": "{{count}} übrig",
+    "featuredPlanNameFallback": "Upgrade",
+    "featuredTitleFree": "Upgrade für Export, KI und unbegrenzte Belege",
+    "featuredTitlePaid": "Mit allen Funktionen voraus bleiben",
+    "featuredDescriptionFallback": "Volle Kassenkontrolle mit Exporten, KI-Unterstützung und mehreren Standorten.",
+    "featuredFootnoteFree": "Unbegrenzte Buchungen und Belege sowie Export, KI-Assistent und mehrere Standorte.",
+    "featuredFootnotePaid": "Halten Sie Export, KI und mehrere Standorte für Ihr Team bereit.",
+    "statusLabels": {
+      "free": "Free",
+      "active": "Aktiv",
+      "trialing": "In Testversion",
+      "past_due": "Überfällig",
+      "canceled": "Gekündigt",
+      "incomplete": "Unvollständig",
+      "incomplete_expired": "Unvollständig abgelaufen",
+      "unpaid": "Unbezahlt"
+    },
+    "usageMetrics": {
+      "entries": "Kassenbuchungen in dieser Periode",
+      "receipts": "Belege in dieser Periode"
+    },
+    "usageNudges": {
+      "entries": "Upgrade für unbegrenzte Kassenbuchungen und Exporte.",
+      "receipts": "Upgrade für unbegrenzte Belege und Exporte."
+    },
+    "plans": {
+      "free": {
+        "name": "Free",
+        "summary": "Für einen Salonstandort mit einfachem täglichem Cash-Controlling.",
+        "highlights": {
+          "0": "1 Standort",
+          "1": "30 Buchungen pro Monat",
+          "2": "10 Belege pro Monat",
+          "3": "Kein Export",
+          "4": "Kein KI-Assistent"
+        }
+      },
+      "starter-monthly": {
+        "name": "Starter",
+        "summary": "Unbegrenzte tägliche Kassenbucharbeit für einen Standort.",
+        "highlights": {
+          "0": "1 Standort",
+          "1": "Unbegrenzte Buchungen",
+          "2": "Unbegrenzte Belege",
+          "3": "Tagesabschluss",
+          "4": "Monatsexport"
+        }
+      },
+      "pro-monthly": {
+        "name": "Pro",
+        "summary": "Erweitert einen Standort um KI-Hilfe und erweiterte Problemerkennung.",
+        "highlights": {
+          "0": "Alles aus Starter",
+          "1": "KI-Assistent",
+          "2": "Mehrsprachige KI-Hilfe",
+          "3": "Problemerkennung",
+          "4": "Abschluss-Hinweise"
+        }
+      },
+      "multi-location-monthly": {
+        "name": "Mehrere Standorte",
+        "summary": "Für Salongruppen mit mehreren Standorten und Teams.",
+        "highlights": {
+          "0": "Alles aus Pro",
+          "1": "Mehrere Standorte",
+          "2": "Team-Zugang",
+          "3": "Konsolidierte Übersicht"
+        }
+      }
+    },
+    "usageLabels": {
+      "usedOf": "Verwendet {{used}} / {{limit}}",
+      "currentPeriod": "Aktuelle Periode"
+    },
+    "featureLabels": {
+      "maxLocations": "Standorte",
+      "maxEntriesPerMonth": "Bareingänge",
+      "maxReceiptsPerMonth": "Belege",
+      "canExport": "Monatlicher Export",
+      "dailyClosing": "Tägliche Schließung",
+      "aiAssistant": "KI-Assistent",
+      "multilingualAiHelp": "Mehrsprachige KI-Hilfe",
+      "issueDetection": "Problemerkennung",
+      "closingGuidance": "Schließungsanleitung",
+      "teamAccess": "Team-Zugang",
+      "consolidatedOverview": "Konsolidierte Übersicht"
+    }
+  },
+  "cashDashboard": {
+    "headerTitle": "Dashboard Kassenkontrolle",
+    "headerSubtitle": "Tägliche Kontrolle für Bargeld und Belege im Salon.",
+    "previewLabel": "Vorschaustatus",
+    "previewStates": {
+      "open": "Tag offen",
+      "ready": "Abschluss bereit",
+      "closed": "Abgeschlossen und exportbereit"
+    },
+    "banner": {
+      "open": "Das Kassenbuch von heute ist noch offen",
+      "receiptsMissing": "{{count}} Belege fehlen",
+      "closeNow": "Du kannst den Tag jetzt abschließen",
+      "monthReady": "Dieser Monat ist exportbereit",
+      "closedToday": "Heute wurde abgeschlossen",
+      "staleTitle": "Letzter synchronisierter Kassenstand",
+      "staleDescription": "Eine neue Synchronisierung läuft noch. Bitte prüfe die letzten Einträge vor dem Tagesabschluss."
+    },
+    "actions": {
+      "addEntry": "Neuer Bareintrag",
+      "openEntries": "Einträge öffnen",
+      "closeDay": "Heutiges Kassenbuch schließen",
+      "exportMonth": "Export für Steuerberater",
+      "openRegister": "Kasse öffnen",
+      "attachReceipt": "Beleg anhängen",
+      "reviewEntries": "Einträge prüfen",
+      "seeAll": "Alle Einträge",
+      "edit": "Bearbeiten",
+      "reverse": "Stornieren",
+      "viewDetails": "Details",
+      "attachNow": "Jetzt anhängen",
+      "createFirstEntry": "Ersten Eintrag anlegen",
+      "openBilling": "Abrechnung öffnen",
+      "upgradeToStarter": "Auf Starter upgraden",
+      "upgradeToPro": "Auf Pro upgraden"
+    },
+    "labels": {
+      "openingBalance": "Anfangsbestand",
+      "cashInToday": "Bareinnahmen heute",
+      "cashOutToday": "Barausgaben heute",
+      "expectedBalance": "Sollbestand",
+      "countedCash": "Gezähltes Bargeld",
+      "difference": "Differenz",
+      "missingReceipts": "Fehlende Belege",
+      "dailyClosing": "Tagesabschluss",
+      "todaysCashStatus": "Kassenstatus heute",
+      "actionRequired": "Jetzt erledigen",
+      "recentEntries": "Letzte Einträge",
+      "receiptStatus": "Belegstatus",
+      "closingWorkflow": "Abschlussablauf",
+      "exportStatus": "Monatsexport",
+      "trendOverview": "Operativer Überblick",
+      "privateDeposits": "Privateinlagen",
+      "privateWithdrawals": "Privatentnahmen",
+      "lastClosedDate": "Zuletzt abgeschlossen",
+      "closedBy": "Abgeschlossen von",
+      "responsibleToday": "Verantwortlich heute",
+      "currentMonth": "Aktueller Monat",
+      "entriesCompleted": "Einträge abgeschlossen",
+      "lastExport": "Letzter Export",
+      "status": "Status",
+      "time": "Zeit",
+      "type": "Art",
+      "amount": "Betrag",
+      "note": "Notiz",
+      "receipt": "Beleg",
+      "rowActions": "Aktionen",
+      "attachedToday": "Heute angehängt",
+      "missingToday": "Heute fehlend",
+      "missingThisMonth": "Diesen Monat fehlend",
+      "weekIncome": "Bareinnahmen diese Woche",
+      "weekExpenses": "Barausgaben diese Woche",
+      "openDays": "Offene Tage",
+      "monthVsLastMonth": "Dieser Monat vs. letzter Monat",
+      "exportChecklistDays": "Alle erforderlichen Tage sind abgeschlossen",
+      "exportChecklistReceipts": "Alle erforderlichen Belege sind angehängt",
+      "exportChecklistReview": "Keine kritischen Prüfpunkte mehr offen",
+      "helperWidget": "Hilfe?"
+    },
+    "helpers": {
+      "includesPrivateMovements": "Enthält {{deposit}} Privateinlagen und {{withdrawal}} Privatentnahmen.",
+      "countNotEntered": "Noch nicht erfasst",
+      "differenceBalanced": "Keine Differenz",
+      "differenceOver": "{{amount}} zu viel",
+      "differenceShort": "{{amount}} zu wenig",
+      "statusOpen": "Offen",
+      "statusNeedsReview": "Prüfung nötig",
+      "statusReadyToClose": "Bereit zum Abschluss",
+      "statusClosed": "Abgeschlossen",
+      "monthExportReady": "Export bereit",
+      "exportBlockedReceipts": "Durch fehlende Belege blockiert",
+      "exportBlockedDays": "Durch offene Tage blockiert",
+      "exportBlockedReview": "Durch Prüfpunkte blockiert",
+      "exportAlreadyGenerated": "Bereits exportiert",
+      "receiptsComplete": "Die Belegprüfung für heute ist vollständig.",
+      "receiptsIncomplete": "{{count} Belegpositionen brauchen heute noch Aufmerksamkeit.",
+      "noActionNeeded": "Im Moment ist nichts Dringendes offen",
+      "noActionDescription": "Das heutige Kassenbuch ist in Ordnung. Du kannst weitere Einträge erfassen oder den Monat exportieren.",
+      "noEntriesTitle": "Heute gibt es noch keine Kassenbewegung",
+      "noEntriesDescription": "Starte mit dem Anfangsbestand oder buche die erste Barbewegung aus dem Salon.",
+      "loadingTitle": "Tagesüberblick wird vorbereitet",
+      "loadingDescription": "Belege, Einträge und Abschlussstatus werden geladen."
+    },
+    "actionItems": {
+      "missingReceiptsTitle": "{{count}} Einträge ohne Beleg",
+      "missingReceiptsDescription": "Hänge die Belege an, bevor der Tag vertraut oder exportiert werden kann.",
+      "closeDayTitle": "Das Kassenbuch von heute ist noch nicht abgeschlossen",
+      "closeDayDescription": "Zähle die Kasse und bestätige den Endbestand, um den Tag abzuschließen.",
+      "missingNotesTitle": "{{count}} Barausgaben ohne Notiz",
+      "missingNotesDescription": "Ergänze eine kurze Notiz, damit die Ausgabe später klar bleibt.",
+      "openDaysTitle": "{{count}} Tage sind diese Woche noch offen",
+      "openDaysDescription": "Schließe offene Tage, damit der Monat ohne Nacharbeit exportiert werden kann.",
+      "reviewTitle": "{{count}} Einträge müssen geprüft werden",
+      "reviewDescription": "Prüfe ungewöhnliche Kassenbewegungen vor dem Abschluss.",
+      "exportTitle": "Der Monatsexport ist noch blockiert",
+      "exportDescription": "Beseitige die restlichen Blocker, bevor du an den Steuerberater sendest.",
+      "exportReadyTitle": "Der Monatsexport ist bereit",
+      "exportReadyDescription": "Der Monat kann jetzt ohne fehlende Unterlagen exportiert werden."
+    },
+    "entryTypes": {
+      "income": "Einnahme",
+      "expense": "Ausgabe",
+      "private-deposit": "Privateinlage",
+      "private-withdrawal": "Privatentnahme"
+    },
+    "entryStatus": {
+      "attached": "Vorhanden",
+      "missing": "Fehlt",
+      "review": "Prüfen",
+      "ok": "OK"
+    },
+    "assistant": {
+      "title": "Brauchst du Hilfe?",
+      "description": "Nutze den Assistenten nur bei Unklarheiten, nicht als Hauptworkflow.",
+      "prompts": [
+        "Warum ist heute nicht bereit zum Abschluss?",
+        "Welche Einträge brauchen noch Belege?",
+        "Warum fehlt mir Bargeld?",
+        "Was bedeutet Privateinlage?"
+      ],
+      "suggestions": [
+        {
+          "label": "Fehlende Belege finden",
+          "value": "Welche Bareinträge von heute brauchen noch einen Beleg?"
+        },
+        {
+          "label": "Kassenstatus heute",
+          "value": "Zeig mir den heutigen Kassenstatus und ob ich abschließen kann."
+        },
+        {
+          "label": "Tag abschließen",
+          "value": "Was blockiert den heutigen Tagesabschluss?"
+        },
+        {
+          "label": "Begriff erklären",
+          "value": "Was bedeutet Privateinlage im Kassenbuch?"
+        }
+      ],
+      "capabilityCatalogTitle": "Aufgaben im Kassenmanagement",
+      "capabilityCatalogDescription": "Das ist die vollständige Liste dessen, wobei dir der Kassenassistent helfen kann. Wähle eine Aufgabe, um die Anfrage vorzufüllen und schneller zu starten.",
+      "capabilityGroups": [
+        {
+          "title": "Kassenbucheinträge",
+          "description": "Kassenbucheinträge für die aktuelle Kasse erstellen, korrigieren und prüfen.",
+          "items": [
+            {
+              "title": "Kassenbucheintrag erstellen",
+              "description": "Einen neuen Geldein- oder Geldausgang mit allen nötigen Angaben anlegen.",
+              "prompt": "Erstelle einen Kassenbucheintrag für die aktuelle Kasse."
+            },
+            {
+              "title": "Offenen Eintrag korrigieren",
+              "description": "Einen offenen Eintrag stornieren und den korrigierten Ersatzeintrag erstellen.",
+              "prompt": "Bitte korrigiere einen offenen Kassenbucheintrag für mich."
+            },
+            {
+              "title": "Kassenbucheinträge anzeigen",
+              "description": "Einträge nach Zeitraum, Typ, Quelle oder Beschreibung prüfen.",
+              "prompt": "Zeig mir die Kassenbucheinträge dieser Kasse."
+            }
+          ]
+        },
+        {
+          "title": "Belege und Anhänge",
+          "description": "Belege hochladen, Einträgen zuordnen und fehlende Dokumente finden.",
+          "items": [
+            {
+              "title": "Beleg hochladen",
+              "description": "Einen oder mehrere Belege direkt aus diesem Chat hochladen.",
+              "prompt": "Lade die Belegdateien aus diesem Chat hoch."
+            },
+            {
+              "title": "Beleg an Eintrag anhängen",
+              "description": "Hochgeladene Belege dem richtigen Kassenbucheintrag zuordnen.",
+              "prompt": "Hänge den hochgeladenen Beleg an den richtigen Kassenbucheintrag an."
+            },
+            {
+              "title": "Fehlende Belege finden",
+              "description": "Einträge anzeigen, für die vor Prüfung oder Export noch ein Beleg fehlt.",
+              "prompt": "Finde die Kassenbucheinträge, denen noch Belege fehlen."
+            }
+          ]
+        },
+        {
+          "title": "Tagesabschluss",
+          "description": "Bereitschaft prüfen, gezähltes Bargeld speichern und den Tag sauber abschließen.",
+          "items": [
+            {
+              "title": "Kassenstatus heute",
+              "description": "Erwarteten Bestand, fehlende Belege und Abschlussbereitschaft anzeigen.",
+              "prompt": "Zeig mir den heutigen Kassenstatus und ob der Tag bereit zum Abschluss ist."
+            },
+            {
+              "title": "Gezähltes Bargeld speichern",
+              "description": "Gezähltes Bargeld oder Stückelung speichern, bevor endgültig abgeschlossen wird.",
+              "prompt": "Speichere das heute gezählte Bargeld für die aktuelle Kasse."
+            },
+            {
+              "title": "Tag abschließen",
+              "description": "Den heutigen Kassentag abschließen, sobald alle Blocker geklärt sind.",
+              "prompt": "Schließe den heutigen Kassentag für die aktuelle Kasse ab."
+            },
+            {
+              "title": "Offene Tage anzeigen",
+              "description": "Tage finden, die noch offen sind oder nur als Entwurf gespeichert wurden.",
+              "prompt": "Liste die Tage auf, die für diese Kasse noch nicht abgeschlossen sind."
+            }
+          ]
+        },
+        {
+          "title": "Übersicht und Export",
+          "description": "Den operativen Status überwachen und das monatliche Exportpaket vorbereiten.",
+          "items": [
+            {
+              "title": "Dashboard-Zusammenfassung",
+              "description": "Eine operative Übersicht zu Bargeld, Belegen, Abschlussstatus und Exportbereitschaft anzeigen.",
+              "prompt": "Zeig mir die Dashboard-Zusammenfassung für diese Kasse."
+            },
+            {
+              "title": "Nächste Schritte",
+              "description": "Die nächsten operativen Aufgaben für den Inhaber anzeigen.",
+              "prompt": "Welche nächsten Schritte muss ich im Kassenmanagement erledigen?"
+            },
+            {
+              "title": "Monatsexport erzeugen",
+              "description": "Das monatliche Exportpaket für Steuerberatung oder Buchhaltung vorbereiten.",
+              "prompt": "Erzeuge das monatliche Kassenexport-Paket für diese Kasse."
+            }
+          ]
+        },
+        {
+          "title": "Hilfe und Begriffe",
+          "description": "Ablaufhilfen und leicht verständliche Erklärungen zu Kassenbuch-Begriffen erhalten.",
+          "items": [
+            {
+              "title": "Begriff im Kassenbuch erklären",
+              "description": "Einen Begriff wie Privateinlage in einfacher Sprache erklären lassen.",
+              "prompt": "Erkläre mir einen Begriff aus dem Kassenbuch."
+            },
+            {
+              "title": "Workflow-Hilfe",
+              "description": "Schritt-für-Schritt-Hilfe für Tagesabschluss, fehlende Belege oder Monatsexport erhalten.",
+              "prompt": "Zeig mir die Workflow-Hilfe für das Kassenmanagement."
+            }
+          ]
+        }
+      ],
+      "languages": "Deutsch, Englisch, Vietnamesisch",
+      "lockedTitle": "KI-Hilfe ist in diesem Tarif gesperrt",
+      "lockedDescription": "Upgrade auf Pro, um den Kassenassistenten, mehrsprachige Erklärungen und geführte Prüfung freizuschalten.",
+      "lockedBadge": "KI gesperrt"
+    },
+    "severity": {
+      "high": "Hoch",
+      "medium": "Mittel",
+      "low": "Niedrig"
+    }
   }
 }

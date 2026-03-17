@@ -11,6 +11,14 @@ import {
   ExternalServiceError,
 } from "@corely/domain";
 import {
+  DomainError,
+  ValidationError as DomainValidationError,
+  UnauthorizedError as DomainUnauthorizedError,
+  ForbiddenError as DomainForbiddenError,
+  NotFoundError as DomainNotFoundError,
+  ConflictError as DomainConflictError,
+} from "../../shared/errors/domain-errors";
+import {
   UseCaseError,
   ValidationError as KernelValidationError,
   NotFoundError as KernelNotFoundError,
@@ -48,7 +56,12 @@ export class ExceptionToProblemDetailsMapper {
       return this.mapAppError(error);
     }
 
-    // 2. Handle UseCaseError (legacy kernel error system)
+    // 2. Handle DomainError (legacy domain error system)
+    if (error instanceof DomainError) {
+      return this.mapDomainError(error);
+    }
+
+    // 3. Handle UseCaseError (legacy kernel error system)
     if (error instanceof UseCaseError) {
       return this.mapUseCaseError(error);
     }
@@ -104,6 +117,40 @@ export class ExceptionToProblemDetailsMapper {
       validationErrors: error.validationErrors,
       traceId: this.traceId,
       data: error.data,
+    };
+  }
+
+  /**
+   * Map legacy DomainError to ProblemDetails
+   */
+  private mapDomainError(error: DomainError): ProblemDetails {
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let isPublic = false;
+
+    // Map specific domain error types to status codes
+    if (error instanceof DomainValidationError) {
+      status = HttpStatus.BAD_REQUEST;
+      isPublic = true; // Validation errors are safe to show
+    } else if (error instanceof DomainUnauthorizedError) {
+      status = HttpStatus.UNAUTHORIZED;
+      isPublic = true;
+    } else if (error instanceof DomainForbiddenError) {
+      status = HttpStatus.FORBIDDEN;
+      isPublic = true;
+    } else if (error instanceof DomainNotFoundError) {
+      status = HttpStatus.NOT_FOUND;
+    } else if (error instanceof DomainConflictError) {
+      status = HttpStatus.CONFLICT;
+    }
+
+    return {
+      type: `https://errors.corely.one/${error.code}`,
+      title: this.getTitle(status),
+      status,
+      detail: isPublic ? error.message : this.getSafeDetail(status),
+      instance: this.instance,
+      code: error.code,
+      traceId: this.traceId,
     };
   }
 

@@ -1,4 +1,5 @@
 export * from "./expense.types";
+export * from "./deductibility.types";
 export * from "./create-expense.schema";
 export * from "./update-expense.schema";
 export * from "./expense-capabilities.schema";

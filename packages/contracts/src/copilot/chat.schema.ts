@@ -14,6 +14,14 @@ export const CopilotReasoningPartSchema = z.object({
   providerMetadata: z.record(z.any()).optional(),
 });
 
+export const CopilotFilePartSchema = z.object({
+  type: z.literal("file"),
+  mediaType: z.string().min(1),
+  filename: z.string().optional(),
+  url: z.string().min(1),
+  providerMetadata: z.record(z.any()).optional(),
+});
+
 const ToolInvocationStateSchema = z.enum([
   "input-streaming",
   "input-available",
@@ -89,6 +97,7 @@ export const CopilotStepStartSchema = z.object({
 export const CopilotUIPartSchema = z.union([
   CopilotTextPartSchema,
   CopilotReasoningPartSchema,
+  CopilotFilePartSchema,
   CopilotToolInvocationSchema,
   CopilotDataPartSchema,
   CopilotStepStartSchema,

@@ -53,15 +53,15 @@ Base path: `/classes`
 - Month boundaries computed in `Europe/Berlin` timezone, sessions stored as UTC.
 - When a month has a billing run in `INVOICES_CREATED` or `LOCKED`, session/attendance edits are blocked.
 
-## Internal Worker Endpoint
+## Internal Background Endpoint
 
-The worker scheduler triggers billing runs via an internal endpoint secured by `x-service-token`.
+Cloud Scheduler or Cloud Tasks trigger billing runs via an internal endpoint secured by `x-service-token`.
 
 - `POST /internal/classes/billing/runs`
   - Headers: `x-tenant-id`, `x-workspace-id`, optional `x-service-token`, optional `Idempotency-Key`
   - Body: `{ "month": "YYYY-MM", "createInvoices": true, "sendInvoices": false }`
 
-Worker config (env):
+Background runtime config (env):
 
 - `API_BASE_URL`
 - `WORKER_API_SERVICE_TOKEN`

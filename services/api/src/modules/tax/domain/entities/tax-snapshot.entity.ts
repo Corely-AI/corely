@@ -14,6 +14,11 @@ export interface TaxSnapshotEntity {
   taxTotalAmountCents: number;
   totalAmountCents: number;
   breakdownJson: string; // stringified TaxBreakdownDto
+  counterparty?: string;
+  category?: string;
+  vatTreatment?: string;
+  missingCategory?: boolean;
+  missingTaxTreatment?: boolean;
   version: number;
   createdAt: Date;
   updatedAt: Date;

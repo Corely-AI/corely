@@ -25,14 +25,14 @@ export default function AccountsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6 animate-fade-in" data-testid="crm-accounts-list">
       <div className="flex items-center justify-between">
-        <h1 className="text-h1 text-foreground">Accounts</h1>
+        <h1 className="text-h1 text-foreground">{t("crm.accounts.title")}</h1>
         <Button
           variant="accent"
           onClick={() => navigate("/crm/accounts/new")}
           data-testid="crm-accounts-create"
         >
           <Plus className="h-4 w-4" />
-          New Account
+          {t("crm.accounts.new")}
         </Button>
       </div>
 
@@ -40,7 +40,7 @@ export default function AccountsPage() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search accounts..."
+            placeholder={t("crm.accounts.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -54,8 +54,8 @@ export default function AccountsPage() {
           <CardContent className="p-0">
             <EmptyState
               icon={Building2}
-              title="No accounts found"
-              description="Create a new account to get started."
+              title={t("crm.accounts.emptyTitle")}
+              description={t("crm.accounts.emptyDescription")}
             />
           </CardContent>
         </Card>
@@ -75,6 +75,14 @@ export default function AccountsPage() {
 }
 
 function AccountRow({ account, onClick }: { account: AccountDto; onClick: () => void }) {
+  const { t } = useTranslation();
+  const statusKey =
+    account.status === "ACTIVE"
+      ? "active"
+      : account.status === "INACTIVE"
+        ? "inactive"
+        : "prospect";
+
   return (
     <Card
       className="cursor-pointer hover:bg-accent/5 transition-colors"
@@ -90,7 +98,8 @@ function AccountRow({ account, onClick }: { account: AccountDto; onClick: () => 
             {account.name}
           </p>
           <p className="text-sm text-muted-foreground truncate">
-            {[account.email, account.phone].filter(Boolean).join(" · ") || "No contact info"}
+            {[account.email, account.phone].filter(Boolean).join(" · ") ||
+              t("crm.accounts.noContactInfo")}
           </p>
         </div>
         <div className="hidden sm:flex items-center gap-3 text-sm">
@@ -104,13 +113,13 @@ function AccountRow({ account, onClick }: { account: AccountDto; onClick: () => 
             }`}
             data-testid="crm-account-status"
           >
-            {account.status}
+            {t(`crm.accounts.status.${statusKey}`)}
           </span>
           <span
             className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
             data-testid="crm-account-type"
           >
-            {account.accountType}
+            {t(`crm.accounts.type.${account.accountType.toLowerCase()}`)}
           </span>
         </div>
       </CardContent>

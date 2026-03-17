@@ -111,6 +111,8 @@ export * from "./cash-management";
 export * from "./booking";
 export * from "./ai/richtext";
 export * from "./notifications";
+export * from "./billing";
+export * from "./onboarding";
 
 export const CONTRACTS_HELLO = "Corely contracts loaded ✅";
 
@@ -153,16 +155,35 @@ export type UserDto = z.infer<typeof UserDtoSchema>;
 export const TenantStatusSchema = z.enum(["ACTIVE", "SUSPENDED", "ARCHIVED"]);
 export type TenantStatus = z.infer<typeof TenantStatusSchema>;
 
+export const TenantPlanSchema = z.enum(["free", "starter", "pro", "multi_location"]);
+export type TenantPlan = z.infer<typeof TenantPlanSchema>;
+
+export const TenantPlanStatusSchema = z.enum(["active", "inactive", "trial"]);
+export type TenantPlanStatus = z.infer<typeof TenantPlanStatusSchema>;
+
+export const BillingMethodSchema = z.enum(["stripe", "bank_transfer", "cash", "manual"]);
+export type BillingMethod = z.infer<typeof BillingMethodSchema>;
+
 export const TenantDtoSchema = z.object({
   id: z.string(),
   name: z.string(),
   slug: z.string(),
   status: TenantStatusSchema,
+  plan: TenantPlanSchema.nullable().optional(),
+  planStatus: TenantPlanStatusSchema.nullable().optional(),
+  billingMethod: BillingMethodSchema.nullable().optional(),
+  billingNote: z.string().nullable().optional(),
+  planUpdatedAt: z.string().nullable().optional(),
+  planUpdatedBy: z.string().nullable().optional(),
 });
 export type TenantDto = z.infer<typeof TenantDtoSchema>;
 
 export const UpdateTenantInputSchema = z.object({
-  status: TenantStatusSchema,
+  status: TenantStatusSchema.optional(),
+  plan: TenantPlanSchema.nullable().optional(),
+  planStatus: TenantPlanStatusSchema.nullable().optional(),
+  billingMethod: BillingMethodSchema.nullable().optional(),
+  billingNote: z.string().nullable().optional(),
 });
 export type UpdateTenantInput = z.infer<typeof UpdateTenantInputSchema>;
 

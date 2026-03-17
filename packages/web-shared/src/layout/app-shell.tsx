@@ -12,6 +12,10 @@ import { useCommandPalette } from "@corely/web-shared/shared/command-palette/use
 import type { Command } from "@corely/web-shared/shared/command-palette/types";
 import { useWorkspaceConfig } from "@corely/web-shared/shared/workspaces/workspace-config-provider";
 import { getIconByName } from "@corely/web-shared/shared/utils/iconMapping";
+import {
+  resolveNavigationGroupLabelKey,
+  resolveNavigationItemLabelKey,
+} from "@corely/web-shared/shared/workspaces/navigation-labels";
 import { useTranslation } from "react-i18next";
 import { AppSidebar, type AppSidebarProps, type WorkspaceSwitcherMode } from "./app-sidebar";
 
@@ -34,6 +38,7 @@ export interface AppShellProps {
   sidebarProps?: Omit<AppSidebarProps, "variant" | "collapsed" | "onToggle">;
   includeWorkspaceQuickActions?: boolean;
   renderSidebar?: (props: SidebarRenderProps) => React.ReactNode;
+  topContent?: React.ReactNode;
 }
 
 const normalizeLabel = (value: string) =>
@@ -119,6 +124,7 @@ export function AppShell({
   sidebarProps,
   includeWorkspaceQuickActions = true,
   renderSidebar,
+  topContent,
 }: AppShellProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -145,10 +151,18 @@ export function AppShell({
         .filter((item) => Boolean(item.route))
         .map((item) => {
           const Icon = getIconByName(item.icon);
+          const itemLabelKey = resolveNavigationItemLabelKey(item);
+          const itemTitle = itemLabelKey
+            ? t(itemLabelKey, { defaultValue: item.label })
+            : item.label;
+          const groupLabelKey = resolveNavigationGroupLabelKey(group);
+          const groupTitle = groupLabelKey
+            ? t(groupLabelKey, { defaultValue: group.defaultLabel })
+            : group.defaultLabel;
           return {
             id: `menu:${item.id}`,
-            title: t(item.labelKey ?? item.label),
-            subtitle: group.defaultLabel,
+            title: itemTitle,
+            subtitle: groupTitle,
             keywords: [item.section, ...(item.tags ?? []), item.route ?? ""].filter(Boolean),
             group: "Navigate",
             icon: <Icon className="h-4 w-4" />,
@@ -279,6 +293,7 @@ export function AppShell({
           </header>
 
           <div className="flex-1 overflow-y-auto">
+            {topContent}
             <Outlet />
           </div>
         </main>

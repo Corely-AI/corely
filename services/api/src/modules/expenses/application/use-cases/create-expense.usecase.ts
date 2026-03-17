@@ -10,10 +10,14 @@ import {
   buildCustomFieldIndexes,
   validateAndNormalizeCustomValues,
 } from "@corely/domain";
-import type { EntityDimensionAssignment } from "@corely/contracts";
+import type { EntityDimensionAssignment, ExpenseDeductibilityMeta } from "@corely/contracts";
 import { Expense } from "../../domain/expense.entity";
 import type { ExpenseRepositoryPort } from "../ports/expense-repository.port";
 import { Inject } from "@nestjs/common";
+import type { GiftThresholdQueryPort } from "../ports/gift-threshold-query.port";
+import { GIFT_THRESHOLD_QUERY_PORT } from "../ports/gift-threshold-query.port";
+import { computeDeDeductibility } from "../../domain/de-deductibility.service";
+
 import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,
@@ -38,6 +42,9 @@ export interface CreateExpenseInput {
   customFieldValues?: Record<string, unknown>;
   dimensionAssignments?: EntityDimensionAssignment[];
   idempotencyKey: string;
+  initialStatusOverride?: "DRAFT" | "APPROVED";
+  /** DE extra fields (participants, recipient, etc.) – stored embedded in custom.deductibilityMeta */
+  deductibilityMeta?: ExpenseDeductibilityMeta | null;
 }
 
 export class CreateExpenseUseCase {
@@ -57,7 +64,9 @@ export class CreateExpenseUseCase {
     @Inject(WORKSPACE_REPOSITORY_PORT)
     private readonly workspaceRepo: WorkspaceRepositoryPort,
     private readonly templateService: WorkspaceTemplateService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    @Inject(GIFT_THRESHOLD_QUERY_PORT)
+    private readonly giftThresholdQuery: GiftThresholdQueryPort
   ) {}
 
   async execute(input: CreateExpenseInput, ctx: UseCaseContext): Promise<Expense> {
@@ -88,8 +97,10 @@ export class CreateExpenseUseCase {
       );
     }
 
-    // Determine initial status based on workspace type
-    const initialStatus = await this.determineInitialStatus(ctx.tenantId, ctx.workspaceId);
+    // Allow specific flows (e.g., copilot draft creation) to force initial status.
+    const initialStatus =
+      input.initialStatusOverride ??
+      (await this.determineInitialStatus(ctx.tenantId, ctx.workspaceId));
 
     const definitions = await this.customFieldDefinitions.listActiveByEntityType(
       input.tenantId,
@@ -116,6 +127,30 @@ export class CreateExpenseUseCase {
       null,
       Object.keys(normalizedCustom).length ? normalizedCustom : null
     );
+
+    // Compute DE income-tax deductibility
+    const dm: ExpenseDeductibilityMeta | null =
+      input.deductibilityMeta ??
+      Expense.extractDeductibilityMeta(
+        Object.keys(normalizedCustom).length ? normalizedCustom : null
+      );
+
+    let priorGiftCents = 0;
+    if (input.category === "GIFTS_BUSINESS_PARTNER" && dm?.recipient) {
+      priorGiftCents = await this.giftThresholdQuery.sumGiftsByRecipientForYear({
+        tenantId: input.tenantId,
+        recipient: dm.recipient,
+        year: input.issuedAt.getFullYear(),
+      });
+    }
+
+    const deductResult = computeDeDeductibility({
+      category: input.category ?? null,
+      totalAmountCents: input.totalCents,
+      meta: dm,
+      priorGiftCentsThisYear: priorGiftCents,
+    });
+    expense.applyDeductibility(deductResult);
 
     await this.expenseRepo.create(expense);
     await this.audit.log({

@@ -1,6 +1,7 @@
 // Types and DTOs
 export * from "./tax.types";
 export * from "./tax-filing.types";
+export * from "./tax-filing-export.schema";
 
 // Operation schemas
 export * from "./get-tax-profile.schema";
@@ -17,6 +18,7 @@ export * from "./get-vat-period-details.schema";
 export * from "./list-vat-periods.schema";
 export * from "./export-vat-period.schema";
 export * from "./get-tax-summary.schema";
+export * from "./get-tax-eur-statement.schema";
 export * from "./list-tax-reports.schema";
 export * from "./tax-consultant.schema";
 export * from "./mark-tax-report-submitted.schema";
@@ -42,3 +44,10 @@ export * from "./submit-tax-filing.schema";
 export * from "./mark-tax-filing-paid.schema";
 export * from "./attach-tax-filing-payment-proof.schema";
 export * from "./recalculate-tax-filing.schema";
+export * from "./tax-document-link.schema";
+export * from "./income-tax-draft.schema";
+export * from "./annual-income-report.schema";
+export * from "./income-tax-return-sections.schema";
+export * from "./tax-report-sections.schema";
+export * from "./tax-eric-jobs.schema";
+export * from "./eric-gateway.schema";
