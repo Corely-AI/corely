@@ -8,6 +8,7 @@ export interface LanguageModelPort {
   streamChat(params: {
     messages: CopilotUIMessage[];
     tools: DomainToolPort[];
+    locale?: string;
     runId: string;
     tenantId: string;
     toolTenantId?: string;

@@ -142,4 +142,34 @@ describe("ToolRegistry", () => {
       "collect_helper",
     ]);
   });
+
+  it("keeps cash-management context scoped even when other apps are enabled", async () => {
+    const entitlementsRead: TenantEntitlementsReadPort = {
+      getAppEnablementMap: vi.fn(async () => ({
+        "cash-management": true,
+        invoices: true,
+        expenses: true,
+      })),
+      isAppEnabled: vi.fn(async () => true),
+    };
+
+    const registry = new ToolRegistry(
+      [
+        mockTool("cash_get_status", "cash-management"),
+        mockTool("cash_close_day", "cash-management"),
+        mockTool("invoice_list", "invoices"),
+        mockTool("expenses_list", "expenses"),
+        mockTool("collect_helper"),
+      ],
+      entitlementsRead
+    );
+
+    const tools = await registry.listForTenant("tenant-1", "cash-management");
+
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "cash_get_status",
+      "cash_close_day",
+      "collect_helper",
+    ]);
+  });
 });

@@ -13,6 +13,8 @@ interface ChatComposerProps {
   onFileSelection: (event: ChangeEvent<HTMLInputElement>) => void;
   removePendingFile: (index: number) => void;
   fileInputRef: RefObject<HTMLInputElement>;
+  composerRef?: RefObject<HTMLFormElement>;
+  inputRef?: RefObject<HTMLInputElement>;
   sendLabel: string;
   sendingLabel: string;
   canSubmit: boolean;
@@ -31,6 +33,8 @@ export function ChatComposer({
   onFileSelection,
   removePendingFile,
   fileInputRef,
+  composerRef,
+  inputRef,
   sendLabel,
   sendingLabel,
   canSubmit,
@@ -38,7 +42,7 @@ export function ChatComposer({
   removeAttachmentLabel,
 }: ChatComposerProps) {
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-2">
+    <form ref={composerRef} onSubmit={onSubmit} className="flex flex-col gap-2">
       <input
         ref={fileInputRef}
         type="file"
@@ -89,6 +93,7 @@ export function ChatComposer({
           <Paperclip className="h-4 w-4" />
         </Button>
         <Input
+          ref={inputRef}
           value={input}
           onChange={onInputChange}
           placeholder={placeholder}

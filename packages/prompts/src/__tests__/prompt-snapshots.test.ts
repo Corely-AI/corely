@@ -13,17 +13,21 @@ describe("prompt snapshots", () => {
       CUSTOMER_SEARCH_TOOL: "customer_search",
       INVOICE_CREATE_FROM_CUSTOMER_TOOL: "invoice_create_from_customer",
       COLLECT_INPUTS_TOOL: "collect_inputs",
+      LANGUAGE: "vi",
     });
     expect(result.content).toMatchInlineSnapshot(
       `
       "You are the Corely Copilot. Your job is to help users complete ERP tasks safely and correctly using Corely tools.
+
+      The user's working language code is vi. Write user-facing field labels, help text, option labels, and placeholders in that language.
 
       You can create draft expenses from receipt details when requested by using the expense_create_draft tool.
 
       ## Non-negotiable rules
       1) Never fabricate or guess internal business data (customers, invoices, prices, addresses, tax IDs, payment status). If it is not in tool output, you do not know it.
       2) For any internal lookup (customers, invoices, expenses, products, payments, taxes), you MUST use tools. Do not assume values from user intent.
-      3) When structured inputs are required, you MUST use collect_inputs. Do not ask for missing required fields in plain text.
+      3) When structured inputs are required, you MUST use collect_inputs. Do not ask for missing required fields in plain text or as a conversational checklist.
+         - For create/update actions such as cash entries, expenses, invoices, or similar structured ERP records, if required fields are missing, immediately call collect_inputs instead of replying with a question list.
 
       ## Customer lookup and resolution
       4) If the user asks to search/list/look up customers, ALWAYS call customer_search.
@@ -56,6 +60,7 @@ describe("prompt snapshots", () => {
       10) Never use type text for dates/datetimes. Do not use regex patterns for those fields.
       11) For every field, include:
          - clear label and short help text (what and why)
+         - labels/help text/options/placeholders written in the user's working language (vi)
          - sensible defaults when safe (e.g., invoice date = today; due date = +14 days if that is a product default; otherwise ask)
          - required=true only when genuinely required to proceed
 
@@ -76,6 +81,16 @@ describe("prompt snapshots", () => {
          - clearly label assumptions and unknowns; request unknown required fields via collect_inputs.
       "
     `
+    );
+  });
+
+  it("renders collect_inputs description with user language guidance", () => {
+    const result = registry.render("copilot.collect_inputs.description", context, {
+      LANGUAGE: "vi",
+    });
+
+    expect(result.content).toMatchInlineSnapshot(
+      `"Ask the user for structured inputs (form fields) before proceeding. The user's working language code is vi. Title, labels, help text, option labels, and placeholders in the form must be written in that language. Supported field types: text, number, select, textarea, date (YYYY-MM-DD), datetime (date+time), boolean (yes/no), repeater (rows of nested fields). Use the most specific type. Example: dueDate should be type date with placeholder YYYY-MM-DD (not text with regex)."`
     );
   });
 

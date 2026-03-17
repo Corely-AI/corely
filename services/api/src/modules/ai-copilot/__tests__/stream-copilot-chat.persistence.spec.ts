@@ -200,6 +200,7 @@ describe("StreamCopilotChatUseCase persistence", () => {
       message: toolResultMessage,
       tenantId: "workspace-1",
       userId: "user-1",
+      locale: "de-DE",
       idempotencyKey: "idem-1",
       runId: "run-1",
       response: {} as any,
@@ -221,6 +222,7 @@ describe("StreamCopilotChatUseCase persistence", () => {
     expect(hasOriginalUserText).toBe(true);
     expect(languageModel.streamChat).toHaveBeenCalledWith(
       expect.objectContaining({
+        locale: "de-DE",
         tenantId: "workspace-1",
         toolTenantId: "tenant-1",
         workspaceId: "workspace-1",

@@ -26,8 +26,8 @@ import { cn } from "@corely/web-shared/shared/lib/utils";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@corely/ui";
 import { billingApi } from "@corely/web-shared/lib/billing-api";
-import { CashManagementProductKey } from "@corely/contracts";
-import { getAssistantSuggestions } from "./assistant-suggestions";
+import { CashManagementBillingFeatureKeys, CashManagementProductKey } from "@corely/contracts";
+import { getAssistantCapabilityGroups, getAssistantSuggestions } from "./assistant-suggestions";
 
 type ThreadGroupKey = "today" | "yesterday" | "week" | "older";
 
@@ -103,6 +103,11 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
     return getAssistantSuggestions({ activeModule, locale, t });
   }, [activeModule, i18n.language, i18n.resolvedLanguage, t]);
 
+  const capabilityGroups = useMemo(
+    () => getAssistantCapabilityGroups({ activeModule, t }),
+    [activeModule, t]
+  );
+
   const threadsQuery = useQuery({
     queryKey: THREAD_LIST_QUERY_KEY,
     queryFn: async () => listCopilotThreads({ pageSize: 50 }),
@@ -124,7 +129,10 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
   });
 
   const canChat =
-    !billingProductKey || Boolean(billingQuery.data?.entitlements?.featureValues?.aiAssistant);
+    !billingProductKey ||
+    billingQuery.data?.entitlements?.featureValues?.[
+      CashManagementBillingFeatureKeys.aiAssistant
+    ] === true;
 
   const searchQuery = useQuery({
     queryKey: ["assistant", "thread-search", debouncedSearchText],
@@ -221,7 +229,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
   return (
     <div className="flex h-[calc(100vh-3.5rem)] lg:h-screen" data-testid="assistant-chat">
       <aside className="hidden w-80 shrink-0 border-r border-border bg-background/80 md:flex md:flex-col">
-        <div className="border-b border-border px-4 py-4">
+        <div className="border-b border-border px-6 py-4 lg:px-8">
           <div className="mb-3 flex items-center justify-between">
             <div className="text-sm font-semibold text-foreground">Recent chats</div>
             <Button variant="outline" size="sm" onClick={() => setSearchOpen(true)}>
@@ -243,7 +251,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 py-3">
+        <div className="flex-1 overflow-y-auto px-4 py-3 lg:px-6">
           {threadsQuery.isLoading ? (
             <div className="px-3 py-2 text-sm text-muted-foreground">Loading chats...</div>
           ) : null}
@@ -304,7 +312,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-3 px-4 py-4 sm:px-6 lg:px-8">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10">
               <Sparkles className="h-5 w-5 text-accent" />
             </div>
@@ -337,10 +345,7 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          <div
-            className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8"
-            data-testid="assistant-messages"
-          >
+          <div className="px-4 py-6 sm:px-6 sm:py-8 lg:px-8" data-testid="assistant-messages">
             <Chat
               key={threadId ?? "new-thread"}
               activeModule={activeModule}
@@ -354,6 +359,12 @@ export default function AssistantPage({ activeModule = "assistant" }: AssistantP
               focusMessageId={focusedMessageId}
               placeholder={t("assistant.placeholder")}
               suggestions={suggestions}
+              capabilityGroups={capabilityGroups}
+              capabilityCatalogTitle={t("cashDashboard.assistant.capabilityCatalogTitle", "")}
+              capabilityCatalogDescription={t(
+                "cashDashboard.assistant.capabilityCatalogDescription",
+                ""
+              )}
               emptyStateTitle={t("assistant.emptyStateTitle")}
               emptyStateDescription={t("assistant.emptyStateDescription")}
             />

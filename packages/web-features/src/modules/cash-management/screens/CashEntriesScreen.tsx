@@ -2,22 +2,28 @@ import { useMemo, useState } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Badge, Button, Input } from "@corely/ui";
-import type {
-  CashEntryAttachment,
-  CashEntryTaxMode,
-  CashEntryType,
-  TaxProfileDto,
-  TaxRateDto,
-  UpsertTaxProfileInput,
-} from "@corely/contracts";
+import { Button } from "@corely/ui";
+import type { CashEntryAttachment, CashEntryType, TaxProfileDto } from "@corely/contracts";
 import { cashManagementApi } from "@corely/web-shared/lib/cash-management-api";
 import { taxApi } from "@corely/web-shared/lib/tax-api";
-import { CrudListPageLayout, CrudRowActions } from "@corely/web-shared/shared/crud";
-import { formatDateTime, formatMoney } from "@corely/web-shared/shared/lib/formatters";
-import { Paperclip } from "lucide-react";
+import { CrudListPageLayout } from "@corely/web-shared/shared/crud";
 import { cashKeys, invalidateCashRegisterQueries } from "../queries";
 import { uploadBelegDocument } from "../upload-beleg-document";
+import {
+  calculateGrossFirstBreakdown,
+  createDefaultGermanTaxProfile,
+  deriveDirectionFromType,
+  deriveTaxModeFromType,
+  entrySources,
+  entryTypes,
+  isTaxRelevantType,
+  requiresSupportingDocument,
+  requiresTaxCodeForType,
+  requiresTaxProfileForType,
+  resolveEffectiveRate,
+} from "./cash-entry-helpers";
+import { CashEntriesFilters, type CashEntryFilters } from "./cash-entries-filters";
+import { CashEntriesTable } from "./cash-entries-table";
 import {
   AttachBelegDialog,
   type AttachBelegForm,
@@ -27,27 +33,7 @@ import {
   ReverseEntryDialog,
 } from "./cash-entries-dialogs";
 
-type Filters = {
-  dayKeyFrom: string;
-  dayKeyTo: string;
-  type: string;
-  source: string;
-  q: string;
-};
-
-const entryTypes = [
-  "SALE_CASH",
-  "REFUND_CASH",
-  "EXPENSE_CASH",
-  "OWNER_DEPOSIT",
-  "OWNER_WITHDRAWAL",
-  "BANK_DEPOSIT",
-  "BANK_WITHDRAWAL",
-  "OPENING_FLOAT",
-] as const;
-const entrySources = ["MANUAL", "SALES", "EXPENSE", "DIFFERENCE", "IMPORT", "INTEGRATION"] as const;
-
-const defaultFilters: Filters = {
+const defaultFilters: CashEntryFilters = {
   dayKeyFrom: "",
   dayKeyTo: "",
   type: "",
@@ -59,85 +45,11 @@ const defaultAttachBelegForm = (): AttachBelegForm => ({
   attachmentFile: null,
 });
 
-const deriveDirectionFromType = (type: CashEntryType): "IN" | "OUT" => {
-  switch (type) {
-    case "REFUND_CASH":
-    case "EXPENSE_CASH":
-    case "OWNER_WITHDRAWAL":
-    case "BANK_DEPOSIT":
-      return "OUT";
-    default:
-      return "IN";
-  }
-};
-
-const isTaxRelevantType = (type: CashEntryType): boolean => {
-  return type === "SALE_CASH" || type === "REFUND_CASH" || type === "EXPENSE_CASH";
-};
-
-const deriveTaxModeFromType = (type: CashEntryType): CashEntryTaxMode => {
-  return type === "EXPENSE_CASH" ? "INPUT_VAT" : "OUTPUT_VAT";
-};
-
-const requiresSupportingDocument = (type: CashEntryType): boolean => {
-  return type !== "OPENING_FLOAT";
-};
-
-const requiresTaxCodeForType = (type: CashEntryType, profile: TaxProfileDto | null | undefined) => {
-  return (type === "SALE_CASH" || type === "REFUND_CASH") && profile?.regime === "STANDARD_VAT";
-};
-
-const requiresTaxProfileForType = (type: CashEntryType): boolean => {
-  return type === "SALE_CASH" || type === "REFUND_CASH";
-};
-
-const createDefaultGermanTaxProfile = (regime: TaxProfileDto["regime"]): UpsertTaxProfileInput => ({
-  country: "DE",
-  regime,
-  vatEnabled: regime === "STANDARD_VAT",
-  currency: "EUR",
-  filingFrequency: "MONTHLY",
-  taxYearStartMonth: 1,
-  vatAccountingMethod: "IST",
-  effectiveFrom: new Date().toISOString(),
-});
-
-const resolveEffectiveRate = (rates: TaxRateDto[] | undefined, at: Date): number | null => {
-  if (!rates || rates.length === 0) {
-    return null;
-  }
-
-  const match = rates.find((rate) => {
-    const start = new Date(rate.effectiveFrom);
-    const end = rate.effectiveTo ? new Date(rate.effectiveTo) : null;
-    return start <= at && (!end || at <= end);
-  });
-
-  return match?.rateBps ?? rates[0]?.rateBps ?? null;
-};
-
-const calculateGrossFirstBreakdown = (grossAmountCents: number, rateBps: number | null) => {
-  if (!rateBps || rateBps <= 0) {
-    return {
-      grossAmountCents,
-      netAmountCents: grossAmountCents,
-      taxAmountCents: 0,
-    };
-  }
-
-  const netAmountCents = Math.round((grossAmountCents * 10_000) / (10_000 + rateBps));
-  return {
-    grossAmountCents,
-    netAmountCents,
-    taxAmountCents: grossAmountCents - netAmountCents,
-  };
-};
-
 export function CashEntriesScreen() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [filters, setFilters] = useState<CashEntryFilters>(defaultFilters);
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState<CreateEntryForm>(defaultCreateForm);
   const [reverseTargetId, setReverseTargetId] = useState<string | null>(null);
@@ -431,54 +343,14 @@ export function CashEntriesScreen() {
           </Button>
         }
         filters={
-          <>
-            <Input
-              type="date"
-              value={filters.dayKeyFrom}
-              aria-label={t("cash.ui.entries.filters.dayFrom")}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, dayKeyFrom: event.target.value }))
-              }
-            />
-            <Input
-              type="date"
-              value={filters.dayKeyTo}
-              aria-label={t("cash.ui.entries.filters.dayTo")}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, dayKeyTo: event.target.value }))
-              }
-            />
-            <select
-              className="h-9 rounded-md border bg-background px-3 text-sm"
-              value={filters.type}
-              onChange={(event) => setFilters((prev) => ({ ...prev, type: event.target.value }))}
-            >
-              <option value="">{t("cash.ui.entries.filters.allTypes")}</option>
-              {entryTypes.map((value) => (
-                <option key={value} value={value}>
-                  {entryTypeLabel(value)}
-                </option>
-              ))}
-            </select>
-            <select
-              className="h-9 rounded-md border bg-background px-3 text-sm"
-              value={filters.source}
-              onChange={(event) => setFilters((prev) => ({ ...prev, source: event.target.value }))}
-            >
-              <option value="">{t("cash.ui.entries.filters.allSources")}</option>
-              {entrySources.map((value) => (
-                <option key={value} value={value}>
-                  {entrySourceLabel(value)}
-                </option>
-              ))}
-            </select>
-            <Input
-              value={filters.q}
-              onChange={(event) => setFilters((prev) => ({ ...prev, q: event.target.value }))}
-              placeholder={t("cash.ui.entries.filters.searchDescription")}
-              className="w-48"
-            />
-          </>
+          <CashEntriesFilters
+            filters={filters}
+            setFilters={setFilters}
+            entryTypes={entryTypes}
+            entrySources={entrySources}
+            entryTypeLabel={entryTypeLabel}
+            entrySourceLabel={entrySourceLabel}
+          />
         }
       >
         {entriesQuery.isLoading ? (
@@ -488,107 +360,24 @@ export function CashEntriesScreen() {
         ) : entries.length === 0 ? (
           <div className="p-6 text-sm text-muted-foreground">{t("cash.ui.entries.empty")}</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-muted/30 text-left">
-                <tr>
-                  <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.dateTime")}</th>
-                  <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.entryNo")}</th>
-                  <th className="px-4 py-3 font-medium">
-                    {t("cash.ui.entries.table.description")}
-                  </th>
-                  <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.type")}</th>
-                  <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.direction")}</th>
-                  <th className="px-4 py-3 font-medium text-right">
-                    {t("cash.ui.entries.table.amount")}
-                  </th>
-                  <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.tax")}</th>
-                  <th className="px-4 py-3 font-medium">{t("cash.ui.entries.table.source")}</th>
-                  <th className="px-4 py-3 font-medium text-right">
-                    {t("cash.ui.entries.table.balanceAfter")}
-                  </th>
-                  <th className="px-4 py-3 font-medium text-center">
-                    {t("cash.ui.entries.table.beleg")}
-                  </th>
-                  <th className="px-4 py-3 font-medium text-right">
-                    {t("cash.ui.entries.table.actions")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {entries.map((entry) => (
-                  <tr key={entry.id} className="border-t border-border/40">
-                    <td className="px-4 py-3">{formatDateTime(entry.occurredAt)}</td>
-                    <td className="px-4 py-3">{entry.entryNo}</td>
-                    <td className="px-4 py-3">{entry.description}</td>
-                    <td className="px-4 py-3">
-                      <Badge variant="outline">{entryTypeLabel(entry.type)}</Badge>
-                    </td>
-                    <td className="px-4 py-3">{directionLabel(entry.direction)}</td>
-                    <td className="px-4 py-3 text-right">
-                      {entry.direction === "OUT" ? "-" : "+"}
-                      {formatMoney(entry.grossAmountCents, undefined, entry.currency)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {entry.taxMode && entry.taxMode !== "NONE"
-                        ? `${entry.taxLabel ?? entry.taxCode ?? t("cash.ui.entries.table.tax")} (${formatMoney(
-                            entry.taxAmountCents ?? 0,
-                            undefined,
-                            entry.currency
-                          )})`
-                        : t("cash.ui.entries.createDialog.noVat")}
-                    </td>
-                    <td className="px-4 py-3">{entrySourceLabel(entry.source)}</td>
-                    <td className="px-4 py-3 text-right">
-                      {formatMoney(entry.balanceAfterCents, undefined, entry.currency)}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {attachmentCountByEntryId.get(entry.id) ? (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="mx-auto h-8 px-2"
-                          aria-label={t("cash.ui.entries.rowActions.downloadBeleg")}
-                          disabled={downloadAttachmentsMutation.isPending}
-                          onClick={() => downloadAttachmentsMutation.mutate(entry.id)}
-                        >
-                          <Paperclip className="h-4 w-4" />
-                          <span className="ml-1">{attachmentCountByEntryId.get(entry.id)}</span>
-                        </Button>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <CrudRowActions
-                        secondaryActions={[
-                          {
-                            label: t("cash.ui.entries.rowActions.viewRegister"),
-                            href: `/cash/registers/${id}`,
-                          },
-                          {
-                            label: t("cash.ui.entries.rowActions.reverse"),
-                            onClick: () => {
-                              setReverseTargetId(entry.id);
-                              setReverseReason("");
-                            },
-                            disabled: Boolean(entry.reversedByEntryId),
-                          },
-                          {
-                            label: t("cash.ui.entries.rowActions.addBeleg"),
-                            onClick: () => {
-                              setBelegEntryId(entry.id);
-                              setAttachBelegForm(defaultAttachBelegForm());
-                            },
-                          },
-                        ]}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <CashEntriesTable
+            entries={entries}
+            registerId={id}
+            attachmentCountByEntryId={attachmentCountByEntryId}
+            isDownloadingAttachments={downloadAttachmentsMutation.isPending}
+            onDownloadAttachments={(entryId) => downloadAttachmentsMutation.mutate(entryId)}
+            onReverseEntry={(entryId) => {
+              setReverseTargetId(entryId);
+              setReverseReason("");
+            }}
+            onAddBeleg={(entryId) => {
+              setBelegEntryId(entryId);
+              setAttachBelegForm(defaultAttachBelegForm());
+            }}
+            entryTypeLabel={entryTypeLabel}
+            entrySourceLabel={entrySourceLabel}
+            directionLabel={directionLabel}
+          />
         )}
       </CrudListPageLayout>
 

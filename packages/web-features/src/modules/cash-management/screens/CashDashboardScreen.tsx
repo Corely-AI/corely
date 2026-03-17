@@ -387,12 +387,8 @@ const subtlePanelClass =
 
 function DashboardPageFrame({ children }: { children: ReactNode }) {
   return (
-    <div
-      className="relative mx-auto max-w-[1600px] overflow-hidden p-6 lg:p-8"
-      data-testid="cash-dashboard-page"
-    >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[320px] rounded-[2rem] bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.1),transparent_38%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.08),transparent_26%),linear-gradient(180deg,rgba(250,248,244,0.9),rgba(255,255,255,0))] dark:bg-[radial-gradient(circle_at_top_left,rgba(245,158,11,0.12),transparent_34%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.12),transparent_24%),linear-gradient(180deg,rgba(8,15,27,0.82),rgba(8,15,27,0))]" />
-      <div className="relative z-10 space-y-6">{children}</div>
+    <div className="mx-auto max-w-[1600px] p-6 lg:p-8" data-testid="cash-dashboard-page">
+      <div className="space-y-6">{children}</div>
     </div>
   );
 }

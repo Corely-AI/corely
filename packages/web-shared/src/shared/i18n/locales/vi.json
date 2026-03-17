@@ -3329,6 +3329,115 @@
           "value": "Privateinlage có nghĩa là gì?"
         }
       ],
+      "capabilityCatalogTitle": "Tác vụ quản lý quỹ",
+      "capabilityCatalogDescription": "Đây là danh sách đầy đủ những gì trợ lý quản lý quỹ có thể làm cho bạn. Chọn một tác vụ để điền sẵn yêu cầu và bắt đầu nhanh hơn.",
+      "capabilityGroups": [
+        {
+          "title": "Giao dịch sổ quỹ",
+          "description": "Tạo, chỉnh sửa và rà soát các giao dịch sổ quỹ cho két sắt hiện tại.",
+          "items": [
+            {
+              "title": "Tạo giao dịch sổ quỹ",
+              "description": "Bắt đầu một giao dịch thu hoặc chi tiền với đầy đủ thông tin cần thiết.",
+              "prompt": "Tạo một giao dịch sổ quỹ cho két sắt hiện tại."
+            },
+            {
+              "title": "Sửa giao dịch đang mở",
+              "description": "Đảo một giao dịch đang mở và tạo giao dịch thay thế đã chỉnh sửa.",
+              "prompt": "Hãy sửa một giao dịch sổ quỹ đang mở cho tôi."
+            },
+            {
+              "title": "Xem danh sách giao dịch",
+              "description": "Xem giao dịch theo khoảng ngày, loại, nguồn hoặc nội dung diễn giải.",
+              "prompt": "Hiển thị danh sách giao dịch sổ quỹ của két sắt này."
+            }
+          ]
+        },
+        {
+          "title": "Hóa đơn và chứng từ",
+          "description": "Tải hóa đơn lên, gắn vào giao dịch và tìm các chứng từ còn thiếu.",
+          "items": [
+            {
+              "title": "Tải hóa đơn lên",
+              "description": "Tải lên một hoặc nhiều tệp hóa đơn trực tiếp từ cuộc trò chuyện này.",
+              "prompt": "Tải lên các tệp hóa đơn từ cuộc trò chuyện này."
+            },
+            {
+              "title": "Gắn hóa đơn vào giao dịch",
+              "description": "Liên kết chứng từ đã tải lên với đúng giao dịch sổ quỹ.",
+              "prompt": "Gắn hóa đơn đã tải lên vào đúng giao dịch sổ quỹ."
+            },
+            {
+              "title": "Tìm giao dịch thiếu hóa đơn",
+              "description": "Hiển thị các giao dịch vẫn cần hóa đơn trước khi kiểm tra hoặc xuất dữ liệu.",
+              "prompt": "Tìm các giao dịch sổ quỹ vẫn còn thiếu hóa đơn."
+            }
+          ]
+        },
+        {
+          "title": "Đóng ngày",
+          "description": "Kiểm tra mức sẵn sàng, lưu tiền đã kiểm đếm và đóng ngày đúng quy trình.",
+          "items": [
+            {
+              "title": "Trạng thái quỹ hôm nay",
+              "description": "Xem số dư dự kiến, hóa đơn thiếu và hôm nay đã sẵn sàng đóng ngày chưa.",
+              "prompt": "Cho tôi biết tình trạng quỹ hôm nay và có đóng ngày được chưa."
+            },
+            {
+              "title": "Nhập tiền đã kiểm đếm",
+              "description": "Lưu số tiền mặt hoặc số lượng mệnh giá trước khi đóng ngày chính thức.",
+              "prompt": "Nhập số tiền đã kiểm đếm hôm nay cho két sắt hiện tại."
+            },
+            {
+              "title": "Đóng ngày",
+              "description": "Hoàn tất việc đóng ngày sau khi mọi điểm chặn đã được xử lý.",
+              "prompt": "Đóng ngày hôm nay cho két sắt hiện tại."
+            },
+            {
+              "title": "Xem các ngày chưa đóng",
+              "description": "Tìm các ngày vẫn đang mở hoặc mới lưu nháp và chưa đóng.",
+              "prompt": "Liệt kê các ngày vẫn chưa đóng của két sắt này."
+            }
+          ]
+        },
+        {
+          "title": "Tổng quan và xuất dữ liệu",
+          "description": "Theo dõi tình trạng vận hành và chuẩn bị gói xuất dữ liệu theo tháng.",
+          "items": [
+            {
+              "title": "Tổng quan dashboard",
+              "description": "Xem tổng quan về tiền mặt, hóa đơn, trạng thái đóng ngày và mức sẵn sàng xuất dữ liệu.",
+              "prompt": "Hiển thị tổng quan dashboard của két sắt này."
+            },
+            {
+              "title": "Việc cần làm tiếp theo",
+              "description": "Xem các hành động vận hành tiếp theo mà chủ cửa hàng cần xử lý.",
+              "prompt": "Trong quản lý quỹ, tôi cần làm gì tiếp theo?"
+            },
+            {
+              "title": "Xuất dữ liệu tháng",
+              "description": "Tạo gói xuất dữ liệu sổ quỹ hằng tháng cho kế toán hoặc tư vấn thuế.",
+              "prompt": "Tạo gói xuất dữ liệu sổ quỹ theo tháng cho két sắt này."
+            }
+          ]
+        },
+        {
+          "title": "Hướng dẫn và thuật ngữ",
+          "description": "Nhận hướng dẫn quy trình và giải thích dễ hiểu cho các thuật ngữ sổ quỹ.",
+          "items": [
+            {
+              "title": "Giải thích thuật ngữ sổ quỹ",
+              "description": "Giải thích dễ hiểu cho thuật ngữ như Privateinlage.",
+              "prompt": "Giải thích cho tôi một thuật ngữ trong sổ quỹ."
+            },
+            {
+              "title": "Hướng dẫn quy trình",
+              "description": "Nhận hướng dẫn từng bước cho đóng ngày, hóa đơn thiếu hoặc xuất dữ liệu tháng.",
+              "prompt": "Hiển thị hướng dẫn quy trình cho quản lý quỹ."
+            }
+          ]
+        }
+      ],
       "languages": "Tiếng Đức, Tiếng Anh, Tiếng Việt",
       "lockedTitle": "Trợ lý AI bị khóa trong gói này",
       "lockedDescription": "Nâng cấp lên Pro để mở trợ lý sổ quỹ, giải thích đa ngôn ngữ, và gợi ý xử lý vấn đề.",

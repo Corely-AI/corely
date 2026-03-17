@@ -3317,6 +3317,115 @@
           "value": "Was bedeutet Privateinlage im Kassenbuch?"
         }
       ],
+      "capabilityCatalogTitle": "Aufgaben im Kassenmanagement",
+      "capabilityCatalogDescription": "Das ist die vollständige Liste dessen, wobei dir der Kassenassistent helfen kann. Wähle eine Aufgabe, um die Anfrage vorzufüllen und schneller zu starten.",
+      "capabilityGroups": [
+        {
+          "title": "Kassenbucheinträge",
+          "description": "Kassenbucheinträge für die aktuelle Kasse erstellen, korrigieren und prüfen.",
+          "items": [
+            {
+              "title": "Kassenbucheintrag erstellen",
+              "description": "Einen neuen Geldein- oder Geldausgang mit allen nötigen Angaben anlegen.",
+              "prompt": "Erstelle einen Kassenbucheintrag für die aktuelle Kasse."
+            },
+            {
+              "title": "Offenen Eintrag korrigieren",
+              "description": "Einen offenen Eintrag stornieren und den korrigierten Ersatzeintrag erstellen.",
+              "prompt": "Bitte korrigiere einen offenen Kassenbucheintrag für mich."
+            },
+            {
+              "title": "Kassenbucheinträge anzeigen",
+              "description": "Einträge nach Zeitraum, Typ, Quelle oder Beschreibung prüfen.",
+              "prompt": "Zeig mir die Kassenbucheinträge dieser Kasse."
+            }
+          ]
+        },
+        {
+          "title": "Belege und Anhänge",
+          "description": "Belege hochladen, Einträgen zuordnen und fehlende Dokumente finden.",
+          "items": [
+            {
+              "title": "Beleg hochladen",
+              "description": "Einen oder mehrere Belege direkt aus diesem Chat hochladen.",
+              "prompt": "Lade die Belegdateien aus diesem Chat hoch."
+            },
+            {
+              "title": "Beleg an Eintrag anhängen",
+              "description": "Hochgeladene Belege dem richtigen Kassenbucheintrag zuordnen.",
+              "prompt": "Hänge den hochgeladenen Beleg an den richtigen Kassenbucheintrag an."
+            },
+            {
+              "title": "Fehlende Belege finden",
+              "description": "Einträge anzeigen, für die vor Prüfung oder Export noch ein Beleg fehlt.",
+              "prompt": "Finde die Kassenbucheinträge, denen noch Belege fehlen."
+            }
+          ]
+        },
+        {
+          "title": "Tagesabschluss",
+          "description": "Bereitschaft prüfen, gezähltes Bargeld speichern und den Tag sauber abschließen.",
+          "items": [
+            {
+              "title": "Kassenstatus heute",
+              "description": "Erwarteten Bestand, fehlende Belege und Abschlussbereitschaft anzeigen.",
+              "prompt": "Zeig mir den heutigen Kassenstatus und ob der Tag bereit zum Abschluss ist."
+            },
+            {
+              "title": "Gezähltes Bargeld speichern",
+              "description": "Gezähltes Bargeld oder Stückelung speichern, bevor endgültig abgeschlossen wird.",
+              "prompt": "Speichere das heute gezählte Bargeld für die aktuelle Kasse."
+            },
+            {
+              "title": "Tag abschließen",
+              "description": "Den heutigen Kassentag abschließen, sobald alle Blocker geklärt sind.",
+              "prompt": "Schließe den heutigen Kassentag für die aktuelle Kasse ab."
+            },
+            {
+              "title": "Offene Tage anzeigen",
+              "description": "Tage finden, die noch offen sind oder nur als Entwurf gespeichert wurden.",
+              "prompt": "Liste die Tage auf, die für diese Kasse noch nicht abgeschlossen sind."
+            }
+          ]
+        },
+        {
+          "title": "Übersicht und Export",
+          "description": "Den operativen Status überwachen und das monatliche Exportpaket vorbereiten.",
+          "items": [
+            {
+              "title": "Dashboard-Zusammenfassung",
+              "description": "Eine operative Übersicht zu Bargeld, Belegen, Abschlussstatus und Exportbereitschaft anzeigen.",
+              "prompt": "Zeig mir die Dashboard-Zusammenfassung für diese Kasse."
+            },
+            {
+              "title": "Nächste Schritte",
+              "description": "Die nächsten operativen Aufgaben für den Inhaber anzeigen.",
+              "prompt": "Welche nächsten Schritte muss ich im Kassenmanagement erledigen?"
+            },
+            {
+              "title": "Monatsexport erzeugen",
+              "description": "Das monatliche Exportpaket für Steuerberatung oder Buchhaltung vorbereiten.",
+              "prompt": "Erzeuge das monatliche Kassenexport-Paket für diese Kasse."
+            }
+          ]
+        },
+        {
+          "title": "Hilfe und Begriffe",
+          "description": "Ablaufhilfen und leicht verständliche Erklärungen zu Kassenbuch-Begriffen erhalten.",
+          "items": [
+            {
+              "title": "Begriff im Kassenbuch erklären",
+              "description": "Einen Begriff wie Privateinlage in einfacher Sprache erklären lassen.",
+              "prompt": "Erkläre mir einen Begriff aus dem Kassenbuch."
+            },
+            {
+              "title": "Workflow-Hilfe",
+              "description": "Schritt-für-Schritt-Hilfe für Tagesabschluss, fehlende Belege oder Monatsexport erhalten.",
+              "prompt": "Zeig mir die Workflow-Hilfe für das Kassenmanagement."
+            }
+          ]
+        }
+      ],
       "languages": "Deutsch, Englisch, Vietnamesisch",
       "lockedTitle": "KI-Hilfe ist in diesem Tarif gesperrt",
       "lockedDescription": "Upgrade auf Pro, um den Kassenassistenten, mehrsprachige Erklärungen und geführte Prüfung freizuschalten.",

@@ -33,6 +33,7 @@ import {
   normalizeAttachment,
 } from "../../../../shared/adapters/tools/file-parts";
 import { mapToolResult } from "../../../../shared/adapters/tools/tool-mappers";
+import { cashManagementToolDescriptions } from "./cash-management.tool-copy";
 
 type ToolFailure = {
   ok: false;
@@ -752,6 +753,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
     name: "create_cash_entry",
     description:
       "Create a cash entry for the current register and optionally attach uploaded receipts.",
+    descriptions: cashManagementToolDescriptions.create_cash_entry,
     kind: "server",
     inputSchema: CreateCashEntryToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -830,6 +832,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
     name: "update_cash_entry",
     description:
       "Update an open cash entry by reversing the old entry and creating a corrected replacement entry.",
+    descriptions: cashManagementToolDescriptions.update_cash_entry,
     kind: "server",
     inputSchema: UpdateCashEntryToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -910,6 +913,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "list_cash_entries",
     description: "List cash entries for a register with optional date and search filters.",
+    descriptions: cashManagementToolDescriptions.list_cash_entries,
     kind: "server",
     inputSchema: ListCashEntriesToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -948,6 +952,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
     name: "upload_receipt",
     description:
       "Upload one or more receipt files from the latest user attachment or explicit base64 input.",
+    descriptions: cashManagementToolDescriptions.upload_receipt,
     kind: "server",
     inputSchema: UploadReceiptToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId, messages }) => {
@@ -1017,6 +1022,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "attach_receipt_to_entry",
     description: "Attach one or more uploaded receipt documents to a cash entry.",
+    descriptions: cashManagementToolDescriptions.attach_receipt_to_entry,
     kind: "server",
     inputSchema: AttachReceiptToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1057,6 +1063,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "get_today_cash_status",
     description: "Get today's operational cash status for the current register.",
+    descriptions: cashManagementToolDescriptions.get_today_cash_status,
     kind: "server",
     inputSchema: DashboardSummaryToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1111,6 +1118,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
     name: "submit_counted_cash",
     description:
       "Save counted cash for today as a draft step before the final day close is submitted.",
+    descriptions: cashManagementToolDescriptions.submit_counted_cash,
     kind: "server",
     inputSchema: CountedCashToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1167,6 +1175,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "close_cash_day",
     description: "Finalize and close the current cash day once counted cash is ready.",
+    descriptions: cashManagementToolDescriptions.close_cash_day,
     kind: "server",
     inputSchema: CloseCashDayToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1254,6 +1263,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "list_unclosed_days",
     description: "List days with entries that are still open or only saved as drafts.",
+    descriptions: cashManagementToolDescriptions.list_unclosed_days,
     kind: "server",
     inputSchema: ListUnclosedDaysToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1328,6 +1338,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "find_missing_receipts",
     description: "Find receipt-required cash entries that still do not have an attachment.",
+    descriptions: cashManagementToolDescriptions.find_missing_receipts,
     kind: "server",
     inputSchema: FindMissingReceiptsToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1391,6 +1402,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "generate_monthly_export",
     description: "Generate the monthly cash export package for the tax advisor.",
+    descriptions: cashManagementToolDescriptions.generate_monthly_export,
     kind: "server",
     inputSchema: GenerateMonthlyExportToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1453,6 +1465,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
     name: "get_dashboard_summary",
     description:
       "Return the operational dashboard summary for cash, receipts, close status, and export readiness.",
+    descriptions: cashManagementToolDescriptions.get_dashboard_summary,
     kind: "server",
     inputSchema: DashboardSummaryToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1524,6 +1537,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "get_action_required",
     description: "Return the next operational actions the owner should take.",
+    descriptions: cashManagementToolDescriptions.get_action_required,
     kind: "server",
     inputSchema: ActionRequiredToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {
@@ -1618,6 +1632,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
   {
     name: "explain_cashbook_term",
     description: "Explain common cash-book terms in plain language for salon owners.",
+    descriptions: cashManagementToolDescriptions.explain_cashbook_term,
     kind: "server",
     inputSchema: ExplainCashbookTermToolInputSchema,
     execute: async ({ input }) => {
@@ -1644,6 +1659,7 @@ export const buildCashManagementTools = (deps: CashToolDeps): DomainToolPort[] =
     name: "get_workflow_help",
     description:
       "Explain the next steps for closing the day, fixing receipts, or preparing monthly export.",
+    descriptions: cashManagementToolDescriptions.get_workflow_help,
     kind: "server",
     inputSchema: WorkflowHelpToolInputSchema,
     execute: async ({ tenantId, workspaceId, userId, input, toolCallId, runId }) => {

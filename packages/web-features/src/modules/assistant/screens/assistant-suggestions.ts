@@ -1,6 +1,6 @@
 import { AlertCircle, FileText, Receipt, TrendingUp } from "lucide-react";
 import type { TFunction } from "i18next";
-import type { Suggestion } from "@corely/web-shared/shared/components/Chat";
+import type { CapabilityGroup, Suggestion } from "@corely/web-shared/shared/components/Chat";
 
 interface SuggestionOptions {
   activeModule: string;
@@ -46,4 +46,16 @@ export const getAssistantSuggestions = ({
       value: t("assistant.suggestions.taxGuidance.value"),
     },
   ];
+};
+
+export const getAssistantCapabilityGroups = ({
+  activeModule,
+  t,
+}: Omit<SuggestionOptions, "locale">): CapabilityGroup[] => {
+  if (activeModule !== "cash-management") {
+    return [];
+  }
+
+  const groups = t("cashDashboard.assistant.capabilityGroups", { returnObjects: true });
+  return Array.isArray(groups) ? (groups as CapabilityGroup[]) : [];
 };

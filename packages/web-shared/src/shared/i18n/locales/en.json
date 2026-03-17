@@ -3370,6 +3370,115 @@
           "value": "What does Privateinlage mean in the cash book?"
         }
       ],
+      "capabilityCatalogTitle": "Cash management tasks",
+      "capabilityCatalogDescription": "This is the full list of what the cash assistant can help you do. Pick a task to prefill the request and get started faster.",
+      "capabilityGroups": [
+        {
+          "title": "Cash entries",
+          "description": "Create, correct, and review cash-book entries for the current register.",
+          "items": [
+            {
+              "title": "Create a cash entry",
+              "description": "Start a new cash in or cash out entry with the required details.",
+              "prompt": "Create a cash entry for the current register."
+            },
+            {
+              "title": "Correct an open entry",
+              "description": "Reverse an open entry and create the corrected replacement entry.",
+              "prompt": "Correct an open cash entry for me."
+            },
+            {
+              "title": "List cash entries",
+              "description": "Review entries by date range, type, source, or description.",
+              "prompt": "List the cash entries for this register."
+            }
+          ]
+        },
+        {
+          "title": "Receipts and attachments",
+          "description": "Upload receipts, attach them to entries, and find missing documents.",
+          "items": [
+            {
+              "title": "Upload a receipt",
+              "description": "Upload one or more receipt files from this chat.",
+              "prompt": "Upload the receipt files from this chat."
+            },
+            {
+              "title": "Attach a receipt to an entry",
+              "description": "Link uploaded receipt documents to the correct cash entry.",
+              "prompt": "Attach the uploaded receipt to the correct cash entry."
+            },
+            {
+              "title": "Find missing receipts",
+              "description": "Show entries that still require a receipt before review or export.",
+              "prompt": "Find the cash entries that are still missing receipts."
+            }
+          ]
+        },
+        {
+          "title": "Day closing",
+          "description": "Check readiness, save counted cash, and close the day correctly.",
+          "items": [
+            {
+              "title": "Today's cash status",
+              "description": "See expected balance, receipt gaps, and whether closing is ready.",
+              "prompt": "Show me today's cash status and whether the day is ready to close."
+            },
+            {
+              "title": "Submit counted cash",
+              "description": "Save the counted cash or denomination counts before final close.",
+              "prompt": "Submit today's counted cash for the current register."
+            },
+            {
+              "title": "Close the day",
+              "description": "Finalize today's cash day once all blockers are cleared.",
+              "prompt": "Close today's cash day for the current register."
+            },
+            {
+              "title": "List unclosed days",
+              "description": "Find open or draft days that still need closing.",
+              "prompt": "List the days that are still unclosed for this register."
+            }
+          ]
+        },
+        {
+          "title": "Dashboard and export",
+          "description": "Monitor operational status and prepare the monthly export package.",
+          "items": [
+            {
+              "title": "Dashboard summary",
+              "description": "View the operational summary for cash, receipts, close status, and export readiness.",
+              "prompt": "Show me the dashboard summary for this cash register."
+            },
+            {
+              "title": "Actions required",
+              "description": "See the next operational actions the owner should take.",
+              "prompt": "What actions do I need to take next in cash management?"
+            },
+            {
+              "title": "Generate monthly export",
+              "description": "Prepare the monthly export package for the tax advisor.",
+              "prompt": "Generate the monthly cash export package for this register."
+            }
+          ]
+        },
+        {
+          "title": "Guidance and terms",
+          "description": "Get workflow guidance and plain-language explanations of cash-book terms.",
+          "items": [
+            {
+              "title": "Explain a cash-book term",
+              "description": "Get a plain-language explanation of a term such as Privateinlage.",
+              "prompt": "Explain a cash-book term for me."
+            },
+            {
+              "title": "Workflow help",
+              "description": "Get step-by-step guidance for day close, missing receipts, or monthly export.",
+              "prompt": "Show me the workflow help for cash management."
+            }
+          ]
+        }
+      ],
       "languages": "German, English, Vietnamese",
       "lockedTitle": "AI help is locked on this plan",
       "lockedDescription": "Upgrade to Pro to unlock the cash assistant, multilingual explanations, and guided issue review.",

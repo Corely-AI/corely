@@ -1,6 +1,10 @@
 import { tool, type Tool, type ToolCallOptions } from "ai";
 import { SpanStatusCode } from "@opentelemetry/api";
-import type { DomainToolPort } from "../../application/ports/domain-tool.port";
+import type {
+  DomainToolPort,
+  LocalizedToolText,
+  ToolLocale,
+} from "../../application/ports/domain-tool.port";
 import type { ToolExecutionRepositoryPort } from "../../application/ports/tool-execution-repository.port";
 import type { AuditPort } from "../../application/ports/audit.port";
 import type { OutboxPort } from "@corely/kernel";
@@ -13,6 +17,7 @@ export function buildAiTools(
     toolExecutions: ToolExecutionRepositoryPort;
     audit: AuditPort;
     outbox: OutboxPort;
+    locale?: string;
     tenantId: string;
     workspaceId?: string;
     activeAppId?: string;
@@ -32,7 +37,7 @@ export function buildAiTools(
   const entries = serverTools.map<[string, Tool<unknown, unknown>]>((t) => [
     t.name,
     tool({
-      description: t.description,
+      description: resolveToolDescription(t.description, t.descriptions, deps.locale),
       inputSchema: t.inputSchema,
       needsApproval: t.needsApproval,
       execute: async (input: unknown, options: ToolCallOptions) => {
@@ -126,3 +131,35 @@ export function buildAiTools(
 
   return Object.fromEntries(entries);
 }
+
+export const resolveToolLocale = (locale?: string): ToolLocale => {
+  const normalized = locale?.trim().toLowerCase();
+
+  if (normalized?.startsWith("de")) {
+    return "de";
+  }
+  if (normalized?.startsWith("vi")) {
+    return "vi";
+  }
+
+  return "en";
+};
+
+export const resolveToolDescription = (
+  fallbackDescription: string,
+  descriptions?: LocalizedToolText,
+  locale?: string
+): string => {
+  if (!descriptions) {
+    return fallbackDescription;
+  }
+
+  const resolvedLocale = resolveToolLocale(locale);
+  return (
+    descriptions[resolvedLocale] ??
+    descriptions.en ??
+    descriptions.de ??
+    descriptions.vi ??
+    fallbackDescription
+  );
+};

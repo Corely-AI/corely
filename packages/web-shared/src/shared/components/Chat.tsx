@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { Button } from "@corely/ui";
 import { fetchCopilotHistory, useCopilotChatOptions } from "@corely/web-shared/lib/copilot-api";
 import { useRotatingStatusText } from "@corely/web-shared/shared/components/chat/useRotatingStatusText";
 import { type StatusPhase } from "@corely/web-shared/shared/components/chat/statusTexts";
@@ -9,6 +8,12 @@ import { useTranslation } from "react-i18next";
 
 import { type MessagePart, hasVisiblePart, hasVisibleText } from "./chat/ChatParts";
 import { ChatComposer } from "./chat/chat-composer";
+import {
+  ChatEmptyState,
+  type CapabilityAction,
+  type CapabilityGroup,
+  type Suggestion,
+} from "./chat/chat-empty-state";
 import { ChatMessageList, type ChatMessage, type RoleStyle } from "./chat/chat-message-list";
 import {
   fileToChatPart,
@@ -17,17 +22,14 @@ import {
   MAX_ATTACHMENT_SIZE_BYTES,
 } from "./chat/chat-utils";
 
-export interface Suggestion {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}
-
 export interface ChatProps {
   activeModule: string;
   locale?: string;
   placeholder?: string;
   suggestions?: Suggestion[];
+  capabilityGroups?: CapabilityGroup[];
+  capabilityCatalogTitle?: string;
+  capabilityCatalogDescription?: string;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
   canSend?: boolean;
@@ -39,11 +41,16 @@ export interface ChatProps {
   focusMessageId?: string | null;
 }
 
+export type { CapabilityAction, CapabilityGroup, Suggestion };
+
 export function Chat({
   activeModule,
   locale = "en",
   placeholder = "Type your message",
   suggestions = [],
+  capabilityGroups = [],
+  capabilityCatalogTitle,
+  capabilityCatalogDescription,
   emptyStateTitle,
   emptyStateDescription,
   canSend = true,
@@ -98,6 +105,8 @@ export function Chat({
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const composerRef = useRef<HTMLFormElement | null>(null);
+  const composerInputRef = useRef<HTMLInputElement | null>(null);
 
   // AI SDK v3 API - manage input state ourselves
   const messages = (chat.messages ?? []) as ChatMessage[];
@@ -140,6 +149,19 @@ export function Chat({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
+
+  const focusComposer = useCallback((value: string) => {
+    setInput(value);
+    window.requestAnimationFrame(() => {
+      composerRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+      window.setTimeout(() => {
+        composerInputRef.current?.focus();
+      }, 180);
+    });
+  }, []);
 
   const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(e.target.files ?? []);
@@ -369,41 +391,16 @@ export function Chat({
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background/70 to-transparent" />
         </div>
         <div className="relative space-y-6">
-          {messages.length === 0 && suggestions.length > 0 ? (
-            <div className="rounded-2xl border border-dashed border-border/60 bg-background/60 p-6 text-center space-y-4">
-              <div className="mx-auto h-1 w-12 rounded-full bg-gradient-to-r from-accent to-warning" />
-              {emptyStateTitle && (
-                <h3 className="text-xl font-semibold text-foreground">{emptyStateTitle}</h3>
-              )}
-              {emptyStateDescription && (
-                <p className="text-sm text-muted-foreground">{emptyStateDescription}</p>
-              )}
-              <div className="grid gap-3 sm:grid-cols-2">
-                {suggestions.map((suggestion) => (
-                  <Button
-                    key={suggestion.label}
-                    variant="outline"
-                    size="lg"
-                    className="h-auto w-full justify-start gap-3 rounded-2xl border-border/60 bg-background/70 px-4 py-3 text-left shadow-[0_12px_30px_-24px_rgba(0,0,0,0.5)] hover:border-border-strong"
-                    onClick={() =>
-                      handleInputChange({
-                        target: { value: suggestion.value },
-                      } as React.ChangeEvent<HTMLInputElement>)
-                    }
-                  >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent/10 text-accent">
-                      <suggestion.icon className="h-4 w-4" />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-sm font-semibold text-foreground">
-                        {suggestion.label}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{suggestion.value}</div>
-                    </div>
-                  </Button>
-                ))}
-              </div>
-            </div>
+          {messages.length === 0 ? (
+            <ChatEmptyState
+              suggestions={suggestions}
+              capabilityGroups={capabilityGroups}
+              capabilityCatalogTitle={capabilityCatalogTitle}
+              capabilityCatalogDescription={capabilityCatalogDescription}
+              emptyStateTitle={emptyStateTitle}
+              emptyStateDescription={emptyStateDescription}
+              onSelectPrompt={focusComposer}
+            />
           ) : null}
 
           <ChatMessageList
@@ -433,6 +430,8 @@ export function Chat({
         onFileSelection={handleFileSelection}
         removePendingFile={removePendingFile}
         fileInputRef={fileInputRef}
+        composerRef={composerRef}
+        inputRef={composerInputRef}
         sendLabel={t("assistant.send")}
         sendingLabel={t("assistant.sending")}
         canSubmit={Boolean(input.trim()) || pendingFiles.length > 0}

@@ -180,6 +180,7 @@ export class CopilotController {
       message: body.message,
       tenantId: context.tenantId,
       userId: context.userId,
+      locale: body.requestData?.locale,
       idempotencyKey,
       runId: requestedRunId,
       response: res,
