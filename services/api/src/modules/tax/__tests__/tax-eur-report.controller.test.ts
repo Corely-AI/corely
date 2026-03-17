@@ -49,6 +49,8 @@ describe("TaxController /tax/reports/eur", () => {
       {} as never,
       {} as never,
       {} as never,
+      {} as never,
+      {} as never,
       { execute: getEurStatementExecute } as never,
       {} as never
     );
