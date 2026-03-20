@@ -88,6 +88,7 @@ Specific feature implementation details.
 - [Catalog Module](./features/catalog.md)
 - [Custom Attributes Framework](./features/custom-attributes.md)
 - [Command Palette](./features/command-palette.md)
+- [Coaching Engagements](./features/coaching-engagements.md)
 
 ### 📚 Guides
 

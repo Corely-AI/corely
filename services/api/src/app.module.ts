@@ -48,6 +48,7 @@ import { CrmMailModule } from "./modules/crm-mail";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { BackgroundModule } from "./modules/background/background.module";
 import { OnboardingModule } from "./modules/onboarding";
+import { CoachingEngagementsModule } from "./modules/coaching-engagements";
 import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
@@ -100,6 +101,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     CrmMailModule,
     ClassesModule,
     BookingModule,
+    CoachingEngagementsModule,
     PortalModule,
     PortfolioModule,
     IssuesModule,

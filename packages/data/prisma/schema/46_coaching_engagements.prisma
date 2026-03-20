@@ -1,0 +1,185 @@
+enum CoachingEngagementStatus {
+  draft
+  pending_payment
+  pending_signature
+  confirmed
+  prep_pending
+  ready
+  session_done
+  debrief_pending
+  completed
+  archived
+
+  @@schema("crm")
+}
+
+enum CoachingPaymentStatus {
+  not_required
+  pending
+  captured
+  failed
+
+  @@schema("crm")
+}
+
+enum CoachingContractStatus {
+  not_required
+  pending
+  signed
+  failed
+
+  @@schema("crm")
+}
+
+enum CoachingSessionStatus {
+  scheduled
+  completed
+  cancelled
+
+  @@schema("crm")
+}
+
+enum CoachingExportBundleStatus {
+  pending
+  ready
+  failed
+
+  @@schema("crm")
+}
+
+model CoachingOffer {
+  id                     String   @id @default(cuid())
+  tenantId               String
+  workspaceId            String?
+  titleJson              Json     @db.JsonB
+  descriptionJson        Json?    @db.JsonB
+  currency               String   @db.VarChar(3)
+  priceCents             Int
+  sessionDurationMinutes Int
+  contractRequired       Boolean  @default(true)
+  paymentRequired        Boolean  @default(true)
+  localeDefault          String   @default("en")
+  contractLabelJson      Json?    @db.JsonB
+  prepFormTemplateJson   Json?    @db.JsonB
+  debriefTemplateJson    Json?    @db.JsonB
+  createdAt              DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime @updatedAt @db.Timestamptz(6)
+
+  engagements CoachingEngagement[]
+
+  @@index([tenantId, workspaceId, createdAt])
+  @@schema("crm")
+}
+
+model CoachingEngagement {
+  id                     String                   @id @default(cuid())
+  tenantId               String
+  workspaceId            String
+  offerId                String
+  clientPartyId          String
+  coachPartyId           String?
+  coachUserId            String
+  locale                 String                   @default("en")
+  status                 CoachingEngagementStatus @default(draft)
+  paymentStatus          CoachingPaymentStatus    @default(pending)
+  contractStatus         CoachingContractStatus   @default(pending)
+  legalEntityId          String?
+  paymentMethodId        String?
+  invoiceId              String?
+  stripeCheckoutSessionId String?
+  stripeCheckoutUrl      String?
+  stripePaymentIntentId  String?
+  contractAccessTokenHash String?
+  contractRequestedAt    DateTime?                @db.Timestamptz(6)
+  contractSignedAt       DateTime?                @db.Timestamptz(6)
+  contractDraftDocumentId String?
+  signedContractDocumentId String?
+  latestSummary          String?
+  archivedAt             DateTime?                @db.Timestamptz(6)
+  createdAt              DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime                 @updatedAt @db.Timestamptz(6)
+
+  offer         CoachingOffer            @relation(fields: [offerId], references: [id], onDelete: Restrict)
+  sessions      CoachingSession[]
+  timeline      CoachingEngagementEvent[]
+  exportBundles CoachingArtifactBundle[]
+
+  @@unique([tenantId, stripeCheckoutSessionId])
+  @@index([tenantId, workspaceId, status, createdAt])
+  @@index([tenantId, clientPartyId])
+  @@index([tenantId, coachUserId])
+  @@index([tenantId, contractAccessTokenHash])
+  @@schema("crm")
+}
+
+model CoachingSession {
+  id                    String               @id @default(cuid())
+  tenantId              String
+  workspaceId           String
+  engagementId          String
+  status                CoachingSessionStatus @default(scheduled)
+  sequenceNo            Int                  @default(1)
+  startAt               DateTime             @db.Timestamptz(6)
+  endAt                 DateTime             @db.Timestamptz(6)
+  meetingProvider       String?
+  meetingLink           String?
+  meetingIssuedAt       DateTime?            @db.Timestamptz(6)
+  prepAccessTokenHash   String?
+  prepRequestedAt       DateTime?            @db.Timestamptz(6)
+  prepSubmittedAt       DateTime?            @db.Timestamptz(6)
+  prepDocumentId        String?
+  debriefAccessTokenHash String?
+  debriefRequestedAt    DateTime?            @db.Timestamptz(6)
+  debriefSubmittedAt    DateTime?            @db.Timestamptz(6)
+  debriefDocumentId     String?
+  completedAt           DateTime?            @db.Timestamptz(6)
+  createdAt             DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime             @updatedAt @db.Timestamptz(6)
+
+  engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId, startAt])
+  @@index([tenantId, engagementId, sequenceNo])
+  @@index([tenantId, prepAccessTokenHash])
+  @@index([tenantId, debriefAccessTokenHash])
+  @@schema("crm")
+}
+
+model CoachingEngagementEvent {
+  id         String                    @id @default(cuid())
+  tenantId   String
+  workspaceId String
+  engagementId String
+  eventType  String
+  stateFrom  CoachingEngagementStatus?
+  stateTo    CoachingEngagementStatus?
+  actorUserId String?
+  metadataJson Json?                  @db.JsonB
+  occurredAt DateTime                 @db.Timestamptz(6)
+  createdAt  DateTime                 @default(now()) @db.Timestamptz(6)
+
+  engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, engagementId, occurredAt])
+  @@schema("crm")
+}
+
+model CoachingArtifactBundle {
+  id               String                    @id @default(cuid())
+  tenantId         String
+  workspaceId      String
+  engagementId     String
+  status           CoachingExportBundleStatus @default(pending)
+  documentId       String?
+  requestedByUserId String
+  requestedAt      DateTime                  @db.Timestamptz(6)
+  completedAt      DateTime?                 @db.Timestamptz(6)
+  errorMessage     String?
+  createdAt        DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime                  @updatedAt @db.Timestamptz(6)
+
+  engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, engagementId, requestedAt])
+  @@schema("crm")
+}

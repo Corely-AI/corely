@@ -113,6 +113,7 @@ export * from "./ai/richtext";
 export * from "./notifications";
 export * from "./billing";
 export * from "./onboarding";
+export * from "./coaching";
 
 export const CONTRACTS_HELLO = "Corely contracts loaded ✅";
 

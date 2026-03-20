@@ -1,0 +1,47 @@
+import type { AppManifest } from "@corely/contracts";
+
+export const coachingEngagementsAppManifest: AppManifest = {
+  appId: "coaching-engagements",
+  name: "Coaching",
+  tier: 2,
+  version: "1.0.0",
+  description: "Manage coaching engagements, gated bookings, and coaching artifacts",
+  dependencies: ["parties", "invoices", "forms"],
+  capabilities: ["coaching.engagements"],
+  permissions: [
+    "coaching.engagements.read",
+    "coaching.engagements.manage",
+    "coaching.sessions.manage",
+    "coaching.artifacts.read",
+    "coaching.artifacts.export",
+    "coaching.ai.summary",
+  ],
+  entitlement: {
+    enabledFeatureKey: "app.coaching-engagements.enabled",
+    defaultEnabled: true,
+  },
+  menu: [
+    {
+      id: "coaching-engagements",
+      scope: "web",
+      section: "crm",
+      labelKey: "nav.coaching.engagements",
+      defaultLabel: "Coaching engagements",
+      route: "/coaching/engagements",
+      icon: "Handshake",
+      order: 45,
+      requiresPermissions: ["coaching.engagements.read"],
+    },
+    {
+      id: "coaching-sessions",
+      scope: "web",
+      section: "crm",
+      labelKey: "nav.coaching.sessions",
+      defaultLabel: "Coaching sessions",
+      route: "/coaching/sessions",
+      icon: "Calendar",
+      order: 46,
+      requiresPermissions: ["coaching.engagements.read"],
+    },
+  ],
+};

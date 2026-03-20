@@ -107,7 +107,7 @@ export interface InvoiceCommandsPort {
  * Input for creating an invoice from a sales source (order, quote, deal).
  */
 export interface CreateInvoiceFromSalesSourceInput {
-  sourceType: "order" | "quote" | "deal";
+  sourceType: "order" | "quote" | "deal" | "coaching_engagement";
   sourceId: string;
   customerPartyId: string;
   customerContactPartyId?: string;
