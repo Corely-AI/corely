@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { EnvService } from "@corely/config";
 import { DocumentsController } from "./adapters/http/documents.controller";
 import { InvoicePdfController } from "./adapters/http/invoice-pdf.controller";
@@ -13,7 +13,7 @@ import { CLOCK_PORT_TOKEN, type ClockPort } from "../../shared/ports/clock.port"
 import { OUTBOX_PORT } from "@corely/kernel";
 import type { OutboxPort } from "@corely/kernel";
 import { NestLoggerAdapter } from "../../shared/adapters/logger/nest-logger.adapter";
-import { IdentityModule } from "../identity";
+import { IdentityModule } from "../identity/identity.module";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 
 import { CompleteUploadUseCase } from "./application/use-cases/complete-upload/complete-upload.usecase";
@@ -30,7 +30,7 @@ import { UploadFileUseCase } from "./application/use-cases/upload-file/upload-fi
 import { ProxyDownloadUseCase } from "./application/use-cases/proxy-download/proxy-download.usecase";
 
 @Module({
-  imports: [IdentityModule, KernelModule],
+  imports: [forwardRef(() => IdentityModule), KernelModule],
   controllers: [DocumentsController, InvoicePdfController, PublicDocumentsController],
   providers: [
     PrismaDocumentRepoAdapter,

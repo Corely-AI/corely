@@ -25,6 +25,7 @@ import { importAppManifest } from "../../../import/import.manifest";
 import { directoryAppManifest } from "../../../directory/directory.manifest";
 import { bookingAppManifest } from "../../../booking/booking.manifest";
 import { formsAppManifest } from "../../../forms/forms.manifest";
+import { coachingEngagementsAppManifest } from "../../../coaching-engagements";
 
 /**
  * App Registry
@@ -117,5 +118,6 @@ export class AppRegistry implements AppRegistryPort {
     this.register(directoryAppManifest);
     this.register(bookingAppManifest);
     this.register(formsAppManifest);
+    this.register(coachingEngagementsAppManifest);
   }
 }

@@ -288,6 +288,10 @@
     "catalogItems": "Katalogartikel",
     "importShipments": "Sendungen",
     "suppliers": "Lieferanten",
+    "coaching": {
+      "engagements": "Coaching-Faelle",
+      "sessions": "Coaching-Sitzungen"
+    },
     "automation": "Automatisierung",
     "documents": "Dokumente",
     "cms": {
@@ -316,6 +320,51 @@
     "website": "Website",
     "platform": "Plattform",
     "forms": "Formulare"
+  },
+  "coaching": {
+    "engagements": {
+      "title": "Coaching-Faelle",
+      "subtitle": "Coaching-Buchungen, Voraussetzungen, Dokumente und Follow-ups verfolgen.",
+      "columns": {
+        "offer": "Angebot",
+        "client": "Kunde",
+        "status": "Status",
+        "billing": "Abrechnung",
+        "updated": "Aktualisiert"
+      }
+    },
+    "sessions": {
+      "title": "Coaching-Sitzungen",
+      "subtitle": "Bevorstehende und abgeschlossene Coaching-Sitzungen ueberwachen.",
+      "columns": {
+        "engagement": "Vorgang",
+        "start": "Beginn",
+        "status": "Status",
+        "meeting": "Meeting"
+      },
+      "pendingMeeting": "Voraussetzungen ausstehend"
+    },
+    "detail": {
+      "openCheckout": "Checkout oeffnen",
+      "exportBundle": "Bundle exportieren",
+      "exportQueued": "Export-Anfrage wurde eingereiht.",
+      "exportError": "Export-Anfrage konnte nicht erstellt werden.",
+      "checkoutError": "Checkout-Sitzung konnte nicht erstellt werden.",
+      "sections": {
+        "overview": "Ueberblick",
+        "workflow": "Workflow-Status",
+        "sessions": "Vorbereitung und Sitzungen",
+        "documents": "Dokumente",
+        "activity": "Aktivitaet und Audit",
+        "aiSummary": "KI-Zusammenfassung"
+      },
+      "noArtifacts": "Noch keine Artefakte gespeichert.",
+      "noAiSummary": "Noch keine KI-Zusammenfassung verfuegbar."
+    },
+    "empty": {
+      "engagements": "Keine Coaching-Faelle gefunden.",
+      "sessions": "Keine Coaching-Sitzungen gefunden."
+    }
   },
   "featureFlags": {
     "app": {

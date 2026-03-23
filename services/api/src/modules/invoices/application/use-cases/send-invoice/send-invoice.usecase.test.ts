@@ -107,6 +107,16 @@ class FakeInvoiceRepo implements InvoiceRepoPort {
   async findById(tenantId: string, invoiceId: string) {
     return this.invoices.find((i) => i.tenantId === tenantId && i.id === invoiceId) ?? null;
   }
+  async findBySource(tenantId: string, sourceType: string, sourceId: string) {
+    return (
+      this.invoices.find(
+        (invoice) =>
+          invoice.tenantId === tenantId &&
+          invoice.sourceType === sourceType &&
+          invoice.sourceId === sourceId
+      ) ?? null
+    );
+  }
   async list(_workspaceId: string, _filters: any, _pagination: any) {
     return { items: [], total: 0, nextCursor: null };
   }

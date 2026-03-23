@@ -1,12 +1,12 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import {
   DataModule,
   EXT_ENTITY_LINK_PORT,
   type ExtEntityLinkPort,
   PrismaService,
 } from "@corely/data";
-import { IdentityModule } from "../identity";
-import { PlatformModule } from "../platform";
+import { IdentityModule } from "../identity/identity.module";
+import { PlatformModule } from "../platform/platform.module";
 import { CustomersHttpController } from "./adapters/http/customers.controller";
 import { PartyInternalController } from "./adapters/http/party-internal.controller";
 import { PrismaPartyRepoAdapter } from "./infrastructure/prisma/prisma-party-repo.adapter";
@@ -40,18 +40,18 @@ import { PrismaPartyQueryAdapter } from "./infrastructure/prisma/prisma-party-qu
 import {
   CUSTOM_FIELDS_WRITE_PORT,
   DIMENSIONS_WRITE_PORT,
-  PlatformCustomAttributesModule,
   type CustomFieldsWritePort,
   type DimensionsWritePort,
 } from "../platform-custom-attributes";
+import { PlatformCustomAttributesModule } from "../platform-custom-attributes/platform-custom-attributes.module";
 
 @Module({
   imports: [
     DataModule,
     KernelModule,
-    IdentityModule,
-    PlatformModule,
-    PlatformCustomAttributesModule,
+    forwardRef(() => IdentityModule),
+    forwardRef(() => PlatformModule),
+    forwardRef(() => PlatformCustomAttributesModule),
   ],
   controllers: [CustomersHttpController, PartyInternalController],
   providers: [

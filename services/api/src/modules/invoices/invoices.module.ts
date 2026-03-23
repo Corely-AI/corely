@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { PrismaService } from "@corely/data";
 import { OUTBOX_PORT, AUDIT_PORT } from "@corely/kernel";
@@ -31,14 +31,14 @@ import { PrismaLegalEntityQueryAdapter } from "./infrastructure/adapters/legal-e
 import { CLOCK_PORT_TOKEN } from "../../shared/ports/clock.port";
 import { ID_GENERATOR_TOKEN } from "../../shared/ports/id-generator.port";
 import { InvoiceNumberingAdapter } from "./infrastructure/prisma/prisma-numbering.adapter";
-import { IdentityModule } from "../identity";
+import { IdentityModule } from "../identity/identity.module";
 import { TimeService } from "@corely/kernel";
 import { PrismaTenantTimeZoneAdapter } from "../../shared/infrastructure/time/prisma-tenant-timezone.adapter";
 import { TENANT_TIMEZONE_PORT } from "../../shared/time/tenant-timezone.token";
-import { PartyModule } from "../party";
-import { DocumentsModule } from "../documents";
+import { PartyModule } from "../party/party.module";
+import { DocumentsModule } from "../documents/documents.module";
 import { TaxModule } from "../tax/tax.module";
-import { PlatformModule } from "../platform";
+import { PlatformModule } from "../platform/platform.module";
 import { AccountingModule } from "../accounting/accounting.module";
 import { TaxEngineService } from "../tax/application/services/tax-engine.service";
 import { CancelInvoiceUseCase } from "./application/use-cases/cancel-invoice/cancel-invoice.usecase";
@@ -74,11 +74,11 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
     DataModule,
     KernelModule,
     PromptModule,
-    IdentityModule,
-    PartyModule,
-    DocumentsModule,
-    TaxModule,
-    PlatformModule,
+    forwardRef(() => IdentityModule),
+    forwardRef(() => PartyModule),
+    forwardRef(() => DocumentsModule),
+    forwardRef(() => TaxModule),
+    forwardRef(() => PlatformModule),
     AccountingModule,
   ],
   controllers: [
@@ -416,6 +416,6 @@ import type { AiTextPort } from "../../shared/ai/ai-text.port";
       useClass: InvoiceCommandService,
     },
   ],
-  exports: [InvoicesApplication, INVOICE_COMMANDS],
+  exports: [InvoicesApplication, INVOICE_COMMANDS, PrismaInvoiceRepoAdapter],
 })
 export class InvoicesModule {}

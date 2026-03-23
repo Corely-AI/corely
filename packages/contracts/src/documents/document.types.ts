@@ -15,6 +15,8 @@ export const DocumentLinkEntityTypeSchema = z.enum([
   "MESSAGE",
   "CLASS_GROUP",
   "CLASS_SESSION",
+  "COACHING_ENGAGEMENT",
+  "COACHING_SESSION",
   "PARTY",
   "OTHER",
 ]);

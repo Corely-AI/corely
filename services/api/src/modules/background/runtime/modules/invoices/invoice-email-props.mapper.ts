@@ -33,6 +33,7 @@ type InvoiceLike = BillToFields & {
   currency: string;
   dueDate?: Date | null;
   lines: InvoiceLineLike[];
+  taxSnapshot?: unknown;
   paymentSnapshot?: unknown;
   paymentDetails?: unknown;
 };
@@ -48,11 +49,11 @@ type MapperInput = {
 export function mapToInvoiceEmailProps(input: MapperInput): InvoiceEmailProps {
   const { invoice, companyName, customMessage, viewInvoiceUrl, locale } = input;
 
-  // Calculate total amount
-  const totalAmountCents = invoice.lines.reduce(
+  const subtotalAmountCents = invoice.lines.reduce(
     (sum: number, line: InvoiceLineLike) => sum + line.qty * line.unitPriceCents,
     0
   );
+  const totalAmountCents = subtotalAmountCents + readTaxTotalAmountCents(invoice.taxSnapshot);
 
   // Format currency amounts
   const formatAmount = (amountCents: number): string => {
@@ -105,6 +106,15 @@ export function mapToInvoiceEmailProps(input: MapperInput): InvoiceEmailProps {
     viewInvoiceUrl,
     locale,
   };
+}
+
+function readTaxTotalAmountCents(value: unknown): number {
+  if (!value || typeof value !== "object") {
+    return 0;
+  }
+
+  const maybeTax = (value as { taxTotalAmountCents?: unknown }).taxTotalAmountCents;
+  return typeof maybeTax === "number" && Number.isFinite(maybeTax) ? maybeTax : 0;
 }
 
 function toPaymentDetails(value: unknown): PaymentDetailsLike | undefined {

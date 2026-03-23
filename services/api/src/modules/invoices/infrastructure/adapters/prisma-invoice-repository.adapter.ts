@@ -66,6 +66,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         paymentDetails: invoice.paymentDetails as any,
         taxSnapshot: invoice.taxSnapshot as any,
         issuerSnapshot: invoice.issuerSnapshot as any,
+        paymentSnapshot: invoice.paymentSnapshot as any,
         legalEntityId: invoice.legalEntityId,
         paymentMethodId: invoice.paymentMethodId,
       },
@@ -102,6 +103,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         paymentDetails: invoice.paymentDetails as any,
         taxSnapshot: invoice.taxSnapshot as any,
         issuerSnapshot: invoice.issuerSnapshot as any,
+        paymentSnapshot: invoice.paymentSnapshot as any,
         legalEntityId: invoice.legalEntityId,
         paymentMethodId: invoice.paymentMethodId,
         lines: {
@@ -152,59 +154,30 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         },
       },
     });
-    if (!data) {
-      return null;
-    }
-    const lineItems: InvoiceLine[] = data.lines.map((line) => ({
-      id: line.id,
-      description: line.description,
-      qty: line.qty,
-      unitPriceCents: line.unitPriceCents,
-    }));
-    const payments: InvoicePayment[] = data.payments.map((payment) => ({
-      id: payment.id,
-      amountCents: payment.amountCents,
-      paidAt: payment.paidAt,
-      note: payment.note ?? undefined,
-    }));
-    return new InvoiceAggregate({
-      id: data.id,
-      tenantId: data.tenantId,
-      customerPartyId: (data as any).customerPartyId ?? "",
-      currency: data.currency,
-      notes: (data as any).notes ?? null,
-      terms: (data as any).terms ?? null,
-      number: (data as any).number ?? null,
-      status: data.status as any,
-      lineItems,
-      payments,
-      issuedAt: data.issuedAt,
-      invoiceDate: fromPrismaDate((data as any).invoiceDate ?? null),
-      dueDate: fromPrismaDate((data as any).dueDate ?? null),
-      sentAt: (data as any).sentAt ?? null,
-      billToName: (data as any).billToName ?? null,
-      billToEmail: (data as any).billToEmail ?? null,
-      billToVatId: (data as any).billToVatId ?? null,
-      billToAddressLine1: (data as any).billToAddressLine1 ?? null,
-      billToAddressLine2: (data as any).billToAddressLine2 ?? null,
-      billToCity: (data as any).billToCity ?? null,
-      billToPostalCode: (data as any).billToPostalCode ?? null,
-      billToCountry: (data as any).billToCountry ?? null,
-      createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
-      pdfStorageKey: (data as any).pdfStorageKey ?? null,
-      pdfGeneratedAt: (data as any).pdfGeneratedAt ?? null,
-      pdfSourceVersion: (data as any).pdfSourceVersion ?? null,
-      pdfStatus: ((data as any).pdfStatus as PdfStatus) ?? "NONE",
-      pdfFailureReason: (data as any).pdfFailureReason ?? null,
-      sourceType: (data as any).sourceType ?? null,
-      sourceId: (data as any).sourceId ?? null,
-      paymentDetails: ((data as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
-      taxSnapshot: ((data as any).taxSnapshot as any) ?? null,
-      issuerSnapshot: ((data as any).issuerSnapshot as any) ?? null,
-      legalEntityId: (data as any).legalEntityId ?? null,
-      paymentMethodId: (data as any).paymentMethodId ?? null,
+    return data ? this.toAggregate(data) : null;
+  }
+
+  async findBySource(
+    workspaceId: string,
+    sourceType: string,
+    sourceId: string
+  ): Promise<InvoiceAggregate | null> {
+    const data = await this.prisma.invoice.findFirst({
+      where: {
+        tenantId: workspaceId,
+        sourceType,
+        sourceId,
+      },
+      include: {
+        lines: true,
+        payments: {
+          orderBy: { paidAt: "asc" },
+        },
+      },
+      orderBy: { createdAt: "asc" },
     });
+
+    return data ? this.toAggregate(data) : null;
   }
 
   async list(
@@ -340,6 +313,7 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         paymentDetails: ((row as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
         taxSnapshot: ((row as any).taxSnapshot as any) ?? null,
         issuerSnapshot: ((row as any).issuerSnapshot as any) ?? null,
+        paymentSnapshot: ((row as any).paymentSnapshot as PaymentDetailsSnapshot) ?? null,
         legalEntityId: (row as any).legalEntityId ?? null,
         paymentMethodId: (row as any).paymentMethodId ?? null,
       });
@@ -416,5 +390,70 @@ export class PrismaInvoiceRepoAdapter implements InvoiceRepoPort {
         },
       });
     }
+  }
+
+  private toAggregate(data: {
+    id: string;
+    tenantId: string;
+    currency: string;
+    status: InvoiceStatus;
+    issuedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    lines: Array<{ id: string; description: string; qty: number; unitPriceCents: number }>;
+    payments: Array<{ id: string; amountCents: number; paidAt: Date; note: string | null }>;
+  }) {
+    const lineItems: InvoiceLine[] = data.lines.map((line) => ({
+      id: line.id,
+      description: line.description,
+      qty: line.qty,
+      unitPriceCents: line.unitPriceCents,
+    }));
+    const payments: InvoicePayment[] = data.payments.map((payment) => ({
+      id: payment.id,
+      amountCents: payment.amountCents,
+      paidAt: payment.paidAt,
+      note: payment.note ?? undefined,
+    }));
+
+    return new InvoiceAggregate({
+      id: data.id,
+      tenantId: data.tenantId,
+      customerPartyId: (data as any).customerPartyId ?? "",
+      currency: data.currency,
+      notes: (data as any).notes ?? null,
+      terms: (data as any).terms ?? null,
+      number: (data as any).number ?? null,
+      status: data.status as any,
+      lineItems,
+      payments,
+      issuedAt: data.issuedAt,
+      invoiceDate: fromPrismaDate((data as any).invoiceDate ?? null),
+      dueDate: fromPrismaDate((data as any).dueDate ?? null),
+      sentAt: (data as any).sentAt ?? null,
+      billToName: (data as any).billToName ?? null,
+      billToEmail: (data as any).billToEmail ?? null,
+      billToVatId: (data as any).billToVatId ?? null,
+      billToAddressLine1: (data as any).billToAddressLine1 ?? null,
+      billToAddressLine2: (data as any).billToAddressLine2 ?? null,
+      billToCity: (data as any).billToCity ?? null,
+      billToPostalCode: (data as any).billToPostalCode ?? null,
+      billToCountry: (data as any).billToCountry ?? null,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      pdfStorageKey: (data as any).pdfStorageKey ?? null,
+      pdfGeneratedAt: (data as any).pdfGeneratedAt ?? null,
+      pdfSourceVersion: (data as any).pdfSourceVersion ?? null,
+      pdfStatus: ((data as any).pdfStatus as PdfStatus) ?? "NONE",
+      pdfFailureReason: (data as any).pdfFailureReason ?? null,
+      sourceType: (data as any).sourceType ?? null,
+      sourceId: (data as any).sourceId ?? null,
+      paymentDetails: ((data as any).paymentDetails as PaymentDetailsSnapshot) ?? null,
+      taxSnapshot: ((data as any).taxSnapshot as any) ?? null,
+      issuerSnapshot: ((data as any).issuerSnapshot as any) ?? null,
+      paymentSnapshot: ((data as any).paymentSnapshot as PaymentDetailsSnapshot) ?? null,
+      legalEntityId: (data as any).legalEntityId ?? null,
+      paymentMethodId: (data as any).paymentMethodId ?? null,
+    });
   }
 }

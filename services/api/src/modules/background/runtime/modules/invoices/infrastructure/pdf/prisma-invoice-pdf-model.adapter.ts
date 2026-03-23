@@ -27,6 +27,48 @@ function resolveReferenceTemplate(template: string, invoiceNumber: string): stri
   });
 }
 
+function readLockedTaxSnapshot(value: unknown):
+  | {
+      subtotalAmountCents: number;
+      taxTotalAmountCents: number;
+      totalAmountCents: number;
+      vatRateBps?: number;
+    }
+  | undefined {
+  if (!value || typeof value !== "object") {
+    return undefined;
+  }
+
+  const snapshot = value as Record<string, unknown>;
+  const subtotalAmountCents = snapshot.subtotalAmountCents;
+  const taxTotalAmountCents = snapshot.taxTotalAmountCents;
+  const totalAmountCents = snapshot.totalAmountCents;
+
+  if (
+    typeof subtotalAmountCents !== "number" ||
+    typeof taxTotalAmountCents !== "number" ||
+    typeof totalAmountCents !== "number"
+  ) {
+    return undefined;
+  }
+
+  const lines = Array.isArray(snapshot.lines) ? snapshot.lines : [];
+  const firstRateBps = lines
+    .map((line) =>
+      typeof line === "object" && line && typeof (line as { rateBps?: unknown }).rateBps === "number"
+        ? ((line as { rateBps: number }).rateBps ?? 0)
+        : null
+    )
+    .find((rateBps): rateBps is number => rateBps !== null);
+
+  return {
+    subtotalAmountCents,
+    taxTotalAmountCents,
+    totalAmountCents,
+    vatRateBps: firstRateBps ?? undefined,
+  };
+}
+
 @Injectable()
 export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
   constructor(private readonly prisma: PrismaService) {}
@@ -159,34 +201,43 @@ export class PrismaInvoicePdfModelAdapter implements InvoicePdfModelPort {
     const dueDate = formatDate(invoice.dueDate);
     const serviceDate = issueDate ? `${issueDate} - ${issueDate}` : undefined;
 
-    const taxProfile = await this.prisma.taxProfile.findFirst({
-      where: { tenantId: platformTenantId },
-      orderBy: { effectiveFrom: "desc" },
-    });
+    const lockedTaxSnapshot = readLockedTaxSnapshot((invoice as any).taxSnapshot);
+    let subtotalCents = invoice.lines.reduce((sum, line) => sum + line.qty * line.unitPriceCents, 0);
+    let vatCents = lockedTaxSnapshot?.taxTotalAmountCents ?? 0;
+    let totalCents = lockedTaxSnapshot?.totalAmountCents ?? subtotalCents;
+    let vatRateBps = lockedTaxSnapshot?.vatRateBps ?? 0;
 
-    let vatRateBps = 0;
-    if (taxProfile?.vatEnabled && taxProfile.regime !== "SMALL_BUSINESS") {
-      const rate = await this.prisma.taxRate.findFirst({
-        where: {
-          tenantId: platformTenantId,
-          effectiveFrom: { lte: issueDateValue },
-          taxCode: { kind: "STANDARD", isActive: true },
-        },
+    if (lockedTaxSnapshot) {
+      subtotalCents = lockedTaxSnapshot.subtotalAmountCents;
+      totalCents = lockedTaxSnapshot.totalAmountCents;
+    } else {
+      const taxProfile = await this.prisma.taxProfile.findFirst({
+        where: { tenantId: platformTenantId },
         orderBy: { effectiveFrom: "desc" },
       });
-      vatRateBps = rate?.rateBps ?? 0;
-    }
-    if (vatRateBps === 0 && legalEntity?.countryCode === "DE" && taxProfile?.vatEnabled !== false) {
-      vatRateBps = 1900;
-    }
 
-    // Calculate totals
-    const subtotalCents = invoice.lines.reduce(
-      (sum, line) => sum + line.qty * line.unitPriceCents,
-      0
-    );
-    const vatCents = Math.round((subtotalCents * vatRateBps) / 10000);
-    const totalCents = subtotalCents + vatCents;
+      if (taxProfile?.vatEnabled && taxProfile.regime !== "SMALL_BUSINESS") {
+        const rate = await this.prisma.taxRate.findFirst({
+          where: {
+            tenantId: platformTenantId,
+            effectiveFrom: { lte: issueDateValue },
+            taxCode: { kind: "STANDARD", isActive: true },
+          },
+          orderBy: { effectiveFrom: "desc" },
+        });
+        vatRateBps = rate?.rateBps ?? 0;
+      }
+      if (
+        vatRateBps === 0 &&
+        legalEntity?.countryCode === "DE" &&
+        taxProfile?.vatEnabled !== false
+      ) {
+        vatRateBps = 1900;
+      }
+
+      vatCents = Math.round((subtotalCents * vatRateBps) / 10000);
+      totalCents = subtotalCents + vatCents;
+    }
 
     // Format currency helper
     const formatCurrency = (cents: number): string => {

@@ -7,6 +7,7 @@ import {
   PrismaInvoiceEmailDeliveryAdapter,
 } from "@corely/data";
 import { EnvService } from "@corely/config";
+import { KernelModule } from "../../../../../shared/kernel/kernel.module";
 import { InvoiceEmailRequestedHandler } from "../invoices/invoice-email-requested.handler";
 import { InvoicePdfRenderRequestedHandler } from "../invoices/handlers/invoice-pdf-render-requested.handler";
 import { PrismaInvoiceEmailRepository } from "../invoices/infrastructure/prisma-invoice-email-repository.adapter";
@@ -37,11 +38,25 @@ import { PlatformEntityDeletedHandler } from "../platform-custom-attributes/adap
 import { DirectoryWorkerModule } from "../directory/directory-worker.module";
 import { DirectoryLeadCreatedHandler } from "../directory/handlers/directory-lead-created.handler";
 import { NotificationIntentHandler } from "../notifications/handlers/notification-intent.handler";
+import { CoachingEngagementsModule } from "../../../../coaching-engagements";
+import { PartyModule } from "../../../../party";
+import { DocumentsModule } from "../../../../documents";
+import { InvoicesModule } from "../../../../invoices/invoices.module";
+import { CoachingBookingRequestedHandler } from "../coaching/handlers/coaching-booking-requested.handler";
+import { CoachingPaymentCapturedHandler } from "../coaching/handlers/coaching-payment-captured.handler";
+import { CoachingContractSignedHandler } from "../coaching/handlers/coaching-contract-signed.handler";
+import { CoachingPrepFormRequestedHandler } from "../coaching/handlers/coaching-prep-form-requested.handler";
+import { CoachingPrepFormSubmittedHandler } from "../coaching/handlers/coaching-prep-form-submitted.handler";
+import { CoachingSessionCompletedHandler } from "../coaching/handlers/coaching-session-completed.handler";
+import { CoachingDebriefRequestedHandler } from "../coaching/handlers/coaching-debrief-requested.handler";
+import { CoachingExportBundleRequestedHandler } from "../coaching/handlers/coaching-export-bundle-requested.handler";
+import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
 
 // ... imports
 
 @Module({
   imports: [
+    KernelModule,
     AccountingWorkerModule,
     IssuesWorkerModule,
     InvoicesWorkerModule,
@@ -50,6 +65,11 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
     ClassesWorkerModule,
     DirectoryWorkerModule,
     NotificationsModule,
+    CoachingEngagementsModule,
+    PartyModule,
+    DocumentsModule,
+    InvoicesModule,
+    CoachingWorkerModule,
   ],
   providers: [
     {
@@ -60,6 +80,14 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
     },
     ClassesInvoiceReadyToSendHandler,
     PlatformEntityDeletedHandler,
+    CoachingBookingRequestedHandler,
+    CoachingPaymentCapturedHandler,
+    CoachingContractSignedHandler,
+    CoachingPrepFormRequestedHandler,
+    CoachingPrepFormSubmittedHandler,
+    CoachingSessionCompletedHandler,
+    CoachingDebriefRequestedHandler,
+    CoachingExportBundleRequestedHandler,
     {
       provide: InvoiceEmailRequestedHandler,
       useFactory: (
@@ -103,7 +131,15 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
         classesHandler: ClassesInvoiceReadyToSendHandler,
         platformEntityDeletedHandler: PlatformEntityDeletedHandler,
         directoryLeadCreatedHandler: DirectoryLeadCreatedHandler,
-        notificationIntentHandler: NotificationIntentHandler
+        notificationIntentHandler: NotificationIntentHandler,
+        coachingBookingRequestedHandler: CoachingBookingRequestedHandler,
+        coachingPaymentCapturedHandler: CoachingPaymentCapturedHandler,
+        coachingContractSignedHandler: CoachingContractSignedHandler,
+        coachingPrepFormRequestedHandler: CoachingPrepFormRequestedHandler,
+        coachingPrepFormSubmittedHandler: CoachingPrepFormSubmittedHandler,
+        coachingSessionCompletedHandler: CoachingSessionCompletedHandler,
+        coachingDebriefRequestedHandler: CoachingDebriefRequestedHandler,
+        coachingExportBundleRequestedHandler: CoachingExportBundleRequestedHandler
       ) => {
         return new OutboxPollerService(repo, env, [
           invoiceHandler,
@@ -117,6 +153,14 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
           platformEntityDeletedHandler,
           directoryLeadCreatedHandler,
           notificationIntentHandler,
+          coachingBookingRequestedHandler,
+          coachingPaymentCapturedHandler,
+          coachingContractSignedHandler,
+          coachingPrepFormRequestedHandler,
+          coachingPrepFormSubmittedHandler,
+          coachingSessionCompletedHandler,
+          coachingDebriefRequestedHandler,
+          coachingExportBundleRequestedHandler,
         ]);
       },
       inject: [
@@ -133,6 +177,14 @@ import { NotificationIntentHandler } from "../notifications/handlers/notificatio
         PlatformEntityDeletedHandler,
         DirectoryLeadCreatedHandler,
         NotificationIntentHandler,
+        CoachingBookingRequestedHandler,
+        CoachingPaymentCapturedHandler,
+        CoachingContractSignedHandler,
+        CoachingPrepFormRequestedHandler,
+        CoachingPrepFormSubmittedHandler,
+        CoachingSessionCompletedHandler,
+        CoachingDebriefRequestedHandler,
+        CoachingExportBundleRequestedHandler,
       ],
     },
   ],

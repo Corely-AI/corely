@@ -111,6 +111,9 @@ import { ListCashEntryAttachmentsQueryUseCase } from "../cash-management/applica
 import { ExportCashBookUseCase } from "../cash-management/application/use-cases/export-cash-book.usecase";
 import { buildCashManagementTools } from "../cash-management/adapters/tools/cash-management.tools";
 import { BillingModule } from "../billing/billing.module";
+import { CoachingEngagementsModule } from "../coaching-engagements";
+import { CoachingEngagementsApplication } from "../coaching-engagements/application/coaching-engagements.application";
+import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coaching.tools";
 
 @Module({
   imports: [
@@ -128,6 +131,7 @@ import { BillingModule } from "../billing/billing.module";
     DocumentsModule,
     CashManagementModule,
     BillingModule,
+    CoachingEngagementsModule,
     TaxModule,
     PlatformEntitlementsModule,
     PromptModule,
@@ -286,6 +290,7 @@ import { BillingModule } from "../billing/billing.module";
         startIncomeTaxDraftPdfExport: StartIncomeTaxDraftPdfExportUseCase,
         pollIncomeTaxDraftPdfExport: PollIncomeTaxDraftPdfExportUseCase,
         confirmIncomeTaxDraftSubmission: ConfirmIncomeTaxDraftSubmissionUseCase,
+        coaching: CoachingEngagementsApplication,
         chatStore: ChatStorePort,
         env: EnvService,
         promptRegistry: PromptRegistry,
@@ -369,6 +374,7 @@ import { BillingModule } from "../billing/billing.module";
               chatStore,
             })
           ),
+          ...withAppId("coaching-engagements", buildCoachingTools(coaching)),
         ];
       },
       inject: [
@@ -413,6 +419,7 @@ import { BillingModule } from "../billing/billing.module";
         StartIncomeTaxDraftPdfExportUseCase,
         PollIncomeTaxDraftPdfExportUseCase,
         ConfirmIncomeTaxDraftSubmissionUseCase,
+        CoachingEngagementsApplication,
         CHAT_STORE_PORT,
         EnvService,
         PromptRegistry,

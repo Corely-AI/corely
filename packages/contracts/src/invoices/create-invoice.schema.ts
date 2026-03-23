@@ -20,7 +20,7 @@ export const CreateInvoiceInputSchema = z.object({
   legalEntityId: z.string().optional(),
   paymentMethodId: z.string().optional(),
   // Source tracking for invoices created from sales artifacts
-  sourceType: z.enum(["order", "quote", "deal", "manual"]).optional(),
+  sourceType: z.enum(["order", "quote", "deal", "manual", "coaching_engagement"]).optional(),
   sourceId: z.string().optional(),
   idempotencyKey: z.string().optional(),
 });
