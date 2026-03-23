@@ -24,7 +24,6 @@ import {
 import { buildSimplePdf } from "../../domain/simple-pdf";
 import { hashCoachingAccessToken } from "../../domain/coaching-tokens";
 import { resolveGatedStatus } from "../../domain/coaching-state.machine";
-import { resolveLocalizedText } from "../../domain/coaching-localization";
 import { type CoachingArtifactService } from "../../infrastructure/documents/coaching-artifact.service";
 import { toCoachingEngagementDto } from "../mappers/coaching-dto.mapper";
 import { type CoachingEngagementRepositoryPort } from "../ports/coaching-engagement-repository.port";
@@ -56,24 +55,42 @@ export class SignCoachingContractUseCase extends BaseUseCase<
       return err(new ValidationError("tenantId and workspaceId are required"));
     }
 
-    const engagement = await this.deps.repo.findEngagementByContractTokenHash(
+    const request = await this.deps.repo.findContractRequestByTokenHash(
       ctx.tenantId,
       input.engagementId,
       hashCoachingAccessToken(input.token)
     );
-    if (!engagement) {
+    if (!request) {
       return err(new ValidationError("Invalid contract signing token"));
     }
 
-    if (engagement.contractStatus === "signed" && engagement.signedContractDocumentId) {
+    const engagement = await this.deps.repo.findEngagementById(
+      ctx.tenantId,
+      ctx.workspaceId,
+      input.engagementId
+    );
+    if (!engagement) {
+      return err(new ValidationError("Engagement not found"));
+    }
+
+    if (request.status === "signed" && request.signedDocumentId) {
       return ok({
         signed: true,
         engagement: toCoachingEngagementDto(engagement, engagement.offer),
       });
     }
 
+    if (
+      request.recipientEmail &&
+      input.signerEmail &&
+      request.recipientEmail.toLowerCase() !== input.signerEmail.toLowerCase()
+    ) {
+      return err(new ValidationError("Signer email must match the requested recipient"));
+    }
+
     const now = this.deps.clock.now();
-    const title = `${resolveLocalizedText(engagement.offer.contractLabel ?? engagement.offer.title, engagement.locale)} - Signed Contract`;
+    const signerEmail = input.signerEmail ?? request.recipientEmail;
+    const title = `${request.contractTitle} - Signed Contract`;
     const document = await this.deps.artifactService.createPdfArtifact({
       tenantId: ctx.tenantId,
       title,
@@ -87,7 +104,10 @@ export class SignCoachingContractUseCase extends BaseUseCase<
         `Engagement: ${engagement.id}`,
         `Client party: ${engagement.clientPartyId}`,
         `Signer: ${input.signerName}`,
-        input.signerEmail ? `Signer email: ${input.signerEmail}` : "Signer email: not provided",
+        signerEmail ? `Signer email: ${signerEmail}` : "Signer email: not provided",
+        `Template locale: ${request.templateLocale}`,
+        "Contract body:",
+        request.contractBody,
         `Signed at: ${now.toISOString()}`,
       ]),
     });
@@ -105,6 +125,19 @@ export class SignCoachingContractUseCase extends BaseUseCase<
     engagement.updatedAt = now;
 
     await this.uow!.withinTransaction(async (tx) => {
+      await this.deps.repo.updateContractRequest(
+        {
+          ...request,
+          status: "signed",
+          signerName: input.signerName,
+          signerEmail: signerEmail ?? null,
+          viewedAt: request.viewedAt ?? now,
+          completedAt: now,
+          signedDocumentId: document.documentId,
+          updatedAt: now,
+        },
+        tx
+      );
       await this.deps.repo.updateEngagement(engagement, tx);
       await this.deps.repo.createTimelineEntry(
         {
@@ -117,8 +150,9 @@ export class SignCoachingContractUseCase extends BaseUseCase<
           stateTo: engagement.status,
           actorUserId: null,
           metadata: {
+            requestId: request.id,
             signerName: input.signerName,
-            signerEmail: input.signerEmail ?? null,
+            signerEmail: signerEmail ?? null,
             documentId: document.documentId,
           },
           occurredAt: now,
@@ -145,6 +179,7 @@ export class SignCoachingContractUseCase extends BaseUseCase<
           payload: {
             workspaceId: ctx.workspaceId!,
             engagementId: engagement.id,
+            requestId: request.id,
             documentId: document.documentId,
           },
         },

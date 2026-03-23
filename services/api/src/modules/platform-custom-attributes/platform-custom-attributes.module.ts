@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { KernelModule } from "../../shared/kernel/kernel.module";
 import { IdentityModule } from "../identity/identity.module";
@@ -33,7 +33,12 @@ import { DimensionsController } from "./http/dimensions.controller";
 import { CustomFieldValuesController } from "./http/custom-field-values.controller";
 
 @Module({
-  imports: [DataModule, KernelModule, IdentityModule, PlatformModule],
+  imports: [
+    DataModule,
+    KernelModule,
+    forwardRef(() => IdentityModule),
+    forwardRef(() => PlatformModule),
+  ],
   controllers: [DimensionsController, CustomFieldValuesController],
   providers: [
     DimensionsPrismaAdapter,

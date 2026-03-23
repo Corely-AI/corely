@@ -1,16 +1,22 @@
 import type {
+  CoachingBookingHoldDto,
   CoachingArtifactDto,
   CoachingArtifactKind,
+  CoachingContractRequestDto,
   CoachingEngagementDetailDto,
   CoachingEngagementDto,
   CoachingOfferDto,
+  CoachingPaymentDto,
   CoachingSessionDto,
   CoachingTimelineEntryDto,
   DocumentDTO,
 } from "@corely/contracts";
 import type {
   CoachingEngagementRecord,
+  CoachingBookingHoldRecord,
+  CoachingContractRequestRecord,
   CoachingOfferRecord,
+  CoachingPaymentRecord,
   CoachingSessionRecord,
   CoachingTimelineEntryRecord,
 } from "../../domain/coaching.types";
@@ -21,17 +27,24 @@ export const toCoachingOfferDto = (offer: CoachingOfferRecord): CoachingOfferDto
   id: offer.id,
   tenantId: offer.tenantId,
   workspaceId: offer.workspaceId,
+  coachUserId: offer.coachUserId,
   title: offer.title,
   description: offer.description ?? undefined,
   currency: offer.currency,
   priceCents: offer.priceCents,
   sessionDurationMinutes: offer.sessionDurationMinutes,
+  meetingType: offer.meetingType,
+  availabilityRule: offer.availabilityRule,
+  bookingRules: offer.bookingRules,
   contractRequired: offer.contractRequired,
   paymentRequired: offer.paymentRequired,
   localeDefault: offer.localeDefault,
+  contractTemplate: offer.contractTemplate ?? undefined,
   contractLabel: offer.contractLabel ?? undefined,
   prepFormTemplate: offer.prepFormTemplate ?? undefined,
+  prepFormSendHoursBeforeSession: offer.prepFormSendHoursBeforeSession ?? undefined,
   debriefTemplate: offer.debriefTemplate ?? undefined,
+  archivedAt: toIso(offer.archivedAt),
   createdAt: offer.createdAt.toISOString(),
   updatedAt: offer.updatedAt.toISOString(),
 });
@@ -56,6 +69,48 @@ export const toCoachingSessionDto = (session: CoachingSessionRecord): CoachingSe
   completedAt: toIso(session.completedAt),
   createdAt: session.createdAt.toISOString(),
   updatedAt: session.updatedAt.toISOString(),
+});
+
+export const toCoachingBookingHoldDto = (hold: CoachingBookingHoldRecord): CoachingBookingHoldDto => ({
+  id: hold.id,
+  offerId: hold.offerId,
+  coachUserId: hold.coachUserId,
+  tenantId: hold.tenantId,
+  workspaceId: hold.workspaceId,
+  status: hold.status,
+  startAt: hold.startAt.toISOString(),
+  endAt: hold.endAt.toISOString(),
+  expiresAt: hold.expiresAt.toISOString(),
+  bookedByName: hold.bookedByName,
+  bookedByEmail: hold.bookedByEmail,
+  createdAt: hold.createdAt.toISOString(),
+  updatedAt: hold.updatedAt.toISOString(),
+});
+
+export const toCoachingPaymentDto = (payment: CoachingPaymentRecord): CoachingPaymentDto => ({
+  id: payment.id,
+  tenantId: payment.tenantId,
+  workspaceId: payment.workspaceId,
+  engagementId: payment.engagementId,
+  sessionId: payment.sessionId,
+  provider: payment.provider,
+  status: payment.status,
+  amountCents: payment.amountCents,
+  refundedAmountCents: payment.refundedAmountCents,
+  currency: payment.currency,
+  customerEmail: payment.customerEmail,
+  providerCheckoutSessionId: payment.providerCheckoutSessionId,
+  providerCheckoutUrl: payment.providerCheckoutUrl,
+  providerPaymentRef: payment.providerPaymentRef,
+  providerRefundRef: payment.providerRefundRef,
+  failureCode: payment.failureCode,
+  failureMessage: payment.failureMessage,
+  checkoutCreatedAt: toIso(payment.checkoutCreatedAt),
+  capturedAt: toIso(payment.capturedAt),
+  failedAt: toIso(payment.failedAt),
+  refundedAt: toIso(payment.refundedAt),
+  createdAt: payment.createdAt.toISOString(),
+  updatedAt: payment.updatedAt.toISOString(),
 });
 
 export const toCoachingEngagementDto = (
@@ -83,6 +138,26 @@ export const toCoachingEngagementDto = (
   latestSummary: engagement.latestSummary,
   createdAt: engagement.createdAt.toISOString(),
   updatedAt: engagement.updatedAt.toISOString(),
+});
+
+export const toCoachingContractRequestDto = (
+  request: CoachingContractRequestRecord
+): CoachingContractRequestDto => ({
+  id: request.id,
+  provider: request.provider,
+  status: request.status,
+  templateLocale: request.templateLocale,
+  contractTitle: request.contractTitle,
+  recipientName: request.recipientName,
+  recipientEmail: request.recipientEmail,
+  signerName: request.signerName,
+  signerEmail: request.signerEmail,
+  requestedAt: request.requestedAt.toISOString(),
+  deliveredAt: toIso(request.deliveredAt),
+  viewedAt: toIso(request.viewedAt),
+  completedAt: toIso(request.completedAt),
+  draftDocumentId: request.draftDocumentId,
+  signedDocumentId: request.signedDocumentId,
 });
 
 export const toCoachingTimelineEntryDto = (
@@ -137,7 +212,9 @@ export const toCoachingArtifactDto = (params: {
 export const toCoachingDetailDto = (params: {
   engagement: CoachingEngagementRecord;
   offer: CoachingOfferRecord;
+  contractRequest?: CoachingContractRequestRecord | null;
   sessions: CoachingSessionRecord[];
+  payments: CoachingPaymentRecord[];
   timeline: CoachingTimelineEntryRecord[];
   artifacts: CoachingArtifactDto[];
   aiSummary: string | null;
@@ -148,7 +225,9 @@ export const toCoachingDetailDto = (params: {
     params.offer,
     params.exportedBundleDocumentId
   ),
+  contractRequest: params.contractRequest ? toCoachingContractRequestDto(params.contractRequest) : null,
   sessions: params.sessions.map(toCoachingSessionDto),
+  payments: params.payments.map(toCoachingPaymentDto),
   artifacts: params.artifacts,
   timeline: params.timeline.map(toCoachingTimelineEntryDto),
   aiSummary: params.aiSummary,

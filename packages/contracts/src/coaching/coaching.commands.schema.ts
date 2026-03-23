@@ -1,15 +1,30 @@
 import { z } from "zod";
 import {
+  ArchiveCoachingOfferInputSchema,
+  ArchiveCoachingOfferOutputSchema,
+  CoachingBookingHoldDtoSchema,
+  CoachingPaymentDtoSchema,
+  CoachingPublicAvailabilityOutputSchema,
   CoachingAnswerPayloadSchema,
+  CreateCoachingOfferInputSchema,
+  CreateCoachingOfferOutputSchema,
   CoachingEngagementDetailDtoSchema,
   CoachingEngagementDtoSchema,
   CoachingOfferInputSchema,
+  CoachingPublicContractSchema,
   CoachingPublicQuestionnaireSchema,
   CoachingSessionDtoSchema,
+  GetCoachingOfferInputSchema,
+  GetCoachingOfferOutputSchema,
+  ListCoachingOffersInputSchema,
+  ListCoachingOffersOutputSchema,
+  UpdateCoachingOfferInputSchema,
+  UpdateCoachingOfferOutputSchema,
 } from "./coaching.types";
 
 export const BookCoachingEngagementInputSchema = z.object({
   clientPartyId: z.string().min(1),
+  bookingHoldId: z.string().min(1).optional(),
   coachUserId: z.string().min(1),
   coachPartyId: z.string().optional(),
   locale: z.string().default("en"),
@@ -39,12 +54,14 @@ export type GetCoachingEngagementOutput = z.infer<typeof GetCoachingEngagementOu
 
 export const CreateCoachingCheckoutSessionInputSchema = z.object({
   engagementId: z.string().min(1),
+  paymentProvider: z.string().min(1).optional(),
   successPath: z.string().optional(),
   cancelPath: z.string().optional(),
 });
 export const CreateCoachingCheckoutSessionOutputSchema = z.object({
   checkoutUrl: z.string().url(),
   sessionId: z.string(),
+  payment: CoachingPaymentDtoSchema,
 });
 export type CreateCoachingCheckoutSessionInput = z.infer<
   typeof CreateCoachingCheckoutSessionInputSchema
@@ -52,6 +69,14 @@ export type CreateCoachingCheckoutSessionInput = z.infer<
 export type CreateCoachingCheckoutSessionOutput = z.infer<
   typeof CreateCoachingCheckoutSessionOutputSchema
 >;
+
+export const GetCoachingContractViewInputSchema = z.object({
+  engagementId: z.string().min(1),
+  token: z.string().min(1),
+});
+export const GetCoachingContractViewOutputSchema = CoachingPublicContractSchema;
+export type GetCoachingContractViewInput = z.infer<typeof GetCoachingContractViewInputSchema>;
+export type GetCoachingContractViewOutput = z.infer<typeof GetCoachingContractViewOutputSchema>;
 
 export const SignCoachingContractInputSchema = z.object({
   engagementId: z.string().min(1),
@@ -150,3 +175,105 @@ export type GetCoachingArtifactSummaryInput = z.infer<typeof GetCoachingArtifact
 export type GetCoachingArtifactSummaryOutput = z.infer<
   typeof GetCoachingArtifactSummaryOutputSchema
 >;
+
+export const GetCoachingPublicAvailabilityInputSchema = z.object({
+  offerId: z.string().min(1),
+  from: z.string().datetime(),
+  to: z.string().datetime(),
+  timezone: z.string().min(1).optional(),
+});
+export const GetCoachingPublicAvailabilityOutputSchema = CoachingPublicAvailabilityOutputSchema;
+export type GetCoachingPublicAvailabilityInput = z.infer<
+  typeof GetCoachingPublicAvailabilityInputSchema
+>;
+export type GetCoachingPublicAvailabilityOutput = z.infer<
+  typeof GetCoachingPublicAvailabilityOutputSchema
+>;
+
+export const CreateCoachingBookingHoldInputSchema = z.object({
+  offerId: z.string().min(1),
+  startAt: z.string().datetime(),
+  endAt: z.string().datetime(),
+  bookedByName: z.string().optional(),
+  bookedByEmail: z.string().email().optional(),
+  ttlSeconds: z.number().int().positive().max(3600).optional(),
+});
+export const CreateCoachingBookingHoldOutputSchema = z.object({
+  hold: CoachingBookingHoldDtoSchema,
+});
+export type CreateCoachingBookingHoldInput = z.infer<typeof CreateCoachingBookingHoldInputSchema>;
+export type CreateCoachingBookingHoldOutput = z.infer<typeof CreateCoachingBookingHoldOutputSchema>;
+
+export const StartCoachingPublicBookingInputSchema = z.object({
+  offerId: z.string().min(1),
+  holdId: z.string().min(1),
+  locale: z.string().default("en"),
+  paymentProvider: z.string().min(1).optional(),
+  client: z.object({
+    displayName: z.string().min(1),
+    email: z.string().email(),
+    phone: z.string().optional(),
+  }),
+  successPath: z.string().optional(),
+  cancelPath: z.string().optional(),
+});
+export const StartCoachingPublicBookingOutputSchema = z.object({
+  engagement: CoachingEngagementDtoSchema,
+  session: CoachingSessionDtoSchema,
+  payment: CoachingPaymentDtoSchema,
+  checkoutUrl: z.string().url(),
+});
+export type StartCoachingPublicBookingInput = z.infer<
+  typeof StartCoachingPublicBookingInputSchema
+>;
+export type StartCoachingPublicBookingOutput = z.infer<
+  typeof StartCoachingPublicBookingOutputSchema
+>;
+
+export const CancelCoachingSessionInputSchema = z.object({
+  sessionId: z.string().min(1),
+  reason: z.string().max(2000).optional(),
+});
+export const CancelCoachingSessionOutputSchema = z.object({
+  session: CoachingSessionDtoSchema,
+});
+export type CancelCoachingSessionInput = z.infer<typeof CancelCoachingSessionInputSchema>;
+export type CancelCoachingSessionOutput = z.infer<typeof CancelCoachingSessionOutputSchema>;
+
+export const RefundCoachingPaymentInputSchema = z.object({
+  engagementId: z.string().min(1),
+  paymentId: z.string().min(1).optional(),
+  amountCents: z.number().int().positive().optional(),
+  reason: z.string().max(1000).optional(),
+});
+export const RefundCoachingPaymentOutputSchema = z.object({
+  payment: CoachingPaymentDtoSchema,
+});
+export type RefundCoachingPaymentInput = z.infer<typeof RefundCoachingPaymentInputSchema>;
+export type RefundCoachingPaymentOutput = z.infer<typeof RefundCoachingPaymentOutputSchema>;
+
+export const ResendCoachingInvoiceInputSchema = z.object({
+  engagementId: z.string().min(1),
+  to: z.string().email().optional(),
+});
+export const ResendCoachingInvoiceOutputSchema = z.object({
+  invoiceId: z.string(),
+  deliveryId: z.string(),
+  status: z.enum(["QUEUED", "SENT", "DELIVERED", "BOUNCED", "FAILED", "DELAYED"]),
+  to: z.string().email(),
+});
+export type ResendCoachingInvoiceInput = z.infer<typeof ResendCoachingInvoiceInputSchema>;
+export type ResendCoachingInvoiceOutput = z.infer<typeof ResendCoachingInvoiceOutputSchema>;
+
+export {
+  CreateCoachingOfferInputSchema,
+  CreateCoachingOfferOutputSchema,
+  UpdateCoachingOfferInputSchema,
+  UpdateCoachingOfferOutputSchema,
+  ListCoachingOffersInputSchema,
+  ListCoachingOffersOutputSchema,
+  GetCoachingOfferInputSchema,
+  GetCoachingOfferOutputSchema,
+  ArchiveCoachingOfferInputSchema,
+  ArchiveCoachingOfferOutputSchema,
+};

@@ -1,7 +1,11 @@
 import type {
   CoachingAnswerPayload,
+  CoachingAvailabilityRule,
+  CoachingBookingRules,
   CoachingContractStatus,
+  CoachingContractRequestStatus,
   CoachingEngagementStatus,
+  CoachingMeetingType,
   CoachingPaymentStatus,
   CoachingQuestionnaireTemplate,
   CoachingSessionStatus,
@@ -12,19 +16,81 @@ export type CoachingOfferRecord = {
   id: string;
   tenantId: string;
   workspaceId: string | null;
+  coachUserId: string | null;
   title: LocalizedText;
   description: LocalizedText | null;
   currency: string;
   priceCents: number;
   sessionDurationMinutes: number;
+  meetingType: CoachingMeetingType;
+  availabilityRule: CoachingAvailabilityRule;
+  bookingRules: CoachingBookingRules;
   contractRequired: boolean;
   paymentRequired: boolean;
   localeDefault: string;
+  contractTemplate: LocalizedText | null;
   contractLabel: LocalizedText | null;
   prepFormTemplate: CoachingQuestionnaireTemplate | null;
+  prepFormSendHoursBeforeSession?: number | null;
   debriefTemplate: CoachingQuestionnaireTemplate | null;
+  archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+};
+
+export type CoachingBookingHoldRecord = {
+  id: string;
+  offerId: string;
+  coachUserId: string;
+  tenantId: string;
+  workspaceId: string | null;
+  status: "active" | "expired" | "cancelled";
+  startAt: Date;
+  endAt: Date;
+  expiresAt: Date;
+  bookedByName: string | null;
+  bookedByEmail: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type CoachingPaymentRecord = {
+  id: string;
+  tenantId: string;
+  workspaceId: string | null;
+  engagementId: string;
+  sessionId: string | null;
+  provider: string;
+  status: "pending" | "captured" | "failed" | "refunded";
+  amountCents: number;
+  refundedAmountCents: number;
+  currency: string;
+  customerEmail: string | null;
+  providerCheckoutSessionId: string | null;
+  providerCheckoutUrl: string | null;
+  providerPaymentRef: string | null;
+  providerRefundRef: string | null;
+  failureCode: string | null;
+  failureMessage: string | null;
+  checkoutCreatedAt: Date | null;
+  capturedAt: Date | null;
+  failedAt: Date | null;
+  refundedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type CoachingPaymentProviderEventRecord = {
+  id: string;
+  tenantId: string;
+  provider: string;
+  providerEventId: string;
+  eventType: string;
+  engagementId: string | null;
+  paymentId: string | null;
+  payload: Record<string, unknown>;
+  processedAt: Date;
+  createdAt: Date;
 };
 
 export type CoachingEngagementRecord = {
@@ -56,6 +122,33 @@ export type CoachingEngagementRecord = {
   updatedAt: Date;
 };
 
+export type CoachingContractRequestRecord = {
+  id: string;
+  tenantId: string;
+  workspaceId: string;
+  engagementId: string;
+  clientPartyId: string;
+  provider: string;
+  status: CoachingContractRequestStatus;
+  requestToken: string;
+  requestTokenHash: string;
+  templateLocale: string;
+  contractTitle: string;
+  contractBody: string;
+  recipientName: string | null;
+  recipientEmail: string | null;
+  signerName: string | null;
+  signerEmail: string | null;
+  requestedAt: Date;
+  deliveredAt: Date | null;
+  viewedAt: Date | null;
+  completedAt: Date | null;
+  draftDocumentId: string;
+  signedDocumentId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type CoachingSessionRecord = {
   id: string;
   tenantId: string;
@@ -68,6 +161,7 @@ export type CoachingSessionRecord = {
   meetingProvider: string | null;
   meetingLink: string | null;
   meetingIssuedAt: Date | null;
+  prepAccessToken?: string | null;
   prepAccessTokenHash: string | null;
   prepRequestedAt: Date | null;
   prepSubmittedAt: Date | null;

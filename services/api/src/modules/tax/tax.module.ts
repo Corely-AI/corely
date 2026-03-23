@@ -1,4 +1,4 @@
-import { Inject, Module } from "@nestjs/common";
+import { Inject, Module, forwardRef } from "@nestjs/common";
 import { DataModule } from "@corely/data";
 import { IdentityModule } from "../identity";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
@@ -142,7 +142,12 @@ import { DeUstvaElsterSubmissionBuilder } from "./infrastructure/eric/de-ustva-e
 import { HttpTaxElsterGatewayAdapter } from "./infrastructure/eric/http-tax-elster-gateway.adapter";
 
 @Module({
-  imports: [IdentityModule, WorkspacesModule, DataModule, DocumentsModule],
+  imports: [
+    forwardRef(() => IdentityModule),
+    WorkspacesModule,
+    DataModule,
+    forwardRef(() => DocumentsModule),
+  ],
   controllers: [TaxController, TaxFilingsController, TaxFilingReportsController],
   providers: [
     NestLoggerAdapter,

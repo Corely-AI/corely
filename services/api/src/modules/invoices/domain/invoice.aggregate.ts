@@ -300,10 +300,12 @@ export class InvoiceAggregate {
   }
 
   markSent(sentAt: Date, now: Date) {
-    if (this.status !== "ISSUED" && this.status !== "SENT") {
+    if (this.status !== "ISSUED" && this.status !== "SENT" && this.status !== "PAID") {
       throw new Error("Only issued invoices can be sent");
     }
-    this.status = "SENT";
+    if (this.status !== "PAID") {
+      this.status = "SENT";
+    }
     this.sentAt = sentAt;
     this.touch(now);
   }

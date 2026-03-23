@@ -61,6 +61,11 @@ export class GetCoachingEngagementUseCase extends BaseUseCase<
       { engagementId: engagement.id },
       { page: 1, pageSize: 50 }
     );
+    const contractRequest = await this.deps.repo.findLatestContractRequestByEngagement(
+      ctx.tenantId,
+      engagement.id
+    );
+    const payments = await this.deps.repo.listPaymentsByEngagement(ctx.tenantId, engagement.id);
     const timeline = await this.deps.repo.listTimeline(ctx.tenantId, engagement.id);
     const bundle = await this.deps.repo.findLatestArtifactBundle(ctx.tenantId, engagement.id);
 
@@ -96,7 +101,9 @@ export class GetCoachingEngagementUseCase extends BaseUseCase<
       toCoachingDetailDto({
         engagement,
         offer: engagement.offer,
+        contractRequest,
         sessions: sessions.items,
+        payments,
         timeline,
         artifacts: [
           ...engagementDocuments.value.items.map((document) =>

@@ -7,6 +7,7 @@ import {
   PrismaInvoiceEmailDeliveryAdapter,
 } from "@corely/data";
 import { EnvService } from "@corely/config";
+import { KernelModule } from "../../../../../shared/kernel/kernel.module";
 import { InvoiceEmailRequestedHandler } from "../invoices/invoice-email-requested.handler";
 import { InvoicePdfRenderRequestedHandler } from "../invoices/handlers/invoice-pdf-render-requested.handler";
 import { PrismaInvoiceEmailRepository } from "../invoices/infrastructure/prisma-invoice-email-repository.adapter";
@@ -49,11 +50,13 @@ import { CoachingPrepFormSubmittedHandler } from "../coaching/handlers/coaching-
 import { CoachingSessionCompletedHandler } from "../coaching/handlers/coaching-session-completed.handler";
 import { CoachingDebriefRequestedHandler } from "../coaching/handlers/coaching-debrief-requested.handler";
 import { CoachingExportBundleRequestedHandler } from "../coaching/handlers/coaching-export-bundle-requested.handler";
+import { CoachingWorkerModule } from "../coaching/coaching-worker.module";
 
 // ... imports
 
 @Module({
   imports: [
+    KernelModule,
     AccountingWorkerModule,
     IssuesWorkerModule,
     InvoicesWorkerModule,
@@ -66,6 +69,7 @@ import { CoachingExportBundleRequestedHandler } from "../coaching/handlers/coach
     PartyModule,
     DocumentsModule,
     InvoicesModule,
+    CoachingWorkerModule,
   ],
   providers: [
     {

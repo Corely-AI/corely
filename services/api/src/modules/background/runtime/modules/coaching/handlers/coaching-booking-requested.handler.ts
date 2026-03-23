@@ -1,6 +1,4 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { InvoicesApplication } from "../../../../../invoices/application/invoices.application";
-import { DocumentsApplication } from "../../../../../documents/application/documents.application";
 import {
   CUSTOMER_QUERY_PORT,
   type CustomerQueryPort,
@@ -21,6 +19,7 @@ import { PrismaCoachingEngagementRepositoryAdapter } from "../../../../../coachi
 import { CoachingArtifactService } from "../../../../../coaching-engagements/infrastructure/documents/coaching-artifact.service";
 import { COACHING_EVENTS, type CoachingBookingRequestedEvent } from "@corely/contracts";
 import { buildSimplePdf } from "../../../../../coaching-engagements/domain/simple-pdf";
+import { resolveLocalizedText } from "../../../../../coaching-engagements/domain/coaching-localization";
 import {
   buildAbsoluteUrl,
   buildEmailMessage,
@@ -38,8 +37,6 @@ export class CoachingBookingRequestedHandler implements EventHandler {
 
   constructor(
     private readonly repo: PrismaCoachingEngagementRepositoryAdapter,
-    private readonly invoices: InvoicesApplication,
-    private readonly documents: DocumentsApplication,
     private readonly artifactService: CoachingArtifactService,
     @Inject(CUSTOMER_QUERY_PORT) private readonly customerQuery: CustomerQueryPort,
     @Inject(EMAIL_SENDER_PORT) private readonly emailSender: EmailSenderPort,
@@ -65,119 +62,138 @@ export class CoachingBookingRequestedHandler implements EventHandler {
       engagement.clientPartyId
     );
     const title = buildLocalizedOfferTitle(engagement);
-    const appCtx = {
-      tenantId: event.tenantId,
-      workspaceId: payload.workspaceId,
-      userId: "system",
-      correlationId: event.correlationId ?? undefined,
-      requestId: `coaching:${engagement.id}`,
-    };
-
-    if (engagement.offer.paymentRequired && !engagement.invoiceId) {
-      const created = await this.invoices.createInvoice.execute(
-        {
-          customerPartyId: engagement.clientPartyId,
-          currency: engagement.offer.currency,
-          legalEntityId: engagement.legalEntityId ?? undefined,
-          paymentMethodId: engagement.paymentMethodId ?? undefined,
-          sourceType: "coaching_engagement",
-          sourceId: engagement.id,
-          notes: `Coaching engagement ${engagement.id}`,
-          lineItems: [{ description: title, qty: 1, unitPriceCents: engagement.offer.priceCents }],
-        },
-        appCtx
+    if (engagement.offer.contractRequired) {
+      const now = this.clock.now();
+      const contractTemplate = engagement.offer.contractTemplate
+        ? resolveLocalizedText(engagement.offer.contractTemplate, engagement.locale, engagement.offer.localeDefault)
+        : null;
+      const contractBody = contractTemplate ?? "No contract template has been configured.";
+      let contractRequest = await this.repo.findLatestContractRequestByEngagement(
+        event.tenantId,
+        engagement.id
       );
-      if ("value" in created) {
-        const invoiceId = created.value.invoice.id;
-        engagement.invoiceId = invoiceId;
-        engagement.updatedAt = this.clock.now();
-        await this.repo.updateEngagement(engagement);
-        await this.invoices.finalizeInvoice.execute({ invoiceId }, appCtx);
-        if (customer?.email) {
-          await this.invoices.sendInvoice.execute(
-            {
-              invoiceId,
-              to: customer.email,
-              attachPdf: true,
-              locale: engagement.locale,
-            },
-            appCtx
-          );
-        }
-        const pdf = await this.documents.getInvoicePdf.execute({ invoiceId, waitMs: 0 }, appCtx);
-        if ("value" in pdf && pdf.value.documentId) {
-          await this.documents.linkDocument.execute(
-            {
-              documentId: pdf.value.documentId,
-              entityType: "COACHING_ENGAGEMENT",
-              entityId: engagement.id,
-            },
-            appCtx
-          );
-          await this.documents.linkDocument.execute(
-            {
-              documentId: pdf.value.documentId,
-              entityType: "PARTY",
-              entityId: engagement.clientPartyId,
-            },
-            appCtx
-          );
-        }
+
+      if (!contractRequest) {
+        const token = createCoachingAccessToken();
+        const draft = await this.artifactService.createPdfArtifact({
+          tenantId: event.tenantId,
+          title: `${title} Contract Draft`,
+          objectPath: `engagements/${engagement.id}/contracts`,
+          links: [
+            { entityType: "COACHING_ENGAGEMENT", entityId: engagement.id },
+            { entityType: "PARTY", entityId: engagement.clientPartyId },
+          ],
+          bytes: buildSimplePdf([
+            `${title} contract draft`,
+            `Engagement: ${engagement.id}`,
+            `Client party: ${engagement.clientPartyId}`,
+            `Template locale: ${engagement.locale}`,
+            "Contract body:",
+            contractBody,
+            `Generated at: ${now.toISOString()}`,
+          ]),
+        });
+
+        contractRequest = await this.repo.createContractRequest({
+          id: this.idGenerator.newId(),
+          tenantId: event.tenantId,
+          workspaceId: payload.workspaceId,
+          engagementId: engagement.id,
+          clientPartyId: engagement.clientPartyId,
+          provider: "corely-internal",
+          status: "pending",
+          requestToken: token,
+          requestTokenHash: hashCoachingAccessToken(token),
+          templateLocale: engagement.locale,
+          contractTitle: title,
+          contractBody,
+          recipientName: customer?.displayName ?? null,
+          recipientEmail: customer?.email ?? null,
+          signerName: null,
+          signerEmail: null,
+          requestedAt: now,
+          deliveredAt: null,
+          viewedAt: null,
+          completedAt: null,
+          draftDocumentId: draft.documentId,
+          signedDocumentId: null,
+          createdAt: now,
+          updatedAt: now,
+        });
+
+        await this.repo.createTimelineEntry({
+          id: this.idGenerator.newId(),
+          tenantId: event.tenantId,
+          workspaceId: payload.workspaceId,
+          engagementId: engagement.id,
+          eventType: COACHING_EVENTS.CONTRACT_SIGNATURE_REQUESTED,
+          stateFrom: engagement.status,
+          stateTo: engagement.status,
+          actorUserId: null,
+          metadata: {
+            requestId: contractRequest.id,
+            draftDocumentId: contractRequest.draftDocumentId,
+            recipientEmail: contractRequest.recipientEmail,
+          },
+          occurredAt: now,
+          createdAt: now,
+        });
         await this.outbox.enqueue({
           tenantId: event.tenantId,
-          eventType: COACHING_EVENTS.INVOICE_ISSUED,
+          eventType: COACHING_EVENTS.CONTRACT_SIGNATURE_REQUESTED,
           correlationId: event.correlationId ?? undefined,
-          payload: { workspaceId: payload.workspaceId, engagementId: engagement.id, invoiceId },
+          payload: {
+            workspaceId: payload.workspaceId,
+            engagementId: engagement.id,
+            requestId: contractRequest.id,
+            draftDocumentId: contractRequest.draftDocumentId,
+          },
         });
       }
-    }
 
-    if (engagement.offer.contractRequired && !engagement.contractDraftDocumentId) {
-      const token = createCoachingAccessToken();
-      const draft = await this.artifactService.createPdfArtifact({
-        tenantId: event.tenantId,
-        title: `${title} Contract Draft`,
-        objectPath: `engagements/${engagement.id}/contracts`,
-        links: [
-          { entityType: "COACHING_ENGAGEMENT", entityId: engagement.id },
-          { entityType: "PARTY", entityId: engagement.clientPartyId },
-        ],
-        bytes: buildSimplePdf([
-          `${title} contract draft`,
-          `Engagement: ${engagement.id}`,
-          `Client party: ${engagement.clientPartyId}`,
-          `Generated at: ${new Date().toISOString()}`,
-        ]),
-      });
-
-      engagement.contractDraftDocumentId = draft.documentId;
-      engagement.contractAccessTokenHash = hashCoachingAccessToken(token);
-      engagement.contractRequestedAt = this.clock.now();
-      engagement.updatedAt = this.clock.now();
-      await this.repo.updateEngagement(engagement);
+      if (
+        engagement.contractDraftDocumentId !== contractRequest.draftDocumentId ||
+        engagement.contractAccessTokenHash !== contractRequest.requestTokenHash ||
+        engagement.contractRequestedAt?.getTime() !== contractRequest.requestedAt.getTime()
+      ) {
+        engagement.contractDraftDocumentId = contractRequest.draftDocumentId;
+        engagement.contractAccessTokenHash = contractRequest.requestTokenHash;
+        engagement.contractRequestedAt = contractRequest.requestedAt;
+        engagement.updatedAt = now;
+        await this.repo.updateEngagement(engagement);
+      }
 
       if (customer?.email) {
         const signUrl = buildAbsoluteUrl(
           this.env.API_BASE_URL ?? "http://localhost:3000",
-          `/coaching/public/contracts/${engagement.id}/${token}/sign`
+          `/coaching/public/contracts/${engagement.id}/${contractRequest.requestToken}`
         );
-        const message = buildEmailMessage({
-          heading: "Please sign your coaching agreement",
-          body: [
-            `Your coaching booking "${title}" is waiting for contract signature.`,
-            "Please review and sign the agreement to continue the confirmation flow.",
-          ],
-          ctaLabel: "Open agreement",
-          ctaUrl: signUrl,
-        });
-        await this.emailSender.sendEmail({
-          tenantId: event.tenantId,
-          to: [customer.email],
-          subject: "Please sign your coaching agreement",
-          html: message.html,
-          text: message.text,
-          idempotencyKey: `coaching-contract-request:${engagement.id}`,
-        });
+        if (!contractRequest.deliveredAt || contractRequest.recipientEmail !== customer.email) {
+          const message = buildEmailMessage({
+            heading: "Please sign your coaching agreement",
+            body: [
+              `Your coaching booking "${title}" is waiting for contract signature.`,
+              "Please review and sign the agreement to continue the confirmation flow.",
+            ],
+            ctaLabel: "Open agreement",
+            ctaUrl: signUrl,
+          });
+          await this.emailSender.sendEmail({
+            tenantId: event.tenantId,
+            to: [customer.email],
+            subject: "Please sign your coaching agreement",
+            html: message.html,
+            text: message.text,
+            idempotencyKey: `coaching-contract-request:${engagement.id}:${contractRequest.id}`,
+          });
+          await this.repo.updateContractRequest({
+            ...contractRequest,
+            recipientName: customer.displayName ?? contractRequest.recipientName,
+            recipientEmail: customer.email,
+            deliveredAt: contractRequest.deliveredAt ?? this.clock.now(),
+            updatedAt: this.clock.now(),
+          });
+        }
       }
     }
 

@@ -4,6 +4,8 @@ export const COACHING_EVENTS = {
   BOOKING_REQUESTED: "coaching.booking.requested",
   INVOICE_ISSUED: "coaching.invoice.issued",
   PAYMENT_CAPTURED: "coaching.payment.captured",
+  PAYMENT_FAILED: "coaching.payment.failed",
+  PAYMENT_REFUNDED: "coaching.payment.refunded",
   CONTRACT_SIGNATURE_REQUESTED: "coaching.contract_signature.requested",
   CONTRACT_SIGNED: "coaching.contract.signed",
   PREP_FORM_REQUESTED: "coaching.prep_form.requested",
@@ -15,6 +17,9 @@ export const COACHING_EVENTS = {
   EXPORT_BUNDLE_REQUESTED: "coaching.export_bundle.requested",
   EXPORT_BUNDLE_GENERATED: "coaching.export_bundle.generated",
   ENGAGEMENT_ARCHIVED: "coaching.engagement.archived",
+  OFFER_CREATED: "coaching.offer.created",
+  OFFER_UPDATED: "coaching.offer.updated",
+  OFFER_ARCHIVED: "coaching.offer.archived",
 } as const;
 
 export const CoachingBookingRequestedEventSchema = z.object({
@@ -38,9 +43,20 @@ export const CoachingPaymentCapturedEventSchema = z.object({
 });
 export type CoachingPaymentCapturedEvent = z.infer<typeof CoachingPaymentCapturedEventSchema>;
 
+export const CoachingContractSignatureRequestedEventSchema = z.object({
+  workspaceId: z.string(),
+  engagementId: z.string(),
+  requestId: z.string(),
+  draftDocumentId: z.string(),
+});
+export type CoachingContractSignatureRequestedEvent = z.infer<
+  typeof CoachingContractSignatureRequestedEventSchema
+>;
+
 export const CoachingContractSignedEventSchema = z.object({
   workspaceId: z.string(),
   engagementId: z.string(),
+  requestId: z.string(),
   documentId: z.string(),
 });
 export type CoachingContractSignedEvent = z.infer<typeof CoachingContractSignedEventSchema>;

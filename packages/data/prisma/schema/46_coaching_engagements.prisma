@@ -31,6 +31,24 @@ enum CoachingContractStatus {
   @@schema("crm")
 }
 
+enum CoachingContractRequestStatus {
+  pending
+  viewed
+  signed
+  failed
+
+  @@schema("crm")
+}
+
+enum CoachingPaymentRecordStatus {
+  pending
+  captured
+  failed
+  refunded
+
+  @@schema("crm")
+}
+
 enum CoachingSessionStatus {
   scheduled
   completed
@@ -51,23 +69,31 @@ model CoachingOffer {
   id                     String   @id @default(cuid())
   tenantId               String
   workspaceId            String?
+  coachUserId            String?
   titleJson              Json     @db.JsonB
   descriptionJson        Json?    @db.JsonB
   currency               String   @db.VarChar(3)
   priceCents             Int
   sessionDurationMinutes Int
+  meetingType            String   @default("video") @db.VarChar(32)
+  availabilityRuleJson   Json     @default("{}") @db.JsonB
+  bookingRulesJson       Json     @default("{}") @db.JsonB
   contractRequired       Boolean  @default(true)
   paymentRequired        Boolean  @default(true)
   localeDefault          String   @default("en")
+  contractTemplateJson   Json?    @db.JsonB
   contractLabelJson      Json?    @db.JsonB
   prepFormTemplateJson   Json?    @db.JsonB
+  prepFormSendHoursBeforeSession Int?
   debriefTemplateJson    Json?    @db.JsonB
+  archivedAt             DateTime? @db.Timestamptz(6)
   createdAt              DateTime @default(now()) @db.Timestamptz(6)
   updatedAt              DateTime @updatedAt @db.Timestamptz(6)
 
   engagements CoachingEngagement[]
+  holds       CoachingBookingHold[]
 
-  @@index([tenantId, workspaceId, createdAt])
+  @@index([tenantId, workspaceId, archivedAt, createdAt])
   @@schema("crm")
 }
 
@@ -101,14 +127,51 @@ model CoachingEngagement {
 
   offer         CoachingOffer            @relation(fields: [offerId], references: [id], onDelete: Restrict)
   sessions      CoachingSession[]
+  payments      CoachingPayment[]
   timeline      CoachingEngagementEvent[]
   exportBundles CoachingArtifactBundle[]
+  contractRequests CoachingContractRequest[]
 
   @@unique([tenantId, stripeCheckoutSessionId])
   @@index([tenantId, workspaceId, status, createdAt])
   @@index([tenantId, clientPartyId])
   @@index([tenantId, coachUserId])
   @@index([tenantId, contractAccessTokenHash])
+  @@schema("crm")
+}
+
+model CoachingContractRequest {
+  id                 String                        @id @default(cuid())
+  tenantId           String
+  workspaceId        String
+  engagementId       String
+  clientPartyId      String
+  provider           String                        @default("corely-internal") @db.VarChar(32)
+  status             CoachingContractRequestStatus @default(pending)
+  requestToken       String
+  requestTokenHash   String
+  templateLocale     String
+  contractTitle      String
+  contractBody       String                        @db.Text
+  recipientName      String?
+  recipientEmail     String?
+  signerName         String?
+  signerEmail        String?
+  requestedAt        DateTime                      @db.Timestamptz(6)
+  deliveredAt        DateTime?                     @db.Timestamptz(6)
+  viewedAt           DateTime?                     @db.Timestamptz(6)
+  completedAt        DateTime?                     @db.Timestamptz(6)
+  draftDocumentId    String
+  signedDocumentId   String?
+  createdAt          DateTime                      @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                      @updatedAt @db.Timestamptz(6)
+
+  engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, requestToken])
+  @@unique([tenantId, requestTokenHash])
+  @@index([tenantId, engagementId, requestedAt])
+  @@index([tenantId, recipientEmail, requestedAt])
   @@schema("crm")
 }
 
@@ -124,6 +187,7 @@ model CoachingSession {
   meetingProvider       String?
   meetingLink           String?
   meetingIssuedAt       DateTime?            @db.Timestamptz(6)
+  prepAccessToken       String?
   prepAccessTokenHash   String?
   prepRequestedAt       DateTime?            @db.Timestamptz(6)
   prepSubmittedAt       DateTime?            @db.Timestamptz(6)
@@ -142,6 +206,78 @@ model CoachingSession {
   @@index([tenantId, engagementId, sequenceNo])
   @@index([tenantId, prepAccessTokenHash])
   @@index([tenantId, debriefAccessTokenHash])
+  @@schema("crm")
+}
+
+model CoachingBookingHold {
+  id           String   @id @default(cuid())
+  offerId      String
+  coachUserId  String
+  tenantId     String
+  workspaceId  String?
+  status       String   @default("active") @db.VarChar(20)
+  startAt      DateTime @db.Timestamptz(6)
+  endAt        DateTime @db.Timestamptz(6)
+  expiresAt    DateTime @db.Timestamptz(6)
+  bookedByName String?
+  bookedByEmail String?
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+
+  offer CoachingOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, coachUserId, status, expiresAt])
+  @@index([tenantId, offerId, startAt])
+  @@schema("crm")
+}
+
+model CoachingPayment {
+  id                       String                     @id @default(cuid())
+  tenantId                 String
+  workspaceId              String?
+  engagementId             String
+  sessionId                String?
+  provider                 String                     @db.VarChar(32)
+  status                   CoachingPaymentRecordStatus @default(pending)
+  amountCents              Int
+  refundedAmountCents      Int                        @default(0)
+  currency                 String                     @db.VarChar(3)
+  customerEmail            String?
+  providerCheckoutSessionId String?
+  providerCheckoutUrl      String?
+  providerPaymentRef       String?
+  providerRefundRef        String?
+  failureCode              String?
+  failureMessage           String?
+  checkoutCreatedAt        DateTime?                  @db.Timestamptz(6)
+  capturedAt               DateTime?                  @db.Timestamptz(6)
+  failedAt                 DateTime?                  @db.Timestamptz(6)
+  refundedAt               DateTime?                  @db.Timestamptz(6)
+  createdAt                DateTime                   @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime                   @updatedAt @db.Timestamptz(6)
+
+  engagement CoachingEngagement @relation(fields: [engagementId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, provider, providerCheckoutSessionId])
+  @@index([tenantId, engagementId, createdAt])
+  @@index([tenantId, provider, providerPaymentRef])
+  @@schema("crm")
+}
+
+model CoachingPaymentProviderEvent {
+  id              String   @id @default(cuid())
+  tenantId        String
+  provider        String   @db.VarChar(32)
+  providerEventId String
+  eventType       String
+  engagementId    String?
+  paymentId       String?
+  payloadJson     Json     @default("{}") @db.JsonB
+  processedAt     DateTime @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([tenantId, provider, providerEventId])
+  @@index([tenantId, engagementId, processedAt])
   @@schema("crm")
 }
 

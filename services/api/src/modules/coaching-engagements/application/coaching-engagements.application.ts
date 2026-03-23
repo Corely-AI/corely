@@ -3,7 +3,8 @@ import type { GetCoachingEngagementUseCase } from "./use-cases/get-coaching-enga
 import type { ListCoachingEngagementsUseCase } from "./use-cases/list-coaching-engagements.usecase";
 import type { ListCoachingSessionsUseCase } from "./use-cases/list-coaching-sessions.usecase";
 import type { CreateCoachingCheckoutSessionUseCase } from "./use-cases/create-coaching-checkout-session.usecase";
-import type { ProcessCoachingStripeWebhookUseCase } from "./use-cases/process-coaching-stripe-webhook.usecase";
+import type { GetCoachingContractViewUseCase } from "./use-cases/get-coaching-contract-view.usecase";
+import type { ProcessCoachingPaymentWebhookUseCase } from "./use-cases/process-coaching-payment-webhook.usecase";
 import type { SignCoachingContractUseCase } from "./use-cases/sign-coaching-contract.usecase";
 import type { GetCoachingPrepFormUseCase } from "./use-cases/get-coaching-prep-form.usecase";
 import type { SubmitCoachingPrepFormUseCase } from "./use-cases/submit-coaching-prep-form.usecase";
@@ -12,15 +13,32 @@ import type { GetCoachingDebriefFormUseCase } from "./use-cases/get-coaching-deb
 import type { SubmitCoachingDebriefUseCase } from "./use-cases/submit-coaching-debrief.usecase";
 import type { GenerateCoachingExportBundleUseCase } from "./use-cases/generate-coaching-export-bundle.usecase";
 import type { GetCoachingArtifactSummaryUseCase } from "./use-cases/get-coaching-artifact-summary.usecase";
+import type { CreateCoachingOfferUseCase } from "./use-cases/create-coaching-offer.usecase";
+import type { ListCoachingOffersUseCase } from "./use-cases/list-coaching-offers.usecase";
+import type { GetCoachingOfferUseCase } from "./use-cases/get-coaching-offer.usecase";
+import type { UpdateCoachingOfferUseCase } from "./use-cases/update-coaching-offer.usecase";
+import type { ArchiveCoachingOfferUseCase } from "./use-cases/archive-coaching-offer.usecase";
+import type { StartCoachingPublicBookingUseCase } from "./use-cases/start-coaching-public-booking.usecase";
+import type { RefundCoachingPaymentUseCase } from "./use-cases/refund-coaching-payment.usecase";
+import type { ResendCoachingInvoiceUseCase } from "./use-cases/resend-coaching-invoice.usecase";
 
 export class CoachingEngagementsApplication {
   constructor(
+    public readonly createOffer: CreateCoachingOfferUseCase,
+    public readonly listOffers: ListCoachingOffersUseCase,
+    public readonly getOffer: GetCoachingOfferUseCase,
+    public readonly updateOffer: UpdateCoachingOfferUseCase,
+    public readonly archiveOffer: ArchiveCoachingOfferUseCase,
     public readonly bookEngagement: BookCoachingEngagementUseCase,
     public readonly getEngagement: GetCoachingEngagementUseCase,
     public readonly listEngagements: ListCoachingEngagementsUseCase,
     public readonly listSessions: ListCoachingSessionsUseCase,
     public readonly createCheckoutSession: CreateCoachingCheckoutSessionUseCase,
-    public readonly processStripeWebhook: ProcessCoachingStripeWebhookUseCase,
+    public readonly getContractView: GetCoachingContractViewUseCase,
+    public readonly processPaymentWebhook: ProcessCoachingPaymentWebhookUseCase,
+    public readonly startPublicBooking: StartCoachingPublicBookingUseCase,
+    public readonly refundPayment: RefundCoachingPaymentUseCase,
+    public readonly resendInvoice: ResendCoachingInvoiceUseCase,
     public readonly signContract: SignCoachingContractUseCase,
     public readonly getPrepForm: GetCoachingPrepFormUseCase,
     public readonly submitPrepForm: SubmitCoachingPrepFormUseCase,

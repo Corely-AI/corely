@@ -8,8 +8,12 @@ import {
 } from "../../application/ports/coaching-engagement-repository.port";
 import type {
   CoachingArtifactBundleRecord,
+  CoachingBookingHoldRecord,
+  CoachingContractRequestRecord,
   CoachingEngagementRecord,
   CoachingOfferRecord,
+  CoachingPaymentProviderEventRecord,
+  CoachingPaymentRecord,
   CoachingSessionRecord,
   CoachingTimelineEntryRecord,
 } from "../../domain/coaching.types";
@@ -18,17 +22,24 @@ const mapOffer = (row: any): CoachingOfferRecord => ({
   id: row.id,
   tenantId: row.tenantId,
   workspaceId: row.workspaceId,
+  coachUserId: row.coachUserId,
   title: row.titleJson,
   description: row.descriptionJson,
   currency: row.currency,
   priceCents: row.priceCents,
   sessionDurationMinutes: row.sessionDurationMinutes,
+  meetingType: row.meetingType,
+  availabilityRule: row.availabilityRuleJson,
+  bookingRules: row.bookingRulesJson,
   contractRequired: row.contractRequired,
   paymentRequired: row.paymentRequired,
   localeDefault: row.localeDefault,
+  contractTemplate: row.contractTemplateJson,
   contractLabel: row.contractLabelJson,
   prepFormTemplate: row.prepFormTemplateJson,
+  prepFormSendHoursBeforeSession: row.prepFormSendHoursBeforeSession,
   debriefTemplate: row.debriefTemplateJson,
+  archivedAt: row.archivedAt,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
 });
@@ -62,6 +73,33 @@ const mapEngagement = (row: any): CoachingEngagementRecord => ({
   updatedAt: row.updatedAt,
 });
 
+const mapContractRequest = (row: any): CoachingContractRequestRecord => ({
+  id: row.id,
+  tenantId: row.tenantId,
+  workspaceId: row.workspaceId,
+  engagementId: row.engagementId,
+  clientPartyId: row.clientPartyId,
+  provider: row.provider,
+  status: row.status,
+  requestToken: row.requestToken,
+  requestTokenHash: row.requestTokenHash,
+  templateLocale: row.templateLocale,
+  contractTitle: row.contractTitle,
+  contractBody: row.contractBody,
+  recipientName: row.recipientName,
+  recipientEmail: row.recipientEmail,
+  signerName: row.signerName,
+  signerEmail: row.signerEmail,
+  requestedAt: row.requestedAt,
+  deliveredAt: row.deliveredAt,
+  viewedAt: row.viewedAt,
+  completedAt: row.completedAt,
+  draftDocumentId: row.draftDocumentId,
+  signedDocumentId: row.signedDocumentId,
+  createdAt: row.createdAt,
+  updatedAt: row.updatedAt,
+});
+
 const mapSession = (row: any): CoachingSessionRecord => ({
   id: row.id,
   tenantId: row.tenantId,
@@ -74,6 +112,7 @@ const mapSession = (row: any): CoachingSessionRecord => ({
   meetingProvider: row.meetingProvider,
   meetingLink: row.meetingLink,
   meetingIssuedAt: row.meetingIssuedAt,
+  prepAccessToken: row.prepAccessToken,
   prepAccessTokenHash: row.prepAccessTokenHash,
   prepRequestedAt: row.prepRequestedAt,
   prepSubmittedAt: row.prepSubmittedAt,
@@ -116,6 +155,61 @@ const mapBundle = (row: any): CoachingArtifactBundleRecord => ({
   updatedAt: row.updatedAt,
 });
 
+const mapHold = (row: any): CoachingBookingHoldRecord => ({
+  id: row.id,
+  offerId: row.offerId,
+  coachUserId: row.coachUserId,
+  tenantId: row.tenantId,
+  workspaceId: row.workspaceId,
+  status: row.status,
+  startAt: row.startAt,
+  endAt: row.endAt,
+  expiresAt: row.expiresAt,
+  bookedByName: row.bookedByName,
+  bookedByEmail: row.bookedByEmail,
+  createdAt: row.createdAt,
+  updatedAt: row.updatedAt,
+});
+
+const mapPayment = (row: any): CoachingPaymentRecord => ({
+  id: row.id,
+  tenantId: row.tenantId,
+  workspaceId: row.workspaceId,
+  engagementId: row.engagementId,
+  sessionId: row.sessionId,
+  provider: row.provider,
+  status: row.status,
+  amountCents: row.amountCents,
+  refundedAmountCents: row.refundedAmountCents,
+  currency: row.currency,
+  customerEmail: row.customerEmail,
+  providerCheckoutSessionId: row.providerCheckoutSessionId,
+  providerCheckoutUrl: row.providerCheckoutUrl,
+  providerPaymentRef: row.providerPaymentRef,
+  providerRefundRef: row.providerRefundRef,
+  failureCode: row.failureCode,
+  failureMessage: row.failureMessage,
+  checkoutCreatedAt: row.checkoutCreatedAt,
+  capturedAt: row.capturedAt,
+  failedAt: row.failedAt,
+  refundedAt: row.refundedAt,
+  createdAt: row.createdAt,
+  updatedAt: row.updatedAt,
+});
+
+const mapProviderEvent = (row: any): CoachingPaymentProviderEventRecord => ({
+  id: row.id,
+  tenantId: row.tenantId,
+  provider: row.provider,
+  providerEventId: row.providerEventId,
+  eventType: row.eventType,
+  engagementId: row.engagementId,
+  paymentId: row.paymentId,
+  payload: row.payloadJson,
+  processedAt: row.processedAt,
+  createdAt: row.createdAt,
+});
+
 @Injectable()
 export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngagementRepositoryPort {
   constructor(private readonly prisma: PrismaService) {}
@@ -130,18 +224,55 @@ export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngage
         id: offer.id,
         tenantId: offer.tenantId,
         workspaceId: offer.workspaceId,
+        coachUserId: offer.coachUserId,
         titleJson: offer.title,
         descriptionJson: offer.description,
         currency: offer.currency,
         priceCents: offer.priceCents,
         sessionDurationMinutes: offer.sessionDurationMinutes,
+        meetingType: offer.meetingType,
+        availabilityRuleJson: offer.availabilityRule,
+        bookingRulesJson: offer.bookingRules,
         contractRequired: offer.contractRequired,
         paymentRequired: offer.paymentRequired,
         localeDefault: offer.localeDefault,
+        contractTemplateJson: offer.contractTemplate,
         contractLabelJson: offer.contractLabel,
         prepFormTemplateJson: offer.prepFormTemplate,
+        prepFormSendHoursBeforeSession: offer.prepFormSendHoursBeforeSession ?? null,
         debriefTemplateJson: offer.debriefTemplate,
+        archivedAt: offer.archivedAt,
         createdAt: offer.createdAt,
+        updatedAt: offer.updatedAt,
+      },
+    });
+    return mapOffer(row);
+  }
+
+  async updateOffer(offer: CoachingOfferRecord, tx?: TransactionContext): Promise<CoachingOfferRecord> {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingOffer.update({
+      where: { id: offer.id },
+      data: {
+        workspaceId: offer.workspaceId,
+        coachUserId: offer.coachUserId,
+        titleJson: offer.title,
+        descriptionJson: offer.description,
+        currency: offer.currency,
+        priceCents: offer.priceCents,
+        sessionDurationMinutes: offer.sessionDurationMinutes,
+        meetingType: offer.meetingType,
+        availabilityRuleJson: offer.availabilityRule,
+        bookingRulesJson: offer.bookingRules,
+        contractRequired: offer.contractRequired,
+        paymentRequired: offer.paymentRequired,
+        localeDefault: offer.localeDefault,
+        contractTemplateJson: offer.contractTemplate,
+        contractLabelJson: offer.contractLabel,
+        prepFormTemplateJson: offer.prepFormTemplate,
+        prepFormSendHoursBeforeSession: offer.prepFormSendHoursBeforeSession ?? null,
+        debriefTemplateJson: offer.debriefTemplate,
+        archivedAt: offer.archivedAt,
         updatedAt: offer.updatedAt,
       },
     });
@@ -161,10 +292,111 @@ export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngage
     return row ? mapOffer(row) : null;
   }
 
+  async listOffers(
+    tenantId: string,
+    workspaceId: string,
+    filters: { q?: string; includeArchived?: boolean },
+    pagination: { page: number; pageSize: number }
+  ): Promise<CoachingListResult<CoachingOfferRecord>> {
+    const where: any = {
+      tenantId,
+      OR: [{ workspaceId }, { workspaceId: null }],
+      ...(filters.includeArchived ? {} : { archivedAt: null }),
+    };
+
+    if (filters.q) {
+      where.AND = [
+        {
+          OR: [{ id: { contains: filters.q, mode: "insensitive" } }],
+        },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.coachingOffer.findMany({
+        where,
+        orderBy: { updatedAt: "desc" },
+        skip: (pagination.page - 1) * pagination.pageSize,
+        take: pagination.pageSize,
+      }),
+      this.prisma.coachingOffer.count({ where }),
+    ]);
+
+    return { items: items.map(mapOffer), total };
+  }
+
+  async findPublicOfferById(offerId: string, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingOffer.findFirst({
+      where: { id: offerId, archivedAt: null },
+    });
+    return row ? mapOffer(row) : null;
+  }
+
   async createEngagement(engagement: CoachingEngagementRecord, tx?: TransactionContext) {
     const client = getPrismaClient(this.prisma, tx);
     const row = await client.coachingEngagement.create({ data: { ...engagement } });
     return mapEngagement(row);
+  }
+
+  async createContractRequest(request: CoachingContractRequestRecord, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingContractRequest.create({
+      data: {
+        id: request.id,
+        tenantId: request.tenantId,
+        workspaceId: request.workspaceId,
+        engagementId: request.engagementId,
+        clientPartyId: request.clientPartyId,
+        provider: request.provider,
+        status: request.status,
+        requestToken: request.requestToken,
+        requestTokenHash: request.requestTokenHash,
+        templateLocale: request.templateLocale,
+        contractTitle: request.contractTitle,
+        contractBody: request.contractBody,
+        recipientName: request.recipientName,
+        recipientEmail: request.recipientEmail,
+        signerName: request.signerName,
+        signerEmail: request.signerEmail,
+        requestedAt: request.requestedAt,
+        deliveredAt: request.deliveredAt,
+        viewedAt: request.viewedAt,
+        completedAt: request.completedAt,
+        draftDocumentId: request.draftDocumentId,
+        signedDocumentId: request.signedDocumentId,
+        createdAt: request.createdAt,
+        updatedAt: request.updatedAt,
+      },
+    });
+    return mapContractRequest(row);
+  }
+
+  async updateContractRequest(request: CoachingContractRequestRecord, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingContractRequest.update({
+      where: { id: request.id },
+      data: {
+        provider: request.provider,
+        status: request.status,
+        requestToken: request.requestToken,
+        templateLocale: request.templateLocale,
+        contractTitle: request.contractTitle,
+        contractBody: request.contractBody,
+        recipientName: request.recipientName,
+        recipientEmail: request.recipientEmail,
+        signerName: request.signerName,
+        signerEmail: request.signerEmail,
+        requestedAt: request.requestedAt,
+        deliveredAt: request.deliveredAt,
+        viewedAt: request.viewedAt,
+        completedAt: request.completedAt,
+        draftDocumentId: request.draftDocumentId,
+        signedDocumentId: request.signedDocumentId,
+        updatedAt: request.updatedAt,
+      },
+    });
+    return mapContractRequest(row);
   }
 
   async updateEngagement(engagement: CoachingEngagementRecord, tx?: TransactionContext) {
@@ -244,6 +476,32 @@ export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngage
     return row ? { ...mapEngagement(row), offer: mapOffer(row.offer) } : null;
   }
 
+  async findLatestContractRequestByEngagement(
+    tenantId: string,
+    engagementId: string,
+    tx?: TransactionContext
+  ) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingContractRequest.findFirst({
+      where: { tenantId, engagementId },
+      orderBy: [{ requestedAt: "desc" }, { createdAt: "desc" }],
+    });
+    return row ? mapContractRequest(row) : null;
+  }
+
+  async findContractRequestByTokenHash(
+    tenantId: string,
+    engagementId: string,
+    tokenHash: string,
+    tx?: TransactionContext
+  ) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingContractRequest.findFirst({
+      where: { tenantId, engagementId, requestTokenHash: tokenHash },
+    });
+    return row ? mapContractRequest(row) : null;
+  }
+
   async listEngagements(
     tenantId: string,
     workspaceId: string,
@@ -302,6 +560,7 @@ export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngage
         meetingProvider: session.meetingProvider,
         meetingLink: session.meetingLink,
         meetingIssuedAt: session.meetingIssuedAt,
+        prepAccessToken: session.prepAccessToken ?? null,
         prepAccessTokenHash: session.prepAccessTokenHash,
         prepRequestedAt: session.prepRequestedAt,
         prepSubmittedAt: session.prepSubmittedAt,
@@ -411,6 +670,226 @@ export class PrismaCoachingEngagementRepositoryAdapter implements CoachingEngage
     ]);
 
     return { items: items.map(mapSession), total };
+  }
+
+  async hasCoachSessionConflict(
+    tenantId: string,
+    coachUserId: string,
+    startAt: Date,
+    endAt: Date,
+    options?: { excludeSessionId?: string },
+    tx?: TransactionContext
+  ): Promise<boolean> {
+    const client = getPrismaClient(this.prisma, tx);
+    const conflict = await client.coachingSession.findFirst({
+      where: {
+        tenantId,
+        status: { not: "cancelled" },
+        startAt: { lt: endAt },
+        endAt: { gt: startAt },
+        ...(options?.excludeSessionId ? { id: { not: options.excludeSessionId } } : {}),
+        engagement: {
+          coachUserId,
+          archivedAt: null,
+        },
+      },
+      select: { id: true },
+    });
+    return Boolean(conflict);
+  }
+
+  async createBookingHold(hold: CoachingBookingHoldRecord, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingBookingHold.create({
+      data: {
+        id: hold.id,
+        offerId: hold.offerId,
+        coachUserId: hold.coachUserId,
+        tenantId: hold.tenantId,
+        workspaceId: hold.workspaceId,
+        status: hold.status,
+        startAt: hold.startAt,
+        endAt: hold.endAt,
+        expiresAt: hold.expiresAt,
+        bookedByName: hold.bookedByName,
+        bookedByEmail: hold.bookedByEmail,
+        createdAt: hold.createdAt,
+        updatedAt: hold.updatedAt,
+      },
+    });
+    return mapHold(row);
+  }
+
+  async findBookingHoldById(tenantId: string, holdId: string, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingBookingHold.findFirst({
+      where: { id: holdId, tenantId },
+    });
+    return row ? mapHold(row) : null;
+  }
+
+  async updateBookingHold(hold: CoachingBookingHoldRecord, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingBookingHold.update({
+      where: { id: hold.id },
+      data: {
+        status: hold.status,
+        expiresAt: hold.expiresAt,
+        bookedByName: hold.bookedByName,
+        bookedByEmail: hold.bookedByEmail,
+        updatedAt: hold.updatedAt,
+      },
+    });
+    return mapHold(row);
+  }
+
+  async hasActiveHoldConflict(
+    tenantId: string,
+    coachUserId: string,
+    startAt: Date,
+    endAt: Date,
+    now: Date,
+    options?: { excludeHoldId?: string },
+    tx?: TransactionContext
+  ): Promise<boolean> {
+    const client = getPrismaClient(this.prisma, tx);
+    const conflict = await client.coachingBookingHold.findFirst({
+      where: {
+        tenantId,
+        coachUserId,
+        status: "active",
+        expiresAt: { gt: now },
+        startAt: { lt: endAt },
+        endAt: { gt: startAt },
+        ...(options?.excludeHoldId ? { id: { not: options.excludeHoldId } } : {}),
+      },
+      select: { id: true },
+    });
+    return Boolean(conflict);
+  }
+
+  async createPayment(payment: CoachingPaymentRecord, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingPayment.create({
+      data: {
+        id: payment.id,
+        tenantId: payment.tenantId,
+        workspaceId: payment.workspaceId,
+        engagementId: payment.engagementId,
+        sessionId: payment.sessionId,
+        provider: payment.provider,
+        status: payment.status,
+        amountCents: payment.amountCents,
+        refundedAmountCents: payment.refundedAmountCents,
+        currency: payment.currency,
+        customerEmail: payment.customerEmail,
+        providerCheckoutSessionId: payment.providerCheckoutSessionId,
+        providerCheckoutUrl: payment.providerCheckoutUrl,
+        providerPaymentRef: payment.providerPaymentRef,
+        providerRefundRef: payment.providerRefundRef,
+        failureCode: payment.failureCode,
+        failureMessage: payment.failureMessage,
+        checkoutCreatedAt: payment.checkoutCreatedAt,
+        capturedAt: payment.capturedAt,
+        failedAt: payment.failedAt,
+        refundedAt: payment.refundedAt,
+        createdAt: payment.createdAt,
+        updatedAt: payment.updatedAt,
+      },
+    });
+    return mapPayment(row);
+  }
+
+  async updatePayment(payment: CoachingPaymentRecord, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingPayment.update({
+      where: { id: payment.id },
+      data: {
+        sessionId: payment.sessionId,
+        provider: payment.provider,
+        status: payment.status,
+        amountCents: payment.amountCents,
+        refundedAmountCents: payment.refundedAmountCents,
+        currency: payment.currency,
+        customerEmail: payment.customerEmail,
+        providerCheckoutSessionId: payment.providerCheckoutSessionId,
+        providerCheckoutUrl: payment.providerCheckoutUrl,
+        providerPaymentRef: payment.providerPaymentRef,
+        providerRefundRef: payment.providerRefundRef,
+        failureCode: payment.failureCode,
+        failureMessage: payment.failureMessage,
+        checkoutCreatedAt: payment.checkoutCreatedAt,
+        capturedAt: payment.capturedAt,
+        failedAt: payment.failedAt,
+        refundedAt: payment.refundedAt,
+        updatedAt: payment.updatedAt,
+      },
+    });
+    return mapPayment(row);
+  }
+
+  async findPaymentById(tenantId: string, paymentId: string, tx?: TransactionContext) {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingPayment.findFirst({
+      where: { id: paymentId, tenantId },
+    });
+    return row ? mapPayment(row) : null;
+  }
+
+  async listPaymentsByEngagement(
+    tenantId: string,
+    engagementId: string,
+    tx?: TransactionContext
+  ): Promise<CoachingPaymentRecord[]> {
+    const client = getPrismaClient(this.prisma, tx);
+    const rows = await client.coachingPayment.findMany({
+      where: { tenantId, engagementId },
+      orderBy: [{ createdAt: "desc" }],
+    });
+    return rows.map(mapPayment);
+  }
+
+  async findLatestPaymentByEngagement(
+    tenantId: string,
+    engagementId: string,
+    tx?: TransactionContext
+  ): Promise<CoachingPaymentRecord | null> {
+    const client = getPrismaClient(this.prisma, tx);
+    const row = await client.coachingPayment.findFirst({
+      where: { tenantId, engagementId },
+      orderBy: [{ createdAt: "desc" }],
+    });
+    return row ? mapPayment(row) : null;
+  }
+
+  async createProviderEventIfAbsent(
+    event: CoachingPaymentProviderEventRecord,
+    tx?: TransactionContext
+  ): Promise<boolean> {
+    const client = getPrismaClient(this.prisma, tx);
+    try {
+      const row = await client.coachingPaymentProviderEvent.create({
+        data: {
+          id: event.id,
+          tenantId: event.tenantId,
+          provider: event.provider,
+          providerEventId: event.providerEventId,
+          eventType: event.eventType,
+          engagementId: event.engagementId,
+          paymentId: event.paymentId,
+          payloadJson: event.payload as any,
+          processedAt: event.processedAt,
+          createdAt: event.createdAt,
+        },
+      });
+      mapProviderEvent(row);
+      return true;
+    } catch (error: any) {
+      if (error?.code === "P2002") {
+        return false;
+      }
+      throw error;
+    }
   }
 
   async createTimelineEntry(entry: CoachingTimelineEntryRecord, tx?: TransactionContext) {

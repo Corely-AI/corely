@@ -33,6 +33,11 @@ export type InvoiceReminderCandidate = {
 
 export interface InvoiceRepoPort {
   findById(workspaceId: string, invoiceId: string): Promise<InvoiceAggregate | null>;
+  findBySource(
+    workspaceId: string,
+    sourceType: string,
+    sourceId: string
+  ): Promise<InvoiceAggregate | null>;
   list(
     workspaceId: string,
     filters: ListInvoicesFilters,

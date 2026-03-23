@@ -22,6 +22,17 @@ export const coachingEngagementsAppManifest: AppManifest = {
   },
   menu: [
     {
+      id: "coaching-offers",
+      scope: "web",
+      section: "crm",
+      labelKey: "nav.coaching.offers",
+      defaultLabel: "Coaching offers",
+      route: "/coaching/offers",
+      icon: "BookOpen",
+      order: 44,
+      requiresPermissions: ["coaching.engagements.read"],
+    },
+    {
       id: "coaching-engagements",
       scope: "web",
       section: "crm",

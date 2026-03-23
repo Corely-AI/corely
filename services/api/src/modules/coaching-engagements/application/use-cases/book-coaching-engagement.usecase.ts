@@ -63,8 +63,8 @@ export class BookCoachingEngagementUseCase extends BaseUseCase<
     input: BookCoachingEngagementInput,
     ctx: UseCaseContext
   ): Promise<Result<BookCoachingEngagementOutput, UseCaseError>> {
-    if (!ctx.tenantId || !ctx.workspaceId || !ctx.userId) {
-      return err(new ValidationError("tenantId, workspaceId, and userId are required"));
+    if (!ctx.tenantId || !ctx.workspaceId) {
+      return err(new ValidationError("tenantId and workspaceId are required"));
     }
 
     const customer = await this.deps.customerQuery.getCustomerBillingSnapshot(
@@ -76,21 +76,57 @@ export class BookCoachingEngagementUseCase extends BaseUseCase<
     }
 
     const now = this.deps.clock.now();
+    const sessionStartAt = new Date(input.session.startAt);
+    const sessionEndAt = new Date(input.session.endAt);
+    const bufferedStartAt = new Date(
+      sessionStartAt.getTime() - input.offer.bookingRules.bufferBeforeMinutes * 60 * 1000
+    );
+    const bufferedEndAt = new Date(
+      sessionEndAt.getTime() + input.offer.bookingRules.bufferAfterMinutes * 60 * 1000
+    );
+
+    const [hasSessionConflict, hasHoldConflict] = await Promise.all([
+      this.deps.repo.hasCoachSessionConflict(
+        ctx.tenantId,
+        input.coachUserId,
+        bufferedStartAt,
+        bufferedEndAt
+      ),
+      this.deps.repo.hasActiveHoldConflict(
+        ctx.tenantId,
+        input.coachUserId,
+        bufferedStartAt,
+        bufferedEndAt,
+        now,
+        input.bookingHoldId ? { excludeHoldId: input.bookingHoldId } : undefined
+      ),
+    ]);
+    if (hasSessionConflict || hasHoldConflict) {
+      return err(new ValidationError("Selected slot is no longer available"));
+    }
+
     const offer = {
       id: this.deps.idGenerator.newId(),
       tenantId: ctx.tenantId,
       workspaceId: ctx.workspaceId,
+      coachUserId: input.coachUserId,
       title: input.offer.title,
       description: input.offer.description ?? null,
       currency: input.offer.currency,
       priceCents: input.offer.priceCents,
       sessionDurationMinutes: input.offer.sessionDurationMinutes,
+      meetingType: input.offer.meetingType,
+      availabilityRule: input.offer.availabilityRule,
+      bookingRules: input.offer.bookingRules,
       contractRequired: input.offer.contractRequired,
       paymentRequired: input.offer.paymentRequired,
       localeDefault: input.offer.localeDefault,
+      contractTemplate: input.offer.contractTemplate ?? null,
       contractLabel: input.offer.contractLabel ?? null,
       prepFormTemplate: input.offer.prepFormTemplate ?? null,
+      prepFormSendHoursBeforeSession: input.offer.prepFormSendHoursBeforeSession ?? null,
       debriefTemplate: input.offer.debriefTemplate ?? null,
+      archivedAt: null,
       createdAt: now,
       updatedAt: now,
     };
@@ -131,8 +167,8 @@ export class BookCoachingEngagementUseCase extends BaseUseCase<
       engagementId: engagement.id,
       status: "scheduled" as const,
       sequenceNo: 1,
-      startAt: new Date(input.session.startAt),
-      endAt: new Date(input.session.endAt),
+      startAt: sessionStartAt,
+      endAt: sessionEndAt,
       meetingProvider: input.session.meetingProvider ?? null,
       meetingLink: null,
       meetingIssuedAt: null,
@@ -162,7 +198,7 @@ export class BookCoachingEngagementUseCase extends BaseUseCase<
           eventType: COACHING_EVENTS.BOOKING_REQUESTED,
           stateFrom: null,
           stateTo: engagement.status,
-          actorUserId: ctx.userId,
+          actorUserId: ctx.userId ?? null,
           metadata: {
             clientPartyId: engagement.clientPartyId,
             coachUserId: engagement.coachUserId,
@@ -176,7 +212,7 @@ export class BookCoachingEngagementUseCase extends BaseUseCase<
       await this.deps.audit.log(
         {
           tenantId: ctx.tenantId!,
-          userId: ctx.userId!,
+          userId: ctx.userId ?? "system",
           action: "coaching.engagement.book",
           entityType: "CoachingEngagement",
           entityId: engagement.id,

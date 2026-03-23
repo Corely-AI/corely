@@ -120,6 +120,9 @@ import { NotificationsPage } from "../../modules/notifications/screens/notificat
 import { CoachingEngagementsPage } from "../../modules/coaching-engagements/screens/CoachingEngagementsPage";
 import { CoachingSessionsPage } from "../../modules/coaching-engagements/screens/CoachingSessionsPage";
 import { CoachingEngagementDetailPage } from "../../modules/coaching-engagements/screens/CoachingEngagementDetailPage";
+import { CoachingOffersPage } from "../../modules/coaching-engagements/screens/CoachingOffersPage";
+import CoachingOfferDetailPage from "../../modules/coaching-engagements/screens/CoachingOfferDetailPage";
+import CoachingOfferEditorPage from "../../modules/coaching-engagements/screens/CoachingOfferEditorPage";
 
 const CashLegacyRedirect = () => {
   const { id } = useParams<{ id?: string }>();
@@ -248,6 +251,38 @@ export const appShellRoutes = (
       <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
       <Route path="/invoices/:id/edit" element={<InvoiceDetailPage />} />
       <Route path="/audit" element={<InvoiceAuditPage />} />
+      <Route
+        path="/coaching/offers"
+        element={
+          <RequirePermission permission="coaching.engagements.read">
+            <CoachingOffersPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/coaching/offers/new"
+        element={
+          <RequirePermission permission="coaching.engagements.manage">
+            <CoachingOfferEditorPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/coaching/offers/:offerId"
+        element={
+          <RequirePermission permission="coaching.engagements.read">
+            <CoachingOfferDetailPage />
+          </RequirePermission>
+        }
+      />
+      <Route
+        path="/coaching/offers/:offerId/edit"
+        element={
+          <RequirePermission permission="coaching.engagements.manage">
+            <CoachingOfferEditorPage />
+          </RequirePermission>
+        }
+      />
       <Route
         path="/coaching/engagements"
         element={

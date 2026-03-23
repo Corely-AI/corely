@@ -30,6 +30,21 @@ export class FakeInvoiceRepository implements InvoiceRepoPort {
     return this.invoices.find((i) => i.id === id && i.tenantId === tenantId) ?? null;
   }
 
+  async findBySource(
+    tenantId: string,
+    sourceType: string,
+    sourceId: string
+  ): Promise<InvoiceAggregate | null> {
+    return (
+      this.invoices.find(
+        (invoice) =>
+          invoice.tenantId === tenantId &&
+          invoice.sourceType === sourceType &&
+          invoice.sourceId === sourceId
+      ) ?? null
+    );
+  }
+
   async list(
     tenantId: string,
     filters: ListInvoicesFilters,

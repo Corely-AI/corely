@@ -13,6 +13,8 @@ import type { CustomerQueryPort } from "../../../party/application/ports/custome
 import type { CoachingEngagementRepositoryPort } from "../ports/coaching-engagement-repository.port";
 import type {
   CoachingArtifactBundleRecord,
+  CoachingBookingHoldRecord,
+  CoachingContractRequestRecord,
   CoachingEngagementRecord,
   CoachingOfferRecord,
   CoachingSessionRecord,
@@ -23,6 +25,8 @@ class InMemoryCoachingRepo {
   offers: CoachingOfferRecord[] = [];
   engagements: CoachingEngagementRecord[] = [];
   sessions: CoachingSessionRecord[] = [];
+  holds: CoachingBookingHoldRecord[] = [];
+  contractRequests: CoachingContractRequestRecord[] = [];
   timeline: CoachingTimelineEntryRecord[] = [];
 
   async createOffer(offer: CoachingOfferRecord): Promise<CoachingOfferRecord> {
@@ -37,6 +41,19 @@ class InMemoryCoachingRepo {
   async createEngagement(engagement: CoachingEngagementRecord): Promise<CoachingEngagementRecord> {
     this.engagements.push(engagement);
     return engagement;
+  }
+
+  async createContractRequest(
+    request: CoachingContractRequestRecord
+  ): Promise<CoachingContractRequestRecord> {
+    this.contractRequests.push(request);
+    return request;
+  }
+
+  async updateContractRequest(
+    request: CoachingContractRequestRecord
+  ): Promise<CoachingContractRequestRecord> {
+    return request;
   }
 
   async updateEngagement(engagement: CoachingEngagementRecord): Promise<CoachingEngagementRecord> {
@@ -58,6 +75,14 @@ class InMemoryCoachingRepo {
   async findEngagementByCheckoutSessionId(): Promise<
     (CoachingEngagementRecord & { offer: CoachingOfferRecord }) | null
   > {
+    return null;
+  }
+
+  async findLatestContractRequestByEngagement(): Promise<CoachingContractRequestRecord | null> {
+    return null;
+  }
+
+  async findContractRequestByTokenHash(): Promise<CoachingContractRequestRecord | null> {
     return null;
   }
 
@@ -105,6 +130,58 @@ class InMemoryCoachingRepo {
     return { items: [], total: 0 };
   }
 
+  async hasCoachSessionConflict(
+    tenantId: string,
+    coachUserId: string,
+    startAt: Date,
+    endAt: Date
+  ): Promise<boolean> {
+    return this.sessions.some((session) => {
+      if (session.tenantId !== tenantId || session.status === "cancelled") {
+        return false;
+      }
+      const engagement = this.engagements.find((item) => item.id === session.engagementId);
+      if (!engagement || engagement.coachUserId !== coachUserId) {
+        return false;
+      }
+      return session.startAt < endAt && session.endAt > startAt;
+    });
+  }
+
+  async createBookingHold(hold: CoachingBookingHoldRecord): Promise<CoachingBookingHoldRecord> {
+    this.holds.push(hold);
+    return hold;
+  }
+
+  async findBookingHoldById(
+    tenantId: string,
+    holdId: string
+  ): Promise<CoachingBookingHoldRecord | null> {
+    return this.holds.find((hold) => hold.tenantId === tenantId && hold.id === holdId) ?? null;
+  }
+
+  async updateBookingHold(hold: CoachingBookingHoldRecord): Promise<CoachingBookingHoldRecord> {
+    return hold;
+  }
+
+  async hasActiveHoldConflict(
+    tenantId: string,
+    coachUserId: string,
+    startAt: Date,
+    endAt: Date,
+    now: Date
+  ): Promise<boolean> {
+    return this.holds.some(
+      (hold) =>
+        hold.tenantId === tenantId &&
+        hold.coachUserId === coachUserId &&
+        hold.status === "active" &&
+        hold.expiresAt > now &&
+        hold.startAt < endAt &&
+        hold.endAt > startAt
+    );
+  }
+
   async createTimelineEntry(
     entry: CoachingTimelineEntryRecord
   ): Promise<CoachingTimelineEntryRecord> {
@@ -129,6 +206,10 @@ class InMemoryCoachingRepo {
   }
 
   async findLatestArtifactBundle(): Promise<CoachingArtifactBundleRecord | null> {
+    return null;
+  }
+
+  async findPublicOfferById(): Promise<CoachingOfferRecord | null> {
     return null;
   }
 }
@@ -197,9 +278,23 @@ describe("BookCoachingEngagementUseCase", () => {
         currency: "EUR",
         priceCents: 15000,
         sessionDurationMinutes: 60,
+        meetingType: "video",
+        availabilityRule: {
+          timezone: "Europe/Berlin",
+          weeklySlots: [{ dayOfWeek: 1, startTime: "09:00", endTime: "17:00" }],
+          blackouts: [],
+        },
+        bookingRules: {
+          minNoticeHours: 24,
+          maxAdvanceDays: 60,
+          bufferBeforeMinutes: 0,
+          bufferAfterMinutes: 0,
+        },
         contractRequired: true,
         paymentRequired: true,
         localeDefault: "en",
+        contractTemplate: { en: "Standard coaching agreement" },
+        prepFormSendHoursBeforeSession: 48,
       },
       session: {
         startAt: "2026-03-25T09:00:00.000Z",
@@ -224,6 +319,7 @@ describe("BookCoachingEngagementUseCase", () => {
     expect(repo.timeline).toHaveLength(1);
     expect(audit.entries).toHaveLength(1);
     expect(outbox.events).toHaveLength(1);
+    expect(repo.offers[0]?.prepFormSendHoursBeforeSession).toBe(48);
     expect(first.engagement.status).toBe("pending_payment");
     expect(first.session.engagementId).toBe(first.engagement.id);
     expect(outbox.events[0]).toEqual(
@@ -237,5 +333,134 @@ describe("BookCoachingEngagementUseCase", () => {
         }),
       })
     );
+  });
+
+  it("rejects an overlapping booking when the coach already has a scheduled session", async () => {
+    const repo = new InMemoryCoachingRepo();
+    repo.engagements.push({
+      id: "eng-existing",
+      tenantId: "tenant-1",
+      workspaceId: "ws-1",
+      offerId: "offer-existing",
+      clientPartyId: "party-client-existing",
+      coachPartyId: null,
+      coachUserId: "coach-user-1",
+      locale: "en",
+      status: "confirmed",
+      paymentStatus: "captured",
+      contractStatus: "signed",
+      legalEntityId: null,
+      paymentMethodId: null,
+      invoiceId: null,
+      stripeCheckoutSessionId: null,
+      stripeCheckoutUrl: null,
+      stripePaymentIntentId: null,
+      contractAccessTokenHash: null,
+      contractRequestedAt: null,
+      contractSignedAt: null,
+      contractDraftDocumentId: null,
+      signedContractDocumentId: null,
+      latestSummary: null,
+      archivedAt: null,
+      createdAt: new Date("2026-03-20T08:00:00.000Z"),
+      updatedAt: new Date("2026-03-20T08:00:00.000Z"),
+    });
+    repo.sessions.push({
+      id: "sess-existing",
+      tenantId: "tenant-1",
+      workspaceId: "ws-1",
+      engagementId: "eng-existing",
+      status: "scheduled",
+      sequenceNo: 1,
+      startAt: new Date("2026-03-25T09:00:00.000Z"),
+      endAt: new Date("2026-03-25T10:00:00.000Z"),
+      meetingProvider: null,
+      meetingLink: null,
+      meetingIssuedAt: null,
+      prepAccessTokenHash: null,
+      prepRequestedAt: null,
+      prepSubmittedAt: null,
+      prepDocumentId: null,
+      debriefAccessTokenHash: null,
+      debriefRequestedAt: null,
+      debriefSubmittedAt: null,
+      debriefDocumentId: null,
+      completedAt: null,
+      createdAt: new Date("2026-03-20T08:00:00.000Z"),
+      updatedAt: new Date("2026-03-20T08:00:00.000Z"),
+    });
+
+    const customerQuery: CustomerQueryPort = {
+      getCustomerBillingSnapshot: async () => ({
+        customerPartyId: "party-client-1",
+        displayName: "Overlap Client",
+        email: "client@example.com",
+        billingEmail: "billing@example.com",
+        addressLine1: null,
+        addressLine2: null,
+        city: null,
+        postalCode: null,
+        country: null,
+        vatId: null,
+      }),
+    };
+
+    const useCase = new BookCoachingEngagementUseCase({
+      logger: new NoopLogger(),
+      repo: repo as unknown as CoachingEngagementRepositoryPort,
+      customerQuery,
+      idGenerator: new FakeIdGenerator("coach"),
+      clock: new FixedClock(new Date("2026-03-20T10:00:00.000Z")),
+      audit: new RecordingAuditPort() as any,
+      outbox: new RecordingOutboxPort() as any,
+      idempotency: new InMemoryIdempotency(),
+      uow,
+    });
+
+    await expect(
+      useCase.execute(
+        {
+          clientPartyId: "party-client-1",
+          coachUserId: "coach-user-1",
+          locale: "en",
+          offer: {
+            title: { en: "Executive coaching" },
+            currency: "EUR",
+            priceCents: 15000,
+            sessionDurationMinutes: 60,
+            meetingType: "video",
+            availabilityRule: {
+              timezone: "Europe/Berlin",
+              weeklySlots: [{ dayOfWeek: 2, startTime: "10:00", endTime: "14:00" }],
+              blackouts: [],
+            },
+            bookingRules: {
+              minNoticeHours: 24,
+              maxAdvanceDays: 30,
+              bufferBeforeMinutes: 0,
+              bufferAfterMinutes: 0,
+            },
+            contractRequired: true,
+            paymentRequired: true,
+            localeDefault: "en",
+          },
+          session: {
+            startAt: "2026-03-25T09:30:00.000Z",
+            endAt: "2026-03-25T10:30:00.000Z",
+          },
+        },
+        {
+          tenantId: "tenant-1",
+          workspaceId: "ws-1",
+          userId: "user-1",
+          correlationId: "corr-2",
+        }
+      )
+    ).resolves.toMatchObject({
+      ok: false,
+      error: expect.objectContaining({
+        message: "Selected slot is no longer available",
+      }),
+    });
   });
 });

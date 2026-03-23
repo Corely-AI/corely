@@ -1,11 +1,11 @@
 import {
-  AUDIT_PORT,
   BaseUseCase,
   ConflictError,
   ForbiddenError,
   ValidationError,
   type AuditPort,
   type ClockPort,
+  type IdGeneratorPort,
   type LoggerPort,
   type Result,
   type UseCaseContext,
@@ -19,9 +19,10 @@ import {
 } from "@corely/contracts";
 import type { CustomerQueryPort } from "../../../party/application/ports/customer-query.port";
 import { canManageEngagement } from "../../domain/coaching-state.machine";
-import { resolveLocalizedText } from "../../domain/coaching-localization";
+import { toCoachingPaymentDto } from "../mappers/coaching-dto.mapper";
 import { type CoachingEngagementRepositoryPort } from "../ports/coaching-engagement-repository.port";
-import { type CoachingPaymentGatewayPort } from "../ports/coaching-payment-gateway.port";
+import { type CoachingPaymentProviderRegistryPort } from "../ports/coaching-payment-provider.port";
+import { createCoachingPaymentSession } from "./coaching-payment-session.helpers";
 
 export class CreateCoachingCheckoutSessionUseCase extends BaseUseCase<
   CreateCoachingCheckoutSessionInput,
@@ -31,8 +32,9 @@ export class CreateCoachingCheckoutSessionUseCase extends BaseUseCase<
     private readonly deps: {
       logger: LoggerPort;
       repo: CoachingEngagementRepositoryPort;
-      paymentGateway: CoachingPaymentGatewayPort;
+      paymentProviders: CoachingPaymentProviderRegistryPort;
       customerQuery: CustomerQueryPort;
+      idGenerator: IdGeneratorPort;
       clock: ClockPort;
       audit: AuditPort;
     }
@@ -70,42 +72,52 @@ export class CreateCoachingCheckoutSessionUseCase extends BaseUseCase<
       ctx.tenantId,
       engagement.clientPartyId
     );
+    const latestPayment = await this.deps.repo.findLatestPaymentByEngagement(
+      ctx.tenantId,
+      engagement.id
+    );
 
-    const session = await this.deps.paymentGateway.createCheckoutSession({
-      tenantId: ctx.tenantId,
-      engagementId: engagement.id,
-      title: resolveLocalizedText(
-        engagement.offer.title,
-        engagement.locale,
-        engagement.offer.localeDefault
-      ),
-      description: engagement.offer.description
-        ? resolveLocalizedText(
-            engagement.offer.description,
-            engagement.locale,
-            engagement.offer.localeDefault
-          )
-        : null,
-      amountCents: engagement.offer.priceCents,
-      currency: engagement.offer.currency,
+    if (latestPayment?.status === "pending") {
+      if (!latestPayment.providerCheckoutUrl || !latestPayment.providerCheckoutSessionId) {
+        return err(new ConflictError("Pending payment session is incomplete"));
+      }
+      return ok({
+        checkoutUrl: latestPayment.providerCheckoutUrl,
+        sessionId: latestPayment.providerCheckoutSessionId,
+        payment: toCoachingPaymentDto(latestPayment),
+      });
+    }
+
+    const created = await createCoachingPaymentSession({
+      repo: this.deps.repo,
+      paymentProviders: this.deps.paymentProviders,
+      idGenerator: this.deps.idGenerator,
+      clock: this.deps.clock,
+      engagement,
+      offer: engagement.offer,
       customerEmail: customer?.email ?? null,
+      paymentProvider: input.paymentProvider,
       successPath: input.successPath,
       cancelPath: input.cancelPath,
     });
 
-    engagement.stripeCheckoutSessionId = session.sessionId;
-    engagement.stripeCheckoutUrl = session.checkoutUrl;
-    engagement.updatedAt = this.deps.clock.now();
-    await this.deps.repo.updateEngagement(engagement);
     await this.deps.audit.log({
       tenantId: ctx.tenantId,
       userId: ctx.userId ?? "system",
       action: "coaching.checkout.create",
       entityType: "CoachingEngagement",
       entityId: engagement.id,
-      metadata: { checkoutSessionId: session.sessionId },
+      metadata: {
+        checkoutSessionId: created.sessionId,
+        paymentId: created.payment.id,
+        provider: created.payment.provider,
+      },
     });
 
-    return ok({ checkoutUrl: session.checkoutUrl, sessionId: session.sessionId });
+    return ok({
+      checkoutUrl: created.checkoutUrl,
+      sessionId: created.sessionId,
+      payment: toCoachingPaymentDto(created.payment),
+    });
   }
 }
