@@ -67,6 +67,12 @@ import {
   JournalEntriesList,
   ReportsHub,
 } from "../../modules/accounting/screens";
+import {
+  RestaurantFloorPlanPage,
+  RestaurantKitchenQueuePage,
+  RestaurantKitchenStationsPage,
+  RestaurantModifierGroupsPage,
+} from "../../modules/restaurant";
 import { CmsPostsPage, CmsPostEditorPage, CmsCommentsPage } from "../../modules/cms";
 import {
   WebsiteSitesPage,
@@ -163,6 +169,10 @@ export const appShellRoutes = (
       <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
       <Route path="/cms/posts/:id/edit" element={<CmsPostEditorPage />} />
       <Route path="/cms/comments" element={<CmsCommentsPage />} />
+      <Route path="/restaurant/floor-plan" element={<RestaurantFloorPlanPage />} />
+      <Route path="/restaurant/modifier-groups" element={<RestaurantModifierGroupsPage />} />
+      <Route path="/restaurant/kitchen-stations" element={<RestaurantKitchenStationsPage />} />
+      <Route path="/restaurant/kitchen-queue" element={<RestaurantKitchenQueuePage />} />
       <Route path="/website/sites" element={<WebsiteSitesPage />} />
       <Route path="/website/sites/new" element={<WebsiteSiteEditorPage />} />
       <Route path="/website/sites/:siteId/edit" element={<WebsiteSiteEditorPage />} />

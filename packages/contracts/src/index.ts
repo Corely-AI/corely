@@ -63,6 +63,7 @@ export * from "./inventory";
 export * from "./inventory-ai";
 export * from "./import";
 export * from "./catalog";
+export * from "./restaurant";
 export * from "./portfolio";
 export * from "./issues";
 export * from "./integrations";

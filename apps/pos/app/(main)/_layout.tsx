@@ -65,6 +65,15 @@ export default function MainLayout() {
         }}
       />
       <Tabs.Screen
+        name="restaurant"
+        options={{
+          title: t("nav.restaurant"),
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="restaurant-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="kiosk"
         options={{
           title: t("nav.kiosk"),

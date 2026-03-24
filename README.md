@@ -225,7 +225,9 @@ Common scripts include:
 - `pnpm build`, `pnpm build:web`, `pnpm build:api` – compile packages plus apps/services.
 - `pnpm typecheck`, `pnpm lint`, `pnpm format`, `pnpm format:check` – workspace-wide quality gates.
 - `pnpm check` – `lint` + `typecheck`.
-- `pnpm prisma:migrate`, `pnpm prisma:generate` – keep Prisma schema in sync for `@corely/data`.
+- `pnpm prisma:migrate` – apply committed Prisma migrations for `@corely/data`.
+- `pnpm prisma:migrate:dev` – create/apply local development migrations; requires PostgreSQL `CREATEDB` or `SHADOW_DATABASE_URL`.
+- `pnpm prisma:generate` – regenerate the Prisma client.
 
 ## Development modes
 

@@ -49,7 +49,7 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
 import { BackgroundModule } from "./modules/background/background.module";
 import { OnboardingModule } from "./modules/onboarding";
 import { CoachingEngagementsModule } from "./modules/coaching-engagements";
-import { TraceIdMiddleware } from "./shared/trace/trace-id.middleware";
+import { RestaurantModule } from "./modules/restaurant";
 import { TraceIdService } from "./shared/trace/trace-id.service";
 import { RequestContextInterceptor } from "./shared/request-context";
 import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared/public";
@@ -102,6 +102,7 @@ import { PublicWorkspacePathMiddleware, PublicWorkspaceResolver } from "./shared
     ClassesModule,
     BookingModule,
     CoachingEngagementsModule,
+    RestaurantModule,
     PortalModule,
     PortfolioModule,
     IssuesModule,

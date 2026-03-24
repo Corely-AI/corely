@@ -1,0 +1,371 @@
+enum RestaurantTableShape {
+  SQUARE
+  ROUND
+  RECTANGLE
+
+  @@schema("commerce")
+}
+
+enum RestaurantTableAvailabilityStatus {
+  AVAILABLE
+  OCCUPIED
+  DIRTY
+  OUT_OF_SERVICE
+
+  @@schema("commerce")
+}
+
+enum RestaurantTableSessionStatus {
+  OPEN
+  CLOSED
+  TRANSFERRED
+
+  @@schema("commerce")
+}
+
+enum RestaurantOrderStatus {
+  DRAFT
+  PARTIALLY_SENT
+  SENT
+  PAID
+  CLOSED
+  CANCELLED
+
+  @@schema("commerce")
+}
+
+enum ModifierSelectionMode {
+  SINGLE
+  MULTI
+
+  @@schema("commerce")
+}
+
+enum KitchenTicketStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  BUMPED
+
+  @@schema("commerce")
+}
+
+enum RestaurantApprovalType {
+  VOID
+  DISCOUNT
+
+  @@schema("commerce")
+}
+
+enum RestaurantApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  APPLIED
+
+  @@schema("commerce")
+}
+
+model DiningRoom {
+  id          String   @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  name        String
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  tables RestaurantTable[]
+
+  @@unique([tenantId, workspaceId, name])
+  @@index([tenantId, workspaceId, sortOrder])
+  @@map("restaurant_dining_rooms")
+  @@schema("commerce")
+}
+
+model RestaurantTable {
+  id                 String                           @id @default(cuid())
+  tenantId           String
+  workspaceId        String
+  diningRoomId       String
+  name               String
+  capacity           Int?
+  posX               Int?
+  posY               Int?
+  shape              RestaurantTableShape            @default(SQUARE)
+  availabilityStatus RestaurantTableAvailabilityStatus @default(AVAILABLE)
+  createdAt          DateTime                         @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                         @updatedAt @db.Timestamptz(6)
+
+  diningRoom     DiningRoom           @relation(fields: [diningRoomId], references: [id], onDelete: Cascade)
+  sessions RestaurantTableSession[]
+
+  @@unique([tenantId, workspaceId, diningRoomId, name])
+  @@index([tenantId, workspaceId, diningRoomId])
+  @@index([tenantId, workspaceId, availabilityStatus])
+  @@map("restaurant_tables")
+  @@schema("commerce")
+}
+
+model RestaurantModifierGroup {
+  id            String                @id @default(cuid())
+  tenantId      String
+  workspaceId   String
+  name          String
+  selectionMode ModifierSelectionMode @default(MULTI)
+  isRequired    Boolean               @default(false)
+  sortOrder     Int                   @default(0)
+  createdAt     DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime              @updatedAt @db.Timestamptz(6)
+
+  options          RestaurantModifierOption[]
+  linkedCatalogIds RestaurantMenuItemModifierGroup[]
+
+  @@unique([tenantId, workspaceId, name])
+  @@index([tenantId, workspaceId, sortOrder])
+  @@map("restaurant_modifier_groups")
+  @@schema("commerce")
+}
+
+model RestaurantModifierOption {
+  id              String   @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  modifierGroupId String
+  name            String
+  priceDeltaCents Int      @default(0)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  modifierGroup RestaurantModifierGroup @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, workspaceId, modifierGroupId, name])
+  @@index([tenantId, workspaceId, modifierGroupId, sortOrder])
+  @@map("restaurant_modifier_options")
+  @@schema("commerce")
+}
+
+model RestaurantMenuItemModifierGroup {
+  id              String   @id @default(cuid())
+  tenantId        String
+  workspaceId     String
+  catalogItemId   String
+  modifierGroupId String
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+
+  modifierGroup RestaurantModifierGroup @relation(fields: [modifierGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, workspaceId, catalogItemId, modifierGroupId])
+  @@index([tenantId, workspaceId, catalogItemId, sortOrder])
+  @@map("restaurant_menu_item_modifier_groups")
+  @@schema("commerce")
+}
+
+model RestaurantTableSession {
+  id             String                      @id
+  tenantId       String
+  workspaceId    String
+  tableId        String
+  registerId     String?
+  shiftSessionId String?
+  openedByUserId String
+  openedAt       DateTime                    @db.Timestamptz(6)
+  closedAt       DateTime?                   @db.Timestamptz(6)
+  status         RestaurantTableSessionStatus @default(OPEN)
+  transferCount  Int                         @default(0)
+  notes          String?
+  createdAt      DateTime                    @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime                    @updatedAt @db.Timestamptz(6)
+
+  table  RestaurantTable @relation(fields: [tableId], references: [id], onDelete: Restrict)
+  orders RestaurantOrder[]
+
+  @@index([tenantId, workspaceId, tableId, status])
+  @@index([tenantId, workspaceId, status, openedAt])
+  @@map("restaurant_table_sessions")
+  @@schema("commerce")
+}
+
+model RestaurantOrder {
+  id             String                @id
+  tenantId       String
+  workspaceId    String
+  tableSessionId String
+  tableId        String
+  status         RestaurantOrderStatus @default(DRAFT)
+  subtotalCents  Int                   @default(0)
+  discountCents  Int                   @default(0)
+  taxCents       Int                   @default(0)
+  totalCents     Int                   @default(0)
+  sentAt         DateTime?             @db.Timestamptz(6)
+  paidAt         DateTime?             @db.Timestamptz(6)
+  closedAt       DateTime?             @db.Timestamptz(6)
+  createdAt      DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime              @updatedAt @db.Timestamptz(6)
+
+  session          RestaurantTableSession @relation(fields: [tableSessionId], references: [id], onDelete: Restrict)
+  items            RestaurantOrderItem[]
+  payments         RestaurantOrderPayment[]
+  kitchenTickets   KitchenTicket[]
+  approvalRequests RestaurantApprovalRequest[]
+
+  @@index([tenantId, workspaceId, tableId, status])
+  @@index([tenantId, workspaceId, tableSessionId])
+  @@map("restaurant_orders")
+  @@schema("commerce")
+}
+
+model RestaurantOrderPayment {
+  id          String   @id
+  tenantId    String
+  workspaceId String
+  orderId     String
+  method      String
+  amountCents Int
+  reference   String?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  order RestaurantOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId, orderId])
+  @@map("restaurant_order_payments")
+  @@schema("commerce")
+}
+
+model RestaurantOrderItem {
+  id                String   @id
+  tenantId          String
+  workspaceId       String
+  orderId           String
+  catalogItemId     String
+  itemName          String
+  sku               String
+  quantity          Int
+  sentQuantity      Int      @default(0)
+  unitPriceCents    Int
+  taxRateBps        Int      @default(0)
+  taxCents          Int      @default(0)
+  lineSubtotalCents Int
+  lineTotalCents    Int
+  voidedAt          DateTime? @db.Timestamptz(6)
+  createdAt         DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
+
+  order             RestaurantOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  modifiers         RestaurantOrderItemModifier[]
+  kitchenTicketItems KitchenTicketItem[]
+  approvalRequests  RestaurantApprovalRequest[]
+
+  @@index([tenantId, workspaceId, orderId])
+  @@index([tenantId, workspaceId, catalogItemId])
+  @@map("restaurant_order_items")
+  @@schema("commerce")
+}
+
+model RestaurantOrderItemModifier {
+  id              String   @id
+  tenantId        String
+  workspaceId     String
+  orderItemId     String
+  modifierGroupId String?
+  optionName      String
+  quantity        Int      @default(1)
+  priceDeltaCents Int      @default(0)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  orderItem RestaurantOrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, workspaceId, orderItemId])
+  @@map("restaurant_order_item_modifiers")
+  @@schema("commerce")
+}
+
+model KitchenStation {
+  id          String   @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  name        String
+  code        String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  tickets KitchenTicket[]
+
+  @@unique([tenantId, workspaceId, code])
+  @@unique([tenantId, workspaceId, name])
+  @@map("kitchen_stations")
+  @@schema("commerce")
+}
+
+model KitchenTicket {
+  id             String             @id @default(cuid())
+  tenantId       String
+  workspaceId    String
+  orderId        String
+  tableSessionId String
+  tableId        String
+  stationId      String?
+  sendKey        String
+  status         KitchenTicketStatus @default(NEW)
+  sentAt         DateTime            @db.Timestamptz(6)
+  bumpedAt       DateTime?           @db.Timestamptz(6)
+  createdAt      DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime            @updatedAt @db.Timestamptz(6)
+
+  order   RestaurantOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  station KitchenStation? @relation(fields: [stationId], references: [id], onDelete: SetNull)
+  items   KitchenTicketItem[]
+
+  @@unique([tenantId, workspaceId, sendKey, stationId])
+  @@index([tenantId, workspaceId, status, sentAt])
+  @@index([tenantId, workspaceId, orderId])
+  @@map("kitchen_tickets")
+  @@schema("commerce")
+}
+
+model KitchenTicketItem {
+  id          String   @id @default(cuid())
+  tenantId    String
+  workspaceId String
+  ticketId    String
+  orderItemId String
+  quantity    Int
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  ticket    KitchenTicket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  orderItem RestaurantOrderItem @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, workspaceId, ticketId])
+  @@index([tenantId, workspaceId, orderItemId])
+  @@map("kitchen_ticket_items")
+  @@schema("commerce")
+}
+
+model RestaurantApprovalRequest {
+  id                 String                   @id @default(cuid())
+  tenantId           String
+  workspaceId        String
+  orderId            String
+  orderItemId        String?
+  type               RestaurantApprovalType
+  status             RestaurantApprovalStatus @default(PENDING)
+  reason             String
+  amountCents        Int?
+  workflowInstanceId String?
+  requestedByUserId  String
+  decidedByUserId    String?
+  decidedAt          DateTime?                @db.Timestamptz(6)
+  createdAt          DateTime                 @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                 @updatedAt @db.Timestamptz(6)
+
+  order     RestaurantOrder      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderItem RestaurantOrderItem? @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, workspaceId, orderId, status])
+  @@index([tenantId, workspaceId, workflowInstanceId])
+  @@map("restaurant_approval_requests")
+  @@schema("commerce")
+}
