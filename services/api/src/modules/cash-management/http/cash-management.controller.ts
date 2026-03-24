@@ -33,7 +33,7 @@ import {
   resolveIdempotencyKey,
 } from "@/shared/http/usecase-mappers";
 import type { ContextAwareRequest } from "@/shared/request-context";
-import { AuthGuard } from "@/modules/identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { ListCashRegistersQueryUseCase } from "../application/use-cases/list-cash-registers.query";
 import { GetCashRegisterQueryUseCase } from "../application/use-cases/get-cash-register.query";
 import { CreateCashRegisterUseCase } from "../application/use-cases/create-cash-register.usecase";

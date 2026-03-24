@@ -20,7 +20,7 @@ import {
   UpsertRestaurantModifierGroupInputSchema,
   UpsertRestaurantTableInputSchema,
 } from "@corely/contracts";
-import { AuthGuard } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { buildUseCaseContext, resolveIdempotencyKey } from "../../../shared/http/usecase-mappers";
 import { RestaurantApplication } from "../application/restaurant.application";
 

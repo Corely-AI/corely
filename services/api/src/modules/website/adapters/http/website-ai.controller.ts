@@ -13,7 +13,7 @@ import {
   mapResultToHttp,
   resolveIdempotencyKey,
 } from "@/shared/http/usecase-mappers";
-import { AuthGuard } from "@/modules/identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { WebsiteApplication } from "../../application/website.application";
 
 @Controller("website/ai")

@@ -22,7 +22,7 @@ import {
   GetCashlessPaymentStatusInputSchema,
   StartCashlessPaymentInputSchema,
 } from "@corely/contracts";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { CreateRegisterUseCase } from "../../application/use-cases/create-register.usecase";
 import { ListRegistersUseCase } from "../../application/use-cases/list-registers.usecase";
 import { OpenShiftUseCase } from "../../application/use-cases/open-shift.usecase";

@@ -9,7 +9,7 @@ import {
 } from "@corely/contracts";
 import { parseListQuery } from "../../../../shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { CmsApplication } from "../../application/cms.application";
 
 @Controller("cms/posts")

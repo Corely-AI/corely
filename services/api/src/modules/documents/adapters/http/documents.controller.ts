@@ -12,7 +12,7 @@ import {
 } from "@corely/contracts";
 import { DocumentsApplication } from "../../application/documents.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 
 @Controller("documents")
 @UseGuards(AuthGuard)

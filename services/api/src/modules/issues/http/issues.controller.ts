@@ -12,7 +12,8 @@ import {
 } from "@corely/contracts";
 import { parseListQuery, buildPageInfo } from "@/shared/http/pagination";
 import { buildUseCaseContext, resolveIdempotencyKey } from "@/shared/http/usecase-mappers";
-import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { CreateIssueUseCase } from "../application/use-cases/create-issue.usecase";
 import { ListIssuesUseCase } from "../application/use-cases/list-issues.usecase";
 import { GetIssueUseCase } from "../application/use-cases/get-issue.usecase";

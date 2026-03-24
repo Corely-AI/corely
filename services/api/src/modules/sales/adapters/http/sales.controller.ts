@@ -32,8 +32,8 @@ import {
 } from "@corely/contracts";
 import { SalesApplication } from "../../application/sales.application";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
-import { AuthGuard } from "../../../identity";
-import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../../platform";
 
 @Controller("sales")

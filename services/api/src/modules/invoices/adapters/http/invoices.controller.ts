@@ -34,10 +34,9 @@ import { isErr } from "@corely/kernel";
 import { EXT_KV_PORT, type ExtKvPort } from "@corely/data";
 import { parseListQuery } from "../../../../shared/http/pagination";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
-
-import { AuthGuard } from "../../../identity";
 import { ModuleRef } from "@nestjs/core";
 import { DocumentsApplication } from "../../../documents/application/documents.application";
+import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import {
   INVOICE_SHARE_LINK_MODULE_ID,
   INVOICE_SHARE_LINK_SCOPE,

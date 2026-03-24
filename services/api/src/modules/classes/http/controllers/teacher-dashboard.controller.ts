@@ -7,7 +7,8 @@ import {
 } from "@corely/contracts/classes";
 
 import { GetTeacherDashboardSummaryUseCase } from "../../application/use-cases/get-teacher-dashboard-summary.use-case";
-import { AuthGuard, RbacGuard, RequirePermission } from "../../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { buildUseCaseContext } from "../../../../shared/http/usecase-mappers";
 import type { Request } from "express";
 

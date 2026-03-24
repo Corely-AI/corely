@@ -30,7 +30,8 @@ import {
 } from "@corely/contracts";
 import { parseListQuery } from "../../../shared/http/pagination";
 import { buildUseCaseContext } from "../../../shared/http/usecase-mappers";
-import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { CreateFormUseCase } from "../application/use-cases/create-form.usecase";
 import { UpdateFormUseCase } from "../application/use-cases/update-form.usecase";
 import { DeleteFormUseCase } from "../application/use-cases/delete-form.usecase";

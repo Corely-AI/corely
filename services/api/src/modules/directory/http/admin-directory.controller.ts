@@ -30,7 +30,8 @@ import {
   mapResultToHttp,
   resolveIdempotencyKey,
 } from "@/shared/http/usecase-mappers";
-import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { DirectoryPublicScopeResolver } from "../application/directory-public-scope.resolver";
 import { AdminCreateRestaurantCommandUseCase } from "../application/use-cases/admin-create-restaurant-command.usecase";
 import { AdminGetRestaurantByIdQueryUseCase } from "../application/use-cases/admin-get-restaurant-by-id-query.usecase";

@@ -19,8 +19,8 @@ import {
   computeEffectivePermissionSet,
   hasPermission,
 } from "../../../../shared/permissions/effective-permissions";
-import { PlatformModule, WorkspaceTemplateService } from "../../../platform";
 import { resolveRequestContext } from "../../../../shared/request-context";
+import { WorkspaceTemplateService } from "../../../platform/application/services/workspace-template.service";
 import {
   WORKSPACE_REPOSITORY_PORT,
   type WorkspaceRepositoryPort,

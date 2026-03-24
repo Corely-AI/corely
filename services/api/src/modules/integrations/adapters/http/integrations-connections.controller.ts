@@ -6,7 +6,7 @@ import {
   TestIntegrationConnectionInputSchema,
   UpdateIntegrationConnectionInputSchema,
 } from "@corely/contracts";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { IntegrationsApplication } from "../../application/integrations.application";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 

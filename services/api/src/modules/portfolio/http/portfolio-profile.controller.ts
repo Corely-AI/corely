@@ -5,7 +5,8 @@ import {
   UpsertPortfolioProfileInputSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../shared/http/usecase-mappers";
-import { AuthGuard, RbacGuard, RequirePermission } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { PortfolioApplication } from "../application/portfolio.application";
 
 @Controller("portfolio/showcases/:showcaseId/profile")

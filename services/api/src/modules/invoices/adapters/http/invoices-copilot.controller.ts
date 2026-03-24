@@ -6,7 +6,8 @@ import {
 } from "@corely/contracts";
 import { InvoicesApplication } from "../../application/invoices.application";
 import { buildUseCaseContext, mapResultToHttp } from "./mappers";
-import { AuthGuard, RbacGuard, RequirePermission } from "../../../identity";
+import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 
 @Controller("invoices")
 @UseGuards(AuthGuard, RbacGuard)
