@@ -143,4 +143,12 @@ export interface RestaurantRepositoryPort {
     workspaceId: string,
     approvalRequestId: string
   ): Promise<RestaurantApprovalRequest | null>;
+  listApprovalRequests(
+    tenantId: string,
+    workspaceId: string,
+    input?: {
+      statuses?: RestaurantApprovalRequest["status"][];
+      limit?: number;
+    }
+  ): Promise<RestaurantApprovalRequest[]>;
 }

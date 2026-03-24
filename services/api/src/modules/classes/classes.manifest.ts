@@ -7,6 +7,7 @@ export const classesAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Manage tutoring class groups, sessions, attendance, and billing",
   dependencies: ["invoices", "crm"],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: [
     "classes.read",

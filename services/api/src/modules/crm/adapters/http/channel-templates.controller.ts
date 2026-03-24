@@ -22,7 +22,9 @@ import { CrmApplication } from "../../application/crm.application";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
+import { AllowSurfaces } from "@/shared/surface";
 
+@AllowSurfaces("platform", "crm")
 @Controller("crm/workspaces/:workspaceId/channel-templates")
 @UseGuards(AuthGuard, RbacGuard)
 export class ChannelTemplatesHttpController {

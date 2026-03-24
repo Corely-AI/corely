@@ -1,4 +1,5 @@
 import type { Request } from "express";
+import type { SurfaceId } from "@corely/contracts";
 import type { PublicWorkspaceContext } from "../public";
 
 export type ContextSource =
@@ -25,6 +26,7 @@ export interface RequestContext {
   userId?: string;
   workspaceId?: string | null;
   tenantId?: string | null;
+  surfaceId: SurfaceId;
   roles?: string[];
   scopes?: string[];
   activeAppId?: string;
@@ -43,6 +45,7 @@ export type ContextAwareRequest = Request & {
   tenantId?: string | null;
   workspaceId?: string | null;
   roleIds?: string[];
+  surfaceId?: SurfaceId;
   traceId?: string;
   activeAppId?: string;
   id?: string;

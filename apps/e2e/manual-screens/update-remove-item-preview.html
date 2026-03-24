@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Update Or Remove Item E2E Preview</title>
+    <style>
+      :root {
+        --bg: #f3efe7;
+        --panel: rgba(255, 255, 255, 0.9);
+        --ink: #1f2933;
+        --muted: #5d6977;
+        --line: rgba(31, 41, 51, 0.12);
+        --accent: #0f766e;
+        --accent-soft: rgba(15, 118, 110, 0.12);
+        --warn: #b45309;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(180, 83, 9, 0.1), transparent 24%),
+          radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.14), transparent 24%),
+          linear-gradient(165deg, #fff9ef 0%, var(--bg) 58%, #e7dfd1 100%);
+      }
+      main {
+        width: min(1180px, calc(100vw - 48px));
+        margin: 34px auto;
+        display: grid;
+        gap: 22px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 24px 60px rgba(31, 41, 51, 0.08);
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.06fr 0.94fr;
+        gap: 22px;
+      }
+      .headline, .summary, .workspace { padding: 28px 30px; }
+      .eyebrow {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h1 {
+        margin: 10px 0 14px;
+        font-size: 40px;
+        line-height: 1;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.6;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .chip {
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.74);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .pill {
+        width: fit-content;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+      .workspace-grid {
+        display: grid;
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 18px;
+      }
+      .before, .after {
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.78);
+        padding: 20px;
+      }
+      .label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .item {
+        margin-top: 14px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: white;
+      }
+      .item.removed {
+        opacity: 0.48;
+        text-decoration: line-through;
+      }
+      .item strong { display: block; font-size: 17px; }
+      .item span { display: block; margin-top: 4px; color: var(--muted); }
+      .modifier {
+        margin-top: 6px;
+        color: var(--warn);
+        font-size: 13px;
+      }
+      .totals {
+        margin-top: 16px;
+        border-top: 1px dashed rgba(31, 41, 51, 0.12);
+        padding-top: 10px;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 0;
+        border-bottom: 1px dashed rgba(31, 41, 51, 0.12);
+        color: var(--muted);
+      }
+      .row:last-child { border-bottom: 0; }
+      .row strong { color: var(--ink); }
+      code { font-family: "Menlo", "SFMono-Regular", monospace; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <article class="panel headline">
+          <div class="eyebrow">Restaurant POS Phase 1 E2E</div>
+          <h1>Update Or Remove Item Before Send</h1>
+          <p>
+            Focused API E2E coverage for correcting a draft order before kitchen submission by
+            updating quantity and modifiers on one item while removing another.
+          </p>
+          <div class="chips">
+            <div class="chip">Status <code>DRAFT</code></div>
+            <div class="chip">Remaining items <code>1</code></div>
+            <div class="chip">Subtotal <code>4100</code></div>
+            <div class="chip">Tax <code>410</code></div>
+            <div class="chip">Total <code>4510</code></div>
+          </div>
+        </article>
+        <aside class="panel summary">
+          <div class="pill">Passing case state</div>
+          <p>
+            The test submits two draft revisions. The second revision keeps the burger, changes its
+            quantity to two, adds a size modifier, removes fries entirely, recalculates totals, and
+            records draft-update audit and outbox rows before anything is sent to kitchen.
+          </p>
+        </aside>
+      </section>
+
+      <section class="panel workspace">
+        <div class="workspace-grid">
+          <div class="before">
+            <div class="label">Draft Before Correction</div>
+            <div class="item">
+              <strong>House Burger</strong>
+              <span>Qty 1</span>
+              <div class="modifier">+ Extra cheese</div>
+            </div>
+            <div class="item">
+              <strong>Fries</strong>
+              <span>Qty 1</span>
+            </div>
+            <div class="totals">
+              <div class="row">
+                <span>Total</span>
+                <strong>2860</strong>
+              </div>
+            </div>
+          </div>
+          <div class="after">
+            <div class="label">Draft After Correction</div>
+            <div class="item">
+              <strong>House Burger</strong>
+              <span>Qty 2</span>
+              <div class="modifier">+ Extra cheese</div>
+              <div class="modifier">+ Large size</div>
+            </div>
+            <div class="item removed">
+              <strong>Fries</strong>
+              <span>Removed before send</span>
+            </div>
+            <div class="totals">
+              <div class="row">
+                <span>Subtotal</span>
+                <strong>4100</strong>
+              </div>
+              <div class="row">
+                <span>Tax</span>
+                <strong>410</strong>
+              </div>
+              <div class="row">
+                <span>Total</span>
+                <strong>4510</strong>
+              </div>
+              <div class="row">
+                <span>Kitchen tickets</span>
+                <strong>0</strong>
+              </div>
+              <div class="row">
+                <span>Audit rows</span>
+                <strong>2</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

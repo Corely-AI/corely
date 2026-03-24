@@ -11,6 +11,7 @@ export const invoicesAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Create, manage, and send invoices to customers",
   dependencies: ["parties"], // Invoices depend on the parties module
+  allowedSurfaces: ["platform"],
   capabilities: ["invoices.create", "invoices.send", "invoices.pdf", "invoices.recurring"],
   permissions: [
     "invoices.read",

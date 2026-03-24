@@ -7,6 +7,7 @@ export const workspacesAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Workspace and profile management",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: [],
   menu: [

@@ -6,6 +6,8 @@ import { useAdaptiveLayout } from "@/hooks/useAdaptiveLayout";
 import { useRestaurantStore } from "@/stores/restaurantStore";
 import { useRegisterStore } from "@/stores/registerStore";
 import { useShiftStore } from "@/stores/shiftStore";
+import { RestaurantCopilotPanel } from "@/components/restaurant-copilot-panel";
+import { runRestaurantCopilotPrompt } from "@/lib/restaurant-copilot";
 import { Badge, Card, EmptyState, SegmentedControl } from "@/ui/components";
 import { posTheme } from "@/ui/theme";
 
@@ -76,6 +78,23 @@ export default function RestaurantFloorScreen() {
         ]}
       />
 
+      <RestaurantCopilotPanel
+        title="Floor plan copilot"
+        helperText="Summarize occupied, dirty, or blocked tables without interrupting manual floor usage."
+        quickActions={[
+          {
+            label: "Summarize attention tables",
+            buildPrompt: () =>
+              [
+                "Call restaurant_summarizeFloorPlanAttention with this exact JSON input and return the resulting tool card.",
+                JSON.stringify({ rooms: floorPlan }),
+              ].join("\n\n"),
+          },
+        ]}
+        runPrompt={async (prompt) => (await runRestaurantCopilotPrompt(prompt)).card}
+        testIdPrefix="pos-restaurant-floor-copilot"
+      />
+
       {isLoading ? (
         <Card>
           <Text style={styles.muted}>Loading floor plan…</Text>
@@ -92,6 +111,7 @@ export default function RestaurantFloorScreen() {
             {room.tables.map((table) => (
               <Pressable
                 key={table.id}
+                testID={`pos-restaurant-table-card-${table.id}`}
                 style={[
                   styles.tableCard,
                   table.availabilityStatus === "OCCUPIED" && styles.tableCardOccupied,

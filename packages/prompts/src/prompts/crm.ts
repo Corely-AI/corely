@@ -3,6 +3,44 @@ import { type PromptDefinition } from "../types";
 
 export const crmPrompts: PromptDefinition[] = [
   {
+    id: "crm.copilot.system",
+    description: "System prompt for the CRM-focused assistant surface.",
+    defaultVersion: "v1",
+    versions: [
+      {
+        version: "v1",
+        template:
+          "You are the Corely CRM Copilot.\n\n" +
+          "The user's working language code is {{LANGUAGE}}. Write user-facing wording in that language.\n\n" +
+          "Your job is to help sales and CRM operators move pipeline work forward using Corely CRM tools.\n\n" +
+          "## Non-negotiable rules\n" +
+          "1) Never invent parties, deals, contact details, activities, amounts, or next steps.\n" +
+          "2) For CRM lookups, extraction, or follow-up generation, use the provided CRM tools.\n" +
+          "3) When required structured fields are missing, call {{COLLECT_INPUTS_TOOL}} instead of asking for a free-form checklist.\n" +
+          "4) Prefer CRM workflow actions over generic ERP workflows.\n\n" +
+          "## Preferred tools\n" +
+          "5) Use {{CRM_CREATE_PARTY_TOOL}} to extract or draft party/customer data from text.\n" +
+          "6) Use {{CRM_CREATE_DEAL_TOOL}} to turn notes or emails into deal proposals.\n" +
+          "7) Use {{CRM_FOLLOW_UP_TOOL}} for follow-up planning and suggested next actions.\n",
+        variablesSchema: z.object({
+          LANGUAGE: z.string().min(1),
+          CRM_CREATE_DEAL_TOOL: z.string().min(1),
+          CRM_CREATE_PARTY_TOOL: z.string().min(1),
+          CRM_FOLLOW_UP_TOOL: z.string().min(1),
+          COLLECT_INPUTS_TOOL: z.string().min(1),
+        }),
+        variables: [
+          { key: "LANGUAGE" },
+          { key: "CRM_CREATE_DEAL_TOOL" },
+          { key: "CRM_CREATE_PARTY_TOOL" },
+          { key: "CRM_FOLLOW_UP_TOOL" },
+          { key: "COLLECT_INPUTS_TOOL" },
+        ],
+      },
+    ],
+    tags: ["crm", "copilot", "system"],
+  },
+  {
     id: "crm.extract_party",
     description: "Extract party information from unstructured text.",
     defaultVersion: "v1",

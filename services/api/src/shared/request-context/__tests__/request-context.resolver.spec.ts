@@ -62,4 +62,17 @@ describe("resolveRequestContext", () => {
     const ctx = resolveRequestContext(req);
     expect(ctx.userId).toBeUndefined();
   });
+
+  it("resolves surface from trusted forwarded host", () => {
+    const req = buildReq({
+      headers: {
+        "x-forwarded-host": "crm.corely.one",
+      },
+    });
+
+    const ctx = resolveRequestContext(req);
+
+    expect(ctx.surfaceId).toBe("crm");
+    expect(ctx.sources.surfaceId).toBe("header");
+  });
 });

@@ -34,6 +34,7 @@ import {
 } from "@/shared/http/usecase-mappers";
 import type { ContextAwareRequest } from "@/shared/request-context";
 import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { AllowSurfaces } from "@/shared/surface";
 import { ListCashRegistersQueryUseCase } from "../application/use-cases/list-cash-registers.query";
 import { GetCashRegisterQueryUseCase } from "../application/use-cases/get-cash-register.query";
 import { CreateCashRegisterUseCase } from "../application/use-cases/create-cash-register.usecase";
@@ -50,6 +51,7 @@ import { ListCashDayClosesQueryUseCase } from "../application/use-cases/list-cas
 import { GetCashExportArtifactQueryUseCase } from "../application/use-cases/get-cash-export-artifact.query";
 import { GetCashDashboardQueryUseCase } from "../application/use-cases/get-cash-dashboard.query";
 
+@AllowSurfaces("platform", "pos")
 @Controller()
 @UseGuards(AuthGuard)
 export class CashManagementController {

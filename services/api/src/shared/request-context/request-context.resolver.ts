@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import { normalizeSurfaceHostname, resolveSurface } from "@corely/contracts";
 import {
   HEADER_CORRELATION_ID,
   HEADER_REQUEST_ID,
@@ -43,6 +44,9 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
 
   const requestId = headerRequestId || traceId || randomUUID();
   const correlationId = correlationHeader || requestId;
+  const trustedHost = pickHeader(req, ["x-forwarded-host", "host"]);
+  const normalizedHost = normalizeSurfaceHostname(trustedHost);
+  const surfaceId = resolveSurface(normalizedHost);
 
   // Principal
   const headerUserId = pickHeader(req, ["x-user-id"]);
@@ -115,6 +119,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
     userId: finalUserId,
     tenantId,
     workspaceId,
+    surfaceId,
     activeAppId,
     roles: roleIds,
     metadata,
@@ -141,6 +146,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
                 ? "user"
                 : undefined
         : undefined,
+      surfaceId: normalizedHost ? "header" : "inferred",
       activeAppId: activeAppId ? "header" : undefined,
     },
     deprecated: {},
@@ -161,6 +167,7 @@ export const resolveRequestContext = (req: ContextAwareRequest): RequestContext 
   req.context = ctx;
   req.tenantId = tenantId;
   req.workspaceId = workspaceId;
+  req.surfaceId = surfaceId;
   req.activeAppId = activeAppId;
   req.roleIds = roleIds;
   req.id = requestId;

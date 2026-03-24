@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException, Inject } from "@nestjs/common";
 import type {
   MenuGroup,
+  SurfaceId,
   WorkspaceConfig,
   WorkspaceNavigationGroup,
   WorkspaceMembershipRole,
@@ -24,6 +25,7 @@ export interface GetWorkspaceConfigInput {
   workspaceId: string;
   permissions: string[];
   scope: "web" | "pos";
+  surfaceId: SurfaceId;
 }
 
 @Injectable()
@@ -76,6 +78,7 @@ export class GetWorkspaceConfigUseCase {
       userId: input.userId,
       permissions: new Set(input.permissions),
       scope: input.scope,
+      surfaceId: input.surfaceId,
       capabilityFilter,
       capabilityKeys,
     });
@@ -89,6 +92,7 @@ export class GetWorkspaceConfigUseCase {
 
     return {
       workspaceId: workspace.id,
+      surfaceId: input.surfaceId,
       kind: workspaceKind,
       capabilities,
       terminology,

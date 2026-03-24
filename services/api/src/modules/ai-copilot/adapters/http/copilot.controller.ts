@@ -188,6 +188,7 @@ export class CopilotController {
       requestId: context.requestId,
       workspaceId: context.workspaceId,
       workspaceKind: "COMPANY",
+      surfaceId: context.surfaceId,
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,
       modelProvider: this.env.AI_MODEL_PROVIDER,

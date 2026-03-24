@@ -36,10 +36,14 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
     input: CloseShiftInput,
     ctx: UseCaseContext
   ): Promise<Result<CloseShiftOutput, UseCaseError>> {
-    const tenantId = ctx.tenantId!;
+    const workspaceId = ctx.tenantId!;
+    const tenantId =
+      typeof ctx.metadata?.platformTenantId === "string"
+        ? ctx.metadata.platformTenantId
+        : (ctx.workspaceId ?? ctx.tenantId!);
 
     // Find session
-    const session = await this.shiftRepo.findById(tenantId, input.sessionId);
+    const session = await this.shiftRepo.findById(workspaceId, input.sessionId);
     if (!session) {
       return err(new NotFoundError("SESSION_NOT_FOUND", "Shift session not found"));
     }
@@ -68,49 +72,54 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
     // Bridge to Cash Management: Submit Daily Close
     // This ensures that the POS Shift Close is reflected in the central ledger
     if (input.closingCashCents !== null && input.closingCashCents !== undefined) {
-      try {
-        await this.submitDailyCloseUC.execute(
-          {
-            tenantId,
-            registerId: session.registerId,
-            businessDate: new Date().toISOString().split("T")[0],
-            countedBalanceCents: input.closingCashCents,
-            notes: input.notes ?? `POS Shift Closed by ${ctx.userId}`,
-          },
-          ctx
-        );
-      } catch (error: unknown) {
-        // If register missing, we try to create it then retry (Auto-healing)
-        const err = error as Error;
-        if (err?.message === "Cash Register not found") {
-          await this.createRegisterUC.execute(
+      const cashManagementContext = {
+        ...ctx,
+        tenantId,
+        workspaceId,
+      };
+      const dayCloseResult = await this.submitDailyCloseUC.execute(
+        {
+          tenantId,
+          registerId: session.registerId,
+          businessDate: new Date().toISOString().split("T")[0],
+          countedBalanceCents: input.closingCashCents,
+          denominationCounts: [],
+          notes: input.notes ?? `POS Shift Closed by ${ctx.userId}`,
+        },
+        cashManagementContext
+      );
+
+      if ("error" in dayCloseResult) {
+        if (this.isMissingCashRegisterError(dayCloseResult.error)) {
+          const createRegisterResult = await this.createRegisterUC.execute(
             {
               tenantId,
               name: `POS Register ${session.registerId.slice(0, 8)}`,
               currency: "EUR",
             },
-            ctx
+            cashManagementContext
           );
 
-          // Retry close
-          await this.submitDailyCloseUC.execute(
+          if ("error" in createRegisterResult) {
+            return err(createRegisterResult.error);
+          }
+
+          const retryResult = await this.submitDailyCloseUC.execute(
             {
               tenantId,
               registerId: session.registerId,
               businessDate: new Date().toISOString().split("T")[0],
               countedBalanceCents: input.closingCashCents,
+              denominationCounts: [],
               notes: input.notes ?? `POS Shift Closed by ${ctx.userId}`,
             },
-            ctx
+            cashManagementContext
           );
+          if ("error" in retryResult) {
+            return err(retryResult.error);
+          }
         } else {
-          // Log but don't fail the POS close? Or fail?
-          // "Prevent double-posting...".
-          // If Cash Mgmt fails, we probably should warn but maybe not rollback POS close if it's already done?
-          // Actually, we haven't returned yet.
-          // Let's log error but proceed, or throw?
-          // Throwing is safer data-integrity wise.
-          throw error;
+          return err(dayCloseResult.error);
         }
       }
     }
@@ -123,5 +132,12 @@ export class CloseShiftUseCase extends BaseUseCase<CloseShiftInput, CloseShiftOu
       totalCashReceivedCents: session.totalCashReceivedCents,
       varianceCents: session.varianceCents,
     });
+  }
+
+  private isMissingCashRegisterError(error: UseCaseError): boolean {
+    return (
+      error.code === "CashManagement:RegisterNotFound" ||
+      error.message === "Cash register not found"
+    );
   }
 }

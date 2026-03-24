@@ -3,6 +3,7 @@ import { z } from "zod";
 export const RestaurantEventTypeSchema = z.enum([
   "restaurant.table-opened",
   "restaurant.table-transferred",
+  "restaurant.table-merged",
   "restaurant.order-draft-updated",
   "restaurant.order-sent-to-kitchen",
   "restaurant.kitchen-ticket-bumped",

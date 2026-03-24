@@ -13,12 +13,17 @@ import type {
   OpenShiftOutput,
   OpenRestaurantTableInput,
   OpenRestaurantTableOutput,
+  RequestRestaurantDiscountInput,
+  RequestRestaurantVoidInput,
+  RestaurantApprovalMutationOutput,
   CloseShiftInput,
   CloseShiftOutput,
   PutRestaurantDraftOrderInput,
   PutRestaurantDraftOrderOutput,
   SendRestaurantOrderToKitchenInput,
   SendRestaurantOrderToKitchenOutput,
+  TransferRestaurantTableInput,
+  TransferRestaurantTableOutput,
   GetCurrentShiftInput,
   GetCurrentShiftOutput,
   SyncPosSaleInput,
@@ -293,5 +298,33 @@ export class PosApiClient extends ApiClient {
         idempotencyKey: input.idempotencyKey,
       }
     );
+  }
+
+  async transferRestaurantTable(
+    input: TransferRestaurantTableInput
+  ): Promise<TransferRestaurantTableOutput> {
+    return this.post<TransferRestaurantTableOutput>(
+      `/restaurant/orders/${input.orderId}/transfer`,
+      input,
+      {
+        idempotencyKey: input.idempotencyKey,
+      }
+    );
+  }
+
+  async requestRestaurantVoid(
+    input: RequestRestaurantVoidInput
+  ): Promise<RestaurantApprovalMutationOutput> {
+    return this.post<RestaurantApprovalMutationOutput>("/restaurant/approvals/void", input, {
+      idempotencyKey: input.idempotencyKey,
+    });
+  }
+
+  async requestRestaurantDiscount(
+    input: RequestRestaurantDiscountInput
+  ): Promise<RestaurantApprovalMutationOutput> {
+    return this.post<RestaurantApprovalMutationOutput>("/restaurant/approvals/discount", input, {
+      idempotencyKey: input.idempotencyKey,
+    });
   }
 }

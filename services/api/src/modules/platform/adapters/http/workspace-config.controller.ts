@@ -63,6 +63,7 @@ export class WorkspaceConfigController {
       workspaceId,
       permissions,
       scope: validatedScope,
+      surfaceId: ctx.surfaceId,
     });
   }
 

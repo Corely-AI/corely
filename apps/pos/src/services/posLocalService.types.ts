@@ -1,4 +1,15 @@
-import type { PosSale, PosSalePayment, SyncPosSaleInput } from "@corely/contracts";
+import type {
+  FloorPlanRoom,
+  OpenRestaurantTableInput,
+  PosSale,
+  PosSalePayment,
+  PutRestaurantDraftOrderInput,
+  RestaurantModifierGroup,
+  RestaurantOrder,
+  SendRestaurantOrderToKitchenInput,
+  SyncPosSaleInput,
+  TableSession,
+} from "@corely/contracts";
 import type { OutboxCommand } from "@corely/offline-core";
 import type { ShiftCashEventType } from "@/offline/posOutbox";
 
@@ -70,6 +81,76 @@ export interface ShiftCashEventRecord {
 export interface ShiftCashEventTotals {
   paidInCents: number;
   paidOutCents: number;
+}
+
+export interface RestaurantOfflineSnapshot {
+  rooms: FloorPlanRoom[];
+  modifierGroups: RestaurantModifierGroup[];
+}
+
+export type RestaurantLocalSyncStatus = "PENDING" | "SYNCED" | "FAILED";
+
+export interface RestaurantAggregateState {
+  session: TableSession;
+  order: RestaurantOrder;
+  syncStatus: RestaurantLocalSyncStatus;
+  lastError: string | null;
+  commandVersion: number;
+}
+
+export interface RestaurantOpenTableInput {
+  workspaceId: string;
+  tableId: string;
+  registerId: string | null;
+  shiftSessionId: string | null;
+  openedByUserId: string;
+  notes?: string | null;
+}
+
+export interface RestaurantOpenTableResult {
+  session: TableSession;
+  order: RestaurantOrder;
+  command: OutboxCommand<OpenRestaurantTableInput>;
+}
+
+export interface RestaurantDraftUpdateInput {
+  workspaceId: string;
+  orderId: string;
+  items: PutRestaurantDraftOrderInput["items"];
+  discountCents: number;
+}
+
+export interface RestaurantDraftUpdateResult {
+  session: TableSession;
+  order: RestaurantOrder;
+  command: OutboxCommand<PutRestaurantDraftOrderInput>;
+}
+
+export interface RestaurantSendInput {
+  workspaceId: string;
+  orderId: string;
+}
+
+export interface RestaurantSendResult {
+  session: TableSession;
+  order: RestaurantOrder;
+  command: OutboxCommand<SendRestaurantOrderToKitchenInput>;
+}
+
+export interface RestaurantAggregateRow {
+  order_id: string;
+  workspace_id: string;
+  table_id: string;
+  table_session_id: string;
+  order_status: string;
+  session_status: string;
+  command_version: number;
+  sync_status: RestaurantLocalSyncStatus;
+  last_error: string | null;
+  session_json: string;
+  order_json: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CatalogProductRow {

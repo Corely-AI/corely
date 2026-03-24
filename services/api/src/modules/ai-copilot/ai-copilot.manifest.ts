@@ -7,6 +7,7 @@ export const aiCopilotAppManifest: AppManifest = {
   version: "1.0.0",
   description: "AI-powered assistant",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["ai.copilot"],
   permissions: [],
   menu: [

@@ -36,6 +36,7 @@ import {
 import { WorkspaceTypeBadge } from "@corely/web-shared/shared/workspaces/WorkspaceTypeBadge";
 import { useCanManageTenants, useCanReadTenants } from "@corely/web-shared/shared/lib/permissions";
 import { getDocsBaseUrl } from "@corely/web-shared/shared/lib/docs-url";
+import { useSurfaceId } from "@corely/web-shared/shared/surface";
 
 export type WorkspaceSwitcherMode = "always" | "multi" | "hidden";
 
@@ -101,6 +102,7 @@ export function AppSidebar({
   const { theme, setTheme } = useThemeStore();
   const { user, logout } = useAuth();
   const { activeWorkspace, workspaces } = useWorkspace();
+  const surfaceId = useSurfaceId();
   const { can: canReadTenants } = useCanReadTenants();
   const { can: canManageTenants } = useCanManageTenants();
   const {
@@ -114,6 +116,8 @@ export function AppSidebar({
   const workspaceCount = Array.isArray(workspaces) ? workspaces.length : 0;
   const showSwitcher = isWorkspaceSwitcherVisible(workspaceSwitcherMode, workspaceCount);
   const isHostScope = user?.activeTenantId === null;
+  const showSurfacePlatformAdminNav =
+    showPlatformAdminNav && surfaceId === "platform" && (canReadTenants || canManageTenants);
 
   const resolvedGroups = React.useMemo(() => {
     const sourceGroups = navigationGroups ?? workspaceNavigationGroups;
@@ -191,8 +195,7 @@ export function AppSidebar({
           <div className="px-3 py-4 text-sm text-muted-foreground">
             {t("errors.loadMenuFailed")}
           </div>
-        ) : resolvedGroups.length > 0 ||
-          (showPlatformAdminNav && (canReadTenants || canManageTenants)) ? (
+        ) : resolvedGroups.length > 0 || showSurfacePlatformAdminNav ? (
           <>
             {resolvedGroups.map((group) => {
               return (
@@ -244,7 +247,7 @@ export function AppSidebar({
               );
             })}
 
-            {showPlatformAdminNav && (canReadTenants || canManageTenants) && (
+            {showSurfacePlatformAdminNav && (
               <div className="space-y-1">
                 {!collapsed && (
                   <div className="px-3 pt-4 pb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

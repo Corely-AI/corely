@@ -61,6 +61,54 @@ export class RestaurantOrderAggregate {
     this.order.updatedAt = new Date().toISOString();
   }
 
+  static merge(
+    source: RestaurantOrderAggregate,
+    target: RestaurantOrderAggregate,
+    nowIso: string
+  ): { sourceItemIdMap: Map<string, string> } {
+    source.assertMergeable("source");
+    target.assertMergeable("target");
+
+    if (source.order.id === target.order.id || source.session.id === target.session.id) {
+      throw new ConflictError(
+        "RESTAURANT_MERGE_SAME_CHECK",
+        "Source and target checks must be different"
+      );
+    }
+
+    if (source.order.payments.length > 0 || target.order.payments.length > 0) {
+      throw new ConflictError(
+        "RESTAURANT_MERGE_ALREADY_PAID",
+        "Checks with recorded payments cannot be merged"
+      );
+    }
+
+    const sourceItemIdMap = new Map<string, string>();
+    const clonedItems = source.order.items.map((item) => {
+      const cloned = cloneOrderItemForTarget(item, target.order.id);
+      sourceItemIdMap.set(item.id, cloned.id);
+      return cloned;
+    });
+
+    target.order.items = [...target.order.items, ...clonedItems];
+    target.order.discountCents = Math.max(
+      0,
+      target.order.discountCents + source.order.discountCents
+    );
+    target.order.sentAt = earliestIso(target.order.sentAt, source.order.sentAt);
+    target.order.updatedAt = nowIso;
+    target.refresh();
+
+    source.order.status = "CANCELLED";
+    source.order.closedAt = nowIso;
+    source.order.updatedAt = nowIso;
+    source.session.status = "TRANSFERRED";
+    source.session.closedAt = nowIso;
+    source.session.updatedAt = nowIso;
+
+    return { sourceItemIdMap };
+  }
+
   sendPending(nowIso: string): RestaurantOrderItem[] {
     const pending = this.order.items.filter((item) => item.sentQuantity === 0 && !item.voidedAt);
     if (pending.length === 0) {
@@ -195,6 +243,21 @@ export class RestaurantOrderAggregate {
       this.order.status = "DRAFT";
     }
   }
+
+  private assertMergeable(label: "source" | "target"): void {
+    if (this.session.status !== "OPEN") {
+      throw new ConflictError(
+        "RESTAURANT_SESSION_NOT_OPEN",
+        `Only open ${label} sessions can be merged`
+      );
+    }
+    if (this.order.status === "CLOSED" || this.order.status === "CANCELLED") {
+      throw new ConflictError(
+        "RESTAURANT_ORDER_LOCKED",
+        `Closed or cancelled ${label} checks cannot be merged`
+      );
+    }
+  }
 }
 
 function toOrderItem(
@@ -232,6 +295,31 @@ function toOrderItem(
     voidedAt: existing?.voidedAt ?? null,
     modifiers,
   };
+}
+
+function cloneOrderItemForTarget(
+  item: RestaurantOrderItem,
+  targetOrderId: string
+): RestaurantOrderItem {
+  return {
+    ...item,
+    id: cryptoRandomId(),
+    orderId: targetOrderId,
+    modifiers: item.modifiers.map((modifier) => ({
+      ...modifier,
+      id: cryptoRandomId(),
+    })),
+  };
+}
+
+function earliestIso(left: string | null, right: string | null): string | null {
+  if (!left) {
+    return right;
+  }
+  if (!right) {
+    return left;
+  }
+  return new Date(left).getTime() <= new Date(right).getTime() ? left : right;
 }
 
 function cryptoRandomId(): string {

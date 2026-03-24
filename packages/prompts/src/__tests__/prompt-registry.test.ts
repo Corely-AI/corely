@@ -60,4 +60,42 @@ describe("PromptRegistry", () => {
 
     expect(resolved.version.version).toBe("v2");
   });
+
+  it("selects versions based on surface rules", () => {
+    const definition: PromptDefinition = {
+      id: "test.surface-selection",
+      description: "Test surface selection prompt",
+      defaultVersion: "v1",
+      versions: [
+        {
+          version: "v1",
+          template: "platform",
+          variablesSchema: z.object({}),
+          variables: [],
+        },
+        {
+          version: "v2",
+          template: "crm",
+          variablesSchema: z.object({}),
+          variables: [],
+        },
+      ],
+      selection: [
+        {
+          when: { surfaces: ["crm"] },
+          version: "v2",
+          priority: 10,
+        },
+      ],
+    };
+
+    const localRegistry = new PromptRegistry([new StaticPromptProvider([definition])]);
+
+    const resolved = localRegistry.get("test.surface-selection", {
+      environment: "dev",
+      surfaceId: "crm",
+    });
+
+    expect(resolved.version.version).toBe("v2");
+  });
 });

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add Menu Items E2E Preview</title>
+    <style>
+      :root {
+        --bg: #f2efe8;
+        --panel: rgba(255, 255, 255, 0.9);
+        --ink: #1c2430;
+        --muted: #5c6876;
+        --line: rgba(28, 36, 48, 0.12);
+        --accent: #0f766e;
+        --accent-soft: rgba(15, 118, 110, 0.12);
+        --warm: #b45309;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(180, 83, 9, 0.11), transparent 24%),
+          radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.14), transparent 24%),
+          linear-gradient(165deg, #fffaf1 0%, var(--bg) 56%, #e7dfd2 100%);
+      }
+      main {
+        width: min(1180px, calc(100vw - 48px));
+        margin: 34px auto;
+        display: grid;
+        gap: 22px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 0 24px 60px rgba(28, 36, 48, 0.08);
+      }
+      .hero {
+        display: grid;
+        grid-template-columns: 1.06fr 0.94fr;
+        gap: 22px;
+      }
+      .headline, .summary, .workspace { padding: 28px 30px; }
+      .eyebrow {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h1 {
+        margin: 10px 0 14px;
+        font-size: 42px;
+        line-height: 1;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.6;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .chip {
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.74);
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .pill {
+        width: fit-content;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 14px;
+      }
+      .workspace-grid {
+        display: grid;
+        grid-template-columns: 0.94fr 1.06fr;
+        gap: 18px;
+      }
+      .menu, .check {
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.76);
+        padding: 20px;
+      }
+      .label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .menu-card {
+        margin-top: 14px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: white;
+      }
+      .menu-card strong,
+      .line-item strong {
+        display: block;
+        font-size: 17px;
+      }
+      .menu-card span {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+      }
+      .line-item {
+        padding: 14px 0;
+        border-bottom: 1px dashed rgba(28, 36, 48, 0.12);
+      }
+      .line-item:last-of-type {
+        border-bottom: 0;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 0;
+        border-bottom: 1px dashed rgba(28, 36, 48, 0.12);
+        color: var(--muted);
+      }
+      .row:last-child { border-bottom: 0; }
+      .row strong { color: var(--ink); }
+      .modifier {
+        margin-top: 6px;
+        color: var(--warm);
+        font-size: 13px;
+      }
+      code { font-family: "Menlo", "SFMono-Regular", monospace; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="hero">
+        <article class="panel headline">
+          <div class="eyebrow">Restaurant POS Phase 1 E2E</div>
+          <h1>Add Menu Items</h1>
+          <p>
+            Focused API E2E coverage for adding ordered items to an open table check and verifying
+            the recalculated line totals, subtotal, tax, and grand total.
+          </p>
+          <div class="chips">
+            <div class="chip">Order <code>DRAFT</code></div>
+            <div class="chip">Items <code>2</code></div>
+            <div class="chip">Subtotal <code>2400</code></div>
+            <div class="chip">Tax <code>198</code></div>
+            <div class="chip">Total <code>2598</code></div>
+          </div>
+        </article>
+        <aside class="panel summary">
+          <div class="pill">Passing case state</div>
+          <p>
+            The test opens a table, adds a pizza with a modifier and two lemonades to the draft
+            order, then verifies the public current-order view and persisted order both reflect the
+            recalculated guest selections.
+          </p>
+        </aside>
+      </section>
+
+      <section class="panel workspace">
+        <div class="workspace-grid">
+          <div class="menu">
+            <div class="label">Menu Selection Snapshot</div>
+            <div class="menu-card">
+              <strong>Margherita Pizza</strong>
+              <span>1 × 1200</span>
+              <div class="modifier">+ Extra cheese · 200</div>
+            </div>
+            <div class="menu-card">
+              <strong>Lemonade</strong>
+              <span>2 × 500</span>
+            </div>
+          </div>
+          <div class="check">
+            <div class="label">Draft Order Response</div>
+            <div class="line-item">
+              <strong>Margherita Pizza</strong>
+              <div class="row">
+                <span>Line subtotal</span>
+                <strong>1400</strong>
+              </div>
+              <div class="row">
+                <span>Line tax</span>
+                <strong>98</strong>
+              </div>
+              <div class="row">
+                <span>Line total</span>
+                <strong>1498</strong>
+              </div>
+            </div>
+            <div class="line-item">
+              <strong>Lemonade</strong>
+              <div class="row">
+                <span>Line subtotal</span>
+                <strong>1000</strong>
+              </div>
+              <div class="row">
+                <span>Line tax</span>
+                <strong>100</strong>
+              </div>
+              <div class="row">
+                <span>Line total</span>
+                <strong>1100</strong>
+              </div>
+            </div>
+            <div class="row">
+              <span>Subtotal</span>
+              <strong>2400</strong>
+            </div>
+            <div class="row">
+              <span>Tax</span>
+              <strong>198</strong>
+            </div>
+            <div class="row">
+              <span>Total</span>
+              <strong>2598</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

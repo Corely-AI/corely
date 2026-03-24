@@ -99,6 +99,23 @@ export const TransferRestaurantTableOutputSchema = z.object({
 });
 export type TransferRestaurantTableOutput = z.infer<typeof TransferRestaurantTableOutputSchema>;
 
+export const MergeRestaurantChecksInputSchema = z.object({
+  targetTableSessionId: z.string(),
+  targetOrderId: z.string(),
+  sourceTableSessionId: z.string(),
+  sourceOrderId: z.string(),
+  idempotencyKey: z.string(),
+});
+export type MergeRestaurantChecksInput = z.infer<typeof MergeRestaurantChecksInputSchema>;
+
+export const MergeRestaurantChecksOutputSchema = z.object({
+  session: TableSessionSchema,
+  order: RestaurantOrderSchema,
+  sourceSessionId: z.string(),
+  sourceOrderId: z.string(),
+});
+export type MergeRestaurantChecksOutput = z.infer<typeof MergeRestaurantChecksOutputSchema>;
+
 export const SendRestaurantOrderToKitchenInputSchema = z.object({
   orderId: z.string(),
   idempotencyKey: z.string(),

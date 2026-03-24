@@ -6,9 +6,12 @@ import type {
   DraftRestaurantOrderItemInput,
   ProductSnapshot,
   RestaurantModifierGroup,
+  RestaurantOrderProposalCard,
 } from "@corely/contracts";
 import { useCatalogStore } from "@/stores/catalogStore";
 import { useRestaurantStore } from "@/stores/restaurantStore";
+import { RestaurantCopilotPanel } from "@/components/restaurant-copilot-panel";
+import { runRestaurantCopilotPrompt } from "@/lib/restaurant-copilot";
 import { AppShell, Button, Card, EmptyState, ModalSheet, TextField } from "@/ui/components";
 import { formatCurrencyFromCents } from "@/lib/formatters";
 import { posTheme } from "@/ui/theme";
@@ -25,10 +28,14 @@ export default function RestaurantTableOrderScreen() {
   const { products, initialize, searchProducts } = useCatalogStore();
   const {
     activeOrder,
+    floorPlan,
     modifierGroups,
     openOrResumeTable,
+    requestDiscount,
+    requestVoid,
     replaceDraft,
     sendToKitchen,
+    transferTable,
     isMutating,
   } = useRestaurantStore();
   const [query, setQuery] = useState("");
@@ -154,6 +161,44 @@ export default function RestaurantTableOrderScreen() {
     });
   };
 
+  const runOrderCopilot = async (instruction: string) => {
+    const relevantProducts = (await searchProducts(instruction)).slice(0, 20);
+    const prompt = [
+      "Call restaurant_buildOrderDraft with this exact JSON input and return the resulting tool card.",
+      JSON.stringify({
+        sourceText: instruction,
+        tableId,
+        orderId: activeOrder?.id,
+        tableSessionId: activeOrder?.tableSessionId,
+        activeOrder,
+        modifierGroups,
+        catalogProducts: relevantProducts,
+        floorPlanRooms: floorPlan,
+      }),
+    ].join("\n\n");
+    return (await runRestaurantCopilotPrompt(prompt)).card;
+  };
+
+  const applyOrderProposal = async (card: RestaurantOrderProposalCard) => {
+    switch (card.action.actionType) {
+      case "REPLACE_DRAFT":
+        await replaceDraft(card.action.items, card.action.discountCents);
+        return;
+      case "REQUEST_VOID":
+        await requestVoid(card.action.request.orderItemId, card.action.request.reason);
+        return;
+      case "REQUEST_DISCOUNT":
+        await requestDiscount(card.action.request.amountCents, card.action.request.reason);
+        return;
+      case "TRANSFER_TABLE":
+        await transferTable(card.action.transfer.toTableId);
+        router.replace(`/restaurant/table/${card.action.transfer.toTableId}` as never);
+        return;
+      case "NOOP":
+        Alert.alert("No action applied", card.action.reason);
+    }
+  };
+
   if (!activeOrder) {
     return (
       <AppShell title="Table order" subtitle="Loading active check..." onBack={() => router.back()}>
@@ -171,17 +216,26 @@ export default function RestaurantTableOrderScreen() {
       onBack={() => router.back()}
       maxWidth={1200}
     >
-      <View style={styles.layout}>
+      <View testID="pos-restaurant-table-screen" style={styles.layout}>
         <View style={styles.catalogPane}>
           <Card>
-            <TextField value={query} onChangeText={onSearch} placeholder="Search menu items" />
+            <TextField
+              testID="pos-restaurant-menu-search"
+              value={query}
+              onChangeText={onSearch}
+              placeholder="Search menu items"
+            />
           </Card>
           <FlatList
             data={visibleProducts}
             keyExtractor={(item) => item.productId}
             contentContainerStyle={styles.listContent}
             renderItem={({ item }) => (
-              <Pressable style={styles.productRow} onPress={() => onSelectProduct(item)}>
+              <Pressable
+                testID={`pos-restaurant-product-${item.productId}`}
+                style={styles.productRow}
+                onPress={() => onSelectProduct(item)}
+              >
                 <View style={styles.productMain}>
                   <Text style={styles.productName}>{item.name}</Text>
                   <Text style={styles.productMeta}>{item.sku}</Text>
@@ -194,15 +248,31 @@ export default function RestaurantTableOrderScreen() {
 
         <View style={styles.orderPane}>
           <Card>
-            <Text style={styles.sectionTitle}>Current order</Text>
+            <Text testID="pos-restaurant-order-title" style={styles.sectionTitle}>
+              Current order
+            </Text>
             {activeOrder.items.length === 0 ? (
-              <Text style={styles.emptyHint}>Add menu items to start the check.</Text>
+              <Text testID="pos-restaurant-order-empty" style={styles.emptyHint}>
+                Add menu items to start the check.
+              </Text>
             ) : (
               activeOrder.items.map((item) => (
-                <View key={item.id} style={styles.orderRow}>
+                <View
+                  key={item.id}
+                  testID={`pos-restaurant-order-item-${item.id}`}
+                  style={styles.orderRow}
+                >
                   <View style={styles.orderMain}>
-                    <Text style={styles.orderName}>{item.itemName}</Text>
-                    <Text style={styles.orderMeta}>
+                    <Text
+                      testID={`pos-restaurant-order-item-name-${item.id}`}
+                      style={styles.orderName}
+                    >
+                      {item.itemName}
+                    </Text>
+                    <Text
+                      testID={`pos-restaurant-order-item-meta-${item.id}`}
+                      style={styles.orderMeta}
+                    >
                       {item.modifiers.map((modifier) => modifier.optionName).join(", ") ||
                         "No modifiers"}
                     </Text>
@@ -225,7 +295,7 @@ export default function RestaurantTableOrderScreen() {
                 </View>
               ))
             )}
-            <View style={styles.summaryBlock}>
+            <View testID="pos-restaurant-order-summary" style={styles.summaryBlock}>
               <SummaryRow
                 label="Subtotal"
                 value={formatCurrencyFromCents(activeOrder.subtotalCents)}
@@ -235,18 +305,28 @@ export default function RestaurantTableOrderScreen() {
             </View>
             <View style={styles.actionRow}>
               <Button
+                testID="pos-restaurant-send-to-kitchen"
                 label="Send to kitchen"
                 variant="secondary"
                 onPress={() => void sendToKitchen()}
                 disabled={activeOrder.items.length === 0 || isMutating}
               />
               <Button
+                testID="pos-restaurant-take-payment"
                 label="Take payment"
                 onPress={() => router.push(`/restaurant/payment/${activeOrder.id}` as never)}
                 disabled={activeOrder.items.length === 0}
               />
             </View>
           </Card>
+          <RestaurantCopilotPanel
+            title="Order copilot"
+            helperText="Parse order instructions into explicit proposal cards. Apply still uses the normal restaurant commands."
+            placeholder='Try: "2 margherita, 1 coke, extra cheese"'
+            runPrompt={runOrderCopilot}
+            onApplyOrderProposal={applyOrderProposal}
+            testIdPrefix="pos-restaurant-order-copilot"
+          />
         </View>
       </View>
 

@@ -24,7 +24,7 @@ interface AuthState {
   logout: () => Promise<void>;
 }
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 const storage = new NativeStorageAdapter();
 
 export const useAuthStore = create<AuthState>((set, get) => ({

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { AllowedSurfacesSchema } from "./surface.schema";
 
 /**
  * Menu Contribution - Defines a menu item contributed by an app
@@ -13,6 +14,9 @@ export const MenuContributionSchema = z.object({
   screen: z.string().optional().describe("POS screen identifier"),
   icon: z.string().describe("Icon identifier (e.g., FileText, Users, Package)"),
   order: z.number().describe("Display order within section (lower = earlier)"),
+  allowedSurfaces: AllowedSurfacesSchema.optional().describe(
+    "Surface IDs where this menu item is allowed"
+  ),
   requiresApps: z.array(z.string()).optional().describe("Required app IDs"),
   requiresCapabilities: z.array(z.string()).optional().describe("Required capability strings"),
   requiresPermissions: z.array(z.string()).optional().describe("Required RBAC permission keys"),
@@ -32,6 +36,9 @@ export const AppManifestSchema = z.object({
   version: z.string().describe('Semantic version (e.g., "1.0.0")'),
   description: z.string().optional().describe("App description"),
   dependencies: z.array(z.string()).describe("App IDs this app depends on"),
+  allowedSurfaces: AllowedSurfacesSchema.optional().describe(
+    "Surface IDs where this app is allowed"
+  ),
   capabilities: z
     .array(z.string())
     .describe("Fine-grained capability strings provided by this app"),

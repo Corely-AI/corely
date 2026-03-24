@@ -7,6 +7,7 @@ export const partyAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Customer and client management",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: ["party.customers.read", "party.customers.manage"],
   entitlement: {

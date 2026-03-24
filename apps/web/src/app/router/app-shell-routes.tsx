@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, Route, useLocation, useParams } from "react-router-dom";
 import { cashManagementFeature } from "@corely/web-features";
-import { RequirePermission } from "@corely/web-shared/shared/permissions";
+import { RequirePermission, RequireSurface } from "@corely/web-shared/shared/permissions";
 import { AppShell } from "../AppShell";
 import { DashboardPage } from "../../modules/core";
 import { AssistantPage } from "../../modules/assistant";
@@ -68,6 +68,7 @@ import {
   ReportsHub,
 } from "../../modules/accounting/screens";
 import {
+  RestaurantCopilotPage,
   RestaurantFloorPlanPage,
   RestaurantKitchenQueuePage,
   RestaurantKitchenStationsPage,
@@ -129,6 +130,17 @@ import { CoachingEngagementDetailPage } from "../../modules/coaching-engagements
 import { CoachingOffersPage } from "../../modules/coaching-engagements/screens/CoachingOffersPage";
 import CoachingOfferDetailPage from "../../modules/coaching-engagements/screens/CoachingOfferDetailPage";
 import CoachingOfferEditorPage from "../../modules/coaching-engagements/screens/CoachingOfferEditorPage";
+import { useSurfaceId } from "@corely/web-shared/shared/surface";
+
+const SurfaceAssistantPage = () => {
+  const surfaceId = useSurfaceId();
+
+  if (surfaceId === "pos") {
+    return <Navigate to="/restaurant/copilot" replace />;
+  }
+
+  return <AssistantPage activeModule={surfaceId === "crm" ? "crm" : "freelancer"} />;
+};
 
 const CashLegacyRedirect = () => {
   const { id } = useParams<{ id?: string }>();
@@ -162,17 +174,53 @@ export const appShellRoutes = (
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/dashboard/teacher" element={<TeacherDashboardPage />} />
       <Route path="/notifications" element={<NotificationsPage />} />
-      <Route path="/assistant" element={<AssistantPage activeModule="freelancer" />} />
-      <Route path="/assistant/t/:threadId" element={<AssistantPage activeModule="freelancer" />} />
+      <Route path="/assistant" element={<SurfaceAssistantPage />} />
+      <Route path="/assistant/t/:threadId" element={<SurfaceAssistantPage />} />
       <Route path="/cms/posts" element={<CmsPostsPage />} />
       <Route path="/cms/posts/new" element={<CmsPostEditorPage />} />
       <Route path="/cms/posts/:id" element={<CmsPostEditorPage />} />
       <Route path="/cms/posts/:id/edit" element={<CmsPostEditorPage />} />
       <Route path="/cms/comments" element={<CmsCommentsPage />} />
-      <Route path="/restaurant/floor-plan" element={<RestaurantFloorPlanPage />} />
-      <Route path="/restaurant/modifier-groups" element={<RestaurantModifierGroupsPage />} />
-      <Route path="/restaurant/kitchen-stations" element={<RestaurantKitchenStationsPage />} />
-      <Route path="/restaurant/kitchen-queue" element={<RestaurantKitchenQueuePage />} />
+      <Route
+        path="/restaurant/floor-plan"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <RestaurantFloorPlanPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/restaurant/copilot"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <RestaurantCopilotPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/restaurant/modifier-groups"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <RestaurantModifierGroupsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/restaurant/kitchen-stations"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <RestaurantKitchenStationsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/restaurant/kitchen-queue"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <RestaurantKitchenQueuePage />
+          </RequireSurface>
+        }
+      />
       <Route path="/website/sites" element={<WebsiteSitesPage />} />
       <Route path="/website/sites/new" element={<WebsiteSiteEditorPage />} />
       <Route path="/website/sites/:siteId/edit" element={<WebsiteSiteEditorPage />} />
@@ -251,11 +299,36 @@ export const appShellRoutes = (
       <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
       <Route path="/expenses/:id/edit" element={<NewExpensePage />} />
       {cashManagementFeature.cashManagementRoutes().map((route) => (
-        <Route key={route.path} path={route.path} element={route.element} />
+        <Route
+          key={route.path}
+          path={route.path}
+          element={<RequireSurface surfaces={["platform", "pos"]}>{route.element}</RequireSurface>}
+        />
       ))}
-      <Route path="/cash-registers" element={<CashLegacyRedirect />} />
-      <Route path="/cash-registers/:id" element={<CashLegacyRedirect />} />
-      <Route path="/cash-registers/:id/daily-close" element={<CashLegacyDayCloseRedirect />} />
+      <Route
+        path="/cash-registers"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <CashLegacyRedirect />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/cash-registers/:id"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <CashLegacyRedirect />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/cash-registers/:id/daily-close"
+        element={
+          <RequireSurface surfaces={["platform", "pos"]}>
+            <CashLegacyDayCloseRedirect />
+          </RequireSurface>
+        }
+      />
       <Route path="/invoices" element={<InvoicesPage />} />
       <Route path="/invoices/new" element={<NewInvoicePage />} />
       <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
@@ -394,29 +467,190 @@ export const appShellRoutes = (
       <Route path="/students/new" element={<NewStudentPage />} />
       <Route path="/students/:id" element={<StudentDetailPage />} />
       <Route path="/students/:id/edit" element={<StudentDetailPage />} />
-      <Route path="/crm" element={<CrmDashboardPage />} />
-      <Route path="/crm/overview" element={<Navigate to="/crm" replace />} />
-      <Route path="/crm/deals" element={<DealsPage />} />
-      <Route path="/crm/deals/new" element={<NewDealPage />} />
-      <Route path="/crm/deals/:id" element={<DealDetailPage />} />
-      <Route path="/crm/deals/:id/edit" element={<DealDetailPage />} />
-      <Route path="/crm/activities" element={<ActivitiesPage />} />
-      <Route path="/crm/activities/new" element={<NewActivityPage />} />
-      <Route path="/crm/leads" element={<LeadsPage />} />
-      <Route path="/crm/leads/new" element={<NewLeadPage />} />
-      <Route path="/crm/leads/:id" element={<LeadDetailPage />} />
-      <Route path="/crm/contacts" element={<ContactsPage />} />
-      <Route path="/crm/contacts/new" element={<ContactFormPage />} />
-      <Route path="/crm/contacts/:id" element={<ContactDetailPage />} />
-      <Route path="/crm/contacts/:id/edit" element={<ContactFormPage />} />
-      <Route path="/crm/sequences" element={<SequencesPage />} />
-      <Route path="/crm/sequences/new" element={<NewSequencePage />} />
-      <Route path="/crm/sequences/:id" element={<SequenceDetailPage />} />
-      <Route path="/crm/settings/email" element={<CrmEmailSettingsPage />} />
-      <Route path="/crm/accounts" element={<AccountsPage />} />
-      <Route path="/crm/accounts/new" element={<AccountFormPage />} />
-      <Route path="/crm/accounts/:id" element={<AccountDetailPage />} />
-      <Route path="/crm/accounts/:id/edit" element={<AccountFormPage />} />
+      <Route
+        path="/crm"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <CrmDashboardPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/overview"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <Navigate to="/crm" replace />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/deals"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <DealsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/deals/new"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <NewDealPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/deals/:id"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <DealDetailPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/deals/:id/edit"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <DealDetailPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/activities"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <ActivitiesPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/activities/new"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <NewActivityPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/leads"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <LeadsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/leads/new"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <NewLeadPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/leads/:id"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <LeadDetailPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/contacts"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <ContactsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/contacts/new"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <ContactFormPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/contacts/:id"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <ContactDetailPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/contacts/:id/edit"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <ContactFormPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/sequences"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <SequencesPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/sequences/new"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <NewSequencePage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/sequences/:id"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <SequenceDetailPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/settings/email"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <CrmEmailSettingsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/accounts"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <AccountsPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/accounts/new"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <AccountFormPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/accounts/:id"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <AccountDetailPage />
+          </RequireSurface>
+        }
+      />
+      <Route
+        path="/crm/accounts/:id/edit"
+        element={
+          <RequireSurface surfaces={["platform", "crm"]}>
+            <AccountFormPage />
+          </RequireSurface>
+        }
+      />
       <Route path="/accounting" element={<AccountingDashboard />} />
       <Route path="/accounting/setup" element={<SetupWizard />} />
       <Route path="/accounting/accounts" element={<ChartOfAccountsList />} />
@@ -424,7 +658,14 @@ export const appShellRoutes = (
       <Route path="/accounting/reports" element={<ReportsHub />} />
       {catalogRoutes}
       {bookingRoutes}
-      <Route path="/copilot" element={<CopilotPage />} />
+      <Route
+        path="/copilot"
+        element={
+          <RequireSurface surfaces={["platform"]}>
+            <CopilotPage />
+          </RequireSurface>
+        }
+      />
       <Route path="/tax" element={<TaxCenterPage />} />
       <Route path="/tax/reports/eur" element={<TaxEurReportPage />} />
       <Route path="/tax/annual/:year" element={<TaxAnnualAssistantPage />} />

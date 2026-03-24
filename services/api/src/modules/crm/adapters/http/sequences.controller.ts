@@ -10,7 +10,9 @@ import { UpdateSequenceUseCase } from "../../application/use-cases/update-sequen
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
+import { AllowSurfaces } from "@/shared/surface";
 
+@AllowSurfaces("platform", "crm")
 @Controller("crm/sequences")
 @UseGuards(AuthGuard, RbacGuard)
 export class SequencesHttpController {

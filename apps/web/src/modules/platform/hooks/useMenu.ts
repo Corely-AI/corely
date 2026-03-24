@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useWorkspace } from "@/shared/workspaces/workspace-provider";
+import { useSurfaceId } from "@corely/web-shared/shared/surface";
 
 export interface MenuItem {
   id: string;
@@ -48,6 +49,7 @@ export interface MenuOverrides {
  */
 export function useMenu(scope: "web" | "pos" = "web") {
   const { activeWorkspace } = useWorkspace();
+  const surfaceId = useSurfaceId();
   const enabled = !!activeWorkspace?.id;
 
   console.debug("[useMenu] hook init", {
@@ -57,7 +59,7 @@ export function useMenu(scope: "web" | "pos" = "web") {
   });
 
   return useQuery<ComposedMenu, Error>({
-    queryKey: ["menu", scope, activeWorkspace?.id],
+    queryKey: ["menu", scope, activeWorkspace?.id, surfaceId],
     queryFn: async () => {
       try {
         console.debug("[useMenu] fetching menu", {
@@ -92,6 +94,7 @@ export function useMenu(scope: "web" | "pos" = "web") {
 export function useUpdateMenuOverrides() {
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
+  const surfaceId = useSurfaceId();
 
   return useMutation({
     mutationFn: async ({
@@ -104,10 +107,12 @@ export function useUpdateMenuOverrides() {
       return apiClient.put(`/menu/overrides?scope=${scope}`, { overrides });
     },
     onSuccess: (_data, variables) => {
-      void queryClient.invalidateQueries({ queryKey: ["menu", variables.scope] });
+      void queryClient.invalidateQueries({
+        queryKey: ["menu", variables.scope, activeWorkspace?.id, surfaceId],
+      });
       if (activeWorkspace?.id) {
         void queryClient.invalidateQueries({
-          queryKey: ["workspace-config", activeWorkspace.id],
+          queryKey: ["workspace-config", activeWorkspace.id, "web", surfaceId],
         });
       }
     },
@@ -120,16 +125,19 @@ export function useUpdateMenuOverrides() {
 export function useResetMenuOverrides() {
   const queryClient = useQueryClient();
   const { activeWorkspace } = useWorkspace();
+  const surfaceId = useSurfaceId();
 
   return useMutation({
     mutationFn: async (scope: "web" | "pos") => {
       return apiClient.delete(`/menu/overrides?scope=${scope}`);
     },
     onSuccess: (_data, scope) => {
-      void queryClient.invalidateQueries({ queryKey: ["menu", scope] });
+      void queryClient.invalidateQueries({
+        queryKey: ["menu", scope, activeWorkspace?.id, surfaceId],
+      });
       if (activeWorkspace?.id) {
         void queryClient.invalidateQueries({
-          queryKey: ["workspace-config", activeWorkspace.id],
+          queryKey: ["workspace-config", activeWorkspace.id, "web", surfaceId],
         });
       }
     },

@@ -7,6 +7,7 @@ export const coachingEngagementsAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Manage coaching engagements, gated bookings, and coaching artifacts",
   dependencies: ["parties", "invoices", "forms"],
+  allowedSurfaces: ["platform"],
   capabilities: ["coaching.engagements"],
   permissions: [
     "coaching.engagements.read",

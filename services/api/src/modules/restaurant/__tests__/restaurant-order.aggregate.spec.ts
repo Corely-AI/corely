@@ -58,6 +58,83 @@ function buildAggregate() {
   );
 }
 
+function buildAggregateForTable(
+  suffix: string,
+  input?: {
+    tableId?: string;
+    unitPriceCents?: number;
+    taxRateBps?: number;
+    discountCents?: number;
+    sentQuantity?: number;
+    sentAt?: string | null;
+  }
+) {
+  const aggregate = new RestaurantOrderAggregate(
+    {
+      id: `session-${suffix}`,
+      tenantId: "tenant-1",
+      workspaceId: "workspace-1",
+      tableId: input?.tableId ?? `table-${suffix}`,
+      registerId: "register-1",
+      shiftSessionId: "shift-1",
+      openedByUserId: "user-1",
+      openedAt: "2026-03-24T10:00:00.000Z",
+      closedAt: null,
+      status: "OPEN",
+      transferCount: 0,
+      createdAt: "2026-03-24T10:00:00.000Z",
+      updatedAt: "2026-03-24T10:00:00.000Z",
+    },
+    {
+      id: `order-${suffix}`,
+      tenantId: "tenant-1",
+      workspaceId: "workspace-1",
+      tableSessionId: `session-${suffix}`,
+      tableId: input?.tableId ?? `table-${suffix}`,
+      status: (input?.sentQuantity ?? 0) > 0 ? "SENT" : "DRAFT",
+      subtotalCents: input?.unitPriceCents ?? 1200,
+      discountCents: input?.discountCents ?? 0,
+      taxCents: Math.round(
+        ((input?.unitPriceCents ?? 1200) * (input?.taxRateBps ?? 1000)) / 10_000
+      ),
+      totalCents:
+        (input?.unitPriceCents ?? 1200) +
+        Math.round(((input?.unitPriceCents ?? 1200) * (input?.taxRateBps ?? 1000)) / 10_000) -
+        (input?.discountCents ?? 0),
+      sentAt: input?.sentAt ?? null,
+      paidAt: null,
+      closedAt: null,
+      items: [
+        {
+          id: `item-${suffix}`,
+          orderId: `order-${suffix}`,
+          catalogItemId: `catalog-${suffix}`,
+          itemName: `Item ${suffix}`,
+          sku: `SKU-${suffix}`,
+          quantity: 1,
+          sentQuantity: input?.sentQuantity ?? 0,
+          unitPriceCents: input?.unitPriceCents ?? 1200,
+          taxRateBps: input?.taxRateBps ?? 1000,
+          taxCents: Math.round(
+            ((input?.unitPriceCents ?? 1200) * (input?.taxRateBps ?? 1000)) / 10_000
+          ),
+          lineSubtotalCents: input?.unitPriceCents ?? 1200,
+          lineTotalCents:
+            (input?.unitPriceCents ?? 1200) +
+            Math.round(((input?.unitPriceCents ?? 1200) * (input?.taxRateBps ?? 1000)) / 10_000),
+          voidedAt: null,
+          modifiers: [],
+        },
+      ],
+      payments: [],
+      createdAt: "2026-03-24T10:00:00.000Z",
+      updatedAt: "2026-03-24T10:00:00.000Z",
+    }
+  );
+
+  return aggregate;
+}
+
 describe("RestaurantOrderAggregate", () => {
   it("replaces draft items and recalculates totals", () => {
     const aggregate = buildAggregate();
@@ -171,5 +248,65 @@ describe("RestaurantOrderAggregate", () => {
     expect(aggregate.order.status).toBe("CLOSED");
     expect(aggregate.session.status).toBe("CLOSED");
     expect(aggregate.order.payments).toHaveLength(1);
+  });
+
+  it("merges a source check into a target check and closes the source session", () => {
+    const source = buildAggregateForTable("source", {
+      tableId: "table-a",
+      unitPriceCents: 900,
+      taxRateBps: 1000,
+      discountCents: 50,
+      sentQuantity: 1,
+      sentAt: "2026-03-24T10:04:00.000Z",
+    });
+    const target = buildAggregateForTable("target", {
+      tableId: "table-b",
+      unitPriceCents: 1200,
+      taxRateBps: 700,
+    });
+
+    const { sourceItemIdMap } = RestaurantOrderAggregate.merge(
+      source,
+      target,
+      "2026-03-24T10:08:00.000Z"
+    );
+
+    expect(source.session.status).toBe("TRANSFERRED");
+    expect(source.session.closedAt).toBe("2026-03-24T10:08:00.000Z");
+    expect(source.order.status).toBe("CANCELLED");
+    expect(source.order.closedAt).toBe("2026-03-24T10:08:00.000Z");
+
+    expect(target.order.id).toBe("order-target");
+    expect(target.order.items).toHaveLength(2);
+    expect(target.order.discountCents).toBe(50);
+    expect(target.order.sentAt).toBe("2026-03-24T10:04:00.000Z");
+    expect(target.order.status).toBe("PARTIALLY_SENT");
+    expect(target.order.subtotalCents).toBe(2100);
+    expect(target.order.taxCents).toBe(174);
+    expect(target.order.totalCents).toBe(2224);
+
+    const clonedSourceItem = target.order.items.find(
+      (item) => item.catalogItemId === "catalog-source"
+    );
+    expect(clonedSourceItem?.orderId).toBe("order-target");
+    expect(clonedSourceItem?.id).not.toBe("item-source");
+    expect(sourceItemIdMap.get("item-source")).toBe(clonedSourceItem?.id);
+  });
+
+  it("rejects merging the same check or a paid check", () => {
+    const same = buildAggregateForTable("same");
+    expect(() => RestaurantOrderAggregate.merge(same, same, "2026-03-24T10:08:00.000Z")).toThrow(
+      ConflictError
+    );
+
+    const source = buildAggregateForTable("source");
+    const target = buildAggregateForTable("target");
+    source.order.payments = [
+      { id: "payment-1", method: "CARD", amountCents: source.order.totalCents, reference: null },
+    ];
+
+    expect(() =>
+      RestaurantOrderAggregate.merge(source, target, "2026-03-24T10:08:00.000Z")
+    ).toThrow(ConflictError);
   });
 });

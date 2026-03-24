@@ -2,11 +2,15 @@ import { v4 as uuidv4 } from "@lukeed/uuid";
 import { SaleBuilder } from "@corely/pos-core";
 import type { OutboxCommand } from "@corely/offline-core";
 import type {
+  FloorPlanRoom,
   PosSale,
   PosSaleLineItem,
   ProductSnapshot,
+  RestaurantModifierGroup,
+  RestaurantOrder,
   ShiftSession,
   SyncPosSaleInput,
+  TableSession,
 } from "@corely/contracts";
 import {
   buildDeterministicIdempotencyKey,
@@ -15,8 +19,25 @@ import {
   type ShiftCashEventCommandPayload,
   type ShiftCashEventType,
 } from "@/offline/posOutbox";
+import {
+  cloneAggregate,
+  cloneModifierGroups,
+  cloneRooms,
+  createRestaurantAggregate,
+  overlayRestaurantFloorPlan,
+  replaceRestaurantDraftState,
+  sendRestaurantOrderState,
+} from "@/services/posLocalService.restaurant.shared";
 import type {
   CreateSaleAndEnqueueInput,
+  RestaurantAggregateState,
+  RestaurantDraftUpdateInput,
+  RestaurantDraftUpdateResult,
+  RestaurantOfflineSnapshot,
+  RestaurantOpenTableInput,
+  RestaurantOpenTableResult,
+  RestaurantSendInput,
+  RestaurantSendResult,
   SaleCreateResult,
   ShiftCashEventInput,
   ShiftCloseInput,
@@ -43,6 +64,9 @@ export class PosLocalServiceWeb {
   private openShiftsByRegister = new Map<string, ShiftSession>();
   private shiftsById = new Map<string, ShiftSession>();
   private shiftCashEvents = new Map<string, ShiftCashEventRow[]>();
+  private restaurantFloorPlan: FloorPlanRoom[] = [];
+  private restaurantModifierGroups: RestaurantModifierGroup[] = [];
+  private restaurantAggregatesByOrderId = new Map<string, RestaurantAggregateState>();
 
   async replaceCatalogSnapshot(
     products: ProductSnapshot[],
@@ -415,6 +439,216 @@ export class PosLocalServiceWeb {
 
   async getLastCatalogSyncAt(): Promise<Date | null> {
     return this.lastCatalogSyncAt;
+  }
+
+  async cacheRestaurantSnapshot(
+    rooms: FloorPlanRoom[],
+    modifierGroups: RestaurantModifierGroup[]
+  ): Promise<void> {
+    this.restaurantFloorPlan = cloneRooms(rooms);
+    this.restaurantModifierGroups = cloneModifierGroups(modifierGroups);
+  }
+
+  async getRestaurantSnapshot(): Promise<RestaurantOfflineSnapshot> {
+    return {
+      rooms: overlayRestaurantFloorPlan(
+        this.restaurantFloorPlan,
+        Array.from(this.restaurantAggregatesByOrderId.values()).map((aggregate) =>
+          cloneAggregate(aggregate)
+        )
+      ),
+      modifierGroups: cloneModifierGroups(this.restaurantModifierGroups),
+    };
+  }
+
+  async getRestaurantAggregateByTable(tableId: string): Promise<RestaurantAggregateState | null> {
+    const aggregate =
+      Array.from(this.restaurantAggregatesByOrderId.values())
+        .filter(
+          (candidate) =>
+            candidate.order.tableId === tableId &&
+            candidate.session.status === "OPEN" &&
+            candidate.order.status !== "CLOSED" &&
+            candidate.order.status !== "CANCELLED"
+        )
+        .sort((left, right) => right.order.updatedAt.localeCompare(left.order.updatedAt))[0] ??
+      null;
+
+    return aggregate ? cloneAggregate(aggregate) : null;
+  }
+
+  async upsertRestaurantAggregate(session: TableSession, order: RestaurantOrder): Promise<void> {
+    const existing = this.restaurantAggregatesByOrderId.get(order.id);
+    this.restaurantAggregatesByOrderId.set(order.id, {
+      session: cloneAggregate({
+        session,
+        order,
+        syncStatus: existing?.syncStatus ?? "SYNCED",
+        lastError: existing?.lastError ?? null,
+        commandVersion: existing?.commandVersion ?? 0,
+      }).session,
+      order: cloneAggregate({
+        session,
+        order,
+        syncStatus: existing?.syncStatus ?? "SYNCED",
+        lastError: existing?.lastError ?? null,
+        commandVersion: existing?.commandVersion ?? 0,
+      }).order,
+      syncStatus: existing?.syncStatus ?? "SYNCED",
+      lastError: existing?.lastError ?? null,
+      commandVersion: existing?.commandVersion ?? 0,
+    });
+  }
+
+  async openRestaurantTableAndEnqueue(
+    input: RestaurantOpenTableInput
+  ): Promise<RestaurantOpenTableResult> {
+    const existing = await this.getRestaurantAggregateByTable(input.tableId);
+    if (existing) {
+      throw new Error("Table already has an active local session");
+    }
+
+    const nowIso = new Date().toISOString();
+    const tableSessionId = uuidv4();
+    const orderId = uuidv4();
+    const aggregate = createRestaurantAggregate({
+      workspaceId: input.workspaceId,
+      tableId: input.tableId,
+      registerId: input.registerId,
+      shiftSessionId: input.shiftSessionId,
+      openedByUserId: input.openedByUserId,
+      tableSessionId,
+      orderId,
+      openedAtIso: nowIso,
+    });
+    const payload = {
+      tableSessionId,
+      orderId,
+      tableId: input.tableId,
+      registerId: input.registerId,
+      shiftSessionId: input.shiftSessionId,
+      openedAt: nowIso,
+      notes: input.notes ?? null,
+      idempotencyKey: buildDeterministicIdempotencyKey.restaurantTableOpen(tableSessionId),
+    };
+    const command = createPosOutboxCommand(
+      input.workspaceId,
+      PosCommandTypes.RestaurantTableOpen,
+      payload,
+      payload.idempotencyKey
+    ) as OutboxCommand<typeof payload>;
+
+    this.restaurantAggregatesByOrderId.set(orderId, cloneAggregate(aggregate));
+
+    return {
+      session: aggregate.session,
+      order: aggregate.order,
+      command,
+    };
+  }
+
+  async replaceRestaurantDraftAndEnqueue(
+    input: RestaurantDraftUpdateInput
+  ): Promise<RestaurantDraftUpdateResult> {
+    const existing = this.restaurantAggregatesByOrderId.get(input.orderId);
+    if (!existing) {
+      throw new Error("Restaurant order not found in local cache");
+    }
+
+    const next = replaceRestaurantDraftState(
+      existing,
+      input.items,
+      input.discountCents,
+      new Date().toISOString()
+    );
+    const payload = {
+      orderId: input.orderId,
+      items: input.items,
+      discountCents: input.discountCents,
+      idempotencyKey: buildDeterministicIdempotencyKey.restaurantDraftReplace(
+        input.orderId,
+        next.commandVersion
+      ),
+    };
+    const command = createPosOutboxCommand(
+      input.workspaceId,
+      PosCommandTypes.RestaurantDraftReplace,
+      payload,
+      payload.idempotencyKey
+    ) as OutboxCommand<typeof payload>;
+
+    this.restaurantAggregatesByOrderId.set(input.orderId, cloneAggregate(next));
+
+    return {
+      session: next.session,
+      order: next.order,
+      command,
+    };
+  }
+
+  async sendRestaurantOrderAndEnqueue(input: RestaurantSendInput): Promise<RestaurantSendResult> {
+    const existing = this.restaurantAggregatesByOrderId.get(input.orderId);
+    if (!existing) {
+      throw new Error("Restaurant order not found in local cache");
+    }
+
+    const next = sendRestaurantOrderState(existing, new Date().toISOString());
+    const payload = {
+      orderId: input.orderId,
+      idempotencyKey: buildDeterministicIdempotencyKey.restaurantSendToKitchen(
+        input.orderId,
+        next.commandVersion
+      ),
+    };
+    const command = createPosOutboxCommand(
+      input.workspaceId,
+      PosCommandTypes.RestaurantSendToKitchen,
+      payload,
+      payload.idempotencyKey
+    ) as OutboxCommand<typeof payload>;
+
+    this.restaurantAggregatesByOrderId.set(input.orderId, cloneAggregate(next));
+
+    return {
+      session: next.session,
+      order: next.order,
+      command,
+    };
+  }
+
+  async markRestaurantOrderSynced(
+    orderId: string,
+    next?: { session?: TableSession; order?: RestaurantOrder }
+  ): Promise<void> {
+    const existing = this.restaurantAggregatesByOrderId.get(orderId);
+    if (!existing) {
+      return;
+    }
+
+    this.restaurantAggregatesByOrderId.set(orderId, {
+      ...cloneAggregate(existing),
+      session: next?.session
+        ? cloneAggregate({ ...existing, session: next.session }).session
+        : cloneAggregate(existing).session,
+      order: next?.order
+        ? cloneAggregate({ ...existing, order: next.order }).order
+        : cloneAggregate(existing).order,
+      syncStatus: "SYNCED",
+      lastError: null,
+    });
+  }
+
+  async markRestaurantOrderSyncFailure(orderId: string, reason: string): Promise<void> {
+    const existing = this.restaurantAggregatesByOrderId.get(orderId);
+    if (!existing) {
+      return;
+    }
+
+    this.restaurantAggregatesByOrderId.set(orderId, {
+      ...cloneAggregate(existing),
+      syncStatus: "FAILED",
+      lastError: reason,
+    });
   }
 
   private generateReceiptNumber(registerId: string, date: Date, posSaleId: string): string {

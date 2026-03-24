@@ -7,6 +7,7 @@ export const catalogAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Manage products, variants, units, and tax profiles",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["catalog.basic"],
   permissions: ["catalog.read", "catalog.write"],
   entitlement: {

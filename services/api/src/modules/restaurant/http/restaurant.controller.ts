@@ -8,6 +8,7 @@ import {
   ListKitchenStationsInputSchema,
   ListKitchenTicketsInputSchema,
   ListRestaurantModifierGroupsInputSchema,
+  MergeRestaurantChecksInputSchema,
   OpenRestaurantTableInputSchema,
   PutRestaurantDraftOrderInputSchema,
   RequestRestaurantDiscountInputSchema,
@@ -21,9 +22,11 @@ import {
   UpsertRestaurantTableInputSchema,
 } from "@corely/contracts";
 import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { AllowSurfaces } from "@/shared/surface";
 import { buildUseCaseContext, resolveIdempotencyKey } from "../../../shared/http/usecase-mappers";
 import { RestaurantApplication } from "../application/restaurant.application";
 
+@AllowSurfaces("platform", "pos")
 @Controller("restaurant")
 @UseGuards(AuthGuard)
 export class RestaurantController {
@@ -148,6 +151,19 @@ export class RestaurantController {
       TransferRestaurantTableInputSchema.parse({
         ...(body as object),
         orderId,
+        idempotencyKey:
+          (body as Record<string, unknown>)?.idempotencyKey ?? resolveIdempotencyKey(req as never),
+      }),
+      buildUseCaseContext(req as never)
+    );
+  }
+
+  @Post("orders/:orderId/merge")
+  async mergeChecks(@Param("orderId") orderId: string, @Body() body: unknown, @Req() req: Request) {
+    return this.app.mergeChecks(
+      MergeRestaurantChecksInputSchema.parse({
+        ...(body as object),
+        targetOrderId: orderId,
         idempotencyKey:
           (body as Record<string, unknown>)?.idempotencyKey ?? resolveIdempotencyKey(req as never),
       }),

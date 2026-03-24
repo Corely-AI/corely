@@ -6,9 +6,11 @@ import {
   SyncCrmMailboxInputSchema,
 } from "@corely/contracts";
 import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { AllowSurfaces } from "@/shared/surface";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
 import { CrmMailApplication } from "../../application/crm-mail.application";
 
+@AllowSurfaces("platform", "crm")
 @Controller("crm/mailboxes")
 @UseGuards(AuthGuard)
 export class CrmMailboxesController {

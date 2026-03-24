@@ -4,6 +4,8 @@ import type {
   CloseRestaurantTableOutput,
   GetActiveRestaurantOrderInput,
   GetActiveRestaurantOrderOutput,
+  MergeRestaurantChecksInput,
+  MergeRestaurantChecksOutput,
   OpenRestaurantTableInput,
   OpenRestaurantTableOutput,
   PutRestaurantDraftOrderInput,
@@ -264,6 +266,105 @@ export class RestaurantOrderApplication {
             tx
           );
           return persisted;
+        });
+      }
+    );
+  }
+
+  async mergeChecks(
+    input: MergeRestaurantChecksInput,
+    ctx: UseCaseContext
+  ): Promise<MergeRestaurantChecksOutput> {
+    return this.support.withWrite(
+      ctx,
+      "restaurant.table.merge",
+      input.idempotencyKey,
+      input,
+      async ({ tenantId, workspaceId, userId }) => {
+        if (input.sourceOrderId === input.targetOrderId) {
+          throw new ConflictError(
+            "RESTAURANT_MERGE_SAME_CHECK",
+            "Source and target checks must be different"
+          );
+        }
+
+        const source = await this.support.requireAggregate(
+          tenantId,
+          workspaceId,
+          input.sourceOrderId
+        );
+        const target = await this.support.requireAggregate(
+          tenantId,
+          workspaceId,
+          input.targetOrderId
+        );
+
+        if (source.session.id !== input.sourceTableSessionId) {
+          throw new ConflictError(
+            "RESTAURANT_SESSION_ORDER_MISMATCH",
+            "Source session does not belong to source order"
+          );
+        }
+        if (target.session.id !== input.targetTableSessionId) {
+          throw new ConflictError(
+            "RESTAURANT_SESSION_ORDER_MISMATCH",
+            "Target session does not belong to target order"
+          );
+        }
+
+        const sourceDomain = new RestaurantOrderAggregate(source.session, source.order);
+        const targetDomain = new RestaurantOrderAggregate(target.session, target.order);
+        RestaurantOrderAggregate.merge(sourceDomain, targetDomain, new Date().toISOString());
+
+        return this.support.uow.withinTransaction(async (tx) => {
+          await this.support.repo.saveAggregate(
+            tenantId,
+            workspaceId,
+            { session: sourceDomain.session, order: sourceDomain.order },
+            tx
+          );
+          const persistedTarget = await this.support.repo.saveAggregate(
+            tenantId,
+            workspaceId,
+            { session: targetDomain.session, order: targetDomain.order },
+            tx
+          );
+          await this.support.audit.log(
+            {
+              tenantId,
+              userId,
+              action: "restaurant.table.merged",
+              entityType: "RestaurantOrder",
+              entityId: persistedTarget.order.id,
+              metadata: {
+                sourceOrderId: sourceDomain.order.id,
+                sourceTableSessionId: sourceDomain.session.id,
+                targetTableSessionId: persistedTarget.session.id,
+                mergedItemCount: sourceDomain.order.items.length,
+              },
+            },
+            tx
+          );
+          await this.support.outbox.enqueue(
+            {
+              tenantId,
+              eventType: "restaurant.table-merged",
+              payload: {
+                targetOrderId: persistedTarget.order.id,
+                sourceOrderId: sourceDomain.order.id,
+                sourceTableSessionId: sourceDomain.session.id,
+                targetTableSessionId: persistedTarget.session.id,
+              },
+              correlationId: persistedTarget.order.id,
+            },
+            tx
+          );
+          return {
+            session: persistedTarget.session,
+            order: persistedTarget.order,
+            sourceSessionId: sourceDomain.session.id,
+            sourceOrderId: sourceDomain.order.id,
+          };
         });
       }
     );

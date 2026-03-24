@@ -106,6 +106,8 @@ General developer guides and references.
 
 ### 📂 Other Resources
 
+- [Platform Menu API](./platform/menu.md)
+- [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
 - [Conventions](./conventions/)
 - [Decisions](./decisions/)

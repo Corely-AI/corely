@@ -13,6 +13,8 @@ import type {
   ListKitchenTicketsOutput,
   ListRestaurantModifierGroupsInput,
   ListRestaurantModifierGroupsOutput,
+  MergeRestaurantChecksInput,
+  MergeRestaurantChecksOutput,
   OpenRestaurantTableInput,
   OpenRestaurantTableOutput,
   PutRestaurantDraftOrderInput,
@@ -113,6 +115,12 @@ export class RestaurantApplication {
     ctx: UseCaseContext
   ): Promise<TransferRestaurantTableOutput> {
     return this.order.transferTable(input, ctx);
+  }
+  mergeChecks(
+    input: MergeRestaurantChecksInput,
+    ctx: UseCaseContext
+  ): Promise<MergeRestaurantChecksOutput> {
+    return this.order.mergeChecks(input, ctx);
   }
   sendOrderToKitchen(
     input: SendRestaurantOrderToKitchenInput,

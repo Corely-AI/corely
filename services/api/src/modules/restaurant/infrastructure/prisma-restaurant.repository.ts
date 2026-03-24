@@ -424,4 +424,24 @@ export class PrismaRestaurantRepository implements RestaurantRepositoryPort {
     });
     return request ? mapApprovalRequest(request) : null;
   }
+
+  async listApprovalRequests(
+    tenantId: string,
+    workspaceId: string,
+    input?: {
+      statuses?: RestaurantApprovalRequest["status"][];
+      limit?: number;
+    }
+  ): Promise<RestaurantApprovalRequest[]> {
+    const requests = await this.prisma.restaurantApprovalRequest.findMany({
+      where: {
+        tenantId,
+        workspaceId,
+        status: input?.statuses?.length ? { in: input.statuses } : undefined,
+      },
+      orderBy: [{ createdAt: "desc" }],
+      take: input?.limit ?? 20,
+    });
+    return requests.map(mapApprovalRequest);
+  }
 }

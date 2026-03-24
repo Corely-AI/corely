@@ -6,6 +6,7 @@ import { ApprovalsModule } from "../approvals";
 import { IdentityModule } from "../identity";
 import { WorkflowModule } from "../workflow";
 import { RestaurantApprovalApplication } from "./application/restaurant-approval.application";
+import { RestaurantAiApplication } from "./application/restaurant-ai.application";
 import { RestaurantApplicationSupport } from "./application/restaurant-application.support";
 import { RestaurantApplication } from "./application/restaurant.application";
 import { RestaurantOrderApplication } from "./application/restaurant-order.application";
@@ -23,6 +24,7 @@ import { PrismaRestaurantRepository } from "./infrastructure/prisma-restaurant.r
     RestaurantSetupApplication,
     RestaurantOrderApplication,
     RestaurantApprovalApplication,
+    RestaurantAiApplication,
     PrismaRestaurantRepository,
     IdempotencyService,
     {
@@ -30,6 +32,6 @@ import { PrismaRestaurantRepository } from "./infrastructure/prisma-restaurant.r
       useExisting: PrismaRestaurantRepository,
     },
   ],
-  exports: [RestaurantApplication],
+  exports: [RestaurantApplication, RestaurantAiApplication],
 })
 export class RestaurantModule {}

@@ -200,4 +200,31 @@ describe("ToolRegistry", () => {
       "collect_helper",
     ]);
   });
+
+  it("filters platform-only tools out of the CRM surface", async () => {
+    const registry = new ToolRegistry([
+      mockTool("invoice_list", "invoices"),
+      mockTool("crm_createDealFromText", "crm"),
+      mockTool("collect_helper"),
+    ]);
+
+    const tools = await registry.listForTenant("tenant-1", undefined, "crm");
+
+    expect(tools.map((tool) => tool.name)).toEqual(["crm_createDealFromText", "collect_helper"]);
+  });
+
+  it("filters CRM tools out of the POS surface while keeping POS tools", async () => {
+    const registry = new ToolRegistry([
+      mockTool("crm_createDealFromText", "crm"),
+      mockTool("restaurant_searchMenuItems", "restaurant"),
+      mockTool("collect_helper"),
+    ]);
+
+    const tools = await registry.listForTenant("tenant-1", undefined, "pos");
+
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "restaurant_searchMenuItems",
+      "collect_helper",
+    ]);
+  });
 });

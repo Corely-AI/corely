@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Badge,
   Button,
@@ -22,6 +23,7 @@ const ticketStatuses: Array<KitchenTicketStatus | "ALL"> = [
 ];
 
 export default function RestaurantKitchenQueuePage() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<KitchenTicketStatus | "ALL">("ALL");
   const ticketsQuery = useKitchenTickets(status);
   const updateStatus = useUpdateKitchenTicketStatus();
@@ -34,6 +36,9 @@ export default function RestaurantKitchenQueuePage() {
           <p className="text-sm text-muted-foreground">
             Basic queue view for restaurant tickets created from sent orders.
           </p>
+          <Button variant="outline" onClick={() => navigate("/restaurant/copilot")}>
+            Open Restaurant Copilot
+          </Button>
         </div>
         <div className="w-48">
           <Select
