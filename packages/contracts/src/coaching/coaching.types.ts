@@ -426,7 +426,9 @@ export const ListCoachingOffersInputSchema = z.object({
   pageSize: QueryNumberSchema.optional().default(20),
   includeArchived: QueryBooleanSchema.optional(),
 });
-export const ListCoachingOffersOutputSchema = createListResponseSchema(CoachingOfferListItemDtoSchema);
+export const ListCoachingOffersOutputSchema = createListResponseSchema(
+  CoachingOfferListItemDtoSchema
+);
 export type ListCoachingOffersInput = z.infer<typeof ListCoachingOffersInputSchema>;
 export type ListCoachingOffersOutput = z.infer<typeof ListCoachingOffersOutputSchema>;
 

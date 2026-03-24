@@ -42,7 +42,11 @@ export class UpdateCoachingOfferUseCase extends BaseUseCase<
       return err(new ValidationError("tenantId, workspaceId, and userId are required"));
     }
 
-    const current = await this.deps.repo.findOfferById(ctx.tenantId, ctx.workspaceId, input.offerId);
+    const current = await this.deps.repo.findOfferById(
+      ctx.tenantId,
+      ctx.workspaceId,
+      input.offerId
+    );
     if (!current) {
       return err(new NotFoundError("Coaching offer not found"));
     }
@@ -62,7 +66,9 @@ export class UpdateCoachingOfferUseCase extends BaseUseCase<
       paymentRequired: input.paymentRequired ?? current.paymentRequired,
       localeDefault: input.localeDefault ?? current.localeDefault,
       contractTemplate:
-        input.contractTemplate !== undefined ? (input.contractTemplate ?? null) : current.contractTemplate,
+        input.contractTemplate !== undefined
+          ? (input.contractTemplate ?? null)
+          : current.contractTemplate,
       contractLabel:
         input.contractLabel !== undefined ? (input.contractLabel ?? null) : current.contractLabel,
       prepFormTemplate:

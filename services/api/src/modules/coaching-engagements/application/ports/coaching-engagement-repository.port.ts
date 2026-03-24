@@ -36,7 +36,10 @@ export interface CoachingEngagementRepositoryPort {
     filters: { q?: string; includeArchived?: boolean },
     pagination: { page: number; pageSize: number }
   ): Promise<CoachingListResult<CoachingOfferRecord>>;
-  findPublicOfferById(offerId: string, tx?: TransactionContext): Promise<CoachingOfferRecord | null>;
+  findPublicOfferById(
+    offerId: string,
+    tx?: TransactionContext
+  ): Promise<CoachingOfferRecord | null>;
   createEngagement(
     engagement: CoachingEngagementRecord,
     tx?: TransactionContext

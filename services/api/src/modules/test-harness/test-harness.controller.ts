@@ -262,9 +262,7 @@ export class TestHarnessController {
     @Body() payload: { tenantId: string; sessionId: string; startAt: string; endAt: string }
   ) {
     if (!payload.tenantId || !payload.sessionId || !payload.startAt || !payload.endAt) {
-      throw new BadRequestException(
-        "Missing required fields: tenantId, sessionId, startAt, endAt"
-      );
+      throw new BadRequestException("Missing required fields: tenantId, sessionId, startAt, endAt");
     }
     await this.testHarnessService.updateCoachingSessionSchedule(payload);
     return { success: true };

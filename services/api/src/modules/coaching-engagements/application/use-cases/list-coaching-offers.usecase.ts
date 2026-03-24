@@ -8,10 +8,7 @@ import {
   err,
   ok,
 } from "@corely/kernel";
-import {
-  type ListCoachingOffersInput,
-  type ListCoachingOffersOutput,
-} from "@corely/contracts";
+import { type ListCoachingOffersInput, type ListCoachingOffersOutput } from "@corely/contracts";
 import { toCoachingOfferDto } from "../mappers/coaching-dto.mapper";
 import { type CoachingEngagementRepositoryPort } from "../ports/coaching-engagement-repository.port";
 

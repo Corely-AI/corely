@@ -4,7 +4,8 @@ import type { CoachingEngagementRecord, CoachingOfferRecord } from "../../domain
 import type { CoachingEngagementRepositoryPort } from "../ports/coaching-engagement-repository.port";
 import type { CoachingPaymentProviderRegistryPort } from "../ports/coaching-payment-provider.port";
 
-const APP_BASE_URL = process.env.WEB_BASE_URL ?? process.env.API_BASE_URL ?? "http://localhost:8080";
+const APP_BASE_URL =
+  process.env.WEB_BASE_URL ?? process.env.API_BASE_URL ?? "http://localhost:8080";
 
 export function resolveCoachingReturnUrl(path: string | undefined, fallbackPath: string): string {
   return new URL(path ?? fallbackPath, APP_BASE_URL).toString();

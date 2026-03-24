@@ -223,9 +223,7 @@ export const StartCoachingPublicBookingOutputSchema = z.object({
   payment: CoachingPaymentDtoSchema,
   checkoutUrl: z.string().url(),
 });
-export type StartCoachingPublicBookingInput = z.infer<
-  typeof StartCoachingPublicBookingInputSchema
->;
+export type StartCoachingPublicBookingInput = z.infer<typeof StartCoachingPublicBookingInputSchema>;
 export type StartCoachingPublicBookingOutput = z.infer<
   typeof StartCoachingPublicBookingOutputSchema
 >;

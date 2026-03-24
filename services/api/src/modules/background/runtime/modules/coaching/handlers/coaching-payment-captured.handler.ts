@@ -26,7 +26,11 @@ import { InvoicesApplication } from "../../../../../invoices/application/invoice
 import { PrismaInvoiceRepoAdapter } from "../../../../../invoices/infrastructure/adapters/prisma-invoice-repository.adapter";
 import { toInvoiceDto } from "../../../../../invoices/application/use-cases/shared/invoice-dto.mapper";
 import { DocumentsApplication } from "../../../../../documents/application/documents.application";
-import { COACHING_EVENTS, type CoachingPaymentCapturedEvent, type InvoiceDto } from "@corely/contracts";
+import {
+  COACHING_EVENTS,
+  type CoachingPaymentCapturedEvent,
+  type InvoiceDto,
+} from "@corely/contracts";
 import {
   buildEmailMessage,
   buildLocalizedOfferTitle,
@@ -240,7 +244,10 @@ export class CoachingPaymentCapturedHandler implements EventHandler {
         engagementId: engagement.id,
         invoiceId: invoice.id,
       });
-      const finalized = await this.invoices.finalizeInvoice.execute({ invoiceId: invoice.id }, appCtx);
+      const finalized = await this.invoices.finalizeInvoice.execute(
+        { invoiceId: invoice.id },
+        appCtx
+      );
       if (isErr(finalized)) {
         console.log("[coaching-invoice] finalize failed", finalized.error);
         throw finalized.error;
@@ -248,7 +255,10 @@ export class CoachingPaymentCapturedHandler implements EventHandler {
       invoice = finalized.value.invoice;
     }
 
-    const pdf = await this.documents.getInvoicePdf.execute({ invoiceId: invoice.id, waitMs: 0 }, appCtx);
+    const pdf = await this.documents.getInvoicePdf.execute(
+      { invoiceId: invoice.id, waitMs: 0 },
+      appCtx
+    );
     if (!isErr(pdf) && pdf.value.documentId) {
       await this.documents.linkDocument.execute(
         {
