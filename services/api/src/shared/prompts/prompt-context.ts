@@ -8,9 +8,19 @@ export const buildPromptContext = (params: {
   workspaceKind?: WorkspaceKind;
   environmentOverride?: string;
   surfaceId?: SurfaceId;
-}): PromptContext => ({
-  environment: params.environmentOverride ?? params.env.APP_ENV,
-  tenantId: params.tenantId,
-  workspaceKind: params.workspaceKind,
-  surfaceId: params.surfaceId,
-});
+}): PromptContext => {
+  const context: PromptContext = {
+    environment: params.environmentOverride ?? params.env.APP_ENV,
+    tenantId: params.tenantId,
+    workspaceKind: params.workspaceKind,
+  };
+
+  if (!params.surfaceId) {
+    return context;
+  }
+
+  return {
+    ...context,
+    surfaceId: params.surfaceId,
+  } as PromptContext;
+};

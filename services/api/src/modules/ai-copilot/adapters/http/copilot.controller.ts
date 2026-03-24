@@ -22,6 +22,7 @@ import {
   ListCopilotThreadMessagesRequestSchema,
   ListCopilotThreadsRequestSchema,
   SearchCopilotThreadsRequestSchema,
+  type SurfaceId,
 } from "@corely/contracts";
 import { CopilotChatRequestDto } from "./copilot.dto";
 import { StreamCopilotChatUseCase } from "../../application/use-cases/stream-copilot-chat.usecase";
@@ -302,6 +303,7 @@ export class CopilotController {
       requestId: context.requestId,
       workspaceId: context.workspaceId,
       workspaceKind: "COMPANY",
+      surfaceId: context.surfaceId,
       environment: this.env.APP_ENV,
       modelId: this.env.AI_MODEL_ID,
       modelProvider: this.env.AI_MODEL_PROVIDER,
@@ -317,6 +319,7 @@ export class CopilotController {
     requestId: string;
     workspaceId: string;
     activeAppId?: string;
+    surfaceId?: SurfaceId;
   } {
     const ctx = toUseCaseContext(req as ContextAwareRequest);
     const tenantId = (ctx.workspaceId as string | undefined) ?? ctx.tenantId;
@@ -332,6 +335,7 @@ export class CopilotController {
       requestId,
       workspaceId,
       activeAppId: ctx.activeAppId,
+      surfaceId: ctx.surfaceId as SurfaceId | undefined,
     };
   }
 
