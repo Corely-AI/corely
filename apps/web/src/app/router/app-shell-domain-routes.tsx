@@ -40,6 +40,7 @@ import {
   LeadsPage,
   NewActivityPage,
   NewDealPage,
+  NewLeadPage,
   NewSequencePage,
   SequencesPage,
   SequenceDetailPage,
