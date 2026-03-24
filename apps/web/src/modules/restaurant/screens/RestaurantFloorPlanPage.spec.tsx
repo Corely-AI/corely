@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import RestaurantFloorPlanPage from "./RestaurantFloorPlanPage";
 
@@ -50,7 +51,11 @@ vi.mock("../hooks/use-restaurant-admin", () => ({
 
 describe("RestaurantFloorPlanPage", () => {
   it("renders dining rooms and tables", () => {
-    render(<RestaurantFloorPlanPage />);
+    render(
+      <MemoryRouter>
+        <RestaurantFloorPlanPage />
+      </MemoryRouter>
+    );
 
     expect(screen.getByText("Restaurant floor plan")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Main hall" })).toBeInTheDocument();
