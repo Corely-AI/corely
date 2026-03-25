@@ -16,7 +16,7 @@ import { runRestaurantCopilotPrompt } from "@/lib/restaurant-copilot";
 import { AppShell, Button, Card, EmptyState, ModalSheet, TextField } from "@/ui/components";
 import { formatCurrencyFromCents } from "@/lib/formatters";
 import { posTheme } from "@/ui/theme";
-import { styles } from "./table-order.styles";
+import { styles } from "@/screens/restaurant-table-order.styles";
 
 type PendingModifierSelection = {
   product: ProductSnapshot;
