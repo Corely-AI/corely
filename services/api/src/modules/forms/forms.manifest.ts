@@ -7,6 +7,7 @@ export const formsAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Create, publish, and manage public forms and submissions",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: ["forms.read", "forms.manage", "forms.submissions.read"],
   entitlement: {

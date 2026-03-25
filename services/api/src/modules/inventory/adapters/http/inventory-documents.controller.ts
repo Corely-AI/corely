@@ -15,8 +15,8 @@ import { ValidationError } from "@corely/kernel";
 import { InventoryDocumentsApplication } from "../../application/inventory-documents.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
 import { toHttpException } from "../../../../shared/http/usecase-error.mapper";
-import { AuthGuard } from "../../../identity";
-import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../../platform";
 import { ApprovalGateService } from "../../../approvals/application/approval-gate.service";
 

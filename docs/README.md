@@ -88,6 +88,7 @@ Specific feature implementation details.
 - [Catalog Module](./features/catalog.md)
 - [Custom Attributes Framework](./features/custom-attributes.md)
 - [Command Palette](./features/command-palette.md)
+- [Coaching Engagements](./features/coaching-engagements.md)
 
 ### 📚 Guides
 
@@ -105,6 +106,8 @@ General developer guides and references.
 
 ### 📂 Other Resources
 
+- [Platform Menu API](./platform/menu.md)
+- [Tenant Features And Menu Permissions](./platform/tenant-features-and-menu-permissions.md)
 - [Best Practices](./best-practices/)
 - [Conventions](./conventions/)
 - [Decisions](./decisions/)

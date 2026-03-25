@@ -1,13 +1,23 @@
-export const isCustomDomain = (): boolean => {
-  const host = window.location.hostname;
-  // Exclude localhost for dev (unless we specifically want to test domain mapping on localhost, which is hard without modifying /etc/hosts)
-  // But usually admin runs on localhost.
+import { normalizeSurfaceHostname, resolveSurface } from "@corely/contracts";
+
+export const isCustomDomainHost = (hostname: string): boolean => {
+  const host = normalizeSurfaceHostname(hostname);
+
+  if (!host) {
+    return false;
+  }
+
+  // Keep local surface subdomains in app mode so crm.localhost / pos.localhost
+  // route into the authenticated shell instead of public portfolio pages.
+  if (host.endsWith(".localhost") && resolveSurface(host) !== "platform") {
+    return false;
+  }
+
+  // Exclude localhost for dev. Bare localhost should always behave like the app shell.
   if (host === "localhost" || host === "127.0.0.1") {
     return false;
   }
 
-  // Exclude known admin domains
-  // Check env vars first
   const appHostsRaw =
     import.meta.env.VITE_APP_HOSTS ?? import.meta.env.VITE_APP_HOST ?? "app.corely.one";
   const appHosts = appHostsRaw
@@ -28,4 +38,8 @@ export const isCustomDomain = (): boolean => {
   }
 
   return true;
+};
+
+export const isCustomDomain = (): boolean => {
+  return isCustomDomainHost(window.location.hostname);
 };

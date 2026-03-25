@@ -111,6 +111,12 @@ import { ListCashEntryAttachmentsQueryUseCase } from "../cash-management/applica
 import { ExportCashBookUseCase } from "../cash-management/application/use-cases/export-cash-book.usecase";
 import { buildCashManagementTools } from "../cash-management/adapters/tools/cash-management.tools";
 import { BillingModule } from "../billing/billing.module";
+import { CoachingEngagementsModule } from "../coaching-engagements";
+import { CoachingEngagementsApplication } from "../coaching-engagements/application/coaching-engagements.application";
+import { buildCoachingTools } from "../coaching-engagements/adapters/tools/coaching.tools";
+import { RestaurantModule } from "../restaurant/restaurant.module";
+import { RestaurantAiApplication } from "../restaurant/application/restaurant-ai.application";
+import { buildRestaurantAiTools } from "../restaurant/adapters/tools/restaurant.tools";
 
 @Module({
   imports: [
@@ -128,6 +134,8 @@ import { BillingModule } from "../billing/billing.module";
     DocumentsModule,
     CashManagementModule,
     BillingModule,
+    CoachingEngagementsModule,
+    RestaurantModule,
     TaxModule,
     PlatformEntitlementsModule,
     PromptModule,
@@ -286,6 +294,8 @@ import { BillingModule } from "../billing/billing.module";
         startIncomeTaxDraftPdfExport: StartIncomeTaxDraftPdfExportUseCase,
         pollIncomeTaxDraftPdfExport: PollIncomeTaxDraftPdfExportUseCase,
         confirmIncomeTaxDraftSubmission: ConfirmIncomeTaxDraftSubmissionUseCase,
+        coaching: CoachingEngagementsApplication,
+        restaurantAi: RestaurantAiApplication,
         chatStore: ChatStorePort,
         env: EnvService,
         promptRegistry: PromptRegistry,
@@ -369,6 +379,8 @@ import { BillingModule } from "../billing/billing.module";
               chatStore,
             })
           ),
+          ...withAppId("coaching-engagements", buildCoachingTools(coaching)),
+          ...withAppId("restaurant", buildRestaurantAiTools(restaurantAi)),
         ];
       },
       inject: [
@@ -413,6 +425,8 @@ import { BillingModule } from "../billing/billing.module";
         StartIncomeTaxDraftPdfExportUseCase,
         PollIncomeTaxDraftPdfExportUseCase,
         ConfirmIncomeTaxDraftSubmissionUseCase,
+        CoachingEngagementsApplication,
+        RestaurantAiApplication,
         CHAT_STORE_PORT,
         EnvService,
         PromptRegistry,

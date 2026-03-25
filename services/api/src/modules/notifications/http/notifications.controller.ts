@@ -7,7 +7,8 @@ import {
   MarkReadRequestSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext } from "../../../shared/http/usecase-mappers";
-import { AuthGuard, RbacGuard } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard } from "@/modules/identity/adapters/http/rbac.guard";
 import { ListNotificationsUseCase } from "../application/use-cases/list-notifications.usecase";
 import { GetUnreadCountUseCase } from "../application/use-cases/get-unread-count.usecase";
 import { MarkReadUseCase } from "../application/use-cases/mark-read.usecase";

@@ -1,3 +1,31 @@
+import { Platform } from "react-native";
+
+const cardElevation =
+  Platform.OS === "web"
+    ? {
+        boxShadow: "0px 6px 14px rgba(11, 26, 61, 0.08)",
+      }
+    : {
+        shadowColor: "#0B1A3D",
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.08,
+        shadowRadius: 14,
+        elevation: 3,
+      };
+
+const raisedElevation =
+  Platform.OS === "web"
+    ? {
+        boxShadow: "0px 10px 18px rgba(11, 26, 61, 0.14)",
+      }
+    : {
+        shadowColor: "#0B1A3D",
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.14,
+        shadowRadius: 18,
+        elevation: 6,
+      };
+
 export const posTheme = {
   colors: {
     primary: "#003399",
@@ -96,20 +124,8 @@ export const posTheme = {
     sm: 12,
   },
   elevation: {
-    card: {
-      shadowColor: "#0B1A3D",
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.08,
-      shadowRadius: 14,
-      elevation: 3,
-    },
-    elevated: {
-      shadowColor: "#0B1A3D",
-      shadowOffset: { width: 0, height: 10 },
-      shadowOpacity: 0.14,
-      shadowRadius: 18,
-      elevation: 6,
-    },
+    card: cardElevation,
+    elevated: raisedElevation,
   },
   breakpoints: {
     phoneMax: 719,

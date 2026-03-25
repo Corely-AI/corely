@@ -388,6 +388,7 @@
   "nav": {
     "cart": "Cart",
     "kiosk": "Check-In",
+    "restaurant": "Restaurant",
     "settings": "Settings",
     "shop": "Shop",
     "sync": "Sync"

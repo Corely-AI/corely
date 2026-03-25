@@ -7,6 +7,7 @@ export const importAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Import shipment tracking and customs operations",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["import.basic"],
   permissions: ["import.shipments.read", "import.shipments.manage"],
   entitlement: {

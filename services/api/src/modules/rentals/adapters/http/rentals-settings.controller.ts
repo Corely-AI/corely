@@ -6,7 +6,7 @@ import {
   UpdateRentalContactSettingsOutputSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { RentalsApplication } from "../../application/rentals.application";
 
 @Controller("rentals/settings")

@@ -7,6 +7,7 @@ export const issuesAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Issue tracking and management",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: ["issues.manage", "issues.voice"],
   permissions: ["issues.read", "issues.write", "issues.delete", "issues.resolve", "issues.assign"],
   menu: [

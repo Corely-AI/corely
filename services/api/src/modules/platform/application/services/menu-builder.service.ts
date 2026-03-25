@@ -1,5 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common";
-import type { MenuContribution, MenuGroup, MenuItem, MenuOverrides } from "@corely/contracts";
+import {
+  isSurfaceAllowed,
+  type MenuContribution,
+  type MenuGroup,
+  type MenuItem,
+  type MenuOverrides,
+  type SurfaceId,
+} from "@corely/contracts";
 import { TenantEntitlementService } from "./tenant-entitlement.service";
 import { TenantEntitlement } from "../../domain/entitlement.aggregate";
 import { APP_REGISTRY_TOKEN, type AppRegistryPort } from "../ports/app-registry.port";
@@ -14,6 +21,7 @@ export interface BuildMenuInput {
   userId: string;
   permissions: Set<string>;
   scope: "web" | "pos";
+  surfaceId: SurfaceId;
   capabilityFilter?: Set<string>;
   capabilityKeys?: Set<string>;
 }
@@ -62,11 +70,15 @@ export class MenuBuilderService {
       if (!manifest) {
         continue;
       }
+      if (!isSurfaceAllowed(input.surfaceId, manifest.allowedSurfaces)) {
+        continue;
+      }
 
       const contributions = manifest.menu.filter((item) =>
         this.shouldIncludeMenuItem(
           item,
           input.scope,
+          input.surfaceId,
           input.permissions,
           entitlement,
           input.capabilityFilter,
@@ -137,11 +149,16 @@ export class MenuBuilderService {
   private shouldIncludeMenuItem(
     item: MenuContribution,
     scope: string,
+    surfaceId: SurfaceId,
     permissions: Set<string>,
     entitlement: TenantEntitlement,
     capabilityFilter?: Set<string>,
     capabilityKeys?: Set<string>
   ): boolean {
+    if (!isSurfaceAllowed(surfaceId, item.allowedSurfaces)) {
+      return false;
+    }
+
     if (!this.matchesScope(item, scope)) {
       return false;
     }

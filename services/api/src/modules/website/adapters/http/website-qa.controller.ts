@@ -18,7 +18,7 @@ import {
   UpdateWebsiteQaInputSchema,
   UpsertWebsiteQaOutputSchema,
 } from "@corely/contracts";
-import { AuthGuard } from "@/modules/identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { buildUseCaseContext, mapResultToHttp } from "@/shared/http/usecase-mappers";
 import { WebsiteApplication } from "../../application/website.application";
 

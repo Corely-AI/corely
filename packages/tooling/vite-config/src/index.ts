@@ -77,6 +77,7 @@ export function createBaseViteConfig(options: BaseViteConfigOptions = {}): UserC
         [proxyPath]: {
           target: apiProxy.target,
           changeOrigin: true,
+          xfwd: true,
           ...(apiProxy.path ? {} : { rewrite: (path: string) => path.replace(/^\/api/, "") }),
         },
       }

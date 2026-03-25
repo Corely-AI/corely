@@ -17,8 +17,12 @@ import {
 
 const TEST_APP_CORE_ID = "core";
 const TEST_APP_EXPENSES_ID = "expenses";
+const TEST_APP_CRM_ID = "crm";
+const TEST_APP_CASH_ID = "cash-management";
 const TEST_APP_TAX_ID = "tax";
 const TEST_MENU_DASHBOARD_ID = "dashboard";
+const TEST_MENU_CRM_DASHBOARD_ID = "crm-dashboard";
+const TEST_MENU_CASH_ID = "cash-management";
 const TEST_MENU_EXPENSES_ID = "expenses";
 const TEST_MENU_TAX_OVERVIEW_ID = "tax-center";
 
@@ -97,6 +101,26 @@ describe("Menu app entitlements integration", () => {
       enabledAt: new Date(),
       enabledByUserId: userId,
     });
+
+    await appInstallRepo.upsert({
+      id: randomUUID(),
+      tenantId,
+      appId: TEST_APP_CRM_ID,
+      enabled: true,
+      installedVersion: "1.0.0",
+      enabledAt: new Date(),
+      enabledByUserId: userId,
+    });
+
+    await appInstallRepo.upsert({
+      id: randomUUID(),
+      tenantId,
+      appId: TEST_APP_CASH_ID,
+      enabled: true,
+      installedVersion: "1.0.0",
+      enabledAt: new Date(),
+      enabledByUserId: userId,
+    });
   });
 
   afterAll(async () => {
@@ -167,5 +191,29 @@ describe("Menu app entitlements integration", () => {
     );
     expect(taxGroup).toBeDefined();
     expect(taxGroup!.items[taxGroup!.items.length - 1].id).toBe("tax-settings");
+  });
+
+  it("returns different menu trees for CRM and POS surfaces", async () => {
+    const posResponse = await request(server)
+      .get("/menu?scope=web")
+      .set("x-user-id", userId)
+      .set("x-tenant-id", tenantId)
+      .set("x-forwarded-host", "pos.corely.one");
+    const crmResponse = await request(server)
+      .get("/menu?scope=web")
+      .set("x-user-id", userId)
+      .set("x-tenant-id", tenantId)
+      .set("x-forwarded-host", "crm.corely.one");
+
+    expect(posResponse.status).toBe(200);
+    expect(crmResponse.status).toBe(200);
+
+    const posIds = new Set<string>(posResponse.body.items.map((item: { id: string }) => item.id));
+    const crmIds = new Set<string>(crmResponse.body.items.map((item: { id: string }) => item.id));
+
+    expect(posIds.has(TEST_MENU_CASH_ID)).toBe(true);
+    expect(posIds.has(TEST_MENU_CRM_DASHBOARD_ID)).toBe(false);
+    expect(crmIds.has(TEST_MENU_CRM_DASHBOARD_ID)).toBe(true);
+    expect(crmIds.has(TEST_MENU_CASH_ID)).toBe(false);
   });
 });

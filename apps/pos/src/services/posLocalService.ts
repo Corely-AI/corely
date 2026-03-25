@@ -1,5 +1,12 @@
 import type * as SQLite from "expo-sqlite";
-import type { ProductSnapshot, ShiftSession } from "@corely/contracts";
+import type {
+  FloorPlanRoom,
+  ProductSnapshot,
+  RestaurantModifierGroup,
+  RestaurantOrder,
+  ShiftSession,
+  TableSession,
+} from "@corely/contracts";
 import {
   getLastCatalogSyncAt,
   getProductByBarcode,
@@ -25,8 +32,27 @@ import {
   openShiftAndEnqueue,
   upsertShiftSession,
 } from "@/services/posLocalService.shift";
+import {
+  cacheRestaurantSnapshot,
+  getRestaurantAggregateByTable,
+  getRestaurantSnapshot,
+  markRestaurantOrderSyncFailure,
+  markRestaurantOrderSynced,
+  openRestaurantTableAndEnqueue,
+  replaceRestaurantDraftAndEnqueue,
+  sendRestaurantOrderAndEnqueue,
+  upsertRestaurantAggregate,
+} from "@/services/posLocalService.restaurant";
 import type {
   CreateSaleAndEnqueueInput,
+  RestaurantAggregateState,
+  RestaurantDraftUpdateInput,
+  RestaurantDraftUpdateResult,
+  RestaurantOfflineSnapshot,
+  RestaurantOpenTableInput,
+  RestaurantOpenTableResult,
+  RestaurantSendInput,
+  RestaurantSendResult,
   SaleCreateResult,
   ShiftCashEventInput,
   ShiftCashEventRecord,
@@ -38,6 +64,14 @@ import type {
 export type {
   CartLineInput,
   CreateSaleAndEnqueueInput,
+  RestaurantAggregateState,
+  RestaurantDraftUpdateInput,
+  RestaurantDraftUpdateResult,
+  RestaurantOfflineSnapshot,
+  RestaurantOpenTableInput,
+  RestaurantOpenTableResult,
+  RestaurantSendInput,
+  RestaurantSendResult,
   SaleCreateResult,
   ShiftCashEventInput,
   ShiftCloseInput,
@@ -130,5 +164,51 @@ export class PosLocalService {
 
   async getLastCatalogSyncAt(): Promise<Date | null> {
     return getLastCatalogSyncAt(this.db);
+  }
+
+  async cacheRestaurantSnapshot(
+    rooms: FloorPlanRoom[],
+    modifierGroups: RestaurantModifierGroup[]
+  ): Promise<void> {
+    return cacheRestaurantSnapshot(this.db, rooms, modifierGroups);
+  }
+
+  async getRestaurantSnapshot(): Promise<RestaurantOfflineSnapshot> {
+    return getRestaurantSnapshot(this.db);
+  }
+
+  async getRestaurantAggregateByTable(tableId: string): Promise<RestaurantAggregateState | null> {
+    return getRestaurantAggregateByTable(this.db, tableId);
+  }
+
+  async upsertRestaurantAggregate(session: TableSession, order: RestaurantOrder): Promise<void> {
+    return upsertRestaurantAggregate(this.db, session, order);
+  }
+
+  async openRestaurantTableAndEnqueue(
+    input: RestaurantOpenTableInput
+  ): Promise<RestaurantOpenTableResult> {
+    return openRestaurantTableAndEnqueue(this.db, input);
+  }
+
+  async replaceRestaurantDraftAndEnqueue(
+    input: RestaurantDraftUpdateInput
+  ): Promise<RestaurantDraftUpdateResult> {
+    return replaceRestaurantDraftAndEnqueue(this.db, input);
+  }
+
+  async sendRestaurantOrderAndEnqueue(input: RestaurantSendInput): Promise<RestaurantSendResult> {
+    return sendRestaurantOrderAndEnqueue(this.db, input);
+  }
+
+  async markRestaurantOrderSynced(
+    orderId: string,
+    next?: { session?: TableSession; order?: RestaurantOrder }
+  ): Promise<void> {
+    return markRestaurantOrderSynced(this.db, orderId, next);
+  }
+
+  async markRestaurantOrderSyncFailure(orderId: string, reason: string): Promise<void> {
+    return markRestaurantOrderSyncFailure(this.db, orderId, reason);
   }
 }

@@ -3,6 +3,7 @@ import { OutboxPollerService } from "./runtime/modules/outbox/outbox-poller.serv
 import { InvoicePdfService } from "./runtime/modules/invoices/application/invoice-pdf.service";
 import { TrialExpiryRunnerService } from "./runtime/modules/billing/trial-expiry-runner.service";
 import { BackgroundInternalGuard } from "./background-internal.guard";
+import { CoachingPrepReminderRunnerService } from "./runtime/modules/coaching/coaching-prep-reminder-runner.service";
 
 type RunOutboxBody = {
   limit?: number;
@@ -18,7 +19,8 @@ export class BackgroundInternalController {
   constructor(
     private readonly outboxPoller: OutboxPollerService,
     private readonly invoicePdfService: InvoicePdfService,
-    private readonly trialExpiryRunner: TrialExpiryRunnerService
+    private readonly trialExpiryRunner: TrialExpiryRunnerService,
+    private readonly coachingPrepRunner: CoachingPrepReminderRunnerService
   ) {}
 
   @Post("internal/background/outbox/run")
@@ -26,8 +28,44 @@ export class BackgroundInternalController {
     const limit = Number.isFinite(body?.limit) ? Math.max(1, Number(body?.limit)) : 50;
     const startedAt = new Date();
 
-    const report = await this.outboxPoller.run({
+    const outboxReport = await this.outboxPoller.run({
       runId: `api-background-${Date.now()}`,
+      startedAt,
+      budgets: {
+        overallMaxMs: 120_000,
+        perRunnerMaxMs: 120_000,
+        perRunnerMaxItems: limit,
+      },
+      logger: new Logger(BackgroundInternalController.name),
+    });
+    const coachingPrepReport = await this.coachingPrepRunner.run({
+      runId: `api-background-coaching-prep-${Date.now()}`,
+      startedAt: new Date(),
+      budgets: {
+        overallMaxMs: 120_000,
+        perRunnerMaxMs: 120_000,
+        perRunnerMaxItems: limit,
+      },
+      logger: new Logger(BackgroundInternalController.name),
+    });
+
+    return {
+      processedCount: outboxReport.processedCount + coachingPrepReport.processedCount,
+      updatedCount: outboxReport.updatedCount + coachingPrepReport.updatedCount,
+      skippedCount: outboxReport.skippedCount + coachingPrepReport.skippedCount,
+      errorCount: outboxReport.errorCount + coachingPrepReport.errorCount,
+      durationMs: outboxReport.durationMs + coachingPrepReport.durationMs,
+      outbox: outboxReport,
+      coachingPrep: coachingPrepReport,
+    };
+  }
+
+  @Post("internal/background/coaching/prep/run")
+  async runCoachingPrep(@Body() body: RunOutboxBody | undefined) {
+    const limit = Number.isFinite(body?.limit) ? Math.max(1, Number(body?.limit)) : 50;
+    const startedAt = new Date();
+    const report = await this.coachingPrepRunner.run({
+      runId: `api-background-coaching-prep-${Date.now()}`,
       startedAt,
       budgets: {
         overallMaxMs: 120_000,

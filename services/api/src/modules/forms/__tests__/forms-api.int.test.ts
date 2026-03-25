@@ -7,7 +7,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vites
 import type { PostgresTestDb } from "@corely/testkit";
 import { createTenant, createTestDb, createUser, stopSharedContainer } from "@corely/testkit";
 import { KernelModule } from "../../../shared/kernel/kernel.module";
-import { AuthGuard, RbacGuard } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard } from "@/modules/identity/adapters/http/rbac.guard";
 import { PrismaFormRepository } from "../infrastructure/adapters/prisma-form-repository.adapter";
 import { FORM_REPOSITORY } from "../application/ports/form-repository.port";
 import { CLOCK_PORT_TOKEN } from "../../../shared/ports/clock.port";

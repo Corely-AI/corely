@@ -27,7 +27,7 @@ import {
 } from "@corely/contracts";
 import { PurchasingApplication } from "../../application/purchasing.application";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../../platform";
 
 @Controller("purchasing")

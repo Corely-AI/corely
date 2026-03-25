@@ -7,6 +7,7 @@ export const websiteAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Sites, domains, pages, menus, and publishing for websites",
   dependencies: ["cms"],
+  allowedSurfaces: ["platform"],
   capabilities: ["website.manage"],
   permissions: ["website.read", "website.write", "website.publish", "website.ai.generate"],
   menu: [

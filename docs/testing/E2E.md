@@ -230,6 +230,17 @@ test("should do something", async ({ page, testData }) => {
 2. **testData** is reset after each test via `/test/reset`
 3. Data is isolated per test (no cross-test pollution)
 
+### Restaurant role credentials in E2E
+
+The restaurant Phase 1 E2E coverage uses dynamically seeded actors rather than fixed static accounts.
+
+- Bootstrap seed owner email pattern: `e2e-test-<timestamp>-<rand>@corely.local`
+- Restaurant cashier email pattern: `<seed-owner-prefix>+restaurant-cashier-<nonce>@corely.local`
+- Restaurant manager email pattern: `<seed-owner-prefix>+restaurant-manager-<nonce>@corely.local`
+- Shared password for the seed owner, cashier, and manager: `E2ETestPassword123!`
+
+The password constant is defined in [testData.ts](/Users/hadoan/Documents/GitHub/Kerniflow/apps/e2e/utils/testData.ts), and the restaurant actors are created in [restaurant-fixtures.ts](/Users/hadoan/Documents/GitHub/Kerniflow/apps/e2e/tests/helpers/restaurant-fixtures.ts). Because the emails are generated per run, test authors should read the seeded actor values from fixtures instead of hardcoding login names.
+
 ### Selectors
 
 Avoid brittle CSS selectors. Use `data-testid` attributes instead:

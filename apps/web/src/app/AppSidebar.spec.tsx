@@ -24,6 +24,8 @@ let navigationGroupsState = [
     ],
   },
 ];
+let surfaceIdState = "platform";
+let tenantPermissionState = { canRead: false, canManage: false };
 
 vi.mock("react-i18next", async () => {
   const actual = await vi.importActual("react-i18next");
@@ -81,12 +83,26 @@ vi.mock("@/shared/utils/iconMapping", () => ({
 }));
 
 vi.mock("@/shared/lib/permissions", () => ({
-  useCanReadTenants: () => ({ can: false, isLoading: false, error: null }),
-  useCanManageTenants: () => ({ can: false, isLoading: false, error: null }),
+  useCanReadTenants: () => ({
+    can: tenantPermissionState.canRead,
+    isLoading: false,
+    error: null,
+  }),
+  useCanManageTenants: () => ({
+    can: tenantPermissionState.canManage,
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+vi.mock("@corely/web-shared/shared/surface", () => ({
+  useSurfaceId: () => surfaceIdState,
 }));
 
 describe("AppSidebar", () => {
   beforeEach(() => {
+    surfaceIdState = "platform";
+    tenantPermissionState = { canRead: false, canManage: false };
     navigationGroupsState = [
       {
         id: "tax",
@@ -143,5 +159,19 @@ describe("AppSidebar", () => {
     );
 
     expect(screen.getByTestId("nav-import-shipments")).toHaveClass("bg-sidebar-accent");
+  });
+
+  it("hides platform admin links outside the platform surface", () => {
+    surfaceIdState = "crm";
+    tenantPermissionState = { canRead: true, canManage: true };
+
+    render(
+      <MemoryRouter>
+        <AppSidebar />
+      </MemoryRouter>
+    );
+
+    expect(screen.queryByTestId("nav-platform-tenants")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("nav-directory-restaurants")).not.toBeInTheDocument();
   });
 });

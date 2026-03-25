@@ -6,9 +6,11 @@ import { ListLeadsUseCase } from "../../application/use-cases/list-leads/list-le
 import { GetLeadUseCase } from "../../application/use-cases/get-lead/get-lead.usecase";
 import { CreateLeadInputSchema, ConvertLeadInputSchema } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
-import { AuthGuard } from "../../../identity";
-import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
+import { AllowSurfaces } from "@/shared/surface";
 
+@AllowSurfaces("platform", "crm")
 @Controller("crm/leads")
 @UseGuards(AuthGuard, RbacGuard)
 export class LeadsController {

@@ -35,7 +35,7 @@ import {
   buildUseCaseContext,
   resolveIdempotencyKey,
 } from "../../../../shared/http/usecase-mappers";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { EngagementApplication } from "../../application/engagement.application";
 import { toHttpException } from "../../../../shared/http/usecase-error.mapper";
 

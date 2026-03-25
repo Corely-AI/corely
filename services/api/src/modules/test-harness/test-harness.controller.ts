@@ -221,6 +221,53 @@ export class TestHarnessController {
     };
   }
 
+  @Post("invoices/by-source")
+  @HttpCode(HttpStatus.OK)
+  async listInvoicesBySource(
+    @Body() payload: { tenantId: string; sourceType: string; sourceId: string }
+  ) {
+    if (!payload.tenantId || !payload.sourceType || !payload.sourceId) {
+      throw new BadRequestException("Missing required fields: tenantId, sourceType, sourceId");
+    }
+    return {
+      invoices: await this.testHarnessService.listInvoicesBySource(payload),
+    };
+  }
+
+  @Post("coaching/contract-requests")
+  @HttpCode(HttpStatus.OK)
+  async listCoachingContractRequests(@Body() payload: { tenantId: string; engagementId: string }) {
+    if (!payload.tenantId || !payload.engagementId) {
+      throw new BadRequestException("Missing required fields: tenantId, engagementId");
+    }
+    return {
+      contractRequests: await this.testHarnessService.listCoachingContractRequests(payload),
+    };
+  }
+
+  @Post("coaching/prep-access")
+  @HttpCode(HttpStatus.OK)
+  async getCoachingPrepAccess(@Body() payload: { tenantId: string; sessionId: string }) {
+    if (!payload.tenantId || !payload.sessionId) {
+      throw new BadRequestException("Missing required fields: tenantId, sessionId");
+    }
+    return {
+      prepAccess: await this.testHarnessService.getCoachingPrepAccess(payload),
+    };
+  }
+
+  @Post("coaching/session-schedule")
+  @HttpCode(HttpStatus.OK)
+  async updateCoachingSessionSchedule(
+    @Body() payload: { tenantId: string; sessionId: string; startAt: string; endAt: string }
+  ) {
+    if (!payload.tenantId || !payload.sessionId || !payload.startAt || !payload.endAt) {
+      throw new BadRequestException("Missing required fields: tenantId, sessionId, startAt, endAt");
+    }
+    await this.testHarnessService.updateCoachingSessionSchedule(payload);
+    return { success: true };
+  }
+
   /**
    * Seed deterministic tax filing data for UI E2E scenarios.
    */

@@ -7,6 +7,7 @@ import { workflowPrompts } from "./workflows";
 import { cmsPrompts } from "./cms";
 import { websitePrompts } from "./website";
 import { invoicePrompts } from "./invoices";
+import { restaurantPrompts } from "./restaurant";
 
 export const promptDefinitions = [
   ...copilotPrompts,
@@ -18,4 +19,5 @@ export const promptDefinitions = [
   ...cmsPrompts,
   ...websitePrompts,
   ...invoicePrompts,
+  ...restaurantPrompts,
 ];

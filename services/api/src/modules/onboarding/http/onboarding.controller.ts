@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/comm
 import { CompleteOnboardingInputSchema, UpsertOnboardingStepInputSchema } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "@/shared/http/usecase-mappers";
 import type { ContextAwareRequest } from "@/shared/request-context";
-import { AuthGuard } from "@/modules/identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { GetOnboardingProgressQuery } from "../application/use-cases/get-onboarding-progress.query";
 import { UpsertOnboardingStepUseCase } from "../application/use-cases/upsert-onboarding-step.usecase";
 import { CompleteOnboardingUseCase } from "../application/use-cases/complete-onboarding.usecase";

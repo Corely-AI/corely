@@ -322,6 +322,10 @@
       "services": "Services",
       "bookingPage": "Booking Page"
     },
+    "coaching": {
+      "engagements": "Coaching engagements",
+      "sessions": "Coaching sessions"
+    },
     "programs": "Programs",
     "teacherDashboard": "Teacher Dashboard",
     "classSessions": "Sessions",
@@ -329,6 +333,51 @@
     "website": "Website",
     "platform": "Platform",
     "forms": "Forms"
+  },
+  "coaching": {
+    "engagements": {
+      "title": "Coaching engagements",
+      "subtitle": "Track coaching bookings, prerequisites, documents, and follow-ups.",
+      "columns": {
+        "offer": "Offer",
+        "client": "Client",
+        "status": "Status",
+        "billing": "Billing",
+        "updated": "Updated"
+      }
+    },
+    "sessions": {
+      "title": "Coaching sessions",
+      "subtitle": "Monitor upcoming and completed coaching sessions.",
+      "columns": {
+        "engagement": "Engagement",
+        "start": "Start",
+        "status": "Status",
+        "meeting": "Meeting"
+      },
+      "pendingMeeting": "Pending prerequisites"
+    },
+    "detail": {
+      "openCheckout": "Open checkout",
+      "exportBundle": "Export bundle",
+      "exportQueued": "Export bundle request queued.",
+      "exportError": "Failed to request export bundle.",
+      "checkoutError": "Failed to create checkout session.",
+      "sections": {
+        "overview": "Overview",
+        "workflow": "Workflow status",
+        "sessions": "Prep and sessions",
+        "documents": "Documents",
+        "activity": "Activity and audit",
+        "aiSummary": "AI summary"
+      },
+      "noArtifacts": "No artifacts stored yet.",
+      "noAiSummary": "No AI summary available yet."
+    },
+    "empty": {
+      "engagements": "No coaching engagements found.",
+      "sessions": "No coaching sessions found."
+    }
   },
   "featureFlags": {
     "app": {

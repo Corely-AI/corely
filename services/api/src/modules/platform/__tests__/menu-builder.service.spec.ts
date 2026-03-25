@@ -70,6 +70,7 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(["sales.invoices.read"]),
       scope: "web",
+      surfaceId: "platform",
     });
 
     expect(result.groups).toEqual([]);
@@ -87,6 +88,7 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(),
       scope: "web",
+      surfaceId: "platform",
     });
 
     expect(result.groups).toEqual([]);
@@ -108,6 +110,7 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(),
       scope: "web",
+      surfaceId: "platform",
     });
 
     expect(result.groups.map((group) => group.appId)).toEqual(["core"]);
@@ -131,6 +134,7 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(),
       scope: "web",
+      surfaceId: "platform",
     });
 
     expect(result.groups).toEqual([]);
@@ -154,6 +158,7 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(),
       scope: "web",
+      surfaceId: "platform",
     });
 
     expect(result.groups).toEqual([]);
@@ -178,6 +183,7 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(["import.shipments.read"]),
       scope: "web",
+      surfaceId: "platform",
       capabilityFilter: new Set(["import.basic"]),
       capabilityKeys: new Set(["import.basic"]),
     });
@@ -205,12 +211,61 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(["import.shipments.read"]),
       scope: "web",
+      surfaceId: "platform",
       capabilityFilter: new Set(),
       capabilityKeys: new Set(["import.basic"]),
     });
 
     expect(result.groups).toEqual([]);
     expect(result.items).toEqual([]);
+  });
+
+  it("hides apps that are not allowed on the active surface", async () => {
+    manifests["crm"] = {
+      ...createManifest("crm", [createMenuItem({ id: "crm-dashboard", route: "/crm" })]),
+      allowedSurfaces: ["platform", "crm"],
+    };
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["crm"]), new Set())
+    );
+
+    const result = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(),
+      scope: "web",
+      surfaceId: "pos",
+    });
+
+    expect(result.groups).toEqual([]);
+    expect(result.items).toEqual([]);
+  });
+
+  it("hides menu items whose surface restriction excludes the current host", async () => {
+    manifests["crm"] = createManifest("crm", [
+      createMenuItem({
+        id: "crm-dashboard",
+        route: "/crm",
+      }),
+      createMenuItem({
+        id: "crm-assistant",
+        route: "/assistant",
+        allowedSurfaces: ["crm"],
+      }),
+    ]);
+    vi.mocked(entitlementService.getTenantEntitlement).mockResolvedValue(
+      new TenantEntitlement("tenant-1", new Set(["crm"]), new Set())
+    );
+
+    const result = await service.build({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      permissions: new Set(),
+      scope: "web",
+      surfaceId: "platform",
+    });
+
+    expect(result.items.map((item) => item.id)).toEqual(["crm-dashboard"]);
   });
 
   it("sorts settings items last within each app group", async () => {
@@ -246,6 +301,7 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(),
       scope: "web",
+      surfaceId: "platform",
     });
 
     expect(result.groups).toHaveLength(1);
@@ -283,6 +339,7 @@ describe("MenuBuilderService", () => {
       userId: "user-1",
       permissions: new Set(),
       scope: "web",
+      surfaceId: "platform",
     });
 
     expect(result.groups.map((group) => group.appId)).toEqual(["core", "expenses", "workspaces"]);

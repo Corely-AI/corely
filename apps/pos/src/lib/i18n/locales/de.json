@@ -397,6 +397,7 @@
   "nav": {
     "cart": "Warenkorb",
     "kiosk": "Check-in",
+    "restaurant": "Restaurant",
     "settings": "Einstellungen",
     "shop": "Verkauf",
     "sync": "Sync"

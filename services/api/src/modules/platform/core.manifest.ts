@@ -7,6 +7,7 @@ export const coreAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Dashboard and core features",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: [],
   menu: [

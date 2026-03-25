@@ -18,8 +18,8 @@ import {
   GetExpirySummaryInputSchema,
 } from "@corely/contracts";
 import { buildUseCaseContext, mapResultToHttp } from "./http-mappers";
-import { AuthGuard } from "../../../identity";
-import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
 import { RequireWorkspaceCapability, WorkspaceCapabilityGuard } from "../../../platform";
 import { CreateLotUseCase } from "../../application/use-cases/create-lot.usecase";
 import { ListLotsUseCase } from "../../application/use-cases/list-lots.usecase";

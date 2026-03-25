@@ -8,9 +8,11 @@ import { GetSequenceByIdUseCase } from "../../application/use-cases/get-sequence
 import { ListSequencesUseCase } from "../../application/use-cases/list-sequences/list-sequences.usecase";
 import { UpdateSequenceUseCase } from "../../application/use-cases/update-sequence/update-sequence.usecase";
 import { buildUseCaseContext, mapResultToHttp } from "../../../../shared/http/usecase-mappers";
-import { AuthGuard } from "../../../identity";
-import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
+import { RbacGuard, RequirePermission } from "@/modules/identity/adapters/http/rbac.guard";
+import { AllowSurfaces } from "@/shared/surface";
 
+@AllowSurfaces("platform", "crm")
 @Controller("crm/sequences")
 @UseGuards(AuthGuard, RbacGuard)
 export class SequencesHttpController {

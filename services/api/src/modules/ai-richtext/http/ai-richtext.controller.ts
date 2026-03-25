@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Req, Res, UseGuards, Header } from "@nestjs/common";
 import type { Request, Response } from "express";
 import { RichTextAiRequestSchema } from "@corely/contracts";
-import { AuthGuard } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 import { RunRichTextAiUseCase } from "../application/run-richtext-ai.usecase";
 
 @Controller("ai/richtext")

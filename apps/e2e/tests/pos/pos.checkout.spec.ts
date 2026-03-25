@@ -1,16 +1,16 @@
 import { expect, test, type Page } from "@playwright/test";
-import { POS_IDS, autoAcceptNativeDialogs, installPosApiMock } from "./helpers";
+import { POS_AUTH_TOKENS, POS_IDS, autoAcceptNativeDialogs, installPosApiMock } from "./helpers";
 
 function seedAuthenticatedStorage(page: Page): Promise<void> {
   return page.addInitScript(
-    ({ ids }) => {
+    ({ ids, tokens }) => {
       const prefix = "corely-pos.secure.";
       const set = (key: string, value: string) => localStorage.setItem(`${prefix}${key}`, value);
 
       localStorage.clear();
 
-      set("accessToken", "pos-e2e-access-token");
-      set("refreshToken", "pos-e2e-refresh-token");
+      set("accessToken", tokens.accessToken);
+      set("refreshToken", tokens.refreshToken);
       set("activeWorkspaceId", ids.workspaceId);
       set("pos.require-open-shift-for-sales", "false");
       set("pos.language", "en");
@@ -23,7 +23,7 @@ function seedAuthenticatedStorage(page: Page): Promise<void> {
         })
       );
     },
-    { ids: POS_IDS }
+    { ids: POS_IDS, tokens: POS_AUTH_TOKENS }
   );
 }
 

@@ -30,7 +30,7 @@ import {
   mapResultToHttp,
   resolveIdempotencyKey,
 } from "../../../../shared/http/usecase-mappers";
-import { AuthGuard } from "../../../identity";
+import { AuthGuard } from "../../../identity/adapters/http/auth.guard";
 import { RbacGuard, RequirePermission } from "../../../identity/adapters/http/rbac.guard";
 import { PARTY_QUERY_PORT, type PartyQueryPort } from "../../application/ports/party-query.port";
 import { Inject } from "@nestjs/common";

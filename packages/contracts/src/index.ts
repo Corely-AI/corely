@@ -63,6 +63,8 @@ export * from "./inventory";
 export * from "./inventory-ai";
 export * from "./import";
 export * from "./catalog";
+export * from "./restaurant";
+export * from "./restaurant-ai";
 export * from "./portfolio";
 export * from "./issues";
 export * from "./integrations";
@@ -113,6 +115,7 @@ export * from "./ai/richtext";
 export * from "./notifications";
 export * from "./billing";
 export * from "./onboarding";
+export * from "./coaching";
 
 export const CONTRACTS_HELLO = "Corely contracts loaded ✅";
 

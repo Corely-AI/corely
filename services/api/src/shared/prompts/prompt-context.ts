@@ -1,13 +1,26 @@
 import type { EnvService } from "@corely/config";
 import type { PromptContext, WorkspaceKind } from "@corely/prompts";
+import type { SurfaceId } from "@corely/contracts";
 
 export const buildPromptContext = (params: {
   env: EnvService;
   tenantId?: string;
   workspaceKind?: WorkspaceKind;
   environmentOverride?: string;
-}): PromptContext => ({
-  environment: params.environmentOverride ?? params.env.APP_ENV,
-  tenantId: params.tenantId,
-  workspaceKind: params.workspaceKind,
-});
+  surfaceId?: SurfaceId;
+}): PromptContext => {
+  const context: PromptContext = {
+    environment: params.environmentOverride ?? params.env.APP_ENV,
+    tenantId: params.tenantId,
+    workspaceKind: params.workspaceKind,
+  };
+
+  if (!params.surfaceId) {
+    return context;
+  }
+
+  return {
+    ...context,
+    surfaceId: params.surfaceId,
+  } as PromptContext;
+};

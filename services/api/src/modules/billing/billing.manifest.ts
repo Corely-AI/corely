@@ -7,6 +7,7 @@ export const billingAppManifest: AppManifest = {
   version: "1.0.0",
   description: "Subscriptions, checkout, usage, and billing provider synchronization.",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: ["billing.read", "billing.manage"],
   menu: [],

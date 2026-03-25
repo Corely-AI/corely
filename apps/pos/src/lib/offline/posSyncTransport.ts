@@ -1,10 +1,16 @@
 import type { SyncTransport, CommandResult, OutboxCommand } from "@corely/offline-core";
 import type {
   CashEntryType,
+  OpenRestaurantTableInput,
+  OpenRestaurantTableOutput,
   CreateCheckInEventInput,
   CreateLoyaltyEarnEntryInput,
   OpenShiftInput,
   CloseShiftInput,
+  PutRestaurantDraftOrderInput,
+  PutRestaurantDraftOrderOutput,
+  SendRestaurantOrderToKitchenInput,
+  SendRestaurantOrderToKitchenOutput,
   SyncPosSaleInput,
 } from "@corely/contracts";
 import { CashEntrySourceType } from "@corely/contracts";
@@ -85,16 +91,56 @@ export class PosSyncTransport implements SyncTransport {
             registerId: payload.registerId,
             type: toCashEntryType(payload.eventType),
             amountCents: payload.amountCents,
+            source: CashEntrySourceType.MANUAL,
             sourceType: CashEntrySourceType.MANUAL,
             description:
               payload.reason ??
               (payload.eventType === "PAID_IN" ? "POS shift paid-in" : "POS shift paid-out"),
+            paymentMethod: "CASH",
+            currency: "EUR",
             referenceId: payload.eventId,
             businessDate: payload.occurredAt.slice(0, 10),
           });
 
           if (this.deps.posLocalService) {
             await this.deps.posLocalService.markShiftCashEventSynced(payload.eventId);
+          }
+          return { status: "OK" };
+        }
+        case PosCommandTypes.RestaurantTableOpen: {
+          const payload = command.payload as OpenRestaurantTableInput;
+          const output = (await this.deps.apiClient.openRestaurantTable(
+            payload
+          )) as OpenRestaurantTableOutput;
+          if (this.deps.posLocalService) {
+            await this.deps.posLocalService.markRestaurantOrderSynced(payload.orderId, {
+              session: output.session,
+              order: output.order,
+            });
+          }
+          return { status: "OK" };
+        }
+        case PosCommandTypes.RestaurantDraftReplace: {
+          const payload = command.payload as PutRestaurantDraftOrderInput;
+          const output = (await this.deps.apiClient.putRestaurantDraftOrder(
+            payload
+          )) as PutRestaurantDraftOrderOutput;
+          if (this.deps.posLocalService) {
+            await this.deps.posLocalService.markRestaurantOrderSynced(payload.orderId, {
+              order: output.order,
+            });
+          }
+          return { status: "OK" };
+        }
+        case PosCommandTypes.RestaurantSendToKitchen: {
+          const payload = command.payload as SendRestaurantOrderToKitchenInput;
+          const output = (await this.deps.apiClient.sendRestaurantOrderToKitchen(
+            payload
+          )) as SendRestaurantOrderToKitchenOutput;
+          if (this.deps.posLocalService) {
+            await this.deps.posLocalService.markRestaurantOrderSynced(payload.orderId, {
+              order: output.order,
+            });
           }
           return { status: "OK" };
         }
@@ -129,6 +175,21 @@ export class PosSyncTransport implements SyncTransport {
         const payload = command.payload as ShiftCashEventCommandPayload;
         await this.deps.posLocalService.markShiftCashEventFailed(
           payload.eventId,
+          error instanceof Error ? error.message : "Sync failed"
+        );
+      }
+      if (
+        (command.type === PosCommandTypes.RestaurantTableOpen ||
+          command.type === PosCommandTypes.RestaurantDraftReplace ||
+          command.type === PosCommandTypes.RestaurantSendToKitchen) &&
+        this.deps.posLocalService
+      ) {
+        const payload = command.payload as
+          | OpenRestaurantTableInput
+          | PutRestaurantDraftOrderInput
+          | SendRestaurantOrderToKitchenInput;
+        await this.deps.posLocalService.markRestaurantOrderSyncFailure(
+          payload.orderId,
           error instanceof Error ? error.message : "Sync failed"
         );
       }

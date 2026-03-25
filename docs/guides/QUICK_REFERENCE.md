@@ -157,10 +157,10 @@ pnpm dev
 
 ```bash
 # Create migration
-pnpm prisma:migrate --name add_{module}_table
+pnpm prisma:migrate:dev --name add_{module}_table
 
 # Apply migrations
-pnpm --filter @corely/data exec prisma migrate deploy
+pnpm prisma:migrate
 
 # Generate client
 pnpm prisma:generate

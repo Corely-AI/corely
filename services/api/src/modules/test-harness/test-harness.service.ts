@@ -54,6 +54,54 @@ export interface InvoiceEmailDeliveryLookup {
   lastError: string | null;
 }
 
+export interface InvoiceSourceLookup {
+  invoiceId: string;
+  number: string | null;
+  status: string;
+  currency: string;
+  sourceType: string | null;
+  sourceId: string | null;
+  paymentCount: number;
+  deliveryCount: number;
+}
+
+export interface CoachingContractRequestLookup {
+  id: string;
+  engagementId: string;
+  clientPartyId: string;
+  provider: string;
+  status: string;
+  requestToken: string;
+  requestTokenHash: string;
+  templateLocale: string;
+  contractTitle: string;
+  contractBody: string;
+  recipientName: string | null;
+  recipientEmail: string | null;
+  signerName: string | null;
+  signerEmail: string | null;
+  requestedAt: string;
+  deliveredAt: string | null;
+  viewedAt: string | null;
+  completedAt: string | null;
+  draftDocumentId: string;
+  signedDocumentId: string | null;
+}
+
+export interface CoachingPrepAccessLookup {
+  sessionId: string;
+  engagementId: string;
+  clientPartyId: string;
+  coachUserId: string;
+  prepAccessToken: string | null;
+  prepAccessTokenHash: string | null;
+  prepRequestedAt: string | null;
+  prepSubmittedAt: string | null;
+  prepDocumentId: string | null;
+  startAt: string;
+  endAt: string;
+}
+
 export type SeedTaxFilingScenarioType = "VAT_PERIODIC" | "VAT_ANNUAL";
 export type SeedTaxFilingScenarioStatus = "OPEN" | "SUBMITTED" | "PAID";
 
@@ -1139,6 +1187,180 @@ export class TestHarnessService {
       providerMessageId: row.providerMessageId ?? null,
       lastError: row.lastError ?? null,
     }));
+  }
+
+  async listInvoicesBySource(params: {
+    tenantId: string;
+    sourceType: string;
+    sourceId: string;
+  }): Promise<InvoiceSourceLookup[]> {
+    const rows = await this.prisma.invoice.findMany({
+      where: {
+        tenantId: params.tenantId,
+        sourceType: params.sourceType,
+        sourceId: params.sourceId,
+      },
+      include: {
+        payments: true,
+        _count: {
+          select: {
+            payments: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    if (rows.length === 0) {
+      return [];
+    }
+
+    const deliveryCounts = await this.prisma.invoiceEmailDelivery.groupBy({
+      by: ["invoiceId"],
+      where: {
+        tenantId: params.tenantId,
+        invoiceId: { in: rows.map((row) => row.id) },
+      },
+      _count: {
+        invoiceId: true,
+      },
+    });
+    const deliveryCountByInvoiceId = new Map(
+      deliveryCounts.map((row) => [row.invoiceId, row._count.invoiceId])
+    );
+
+    return rows.map((row) => ({
+      invoiceId: row.id,
+      number: row.number ?? null,
+      status: row.status,
+      currency: row.currency,
+      sourceType: row.sourceType ?? null,
+      sourceId: row.sourceId ?? null,
+      paymentCount: row._count.payments,
+      deliveryCount: deliveryCountByInvoiceId.get(row.id) ?? 0,
+    }));
+  }
+
+  async listCoachingContractRequests(params: {
+    tenantId: string;
+    engagementId: string;
+  }): Promise<CoachingContractRequestLookup[]> {
+    const rows = await this.prisma.coachingContractRequest.findMany({
+      where: {
+        tenantId: params.tenantId,
+        engagementId: params.engagementId,
+      },
+      orderBy: { requestedAt: "asc" },
+      select: {
+        id: true,
+        engagementId: true,
+        clientPartyId: true,
+        provider: true,
+        status: true,
+        requestToken: true,
+        requestTokenHash: true,
+        templateLocale: true,
+        contractTitle: true,
+        contractBody: true,
+        recipientName: true,
+        recipientEmail: true,
+        signerName: true,
+        signerEmail: true,
+        requestedAt: true,
+        deliveredAt: true,
+        viewedAt: true,
+        completedAt: true,
+        draftDocumentId: true,
+        signedDocumentId: true,
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      engagementId: row.engagementId,
+      clientPartyId: row.clientPartyId,
+      provider: row.provider,
+      status: row.status,
+      requestToken: row.requestToken,
+      requestTokenHash: row.requestTokenHash,
+      templateLocale: row.templateLocale,
+      contractTitle: row.contractTitle,
+      contractBody: row.contractBody,
+      recipientName: row.recipientName ?? null,
+      recipientEmail: row.recipientEmail ?? null,
+      signerName: row.signerName ?? null,
+      signerEmail: row.signerEmail ?? null,
+      requestedAt: row.requestedAt.toISOString(),
+      deliveredAt: row.deliveredAt?.toISOString() ?? null,
+      viewedAt: row.viewedAt?.toISOString() ?? null,
+      completedAt: row.completedAt?.toISOString() ?? null,
+      draftDocumentId: row.draftDocumentId,
+      signedDocumentId: row.signedDocumentId ?? null,
+    }));
+  }
+
+  async getCoachingPrepAccess(params: {
+    tenantId: string;
+    sessionId: string;
+  }): Promise<CoachingPrepAccessLookup | null> {
+    const row = await this.prisma.coachingSession.findFirst({
+      where: {
+        id: params.sessionId,
+        tenantId: params.tenantId,
+      },
+      select: {
+        id: true,
+        prepAccessToken: true,
+        prepAccessTokenHash: true,
+        prepRequestedAt: true,
+        prepSubmittedAt: true,
+        prepDocumentId: true,
+        startAt: true,
+        endAt: true,
+        engagement: {
+          select: {
+            id: true,
+            clientPartyId: true,
+            coachUserId: true,
+          },
+        },
+      },
+    });
+    if (!row) {
+      return null;
+    }
+
+    return {
+      sessionId: row.id,
+      engagementId: row.engagement.id,
+      clientPartyId: row.engagement.clientPartyId,
+      coachUserId: row.engagement.coachUserId,
+      prepAccessToken: row.prepAccessToken ?? null,
+      prepAccessTokenHash: row.prepAccessTokenHash ?? null,
+      prepRequestedAt: row.prepRequestedAt?.toISOString() ?? null,
+      prepSubmittedAt: row.prepSubmittedAt?.toISOString() ?? null,
+      prepDocumentId: row.prepDocumentId ?? null,
+      startAt: row.startAt.toISOString(),
+      endAt: row.endAt.toISOString(),
+    };
+  }
+
+  async updateCoachingSessionSchedule(params: {
+    tenantId: string;
+    sessionId: string;
+    startAt: string;
+    endAt: string;
+  }): Promise<void> {
+    await this.prisma.coachingSession.updateMany({
+      where: {
+        id: params.sessionId,
+        tenantId: params.tenantId,
+      },
+      data: {
+        startAt: new Date(params.startAt),
+        endAt: new Date(params.endAt),
+      },
+    });
   }
 
   /**

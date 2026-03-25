@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import type { Request, Route } from "@playwright/test";
 
 export const POS_IDS = {
   workspaceId: "2f00417b-b4d9-4bd5-a2d9-0d0e68221601",
@@ -10,9 +11,36 @@ export const POS_IDS = {
   serverPaymentId: "599f801a-e95f-43cc-acc6-aa69b17f6e14",
 };
 
+function createMockJwt(payload: Record<string, unknown>): string {
+  const encode = (value: Record<string, unknown>) =>
+    Buffer.from(JSON.stringify(value)).toString("base64url");
+  return `${encode({ alg: "none", typ: "JWT" })}.${encode(payload)}.signature`;
+}
+
+export const POS_AUTH_TOKENS = {
+  accessToken: createMockJwt({
+    sub: POS_IDS.userId,
+    userId: POS_IDS.userId,
+    workspaceId: POS_IDS.workspaceId,
+    exp: 4_102_444_800,
+  }),
+  refreshToken: createMockJwt({
+    sub: POS_IDS.userId,
+    tokenType: "refresh",
+    exp: 4_102_444_800,
+  }),
+};
+
 type MockPosApiOptions = {
   failShiftOpenAttempts?: number;
   startWithOpenShift?: boolean;
+  extraApiHandler?: (context: {
+    path: string;
+    method: string;
+    request: Request;
+    origin: string;
+    fulfillJson: (status: number, payload: unknown) => Promise<void>;
+  }) => Promise<boolean>;
 };
 
 export async function installPosApiMock(
@@ -43,7 +71,7 @@ export async function installPosApiMock(
     : null;
   let remainingShiftOpenFailures = options.failShiftOpenAttempts ?? 0;
 
-  await page.route("**/api/**", async (route) => {
+  const apiHandler = async (route: Route) => {
     const request = route.request();
     const method = request.method();
     const url = new URL(request.url());
@@ -71,13 +99,34 @@ export async function installPosApiMock(
       });
     };
 
+    if (
+      options.extraApiHandler &&
+      (await options.extraApiHandler({
+        path,
+        method,
+        request,
+        origin,
+        fulfillJson,
+      }))
+    ) {
+      return;
+    }
+
     if (path.endsWith("/auth/login") && method === "POST") {
       await fulfillJson(200, {
-        accessToken: "pos-e2e-access-token",
-        refreshToken: "pos-e2e-refresh-token",
+        accessToken: POS_AUTH_TOKENS.accessToken,
+        refreshToken: POS_AUTH_TOKENS.refreshToken,
         userId: POS_IDS.userId,
         email: "cashier@corely.test",
         workspaceId: POS_IDS.workspaceId,
+      });
+      return;
+    }
+
+    if (path.endsWith("/auth/refresh") && method === "POST") {
+      await fulfillJson(200, {
+        accessToken: POS_AUTH_TOKENS.accessToken,
+        refreshToken: POS_AUTH_TOKENS.refreshToken,
       });
       return;
     }
@@ -305,7 +354,18 @@ export async function installPosApiMock(
       status: 404,
       detail: `No mock implemented for ${method} ${path}`,
     });
-  });
+  };
+
+  for (const pattern of [
+    "**/api/**",
+    "**/auth/**",
+    "**/customers/**",
+    "**/pos/**",
+    "**/engagement/**",
+    "**/cash-registers/**",
+  ]) {
+    await page.route(pattern, apiHandler);
+  }
 }
 
 export function autoAcceptNativeDialogs(page: Page): void {
@@ -319,14 +379,14 @@ export async function bootstrapAuthenticatedPos(
   options?: { requireOpenShiftForSales?: boolean }
 ): Promise<void> {
   await page.addInitScript(
-    ({ ids, requireOpenShiftForSales }) => {
+    ({ ids, tokens, requireOpenShiftForSales }) => {
       const prefix = "corely-pos.secure.";
       const set = (key: string, value: string) => {
         localStorage.setItem(`${prefix}${key}`, value);
       };
 
-      set("accessToken", "pos-e2e-access-token");
-      set("refreshToken", "pos-e2e-refresh-token");
+      set("accessToken", tokens.accessToken);
+      set("refreshToken", tokens.refreshToken);
       set("activeWorkspaceId", ids.workspaceId);
       set("pos.require-open-shift-for-sales", requireOpenShiftForSales ? "true" : "false");
       set(
@@ -338,7 +398,11 @@ export async function bootstrapAuthenticatedPos(
         })
       );
     },
-    { ids: POS_IDS, requireOpenShiftForSales: options?.requireOpenShiftForSales ?? true }
+    {
+      ids: POS_IDS,
+      tokens: POS_AUTH_TOKENS,
+      requireOpenShiftForSales: options?.requireOpenShiftForSales ?? true,
+    }
   );
 
   await page.goto("/");

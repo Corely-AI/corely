@@ -288,6 +288,10 @@
     "catalogItems": "Mặt hàng danh mục",
     "importShipments": "Lô hàng",
     "suppliers": "Nhà cung cấp",
+    "coaching": {
+      "engagements": "Ho so coaching",
+      "sessions": "Buoi coaching"
+    },
     "automation": "Tự động hóa",
     "documents": "Tài liệu",
     "cms": {
@@ -317,6 +321,51 @@
     "website": "Trang web",
     "platform": "Nền tảng",
     "forms": "Biểu mẫu"
+  },
+  "coaching": {
+    "engagements": {
+      "title": "Ho so coaching",
+      "subtitle": "Theo doi lich coaching, dieu kien, tai lieu va cac buoc tiep theo.",
+      "columns": {
+        "offer": "Goi dich vu",
+        "client": "Khach hang",
+        "status": "Trang thai",
+        "billing": "Thanh toan",
+        "updated": "Cap nhat"
+      }
+    },
+    "sessions": {
+      "title": "Buoi coaching",
+      "subtitle": "Theo doi cac buoi coaching sap toi va da hoan thanh.",
+      "columns": {
+        "engagement": "Ho so",
+        "start": "Bat dau",
+        "status": "Trang thai",
+        "meeting": "Lien ket hop"
+      },
+      "pendingMeeting": "Dang cho dieu kien"
+    },
+    "detail": {
+      "openCheckout": "Mo thanh toan",
+      "exportBundle": "Xuat bo tai lieu",
+      "exportQueued": "Da tao yeu cau xuat bo tai lieu.",
+      "exportError": "Khong the tao yeu cau xuat.",
+      "checkoutError": "Khong the tao phien thanh toan.",
+      "sections": {
+        "overview": "Tong quan",
+        "workflow": "Trang thai quy trinh",
+        "sessions": "Chuan bi va buoi hoc",
+        "documents": "Tai lieu",
+        "activity": "Hoat dong va audit",
+        "aiSummary": "Tom tat AI"
+      },
+      "noArtifacts": "Chua co tai lieu nao duoc luu.",
+      "noAiSummary": "Chua co tom tat AI."
+    },
+    "empty": {
+      "engagements": "Khong tim thay ho so coaching.",
+      "sessions": "Khong tim thay buoi coaching."
+    }
   },
   "featureFlags": {
     "app": {

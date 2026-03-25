@@ -1,13 +1,29 @@
 import { ApiClient, type ApiClientConfig } from "@corely/auth-client";
 import type {
+  CloseRestaurantTableInput,
+  CloseRestaurantTableOutput,
   CreateRegisterInput,
   CreateRegisterOutput,
+  GetActiveRestaurantOrderOutput,
+  GetRestaurantFloorPlanOutput,
   ListRegistersInput,
   ListRegistersOutput,
+  ListRestaurantModifierGroupsOutput,
   OpenShiftInput,
   OpenShiftOutput,
+  OpenRestaurantTableInput,
+  OpenRestaurantTableOutput,
+  RequestRestaurantDiscountInput,
+  RequestRestaurantVoidInput,
+  RestaurantApprovalMutationOutput,
   CloseShiftInput,
   CloseShiftOutput,
+  PutRestaurantDraftOrderInput,
+  PutRestaurantDraftOrderOutput,
+  SendRestaurantOrderToKitchenInput,
+  SendRestaurantOrderToKitchenOutput,
+  TransferRestaurantTableInput,
+  TransferRestaurantTableOutput,
   GetCurrentShiftInput,
   GetCurrentShiftOutput,
   SyncPosSaleInput,
@@ -92,9 +108,11 @@ export class PosApiClient extends ApiClient {
   async startCashlessPayment(
     input: StartCashlessPaymentInput
   ): Promise<StartCashlessPaymentOutput> {
-    return this.post<StartCashlessPaymentOutput>("/pos/payments/cashless/start", input, {
-      idempotencyKey: input.idempotencyKey,
-    });
+    return this.post<StartCashlessPaymentOutput>(
+      "/pos/payments/cashless/start",
+      input,
+      input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined
+    );
   }
 
   async getCashlessPaymentStatus(attemptId: string): Promise<GetCashlessPaymentStatusOutput> {
@@ -225,6 +243,88 @@ export class PosApiClient extends ApiClient {
   async createCashEntry(input: CreateCashEntry): Promise<{ entry: unknown }> {
     return this.post<{ entry: unknown }>(`/cash-registers/${input.registerId}/entries`, input, {
       idempotencyKey: this.generateIdempotencyKey(),
+    });
+  }
+
+  async getRestaurantFloorPlan(): Promise<GetRestaurantFloorPlanOutput> {
+    return this.get<GetRestaurantFloorPlanOutput>("/restaurant/floor-plan");
+  }
+
+  async listRestaurantModifierGroups(): Promise<ListRestaurantModifierGroupsOutput> {
+    return this.get<ListRestaurantModifierGroupsOutput>("/restaurant/modifier-groups");
+  }
+
+  async openRestaurantTable(input: OpenRestaurantTableInput): Promise<OpenRestaurantTableOutput> {
+    return this.post<OpenRestaurantTableOutput>("/restaurant/tables/open", input, {
+      idempotencyKey: input.idempotencyKey,
+    });
+  }
+
+  async getActiveRestaurantOrder(tableId: string): Promise<GetActiveRestaurantOrderOutput> {
+    return this.get<GetActiveRestaurantOrderOutput>(`/restaurant/tables/${tableId}/current`);
+  }
+
+  async putRestaurantDraftOrder(
+    input: PutRestaurantDraftOrderInput
+  ): Promise<PutRestaurantDraftOrderOutput> {
+    return this.put<PutRestaurantDraftOrderOutput>(
+      `/restaurant/orders/${input.orderId}/draft`,
+      input,
+      {
+        idempotencyKey: input.idempotencyKey,
+      }
+    );
+  }
+
+  async sendRestaurantOrderToKitchen(
+    input: SendRestaurantOrderToKitchenInput
+  ): Promise<SendRestaurantOrderToKitchenOutput> {
+    return this.post<SendRestaurantOrderToKitchenOutput>(
+      `/restaurant/orders/${input.orderId}/send`,
+      input,
+      {
+        idempotencyKey: input.idempotencyKey,
+      }
+    );
+  }
+
+  async closeRestaurantTable(
+    input: CloseRestaurantTableInput
+  ): Promise<CloseRestaurantTableOutput> {
+    return this.post<CloseRestaurantTableOutput>(
+      `/restaurant/orders/${input.orderId}/close`,
+      input,
+      {
+        idempotencyKey: input.idempotencyKey,
+      }
+    );
+  }
+
+  async transferRestaurantTable(
+    input: TransferRestaurantTableInput
+  ): Promise<TransferRestaurantTableOutput> {
+    return this.post<TransferRestaurantTableOutput>(
+      `/restaurant/orders/${input.orderId}/transfer`,
+      input,
+      {
+        idempotencyKey: input.idempotencyKey,
+      }
+    );
+  }
+
+  async requestRestaurantVoid(
+    input: RequestRestaurantVoidInput
+  ): Promise<RestaurantApprovalMutationOutput> {
+    return this.post<RestaurantApprovalMutationOutput>("/restaurant/approvals/void", input, {
+      idempotencyKey: input.idempotencyKey,
+    });
+  }
+
+  async requestRestaurantDiscount(
+    input: RequestRestaurantDiscountInput
+  ): Promise<RestaurantApprovalMutationOutput> {
+    return this.post<RestaurantApprovalMutationOutput>("/restaurant/approvals/discount", input, {
+      idempotencyKey: input.idempotencyKey,
     });
   }
 }

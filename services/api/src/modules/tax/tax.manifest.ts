@@ -7,6 +7,7 @@ export const taxAppManifest: AppManifest = {
   version: "2.0.0",
   description: "Tax Center, Filings, and Compliance",
   dependencies: [],
+  allowedSurfaces: ["platform"],
   capabilities: [],
   permissions: [],
   entitlement: {

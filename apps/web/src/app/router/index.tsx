@@ -21,6 +21,12 @@ import {
   PublicShowcaseBlog,
 } from "../../modules/portfolio";
 import { appShellRoutes } from "./app-shell-routes";
+import { getDefaultRouteForSurface, useSurfaceId } from "@corely/web-shared/shared/surface";
+
+const SurfaceRootRedirect = () => {
+  const surfaceId = useSurfaceId();
+  return <Navigate to={getDefaultRouteForSurface(surfaceId)} replace />;
+};
 
 export const Router = () => (
   <BrowserRouter
@@ -33,9 +39,7 @@ export const Router = () => (
       {/* Root Route: Domain Mode Portfolio OR Dashboard Redirect */}
       <Route
         path="/"
-        element={
-          isCustomDomain() ? <PublicPortfolioLayout /> : <Navigate to="/dashboard" replace />
-        }
+        element={isCustomDomain() ? <PublicPortfolioLayout /> : <SurfaceRootRedirect />}
       >
         {/* Only active if PublicPortfolioLayout renders Outlet (i.e. custom domain) */}
         {/* But wait, if Navigate renders, it redirects. If Layout renders, it renders Outlet. */}

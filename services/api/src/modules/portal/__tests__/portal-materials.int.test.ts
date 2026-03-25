@@ -17,7 +17,7 @@ import {
   createInvoice,
 } from "@corely/testkit";
 import cookieParser from "cookie-parser";
-import { AuthGuard } from "../../identity";
+import { AuthGuard } from "@/modules/identity/adapters/http/auth.guard";
 
 describe("Portal Materials E2E", () => {
   vi.setConfig({ hookTimeout: 120_000, testTimeout: 120_000 });

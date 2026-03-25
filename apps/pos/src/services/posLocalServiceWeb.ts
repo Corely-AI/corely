@@ -2,11 +2,15 @@ import { v4 as uuidv4 } from "@lukeed/uuid";
 import { SaleBuilder } from "@corely/pos-core";
 import type { OutboxCommand } from "@corely/offline-core";
 import type {
+  FloorPlanRoom,
   PosSale,
   PosSaleLineItem,
   ProductSnapshot,
+  RestaurantModifierGroup,
+  RestaurantOrder,
   ShiftSession,
   SyncPosSaleInput,
+  TableSession,
 } from "@corely/contracts";
 import {
   buildDeterministicIdempotencyKey,
@@ -17,24 +21,33 @@ import {
 } from "@/offline/posOutbox";
 import type {
   CreateSaleAndEnqueueInput,
+  RestaurantAggregateState,
+  RestaurantDraftUpdateInput,
+  RestaurantDraftUpdateResult,
+  RestaurantOfflineSnapshot,
+  RestaurantOpenTableInput,
+  RestaurantOpenTableResult,
+  RestaurantSendInput,
+  RestaurantSendResult,
   SaleCreateResult,
   ShiftCashEventInput,
   ShiftCloseInput,
   ShiftOpenInput,
 } from "@/services/posLocalService";
+import type { ShiftCashEventRow } from "@/services/posLocalServiceWeb.types";
+import {
+  cacheRestaurantSnapshotWeb,
+  getRestaurantAggregateByTableWeb,
+  getRestaurantSnapshotWeb,
+  markRestaurantOrderSyncFailureWeb,
+  markRestaurantOrderSyncedWeb,
+  openRestaurantTableAndEnqueueWeb,
+  replaceRestaurantDraftAndEnqueueWeb,
+  sendRestaurantOrderAndEnqueueWeb,
+  upsertRestaurantAggregateWeb,
+} from "@/services/posLocalServiceWeb.restaurant";
 
 const saleBuilder = new SaleBuilder();
-
-type ShiftCashEventRow = {
-  eventId: string;
-  sessionId: string;
-  eventType: ShiftCashEventType;
-  amountCents: number;
-  reason: string | null;
-  occurredAt: Date;
-  syncStatus: "PENDING" | "SYNCED" | "FAILED";
-  lastError: string | null;
-};
 
 export class PosLocalServiceWeb {
   private products: ProductSnapshot[] = [];
@@ -43,6 +56,9 @@ export class PosLocalServiceWeb {
   private openShiftsByRegister = new Map<string, ShiftSession>();
   private shiftsById = new Map<string, ShiftSession>();
   private shiftCashEvents = new Map<string, ShiftCashEventRow[]>();
+  private restaurantFloorPlan: FloorPlanRoom[] = [];
+  private restaurantModifierGroups: RestaurantModifierGroup[] = [];
+  private restaurantAggregatesByOrderId = new Map<string, RestaurantAggregateState>();
 
   async replaceCatalogSnapshot(
     products: ProductSnapshot[],
@@ -415,6 +431,52 @@ export class PosLocalServiceWeb {
 
   async getLastCatalogSyncAt(): Promise<Date | null> {
     return this.lastCatalogSyncAt;
+  }
+
+  async cacheRestaurantSnapshot(
+    rooms: FloorPlanRoom[],
+    modifierGroups: RestaurantModifierGroup[]
+  ): Promise<void> {
+    return cacheRestaurantSnapshotWeb(this, rooms, modifierGroups);
+  }
+
+  async getRestaurantSnapshot(): Promise<RestaurantOfflineSnapshot> {
+    return getRestaurantSnapshotWeb(this);
+  }
+
+  async getRestaurantAggregateByTable(tableId: string): Promise<RestaurantAggregateState | null> {
+    return getRestaurantAggregateByTableWeb(this, tableId);
+  }
+
+  async upsertRestaurantAggregate(session: TableSession, order: RestaurantOrder): Promise<void> {
+    return upsertRestaurantAggregateWeb(this, session, order);
+  }
+
+  async openRestaurantTableAndEnqueue(
+    input: RestaurantOpenTableInput
+  ): Promise<RestaurantOpenTableResult> {
+    return openRestaurantTableAndEnqueueWeb(this, input);
+  }
+
+  async replaceRestaurantDraftAndEnqueue(
+    input: RestaurantDraftUpdateInput
+  ): Promise<RestaurantDraftUpdateResult> {
+    return replaceRestaurantDraftAndEnqueueWeb(this, input);
+  }
+
+  async sendRestaurantOrderAndEnqueue(input: RestaurantSendInput): Promise<RestaurantSendResult> {
+    return sendRestaurantOrderAndEnqueueWeb(this, input);
+  }
+
+  async markRestaurantOrderSynced(
+    orderId: string,
+    next?: { session?: TableSession; order?: RestaurantOrder }
+  ): Promise<void> {
+    return markRestaurantOrderSyncedWeb(this, orderId, next);
+  }
+
+  async markRestaurantOrderSyncFailure(orderId: string, reason: string): Promise<void> {
+    return markRestaurantOrderSyncFailureWeb(this, orderId, reason);
   }
 
   private generateReceiptNumber(registerId: string, date: Date, posSaleId: string): string {

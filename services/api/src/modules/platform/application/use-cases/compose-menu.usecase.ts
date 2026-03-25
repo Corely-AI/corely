@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
-import type { MenuGroup, MenuItem } from "@corely/contracts";
+import type { MenuGroup, MenuItem, SurfaceId } from "@corely/contracts";
 import { MenuComposerService } from "../services/menu-composer.service";
 import { WorkspaceTemplateService } from "../services/workspace-template.service";
 import {
@@ -19,6 +19,7 @@ export interface ComposeMenuInput {
   permissions: string[];
   scope: "web" | "pos";
   workspaceId?: string; // Optional: if not provided, menu won't include workspace metadata
+  surfaceId: SurfaceId;
 }
 
 export interface ComposeMenuOutput {
@@ -26,6 +27,7 @@ export interface ComposeMenuOutput {
   items: MenuItem[];
   groups: MenuGroup[];
   computedAt: string;
+  surfaceId: SurfaceId;
   // Workspace metadata for server-driven UI
   workspace?: {
     kind: "PERSONAL" | "COMPANY";
@@ -78,6 +80,7 @@ export class ComposeMenuUseCase {
       userId: input.userId,
       permissions: new Set(input.permissions),
       scope: input.scope,
+      surfaceId: input.surfaceId,
       capabilityFilter,
       capabilityKeys,
     });
@@ -108,6 +111,7 @@ export class ComposeMenuUseCase {
       items: menu.items,
       groups: menu.groups,
       computedAt: new Date().toISOString(),
+      surfaceId: input.surfaceId,
       workspace: workspaceMetadata,
     };
   }
